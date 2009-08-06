@@ -1,115 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752537AbZHHVzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbZHHV6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752537AbZHHVzK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 17:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbZHHVzJ
+	id S1752799AbZHHV6F (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 17:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbZHHV6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 17:55:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41022 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751870AbZHHVzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 17:55:09 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH update x2] PM: Introduce core framework for run-time PM of I/O devices (rev. 13)
-Date: Sat, 8 Aug 2009 23:55:32 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       Magnus Damm <magnus.damm@gmail.com>, Greg KH <gregkh@suse.de>,
-       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0908081120160.19562-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908081120160.19562-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908082355.32749.rjw@sisk.pl>
+	Sat, 8 Aug 2009 17:58:04 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:41527 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752666AbZHHV6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 17:58:03 -0400
+Date: Thu, 6 Aug 2009 10:54:01 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: David Brownell <david-b@pacbell.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org, nico@cam.org,
+       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
+       manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl, ppisa@pikron.com,
+       jarkko.lavinen@nokia.com, ben@fluff.org, saschasommer@freenet.de,
+       avorontsov@ru.mvista.com, oakad@yahoo.com, ian@mnementh.co.uk,
+       HaraldWelte@viatech.com, JosephChan@via.com.tw, adrian.hunter@nokia.com
+Subject: Re: New MMC maintainer needed
+Message-ID: <20090806105401.1f852995@mjolnir.ossman.eu>
+In-Reply-To: <200908031851.24375.david-b@pacbell.net>
+References: <20090714153601.6dfe70ff@mjolnir.ossman.eu>
+	<20090728222334.0c543c47@mjolnir.ossman.eu>
+	<20090731122623.254fd0f1@mjolnir.ossman.eu>
+	<200908031851.24375.david-b@pacbell.net>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-20598-1249548849-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 08 August 2009, Alan Stern wrote:
-> On Sat, 8 Aug 2009, Rafael J. Wysocki wrote:
-> 
-> > > We may need to be more careful here.  The driver's remove method may
-> > > want to do some runtime PM stuff to the device before giving up
-> > > control.  On the other hand I'm not sure what _should_ be done here, so
-> > > I can't suggest anything better.
-> > 
-> > Hmm.  Perhaps we can do something along the lines of our .probe() handling.
-> > Namely, call
-> > 
-> > pm_runtime_disable(dev);
-> > pm_runtime_get_noresume(dev);
-> > pm_runtime_enable(dev);
-> > 
-> > before and
-> > 
-> > pm_runtime_put_noidle()
-> > 
-> > after?  Then, if the driver's or bus type's .remove() needs to resume, it will
-> > be able to do that right away and if it wants to suspend, it can always call
-> > pm_runtime_put*(), because our pm_runtime_put_noidle() won't decrease the
-> > usage counter below zero.
-> > 
-> > At the same time we can avoid "leftover" suspends that could interfere with
-> > .remove() in case it needs to access the hardware.
-> 
-> The problem with this is that it calls pm_runtime_disable() at a time 
-> when the driver is still supposed to be in control of the device.  
-> Interfering with the driver's legitimate activity in this way is a bad 
-> thing to do.
-> 
-> The difficulty here is that our requirements are a little
-> contradictory.  We want to prevent all runtime PM callbacks while the
-> remove method is running, but we also want the remove method to be able
-> to carry out its own runtime PM activities.
-> 
-> So maybe what we really need is more like a barrier.  That is,
-> something that will do a "get", wait for outstanding callbacks to
-> finish, carry out a resume if one is pending, and cancel other pending
-> requests.  This could easily share code with pm_runtime_disable.  We 
-> should be able to use this for both probe and remove.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Isn't it what's done in rev. 14?
+--=_freyr.ossman.eu-20598-1249548849-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-pm_runtime_disable(dev);
-pm_runtime_get_noresume(dev);
-pm_runtime_enable(dev);
+On Mon, 3 Aug 2009 18:51:23 -0700
+David Brownell <david-b@pacbell.net> wrote:
 
-is exactly a barrier like this.  How exactly would you like to implement it
-instead?
+> On Friday 31 July 2009, Pierre Ossman wrote:
+> > Restoring back the system state from MMC after a successful hibernation
+> > http://marc.info/?t=3D124818534700003&r=3D1&w=3D2
+> >=20
+> > I don't agree with this approach. The point of the workqueue is so that
+> > the kernel can do things in parallel, so this patch is a step back. The
+> > problem is really with how the kernel doesn't properly cope with
+> > asynchronous disk scanning during bootup. The root_delay parameter was
+> > added for this for the "normal" case, but it seems more work is needed.
+>=20
 
-> We will also need to be a lot more careful about handling runtime PM 
-> during system sleep transitions.  The current code runs a risk of 
-> losing remote wakeup requests.  One scenario goes like this:
-> 
->      1. The device sends a wakeup request, probably in the form of
-> 	an IRQ.
-> 
->      2.	The driver fields the interrupt and tells the device to turn
-> 	off its interrupt request signal.
-> 
->      3. The driver calls pm_request_resume.
-> 
->      4. The runtime PM core carries out the resume callback.
-> 
-> If the core disables runtime PM before step 1 (and before we begin the
-> "late" stage of a system sleep, so interrupts still get delivered) then 
-> steps 1 and 2 will succeed but step 3 will fail.  The wakeup event will 
-> be lost.
+(confusion on my end, I wasn't thinking about root_delay but rootwait)
 
-The idea is that once the system sleep transition has started, the non-runtime
-callbacks are in charge of handling the device.
+> Doesn't handing of resumes needs more attention overall?
+>=20
 
-> Perhaps this means we don't want to disable runtime PM during system 
-> sleep callbacks, but instead use the "barrier" scheme.
+Very much so. I haven't given that area much love since a) I haven't
+had the time, b) I don't have any systems with fancy enough suspend
+handling to do anything interesting.
 
-I'm not really sure about that.  I'd rather do what's right now in the patch
-(well, that's why it's in there) until drivers and bus types start using the
-runtime PM framework.  If it turns out to be problematic, we'll change it
-later.
+> Example, root on eMMC (e.g. a 32-MByte non-removable chip) wouldn't
+> resume at all well the last time I checked ... mounted file systems
+> (not just root) made trouble.  Hardware that reliably reports card
+> insert/remove was rude in the same ways.
 
-Best,
-Rafael
+The general lack of removal detection during suspend tends to make
+everything more complicated than one would like. But I'm sure it's
+manageable just as long as someone puts enough time into it. I'm still
+very much opposed to just assuming that the user never removes the card
+during suspend though.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-20598-1249548849-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkp6mi4ACgkQ7b8eESbyJLjGwQCfaDZO/QTMSmyt85o5XDJBOxii
+i/wAn3enY3iPeJjHxgkJBsFbDdMR69r7
+=qbfd
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-20598-1249548849-0001-2--
