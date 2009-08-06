@@ -1,210 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbZHFCvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbZHFCpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753668AbZHFCvT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 22:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbZHFCvS
+	id S1753790AbZHFCpH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 22:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbZHFCpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 22:51:18 -0400
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:51826 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751110AbZHFCvR (ORCPT
+	Wed, 5 Aug 2009 22:45:06 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3233 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752142AbZHFCnu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 22:51:17 -0400
-Date: Thu, 6 Aug 2009 08:21:05 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/rcu] rcu: Add diagnostic check for a possible
-	CPU-hotplug race
-Message-ID: <20090806025105.GA7077@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <tip-7256cf0e83bf018be8a81806593aaef7f2437f0b@git.kernel.org> <20090802202720.GA32360@elte.hu> <20090802221324.GP6854@linux.vnet.ibm.com> <20090803070458.GA27581@elte.hu> <20090803125618.GV6854@linux.vnet.ibm.com> <20090806012645.GA24800@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090806012645.GA24800@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 5 Aug 2009 22:43:50 -0400
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Julia Lawall <julia@diku.dk>,
+       Greg KH <greg@kroah.com>
+Subject: [PATCH 1/7] scripts/get_maintainer.pl: Add --git-blame
+Date: Wed,  5 Aug 2009 19:43:42 -0700
+Message-Id: <edeadcb4255031feccbfe65477636ee5c03a05a5.1249525834.git.joe@perches.com>
+X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
+In-Reply-To: <cover.1249525834.git.joe@perches.com>
+References: <cover.1249525834.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 06:26:45PM -0700, Paul E. McKenney wrote:
-> On Mon, Aug 03, 2009 at 05:56:18AM -0700, Paul E. McKenney wrote:
-> > On Mon, Aug 03, 2009 at 09:04:58AM +0200, Ingo Molnar wrote:
-> > > 
-> > > i've attached the full serial bootlog with the warning in it. This 
-> > > should address your question about what the order of initialization 
-> > > is, right?
-> > 
-> > It does, thank you!  This problem really is happening during boot.
-> > 
-> > > Let me know if you still would like me to run your diagnostic patch 
-> > > too.
-> > 
-> > Now that you mention it, you should probably let me test it a bit first.
-> 
-> And here is a tested and debugged version.  Diagnostic only, not for
-> inclusion, based on tip/core/rcu as of today (August 5th).
-> 
-> Gautham, have you been able to reproduce on your machines?  Still cannot
-> here.
+Julia Lawall suggested that get_maintainers.pl should have the
+ability to include signatories of commits that are modified by
+a particular patch.
 
-I tried on a couple of machines yesterday, but I still couldn't
-reproduce it with Ingo's config.
+Vegard Nossum did something similar once.
+http://lkml.org/lkml/2008/5/29/449
 
-> 
-> 							Thanx, Paul
-> 
-> ------------------------------------------------------------------------
-> 
-> Create an rcu_cpu_notified() API that checks to see whether RCU's
-> CPU-hotplug notifier is registered.  This is used in three WARN_ON_ONCE()
-> calls, the first of which should trigger, and the second two of
-> which should not -- but I suspect that the WARN_ON_ONCE() located in
-> __rcu_process_callbacks() will in fact trigger on the machine suffering
-> from this bug.  ;-)
-> 
-> Any code path that executes after rcu_init() should have RCU CPU-hotplug
-> notifiers registered, so any triggering of the following WARN_ON_ONCE()
-> after rcu_init() is a bug:
-> 
-> 	WARN_ON_ONCE(!rcu_cpu_notified());
-> 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
-> 
->  include/linux/cpu.h      |    3 +++
->  include/linux/rcupdate.h |    1 +
->  kernel/cpu.c             |    5 +++++
->  kernel/notifier.c        |   23 +++++++++++++++++++++++
->  kernel/rcupdate.c        |    9 ++++++++-
->  kernel/rcutree.c         |    1 +
->  6 files changed, 41 insertions(+), 1 deletion(-)
-> 
-> diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-> index 4d668e0..d9b3c18 100644
-> --- a/include/linux/cpu.h
-> +++ b/include/linux/cpu.h
-> @@ -51,6 +51,9 @@ struct notifier_block;
->  #ifdef CONFIG_HOTPLUG_CPU
->  extern int register_cpu_notifier(struct notifier_block *nb);
->  extern void unregister_cpu_notifier(struct notifier_block *nb);
-> +extern int cpu_notified(int (*fn)(struct notifier_block *, unsigned long, void *));
-> +extern int raw_notifier_chain_is_registered(struct raw_notifier_head *nh,
-> +		int (*fn)(struct notifier_block *, unsigned long, void *));
->  #else
-> 
->  #ifndef MODULE
-> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-> index 3c89d6a..f790f3c 100644
-> --- a/include/linux/rcupdate.h
-> +++ b/include/linux/rcupdate.h
-> @@ -65,6 +65,7 @@ extern void rcu_init(void);
->  extern void rcu_scheduler_starting(void);
->  extern int rcu_needs_cpu(int cpu);
->  extern int rcu_scheduler_active;
-> +extern int rcu_cpu_notified(void);
-> 
->  #if defined(CONFIG_TREE_RCU)
->  #include <linux/rcutree.h>
-> diff --git a/kernel/cpu.c b/kernel/cpu.c
-> index 8ce1004..5aa736a 100644
-> --- a/kernel/cpu.c
-> +++ b/kernel/cpu.c
-> @@ -133,6 +133,11 @@ int __ref register_cpu_notifier(struct notifier_block *nb)
->  	return ret;
->  }
-> 
-> +int cpu_notified(int (*fn)(struct notifier_block *, unsigned long, void *))
-> +{
-> +	return raw_notifier_chain_is_registered(&cpu_chain, fn);
-> +}
-> +
->  #ifdef CONFIG_HOTPLUG_CPU
-> 
->  EXPORT_SYMBOL(register_cpu_notifier);
-> diff --git a/kernel/notifier.c b/kernel/notifier.c
-> index 61d5aa5..d72c0b8 100644
-> --- a/kernel/notifier.c
-> +++ b/kernel/notifier.c
-> @@ -59,6 +59,29 @@ static int notifier_chain_unregister(struct notifier_block **nl,
->  	return -ENOENT;
->  }
-> 
-> +static int notifier_chain_is_registered(struct notifier_block *nl,
-> +		int (*fn)(struct notifier_block *, unsigned long, void *))
-> +{
-> +	rcu_read_lock();
-> +	/* printk(KERN_ALERT "notifier_chain_is_registered looking for: %pS\n", fn); */
-> +	while (nl != NULL) {
-> +		/* printk(KERN_ALERT "notifier_chain_is_registered: %pS\n", rcu_dereference(nl)->notifier_call); */
-> +		if (rcu_dereference(nl)->notifier_call == fn) {
-> +			rcu_read_unlock();
-> +			return 1;
-> +		}
-> +		nl = (rcu_dereference(nl)->next);
-> +	}
-> +	rcu_read_unlock();
-> +	return 0;
-> +}
-> +
-> +int raw_notifier_chain_is_registered(struct raw_notifier_head *nh,
-> +		int (*fn)(struct notifier_block *, unsigned long, void *))
-> +{
-> +	return notifier_chain_is_registered(nh->head, fn);
-> +}
-> +
->  /**
->   * notifier_call_chain - Informs the registered notifiers about an event.
->   *	@nl:		Pointer to head of the blocking notifier chain
-> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-> index 9f0584e..57a4626 100644
-> --- a/kernel/rcupdate.c
-> +++ b/kernel/rcupdate.c
-> @@ -220,7 +220,7 @@ static void rcu_migrate_callback(struct rcu_head *notused)
->  extern int rcu_cpu_notify(struct notifier_block *self,
->  			  unsigned long action, void *hcpu);
-> 
-> -static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
-> +int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
->  		unsigned long action, void *hcpu)
->  {
->  	rcu_cpu_notify(self, action, hcpu);
-> @@ -246,12 +246,19 @@ static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
->  	return NOTIFY_OK;
->  }
-> 
-> +int rcu_cpu_notified(void)
-> +{
-> +	return cpu_notified(rcu_barrier_cpu_hotplug);
-> +}
-> +
->  void __init rcu_init(void)
->  {
->  	int i;
-> 
->  	__rcu_init();
-> +	WARN_ON_ONCE(!rcu_cpu_notified()); /* this one expected to trigger. */
->  	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
-> +	WARN_ON_ONCE(!rcu_cpu_notified());
-> 
->  	/*
->  	 * We don't need protection against CPU-hotplug here because
-> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> index b9b1928..a0bfc93 100644
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-> @@ -1133,6 +1133,7 @@ __rcu_process_callbacks(struct rcu_state *rsp, struct rcu_data *rdp)
->  	unsigned long flags;
-> 
->  	WARN_ON_ONCE(rdp->beenonline == 0);
-> +	WARN_ON_ONCE(!rcu_cpu_notified());
-> 
->  	/*
->  	 * If an RCU GP has gone long enough, go check for dyntick
+The modified script looks the commits for all lines in the
+patch, and includes the "-by:" signatories for those commits.
+It uses the same git-min-percent, git-max-maintainers, and
+git-min-signatures options.  git-since is ignored.
 
+It can be used independently from the --git default, so
+        ./scripts/get_maintainers.pl --nogit --git-blame <patch>
+or
+        ./scripts/get_maintainers.pl --nogit --git-blame -f <file>
+is acceptable.
+
+If used with -f <file>, all lines/commits for the file are
+checked.
+
+--git-blame can be slow if used with -f <file>
+--git-blame does not work with -f <directory>
+
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ scripts/get_maintainer.pl |  138 +++++++++++++++++++++++++++++++++++---------
+ 1 files changed, 109 insertions(+), 29 deletions(-)
+
+diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+index 278a45b..35781e0 100755
+--- a/scripts/get_maintainer.pl
++++ b/scripts/get_maintainer.pl
+@@ -13,7 +13,7 @@
+ use strict;
+ 
+ my $P = $0;
+-my $V = '0.17';
++my $V = '0.18beta2';
+ 
+ use Getopt::Long qw(:config no_auto_abbrev);
+ 
+@@ -29,6 +29,7 @@ my $email_git_min_signatures = 1;
+ my $email_git_max_maintainers = 5;
+ my $email_git_min_percent = 5;
+ my $email_git_since = "1-year-ago";
++my $email_git_blame = 0;
+ my $output_multiline = 1;
+ my $output_separator = ", ";
+ my $scm = 0;
+@@ -68,6 +69,7 @@ if (!GetOptions(
+ 		'git-max-maintainers=i' => \$email_git_max_maintainers,
+ 		'git-min-percent=i' => \$email_git_min_percent,
+ 		'git-since=s' => \$email_git_since,
++		'git-blame!' => \$email_git_blame,
+ 		'm!' => \$email_maintainer,
+ 		'n!' => \$email_usename,
+ 		'l!' => \$email_list,
+@@ -107,8 +109,9 @@ if ($selections == 0) {
+     die "$P:  Missing required option: email, scm, status, subsystem or web\n";
+ }
+ 
+-if ($email && ($email_maintainer + $email_list + $email_subscriber_list
+-	       + $email_git + $email_git_penguin_chiefs) == 0) {
++if ($email &&
++    ($email_maintainer + $email_list + $email_subscriber_list +
++     $email_git + $email_git_penguin_chiefs + $email_git_blame) == 0) {
+     usage();
+     die "$P: Please select at least 1 email option\n";
+ }
+@@ -150,6 +153,7 @@ close(MAINT);
+ ## use the filenames on the command line or find the filenames in the patchfiles
+ 
+ my @files = ();
++my @range = ();
+ 
+ foreach my $file (@ARGV) {
+     ##if $file is a directory and it lacks a trailing slash, add one
+@@ -162,13 +166,19 @@ foreach my $file (@ARGV) {
+ 	push(@files, $file);
+     } else {
+ 	my $file_cnt = @files;
++	my $lastfile;
+ 	open(PATCH, "<$file") or die "$P: Can't open ${file}\n";
+ 	while (<PATCH>) {
+ 	    if (m/^\+\+\+\s+(\S+)/) {
+ 		my $filename = $1;
+ 		$filename =~ s@^[^/]*/@@;
+ 		$filename =~ s@\n@@;
++		$lastfile = $filename;
+ 		push(@files, $filename);
++	    } elsif (m/^\@\@ -(\d+),(\d+)/) {
++		if ($email_git_blame) {
++		    push(@range, "$lastfile:$1:$2");
++		}
+ 	    }
+ 	}
+ 	close(PATCH);
+@@ -226,6 +236,9 @@ foreach my $file (@files) {
+ 	recent_git_signoffs($file);
+     }
+ 
++    if ($email && $email_git_blame) {
++	git_assign_blame($file);
++    }
+ }
+ 
+ if ($email) {
+@@ -311,6 +324,7 @@ MAINTAINER field selection options:
+     --git-max-maintainers => maximum maintainers to add (default: 5)
+     --git-min-percent => minimum percentage of commits required (default: 5)
+     --git-since => git history to use (default: 1-year-ago)
++    --git-blame => use git blame to find modified commits for patch or file
+     --m => include maintainer(s) if any
+     --n => include name 'Full Name <addr\@domain.tld>'
+     --l => include list(s) if any
+@@ -333,13 +347,15 @@ Other options:
+ 
+ Notes:
+   Using "-f directory" may give unexpected results:
+-
+-  Used with "--git", git signators for _all_ files in and below
+-     directory are examined as git recurses directories.
+-     Any specified X: (exclude) pattern matches are _not_ ignored.
+-  Used with "--nogit", directory is used as a pattern match,
+-     no individual file within the directory or subdirectory
+-     is matched.
++      Used with "--git", git signators for _all_ files in and below
++          directory are examined as git recurses directories.
++          Any specified X: (exclude) pattern matches are _not_ ignored.
++      Used with "--nogit", directory is used as a pattern match,
++         no individual file within the directory or subdirectory
++         is matched.
++      Used with "--git-blame", does not iterate all files in directory
++  Using "--git-blame" is slow and may add old committers and authors
++      that are no longer active maintainers to the output.
+ EOT
+ }
+ 
+@@ -449,14 +465,19 @@ sub push_email_address {
+     my ($email_address) = @_;
+ 
+     my $email_name = "";
+-    if ($email_address =~ m/([^<]+)<(.*\@.*)>$/) {
+-	$email_name = $1;
+-	$email_address = $2;
+-    }
+ 
+     if ($email_maintainer) {
+-	if ($email_usename && $email_name) {
+-	    push(@email_to, format_email($email_name, $email_address));
++	if ($email_address =~ m/([^<]+)<(.*\@.*)>$/) {
++	    $email_name = $1;
++	    $email_address = $2;
++	    if ($email_usename) {
++		push(@email_to, format_email($email_name, $email_address));
++	    } else {
++		push(@email_to, $email_address);
++	    }
++	} elsif ($email_address =~ m/<(.+)>/) {
++	    $email_address = $1;
++	    push(@email_to, $email_address);
+ 	} else {
+ 	    push(@email_to, $email_address);
+ 	}
+@@ -545,20 +566,79 @@ sub recent_git_signoffs {
+ 		last;
+ 	    }
+ 	}
+-	if ($line =~ m/(.+)<(.+)>/) {
+-	    my $git_name = $1;
+-	    my $git_addr = $2;
+-	    if ($email_usename) {
+-		push(@email_to, format_email($git_name, $git_addr));
+-	    } else {
+-		push(@email_to, $git_addr);
+-	    }
+-	} elsif ($line =~ m/<(.+)>/) {
+-	    my $git_addr = $1;
+-	    push(@email_to, $git_addr);
+-	} else {
+-	    push(@email_to, $line);
++	push_email_address($line);
++    }
++}
++
++sub save_commits {
++    my ($cmd, @commits) = @_;
++    my $output;
++    my @lines = ();
++
++    $output = `${cmd}`;
++
++    @lines = split("\n", $output);
++    foreach my $line (@lines) {
++	if ($line =~ m/^(\w+) /) {
++	    push (@commits, $1);
++	}
++    }
++    return @commits;
++}
++
++sub git_assign_blame {
++    my ($file) = @_;
++
++    my @lines = ();
++    my @commits = ();
++    my $cmd;
++    my $output;
++    my %hash;
++    my $total_sign_offs;
++    my $count;
++
++    if (@range) {
++	foreach my $file_range_diff (@range) {
++	    next if (!($file_range_diff =~ m/(.+):(.+):(.+)/));
++	    my $diff_file = $1;
++	    my $diff_start = $2;
++	    my $diff_length = $3;
++	    next if (!("$file" eq "$diff_file"));
++	    $cmd = "git blame -l -L $diff_start,+$diff_length $file\n";
++	    @commits = save_commits($cmd, @commits);
+ 	}
++    } else {
++	if (-f $file) {
++	    $cmd = "git blame -l $file\n";
++	    @commits = save_commits($cmd, @commits);
++	}
++    }
++
++    $total_sign_offs = 0;
++    @commits = uniq(@commits);
++    foreach my $commit (@commits) {
++	$cmd = "git log -1 ${commit}";
++	$cmd .= " | grep -Ei \"^[-_ 	a-z]+by:.*\\\@.*\$\"";
++	if (!$email_git_penguin_chiefs) {
++	    $cmd .= " | grep -Ev \"${penguin_chiefs}\"";
++	}
++	$cmd .= " | cut -f2- -d\":\"";
++
++	$output = `${cmd}`;
++	$output =~ s/^\s*//gm;
++	@lines = split("\n", $output);
++	$hash{$_}++ for @lines;
++	$total_sign_offs += @lines;
++    }
++
++    $count = 0;
++    foreach my $line (sort {$hash{$b} <=> $hash{$a}} keys %hash) {
++	my $sign_offs = $hash{$line};
++	$count++;
++	last if ($sign_offs < $email_git_min_signatures ||
++		 $count > $email_git_max_maintainers ||
++		 $sign_offs * 100 / $total_sign_offs < $email_git_min_percent);
++	push_email_address($line);
+     }
+ }
+ 
 -- 
-Thanks and Regards
-gautham
+1.6.3.1.10.g659a0.dirty
+
