@@ -1,82 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbZHFT6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbZHFT6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbZHFT6J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 15:58:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756581AbZHFT6I
+	id S1756653AbZHFT6Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 15:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbZHFT6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 15:58:08 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:59750 "EHLO kernel.dk"
+	Thu, 6 Aug 2009 15:58:11 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:59756 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756175AbZHFT6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 15:58:05 -0400
+	id S1756512AbZHFT6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 15:58:06 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: Eric.Moore@lsi.com, jeff@garzik.org
-Subject: [PATCH 0/3]: blk-iopoll, a polled completion API for block devices
-Date: Thu,  6 Aug 2009 21:58:02 +0200
-Message-Id: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com>
+Cc: Eric.Moore@lsi.com, jeff@garzik.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 3/3] mptfusion: add support for blk-iopoll
+Date: Thu,  6 Aug 2009 21:58:05 +0200
+Message-Id: <1249588685-4662-4-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.3.2.306.g4f4fa
+In-Reply-To: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com>
+References: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ drivers/message/fusion/mptbase.c |   99 ++++++++++++++++++++++++++++++++-----
+ drivers/message/fusion/mptbase.h |    3 +
+ 2 files changed, 88 insertions(+), 14 deletions(-)
 
-This is something I've been playing around and I have hopes of merging
-the core for 2.6.32, so I thought I'd send it out for some review and
-inspection.
-
-Basically this implements NAPI for block devices, and much of the core
-is essentially lifted from there. Since NAPI is already generic, there's
-a possibility for some code reuse too. It's pretty small though and
-there are a few small differences, so I just left it as-is for this
-posting.
-
-I've gotten good results with this on SSD devices, reducing the
-interrupt rate a lot. And that's just for single disks, if you had
-a bunch of those hanging off several controllers, it would look more
-interesting I'm sure.
-
-Apart from the core, I did patches for ahci and mpt. The former mostly
-as a proof of concept, it's been running my laptop and test box for
-months. There may be a problem with the ack part, as per the comment at
-the end of ahci_interrupt(). So far I haven't observed any bad behaviour.
-mpt is more interesting, as it's more geared at the market where this
-should make some impact. The mpt patch should also be fully stable,
-I've tested it on several platforms and adapters.
-
-As to results, they vary. On a faster box, I can reduce the interrupt
-rate by ~28% at only 50k IOPS. On a slower box, at 30k IOPS it'll drop
-by as much as 95%. Latencies numbers are as good (or better). On
-the faster box, the mpt controller even had interrupt coalescing enabled
-and it still made a big difference.
-
-Anyway, YMMV, I would appreciate some test results (and as usual, that
-even includes just saying that it boots and functions for you). If
-people feel adventurous, patches for other controllers will be happily
-queued up for testing. I may even be convinced to implement support
-for your controller of choice, if you have some fast storage hooked up
-and would like to experiment. Generally, adding support to a driver is
-not very hard and the two conversions included were also meant to serve
-as an inspiration.
-
-Patches are against current -git. You can also pull them from
-
-  git://git.kernel.dk/linux-2.6-block.git blk-iopoll
-
-
- block/Makefile                   |    2 
- block/blk-iopoll.c               |  227 +++++++++++++++++++++++++++++++
- drivers/ata/ahci.c               |   53 ++++++-
- drivers/message/fusion/mptbase.c |   99 +++++++++++--
- drivers/message/fusion/mptbase.h |    3 
- include/linux/blk-iopoll.h       |   41 +++++
- include/linux/interrupt.h        |    1 
- include/linux/libata.h           |    2 
- kernel/sysctl.c                  |   10 +
- 9 files changed, 419 insertions(+), 19 deletions(-)
-
+diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
+index 5d0ba4f..24549d6 100644
+--- a/drivers/message/fusion/mptbase.c
++++ b/drivers/message/fusion/mptbase.c
+@@ -114,6 +114,9 @@ module_param_call(mpt_fwfault_debug, param_set_int, param_get_int,
+ MODULE_PARM_DESC(mpt_fwfault_debug, "Enable detection of Firmware fault"
+ 	" and halt Firmware on fault - (default=0)");
+ 
++static int mpt_iopoll_w = 32;
++module_param(mpt_iopoll_w, int, 0);
++MODULE_PARM_DESC(mpt_iopoll_w, " blk iopoll budget (default=32");
+ 
+ 
+ #ifdef MFCNT
+@@ -515,6 +518,44 @@ mpt_reply(MPT_ADAPTER *ioc, u32 pa)
+ 	mb();
+ }
+ 
++static void mpt_irq_disable(MPT_ADAPTER *ioc)
++{
++	CHIPREG_WRITE32(&ioc->chip->IntMask, 0xFFFFFFFF);
++	CHIPREG_WRITE32(&ioc->chip->IntStatus, 0);
++	CHIPREG_READ32(&ioc->chip->IntStatus);
++}
++
++static void mpt_irq_enable(MPT_ADAPTER *ioc)
++{
++	CHIPREG_WRITE32(&ioc->chip->IntMask, MPI_HIM_DIM);
++}
++
++static inline void __mpt_handle_irq(MPT_ADAPTER *ioc, u32 pa)
++{
++	if (pa & MPI_ADDRESS_REPLY_A_BIT)
++		mpt_reply(ioc, pa);
++	else
++		mpt_turbo_reply(ioc, pa);
++}
++
++static int mpt_handle_irq(MPT_ADAPTER *ioc, unsigned int budget)
++{
++	int nr = 0;
++	u32 pa;
++
++	/*
++	 *  Drain the reply FIFO!
++	 */
++	while ((pa = CHIPREG_READ32_dmasync(&ioc->chip->ReplyFifo)) != 0xffffffff) {
++		nr++;
++		__mpt_handle_irq(ioc, pa);
++		if (nr == budget)
++			break;
++	}
++
++	return nr;
++}
++
+ /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+ /**
+  *	mpt_interrupt - MPT adapter (IOC) specific interrupt handler.
+@@ -536,23 +577,48 @@ static irqreturn_t
+ mpt_interrupt(int irq, void *bus_id)
+ {
+ 	MPT_ADAPTER *ioc = bus_id;
+-	u32 pa = CHIPREG_READ32_dmasync(&ioc->chip->ReplyFifo);
++	int nr = 0;
++
++	if (!blk_iopoll_enabled)
++		nr = mpt_handle_irq(ioc, -1U);
++	else if (blk_iopoll_sched_prep(&ioc->iopoll)) {
++		mpt_irq_disable(ioc);
++		ioc->iopoll.data =CHIPREG_READ32_dmasync(&ioc->chip->ReplyFifo);
++		blk_iopoll_sched(&ioc->iopoll);
++		nr = 1;
++	} else {
++		/*
++		 * Not really handled, but it will be by iopoll.
++		 */
++		nr = 1;
++	}
+ 
+-	if (pa == 0xFFFFFFFF)
+-		return IRQ_NONE;
++	if (nr)
++		return IRQ_HANDLED;
+ 
+-	/*
+-	 *  Drain the reply FIFO!
+-	 */
+-	do {
+-		if (pa & MPI_ADDRESS_REPLY_A_BIT)
+-			mpt_reply(ioc, pa);
+-		else
+-			mpt_turbo_reply(ioc, pa);
+-		pa = CHIPREG_READ32_dmasync(&ioc->chip->ReplyFifo);
+-	} while (pa != 0xFFFFFFFF);
++	return IRQ_NONE;
++}
+ 
+-	return IRQ_HANDLED;
++static int mpt_iopoll(struct blk_iopoll *iop, int budget)
++{
++	MPT_ADAPTER *ioc = container_of(iop, MPT_ADAPTER, iopoll);
++	int ret = 0;
++	u32 pa;
++
++	pa = iop->data;
++	iop->data = 0xffffffff;
++	if (pa != 0xffffffff) {
++		__mpt_handle_irq(ioc, pa);
++		ret = 1;
++	}
++
++	ret += mpt_handle_irq(ioc, budget - ret);
++	if (ret < budget) {
++		blk_iopoll_complete(iop);
++		mpt_irq_enable(ioc);
++	}
++
++	return ret;
+ }
+ 
+ /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+@@ -2091,6 +2157,7 @@ mpt_suspend(struct pci_dev *pdev, pm_message_t state)
+ 	/* Clear any lingering interrupt */
+ 	CHIPREG_WRITE32(&ioc->chip->IntStatus, 0);
+ 
++	blk_iopoll_disable(&ioc->iopoll);
+ 	free_irq(ioc->pci_irq, ioc);
+ 	if (ioc->msi_enable)
+ 		pci_disable_msi(ioc->pcidev);
+@@ -2358,6 +2425,8 @@ mpt_do_ioc_recovery(MPT_ADAPTER *ioc, u32 reason, int sleepFlag)
+ 				ret = -EBUSY;
+ 				goto out;
+ 			}
++			blk_iopoll_init(&ioc->iopoll, mpt_iopoll_w, mpt_iopoll);
++			blk_iopoll_enable(&ioc->iopoll);
+ 			irq_allocated = 1;
+ 			ioc->pci_irq = ioc->pcidev->irq;
+ 			pci_set_master(ioc->pcidev);		/* ?? */
+@@ -2578,6 +2647,7 @@ mpt_do_ioc_recovery(MPT_ADAPTER *ioc, u32 reason, int sleepFlag)
+ 
+  out:
+ 	if ((ret != 0) && irq_allocated) {
++		blk_iopoll_disable(&ioc->iopoll);
+ 		free_irq(ioc->pci_irq, ioc);
+ 		if (ioc->msi_enable)
+ 			pci_disable_msi(ioc->pcidev);
+@@ -2786,6 +2856,7 @@ mpt_adapter_dispose(MPT_ADAPTER *ioc)
+ 	mpt_adapter_disable(ioc);
+ 
+ 	if (ioc->pci_irq != -1) {
++		blk_iopoll_disable(&ioc->iopoll);
+ 		free_irq(ioc->pci_irq, ioc);
+ 		if (ioc->msi_enable)
+ 			pci_disable_msi(ioc->pcidev);
+diff --git a/drivers/message/fusion/mptbase.h b/drivers/message/fusion/mptbase.h
+index 1c8514d..954a59f 100644
+--- a/drivers/message/fusion/mptbase.h
++++ b/drivers/message/fusion/mptbase.h
+@@ -52,6 +52,7 @@
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+ #include <linux/mutex.h>
++#include <linux/blk-iopoll.h>
+ 
+ #include "lsi/mpi_type.h"
+ #include "lsi/mpi.h"		/* Fusion MPI(nterface) basic defs */
+@@ -763,6 +764,8 @@ typedef struct _MPT_ADAPTER
+ 	struct workqueue_struct *reset_work_q;
+ 	struct delayed_work	 fault_reset_work;
+ 
++	struct blk_iopoll	iopoll;
++
+ 	u8			sg_addr_size;
+ 	u8			in_rescan;
+ 	u8			SGE_size;
 -- 
-Jens Axboe
-
+1.6.3.2.306.g4f4fa
 
