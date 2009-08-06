@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbZHFNQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbZHFNQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755820AbZHFNQA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 09:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbZHFNP6
+	id S1755814AbZHFNQv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 09:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755665AbZHFNQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 09:15:58 -0400
-Received: from atreides.gradator.net ([212.85.155.42]:60660 "EHLO
-	atreides.gradator.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755819AbZHFNP5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 09:15:57 -0400
-Date: Thu, 6 Aug 2009 15:15:56 +0200
-From: Sylvain Rochet <gradator@gradator.net>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       linux-nfs@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
-Message-ID: <20090806131555.GA23359@gradator.net>
-References: <20090420162017.GA28079@gradator.net> <20090716172749.GC3740@atrey.karlin.mff.cuni.cz> <20090725151751.GA6419@gradator.net> <20090727154253.GB8332@duck.suse.cz> <20090728112715.GA8442@gradator.net> <20090728135226.GA21682@duck.suse.cz> <20090728164142.GA13662@gradator.net> <20090803222901.GB23162@duck.suse.cz> <20090804111505.GA6433@gradator.net> <20090804225619.GB11097@duck.suse.cz>
+	Thu, 6 Aug 2009 09:16:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49181 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755657AbZHFNQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 09:16:48 -0400
+Message-ID: <4A7AD79E.4020604@redhat.com>
+Date: Thu, 06 Aug 2009 09:16:14 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="J/dobhs11T7y2rNN"
-Content-Disposition: inline
-In-Reply-To: <20090804225619.GB11097@duck.suse.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: gradator@atreides.gradator.net
-Subject: Re: 2.6.28.9: EXT3/NFS inodes corruption
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
-X-SA-Exim-Scanned: Yes (on atreides.gradator.net)
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+References: <20090805024058.GA8886@localhost> <20090805155805.GC23385@random.random> <20090806100824.GO23385@random.random> <4A7AAE07.1010202@redhat.com> <20090806102057.GQ23385@random.random> <20090806105932.GA1569@localhost> <4A7AC201.4010202@redhat.com> <20090806130631.GB6162@localhost>
+In-Reply-To: <20090806130631.GB6162@localhost>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Wu Fengguang wrote:
 
---J/dobhs11T7y2rNN
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> I guess both schemes have unacceptable flaws.
+> 
+> For JVM/BIGMEM workload, most pages would be found referenced _all the time_.
+> So the KEEP_MOST scheme could increase reclaim overheads by N=250 times;
+> while the DROP_CONTINUOUS scheme is effectively zero cost.
 
-Hi,
+The higher overhead may not be an issue on smaller systems,
+or inside smaller cgroups inside large systems, when doing
+cgroup reclaim.
 
+> However, the DROP_CONTINUOUS scheme does bring more _indeterminacy_.
+> It can behave vastly different on single active task and multi ones.
+> It is short sighted and can be cheated by bursty activities.
 
-On Wed, Aug 05, 2009 at 12:56:19AM +0200, Jan Kara wrote:
->=20
-> Thanks for testing. So you seem to be really stressting the path where
-> creation of new files / directories fails (probably due to group quota).
+The split LRU VM tries to avoid the bursty page aging as
+much as possible, by doing background deactivating of
+anonymous pages whenever we reclaim page cache pages and
+the number of anonymous pages in the zone (or cgroup) is
+low.
 
-Yes, there are 29 groups over quota on a total of 4499. Those are mainly=20
-spammed websites and therefore quite stressed due to the amount of tries=20
-to add new "data".
-
-
-> I have one idea what could cause your filesystem corruption, although=20
-> it's a wild guess... Please try attached oneliner.
-
-Running since yesterday.
-
-
-> Also your corruption reminded me that Al Viro has been fixing problems
-> where we could cache one inode twice when a filesystem was mounted over N=
-FS
-> and that could also lead to a filesystem corruption. So I'm adding him to
-> CC just in case he has some idea. BTW Al, what do you think about the
-> problem I describe in the attached patch? I'm not sure if it can cause so=
-me
-> real problems but in theory it could...
-
-Should we upgrade NFS clients as well ?  (now running 2.6.28.9)
-
-
-Sylvain
-
---J/dobhs11T7y2rNN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFKeteLDFub3qtEsS8RAkblAKCDyCR00ocoDY1Qxjp1bk6YWlPfkACgvdg9
-qcCk43m4BmrsCFyT9U7VTwE=
-=Dhxc
------END PGP SIGNATURE-----
-
---J/dobhs11T7y2rNN--
+-- 
+All rights reversed.
