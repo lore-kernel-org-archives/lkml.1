@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932163AbZHFUPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbZHFUQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932163AbZHFUPv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 16:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756710AbZHFUPu
+	id S1756709AbZHFUQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 16:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbZHFUQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 16:15:50 -0400
-Received: from mail-fx0-f228.google.com ([209.85.220.228]:43142 "EHLO
-	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756706AbZHFUPt convert rfc822-to-8bit (ORCPT
+	Thu, 6 Aug 2009 16:16:28 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:34473 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932183AbZHFUQ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 16:15:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=G9h86WdDu5y8ov78tWgN8W7f4vAr1aLxKRf55wA3KIzPncwDATtCsluNtjokIuKetr
-         +/Gsvmts2L5hKweCerVDUCvHQOdlmw9QYFwiUMtWuJI6O4Ij1Q2jcDDhCrnAzlu3D/gu
-         cHczDnf5yWq7xE9MvKKbPVoCTakebLI6eFT0Q=
+	Thu, 6 Aug 2009 16:16:27 -0400
+Message-ID: <4A7B3A2C.60500@vmware.com>
+Date: Thu, 06 Aug 2009 22:16:44 +0200
+From: =?UTF-8?B?VGhvbWFzIEhlbGxzdHLDtm0=?= <thellstrom@vmware.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-In-Reply-To: <43e72e890908061232k467ba1f7iece5d0aa9bece811@mail.gmail.com>
-References: <b637ec0b0908061130w399eb1c6oc3a31640a76398c5@mail.gmail.com>
-	 <20090806183247.GI26809@tuxdriver.com>
-	 <b637ec0b0908061226m33203bco7ac38cecb939b382@mail.gmail.com>
-	 <43e72e890908061232k467ba1f7iece5d0aa9bece811@mail.gmail.com>
-Date: Thu, 6 Aug 2009 22:15:48 +0200
-Message-ID: <b637ec0b0908061315s3614603dya1ac800445b748bf@mail.gmail.com>
-Subject: Re: WARNING: at net/mac80211/mlme.c:2292 ieee80211_sta_work+0x97/0xd2d 
-	[mac80211]()
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-wireless@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: =?UTF-8?B?VGhvbWFzIEhlbGxzdHLDtm0=?= <thomas@tungstengraphics.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>
+Subject: Re: shmem + TTM  oops
+References: <4A7ACC90.2000808@tungstengraphics.com> <Pine.LNX.4.64.0908062045270.944@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0908062045270.944@sister.anvils>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Luis.
-I'm using 2.6.31-rc5 and I'm not using wireless-testing.
-
-Regards,
-Fabio
-
-
-
-On Thu, Aug 6, 2009 at 9:32 PM, Luis R. Rodriguez<mcgrof@gmail.com> wrote:
-> On Thu, Aug 6, 2009 at 12:26 PM, Fabio Comolli<fabio.comolli@gmail.com> wrote:
->> Hi John. I'm using ath5k .
+Hugh Dickins skrev:
+> On Thu, 6 Aug 2009, Thomas Hellström wrote:
+>   
+>> Hi!
+>> I've been debugging a strange problem for a while, and it'd be nice to have
+>> some more eyes on this.
 >>
->> The card is a:
+>> When the TTM graphics memory manager decides it's using too much memory, it
+>> copies the contents of the buffer to shmem objects and releases the buffers.
+>> This is because shmem objects are pageable whereas TTM buffers are not. When
+>> the TTM buffers are accessed in one way or another, it copies contents back.
+>> Seems to work fairly nice, but not really optimal.
 >>
->> 01:00.0 Ethernet controller: Atheros Communications Inc. AR5001
->> Wireless Network Adapter (rev 01)
->>
->> with PCI ID:
->>
->> 01:00.0 0200: 168c:001c (rev 01)
+>> When the X server is VT switched, TTM optionally switches out all buffers to
+>> shmem objects, but when the contents are read back, some shmem objects have
+>> corrupted swap entry top directory. The member
+>> shmem_inode_info::i_indirect[0] usually contains a value 0xffffff60 or
+>> something similar, causing an oops in shmem_truncate_range() when the shmem
+>> object is freed. Before that, readback seems to work OK. The corruption is
+>> happening after X server VT switch when TTM is supposed to be idle. The shmem
+>> objects have been verified to have swap entry directories after all buffer
+>> objects have been swapped out.
+>>     
 >
-> What kernel?
+> Not a symptom I've ever come across: I agree strange.  A few questions:
 >
-> This is probably a driver/mac80211 adding work into the mac80211
-> workqueue during the susend --> resume cycle. We recently changed the
-> warning to be moved onto the actual caller who does the queue_work()
-> so we don't have to guess at this and do a painful debugging.
+> What architecture? I assume x86 32-bit; if so, what happens on 64-bit?
+> if not x86, what is your PAGE_SIZE?
 >
-> I suspect you are not using the latest wireless-testing.
+> What size are these objects i.e. how many pages?
 >
->  Luis
+> What release? I'm assuming 2.6.31-rc5 and various earlier.
 >
+> What slab allocator? what if you choose another (SLUB versus SLAB)?
+> Please turn on all the slab/slub debugging you can.
+>
+> And you say i_indirect "usually contains a value 0xffffff60 or something
+> similar": please give other examples of what you find there (if possible,
+> with a rough idea of their frequency e.g. is 0xffffff60 the most common?).
+>
+> Does there appear to be corruption of any other nearby fields?
+>
+> Thanks.
+>
+>   
+>> If anyone could shed some light over this, it would be very helpful. Relevant
+>> TTM code is fairly straightforward looks like this. The process that copies
+>> out to shmem objects may not be the same process that copies in:
+>>     
+>
+> I didn't notice anything wrong with your code; and it wouldn't
+> be easy for it to corrupt that field of shmem_inode_info.
+>
+> Hugh
+Hugh,
+
+Thanks for looking at this.
+After further debugging it seems this is not relevant to the shmem code. 
+It looks like a (possibly misconfigured) hrtimer in the graphics driver 
+corrupts the shmem_inode_info data from within interrupt context, so 
+this appears to be a false alarm. The hrtimer was supposed to be idled 
+at vt switch, but apparently not.
+
+Thanks,
+Thomas
+
