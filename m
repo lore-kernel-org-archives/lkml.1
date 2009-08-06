@@ -1,95 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbZHFXnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932214AbZHFXrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbZHFXnU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 19:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbZHFXnT
+	id S932214AbZHFXrd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 19:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756602AbZHFXrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 19:43:19 -0400
-Received: from vena.lwn.net ([206.168.112.25]:50326 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756586AbZHFXnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 19:43:18 -0400
-Date: Thu, 6 Aug 2009 14:01:18 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Mark Gross <mgross@linux.intel.com>
-Subject: [PATCH 2/2] pm_qos: clean up racy "name" variable
-Message-ID: <20090806140118.17286d0e@bike.lwn.net>
-In-Reply-To: <20090806135841.46682114@bike.lwn.net>
-References: <20090806135841.46682114@bike.lwn.net>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	Thu, 6 Aug 2009 19:47:32 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:35151 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754017AbZHFXrb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 19:47:31 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEABcIe0qrR7PD/2dsb2JhbAC5LogqkCgFhBg
+X-IronPort-AV: E=Sophos;i="4.43,337,1246838400"; 
+   d="scan'208";a="193374736"
+From: Roland Dreier <rdreier@cisco.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Andreas Mohr <andi@lisas.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
+Subject: Re: [BUG] git 2.6.31-rc3'ish: "<kobject> does not have a release() function, it is broken and must be fixed."
+References: <20090716181256.GA11157@rhlx01.hs-esslingen.de>
+	<20090716225525.GC1548@suse.de> <adabpmsg01a.fsf@cisco.com>
+	<20090806205019.GA12988@rhlx01.hs-esslingen.de>
+	<20090806223205.GD14792@suse.de>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 06 Aug 2009 16:47:31 -0700
+In-Reply-To: <20090806223205.GD14792@suse.de> (Greg KH's message of "Thu, 6
+	Aug 2009 15:32:05 -0700")
+Message-ID: <adaiqh0ec8c.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 06 Aug 2009 23:47:32.0218 (UTC) FILETIME=[43FE45A0:01CA16F0]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"name" is an awful name for a file-global variable.  It was used in three
-different functions, with no mutual exclusion.  But it's just a tiny,
-temporary string; let's just move it onto the stack in the functions that
-need it.  Also use snprintf() just in case.
 
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
----
- kernel/pm_qos_params.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+ > Kay, we were cleaning up the kobject name stuff then, and we thought
+ > that this release function wasn't used anymore.  But in looking at the
+ > code, I can't see where the kobject is actually freed.  What am I
+ > missing?
 
-diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index d96b83e..3db49b9 100644
---- a/kernel/pm_qos_params.c
-+++ b/kernel/pm_qos_params.c
-@@ -343,18 +343,18 @@ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
- }
- EXPORT_SYMBOL_GPL(pm_qos_remove_notifier);
- 
--#define PID_NAME_LEN sizeof("process_1234567890")
--static char name[PID_NAME_LEN];
-+#define PID_NAME_LEN 32
- 
- static int pm_qos_power_open(struct inode *inode, struct file *filp)
- {
- 	int ret;
- 	long pm_qos_class;
-+	char name[PID_NAME_LEN];
- 
- 	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
- 	if (pm_qos_class >= 0) {
- 		filp->private_data = (void *)pm_qos_class;
--		sprintf(name, "process_%d", current->pid);
-+		snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
- 		ret = pm_qos_add_requirement(pm_qos_class, name,
- 					PM_QOS_DEFAULT_VALUE);
- 		if (ret >= 0)
-@@ -366,9 +366,10 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
- static int pm_qos_power_release(struct inode *inode, struct file *filp)
- {
- 	int pm_qos_class;
-+	char name[PID_NAME_LEN];
- 
- 	pm_qos_class = (long)filp->private_data;
--	sprintf(name, "process_%d", current->pid);
-+	snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
- 	pm_qos_remove_requirement(pm_qos_class, name);
- 
- 	return 0;
-@@ -379,13 +380,14 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
- {
- 	s32 value;
- 	int pm_qos_class;
-+	char name[PID_NAME_LEN];
- 
- 	pm_qos_class = (long)filp->private_data;
- 	if (count != sizeof(s32))
- 		return -EINVAL;
- 	if (copy_from_user(&value, buf, sizeof(s32)))
- 		return -EFAULT;
--	sprintf(name, "process_%d", current->pid);
-+	snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
- 	pm_qos_update_requirement(pm_qos_class, name, value);
- 
- 	return  sizeof(s32);
--- 
-1.6.2.5
+the kobject in question is freed at
+
+  free_module() ->
+    mod_kobject_remove() ->
+      mod_sysfs_fini() ->
+        kobject_put(&mod->mkobj.kobj);
+
+(in kernel/module.c)
+
+Of course the release function you removed in 7a6a4161 was empty so it
+wasn't doing anything except satisfying the "all kobjects must have a
+release method" diktat.
+
+ - R.
 
