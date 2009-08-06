@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbZHFQx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbZHFQzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755312AbZHFQx6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 12:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbZHFQx5
+	id S1756240AbZHFQzx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 12:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbZHFQzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 12:53:57 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4311 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752183AbZHFQx5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 12:53:57 -0400
-Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
- sections
-From: Joe Perches <joe@perches.com>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-arm-kernel@lists.arm.linux.org.uk,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090806164001.GA31507@flint.arm.linux.org.uk>
-References: <20090806125751.7d0253ce@nij0285>
-	 <20090806113104.GK31370@elf.ucw.cz>
-	 <20090806120826.GC27773@flint.arm.linux.org.uk>
-	 <4A7ACC8D.7030706@xenontk.org>
-	 <20090806124048.GD27773@flint.arm.linux.org.uk>
-	 <1249563730.10297.13.camel@Joe-Laptop.home>
-	 <20090806133349.GF27773@flint.arm.linux.org.uk>
-	 <1249568614.10297.20.camel@Joe-Laptop.home>
-	 <20090806150322.GX2080@trinity.fluff.org>
-	 <1249575528.3467.9.camel@Joe-Laptop.home>
-	 <20090806164001.GA31507@flint.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Thu, 06 Aug 2009 09:53:31 -0700
-Message-Id: <1249577611.3467.29.camel@Joe-Laptop.home>
+	Thu, 6 Aug 2009 12:55:52 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:31609 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752833AbZHFQzv convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-ghaskins@novell.com;4:2>);
+	Thu, 6 Aug 2009 12:55:51 -0400
+Message-Id: <4A7AD2D20200005A00051C83@sinclair.provo.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 Beta 
+Date: Thu, 06 Aug 2009 10:55:46 -0600
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Arnd Bergmann" <arnd@arndb.de>, "Avi Kivity" <avi@redhat.com>
+Cc: <alacrityvm-devel@lists.sourceforge.net>,
+       "Michael S. Tsirkin" <mst@redhat.com>, <kvm@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+Subject: Re: [PATCH 0/7] AlacrityVM guest drivers Reply-To:
+References: <20090803171030.17268.26962.stgit@dev.haskins.net>
+ <4A7AE150.7040009@redhat.com>
+ <4A7AAB1A0200005A00051BED@sinclair.provo.novell.com>
+ <200908061740.04276.arnd@arndb.de> <4A7AFBE3.5080200@redhat.com>
+In-Reply-To: <4A7AFBE3.5080200@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-06 at 17:40 +0100, Russell King wrote:
-> On Thu, Aug 06, 2009 at 09:18:48AM -0700, Joe Perches wrote:
-> > It does add both linux-arm-kernel and linux-arm to section
-> > SIMTEC EB2410ITX (BAST).  By the way, another section you
-> > maintain, SIMTEC EB110ATX (Chalice CATS), has neither a
-> > pattern entry nor a mailing list entry.  Should it?
+>>> On 8/6/2009 at 11:50 AM, in message <4A7AFBE3.5080200@redhat.com>, Avi Kivity
+<avi@redhat.com> wrote: 
+> On 08/06/2009 06:40 PM, Arnd Bergmann wrote:
+>> 3. The ioq method seems to be the real core of your work that makes
+>> venet perform better than virtio-net with its virtqueues. I don't see
+>> any reason to doubt that your claim is correct. My conclusion from
+>> this would be to add support for ioq to virtio devices, alongside
+>> virtqueues, but to leave out the extra bus_type and probing method.
+>>    
 > 
-> I recently had to remove those pattern entries because they were plainly
-> wrong (thanks to those who didn't CC anyone in the ARM community with
-> those patches.)  EB110ATX != EBSA110.  See ce53895.
+> The current conjecture is that ioq outperforms virtio because the host 
+> side of ioq is implemented in the host kernel, while the host side of 
+> virtio is implemented in userspace.  AFAIK, no one pointed out 
+> differences in the protocol which explain the differences in performance.
 
-[cc's trimmed]
+There *are* protocol difference that matter, though I think they are slowly being addressed.
 
-Nope.  Not the case.  I submitted that entry.
-I cc'd both Ben and Vincent before submitting it.
+For an example:  Earlier versions of virtio-pci had a single interrupt for all ring events, and you had to do an extra MMIO cycle to learn the proper context. That will hurt...a _lot_ especially for latency.  I think recent versions of KVM switched to MSI-X per queue which fixed this particular ugly.
 
-> I had asked the maintainer of that platform to submit a patch to add the
-> correct entries.  Rather than having plainly bogus entries in there,
-> let's have either nothing or the right entries.
+However, generally I think Avi is right.  The main reason why it outperforms virtio-pci by such a large margin has more to do with all the various inefficiencies in the backend (such as requiring multiple hops U->K, K->U per packet), coarse locking, lack of parallel processing, etc.  I went through and streamlined all the bottlenecks (such as putting the code in the kernel, reducing locking/context switches, etc).
 
-I couldn't possibly disagree with that...
+I have every reason to believe that someone will skills/time equal to myself could develop a virtio-based backend that does not use vbus and achieve similar numbers.  However, as stated in my last reply, I am interested in this backend supporting more than KVM, and I designed vbus to fill that role.  Therefore, it does not interest me to endeavor such an effort if it doesn't involve a backend that is independent of KVM.
 
-cheers, Joe
+Based on this, I will continue my efforts surrounding to use of vbus including its use to accelerate KVM for AlacrityVM.  If I can find a way to do this in such a way that KVM upstream finds acceptable, I would be very happy and will work towards whatever that compromise might be.   OTOH, if the KVM community is set against the concept of a generalized/shared backend, and thus wants to use some other approach that does not involve vbus, that is fine too.  Choice is one of the great assets of open source, eh?   :)
+
+Kind Regards,
+-Greg
+
+
+
 
