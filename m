@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751567AbZHFKYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751752AbZHFK0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751567AbZHFKYx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 06:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbZHFKYx
+	id S1751752AbZHFK0I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 06:26:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbZHFK0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 06:24:53 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52609 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750810AbZHFKYw (ORCPT
+	Thu, 6 Aug 2009 06:26:08 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59408 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751307AbZHFK0H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 06:24:52 -0400
-Date: Thu, 6 Aug 2009 12:24:46 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-Cc: Eric Paris <eparis@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
-       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
-       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
-       Douglas Leeder <douglas.leeder@sophos.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "david@lang.hm" <david@lang.hm>,
-       "jengelh@medozas.de" <jengelh@medozas.de>,
-       "aviro@redhat.com" <aviro@redhat.com>,
-       "mrkafk@gmail.com" <mrkafk@gmail.com>,
-       "alexl@redhat.com" <alexl@redhat.com>, "jack@suse.cz" <jack@suse.cz>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "mmorley@hcl.in" <mmorley@hcl.in>
-Subject: Re: fanotify - overall design before I start sending patches
-Message-ID: <20090806102445.GH31370@elf.ucw.cz>
-References: <1248466429.3567.82.camel@localhost> <200908051746.17903.tvrtko.ursulin@sophos.com> <20090806101059.GD31370@elf.ucw.cz> <200908061120.26866.tvrtko.ursulin@sophos.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908061120.26866.tvrtko.ursulin@sophos.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 6 Aug 2009 06:26:07 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 6 Aug 2009 19:24:16 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: xiyou.wangcong@gmail.com, akpm@linux-foundation.org
+Subject: [PATCH 0/6] kcore clean up and enhance
+Message-Id: <20090806192416.4f94be76.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-08-06 11:20:25, Tvrtko Ursulin wrote:
-> On Thursday 06 August 2009 11:10:59 Pavel Machek wrote:
-> > On Wed 2009-08-05 17:46:16, Tvrtko Ursulin wrote:
-> > > Just to make sure you haven't missed this - it is not that they have to
-> > > complete the whole operation before the timeout period (since you mention
-> > > realtime/mlock I suspect this is what you think?), but _during_ the
-> > > operation they have to show that they are active by sending something
-> > > like keep alive messages.
-> > >
-> > > Or you are worried about failing to meet even that on a loaded system?
-> > > There has to be something like this otherwise hung userspace client would
-> > > kill the whole system.
-> >
-> > Of course, I'm worried about failing to meet this on loaded
-> > system. And the fact that I _have_ to worry about that means that
-> > interface is ugly/broken.
-> 
-> Would you prefer an infinite timeout instead? Maybe Eric could make it 
-> configurable. Or you have some other alternative ideas?
 
-Infinite timeout would be less ugly, yes.
+This patch set is for /proc/kcore. By this,
 
-Having it configurable would be still ugly, but at least it would be
-"administrator's fault" at that point.
-									Pavel
+ - many per-arch hooks are removed.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ - /proc/kcore will know really valid physical memory area.
+
+ - /proc/kcore will be aware of memory hotplug.
+
+ - /proc/kcore will be architecture independent i.e.
+   if an arch supports CONFIG_MMU, it can use /proc/kcore.
+   (if the arch uses usual memory layout.)
+
+BTW, I'll be on small trip from Aug/11 to Aug/17. So, my rtt may be
+bad in the next week.
+
+Thanks,
+-Kame
+
