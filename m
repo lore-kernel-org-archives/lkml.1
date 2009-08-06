@@ -1,168 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbZHFS2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbZHFS21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753715AbZHFS2H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 14:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbZHFS2G
+	id S1754045AbZHFS21 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 14:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbZHFS20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 14:28:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49775 "EHLO hera.kernel.org"
+	Thu, 6 Aug 2009 14:28:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49789 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751841AbZHFS2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 14:28:04 -0400
-Date: Thu, 6 Aug 2009 18:27:34 GMT
-From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
+	id S1753866AbZHFS20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 14:28:26 -0400
+Date: Thu, 6 Aug 2009 18:28:00 GMT
+From: tip-bot for Peter Zijlstra <peterz@infradead.org>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/urgent] perf symbol: Fix symbol parsing in certain cases: use the build-id as a symlink
-Message-ID: <tip-4d1e00a8af426500edfb8643fa6c375b89f1f804@git.kernel.org>
-Git-Commit-ID: 4d1e00a8af426500edfb8643fa6c375b89f1f804
+Cc: linux-kernel@vger.kernel.org, Brice.Goglin@inria.fr, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, peterz@infradead.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, Brice.Goglin@inria.fr,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1249574786.32113.550.camel@twins>
+References: <1249574786.32113.550.camel@twins>
+Subject: [tip:perfcounters/urgent] perf_counter: Fix double list iteration in per task precise stats
+Message-ID: <tip-1054598cab8674438675085fae459e960eb10799@git.kernel.org>
+Git-Commit-ID: 1054598cab8674438675085fae459e960eb10799
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 06 Aug 2009 18:27:35 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 06 Aug 2009 18:28:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4d1e00a8af426500edfb8643fa6c375b89f1f804
-Gitweb:     http://git.kernel.org/tip/4d1e00a8af426500edfb8643fa6c375b89f1f804
-Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Wed, 5 Aug 2009 19:02:49 -0300
+Commit-ID:  1054598cab8674438675085fae459e960eb10799
+Gitweb:     http://git.kernel.org/tip/1054598cab8674438675085fae459e960eb10799
+Author:     Peter Zijlstra <peterz@infradead.org>
+AuthorDate: Thu, 6 Aug 2009 18:06:26 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 6 Aug 2009 20:24:37 +0200
+CommitDate: Thu, 6 Aug 2009 20:25:18 +0200
 
-perf symbol: Fix symbol parsing in certain cases: use the build-id as a symlink
+perf_counter: Fix double list iteration in per task precise stats
 
-In some cases distros have binaries and debuginfo in weird places:
+Brice Goglin reported this crash with per task precise stats:
 
-[root@doppio tuna]# ls -la /usr/lib64/{xulrunner-1.9.1/xulrunner-stub,firefox-3.5.2/firefox}
--rwxr-xr-x 1 root root 90024 2009-08-03 19:45 /usr/lib64/firefox-3.5.2/firefox
--rwxr-xr-x 1 root root 90024 2009-08-03 18:23 /usr/lib64/xulrunner-1.9.1/xulrunner-stub
-[root@doppio tuna]# sha1sum /usr/lib64/{xulrunner-1.9.1/xulrunner-stub,firefox-3.5.2/firefox}
-19a858077d263d5de22c9c5da250d3e4396ae739  /usr/lib64/xulrunner-1.9.1/xulrunner-stub
-19a858077d263d5de22c9c5da250d3e4396ae739  /usr/lib64/firefox-3.5.2/firefox
-[root@doppio tuna]# rpm -qf /usr/lib64/{xulrunner-1.9.1/xulrunner-stub,firefox-3.5.2/firefox}
-xulrunner-1.9.1.2-1.fc11.x86_64
-firefox-3.5.2-2.fc11.x86_64
-[root@doppio tuna]# ls -la /usr/lib/debug/{usr/lib64/xulrunner-1.9.1/xulrunner-stub,usr/lib64/firefox-3.5.2/firefox}.debug
-ls: cannot access /usr/lib/debug/usr/lib64/firefox-3.5.2/firefox.debug: No such file or directory
--rwxr-xr-x 1 root root 403608 2009-08-03 18:22 /usr/lib/debug/usr/lib64/xulrunner-1.9.1/xulrunner-stub.debug
+> I finally managed to test the threaded perfcounter statistics (thanks a
+> lot for implementing it). I am running 2.6.31-rc5 (with the AMD
+> magny-cours patches but I don't think they matter here). I am trying to
+> measure local/remote memory accesses per thread during the well-known
+> stream benchmark. It's compiled with OpenMP using 16 threads on a
+> quad-socket quad-core barcelona machine.
+>
+> Command line is:
+>  /mnt/scratch/bgoglin/cpunode/linux-2.6.31/tools/perf/perf record -f -s
+> -e r1000001e0 -e r1000002e0 -e r1000004e0 -e r1000008e0 ./stream
+>
+> It seems to work fine with a single -e <counter> on the command line
+> while it crashes when there are at least 2 of them.
+> It seems to work fine without -s as well.
 
-Seemingly we don't have a .symtab when we actually can find it
-if we use the .note.gnu.build-id ELF section put in place by
-some distros. Use it and find the symbols we need.
+A silly copy-paste resulted in a messed up iteration which would
+cause the OOPS.
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <new-submission>
+Reported-by: Brice Goglin <Brice.Goglin@inria.fr>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Tested-by: Brice Goglin <Brice.Goglin@inria.fr>
+LKML-Reference: <1249574786.32113.550.camel@twins>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/util/symbol.c |   76 ++++++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 73 insertions(+), 3 deletions(-)
+ kernel/perf_counter.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 0580b94..16ddca2 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -661,10 +661,69 @@ out_close:
- 	return err;
- }
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 199ed47..673c1aa 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -1104,7 +1104,7 @@ static void perf_counter_sync_stat(struct perf_counter_context *ctx,
+ 		__perf_counter_sync_stat(counter, next_counter);
  
-+#define BUILD_ID_SIZE 128
-+
-+static char *dso__read_build_id(struct dso *self, int verbose)
-+{
-+	int i;
-+	GElf_Ehdr ehdr;
-+	GElf_Shdr shdr;
-+	Elf_Data *build_id_data;
-+	Elf_Scn *sec;
-+	char *build_id = NULL, *bid;
-+	unsigned char *raw;
-+	Elf *elf;
-+	int fd = open(self->name, O_RDONLY);
-+
-+	if (fd < 0)
-+		goto out;
-+
-+	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
-+	if (elf == NULL) {
-+		if (verbose)
-+			fprintf(stderr, "%s: cannot read %s ELF file.\n",
-+				__func__, self->name);
-+		goto out_close;
-+	}
-+
-+	if (gelf_getehdr(elf, &ehdr) == NULL) {
-+		if (verbose)
-+			fprintf(stderr, "%s: cannot get elf header.\n", __func__);
-+		goto out_elf_end;
-+	}
-+
-+	sec = elf_section_by_name(elf, &ehdr, &shdr, ".note.gnu.build-id", NULL);
-+	if (sec == NULL)
-+		goto out_elf_end;
-+
-+	build_id_data = elf_getdata(sec, NULL);
-+	if (build_id_data == NULL)
-+		goto out_elf_end;
-+	build_id = malloc(BUILD_ID_SIZE);
-+	if (build_id == NULL)
-+		goto out_elf_end;
-+	raw = build_id_data->d_buf + 16;
-+	bid = build_id;
-+
-+	for (i = 0; i < 20; ++i) {
-+		sprintf(bid, "%02x", *raw);
-+		++raw;
-+		bid += 2;
-+	}
-+	if (verbose)
-+		printf("%s(%s): %s\n", __func__, self->name, build_id);
-+out_elf_end:
-+	elf_end(elf);
-+out_close:
-+	close(fd);
-+out:
-+	return build_id;
-+}
-+
- int dso__load(struct dso *self, symbol_filter_t filter, int verbose)
- {
--	int size = strlen(self->name) + sizeof("/usr/lib/debug%s.debug");
--	char *name = malloc(size);
-+	int size = PATH_MAX;
-+	char *name = malloc(size), *build_id = NULL;
- 	int variant = 0;
- 	int ret = -1;
- 	int fd;
-@@ -686,7 +745,18 @@ more:
- 		case 1: /* Ubuntu */
- 			snprintf(name, size, "/usr/lib/debug%s", self->name);
- 			break;
--		case 2: /* Sane people */
-+		case 2:
-+			build_id = dso__read_build_id(self, verbose);
-+			if (build_id != NULL) {
-+				snprintf(name, size,
-+					 "/usr/lib/debug/.build-id/%.2s/%s.debug",
-+					build_id, build_id + 2);
-+				free(build_id);
-+				break;
-+			}
-+			variant++;
-+			/* Fall thru */
-+		case 3: /* Sane people */
- 			snprintf(name, size, "%s", self->name);
- 			break;
+ 		counter = list_next_entry(counter, event_entry);
+-		next_counter = list_next_entry(counter, event_entry);
++		next_counter = list_next_entry(next_counter, event_entry);
+ 	}
+ }
  
