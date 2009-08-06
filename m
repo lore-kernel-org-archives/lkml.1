@@ -1,86 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751693AbZHFJTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539AbZHFJWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751693AbZHFJTJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 05:19:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbZHFJTI
+	id S1752539AbZHFJWY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 05:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbZHFJWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 05:19:08 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55258 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933AbZHFJTH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 05:19:07 -0400
-Message-ID: <4A7AA008.80309@cs.helsinki.fi>
-Date: Thu, 06 Aug 2009 12:19:04 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, acme <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>,
-       Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       roland <roland@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       fche <fche@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: malloc() tracing in perf?
-References: <4A7A8ADD.4080208@cs.helsinki.fi> <1249546610.32113.35.camel@twins> <4A7A9F7F.7080405@cs.helsinki.fi>
-In-Reply-To: <4A7A9F7F.7080405@cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Aug 2009 05:22:23 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52418 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751355AbZHFJWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 05:22:21 -0400
+Date: Thu, 6 Aug 2009 19:22:09 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for August 6
+Message-Id: <20090806192209.513abec7.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__6_Aug_2009_19_22_09_+1000_3S4ZNix3Z+7qRWHY"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> Hi Peter,
-> 
-> On Thu, 2009-08-06 at 10:48 +0300, Pekka Enberg wrote:
->>> Hi,
->>>
->>> It's me again :-).
->>>
->>> I have a little user-space application that is pretty memory hungry 
->>> and I want to understand why. I started to google around for a memory 
->>> profiler or a malloc() tracer but didn't seem to find anything really 
->>> useful.
->>>
->>> But then it hit me, why can't I have kmemtrace + perf but for 
->>> user-space? Something like the "Malloc Trace" shown here:
->>>
->>> http://developer.apple.com/documentation/developertools/conceptual/SharkUserGuide/OtherProfilingandTracingTechniques/OtherProfilingandTracingTechniques.html#//apple_ref/doc/uid/TP40005233-CH6-SW17 
->>>
->>>
->>> Does this sound like something that could/should be part of "perf"? 
->>> How would all this work anyway? Can we intercept malloc() and free() 
->>> somehow? Where would the data be pushed? Am I just going perf-crazy 
->>> and trying to turn it into a swiss army knife because it's so easy to 
->>> use?-)
-> 
-> Peter Zijlstra wrote:
->> OK, you just trod into a wasp's nest :-)
->>
->> That sounds like uprobes, the equivalent of kprobes but for userspace.
->>
->> I seem to have heard people are working on such a thing, but I can't
->> seem to find a single LKML post with 'uprobe' in the subject in the past
->> two years or something (except for MTUprobe) -- so I guess its not
->> really going anywhere any fast.
-> 
-> [snip]
-> 
-> Right. Are dynamic tracepoints what we want for malloc() and free() 
-> interception, though? I guess we can just do generic "userspace function 
-> called" events and record the passed parameters. Then "perf memreport" 
-> can just go find all the malloc() and free() calls and construct a 
-> memory profile out of it?
-> 
-> That said, I'd also be interested in wiring my userspace VM garbage 
-> collector to emit similar alloc and free events as well (because perf 
-> already has a JIT symbol map) which makes me think we want generic 
-> "userspace allocated memory" events.
+--Signature=_Thu__6_Aug_2009_19_22_09_+1000_3S4ZNix3Z+7qRWHY
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Argh, I dropped LKML from the CC. Sorry for the duplicate email!
+Hi all,
 
-			Pekka
+Changes since 20090805:
+
+The next-yyyymmdd tags will now be signed tags by request.
+
+This tree fails to build for powerpc allyesconfig (final link problem).
+
+The agp tree gained a build failure for which I reverted a commit.
+
+The edac-amd tree lost its conflicts but gained another conflict against
+the rr tree.
+
+The tty tree lost a conflict.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 138 trees (counting Linus' and 20 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging davinci/for-next
+Merging pxa/for-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging thumb-2/thumb-2
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+CONFLICT (content): Merge conflict in arch/mips/cavium-octeon/dma-octeon.c
+CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
+x-helper-errata.c
+CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
+CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
+CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+CONFLICT (content): Merge conflict in fs/configfs/dir.c
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/board-dm646x-ev=
+m.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm355.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm644x.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm646x.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
+355.h
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
+644x.h
+Merging quota/for_next
+Merging kbuild/master
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/x86/lguest/boot.c
+CONFLICT (content): Merge conflict in drivers/lguest/page_tables.c
+CONFLICT (content): Merge conflict in drivers/virtio/virtio_pci.c
+[master c69a397] Revert "cpumask:remove-set_cpus_allowed"
+Merging mmc/next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+CONFLICT (content): Merge conflict in drivers/input/misc/Kconfig
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_crtc.c
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging drbd/drbd
+Applying: drbd: fix for removal of blk_queue_stack_limits
+Merging kmemleak/kmemleak
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+CONFLICT (content): Merge conflict in kernel/fork.c
+Merging oprofile/for-next
+Merging edac-amd/for-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/perf_counter.c
+CONFLICT (content): Merge conflict in drivers/cpufreq/cpufreq_ondemand.c
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in init/main.c
+Merging quilt/tty
+CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
+Merging quilt/usb
+CONFLICT (content): Merge conflict in drivers/usb/gadget/m66592-udc.c
+CONFLICT (content): Merge conflict in drivers/usb/host/r8a66597-hcd.c
+Merging quilt/staging
+CONFLICT (delete/modify): drivers/staging/epl/VirtualEthernetLinux.c delete=
+d in quilt/staging and modified in HEAD. Version HEAD of drivers/staging/ep=
+l/VirtualEthernetLinux.c left in tree.
+$ git rm -f drivers/staging/epl/VirtualEthernetLinux.c
+Merging scsi-post-merge/master
+[master 0e15677] Revert "agp: kill phys_to_gart() and gart_to_phys()"
+[master c95724f] Revert "agp: Switch agp_{un,}map_page() to take struct pag=
+e * argument"
+
+--Signature=_Thu__6_Aug_2009_19_22_09_+1000_3S4ZNix3Z+7qRWHY
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkp6oMEACgkQjjKRsyhoI8xwtQCeOvwLuELpgVRuYaSaH5jRcNOP
+ut8AoJ9eOMdaRcXJd7/FTvGu3yLJmfRH
+=ZAOx
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__6_Aug_2009_19_22_09_+1000_3S4ZNix3Z+7qRWHY--
