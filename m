@@ -1,100 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbZHFNKH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbZHFNLC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755673AbZHFNKH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 09:10:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbZHFNKG
+	id S1755841AbZHFNLC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 09:11:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbZHFNK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 09:10:06 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:55433 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755478AbZHFNKF (ORCPT
+	Thu, 6 Aug 2009 09:10:59 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:45772 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755825AbZHFNK6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 09:10:05 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linux-kernel@vger.kernel.org
-Cc: Christoph Hellwig <hch@lst.de>, Andi Kleen <andi@firstfloor.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
-       Jeff Dike <jdike@addtoit.com>
-Subject: [PATCH 1/5] arch/um: handle compat_ioctl in tty line driver
-Date: Thu,  6 Aug 2009 15:09:26 +0200
-Message-Id: <1249564170-18627-2-git-send-email-arnd@arndb.de>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1249564170-18627-1-git-send-email-arnd@arndb.de>
-References: <1249564170-18627-1-git-send-email-arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+IG1yNLZp2lyGXMmymOUr8ehb0RrpMt3lRaSR
- za65AebzPwqJeOqGmiHdqt0sDi/BN0Qad7thUiT89VUui8J/Ia
- D8Ay0MeE+qQ5qPuexFQBQ==
+	Thu, 6 Aug 2009 09:10:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=JJXHFmBhlJ9bsMzmkduVkwJOSG9sw/wcir9l5FSyR22pDm8UOxYQkr8UwA6W6ytjRn
+         1+PCVcxCh1HEAntBkvi/dBOVs63DempSa6SMFKDAZh3fcBCkLAVN8OkCKIaLP7qx6w/r
+         pyqm9rnr1Pv4gZGg+d5DEZe77lVQ6jJFZ//BQ=
+MIME-Version: 1.0
+In-Reply-To: <200908061416.08564.rjw@sisk.pl>
+References: <20090803163304.GF5002@laptop> <200908052330.08452.rjw@sisk.pl>
+	 <20090806085144.GS13236@buzzloop.caiaq.de>
+	 <200908061416.08564.rjw@sisk.pl>
+Date: Thu, 6 Aug 2009 22:10:57 +0900
+Message-ID: <aec7e5c30908060610l7edab1c1oae08720a675937a9@mail.gmail.com>
+Subject: Re: [PATCH] PM: Add convenience macro to make switching to dev_pm_ops 
+	less error-prone
+From: Magnus Damm <magnus.damm@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Daniel Mack <daniel@caiaq.de>, Frans Pop <elendil@planet.nl>,
+       pHilipp Zabel <philipp.zabel@gmail.com>,
+       albin.tonnerre@free-electrons.com, dmitry.torokhov@gmail.com,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This pushes the handling of VT specific ioctls down to the
-UML specific drivers so we can remove it from the common
-compat_ioctl.c file.
+On Thu, Aug 6, 2009 at 9:16 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> On Thursday 06 August 2009, Daniel Mack wrote:
+>> When is a good point to resend patches that use this macro? I guess they
+>> won't make it to .31 anyway, right? So I just wait for the next merge
+>> window?
+>
+> Yes, I think that would be the right thing to do.
 
-Cc: Jeff Dike <jdike@addtoit.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- arch/um/drivers/line.c          |    6 ++++++
- arch/um/drivers/ssl.c           |    1 +
- arch/um/drivers/stdio_console.c |    1 +
- arch/um/include/shared/line.h   |    2 ++
- 4 files changed, 10 insertions(+), 0 deletions(-)
+Is it a good idea to disable the warning before the final 2.6.31 release?
 
-diff --git a/arch/um/drivers/line.c b/arch/um/drivers/line.c
-index 14a102e..9819a3b 100644
---- a/arch/um/drivers/line.c
-+++ b/arch/um/drivers/line.c
-@@ -314,6 +314,12 @@ int line_ioctl(struct tty_struct *tty, struct file * file,
- 	return ret;
- }
- 
-+long line_compat_ioctl(struct tty_struct *tty, struct file * file,
-+	       unsigned int cmd, unsigned long arg)
-+{
-+	return line_ioctl(tty, file, cmd, arg);
-+}
-+
- void line_throttle(struct tty_struct *tty)
- {
- 	struct line *line = tty->driver_data;
-diff --git a/arch/um/drivers/ssl.c b/arch/um/drivers/ssl.c
-index f1786e6..eccf14a 100644
---- a/arch/um/drivers/ssl.c
-+++ b/arch/um/drivers/ssl.c
-@@ -137,6 +137,7 @@ static const struct tty_operations ssl_ops = {
- 	.flush_chars 		= line_flush_chars,
- 	.set_termios 		= line_set_termios,
- 	.ioctl 	 		= line_ioctl,
-+	.compat_ioctl 	 	= line_compat_ioctl,
- 	.throttle 		= line_throttle,
- 	.unthrottle 		= line_unthrottle,
- #if 0
-diff --git a/arch/um/drivers/stdio_console.c b/arch/um/drivers/stdio_console.c
-index 49266f6..2cb1f04 100644
---- a/arch/um/drivers/stdio_console.c
-+++ b/arch/um/drivers/stdio_console.c
-@@ -120,6 +120,7 @@ static const struct tty_operations console_ops = {
- 	.flush_chars 		= line_flush_chars,
- 	.set_termios 		= line_set_termios,
- 	.ioctl 	 		= line_ioctl,
-+	.compat_ioctl 	 	= line_compat_ioctl,
- 	.throttle 		= line_throttle,
- 	.unthrottle 		= line_unthrottle,
- };
-diff --git a/arch/um/include/shared/line.h b/arch/um/include/shared/line.h
-index 311a0d3..6ef62e4 100644
---- a/arch/um/include/shared/line.h
-+++ b/arch/um/include/shared/line.h
-@@ -79,6 +79,8 @@ extern void line_flush_chars(struct tty_struct *tty);
- extern int line_write_room(struct tty_struct *tty);
- extern int line_ioctl(struct tty_struct *tty, struct file * file,
- 		      unsigned int cmd, unsigned long arg);
-+extern long line_compat_ioctl(struct tty_struct *tty, struct file * file,
-+		      unsigned int cmd, unsigned long arg);
- extern void line_throttle(struct tty_struct *tty);
- extern void line_unthrottle(struct tty_struct *tty);
- 
--- 
-1.6.3.3
+Cheers,
 
+/ magnus
