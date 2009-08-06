@@ -1,279 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZHFJOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbZHFJR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754728AbZHFJOd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 05:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbZHFJOc
+	id S1754731AbZHFJR0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 05:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754629AbZHFJR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 05:14:32 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41278 "EHLO mx1.suse.de"
+	Thu, 6 Aug 2009 05:17:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45180 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754629AbZHFJOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 05:14:31 -0400
-Message-ID: <4A7A9EF2.2080906@suse.de>
-Date: Thu, 06 Aug 2009 18:14:26 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S1752090AbZHFJRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 05:17:25 -0400
+Message-ID: <4A7AA0CF.2020700@redhat.com>
+Date: Thu, 06 Aug 2009 12:22:23 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Colin Guthrie <cguthrie@mandriva.org>, Al Viro <viro@ftp.linux.org.uk>
-Subject: [PATCH 3/3] sound: make OSS device number claiming optional and schedule
- its removal
-References: <4A7A9EB3.4010302@kernel.org> <4A7A9ED6.8010400@suse.de>
-In-Reply-To: <4A7A9ED6.8010400@suse.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>
+CC: Rik van Riel <riel@redhat.com>, "Wu, Fengguang" <fengguang.wu@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+References: <20090805024058.GA8886@localhost> <4A79C70C.6010200@redhat.com> <9EECC02A4CC333418C00A85D21E89326B651C1FE@azsmsx502.amr.corp.intel.com> <4A79D88E.2040005@redhat.com> <9EECC02A4CC333418C00A85D21E89326B651C21C@azsmsx502.amr.corp.intel.com>
+In-Reply-To: <9EECC02A4CC333418C00A85D21E89326B651C21C@azsmsx502.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If any OSS support is enabled, regardless of built-in or module,
-sound_core claims full OSS major number (that is, the old 0-255
-region) to trap open attempts and request sound modules using custom
-module aliases.  This feature is redundant as chrdev already has such
-mechanism.  This preemptive claiming prevents alternative OSS
-implementation.
+On 08/05/2009 10:18 PM, Dike, Jeffrey G wrote:
+>> How did you create that 128M memory compartment?
+>>
+>> Did you use cgroups on the host system?
+>>      
+>
+> Yup.
+>
+>    
+>> How much memory do you give your virtual machine?
+>>
+>> That is, how much memory does it think it has?
+>>      
+>
+> 256M.
+>    
 
-The custom module aliases are scheduled to be removed and the previous
-patch made soundcore emit the standard chrdev aliases too to help
-transition.
+So you're effectively running a 256M guest on a 128M host?
 
-This patch schedule the feature for removal in a year and makes it
-optional so that developers and distros can try new things in the
-meantime without rebuilding the kernel.  The pre-claiming can be
-turned off by using SOUND_OSS_CORE_PRECLAIM and/or kernel parameter
-soundcore.preclaim_oss.
+Do cgroups have private active/inactive lists?
 
-As this allows sound minors to be individually grabbed by other users,
-this patch updates sound_insert_unit() such that if registering
-individual device region fails, it tries the next available slot.
+-- 
+error compiling committee.c: too many arguments to function
 
-For details on removal plan, please read the entry added by this patch
-in feature-removal-schedule.txt .
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Takashi Iwai <tiwai@suse.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
- Documentation/feature-removal-schedule.txt |   24 +++++++
- sound/Kconfig                              |   28 +++++++++
- sound/sound_core.c                         |   88 +++++++++++++++++++++++------
- 3 files changed, 122 insertions(+), 18 deletions(-)
-
-Index: work/sound/Kconfig
-===================================================================
---- work.orig/sound/Kconfig
-+++ work/sound/Kconfig
-@@ -32,6 +32,34 @@ config SOUND_OSS_CORE
- 	bool
- 	default n
-
-+config SOUND_OSS_CORE_PRECLAIM
-+	bool "Preclaim OSS device numbers"
-+	depends on SOUND_OSS_CORE
-+	default y
-+	help
-+	  With this option enabled, the kernel will claim all OSS device
-+	  numbers if any OSS support (native or emulation) is enabled
-+	  whether the respective module is loaded or not and try to load the
-+	  appropriate module using sound-slot/service-* and char-major-*
-+	  module aliases when one of the device numbers is opened.  With
-+	  this option disabled, kernel will only claim actually in-use
-+	  device numbers and opening a missing device will generate only the
-+	  standard char-major-* aliases.
-+
-+	  The only visible difference is use of additional module aliases
-+	  and whether OSS sound devices appear multiple times in
-+	  /proc/devices.  sound-slot/service-* module aliases are scheduled
-+	  to be removed (ie. PRECLAIM won't be available) and this option is
-+	  to make the transition easier.  This option can be overridden
-+	  during boot using the kernel parameter soundcore.preclaim_oss.
-+
-+	  Disabling this allows alternative OSS implementations.
-+
-+	  Please read Documentation/feature-removal-schedule.txt for
-+	  details.
-+
-+	  If unusre, say Y.
-+
- source "sound/oss/dmasound/Kconfig"
-
- if !M68K
-Index: work/sound/sound_core.c
-===================================================================
---- work.orig/sound/sound_core.c
-+++ work/sound/sound_core.c
-@@ -128,6 +128,46 @@ extern int msnd_pinnacle_init(void);
- #endif
-
- /*
-+ * By default, OSS sound_core claims full legacy minor range (0-255)
-+ * of SOUND_MAJOR to trap open attempts to any sound minor and
-+ * requests modules using custom sound-slot/service-* module aliases.
-+ * The only benefit of doing this is allowing use of custom module
-+ * aliases instead of the standard char-major-* ones.  This behavior
-+ * prevents alternative OSS implementation and is scheduled to be
-+ * removed.
-+ *
-+ * CONFIG_SOUND_OSS_CORE_PRECLAIM and soundcore.preclaim_oss kernel
-+ * parameter are added to allow distros and developers to try and
-+ * switch to alternative implementations without needing to rebuild
-+ * the kernel in the meantime.  If preclaim_oss is non-zero, the
-+ * kernel will behave the same as before.  All SOUND_MAJOR minors are
-+ * preclaimed and the custom module aliases along with standard chrdev
-+ * ones are emitted if a missing device is opened.  If preclaim_oss is
-+ * zero, sound_core only grabs what's actually in use and for missing
-+ * devices only the standard chrdev aliases are requested.
-+ *
-+ * All these clutters are scheduled to be removed along with
-+ * sound-slot/service-* module aliases.  Please take a look at
-+ * feature-removal-schedule.txt for details.
-+ */
-+#ifdef CONFIG_SOUND_OSS_CORE_PRECLAIM
-+static int preclaim_oss = 1;
-+#else
-+static int preclaim_oss = 0;
-+#endif
-+
-+module_param(preclaim_oss, int, 0444);
-+
-+static int soundcore_open(struct inode *, struct file *);
-+
-+static const struct file_operations soundcore_fops =
-+{
-+	/* We must have an owner or the module locking fails */
-+	.owner	= THIS_MODULE,
-+	.open	= soundcore_open,
-+};
-+
-+/*
-  *	Low level list operator. Scan the ordered list, find a hole and
-  *	join into it. Called with the lock asserted
-  */
-@@ -219,8 +259,9 @@ static int sound_insert_unit(struct soun
-
- 	if (!s)
- 		return -ENOMEM;
--		
-+
- 	spin_lock(&sound_loader_lock);
-+retry:
- 	r = __sound_insert_unit(s, list, fops, index, low, top);
- 	spin_unlock(&sound_loader_lock);
- 	
-@@ -231,11 +272,31 @@ static int sound_insert_unit(struct soun
- 	else
- 		sprintf(s->name, "sound/%s%d", name, r / SOUND_STEP);
-
-+	if (!preclaim_oss) {
-+		/*
-+		 * Something else might have grabbed the minor.  If
-+		 * first free slot is requested, rescan with @low set
-+		 * to the next unit; otherwise, -EBUSY.
-+		 */
-+		r = __register_chrdev(SOUND_MAJOR, s->unit_minor, 1, s->name,
-+				      &soundcore_fops);
-+		if (r < 0) {
-+			spin_lock(&sound_loader_lock);
-+			__sound_remove_unit(list, s->unit_minor);
-+			if (index < 0) {
-+				low = s->unit_minor + SOUND_STEP;
-+				goto retry;
-+			}
-+			spin_unlock(&sound_loader_lock);
-+			return -EBUSY;
-+		}
-+	}
-+
- 	device_create(sound_class, dev, MKDEV(SOUND_MAJOR, s->unit_minor),
- 		      NULL, s->name+6);
--	return r;
-+	return s->unit_minor;
-
-- fail:
-+fail:
- 	kfree(s);
- 	return r;
- }
-@@ -254,6 +315,9 @@ static void sound_remove_unit(struct sou
- 	p = __sound_remove_unit(list, unit);
- 	spin_unlock(&sound_loader_lock);
- 	if (p) {
-+		if (!preclaim_oss)
-+			__unregister_chrdev(SOUND_MAJOR, p->unit_minor, 1,
-+					    p->name);
- 		device_destroy(sound_class, MKDEV(SOUND_MAJOR, p->unit_minor));
- 		kfree(p);
- 	}
-@@ -491,19 +555,6 @@ void unregister_sound_dsp(int unit)
-
- EXPORT_SYMBOL(unregister_sound_dsp);
-
--/*
-- *	Now our file operations
-- */
--
--static int soundcore_open(struct inode *, struct file *);
--
--static const struct file_operations soundcore_fops=
--{
--	/* We must have an owner or the module locking fails */
--	.owner	= THIS_MODULE,
--	.open	= soundcore_open,
--};
--
- static struct sound_unit *__look_for_unit(int chain, int unit)
- {
- 	struct sound_unit *s;
-@@ -539,7 +590,7 @@ static int soundcore_open(struct inode *
- 	s = __look_for_unit(chain, unit);
- 	if (s)
- 		new_fops = fops_get(s->unit_fops);
--	if (!new_fops) {
-+	if (preclaim_oss && !new_fops) {
- 		spin_unlock(&sound_loader_lock);
-
- 		/*
-@@ -605,7 +656,8 @@ static void cleanup_oss_soundcore(void)
-
- static int __init init_oss_soundcore(void)
- {
--	if (register_chrdev(SOUND_MAJOR, "sound", &soundcore_fops)==-1) {
-+	if (preclaim_oss &&
-+	    register_chrdev(SOUND_MAJOR, "sound", &soundcore_fops) == -1) {
- 		printk(KERN_ERR "soundcore: sound device already in use.\n");
- 		return -EBUSY;
- 	}
-Index: work/Documentation/feature-removal-schedule.txt
-===================================================================
---- work.orig/Documentation/feature-removal-schedule.txt
-+++ work/Documentation/feature-removal-schedule.txt
-@@ -468,3 +468,27 @@ Why:	cpu_policy_rwsem has a new cleaner
- 	cpufreq core and contained inside cpufreq.c. Other dependent
- 	drivers should not use it in order to safely avoid lockdep issues.
- Who:	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-+
-+----------------------------
-+
-+What:	sound-slot/service-* module aliases and related clutters in
-+	sound/sound_core.c
-+When:	August 2010
-+Why:	OSS sound_core grabs all legacy minors (0-255) of SOUND_MAJOR
-+	(14) and requests modules using custom sound-slot/service-*
-+	module aliases.  The only benefit of doing this is allowing
-+	use of custom module aliases which might as well be considered
-+	a bug at this point.  This preemptive claiming prevents
-+	alternative OSS implementations.
-+
-+	Till the feature is removed, the kernel will be requesting
-+	both sound-slot/service-* and the standard char-major-* module
-+	aliases and allow turning off the pre-claiming selectively via
-+	CONFIG_SOUND_OSS_CORE_PRECLAIM and soundcore.preclaim_oss
-+	kernel parameter.
-+
-+	After the transition phase is complete, both the custom module
-+	aliases and switches to disable it will go away.  This removal
-+	will also allow making ALSA OSS emulation independent of
-+	sound_core.  The dependency will be broken then too.
-+Who:	Tejun Heo <tj@kernel.org>
