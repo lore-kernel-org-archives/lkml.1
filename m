@@ -1,71 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753213AbZHFAkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbZHFAvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753213AbZHFAkW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 20:40:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZHFAkV
+	id S1753209AbZHFAvO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 20:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZHFAvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 20:40:21 -0400
-Received: from mga01.intel.com ([192.55.52.88]:26173 "EHLO mga01.intel.com"
+	Wed, 5 Aug 2009 20:51:13 -0400
+Received: from mail.atheros.com ([12.36.123.2]:29952 "EHLO mail.atheros.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751806AbZHFAkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 20:40:20 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,331,1246863600"; 
-   d="scan'208";a="481125326"
-Subject: Re: [PATCH] pci/intr_remapping: allocate irq_iommu on node
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-In-Reply-To: <4A794D8A.1060508@kernel.org>
-References: <4A785C17.3030104@kernel.org>
-	 <1249406368.27006.10789.camel@localhost.localdomain>
-	 <4A794D8A.1060508@kernel.org>
+	id S1751814AbZHFAvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 20:51:13 -0400
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: <akpm@linux-foundation.org>, <joe@perches.com>,
+       <torvalds@linux-foundation.org>
+CC: <linux-kernel@vger.kernel.org>, <mcgrof@gmail.com>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: [PATCH 0/3] checkincludes.pl: add removal option
+Date: Wed, 5 Aug 2009 17:51:09 -0700
+Message-ID: <1249519872-23958-1-git-send-email-lrodriguez@atheros.com>
+X-Mailer: git-send-email 1.6.3.3
+MIME-Version: 1.0
 Content-Type: text/plain
-Organization: Intel Corp
-Date: Wed, 05 Aug 2009 17:36:25 -0700
-Message-Id: <1249518985.27006.10805.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-05 at 02:14 -0700, Yinghai Lu wrote:
-> without this patch
-> 
-> [  299.175436] igbvf 0000:41:10.0: enabling device (0000 -> 0002)
-> [  299.180009] igbvf 0000:41:10.0: using 64bit DMA mask
-> [  299.183077] igbvf 0000:41:10.0: using 64bit consistent DMA mask
-> [  299.199870] igbvf 0000:41:10.0: enabling bus mastering
-> [  299.205534] igbvf 0000:41:10.0: setting latency timer to 64
-> [  299.219654] reserve_memtype added 0xcfc00000-0xcfc04000, track uncached-minus, req uncached-minus, ret uncached-minus
-> [  299.239615] reserve_memtype added 0xcfc20000-0xcfc21000, track uncached-minus, req uncached-minus, ret uncached-minus
-> [  299.260181]   alloc irq_desc for 217 on node 2
-> [  299.263501]   alloc kstat_irqs on node 2
-> [  299.276276] alloc irq_2_iommu on node 0
-> [  299.281847] igbvf 0000:41:10.0: irq 217 for MSI/MSI-X
-> [  299.285511]   alloc irq_desc for 218 on node 2
-> [  299.297813]   alloc kstat_irqs on node 2
-> [  299.302543] alloc irq_2_iommu on node 0
-> [  299.315358] igbvf 0000:41:10.0: irq 218 for MSI/MSI-X
-> [  299.321102]   alloc irq_desc for 219 on node 2
-> [  299.325932]   alloc kstat_irqs on node 2
-> [  299.338616] alloc irq_2_iommu on node 0
-> [  299.340789] igbvf 0000:41:10.0: irq 219 for MSI/MSI-X
-> [  299.356532] igbvf 0000:41:10.0: PF still in reset state, assigning new address
-> [  299.365128] igbvf 0000:41:10.0: PF still resetting
-> [  299.377625] igbvf 0000:41:10.0: Intel(R) 82576 Virtual Function
-> [  299.385619] igbvf 0000:41:10.0: Address: c6:e3:de:62:de:eb
-> [  299.395957] igbvf 0000:41:10.0: MAC: 1
-> 
-> thought we could put irq_2_iommu to same node too.
+This lets you remove duplicate includes headers in place with
+checkincludes.pl, that is, the same file is overwritten with -r.
+This actually makes this useful for me for porting crap drivers
+where I have to do this a lot.
 
-Yinghai, even with this patch, we will still be allocating from node-0.
-No?
+I don't know who these go through so sending to a few of you.
+
+Luis R. Rodriguez (3):
+  checkincludes.pl: close file as soon as we're done with it
+  checkincludes.pl: provide usage helper
+  checkincludes.pl: add option to remove duplicates in place
+
+ scripts/checkincludes.pl |   62 +++++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 58 insertions(+), 4 deletions(-)
 
