@@ -1,180 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753749AbZHFDNw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbZHFDWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753749AbZHFDNw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 23:13:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbZHFDNw
+	id S1753863AbZHFDWM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 23:22:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbZHFDWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 23:13:52 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:41981 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752142AbZHFDNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 23:13:50 -0400
-From: Neil Brown <neilb@suse.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Date: Thu, 6 Aug 2009 13:13:56 +1000
+	Wed, 5 Aug 2009 23:22:12 -0400
+Received: from [222.73.24.84] ([222.73.24.84]:53084 "EHLO song.cn.fujitsu.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753545AbZHFDWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 23:22:11 -0400
+Message-ID: <4A7A4C45.3040008@cn.fujitsu.com>
+Date: Thu, 06 Aug 2009 11:21:41 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Anton Blanchard <anton@samba.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v5 1/3] ftrace: add tracepoint for timer
+References: <4A7A4153.3040207@cn.fujitsu.com> <20090806024804.GB4685@kryten>
+In-Reply-To: <20090806024804.GB4685@kryten>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-ID: <19066.19060.95471.616532@notabene.brown>
-Cc: Mike Snitzer <snitzer@gmail.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [md PATCH 8/8] md: Use revalidate_disk to effect changes in size
- 	of device.
-In-Reply-To: message from H. Peter Anvin on Wednesday August 5
-References: <20090802215444.4198.83094.stgit@notabene.brown>
-	<20090802215818.4198.77041.stgit@notabene.brown>
-	<4A7A0287.5010505@zytor.com>
-	<170fa0d20908051803ud6ef819xdad3cafe44cc1fb8@mail.gmail.com>
-	<4A7A2EA6.9020603@zytor.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday August 5, hpa@zytor.com wrote:
-> On 08/05/2009 06:03 PM, Mike Snitzer wrote:
-> > On Wed, Aug 5, 2009 at 6:07 PM, H. Peter Anvin<hpa@zytor.com> wrote:
-> >> On 08/02/2009 02:58 PM, NeilBrown wrote:
-> >>> As revalidate_disk calls check_disk_size_change, it will cause
-> >>> any capacity change of a gendisk to be propagated to the blockdev
-> >>> inode.  So use that instead of mucking about with locks and
-> >>> i_size_write.
-> >>>
-> >>> Also add a call to revalidate_disk in do_md_run and a few other places
-> >>> where the gendisk capacity is changed.
-> >>>
-> >> This patch causes my Fedora 11 system with all filesystems on RAID-1 to
-> >> not boot (it hangs in early userspace, Ctrl-Alt-Del reboots the system.)
-> > 
-> > I reported similar findings, with some more detail, relative to
-> > Fedora's rawhide here:
-> > http://lkml.org/lkml/2009/8/5/275
+
+
+Anton Blanchard wrote:
+> Hi,
 > 
-> Sounds to be the same, yes.
+>> Example ftrace output:
+>>   insmod-1712  [000]   145.901459: timer_init: timer=d0ace4b4
+>>   insmod-1712  [000]   145.901469: timer_start: timer=d0ace4b4 func=timer_fun expires=4294813629 timeout=199
+>>   <idle>-0     [000]   146.100230: timer_cancel: timer=d0ace4b4
+>>   <idle>-0     [000]   146.100233: timer_expire: timer=d0ace4b4 jiffies=4294813629
+>>   <idle>-0     [000]   146.100627: timer_callback_done: func=d0ace4b4
+> 
+> Sorry I haven't followed the thread, but I was wondering why you changed
+> the name of the entry and exit tracepoints (ie timer_entry/timer_exit). 
+> 
+> I think consistent naming is important to match the other static
+> tracepoints, such as softirq_entry/softirq_exit, irq_entry/irq_exit and
+> tasklet_entry/tasklet_exit.
+> 
 
-Thanks for the reports guys.
+I rename timer_entry/timer_exit to timer_expire/timer_callback_done just to
+match this series:
 
-I managed to reproduce the lockup and I think this patch should fix
-it.
-If you could review/test I would appreciate it.
+*_init() -> *_start() -> *_expire()...
+
+It's a complete timer's lifecycle.
 
 Thanks,
-NeilBrown
+Xiao
 
-
->From cf90cb85596d05d9595bb8ee4cadb7d4091212b5 Mon Sep 17 00:00:00 2001
-From: NeilBrown <neilb@suse.de>
-Date: Thu, 6 Aug 2009 13:10:43 +1000
-Subject: [PATCH] Remove deadlock potential in md_open
-
-A recent commit:
-  commit 449aad3e25358812c43afc60918c5ad3819488e7
-
-introduced the possibility of an A-B/B-A deadlock between
-bd_mutex and reconfig_mutex.
-
-__blkdev_get holds bd_mutex while calling md_open which takes
-   reconfig_mutex,
-do_md_run is always called with reconfig_mutex held, and it now
-   takes bd_mutex in the call the revalidate_disk.
-
-This potential deadlock was not caught by lockdep due to the
-use of mutex_lock_interruptible_nexted which was introduced
-by
-   commit d63a5a74dee87883fda6b7d170244acaac5b05e8
-do avoid a warning of an impossible deadlock.
-
-It is quite possible to split reconfig_mutex in to two locks.
-One protects the array data structures while it is being
-reconfigured, the other ensures that an array is never even partially
-open while it is being deactivated.
-
-So create a new lock, open_mutex, just to ensure exclusion between
-'open' and 'stop'.
-
-This avoids the deadlock and also avoid the lockdep warning mentioned
-in commit d63a5a74d
-
-Reported-by: "Mike Snitzer" <snitzer@gmail.com>
-Reported-by: "H. Peter Anvin" <hpa@zytor.com>
-Signed-off-by: NeilBrown <neilb@suse.de>
----
- drivers/md/md.c |   10 +++++++---
- drivers/md/md.h |   10 ++++++++++
- 2 files changed, 17 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index 5b98bea..1ecb219 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -359,6 +359,7 @@ static mddev_t * mddev_find(dev_t unit)
- 	else
- 		new->md_minor = MINOR(unit) >> MdpMinorShift;
- 
-+	mutex_init(&new->open_mutex);
- 	mutex_init(&new->reconfig_mutex);
- 	INIT_LIST_HEAD(&new->disks);
- 	INIT_LIST_HEAD(&new->all_mddevs);
-@@ -4304,9 +4305,11 @@ static int do_md_stop(mddev_t * mddev, int mode, int is_open)
- 	struct gendisk *disk = mddev->gendisk;
- 	mdk_rdev_t *rdev;
- 
-+	mutex_lock(&mddev->open_mutex);
- 	if (atomic_read(&mddev->openers) > is_open) {
- 		printk("md: %s still in use.\n",mdname(mddev));
--		return -EBUSY;
-+		err = -EBUSY;
-+		goto out;
- 	}
- 
- 	if (mddev->pers) {
-@@ -4434,6 +4437,7 @@ static int do_md_stop(mddev_t * mddev, int mode, int is_open)
- 	md_new_event(mddev);
- 	sysfs_notify_dirent(mddev->sysfs_state);
- out:
-+	mutex_unlock(&mddev->open_mutex);
- 	return err;
- }
- 
-@@ -5518,12 +5522,12 @@ static int md_open(struct block_device *bdev, fmode_t mode)
- 	}
- 	BUG_ON(mddev != bdev->bd_disk->private_data);
- 
--	if ((err = mutex_lock_interruptible_nested(&mddev->reconfig_mutex, 1)))
-+	if ((err = mutex_lock_interruptible(&mddev->open_mutex)))
- 		goto out;
- 
- 	err = 0;
- 	atomic_inc(&mddev->openers);
--	mddev_unlock(mddev);
-+	mutex_unlock(&mddev->open_mutex);
- 
- 	check_disk_change(bdev);
-  out:
-diff --git a/drivers/md/md.h b/drivers/md/md.h
-index 78f0316..f8fc188 100644
---- a/drivers/md/md.h
-+++ b/drivers/md/md.h
-@@ -223,6 +223,16 @@ struct mddev_s
- 							    * so we don't loop trying */
- 
- 	int				in_sync;	/* know to not need resync */
-+	/* 'open_mutex' avoids races between 'md_open' and 'do_md_stop', so
-+	 * that we are never stopping an array while it is open.
-+	 * 'reconfig_mutex' protects all other reconfiguration.
-+	 * These locks are separate due to conflicting interactions
-+	 * with bdev->bd_mutex.
-+	 * Lock ordering is:
-+	 *  reconfig_mutex -> bd_mutex : e.g. do_md_run -> revalidate_disk
-+	 *  bd_mutex -> open_mutex:  e.g. __blkdev_get -> md_open
-+	 */
-+	struct mutex			open_mutex;
- 	struct mutex			reconfig_mutex;
- 	atomic_t			active;		/* general refcount */
- 	atomic_t			openers;	/* number of active opens */
--- 
-1.6.3.3
-
+> Anton
+> 
+> 
