@@ -1,87 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752879AbZHFOSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbZHFOVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752879AbZHFOSi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 10:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbZHFOSh
+	id S1752980AbZHFOVr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 10:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbZHFOVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 10:18:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39906 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751831AbZHFOSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 10:18:37 -0400
-Date: Thu, 6 Aug 2009 10:17:44 -0400
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       acme <acme@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       roland <roland@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: malloc() tracing in perf?
-Message-ID: <20090806141744.GG18768@redhat.com>
-References: <4A7A8ADD.4080208@cs.helsinki.fi> <1249546610.32113.35.camel@twins> <20090806112059.GD18768@redhat.com> <1249558094.32113.242.camel@twins> <20090806115527.GE18768@redhat.com> <1249563574.32113.358.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249563574.32113.358.camel@twins>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 6 Aug 2009 10:21:46 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:50748 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbZHFOVp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 10:21:45 -0400
+Date: Thu, 6 Aug 2009 10:21:45 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Li Zefan <lizf@cn.fujitsu.com>
+cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <f.weisbecker@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] tracing/filters: Support filtering for char *
+ strings
+In-Reply-To: <4A7A72FA.9040102@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0908061020240.9870@gandalf.stny.rr.com>
+References: <4A7A72BD.5030201@cn.fujitsu.com> <4A7A72FA.9040102@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
 
-On Thu, Aug 06, 2009 at 02:59:34PM +0200, Peter Zijlstra wrote:
+On Thu, 6 Aug 2009, Li Zefan wrote:
 
-> [...]  Yeah in plain sight where nobody looks, really I thought the
-> idea was to get utrace upstream, this means posting to
-> linux-kernel. Going on LKML posts [...]
-
-I don't wish to get into arguing about how much lkml posting is
-appropriate, or to editorialize about what happened when some of this
-code did actually get posted.  I'm simply discussing the technology.
-It's never been hard to find.
-
-
-> [...]
-> Does this also iterate the already existing tasks to find if it was
-> already mmap()ed?
-
-Yes.
-
-> > This overview skims over issues related to return probes, tracing
-> > buffer manipulations, and much other stuff.
+> Usually, char * entries are dangerous in traces because the string
+> can be released whereas a pointer to it can still wait to be read from
+> the ring buffer.
 > 
-> Right, so you basically read the (dwarf2) debug info for a particular
-> lib/symbol and generate a kernel module that knows about that and then
-> insert that into the kernel to act as a uprobe handler?
-
-Yes.
-
-> Uprobe will then do the code rewrite on mmap() time to insert a trap
-> much like kprobe does? What if its a JITed code section and the JIT
-> rewrites it? Will uprobes detect that?
-
-You mean if the uprobe is made to refer to code that was created by a
-JIT?  That does not happen in the preceding scenario, since the
-uprobes addresses were based on prior generated debugging data.
-
-Putting uprobes into JIT code such as LLVM or JVM code is something
-for the future.
-
-
-> > All the code for this is hidden in plain sight in every systemtap
-> > release, so please feel free to refer to that and/or ask more detailed
-> > questions.
+> But sometimes we can assume it's safe, like in case of RO data
+> (eg: __file__ or __line__, used in bkl trace event). If these RO data
+> are in a module and so is the call to the trace event, then it's safe,
+> because the ring buffer will be flushed once this module get unloaded.
 > 
-> I thought the goal was to get stuff upstream, but if you want to
-> continue living in la-la land and not bother with upstream Linux then so
-> be it I guess :-(
+> To allow char * to be treated as a string:
+> 
+> 	TRACE_EVENT(...,
+> 
+> 		TP_STRUCT__entry(
+> 			__field_ext(const char *, name, FILTER_PTR_STRING)
+> 			...
+> 		)
+> 
+> 		...
+> 	);
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  include/linux/ftrace_event.h       |    1 +
+>  kernel/trace/trace_events_filter.c |   26 +++++++++++++++++++++++---
+>  2 files changed, 24 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+> index 14c388e..1a98a61 100644
+> --- a/include/linux/ftrace_event.h
+> +++ b/include/linux/ftrace_event.h
+> @@ -141,6 +141,7 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
+>  enum {
+>  	FILTER_STATIC_STRING = 1,
+>  	FILTER_DYN_STRING,
+> +	FILTER_PTR_STRING,
+>  	FILTER_OTHER,
+>  };
+>  
+> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+> index 5e7f031..b16923e 100644
+> --- a/kernel/trace/trace_events_filter.c
+> +++ b/kernel/trace/trace_events_filter.c
+> @@ -163,6 +163,20 @@ static int filter_pred_string(struct filter_pred *pred, void *event,
+>  	return match;
+>  }
+>  
+> +/* Filter predicate for char * pointers */
+> +static int filter_pred_pchar(struct filter_pred *pred, void *event,
+> +			     int val1, int val2)
+> +{
+> +	char **addr = (char **)(event + pred->offset);
+> +	int cmp, match;
+> +
+> +	cmp = strncmp(*addr, pred->str_val, pred->str_len);
+> +
+> +	match = (!cmp) ^ pred->not;
+> +
+> +	return match;
+> +}
+> +
+>  /*
+>   * Filter predicate for dynamic sized arrays of characters.
+>   * These are implemented through a list of strings at the end
+> @@ -489,7 +503,8 @@ int filter_assign_type(const char *type)
+>  static bool is_string_field(struct ftrace_event_field *field)
+>  {
+>  	return field->filter_type == FILTER_DYN_STRING ||
+> -	       field->filter_type == FILTER_STATIC_STRING;
+> +	       field->filter_type == FILTER_STATIC_STRING ||
+> +	       field->filter_type == FILTER_PTR_STRING;
+>  }
+>  
+>  static int is_legal_op(struct ftrace_event_field *field, int op)
+> @@ -579,11 +594,16 @@ static int filter_add_pred(struct filter_parse_state *ps,
+>  	}
+>  
+>  	if (is_string_field(field)) {
+> +		pred->str_len = field->size;
+> +
+>  		if (field->filter_type == FILTER_STATIC_STRING)
+>  			fn = filter_pred_string;
+> -		else
+> +		else if (field->filter_type == FILTER_DYN_STRING)
+>  			fn = filter_pred_strloc;
+> -		pred->str_len = field->size;
+> +		else {
+> +			fn = filter_pred_pchar;
+> +			pred->str_len = strlen(pred->str_val);
+> +		}
 
-It's not that simple, and you know it.
+I'm a little dense here, where do we protect against someone making a 
+tracepoint that points to unsafe data?
+
+-- Steve
 
 
-- FChE
+>  	} else {
+>  		if (field->is_signed)
+>  			ret = strict_strtoll(pred->str_val, 0, &val);
+> -- 
+> 1.6.3
+> 
+> 
