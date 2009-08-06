@@ -1,81 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbZHFSTC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753447AbZHFSZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753181AbZHFSTC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 14:19:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbZHFSTB
+	id S1753447AbZHFSZw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 14:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbZHFSZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 14:19:01 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50449 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751670AbZHFSTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 14:19:00 -0400
-Subject: Re: fanotify - overall design before I start sending patches
-From: Eric Paris <eparis@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Douglas Leeder <douglas.leeder@sophos.com>, Pavel Machek <pavel@ucw.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
-       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
-       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "david@lang.hm" <david@lang.hm>,
-       "jengelh@medozas.de" <jengelh@medozas.de>,
-       "aviro@redhat.com" <aviro@redhat.com>,
-       "mrkafk@gmail.com" <mrkafk@gmail.com>,
-       "alexl@redhat.com" <alexl@redhat.com>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "mmorley@hcl.in" <mmorley@hcl.in>
-In-Reply-To: <20090806135800.7ccb7787@lxorguk.ukuu.org.uk>
-References: <1248466429.3567.82.camel@localhost>
-	 <200908061159.45550.tvrtko.ursulin@sophos.com>
-	 <1249557831.32113.234.camel@twins>
-	 <200908061348.43625.tvrtko.ursulin@sophos.com>
-	 <20090806135800.7ccb7787@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Thu, 06 Aug 2009 14:18:10 -0400
-Message-Id: <1249582690.20644.33.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Aug 2009 14:25:51 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:21660 "EHLO
+	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752779AbZHFSZv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 14:25:51 -0400
+X-SpamScore: 1
+X-BigFish: VPS1(z5edIz14c3M853ka4a4kzz1202hzzz32i6bh203h63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0KNYWIJ-02-OZM-02
+X-M-MSG: 
+Date: Thu, 6 Aug 2009 20:24:38 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel@vger.kernel.org, Borislav Petkov <borislav.petkov@amd.com>,
+       Brice Goglin <Brice.Goglin@inria.fr>
+Subject: [PATCH] topology: Update CPU topology documentation
+Message-ID: <20090806182438.GN6520@alberich.amd.com>
+References: <20090805154402.GA6520@alberich.amd.com> <20090806172955.GF7198@alberich.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090806172955.GF7198@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 06 Aug 2009 18:24:38.0849 (UTC) FILETIME=[2890C310:01CA16C3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-06 at 13:58 +0100, Alan Cox wrote:
-> > > We are taking about the kind of fanotify client that says: No you cannot
-> > > open/read/write/mmap/etc.. this file until I say you can, right?
-> > 
-> > Yes and no, it would be more accurate to say "this open takes long while we do 
-> > something else in the background".
-> 
-> There are two or three ways to handle this
-> 
-> 1.	Block the open until the daemon dies or responds
-> 2.	Have a timeout (which would need to be connection configurable)
-> 3.	Require the daemon responds with "in progress" now and then.
+Mention new attributes introduced for multi-node processor support.
 
-I've taken option #3.  I don't see options #2 as viable, although off
-list discussion from clamav people has said they believe they are
-interested in #2 rather than #3.
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ Documentation/cputopology.txt |   35 +++++++++++++++++++++++++++++------
+ 1 files changed, 29 insertions(+), 6 deletions(-)
 
-> For a superuser managed service its no different to an NFS mount which
-> can go wonky so the only real question is what should fanotify allow non
-> privileged users to do. The answer would appear anyway to be: not use
-> this aspect of such a facility.
+diff --git a/Documentation/cputopology.txt b/Documentation/cputopology.txt
+index b41f3e5..48914b1 100644
+--- a/Documentation/cputopology.txt
++++ b/Documentation/cputopology.txt
+@@ -3,13 +3,32 @@ Export cpu topology info via sysfs. Items (attributes) are similar
+ to /proc/cpuinfo.
+ 
+ 1) /sys/devices/system/cpu/cpuX/topology/physical_package_id:
+-represent the physical package id of  cpu X;
++   represents the physical package id of cpu X;
+ 2) /sys/devices/system/cpu/cpuX/topology/core_id:
+-represent the cpu core id to cpu X;
+-3) /sys/devices/system/cpu/cpuX/topology/thread_siblings:
+-represent the thread siblings to cpu X in the same core;
+-4) /sys/devices/system/cpu/cpuX/topology/core_siblings:
+-represent the thread siblings to cpu X in the same physical package;
++   represents the cpu core id of cpu X;
++3) /sys/devices/system/cpu/cpuX/topology/cpu_node_id:
++   represents the processor internal node_id of cpu X;
++4) /sys/devices/system/cpu/cpuX/topology/thread_siblings:
++   represents the thread siblings of cpu X in the same core;
++5) /sys/devices/system/cpu/cpuX/topology/core_siblings:
++   represents the thread siblings of cpu X in the same processor
++   internal node;
++6) /sys/devices/system/cpu/cpuX/topology/cpu_node_siblings:
++   represents the thread siblings of cpu X in the same physical
++   package;
++
++Note: cpu_node_siblings and core_siblings differ only on
++      multi-node processors. On all other processors they are
++      identical and then cpu_node_id is always 0.
++
++With that CPU topology is mapped into following hierarchy:
++
++  Level        | Set of CPUs
++ --------------|---------------
++  phys_package | cpu_node_siblings
++  cpu_node     | core_siblings
++  core         | thread_siblings
++  thread       | one CPU
+ 
+ To implement it in an architecture-neutral way, a new source file,
+ drivers/base/topology.c, is to export the 4 attributes.
+@@ -20,6 +39,8 @@ these macros in include/asm-XXX/topology.h:
+ #define topology_core_id(cpu)
+ #define topology_thread_cpumask(cpu)
+ #define topology_core_cpumask(cpu)
++#define topology_cpu_node_id(cpu)
++#define topology_cpu_node_siblings(cpu)
+ 
+ The type of **_id is int.
+ The type of siblings is (const) struct cpumask *.
+@@ -31,6 +52,8 @@ not defined by include/asm-XXX/topology.h:
+ 2) core_id: 0
+ 3) thread_siblings: just the given CPU
+ 4) core_siblings: just the given CPU
++5) cpu_node_id: 0
++6) cpu_node_siblings: identical to core_siblings
+ 
+ Additionally, cpu topology information is provided under
+ /sys/devices/system/cpu and includes these files.  The internal
+-- 
+1.6.3.3
 
-That's the approach taken thus far.  Although non-blocking/access
-notification will be opened up to normal users (currently even
-notification is root only)
 
-> For the superuser case the fact the daemon can be killed thus releasing
-> anything stuff is analogous to umount -f of a stuck NFS mount which seems
-> perfectly good for NFS.
-
-It does work for NFS (which I would call case #1.)  I claim that it
-doesn't work for this case since a global listener stuck would stop you
-from running kill() since it owuldn't be able to get permission to open
-it....
 
