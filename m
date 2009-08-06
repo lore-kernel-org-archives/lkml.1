@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbZHFOGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZHFOHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755940AbZHFOGX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 10:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbZHFOGV
+	id S1755962AbZHFOHS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 10:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755537AbZHFOHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 10:06:21 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:26412 "EHLO
+	Thu, 6 Aug 2009 10:07:17 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:26439 "EHLO
 	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755458AbZHFOGU convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1755458AbZHFOHQ convert rfc822-to-8bit (ORCPT
 	<rfc822;groupwise-ghaskins@novell.com;3:2>);
-	Thu, 6 Aug 2009 10:06:20 -0400
-Message-Id: <4A7AAB1A0200005A00051BED@sinclair.provo.novell.com>
+	Thu, 6 Aug 2009 10:07:16 -0400
+Message-Id: <4A7AAB510200005A00051BF3@sinclair.provo.novell.com>
 X-Mailer: Novell GroupWise Internet Agent 8.0.1 Beta 
-Date: Thu, 06 Aug 2009 08:06:18 -0600
+Date: Thu, 06 Aug 2009 08:07:13 -0600
 From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Avi Kivity" <avi@redhat.com>
-Cc: <alacrityvm-devel@lists.sourceforge.net>,
-       "Michael S. Tsirkin" <mst@redhat.com>, <kvm@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: <alacrityvm-devel@lists.sourceforge.net>, "Avi Kivity" <avi@redhat.com>,
+       <kvm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>
 Subject: Re: [PATCH 0/7] AlacrityVM guest drivers Reply-To:
 References: <20090803171030.17268.26962.stgit@dev.haskins.net>
  <20090806081955.GA9752@redhat.com>
@@ -26,8 +26,8 @@ References: <20090803171030.17268.26962.stgit@dev.haskins.net>
  <4A7A9C6B0200005A00051BB9@sinclair.provo.novell.com>
  <4A7ADE23.5010208@redhat.com>
  <4A7AA63A0200005A00051BE2@sinclair.provo.novell.com>
- <4A7AE150.7040009@redhat.com>
-In-Reply-To: <4A7AE150.7040009@redhat.com>
+ <20090806135903.GA11530@redhat.com>
+In-Reply-To: <20090806135903.GA11530@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
@@ -36,91 +36,19 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On 8/6/2009 at  9:57 AM, in message <4A7AE150.7040009@redhat.com>, Avi Kivity
-<avi@redhat.com> wrote: 
-> On 08/06/2009 04:45 PM, Gregory Haskins wrote:
->>
->>> (though still rooting for virtio).
->>>      
->>
+>>> On 8/6/2009 at  9:59 AM, in message <20090806135903.GA11530@redhat.com>,
+"Michael S. Tsirkin" <mst@redhat.com> wrote: 
+> On Thu, Aug 06, 2009 at 07:45:30AM -0600, Gregory Haskins wrote:
+>> > (though still rooting for virtio).
+>> 
 >> Heh...not to belabor the point to death, but virtio is orthogonal (you keep 
 > forgetting that ;).
->>
->> Its really the vbus device-model vs the qemu device-model (and possibly vs the 
-> "in-kernel pci emulation" model that I believe Michael is working on).
->>
->> You can run virtio on any of those three.
->>    
 > 
-> It's not orthogonal.  virtio is one set of ABI+guest drivers+host 
-> support to get networking on kvm guests.  AlacrityVM's vbus-based 
-> drivers are another set of ABI+guest drivers+host support to get 
-> networking on kvm guests.  That makes them competitors (two different 
-> ways to do one thing), not orthogonal.
+> venet and virtio aren't orthogonal, are they?
 
-Thats not accurate, though.
+See my last reply to Avi.
 
-The virtio stack is modular.  For instance, with virtio-net, you have
-
-  (guest-side)
-|--------------------------
-| virtio-net
-|--------------------------
-| virtio-ring
-|--------------------------
-| virtio-bus
-|--------------------------
-| virtio-pci
-|--------------------------
-                      |
-                   (pci)
-                      |
-|--------------------------
-| kvm.ko
-|--------------------------
-| qemu
-|--------------------------
-| tun-tap
-|--------------------------
-| netif
-|--------------------------
-     (host-side)
-
-We can exchange out the "virtio-pci" module like this:
-
-  (guest-side)
-|--------------------------
-| virtio-net
-|--------------------------
-| virtio-ring
-|--------------------------
-| virtio-bus
-|--------------------------
-| virtio-vbus
-|--------------------------
-| vbus-proxy
-|--------------------------
-| vbus-connector
-|--------------------------
-                      |
-                   (vbus)
-                      |
-|--------------------------
-| kvm.ko
-|--------------------------
-| vbus-connector
-|--------------------------
-| vbus
-|--------------------------
-| virtio-net-tap (vbus model)
-|--------------------------
-| netif
-|--------------------------
-     (host-side)
-
-
-So virtio-net runs unmodified.  What is "competing" here is "virtio-pci" vs "virtio-vbus".  Also, venet vs virtio-net are technically competing.  But to say "virtio vs vbus" is inaccurate, IMO.
-
-HTH
+Regards,
 -Greg
+
 
