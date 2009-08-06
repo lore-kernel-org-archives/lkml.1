@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbZHFM3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbZHFMeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755477AbZHFM3z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 08:29:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755440AbZHFM3y
+	id S1755284AbZHFMeT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 08:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbZHFMeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 08:29:54 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52470 "EHLO mx2.mail.elte.hu"
+	Thu, 6 Aug 2009 08:34:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33011 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755452AbZHFM3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 08:29:53 -0400
-Date: Thu, 6 Aug 2009 14:29:35 +0200
+	id S1752931AbZHFMeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 08:34:17 -0400
+Date: Thu, 6 Aug 2009 14:34:07 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/rcu] rcu: Add diagnostic check for a possible
-	CPU-hotplug race
-Message-ID: <20090806122935.GB15314@elte.hu>
-References: <tip-7256cf0e83bf018be8a81806593aaef7f2437f0b@git.kernel.org> <20090802202720.GA32360@elte.hu> <20090802221324.GP6854@linux.vnet.ibm.com> <20090803070458.GA27581@elte.hu> <20090803125618.GV6854@linux.vnet.ibm.com> <20090806012645.GA24800@linux.vnet.ibm.com> <20090806025105.GA7077@in.ibm.com>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, tglx@linutronix.de, airlied@gmail.com
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/urgent] tracing: do not use functions starting
+	with .L in recordmcount.pl
+Message-ID: <20090806123407.GC15314@elte.hu>
+References: <alpine.DEB.2.00.0908052011590.5010@gandalf.stny.rr.com> <tip-3f6e968ef4e1d8d93d8a8505461b0e50a9e97ad8@git.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090806025105.GA7077@in.ibm.com>
+In-Reply-To: <tip-3f6e968ef4e1d8d93d8a8505461b0e50a9e97ad8@git.kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,33 +35,33 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Gautham R Shenoy <ego@in.ibm.com> wrote:
+* tip-bot for Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> On Wed, Aug 05, 2009 at 06:26:45PM -0700, Paul E. McKenney wrote:
-> > On Mon, Aug 03, 2009 at 05:56:18AM -0700, Paul E. McKenney wrote:
-> > > On Mon, Aug 03, 2009 at 09:04:58AM +0200, Ingo Molnar wrote:
-> > > > 
-> > > > i've attached the full serial bootlog with the warning in it. This 
-> > > > should address your question about what the order of initialization 
-> > > > is, right?
-> > > 
-> > > It does, thank you!  This problem really is happening during boot.
-> > > 
-> > > > Let me know if you still would like me to run your diagnostic patch 
-> > > > too.
-> > > 
-> > > Now that you mention it, you should probably let me test it a bit first.
-> > 
-> > And here is a tested and debugged version.  Diagnostic only, not for
-> > inclusion, based on tip/core/rcu as of today (August 5th).
-> > 
-> > Gautham, have you been able to reproduce on your machines?  
-> > Still cannot here.
+> Commit-ID:  3f6e968ef4e1d8d93d8a8505461b0e50a9e97ad8
+> Gitweb:     http://git.kernel.org/tip/3f6e968ef4e1d8d93d8a8505461b0e50a9e97ad8
+> Author:     Steven Rostedt <rostedt@goodmis.org>
+> AuthorDate: Wed, 5 Aug 2009 22:00:14 -0400
+> Committer:  Steven Rostedt <rostedt@goodmis.org>
+> CommitDate: Wed, 5 Aug 2009 22:45:07 -0400
 > 
-> I tried on a couple of machines yesterday, but I still couldn't 
-> reproduce it with Ingo's config.
+> tracing: do not use functions starting with .L in recordmcount.pl
+> 
+> On Wed, 5 Aug 2009, Ingo Molnar wrote:
+> > * Dave Airlie <airlied@gmail.com> wrote:
+> >
+> > > Hey,
+> > >
+> > > So I spent 3-4 hrs today (I'm stupid yes) tracking down a .o
+> > > breakage by blaming rawhide gcc/binutils as I was using make
+> > > V=1and seeing only the compiler chain running,
+> >
+> > Hm, is this that powerpc related build bug you just reported?
 
-Paul, should i try your latest diagnostic patch in -tip testing, to 
-see whether it triggers any new warning?
+Btw., a small nitpick for future commit logs: it would have been 
+nice to keep this email quote excerpt out of the changelog, it looks 
+a bit messy. If it contains useful info then it can be paraphrased 
+into the usual 'Dave Airlie reported ...' sentence(s).
+
+Thanks,
 
 	Ingo
