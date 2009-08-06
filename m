@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbZHFMJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZHFMQD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755298AbZHFMJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 08:09:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZHFMJ5
+	id S1755345AbZHFMQD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 08:16:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbZHFMQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 08:09:57 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:35692 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753640AbZHFMJ4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 08:09:56 -0400
-Date: Thu, 6 Aug 2009 13:08:26 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Erik Mouw <mouw@nl.linux.org>, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: linux-arm-kernel useless for development (was Re: Your message
-	to Linux-arm-kernel awaits moderator approval)
-Message-ID: <20090806120826.GC27773@flint.arm.linux.org.uk>
-References: <mailman.3653.1249217530.31043.linux-arm-kernel@lists.arm.linux.org.uk> <20090804100051.GA17106@elf.ucw.cz> <20090804223922.GD18365@flint.arm.linux.org.uk> <20090806125751.7d0253ce@nij0285> <20090806113104.GK31370@elf.ucw.cz>
+	Thu, 6 Aug 2009 08:16:03 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59485 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755317AbZHFMQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 08:16:01 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Daniel Mack <daniel@caiaq.de>
+Subject: Re: [PATCH] PM: Add convenience macro to make switching to dev_pm_ops less error-prone
+Date: Thu, 6 Aug 2009 14:16:08 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Frans Pop <elendil@planet.nl>, pHilipp Zabel <philipp.zabel@gmail.com>,
+       albin.tonnerre@free-electrons.com, dmitry.torokhov@gmail.com,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <20090803163304.GF5002@laptop> <200908052330.08452.rjw@sisk.pl> <20090806085144.GS13236@buzzloop.caiaq.de>
+In-Reply-To: <20090806085144.GS13236@buzzloop.caiaq.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090806113104.GK31370@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908061416.08564.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 01:31:04PM +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > > > Please fix your mailinglist.
-> > > > 
-> > > > You claimed that it is possible to crosspost between lkml and lakml,
-> > > > yet the lakml does everything to prevent that -- even in case as
-> > > > simple as reporting that regression that affects arm.
-> > > > 
-> > > > Please fix it.
+On Thursday 06 August 2009, Daniel Mack wrote:
+> On Wed, Aug 05, 2009 at 11:30:07PM +0200, Rafael J. Wysocki wrote:
+> > On Wednesday 05 August 2009, Frans Pop wrote:
+> > > Rafael J. Wysocki wrote:
+> > > 
+> > > > +#define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
+> > > > +struct dev_pm_ops name = { \
+> > > > +       .suspend = suspend_fn, \
+> > > > +       .resume = resume_fn, \
+> > > > +       .freeze = suspend_fn, \
+> > > > +       .thaw = resume_fn, \
+> > > > +       .poweroff = suspend_fn, \
+> > > > +       .resume = resume_fn, \
+> > > 
+> > > That defines .resume twice. Guess the last should be restore.
 > > 
-> > It is indeed possible to cross post between lkml and lakml. The easiest
-> > way to do that is to subscribe to the list and tell Mailman that you
-> > don't want to receive any messages.
+> > Yes, thanks to you and Philipp for noticing that and sorry for the mistake.
 > 
-> Actually I'm subscribed, but I still have far too many problems.
-> 
-> Due to the approval process, I don't think you'll ever have a spammer
-> on lakml... can the mail size + #of people in to/cc list simply be
-> increased to lkml levels?
+> When is a good point to resend patches that use this macro? I guess they
+> won't make it to .31 anyway, right? So I just wait for the next merge
+> window?
 
-The mail size is currently 100K, having been recently increased.  I
-believe this is a sane limit.
+Yes, I think that would be the right thing to do.
 
-The number of people is 15, which is probably a little low.  I've
-already explained my personal position over that limit concerning
-requests from you.  Erik's position may be different.
-
-> > When I get such a Mailman message from a list I just shrug. The
-> > moderator will take care eventually and if he rejects it I don't care.
-> > Suggest you try to do the same, there are may more important things
-> > than a message that doesn't get it to a list.
-> 
-> Well, I'd say that mailing list is pretty vital for Linux-style 
-> development, and those rejects are simply far too frequent.
-
-This is the first time in at least one month that anything from you has
-been held according to the logs.  If I look at my mailbox which has
-3400+ messages from the list since 1st June, you have sent 78 messages,
-only one of which was held.
-
-I think you need to develop a realistic sense of proportion.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Best,
+Rafael
