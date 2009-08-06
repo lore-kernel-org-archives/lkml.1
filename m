@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756508AbZHFS6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbZHFS5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756508AbZHFS6R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 14:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756115AbZHFS5z
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1756264AbZHFS5z (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 6 Aug 2009 14:57:55 -0400
-Received: from kroah.org ([198.145.64.141]:36187 "EHLO coco.kroah.org"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbZHFS5w
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 6 Aug 2009 14:57:52 -0400
+Received: from cantor.suse.de ([195.135.220.2]:59918 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755995AbZHFS5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 14:57:53 -0400
-Date: Thu, 6 Aug 2009 11:56:02 -0700
-From: Greg KH <greg@kroah.com>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-       Richard Purdie <rpurdie@rpsys.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
-Subject: Re: [RFC PATCH V2 1/2] introduce ALS sysfs class
-Message-ID: <20090806185602.GC28664@kroah.com>
-References: <1249547498.2670.499.camel@rzhang-dt>
+	id S1755416AbZHFS5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 14:57:48 -0400
+Date: Thu, 6 Aug 2009 11:31:47 -0700
+From: Greg KH <gregkh@suse.de>
+To: David Dillow <dave@thedillows.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Greg KH <greg@kroah.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
+       Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+ /dev
+Message-ID: <20090806183147.GA28409@suse.de>
+References: <20090805171513.GA10443@kroah.com>
+ <20090805192037.19c54c4d@lxorguk.ukuu.org.uk>
+ <20090805182805.GA7534@kroah.com>
+ <20090805185136.GA21442@kroah.com>
+ <87ljlxhrnr.fsf@basil.nowhere.org>
+ <1249575658.19886.8.camel@lap75545.ornl.gov>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249547498.2670.499.camel@rzhang-dt>
+In-Reply-To: <1249575658.19886.8.camel@lap75545.ornl.gov>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 04:31:38PM +0800, Zhang Rui wrote:
-> +#define PREFIX "ALS: "
+On Thu, Aug 06, 2009 at 12:20:58PM -0400, David Dillow wrote:
+> On Thu, 2009-08-06 at 17:46 +0200, Andi Kleen wrote:
+> > Greg KH <greg@kroah.com> writes:
+> > >
+> > > It makes the userspace boot process much simpler and easier to maintain,
+> > > as well as providing a way to handle rescue disks and images trivially,
+> > > and it makes the kernel _less_ dependant on the early userspace bootup
+> > > scripts.
+> > 
+> > As a initrd less kernel user I can really only agree: getting rid
+> > of the udev-in-initrd requirement would be a big step forward
+> > in usability. Typically I always have to pre populate 
+> > a on disk /dev manually first to get my kernels to boot.
+> 
+> If you use mount by label or UUID, you still need udev (or other tools)
+> in the initrd to find the right disk, correct?
 
-This is not used.
+Yes, you would.
 
-> +	/* sys I/F */
-> +	result = device_create_file(&als->device, &dev_attr_illuminance);
-> +	if (result)
-> +		goto unregister_device;
-> +
-> +	result = device_create_file(&als->device, &dev_attr_desc);
-> +	if (result)
-> +		goto unregister_device;
+> And for distros that want to support that, does this really reduce the
+> amount of code in the initrd?
 
-These should be default attributes for the device, that way they get
-created before userspace is told the device is there, removing any race
-conditions you will have otherwise.
-
-> +
-> +	return als;
-> +
-> +unregister_device:
-> +	device_unregister(&als->device);
-> +	return ERR_PTR(result);
-
-And you weren't cleaning up the file if the second one failed.
+Yes it does, see the code in the Novell Moblin images for an example of
+how to use devtmpfs with udev for how to do this.
 
 thanks,
 
