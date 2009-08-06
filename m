@@ -1,74 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbZHFM0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZHFM2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755353AbZHFM0A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 08:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZHFM0A
+	id S1755383AbZHFM2H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 08:28:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbZHFM2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 08:26:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44122 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752931AbZHFMZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 08:25:59 -0400
-Date: Thu, 6 Aug 2009 15:24:49 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: alacrityvm-devel@lists.sourceforge.net, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 0/7] AlacrityVM guest drivers Reply-To:
-Message-ID: <20090806122449.GC11038@redhat.com>
-References: <20090803171030.17268.26962.stgit@dev.haskins.net> <20090806081955.GA9752@redhat.com> <4A7A8F7B0200005A00051B84@sinclair.provo.novell.com>
+	Thu, 6 Aug 2009 08:28:07 -0400
+Received: from smtpauth.net4india.com ([202.71.129.41]:46516 "EHLO
+	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752800AbZHFM2G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 08:28:06 -0400
+Message-ID: <4A7ACC8D.7030706@xenontk.org>
+Date: Thu, 06 Aug 2009 17:59:01 +0530
+From: David John <davidjon@xenontk.org>
+Reply-To: davidjon@xenontk.org
+User-Agent: Mozilla/5.0 (X11; X; Linux x86_64; rv:1.9.1b3pre) Gecko/20090513 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A7A8F7B0200005A00051B84@sinclair.provo.novell.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+CC: Pavel Machek <pavel@ucw.cz>, Erik Mouw <mouw@nl.linux.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: linux-arm-kernel useless for development (was Re: Your message
+ to Linux-arm-kernel awaits moderator approval)
+References: <mailman.3653.1249217530.31043.linux-arm-kernel@lists.arm.linux.org.uk> <20090804100051.GA17106@elf.ucw.cz> <20090804223922.GD18365@flint.arm.linux.org.uk> <20090806125751.7d0253ce@nij0285> <20090806113104.GK31370@elf.ucw.cz> <20090806120826.GC27773@flint.arm.linux.org.uk>
+In-Reply-To: <20090806120826.GC27773@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 06:08:27AM -0600, Gregory Haskins wrote:
-> Hi Michael,
+On 08/06/2009 05:38 PM, Russell King wrote:
+> On Thu, Aug 06, 2009 at 01:31:04PM +0200, Pavel Machek wrote:
+>> Hi!
+>>
+>>>>> Please fix your mailinglist.
+>>>>>
+>>>>> You claimed that it is possible to crosspost between lkml and lakml,
+>>>>> yet the lakml does everything to prevent that -- even in case as
+>>>>> simple as reporting that regression that affects arm.
+>>>>>
+>>>>> Please fix it.
+>>> It is indeed possible to cross post between lkml and lakml. The easiest
+>>> way to do that is to subscribe to the list and tell Mailman that you
+>>> don't want to receive any messages.
+>> Actually I'm subscribed, but I still have far too many problems.
+>>
+>> Due to the approval process, I don't think you'll ever have a spammer
+>> on lakml... can the mail size + #of people in to/cc list simply be
+>> increased to lkml levels?
 > 
-> >>> On 8/6/2009 at  4:19 AM, in message <20090806081955.GA9752@redhat.com>,
-> "Michael S. Tsirkin" <mst@redhat.com> wrote: 
-> > On Mon, Aug 03, 2009 at 01:17:30PM -0400, Gregory Haskins wrote:
-> >> (Applies to v2.6.31-rc5, proposed for linux-next after review is complete)
-> > 
-> > These are guest drivers, right?
+> The mail size is currently 100K, having been recently increased.  I
+> believe this is a sane limit.
 > 
-> Yep.
+> The number of people is 15, which is probably a little low.  I've
+> already explained my personal position over that limit concerning
+> requests from you.  Erik's position may be different.
 > 
-> > Merging the guest first means relying on
-> > kernel interface from an out of tree driver, which well might change
-> > before it goes in.
+>>> When I get such a Mailman message from a list I just shrug. The
+>>> moderator will take care eventually and if he rejects it I don't care.
+>>> Suggest you try to do the same, there are may more important things
+>>> than a message that doesn't get it to a list.
+>> Well, I'd say that mailing list is pretty vital for Linux-style 
+>> development, and those rejects are simply far too frequent.
 > 
-> ABI compatibility is already addressed/handled, so even if that is true its not a problem.
-
-It is? With versioning? Presumably this:
-
-+       params.devid   = vdev->id;
-+       params.version = version;
-+
-+       ret = vbus_pci_hypercall(VBUS_PCI_HC_DEVOPEN,
-+                                &params, sizeof(params));
-+       if (ret < 0)
-+               return ret;
-
-Even assuming host even knows how to decode this structure (e.g.  some
-other host module doesn't use VBUS_PCI_HC_DEVOPEN), checks the version
-and denies older guests, this might help guest not to crash, but guest
-still won't work.
-
-> > Would it make more sense to start merging with the host side of the project?
+> This is the first time in at least one month that anything from you has
+> been held according to the logs.  If I look at my mailbox which has
+> 3400+ messages from the list since 1st June, you have sent 78 messages,
+> only one of which was held.
 > 
-> Not necessarily, no.  These are drivers for a "device", so its no
-> different than merging any other driver really.  This is especially
-> true since the hypervisor is also already published and freely
-> available today, so anyone can start using it.
+> I think you need to develop a realistic sense of proportion.
+> 
 
-The difference is clear to me: devices do not get to set kernel/userspace
-interfaces. This "device" depends on a specific interface between
-kernel and (guest) userspace.
+I think the basis of Pavel's complaint is that the ARM mailing list is
+difficult to work with for casual users who might want to forward say,
+a simple bug report.
 
--- 
-MST
+If data protection laws prevent you from keeping an open list, can't you
+host the list at kernel.org or elsewhere?
+
+Regards,
+David.
