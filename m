@@ -1,88 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbZHFTRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756433AbZHFTUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756501AbZHFTRf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 15:17:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755416AbZHFTRe
+	id S1756433AbZHFTUG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 15:20:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755416AbZHFTUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 15:17:34 -0400
-Received: from emulex.emulex.com ([138.239.112.1]:37380 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754547AbZHFTRd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 15:17:33 -0400
-From: Chetan.Loke@Emulex.Com
-To: <dxiao@broadcom.com>, <laurent.pinchart@ideasonboard.com>
-CC: <ben-linux@fluff.org>, <hugh.dickins@tiscali.co.uk>, <holt@sgi.com>,
-       <linux-kernel@vger.kernel.org>, <linux-media@vger.kernel.org>,
-       <linux-arm-kernel@lists.arm.linux.org.uk>
-Date: Thu, 6 Aug 2009 12:16:35 -0700
-Subject: RE: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
- get_user_pages() enough to prevent pages from being swapped out ?")
-Thread-Topic: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
- get_user_pages() enough to prevent pages from being swapped out ?")
-Thread-Index: AcoWxl3ee2a9ZHqTRBq19jJ/ZYHMzQAAfNDg
-Message-ID: <412A05BA40734D4887DBC67661F433080D73232D@EXMAIL.ad.emulex.com>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com>
- <20090806114619.GW2080@trinity.fluff.org>
- <200908061506.23874.laurent.pinchart@ideasonboard.com>
- <1249584374.29182.20.camel@david-laptop>
-In-Reply-To: <1249584374.29182.20.camel@david-laptop>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-MIME-Version: 1.0
-X-OriginalArrivalTime: 06 Aug 2009 19:16:37.0621 (UTC) FILETIME=[6B7F9A50:01CA16CA]
+	Thu, 6 Aug 2009 15:20:05 -0400
+Received: from mga01.intel.com ([192.55.52.88]:49719 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754199AbZHFTUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 15:20:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,335,1246863600"; 
+   d="scan'208";a="714561674"
+Subject: Re: [PATCH] pci/intr_remapping: allocate irq_iommu on node
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+In-Reply-To: <4A7A2FB1.9050407@kernel.org>
+References: <4A785C17.3030104@kernel.org>
+	 <1249406368.27006.10789.camel@localhost.localdomain>
+	 <4A794D8A.1060508@kernel.org>
+	 <1249518985.27006.10805.camel@localhost.localdomain>
+	 <4A7A2FB1.9050407@kernel.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Thu, 06 Aug 2009 12:16:06 -0700
+Message-Id: <1249586166.27006.10816.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
-> owner@vger.kernel.org] On Behalf Of David Xiao
-> Sent: Thursday, August 06, 2009 2:46 PM
-> To: Laurent Pinchart
-> Cc: Ben Dooks; Hugh Dickins; Robin Holt; linux-kernel@vger.kernel.org;
-> v4l2_linux; linux-arm-kernel@lists.arm.linux.org.uk
-> Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
-> get_user_pages() enough to prevent pages from being swapped out ?")
+On Wed, 2009-08-05 at 18:19 -0700, Yinghai Lu wrote:
+> Suresh Siddha wrote:
+> > 
+> > Yinghai, even with this patch, we will still be allocating from node-0.
+> > No?
 > 
-> On Thu, 2009-08-06 at 06:06 -0700, Laurent Pinchart wrote:
-> > Hi Ben,
-> >
-> > On Thursday 06 August 2009 13:46:19 Ben Dooks wrote:
-> > > On Thu, Aug 06, 2009 at 12:08:21PM +0200, Laurent Pinchart wrote:
-> > [snip]
-> > > >
-> > > > The second problem is to ensure cache coherency. As the userspace
-> > > > application will read data from the video buffers, those buffers
-> will end
-> > > > up being cached in the processor's data cache. The driver does need
-> to
-> > > > invalidate the cache before starting the DMA operation (userspace
-> could
-> > > > in theory write to the buffers, but the data will be overwritten by
-> DMA
-> > > > anyway, so there's no need to clean the cache).
-> > >
-> > > You'll need to clean the write buffers, otherwise the CPU may have
-> data
-> > > queued that it has yet to write back to memory.
-> >
-> > Good points, thanks.
-> 
->    I thought this should have been taken care of by the CPU specific
-> dma_inv_range routine. However, In arch/arm/mm/cache-v7.c,
-> v7_dma_inv_range does not drain the write buffer; and the
-> v6_dma_inv_range does that in the end of all the cache maintenance
-> operaitons.
->    So this is probably something Russel can clarify.
-> 
+> with this patch will get 
+> alloc irq_2_iommu on node 2
 
-Something non-related. I haven't used this specific api but ARM1156 has an issue. If you use the clean-cache-block mcr feature then it might result in memory-corruption. So be careful. I'm not sure which of these(ARM1156T2-S or ARM1156T2F-S) variants has that errata. 
+Looking closer, I missed the fact that we are now using the
+create_irq_nr() which has the node information.
 
+Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
 
-Chetan
+Thanks.
+
