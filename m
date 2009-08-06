@@ -1,97 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932066AbZHFLjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbZHFLjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932066AbZHFLjp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 07:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbZHFLjo
+	id S1754793AbZHFLjg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 07:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbZHFLjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 07:39:44 -0400
-Received: from viefep13-int.chello.at ([62.179.121.33]:56077 "EHLO
-	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753342AbZHFLjh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 07:39:37 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by
- tgid  at once
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Menage <menage@google.com>
-Cc: Benjamin Blum <bblum@google.com>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, paulmck <paulmck@linux.vnet.ibm.com>,
-       oleg <oleg@redhat.com>
-In-Reply-To: <6599ad830908060424r72e1aa12g2b246785e7bc039c@mail.gmail.com>
-References: <2f86c2480908031113y525b6cbdhe418b8a0364c7760@mail.gmail.com>
-	 <20090805102057.GT29252@hawkmoon.kerlabs.com>
-	 <6599ad830908050911t6f23f810i65fe8fe17f3ee698@mail.gmail.com>
-	 <20090805164218.GB26446@hawkmoon.kerlabs.com>
-	 <2f86c2480908051701s57120404q475edbedb58cdca1@mail.gmail.com>
-	 <20090806095854.GD26446@hawkmoon.kerlabs.com>
-	 <6599ad830908060328y21a008c1pc5ed5c27e0ec905d@mail.gmail.com>
-	 <1249554853.32113.145.camel@twins>
-	 <6599ad830908060342m1fc8cdd2me25af248a8e0e183@mail.gmail.com>
-	 <1249556540.32113.191.camel@twins>
-	 <6599ad830908060424r72e1aa12g2b246785e7bc039c@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 06 Aug 2009 13:39:21 +0200
-Message-Id: <1249558761.32113.262.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 6 Aug 2009 07:39:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46863 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751528AbZHFLjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 07:39:35 -0400
+Message-ID: <4A7AC201.4010202@redhat.com>
+Date: Thu, 06 Aug 2009 14:44:01 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+References: <20090805024058.GA8886@localhost> <20090805155805.GC23385@random.random> <20090806100824.GO23385@random.random> <4A7AAE07.1010202@redhat.com> <20090806102057.GQ23385@random.random> <20090806105932.GA1569@localhost>
+In-Reply-To: <20090806105932.GA1569@localhost>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-06 at 04:24 -0700, Paul Menage wrote:
-> On Thu, Aug 6, 2009 at 4:02 AM, Peter Zijlstra<a.p.zijlstra@chello.nl> wrote:
-> >
-> > Taking that many locks in general, some apps (JVM based usually) tend to
-> > be thread heavy and can easily have hundreds of them, even on relatively
-> 
-> Oh, I'm well aware that apps can be heavily multi-threaded - we have
-> much worse cases at Google.
-> 
-> >
-> > Now that's not real nice is it ;-)
-> 
-> Not particularly - but who exactly is going to be moving processes
-> with thousands of threads between cgroups on a lockdep-enabled debug
-> kernel?
+On 08/06/2009 01:59 PM, Wu Fengguang wrote:
+>
+> This is a quick hack to materialize the idea. It remembers roughly
+> the last 32*SWAP_CLUSTER_MAX=1024 active (mapped) pages scanned,
+> and if _all of them_ are referenced, then the referenced bit is
+> probably meaningless and should not be taken seriously.
+>
+>    
 
-All it takes are: 8 or 48 (or soon 2048) depending on your particular
-annotation. I might and then I'd have to come and kick you ;-)
+I don't think we should ignore the referenced bit. There could still be 
+a large batch of unreferenced pages later on that we should 
+preferentially swap. If we swap at least 1 page for every 250 scanned, 
+after 4K swaps we will have traversed 1M pages, enough to find them.
 
-Really, lockdep not being able to deal with something is a strong
-indication that you're doing something wonky.
+> As a refinement, the static variable 'recent_all_referenced' could be
+> moved to struct zone or made a per-cpu variable.
+>
+>    
 
-Stronger, you can even do wonky things which lockdep thinks are
-absolutely fine.
+Definitely this should be made part of the zone structure, consider the 
+original report where the problem occurs in a 128MB zone (where we can 
+expect many pages to have their referenced bit set).
 
-And doing wonky things should be avoided :-)
-
-Luckily we seem to have found a sensible solution.
-
-> What benefits does the additional complexity of SRCU give, over the
-> simple solution of putting an rwsem in the same cache line as
-> sighand->count ?
-
-I said:
-
-> Then again, clone() might already serialize on the process as a whole
-> (not sure though, Oleg/Ingo?), in which case you can indeed take a
-> process wide lock.
-
-Which looking up sighand->count seems to be the case:
-
-static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
-{
-        struct sighand_struct *sig;
-
-        if (clone_flags & CLONE_SIGHAND) {
-                atomic_inc(&current->sighand->count);
-                return 0;
-        }
-
-
-So yes, putting a rwsem in there sounds fine, you're already bouncing
-it.
+-- 
+error compiling committee.c: too many arguments to function
 
