@@ -1,193 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbZHFG2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751272AbZHFGhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754456AbZHFG2E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 02:28:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbZHFG2A
+	id S1751272AbZHFGhN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 02:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbZHFGhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 02:28:00 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:53224 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754391AbZHFG15 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 02:27:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=pxat3mMbATp2cPJaWWEl9l1r81tkYzkWf0fTUmDO3IaNAe17uNz1ZXgmUFeuK+sD2R
-         8YKwp2H94RFiFTL7W9G/ANmG5ca/d+M84RTfCNiZeJpnJN6rNpcm7SxIW5UfrAV7saKK
-         +C0J/ZtQz0qnud1KurmadO6LEzc8a9sPuJgmY=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 5/7] tracing: Move sched event insertion helpers in the sched switch tracer file
-Date: Thu,  6 Aug 2009 08:27:36 +0200
-Message-Id: <1249540058-5528-6-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <20090802195312.GA18598@elte.hu>
-References: <20090802195312.GA18598@elte.hu>
+	Thu, 6 Aug 2009 02:37:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49654 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750771AbZHFGhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 02:37:11 -0400
+Message-ID: <4A7A7A0F.6070906@redhat.com>
+Date: Thu, 06 Aug 2009 14:37:03 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Neil Horman <nhorman@redhat.com>, linux-kernel@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 0/7] Implement crashkernel=auto
+References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>	<m1eirqtmey.fsf@fess.ebiederm.org>	<20090805140408.GJ7259@hmsreliant.think-freely.org>	<m1skg5vpgg.fsf@fess.ebiederm.org> <4A7A3A78.7080200@redhat.com>	<m1y6pxr737.fsf@fess.ebiederm.org> <4A7A506B.2060008@redhat.com>	<m1ljlxsiox.fsf@fess.ebiederm.org> <4A7A70E5.2010204@redhat.com> <m1bpmtqxjh.fsf@fess.ebiederm.org>
+In-Reply-To: <m1bpmtqxjh.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sched events helpers which insert the sched switch and wakeup
-events into the ring buffer currently reside in trace.c
-But this file is quite overloaded and the right place for these helpers
-is in the sched switch tracer file.
+Eric W. Biederman wrote:
+> Amerigo Wang <amwang@redhat.com> writes:
+>
+>   
+>> Eric W. Biederman wrote:
+>>     
+>>> Amerigo Wang <amwang@redhat.com> writes:
+>>>
+>>>   
+>>>       
+>>>>> No the crashdump mechanism is useless because user space is already
+>>>>> broken and unusable.
+>>>>>       
+>>>>>           
+>>>> Again, why broken?
+>>>>     
+>>>>         
+>>> To get a stock stat drive by hand I had to list about 5 kernel modules
+>>> in the right magic order in /etc/kdump.conf
+>>>
+>>> Neither mount by label or mount by uuid when specified in /etc/kdump.conf
+>>> I had to hack mkdumprd to get an initrd that even finds the proper disk
+>>> to mount.
+>>>   
+>>>       
+>> You are saying that there is some difficulty to make a initrd for kdump, but I
+>> am sorry that I can't see any relations between this and my patch. What is your
+>> point here?
+>>     
+>
+> You are trying to make it easier for end users.
+>
+> I am saying the problem is in user space.
+>
+> I am saying also that the kernel doesn't have a clue what you are
+> going to load with kexec on panic to handle panics.  Maybe it is a
+> custom stand alone binary that only needs 5K.  So the kernel doesn't
+> have a clue what the right size to reserve.
+>   
 
-Then move them to trace_functions.c
+So what? If you have 8G memory, would you mind 128M-5K memory to be wasted?
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace.c              |   56 ------------------------------------
- kernel/trace/trace_sched_switch.c |   57 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 57 insertions(+), 56 deletions(-)
+The kernel doesn't have to reserve the exact amount of memory that a 
+kexec kernel will use, it just finds a big enough size for all cases 
+which already assumes the physical memory is large enough.
+> I think if what you were proposing was part of some coherent story for
+> a complete implementation I would consider it more.  Instead this just
+> appears to be a reaction to how frustrating the user space
+> implementation is, and fixing things in the kernel instead of in user
+> space.
+>   
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index d6059a4..1b73acb 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1106,62 +1106,6 @@ __trace_special(void *__tr, void *__data,
- }
- 
- void
--tracing_sched_switch_trace(struct trace_array *tr,
--			   struct task_struct *prev,
--			   struct task_struct *next,
--			   unsigned long flags, int pc)
--{
--	struct ftrace_event_call *call = &event_context_switch;
--	struct ring_buffer_event *event;
--	struct ctx_switch_entry *entry;
--
--	event = trace_buffer_lock_reserve(tr, TRACE_CTX,
--					  sizeof(*entry), flags, pc);
--	if (!event)
--		return;
--	entry	= ring_buffer_event_data(event);
--	entry->prev_pid			= prev->pid;
--	entry->prev_prio		= prev->prio;
--	entry->prev_state		= prev->state;
--	entry->next_pid			= next->pid;
--	entry->next_prio		= next->prio;
--	entry->next_state		= next->state;
--	entry->next_cpu	= task_cpu(next);
--
--	if (!filter_check_discard(call, entry, tr->buffer, event))
--		trace_buffer_unlock_commit(tr, event, flags, pc);
--}
--
--void
--tracing_sched_wakeup_trace(struct trace_array *tr,
--			   struct task_struct *wakee,
--			   struct task_struct *curr,
--			   unsigned long flags, int pc)
--{
--	struct ftrace_event_call *call = &event_wakeup;
--	struct ring_buffer_event *event;
--	struct ctx_switch_entry *entry;
--
--	event = trace_buffer_lock_reserve(tr, TRACE_WAKE,
--					  sizeof(*entry), flags, pc);
--	if (!event)
--		return;
--	entry	= ring_buffer_event_data(event);
--	entry->prev_pid			= curr->pid;
--	entry->prev_prio		= curr->prio;
--	entry->prev_state		= curr->state;
--	entry->next_pid			= wakee->pid;
--	entry->next_prio		= wakee->prio;
--	entry->next_state		= wakee->state;
--	entry->next_cpu			= task_cpu(wakee);
--
--	if (!filter_check_discard(call, entry, tr->buffer, event))
--		ring_buffer_unlock_commit(tr->buffer, event);
--	ftrace_trace_stack(tr, flags, 6, pc);
--	ftrace_trace_userstack(tr, flags, pc);
--}
--
--void
- ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3)
- {
- 	struct trace_array *tr = &global_trace;
-diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
-index a98106d..e1285d7 100644
---- a/kernel/trace/trace_sched_switch.c
-+++ b/kernel/trace/trace_sched_switch.c
-@@ -20,6 +20,34 @@ static int			sched_ref;
- static DEFINE_MUTEX(sched_register_mutex);
- static int			sched_stopped;
- 
-+
-+void
-+tracing_sched_switch_trace(struct trace_array *tr,
-+			   struct task_struct *prev,
-+			   struct task_struct *next,
-+			   unsigned long flags, int pc)
-+{
-+	struct ftrace_event_call *call = &event_context_switch;
-+	struct ring_buffer_event *event;
-+	struct ctx_switch_entry *entry;
-+
-+	event = trace_buffer_lock_reserve(tr, TRACE_CTX,
-+					  sizeof(*entry), flags, pc);
-+	if (!event)
-+		return;
-+	entry	= ring_buffer_event_data(event);
-+	entry->prev_pid			= prev->pid;
-+	entry->prev_prio		= prev->prio;
-+	entry->prev_state		= prev->state;
-+	entry->next_pid			= next->pid;
-+	entry->next_prio		= next->prio;
-+	entry->next_state		= next->state;
-+	entry->next_cpu	= task_cpu(next);
-+
-+	if (!filter_check_discard(call, entry, tr->buffer, event))
-+		trace_buffer_unlock_commit(tr, event, flags, pc);
-+}
-+
- static void
- probe_sched_switch(struct rq *__rq, struct task_struct *prev,
- 			struct task_struct *next)
-@@ -49,6 +77,35 @@ probe_sched_switch(struct rq *__rq, struct task_struct *prev,
- 	local_irq_restore(flags);
- }
- 
-+void
-+tracing_sched_wakeup_trace(struct trace_array *tr,
-+			   struct task_struct *wakee,
-+			   struct task_struct *curr,
-+			   unsigned long flags, int pc)
-+{
-+	struct ftrace_event_call *call = &event_wakeup;
-+	struct ring_buffer_event *event;
-+	struct ctx_switch_entry *entry;
-+
-+	event = trace_buffer_lock_reserve(tr, TRACE_WAKE,
-+					  sizeof(*entry), flags, pc);
-+	if (!event)
-+		return;
-+	entry	= ring_buffer_event_data(event);
-+	entry->prev_pid			= curr->pid;
-+	entry->prev_prio		= curr->prio;
-+	entry->prev_state		= curr->state;
-+	entry->next_pid			= wakee->pid;
-+	entry->next_prio		= wakee->prio;
-+	entry->next_state		= wakee->state;
-+	entry->next_cpu			= task_cpu(wakee);
-+
-+	if (!filter_check_discard(call, entry, tr->buffer, event))
-+		ring_buffer_unlock_commit(tr->buffer, event);
-+	ftrace_trace_stack(tr, flags, 6, pc);
-+	ftrace_trace_userstack(tr, flags, pc);
-+}
-+
- static void
- probe_sched_wakeup(struct rq *__rq, struct task_struct *wakee, int success)
- {
--- 
-1.6.2.3
+Yes, exactly, in fact I am doing another part which will allow us to 
+take back of the reserved memory at run-time.
+
 
