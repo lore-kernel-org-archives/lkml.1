@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbZHFLCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbZHFLHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753837AbZHFLCy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 07:02:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbZHFLCy
+	id S1753254AbZHFLHB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 07:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbZHFLHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 07:02:54 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50133 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753176AbZHFLCx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 07:02:53 -0400
-Date: Thu, 6 Aug 2009 13:02:47 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: kernel list <linux-kernel@vger.kernel.org>, davem@davemloft.net,
-       mouw@nl.linux.org
-Subject: Re: linux-arm-kernel useless for development (was Re: Your message
-	to Linux-arm-kernel awaits moderator approval)
-Message-ID: <20090806110246.GI31370@elf.ucw.cz>
-References: <mailman.3653.1249217530.31043.linux-arm-kernel@lists.arm.linux.org.uk> <20090804100051.GA17106@elf.ucw.cz> <20090804222840.GC18365@flint.arm.linux.org.uk> <20090806100700.GC31370@elf.ucw.cz> <20090806104421.GA27773@flint.arm.linux.org.uk>
+	Thu, 6 Aug 2009 07:07:00 -0400
+Received: from d1.icnet.pl ([212.160.220.21]:41978 "EHLO d1.icnet.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751521AbZHFLG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 07:06:59 -0400
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Organization: Tele-Info-System, Poznan, PL
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 0/2] Give the N_AMSDELTA line discipline more generic name
+Date: Thu, 6 Aug 2009 13:06:26 +0200
+User-Agent: KMail/1.9.10
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       e3-hacking@earth.li,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090806104421.GA27773@flint.arm.linux.org.uk>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908061306.27639.jkrzyszt@tis.icnet.pl>
+X-SA-Exim-Scanned: No (on d1.icnet); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-08-06 11:44:21, Russell King wrote:
+This series of patches renames the N_AMSDELTA line discipline, used by the 
+Amstrad Delta ASoC machine driver and the CX20442 ASoC codec driver for 
+controlling the CX20442 voice codec over the CX81801 voice modem, giving it a 
+more generic name: N_V253. The name has been chosen after the voice modem 
+standard codename V.253.
 
-> It appears the answer to that is no.  People are free to subscribe to
-> the one on vger, where they won't have to "put up" with me.  However,
-> it seems that people much prefer to subscribe to my lists, because that
-> seems to be where the expertise is.
-> 
-> Moreover,
-> 
-> (a) when ever you have a problem, you go shouting and making public
-> accusations without trying first to resolve the problem in private.
+I think that even if the code of the line discipline is currently implemented 
+inside those two specific drivers, the idea, if not the code, could be reused 
+with other similar hardware configurations, if necessary.
 
-When I tried asking in private, I was told to stop complaining or loose
-my mailing list subscription. I'd prefer not to make that mistake again.
+As the line discipline is conceived to be registered from a machine driver, 
+there should be no conflicts, even if used by several different drivers that 
+happen to be be built-in side-by-side.
 
-> (c) you really don't understand that "held for moderation" is *not*
-> rejection, but merely a case of mailman spotting something it doesn't
-> like and letting a *human* deal with it rather than out-right rejecting
-> it.
+[PATCH 1/2] TTY: Rename N_AMSDELTA line discipline to N_V253
+[PATCH 2/2] ASoC: AMS_DELTA: Use updated line discipline name
 
-For lakml, held for moderation _does_ mean it will return with
-"posting rejected: no reason given" in few days. I have never seen any
-other result, and have got perfectly reasonable messages rejected with
-"no reason". So no, I do not believe there's cooperative human being
-moderating lakml.
-
-> I wonder, do you even know what happened to the message you're whinging
-> about?  Would you prefer that your message was silently dropped into
-> /dev/null instead of having a chance of the issue being resolved?  It
-> strikes me that _that_ would be a better solution than all your
-> whinging.
-
-So... your solution to broken mailing list is to silence everyone who
-complains?
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
