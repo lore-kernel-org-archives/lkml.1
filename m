@@ -1,95 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbZHFM7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbZHFNAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755543AbZHFM7x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 08:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbZHFM7w
+	id S1755553AbZHFNAZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 09:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZHFNAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 08:59:52 -0400
-Received: from viefep17-int.chello.at ([62.179.121.37]:49377 "EHLO
-	viefep17-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752516AbZHFM7w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 08:59:52 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: malloc() tracing in perf?
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       acme <acme@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       roland <roland@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090806115527.GE18768@redhat.com>
-References: <4A7A8ADD.4080208@cs.helsinki.fi>
-	 <1249546610.32113.35.camel@twins> <20090806112059.GD18768@redhat.com>
-	 <1249558094.32113.242.camel@twins>  <20090806115527.GE18768@redhat.com>
-Content-Type: text/plain
-Date: Thu, 06 Aug 2009 14:59:34 +0200
-Message-Id: <1249563574.32113.358.camel@twins>
+	Thu, 6 Aug 2009 09:00:24 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:24352 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751251AbZHFNAX convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-ghaskins@novell.com;3:2>);
+	Thu, 6 Aug 2009 09:00:23 -0400
+Message-Id: <4A7A9BA40200005A00051BAB@sinclair.provo.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 Beta 
+Date: Thu, 06 Aug 2009 07:00:20 -0600
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: <alacrityvm-devel@lists.sourceforge.net>, <kvm@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+Subject: Re: [PATCH 0/7] AlacrityVM guest drivers Reply-To:
+References: <20090803171030.17268.26962.stgit@dev.haskins.net>
+ <20090806081955.GA9752@redhat.com>
+ <4A7A8F7B0200005A00051B84@sinclair.provo.novell.com>
+ <20090806122449.GC11038@redhat.com>
+In-Reply-To: <20090806122449.GC11038@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-06 at 07:55 -0400, Frank Ch. Eigler wrote:
-> Hi -
+>>> On 8/6/2009 at  8:24 AM, in message <20090806122449.GC11038@redhat.com>,
+"Michael S. Tsirkin" <mst@redhat.com> wrote: 
+> On Thu, Aug 06, 2009 at 06:08:27AM -0600, Gregory Haskins wrote:
+>> Hi Michael,
+>> 
+>> >>> On 8/6/2009 at  4:19 AM, in message <20090806081955.GA9752@redhat.com>,
+>> "Michael S. Tsirkin" <mst@redhat.com> wrote: 
+>> > On Mon, Aug 03, 2009 at 01:17:30PM -0400, Gregory Haskins wrote:
+>> >> (Applies to v2.6.31-rc5, proposed for linux-next after review is complete)
+>> > 
+>> > These are guest drivers, right?
+>> 
+>> Yep.
+>> 
+>> > Merging the guest first means relying on
+>> > kernel interface from an out of tree driver, which well might change
+>> > before it goes in.
+>> 
+>> ABI compatibility is already addressed/handled, so even if that is true its 
+> not a problem.
 > 
-> On Thu, Aug 06, 2009 at 01:28:14PM +0200, Peter Zijlstra wrote:
-> > [...]
-> > > That work is ongoing, and being discussed on utrace-devel@redhat.com,
-> > > since it is a prerequisite. 
-> > 
-> > Still hiding the discussion and the design never helped anybody.
+> It is? With versioning? Presumably this:
 > 
-> I guess "hiding" is a matter of opinion.
+> +       params.devid   = vdev->id;
+> +       params.version = version;
+> +
+> +       ret = vbus_pci_hypercall(VBUS_PCI_HC_DEVOPEN,
+> +                                &params, sizeof(params));
+> +       if (ret < 0)
+> +               return ret;
 
-Yeah in plain sight where nobody looks, really I thought the idea was to
-get utrace upstream, this means posting to linux-kernel. Going on LKML
-posts I'd say the utrace project was dead. Same goes for uprobe.
+This is part of it.  There are various ABI version components (which, by the way, are only expected to only allow change while the code is experimental/alpha).  The other component is capability functions (such as NEGCAP in the venet driver).
 
-I've told this before and I'll say it again, post to LKML.
-
-> > > While these deliberations are ongoing, you can use systemtap.  Probing
-> > > random places in userspace is about as casual as probing the kernel:
-> > 
-> > Right, but that still doesn't tell us anything on how you're doing that,
-> > does it?
 > 
-> Since you asked...  the probe process("/lib64/libc.so.6") points
-> systemtap to a shared library file, whose symbol table & debug data
-> gives us information about what functions & parameters are available.
-> Among other things, we record a shared-library base-relative address
-> for the function.
+> Even assuming host even knows how to decode this structure (e.g.  some
+> other host module doesn't use VBUS_PCI_HC_DEVOPEN),
+
+This argument demonstrates a fundamental lack of understanding on how AlacrityVM works.  Please study the code more closely and you will see that your concern is illogical.  If it's still not clear, let me know and I will walk it through for you.
+
+> checks the version
+> and denies older guests, this might help guest not to crash, but guest
+> still won't work.
+
+Thats ok.  As I said above, the version number is just there for gross ABI protection and generally will never be changed once a driver is "official" (if at all).  We use things like capability-bit negotiation to allow backwards compat.
+
+For an example, see drivers/net/vbus-enet.c, line 703:
+
+http://git.kernel.org/?p=linux/kernel/git/ghaskins/alacrityvm/linux-2.6.git;a=blob;f=drivers/net/vbus-enet.c;h=7220f43723adc5b0bece1bc37974fae1b034cd9e;hb=b3b2339efbd4e754b1c85f8bc8f85f21a1a1f509#l703
+
+venet exposes a verb "NEGCAP" (negotiate capabilities), which is used to extend the ABI.  The version number you quote above (on the device open) is really just a check to make sure the NEGCAP ABI is compatible.  The rest of the abi is negotiated at runtime with capability feature bits.
+
+FWIW; I decided to not built a per-device capability into the low-level vbus protocol (e.g. there is no VBUS_PCI_HC_NEGCAP) because I felt as though the individual devices could better express their own capability mechanism, rather than try to generalize it.  Therefore it is up to each device to define its own mechanism, presumably using a verb from its own private call() namespace (as venet has done).
+
 > 
-> At run time, we monitor the entire system (or just a given process if
-> -x PID/-c CMD was specified) to see when that shared library gets
-> loaded.  (This in turn is done with a utrace-based hook of the mmap
-> syscall - see "task_finder" in our sources). 
+>> > Would it make more sense to start merging with the host side of the 
+> project?
+>> 
+>> Not necessarily, no.  These are drivers for a "device", so its no
+>> different than merging any other driver really.  This is especially
+>> true since the hypervisor is also already published and freely
+>> available today, so anyone can start using it.
+> 
+> The difference is clear to me: devices do not get to set kernel/userspace
+> interfaces. This "device" depends on a specific interface between
+> kernel and (guest) userspace.
 
-Does this also iterate the already existing tasks to find if it was
-already mmap()ed?
+This doesn't really parse for me, but I think the gist of it is based on an incorrect assumption.
 
-> This overview skims over issues related to return probes, tracing
-> buffer manipulations, and much other stuff.
+Can you elaborate?
 
-Right, so you basically read the (dwarf2) debug info for a particular
-lib/symbol and generate a kernel module that knows about that and then
-insert that into the kernel to act as a uprobe handler?
+Kind Regards,
+-Greg
 
-Uprobe will then do the code rewrite on mmap() time to insert a trap
-much like kprobe does? What if its a JITed code section and the JIT
-rewrites it? Will uprobes detect that?
 
-> All the code for this is hidden in plain sight in every systemtap
-> release, so please feel free to refer to that and/or ask more detailed
-> questions.
-
-I thought the goal was to get stuff upstream, but if you want to
-continue living in la-la land and not bother with upstream Linux then so
-be it I guess :-(
 
