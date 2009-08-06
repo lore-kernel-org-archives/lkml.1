@@ -1,90 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbZHFNDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbZHFNEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755564AbZHFNDn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 09:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZHFNDm
+	id S1755608AbZHFNEY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 09:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755494AbZHFNEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 09:03:42 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:24446 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753073AbZHFNDl convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-ghaskins@novell.com;3:2>);
-	Thu, 6 Aug 2009 09:03:41 -0400
-Message-Id: <4A7A9C6B0200005A00051BB9@sinclair.provo.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 Beta 
-Date: Thu, 06 Aug 2009 07:03:39 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Avi Kivity" <avi@redhat.com>
-Cc: <alacrityvm-devel@lists.sourceforge.net>,
-       "Michael S. Tsirkin" <mst@redhat.com>, <kvm@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-Subject: Re: [PATCH 0/7] AlacrityVM guest drivers Reply-To:
-References: <20090803171030.17268.26962.stgit@dev.haskins.net>
- <20090806081955.GA9752@redhat.com>
- <4A7A8F7B0200005A00051B84@sinclair.provo.novell.com>
- <4A7AD29E.50800@redhat.com>
-In-Reply-To: <4A7AD29E.50800@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Thu, 6 Aug 2009 09:04:23 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:38503 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755325AbZHFNEW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 09:04:22 -0400
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Ben Dooks <ben-linux@fluff.org>
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is get_user_pages() enough to prevent pages from being swapped out ?")
+Date: Thu, 6 Aug 2009 15:06:23 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30.3; KDE/4.2.4; x86_64; ; )
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
+       linux-kernel@vger.kernel.org,
+       "v4l2_linux" <linux-media@vger.kernel.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806114619.GW2080@trinity.fluff.org>
+In-Reply-To: <20090806114619.GW2080@trinity.fluff.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200908061506.23874.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On 8/6/2009 at  8:54 AM, in message <4A7AD29E.50800@redhat.com>, Avi Kivity
-<avi@redhat.com> wrote: 
-> On 08/06/2009 03:08 PM, Gregory Haskins wrote:
->>> Merging the guest first means relying on
->>> kernel interface from an out of tree driver, which well might change
->>> before it goes in.
->>>      
->>
->> ABI compatibility is already addressed/handled, so even if that is true its 
-> not a problem.
->>
->>    
-> 
-> Really the correct way to address the ABI is to publish a spec and write 
-> both host and guest drivers to that.  Unfortunately we didn't do this 
-> with virtio.
-> 
-> It becomes more important when you have multiple implementations (e.g. 
-> Windows drivers).
-> 
->>>> This series implements the guest-side drivers for accelerated IO
->>>> when running on top of the AlacrityVM hypervisor, the details of
->>>> which you can find here:
->>>>
->>>> http://developer.novell.com/wiki/index.php/AlacrityVM
->>>>        
->>> Since AlacrityVM is kvm based, Cc kvm@vger.kernel.org.
->>>      
->>
->> I *can* do that, but there is nothing in these drivers that is KVM specific 
-> (its all pure PCI and VBUS).  I've already made the general announcement 
-> about the project/ml cross posted to KVM for anyone that might be interested, 
-> but I figure I will spare the general KVM list the details unless something 
-> specifically pertains to, or affects, KVM.  For instance, when I get to 
-> pushing the hypervisor side, I still need to work on getting that 
-> 'xinterface' patch to you guys.  I would certainly be CC'ing kvm@vger when 
-> that happens since it modifies the KVM code.
->>
->> So instead, I would just encourage anyone interested (such as yourself) to 
-> join the alacrity list so I don't bother the KVM community unless absolutely 
-> necessary.
->>    
-> 
-> It's true that vbus is a separate project (in fact even virtio is 
-> completely separate from kvm).  Still I think it would be of interest to 
-> many kvm@ readers.
+Hi Ben,
 
-Well, my goal was to not annoy KVM readers. ;)  So if you feel as though there is benefit to having all of KVM CC'd and I won't be annoying everyone, I see no problem in cross posting.
+On Thursday 06 August 2009 13:46:19 Ben Dooks wrote:
+> On Thu, Aug 06, 2009 at 12:08:21PM +0200, Laurent Pinchart wrote:
+[snip]
+> >
+> > The second problem is to ensure cache coherency. As the userspace
+> > application will read data from the video buffers, those buffers will end
+> > up being cached in the processor's data cache. The driver does need to
+> > invalidate the cache before starting the DMA operation (userspace could
+> > in theory write to the buffers, but the data will be overwritten by DMA
+> > anyway, so there's no need to clean the cache).
+>
+> You'll need to clean the write buffers, otherwise the CPU may have data
+> queued that it has yet to write back to memory.
 
-Would you like to see all conversations, or just ones related to code (and, of course, KVM relevant items)?
+Good points, thanks.
+
+> > As the cache is of the VIPT (Virtual Index Physical Tag) type, cache
+> > invalidation can either be done globally (in which case the cache is
+> > flushed instead of being invalidated) or based on virtual addresses. In
+> > the last case the processor will need to look physical addresses up,
+> > either in the TLB or through hardware table walk.
+> >
+> > I can see three solutions to the DMA/cache problem.
+> >
+> > 1. Flushing the whole data cache right before starting the DMA transfer.
+> > There's no API for that in the ARM architecture, so a whole I+D cache is
+> > required. This is quite costly, we're talking about around 30 flushes per
+> > second, but it doesn't involve the MMU. That's the solution that I
+> > currently use.
+> >
+> > 2. Invalidating only the cache lines that store video buffer data. This
+> > requires a TLB lookup or a hardware table walk, so the userspace
+> > application MM context needs to be available (no problem there as where's
+> > flushing in userspace context) and all pages need to be mapped properly.
+> > This can be a problem as, as Hugh pointed out, pages can still be
+> > unmapped from the userspace context after get_user_pages() returns. I
+> > have experienced one oops due to a kernel paging request failure:
+>
+> If you already know the virtual addresses of the buffers, why do you need
+> a TLB lookup (or am I being dense here?)
+
+The virtual address is used to compute the cache lines index, and the physical 
+address is then used when comparing the cache line tag. So the processor (or 
+actually the CP15 coprocessor if I'm not wrong) does a TLB lookup to get the 
+physical address during cache invalidation/flushing.
+
+> >         Unable to handle kernel paging request at virtual address
+> > 44e12000 pgd = c8698000
+> >         [44e12000] *pgd=8a4fd031, *pte=8cfda1cd, *ppte=00000000
+> >         Internal error: Oops: 817 [#1] PREEMPT
+> >         PC is at v7_dma_inv_range+0x2c/0x44
+> >
+> > Fixing this requires more investigation, and I'm not sure how to proceed
+> > to find out if the page fault is really caused by pages being unmapped
+> > from the userspace context. Help would be appreciated.
+> >
+> > 3. Mark the pages as non-cacheable. Depending on how the buffers are then
+> > used by userspace, the additional cache misses might destroy any benefit
+> > I would get from not flushing the cache before DMA. I'm not sure how to
+> > mark a bunch of pages as non-cacheable though. What usually happens is
+> > that video drivers allocate DMA-coherent memory themselves, but in this
+> > case I need to deal with an arbitrary buffer allocated by userspace. If
+> > someone has any experience with this, it would be appreciated.
 
 Regards,
--Greg
 
-
+Laurent Pinchart
 
