@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZHFLJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474AbZHFLP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754124AbZHFLJX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 07:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbZHFLJW
+	id S1754474AbZHFLP0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 07:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZHFLP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 07:09:22 -0400
-Received: from d1.icnet.pl ([212.160.220.21]:42621 "EHLO d1.icnet.pl"
+	Thu, 6 Aug 2009 07:15:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44164 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751867AbZHFLJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 07:09:21 -0400
-From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Organization: Tele-Info-System, Poznan, PL
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 2/2] ASoC: AMS_DELTA: Use updated line discipline name
-Date: Thu, 6 Aug 2009 13:08:51 +0200
-User-Agent: KMail/1.9.10
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
-       e3-hacking@earth.li,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1751885AbZHFLPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 07:15:25 -0400
+Subject: [PATCH] block: silently error unsupported empty barriers too
+From: Mark McLoughlin <markmc@redhat.com>
+Reply-To: Mark McLoughlin <markmc@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       dm-devel <dm-devel@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Mikulas Patocka <mpatocka@redhat.com>, Alasdair Kergon <agk@redhat.com>,
+       Neil Brown <neilb@suse.de>
+Content-Type: text/plain
+Date: Thu, 06 Aug 2009 12:14:17 +0100
+Message-Id: <1249557257.3721.55.camel@blaa>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908061308.52693.jkrzyszt@tis.icnet.pl>
-X-SA-Exim-Scanned: No (on d1.icnet); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch updates the tty line discipline name used in the Amstrad Delta
-machine driver.
+With 2.6.31-rc5 in a KVM guest using dm and virtio_blk, we see the
+following errors:
 
-Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+  end_request: I/O error, dev vda, sector 0
+  end_request: I/O error, dev vda, sector 0
 
+The errors go away if dm stops submitting empty barriers, by reverting:
+
+  commit 52b1fd5a27c625c78373e024bf570af3c9d44a79
+  Author: Mikulas Patocka <mpatocka@redhat.com>
+    dm: send empty barriers to targets in dm_flush
+
+We should error all barriers, even empty barriers, on devices like
+virtio_blk which don't support them.
+
+See also:
+
+  https://bugzilla.redhat.com/514901
+
+Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Alasdair G Kergon <agk@redhat.com>
+Cc: Neil Brown <neilb@suse.de>
 ---
---- linux-2.6.31-rc5/sound/soc/omap/ams-delta.c.orig	2009-08-05 21:44:35.000000000 +0200
-+++ linux-2.6.31-rc5/sound/soc/omap/ams-delta.c	2009-08-05 23:30:53.000000000 +0200
-@@ -519,7 +519,7 @@ static int ams_delta_cx20442_init(struct
+ block/blk-core.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/block/blk-core.c b/block/blk-core.c
+index e3299a7..35ad2bb 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1163,8 +1163,7 @@ static int __make_request(struct request_queue *q, struct bio *bio)
+ 	const int unplug = bio_unplug(bio);
+ 	int rw_flags;
+ 
+-	if (bio_barrier(bio) && bio_has_data(bio) &&
+-	    (q->next_ordered == QUEUE_ORDERED_NONE)) {
++	if (bio_barrier(bio) && (q->next_ordered == QUEUE_ORDERED_NONE)) {
+ 		bio_endio(bio, -EOPNOTSUPP);
+ 		return 0;
  	}
- 
- 	/* Register optional line discipline for over the modem control */
--	ret = tty_register_ldisc(N_AMSDELTA, &cx81801_ops);
-+	ret = tty_register_ldisc(N_V253, &cx81801_ops);
- 	if (ret) {
- 		dev_warn(card->dev,
- 				"Failed to register line discipline, "
-@@ -644,9 +644,9 @@ static void __exit ams_delta_module_exit
- 		}
- 	}
- 
--	if (tty_unregister_ldisc(N_AMSDELTA) != 0)
-+	if (tty_unregister_ldisc(N_V253) != 0)
- 		dev_warn(&ams_delta_audio_platform_device->dev,
--			"failed to unregister AMSDELTA line discipline\n");
-+			"failed to unregister V253 line discipline\n");
- 
- 	snd_soc_jack_free_gpios(&ams_delta_hook_switch,
- 			ARRAY_SIZE(ams_delta_hook_switch_gpios),
+-- 
+1.6.4
+
