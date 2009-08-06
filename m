@@ -1,53 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbZHFPUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbZHFPWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbZHFPUE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 11:20:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbZHFPUD
+	id S1756050AbZHFPWJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 11:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbZHFPWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 11:20:03 -0400
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:37074
-	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755318AbZHFPUC convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 11:20:02 -0400
-X-SpamScore: 1
-X-BigFish: VPS1(z1823lz98dNzz1202hzzz32i6bh203h21ch43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KNYNX5-01-06P-02
-X-M-MSG: 
-Date: Thu, 6 Aug 2009 17:18:55 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: wan wei <onewayforever@gmail.com>
-CC: dougthompson@xmission.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] check-dbam1-if-there-is-only-one-DIMM-on-dbam0 in
- unganged mode
-Message-ID: <20090806151855.GC19878@aftab>
-References: <86bb1aef0908060344h37f304c1jf1138b4cb865cbe2@mail.gmail.com>
- <20090806144240.GB19878@aftab>
- <86bb1aef0908060758x349a7996i730dc11113441904@mail.gmail.com>
+	Thu, 6 Aug 2009 11:22:09 -0400
+Received: from slow3-v.mail.gandi.net ([217.70.178.89]:55012 "EHLO
+	slow3-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755635AbZHFPWI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 11:22:08 -0400
+Date: Thu, 6 Aug 2009 07:57:01 -0700
+From: Josh Triplett <josh@joshtriplett.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH] ftrace: Add vim script to enable folding for
+ function_graph traces
+Message-ID: <20090806145701.GB7661@feather>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86bb1aef0908060758x349a7996i730dc11113441904@mail.gmail.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 06 Aug 2009 15:18:55.0542 (UTC) FILETIME=[36A30D60:01CA16A9]
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 10:58:21PM +0800, wan wei wrote:
-> Well, It's just the same
+function_graph traces look like nested function calls, complete with
+braces denoting the start and end of functions.  function-graph-fold.vim
+teaches vim how to fold these functions, to make it more convenient to
+browse them.
 
-Did you test it on your machine?
+To use, :source function-graph-fold.vim while viewing a function_graph
+trace, or use "view -S function-graph-fold.vim some-trace" to load it
+from the command-line together with a trace.  You can then use the usual
+vim fold commands, such as "za", to open and close nested functions.
+While closed, a fold will show the total time taken for a call, as would
+normally appear on the line with the closing brace.  Folded functions
+will not include finish_task_switch(), so folding should remain
+relatively sane even through a context switch.
 
+Note that this will almost certainly only work well with a single-CPU
+trace (e.g. trace-cmd report --cpu 1).  It also takes some time to run
+(a few seconds for a large trace on my laptop).  Nevertheless, I found
+it very handy to get an overview of a trace and then drill down on
+problematic calls.
+
+Signed-off-by: Josh Triplett <josh@joshtriplett.org>
+---
+ Documentation/trace/function-graph-fold.vim |   42 +++++++++++++++++++++++++++
+ 1 files changed, 42 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/trace/function-graph-fold.vim
+
+diff --git a/Documentation/trace/function-graph-fold.vim b/Documentation/trace/function-graph-fold.vim
+new file mode 100644
+index 0000000..0544b50
+--- /dev/null
++++ b/Documentation/trace/function-graph-fold.vim
+@@ -0,0 +1,42 @@
++" Enable folding for ftrace function_graph traces.
++"
++" To use, :source this file while viewing a function_graph trace, or use vim's
++" -S option to load from the command-line together with a trace.  You can then
++" use the usual vim fold commands, such as "za", to open and close nested
++" functions.  While closed, a fold will show the total time taken for a call,
++" as would normally appear on the line with the closing brace.  Folded
++" functions will not include finish_task_switch(), so folding should remain
++" relatively sane even through a context switch.
++"
++" Note that this will almost certainly only work well with a
++" single-CPU trace (e.g. trace-cmd report --cpu 1).
++
++function! FunctionGraphFoldExpr(lnum)
++  let line = getline(a:lnum)
++  if line[-1:] == '{'
++    if line =~ 'finish_task_switch() {$'
++      return '>1'
++    endif
++    return 'a1'
++  elseif line[-1:] == '}'
++    return 's1'
++  else
++    return '='
++  endif
++endfunction
++
++function! FunctionGraphFoldText()
++  let s = split(getline(v:foldstart), '|', 1)
++  if getline(v:foldend+1) =~ 'finish_task_switch() {$'
++    let s[2] = ' task switch  '
++  else
++    let e = split(getline(v:foldend), '|', 1)
++    let s[2] = e[2]
++  endif
++  return join(s, '|')
++endfunction
++
++setlocal foldexpr=FunctionGraphFoldExpr(v:lnum)
++setlocal foldtext=FunctionGraphFoldText()
++setlocal foldcolumn=12
++setlocal foldmethod=expr
 -- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+1.6.3.3
 
