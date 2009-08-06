@@ -1,76 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbZHFAvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbZHFAvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753550AbZHFAvh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 20:51:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbZHFAvg
+	id S1753414AbZHFAvb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 20:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZHFAva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 20:51:36 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55350 "EHLO ogre.sisk.pl"
+	Wed, 5 Aug 2009 20:51:30 -0400
+Received: from mail.atheros.com ([12.36.123.2]:29956 "EHLO mail.atheros.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753248AbZHFAvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 20:51:33 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] [PATCH 4/5] input: gpio-keys: switch to new dev_pm_ops
-Date: Thu, 6 Aug 2009 02:51:55 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Daniel Mack <daniel@caiaq.de>, pHilipp Zabel <philipp.zabel@gmail.com>,
-       Phil Blundell <pb@handhelds.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-References: <1249496971-9019-1-git-send-email-daniel@caiaq.de> <74d0deb30908051315l43b00731yb79f7937707068ec@mail.gmail.com> <20090805223342.GG19257@buzzloop.caiaq.de>
-In-Reply-To: <20090805223342.GG19257@buzzloop.caiaq.de>
+	id S1752330AbZHFAvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 20:51:17 -0400
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: <akpm@linux-foundation.org>, <joe@perches.com>,
+       <torvalds@linux-foundation.org>
+CC: <linux-kernel@vger.kernel.org>, <mcgrof@gmail.com>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: [PATCH 3/3] checkincludes.pl: add option to remove duplicates in place
+Date: Wed, 5 Aug 2009 17:51:12 -0700
+Message-ID: <1249519872-23958-4-git-send-email-lrodriguez@atheros.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1249519872-23958-1-git-send-email-lrodriguez@atheros.com>
+References: <1249519872-23958-1-git-send-email-lrodriguez@atheros.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908060251.55157.rjw@sisk.pl>
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 August 2009, Daniel Mack wrote:
-> On Wed, Aug 05, 2009 at 10:15:52PM +0200, pHilipp Zabel wrote:
-> > On Wed, Aug 5, 2009 at 8:29 PM, Daniel Mack<daniel@caiaq.de> wrote:
-> > > -static int gpio_keys_resume(struct platform_device *pdev)
-> > > +static int gpio_keys_resume(struct device *dev)
-> > >  {
-> > > -       struct gpio_keys_platform_data *pdata = pdev->dev.platform_data;
-> > > +       struct gpio_keys_platform_data *pdata = dev->platform_data;
-> > >        int i;
-> > >
-> > > -       if (device_may_wakeup(&pdev->dev)) {
-> > > +       if (device_may_wakeup(dev)) {
-> > >                for (i = 0; i < pdata->nbuttons; i++) {
-> > >                        struct gpio_keys_button *button = &pdata->buttons[i];
-> > >                        if (button->wakeup) {
-> > > @@ -251,19 +251,27 @@ static int gpio_keys_resume(struct platform_device *pdev)
-> > >
-> > >        return 0;
-> > >  }
-> > > +
-> > > +static struct dev_pm_ops gpio_keys_pm_ops = {
-> > > +       .suspend        = gpio_keys_suspend,
-> > > +       .freeze         = gpio_keys_suspend,
-> > > +       .resume         = gpio_keys_resume,
-> > > +       .thaw           = gpio_keys_resume,
-> > 
-> > I'm not sure I understand hibernation correctly, but isn't
-> > .freeze/.thaw about saving state and halting/resuming the device
-> > operation only?
+checkincludes.pl is more useful if it actually removed
+the lines. This adds support for that with -r.
 
-It is.
+Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+---
+ scripts/checkincludes.pl |   57 +++++++++++++++++++++++++++++++++++++++++-----
+ 1 files changed, 51 insertions(+), 6 deletions(-)
 
-> > It seems to me that enabling system wakeup functionality should go
-> > into .poweroff. (See <linux/pm.h>)
+diff --git a/scripts/checkincludes.pl b/scripts/checkincludes.pl
+index 4bff139..5a53407 100755
+--- a/scripts/checkincludes.pl
++++ b/scripts/checkincludes.pl
+@@ -2,32 +2,77 @@
+ #
+ # checkincludes: Find files included more than once in (other) files.
+ # Copyright abandoned, 2000, Niels Kristian Bech Jensen <nkbj@image.dk>.
++# Copyright abandoned, 2009, Luis R. Rodriguez <mcgrof@gmail.com>
+ 
+ sub usage {
+-	print "Usage: checkincludes.pl <file list>\n";
++	print "Usage: checkincludes.pl [-r]\n";
++	print "By default we just warn of duplicates\n";
++	print "To remove files in place use -r\n";
+ 	exit 1;
+ }
+ 
++my $remove = 0;
++
+ if ($#ARGV < 0) {
+-        usage();
++	usage();
++}
++
++if ($#ARGV >= 1) {
++	if ($ARGV[0] =~ /^-/) {
++		if ($ARGV[0] eq "-r") {
++			$remove = 1;
++			shift;
++		} else {
++			usage();
++		}
++	}
+ }
+ 
+ foreach $file (@ARGV) {
+ 	open(FILE, $file) or die "Cannot open $file: $!.\n";
+ 
+ 	my %includedfiles = ();
++	my @file_lines = ();
+ 
+ 	while (<FILE>) {
+ 		if (m/^\s*#\s*include\s*[<"](\S*)[>"]/o) {
+ 			++$includedfiles{$1};
+ 		}
++		push(@file_lines, $_);
+ 	}
+ 
+ 	close(FILE);
+-	
+-	foreach $filename (keys %includedfiles) {
+-		if ($includedfiles{$filename} > 1) {
+-			print "$file: $filename is included more than once.\n";
++
++	if (!$remove) {
++		foreach $filename (keys %includedfiles) {
++			if ($includedfiles{$filename} > 1) {
++				print "$file: $filename is included more than once.\n";
++			}
+ 		}
++		next;
+ 	}
++
++	open(FILE,">$file") || die("Cannot write to $file: $!");
++
++	my $dups = 0;
++	foreach (@file_lines) {
++		if (m/^\s*#\s*include\s*[<"](\S*)[>"]/o) {
++			foreach $filename (keys %includedfiles) {
++				if ($1 eq $filename) {
++					if ($includedfiles{$filename} > 1) {
++						$includedfiles{$filename}--;
++						$dups++;
++					} else {
++						print FILE $_;
++					}
++				}
++			}
++		} else {
++			print FILE $_;
++		}
++	}
++	if ($dups > 0) {
++		print "$file: removed $dups duplicate includes\n";
++	}
++	close(FILE);
+ }
+-- 
+1.6.3.3
 
-That's correct.
-
-And .restore() plays the role of ".resume() from hibernation".
-
-> Frankly, I'm not sure either. But luckily, the linux-pm list is copied
-> so someone can elborate on this :)
-
-HTH
-
-Best,
-Rafael
