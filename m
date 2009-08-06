@@ -1,98 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbZHFIUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754372AbZHFIVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753036AbZHFIUs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 04:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbZHFIUr
+	id S1754372AbZHFIVX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 04:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbZHFIVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 04:20:47 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:40384 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751677AbZHFIUp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 04:20:45 -0400
-Message-ID: <4A7A925A.90606@cs.helsinki.fi>
-Date: Thu, 06 Aug 2009 11:20:42 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Thu, 6 Aug 2009 04:21:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56750 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754302AbZHFIVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 04:21:11 -0400
+Date: Thu, 6 Aug 2009 11:19:56 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: linux-kernel@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH 0/7] AlacrityVM guest drivers Reply-To:
+Message-ID: <20090806081955.GA9752@redhat.com>
+References: <20090803171030.17268.26962.stgit@dev.haskins.net>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, acme <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>,
-       Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       roland <roland@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       fche <fche@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: malloc() tracing in perf?
-References: <4A7A8ADD.4080208@cs.helsinki.fi> <1249546610.32113.35.camel@twins>
-In-Reply-To: <1249546610.32113.35.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090803171030.17268.26962.stgit@dev.haskins.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2009-08-06 at 10:48 +0300, Pekka Enberg wrote:
->> Hi,
->>
->> It's me again :-).
->>
->> I have a little user-space application that is pretty memory hungry and 
->> I want to understand why. I started to google around for a memory 
->> profiler or a malloc() tracer but didn't seem to find anything really 
->> useful.
->>
->> But then it hit me, why can't I have kmemtrace + perf but for 
->> user-space? Something like the "Malloc Trace" shown here:
->>
->> http://developer.apple.com/documentation/developertools/conceptual/SharkUserGuide/OtherProfilingandTracingTechniques/OtherProfilingandTracingTechniques.html#//apple_ref/doc/uid/TP40005233-CH6-SW17
->>
->> Does this sound like something that could/should be part of "perf"? How 
->> would all this work anyway? Can we intercept malloc() and free() 
->> somehow? Where would the data be pushed? Am I just going perf-crazy and 
->> trying to turn it into a swiss army knife because it's so easy to use?-)
-> 
-> OK, you just trod into a wasp's nest :-)
-> 
-> 
-> That sounds like uprobes, the equivalent of kprobes but for userspace.
-> 
-> I seem to have heard people are working on such a thing, but I can't
-> seem to find a single LKML post with 'uprobe' in the subject in the past
-> two years or something (except for MTUprobe) -- so I guess its not
-> really going anywhere any fast.
-> 
-> Now doing probes on userspace is hard because you need to know more
-> about the userspace bits than a kernel really ought to be interested in.
-> 
-> Then again, the only way to extract bits from userspace is to stop it --
-> now one could do that using [pu]trace and have some monitoring app prod
-> at it like any other debugger would, and I think this is the approach
-> suggested by some (hch iirc).
-> 
-> Others seem to think we ought to stuff all this into the kernel, I can
-> only imagine the pain that will cause, since you need to teach the
-> kernel about these instrumentation sites' context, so I can only imagine
-> it'd be through a kernel module interface much like system-tap does
-> (they would be doing the in-kernel bit).
-> 
-> Then there are the tracer folks who also want to collect userspace
-> traces. Some have proposed a sys_trace() call, others want to play silly
-> games with mmap() and then there is the uprobe idea. Others (tglx and
-> me) proposed letting userspace log itself and post-merge all the various
-> trace buffers to get a complete picture.
-> 
-> 
-> Anyway, like you say, it has uses (potentially very powerful ones),
-> Sun/Apple do it with Dtrace, Linux wants it but I don't think we quite
-> agreed on how to do it :-)
-> 
-> 
-> And here I see LKML isn't on the CC list, perhaps we should?
+On Mon, Aug 03, 2009 at 01:17:30PM -0400, Gregory Haskins wrote:
+> (Applies to v2.6.31-rc5, proposed for linux-next after review is complete)
 
-Oh sure, lets do that, half of the people seem to be on the CC anyway 
-now :-).
+These are guest drivers, right? Merging the guest first means relying on
+kernel interface from an out of tree driver, which well might change
+before it goes in.  Would it make more sense to start merging with the
+host side of the project?
 
-			Pekka
+> This series implements the guest-side drivers for accelerated IO
+> when running on top of the AlacrityVM hypervisor, the details of
+> which you can find here:
+> 
+> http://developer.novell.com/wiki/index.php/AlacrityVM
+
+Since AlacrityVM is kvm based, Cc kvm@vger.kernel.org.
+
+> This series includes the basic plumbing, as well as the driver for
+> accelerated 802.x (ethernet) networking.
+
+The graphs comparing virtio with vbus look interesting.
+However, they do not compare apples to apples, do they?
+These compare userspace virtio with kernel vbus, where for
+apples to apples comparison one would need to compare
+kernel virtio with kernel vbus. Right?
+
+
+> Regards,
+> -Greg
+> 
+> ---
+> 
+> Gregory Haskins (7):
+>       venet: add scatter-gather/GSO support
+>       net: Add vbus_enet driver
+>       ioq: add driver-side vbus helpers
+>       vbus-proxy: add a pci-to-vbus bridge
+>       vbus: add a "vbus-proxy" bus model for vbus_driver objects
+>       ioq: Add basic definitions for a shared-memory, lockless queue
+>       shm-signal: shared-memory signals
+> 
+> 
+>  arch/x86/Kconfig            |    2 
+>  drivers/Makefile            |    1 
+>  drivers/net/Kconfig         |   14 +
+>  drivers/net/Makefile        |    1 
+>  drivers/net/vbus-enet.c     |  899 +++++++++++++++++++++++++++++++++++++++++++
+>  drivers/vbus/Kconfig        |   24 +
+>  drivers/vbus/Makefile       |    6 
+>  drivers/vbus/bus-proxy.c    |  216 ++++++++++
+>  drivers/vbus/pci-bridge.c   |  824 +++++++++++++++++++++++++++++++++++++++
+>  include/linux/Kbuild        |    4 
+>  include/linux/ioq.h         |  415 ++++++++++++++++++++
+>  include/linux/shm_signal.h  |  189 +++++++++
+>  include/linux/vbus_driver.h |   80 ++++
+>  include/linux/vbus_pci.h    |  127 ++++++
+>  include/linux/venet.h       |   84 ++++
+>  lib/Kconfig                 |   21 +
+>  lib/Makefile                |    2 
+>  lib/ioq.c                   |  294 ++++++++++++++
+>  lib/shm_signal.c            |  192 +++++++++
+>  19 files changed, 3395 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/net/vbus-enet.c
+>  create mode 100644 drivers/vbus/Kconfig
+>  create mode 100644 drivers/vbus/Makefile
+>  create mode 100644 drivers/vbus/bus-proxy.c
+>  create mode 100644 drivers/vbus/pci-bridge.c
+>  create mode 100644 include/linux/ioq.h
+>  create mode 100644 include/linux/shm_signal.h
+>  create mode 100644 include/linux/vbus_driver.h
+>  create mode 100644 include/linux/vbus_pci.h
+>  create mode 100644 include/linux/venet.h
+>  create mode 100644 lib/ioq.c
+>  create mode 100644 lib/shm_signal.c
+> 
+> -- 
+> Signature
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
