@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbZHFTrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbZHFTtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756606AbZHFTrG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 15:47:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756586AbZHFTq5
+	id S1756592AbZHFTtG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 15:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756203AbZHFTtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 15:46:57 -0400
-Received: from kroah.org ([198.145.64.141]:55350 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755715AbZHFTqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 15:46:46 -0400
-Date: Thu, 6 Aug 2009 12:38:59 -0700
-From: Greg KH <greg@kroah.com>
-To: Dave Jones <davej@redhat.com>, Marcel Holtmann <marcel@holtmann.org>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>, linville@tuxdriver.com,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       zhifeng.cai@atheros.com, stephen.chen@atheros.com,
-       linux-usb@vger.kernel.org, jbarnes@virtuousgeek.org
-Subject: Re: [PATCH] Document pci_ids.h addition policy.
-Message-ID: <20090806193859.GA29518@kroah.com>
-References: <1249523981-26601-1-git-send-email-lrodriguez@atheros.com>
- <1249532170.21101.3.camel@localhost.localdomain>
- <43e72e890908052126v53aa1b4sb7a48e19f98fdfa6@mail.gmail.com>
- <1249533357.21101.5.camel@localhost.localdomain>
- <20090806050932.GA25015@kroah.com>
- <20090806181546.GA11589@redhat.com>
- <20090806183326.GA28433@kroah.com>
- <20090806191359.GA4345@redhat.com>
+	Thu, 6 Aug 2009 15:49:05 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:63178 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755786AbZHFTtD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 15:49:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
+         :message-id:content-type:content-transfer-encoding;
+        b=Sy7Mij5elN19S8RXQ6JK/OuZDBMyz3cZiPBJErnY0GCtyzURLjbwAn0xdGyMUvAsH4
+         HLRXmLdoi9QPnc6f4AsUEfvZLNAB1+Ch7wt3+tj0YihpY0P0NDqBkPZ98+0GHf8m+szW
+         A3aftK8EAkuFbtrvvCJPHes52ueSO8J32GDcE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] irq: remove superfluous NULL pointer check in check_irq_resend()
+Date: Thu, 6 Aug 2009 21:46:03 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc5-next-20090806; KDE/4.2.4; i686; ; )
+Cc: Dan Carpenter <error27@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
+       Eugene Teo <eteo@redhat.com>, Julia Lawall <julia@diku.dk>,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090806191359.GA4345@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200908062146.03638.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 03:13:59PM -0400, Dave Jones wrote:
-> On Thu, Aug 06, 2009 at 11:33:26AM -0700, Greg Kroah-Hartman wrote:
->  
->  > > I agree. In fact, I'd go further, and say that the bulk of what we have
->  > > in pci_ids.h is also pointlessly shared. Only a tiny fraction of the device
->  > > entries in that file are used by multiple files in the kernel.
->  > 
->  > I agree with that as well, which is why when I was PCI maintainer, I
->  > didn't allow any new additions to the pci_ids.h file, unless it was
->  > going to be an id that was shared by different drivers.  That cut the
->  > new additions down to about none :)
-> 
-> Perhaps documenting this is a good idea to prevent things being moved there,
-> as it still seems to be happening judging from the git log.
-> 
-> Signed-off-by: Dave Jones <davej@redhat.com>
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] irq: remove superfluous NULL pointer check in check_irq_resend()
 
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+This takes care of the following entry from Dan's list:
+
+kernel/irq/resend.c +73 check_irq_resend(17) warning: variable derefenced before check 'desc->chip'
+
+Reported-by: Dan Carpenter <error27@gmail.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Eugene Teo <eteo@redhat.com>
+Cc: Julia Lawall <julia@diku.dk>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ kernel/irq/resend.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+Index: b/kernel/irq/resend.c
+===================================================================
+--- a/kernel/irq/resend.c
++++ b/kernel/irq/resend.c
+@@ -70,8 +70,7 @@ void check_irq_resend(struct irq_desc *d
+ 	if ((status & (IRQ_LEVEL | IRQ_PENDING | IRQ_REPLAY)) == IRQ_PENDING) {
+ 		desc->status = (status & ~IRQ_PENDING) | IRQ_REPLAY;
+ 
+-		if (!desc->chip || !desc->chip->retrigger ||
+-					!desc->chip->retrigger(irq)) {
++		if (!desc->chip->retrigger || !desc->chip->retrigger(irq)) {
+ #ifdef CONFIG_HARDIRQS_SW_RESEND
+ 			/* Set it pending and activate the softirq: */
+ 			set_bit(irq, irqs_resend);
