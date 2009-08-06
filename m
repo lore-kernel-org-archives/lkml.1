@@ -1,56 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZHFKJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbZHFKLJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbZHFKJd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 06:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZHFKJc
+	id S1754846AbZHFKLJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 06:11:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbZHFKLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 06:09:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58041 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751361AbZHFKJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 06:09:31 -0400
-Message-ID: <4A7AACF1.9040400@redhat.com>
-Date: Thu, 06 Aug 2009 13:14:09 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Thu, 6 Aug 2009 06:11:08 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48966 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753567AbZHFKLH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 06:11:07 -0400
+Date: Thu, 6 Aug 2009 12:10:59 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+Cc: Eric Paris <eparis@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
+       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
+       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
+       Douglas Leeder <douglas.leeder@sophos.com>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "arjan@infradead.org" <arjan@infradead.org>,
+       "david@lang.hm" <david@lang.hm>,
+       "jengelh@medozas.de" <jengelh@medozas.de>,
+       "aviro@redhat.com" <aviro@redhat.com>,
+       "mrkafk@gmail.com" <mrkafk@gmail.com>,
+       "alexl@redhat.com" <alexl@redhat.com>, "jack@suse.cz" <jack@suse.cz>,
+       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "mmorley@hcl.in" <mmorley@hcl.in>
+Subject: Re: fanotify - overall design before I start sending patches
+Message-ID: <20090806101059.GD31370@elf.ucw.cz>
+References: <1248466429.3567.82.camel@localhost> <20090805020534.GB1354@ucw.cz> <200908051746.17903.tvrtko.ursulin@sophos.com>
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       Rik van Riel <riel@redhat.com>, "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-References: <20090805024058.GA8886@localhost> <4A79C70C.6010200@redhat.com> <9EECC02A4CC333418C00A85D21E89326B651C1FE@azsmsx502.amr.corp.intel.com> <4A79D88E.2040005@redhat.com> <9EECC02A4CC333418C00A85D21E89326B651C21C@azsmsx502.amr.corp.intel.com> <4A7AA0CF.2020700@redhat.com> <20090806092516.GA18425@localhost> <4A7AA3FF.9070808@redhat.com> <20090806093507.GA24669@localhost> <4A7AA999.8050309@redhat.com> <20090806095905.GA30410@localhost>
-In-Reply-To: <20090806095905.GA30410@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908051746.17903.tvrtko.ursulin@sophos.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/06/2009 12:59 PM, Wu Fengguang wrote:
->> Do we know for a fact that only stack pages suffer, or is it what has
->> been noticed?
->>      
->
-> It shall be the first case: "These pages are nearly all stack pages.",
-> Jeff said.
->    
+On Wed 2009-08-05 17:46:16, Tvrtko Ursulin wrote:
+> On Wednesday 05 August 2009 03:05:34 Pavel Machek wrote:
+> > BTW my -@suse.cz address no longer works. pavel@ucw.cz should be ok.
+> >
+> > > If a FAN_ACCESS_PERM or FAN_OPEN_PERM event is received the listener
+> > > must send a response before the 5 second timeout.  If no response is
+> > > sent before the 5 second timeout the original operation is allowed.  If
+> > > this happens too many times (10 in a row) the fanotify group is evicted
+> > > from the kernel and will not get any new events.  Sending a response is
+> > > done using the setsockopt() call with the socket options set to
+> > > FANOTIFY_ACCESS_RESPONSE.  The buffer should contain a structure like:
+> >
+> > The timeout part of interface is very ugly. Will fanotify users have
+> > to be realtime/mlocked?
+> 
+> Why do you think it is very ugly?
 
-Ok.  I can't explain it.  There's no special treatment for guest stack 
-pages.  The accessed bit should be maintained for them exactly like all 
-other pages.
+Do I need to explain?
 
-Are they kernel-mode stack pages, or user-mode stack pages (the 
-difference being that kernel mode stack pages are accessed through large 
-ptes, whereas user mode stack pages are accessed through normal ptes).
+> Just to make sure you haven't missed this - it is not that they have to 
+> complete the whole operation before the timeout period (since you mention 
+> realtime/mlock I suspect this is what you think?), but _during_ the operation 
+> they have to show that they are active by sending something like keep alive 
+> messages.
+> 
+> Or you are worried about failing to meet even that on a loaded system? There 
+> has to be something like this otherwise hung userspace client would kill the 
+> whole system.
 
+Of course, I'm worried about failing to meet this on loaded
+system. And the fact that I _have_ to worry about that means that
+interface is ugly/broken.
+									Pavel
 -- 
-error compiling committee.c: too many arguments to function
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
