@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZHFM2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbZHFM3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755414AbZHFM2f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 08:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbZHFM2e
+	id S1755435AbZHFM3n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 08:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbZHFM3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 08:28:34 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:23514 "EHLO
+	Thu, 6 Aug 2009 08:29:42 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:23542 "EHLO
 	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753187AbZHFM2d convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1754432AbZHFM3l convert rfc822-to-8bit (ORCPT
 	<rfc822;groupwise-ghaskins@novell.com;3:2>);
-	Thu, 6 Aug 2009 08:28:33 -0400
-X-Greylist: delayed 1204 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Aug 2009 08:28:32 EDT
-Message-Id: <4A7A8F7B0200005A00051B84@sinclair.provo.novell.com>
+	Thu, 6 Aug 2009 08:29:41 -0400
+Message-Id: <4A7A8FBD0200005A00051B8A@sinclair.provo.novell.com>
 X-Mailer: Novell GroupWise Internet Agent 8.0.1 Beta 
-Date: Thu, 06 Aug 2009 06:08:27 -0600
+Date: Thu, 06 Aug 2009 06:09:33 -0600
 From: "Gregory Haskins" <ghaskins@novell.com>
 To: "Michael S. Tsirkin" <mst@redhat.com>
 Cc: <alacrityvm-devel@lists.sourceforge.net>, <kvm@vger.kernel.org>,
        <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
 Subject: Re: [PATCH 0/7] AlacrityVM guest drivers Reply-To:
 References: <20090803171030.17268.26962.stgit@dev.haskins.net>
- <20090806081955.GA9752@redhat.com>
-In-Reply-To: <20090806081955.GA9752@redhat.com>
+ <20090806081955.GA9752@redhat.com> <20090806101702.GA10605@redhat.com>
+In-Reply-To: <20090806101702.GA10605@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
@@ -30,64 +29,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
-
->>> On 8/6/2009 at  4:19 AM, in message <20090806081955.GA9752@redhat.com>,
+>>> On 8/6/2009 at  6:17 AM, in message <20090806101702.GA10605@redhat.com>,
 "Michael S. Tsirkin" <mst@redhat.com> wrote: 
-> On Mon, Aug 03, 2009 at 01:17:30PM -0400, Gregory Haskins wrote:
->> (Applies to v2.6.31-rc5, proposed for linux-next after review is complete)
-> 
-> These are guest drivers, right?
-
-Yep.
-
-> Merging the guest first means relying on
-> kernel interface from an out of tree driver, which well might change
-> before it goes in.
-
-ABI compatibility is already addressed/handled, so even if that is true its not a problem.
-
-> Would it make more sense to start merging with the host side of the project?
-
-Not necessarily, no.  These are drivers for a "device", so its no different than merging any other driver really.  This is especially true since the hypervisor is also already published and freely available today, so anyone can start using it.
-
-> 
->> This series implements the guest-side drivers for accelerated IO
->> when running on top of the AlacrityVM hypervisor, the details of
->> which you can find here:
+> On Thu, Aug 06, 2009 at 11:19:56AM +0300, Michael S. Tsirkin wrote:
+>> On Mon, Aug 03, 2009 at 01:17:30PM -0400, Gregory Haskins wrote:
+>> > (Applies to v2.6.31-rc5, proposed for linux-next after review is complete)
 >> 
->> http://developer.novell.com/wiki/index.php/AlacrityVM
+>> These are guest drivers, right? Merging the guest first means relying on
+>> kernel interface from an out of tree driver, which well might change
+>> before it goes in.  Would it make more sense to start merging with the
+>> host side of the project?
+>> 
+>> > This series implements the guest-side drivers for accelerated IO
+>> > when running on top of the AlacrityVM hypervisor, the details of
+>> > which you can find here:
+>> > 
+>> > http://developer.novell.com/wiki/index.php/AlacrityVM
+>> 
+>> Since AlacrityVM is kvm based, Cc kvm@vger.kernel.org.
+>> 
+>> > This series includes the basic plumbing, as well as the driver for
+>> > accelerated 802.x (ethernet) networking.
+>> 
+>> The graphs comparing virtio with vbus look interesting.
+>> However, they do not compare apples to apples, do they?
+>> These compare userspace virtio with kernel vbus, where for
+>> apples to apples comparison one would need to compare
+>> kernel virtio with kernel vbus. Right?
 > 
-> Since AlacrityVM is kvm based, Cc kvm@vger.kernel.org.
+> Or userspace virtio with userspace vbus.
 
-I *can* do that, but there is nothing in these drivers that is KVM specific (its all pure PCI and VBUS).  I've already made the general announcement about the project/ml cross posted to KVM for anyone that might be interested, but I figure I will spare the general KVM list the details unless something specifically pertains to, or affects, KVM.  For instance, when I get to pushing the hypervisor side, I still need to work on getting that 'xinterface' patch to you guys.  I would certainly be CC'ing kvm@vger when that happens since it modifies the KVM code.
+Note: That would be pointless.
 
-So instead, I would just encourage anyone interested (such as yourself) to join the alacrity list so I don't bother the KVM community unless absolutely necessary.
-
-> 
->> This series includes the basic plumbing, as well as the driver for
->> accelerated 802.x (ethernet) networking.
-> 
-> The graphs comparing virtio with vbus look interesting.
-> However, they do not compare apples to apples, do they?
-
-Yes, I believe they do.  They represent the best that KVM has to offer (to my knowledge) vs the best that alacrityvm has to offer.
-
-> These compare userspace virtio with kernel vbus,
-
-vbus is a device model (akin to QEMU's device model).  Technically, it was a comparison of userspace virtio-net (via QEMU), to kernel venet (via vbus),
-which I again stress is the state of the art for both to my knowledge.
-
-As I have explained before in earlier threads on kvm@vger, virtio is not mutually exclusive here.  You can run the virtio protocol over the vbus model if someone were so inclined.  In fact, I proposed this very idea to you a month or two ago but I believe you decided to go your own way and reinvent some other in-kernel model instead for your own reasons.
-
->where for apples to apples comparison one would need to compare
-> kernel virtio with kernel vbus. Right?
-
-Again, it already *is* apples to apples as far as I am concerned.  
-
-At the time I ran those numbers, there was certainly no in-kernel virtio model to play with.  And to my knowledge, there isn't one now (I was never CC'd on the patches, and a cursory search of the KVM list isn't revealing one that was posted recently).
-
-To reiterate: kernel virtio-net (using ??) to kernel venet (vbus based) to kernel virtio-net (vbus, but doesnt exist yet) would be a fun bakeoff.  If you have something for the kernel virtio-net, point me at it and I will try to include it in the comparison next time.
-
-Kind Regards,
 -Greg
+
+
