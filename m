@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbZHFNwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932099AbZHFNx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755908AbZHFNwO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 09:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbZHFNwO
+	id S932099AbZHFNx3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 09:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbZHFNx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 09:52:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56710 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753269AbZHFNwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 09:52:13 -0400
-Message-ID: <4A7AE150.7040009@redhat.com>
-Date: Thu, 06 Aug 2009 16:57:36 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Thu, 6 Aug 2009 09:53:28 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:53294 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754523AbZHFNx1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 09:53:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=a/P4gYKxiQeu8aunprFMnrcr+dSEDOYPjDhvB/UC76YPLl7CSx3RANmyRwTjNrpMS3
+         f/bsQhB50jISvXIYlsPcPepuOK350s0FXEiebH2b6pwh1IyMSYqDeTBsc7ZhjMWmNd0r
+         U6Gr4jzu+iOjQcEAdanV7T9VkNfCZLsUQSgfg=
+From: Alberto Gonzalez <alberto6674@gmail.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: Kernel 2.6.30 and udevd problem
+Date: Thu, 6 Aug 2009 15:53:23 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.29-ARCH; KDE/4.3.0; x86_64; ; )
+Cc: Michal Soltys <soltys@ziu.info>, Dave Airlie <airlied@linux.ie>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       linux-hotplug@vger.kernel.org
+References: <200906280821.58631.info@gnebu.es> <200907222200.21792.info@gnebu.es> <200907230206.36544.info@gnebu.es>
+In-Reply-To: <200907230206.36544.info@gnebu.es>
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: alacrityvm-devel@lists.sourceforge.net,
-       "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 0/7] AlacrityVM guest drivers Reply-To:
-References: <20090803171030.17268.26962.stgit@dev.haskins.net> <20090806081955.GA9752@redhat.com> <4A7A8F7B0200005A00051B84@sinclair.provo.novell.com> <4A7AD29E.50800@redhat.com> <4A7A9C6B0200005A00051BB9@sinclair.provo.novell.com> <4A7ADE23.5010208@redhat.com> <4A7AA63A0200005A00051BE2@sinclair.provo.novell.com>
-In-Reply-To: <4A7AA63A0200005A00051BE2@sinclair.provo.novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908061553.23525.alberto6674@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/06/2009 04:45 PM, Gregory Haskins wrote:
+On Thursday 23 July 2009 02:06:36 Alberto Gonzalez wrote:
+> > On Wednesday 22 July 2009 21:44:36 Jesse Barnes wrote:
+> > > Hm, so this type of interrupt problem is *supposed* to be handled by
+> > > setting of the PEG_BAND_GAP_DATA reg (low bits set to 0xd).  Do you
+> > > have that in your tree?  Does git master have this problem?
 >
->> (though still rooting for virtio).
->>      
+> I've tested 2.6.31 from git and I can reproduce the problem. Attached is
+> the dmesg with the debug patch applied.
 >
-> Heh...not to belabor the point to death, but virtio is orthogonal (you keep forgetting that ;).
->
-> Its really the vbus device-model vs the qemu device-model (and possibly vs the "in-kernel pci emulation" model that I believe Michael is working on).
->
-> You can run virtio on any of those three.
->    
+> > > Maybe we need to add a patch to 2.6.30.x to set PEG_BAND_GAP_DATA as a
+> > > workaround (git master already has code to do this properly for HDMI
+> > > and DP outputs afaict).
 
-It's not orthogonal.  virtio is one set of ABI+guest drivers+host 
-support to get networking on kvm guests.  AlacrityVM's vbus-based 
-drivers are another set of ABI+guest drivers+host support to get 
-networking on kvm guests.  That makes them competitors (two different 
-ways to do one thing), not orthogonal.
+Hi,
 
--- 
-error compiling committee.c: too many arguments to function
+No updates here? I was wondering if it would be more useful to open a bug 
+report so that it doesn't get lost. It is a rather nasty bug that keeps me 
+using .29 kernel, and since it seems to be clear where the problem is it seems 
+a pity to let it go...
 
+Regards,
+Alberto.
