@@ -1,80 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbZHFQQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbZHFQVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756173AbZHFQQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 12:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756162AbZHFQQ1
+	id S1756165AbZHFQVp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 12:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755704AbZHFQVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 12:16:27 -0400
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:57848
-	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756126AbZHFQQ0 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 12:16:26 -0400
-X-SpamScore: -17
-X-BigFish: VPS-17(z34a4jz1432R98dN4015Lzz1202hzzz32i203h6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KNYQJ2-02-J4Y-02
-X-M-MSG: 
-Date: Thu, 6 Aug 2009 18:15:52 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Borislav Petkov <borislav.petkov@amd.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 2/5] x86: Provide CPU topology information for
-	multi-node processors
-Message-ID: <20090806161552.GE7198@alberich.amd.com>
-References: <20090805154402.GA6520@alberich.amd.com> <20090805154811.GC6520@alberich.amd.com> <20090806183046.8aaa7404.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <20090806183046.8aaa7404.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 06 Aug 2009 16:15:52.0921 (UTC) FILETIME=[2B8DB490:01CA16B1]
-Content-Transfer-Encoding: 8BIT
+	Thu, 6 Aug 2009 12:21:44 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4218 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752966AbZHFQVo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 12:21:44 -0400
+Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
+ sections
+From: Joe Perches <joe@perches.com>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       David John <davidjon@xenontk.org>, Pavel Machek <pavel@ucw.cz>,
+       Erik Mouw <mouw@nl.linux.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
+In-Reply-To: <20090806150322.GX2080@trinity.fluff.org>
+References: <20090804100051.GA17106@elf.ucw.cz>
+	 <20090804223922.GD18365@flint.arm.linux.org.uk>
+	 <20090806125751.7d0253ce@nij0285> <20090806113104.GK31370@elf.ucw.cz>
+	 <20090806120826.GC27773@flint.arm.linux.org.uk>
+	 <4A7ACC8D.7030706@xenontk.org>
+	 <20090806124048.GD27773@flint.arm.linux.org.uk>
+	 <1249563730.10297.13.camel@Joe-Laptop.home>
+	 <20090806133349.GF27773@flint.arm.linux.org.uk>
+	 <1249568614.10297.20.camel@Joe-Laptop.home>
+	 <20090806150322.GX2080@trinity.fluff.org>
+Content-Type: text/plain
+Date: Thu, 06 Aug 2009 09:18:48 -0700
+Message-Id: <1249575528.3467.9.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 06:30:46PM +1000, Stephen Rothwell wrote:
-> Hi Andrea,
+On Thu, 2009-08-06 at 16:03 +0100, Ben Dooks wrote:
+> On Thu, Aug 06, 2009 at 07:23:34AM -0700, Joe Perches wrote:
+> > On Thu, 2009-08-06 at 14:33 +0100, Russell King wrote:
+> > > On Thu, Aug 06, 2009 at 06:02:10AM -0700, Joe Perches wrote:
+> > > > I suspect a vger based ARM list would not require you to "run" it.
+> > > There is already a vger based ARM list.  I see no signs of people
+> > > moving over to it.  I summise that is because most people don't
+> > > have a problem, and most people are happy with the existing lists
+> > > as they stand.  Could it be that it's only a minority who are
+> > > having issues.  I don't know.
+> > 
+> > Perhaps there is too little exposure of the
+> > linux-arm@vger.kernel.org mailing list.
 > 
-> On Wed, 5 Aug 2009 17:48:11 +0200 Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
-> >
-> > @@ -1061,8 +1070,10 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
-> >  	for_each_possible_cpu(i) {
-> >  		alloc_cpumask_var(&per_cpu(cpu_sibling_map, i), GFP_KERNEL);
-> >  		alloc_cpumask_var(&per_cpu(cpu_core_map, i), GFP_KERNEL);
-> > +		alloc_cpumask_var(&per_cpu(cpu_node_map, i), GFP_KERNEL);
-> >  		alloc_cpumask_var(&cpu_data(i).llc_shared_map, GFP_KERNEL);
-> >  		cpumask_clear(per_cpu(cpu_core_map, i));
-> > +		cpumask_clear(per_cpu(cpu_node_map, i));
-> 
-> I noticed this in linux-next ... you can use zalloc_cpumask_var() instead
-> of alloc_cpumask_var() followed by cpumask_clear().
+> I'm not subscribed, please do not add any of the samsung entries
+> with linux-arm@vger.kernel.org list.
 
-I know, there is a collision with a patch in linux-next that replaced
-alloc_cpumask_var/cpumask_clear with the zalloc version.
+Perhaps this patch is more palatable.  It's certainly shorter.
 
-(a) Either that patch should be adapted to change also the new allocation.
-(b) I can also change all those allocation to zalloc with my patch.
+It does add both linux-arm-kernel and linux-arm to section
+SIMTEC EB2410ITX (BAST).  By the way, another section you
+maintain, SIMTEC EB110ATX (Chalice CATS), has neither a
+pattern entry nor a mailing list entry.  Should it?
 
-Make your choice:
+Signed-off-by: Joe Perches <joe@perches.com>
 
-[ ] (a)
-[ ] (b)
-
-
-Thanks,
-
-Andreas
-
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b1114cf..04c13c5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -498,9 +498,11 @@ F:	arch/arm/include/asm/floppy.h
+ ARM PORT
+ M:	Russell King <linux@arm.linux.org.uk>
+ L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ F:	arch/arm/
++F:	drivers/*/arm/
+ 
+ ARM PRIMECELL MMCI PL180/1 DRIVER
+ S:	Orphan
+@@ -2047,6 +2049,7 @@ FREESCALE IMX / MXC FRAMEBUFFER DRIVER
+ M:	Sascha Hauer <kernel@pengutronix.de>
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm@vger.kernel.org
+ S:	Maintained
+ F:	arch/arm/plat-mxc/include/mach/imxfb.h
+ F:	drivers/video/imxfb.c
+@@ -2616,6 +2619,8 @@ F:	drivers/dma/iop-adma.c
+ 
+ INTEL IXP4XX QMGR, NPE, ETHERNET and HSS SUPPORT
+ M:	Krzysztof Halasa <khc@pm.waw.pl>
++L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ S:	Maintained
+ F:	arch/arm/mach-ixp4xx/include/mach/qmgr.h
+ F:	arch/arm/mach-ixp4xx/include/mach/npe.h
+@@ -4093,6 +4098,7 @@ PXA2xx/PXA3xx SUPPORT
+ M:	Eric Miao <eric.y.miao@gmail.com>
+ M:	Russell King <linux@arm.linux.org.uk>
+ L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ S:	Maintained
+ F:	arch/arm/mach-pxa/
+ F:	drivers/pcmcia/pxa2xx*
+@@ -4548,6 +4554,7 @@ SHARP LH SUPPORT (LH7952X & LH7A40X)
+ M:	Marc Singer <elf@buici.com>
+ W:	http://projects.buici.com/arm
+ L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ S:	Maintained
+ F:	Documentation/arm/Sharp-LH/ADC-LH7-Touchscreen
+ F:	arch/arm/mach-lh7a40x/
+@@ -4570,6 +4577,8 @@ S:	Supported
+ SIMTEC EB2410ITX (BAST)
+ P:	Ben Dooks
+ M:	Vincent Sanders <support@simtec.co.uk>
++L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.simtec.co.uk/products/EB2410ITX/
+ S:	Supported
+ F:	arch/arm/mach-s3c2410/
 
 
