@@ -1,139 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752840AbZHFABT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZHFABt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752840AbZHFABT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 20:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbZHFABT
+	id S1753141AbZHFABt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 20:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbZHFABt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 20:01:19 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:52946 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751338AbZHFABS (ORCPT
+	Wed, 5 Aug 2009 20:01:49 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:1291 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752740AbZHFABs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 20:01:18 -0400
-Message-ID: <4A7A1D48.7040309@us.ibm.com>
-Date: Wed, 05 Aug 2009 17:01:12 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Wed, 5 Aug 2009 20:01:48 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	content-type:content-transfer-encoding:x-system-of-record;
+	b=G58XweUyQKktxyRn4ZsVGbh3EX5ntLZY4fXFGdlpukdVdxILpvn489517Nqn7sD3g
+	thfAtRH/YgbNR8qQ6pNlw==
 MIME-Version: 1.0
-To: "lkml, " <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       John Kacur <jkacur@redhat.com>, Dinakar Guniguntala <dino@in.ibm.com>,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-Subject: [RFC][PATCH] fixup pi_state in futex_requeue on lock steal
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090805164218.GB26446@hawkmoon.kerlabs.com>
+References: <20090731015154.27908.9639.stgit@hastromil.mtv.corp.google.com>
+	 <2f86c2480908031113y525b6cbdhe418b8a0364c7760@mail.gmail.com>
+	 <20090803185556.GA8469@us.ibm.com> <20090803194555.GA10158@us.ibm.com>
+	 <6599ad830908041148h6d3f3e9bxfef9f3eedec0ab6d@mail.gmail.com>
+	 <2f86c2480908041214r1f23c1b7q9a25b04e26c92a1a@mail.gmail.com>
+	 <6599ad830908041228w67bc6f7fh57e28f244e1923b3@mail.gmail.com>
+	 <20090805102057.GT29252@hawkmoon.kerlabs.com>
+	 <6599ad830908050911t6f23f810i65fe8fe17f3ee698@mail.gmail.com>
+	 <20090805164218.GB26446@hawkmoon.kerlabs.com>
+Date: Wed, 5 Aug 2009 17:01:42 -0700
+Message-ID: <2f86c2480908051701s57120404q475edbedb58cdca1@mail.gmail.com>
+Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by tgid 
+	at once
+From: Benjamin Blum <bblum@google.com>
+To: Paul Menage <menage@google.com>, Benjamin Blum <bblum@google.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NOT FOR INCLUSION
+On Wed, Aug 5, 2009 at 9:42 AM, Louis Rilling<Louis.Rilling@kerlabs.com> wrote:
+> On 05/08/09  9:11 -0700, Paul Menage wrote:
+>> On Wed, Aug 5, 2009 at 3:20 AM, Louis Rilling<Louis.Rilling@kerlabs.com> wrote:
+>> >
+>> > The downside of this is teaching lockdep about this recursive locking. Not that
+>> > simple actually...
+>>
+>> Don't we just give each thread's lock its own lock class? That's what
+>> we did for the cgroup hierarchy_mutex.
+>
+> Given that lock classes must be static and that lockdep only supports a limited
+> lock depth, this is an issue for processes having many threads.
+>
+>>
+>> > so that such cases are currently handled using a higher-level
+>> > lock that prevents races in locking the whole chain (there was one such example
+>> > for locking all vmas with KVM). IIUC, the intent here is to avoid such
+>> > higher-level lock.
+>>
+>> cgroup_mutex already fulfills the role of the higher-level lock.
+>
+> If so (that is, here cgroup_mutex is taken before write-locking all threads'
+> rw_sem), then enhancing rwsem's interface in a similar way to the
+> spin_lock_nest_lock() interface could do it. There will still be an issue with
+> many threads and lockdep limited lock depth though.
 
-Fixup the uval and pi_state owner in futex_requeue(requeue_pi=1) in the event
-of a lock steal or owner died.  I had hoped to leave it up to the new owner to
-fix up the userspace value since we can't really handle a fault here
-gracefully.  This should be safe as the lock is contended and should force all
-userspace attempts to lock or unlock into the kernel where they'll block on the
-hb lock.  However, when I don't update the uaddr, I hit the WARN_ON(pid !=
-pi_state->owner->pid) as expected, and the userspace testcase deadlocks.
+If we make the locks per-thread, then we can use plain mutexes instead
+of rwsems since the only reader will ever be the owning thread itself,
+and we can use mutex_lock_nested.
 
-I need to try and better understand what's happening to hang userspace.  In the
-meantime I thought I'd share what I'm working with atm.  This is a complete HACK
-and is ugly, non-modular, etc etc.  However, it currently works.  It would explode
-in a most impressive fashion should we happen to fault.  So the remaining questions
-are:
-
-o Why does userspace deadlock if we leave the uval updating to the new owner
-  waking up in futex_wait_requeue_pi()?
-
-o If we have to handle a fault in futex_requeue(), how can we best cleanup the
-  proxy lock acquisition and get things back into a sane state.  We faulted, so
-  determinism is out the window anyway, we just need to recover gracefully.
-
-Thoughts welcome.
-
-Darren Hart
-
-Index: 2.6.31-rc4-rt1/kernel/futex.c
-===================================================================
---- 2.6.31-rc4-rt1.orig/kernel/futex.c	2009-08-05 13:27:11.000000000 -0700
-+++ 2.6.31-rc4-rt1/kernel/futex.c	2009-08-05 16:19:08.000000000 -0700
-@@ -1174,7 +1174,7 @@ static int futex_requeue(u32 __user *uad
- 	struct plist_head *head1;
- 	struct futex_q *this, *next;
- 	struct task_struct *wake_list = &init_task;
--	u32 curval2;
-+	u32 curval, curval2, newval;
- 
- 	if (requeue_pi) {
- 		/*
-@@ -1329,6 +1329,45 @@ retry_private:
- 			if (ret == 1) {
- 				/* We got the lock. */
- 				requeue_pi_wake_futex(this, &key2, hb2);
-+
-+				while (1) {
-+					newval = (curval2 & FUTEX_OWNER_DIED) |
-+						 task_pid_vnr(this->task) |
-+						 FUTEX_WAITERS;
-+
-+					curval = cmpxchg_futex_value_locked(uaddr2, curval2, newval);
-+
-+					if (curval == -EFAULT)
-+						goto handle_fault;
-+					if (curval == curval2)
-+						break;
-+					curval2 = curval;
-+				}
-+				/*
-+				 * Fixup the pi_state owner to ensure pi
-+				 * boosting happens in the event of a race
-+				 * between us dropping the lock and the new
-+				 * owner waking and grabbing the lock.  Since
-+				 * the lock is contended, we leave it to the new
-+				 * owner to fix up the userspace value since we
-+				 * can't handle a fault here gracefully.
-+				 */
-+				/*
-+				 * FIXME: we duplicate this in 3 places now.  If
-+				 * we keep this solution, let's refactor this
-+				 * pi_state reparenting thing.
-+				 */
-+				BUG_ON(!pi_state->owner);
-+				atomic_spin_lock_irq(&pi_state->owner->pi_lock);
-+				WARN_ON(list_empty(&pi_state->list));
-+				list_del_init(&pi_state->list);
-+				atomic_spin_unlock_irq(&pi_state->owner->pi_lock);
-+
-+				atomic_spin_lock_irq(&this->task->pi_lock);
-+				WARN_ON(!list_empty(&pi_state->list));
-+				list_add(&pi_state->list, &this->task->pi_state_list);
-+				pi_state->owner = this->task;
-+				atomic_spin_unlock_irq(&this->task->pi_lock);
- 				continue;
- 			} else if (ret) {
- 				/* -EDEADLK */
-@@ -1363,6 +1402,17 @@ out:
- 	if (pi_state != NULL)
- 		free_pi_state(pi_state);
- 	return ret ? ret : task_count;
-+
-+handle_fault:
-+	/*
-+	 * We can't handle a fault, so instead, give up the lock and requeue the
-+	 * would-have-been-new-owner instead.
-+	 */
-+	printk("ERROR: faulted during futex_requeue loop, trying to fixup pi_state owner\n");
-+	/* FIXME: write the unlock and requeue code ... */
-+	ret = -EFAULT;
-+	goto out_unlock;
-+
- }
- 
- /* The key must be already stored in q->key. */
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+>
+> Added Peter in CC.
+>
+> Louis
+>
+> --
+> Dr Louis Rilling                        Kerlabs
+> Skype: louis.rilling                    Batiment Germanium
+> Phone: (+33|0) 6 80 89 08 23            80 avenue des Buttes de Coesmes
+> http://www.kerlabs.com/                 35700 Rennes
+>
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.4.9 (GNU/Linux)
+>
+> iEYEARECAAYFAkp5tmoACgkQVKcRuvQ9Q1TwdACeMwdKtGc3rU3PGXPgYvdj9Vxe
+> xYIAmQFMW6Ri9JGuc7+A0WmGzXkzQ81A
+> =Wj3u
+> -----END PGP SIGNATURE-----
+>
+>
