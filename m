@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756334AbZHFRFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbZHFRGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756334AbZHFRFx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 13:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756325AbZHFRFw
+	id S1756358AbZHFRGP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 13:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756319AbZHFRGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 13:05:52 -0400
-Received: from mailhost14.gawab.com ([66.220.20.14]:56626 "HELO
-	info88.gawab.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756260AbZHFRFt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 13:05:49 -0400
-X-Trusted: Whitelisted
-From: Al Boldi <a1426z@gawab.com>
-To: Andi Kleen <andi@firstfloor.org>, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based /dev
-Date: Thu, 6 Aug 2009 20:06:16 +0300
-User-Agent: KMail/1.5
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
-       gregkh@suse.de, Harald Hoyer <harald@redhat.com>,
-       Scott James Remnant <scott@ubuntu.com>
-References: <20090805171513.GA10443@kroah.com> <20090805185136.GA21442@kroah.com> <87ljlxhrnr.fsf@basil.nowhere.org>
-In-Reply-To: <87ljlxhrnr.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908062006.16263.a1426z@gawab.com>
+	Thu, 6 Aug 2009 13:06:14 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:59582 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756321AbZHFRGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 13:06:13 -0400
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       Subrata Modak <subrata@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Thu, 06 Aug 2009 22:36:00 +0530
+Message-Id: <20090806170600.32631.77680.sendpatchset@subratamodak.linux.ibm.com>
+Subject: [PATCH] Address Sparse Static Warning inside kernel/fork.c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Greg KH <greg@kroah.com> writes:
-> > It makes the userspace boot process much simpler and easier to maintain,
-> > as well as providing a way to handle rescue disks and images trivially,
-> > and it makes the kernel _less_ dependant on the early userspace bootup
-> > scripts.
->
-> As a initrd less kernel user I can really only agree: getting rid
-> of the udev-in-initrd requirement would be a big step forward
-> in usability. Typically I always have to pre populate
-> a on disk /dev manually first to get my kernels to boot.
+Hi Ingo,
 
-Oh good, I thought I was the only one doing that.
+The patch below fixes the following SPARSE warning:
+kernel/fork.c:81:5: warning: symbol 'max_threads' was not declared. Should it be static?
+kernel/fork.c:171:13: warning: symbol 'fork_init' was not declared. Should it be static?
 
-The reason I don't like udev is that it's just to slow; something like a 5-10s 
-delay on each boot.  No idea why it should be so slow, but it's probably 
-probing the kernel for all available devices at boot, when it could be much 
-quicker by probing for the device on access.
+Signed-off-by: Subrata Modak<subrata@linux.vnet.ibm.com>
 
+To: Ingo Molnar <mingo@elte.hu>,
+Cc: LKML <linux-kernel@vger.kernel.org>,
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+---
 
-Thanks!
+--- a/kernel/fork.c	2009-08-05 12:00:51.000000000 +0530
++++ b/kernel/fork.c	2009-08-06 22:26:30.000000000 +0530
+@@ -78,7 +78,7 @@
+ unsigned long total_forks;	/* Handle normal Linux uptimes. */
+ int nr_threads; 		/* The idle threads do not count.. */
+ 
+-int max_threads;		/* tunable limit on nr_threads */
++static int max_threads;		/* tunable limit on nr_threads */
+ 
+ DEFINE_PER_CPU(unsigned long, process_counts) = 0;
+ 
+@@ -168,7 +168,7 @@ void __put_task_struct(struct task_struc
+ #define arch_task_cache_init()
+ #endif
+ 
+-void __init fork_init(unsigned long mempages)
++static void __init fork_init(unsigned long mempages)
+ {
+ #ifndef __HAVE_ARCH_TASK_STRUCT_ALLOCATOR
+ #ifndef ARCH_MIN_TASKALIGN
 
---
-Al
+Regards--
+Subrata
 
