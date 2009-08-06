@@ -1,99 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753622AbZHFB7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753681AbZHFCAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753622AbZHFB7y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 21:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZHFB7y
+	id S1753681AbZHFCAS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 22:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbZHFCAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 21:59:54 -0400
-Received: from mail-fx0-f228.google.com ([209.85.220.228]:51675 "EHLO
-	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753601AbZHFB7x (ORCPT
+	Wed, 5 Aug 2009 22:00:16 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:36824 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753603AbZHFCAP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 21:59:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=AkNBxMOwBDVnVhgYk8WuskEqPI4g+AYBVaF3fMy86YFHS8LaB2TTCsHBO/gGyPz82G
-         a3zMKl3kz4Z3JSnenxTvanCEMckt1ryFoVffzhKNUusSbV16gvLC8F9Kxb9wGPRkEM61
-         ZjqP6ep8jMOXG186Evq9YEW+Jl8IwoXemk4QU=
-Date: Thu, 6 Aug 2009 03:59:50 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC][PATCH 5/5] tracing/filters: Provide support for char *
-	pointers
-Message-ID: <20090806015949.GB24609@nowhere>
-References: <1249111408-8657-1-git-send-email-fweisbec@gmail.com> <1249111408-8657-6-git-send-email-fweisbec@gmail.com> <4A768A87.6090800@cn.fujitsu.com> <20090805230257.GI5025@nowhere> <4A7A336B.4040708@cn.fujitsu.com>
+	Wed, 5 Aug 2009 22:00:15 -0400
+Date: Wed, 5 Aug 2009 22:00:14 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Dave Airlie <airlied@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: ftrace scripts and make V=1
+In-Reply-To: <20090805072952.GC19322@elte.hu>
+Message-ID: <alpine.DEB.2.00.0908052011590.5010@gandalf.stny.rr.com>
+References: <21d7e9970908050023j2807ef3bi1321ac2a1fd9a743@mail.gmail.com> <20090805072952.GC19322@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A7A336B.4040708@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 09:35:39AM +0800, Li Zefan wrote:
-> Frederic Weisbecker wrote:
-> > On Mon, Aug 03, 2009 at 02:58:15PM +0800, Li Zefan wrote:
-> >> Frederic Weisbecker wrote:
-> >>> Provide support for char * pointers in the filtering framework.
-> >>> Usually, char * entries are dangerous in traces because the string
-> >>> can be released whereas a pointer to it can still wait to be read from
-> >>> the ring buffer. But sometimes we can assume it's safe, like in case
-> >>> of RO data (eg: __file__ or __line__, used in bkl trace event). If
-> >>> these RO data are in a module and so is the call to the trace event,
-> >>> then it's safe, because the ring buffer will be flushed once this
-> >>> module get unloaded.
-> >>>
-> >> The problem is we don't distinguish dangerous char * from
-> >> safe char *... They are both defined as:
-> >> 	__field(char *, str)
-> >>
-> >> So for those dangerous ones, a string filter still can be applied,
-> >> which will dereference those pointers.
+
+On Wed, 5 Aug 2009, Ingo Molnar wrote:
+
+> 
+> * Dave Airlie <airlied@gmail.com> wrote:
+> 
+> > Hey,
 > > 
-> > Yeah, but only reviewing can distinguish them. It depends on the
-> > context.
-> > IMO, a __builtin_constant check would be wrong. I don't remember who
-> > posted recently tracepoints with char * types that were safe although he
-> > didn't use string constants.
-> > 
+> > So I spent 3-4 hrs today (I'm stupid yes) tracking down a .o 
+> > breakage by blaming rawhide gcc/binutils as I was using make 
+> > V=1and seeing only the compiler chain running,
 > 
-> IMO it's really bad to rely on review to prevent wrong use of
-> an API..
-> 
-> Other developers won't know this restriction, and not all tracepoint
-> patches go through -tip tree, and not all trace_event source files
-> are in include/trace/events/.
-> 
-> How about add __field_type()? So we can define:
-> 
-> 	__field_type(char *, str, FILTER_PTR_STR)
-> 
-> the advantage is he who wrote the code really knows this field is safe
-> to be used in filtering as a string.
-> 
-> I had some patches that does similar job. I can rewrite and post them.
+> Hm, is this that powerpc related build bug you just reported?
+
+Well we tracked it down and it is powerpc64 specific.
+
+Seems that in drivers/hwmon/lm93.c there's a function called:
+
+   LM93_IN_FROM_REG()
+
+But PPC64 has function descriptors and the real function names (the ones 
+you see in objdump) start with a '.'. Thus this in objdump you have:
+
+ Disassembly of section .text:
+
+ 0000000000000000 <.LM93_IN_FROM_REG>:
+       0:       7c 08 02 a6     mflr    r0
+       4:       fb 81 ff e0     std     r28,-32(r1)
 
 
-Ah good idea. That may even be useful for further typedef'ed types which
-filter process match existing supported types.
+The function name used is .LM93_IN_FROM_REG. But gcc considers symbols 
+that start with ".L" as a special symbol that is used inside the assembly 
+stage.
 
-Just one neat however: __field_type looks too much ambiguous. __field() is
-already here to define a typed field. This seems confusing.
+The nm passed into recordmcount uses the --synthetic option which shows 
+the ".L" symbols (my runs outside of the build did not include the 
+--synthetic option, so my older patch worked). We see the function as a 
+local.
 
-Why not __field_ext() for "extended"? We may probably add more flags
-than FILTER_PTR_STR in the future to define options for filtering or even
-for larger scope.
+Now to capture all the locations that use "mcount" we need to have a 
+reference to link into the object file a list of mcount callers. We need a 
+reference that will not disappear. We try to use a global function and if 
+that does not work, we use a local function as a reference. But to relink 
+the section back into the object, we need to make it global. In this case, 
+we run objcopy using --globalize-symbol and --localize-symbol to convert 
+the symbol into a global symbol, link the mcount list, then convert it 
+back to a local symbol.
 
-I then wait for your patches to be posted and I'll integrate them in the
-current queue.
+This works great except for this case. .L* symbols can not be converted 
+into a global symbol, and the mcount section referencing it will remain 
+unresolved.
 
-Thanks a lot!
+Try this patch and see if it fixes your issue.
 
+Thanks!
+
+-- Steve
+
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index d29baa2..4889c44 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -414,7 +414,10 @@ while (<IN>) {
+ 	    $offset = hex $1;
+ 	} else {
+ 	    # if we already have a function, and this is weak, skip it
+-	    if (!defined($ref_func) && !defined($weak{$text})) {
++	    if (!defined($ref_func) && !defined($weak{$text}) &&
++		 # PPC64 can have symbols that start with .L and
++		 # gcc considers these special. Don't use them!
++		 $text !~ /^\.L/) {
+ 		$ref_func = $text;
+ 		$offset = hex $1;
+ 	    }
