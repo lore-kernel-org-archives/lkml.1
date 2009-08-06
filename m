@@ -1,110 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753162AbZHFK7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752921AbZHFLCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753162AbZHFK7z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 06:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbZHFK7x
+	id S1752921AbZHFLCj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 07:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbZHFLCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 06:59:53 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:43909 "EHLO pmx1.sophos.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751712AbZHFK7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 06:59:52 -0400
-From: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-Organization: Sophos Plc
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: fanotify - overall design before I start sending patches
-Date: Thu, 6 Aug 2009 11:59:44 +0100
-User-Agent: KMail/1.9.10
-Cc: Douglas Leeder <douglas.leeder@sophos.com>, Pavel Machek <pavel@ucw.cz>,
-       Eric Paris <eparis@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
-       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
-       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "david@lang.hm" <david@lang.hm>,
-       "jengelh@medozas.de" <jengelh@medozas.de>,
-       "aviro@redhat.com" <aviro@redhat.com>,
-       "mrkafk@gmail.com" <mrkafk@gmail.com>,
-       "alexl@redhat.com" <alexl@redhat.com>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "mmorley@hcl.in" <mmorley@hcl.in>
-References: <1248466429.3567.82.camel@localhost> <4A7AAE89.20205@sophos.com> <1249554548.32113.137.camel@twins>
-In-Reply-To: <1249554548.32113.137.camel@twins>
-MIME-Version: 1.0
-Message-Id: <200908061159.45550.tvrtko.ursulin@sophos.com>
-X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 06/08/2009 11:59:50,
-	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 06/08/2009 11:59:51,
-	Serialize complete at 06/08/2009 11:59:51
-X-TNEFEvaluated: 1
+	Thu, 6 Aug 2009 07:02:39 -0400
+Received: from viefep14-int.chello.at ([62.179.121.34]:5655 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751352AbZHFLCi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 07:02:38 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by
+ tgid  at once
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Menage <menage@google.com>
+Cc: Benjamin Blum <bblum@google.com>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, paulmck <paulmck@linux.vnet.ibm.com>,
+       oleg <oleg@redhat.com>
+In-Reply-To: <6599ad830908060342m1fc8cdd2me25af248a8e0e183@mail.gmail.com>
+References: <2f86c2480908031113y525b6cbdhe418b8a0364c7760@mail.gmail.com>
+	 <2f86c2480908041214r1f23c1b7q9a25b04e26c92a1a@mail.gmail.com>
+	 <6599ad830908041228w67bc6f7fh57e28f244e1923b3@mail.gmail.com>
+	 <20090805102057.GT29252@hawkmoon.kerlabs.com>
+	 <6599ad830908050911t6f23f810i65fe8fe17f3ee698@mail.gmail.com>
+	 <20090805164218.GB26446@hawkmoon.kerlabs.com>
+	 <2f86c2480908051701s57120404q475edbedb58cdca1@mail.gmail.com>
+	 <20090806095854.GD26446@hawkmoon.kerlabs.com>
+	 <6599ad830908060328y21a008c1pc5ed5c27e0ec905d@mail.gmail.com>
+	 <1249554853.32113.145.camel@twins>
+	 <6599ad830908060342m1fc8cdd2me25af248a8e0e183@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 06 Aug 2009 13:02:20 +0200
+Message-Id: <1249556540.32113.191.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 August 2009 11:29:08 Peter Zijlstra wrote:
-> On Thu, 2009-08-06 at 11:20 +0100, Douglas Leeder wrote:
-> > Pavel Machek wrote:
-> > > On Wed 2009-08-05 17:46:16, Tvrtko Ursulin wrote:
-> > >> On Wednesday 05 August 2009 03:05:34 Pavel Machek wrote:
-> > >>
-> > >> Just to make sure you haven't missed this - it is not that they have
-> > >> to complete the whole operation before the timeout period (since you
-> > >> mention realtime/mlock I suspect this is what you think?), but
-> > >> _during_ the operation they have to show that they are active by
-> > >> sending something like keep alive messages.
-> > >>
-> > >> Or you are worried about failing to meet even that on a loaded system?
-> > >> There has to be something like this otherwise hung userspace client
-> > >> would kill the whole system.
-> > >
-> > > Of course, I'm worried about failing to meet this on loaded
-> > > system. And the fact that I _have_ to worry about that means that
-> > > interface is ugly/broken.
+On Thu, 2009-08-06 at 03:42 -0700, Paul Menage wrote:
+> On Thu, Aug 6, 2009 at 3:34 AM, Peter Zijlstra<a.p.zijlstra@chello.nl> wrote:
+> > On Thu, 2009-08-06 at 03:28 -0700, Paul Menage wrote:
 > >
-> > You mean that in 5 seconds, you won't have any point when you can tell
-> > the kernel, "I'm still working"?
->
-> I have to agree with Pavel here, either you demand the monitor process
-> is RT/mlock and can respond in time, in which case the interface doesn't
-> need a 5 second timeout, or you cannot and you have a hole somewhere.
->
-> Now having the kernel depend on any user task to guarantee process is of
-> course utterly insane too.
->
-> Sounds like a bad place to be, and I'd rather not have it.
->
-> If you really need the intermediate you might as well use a FUSE
-> filesystem, but I suspect there's plenty of problems there as well.
+> >> OK, well if lockdep can't currently handle the "writer takes a lock on
+> >> every thread" model,
+> >
+> > I haven't read what this is about, but simply looking at that sentence
+> > makes me want to hit someone with a cluebat. Have you any idea how
+> > expensive that is?
+> 
+> For lockdep to track that many locks, or just the concept of taking
+> that many locks generally?
 
-So you mount FUSE on top of everything if you want to have systemwide 
-monitoring and then you _again_ depend on _userspace_, no? By this logic 
-everything has to be in kernel. But even if it was, and the CPUs are so 
-overloaded that an userspace thread does not get to run at all for X seconds, 
-are kernel threads scheduled differently eg. with priority other than nice 
-levels?
+Taking that many locks in general, some apps (JVM based usually) tend to
+be thread heavy and can easily have hundreds of them, even on relatively
+small (~8 CPU) machines. Having to take hundreds of locks on such a
+small machine seems to indicate to me you're doing something wrong.
 
-Also, it is not like that when the timeout expires the kernel will hang. 
-Rather, some application would get an error from open(2). Note how that is by 
-system configuration where the admin has made a _deliberate_ decision to 
-install such software which can cause this behaviour. 
+[ I now understand its only 'all threads of a process' which is
+  slightly better than 'all threads' but still crazy ]
 
-You can have a RT/mlocked client but what if it crashes (lets say busy loops)? 
-Which is also something timeout mechanism is guarding against.
+> The basic idea is that in order to implement a "procs" file in cgroups
+> that can migrate all threads in a process atomically, we need to
+> synchronize with concurrent clone() calls. But since thread clones are
+> likely to occur far more often than "procs" writes, and we wanted to
+> avoid introducing overhead into the clone path, one approach was to
+> give each thread a fork mutex, which it could take around the relevant
+> parts of the fork/clone operation, and have the "procs" writer deal
+> with obtaining the fork mutex for every thread in the process being
+> moved, so pushing the overhead on to the "procs" writer.
 
-I really think if we want to have this functionality there is no way around 
-the fact that any userspace can fail. Kernel should handle it of course, and 
-Eric's design does it by kicking repeatedly misbehaving clients out.
+See below.
 
-If the timeout is made configurable I think this is the best that can be done 
-here. I don't think the problem is so huge as you are presenting it.
+> I don't think it's a deficiency of lockdep that it would have trouble
+> dealing with this - in fact, my original plan was that we'd just have
+> to live with the fact that anyone doing a "procs" move on a massive
+> process would have to live with lockdep printing an overflow warning.
 
-Tvrtko
+Now that's not real nice is it ;-)
+
+> But given that AFAICS we can eliminate the overhead associated with a
+> single lock by piggy-backing on the cache line containing
+> sighand->count, hopefully this won't be an issue any more.
+
+Right, so this is a write rarely, read frequently thing, which suggests
+an RCU like approach where the readers pay a minimum synchronization
+penalty.
+
+Then again, clone() might already serialize on the process as a whole
+(not sure though, Oleg/Ingo?), in which case you can indeed take a
+process wide lock.
+
+If not, you might think about using an SRCU variant where the read
+(clone) side does something like:
+
+ if (rcu_derference(tsk->sighand->cgroup_block))
+   wait_event(&some_queue, !tsk->sighand->cgroup_block);
+
+ srcu_read_lock(&my_srcu_thing);
+
+ /* do the clone bit */
+
+ srcu_read_unlock(&my_srcu_thing);
+
+
+and the write (cgroup thingy) side does:
+
+ rcu_assign(tsk->sighand->cgroup_block, 1);
+
+ srcu_synchronize(&my_srcu_thing); 
+
+ /* everybody will be out of clone */
+
+ /* do your thing */
+
+ rcu_assign(tsk->sighand->cgroup_block, 0);
+ wake_up_all(&some_queue);
+
+Or something like that, which should reduce the read-side overhead to a
+single shared read and some SRCU ops which should be per-cpu in the
+normal case.
+
+
+
