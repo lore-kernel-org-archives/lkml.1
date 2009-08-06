@@ -1,61 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbZHFNQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbZHFNYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755814AbZHFNQv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 09:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755665AbZHFNQt
+	id S1755701AbZHFNYL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 09:24:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbZHFNYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 09:16:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49181 "EHLO mx2.redhat.com"
+	Thu, 6 Aug 2009 09:24:10 -0400
+Received: from mr1.bfh.ch ([147.87.250.50]:60695 "EHLO mr1.bfh.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755657AbZHFNQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 09:16:48 -0400
-Message-ID: <4A7AD79E.4020604@redhat.com>
-Date: Thu, 06 Aug 2009 09:16:14 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1755318AbZHFNYK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 09:24:10 -0400
+From: Zimmermann Christoph <christoph.zimmermann@bfh.ch>
+To: Andrew Lutomirski <luto@mit.edu>, Greg KH <greg@kroah.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Thu, 6 Aug 2009 14:19:38 +0200
+Subject: Re: Is anyone maintaining (or even using) usbtmc?
+Thread-Topic: Is anyone maintaining (or even using) usbtmc?
+Thread-Index: AcoUf3mYFH0NCKPFTf2TEA7I/d2C6QCC52Ra
+Message-ID: <8288F66EF13DBA41AD8CBFDA64D8FFA31629782B@nyx.bfh.ch>
+References: <cb0375e10908031414g471bacf5lab685958b60bfdfa@mail.gmail.com>
+In-Reply-To: <cb0375e10908031414g471bacf5lab685958b60bfdfa@mail.gmail.com>
+Accept-Language: de-DE, fr-CH
+Content-Language: de-CH
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: de-DE, fr-CH
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-References: <20090805024058.GA8886@localhost> <20090805155805.GC23385@random.random> <20090806100824.GO23385@random.random> <4A7AAE07.1010202@redhat.com> <20090806102057.GQ23385@random.random> <20090806105932.GA1569@localhost> <4A7AC201.4010202@redhat.com> <20090806130631.GB6162@localhost>
-In-Reply-To: <20090806130631.GB6162@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-PMWin-Version: 3.0.2.0, Antivirus-Engine: 2.89.1, Antivirus-Data: 4.44E
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
+i've asked also some of your questions two month ago.
 
-> I guess both schemes have unacceptable flaws.
+i'm a tmc driver user only. i use it to develop my firmware for a
+cypress fx2 based tmc device.
+
+i've made some bugreporting to greg and to the mailinglist (now i'm not
+sure anymore if all my mails arrived on the mailinglist. the gmame
+archive does not list all mails. the other archives are even worse).
+
+since then two ore tree small patches are sent to the mailinglist. but
+none seemed to adress my bugs (one patch was about a memory leak)
+
+> If the answer is no (as I suspect it is), then I might give fixing it
+> a shot the week after next, when I'll be camping out in Virginia with
+> this thing for awhile.  In that case, I have another question:
+
+do it. greg is the maintainer of the whole usb stuff and is working
+really hard. so i understand that he only has little time on "our"
+usbtmc bugs. in my opionion it's good when you do it to help greg with
+it. he still is the maintainer and has to sign of your patches.
+
+the other thing is, that i belive, please correct me, that greg don't
+has an usbtmc device to test with. for me it seems that there is lack
+of testing in the usbtmc driver. thats why i assume this.
+
+as i wrote in my older mails, i've never worked on the kernel source. i
+can do some testing with different devices (in our lab we have serveral
+tmc devices).
+
+> Is anyone using usbtmc, or, more specifically, does anyone care about
+> backward compatibility?
+
+it doesn't look like that. i don't care if the interface changes. i'm
+still working with the old agilent one until the mainline one works.
+
+> Finally, I see no way to read the USB488 status byte or detect a
+> status interrupt.
 > 
-> For JVM/BIGMEM workload, most pages would be found referenced _all the time_.
-> So the KEEP_MOST scheme could increase reclaim overheads by N=250 times;
-> while the DROP_CONTINUOUS scheme is effectively zero cost.
+> >  
+> >> Is anyone using usbtmc, or, more specifically, does anyone care
+> >> about backward compatibility?  
+> >
+> > What do you want to change in the driver interface?  
+> 
+> The main compatibility-breaking change is that I'd like to see
+> close/reopen go through the whole resynchronization procedure so that
+> the device starts in a sane state.  Currently I restore sanity by
+> doing a bunch of reads and ignoring ETIMEDOUT.
+> If not, then I'll be less careful to preserve the interface, even
+> though I'm not really sure that there's much of interest to preserve.
 
-The higher overhead may not be an issue on smaller systems,
-or inside smaller cgroups inside large systems, when doing
-cgroup reclaim.
+to read the USB488 status byte i guess that there is still an ioctl
+function for it (was there in the opensource agilent driver) but you
+can get the status byte with a normal "*STB?" query.
 
-> However, the DROP_CONTINUOUS scheme does bring more _indeterminacy_.
-> It can behave vastly different on single active task and multi ones.
-> It is short sighted and can be cheated by bursty activities.
+the lack of interrupt status reporting is an important one. so you have
+to quess, or do stupid polling, until your device is finished working.
+the normal way is to set "opc?" and do something else until the
+response from the interrupt endpoint arrives.
 
-The split LRU VM tries to avoid the bursty page aging as
-much as possible, by doing background deactivating of
-anonymous pages whenever we reclaim page cache pages and
-the number of anonymous pages in the zone (or cgroup) is
-low.
-
--- 
-All rights reversed.
+christoph
