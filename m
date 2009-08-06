@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751035AbZHFELl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751366AbZHFEQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751035AbZHFELl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 00:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750777AbZHFELk
+	id S1751366AbZHFEQT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 00:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbZHFEQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 00:11:40 -0400
-Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:34458 "EHLO
-	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbZHFELk (ORCPT
+	Thu, 6 Aug 2009 00:16:18 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:42093 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbZHFEQR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 00:11:40 -0400
-X-SpamScore: -38
-X-BigFish: VPS-38(z21eWz62a3L1432R98dN936eM4015L2f55kzz1202hzzz32i21ch6bh203h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KNXSYU-03-6VG-01
-Date: Thu, 6 Aug 2009 06:11:28 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Matt Fleming <mjf@gentoo.org>,
-       Dave Airlie <airlied@gmail.com>
-Subject: Re: [PATCH 0/3] [GIT PULL][2.6.31] ring-buffer/tracing: various
-	fixes
-Message-ID: <20090806041127.GE25478@erda.amd.com>
-References: <20090806025206.306150861@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20090806025206.306150861@goodmis.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 06 Aug 2009 04:11:29.0559 (UTC) FILETIME=[F95EFA70:01CA164B]
+	Thu, 6 Aug 2009 00:16:17 -0400
+Subject: Re: [PATCH] pci_ids.h: add new Atheros USB vendor ID
+From: Marcel Holtmann <marcel@holtmann.org>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: linville@tuxdriver.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, mcgrof@gmail.com,
+       zhifeng.cai@atheros.com, stephen.chen@atheros.com
+In-Reply-To: <1249523981-26601-1-git-send-email-lrodriguez@atheros.com>
+References: <1249523981-26601-1-git-send-email-lrodriguez@atheros.com>
+Content-Type: text/plain
+Date: Wed, 05 Aug 2009 21:16:10 -0700
+Message-Id: <1249532170.21101.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05.08.09 22:52:06, Steven Rostedt wrote:
+Hi Luiz,
+
+> New Atheros USB devices will use 0x0cf3. The first device
+> will be ar9271, for which we are adding support for.
 > 
-> Ingo,
+> Cc: zhifeng.cai@atheros.com
+> Cc: stephen.chen@atheros.com
+> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+> ---
 > 
-> Please pull the latest tip/tracing/urgent tree, which can be found at:
+> John, sending this through you as this is only
+> specific to wireless, at least at the moment.
 > 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/urgent
+>  include/linux/pci_ids.h |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+> index 73b46b6..27f4e6b 100644
+> --- a/include/linux/pci_ids.h
+> +++ b/include/linux/pci_ids.h
+> @@ -2170,6 +2170,7 @@
+>  #define PCI_DEVICE_ID_BCM1250_HT	0x0002
+>  
+>  #define PCI_VENDOR_ID_ATHEROS		0x168c
+> +#define PCI_VENDOR_ID_ATHEROS_USB	0x0cf3
 
-Steven,
+this is confusing the hell out of me. What are you adding here. A USB
+vendor id or a PCI one. Is the ar9271 a PCI device or a USB device?
 
-if there is the chance I would like to see this fix in -rc6 too (I
-know you wanted to test it):
+Regards
 
- 193df82 ring-buffer: Fix advance of reader in rb_buffer_peek()
+Marcel
 
-You can cherry-pick from my oprofile/master tree or linux-next. The
-bug throws warnings with oprofile under high loads and I already got
-bug reports of this.
-
-Thanks,
-
--Robert
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
 
