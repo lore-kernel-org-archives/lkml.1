@@ -1,79 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbZHFT5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbZHFT6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756621AbZHFT5S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 15:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756610AbZHFT5Q
+	id S1756630AbZHFT6J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 15:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756581AbZHFT6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 15:57:16 -0400
-Received: from kroah.org ([198.145.64.141]:55330 "EHLO coco.kroah.org"
+	Thu, 6 Aug 2009 15:58:08 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:59750 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756585AbZHFT5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 15:57:05 -0400
-Date: Thu, 6 Aug 2009 12:55:05 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Lutomirski <luto@mit.edu>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, gregkh@suse.de
-Subject: Re: Is anyone maintaining (or even using) usbtmc?
-Message-ID: <20090806195505.GB29723@kroah.com>
-References: <cb0375e10908031414g471bacf5lab685958b60bfdfa@mail.gmail.com>
- <20090803212015.GC28579@kroah.com>
- <cb0375e10908031449l2005a468v9683eb5a078cf226@mail.gmail.com>
- <cb0375e10908031501w610d1e27ya69d7c2011f93555@mail.gmail.com>
- <cb0375e10908031600v4db81c51hd98094ef9a0a5a16@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <cb0375e10908031600v4db81c51hd98094ef9a0a5a16@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1756175AbZHFT6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 15:58:05 -0400
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: Eric.Moore@lsi.com, jeff@garzik.org
+Subject: [PATCH 0/3]: blk-iopoll, a polled completion API for block devices
+Date: Thu,  6 Aug 2009 21:58:02 +0200
+Message-Id: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com>
+X-Mailer: git-send-email 1.6.3.2.306.g4f4fa
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 03, 2009 at 07:00:47PM -0400, Andrew Lutomirski wrote:
-> On Mon, Aug 3, 2009 at 6:01 PM, Andrew Lutomirski<luto@mit.edu> wrote:
-> > On Mon, Aug 3, 2009 at 5:49 PM, Andrew Lutomirski<luto@mit.edu> wrote:
-> >> On Mon, Aug 3, 2009 at 5:20 PM, Greg KH<greg@kroah.com> wrote:
-> >>> On Mon, Aug 03, 2009 at 05:14:56PM -0400, Andrew Lutomirski wrote:
-> >>>> Hi all-
-> >>>>
-> >>>> I'm trying to use usbtmc on an Aglient N9310A (The only TMC device I
-> >>>> have), and it sort of works, but it seems to be both extremely buggy
-> >>>> and missing a good deal of rather important functionality.  Is there
-> >>>> anyone maintaining it?
-> >>>
-> >>> Yes, me.
-> >>>
-> >>>> If the answer is yes, I can describe the bugs (logspam, spurious
-> >>>> errors, delayed messages, inability to read status, etc.) in greater
-> >>>> detail.
-> >>>
-> >>> Please do, but also please use the latest version, in 2.6.30.3, we fixed
-> >>> some bad problems in it recently.
-> >>
-> >> I am.
-> >>
-> >> Almost anything I do triggers this:
-> >>
-> >> usbtmc 3-1:1.0: Unable to read data, error -110
-> >>
-> 
-> My N9310A is now totally wedged.  Anything I can think of doing (send
-> queries, send *RST, or any of the CLEAR ioctls) fails and spews stuff
-> like this:
-> 
-> [360946.881771] usbtmc 3-1:1.0: Unable to send data, error -110
-> [360946.890770] usbtmc 3-1:1.0: usb_bulk_msg returned -110
-> [360965.303400] usb 3-1: usb_control_msg returned -110
-> [360965.312404] usb 3-1: usb_control_msg returned -110
-> [361052.364626] usbtmc 3-1:1.0: usb_bulk_msg returned -110
-> [361055.114579] usbtmc 3-1:1.0: Unable to send data, error -110
-> [361055.123574] usbtmc 3-1:1.0: usb_bulk_msg returned -110
-> 
-> I'm going to leave it like this in case you want me to try something.
+Hi,
 
-I really don't know, sorry.  Bad firmware on the device?
+This is something I've been playing around and I have hopes of merging
+the core for 2.6.32, so I thought I'd send it out for some review and
+inspection.
 
-odd.
+Basically this implements NAPI for block devices, and much of the core
+is essentially lifted from there. Since NAPI is already generic, there's
+a possibility for some code reuse too. It's pretty small though and
+there are a few small differences, so I just left it as-is for this
+posting.
 
-greg k-h
+I've gotten good results with this on SSD devices, reducing the
+interrupt rate a lot. And that's just for single disks, if you had
+a bunch of those hanging off several controllers, it would look more
+interesting I'm sure.
+
+Apart from the core, I did patches for ahci and mpt. The former mostly
+as a proof of concept, it's been running my laptop and test box for
+months. There may be a problem with the ack part, as per the comment at
+the end of ahci_interrupt(). So far I haven't observed any bad behaviour.
+mpt is more interesting, as it's more geared at the market where this
+should make some impact. The mpt patch should also be fully stable,
+I've tested it on several platforms and adapters.
+
+As to results, they vary. On a faster box, I can reduce the interrupt
+rate by ~28% at only 50k IOPS. On a slower box, at 30k IOPS it'll drop
+by as much as 95%. Latencies numbers are as good (or better). On
+the faster box, the mpt controller even had interrupt coalescing enabled
+and it still made a big difference.
+
+Anyway, YMMV, I would appreciate some test results (and as usual, that
+even includes just saying that it boots and functions for you). If
+people feel adventurous, patches for other controllers will be happily
+queued up for testing. I may even be convinced to implement support
+for your controller of choice, if you have some fast storage hooked up
+and would like to experiment. Generally, adding support to a driver is
+not very hard and the two conversions included were also meant to serve
+as an inspiration.
+
+Patches are against current -git. You can also pull them from
+
+  git://git.kernel.dk/linux-2.6-block.git blk-iopoll
+
+
+ block/Makefile                   |    2 
+ block/blk-iopoll.c               |  227 +++++++++++++++++++++++++++++++
+ drivers/ata/ahci.c               |   53 ++++++-
+ drivers/message/fusion/mptbase.c |   99 +++++++++++--
+ drivers/message/fusion/mptbase.h |    3 
+ include/linux/blk-iopoll.h       |   41 +++++
+ include/linux/interrupt.h        |    1 
+ include/linux/libata.h           |    2 
+ kernel/sysctl.c                  |   10 +
+ 9 files changed, 419 insertions(+), 19 deletions(-)
+
+-- 
+Jens Axboe
+
+
