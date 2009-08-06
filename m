@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbZHFVcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbZHFVdF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756784AbZHFVcP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 17:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756366AbZHFVcP
+	id S1756794AbZHFVdF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 17:33:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756366AbZHFVdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 17:32:15 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:47769 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1756297AbZHFVcO (ORCPT
+	Thu, 6 Aug 2009 17:33:04 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37740 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756297AbZHFVdD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 17:32:14 -0400
-X-Greylist: delayed 1216 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Aug 2009 17:32:11 EDT
-Date: Thu, 6 Aug 2009 17:09:55 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Rik van Riel <riel@redhat.com>, "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-Message-ID: <20090806210955.GA14201@c2.user-mode-linux.org>
-References: <20090805024058.GA8886@localhost> <20090805155805.GC23385@random.random> <20090806100824.GO23385@random.random> <4A7AAE07.1010202@redhat.com> <20090806102057.GQ23385@random.random> <20090806105932.GA1569@localhost> <4A7AC201.4010202@redhat.com> <20090806130631.GB6162@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090806130631.GB6162@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 6 Aug 2009 17:33:03 -0400
+Date: Thu, 6 Aug 2009 22:32:57 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Eric.Moore@lsi.com, jeff@garzik.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 1/3] block: add blk-iopoll, a NAPI like approach for
+ block devices
+Message-ID: <20090806223257.0c33cf15@lxorguk.ukuu.org.uk>
+In-Reply-To: <1249588685-4662-2-git-send-email-jens.axboe@oracle.com>
+References: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com>
+	<1249588685-4662-2-git-send-email-jens.axboe@oracle.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Side question -
-	Is there a good reason for this to be in shrink_active_list()
-as opposed to __isolate_lru_page?
+> doing the command completion when the irq occurs, schedule a dedicated
+> softirq in the hopes that we will complete more IO when the iopoll
+> handler is invoked. Devices have a budget of commands assigned, and will
+> stay in polled mode as long as they continue to consume their budget
+> from the iopoll softirq handler. If they do not, the device is set back
+> to interrupt completion mode.
 
-		if (unlikely(!page_evictable(page, NULL))) {
-			putback_lru_page(page);
-			continue;
-		}
+This seems a little odd for pure ATA except for NCQ commands. Normal ATA
+is notoriously completion/reissue latency sensitive [to the point I
+suspect we should be dequeuing 2 commands from SCSI and loading the next
+in the completion handler as soon as we recover the result task file and
+see no error rather than going up and down the stack)
 
-Maybe we want to minimize the amount of code under the lru lock or
-avoid duplicate logic in the isolate_page functions.
+What do the numbers look like ?
 
-But if there are important mlock-heavy workloads, this could make the
-scan come up empty, or at least emptier than we might like.
+> This patch holds the core bits for blk-iopoll, device driver support
+> sold separately.
 
-				Jeff
+You've been at Oracle too long ;) You'll be telling me its not a
+supported configuration next.
 
--- 
-Work email - jdike at linux dot intel dot com
+Alan
