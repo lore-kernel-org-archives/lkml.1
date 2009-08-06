@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbZHFQjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbZHFQnC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756188AbZHFQjw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 12:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbZHFQjw
+	id S1756054AbZHFQnC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 12:43:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbZHFQnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 12:39:52 -0400
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:36422 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752922AbZHFQjv (ORCPT
+	Thu, 6 Aug 2009 12:43:01 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40737 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753360AbZHFQnA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 12:39:51 -0400
-Message-ID: <4A7B074E.1050907@linux.vnet.ibm.com>
-Date: Thu, 06 Aug 2009 22:09:42 +0530
-From: gowrishankar <gowrishankar.m@linux.vnet.ibm.com>
-Reply-To: gowrishankar.m@linux.vnet.ibm.com
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 6 Aug 2009 12:43:00 -0400
+Date: Thu, 6 Aug 2009 17:40:01 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Joe Perches <joe@perches.com>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-arm-kernel@lists.arm.linux.org.uk,
+       David John <davidjon@xenontk.org>, Pavel Machek <pavel@ucw.cz>,
+       Erik Mouw <mouw@nl.linux.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
+	sections
+Message-ID: <20090806164001.GA31507@flint.arm.linux.org.uk>
+References: <20090806125751.7d0253ce@nij0285> <20090806113104.GK31370@elf.ucw.cz> <20090806120826.GC27773@flint.arm.linux.org.uk> <4A7ACC8D.7030706@xenontk.org> <20090806124048.GD27773@flint.arm.linux.org.uk> <1249563730.10297.13.camel@Joe-Laptop.home> <20090806133349.GF27773@flint.arm.linux.org.uk> <1249568614.10297.20.camel@Joe-Laptop.home> <20090806150322.GX2080@trinity.fluff.org> <1249575528.3467.9.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-To: Clark Williams <williams@redhat.com>
-CC: gowrishankar.m@linux.vnet.ibm.com, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>
-Subject: Re: [ANNOUNCE] 2.6.31-rc4-rt1 (problem with CONFIG_SYSFS_DEPRECATED_V2)
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain> <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <4A79214B.5070003@linux.vnet.ibm.com>	<20090805083247.0b84d1c0@torg> <4A7A7C37.7020609@linux.vnet.ibm.com> <20090806093628.216bb27f@torg>
-In-Reply-To: <20090806093628.216bb27f@torg>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249575528.3467.9.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clark Williams wrote:
-> On Thu, 06 Aug 2009 12:16:15 +0530
-> gowrishankar <gowrishankar.m@linux.vnet.ibm.com> wrote:
+On Thu, Aug 06, 2009 at 09:18:48AM -0700, Joe Perches wrote:
+> On Thu, 2009-08-06 at 16:03 +0100, Ben Dooks wrote:
+> > On Thu, Aug 06, 2009 at 07:23:34AM -0700, Joe Perches wrote:
+> > > On Thu, 2009-08-06 at 14:33 +0100, Russell King wrote:
+> > > > On Thu, Aug 06, 2009 at 06:02:10AM -0700, Joe Perches wrote:
+> > > > > I suspect a vger based ARM list would not require you to "run" it.
+> > > > There is already a vger based ARM list.  I see no signs of people
+> > > > moving over to it.  I summise that is because most people don't
+> > > > have a problem, and most people are happy with the existing lists
+> > > > as they stand.  Could it be that it's only a minority who are
+> > > > having issues.  I don't know.
+> > > 
+> > > Perhaps there is too little exposure of the
+> > > linux-arm@vger.kernel.org mailing list.
+> > 
+> > I'm not subscribed, please do not add any of the samsung entries
+> > with linux-arm@vger.kernel.org list.
 > 
->> Only if I set CONFIG_SYSFS_DEPRECATED_V2=y, I could successfully boot
->> which I have tested with this kernel in same system.
->>
->> Is it not set by default from 2.6.31 onwards ?
->>
->> Thanks,
->> Gowri
+> Perhaps this patch is more palatable.  It's certainly shorter.
 > 
-> I wasn't sure when it would move from 'y' to 'n', but looks like .31 is
-> it. You'll need that option back on for booting on RHEL (since the boot
-> infrastructure uses the old /sys format) but I don't think you'll need
-> it for Fedora. Not sure about SLERT. Bet Greg Haskins would know
-> though :)
-> 
+> It does add both linux-arm-kernel and linux-arm to section
+> SIMTEC EB2410ITX (BAST).  By the way, another section you
+> maintain, SIMTEC EB110ATX (Chalice CATS), has neither a
+> pattern entry nor a mailing list entry.  Should it?
 
-Thanks Clark! Yes, Fedora 10 (or 11) might have updated mkinitrd as in
-https://bugzilla.redhat.com/show_bug.cgi?id=489151 , if I am right!
+I recently had to remove those pattern entries because they were plainly
+wrong (thanks to those who didn't CC anyone in the ARM community with
+those patches.)  EB110ATX != EBSA110.  See ce53895.
 
-Regards,
-Gowri
-> Clark
+I had asked the maintainer of that platform to submit a patch to add the
+correct entries.  Rather than having plainly bogus entries in there,
+let's have either nothing or the right entries.
 
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
