@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbZHFS5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756508AbZHFS6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755918AbZHFS5w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 14:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbZHFS5s
+	id S1756508AbZHFS6R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 14:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756115AbZHFS5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 14:57:48 -0400
-Received: from casper.infradead.org ([85.118.1.10]:51607 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753279AbZHFS5r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 14:57:47 -0400
-Subject: [PATCH] perf tools: Fix reading of perf.data file header
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Brice Goglin <Brice.Goglin@inria.fr>
-Cc: Ingo Molnar <mingo@elte.hu>, paulus@samba.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A7B175B.8030000@inria.fr>
-References: <4A3FEF75.2020804@inria.fr> <20090623131450.GA31519@elte.hu>
-	 <20090623134749.GA6897@elte.hu> <4A40DFF5.7010207@inria.fr>
-	 <20090623143601.GA13415@elte.hu> <4A40F31F.4030609@inria.fr>
-	 <20090629192913.GA29295@elte.hu>  <4A7B0C02.7060704@inria.fr>
-	 <1249580428.4975.14.camel@laptop>  <4A7B175B.8030000@inria.fr>
-Content-Type: text/plain
-Date: Thu, 06 Aug 2009 20:57:41 +0200
-Message-Id: <1249585061.4975.17.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Aug 2009 14:57:55 -0400
+Received: from kroah.org ([198.145.64.141]:36187 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755995AbZHFS5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 14:57:53 -0400
+Date: Thu, 6 Aug 2009 11:56:02 -0700
+From: Greg KH <greg@kroah.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+       Richard Purdie <rpurdie@rpsys.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
+Subject: Re: [RFC PATCH V2 1/2] introduce ALS sysfs class
+Message-ID: <20090806185602.GC28664@kroah.com>
+References: <1249547498.2670.499.camel@rzhang-dt>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249547498.2670.499.camel@rzhang-dt>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-06 at 19:48 +0200, Brice Goglin wrote:
-> Peter Zijlstra wrote:
-> > On Thu, 2009-08-06 at 18:59 +0200, Brice Goglin wrote:
-> >
-> >   
-> >> I can easily sort them by thread id, but I don't know how to match my 4
-> >> events with each group of 4 line.
-> >>
-> >> Maybe perf report earned some better way to show per-thread statistics
-> >> in the meantime?
-> >>     
-> >
-> > Nah, it needs some love..
-> >
-> > The below might be a starting point, it compiles, didn't check the
-> > result. builtin-stat might be a nice place to look for more bits..
-> >   
-> 
-> Thanks, now I get for each thread:
-> 
-> 0x8fc0 [0x30]: PERF_EVENT_READ: 6268 6268 FAIL 209113
-> 0x9698 [0x30]: PERF_EVENT_READ: 6268 6268 FAIL 307215
-> 0x9cf8 [0x30]: PERF_EVENT_READ: 6268 6268 FAIL 9203221
-> 0x8bb8 [0x30]: PERF_EVENT_READ: 6268 6268 raw 0x1000001e0 494628
-> 
-> Looks like it fails to stringified my raw events except the first one.
+On Thu, Aug 06, 2009 at 04:31:38PM +0800, Zhang Rui wrote:
+> +#define PREFIX "ALS: "
 
----
-Subject: perf tools: Fix reading of perf.data file header
+This is not used.
 
-A silly mistake made us re-read the first attribute for every attribute.
+> +	/* sys I/F */
+> +	result = device_create_file(&als->device, &dev_attr_illuminance);
+> +	if (result)
+> +		goto unregister_device;
+> +
+> +	result = device_create_file(&als->device, &dev_attr_desc);
+> +	if (result)
+> +		goto unregister_device;
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index 450384b..95a44bc 100644
---- a/tools/perf/util/header.c
-+++ b/tools/perf/util/header.c
-@@ -213,9 +213,10 @@ struct perf_header *perf_header__read(int fd)
- 
- 	for (i = 0; i < nr_attrs; i++) {
- 		struct perf_header_attr *attr;
--		off_t tmp = lseek(fd, 0, SEEK_CUR);
-+		off_t tmp;
- 
- 		do_read(fd, &f_attr, sizeof(f_attr));
-+		tmp = lseek(fd, 0, SEEK_CUR);
- 
- 		attr = perf_header_attr__new(&f_attr.attr);
- 
+These should be default attributes for the device, that way they get
+created before userspace is told the device is there, removing any race
+conditions you will have otherwise.
 
+> +
+> +	return als;
+> +
+> +unregister_device:
+> +	device_unregister(&als->device);
+> +	return ERR_PTR(result);
 
+And you weren't cleaning up the file if the second one failed.
+
+thanks,
+
+greg k-h
