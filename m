@@ -1,124 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbZHFGIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752763AbZHFGOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754133AbZHFGIR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 02:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbZHFGIR
+	id S1752763AbZHFGOR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 02:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbZHFGOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 02:08:17 -0400
-Received: from [222.73.24.84] ([222.73.24.84]:61503 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752506AbZHFGIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 02:08:16 -0400
-Message-ID: <4A7A72FA.9040102@cn.fujitsu.com>
-Date: Thu, 06 Aug 2009 14:06:50 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 6 Aug 2009 02:14:17 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:51417 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751576AbZHFGOP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 02:14:15 -0400
+To: Amerigo Wang <amwang@redhat.com>
+Cc: Neil Horman <nhorman@redhat.com>, linux-kernel@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>
+	<m1eirqtmey.fsf@fess.ebiederm.org>
+	<20090805140408.GJ7259@hmsreliant.think-freely.org>
+	<m1skg5vpgg.fsf@fess.ebiederm.org> <4A7A3A78.7080200@redhat.com>
+	<m1y6pxr737.fsf@fess.ebiederm.org> <4A7A506B.2060008@redhat.com>
+	<m1ljlxsiox.fsf@fess.ebiederm.org> <4A7A70E5.2010204@redhat.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 05 Aug 2009 23:14:10 -0700
+In-Reply-To: <4A7A70E5.2010204@redhat.com> (Amerigo Wang's message of "Thu\, 06 Aug 2009 13\:57\:57 +0800")
+Message-ID: <m1bpmtqxjh.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <f.weisbecker@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] tracing/filters: Support filtering for char * strings
-References: <4A7A72BD.5030201@cn.fujitsu.com>
-In-Reply-To: <4A7A72BD.5030201@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: amwang@redhat.com, avorontsov@ru.mvista.com, mingo@elte.hu, akpm@linux-foundation.org, linux-ia64@vger.kernel.org, tony.luck@intel.com, linux-kernel@vger.kernel.org, nhorman@redhat.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Amerigo Wang <amwang@redhat.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [Patch 0/7] Implement crashkernel=auto
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Usually, char * entries are dangerous in traces because the string
-can be released whereas a pointer to it can still wait to be read from
-the ring buffer.
+Amerigo Wang <amwang@redhat.com> writes:
 
-But sometimes we can assume it's safe, like in case of RO data
-(eg: __file__ or __line__, used in bkl trace event). If these RO data
-are in a module and so is the call to the trace event, then it's safe,
-because the ring buffer will be flushed once this module get unloaded.
+> Eric W. Biederman wrote:
+>> Amerigo Wang <amwang@redhat.com> writes:
+>>
+>>   
+>>>> No the crashdump mechanism is useless because user space is already
+>>>> broken and unusable.
+>>>>       
+>>> Again, why broken?
+>>>     
+>>
+>> To get a stock stat drive by hand I had to list about 5 kernel modules
+>> in the right magic order in /etc/kdump.conf
+>>
+>> Neither mount by label or mount by uuid when specified in /etc/kdump.conf
+>> I had to hack mkdumprd to get an initrd that even finds the proper disk
+>> to mount.
+>>   
+>
+> You are saying that there is some difficulty to make a initrd for kdump, but I
+> am sorry that I can't see any relations between this and my patch. What is your
+> point here?
 
-To allow char * to be treated as a string:
+You are trying to make it easier for end users.
 
-	TRACE_EVENT(...,
+I am saying the problem is in user space.
 
-		TP_STRUCT__entry(
-			__field_ext(const char *, name, FILTER_PTR_STRING)
-			...
-		)
+I am saying also that the kernel doesn't have a clue what you are
+going to load with kexec on panic to handle panics.  Maybe it is a
+custom stand alone binary that only needs 5K.  So the kernel doesn't
+have a clue what the right size to reserve.
 
-		...
-	);
+I think if what you were proposing was part of some coherent story for
+a complete implementation I would consider it more.  Instead this just
+appears to be a reaction to how frustrating the user space
+implementation is, and fixing things in the kernel instead of in user
+space.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- include/linux/ftrace_event.h       |    1 +
- kernel/trace/trace_events_filter.c |   26 +++++++++++++++++++++++---
- 2 files changed, 24 insertions(+), 3 deletions(-)
+The fact that user space is broken to the point of usability on fedora
+simply reinforces the point to me that the problem is there not in the
+kernel.  So I am pushing back and saying get your user space act together
+and then this kernel option won't matter.
 
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index 14c388e..1a98a61 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -141,6 +141,7 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
- enum {
- 	FILTER_STATIC_STRING = 1,
- 	FILTER_DYN_STRING,
-+	FILTER_PTR_STRING,
- 	FILTER_OTHER,
- };
- 
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 5e7f031..b16923e 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -163,6 +163,20 @@ static int filter_pred_string(struct filter_pred *pred, void *event,
- 	return match;
- }
- 
-+/* Filter predicate for char * pointers */
-+static int filter_pred_pchar(struct filter_pred *pred, void *event,
-+			     int val1, int val2)
-+{
-+	char **addr = (char **)(event + pred->offset);
-+	int cmp, match;
-+
-+	cmp = strncmp(*addr, pred->str_val, pred->str_len);
-+
-+	match = (!cmp) ^ pred->not;
-+
-+	return match;
-+}
-+
- /*
-  * Filter predicate for dynamic sized arrays of characters.
-  * These are implemented through a list of strings at the end
-@@ -489,7 +503,8 @@ int filter_assign_type(const char *type)
- static bool is_string_field(struct ftrace_event_field *field)
- {
- 	return field->filter_type == FILTER_DYN_STRING ||
--	       field->filter_type == FILTER_STATIC_STRING;
-+	       field->filter_type == FILTER_STATIC_STRING ||
-+	       field->filter_type == FILTER_PTR_STRING;
- }
- 
- static int is_legal_op(struct ftrace_event_field *field, int op)
-@@ -579,11 +594,16 @@ static int filter_add_pred(struct filter_parse_state *ps,
- 	}
- 
- 	if (is_string_field(field)) {
-+		pred->str_len = field->size;
-+
- 		if (field->filter_type == FILTER_STATIC_STRING)
- 			fn = filter_pred_string;
--		else
-+		else if (field->filter_type == FILTER_DYN_STRING)
- 			fn = filter_pred_strloc;
--		pred->str_len = field->size;
-+		else {
-+			fn = filter_pred_pchar;
-+			pred->str_len = strlen(pred->str_val);
-+		}
- 	} else {
- 		if (field->is_signed)
- 			ret = strict_strtoll(pred->str_val, 0, &val);
--- 
-1.6.3
+I am further saying that this selecting how much memory to use is the least
+of your problems.
 
+Eric
