@@ -1,120 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbZHFMnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbZHFMnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755294AbZHFMnI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 08:43:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbZHFMnH
+	id S1755389AbZHFMnl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 08:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZHFMnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 08:43:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41314 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752006AbZHFMnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 08:43:05 -0400
-Date: Thu, 6 Aug 2009 12:42:34 GMT
-From: tip-bot for Lai Jiangshan <laijs@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       laijs@cn.fujitsu.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       laijs@cn.fujitsu.com
-In-Reply-To: <4A6EEE5E.2000001@cn.fujitsu.com>
-References: <4A6EEE5E.2000001@cn.fujitsu.com>
-Subject: [tip:tracing/core] tracing: Simplify print_graph_cpu()
-Message-ID: <tip-0c9e6f639aed490202bbc79214f4495cf4bfde58@git.kernel.org>
-Git-Commit-ID: 0c9e6f639aed490202bbc79214f4495cf4bfde58
-X-Mailer: tip-git-log-daemon
+	Thu, 6 Aug 2009 08:43:40 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39566 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753016AbZHFMnk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 08:43:40 -0400
+Date: Thu, 6 Aug 2009 13:40:49 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: David John <davidjon@xenontk.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Erik Mouw <mouw@nl.linux.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: linux-arm-kernel useless for development (was Re: Your message
+	to Linux-arm-kernel awaits moderator approval)
+Message-ID: <20090806124048.GD27773@flint.arm.linux.org.uk>
+References: <mailman.3653.1249217530.31043.linux-arm-kernel@lists.arm.linux.org.uk> <20090804100051.GA17106@elf.ucw.cz> <20090804223922.GD18365@flint.arm.linux.org.uk> <20090806125751.7d0253ce@nij0285> <20090806113104.GK31370@elf.ucw.cz> <20090806120826.GC27773@flint.arm.linux.org.uk> <4A7ACC8D.7030706@xenontk.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 06 Aug 2009 12:42:35 +0000 (UTC)
+In-Reply-To: <4A7ACC8D.7030706@xenontk.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0c9e6f639aed490202bbc79214f4495cf4bfde58
-Gitweb:     http://git.kernel.org/tip/0c9e6f639aed490202bbc79214f4495cf4bfde58
-Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-AuthorDate: Tue, 28 Jul 2009 20:26:06 +0800
-Committer:  Frederic Weisbecker <fweisbec@gmail.com>
-CommitDate: Thu, 6 Aug 2009 07:28:04 +0200
+On Thu, Aug 06, 2009 at 05:59:01PM +0530, David John wrote:
+> I think the basis of Pavel's complaint is that the ARM mailing list is
+> difficult to work with for casual users who might want to forward say,
+> a simple bug report.
+> 
+> If data protection laws prevent you from keeping an open list, can't you
+> host the list at kernel.org or elsewhere?
 
-tracing: Simplify print_graph_cpu()
+If only it were as simple as that.
 
-print_graph_cpu() is little over-designed.
+Basically, to properly resolve this I need a *UK* solicitor who is
+well versed in data protection issues to advise.  Given that this
+is purely voluntary, I'm not willing to spend vast sums of money in
+the legal domain to sort this issue out.
 
-And "log10_all" may be wrong when there are holes in cpu_online_mask:
-the max online cpu id > cpumask_weight(cpu_online_mask)
+Neither am I willing to take a chance.
 
-So change it by using a static column length for the cpu matching
-nr_cpu_ids number of decimal characters.
+And no, moving the list outside the EU domain doesn't relieve any
+of the lawful issues unless (as I understand the law) someone outside
+the EU were to run the list.  And people would have to independently
+subscribe to it - I wouldn't be able to export the existing subscriber
+list outside the EU.
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <4A6EEE5E.2000001@cn.fujitsu.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Now, people here can tell me I'm wrong, but they aren't in the legal
+profession...  Would you get a gardener to fix your gas boiler, or
+would you get a qualified and registered gas engineer in?
 
-
----
- kernel/trace/trace_functions_graph.c |   30 ++++--------------------------
- 1 files changed, 4 insertions(+), 26 deletions(-)
-
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index abf7c4a..e30472d 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -183,43 +183,19 @@ static void graph_trace_reset(struct trace_array *tr)
- 	unregister_ftrace_graph();
- }
- 
--static inline int log10_cpu(int nb)
--{
--	if (nb / 100)
--		return 3;
--	if (nb / 10)
--		return 2;
--	return 1;
--}
-+static int max_bytes_for_cpu;
- 
- static enum print_line_t
- print_graph_cpu(struct trace_seq *s, int cpu)
- {
--	int i;
- 	int ret;
--	int log10_this = log10_cpu(cpu);
--	int log10_all = log10_cpu(cpumask_weight(cpu_online_mask));
--
- 
- 	/*
- 	 * Start with a space character - to make it stand out
- 	 * to the right a bit when trace output is pasted into
- 	 * email:
- 	 */
--	ret = trace_seq_printf(s, " ");
--
--	/*
--	 * Tricky - we space the CPU field according to the max
--	 * number of online CPUs. On a 2-cpu system it would take
--	 * a maximum of 1 digit - on a 128 cpu system it would
--	 * take up to 3 digits:
--	 */
--	for (i = 0; i < log10_all - log10_this; i++) {
--		ret = trace_seq_printf(s, " ");
--		if (!ret)
--			return TRACE_TYPE_PARTIAL_LINE;
--	}
--	ret = trace_seq_printf(s, "%d) ", cpu);
-+	ret = trace_seq_printf(s, " %*d) ", max_bytes_for_cpu, cpu);
- 	if (!ret)
- 		return TRACE_TYPE_PARTIAL_LINE;
- 
-@@ -919,6 +895,8 @@ static struct tracer graph_trace __read_mostly = {
- 
- static __init int init_graph_trace(void)
- {
-+	max_bytes_for_cpu = snprintf(NULL, 0, "%d", nr_cpu_ids - 1);
-+
- 	return register_tracer(&graph_trace);
- }
- 
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
