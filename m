@@ -1,77 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171AbZHFEgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752232AbZHFExq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753171AbZHFEgH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 00:36:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZHFEgF
+	id S1752232AbZHFExq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 00:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbZHFExp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 00:36:05 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:40787 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751287AbZHFEgD (ORCPT
+	Thu, 6 Aug 2009 00:53:45 -0400
+Received: from mail-yw0-f183.google.com ([209.85.211.183]:34589 "EHLO
+	mail-yw0-f183.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751321AbZHFExp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 00:36:03 -0400
-Subject: Re: [PATCH] pci_ids.h: add new Atheros USB vendor ID
-From: Marcel Holtmann <marcel@holtmann.org>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, zhifeng.cai@atheros.com,
-       stephen.chen@atheros.com, linux-usb@vger.kernel.org
-In-Reply-To: <43e72e890908052126v53aa1b4sb7a48e19f98fdfa6@mail.gmail.com>
-References: <1249523981-26601-1-git-send-email-lrodriguez@atheros.com>
-	 <1249532170.21101.3.camel@localhost.localdomain>
-	 <43e72e890908052126v53aa1b4sb7a48e19f98fdfa6@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 05 Aug 2009 21:35:57 -0700
-Message-Id: <1249533357.21101.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Aug 2009 00:53:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sjc+zo2L8fWsaA06ASJRkB/GMu0i6ZwCi9PkMx/fhQQFfG65F8R+LcZ2jbyN+edYz2
+         B/6c/tGb9UJCrZs0p3tMo0+Spj+BmodIhnRZQqgYoWwm8VufkAtGwDGoxqQ6NreJIPF+
+         DkgqzJAxKQyL3FS/jSR6DKw9y0/R1bqZQdAxo=
+Date: Thu, 6 Aug 2009 06:53:40 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] ftrace: Unify effect of writing to trace_options
+	and option/*
+Message-ID: <20090806045339.GD24609@nowhere>
+References: <4A7A4D7B.7010706@cn.fujitsu.com> <4A7A4DBC.6020403@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A7A4DBC.6020403@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Luiz,
-
-> >> New Atheros USB devices will use 0x0cf3. The first device
-> >> will be ar9271, for which we are adding support for.
-> >>
-> >> Cc: zhifeng.cai@atheros.com
-> >> Cc: stephen.chen@atheros.com
-> >> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
-> >> ---
-> >>
-> >> John, sending this through you as this is only
-> >> specific to wireless, at least at the moment.
-> >>
-> >>  include/linux/pci_ids.h |    1 +
-> >>  1 files changed, 1 insertions(+), 0 deletions(-)
-> >>
-> >> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-> >> index 73b46b6..27f4e6b 100644
-> >> --- a/include/linux/pci_ids.h
-> >> +++ b/include/linux/pci_ids.h
-> >> @@ -2170,6 +2170,7 @@
-> >>  #define PCI_DEVICE_ID_BCM1250_HT     0x0002
-> >>
-> >>  #define PCI_VENDOR_ID_ATHEROS                0x168c
-> >> +#define PCI_VENDOR_ID_ATHEROS_USB    0x0cf3
-> >
-> > this is confusing the hell out of me. What are you adding here.
+On Thu, Aug 06, 2009 at 11:27:56AM +0800, Zhaolei wrote:
+> "echo noglobal-clock > trace_options" can be used to change trace
+> clock but "echo 0 > options/global-clock" can't.
 > 
-> No you're right, my fault.
+> We can fix it by using set_tracer_flags() in trace_options_core_write().
 > 
-> > A USB
-> > vendor id or a PCI one. Is the ar9271 a PCI device or a USB device?
+> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> ---
+>  kernel/trace/trace.c |    5 ++---
+>  1 files changed, 2 insertions(+), 3 deletions(-)
 > 
-> Its only USB.
-> 
-> Thanks... hm I see no USB vendor id headers. Guess we won't need to add this.
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 464b7bb..2fa2bac 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -3893,12 +3893,11 @@ trace_options_core_write(struct file *filp, const char __user *ubuf, size_t cnt,
+>  
+>  	switch (val) {
+>  	case 0:
+> -		trace_flags &= ~(1 << index);
+> +		set_tracer_flags(1 << index, 0);
+>  		break;
+>  	case 1:
+> -		trace_flags |= 1 << index;
+> +		set_tracer_flags(1 << index, 1);
+>  		break;
+> -
+>  	default:
+>  		return -EINVAL;
+>  	}
 
-the closest we have is drivers/hid/hid-ids.h and we might just should
-have Greg create a usb-ids.h file.
 
-Regards
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-Marcel
+It applies on .31 BTW.
 
+That makes me think: shouldn't it be better to keep
+tracing/options for global options and options/* for
+local tracer options? That breaks the ABI but...
 
