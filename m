@@ -1,97 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751549AbZHFGqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752018AbZHFGyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751549AbZHFGqc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 02:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751048AbZHFGqb
+	id S1752018AbZHFGyf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 02:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbZHFGye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 02:46:31 -0400
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:51494 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750952AbZHFGqa (ORCPT
+	Thu, 6 Aug 2009 02:54:34 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:54026 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751379AbZHFGyc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 02:46:30 -0400
-Message-ID: <4A7A7C37.7020609@linux.vnet.ibm.com>
-Date: Thu, 06 Aug 2009 12:16:15 +0530
-From: gowrishankar <gowrishankar.m@linux.vnet.ibm.com>
-Reply-To: gowrishankar.m@linux.vnet.ibm.com
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 6 Aug 2009 02:54:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=xVn3yJUmoCjOXox51/d80Sqe3plJIxJ2h/1UOpZSyWupcTpqVKqSzaHSqCE4WvJg/0
+         5bogVaX+QViLX9j4nqPK1r4A3VRt6VUVqL22od9qsN6fU8vMDM3PFXvujwNE+HSel9tI
+         I5Ae8VSdzqDbMOtyQ+Pc3YSCY/2PCGAhkrFGg=
 MIME-Version: 1.0
-To: Clark Williams <williams@redhat.com>
-CC: gowrishankar.m@linux.vnet.ibm.com, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>
-Subject: Re: [ANNOUNCE] 2.6.31-rc4-rt1 (problem with CONFIG_SYSFS_DEPRECATED_V2)
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain> <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <4A79214B.5070003@linux.vnet.ibm.com> <20090805083247.0b84d1c0@torg>
-In-Reply-To: <20090805083247.0b84d1c0@torg>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1247518987-10818-2-git-send-email-mjg@redhat.com>
+References: <1247518987-10818-1-git-send-email-mjg@redhat.com>
+	 <1247518987-10818-2-git-send-email-mjg@redhat.com>
+Date: Thu, 6 Aug 2009 08:54:31 +0200
+Message-ID: <a01a16b50908052354h28522bafja255c4fcac9a2ea8@mail.gmail.com>
+Subject: Re: [PATCH 2/3] libata: Bind the Linux device tree to the ACPI device 
+	tree
+From: =?UTF-8?B?SMOla29uIEzDuHZkYWw=?= <hlovdal@gmail.com>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       linux-scsi@vger.kernel.org, James.Bottomley@hansenpartnership.com,
+       shaohua.li@intel.com, linux-ide@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clark Williams wrote:
-> On Wed, 05 Aug 2009 11:36:03 +0530
-> gowrishankar <gowrishankar.m@linux.vnet.ibm.com> wrote:
-> 
->> Thomas Gleixner wrote:
->>> We are pleased to announce the next update to our new preempt-rt
->>> series.
->>>
->>>     - update to 2.6.31-rc4
->> Hi,
->> I am seeing below kernel panic on 8 way Intel and 4 way AMD blades.
->>
->> Kernel panic - not syncing: Attempted to kill init!
->> Pid: 1, comm: init Not tainted 2.6.31-rc4-rt1-autotest #1
->> Call Trace:
->>   [<ffffffff8104c887>] panic+0xc1/0x171
->>   [<ffffffff8104ec9a>] ? put_files_struct+0xc3/0xe6
->>   [<ffffffff81394313>] ? rt_write_unlock+0x1c/0x32
->>   [<ffffffff810582fd>] ? exit_ptrace+0xab/0x130
->>   [<ffffffff81394313>] ? rt_write_unlock+0x1c/0x32
->>   [<ffffffff810500af>] do_exit+0x88/0x726
->>   [<ffffffff810507d5>] do_group_exit+0x88/0xbb
->>   [<ffffffff8105082d>] sys_exit_group+0x25/0x3d
->>   [<ffffffff8100be2b>] system_call_fastpath+0x16/0x1b
->>
->> Thanks,
->> Gowri
-> 
-> Gowri, 
-> 
-> Would you post your .config so we can see what options you have enabled?
-> 
-Hi Clark,
-Thanks for the attention. I just looked at error message before the trace I posted.
+2009/7/13 Matthew Garrett <mjg@redhat.com>:
+> +               if (!sata_pmp_attached(ap))
+> +                       adr = SATA_ADR(ap->port_no, NO_PORT_MULT);
+> +               else
+> +                       adr = SATA_ADR(ap->port_no, dev->link->pmp);
 
-setuproot: moving /dev failed: No such file or directory
-no fstab.sys, mounting internal defaults
-setuproot: error mounting /proc: No such file or directory
-setuproot: error mounting /sys: No such file or directory
-Switching to new root and running init.
-unmounting old /dev
-unmounting old /proc
-unmounting old /sys
-switchroot: mount failed: No such file or directory
+Maybe I am missing something, but wouldn't it be more natural to write this as
 
-Only if I set CONFIG_SYSFS_DEPRECATED_V2=y, I could successfully boot
-which I have tested with this kernel in same system.
+        if (sata_pmp_attached(ap))
+                adr = SATA_ADR(ap->port_no, dev->link->pmp);
+        else
+                adr = SATA_ADR(ap->port_no, NO_PORT_MULT);
 
-Is it not set by default from 2.6.31 onwards ?
-
-Thanks,
-Gowri
-
-> Clark
-> 
-
+BR Håkon Løvdal
