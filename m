@@ -1,219 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756459AbZHFRnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756464AbZHFRpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756459AbZHFRnb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 13:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755971AbZHFRnb
+	id S1756464AbZHFRpn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 13:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755996AbZHFRpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 13:43:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35281 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755852AbZHFRna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 13:43:30 -0400
-Date: Thu, 6 Aug 2009 14:43:17 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/1] perf report: Show the symtab origin (DSO, build-id,
-	kernel, etc)
-Message-ID: <20090806174317.GC4339@ghostprotocols.net>
+	Thu, 6 Aug 2009 13:45:42 -0400
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:17069
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755986AbZHFRpm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 13:45:42 -0400
+X-SpamScore: -21
+X-BigFish: VPS-21(zz1432R98dN655Nzz1202hzzz32i6bh203h61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KNYUNU-01-6ZZ-02
+X-M-MSG: 
+Date: Thu, 6 Aug 2009 19:44:33 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, Borislav Petkov <borislav.petkov@amd.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH] x86, smpboot: use zalloc_cpumask_var instead of alloc/clear
+Message-ID: <20090806174433.GG7198@alberich.amd.com>
+References: <20090805154402.GA6520@alberich.amd.com> <20090805154811.GC6520@alberich.amd.com> <20090806183046.8aaa7404.sfr@canb.auug.org.au> <20090806161552.GE7198@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090806161552.GE7198@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 06 Aug 2009 17:44:34.0252 (UTC) FILETIME=[8F5060C0:01CA16BD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Used with perf report --verbose:
+On Thu, Aug 06, 2009 at 06:15:52PM +0200, Andreas Herrmann wrote:
+> On Thu, Aug 06, 2009 at 06:30:46PM +1000, Stephen Rothwell wrote:
+> > Hi Andrea,
+> > 
+> > On Wed, 5 Aug 2009 17:48:11 +0200 Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+> > >
+> > > @@ -1061,8 +1070,10 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+> > >  	for_each_possible_cpu(i) {
+> > >  		alloc_cpumask_var(&per_cpu(cpu_sibling_map, i), GFP_KERNEL);
+> > >  		alloc_cpumask_var(&per_cpu(cpu_core_map, i), GFP_KERNEL);
+> > > +		alloc_cpumask_var(&per_cpu(cpu_node_map, i), GFP_KERNEL);
+> > >  		alloc_cpumask_var(&cpu_data(i).llc_shared_map, GFP_KERNEL);
+> > >  		cpumask_clear(per_cpu(cpu_core_map, i));
+> > > +		cpumask_clear(per_cpu(cpu_node_map, i));
+> > 
+> > I noticed this in linux-next ... you can use zalloc_cpumask_var() instead
+> > of alloc_cpumask_var() followed by cpumask_clear().
+> 
+> I know, there is a collision with a patch in linux-next that replaced
+> alloc_cpumask_var/cpumask_clear with the zalloc version.
+> 
+> (a) Either that patch should be adapted to change also the new allocation.
+> (b) I can also change all those allocation to zalloc with my patch.
+> 
+> Make your choice:
+> 
+> [ ] (a)
+> [ ] (b)
 
-[acme@doppio linux-2.6-tip]$ perf report -v | head -16
-     5.17%  firefox  /usr/lib64/xulrunner-1.9.1/libxul.so   0x00000000005d8eee f [.] imgContainer::DrawFrameTo(gfxIImageFrame*, gfxIImageFrame*, nsRect&)
-     2.56%  firefox  /lib64/libpthread-2.10.1.so            0x0000000000008e02 d [.] __pthread_mutex_lock_internal
-     1.94%  firefox  /usr/lib64/xulrunner-1.9.1/libxul.so   0x0000000000d0af8f f [.] SearchTable
-     1.75%  firefox  [kernel]                               0xffffffffff60013b k [.] vread_hpet
-     1.63%  firefox  /lib64/libpthread-2.10.1.so            0x000000000000a404 d [.] __pthread_mutex_unlock
-     1.47%  firefox  /usr/lib64/xulrunner-1.9.1/libmozjs.so 0x00000000000482ea f [.] js_Interpret
-     1.42%  firefox  /usr/lib64/xulrunner-1.9.1/libmozjs.so 0x000000000003eda3 f [.] JS_CallTracer
-     1.24%  firefox  [kernel]                               0xffffffff8102ca4a k [k] read_hpet
-     1.16%  firefox  [kernel]                               0xffffffff810f3dd4 k [k] fget_light
-     1.11%  firefox  /usr/lib64/xulrunner-1.9.1/libmozjs.so 0x00000000000567ff f [.] js_TraceObject
-     0.98%  firefox  /usr/lib64/firefox-3.5.2/firefox       0x000000000000dd23 b [.] arena_ralloc
-[acme@doppio linux-2.6-tip]$
 
-Just after the symbol address. To help in figuring out symbol resolution
-issues.
+My choice is
+ [X] (c) Do this in a separate patch.
 
-Cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/builtin-report.c |    3 +-
- tools/perf/util/symbol.c    |   57 ++++++++++++++++++++++++++++++++++--------
- tools/perf/util/symbol.h    |    2 +
- 3 files changed, 50 insertions(+), 12 deletions(-)
+See below.
 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 8cb58d6..b3a17ea 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -698,7 +698,8 @@ sort__sym_print(FILE *fp, struct hist_entry *self, unsigned int width __used)
- 	size_t ret = 0;
- 
- 	if (verbose)
--		ret += repsep_fprintf(fp, "%#018llx  ", (u64)self->ip);
-+		ret += repsep_fprintf(fp, "%#018llx %c ", (u64)self->ip,
-+				      dso__symtab_origin(self->dso));
- 
- 	ret += repsep_fprintf(fp, "[%c] ", self->level);
- 	if (self->sym) {
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 80fa3e4..d99cb5f 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -24,6 +24,16 @@ const char *sym_hist_filter;
- #define DMGL_ANSI        (1 << 1)       /* Include const, volatile, etc */
- #endif
- 
-+enum dso_origin {
-+	DSO__ORIG_KERNEL = 0,
-+	DSO__ORIG_JAVA_JIT,
-+	DSO__ORIG_FEDORA,
-+	DSO__ORIG_UBUNTU,
-+	DSO__ORIG_BUILDID,
-+	DSO__ORIG_DSO,
-+	DSO__ORIG_NOT_FOUND,
-+};
-+
- static struct symbol *symbol__new(u64 start, u64 len,
- 				  const char *name, unsigned int priv_size,
- 				  u64 obj_start, int verbose)
-@@ -81,6 +91,7 @@ struct dso *dso__new(const char *name, unsigned int sym_priv_size)
- 		self->sym_priv_size = sym_priv_size;
- 		self->find_symbol = dso__find_symbol;
- 		self->slen_calculated = 0;
-+		self->origin = DSO__ORIG_NOT_FOUND;
- 	}
- 
- 	return self;
-@@ -708,7 +719,7 @@ static char *dso__read_build_id(struct dso *self, int verbose)
- 		++raw;
- 		bid += 2;
- 	}
--	if (verbose)
-+	if (verbose >= 2)
- 		printf("%s(%s): %s\n", __func__, self->name, build_id);
- out_elf_end:
- 	elf_end(elf);
-@@ -718,11 +729,26 @@ out:
- 	return build_id;
- }
- 
-+char dso__symtab_origin(const struct dso *self)
-+{
-+	static const char origin[] = {
-+		[DSO__ORIG_KERNEL] =   'k',
-+		[DSO__ORIG_JAVA_JIT] = 'j',
-+		[DSO__ORIG_FEDORA] =   'f',
-+		[DSO__ORIG_UBUNTU] =   'u',
-+		[DSO__ORIG_BUILDID] =  'b',
-+		[DSO__ORIG_DSO] =      'd',
-+	};
-+
-+	if (self == NULL || self->origin == DSO__ORIG_NOT_FOUND)
-+		return '!';
-+	return origin[self->origin];
-+}
-+
- int dso__load(struct dso *self, symbol_filter_t filter, int verbose)
- {
- 	int size = PATH_MAX;
- 	char *name = malloc(size), *build_id = NULL;
--	int variant = 0;
- 	int ret = -1;
- 	int fd;
- 
-@@ -731,19 +757,26 @@ int dso__load(struct dso *self, symbol_filter_t filter, int verbose)
- 
- 	self->adjust_symbols = 0;
- 
--	if (strncmp(self->name, "/tmp/perf-", 10) == 0)
--		return dso__load_perf_map(self, filter, verbose);
-+	if (strncmp(self->name, "/tmp/perf-", 10) == 0) {
-+		ret = dso__load_perf_map(self, filter, verbose);
-+		self->origin = ret > 0 ? DSO__ORIG_JAVA_JIT :
-+					 DSO__ORIG_NOT_FOUND;
-+		return ret;
-+	}
-+
-+	self->origin = DSO__ORIG_FEDORA - 1;
- 
- more:
- 	do {
--		switch (variant) {
--		case 0: /* Fedora */
-+		self->origin++;
-+		switch (self->origin) {
-+		case DSO__ORIG_FEDORA:
- 			snprintf(name, size, "/usr/lib/debug%s.debug", self->name);
- 			break;
--		case 1: /* Ubuntu */
-+		case DSO__ORIG_UBUNTU:
- 			snprintf(name, size, "/usr/lib/debug%s", self->name);
- 			break;
--		case 2:
-+		case DSO__ORIG_BUILDID:
- 			build_id = dso__read_build_id(self, verbose);
- 			if (build_id != NULL) {
- 				snprintf(name, size,
-@@ -752,16 +785,15 @@ more:
- 				free(build_id);
- 				break;
- 			}
--			variant++;
-+			self->origin++;
- 			/* Fall thru */
--		case 3: /* Sane people */
-+		case DSO__ORIG_DSO:
- 			snprintf(name, size, "%s", self->name);
- 			break;
- 
- 		default:
- 			goto out;
- 		}
--		variant++;
- 
- 		fd = open(name, O_RDONLY);
- 	} while (fd < 0);
-@@ -897,6 +929,9 @@ int dso__load_kernel(struct dso *self, const char *vmlinux,
- 	if (err <= 0)
- 		err = dso__load_kallsyms(self, filter, verbose);
- 
-+	if (err > 0)
-+		self->origin = DSO__ORIG_KERNEL;
-+
- 	return err;
- }
- 
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index 2f92b21..1e003ec 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -26,6 +26,7 @@ struct dso {
- 	unsigned int	 sym_priv_size;
- 	unsigned char	 adjust_symbols;
- 	unsigned char	 slen_calculated;
-+	unsigned char	 origin;
- 	char		 name[0];
- };
- 
-@@ -49,6 +50,7 @@ int dso__load_modules(struct dso *self, symbol_filter_t filter, int verbose);
- int dso__load(struct dso *self, symbol_filter_t filter, int verbose);
- 
- size_t dso__fprintf(struct dso *self, FILE *fp);
-+char dso__symtab_origin(const struct dso *self);
- 
- void symbol__init(void);
- #endif /* _PERF_SYMBOL_ */
+Regards,
+Andreas
+
 -- 
-1.6.2.5
+>From 5d7e6138d4bc2d8c5191e6bf9cfbe9d5a27d79b0 Mon Sep 17 00:00:00 2001
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+Date: Thu, 6 Aug 2009 19:31:58 +0200
+Subject: [PATCH] x86, smpboot: use zalloc_cpumask_var instead of alloc/clear
+
+Suggested-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/kernel/smpboot.c |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index f50af56..f797214 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1068,14 +1068,10 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ #endif
+ 	current_thread_info()->cpu = 0;  /* needed? */
+ 	for_each_possible_cpu(i) {
+-		alloc_cpumask_var(&per_cpu(cpu_sibling_map, i), GFP_KERNEL);
+-		alloc_cpumask_var(&per_cpu(cpu_core_map, i), GFP_KERNEL);
+-		alloc_cpumask_var(&per_cpu(cpu_node_map, i), GFP_KERNEL);
+-		alloc_cpumask_var(&cpu_data(i).llc_shared_map, GFP_KERNEL);
+-		cpumask_clear(per_cpu(cpu_core_map, i));
+-		cpumask_clear(per_cpu(cpu_node_map, i));
+-		cpumask_clear(per_cpu(cpu_sibling_map, i));
+-		cpumask_clear(cpu_data(i).llc_shared_map);
++		zalloc_cpumask_var(&per_cpu(cpu_sibling_map, i), GFP_KERNEL);
++		zalloc_cpumask_var(&per_cpu(cpu_core_map, i), GFP_KERNEL);
++		zalloc_cpumask_var(&per_cpu(cpu_node_map, i), GFP_KERNEL);
++		zalloc_cpumask_var(&cpu_data(i).llc_shared_map, GFP_KERNEL);
+ 	}
+ 	set_cpu_sibling_map(0);
+ 
+-- 
+1.6.3.3
+
+
 
