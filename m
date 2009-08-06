@@ -1,225 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751634AbZHFKeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774AbZHFKea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751634AbZHFKeH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 06:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbZHFKeH
+	id S1752774AbZHFKea (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 06:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbZHFKea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 06:34:07 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50591 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751249AbZHFKeF (ORCPT
+	Thu, 6 Aug 2009 06:34:30 -0400
+Received: from viefep14-int.chello.at ([62.179.121.34]:20637 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751685AbZHFKe3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 06:34:05 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 6 Aug 2009 19:32:13 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       xiyou.wangcong@gmail.com, akpm@linux-foundation.org
-Subject: [PATCH 5/6] walk sytem ram range
-Message-Id: <20090806193213.6b19cc73.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090806192416.4f94be76.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090806192416.4f94be76.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 6 Aug 2009 06:34:29 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by
+ tgid  at once
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Menage <menage@google.com>
+Cc: Benjamin Blum <bblum@google.com>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <6599ad830908060328y21a008c1pc5ed5c27e0ec905d@mail.gmail.com>
+References: <2f86c2480908031113y525b6cbdhe418b8a0364c7760@mail.gmail.com>
+	 <20090803194555.GA10158@us.ibm.com>
+	 <6599ad830908041148h6d3f3e9bxfef9f3eedec0ab6d@mail.gmail.com>
+	 <2f86c2480908041214r1f23c1b7q9a25b04e26c92a1a@mail.gmail.com>
+	 <6599ad830908041228w67bc6f7fh57e28f244e1923b3@mail.gmail.com>
+	 <20090805102057.GT29252@hawkmoon.kerlabs.com>
+	 <6599ad830908050911t6f23f810i65fe8fe17f3ee698@mail.gmail.com>
+	 <20090805164218.GB26446@hawkmoon.kerlabs.com>
+	 <2f86c2480908051701s57120404q475edbedb58cdca1@mail.gmail.com>
+	 <20090806095854.GD26446@hawkmoon.kerlabs.com>
+	 <6599ad830908060328y21a008c1pc5ed5c27e0ec905d@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 06 Aug 2009 12:34:13 +0200
+Message-Id: <1249554853.32113.145.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Thu, 2009-08-06 at 03:28 -0700, Paul Menage wrote:
 
-Originally, walk_memory_resource() was introduced to traverse all memory
-of "System RAM" for detecting memory hotplug/unplug range.
-For doing so, flags of IORESOUCE_MEM|IORESOURCE_BUSY was used and this
-was enough for memory hotplug.
+> OK, well if lockdep can't currently handle the "writer takes a lock on
+> every thread" model,
 
-But for using other purpose, /proc/kcore, this may includes some firmware
-area marked as IORESOURCE_BUSY | IORESOUCE_MEM. This patch makes the check
-strict to find out busy "System RAM".
+I haven't read what this is about, but simply looking at that sentence
+makes me want to hit someone with a cluebat. Have you any idea how
+expensive that is?
 
-Note: PPC64 keeps their own walk_memory_resouce(), which walk through
-ppc64's lmb informaton. Because old kclist_add() is called per lmb,
-this patch makes no difference in behavior, finally.
 
-And this patch removes CONFIG_MEMORY_HOTPLUG check from this function.
-Because pfn_valid() just show "there is memmap or not* and cannot be used
-for "there is physical memory or not", this function is useful in generic
-to scan physical memory range.
-
-Changelog v3->v4
- - because of reordering patches, some changes are added.
-   - demoved CONFIG_MEMORY_HOTPLUG check.
-   - move declaration from memory_hotplug.h to iomem.h
-
-Changelog v2->v3
- - walk_memory_resource() is renamed to be walk_system_ram_range()
-Changelog v2:
- - new patch from v2.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- arch/powerpc/mm/mem.c          |    4 ++--
- drivers/net/ehea/ehea_qmr.c    |    2 +-
- include/linux/ioport.h         |    4 ++++
- include/linux/memory_hotplug.h |    8 --------
- kernel/resource.c              |   23 ++++++++++++++++-------
- mm/memory_hotplug.c            |    6 +++---
- 6 files changed, 26 insertions(+), 21 deletions(-)
-
-Index: mmotm-2.6.31-Aug6/kernel/resource.c
-===================================================================
---- mmotm-2.6.31-Aug6.orig/kernel/resource.c
-+++ mmotm-2.6.31-Aug6/kernel/resource.c
-@@ -233,13 +233,13 @@ int release_resource(struct resource *ol
- 
- EXPORT_SYMBOL(release_resource);
- 
--#if defined(CONFIG_MEMORY_HOTPLUG) && !defined(CONFIG_ARCH_HAS_WALK_MEMORY)
-+#if !defined(CONFIG_ARCH_HAS_WALK_MEMORY)
- /*
-  * Finds the lowest memory reosurce exists within [res->start.res->end)
-- * the caller must specify res->start, res->end, res->flags.
-+ * the caller must specify res->start, res->end, res->flags and "name".
-  * If found, returns 0, res is overwritten, if not found, returns -1.
-  */
--static int find_next_system_ram(struct resource *res)
-+static int find_next_system_ram(struct resource *res, char *name)
- {
- 	resource_size_t start, end;
- 	struct resource *p;
-@@ -255,6 +255,8 @@ static int find_next_system_ram(struct r
- 		/* system ram is just marked as IORESOURCE_MEM */
- 		if (p->flags != res->flags)
- 			continue;
-+		if (name && strcmp(p->name, name))
-+			continue;
- 		if (p->start > end) {
- 			p = NULL;
- 			break;
-@@ -272,19 +274,26 @@ static int find_next_system_ram(struct r
- 		res->end = p->end;
- 	return 0;
- }
--int
--walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
--			int (*func)(unsigned long, unsigned long, void *))
-+
-+/*
-+ * This function calls callback against all memory range of "System RAM"
-+ * which are marked as IORESOURCE_MEM and IORESOUCE_BUSY.
-+ * Now, this function is only for "System RAM".
-+ */
-+int walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
-+		void *arg, int (*func)(unsigned long, unsigned long, void *))
- {
- 	struct resource res;
- 	unsigned long pfn, len;
- 	u64 orig_end;
- 	int ret = -1;
-+
- 	res.start = (u64) start_pfn << PAGE_SHIFT;
- 	res.end = ((u64)(start_pfn + nr_pages) << PAGE_SHIFT) - 1;
- 	res.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
- 	orig_end = res.end;
--	while ((res.start < res.end) && (find_next_system_ram(&res) >= 0)) {
-+	while ((res.start < res.end) &&
-+		(find_next_system_ram(&res, "System RAM") >= 0)) {
- 		pfn = (unsigned long)(res.start >> PAGE_SHIFT);
- 		len = (unsigned long)((res.end + 1 - res.start) >> PAGE_SHIFT);
- 		ret = (*func)(pfn, len, arg);
-Index: mmotm-2.6.31-Aug6/mm/memory_hotplug.c
-===================================================================
---- mmotm-2.6.31-Aug6.orig/mm/memory_hotplug.c
-+++ mmotm-2.6.31-Aug6/mm/memory_hotplug.c
-@@ -410,7 +410,7 @@ int online_pages(unsigned long pfn, unsi
- 	if (!populated_zone(zone))
- 		need_zonelists_rebuild = 1;
- 
--	ret = walk_memory_resource(pfn, nr_pages, &onlined_pages,
-+	ret = walk_system_ram_range(pfn, nr_pages, &onlined_pages,
- 		online_pages_range);
- 	if (ret) {
- 		printk(KERN_DEBUG "online_pages %lx at %lx failed\n",
-@@ -702,7 +702,7 @@ offline_isolated_pages_cb(unsigned long 
- static void
- offline_isolated_pages(unsigned long start_pfn, unsigned long end_pfn)
- {
--	walk_memory_resource(start_pfn, end_pfn - start_pfn, NULL,
-+	walk_system_ram_range(start_pfn, end_pfn - start_pfn, NULL,
- 				offline_isolated_pages_cb);
- }
- 
-@@ -728,7 +728,7 @@ check_pages_isolated(unsigned long start
- 	long offlined = 0;
- 	int ret;
- 
--	ret = walk_memory_resource(start_pfn, end_pfn - start_pfn, &offlined,
-+	ret = walk_system_ram_range(start_pfn, end_pfn - start_pfn, &offlined,
- 			check_pages_isolated_cb);
- 	if (ret < 0)
- 		offlined = (long)ret;
-Index: mmotm-2.6.31-Aug6/arch/powerpc/mm/mem.c
-===================================================================
---- mmotm-2.6.31-Aug6.orig/arch/powerpc/mm/mem.c
-+++ mmotm-2.6.31-Aug6/arch/powerpc/mm/mem.c
-@@ -143,8 +143,8 @@ int arch_add_memory(int nid, u64 start, 
-  * memory regions, find holes and callback for contiguous regions.
-  */
- int
--walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
--			int (*func)(unsigned long, unsigned long, void *))
-+walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
-+		void *arg, int (*func)(unsigned long, unsigned long, void *))
- {
- 	struct lmb_property res;
- 	unsigned long pfn, len;
-Index: mmotm-2.6.31-Aug6/drivers/net/ehea/ehea_qmr.c
-===================================================================
---- mmotm-2.6.31-Aug6.orig/drivers/net/ehea/ehea_qmr.c
-+++ mmotm-2.6.31-Aug6/drivers/net/ehea/ehea_qmr.c
-@@ -751,7 +751,7 @@ int ehea_create_busmap(void)
- 
- 	mutex_lock(&ehea_busmap_mutex);
- 	ehea_mr_len = 0;
--	ret = walk_memory_resource(0, 1ULL << MAX_PHYSMEM_BITS, NULL,
-+	ret = walk_system_ram_range(0, 1ULL << MAX_PHYSMEM_BITS, NULL,
- 				   ehea_create_busmap_callback);
- 	mutex_unlock(&ehea_busmap_mutex);
- 	return ret;
-Index: mmotm-2.6.31-Aug6/include/linux/ioport.h
-===================================================================
---- mmotm-2.6.31-Aug6.orig/include/linux/ioport.h
-+++ mmotm-2.6.31-Aug6/include/linux/ioport.h
-@@ -184,5 +184,9 @@ extern void __devm_release_region(struct
- extern int iomem_map_sanity_check(resource_size_t addr, unsigned long size);
- extern int iomem_is_exclusive(u64 addr);
- 
-+extern int
-+walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
-+		void *arg, int (*func)(unsigned long, unsigned long, void *));
-+
- #endif /* __ASSEMBLY__ */
- #endif	/* _LINUX_IOPORT_H */
-Index: mmotm-2.6.31-Aug6/include/linux/memory_hotplug.h
-===================================================================
---- mmotm-2.6.31-Aug6.orig/include/linux/memory_hotplug.h
-+++ mmotm-2.6.31-Aug6/include/linux/memory_hotplug.h
-@@ -191,14 +191,6 @@ static inline void register_page_bootmem
- 
- #endif /* ! CONFIG_MEMORY_HOTPLUG */
- 
--/*
-- * Walk through all memory which is registered as resource.
-- * arg is (start_pfn, nr_pages, private_arg_pointer)
-- */
--extern int walk_memory_resource(unsigned long start_pfn,
--			unsigned long nr_pages, void *arg,
--			int (*func)(unsigned long, unsigned long, void *));
--
- #ifdef CONFIG_MEMORY_HOTREMOVE
- 
- extern int is_mem_section_removable(unsigned long pfn, unsigned long nr_pages);
 
