@@ -1,86 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbZHFVAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbZHFVCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756751AbZHFVAq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 17:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756248AbZHFVAp
+	id S1756280AbZHFVCd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 17:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756239AbZHFVCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 17:00:45 -0400
-Received: from verein.lst.de ([213.95.11.210]:57857 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756247AbZHFVAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 17:00:45 -0400
-Date: Thu, 6 Aug 2009 23:00:38 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Michal Simek <monstr@monstr.eu>
-Cc: microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: [microblaze-uclinux] [PATCH] microblaze: convert to asm-generic/hardirq.h
-Message-ID: <20090806210038.GA5147@lst.de>
-References: <20090804145319.GI20487@lst.de> <4A7AEEEC.2040400@monstr.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 6 Aug 2009 17:02:32 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:56361 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753617AbZHFVCc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 17:02:32 -0400
+Date: Thu, 6 Aug 2009 23:02:31 +0200
+From: Luotao Fu <l.fu@pengutronix.de>
+To: Oliver Hartkopp <oliver@hartkopp.net>, Luotao Fu <l.fu@pengutronix.de>,
+       socketcan-users@lists.berlios.de,
+       Michael Olbrich <m.olbrich@pengutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Socketcan-users] [PATCH] CAN: make checking in can_rcv less
+	restrictive
+Message-ID: <20090806210230.GA22418@pengutronix.de>
+Mail-Followup-To: Oliver Hartkopp <oliver@hartkopp.net>,
+	Luotao Fu <l.fu@pengutronix.de>, socketcan-users@lists.berlios.de,
+	Michael Olbrich <m.olbrich@pengutronix.de>,
+	linux-kernel@vger.kernel.org
+References: <1249572295-7801-1-git-send-email-l.fu@pengutronix.de> <4A7B0957.5020808@hartkopp.net> <20090806201740.GA7067@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="PNTmBPCT7hxwcZjr"
 Content-Disposition: inline
-In-Reply-To: <4A7AEEEC.2040400@monstr.eu>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+In-Reply-To: <20090806201740.GA7067@pengutronix.de>
+X-PGP-Key-ID: 0xE5325261
+X-URL: http://www.pengutronix.de/
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 22:59:03 up 1 day,  8:18,  7 users,  load average: 1.54, 1.27,
+	1.12
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: l.fu@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 04:55:40PM +0200, Michal Simek wrote:
-> Hi Christoph,
-> 
-> Can you please change your patch title?
-> You are removing ack_bad_irq not convert to hardirq.h
-> 
-> But anyway will be worth to remove it from other archs too.
 
-Oh sorry, I copied the patch from various other architectures I touched
-at the same time.  I have been wading throug all architectures to
-convert them to asm-generic/hardirq.h and the generic ack_bad_irq and
-sent out lots of patches for it.  A couple of architectures do count
-bad irqs instead of just printing a message, but even those counters
-could be unified.  The only genirq architectecture that does something
-weird in ack_bad_irq is mips.
+--PNTmBPCT7hxwcZjr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
---
+Hi Oliver (again ;-)),
 
+On Thu, Aug 06, 2009 at 10:17:40PM +0200, Luotao Fu wrote:
+> Hi Oliver,
+>=20
+> On Thu, Aug 06, 2009 at 06:48:23PM +0200, Oliver Hartkopp wrote:
+> >=20
+=2E...
+> > When this BUG() triggers, someone provided a definitely broken *CAN* ne=
+twork
+> > driver, and this needsfp to be fixed on that level.=20
+>=20
+> In our case a sender (a FPGA) generates correct can frames carrying
+> wrong dlc length. This way the can driver on our side runs into the bug
+> though the driver itself is allright. The opposite needed to be fixed,
+> not our side.  Though we do suffer a system crash only because the
+> sender sends trash into the can network. This is imo quite bad.
+>=20
 
-Subject: microblaze: use the generic ack_bad_irq implementation
-From: Christoph Hellwig <hch@lst.de>
+/me answering myself
+had a closer look again. Seemed you are right. The can driver should
+have get the can_dlc right prior to passing the message a level higher.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+cheers
+Fu
+--=20
+Pengutronix e.K.                           | Dipl.-Ing. Luotao Fu        |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
 
-Index: linux-2.6/arch/microblaze/include/asm/hardirq.h
-===================================================================
---- linux-2.6.orig/arch/microblaze/include/asm/hardirq.h	2009-07-27 14:32:58.596148711 +0200
-+++ linux-2.6/arch/microblaze/include/asm/hardirq.h	2009-07-27 14:56:30.691912378 +0200
-@@ -12,8 +12,6 @@
- /* should be defined in each interrupt controller driver */
- extern unsigned int get_irq(struct pt_regs *regs);
- 
--#define ack_bad_irq ack_bad_irq
--void ack_bad_irq(unsigned int irq);
- #include <asm-generic/hardirq.h>
- 
- #endif /* _ASM_MICROBLAZE_HARDIRQ_H */
-Index: linux-2.6/arch/microblaze/kernel/irq.c
-===================================================================
---- linux-2.6.orig/arch/microblaze/kernel/irq.c	2009-07-27 14:53:45.847149312 +0200
-+++ linux-2.6/arch/microblaze/kernel/irq.c	2009-07-27 14:56:37.121902184 +0200
-@@ -30,15 +30,6 @@ unsigned int irq_of_parse_and_map(struct
- }
- EXPORT_SYMBOL_GPL(irq_of_parse_and_map);
- 
--/*
-- * 'what should we do if we get a hw irq event on an illegal vector'.
-- * each architecture has to answer this themselves.
-- */
--void ack_bad_irq(unsigned int irq)
--{
--	printk(KERN_WARNING "unexpected IRQ trap at vector %02x\n", irq);
--}
--
- static u32 concurrent_irq;
- 
- void do_IRQ(struct pt_regs *regs)
+--PNTmBPCT7hxwcZjr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkp7ROYACgkQiruQY+UyUmHH8wCfVviSkMf0L71g0IKQaolp9Ecy
+mBgAoKDKoGAeCuyA8F3lK6Iv6xWBdZeX
+=bzSr
+-----END PGP SIGNATURE-----
+
+--PNTmBPCT7hxwcZjr--
