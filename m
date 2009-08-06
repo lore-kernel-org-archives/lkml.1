@@ -1,205 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbZHFXIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756909AbZHFXIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756898AbZHFXIB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 19:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756877AbZHFXIA
+	id S1756909AbZHFXIS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 19:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbZHFXIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 19:08:00 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:34858 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756262AbZHFXH7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 19:07:59 -0400
-Date: Fri, 7 Aug 2009 00:07:26 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Dhaval Vasa <dhaval.vasa@einfochips.com>
-Cc: nico@marvell.com, linux-kernel@vger.kernel.org, rabeeh@marvell.com
-Subject: Re: [PATCH] [ARM] Kirkwood: Marvell OpenRD-Base board support
-	added to v2.6.31-rc5
-Message-ID: <20090806230726.GA19624@fluff.org.uk>
-References: <1249567753-724-1-git-send-email-dhaval.vasa@einfochips.com>
+	Thu, 6 Aug 2009 19:08:17 -0400
+Received: from mail.gmx.net ([213.165.64.20]:40505 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756875AbZHFXIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 19:08:16 -0400
+X-Authenticated: #1587495
+X-Provags-ID: V01U2FsdGVkX19jfFQTVbxj9KdPnFBcpVXlaVpWVq0BmCD6HEsey5
+	PelR/DsyYIFIjr
+From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: patch thinkpad-acpi-fix-incorrect-use-of-tpacpi_brght_mode_ecnvram.patch added to 2.6.30-stable tree
+Date: Fri, 7 Aug 2009 01:08:10 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-sidux-amd64; KDE/4.3.0; x86_64; ; )
+Cc: hmh@hmh.eng.br, gregkh@suse.de, len.brown@intel.com,
+       ranma+kernel@tdiedrich.de, stable@kernel.org
+References: <20090805205011.57FB548DF1@coco.kroah.org>
+In-Reply-To: <20090805205011.57FB548DF1@coco.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249567753-724-1-git-send-email-dhaval.vasa@einfochips.com>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908070108.15095.s.L-H@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 07:39:13PM +0530, Dhaval Vasa wrote:
-> reference:
-> http://open-rd.org
-> http://code.google.com/p/openrd
-> 
-> This patch is tested for:
-> 1. Boot from DRAM/NAND flash
-> 2. NAND read/write/erase
-> 3. GbE0
-> 4. USB read/write
-> 
-> FIXME:
-> 1. SD/UART1 selection
-> 2. MPP configuration (currently, default)
-> 3. PEX
-> 
-> Signed-off-by: Dhaval Vasa <dhaval.vasa@einfochips.com>
+Hi
 
-You forgot to cc: linux-arm-kernel@lists.arm.linux.org.uk, although
-someone really should issue a MAINTAINERS entry for that machine
-directory.
-
-> ---
->  arch/arm/mach-kirkwood/Kconfig             |    5 ++
->  arch/arm/mach-kirkwood/Makefile            |    1 +
->  arch/arm/mach-kirkwood/openrd_base-setup.c |   79 ++++++++++++++++++++++++++++
->  3 files changed, 85 insertions(+), 0 deletions(-)
->  create mode 100644 arch/arm/mach-kirkwood/openrd_base-setup.c
-
-call this openrd.c or openrd_base.c, the -setup is redundant as
-these directories are suposed to have the machine setup files in
-them.
-
-> diff --git a/arch/arm/mach-kirkwood/Kconfig b/arch/arm/mach-kirkwood/Kconfig
-> index 25100f7..f2379b3 100644
-> --- a/arch/arm/mach-kirkwood/Kconfig
-> +++ b/arch/arm/mach-kirkwood/Kconfig
-> @@ -38,6 +38,11 @@ config MACH_TS219
->  	  Say 'Y' here if you want your kernel to support the
->  	  QNAP TS-119 and TS-219 Turbo NAS devices.
->  
-> +config MACH_OPENRD_BASE
-> +	bool "Marvell OpenRD Base Board"
-> +	help
-> +	  Say 'Y' here if you want your kernel to support the
-> +	  Marvell OpenRD Base Board.
->  endmenu
->  
->  endif
-> diff --git a/arch/arm/mach-kirkwood/Makefile b/arch/arm/mach-kirkwood/Makefile
-> index 9dd680e..80ab0ec 100644
-> --- a/arch/arm/mach-kirkwood/Makefile
-> +++ b/arch/arm/mach-kirkwood/Makefile
-> @@ -6,5 +6,6 @@ obj-$(CONFIG_MACH_RD88F6281)		+= rd88f6281-setup.o
->  obj-$(CONFIG_MACH_MV88F6281GTW_GE)	+= mv88f6281gtw_ge-setup.o
->  obj-$(CONFIG_MACH_SHEEVAPLUG)		+= sheevaplug-setup.o
->  obj-$(CONFIG_MACH_TS219)		+= ts219-setup.o
-> +obj-$(CONFIG_MACH_OPENRD_BASE)		+= openrd_base-setup.o
->  
->  obj-$(CONFIG_CPU_IDLE)			+= cpuidle.o
-> diff --git a/arch/arm/mach-kirkwood/openrd_base-setup.c b/arch/arm/mach-kirkwood/openrd_base-setup.c
-> new file mode 100644
-> index 0000000..26b6e58
-> --- /dev/null
-> +++ b/arch/arm/mach-kirkwood/openrd_base-setup.c
-> @@ -0,0 +1,79 @@
-> +/*
-> + * arch/arm/mach-kirkwood/openrd_base-setup.c
-> + *
-> + * Marvell OpenRD Base Board Setup
-> + *
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2.  This program is licensed "as is" without any
-> + * warranty of any kind, whether express or implied.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/mtd/partitions.h>
-> +#include <linux/mv643xx_eth.h>
-> +#include <linux/gpio.h>
-> +#include <linux/leds.h>
-> +#include <asm/mach-types.h>
-> +#include <asm/mach/arch.h>
-> +#include <mach/kirkwood.h>
-> +#include <plat/mvsdio.h>
-> +#include "common.h"
-> +#include "mpp.h"
-> +
-> +static struct mtd_partition openrd_base_nand_parts[] = {
-> +	{
-> +		.name = "u-boot",
-> +		.offset = 0,
-> +		.size = SZ_1M
-> +	}, {
-> +		.name = "uImage",
-> +		.offset = MTDPART_OFS_NXTBLK,
-> +		.size = SZ_4M
-> +	}, {
-> +		.name = "root",
-> +		.offset = MTDPART_OFS_NXTBLK,
-> +		.size = MTDPART_SIZ_FULL
-> +	},
-> +};
-> +
-> +static struct mv643xx_eth_platform_data openrd_base_ge00_data = {
-> +	.phy_addr	= MV643XX_ETH_PHY_ADDR(8),
-> +};
-> +
-> +static struct mvsdio_platform_data openrd_base_mvsdio_data = {
-> +	.gpio_card_detect = MPP29_GPIO,	/* MPP29 used as SD card detect */
-> +};
-> +
-> +static unsigned int openrd_base_mpp_config[] __initdata = {
-> +	0
-> +};
-> +
-> +static void __init openrd_base_init(void)
-> +{
-> +	/*
-> +	 * Basic setup. Needs to be called early.
-> +	 */
-> +	kirkwood_init();
-> +	kirkwood_mpp_conf(openrd_base_mpp_config);
-> +
-> +	kirkwood_uart0_init();
-> +	kirkwood_nand_init(ARRAY_AND_SIZE(openrd_base_nand_parts), 25);
-> +
-> +	kirkwood_ehci_init();
-> +
-> +	kirkwood_ge00_init(&openrd_base_ge00_data);
-> +	kirkwood_sdio_init(&openrd_base_mvsdio_data);
-> +}
-> +
-> +MACHINE_START(OPENRD_BASE, "Marvell OpenRD Base Board")
-> +	/* Maintainer: Dhaval Vasa <dhaval.vasa@einfochips.com> */
-> +	.phys_io	= KIRKWOOD_REGS_PHYS_BASE,
-> +	.io_pg_offst	= ((KIRKWOOD_REGS_VIRT_BASE) >> 18) & 0xfffc,
-> +	.boot_params	= 0x00000100,
-> +	.init_machine	= openrd_base_init,
-> +	.map_io		= kirkwood_map_io,
-> +	.init_irq	= kirkwood_init_irq,
-> +	.timer		= &kirkwood_timer,
-> +MACHINE_END
-> -- 
-> 1.6.0.6
+On Friday 07 August 2009, gregkh@suse.de wrote:
+> This is a note to let you know that we have just queued up the patch titled
 > 
-> -- 
-> _____________________________________________________________________
-> Disclaimer: This e-mail message and all attachments transmitted with it
-> are intended solely for the use of the addressee and may contain legally
-> privileged and confidential information. If the reader of this message
-> is not the intended recipient, or an employee or agent responsible for
-> delivering this message to the intended recipient, you are hereby
-> notified that any dissemination, distribution, copying, or other use of
-> this message or its attachments is strictly prohibited. If you have
-> received this message in error, please notify the sender immediately by
-> replying to this message and please delete it from your computer. Any
-> views expressed in this message are those of the individual sender
-> unless otherwise stated.Company has taken enough precautions to prevent
-> the spread of viruses. However the company accepts no liability for any
-> damage caused by any virus transmitted by this email.
-> _____________________________________________________________________
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>     Subject: thinkpad-acpi: fix incorrect use of TPACPI_BRGHT_MODE_ECNVRAM
+> 
+> to the 2.6.30-stable tree.  Its filename is
+> 
+>     thinkpad-acpi-fix-incorrect-use-of-tpacpi_brght_mode_ecnvram.patch
+> 
+> A git repo of this tree can be found at 
+>     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+> 
+> 
+> From 59fe4fe34d7afdf63208124f313be9056feaa2f4 Mon Sep 17 00:00:00 2001
+> From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+> Date: Sat, 1 Aug 2009 12:04:20 -0300
+> Subject: thinkpad-acpi: fix incorrect use of TPACPI_BRGHT_MODE_ECNVRAM
+
+This patch fails to compile if applied to 2.6.30 + current stable queue.
+
+drivers/platform/x86/thinkpad_acpi.c:5769: error: array type has incomplete element type         
+drivers/platform/x86/thinkpad_acpi.c:5771: error: implicit declaration of function 'TPACPI_Q_IBM'
+drivers/platform/x86/thinkpad_acpi.c: In function 'brightness_init':                             
+drivers/platform/x86/thinkpad_acpi.c:5799: error: implicit declaration of function 'tpacpi_check_quirks'                                                                                          
+drivers/platform/x86/thinkpad_acpi.c:5800: warning: type defaults to 'int' in declaration of 'type name'                                                                                          
+drivers/platform/x86/thinkpad_acpi.c:5800: warning: type defaults to 'int' in declaration of 'type name'                                                                                          
+drivers/platform/x86/thinkpad_acpi.c:5800: error: size of array 'type name' is negative          
+make[6]: *** [drivers/platform/x86/thinkpad_acpi.o] Error 1                                      
+make[5]: *** [drivers/platform/x86] Error 2                                                      
+make[4]: *** [drivers/platform] Error 2                                                          
+make[4]: *** Waiting for unfinished jobs....      
+
+It seems to depend on the new quirk handling, introduced in:
+
+commit 7d95a3d564901e88ed42810f054e579874151999
+Author: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Date:   Sat May 30 13:25:06 2009 -0300
+
+    thinkpad-acpi: add quirklist engine
+
+    Add a quirklist engine suitable for matching ThinkPad firmware,
+    and change the code to use it.
+
+    Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+Regards
+	Stefan Lippers-Hollmann
 
 -- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+> From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+> 
+> commit 59fe4fe34d7afdf63208124f313be9056feaa2f4 upstream.
+> 
+> HBRV-based default selection of backlight control strategy didn't work
+> well, at least the X41 defines it but doesn't use it and I don't think
+> it will stop there.
+> 
+> Switch to a white/blacklist.  All models that have HBRV defined have
+> been included in the list, and initially all ATI GPUs will get
+> ECNVRAM, and the Intel GPUs will get UCMS_STEP.
+> 
+> Symptoms of incorrect backlight mode selection are:
+> 
+> 1. Non-working backlight control through sysfs;
+> 
+> 2. Backlight gets reset to the lowest level at every shutdown, reboot
+>    and when thinkpad-acpi gets unloaded;
+> 
+> This fixes a regression in 2.6.30, bugzilla #13826
+> 
+> Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+> Reported-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  drivers/platform/x86/thinkpad_acpi.c |   61 ++++++++++++++++++++++++++---------
+>  1 file changed, 47 insertions(+), 14 deletions(-)
+> 
+> --- a/drivers/platform/x86/thinkpad_acpi.c
+> +++ b/drivers/platform/x86/thinkpad_acpi.c
+> @@ -5757,14 +5757,48 @@ static struct backlight_ops ibm_backligh
+>  
+>  /* --------------------------------------------------------------------- */
+>  
+> +/*
+> + * These are only useful for models that have only one possibility
+> + * of GPU.  If the BIOS model handles both ATI and Intel, don't use
+> + * these quirks.
+> + */
+> +#define TPACPI_BRGHT_Q_NOEC	0x0001	/* Must NOT use EC HBRV */
+> +#define TPACPI_BRGHT_Q_EC	0x0002  /* Should or must use EC HBRV */
+> +#define TPACPI_BRGHT_Q_ASK	0x8000	/* Ask for user report */
+> +
+> +static const struct tpacpi_quirk brightness_quirk_table[] __initconst = {
+> +	/* Models with ATI GPUs known to require ECNVRAM mode */
+> +	TPACPI_Q_IBM('1', 'Y', TPACPI_BRGHT_Q_EC),	/* T43/p ATI */
+> +
+> +	/* Models with ATI GPUs (waiting confirmation) */
+> +	TPACPI_Q_IBM('1', 'R', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
+> +	TPACPI_Q_IBM('1', 'Q', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
+> +	TPACPI_Q_IBM('7', '6', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
+> +	TPACPI_Q_IBM('7', '8', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
+> +
+> +	/* Models with Intel Extreme Graphics 2 (waiting confirmation) */
+> +	TPACPI_Q_IBM('1', 'V', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
+> +	TPACPI_Q_IBM('1', 'W', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
+> +	TPACPI_Q_IBM('1', 'U', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
+> +
+> +	/* Models with Intel GMA900 */
+> +	TPACPI_Q_IBM('7', '0', TPACPI_BRGHT_Q_NOEC),	/* T43, R52 */
+> +	TPACPI_Q_IBM('7', '4', TPACPI_BRGHT_Q_NOEC),	/* X41 */
+> +	TPACPI_Q_IBM('7', '5', TPACPI_BRGHT_Q_NOEC),	/* X41 Tablet */
+> +};
+> +
+>  static int __init brightness_init(struct ibm_init_struct *iibm)
+>  {
+>  	int b;
+> +	unsigned long quirks;
+>  
+>  	vdbg_printk(TPACPI_DBG_INIT, "initializing brightness subdriver\n");
+>  
+>  	mutex_init(&brightness_mutex);
+>  
+> +	quirks = tpacpi_check_quirks(brightness_quirk_table,
+> +				ARRAY_SIZE(brightness_quirk_table));
+> +
+>  	/*
+>  	 * We always attempt to detect acpi support, so as to switch
+>  	 * Lenovo Vista BIOS to ACPI brightness mode even if we are not
+> @@ -5821,23 +5855,13 @@ static int __init brightness_init(struct
+>  	/* TPACPI_BRGHT_MODE_AUTO not implemented yet, just use default */
+>  	if (brightness_mode == TPACPI_BRGHT_MODE_AUTO ||
+>  	    brightness_mode == TPACPI_BRGHT_MODE_MAX) {
+> -		if (thinkpad_id.vendor == PCI_VENDOR_ID_IBM) {
+> -			/*
+> -			 * IBM models that define HBRV probably have
+> -			 * EC-based backlight level control
+> -			 */
+> -			if (acpi_evalf(ec_handle, NULL, "HBRV", "qd"))
+> -				/* T40-T43, R50-R52, R50e, R51e, X31-X41 */
+> -				brightness_mode = TPACPI_BRGHT_MODE_ECNVRAM;
+> -			else
+> -				/* all other IBM ThinkPads */
+> -				brightness_mode = TPACPI_BRGHT_MODE_UCMS_STEP;
+> -		} else
+> -			/* All Lenovo ThinkPads */
+> +		if (quirks & TPACPI_BRGHT_Q_EC)
+> +			brightness_mode = TPACPI_BRGHT_MODE_ECNVRAM;
+> +		else
+>  			brightness_mode = TPACPI_BRGHT_MODE_UCMS_STEP;
+>  
+>  		dbg_printk(TPACPI_DBG_BRGHT,
+> -			   "selected brightness_mode=%d\n",
+> +			   "driver auto-selected brightness_mode=%d\n",
+>  			   brightness_mode);
+>  	}
+>  
+> @@ -5858,6 +5882,15 @@ static int __init brightness_init(struct
+>  	vdbg_printk(TPACPI_DBG_INIT | TPACPI_DBG_BRGHT,
+>  			"brightness is supported\n");
+>  
+> +	if (quirks & TPACPI_BRGHT_Q_ASK) {
+> +		printk(TPACPI_NOTICE
+> +			"brightness: will use unverified default: "
+> +			"brightness_mode=%d\n", brightness_mode);
+> +		printk(TPACPI_NOTICE
+> +			"brightness: please report to %s whether it works well "
+> +			"or not on your ThinkPad\n", TPACPI_MAIL);
+> +	}
+> +
+>  	ibm_backlight_device->props.max_brightness =
+>  				(tp_features.bright_16levels)? 15 : 7;
+>  	ibm_backlight_device->props.brightness = b & TP_EC_BACKLIGHT_LVLMSK;
