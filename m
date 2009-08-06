@@ -1,166 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbZHFM6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbZHFM7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755491AbZHFM6J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 08:58:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755396AbZHFM6I
+	id S1755501AbZHFM7D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 08:59:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbZHFM7C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 08:58:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48670 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753242AbZHFM6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 08:58:07 -0400
-Date: Thu, 6 Aug 2009 12:57:36 GMT
-From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/urgent] perf symbol: Fix symbol parsing in certain cases: use the build-id as a symlink
-Message-ID: <tip-98b31af14e0a42030563e3f360fe5a214d589131@git.kernel.org>
-Git-Commit-ID: 98b31af14e0a42030563e3f360fe5a214d589131
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 06 Aug 2009 12:57:38 +0000 (UTC)
+	Thu, 6 Aug 2009 08:59:02 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60318 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753242AbZHFM7B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 08:59:01 -0400
+Date: Thu, 6 Aug 2009 13:58:00 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Douglas Leeder <douglas.leeder@sophos.com>, Pavel Machek <pavel@ucw.cz>,
+       Eric Paris <eparis@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
+       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
+       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "arjan@infradead.org" <arjan@infradead.org>,
+       "david@lang.hm" <david@lang.hm>,
+       "jengelh@medozas.de" <jengelh@medozas.de>,
+       "aviro@redhat.com" <aviro@redhat.com>,
+       "mrkafk@gmail.com" <mrkafk@gmail.com>,
+       "alexl@redhat.com" <alexl@redhat.com>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "mmorley@hcl.in" <mmorley@hcl.in>
+Subject: Re: fanotify - overall design before I start sending patches
+Message-ID: <20090806135800.7ccb7787@lxorguk.ukuu.org.uk>
+In-Reply-To: <200908061348.43625.tvrtko.ursulin@sophos.com>
+References: <1248466429.3567.82.camel@localhost>
+	<200908061159.45550.tvrtko.ursulin@sophos.com>
+	<1249557831.32113.234.camel@twins>
+	<200908061348.43625.tvrtko.ursulin@sophos.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  98b31af14e0a42030563e3f360fe5a214d589131
-Gitweb:     http://git.kernel.org/tip/98b31af14e0a42030563e3f360fe5a214d589131
-Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Wed, 5 Aug 2009 19:02:49 -0300
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 6 Aug 2009 14:52:10 +0200
+> > We are taking about the kind of fanotify client that says: No you cannot
+> > open/read/write/mmap/etc.. this file until I say you can, right?
+> 
+> Yes and no, it would be more accurate to say "this open takes long while we do 
+> something else in the background".
 
-perf symbol: Fix symbol parsing in certain cases: use the build-id as a symlink
+There are two or three ways to handle this
 
-In some cases...
+1.	Block the open until the daemon dies or responds
+2.	Have a timeout (which would need to be connection configurable)
+3.	Require the daemon responds with "in progress" now and then.
 
-[root@doppio tuna]# ls -la /usr/lib64/{xulrunner-1.9.1/xulrunner-stub,firefox-3.5.2/firefox}
--rwxr-xr-x 1 root root 90024 2009-08-03 19:45 /usr/lib64/firefox-3.5.2/firefox
--rwxr-xr-x 1 root root 90024 2009-08-03 18:23 /usr/lib64/xulrunner-1.9.1/xulrunner-stub
-[root@doppio tuna]# sha1sum /usr/lib64/{xulrunner-1.9.1/xulrunner-stub,firefox-3.5.2/firefox}
-19a858077d263d5de22c9c5da250d3e4396ae739  /usr/lib64/xulrunner-1.9.1/xulrunner-stub
-19a858077d263d5de22c9c5da250d3e4396ae739  /usr/lib64/firefox-3.5.2/firefox
-[root@doppio tuna]# rpm -qf /usr/lib64/{xulrunner-1.9.1/xulrunner-stub,firefox-3.5.2/firefox}
-xulrunner-1.9.1.2-1.fc11.x86_64
-firefox-3.5.2-2.fc11.x86_64
-[root@doppio tuna]# ls -la /usr/lib/debug/{usr/lib64/xulrunner-1.9.1/xulrunner-stub,usr/lib64/firefox-3.5.2/firefox}.debug
-ls: cannot access /usr/lib/debug/usr/lib64/firefox-3.5.2/firefox.debug: No such file or directory
--rwxr-xr-x 1 root root 403608 2009-08-03 18:22 /usr/lib/debug/usr/lib64/xulrunner-1.9.1/xulrunner-stub.debug
+For a superuser managed service its no different to an NFS mount which
+can go wonky so the only real question is what should fanotify allow non
+privileged users to do. The answer would appear anyway to be: not use
+this aspect of such a facility.
 
-Seemingly we don't have a .symtab when we actually can find it
-if we use the .note.gnu.build-id ELF section put in place by
-some distros. Use it and find the symbols we need.
+For the superuser case the fact the daemon can be killed thus releasing
+anything stuff is analogous to umount -f of a stuck NFS mount which seems
+perfectly good for NFS.
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- tools/perf/util/symbol.c |   74 ++++++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 71 insertions(+), 3 deletions(-)
-
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 0580b94..80fa3e4 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -661,10 +661,67 @@ out_close:
- 	return err;
- }
- 
-+static char *dso__read_build_id(struct dso *self, int verbose)
-+{
-+	int i;
-+	GElf_Ehdr ehdr;
-+	GElf_Shdr shdr;
-+	Elf_Data *build_id_data;
-+	Elf_Scn *sec;
-+	char *build_id = NULL, *bid;
-+	unsigned char *raw;
-+	Elf *elf;
-+	int fd = open(self->name, O_RDONLY);
-+
-+	if (fd < 0)
-+		goto out;
-+
-+	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
-+	if (elf == NULL) {
-+		if (verbose)
-+			fprintf(stderr, "%s: cannot read %s ELF file.\n",
-+				__func__, self->name);
-+		goto out_close;
-+	}
-+
-+	if (gelf_getehdr(elf, &ehdr) == NULL) {
-+		if (verbose)
-+			fprintf(stderr, "%s: cannot get elf header.\n", __func__);
-+		goto out_elf_end;
-+	}
-+
-+	sec = elf_section_by_name(elf, &ehdr, &shdr, ".note.gnu.build-id", NULL);
-+	if (sec == NULL)
-+		goto out_elf_end;
-+
-+	build_id_data = elf_getdata(sec, NULL);
-+	if (build_id_data == NULL)
-+		goto out_elf_end;
-+	build_id = malloc(128);
-+	if (build_id == NULL)
-+		goto out_elf_end;
-+	raw = build_id_data->d_buf + 16;
-+	bid = build_id;
-+
-+	for (i = 0; i < 20; ++i) {
-+		sprintf(bid, "%02x", *raw);
-+		++raw;
-+		bid += 2;
-+	}
-+	if (verbose)
-+		printf("%s(%s): %s\n", __func__, self->name, build_id);
-+out_elf_end:
-+	elf_end(elf);
-+out_close:
-+	close(fd);
-+out:
-+	return build_id;
-+}
-+
- int dso__load(struct dso *self, symbol_filter_t filter, int verbose)
- {
--	int size = strlen(self->name) + sizeof("/usr/lib/debug%s.debug");
--	char *name = malloc(size);
-+	int size = PATH_MAX;
-+	char *name = malloc(size), *build_id = NULL;
- 	int variant = 0;
- 	int ret = -1;
- 	int fd;
-@@ -686,7 +743,18 @@ more:
- 		case 1: /* Ubuntu */
- 			snprintf(name, size, "/usr/lib/debug%s", self->name);
- 			break;
--		case 2: /* Sane people */
-+		case 2:
-+			build_id = dso__read_build_id(self, verbose);
-+			if (build_id != NULL) {
-+				snprintf(name, size,
-+					 "/usr/lib/debug/.build-id/%.2s/%s.debug",
-+					build_id, build_id + 2);
-+				free(build_id);
-+				break;
-+			}
-+			variant++;
-+			/* Fall thru */
-+		case 3: /* Sane people */
- 			snprintf(name, size, "%s", self->name);
- 			break;
- 
+Alan
