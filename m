@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbZHFGBG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbZHFGHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754030AbZHFGBG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 02:01:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZHFGBG
+	id S1754042AbZHFGHR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 02:07:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbZHFGHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 02:01:06 -0400
-Received: from kroah.org ([198.145.64.141]:41814 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752529AbZHFGBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 02:01:05 -0400
-Date: Wed, 5 Aug 2009 22:09:32 -0700
-From: Greg KH <greg@kroah.com>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>, linville@tuxdriver.com,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       zhifeng.cai@atheros.com, stephen.chen@atheros.com,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH] pci_ids.h: add new Atheros USB vendor ID
-Message-ID: <20090806050932.GA25015@kroah.com>
-References: <1249523981-26601-1-git-send-email-lrodriguez@atheros.com>
- <1249532170.21101.3.camel@localhost.localdomain>
- <43e72e890908052126v53aa1b4sb7a48e19f98fdfa6@mail.gmail.com>
- <1249533357.21101.5.camel@localhost.localdomain>
+	Thu, 6 Aug 2009 02:07:16 -0400
+Received: from [222.73.24.84] ([222.73.24.84]:64981 "EHLO song.cn.fujitsu.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752166AbZHFGHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 02:07:16 -0400
+Message-ID: <4A7A72BD.5030201@cn.fujitsu.com>
+Date: Thu, 06 Aug 2009 14:05:49 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249533357.21101.5.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <f.weisbecker@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/3] tracing/filters: Support specifying filter hook to a
+ TRACE_EVENT field
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 09:35:57PM -0700, Marcel Holtmann wrote:
-> Hi Luiz,
-> 
-> > >> New Atheros USB devices will use 0x0cf3. The first device
-> > >> will be ar9271, for which we are adding support for.
-> > >>
-> > >> Cc: zhifeng.cai@atheros.com
-> > >> Cc: stephen.chen@atheros.com
-> > >> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
-> > >> ---
-> > >>
-> > >> John, sending this through you as this is only
-> > >> specific to wireless, at least at the moment.
-> > >>
-> > >>  include/linux/pci_ids.h |    1 +
-> > >>  1 files changed, 1 insertions(+), 0 deletions(-)
-> > >>
-> > >> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-> > >> index 73b46b6..27f4e6b 100644
-> > >> --- a/include/linux/pci_ids.h
-> > >> +++ b/include/linux/pci_ids.h
-> > >> @@ -2170,6 +2170,7 @@
-> > >>  #define PCI_DEVICE_ID_BCM1250_HT     0x0002
-> > >>
-> > >>  #define PCI_VENDOR_ID_ATHEROS                0x168c
-> > >> +#define PCI_VENDOR_ID_ATHEROS_USB    0x0cf3
-> > >
-> > > this is confusing the hell out of me. What are you adding here.
-> > 
-> > No you're right, my fault.
-> > 
-> > > A USB
-> > > vendor id or a PCI one. Is the ar9271 a PCI device or a USB device?
-> > 
-> > Its only USB.
-> > 
-> > Thanks... hm I see no USB vendor id headers. Guess we won't need to add this.
-> 
-> the closest we have is drivers/hid/hid-ids.h and we might just should
-> have Greg create a usb-ids.h file.
+Currently only static strings and dynamic strings have their
+own filter functions, other types of field are treated as
+integers.
 
-Ick, no, there's no such file for a good reason.  Put your device ids in
-the driver files, no need to share it across the whole kernel.
+This patchset allows assigning a specific filter type to a
+field, so a field which is defined as:
 
-thanks,
+	__field_ext(const char *, str, FILTER_PTR_STR)
 
-greg k-h
+will be treated as a string but not a plain pointer, and then
+we can set the filter like this:
+
+	# echo 'str == foo' > filter
+
+And it's easy to add more filter functions for different types
+to turn these into valid operations:
+
+	(dev is of type dev_t)
+	# echo 'dev == 8:0' > filter
+
+	(callsite is of type void * or unsigned long)
+	# echo 'callsite == skb_free' > filter
+
+[PATCH 1/3] tracing/filters: Add filter_type to struct ftrace_event_field
+[PATCH 2/3] tracing/filters: Add __field_ext() to TRACE_EVENT
+[PATCH 3/3] tracing/filters: Support filtering for char * strings
+---
+ include/linux/ftrace_event.h       |   12 +++++++-
+ include/trace/ftrace.h             |   28 ++++++++++++++++----
+ kernel/trace/trace.h               |    2 +
+ kernel/trace/trace_events.c        |    9 ++++++-
+ kernel/trace/trace_events_filter.c |   47 +++++++++++++++++++++++++----------
+ kernel/trace/trace_export.c        |    7 +++--
+ 6 files changed, 79 insertions(+), 26 deletions(-)
+
