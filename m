@@ -1,92 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbZHFJLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZHFJMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754699AbZHFJLT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 05:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbZHFJLS
+	id S1754660AbZHFJMM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 05:12:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbZHFJML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 05:11:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34639 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754560AbZHFJLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 05:11:05 -0400
-Date: Thu, 6 Aug 2009 11:10:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Valdis.Kletnieks@vt.edu
-Subject: Re: perf: "Longum est iter per praecepta, breve et efficax per
-	exempla"
-Message-ID: <20090806091059.GB28585@elte.hu>
-References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie> <1249409546-6343-5-git-send-email-mel@csn.ul.ie> <20090804112246.4e6d0ab1.akpm@linux-foundation.org> <20090804195717.GA5998@elte.hu> <16246.1249484030@turing-police.cc.vt.edu> <20090805185334.GA4535@Pilar.aei.mpg.de> <84144f020908060008x34a320e2nc6a6bf8a665e51b4@mail.gmail.com> <20090806083219.GA4163@Pilar.aei.mpg.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090806083219.GA4163@Pilar.aei.mpg.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 6 Aug 2009 05:12:11 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:40144 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752859AbZHFJMK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 05:12:10 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [tip:perfcounters/urgent] ftrace: Fix perf-tracepoint OOPS
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, chris.mason@oracle.com, tglx@linutronix.de,
+       mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+In-Reply-To: <tip-af6af30c0fcd77e621638e53ef8b176bca8bd3b4@git.kernel.org>
+References: <1249497664.5890.4.camel@laptop>
+	 <tip-af6af30c0fcd77e621638e53ef8b176bca8bd3b4@git.kernel.org>
+Content-Type: text/plain
+Date: Thu, 06 Aug 2009 11:11:50 +0200
+Message-Id: <1249549910.32113.70.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Carlos R. Mafra <crmafra2@gmail.com> wrote:
-
-> Hi Pekka,
+> [ v2: fix build error in the !CONFIG_EVENT_PROFILE case ]
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 > 
-> On Thu  6.Aug'09 at 10:08:44 +0300, Pekka Enberg wrote:
-> > Hi Carlos,
-> > 
-> > On Wed, Aug 5, 2009 at 9:53 PM, Carlos R. Mafra<crmafra2@gmail.com> wrote:
-> > > A few examples of how 'perf' can be used, from an e-mail by
-> > > Ingo Molnar http://lkml.org/lkml/2009/8/4/346.
-> > >
-> > > Signed-off-by: Carlos R. Mafra <crmafra2@gmail.com>
-> > > ---
-> > >
-> > > This "patch" is my way of _suggesting_ some "documentation by examples"
-> > > of what 'perf' can do to the guys who can really write it :-)
-> > 
-> > I was also looking for a perf "cookbook" and Ingo suggested we should
-> > put this stuff on the kernel.org wiki:
-> > 
-> > http://perf.wiki.kernel.org/index.php/Main_Page
-> > 
-> > How about just putting the email there?
 > 
-> First of all I just would like to rephrase my comment in the 
-> patch.
+> ---
+>  include/linux/ftrace_event.h       |    8 +++-----
+>  kernel/trace/trace_event_profile.c |    2 +-
+>  kernel/trace/trace_events.c        |    2 +-
+>  3 files changed, 5 insertions(+), 7 deletions(-)
 > 
-> It was not meant to be a suggestion for Ingo to write more 
-> documentation per se, it was my way of pointing out that such 
-> "documentation" is useful for beginners and that I, as Valdis, 
-> appreciated reading it. So it was more of a "keep coming" and 
-> don't rephrain from writing these examples in the e-mails kind of 
-> thing.
+> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+> index 5c093ff..d7cd193 100644
+> --- a/include/linux/ftrace_event.h
+> +++ b/include/linux/ftrace_event.h
+> @@ -119,11 +119,9 @@ struct ftrace_event_call {
+>  	void			*filter;
+>  	void			*mod;
+>  
+> -#ifdef CONFIG_EVENT_PROFILE
+> -	atomic_t	profile_count;
+> -	int		(*profile_enable)(struct ftrace_event_call *);
+> -	void		(*profile_disable)(struct ftrace_event_call *);
+> -#endif
+> +	atomic_t		profile_count;
+> +	int			(*profile_enable)(struct ftrace_event_call *);
+> +	void			(*profile_disable)(struct ftrace_event_call *);
+>  };
 
-yeah, that's very useful to newbies, i agree.
+Ah, I would have added ifdefs around the below bit.
 
-I'm not very good at coming up with examples for beginners myself 
-(probably partly because i'm already across the learning curve and 
-partly because i wrote portions of it so it's 'obvious' to my own 
-subjective experience) - so help is welcome.
+> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+> index 23d2972..e75276a 100644
+> --- a/kernel/trace/trace_events.c
+> +++ b/kernel/trace/trace_events.c
+> @@ -940,7 +940,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+>  		entry = trace_create_file("enable", 0644, call->dir, call,
+>  					  enable);
+>  
+> -	if (call->id)
+#ifdef CONFIG_EVENT_PROFILE
+> +	if (call->id && call->profile_enable)
+>  		entry = trace_create_file("id", 0444, call->dir, call,
+>  					  id);
+#endif
 
-Another area that could be improved is to make the screen that comes 
-up when 'perf' is typed a bit more self-explanatory. Maybe print the 
-URL to your "Beginner's Page" wiki page in that place?
+Like that, but I guess this works too ;-)
 
-Patches are much welcome for that area as well, of course.
-
-> Now about the wiki. Yeah, that sounds great and I didn't know 
-> about it yesterday. It will be nice if the wiki becomes a place 
-> where people can look for such usage examples.
-
-Thanks,
-
-	Ingo
