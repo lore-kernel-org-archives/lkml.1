@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbZHFT0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbZHFT2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756539AbZHFT0L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 15:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756526AbZHFT0K
+	id S1756545AbZHFT2I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 15:28:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756512AbZHFT2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 15:26:10 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:60844 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756521AbZHFT0J convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 15:26:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=pFqn3XH3Sx1+CrIPGSuOpGumMRlwZeey7tiS/7Hbtmy+m6m0kJiFxiKHe/8LUg0t7i
-         3wQ1D00r+QbMojheX25z+CbkIBm6WnyOrVThDf6TcoJ9HTmoTHxjWwMspueXjXS/3dQS
-         pg0VoAhdqffDMrpptxr4jV/mbYhMmXiw7GioY=
+	Thu, 6 Aug 2009 15:28:07 -0400
+Received: from in.cluded.net ([195.159.98.120]:33596 "EHLO in.cluded.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756082AbZHFT2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 15:28:06 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Aug 2009 15:28:06 EDT
+Message-ID: <4A7B2C3A.9090709@uw.no>
+Date: Thu, 06 Aug 2009 19:17:14 +0000
+From: "Daniel K." <dk@uw.no>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9a1) Gecko/20060307 SeaMonkey/1.5a
 MIME-Version: 1.0
-In-Reply-To: <20090806183247.GI26809@tuxdriver.com>
-References: <b637ec0b0908061130w399eb1c6oc3a31640a76398c5@mail.gmail.com>
-	 <20090806183247.GI26809@tuxdriver.com>
-Date: Thu, 6 Aug 2009 21:26:07 +0200
-Message-ID: <b637ec0b0908061226m33203bco7ac38cecb939b382@mail.gmail.com>
-Subject: Re: WARNING: at net/mac80211/mlme.c:2292 ieee80211_sta_work+0x97/0xd2d 
-	[mac80211]()
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-wireless@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Luis R. Rodriguez" <lrodriguez@Atheros.com>, joe@perches.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       mcgrof@gmail.com
+Subject: Re: [PATCH 3/3] checkincludes.pl: add option to remove duplicates
+ in place
+References: <1249519872-23958-1-git-send-email-lrodriguez@atheros.com>	<1249519872-23958-4-git-send-email-lrodriguez@atheros.com> <20090805185945.1ece6088.akpm@linux-foundation.org>
+In-Reply-To: <20090805185945.1ece6088.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi John. I'm using ath5k .
+Andrew Morton wrote:
+> On Wed, 5 Aug 2009 17:51:12 -0700 "Luis R. Rodriguez" <lrodriguez@Atheros.com> wrote:
+>> -	print "Usage: checkincludes.pl <file list>\n";
+>> +	print "Usage: checkincludes.pl [-r]\n";
+>> +	print "By default we just warn of duplicates\n";
+>> +	print "To remove files in place use -r\n";
+> 
+> I'm not sure I like the wording here - I don't _want_ my files removed!
+> 
+> This?
+> 
+> --- a/scripts/checkincludes.pl~checkincludespl-add-option-to-remove-duplicates-in-place-fix
+> +++ a/scripts/checkincludes.pl
+> @@ -7,7 +7,7 @@
+>  sub usage {
+>  	print "Usage: checkincludes.pl [-r]\n";
+>  	print "By default we just warn of duplicates\n";
+> -	print "To remove files in place use -r\n";
+> +	print "To remove duplicated includes in place use -r\n";
+>  	exit 1;
+>  }
+>  
 
-The card is a:
+And perhaps the '<file list>' should be kept as well, for documentation?
 
-01:00.0 Ethernet controller: Atheros Communications Inc. AR5001
-Wireless Network Adapter (rev 01)
+--- a/scripts/checkincludes.pl
++++ a/scripts/checkincludes.pl
+@@ -5,7 +5,7 @@
+ # Copyright abandoned, 2009, Luis R. Rodriguez <mcgrof@gmail.com>
+ 
+ sub usage {
+-	print "Usage: checkincludes.pl [-r]\n";
++	print "Usage: checkincludes.pl [-r] <file list>\n";
+ 	print "By default we just warn of duplicates\n";
+ 	print "To remove duplicated includes in place use -r\n";
+ 	exit 1;
 
-with PCI ID:
 
-01:00.0 0200: 168c:001c (rev 01)
-
-
-Regards,
-Fabio
-
-
-
-
-On Thu, Aug 6, 2009 at 8:32 PM, John W. Linville<linville@tuxdriver.com> wrote:
-> What driver are you using?
->
-> On Thu, Aug 06, 2009 at 08:30:23PM +0200, Fabio Comolli wrote:
->> Just got this after a resume from suspend-to-ram. Wifi needed to be
->> disabled and reenabled (with hardware Fn+F2 key - this is an eeePC900)
->> to function  again.
->>
->>
->> [  919.858759] ------------[ cut here ]------------
->> [  919.858787] WARNING: at net/mac80211/mlme.c:2292
->> ieee80211_sta_work+0x97/0xd2d [mac80211]()
->> [  919.858791] Hardware name: 900
->> [  919.858793] Modules linked in: uvcvideo videodev v4l1_compat arc4
->> ecb ath5k mac80211 ath cfg80211
->> [  919.860022] Pid: 793, comm: phy0 Tainted: G   M       2.6.31-rc5 #11
->> [  919.860025] Call Trace:
->> [  919.860035]  [<c10209cf>] warn_slowpath_common+0x65/0x7c
->> [  919.860058]  [<f83d621e>] ? ieee80211_sta_work+0x97/0xd2d [mac80211]
->> [  919.860064]  [<c10209f3>] warn_slowpath_null+0xd/0x10
->> [  919.860086]  [<f83d621e>] ieee80211_sta_work+0x97/0xd2d [mac80211]
->> [  919.860092]  [<c101bb2b>] ? __wake_up+0x2f/0x56
->> [  919.860097]  [<c101bb39>] ? __wake_up+0x3d/0x56
->> [  919.860103]  [<c102eb04>] ? insert_work+0x96/0x9f
->> [  919.860108]  [<c102ed63>] ? __queue_work+0x32/0x49
->> [  919.860113]  [<c102eda1>] ? queue_work_on+0x27/0x2f
->> [  919.860119]  [<c102f52f>] ? queue_work+0x2d/0x45
->> [  919.860140]  [<f83d3324>] ?
->> ieee80211_ibss_notify_scan_completed+0x63/0x68 [mac80211]
->> [  919.860162]  [<f83d1059>] ? ieee80211_scan_completed+0x320/0x328 [mac80211]
->> [  919.860184]  [<f83d1160>] ? ieee80211_scan_work+0xb5/0x171 [mac80211]
->> [  919.860190]  [<c102f075>] worker_thread+0x15d/0x204
->> [  919.860211]  [<f83d6187>] ? ieee80211_sta_work+0x0/0xd2d [mac80211]
->> [  919.860218]  [<c1032217>] ? autoremove_wake_function+0x0/0x2f
->> [  919.860223]  [<c102ef18>] ? worker_thread+0x0/0x204
->> [  919.860229]  [<c1031fab>] kthread+0x63/0x68
->> [  919.860234]  [<c1031f48>] ? kthread+0x0/0x68
->> [  919.860240]  [<c1002f93>] kernel_thread_helper+0x7/0x10
->> [  919.860244] ---[ end trace 7a3a8d08c5a7bedf ]---
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
-> --
-> John W. Linville                Someday the world will need a hero, and you
-> linville@tuxdriver.com                  might be all we have.  Be ready.
->
+Daniel K.
