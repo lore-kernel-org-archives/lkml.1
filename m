@@ -1,165 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbZHFM7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbZHFM7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbZHFM7R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 08:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbZHFM7Q
+	id S1755543AbZHFM7x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 08:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbZHFM7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 08:59:16 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:44623 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751251AbZHFM7M (ORCPT
+	Thu, 6 Aug 2009 08:59:52 -0400
+Received: from viefep17-int.chello.at ([62.179.121.37]:49377 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752516AbZHFM7w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 08:59:12 -0400
-Date: Thu, 6 Aug 2009 14:59:09 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org,
-       pHilipp Zabel <philipp.zabel@gmail.com>,
-       Phil Blundell <pb@handhelds.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: [linux-pm] [PATCH 4/5] input: gpio-keys: switch to new
-	dev_pm_ops
-Message-ID: <20090806125909.GJ19257@buzzloop.caiaq.de>
-References: <1249496971-9019-1-git-send-email-daniel@caiaq.de> <74d0deb30908051315l43b00731yb79f7937707068ec@mail.gmail.com> <20090805223342.GG19257@buzzloop.caiaq.de> <200908060251.55157.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908060251.55157.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 6 Aug 2009 08:59:52 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: malloc() tracing in perf?
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       acme <acme@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       roland <roland@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090806115527.GE18768@redhat.com>
+References: <4A7A8ADD.4080208@cs.helsinki.fi>
+	 <1249546610.32113.35.camel@twins> <20090806112059.GD18768@redhat.com>
+	 <1249558094.32113.242.camel@twins>  <20090806115527.GE18768@redhat.com>
+Content-Type: text/plain
+Date: Thu, 06 Aug 2009 14:59:34 +0200
+Message-Id: <1249563574.32113.358.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 02:51:55AM +0200, Rafael J. Wysocki wrote:
-> On Thursday 06 August 2009, Daniel Mack wrote:
-> > On Wed, Aug 05, 2009 at 10:15:52PM +0200, pHilipp Zabel wrote:
-> > > On Wed, Aug 5, 2009 at 8:29 PM, Daniel Mack<daniel@caiaq.de> wrote:
-> > > > -static int gpio_keys_resume(struct platform_device *pdev)
-> > > > +static int gpio_keys_resume(struct device *dev)
-> > > >  {
-> > > > -       struct gpio_keys_platform_data *pdata = pdev->dev.platform_data;
-> > > > +       struct gpio_keys_platform_data *pdata = dev->platform_data;
-> > > >        int i;
-> > > >
-> > > > -       if (device_may_wakeup(&pdev->dev)) {
-> > > > +       if (device_may_wakeup(dev)) {
-> > > >                for (i = 0; i < pdata->nbuttons; i++) {
-> > > >                        struct gpio_keys_button *button = &pdata->buttons[i];
-> > > >                        if (button->wakeup) {
-> > > > @@ -251,19 +251,27 @@ static int gpio_keys_resume(struct platform_device *pdev)
-> > > >
-> > > >        return 0;
-> > > >  }
-> > > > +
-> > > > +static struct dev_pm_ops gpio_keys_pm_ops = {
-> > > > +       .suspend        = gpio_keys_suspend,
-> > > > +       .freeze         = gpio_keys_suspend,
-> > > > +       .resume         = gpio_keys_resume,
-> > > > +       .thaw           = gpio_keys_resume,
-> > > 
-> > > I'm not sure I understand hibernation correctly, but isn't
-> > > .freeze/.thaw about saving state and halting/resuming the device
-> > > operation only?
+On Thu, 2009-08-06 at 07:55 -0400, Frank Ch. Eigler wrote:
+> Hi -
 > 
-> It is.
+> On Thu, Aug 06, 2009 at 01:28:14PM +0200, Peter Zijlstra wrote:
+> > [...]
+> > > That work is ongoing, and being discussed on utrace-devel@redhat.com,
+> > > since it is a prerequisite. 
+> > 
+> > Still hiding the discussion and the design never helped anybody.
 > 
-> > > It seems to me that enabling system wakeup functionality should go
-> > > into .poweroff. (See <linux/pm.h>)
+> I guess "hiding" is a matter of opinion.
+
+Yeah in plain sight where nobody looks, really I thought the idea was to
+get utrace upstream, this means posting to linux-kernel. Going on LKML
+posts I'd say the utrace project was dead. Same goes for uprobe.
+
+I've told this before and I'll say it again, post to LKML.
+
+> > > While these deliberations are ongoing, you can use systemtap.  Probing
+> > > random places in userspace is about as casual as probing the kernel:
+> > 
+> > Right, but that still doesn't tell us anything on how you're doing that,
+> > does it?
 > 
-> That's correct.
+> Since you asked...  the probe process("/lib64/libc.so.6") points
+> systemtap to a shared library file, whose symbol table & debug data
+> gives us information about what functions & parameters are available.
+> Among other things, we record a shared-library base-relative address
+> for the function.
 > 
-> And .restore() plays the role of ".resume() from hibernation".
+> At run time, we monitor the entire system (or just a given process if
+> -x PID/-c CMD was specified) to see when that shared library gets
+> loaded.  (This in turn is done with a utrace-based hook of the mmap
+> syscall - see "task_finder" in our sources). 
 
-Hence, In case of this driver which only calls disable_irq/enable_irq,
-setting .poweroff and .restore seems to suffice? So does the patch
-below.
+Does this also iterate the already existing tasks to find if it was
+already mmap()ed?
 
-Thanks,
-Daniel
+> This overview skims over issues related to return probes, tracing
+> buffer manipulations, and much other stuff.
 
+Right, so you basically read the (dwarf2) debug info for a particular
+lib/symbol and generate a kernel module that knows about that and then
+insert that into the kernel to act as a uprobe handler?
 
->From afa35cebccf49a24613e711afb8009fb6aadce0e Mon Sep 17 00:00:00 2001
-From: Daniel Mack <daniel@caiaq.de>
-Date: Wed, 5 Aug 2009 15:28:54 +0200
-Subject: [PATCH 3/3] input: gpio-keys: switch to new dev_pm_ops
+Uprobe will then do the code rewrite on mmap() time to insert a trap
+much like kprobe does? What if its a JITed code section and the JIT
+rewrites it? Will uprobes detect that?
 
-The callbacks for the implemented functions are .poweroff and .restore,
-as they only care for {dis,en}able_irq(). Renamed the functions
-to reflect that.
+> All the code for this is hidden in plain sight in every systemtap
+> release, so please feel free to refer to that and/or ask more detailed
+> questions.
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Phil Blundell <pb@handhelds.org>
-Cc: linux-input@vger.kernel.org
----
- drivers/input/keyboard/gpio_keys.c |   26 ++++++++++++++++----------
- 1 files changed, 16 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/input/keyboard/gpio_keys.c b/drivers/input/keyboard/gpio_keys.c
-index efed0c9..8e670d4 100644
---- a/drivers/input/keyboard/gpio_keys.c
-+++ b/drivers/input/keyboard/gpio_keys.c
-@@ -216,12 +216,12 @@ static int __devexit gpio_keys_remove(struct platform_device *pdev)
- 
- 
- #ifdef CONFIG_PM
--static int gpio_keys_suspend(struct platform_device *pdev, pm_message_t state)
-+static int gpio_keys_poweroff(struct device *dev)
- {
--	struct gpio_keys_platform_data *pdata = pdev->dev.platform_data;
-+	struct gpio_keys_platform_data *pdata = dev->platform_data;
- 	int i;
- 
--	if (device_may_wakeup(&pdev->dev)) {
-+	if (device_may_wakeup(dev)) {
- 		for (i = 0; i < pdata->nbuttons; i++) {
- 			struct gpio_keys_button *button = &pdata->buttons[i];
- 			if (button->wakeup) {
-@@ -234,12 +234,12 @@ static int gpio_keys_suspend(struct platform_device *pdev, pm_message_t state)
- 	return 0;
- }
- 
--static int gpio_keys_resume(struct platform_device *pdev)
-+static int gpio_keys_restore(struct device *dev)
- {
--	struct gpio_keys_platform_data *pdata = pdev->dev.platform_data;
-+	struct gpio_keys_platform_data *pdata = dev->platform_data;
- 	int i;
- 
--	if (device_may_wakeup(&pdev->dev)) {
-+	if (device_may_wakeup(dev)) {
- 		for (i = 0; i < pdata->nbuttons; i++) {
- 			struct gpio_keys_button *button = &pdata->buttons[i];
- 			if (button->wakeup) {
-@@ -251,19 +251,25 @@ static int gpio_keys_resume(struct platform_device *pdev)
- 
- 	return 0;
- }
-+
-+static struct dev_pm_ops gpio_keys_pm_ops = {
-+	.poweroff	= gpio_keys_poweroff,
-+	.restore	= gpio_keys_restore,
-+};
-+
-+#define GPIO_KEYS_PM_OPS (&gpio_keys_pm_ops)
-+
- #else
--#define gpio_keys_suspend	NULL
--#define gpio_keys_resume	NULL
-+#define GPIO_KEYS_PM_OPS NULL
- #endif
- 
- static struct platform_driver gpio_keys_device_driver = {
- 	.probe		= gpio_keys_probe,
- 	.remove		= __devexit_p(gpio_keys_remove),
--	.suspend	= gpio_keys_suspend,
--	.resume		= gpio_keys_resume,
- 	.driver		= {
- 		.name	= "gpio-keys",
- 		.owner	= THIS_MODULE,
-+		.pm	= GPIO_KEYS_PM_OPS,
- 	}
- };
- 
--- 
-1.6.3.3
+I thought the goal was to get stuff upstream, but if you want to
+continue living in la-la land and not bother with upstream Linux then so
+be it I guess :-(
 
