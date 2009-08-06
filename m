@@ -1,95 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZHFOKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752698AbZHFORi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755979AbZHFOKG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 10:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbZHFOKF
+	id S1752698AbZHFORi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 10:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbZHFORh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 10:10:05 -0400
-Received: from mr1.bfh.ch ([147.87.250.50]:47953 "EHLO mr1.bfh.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755537AbZHFOKE convert rfc822-to-8bit (ORCPT
+	Thu, 6 Aug 2009 10:17:37 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:46399 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751234AbZHFORh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 10:10:04 -0400
-From: Zimmermann Christoph <christoph.zimmermann@bfh.ch>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Thu, 6 Aug 2009 16:09:35 +0200
-Subject: RESEND: Re: Is anyone maintaining (or even using) usbtmc?
-Thread-Topic: RESEND: Re: Is anyone maintaining (or even using) usbtmc?
-Thread-Index: AQHKFpSTIPlIjuYRAEOYf0pUWfjYapCZEeU3
-Message-ID: <8288F66EF13DBA41AD8CBFDA64D8FFA316297830@nyx.bfh.ch>
-References: <8288F66EF13DBA41AD8CBFDA64D8FFA31629782E@nyx.bfh.ch>
-In-Reply-To: <8288F66EF13DBA41AD8CBFDA64D8FFA31629782E@nyx.bfh.ch>
-Accept-Language: de-DE, fr-CH
-Content-Language: de-CH
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: de-DE, fr-CH
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 6 Aug 2009 10:17:37 -0400
+Date: Thu, 6 Aug 2009 10:17:36 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Li Zefan <lizf@cn.fujitsu.com>
+cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <f.weisbecker@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] tracing/filters: Add __field_ext() to TRACE_EVENT
+In-Reply-To: <4A7A72DF.6030009@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0908061014120.9870@gandalf.stny.rr.com>
+References: <4A7A72BD.5030201@cn.fujitsu.com> <4A7A72DF.6030009@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-X-PMWin-Version: 3.0.2.0, Antivirus-Engine: 2.89.1, Antivirus-Data: 4.44E
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i've asked also some of your questions two month ago.
 
-i'm a tmc driver user only. i use it to develop my firmware for a
-cypress fx2 based tmc device.
 
-i've made some bugreporting to greg and to the mailinglist (now i'm not
-sure anymore if all my mails arrived on the mailinglist. the gmame
-archive does not list all mails. the other archives are even worse).
+On Thu, 6 Aug 2009, Li Zefan wrote:
 
-since then two ore tree small patches are sent to the mailinglist. but
-none seemed to adress my bugs (one patch was about a memory leak)
+> Add __field_ext(), so a field can be assigned to a specific
+> filter_type, which matches a corresponding filter function.
+> 
+> For example, a later patch will allow this:
+> 	__field_ext(const char *, str, FILTER_PTR_STR);
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  include/linux/ftrace_event.h       |   11 +++++++++--
+>  include/trace/ftrace.h             |   28 ++++++++++++++++++++++------
+>  kernel/trace/trace_events.c        |    9 +++++++--
+>  kernel/trace/trace_events_filter.c |    6 ------
+>  kernel/trace/trace_export.c        |    7 ++++---
+>  5 files changed, 42 insertions(+), 19 deletions(-)
+> 
+> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+> index 26d3673..14c388e 100644
+> --- a/include/linux/ftrace_event.h
+> +++ b/include/linux/ftrace_event.h
+> @@ -138,8 +138,15 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
+>  					void *rec,
+>  					struct ring_buffer_event *event);
+>  
+> +enum {
+> +	FILTER_STATIC_STRING = 1,
+> +	FILTER_DYN_STRING,
+> +	FILTER_OTHER,
+> +};
 
-> If the answer is no (as I suspect it is), then I might give fixing it
-> a shot the week after next, when I'll be camping out in Virginia with
-> this thing for awhile.  In that case, I have another question:
+What about making FILTER_OTHER = 0?
 
-do it. greg is the maintainer of the whole usb stuff and is working
-really hard. so i understand that he only has little time on "our"
-usbtmc bugs. in my opionion it's good when you do it to help greg with
-it. he still is the maintainer and has to sign of your patches.
+> +
+>  extern int trace_define_field(struct ftrace_event_call *call, char *type,
+> -			      char *name, int offset, int size, int is_signed);
+> +			      char *name, int offset, int size,
+> +			      int is_signed, int filter_type);
+>  
+>  #define is_signed_type(type)	(((type)(-1)) < 0)
+>  
+> @@ -167,7 +174,7 @@ do {									\
+>  #define __common_field(type, item, is_signed)				\
+>  	ret = trace_define_field(event_call, #type, "common_" #item,	\
+>  				 offsetof(typeof(field.ent), item),	\
+> -				 sizeof(field.ent.item), is_signed);	\
+> +				 sizeof(field.ent.item), is_signed, -1);\
+>  	if (ret)							\
+>  		return ret;
+>  
+> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> index 380b603..8d8518f 100644
+> --- a/include/trace/ftrace.h
+> +++ b/include/trace/ftrace.h
+> @@ -21,6 +21,9 @@
+>  #undef __field
+>  #define __field(type, item)		type	item;
+>  
+> +#undef __field_ext
+> +#define __field_ext(type, item, filter_type)	type	item;
+> +
+>  #undef __array
+>  #define __array(type, item, len)	type	item[len];
+>  
+> @@ -64,6 +67,9 @@
+>  #undef __field
+>  #define __field(type, item);
+>  
+> +#undef __field_ext
+> +#define __field_ext(type, item, filter_type);
 
-the other thing is, that i belive, please correct me, that greg don't
-has an usbtmc device to test with. for me it seems that there is lack
-of testing in the usbtmc driver. thats why i assume this.
+Did you mean to have that ';' in the define?
 
-as i wrote in my older mails, i've never worked on the kernel source. i
-can do some testing with different devices (in our lab we have serveral
-tmc devices).
+> +
+>  #undef __array
+>  #define __array(type, item, len)
+>  
+> @@ -110,6 +116,9 @@
+>  	if (!ret)							\
+>  		return 0;
+>  
+> +#undef __field_ext
+> +#define __field_ext(type, item, filter_type)	__field(type, item)
+> +
+>  #undef __array
+>  #define __array(type, item, len)						\
+>  	ret = trace_seq_printf(s, "\tfield:" #type " " #item "[" #len "];\t"	\
+> @@ -264,28 +273,32 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+>  	
+>  #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+>  
+> -#undef __field
+> -#define __field(type, item)						\
+> +#undef __field_ext
+> +#define __field_ext(type, item, filter_type)				\
+>  	ret = trace_define_field(event_call, #type, #item,		\
+>  				 offsetof(typeof(field), item),		\
+> -				 sizeof(field.item), is_signed_type(type));	\
+> +				 sizeof(field.item),			\
+> +				 is_signed_type(type), filter_type);	\
+>  	if (ret)							\
+>  		return ret;
+>  
+> +#undef __field
+> +#define __field(type, item)	__field_ext(type, item, -1)
 
-> Is anyone using usbtmc, or, more specifically, does anyone care about
-> backward compatibility?
+Why not just set normal fields to be FILTER_OTHER?
 
-it doesn't look like that. i don't care if the interface changes. i'm
-still working with the old agilent one until the mainline one works.
+> +
+>  #undef __array
+>  #define __array(type, item, len)					\
+>  	BUILD_BUG_ON(len > MAX_FILTER_STR_VAL);				\
+>  	ret = trace_define_field(event_call, #type "[" #len "]", #item,	\
+>  				 offsetof(typeof(field), item),		\
+> -				 sizeof(field.item), 0);		\
+> +				 sizeof(field.item), 0, -1);		\
+>  	if (ret)							\
+>  		return ret;
+>  
+>  #undef __dynamic_array
+>  #define __dynamic_array(type, item, len)				       \
+>  	ret = trace_define_field(event_call, "__data_loc " #type "[]", #item,  \
+> -				offsetof(typeof(field), __data_loc_##item),    \
+> -				 sizeof(field.__data_loc_##item), 0);
+> +				 offsetof(typeof(field), __data_loc_##item),   \
+> +				 sizeof(field.__data_loc_##item), 0, -1);
 
-> Finally, I see no way to read the USB488 status byte or detect a
-> status interrupt.
->
-> >
-> >> Is anyone using usbtmc, or, more specifically, does anyone care
-> >> about backward compatibility?
-> >
-> > What do you want to change in the driver interface?
->
-> The main compatibility-breaking change is that I'd like to see
-> close/reopen go through the whole resynchronization procedure so that
-> the device starts in a sane state.  Currently I restore sanity by
-> doing a bunch of reads and ignoring ETIMEDOUT.
-> If not, then I'll be less careful to preserve the interface, even
-> though I'm not really sure that there's much of interest to preserve.
+Yeah, I don't like the use of that magic -1 here.
 
-to read the USB488 status byte i guess that there is still an ioctl
-function for it (was there in the opensource agilent driver) but you
-can get the status byte with a normal "*STB?" query.
+Other than my comments, I like the patches so far.
 
-the lack of interrupt status reporting is an important one. so you have
-to quess, or do stupid polling, until your device is finished working.
-the normal way is to set "opc?" and do something else until the
-response from the interrupt endpoint arrives.
+-- Steve
 
-christoph
+>  
+>  #undef __string
+>  #define __string(item, src) __dynamic_array(char, item, -1)
+> @@ -322,6 +335,9 @@ ftrace_define_fields_##call(void)					\
+>  #undef __field
+>  #define __field(type, item)
+>  
+> +#undef __field_ext
+> +#define __field_ext(type, item, filter_type)
+> +
+>  #undef __array
+>  #define __array(type, item, len)
+>  
+> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+> index 71b2085..0cbad89 100644
+> --- a/kernel/trace/trace_events.c
+> +++ b/kernel/trace/trace_events.c
+> @@ -28,7 +28,8 @@ DEFINE_MUTEX(event_mutex);
+>  LIST_HEAD(ftrace_events);
+>  
+>  int trace_define_field(struct ftrace_event_call *call, char *type,
+> -		       char *name, int offset, int size, int is_signed)
+> +		       char *name, int offset, int size,
+> +		       int is_signed, int filter_type)
+>  {
+>  	struct ftrace_event_field *field;
+>  
+> @@ -44,7 +45,11 @@ int trace_define_field(struct ftrace_event_call *call, char *type,
+>  	if (!field->type)
+>  		goto err;
+>  
+> -	field->filter_type = filter_assign_type(type);
+> +	if (filter_type == -1)
+> +		field->filter_type = filter_assign_type(type);
+> +	else
+> +		field->filter_type = filter_type;
+> +
+>  	field->offset = offset;
+>  	field->size = size;
+>  	field->is_signed = is_signed;
+> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+> index 4c8c5fd..5e7f031 100644
+> --- a/kernel/trace/trace_events_filter.c
+> +++ b/kernel/trace/trace_events_filter.c
+> @@ -475,12 +475,6 @@ static int filter_add_pred_fn(struct filter_parse_state *ps,
+>  	return 0;
+>  }
+>  
+> -enum {
+> -	FILTER_STATIC_STRING = 1,
+> -	FILTER_DYN_STRING,
+> -	FILTER_OTHER,
+> -};
+> -
+>  int filter_assign_type(const char *type)
+>  {
+>  	if (strstr(type, "__data_loc") && strstr(type, "char"))
+> diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+> index d06cf89..4a9f273 100644
+> --- a/kernel/trace/trace_export.c
+> +++ b/kernel/trace/trace_export.c
+> @@ -156,7 +156,8 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+>  #define TRACE_FIELD(type, item, assign)					\
+>  	ret = trace_define_field(event_call, #type, #item,		\
+>  				 offsetof(typeof(field), item),		\
+> -				 sizeof(field.item), is_signed_type(type));	\
+> +				 sizeof(field.item),			\
+> +				 is_signed_type(type), -1);		\
+>  	if (ret)							\
+>  		return ret;
+>  
+> @@ -164,7 +165,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+>  #define TRACE_FIELD_SPECIAL(type, item, len, cmd)			\
+>  	ret = trace_define_field(event_call, #type "[" #len "]", #item,	\
+>  				 offsetof(typeof(field), item),		\
+> -				 sizeof(field.item), 0);		\
+> +				 sizeof(field.item), 0, -1);		\
+>  	if (ret)							\
+>  		return ret;
+>  
+> @@ -172,7 +173,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+>  #define TRACE_FIELD_SIGN(type, item, assign, is_signed)			\
+>  	ret = trace_define_field(event_call, #type, #item,		\
+>  				 offsetof(typeof(field), item),		\
+> -				 sizeof(field.item), is_signed);	\
+> +				 sizeof(field.item), is_signed, -1);	\
+>  	if (ret)							\
+>  		return ret;
+>  
+> -- 
+> 1.6.3
+> 
+> 
