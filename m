@@ -1,102 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752201AbZHFJks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224AbZHFJm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752201AbZHFJks (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 05:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbZHFJkr
+	id S1753224AbZHFJm6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 05:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZHFJm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 05:40:47 -0400
-Received: from mail-pz0-f196.google.com ([209.85.222.196]:38924 "EHLO
-	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933AbZHFJkq (ORCPT
+	Thu, 6 Aug 2009 05:42:58 -0400
+Received: from viefep15-int.chello.at ([62.179.121.35]:43243 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750933AbZHFJm5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 05:40:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Z5R/ZNzyh+14Yym0tZwIqwsXmiVnnVHGmxi+579AnBGBIqLNq+PUDQ35aglG7I1/z1
-         DRb3kavlKoYEXZ+kOFvZ7R2pu1pScDII5vZ5eWbcRQaAb4e2z2kTovZNBJJ0OgI5k1aP
-         UNcaIcCIgfLz0M5esmHUcMSf6m7Z9mOm0dhCE=
-From: tom.leiming@gmail.com
-To: greg@kroah.com
-Cc: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org,
-       akpm@linux-foundation.org, Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH 2/2] init/do_mounts.c: replace polling for root device with devtmpfs_wait_for_dev v1
-Date: Thu,  6 Aug 2009 17:40:42 +0800
-Message-Id: <1249551642-13182-1-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.6.0.GIT
+	Thu, 6 Aug 2009 05:42:57 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: malloc() tracing in perf?
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, acme <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       roland <roland@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       fche <fche@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A7AA008.80309@cs.helsinki.fi>
+References: <4A7A8ADD.4080208@cs.helsinki.fi>
+	 <1249546610.32113.35.camel@twins> <4A7A9F7F.7080405@cs.helsinki.fi>
+	 <4A7AA008.80309@cs.helsinki.fi>
+Content-Type: text/plain
+Date: Thu, 06 Aug 2009 11:42:40 +0200
+Message-Id: <1249551760.32113.83.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+On Thu, 2009-08-06 at 12:19 +0300, Pekka Enberg wrote:
+> Pekka Enberg wrote:
+> > Hi Peter,
+> > 
+> > On Thu, 2009-08-06 at 10:48 +0300, Pekka Enberg wrote:
+> >>> Hi,
+> >>>
+> >>> It's me again :-).
+> >>>
+> >>> I have a little user-space application that is pretty memory hungry 
+> >>> and I want to understand why. I started to google around for a memory 
+> >>> profiler or a malloc() tracer but didn't seem to find anything really 
+> >>> useful.
+> >>>
+> >>> But then it hit me, why can't I have kmemtrace + perf but for 
+> >>> user-space? Something like the "Malloc Trace" shown here:
+> >>>
+> >>> http://developer.apple.com/documentation/developertools/conceptual/SharkUserGuide/OtherProfilingandTracingTechniques/OtherProfilingandTracingTechniques.html#//apple_ref/doc/uid/TP40005233-CH6-SW17 
+> >>>
+> >>>
+> >>> Does this sound like something that could/should be part of "perf"? 
+> >>> How would all this work anyway? Can we intercept malloc() and free() 
+> >>> somehow? Where would the data be pushed? Am I just going perf-crazy 
+> >>> and trying to turn it into a swiss army knife because it's so easy to 
+> >>> use?-)
+> > 
+> > Peter Zijlstra wrote:
+> >> OK, you just trod into a wasp's nest :-)
+> >>
+> >> That sounds like uprobes, the equivalent of kprobes but for userspace.
+> >>
+> >> I seem to have heard people are working on such a thing, but I can't
+> >> seem to find a single LKML post with 'uprobe' in the subject in the past
+> >> two years or something (except for MTUprobe) -- so I guess its not
+> >> really going anywhere any fast.
+> > 
+> > [snip]
+> > 
+> > Right. Are dynamic tracepoints what we want for malloc() and free() 
+> > interception, though? I guess we can just do generic "userspace function 
+> > called" events and record the passed parameters. Then "perf memreport" 
+> > can just go find all the malloc() and free() calls and construct a 
+> > memory profile out of it?
+> > 
+> > That said, I'd also be interested in wiring my userspace VM garbage 
+> > collector to emit similar alloc and free events as well (because perf 
+> > already has a JIT symbol map) which makes me think we want generic 
+> > "userspace allocated memory" events.
 
-This patch removes the polling for root device if rootwait parameter is
-passed to kernel and CONFIG_DEVTMPFS is enabled. This way can lead to
-a faster boot, especially booting from some asynchronous block device
-(such as usb mass storage, mmc card, ...)
+Right, there is the distinction between static and dynamic tracepoints,
+and I'm not sure how that'll work out. Most people who've looked at the
+subject matter are on CC, so I'm hoping someone will expand.
 
-The patch has been verified in beagle board(mmc card as root device).
+That said, we could simply LD_PRELOAD malloc and free (new and delete)
+like any other memory debugger out there already does, that's not rocket
+science (in fact, I've done so on many an occasion).
 
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
----
- init/do_mounts.c |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
+I remember mpatrol being a hackable code base, but I just looked it up
+and its LGPL-v3 so I'm not sure we should be borrowing code from there.
+Maybe there is another such creature out there we can borrow code from.
 
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index aa56007..46f0248 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -364,6 +364,7 @@ void __init mount_root(void)
- void __init prepare_namespace(void)
- {
- 	int is_floppy;
-+	int ret;
- 
- 	if (root_delay) {
- 		printk(KERN_INFO "Waiting %dsec before mounting root device...\n",
-@@ -371,6 +372,7 @@ void __init prepare_namespace(void)
- 		ssleep(root_delay);
- 	}
- 
-+#ifndef CONFIG_DEVTMPFS
- 	/*
- 	 * wait for the known devices to complete their probing
- 	 *
-@@ -379,6 +381,7 @@ void __init prepare_namespace(void)
- 	 * for the touchpad of a laptop to initialize.
- 	 */
- 	wait_for_device_probe();
-+#endif
- 
- 	md_run_setup();
- 
-@@ -397,6 +400,7 @@ void __init prepare_namespace(void)
- 	if (initrd_load())
- 		goto out;
- 
-+#ifndef CONFIG_DEVTMPFS
- 	/* wait for any asynchronous scanning to complete */
- 	if ((ROOT_DEV == 0) && root_wait) {
- 		printk(KERN_INFO "Waiting for root device %s...\n",
-@@ -406,6 +410,18 @@ void __init prepare_namespace(void)
- 			msleep(100);
- 		async_synchronize_full();
- 	}
-+#else
-+	/*wait for root device, and expire if 120 seconds elapse*/
-+	if (!strncmp(saved_root_name, "/dev/", 5)) {
-+		ret = devtmpfs_wait_for_dev(saved_root_name+5, 120);
-+		printk(KERN_INFO "wait for %s based on devtmpfs:%d\n",
-+			saved_root_name, ret);
-+	}
-+
-+	ROOT_DEV = name_to_dev_t(saved_root_name);
-+	if (!ROOT_DEV)
-+		printk(KERN_ERR "Root device %s not found!\n", saved_root_name);
-+#endif
- 
- 	is_floppy = MAJOR(ROOT_DEV) == FLOPPY_MAJOR;
- 
--- 
-1.6.0.GIT
+I've got similar ideas for your JIT stuff, you now open-code the tmp
+file writing, ideally I'd like to push that into a library and have you
+link against something with weak stubs and let perf LD_PRELOAD real code
+which will do whatever is needed. That'd rid you of having to know about
+where and what to write.
+
+Anyway, malloc/free are easy, but like you say, you might be interested
+in other functions which aren't as easy.
 
