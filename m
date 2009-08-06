@@ -1,101 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbZHFIrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbZHFIsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753687AbZHFIrq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 04:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbZHFIrp
+	id S1754569AbZHFIsG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 04:48:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbZHFIsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 04:47:45 -0400
-Received: from mga14.intel.com ([143.182.124.37]:23315 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751232AbZHFIro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 04:47:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,332,1246863600"; 
-   d="scan'208";a="172923919"
-Subject: Re: [PATCH 0/3] Generic sysfs support for ACPI ALS and other ALS
-	devices
-From: Zhang Rui <rui.zhang@intel.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Richard Purdie <rpurdie@rpsys.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <greg@kroah.com>
-In-Reply-To: <20090806071353.GB21847@elf.ucw.cz>
-References: <1249290657.2670.250.camel@rzhang-dt>
-	 <20090804132129.GH18974@elf.ucw.cz> <1249434170.2670.386.camel@rzhang-dt>
-	 <20090805161931.GA9749@elf.ucw.cz> <1249522879.2670.480.camel@rzhang-dt>
-	 <20090806071353.GB21847@elf.ucw.cz>
-Content-Type: text/plain
-Date: Thu, 06 Aug 2009 16:47:10 +0800
-Message-Id: <1249548430.2670.517.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Aug 2009 04:48:05 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:33845 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754428AbZHFIsC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 04:48:02 -0400
+To: Amerigo Wang <amwang@redhat.com>
+Cc: Neil Horman <nhorman@redhat.com>, linux-kernel@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Andi Kleen <andi@firstfloor.org>, Bernhard Walle <bwalle@suse.de>
+References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>
+	<m1eirqtmey.fsf@fess.ebiederm.org>
+	<20090805140408.GJ7259@hmsreliant.think-freely.org>
+	<m1skg5vpgg.fsf@fess.ebiederm.org> <4A7A3A78.7080200@redhat.com>
+	<m1y6pxr737.fsf@fess.ebiederm.org> <4A7A506B.2060008@redhat.com>
+	<m1ljlxsiox.fsf@fess.ebiederm.org> <4A7A70E5.2010204@redhat.com>
+	<m1bpmtqxjh.fsf@fess.ebiederm.org> <4A7A7A0F.6070906@redhat.com>
+	<m1iqh1nxv3.fsf@fess.ebiederm.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 06 Aug 2009 01:47:56 -0700
+In-Reply-To: <m1iqh1nxv3.fsf@fess.ebiederm.org> (Eric W. Biederman's message of "Thu\, 06 Aug 2009 01\:35\:28 -0700")
+Message-ID: <m13a85nxab.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: amwang@redhat.com, bwalle@suse.de, andi@firstfloor.org, avorontsov@ru.mvista.com, mingo@elte.hu, akpm@linux-foundation.org, linux-ia64@vger.kernel.org, tony.luck@intel.com, linux-kernel@vger.kernel.org, nhorman@redhat.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Amerigo Wang <amwang@redhat.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [Patch 0/7] Implement crashkernel=auto
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-06 at 15:13 +0800, Pavel Machek wrote:
-> > > > No,
-> > > > For a ALS policy, user space should set a brightness level as the base
-> > > > point, i.e. the backlight when display adjustment is 100.
-> > > > and then uses the adjustment values gotten from this mappings to
-> > > > calculate the actual brightness level the display should be put in.
-> > > 
-> > > Ok, so just make the code return only the "adjustement" -- userspace
-> > > does not really need to know "illuminance" and you can do the mapping
-> > > in the kernel AFAICT.
-> > > 			
-> > 
-> > ALS exports
-> > 1. the current ambient light illuminance
-> > 2. the mappings
-> > 
-> > Backlight device exports
-> > 1. the brightness levels.
-> > 
-> > User space needs to:
-> > 1. set a brightness level as the base point
-> > 2. read the current ambient light illuminance from ALS device
-> > 3. read the ambient light illuminance to display adjustment mappings
-> > 4. calculate a proper brightness level we should set.
-> > 
-> > For example, if we set brightness 6 as the default brightness, i.e. the
-> > brightness level when ambient light illuminance is 300.
-> > Now we walk outdoors, and the current illuminance is 1000,
-> > then we should set the new_brightness_level to (6 * 150%)
-> 
-> Yes, so just export
-> 
-> ALS exports
-> 1. the current ambient light illuminance
-> 2. the current mapped ambient light illuminance
-> 
-In fact, only one attribute is enough.
-The ALS driver can query the current illuminance, parse the mapping and
-only export the display luminance adjustment values to user space.
 
-> Backlight device exports
-> 1. the brightness levels.
->  
-> User space needs to:
-> 1. set a brightness level as the base point
-> 2. read the current mapped ambient light illuminance from ALS device
-> 3. calculate a proper brightness level we should set.
-> 
-then user space just needs to
-1. set a brightness level as the base point
-2. get the display adjustment value and calculate a proper brightness
-level at any time.
+Hmm.  I half take it back.  How is crashkernel=auto and then shrinking
+the reserved size better than the extended syntax Bernhard Walle
+introduced nearly two years ago?
 
-this is easier, but it makes me feel that this doesn't look like an
-_ALS_ device any more.
-We still should export some ALS properties to user space, shouldn't we?
-
-Could you please look at the documentation about ALS sysfs class in the
-patch I sent out just now, and comment on that one please? thanks!
-
-thanks,
-rui
-
-
+Eric
