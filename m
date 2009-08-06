@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbZHFNrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbZHFNsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755891AbZHFNrj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 09:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755786AbZHFNri
+	id S1755904AbZHFNsy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 09:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbZHFNsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 09:47:38 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:48547 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753187AbZHFNri (ORCPT
+	Thu, 6 Aug 2009 09:48:53 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:46397 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755855AbZHFNsx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 09:47:38 -0400
-Date: Thu, 6 Aug 2009 09:47:36 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: "Frank Ch. Eigler" <fche@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       acme <acme@redhat.com>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       roland <roland@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: malloc() tracing in perf?
-In-Reply-To: <1249563574.32113.358.camel@twins>
-Message-ID: <alpine.DEB.2.00.0908060945050.9870@gandalf.stny.rr.com>
-References: <4A7A8ADD.4080208@cs.helsinki.fi>  <1249546610.32113.35.camel@twins> <20090806112059.GD18768@redhat.com>  <1249558094.32113.242.camel@twins>  <20090806115527.GE18768@redhat.com> <1249563574.32113.358.camel@twins>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 6 Aug 2009 09:48:53 -0400
+Date: Thu, 6 Aug 2009 19:18:44 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: Joel Schopp <jschopp@austin.ibm.com>, "Brown, Len" <len.brown@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Balbir Singh <balbir@in.ibm.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>,
+       "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+Message-ID: <20090806134844.GA19146@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20090805142311.553.78286.stgit@sofia.in.ibm.com> <20090806015855.GA20596@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090806015855.GA20596@sli10-desk.sh.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Shaohua,
 
-On Thu, 6 Aug 2009, Peter Zijlstra wrote:
-
-> On Thu, 2009-08-06 at 07:55 -0400, Frank Ch. Eigler wrote:
-> > Hi -
-> > 
-> > On Thu, Aug 06, 2009 at 01:28:14PM +0200, Peter Zijlstra wrote:
-> > > [...]
-> > > > That work is ongoing, and being discussed on utrace-devel@redhat.com,
-> > > > since it is a prerequisite. 
-> > > 
-> > > Still hiding the discussion and the design never helped anybody.
-> > 
-> > I guess "hiding" is a matter of opinion.
+On Thu, Aug 06, 2009 at 09:58:55AM +0800, Shaohua Li wrote:
+> Hi,
 > 
-> Yeah in plain sight where nobody looks, really I thought the idea was to
-> get utrace upstream, this means posting to linux-kernel. Going on LKML
-> posts I'd say the utrace project was dead. Same goes for uprobe.
+> On Wed, Aug 05, 2009 at 10:25:53PM +0800, Gautham R Shenoy wrote:
+> > In this patch-series, we propose to extend the CPU-Hotplug infrastructure
+> > and allow the system administrator to choose the desired state the CPU should
+> > go to when it is offlined. We think this approach addresses the concerns about
+> > determinism as well as transparency, since CPU-Hotplug already provides
+> > notification mechanism which the userspace can listen to for any change
+> > in the configuration and correspondingly readjust any previously set
+> > cpu-affinities.
+> Peter dislikes any approach (including cpuhotplug) which breaks userspace policy,
+> even userspace can get a notification.
+
+I think Peter's problem was more to do with the kernel offlining the CPUs
+behind the scenes, right ?
+
+We don't do that in this patch series. The option to offline the CPUs is
+very much with the admin. The patch-series only provides the interface
+that helps the admin choose the state the CPU must reside in when it
+goes offline.
+
 > 
-> I've told this before and I'll say it again, post to LKML.
+> > Also, approaches such as [1] can make use of this
+> > extended infrastructure instead of putting the CPU to an arbitrary C-state
+> > when it is offlined, thereby providing the system administrator a rope to hang
+> > himself with should he feel the need to do so.
+> I didn't see the reason why administrator needs to know which state offline cpu
+> should stay. Don't know about powerpc side, but in x86 side, it appears deepest
+> C-state is already preferred.
 
-I second this. _Any_ kernel development that is new must be discussed on 
-LKML. Sure, you can do the initial prototypes on a smaller mailing list, 
-but once you have that prototype ready, it should go to LKML. This was the 
-problem with Xen. The -rt patch was developed on LKML and even though 
-there's a lot more to get in, a lot already has. The reason is that all 
-development was done on the kernel mailing list.
+We can still provide a sane default value based on what states are
+available and what the BIOS limits us to. Thus we can still use the
+idle-state-offline patch that Venki posted sometime ago, right ?
 
--- Steve
+> 
+> Thanks,
+> Shaohua
+
+-- 
+Thanks and Regards
+gautham
