@@ -1,96 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbZHFUQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756724AbZHFUR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756709AbZHFUQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 16:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbZHFUQ2
+	id S1756724AbZHFUR3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 16:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756701AbZHFUR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 16:16:28 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:34473 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932183AbZHFUQ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 16:16:27 -0400
-Message-ID: <4A7B3A2C.60500@vmware.com>
-Date: Thu, 06 Aug 2009 22:16:44 +0200
-From: =?UTF-8?B?VGhvbWFzIEhlbGxzdHLDtm0=?= <thellstrom@vmware.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Thu, 6 Aug 2009 16:17:28 -0400
+Received: from web26108.mail.ukl.yahoo.com ([217.146.182.149]:36740 "HELO
+	web26108.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756171AbZHFUR1 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 16:17:27 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Aug 2009 16:17:27 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.fr;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=5zQAQqgggGpDKLYtMojHOWWG6zPTKfkPpoj02081nOaKIMTlKEGPwvvA402yNrW+BL7P0xz4HouANLMoT+plWReaQJnPS5H9UsImwKPZ/O9j2oW+mkC/JQ+28x1RX6anRT66Ejql5HCLZRGGqoUG4H6dX5Tko97zn2o/NIPASXg=;
+Message-ID: <281886.98991.qm@web26108.mail.ukl.yahoo.com>
+X-YMail-OSG: _QaArBoVM1km9ut97mQDM93xIhAyB4ITZwOybn74uAv0HZ1z9hL32mZyQBfmd7cP2Ngc6OxTwm48QJYuhzKZnfioYwiFGwFlwLzUvqGHOaNL8RVom__nZph9A4ePwhcXP5JOGWtAfD501rDY_9K.b0POmB097kIY4IK02WNPl_WK_eaCT86Dd_qfhUJ2ZCSi8w4Q6WF8aWObOooy7bVicTJQS3kQD6.vRkovGowYi12p1dexUxJLlrDNXMf_qDlQzukk0d3GPTZg3KvyGKl.Gm_mfafoFbjsvjev7wZs.7erH.md_JNPExmNfrsXonXM6cB.fPe0Qy69honBw1g0.8TD226b4IPkJy0-
+X-Mailer: YahooMailClassic/6.1.2 YahooMailWebService/0.7.338.2
+Date: Thu, 6 Aug 2009 20:10:45 +0000 (GMT)
+From: linuxcbon <linuxcbon@yahoo.fr>
+Subject: modprobe acpi-cpufreq FATAL: Error inserting
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: =?UTF-8?B?VGhvbWFzIEhlbGxzdHLDtm0=?= <thomas@tungstengraphics.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linux Memory Management <linux-mm@kvack.org>
-Subject: Re: shmem + TTM  oops
-References: <4A7ACC90.2000808@tungstengraphics.com> <Pine.LNX.4.64.0908062045270.944@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0908062045270.944@sister.anvils>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins skrev:
-> On Thu, 6 Aug 2009, Thomas Hellström wrote:
->   
->> Hi!
->> I've been debugging a strange problem for a while, and it'd be nice to have
->> some more eyes on this.
->>
->> When the TTM graphics memory manager decides it's using too much memory, it
->> copies the contents of the buffer to shmem objects and releases the buffers.
->> This is because shmem objects are pageable whereas TTM buffers are not. When
->> the TTM buffers are accessed in one way or another, it copies contents back.
->> Seems to work fairly nice, but not really optimal.
->>
->> When the X server is VT switched, TTM optionally switches out all buffers to
->> shmem objects, but when the contents are read back, some shmem objects have
->> corrupted swap entry top directory. The member
->> shmem_inode_info::i_indirect[0] usually contains a value 0xffffff60 or
->> something similar, causing an oops in shmem_truncate_range() when the shmem
->> object is freed. Before that, readback seems to work OK. The corruption is
->> happening after X server VT switch when TTM is supposed to be idle. The shmem
->> objects have been verified to have swap entry directories after all buffer
->> objects have been swapped out.
->>     
->
-> Not a symptom I've ever come across: I agree strange.  A few questions:
->
-> What architecture? I assume x86 32-bit; if so, what happens on 64-bit?
-> if not x86, what is your PAGE_SIZE?
->
-> What size are these objects i.e. how many pages?
->
-> What release? I'm assuming 2.6.31-rc5 and various earlier.
->
-> What slab allocator? what if you choose another (SLUB versus SLAB)?
-> Please turn on all the slab/slub debugging you can.
->
-> And you say i_indirect "usually contains a value 0xffffff60 or something
-> similar": please give other examples of what you find there (if possible,
-> with a rough idea of their frequency e.g. is 0xffffff60 the most common?).
->
-> Does there appear to be corruption of any other nearby fields?
->
-> Thanks.
->
->   
->> If anyone could shed some light over this, it would be very helpful. Relevant
->> TTM code is fairly straightforward looks like this. The process that copies
->> out to shmem objects may not be the same process that copies in:
->>     
->
-> I didn't notice anything wrong with your code; and it wouldn't
-> be easy for it to corrupt that field of shmem_inode_info.
->
-> Hugh
-Hugh,
+Hi,
 
-Thanks for looking at this.
-After further debugging it seems this is not relevant to the shmem code. 
-It looks like a (possibly misconfigured) hrtimer in the graphics driver 
-corrupts the shmem_inode_info data from within interrupt context, so 
-this appears to be a false alarm. The hrtimer was supposed to be idled 
-at vt switch, but apparently not.
+I have an AMD Athlon 64 X2.
+I did :
+# modprobe acpi-cpufreq
+FATAL: Error inserting acpi_cpufreq (/lib/modules/2.6.30.1/kernel/arch/x86/=
+kernel/cpu/cpufreq/acpi-cpufreq.ko): Device or resource busy
 
-Thanks,
-Thomas
+I thought that module was general...I know there are other modules for each kind of processors, but can you make one module for all processors or do we need to use the specific ones ?
 
+Cheers.
+
+
+
+      
