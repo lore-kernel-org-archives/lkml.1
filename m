@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752677AbZHFHPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbZHFHQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752677AbZHFHPc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 03:15:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbZHFHPb
+	id S1752737AbZHFHQx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 03:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbZHFHQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 03:15:31 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:36912 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752494AbZHFHPa (ORCPT
+	Thu, 6 Aug 2009 03:16:53 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:59301 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752219AbZHFHQw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 03:15:30 -0400
-Date: Thu, 6 Aug 2009 09:15:27 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       Neil Horman <nhorman@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 1/7] x86: add CONFIG_KEXEC_AUTO_RESERVE
-Message-ID: <20090806071526.GA22124@basil.fritz.box>
-References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain> <20090805112133.6552.69619.sendpatchset@localhost.localdomain> <87zlaeiakr.fsf@basil.nowhere.org> <4A7A3807.8090803@redhat.com>
+	Thu, 6 Aug 2009 03:16:52 -0400
+Date: Thu, 6 Aug 2009 17:16:47 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [PATCH -v2 4/5] x86: Move kernel_fpu_using to irq_is_fpu_using
+	in asm/i387.h
+Message-ID: <20090806071647.GA25065@gondor.apana.org.au>
+References: <1249285531-22422-1-git-send-email-ying.huang@intel.com> <1249285531-22422-2-git-send-email-ying.huang@intel.com> <1249285531-22422-3-git-send-email-ying.huang@intel.com> <1249285531-22422-4-git-send-email-ying.huang@intel.com> <20090806053719.GD23557@gondor.apana.org.au> <4A7A77B6.9050306@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A7A3807.8090803@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <4A7A77B6.9050306@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> More useful would seem a crashkernel=size@auto
->>   
-> We already have this, just use "crashkernel=size@0". :)
+On Wed, Aug 05, 2009 at 11:27:02PM -0700, H. Peter Anvin wrote:
+> Herbert Xu wrote:
+>>
+>> Peter, do you want to apply this patch in your tree or would
+>> you prefer for it to go through my tree along with the rest of
+>> the series?
+>>
+>
+> I'll take it tomorrow... want to double-check that we don't have any  
+> real issues w.r.t. corruption there.
 
-When it's already there then I don't see the point of the feature at all.
-
-Hardcoding the size doesn't really make any sense to me, especially
-a suspicious one like 128MB.
-
--Andi
-
+Thanks!
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
