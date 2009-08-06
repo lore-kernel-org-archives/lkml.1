@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbZHFBxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbZHFByo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753292AbZHFBxn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 21:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbZHFBxm
+	id S1753327AbZHFByo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 21:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZHFByn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 21:53:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42289 "EHLO mx2.redhat.com"
+	Wed, 5 Aug 2009 21:54:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42311 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752120AbZHFBxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 21:53:41 -0400
-Message-ID: <4A7A3807.8090803@redhat.com>
-Date: Thu, 06 Aug 2009 09:55:19 +0800
+	id S1751184AbZHFBym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 21:54:42 -0400
+Message-ID: <4A7A3847.6070406@redhat.com>
+Date: Thu, 06 Aug 2009 09:56:23 +0800
 From: Amerigo Wang <amwang@redhat.com>
 User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 1/7] x86: add CONFIG_KEXEC_AUTO_RESERVE
-References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>	<20090805112133.6552.69619.sendpatchset@localhost.localdomain> <87zlaeiakr.fsf@basil.nowhere.org>
-In-Reply-To: <87zlaeiakr.fsf@basil.nowhere.org>
+To: "Yu, Fenghua" <fenghua.yu@intel.com>
+CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>,
+       "'Neil Horman'" <nhorman@redhat.com>,
+       "'Eric W. Biederman'" <ebiederm@xmission.com>,
+       "'akpm@linux-foundation.org'" <akpm@linux-foundation.org>,
+       "'Ingo Molnar'" <mingo@elte.hu>,
+       "'Anton Vorontsov'" <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 2/7] x86: implement crashkernel=auto
+References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain> <20090805112142.6552.18373.sendpatchset@localhost.localdomain> <A6AD88C3F2289247BE726C37303E1EB8B38E48D7@orsmsx505.amr.corp.intel.com>
+In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB8B38E48D7@orsmsx505.amr.corp.intel.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Amerigo Wang <amwang@redhat.com> writes:
->
->   
->> Introduce a new config option KEXEC_AUTO_RESERVE for x86.
+Yu, Fenghua wrote:
+>> +#ifdef CONFIG_KEXEC_AUTO_RESERVE
+>> +	if (strncmp(ck_cmdline, "auto", 4) == 0) {
+>> +		unsigned long long size;
+>> +		char tmp[32];
+>> +
+>> +		size = arch_default_crash_size(system_ram);
+>> +		if (size != 0) {
+>> +			*crash_size = size;
+>> +			*crash_base = arch_default_crash_base();
+>> +			size = scnprintf(tmp, sizeof(tmp), "%luM@%luM",
+>> +					(unsigned long)(*crash_size)>>20,
+>> +					(unsigned long)(*crash_base)>>20);
+>> +			/* size can't be <= 4. */
+>> +			if (likely((size - 4 + strlen(cmdline))
+>> +					< COMMAND_LINE_SIZE - 1)) {
+>> +				memmove(ck_cmdline + size, ck_cmdline + 4,
+>> +					strlen(cmdline) - (ck_cmdline + 4 - cmdline)
+>> + 1);
+>> +				memcpy(ck_cmdline, tmp, size);
+>> +			}
 >>     
 >
-> The description of the feature belongs in the changelog.
+> Here the variable "size" has two different meanings. First it used for crash size. Then its meaning is changed to buffer size in ck_cmdline. And types are different too. The type for crash size is unsigned long long. But scnprintf() return int.
 >
-> I like the basic idea, but:
->
->   
->> +config KEXEC_AUTO_RESERVE
->> +	bool "automatically reserve memory for kexec kernel"
->> +	depends on KEXEC
->> +	default y
->> +	---help---
->> +	  Automatically reserve memory for a kexec kernel, so that you don't
->> +	  need to specify numbers for the "crashkernel=X@Y" boot option,
->> +	  instead you can use "crashkernel=auto".
->> +	  On x86, 128M is reserved.
->>     
->
-> The obvious problem is the hardcoded 128MB (and 128MB is very large
-> for a crash kernel anyways)
+> Could you use two variables to represent the two meanings for less confusion?
 >   
 
-
-I think that size has to be hardcoded, or we can make it a bit 
-changeable,  according to the page size.... e.g. on PPC and IA64, page 
-size can be 16K or more, but x86's page size is always 4K I think.
-
-Hmm, yes, I choose such a large size in order to be safe, but since you 
-feel this is too large, how about 64M on x86? (On x86_64 Fedora and 
-RHEL, the size of a kernel binary is about 2M~3M.)
-> More useful would seem a crashkernel=size@auto
->   
-We already have this, just use "crashkernel=size@0". :)
+Sure, OK, will do.
 
 Thanks.
 
