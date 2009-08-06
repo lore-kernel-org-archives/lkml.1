@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbZHFFGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbZHFFNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753476AbZHFFGZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 01:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbZHFFGW
+	id S1753230AbZHFFNR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 01:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbZHFFNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 01:06:22 -0400
-Received: from [222.73.24.84] ([222.73.24.84]:57720 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753274AbZHFFGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 01:06:21 -0400
-Message-ID: <4A7A6470.60305@cn.fujitsu.com>
-Date: Thu, 06 Aug 2009 13:04:48 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 6 Aug 2009 01:13:16 -0400
+Received: from mail-yw0-f183.google.com ([209.85.211.183]:39993 "EHLO
+	mail-yw0-f183.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715AbZHFFNP convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 01:13:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=KO2irPWBBe4tlUZdzfOwWbspZi7Do8DGVGJr/rf8L6U2G4F1nOy+aAWcB1pBoR+0Cx
+         hY4aSWH6YaySpFc8baBWzDteDKxFSioH1mnKwgvmKouc27ZxzgmKzrizKjNNqmUdrkdJ
+         7M2A+SkkvYlBWRLJtirDYVB8vhTYY/bJWv2gw=
 MIME-Version: 1.0
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-CC: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] ftrace: Unify effect of writing to trace_options
- and option/*
-References: <4A7A4D7B.7010706@cn.fujitsu.com> <4A7A4DBC.6020403@cn.fujitsu.com>
-In-Reply-To: <4A7A4DBC.6020403@cn.fujitsu.com>
+In-Reply-To: <20090805163945.056c463c.akpm@linux-foundation.org>
+References: <20090804191031.6A3D.A69D9226@jp.fujitsu.com>
+	 <20090805163945.056c463c.akpm@linux-foundation.org>
+Date: Thu, 6 Aug 2009 14:13:16 +0900
+X-Google-Sender-Auth: b99e8b99de5ea9cb
+Message-ID: <2f11576a0908052213m3fba4154ifb73ab1ae2ea74d6@mail.gmail.com>
+Subject: Re: [PATCH for 2.6.31 0/4] fix oom_adj regression v2
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@redhat.com>, linux-mm <linux-mm@kvack.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zhaolei wrote:
-> "echo noglobal-clock > trace_options" can be used to change trace
-> clock but "echo 0 > options/global-clock" can't.
-> 
-> We can fix it by using set_tracer_flags() in trace_options_core_write().
-> 
+> So I merged these but I have a feeling that this isn't the last I'll be
+> hearing on the topic ;)
+>
+> Given the amount of churn, the amount of discussion and the size of the
+> patches, this doesn't look like something we should push into 2.6.31.
+>
+> If we think that the 2ff05b2b regression is sufficiently serious to be
+> a must-fix for 2.6.31 then can we please find something safer and
+> smaller?  Like reverting 2ff05b2b?
 
-Nice catch.
+I don't think the serious problem is only  this issue, I oppose to
+ignore regression
+bug report ;-)
 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  kernel/trace/trace.c |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 464b7bb..2fa2bac 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -3893,12 +3893,11 @@ trace_options_core_write(struct file *filp, const char __user *ubuf, size_t cnt,
->  
->  	switch (val) {
->  	case 0:
-> -		trace_flags &= ~(1 << index);
-> +		set_tracer_flags(1 << index, 0);
->  		break;
->  	case 1:
-> -		trace_flags |= 1 << index;
-> +		set_tracer_flags(1 << index, 1);
->  		break;
-> -
->  	default:
->  		return -EINVAL;
->  	}
+Yes, your point makes sense. then, I'll make two patch series.
+1. reverting 2ff05b2b for 2.6.31
+2. retry fix oom livelock for -mm
 
-The whole switch statement can be simplied:
-
-	if (val != 0 || val != 1)
-		return -EINVAL;
-	set_tracer_flags(1 << index, val);
+I expect I can do that next sunday.
 
 
+> These patches clash with the controversial
+> mm-introduce-proc-pid-oom_adj_child.patch, so I've disabled that patch
+> now.
+
+I think we can drop this because workaround patch is only needed until
+the issue not fixed.
