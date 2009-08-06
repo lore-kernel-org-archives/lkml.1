@@ -1,61 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbZHFNov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbZHFNpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755880AbZHFNov (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 09:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbZHFNou
+	id S1755893AbZHFNpd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 09:45:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbZHFNpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 09:44:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60603 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754489AbZHFNou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 09:44:50 -0400
-Message-ID: <4A7ADF78.20105@redhat.com>
-Date: Thu, 06 Aug 2009 16:49:44 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Wu Fengguang <fengguang.wu@intel.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-References: <20090805024058.GA8886@localhost> <20090805155805.GC23385@random.random> <20090806100824.GO23385@random.random> <4A7AAE07.1010202@redhat.com> <20090806102057.GQ23385@random.random> <20090806105932.GA1569@localhost> <4A7AC201.4010202@redhat.com> <4A7AD6EB.9090208@redhat.com>
-In-Reply-To: <4A7AD6EB.9090208@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Aug 2009 09:45:33 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:25801 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751972AbZHFNpc convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-ghaskins@novell.com;3:2>);
+	Thu, 6 Aug 2009 09:45:32 -0400
+Message-Id: <4A7AA63A0200005A00051BE2@sinclair.provo.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 Beta 
+Date: Thu, 06 Aug 2009 07:45:30 -0600
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Avi Kivity" <avi@redhat.com>
+Cc: <alacrityvm-devel@lists.sourceforge.net>,
+       "Michael S. Tsirkin" <mst@redhat.com>, <kvm@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+Subject: Re: [PATCH 0/7] AlacrityVM guest drivers Reply-To:
+References: <20090803171030.17268.26962.stgit@dev.haskins.net>
+ <20090806081955.GA9752@redhat.com>
+ <4A7A8F7B0200005A00051B84@sinclair.provo.novell.com>
+ <4A7AD29E.50800@redhat.com>
+ <4A7A9C6B0200005A00051BB9@sinclair.provo.novell.com>
+ <4A7ADE23.5010208@redhat.com>
+In-Reply-To: <4A7ADE23.5010208@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/06/2009 04:13 PM, Rik van Riel wrote:
-> Avi Kivity wrote:
->> On 08/06/2009 01:59 PM, Wu Fengguang wrote:
->
->>> As a refinement, the static variable 'recent_all_referenced' could be
->>> moved to struct zone or made a per-cpu variable.
+>>> On 8/6/2009 at  9:44 AM, in message <4A7ADE23.5010208@redhat.com>, Avi Kivity
+<avi@redhat.com> wrote: 
+> On 08/06/2009 04:03 PM, Gregory Haskins wrote:
+>>> It's true that vbus is a separate project (in fact even virtio is
+>>> completely separate from kvm).  Still I think it would be of interest to
+>>> many kvm@ readers.
+>>>      
 >>
->> Definitely this should be made part of the zone structure, consider 
->> the original report where the problem occurs in a 128MB zone (where 
->> we can expect many pages to have their referenced bit set).
->
-> The problem did not occur in a 128MB zone, but in a 128MB cgroup.
->
-> Putting it in the zone means that the cgroup, which may have
-> different behaviour from the rest of the zone, due to excessive
-> memory pressure inside the cgroup, does not get the right
-> statistics.
->
+>> Well, my goal was to not annoy KVM readers. ;)  So if you feel as though 
+> there is benefit to having all of KVM CC'd and I won't be annoying everyone, 
+> I see no problem in cross posting.
+>>    
+> 
+> I can only speak for myself, I'm interested in this project
 
-Well, it should be per inactive list, whether it's a zone or a cgroup.  
-What's the name of this thing? ("inactive list"?)
+In that case, the best solution is probably to have you (and anyone else interested) to sign up, then:
 
-error compiling committee.c: too many arguments to function
+https://lists.sourceforge.net/lists/listinfo/alacrityvm-devel
+https://lists.sourceforge.net/lists/listinfo/alacrityvm-users
+
+
+> (though still rooting for virtio).
+
+Heh...not to belabor the point to death, but virtio is orthogonal (you keep forgetting that ;).
+
+Its really the vbus device-model vs the qemu device-model (and possibly vs the "in-kernel pci emulation" model that I believe Michael is working on).
+
+You can run virtio on any of those three.
+
+> 
+>> Would you like to see all conversations, or just ones related to code (and, 
+> of course, KVM relevant items)
+> 
+> I guess internal vbus changes won't be too interesting for most readers, 
+> but new releases, benchmarks, and kvm-related stuff will be welcome on 
+> the kvm list.
+
+Ok, I was planning on that anyway.
+
+Regards,
+-Greg
+
+
+
 
