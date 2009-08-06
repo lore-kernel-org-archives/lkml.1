@@ -1,53 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbZHFINj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbZHFIPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754245AbZHFINj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 04:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbZHFINi
+	id S1754313AbZHFIPV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 04:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbZHFIPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 04:13:38 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48275 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751677AbZHFINh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 04:13:37 -0400
-Message-ID: <4A7A90AB.3050407@suse.de>
-Date: Thu, 06 Aug 2009 17:13:31 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Thu, 6 Aug 2009 04:15:20 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:38497 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752159AbZHFIPR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 04:15:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Jnn0aP/hHNI6g+MxUJb+PRbXfn26uBzP5XFidNJu24yz8x8mK24PhIc0K4G8eaVUcC
+         ii7FX20A61AhZDKcAhZb4PfPjGmA8lpKLmEnmnfSR1F7OJcynbrqywCAeD3SJsVGweJ3
+         0g+caJOH/po6qPIXzQprqz+LR9ugQQsLx3hbU=
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-Cc: Al Viro <viro@ftp.linux.org.uk>, Takashi Iwai <tiwai@suse.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, cguthrie@mandriva.org
-Subject: Re: [PATCH 1/2] chrdev: implement __[un]register_chrdev()
-References: <4A79283E.7030202@kernel.org> <20090805161643.GA28436@kroah.com> <4A79B3A6.7090109@kernel.org> <20090805164919.GA27457@kroah.com> <4A79BB04.8000408@kernel.org> <20090805171547.GB10443@kroah.com> <4A7A6FAE.8020503@kernel.org>
-In-Reply-To: <4A7A6FAE.8020503@kernel.org>
-X-Enigmail-Version: 0.95.7
+In-Reply-To: <9b2b86520908051449i566e06b4iec523e506346004c@mail.gmail.com>
+References: <5DDAB7BA7BDB58439DD0EED0B8E9A3AE011CD92D@ausx3mpc102.aus.amer.dell.com>
+	 <9b2b86520908051449i566e06b4iec523e506346004c@mail.gmail.com>
+Date: Thu, 6 Aug 2009 09:15:16 +0100
+Message-ID: <9b2b86520908060115k1035542cx1ad4102958eab780@mail.gmail.com>
+Subject: Re: Network Device Naming mechanism and policy
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Jordan_Hargrave@dell.com
+Cc: linux-kernel@vger.kernel.org, Matt_Domsch@dell.com, Narendra_K@dell.com
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello,
-> 
-> Greg KH wrote:
->> Yes the names are confusing, the whole api needs a rework to make it
->> easier to understand :(
-> 
-> For now, I'll open code it then but it would be really nice to clean
-> the names up.
+On 8/5/09, Alan Jenkins <sourcejedi.lkml@googlemail.com> wrote:
+> On 8/5/09, Jordan_Hargrave@dell.com <Jordan_Hargrave@dell.com> wrote:
+>> This is from an old discussion several months ago:
+>> http://lkml.org/lkml/2009/3/24/357
+>> http://lkml.org/lkml/2009/3/24/380
+>>
+>> Basically the issue is that between a race in udev and PCI scan order the
+>> ethX IDs may not
+>> be consistent between reboots.  The idea is to use a mechanism similar to
+>> how disks now can
+>> be accessed by their LABEL/PATH/UUID instead of raw /dev/sdX ids.
+>>
+>> The following patch will create a device node for network devices based
+>> off
+>> their ifindex;
+>> udev can then use this device node for creating symlinks in /dev/net/xxxx
+>> similar to the
+>> way that disks now use by-label and by-path symlinks.
+>>
+>> Combining this with the biosdevname utility and patches to common network
+>> utilities,
+>> it could be possible to access ethernet devices by their PCI path or BIOS
+>> Label.
+>>
+>> eg. ifconfig Embedded_NIC_1
+>>
+>> --- include/linux/major.h~	2009-07-30 18:34:47.000000000 -0400
+>> +++ include/linux/major.h	2009-08-05 14:52:10.000000000 -0400
+>> @@ -169,6 +169,7 @@
+>>  #define IBM_FS3270_MAJOR	228
+>>
+>>  #define VIOTAPE_MAJOR		230
+>> +#define NETDEV_MAJOR		234
+>>
+>>  #define BLOCK_EXT_MAJOR		259
+>>  #define SCSI_OSD_MAJOR		260	/* open-osd's OSD scsi device */
+>> --- net/core/net-sysfs.cx	2009-08-05 15:00:13.000000000 -0400
+>> +++ net/core/net-sysfs.c	2009-08-05 15:01:20.000000000 -0400
+>> @@ -11,6 +11,7 @@
+>>
+>>  #include <linux/capability.h>
+>>  #include <linux/kernel.h>
+>> +#include <linux/major.h>
+>>  #include <linux/netdevice.h>
+>>  #include <linux/if_arp.h>
+>>  #include <net/sock.h>
+>> @@ -496,6 +497,7 @@ int netdev_register_kobject(struct net_d
+>>  	dev->class = &net_class;
+>>  	dev->platform_data = net;
+>>  	dev->groups = groups;
+>> +	dev->devt = MKDEV(NETDEV_MAJOR, net->ifindex);
+>>
+>>  	BUILD_BUG_ON(BUS_ID_SIZE < IFNAMSIZ);
+>>  	dev_set_name(dev, "%s", net->name);
+>>
+>>
+>> --jordan hargrave
+>> Dell Enterprise Linux Engineering
+>
+> I guess opening such a device would yield ENODEV, which is
+> unfortunately misleading.  Pity to add code just to get ENOTSUPP,
+> but...
+>
+> Idea: allow opening the device.  You needn't provide any operations.
+> The only effect would be to pin the ifindex.  That would allow tools
+> to avoid racing with hot-unplug.
+>
+> Alan "Ideas are cheap" Jenkins
 
-Crap, there's a difference.  For [un]register_chrdev() the chrdev
-layer keeps track of cdev while using cdev_alloc/add/del() directly
-requires the caller to keep track of the pointer.  Also, it's a bit of
-pain to open code the whole thing.
+Oops, ifindex values aren't re-used (short of overflow).  So there
+should be no need to "pin" an ifindex.  Nevermind.
 
-For now, it looks like adding the __ prefixed versions seems to be the
-proper solution.  It's strange to provide the helper interface only
-for full minor acquisitions anyway.  Let's do naming cleanup later.
-How does that sound?
-
-Thanks.
-
--- 
-tejun
+> P.S. Is there any risk of ifindex overflowing when converted to a
+> device minor number?
