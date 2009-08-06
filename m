@@ -1,91 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753126AbZHFOhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753627AbZHFOiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753126AbZHFOhi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 10:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbZHFOhh
+	id S1753627AbZHFOiE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 10:38:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbZHFOiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 10:37:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36554 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750857AbZHFOhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 10:37:36 -0400
-Date: Thu, 6 Aug 2009 09:36:28 -0500
-From: Clark Williams <williams@redhat.com>
-To: gowrishankar.m@linux.vnet.ibm.com
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>
-Subject: Re: [ANNOUNCE] 2.6.31-rc4-rt1 (problem with
- CONFIG_SYSFS_DEPRECATED_V2)
-Message-ID: <20090806093628.216bb27f@torg>
-In-Reply-To: <4A7A7C37.7020609@linux.vnet.ibm.com>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
-	<alpine.LFD.2.00.0904181204420.21577@localhost.localdomain>
-	<alpine.LFD.2.00.0904251500150.4529@localhost.localdomain>
-	<alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>
-	<alpine.LFD.2.00.0905012348200.3375@localhost.localdomain>
-	<alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
-	<alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>
-	<alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
-	<alpine.LFD.2.00.0906121800590.3369@localhost.localdomain>
-	<alpine.LFD.2.00.0906151117440.2800@localhost.localdomain>
-	<alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>
-	<alpine.LFD.2.00.0906231418500.2767@localhost.localdomain>
-	<alpine.LFD.2.00.0907092020410.2768@localhost.localdomain>
-	<alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
-	<4A79214B.5070003@linux.vnet.ibm.com>
-	<20090805083247.0b84d1c0@torg>
-	<4A7A7C37.7020609@linux.vnet.ibm.com>
-Organization: Red Hat, Inc
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/LySjAB79UpgUp5fCcJb3DgR"; protocol="application/pgp-signature"
+	Thu, 6 Aug 2009 10:38:03 -0400
+Received: from india.einfochips.com ([203.88.139.151]:2168 "EHLO
+	ahmedabad.einfochips.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753478AbZHFOiB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 10:38:01 -0400
+From: Dhaval Vasa <dhaval.vasa@einfochips.com>
+To: gregkh@suse.de, linux-usb@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, dhaval.vasa@einfochips.com
+Subject: [PATCH] USB: ftdi_sio: add product_id for Marvell OpenRD Base, Client
+Date: Thu,  6 Aug 2009 20:09:26 +0530
+Message-Id: <1249569566-824-1-git-send-email-dhaval.vasa@einfochips.com>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/LySjAB79UpgUp5fCcJb3DgR
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+reference:
+http://www.open-rd.org
 
-On Thu, 06 Aug 2009 12:16:15 +0530
-gowrishankar <gowrishankar.m@linux.vnet.ibm.com> wrote:
+Signed-off-by: Dhaval Vasa <dhaval.vasa@einfochips.com>
+---
+ drivers/usb/serial/ftdi_sio.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-> Only if I set CONFIG_SYSFS_DEPRECATED_V2=3Dy, I could successfully boot
-> which I have tested with this kernel in same system.
->=20
-> Is it not set by default from 2.6.31 onwards ?
->=20
-> Thanks,
-> Gowri
+diff --git a/drivers/usb/serial/ftdi_sio.h b/drivers/usb/serial/ftdi_sio.h
+index 24dbd99..4285b14 100644
+--- a/drivers/usb/serial/ftdi_sio.h
++++ b/drivers/usb/serial/ftdi_sio.h
+@@ -954,6 +954,13 @@
+ #define AURICAL_USB_PID		0x0010	/* Aurical USB Audiometer */
+ 
+ /*
++ * Marvell OpenRD Base, Client
++ * http://www.open-rd.org
++ * OpenRD Base, Client use VID 0x0403
++ */
++#define MARVELL_OPENRD_PID	0x9e90
++
++/*
+  *   BmRequestType:  1100 0000b
+  *   bRequest:       FTDI_E2_READ
+  *   wValue:         0
+-- 
+1.6.0.6
 
-I wasn't sure when it would move from 'y' to 'n', but looks like .31 is
-it. You'll need that option back on for booting on RHEL (since the boot
-infrastructure uses the old /sys format) but I don't think you'll need
-it for Fedora. Not sure about SLERT. Bet Greg Haskins would know
-though :)
-
-Clark
-
---Sig_/LySjAB79UpgUp5fCcJb3DgR
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkp66nAACgkQHyuj/+TTEp1nngCdHHQyf8CyA3GiF38lwc5mWL7w
-3PQAn2ola9hi5QdbI/zrz+Un+FqyOL/T
-=NGHx
------END PGP SIGNATURE-----
-
---Sig_/LySjAB79UpgUp5fCcJb3DgR--
+-- 
+_____________________________________________________________________
+Disclaimer: This e-mail message and all attachments transmitted with it
+are intended solely for the use of the addressee and may contain legally
+privileged and confidential information. If the reader of this message
+is not the intended recipient, or an employee or agent responsible for
+delivering this message to the intended recipient, you are hereby
+notified that any dissemination, distribution, copying, or other use of
+this message or its attachments is strictly prohibited. If you have
+received this message in error, please notify the sender immediately by
+replying to this message and please delete it from your computer. Any
+views expressed in this message are those of the individual sender
+unless otherwise stated.Company has taken enough precautions to prevent
+the spread of viruses. However the company accepts no liability for any
+damage caused by any virus transmitted by this email.
+_____________________________________________________________________
+ 
