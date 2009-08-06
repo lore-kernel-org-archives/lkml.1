@@ -1,165 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbZHFPTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbZHFPTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbZHFPTF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 11:19:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbZHFPTE
+	id S1756048AbZHFPTZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 11:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756012AbZHFPTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 11:19:04 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60193 "EHLO ogre.sisk.pl"
+	Thu, 6 Aug 2009 11:19:25 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:47292 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755995AbZHFPTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 11:19:02 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Daniel Mack <daniel@caiaq.de>
-Subject: Re: [linux-pm] [PATCH 4/5] input: gpio-keys: switch to new dev_pm_ops
-Date: Thu, 6 Aug 2009 17:19:43 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: linux-pm@lists.linux-foundation.org,
-       pHilipp Zabel <philipp.zabel@gmail.com>,
-       Phil Blundell <pb@handhelds.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-References: <1249496971-9019-1-git-send-email-daniel@caiaq.de> <200908060251.55157.rjw@sisk.pl> <20090806125909.GJ19257@buzzloop.caiaq.de>
-In-Reply-To: <20090806125909.GJ19257@buzzloop.caiaq.de>
+	id S1756011AbZHFPTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 11:19:24 -0400
+Date: Thu, 6 Aug 2009 08:19:22 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Menage <menage@google.com>, Benjamin Blum <bblum@google.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       oleg <oleg@redhat.com>
+Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by
+	tgid at once
+Message-ID: <20090806151922.GB6747@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <6599ad830908050911t6f23f810i65fe8fe17f3ee698@mail.gmail.com> <20090805164218.GB26446@hawkmoon.kerlabs.com> <2f86c2480908051701s57120404q475edbedb58cdca1@mail.gmail.com> <20090806095854.GD26446@hawkmoon.kerlabs.com> <6599ad830908060328y21a008c1pc5ed5c27e0ec905d@mail.gmail.com> <1249554853.32113.145.camel@twins> <6599ad830908060342m1fc8cdd2me25af248a8e0e183@mail.gmail.com> <1249556540.32113.191.camel@twins> <6599ad830908060424r72e1aa12g2b246785e7bc039c@mail.gmail.com> <1249558761.32113.262.camel@twins>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908061719.44068.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249558761.32113.262.camel@twins>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 August 2009, Daniel Mack wrote:
-> On Thu, Aug 06, 2009 at 02:51:55AM +0200, Rafael J. Wysocki wrote:
-> > On Thursday 06 August 2009, Daniel Mack wrote:
-> > > On Wed, Aug 05, 2009 at 10:15:52PM +0200, pHilipp Zabel wrote:
-> > > > On Wed, Aug 5, 2009 at 8:29 PM, Daniel Mack<daniel@caiaq.de> wrote:
-> > > > > -static int gpio_keys_resume(struct platform_device *pdev)
-> > > > > +static int gpio_keys_resume(struct device *dev)
-> > > > >  {
-> > > > > -       struct gpio_keys_platform_data *pdata = pdev->dev.platform_data;
-> > > > > +       struct gpio_keys_platform_data *pdata = dev->platform_data;
-> > > > >        int i;
-> > > > >
-> > > > > -       if (device_may_wakeup(&pdev->dev)) {
-> > > > > +       if (device_may_wakeup(dev)) {
-> > > > >                for (i = 0; i < pdata->nbuttons; i++) {
-> > > > >                        struct gpio_keys_button *button = &pdata->buttons[i];
-> > > > >                        if (button->wakeup) {
-> > > > > @@ -251,19 +251,27 @@ static int gpio_keys_resume(struct platform_device *pdev)
-> > > > >
-> > > > >        return 0;
-> > > > >  }
-> > > > > +
-> > > > > +static struct dev_pm_ops gpio_keys_pm_ops = {
-> > > > > +       .suspend        = gpio_keys_suspend,
-> > > > > +       .freeze         = gpio_keys_suspend,
-> > > > > +       .resume         = gpio_keys_resume,
-> > > > > +       .thaw           = gpio_keys_resume,
-> > > > 
-> > > > I'm not sure I understand hibernation correctly, but isn't
-> > > > .freeze/.thaw about saving state and halting/resuming the device
-> > > > operation only?
+On Thu, Aug 06, 2009 at 01:39:21PM +0200, Peter Zijlstra wrote:
+> On Thu, 2009-08-06 at 04:24 -0700, Paul Menage wrote:
+> > On Thu, Aug 6, 2009 at 4:02 AM, Peter Zijlstra<a.p.zijlstra@chello.nl> wrote:
+> > >
+> > > Taking that many locks in general, some apps (JVM based usually) tend to
+> > > be thread heavy and can easily have hundreds of them, even on relatively
 > > 
-> > It is.
+> > Oh, I'm well aware that apps can be heavily multi-threaded - we have
+> > much worse cases at Google.
 > > 
-> > > > It seems to me that enabling system wakeup functionality should go
-> > > > into .poweroff. (See <linux/pm.h>)
+> > >
+> > > Now that's not real nice is it ;-)
 > > 
-> > That's correct.
-> > 
-> > And .restore() plays the role of ".resume() from hibernation".
+> > Not particularly - but who exactly is going to be moving processes
+> > with thousands of threads between cgroups on a lockdep-enabled debug
+> > kernel?
 > 
-> Hence, In case of this driver which only calls disable_irq/enable_irq,
-> setting .poweroff and .restore seems to suffice?
-
-I'll have a look at the driver.  Still, it seems .suspend and .resume should be
-set too, shouldn't they?
-
-> From afa35cebccf49a24613e711afb8009fb6aadce0e Mon Sep 17 00:00:00 2001
-> From: Daniel Mack <daniel@caiaq.de>
-> Date: Wed, 5 Aug 2009 15:28:54 +0200
-> Subject: [PATCH 3/3] input: gpio-keys: switch to new dev_pm_ops
+> All it takes are: 8 or 48 (or soon 2048) depending on your particular
+> annotation. I might and then I'd have to come and kick you ;-)
 > 
-> The callbacks for the implemented functions are .poweroff and .restore,
-> as they only care for {dis,en}able_irq(). Renamed the functions
-> to reflect that.
+> Really, lockdep not being able to deal with something is a strong
+> indication that you're doing something wonky.
 > 
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> Cc: Phil Blundell <pb@handhelds.org>
-> Cc: linux-input@vger.kernel.org
-> ---
->  drivers/input/keyboard/gpio_keys.c |   26 ++++++++++++++++----------
->  1 files changed, 16 insertions(+), 10 deletions(-)
+> Stronger, you can even do wonky things which lockdep thinks are
+> absolutely fine.
 > 
-> diff --git a/drivers/input/keyboard/gpio_keys.c b/drivers/input/keyboard/gpio_keys.c
-> index efed0c9..8e670d4 100644
-> --- a/drivers/input/keyboard/gpio_keys.c
-> +++ b/drivers/input/keyboard/gpio_keys.c
-> @@ -216,12 +216,12 @@ static int __devexit gpio_keys_remove(struct platform_device *pdev)
->  
->  
->  #ifdef CONFIG_PM
-> -static int gpio_keys_suspend(struct platform_device *pdev, pm_message_t state)
-> +static int gpio_keys_poweroff(struct device *dev)
->  {
-> -	struct gpio_keys_platform_data *pdata = pdev->dev.platform_data;
-> +	struct gpio_keys_platform_data *pdata = dev->platform_data;
->  	int i;
->  
-> -	if (device_may_wakeup(&pdev->dev)) {
-> +	if (device_may_wakeup(dev)) {
->  		for (i = 0; i < pdata->nbuttons; i++) {
->  			struct gpio_keys_button *button = &pdata->buttons[i];
->  			if (button->wakeup) {
-> @@ -234,12 +234,12 @@ static int gpio_keys_suspend(struct platform_device *pdev, pm_message_t state)
->  	return 0;
->  }
->  
-> -static int gpio_keys_resume(struct platform_device *pdev)
-> +static int gpio_keys_restore(struct device *dev)
->  {
-> -	struct gpio_keys_platform_data *pdata = pdev->dev.platform_data;
-> +	struct gpio_keys_platform_data *pdata = dev->platform_data;
->  	int i;
->  
-> -	if (device_may_wakeup(&pdev->dev)) {
-> +	if (device_may_wakeup(dev)) {
->  		for (i = 0; i < pdata->nbuttons; i++) {
->  			struct gpio_keys_button *button = &pdata->buttons[i];
->  			if (button->wakeup) {
-> @@ -251,19 +251,25 @@ static int gpio_keys_resume(struct platform_device *pdev)
->  
->  	return 0;
->  }
-> +
-> +static struct dev_pm_ops gpio_keys_pm_ops = {
-> +	.poweroff	= gpio_keys_poweroff,
-> +	.restore	= gpio_keys_restore,
+> And doing wonky things should be avoided :-)
+> 
+> Luckily we seem to have found a sensible solution.
+> 
+> > What benefits does the additional complexity of SRCU give, over the
+> > simple solution of putting an rwsem in the same cache line as
+> > sighand->count ?
+> 
+> I said:
+> 
+> > Then again, clone() might already serialize on the process as a whole
+> > (not sure though, Oleg/Ingo?), in which case you can indeed take a
+> > process wide lock.
+> 
+> Which looking up sighand->count seems to be the case:
+> 
+> static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
+> {
+>         struct sighand_struct *sig;
+> 
+>         if (clone_flags & CLONE_SIGHAND) {
+>                 atomic_inc(&current->sighand->count);
+>                 return 0;
+>         }
+> 
+> 
+> So yes, putting a rwsem in there sounds fine, you're already bouncing
+> it.
 
-Should .suspend and .resume really be NULL?
+If the critical section is small, is an rwsem really better than a
+straight mutex?
 
-> +};
-> +
-> +#define GPIO_KEYS_PM_OPS (&gpio_keys_pm_ops)
-> +
->  #else
-> -#define gpio_keys_suspend	NULL
-> -#define gpio_keys_resume	NULL
-> +#define GPIO_KEYS_PM_OPS NULL
->  #endif
->  
->  static struct platform_driver gpio_keys_device_driver = {
->  	.probe		= gpio_keys_probe,
->  	.remove		= __devexit_p(gpio_keys_remove),
-> -	.suspend	= gpio_keys_suspend,
-> -	.resume		= gpio_keys_resume,
->  	.driver		= {
->  		.name	= "gpio-keys",
->  		.owner	= THIS_MODULE,
-> +		.pm	= GPIO_KEYS_PM_OPS,
->  	}
->  };
-
-Thanks,
-Rafael
+							Thanx, Paul
