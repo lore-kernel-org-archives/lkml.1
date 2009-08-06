@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbZHFAWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753213AbZHFAkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbZHFAWw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 20:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbZHFAWw
+	id S1753213AbZHFAkW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 20:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZHFAkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 20:22:52 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53862 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752410AbZHFAWv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 20:22:51 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4A7A223C.1090705@jp.fujitsu.com>
-Date: Thu, 06 Aug 2009 09:22:20 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Andi Kleen <ak@linux.intel.com>
-CC: Jin Dongming <jin.dongming@np.css.fujitsu.com>,
-       "H.Peter Anvin" <hpa@zytor.com>, LKLM <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Huang Ying <ying.huang@intel.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Subject: Re: [PATCH] x86, mce: cleanup initcall of debugfs for mce
-References: <4A77CEAB.4030909@np.css.fujitsu.com> <4A77FCCC.7040608@linux.intel.com> <4A794A4E.2060802@np.css.fujitsu.com> <4A797F95.30906@linux.intel.com>
-In-Reply-To: <4A797F95.30906@linux.intel.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+	Wed, 5 Aug 2009 20:40:21 -0400
+Received: from mga01.intel.com ([192.55.52.88]:26173 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751806AbZHFAkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 20:40:20 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,331,1246863600"; 
+   d="scan'208";a="481125326"
+Subject: Re: [PATCH] pci/intr_remapping: allocate irq_iommu on node
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+In-Reply-To: <4A794D8A.1060508@kernel.org>
+References: <4A785C17.3030104@kernel.org>
+	 <1249406368.27006.10789.camel@localhost.localdomain>
+	 <4A794D8A.1060508@kernel.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Wed, 05 Aug 2009 17:36:25 -0700
+Message-Id: <1249518985.27006.10805.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Jin Dongming wrote:
->> Andi Kleen wrote:
->>> Sorry but I think it's better to have an own initcall per file,
->>> that makes everything more self contained and easier to read.
->>>
->>> -Andi
->>>
->> Thank you for your comment.
->>
->> That's OK, but this patch is also used for resolving compile error
->> without CONFIG_DEBUG_FS.  Then how about this patch?
+On Wed, 2009-08-05 at 02:14 -0700, Yinghai Lu wrote:
+> without this patch
 > 
+> [  299.175436] igbvf 0000:41:10.0: enabling device (0000 -> 0002)
+> [  299.180009] igbvf 0000:41:10.0: using 64bit DMA mask
+> [  299.183077] igbvf 0000:41:10.0: using 64bit consistent DMA mask
+> [  299.199870] igbvf 0000:41:10.0: enabling bus mastering
+> [  299.205534] igbvf 0000:41:10.0: setting latency timer to 64
+> [  299.219654] reserve_memtype added 0xcfc00000-0xcfc04000, track uncached-minus, req uncached-minus, ret uncached-minus
+> [  299.239615] reserve_memtype added 0xcfc20000-0xcfc21000, track uncached-minus, req uncached-minus, ret uncached-minus
+> [  299.260181]   alloc irq_desc for 217 on node 2
+> [  299.263501]   alloc kstat_irqs on node 2
+> [  299.276276] alloc irq_2_iommu on node 0
+> [  299.281847] igbvf 0000:41:10.0: irq 217 for MSI/MSI-X
+> [  299.285511]   alloc irq_desc for 218 on node 2
+> [  299.297813]   alloc kstat_irqs on node 2
+> [  299.302543] alloc irq_2_iommu on node 0
+> [  299.315358] igbvf 0000:41:10.0: irq 218 for MSI/MSI-X
+> [  299.321102]   alloc irq_desc for 219 on node 2
+> [  299.325932]   alloc kstat_irqs on node 2
+> [  299.338616] alloc irq_2_iommu on node 0
+> [  299.340789] igbvf 0000:41:10.0: irq 219 for MSI/MSI-X
+> [  299.356532] igbvf 0000:41:10.0: PF still in reset state, assigning new address
+> [  299.365128] igbvf 0000:41:10.0: PF still resetting
+> [  299.377625] igbvf 0000:41:10.0: Intel(R) 82576 Virtual Function
+> [  299.385619] igbvf 0000:41:10.0: Address: c6:e3:de:62:de:eb
+> [  299.395957] igbvf 0000:41:10.0: MAC: 1
 > 
-> Compiler errors should be always fixed of course. But did you check
-> the compile error is still in the latest version of the x86/mce branch
-> of
-> git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git
-> It might be fixed already.
+> thought we could put irq_2_iommu to same node too.
 
-The compiler error pointed by Jin will be introduced by Huang's patch:
- 3.x86: MCE: Move debugfs mce dir creating to mce.c
-   URL: http://marc.info/?l=linux-kernel&m=124900459100790&w=2
-and it seems that none of tip branches have Huang's debug patch set yet.
-At least I could not find them in today's tip/x86/mce and tip/master.
-(Or I might have trouble on syncing of git.)
-
-I think that the previous change to unify initcalls is worth to be in
-an incremental patch, but this trivial change to add ifdef could be
-done by updating original patch if you'd like to do so.
-
-
-Thanks,
-H.Seto
+Yinghai, even with this patch, we will still be allocating from node-0.
+No?
 
