@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbZHFNEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbZHFNFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755608AbZHFNEY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 09:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755494AbZHFNEX
+	id S1755576AbZHFNFI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 09:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755483AbZHFNFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 09:04:23 -0400
-Received: from perceval.irobotique.be ([92.243.18.41]:38503 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755325AbZHFNEW (ORCPT
+	Thu, 6 Aug 2009 09:05:07 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3929 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753263AbZHFNFG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 09:04:22 -0400
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Ben Dooks <ben-linux@fluff.org>
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is get_user_pages() enough to prevent pages from being swapped out ?")
-Date: Thu, 6 Aug 2009 15:06:23 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30.3; KDE/4.2.4; x86_64; ; )
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
-       linux-kernel@vger.kernel.org,
-       "v4l2_linux" <linux-media@vger.kernel.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806114619.GW2080@trinity.fluff.org>
-In-Reply-To: <20090806114619.GW2080@trinity.fluff.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Thu, 6 Aug 2009 09:05:06 -0400
+Subject: Re: linux-arm-kernel useless for development (was Re: Your message
+ to Linux-arm-kernel awaits moderator approval)
+From: Joe Perches <joe@perches.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: David John <davidjon@xenontk.org>, Pavel Machek <pavel@ucw.cz>,
+       Erik Mouw <mouw@nl.linux.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090806124048.GD27773@flint.arm.linux.org.uk>
+References: <mailman.3653.1249217530.31043.linux-arm-kernel@lists.arm.linux.org.uk>
+	 <20090804100051.GA17106@elf.ucw.cz>
+	 <20090804223922.GD18365@flint.arm.linux.org.uk>
+	 <20090806125751.7d0253ce@nij0285> <20090806113104.GK31370@elf.ucw.cz>
+	 <20090806120826.GC27773@flint.arm.linux.org.uk>
+	 <4A7ACC8D.7030706@xenontk.org>
+	 <20090806124048.GD27773@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Thu, 06 Aug 2009 06:02:10 -0700
+Message-Id: <1249563730.10297.13.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908061506.23874.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben,
+On Thu, 2009-08-06 at 13:40 +0100, Russell King wrote:
+> On Thu, Aug 06, 2009 at 05:59:01PM +0530, David John wrote:
+> > I think the basis of Pavel's complaint is that the ARM mailing list is
+> > difficult to work with for casual users who might want to forward say,
+> > a simple bug report.
+> If only it were as simple as that.
+[]
+> I'm not willing to spend vast sums of money in
+> the legal domain to sort this issue out.
+> Neither am I willing to take a chance.
 
-On Thursday 06 August 2009 13:46:19 Ben Dooks wrote:
-> On Thu, Aug 06, 2009 at 12:08:21PM +0200, Laurent Pinchart wrote:
-[snip]
-> >
-> > The second problem is to ensure cache coherency. As the userspace
-> > application will read data from the video buffers, those buffers will end
-> > up being cached in the processor's data cache. The driver does need to
-> > invalidate the cache before starting the DMA operation (userspace could
-> > in theory write to the buffers, but the data will be overwritten by DMA
-> > anyway, so there's no need to clean the cache).
->
-> You'll need to clean the write buffers, otherwise the CPU may have data
-> queued that it has yet to write back to memory.
+What chances are those?
 
-Good points, thanks.
+> And no, moving the list outside the EU domain doesn't relieve any
+> of the lawful issues unless (as I understand the law) someone outside
+> the EU were to run the list.  And people would have to independently
+> subscribe to it - I wouldn't be able to export the existing subscriber
+> list outside the EU.
 
-> > As the cache is of the VIPT (Virtual Index Physical Tag) type, cache
-> > invalidation can either be done globally (in which case the cache is
-> > flushed instead of being invalidated) or based on virtual addresses. In
-> > the last case the processor will need to look physical addresses up,
-> > either in the TLB or through hardware table walk.
-> >
-> > I can see three solutions to the DMA/cache problem.
-> >
-> > 1. Flushing the whole data cache right before starting the DMA transfer.
-> > There's no API for that in the ARM architecture, so a whole I+D cache is
-> > required. This is quite costly, we're talking about around 30 flushes per
-> > second, but it doesn't involve the MMU. That's the solution that I
-> > currently use.
-> >
-> > 2. Invalidating only the cache lines that store video buffer data. This
-> > requires a TLB lookup or a hardware table walk, so the userspace
-> > application MM context needs to be available (no problem there as where's
-> > flushing in userspace context) and all pages need to be mapped properly.
-> > This can be a problem as, as Hugh pointed out, pages can still be
-> > unmapped from the userspace context after get_user_pages() returns. I
-> > have experienced one oops due to a kernel paging request failure:
->
-> If you already know the virtual addresses of the buffers, why do you need
-> a TLB lookup (or am I being dense here?)
+I suspect a vger based ARM list would not require you to "run" it.
 
-The virtual address is used to compute the cache lines index, and the physical 
-address is then used when comparing the cache line tag. So the processor (or 
-actually the CP15 coprocessor if I'm not wrong) does a TLB lookup to get the 
-physical address during cache invalidation/flushing.
+Perhaps you overestimate the value of the arm subscriber database
+as well as the work involved to subscribe to a list.
 
-> >         Unable to handle kernel paging request at virtual address
-> > 44e12000 pgd = c8698000
-> >         [44e12000] *pgd=8a4fd031, *pte=8cfda1cd, *ppte=00000000
-> >         Internal error: Oops: 817 [#1] PREEMPT
-> >         PC is at v7_dma_inv_range+0x2c/0x44
-> >
-> > Fixing this requires more investigation, and I'm not sure how to proceed
-> > to find out if the page fault is really caused by pages being unmapped
-> > from the userspace context. Help would be appreciated.
-> >
-> > 3. Mark the pages as non-cacheable. Depending on how the buffers are then
-> > used by userspace, the additional cache misses might destroy any benefit
-> > I would get from not flushing the cache before DMA. I'm not sure how to
-> > mark a bunch of pages as non-cacheable though. What usually happens is
-> > that video drivers allocate DMA-coherent memory themselves, but in this
-> > case I need to deal with an arbitrary buffer allocated by userspace. If
-> > someone has any experience with this, it would be appreciated.
+Adding a "click this to subscribe to the new list" to the mailing
+list trailer would work reasonably well.
 
-Regards,
+> Now, people here can tell me I'm wrong, but they aren't in the legal
+> profession...  Would you get a gardener to fix your gas boiler, or
+> would you get a qualified and registered gas engineer in?
 
-Laurent Pinchart
+Perhaps not using the gas boiler is another option.
+
 
