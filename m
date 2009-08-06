@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbZHFOVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753063AbZHFOXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752980AbZHFOVr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 10:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbZHFOVq
+	id S1753063AbZHFOXy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 10:23:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZHFOXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 10:21:46 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:50748 "EHLO
+	Thu, 6 Aug 2009 10:23:53 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:56904 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751426AbZHFOVp (ORCPT
+	with ESMTP id S1750857AbZHFOXx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 10:21:45 -0400
-Date: Thu, 6 Aug 2009 10:21:45 -0400 (EDT)
+	Thu, 6 Aug 2009 10:23:53 -0400
+Date: Thu, 6 Aug 2009 10:23:53 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Li Zefan <lizf@cn.fujitsu.com>
 cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <f.weisbecker@gmail.com>,
        Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] tracing/filters: Support filtering for char *
- strings
-In-Reply-To: <4A7A72FA.9040102@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0908061020240.9870@gandalf.stny.rr.com>
-References: <4A7A72BD.5030201@cn.fujitsu.com> <4A7A72FA.9040102@cn.fujitsu.com>
+Subject: Re: [PATCH 0/3] tracing/filters: Support specifying filter hook to
+ a TRACE_EVENT field
+In-Reply-To: <4A7A72BD.5030201@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0908061022490.9870@gandalf.stny.rr.com>
+References: <4A7A72BD.5030201@cn.fujitsu.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -31,107 +31,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Thu, 6 Aug 2009, Li Zefan wrote:
 
-> Usually, char * entries are dangerous in traces because the string
-> can be released whereas a pointer to it can still wait to be read from
-> the ring buffer.
+> Currently only static strings and dynamic strings have their
+> own filter functions, other types of field are treated as
+> integers.
 > 
-> But sometimes we can assume it's safe, like in case of RO data
-> (eg: __file__ or __line__, used in bkl trace event). If these RO data
-> are in a module and so is the call to the trace event, then it's safe,
-> because the ring buffer will be flushed once this module get unloaded.
+> This patchset allows assigning a specific filter type to a
+> field, so a field which is defined as:
 > 
-> To allow char * to be treated as a string:
+> 	__field_ext(const char *, str, FILTER_PTR_STR)
 > 
-> 	TRACE_EVENT(...,
+> will be treated as a string but not a plain pointer, and then
+> we can set the filter like this:
 > 
-> 		TP_STRUCT__entry(
-> 			__field_ext(const char *, name, FILTER_PTR_STRING)
-> 			...
-> 		)
+> 	# echo 'str == foo' > filter
 > 
-> 		...
-> 	);
+> And it's easy to add more filter functions for different types
+> to turn these into valid operations:
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  include/linux/ftrace_event.h       |    1 +
->  kernel/trace/trace_events_filter.c |   26 +++++++++++++++++++++++---
->  2 files changed, 24 insertions(+), 3 deletions(-)
+> 	(dev is of type dev_t)
+> 	# echo 'dev == 8:0' > filter
 > 
-> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-> index 14c388e..1a98a61 100644
-> --- a/include/linux/ftrace_event.h
-> +++ b/include/linux/ftrace_event.h
-> @@ -141,6 +141,7 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
->  enum {
->  	FILTER_STATIC_STRING = 1,
->  	FILTER_DYN_STRING,
-> +	FILTER_PTR_STRING,
->  	FILTER_OTHER,
->  };
->  
-> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-> index 5e7f031..b16923e 100644
-> --- a/kernel/trace/trace_events_filter.c
-> +++ b/kernel/trace/trace_events_filter.c
-> @@ -163,6 +163,20 @@ static int filter_pred_string(struct filter_pred *pred, void *event,
->  	return match;
->  }
->  
-> +/* Filter predicate for char * pointers */
-> +static int filter_pred_pchar(struct filter_pred *pred, void *event,
-> +			     int val1, int val2)
-> +{
-> +	char **addr = (char **)(event + pred->offset);
-> +	int cmp, match;
-> +
-> +	cmp = strncmp(*addr, pred->str_val, pred->str_len);
-> +
-> +	match = (!cmp) ^ pred->not;
-> +
-> +	return match;
-> +}
-> +
->  /*
->   * Filter predicate for dynamic sized arrays of characters.
->   * These are implemented through a list of strings at the end
-> @@ -489,7 +503,8 @@ int filter_assign_type(const char *type)
->  static bool is_string_field(struct ftrace_event_field *field)
->  {
->  	return field->filter_type == FILTER_DYN_STRING ||
-> -	       field->filter_type == FILTER_STATIC_STRING;
-> +	       field->filter_type == FILTER_STATIC_STRING ||
-> +	       field->filter_type == FILTER_PTR_STRING;
->  }
->  
->  static int is_legal_op(struct ftrace_event_field *field, int op)
-> @@ -579,11 +594,16 @@ static int filter_add_pred(struct filter_parse_state *ps,
->  	}
->  
->  	if (is_string_field(field)) {
-> +		pred->str_len = field->size;
-> +
->  		if (field->filter_type == FILTER_STATIC_STRING)
->  			fn = filter_pred_string;
-> -		else
-> +		else if (field->filter_type == FILTER_DYN_STRING)
->  			fn = filter_pred_strloc;
-> -		pred->str_len = field->size;
-> +		else {
-> +			fn = filter_pred_pchar;
-> +			pred->str_len = strlen(pred->str_val);
-> +		}
+> 	(callsite is of type void * or unsigned long)
+> 	# echo 'callsite == skb_free' > filter
+> 
+> [PATCH 1/3] tracing/filters: Add filter_type to struct ftrace_event_field
+> [PATCH 2/3] tracing/filters: Add __field_ext() to TRACE_EVENT
+> [PATCH 3/3] tracing/filters: Support filtering for char * strings
 
-I'm a little dense here, where do we protect against someone making a 
-tracepoint that points to unsafe data?
+I like the first two patches, but would like to see a V2 with the updates 
+I've mentioned. The last patch I do not fully understand its purpose.
+
+I'll wait for V2 to pull it in.
+
+Thanks!
 
 -- Steve
 
 
->  	} else {
->  		if (field->is_signed)
->  			ret = strict_strtoll(pred->str_val, 0, &val);
-> -- 
-> 1.6.3
+> ---
+>  include/linux/ftrace_event.h       |   12 +++++++-
+>  include/trace/ftrace.h             |   28 ++++++++++++++++----
+>  kernel/trace/trace.h               |    2 +
+>  kernel/trace/trace_events.c        |    9 ++++++-
+>  kernel/trace/trace_events_filter.c |   47 +++++++++++++++++++++++++----------
+>  kernel/trace/trace_export.c        |    7 +++--
+>  6 files changed, 79 insertions(+), 26 deletions(-)
 > 
 > 
