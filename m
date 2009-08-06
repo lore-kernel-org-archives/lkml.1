@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbZHFMB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbZHFMEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755214AbZHFMB7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 08:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755172AbZHFMB7
+	id S1755201AbZHFMEU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 08:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbZHFMET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 08:01:59 -0400
-Received: from lider.uludag.org.tr ([193.140.100.216]:54298 "EHLO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752931AbZHFMB6 (ORCPT
+	Thu, 6 Aug 2009 08:04:19 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57803 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752006AbZHFMES (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 08:01:58 -0400
-Message-ID: <4A7AC6FD.6080600@pardus.org.tr>
-Date: Thu, 06 Aug 2009 15:05:17 +0300
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.22 (X11/20071115)
+	Thu, 6 Aug 2009 08:04:18 -0400
+Date: Thu, 6 Aug 2009 14:04:17 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, fengguang.wu@intel.com,
+       hidehiro.kawai.ez@hitachi.com, linux-arch@vger.kernel.org
+Subject: Re: [PATCH] [11/19] HWPOISON: Refactor truncate to allow direct
+	truncating of page v2
+Message-ID: <20090806120417.GC22124@basil.fritz.box>
+References: <200908051136.682859934@firstfloor.org> <20090805093638.D3754B15D8@basil.firstfloor.org> <20090805102008.GB17190@wotan.suse.de> <20090805134607.GH11385@basil.fritz.box> <20090805140145.GB28563@wotan.suse.de> <20090805141001.GJ11385@basil.fritz.box> <20090805141642.GB23992@wotan.suse.de> <20090806134830.4f3931d2@skybase>
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix markup_oops to work with 32-bit userspace on a 64-bit
- kernel
-References: <20090713141819.GG24310@parisc-linux.org>
-In-Reply-To: <20090713141819.GG24310@parisc-linux.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090806134830.4f3931d2@skybase>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote On 13-07-2009 17:18:
-> A 32-bit perl can't handle 64-bit addresses without using the BigInt package.
->
->  
-> -my $decodestart = hex($target) - hex($func_offset);
-> -my $decodestop = hex($target) + 8192;
-> +my $decodestart = Math::BigInt->from_hex("0x$target") - Math::BigInt->from_hex("0x$func_offset");
-> +my $decodestop = Math::BigInt->from_hex("0x$target") + 8192;
->  if ($target eq "0") {
->  	print "No oops found!\n";
->  	print "Usage: \n";
->   
+> This is not relevant for s390, as current machines do transparent memory
+> sparing if a memory module goes bad. Really old machines reported bad
+> memory to the OS by means of a machine check (storage error uncorrected
+> and storage error corrected). I have never seen this happen, the level
+> below the OS deals with these errors for us.
 
-$func_offset has already "0x" so this commit prepends another "0x"
-causing decodestart to be NaN.
+Ok fine. It's for the poorer cousins then who can't afford memory mirroring.
 
-Regards,
-Ozan
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
