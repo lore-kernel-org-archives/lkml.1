@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756450AbZHFRsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbZHFR4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756450AbZHFRsA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 13:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755996AbZHFRsA
+	id S1756061AbZHFR4Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 13:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756002AbZHFR4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 13:48:00 -0400
-Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:5817 "EHLO
-	mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755602AbZHFRr7 (ORCPT
+	Thu, 6 Aug 2009 13:56:13 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:50893 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752422AbZHFR4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 13:47:59 -0400
-X-IronPort-AV: E=Sophos;i="4.43,334,1246831200"; 
-   d="scan'208";a="30863821"
-Message-ID: <4A7B175B.8030000@inria.fr>
-Date: Thu, 06 Aug 2009 19:48:11 +0200
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Thu, 6 Aug 2009 13:56:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=fmmscdkvqtMm7dU18ZvQeMtYdO3c/kODjW1hdIDLnzxD6tl05QM0lgTM0SKUrrk6T/
+         p9Th4M4f8QVZ3MPVG9p0sYBL5hL7ob6F/09F60VfvLEL1Jz64ctfXrZ5PQsPpiMfCFmH
+         pnEFnOUI5nJTm44Tzvr9Dc2t3QOdaW2pligBY=
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, paulus@samba.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [perf] howto switch from pfmon
-References: <4A3FEF75.2020804@inria.fr> <20090623131450.GA31519@elte.hu>	 <20090623134749.GA6897@elte.hu> <4A40DFF5.7010207@inria.fr>	 <20090623143601.GA13415@elte.hu> <4A40F31F.4030609@inria.fr>	 <20090629192913.GA29295@elte.hu>  <4A7B0C02.7060704@inria.fr> <1249580428.4975.14.camel@laptop>
-In-Reply-To: <1249580428.4975.14.camel@laptop>
-X-Enigmail-Version: 0.95.0
+Date: Thu, 6 Aug 2009 13:56:12 -0400
+Message-ID: <b4198de60908061056m2b27402cjd25f94b6bbed0707@mail.gmail.com>
+Subject: Bad Code generated from __{get,put}_unaligned functions
+From: Matt Turner <mattst88@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2009-08-06 at 18:59 +0200, Brice Goglin wrote:
->
->   
->> I can easily sort them by thread id, but I don't know how to match my 4
->> events with each group of 4 line.
->>
->> Maybe perf report earned some better way to show per-thread statistics
->> in the meantime?
->>     
->
-> Nah, it needs some love..
->
-> The below might be a starting point, it compiles, didn't check the
-> result. builtin-stat might be a nice place to look for more bits..
->   
+I was researching different ways of writing unaligned load/store
+macros, so I checked how the kernel did it -- the most general way
+possible. See include/linux/unaligned.h. As such, very bad code is
+generated, for example on alpha with BWX, we can implement all these
+functions with a single instruction, whereas we get stuff like this
+generated from the generic functions.
 
-Thanks, now I get for each thread:
+__get_unaligned_le32:
+    .frame $30,0,$26,0
+    .prologue 0
+    ldbu $0,1($16)
+    ldbu $1,2($16)
+    ldbu $2,3($16)
+    ldbu $3,0($16)
+    sll $1,16,$1
+    sll $0,8,$0
+    bis $0,$1,$0
+    sll $2,24,$2
+    bis $0,$3,$0
+    bis $0,$2,$0
+    addl $31,$0,$0
+    ret $31,($26),1
 
-0x8fc0 [0x30]: PERF_EVENT_READ: 6268 6268 FAIL 209113
-0x9698 [0x30]: PERF_EVENT_READ: 6268 6268 FAIL 307215
-0x9cf8 [0x30]: PERF_EVENT_READ: 6268 6268 FAIL 9203221
-0x8bb8 [0x30]: PERF_EVENT_READ: 6268 6268 raw 0x1000001e0 494628
+4 load byte instructions, shift, shift, or, shift, or, or, sign extend
+-- or ldl_u instruction. The code is more than doubly-bad for le64.
 
-Looks like it fails to stringified my raw events except the first one.
+Do we use the generic functions for a reason I don't see? It appears
+that it would be easy enough to add architecture-specific unaligned
+get/put functions in arch/*/include/asm/unaligned.h
 
-Brice
+CC me on replies please.
 
+Matt Turner
