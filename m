@@ -1,86 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751272AbZHFGhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751549AbZHFGqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751272AbZHFGhN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 02:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbZHFGhM
+	id S1751549AbZHFGqc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 02:46:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751048AbZHFGqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 02:37:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49654 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750771AbZHFGhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 02:37:11 -0400
-Message-ID: <4A7A7A0F.6070906@redhat.com>
-Date: Thu, 06 Aug 2009 14:37:03 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+	Thu, 6 Aug 2009 02:46:31 -0400
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:51494 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750952AbZHFGqa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 02:46:30 -0400
+Message-ID: <4A7A7C37.7020609@linux.vnet.ibm.com>
+Date: Thu, 06 Aug 2009 12:16:15 +0530
+From: gowrishankar <gowrishankar.m@linux.vnet.ibm.com>
+Reply-To: gowrishankar.m@linux.vnet.ibm.com
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Neil Horman <nhorman@redhat.com>, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 0/7] Implement crashkernel=auto
-References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>	<m1eirqtmey.fsf@fess.ebiederm.org>	<20090805140408.GJ7259@hmsreliant.think-freely.org>	<m1skg5vpgg.fsf@fess.ebiederm.org> <4A7A3A78.7080200@redhat.com>	<m1y6pxr737.fsf@fess.ebiederm.org> <4A7A506B.2060008@redhat.com>	<m1ljlxsiox.fsf@fess.ebiederm.org> <4A7A70E5.2010204@redhat.com> <m1bpmtqxjh.fsf@fess.ebiederm.org>
-In-Reply-To: <m1bpmtqxjh.fsf@fess.ebiederm.org>
+To: Clark Williams <williams@redhat.com>
+CC: gowrishankar.m@linux.vnet.ibm.com, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>
+Subject: Re: [ANNOUNCE] 2.6.31-rc4-rt1 (problem with CONFIG_SYSFS_DEPRECATED_V2)
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain> <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <4A79214B.5070003@linux.vnet.ibm.com> <20090805083247.0b84d1c0@torg>
+In-Reply-To: <20090805083247.0b84d1c0@torg>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Amerigo Wang <amwang@redhat.com> writes:
->
->   
->> Eric W. Biederman wrote:
->>     
->>> Amerigo Wang <amwang@redhat.com> writes:
+Clark Williams wrote:
+> On Wed, 05 Aug 2009 11:36:03 +0530
+> gowrishankar <gowrishankar.m@linux.vnet.ibm.com> wrote:
+> 
+>> Thomas Gleixner wrote:
+>>> We are pleased to announce the next update to our new preempt-rt
+>>> series.
 >>>
->>>   
->>>       
->>>>> No the crashdump mechanism is useless because user space is already
->>>>> broken and unusable.
->>>>>       
->>>>>           
->>>> Again, why broken?
->>>>     
->>>>         
->>> To get a stock stat drive by hand I had to list about 5 kernel modules
->>> in the right magic order in /etc/kdump.conf
->>>
->>> Neither mount by label or mount by uuid when specified in /etc/kdump.conf
->>> I had to hack mkdumprd to get an initrd that even finds the proper disk
->>> to mount.
->>>   
->>>       
->> You are saying that there is some difficulty to make a initrd for kdump, but I
->> am sorry that I can't see any relations between this and my patch. What is your
->> point here?
->>     
->
-> You are trying to make it easier for end users.
->
-> I am saying the problem is in user space.
->
-> I am saying also that the kernel doesn't have a clue what you are
-> going to load with kexec on panic to handle panics.  Maybe it is a
-> custom stand alone binary that only needs 5K.  So the kernel doesn't
-> have a clue what the right size to reserve.
->   
+>>>     - update to 2.6.31-rc4
+>> Hi,
+>> I am seeing below kernel panic on 8 way Intel and 4 way AMD blades.
+>>
+>> Kernel panic - not syncing: Attempted to kill init!
+>> Pid: 1, comm: init Not tainted 2.6.31-rc4-rt1-autotest #1
+>> Call Trace:
+>>   [<ffffffff8104c887>] panic+0xc1/0x171
+>>   [<ffffffff8104ec9a>] ? put_files_struct+0xc3/0xe6
+>>   [<ffffffff81394313>] ? rt_write_unlock+0x1c/0x32
+>>   [<ffffffff810582fd>] ? exit_ptrace+0xab/0x130
+>>   [<ffffffff81394313>] ? rt_write_unlock+0x1c/0x32
+>>   [<ffffffff810500af>] do_exit+0x88/0x726
+>>   [<ffffffff810507d5>] do_group_exit+0x88/0xbb
+>>   [<ffffffff8105082d>] sys_exit_group+0x25/0x3d
+>>   [<ffffffff8100be2b>] system_call_fastpath+0x16/0x1b
+>>
+>> Thanks,
+>> Gowri
+> 
+> Gowri, 
+> 
+> Would you post your .config so we can see what options you have enabled?
+> 
+Hi Clark,
+Thanks for the attention. I just looked at error message before the trace I posted.
 
-So what? If you have 8G memory, would you mind 128M-5K memory to be wasted?
+setuproot: moving /dev failed: No such file or directory
+no fstab.sys, mounting internal defaults
+setuproot: error mounting /proc: No such file or directory
+setuproot: error mounting /sys: No such file or directory
+Switching to new root and running init.
+unmounting old /dev
+unmounting old /proc
+unmounting old /sys
+switchroot: mount failed: No such file or directory
 
-The kernel doesn't have to reserve the exact amount of memory that a 
-kexec kernel will use, it just finds a big enough size for all cases 
-which already assumes the physical memory is large enough.
-> I think if what you were proposing was part of some coherent story for
-> a complete implementation I would consider it more.  Instead this just
-> appears to be a reaction to how frustrating the user space
-> implementation is, and fixing things in the kernel instead of in user
-> space.
->   
+Only if I set CONFIG_SYSFS_DEPRECATED_V2=y, I could successfully boot
+which I have tested with this kernel in same system.
 
-Yes, exactly, in fact I am doing another part which will allow us to 
-take back of the reserved memory at run-time.
+Is it not set by default from 2.6.31 onwards ?
 
+Thanks,
+Gowri
+
+> Clark
+> 
 
