@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753525AbZHFBhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593AbZHFBhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753525AbZHFBhM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 21:37:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZHFBhL
+	id S1753593AbZHFBhi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 21:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZHFBhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 21:37:11 -0400
-Received: from [222.73.24.84] ([222.73.24.84]:49565 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752620AbZHFBhK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 21:37:10 -0400
-Message-ID: <4A7A336B.4040708@cn.fujitsu.com>
-Date: Thu, 06 Aug 2009 09:35:39 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Wed, 5 Aug 2009 21:37:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57687 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753367AbZHFBhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 21:37:35 -0400
+Message-ID: <4A7A3445.60903@redhat.com>
+Date: Thu, 06 Aug 2009 09:39:17 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC][PATCH 5/5] tracing/filters: Provide support for char *
- pointers
-References: <1249111408-8657-1-git-send-email-fweisbec@gmail.com> <1249111408-8657-6-git-send-email-fweisbec@gmail.com> <4A768A87.6090800@cn.fujitsu.com> <20090805230257.GI5025@nowhere>
-In-Reply-To: <20090805230257.GI5025@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 0/7] Implement crashkernel=auto
+References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain> <m1eirqtmey.fsf@fess.ebiederm.org>
+In-Reply-To: <m1eirqtmey.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Mon, Aug 03, 2009 at 02:58:15PM +0800, Li Zefan wrote:
->> Frederic Weisbecker wrote:
->>> Provide support for char * pointers in the filtering framework.
->>> Usually, char * entries are dangerous in traces because the string
->>> can be released whereas a pointer to it can still wait to be read from
->>> the ring buffer. But sometimes we can assume it's safe, like in case
->>> of RO data (eg: __file__ or __line__, used in bkl trace event). If
->>> these RO data are in a module and so is the call to the trace event,
->>> then it's safe, because the ring buffer will be flushed once this
->>> module get unloaded.
->>>
->> The problem is we don't distinguish dangerous char * from
->> safe char *... They are both defined as:
->> 	__field(char *, str)
+Eric W. Biederman wrote:
+> Amerigo Wang <amwang@redhat.com> writes:
+>
+>   
+>> This series of patch implements automatically reserved memory for crashkernel,
+>> by introducing a new boot option "crashkernel=auto". This idea is from Neil.
 >>
->> So for those dangerous ones, a string filter still can be applied,
->> which will dereference those pointers.
-> 
-> Yeah, but only reviewing can distinguish them. It depends on the
-> context.
-> IMO, a __builtin_constant check would be wrong. I don't remember who
-> posted recently tracepoints with char * types that were safe although he
-> didn't use string constants.
-> 
+>> In case of breaking user-space applications, it modifies this boot option after
+>> it decides how much memory should be reserved.
+>>
+>> On different arch, the threshold and reserved memory size is different. Please
+>> refer patch 7/7 which contains an update for the documentation.
+>>
+>> Note: This patchset was only tested on x86_64 with differernt memory sizes.
+>>     
+>
+> This seems like a silly hard code. Especially for a feature distros don't
+> care enough about to implement a working initrd for.
+>
+> Has anyone bothered to justify those large amounts of memory?
+> Where does the 128M go?
+>   
 
-IMO it's really bad to rely on review to prevent wrong use of
-an API..
+If 128M is too big, we can make it to be 64M, that is no problem.
+I am very open to this. :)
 
-Other developers won't know this restriction, and not all tracepoint
-patches go through -tip tree, and not all trace_event source files
-are in include/trace/events/.
+> Please pardon me for being a cynic but I don't see the command line option
+> being the bottleneck for real users to make this work.
+>
+>   
+Well, take /me as an example, to be honest, I still have no idea how 
+much memory I should reserve for s390/sh, if I would use kdump on sh, it 
+*is* my bottleneck.
 
-How about add __field_type()? So we can define:
+Thanks.
 
-	__field_type(char *, str, FILTER_PTR_STR)
 
-the advantage is he who wrote the code really knows this field is safe
-to be used in filtering as a string.
-
-I had some patches that does similar job. I can rewrite and post them.
