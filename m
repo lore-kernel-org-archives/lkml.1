@@ -1,79 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755770AbZHFSqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756321AbZHFSqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755770AbZHFSqH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 14:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbZHFSqH
+	id S1756321AbZHFSqa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 14:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756120AbZHFSq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 14:46:07 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:54216 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754389AbZHFSqF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 14:46:05 -0400
-Date: Thu, 6 Aug 2009 14:32:48 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Fabio Comolli <fabio.comolli@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-wireless@vger.kernel.org
-Subject: Re: WARNING: at net/mac80211/mlme.c:2292
-	ieee80211_sta_work+0x97/0xd2d [mac80211]()
-Message-ID: <20090806183247.GI26809@tuxdriver.com>
-References: <b637ec0b0908061130w399eb1c6oc3a31640a76398c5@mail.gmail.com>
+	Thu, 6 Aug 2009 14:46:29 -0400
+Received: from mms1.broadcom.com ([216.31.210.17]:1208 "EHLO mms1.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756115AbZHFSq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 14:46:28 -0400
+X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was
+ "Is get_user_pages() enough to prevent pages from being swapped out ?")
+From: "David Xiao" <dxiao@broadcom.com>
+To: "Laurent Pinchart" <laurent.pinchart@ideasonboard.com>
+cc: "Ben Dooks" <ben-linux@fluff.org>,
+       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
+       "Robin Holt" <holt@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       v4l2_linux <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+In-Reply-To: <200908061506.23874.laurent.pinchart@ideasonboard.com>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com>
+ <20090806114619.GW2080@trinity.fluff.org>
+ <200908061506.23874.laurent.pinchart@ideasonboard.com>
+Date: Thu, 6 Aug 2009 11:46:14 -0700
+Message-ID: <1249584374.29182.20.camel@david-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b637ec0b0908061130w399eb1c6oc3a31640a76398c5@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Mailer: Evolution 2.26.1
+X-WSS-ID: 6665FB7D3704674188-01-01
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What driver are you using?
+On Thu, 2009-08-06 at 06:06 -0700, Laurent Pinchart wrote:
+> Hi Ben,
+> 
+> On Thursday 06 August 2009 13:46:19 Ben Dooks wrote:
+> > On Thu, Aug 06, 2009 at 12:08:21PM +0200, Laurent Pinchart wrote:
+> [snip]
+> > >
+> > > The second problem is to ensure cache coherency. As the userspace
+> > > application will read data from the video buffers, those buffers will end
+> > > up being cached in the processor's data cache. The driver does need to
+> > > invalidate the cache before starting the DMA operation (userspace could
+> > > in theory write to the buffers, but the data will be overwritten by DMA
+> > > anyway, so there's no need to clean the cache).
+> >
+> > You'll need to clean the write buffers, otherwise the CPU may have data
+> > queued that it has yet to write back to memory.
+> 
+> Good points, thanks.
 
-On Thu, Aug 06, 2009 at 08:30:23PM +0200, Fabio Comolli wrote:
-> Just got this after a resume from suspend-to-ram. Wifi needed to be
-> disabled and reenabled (with hardware Fn+F2 key - this is an eeePC900)
-> to function  again.
+   I thought this should have been taken care of by the CPU specific
+dma_inv_range routine. However, In arch/arm/mm/cache-v7.c,
+v7_dma_inv_range does not drain the write buffer; and the
+v6_dma_inv_range does that in the end of all the cache maintenance
+operaitons.
+   So this is probably something Russel can clarify.
+
 > 
+> > > As the cache is of the VIPT (Virtual Index Physical Tag) type, cache
+> > > invalidation can either be done globally (in which case the cache is
+> > > flushed instead of being invalidated) or based on virtual addresses. In
+> > > the last case the processor will need to look physical addresses up,
+> > > either in the TLB or through hardware table walk.
+> > >
+> > > I can see three solutions to the DMA/cache problem.
+> > >
+> > > 1. Flushing the whole data cache right before starting the DMA transfer.
+> > > There's no API for that in the ARM architecture, so a whole I+D cache is
+> > > required. This is quite costly, we're talking about around 30 flushes per
+> > > second, but it doesn't involve the MMU. That's the solution that I
+> > > currently use.
+> > >
+> > > 2. Invalidating only the cache lines that store video buffer data. This
+> > > requires a TLB lookup or a hardware table walk, so the userspace
+> > > application MM context needs to be available (no problem there as where's
+> > > flushing in userspace context) and all pages need to be mapped properly.
+> > > This can be a problem as, as Hugh pointed out, pages can still be
+> > > unmapped from the userspace context after get_user_pages() returns. I
+> > > have experienced one oops due to a kernel paging request failure:
+> >
+> > If you already know the virtual addresses of the buffers, why do you need
+> > a TLB lookup (or am I being dense here?)
 > 
-> [  919.858759] ------------[ cut here ]------------
-> [  919.858787] WARNING: at net/mac80211/mlme.c:2292
-> ieee80211_sta_work+0x97/0xd2d [mac80211]()
-> [  919.858791] Hardware name: 900
-> [  919.858793] Modules linked in: uvcvideo videodev v4l1_compat arc4
-> ecb ath5k mac80211 ath cfg80211
-> [  919.860022] Pid: 793, comm: phy0 Tainted: G   M       2.6.31-rc5 #11
-> [  919.860025] Call Trace:
-> [  919.860035]  [<c10209cf>] warn_slowpath_common+0x65/0x7c
-> [  919.860058]  [<f83d621e>] ? ieee80211_sta_work+0x97/0xd2d [mac80211]
-> [  919.860064]  [<c10209f3>] warn_slowpath_null+0xd/0x10
-> [  919.860086]  [<f83d621e>] ieee80211_sta_work+0x97/0xd2d [mac80211]
-> [  919.860092]  [<c101bb2b>] ? __wake_up+0x2f/0x56
-> [  919.860097]  [<c101bb39>] ? __wake_up+0x3d/0x56
-> [  919.860103]  [<c102eb04>] ? insert_work+0x96/0x9f
-> [  919.860108]  [<c102ed63>] ? __queue_work+0x32/0x49
-> [  919.860113]  [<c102eda1>] ? queue_work_on+0x27/0x2f
-> [  919.860119]  [<c102f52f>] ? queue_work+0x2d/0x45
-> [  919.860140]  [<f83d3324>] ?
-> ieee80211_ibss_notify_scan_completed+0x63/0x68 [mac80211]
-> [  919.860162]  [<f83d1059>] ? ieee80211_scan_completed+0x320/0x328 [mac80211]
-> [  919.860184]  [<f83d1160>] ? ieee80211_scan_work+0xb5/0x171 [mac80211]
-> [  919.860190]  [<c102f075>] worker_thread+0x15d/0x204
-> [  919.860211]  [<f83d6187>] ? ieee80211_sta_work+0x0/0xd2d [mac80211]
-> [  919.860218]  [<c1032217>] ? autoremove_wake_function+0x0/0x2f
-> [  919.860223]  [<c102ef18>] ? worker_thread+0x0/0x204
-> [  919.860229]  [<c1031fab>] kthread+0x63/0x68
-> [  919.860234]  [<c1031f48>] ? kthread+0x0/0x68
-> [  919.860240]  [<c1002f93>] kernel_thread_helper+0x7/0x10
-> [  919.860244] ---[ end trace 7a3a8d08c5a7bedf ]---
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> The virtual address is used to compute the cache lines index, and the physical 
+> address is then used when comparing the cache line tag. So the processor (or 
+> actually the CP15 coprocessor if I'm not wrong) does a TLB lookup to get the 
+> physical address during cache invalidation/flushing.
+> 
+> > >         Unable to handle kernel paging request at virtual address
+> > > 44e12000 pgd = c8698000
+> > >         [44e12000] *pgd=8a4fd031, *pte=8cfda1cd, *ppte=00000000
+> > >         Internal error: Oops: 817 [#1] PREEMPT
+> > >         PC is at v7_dma_inv_range+0x2c/0x44
+> > >
+> > > Fixing this requires more investigation, and I'm not sure how to proceed
+> > > to find out if the page fault is really caused by pages being unmapped
+> > > from the userspace context. Help would be appreciated.
+> > >
+> > > 3. Mark the pages as non-cacheable. Depending on how the buffers are then
+> > > used by userspace, the additional cache misses might destroy any benefit
+> > > I would get from not flushing the cache before DMA. I'm not sure how to
+> > > mark a bunch of pages as non-cacheable though. What usually happens is
+> > > that video drivers allocate DMA-coherent memory themselves, but in this
+> > > case I need to deal with an arbitrary buffer allocated by userspace. If
+> > > someone has any experience with this, it would be appreciated.
 > 
 
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+Another approach is working from a different direction: the kernel
+allocates the non-cached buffer and then mmap() into user space. I have
+done that in similar situation to try to achieve "zero-copy". 
+
+
+David
+
+
