@@ -1,71 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756422AbZHFRbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756444AbZHFRki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756422AbZHFRbq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 13:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755763AbZHFRbq
+	id S1756444AbZHFRki (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 13:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756433AbZHFRkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 13:31:46 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:64556 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755006AbZHFRbp convert rfc822-to-8bit (ORCPT
+	Thu, 6 Aug 2009 13:40:37 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35713 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756322AbZHFRkg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 13:31:45 -0400
-MIME-Version: 1.0
-In-Reply-To: <200908062027.09413.a1426z@gawab.com>
-References: <20090805171513.GA10443@kroah.com> <200908062006.16263.a1426z@gawab.com> 
-	<ac3eb2510908061015p1c7fd544hc8d8e5bdac738c08@mail.gmail.com> 
-	<200908062027.09413.a1426z@gawab.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Thu, 6 Aug 2009 19:31:30 +0200
-Message-ID: <ac3eb2510908061031t43691fb0k14f8bd2da49e991f@mail.gmail.com>
-Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based 
-	/dev
-To: Al Boldi <a1426z@gawab.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Greg KH <greg@kroah.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Jan Blunck <jblunck@suse.de>, gregkh@suse.de,
-       Harald Hoyer <harald@redhat.com>,
-       Scott James Remnant <scott@ubuntu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 6 Aug 2009 13:40:36 -0400
+Subject: Re: [perf] howto switch from pfmon
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Ingo Molnar <mingo@elte.hu>, paulus@samba.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A7B0C02.7060704@inria.fr>
+References: <4A3FEF75.2020804@inria.fr> <20090623131450.GA31519@elte.hu>
+	 <20090623134749.GA6897@elte.hu> <4A40DFF5.7010207@inria.fr>
+	 <20090623143601.GA13415@elte.hu> <4A40F31F.4030609@inria.fr>
+	 <20090629192913.GA29295@elte.hu>  <4A7B0C02.7060704@inria.fr>
+Content-Type: text/plain
+Date: Thu, 06 Aug 2009 19:40:28 +0200
+Message-Id: <1249580428.4975.14.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 6, 2009 at 19:27, Al Boldi<a1426z@gawab.com> wrote:
-> Kay Sievers wrote:
->> On Thu, Aug 6, 2009 at 19:06, Al Boldi<a1426z@gawab.com> wrote:
->> > Andi Kleen wrote:
->> >> Greg KH <greg@kroah.com> writes:
->> >> > It makes the userspace boot process much simpler and easier to
->> >> > maintain, as well as providing a way to handle rescue disks and images
->> >> > trivially, and it makes the kernel _less_ dependant on the early
->> >> > userspace bootup scripts.
->> >>
->> >> As a initrd less kernel user I can really only agree: getting rid
->> >> of the udev-in-initrd requirement would be a big step forward
->> >> in usability. Typically I always have to pre populate
->> >> a on disk /dev manually first to get my kernels to boot.
->> >
->> > Oh good, I thought I was the only one doing that.
->> >
->> > The reason I don't like udev is that it's just to slow; something like a
->> > 5-10s delay on each boot.  No idea why it should be so slow,
->>
->> Because you setup is broken, I guess.
->>
->> > but it's probably
->> > probing the kernel for all available devices at boot, when it could be
->> > much quicker by probing for the device on access.
->>
->> It takes more like 0.5 - 0.7 seconds on a usual setup.
->
-> I don't know about your setup, but all dists I used (fedora, mandriva, ubuntu,
-> debian) hang every boot for 5-10s.
+On Thu, 2009-08-06 at 18:59 +0200, Brice Goglin wrote:
 
-That's just not true. If you want to solve your issue, which has
-nothing to do with devtmpfs, please move that to the
-linux-hotplug@vger.kernel.org list.
+> I can easily sort them by thread id, but I don't know how to match my 4
+> events with each group of 4 line.
+> 
+> Maybe perf report earned some better way to show per-thread statistics
+> in the meantime?
 
-Thanks,
-Kay
+Nah, it needs some love..
+
+The below might be a starting point, it compiles, didn't check the
+result. builtin-stat might be a nice place to look for more bits..
+
+---
+
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index 8cb58d6..c053fd8 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -112,7 +112,9 @@ struct read_event {
+ 	struct perf_event_header header;
+ 	u32 pid,tid;
+ 	u64 value;
+-	u64 format[3];
++	u64 time_enabled;
++	u64 time_running;
++	u64 id;
+ };
+ 
+ typedef union event_union {
+@@ -1690,14 +1692,37 @@ static void trace_event(event_t *event)
+ 	dprintf(".\n");
+ }
+ 
++static struct perf_header	*header;
++
++static struct perf_counter_attr *perf_header__find_attr(u64 id)
++{
++	int i;
++
++	for (i = 0; i < header->attrs; i++) {
++		struct perf_header_attr *attr = header->attr[i];
++		int j;
++
++		for (j = 0; j < attr->ids; j++) {
++			if (attr->id[j] == id)
++				return &attr->attr;
++		}
++	}
++
++	return NULL;
++}
++
+ static int
+ process_read_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+-	dprintf("%p [%p]: PERF_EVENT_READ: %d %d %Lu\n",
++	struct perf_counter_attr *attr = perf_header__find_attr(event->read.id);
++
++	dprintf("%p [%p]: PERF_EVENT_READ: %d %d %s %Lu\n",
+ 			(void *)(offset + head),
+ 			(void *)(long)(event->header.size),
+ 			event->read.pid,
+ 			event->read.tid,
++			attr ? __event_name(attr->type, attr->config)
++			     : "FAIL",
+ 			event->read.value);
+ 
+ 	return 0;
+@@ -1743,8 +1768,6 @@ process_event(event_t *event, unsigned long offset, unsigned long head)
+ 	return 0;
+ }
+ 
+-static struct perf_header	*header;
+-
+ static u64 perf_header__sample_type(void)
+ {
+ 	u64 sample_type = 0;
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 7bdad8d..4858d83 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -223,9 +239,15 @@ char *event_name(int counter)
+ {
+ 	u64 config = attrs[counter].config;
+ 	int type = attrs[counter].type;
++
++	return __event_name(type, config);
++}
++
++char *__event_name(int type, u64 config)
++{
+ 	static char buf[32];
+ 
+-	if (attrs[counter].type == PERF_TYPE_RAW) {
++	if (type == PERF_TYPE_RAW) {
+ 		sprintf(buf, "raw 0x%llx", config);
+ 		return buf;
+ 	}
+diff --git a/tools/perf/util/parse-events.h b/tools/perf/util/parse-events.h
+index 1ea5d09..192a962 100644
+--- a/tools/perf/util/parse-events.h
++++ b/tools/perf/util/parse-events.h
+@@ -10,6 +10,7 @@ extern int			nr_counters;
+ extern struct perf_counter_attr attrs[MAX_COUNTERS];
+ 
+ extern char *event_name(int ctr);
++extern char *__event_name(int type, u64 config);
+ 
+ extern int parse_events(const struct option *opt, const char *str, int unset);
+ 
+
+
