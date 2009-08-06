@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbZHFLsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753896AbZHFLwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755141AbZHFLsl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 07:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbZHFLsj
+	id S1753896AbZHFLwo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 07:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZHFLwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 07:48:39 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:57166 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752911AbZHFLsi (ORCPT
+	Thu, 6 Aug 2009 07:52:43 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:53272 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751528AbZHFLwn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 07:48:38 -0400
-Date: Thu, 6 Aug 2009 13:48:30 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com, hidehiro.kawai.ez@hitachi.com,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH] [11/19] HWPOISON: Refactor truncate to allow direct
- truncating of page v2
-Message-ID: <20090806134830.4f3931d2@skybase>
-In-Reply-To: <20090805141642.GB23992@wotan.suse.de>
-References: <200908051136.682859934@firstfloor.org>
-	<20090805093638.D3754B15D8@basil.firstfloor.org>
-	<20090805102008.GB17190@wotan.suse.de>
-	<20090805134607.GH11385@basil.fritz.box>
-	<20090805140145.GB28563@wotan.suse.de>
-	<20090805141001.GJ11385@basil.fritz.box>
-	<20090805141642.GB23992@wotan.suse.de>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Aug 2009 07:52:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=gO2RlA7Z5p81Tv8YiVPpqXxAvs0QYvdnaVLcv7/LXp7wRnY4w3nvcGp8M2FJlBEZQy
+         Vhmw3SgxzQtdNdyOT6RLF8Ou379oyZVlbP7k1x9j+8P1FH6jbWLHuhM8HQbbah+lliQF
+         XV3YXj32UivKYXeOuxNgP61/pxFgPyKmfH1IM=
+MIME-Version: 1.0
+In-Reply-To: <20090805222920.GF19257@buzzloop.caiaq.de>
+References: <1249496971-9019-1-git-send-email-daniel@caiaq.de>
+	 <1249496971-9019-2-git-send-email-daniel@caiaq.de>
+	 <200908052149.55567.elendil@planet.nl>
+	 <20090805222920.GF19257@buzzloop.caiaq.de>
+Date: Thu, 6 Aug 2009 13:52:41 +0200
+Message-ID: <74d0deb30908060452k1fc0e982jf14be2e895e9a805@mail.gmail.com>
+Subject: Re: [PATCH 2/5] pda-power: switch to new dev_pm_ops
+From: pHilipp Zabel <philipp.zabel@gmail.com>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, spyro@f2s.com, cbou@mail.ru,
+       mreimer@vpop.net
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Aug 2009 16:16:42 +0200
-Nick Piggin <npiggin@suse.de> wrote:
+On Thu, Aug 6, 2009 at 12:29 AM, Daniel Mack<daniel@caiaq.de> wrote:
+> On Wed, Aug 05, 2009 at 09:49:52PM +0200, Frans Pop wrote:
+>> Daniel Mack wrote:
+>> > +static struct dev_pm_ops pda_power_pm_ops = {
+>> > +       .suspend        = pda_power_suspend,
+>> > +       .freeze         = pda_power_freeze,
+>>
+>> Hmmm. Where's pda_power_freeze defined? Forgot to (compile)test the
+>> patches?
+>
+> Yes, sorry. I can't test hibernation, so I didn't pay enough attention.
+> I'll resend them anyway with Rafael's new macro used.
 
-> On Wed, Aug 05, 2009 at 04:10:01PM +0200, Andi Kleen wrote:
-> > > I haven't brought up the caller at this point, but IIRC you had
-> > > the page locked and mapping confirmed at this point anyway so
-> > > it would never be an error for your code.
-> > > 
-> > > Probably it would be nice to just force callers to verify the page.
-> > > Normally IMO it is much nicer and clearer to do it at the time the
-> > > page gets locked, unless there is good reason otherwise.
-> > 
-> > Ok. I think I'll just keep it as it is for now.
-> > 
-> > The only reason I added the error code was to make truncate_inode_page
-> > fit into .error_remove_page, but then latter I did another wrapper
-> > so it could be removed again. But it won't hurt to have it either.
-> 
-> OK, it's more of a cleanup/nit.
-> 
-> One question I had for the others (Andrew? other mm guys?) what is the
-> feelings of merging this feature? Leaving aside exact implementation
-> and just considering the high level design and cost/benefit. Last time
-> there were some people objecting, so I wonder the situation now? So
-> does anybody need more convincing? :)
-> 
-> Also I will just cc linux-arch. It would be interesting to know whether
-> powerpc, ia64, or s390 or others would be interested to use this feature?
+After Rafael's comments on gpio_keys, I believe also here
+.freeze/.thaw should be empty. enable/disable_irq_wake should be
+called from .poweroff/.restore.
 
-This is not relevant for s390, as current machines do transparent memory
-sparing if a memory module goes bad. Really old machines reported bad
-memory to the OS by means of a machine check (storage error uncorrected
-and storage error corrected). I have never seen this happen, the level
-below the OS deals with these errors for us.
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+regards
+Philipp
