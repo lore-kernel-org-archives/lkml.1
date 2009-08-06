@@ -1,88 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbZHFFGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbZHFFGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345AbZHFFGR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 01:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbZHFFGQ
+	id S1753476AbZHFFGZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 01:06:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbZHFFGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 01:06:16 -0400
-Received: from mail-yx0-f175.google.com ([209.85.210.175]:45644 "EHLO
-	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753221AbZHFFGL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 01:06:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=jC7C3BfpO4nKO/9eQO6jXWzBskpXjugpXeMpes4vssWx0I/GGod1kU7T/kDZ4x8awl
-         c3yysm8ARryUT7q97UPf7mOgLGpt4p6ZJsqJB0raz7MFDeeoYk9u0P43oO7DoDzPMfD2
-         WlEc/6ihjPupKBic8fld7dxBQea9mag2ipqJg=
+	Thu, 6 Aug 2009 01:06:22 -0400
+Received: from [222.73.24.84] ([222.73.24.84]:57720 "EHLO song.cn.fujitsu.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753274AbZHFFGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 01:06:21 -0400
+Message-ID: <4A7A6470.60305@cn.fujitsu.com>
+Date: Thu, 06 Aug 2009 13:04:48 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <20090805163325.14a4a77f.akpm@linux-foundation.org>
-References: <20090804191031.6A3D.A69D9226@jp.fujitsu.com>
-	 <20090804192721.6A49.A69D9226@jp.fujitsu.com>
-	 <20090805163325.14a4a77f.akpm@linux-foundation.org>
-Date: Thu, 6 Aug 2009 14:06:11 +0900
-X-Google-Sender-Auth: 1dcefaa41fdae919
-Message-ID: <2f11576a0908052206t421686c9q9a458afee49b1d6f@mail.gmail.com>
-Subject: Re: [PATCH 4/4] oom: fix oom_adjust_write() input sanity check.
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>,
-       David Rientjes <rientjes@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>, linux-mm <linux-mm@kvack.org>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+CC: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] ftrace: Unify effect of writing to trace_options
+ and option/*
+References: <4A7A4D7B.7010706@cn.fujitsu.com> <4A7A4DBC.6020403@cn.fujitsu.com>
+In-Reply-To: <4A7A4DBC.6020403@cn.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> @@ -1033,12 +1033,15 @@ static ssize_t oom_adjust_write(struct f
->>               count = sizeof(buffer) - 1;
->>       if (copy_from_user(buffer, buf, count))
->>               return -EFAULT;
->> +
->> +     strstrip(buffer);
->
-> +1 for using strstrip()
->
-> -1 for using it wrongly.  If it strips leading whitespace it will
-> return a new address for the caller to use.
+Zhaolei wrote:
+> "echo noglobal-clock > trace_options" can be used to change trace
+> clock but "echo 0 > options/global-clock" can't.
+> 
+> We can fix it by using set_tracer_flags() in trace_options_core_write().
+> 
 
-Will fix. thanks.
+Nice catch.
 
-Paul, hehe your kernel/cgroup.c parsing have the same problem. Could you
-please fix it too? :-)
+> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> ---
+>  kernel/trace/trace.c |    5 ++---
+>  1 files changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 464b7bb..2fa2bac 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -3893,12 +3893,11 @@ trace_options_core_write(struct file *filp, const char __user *ubuf, size_t cnt,
+>  
+>  	switch (val) {
+>  	case 0:
+> -		trace_flags &= ~(1 << index);
+> +		set_tracer_flags(1 << index, 0);
+>  		break;
+>  	case 1:
+> -		trace_flags |= 1 << index;
+> +		set_tracer_flags(1 << index, 1);
+>  		break;
+> -
+>  	default:
+>  		return -EINVAL;
+>  	}
 
-> We could mark it __must_check() to prevent reoccurences of this error.
->
-> How does this look?
+The whole switch statement can be simplied:
 
-I see.
-I'll do and send it.
+	if (val != 0 || val != 1)
+		return -EINVAL;
+	set_tracer_flags(1 << index, val);
 
->
-> --- a/fs/proc/base.c~oom-fix-oom_adjust_write-input-sanity-check-fix
-> +++ a/fs/proc/base.c
-> @@ -1033,8 +1033,7 @@ static ssize_t oom_adjust_write(struct f
->        if (copy_from_user(buffer, buf, count))
->                return -EFAULT;
->
-> -       strstrip(buffer);
-> -       oom_adjust = simple_strtol(buffer, &end, 0);
-> +       oom_adjust = simple_strtol(strstrip(buffer), &end, 0);
->        if (*end)
->                return -EINVAL;
->        if ((oom_adjust < OOM_ADJUST_MIN || oom_adjust > OOM_ADJUST_MAX) &&
->
->
->>       oom_adjust = simple_strtol(buffer, &end, 0);
->
-> That should've used strict_strtoul() but it's too late to fix it now.
 
-Perhaps, it's not too late. I never seen userland program pass non number value
-into this.
