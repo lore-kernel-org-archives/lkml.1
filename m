@@ -1,38 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZHFMIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbZHFMJO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218AbZHFMIc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 08:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbZHFMIb
+	id S1755320AbZHFMJO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 08:09:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbZHFMJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 08:08:31 -0400
-Received: from ozlabs.org ([203.10.76.45]:57740 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753342AbZHFMIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 08:08:31 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: Re: [PATCH] lguest: cleanup for map_switcher()
-Date: Thu, 6 Aug 2009 21:38:24 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; i686; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Matias Zabaljauregui <zabaljauregui@gmail.com>,
-       Johannes Weiner <hannes@saeurebad.de>,
-       Atsushi SAKAI <sakaia@jp.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, lguest@ozlabs.org
-References: <4A79540D.6060207@cn.fujitsu.com>
-In-Reply-To: <4A79540D.6060207@cn.fujitsu.com>
+	Thu, 6 Aug 2009 08:09:13 -0400
+Received: from mail.smsc.com ([170.129.50.11]:57389 "EHLO smsc.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755300AbZHFMJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 08:09:12 -0400
+X-Greylist: delayed 904 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Aug 2009 08:09:11 EDT
+In-Reply-To: <20090805.202922.241102337.davem@davemloft.net>
+To: David Miller <davem@davemloft.net>
+Cc: daniel@caiaq.de, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, netdev@vger.kernel.org,
+       linux-sh@vger.kernel.org, Ian.Saturley@smsc.com
+Subject: Re: [PATCH 5/5] net: smsc911x: switch to new dev_pm_ops
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908062138.24950.rusty@rustcorp.com.au>
+X-Mailer: Lotus Notes Release 7.0.2 September 26, 2006
+From: Steve.Glendinning@smsc.com
+Message-ID: <OF06D1E485.71250FEA-ON8025760A.003F9572-8025760A.00415798@smsc.com>
+Date: Thu, 6 Aug 2009 12:53:45 +0100
+X-MIMETrack: Serialize by Router on EastFranklin/SMSC(Release 7.0.3|September 26, 2007) at
+ 08/06/2009 07:53:47 AM,
+	Serialize complete at 08/06/2009 07:53:47 AM
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Aug 2009 07:12:37 pm Xiao Guangrong wrote:
-> We can use alloc_page() instead of get_zeroed_page() and virt_to_page()
+David Miller <davem@davemloft.net> wrote on 06/08/2009 04:29:22:
 
-Applied, thanks!
-Rusty.
+> From: Daniel Mack <daniel@caiaq.de>
+> Date: Wed,  5 Aug 2009 20:29:31 +0200
+> 
+> > Hibernation is unsupported for now, which meets the actual
+> > implementation in the driver. For free/thaw, the chip's D2 state 
+should
+> > be entered.
+> > 
+> > Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> 
+> Steve, if it looks good to you I can toss this into net-next-2.6
+> 
+> Just let me know.
+
+Looks fine.  Compiles ok and doesn't actually change any PM 
+implementation.
+
+Acked-by: <steve.glendinning@smsc.com>
+
+Unfortunately I can't test it.  The only dev platform I have in front of 
+me
+is SH7709S, which doesn't boot since 
+4ff29ff8e8723a41e7defd8bc78a7b16cbf940a2
+(the sh maintainers are aware and working on it:
+http://marc.info/?l=linux-sh&m=124891631203530&w=2)
+
+Steve
