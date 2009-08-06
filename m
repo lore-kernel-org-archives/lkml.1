@@ -1,111 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbZHFN5C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbZHFN7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932117AbZHFN5C (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 09:57:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbZHFN5B
+	id S1755932AbZHFN7K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 09:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755715AbZHFN7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 09:57:01 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:61902 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755919AbZHFN5A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 09:57:00 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [PATCH 1/7] shm-signal: shared-memory signals
-Date: Thu, 6 Aug 2009 15:56:55 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org
-References: <20090803171030.17268.26962.stgit@dev.haskins.net> <20090803171735.17268.37490.stgit@dev.haskins.net>
-In-Reply-To: <20090803171735.17268.37490.stgit@dev.haskins.net>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 6 Aug 2009 09:59:08 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:43627 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755457AbZHFN7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 09:59:07 -0400
+Date: Thu, 6 Aug 2009 06:59:07 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/rcu] rcu: Add diagnostic check for a possible
+	CPU-hotplug race
+Message-ID: <20090806135907.GA7192@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <tip-7256cf0e83bf018be8a81806593aaef7f2437f0b@git.kernel.org> <20090802202720.GA32360@elte.hu> <20090802221324.GP6854@linux.vnet.ibm.com> <20090803070458.GA27581@elte.hu> <20090803125618.GV6854@linux.vnet.ibm.com> <20090806012645.GA24800@linux.vnet.ibm.com> <20090806025105.GA7077@in.ibm.com> <20090806122935.GB15314@elte.hu>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908061556.55390.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/Or/4tm4pTsKne3dyZLPDTdmOQwratO4Ehwda
- tXohoO81uSaAdJkA+RZy5MC2pK++qANVTwqnxKiBXJ2iOXiSWR
- V4ZoChbekBFHCSQIljSrA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090806122935.GB15314@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 August 2009, Gregory Haskins wrote:
-> shm-signal provides a generic shared-memory based bidirectional
-> signaling mechanism.  It is used in conjunction with an existing
-> signal transport (such as posix-signals, interrupts, pipes, etc) to
-> increase the efficiency of the transport since the state information
-> is directly accessible to both sides of the link.  The shared-memory
-> design provides very cheap access to features such as event-masking
-> and spurious delivery mititgation, and is useful implementing higher
-> level shared-memory constructs such as rings.
+On Thu, Aug 06, 2009 at 02:29:35PM +0200, Ingo Molnar wrote:
+> 
+> * Gautham R Shenoy <ego@in.ibm.com> wrote:
+> 
+> > On Wed, Aug 05, 2009 at 06:26:45PM -0700, Paul E. McKenney wrote:
+> > > On Mon, Aug 03, 2009 at 05:56:18AM -0700, Paul E. McKenney wrote:
+> > > > On Mon, Aug 03, 2009 at 09:04:58AM +0200, Ingo Molnar wrote:
+> > > > > 
+> > > > > i've attached the full serial bootlog with the warning in it. This 
+> > > > > should address your question about what the order of initialization 
+> > > > > is, right?
+> > > > 
+> > > > It does, thank you!  This problem really is happening during boot.
+> > > > 
+> > > > > Let me know if you still would like me to run your diagnostic patch 
+> > > > > too.
+> > > > 
+> > > > Now that you mention it, you should probably let me test it a bit first.
+> > > 
+> > > And here is a tested and debugged version.  Diagnostic only, not for
+> > > inclusion, based on tip/core/rcu as of today (August 5th).
+> > > 
+> > > Gautham, have you been able to reproduce on your machines?  
+> > > Still cannot here.
+> > 
+> > I tried on a couple of machines yesterday, but I still couldn't 
+> > reproduce it with Ingo's config.
+> 
+> Paul, should i try your latest diagnostic patch in -tip testing, to 
+> see whether it triggers any new warning?
 
-Looks like a very useful feature in general.
+Could you please?
 
-> +struct shm_signal_irq {
-> +       __u8                  enabled;
-> +       __u8                  pending;
-> +       __u8                  dirty;
-> +};
-
-Won't this layout cause cache line ping pong? Other schemes I have
-seen try to separate the bits so that each cache line is written to
-by only one side. This gets much more interesting if the two sides
-are on remote ends of an I/O link, e.g. using a nontransparent
-PCI bridge, where you only want to send stores over the wire, but
-never fetches or even read-modify-write cycles.
-
-Your code is probably optimal if you only communicate between host
-and guest code on the same CPU, but not so good if it crosses NUMA
-nodes or worse.
-
-> +struct shm_signal_desc {
-> +       __u32                 magic;
-> +       __u32                 ver;
-> +       struct shm_signal_irq irq[2];
-> +};
-
-This data structure has implicit padding of two bytes at the end.
-How about adding another '__u16 reserved' to make it explicit?
-
-> +	/*
-> +	 * We always mark the remote side as dirty regardless of whether
-> +	 * they need to be notified.
-> +	 */
-> +	irq->dirty = 1;
-> +	wmb();   /* dirty must be visible before we test the pending state */
-> +
-> +	if (irq->enabled && !irq->pending) {
-> +		rmb();
-> +
-> +		/*
-> +		 * If the remote side has enabled notifications, and we do
-> +		 * not see a notification pending, we must inject a new one.
-> +		 */
-> +		irq->pending = 1;
-> +		wmb(); /* make it visible before we do the injection */
-> +
-> +		s->ops->inject(s);
-> +	}
-
-Barriers always confuse me, but the rmb() looks slightly wrong. AFAIU
-it only prevents reads after the barrier from being done before the
-barrier, but you don't do any reads after it.
-
-The (irq->enabled && !irq->pending) check could be done before the
-irq->dirty = 1 arrives at the bus, but that does not seem to hurt, it
-would at most cause a duplicate ->inject().
-
-Regarding the scope of the barrier, did you intentionally use the
-global versions (rmb()/wmb()) and not the lighter single-system
-(smp_rmb()/smp_wmb()) versions? Your version should cope with remote
-links over PCI but looks otherwise optimized for local use, as I
-wrote above.
-
-	Arnd <><
+							Thanx, Paul
