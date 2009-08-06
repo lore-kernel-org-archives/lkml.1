@@ -1,89 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbZHFQZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbZHFQ2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756164AbZHFQZk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 12:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbZHFQZj
+	id S1755953AbZHFQ2Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 12:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbZHFQ2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 12:25:39 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43249 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752555AbZHFQZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 12:25:39 -0400
-Date: Thu, 6 Aug 2009 17:25:39 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [PATCH] page-allocator: Remove dead function free_cold_page()
-Message-ID: <20090806162539.GE6915@csn.ul.ie>
-References: <20090805102817.GE21950@csn.ul.ie> <20090805185247.86766d80.akpm@linux-foundation.org>
+	Thu, 6 Aug 2009 12:28:16 -0400
+Received: from emulex.emulex.com ([138.239.112.1]:51540 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753187AbZHFQ2P convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 12:28:15 -0400
+From: Chetan.Loke@Emulex.Com
+To: <tony@linx.net>
+CC: <hancockrwd@gmail.com>, <jgarzik@pobox.com>, <linux-ide@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <philipl@overt.org>
+Date: Thu, 6 Aug 2009 09:28:02 -0700
+Subject: RE: [PATCH 2.6.32 v2] MCP55 SATA2 conditional MSI support for
+ sata_nv
+Thread-Topic: [PATCH 2.6.32 v2] MCP55 SATA2 conditional MSI support for
+ sata_nv
+Thread-Index: AcoWrvIBnurx2YazRAe6I2hKNhAWsgAAjpRQ
+Message-ID: <412A05BA40734D4887DBC67661F433080D7322B1@EXMAIL.ad.emulex.com>
+References: <20090805192055.8F2DE1007C@gold.linx.net>
+	 <4A7A16C9.6030500@gmail.com>
+	 <412A05BA40734D4887DBC67661F433080D73228B@EXMAIL.ad.emulex.com>
+ <1249574363.4530.23.camel@localhost>
+In-Reply-To: <1249574363.4530.23.camel@localhost>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090805185247.86766d80.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-OriginalArrivalTime: 06 Aug 2009 16:28:05.0000 (UTC) FILETIME=[DFE81880:01CA16B2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 06:52:47PM -0700, Andrew Morton wrote:
-> On Wed, 5 Aug 2009 11:28:17 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
+> -----Original Message-----
+> From: Tony Vroon [mailto:tony@linx.net]
+> Sent: Thursday, August 06, 2009 11:59 AM
+> To: Loke,Chetan
+> Cc: hancockrwd@gmail.com; jgarzik@pobox.com; linux-ide@vger.kernel.org;
+> linux-kernel@vger.kernel.org; philipl@overt.org
+> Subject: RE: [PATCH 2.6.32 v2] MCP55 SATA2 conditional MSI support for
+> sata_nv
 > 
-> > The function free_cold_page() has no callers so delete it.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > --- 
-> >  include/linux/gfp.h |    1 -
-> >  mm/page_alloc.c     |    5 -----
-> >  2 files changed, 6 deletions(-)
-> > 
-> > diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-> > index 7c777a0..c32bfa8 100644
-> > --- a/include/linux/gfp.h
-> > +++ b/include/linux/gfp.h
-> > @@ -326,7 +326,6 @@ void free_pages_exact(void *virt, size_t size);
-> >  extern void __free_pages(struct page *page, unsigned int order);
-> >  extern void free_pages(unsigned long addr, unsigned int order);
-> >  extern void free_hot_page(struct page *page);
-> > -extern void free_cold_page(struct page *page);
-> >  
-> >  #define __free_page(page) __free_pages((page), 0)
-> >  #define free_page(addr) free_pages((addr),0)
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index d052abb..36758db 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -1065,11 +1065,6 @@ void free_hot_page(struct page *page)
-> >  	free_hot_cold_page(page, 0);
-> >  }
-> >  	
-> > -void free_cold_page(struct page *page)
-> > -{
-> > -	free_hot_cold_page(page, 1);
-> > -}
-> > -
-> >  /*
-> >   * split_page takes a non-compound higher-order page, and splits it into
-> >   * n (1<<order) sub-pages: page[0..n]
+> > disable_msi() is missing right?
 > 
-> Well I spose so.  But the function is valid and might need to be
-> resurrected at any stage.  We could `#if 0' it to save a few bytes of
-> text, perhaps.
+> I didn't add that as none of the other drivers have it:
+
+Then they would leak the MSI-vectors if request_irq fails.
+
+
+> chainsaw@amalthea /cvs/linux-2.6/drivers/ata $ grep _msi * | grep pci
+> ahci.c:		pci_enable_msi(pdev);
+> sata_mv.c:	if (msi && pci_enable_msi(pdev) == 0)
+> sata_vsc.c:	if (pci_enable_msi(pdev) == 0)
 > 
-
-We could although the code is so trivial, it's not like it's hard to
-reimplement.
-
-> I wonder how many free_page() callers should really be calling
-> free_cold_page().  c'mon, write a thingy to work it out ;) You can
-> query a page's hotness by timing how long it takes to read all its
-> cachelines.
+> (This is a tree without the sata_nv change I submitted)
 > 
+> I do believe it is safe to shut the interrupt down and unload the
+> handler whilst it is still in MSI mode. At least, I don't see the libata
+> core special-casing it in any way.
 
-Hmm, interesting idea, I'll give it more of a think and see what falls
-out!
+If I'm not wrong then that's how it's supposed to be done. free_irq and then disable_msi. You can't reverse the order. Also the driver should know when to quiesce the ASIC. So quiesce first and then shutdown everything.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+
+> Regards,
+> Tony V.
+
+Regards
+Chetan
