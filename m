@@ -1,96 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbZHFNYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755796AbZHFNbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755701AbZHFNYL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 09:24:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbZHFNYK
+	id S1755796AbZHFNbW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 09:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbZHFNbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 09:24:10 -0400
-Received: from mr1.bfh.ch ([147.87.250.50]:60695 "EHLO mr1.bfh.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755318AbZHFNYK convert rfc822-to-8bit (ORCPT
+	Thu, 6 Aug 2009 09:31:21 -0400
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:53693 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755325AbZHFNbU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 09:24:10 -0400
-From: Zimmermann Christoph <christoph.zimmermann@bfh.ch>
-To: Andrew Lutomirski <luto@mit.edu>, Greg KH <greg@kroah.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Thu, 6 Aug 2009 14:19:38 +0200
-Subject: Re: Is anyone maintaining (or even using) usbtmc?
-Thread-Topic: Is anyone maintaining (or even using) usbtmc?
-Thread-Index: AcoUf3mYFH0NCKPFTf2TEA7I/d2C6QCC52Ra
-Message-ID: <8288F66EF13DBA41AD8CBFDA64D8FFA31629782B@nyx.bfh.ch>
-References: <cb0375e10908031414g471bacf5lab685958b60bfdfa@mail.gmail.com>
-In-Reply-To: <cb0375e10908031414g471bacf5lab685958b60bfdfa@mail.gmail.com>
-Accept-Language: de-DE, fr-CH
-Content-Language: de-CH
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: de-DE, fr-CH
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 6 Aug 2009 09:31:20 -0400
+X-Greylist: delayed 514 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Aug 2009 09:31:20 EDT
+X-Sasl-enc: /1wEkFSbGmAAi6N9sCcUmPE1KewYzKEKIMtizhRnF9M2 1249564967
+Date: Thu, 6 Aug 2009 10:22:44 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: reinette chatre <reinette.chatre@intel.com>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: iwlwifi (4965) regression since 2.6.30
+Message-ID: <20090806132244.GC15867@khazad-dum.debian.net>
+References: <20090726075738.GA21333@ics.muni.cz>
+ <1248710618.1216.452.camel@rc-desk>
+ <1248710775.9958.0.camel@johannes.local>
+ <20090728112102.GA3382@ics.muni.cz>
+ <1249336021.30019.4304.camel@rc-desk>
+ <20090804084903.GV3382@ics.muni.cz>
+ <1249426183.30019.4581.camel@rc-desk>
+ <20090804225626.GZ3382@ics.muni.cz>
+ <1249429081.30019.4588.camel@rc-desk>
 MIME-Version: 1.0
-X-PMWin-Version: 3.0.2.0, Antivirus-Engine: 2.89.1, Antivirus-Data: 4.44E
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249429081.30019.4588.camel@rc-desk>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i've asked also some of your questions two month ago.
-
-i'm a tmc driver user only. i use it to develop my firmware for a
-cypress fx2 based tmc device.
-
-i've made some bugreporting to greg and to the mailinglist (now i'm not
-sure anymore if all my mails arrived on the mailinglist. the gmame
-archive does not list all mails. the other archives are even worse).
-
-since then two ore tree small patches are sent to the mailinglist. but
-none seemed to adress my bugs (one patch was about a memory leak)
-
-> If the answer is no (as I suspect it is), then I might give fixing it
-> a shot the week after next, when I'll be camping out in Virginia with
-> this thing for awhile.  In that case, I have another question:
-
-do it. greg is the maintainer of the whole usb stuff and is working
-really hard. so i understand that he only has little time on "our"
-usbtmc bugs. in my opionion it's good when you do it to help greg with
-it. he still is the maintainer and has to sign of your patches.
-
-the other thing is, that i belive, please correct me, that greg don't
-has an usbtmc device to test with. for me it seems that there is lack
-of testing in the usbtmc driver. thats why i assume this.
-
-as i wrote in my older mails, i've never worked on the kernel source. i
-can do some testing with different devices (in our lab we have serveral
-tmc devices).
-
-> Is anyone using usbtmc, or, more specifically, does anyone care about
-> backward compatibility?
-
-it doesn't look like that. i don't care if the interface changes. i'm
-still working with the old agilent one until the mainline one works.
-
-> Finally, I see no way to read the USB488 status byte or detect a
-> status interrupt.
+On Tue, 04 Aug 2009, reinette chatre wrote:
+> > My problem is, that since 2.6.31-rcX Fn+F5 toggles soft rfkill state. It
+> > did not happen in 2.6.30 and earlier. In that case, Fn+F5 triggered an
+> > acpi event (key press). Now, it triggers acpi eveny *and* touches soft
+> > rfkill of WIFI.  I like the previous behavior, i.e., don't touch
+> > anything, just report acpi event.
 > 
-> >  
-> >> Is anyone using usbtmc, or, more specifically, does anyone care
-> >> about backward compatibility?  
-> >
-> > What do you want to change in the driver interface?  
-> 
-> The main compatibility-breaking change is that I'd like to see
-> close/reopen go through the whole resynchronization procedure so that
-> the device starts in a sane state.  Currently I restore sanity by
-> doing a bunch of reads and ignoring ETIMEDOUT.
-> If not, then I'll be less careful to preserve the interface, even
-> though I'm not really sure that there's much of interest to preserve.
+> I do not know why your Lenovo T61 gets wifi software rfkill when you press
+> Fn-F5 and mine does not. I am adding Henrique and hope he can tell us what
+> is going on. 
 
-to read the USB488 status byte i guess that there is still an ioctl
-function for it (was there in the opensource agilent driver) but you
-can get the status byte with a normal "*STB?" query.
+Well, if you really want to get to the bottom of the matter, I need:
 
-the lack of interrupt status reporting is an important one. so you have
-to quess, or do stupid polling, until your device is finished working.
-the normal way is to set "opc?" and do something else until the
-response from the interrupt endpoint arrives.
+1. .config from both of you
 
-christoph
+2. the output of "grep . /sys/bus/platform/devices/thinkpad_acpi/hotkey_*";
+
+3. the keymap of the thinkpad-acpi input device.  On Debian, "lsinput and
+input-kbd" from package "input-utils" can be used to locate the correct
+input device and dump its keymap.  Other distros have similar input-device
+utilities, I think.
+
+
+I guess 2.6.31 has the new rfkill code, and this likely enabled rfkill-input
+or something.
+
+If you *really* want to make sure fn+f5 will never give you surprises, you
+either:
+
+1. switch bit 4 off from /sys/bus/platform/devices/thinkpad_acpi/hotkey_mask
+
+or
+
+2. program scancode 4 on the thinkpad-acpi input device to something that is
+not KEY_WLAN, KEY_BLUETOOTH, etc.
+
+
+ACPI events for fn+f5 will be generated *only* on the deprecated, outdated
+/proc/acpi/event interface.  hotkey_mask gets rid of those too.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
