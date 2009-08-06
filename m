@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755591AbZHFNGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755610AbZHFNJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755591AbZHFNGu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 09:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZHFNGu
+	id S1755610AbZHFNJf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 09:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZHFNJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 09:06:50 -0400
-Received: from mga03.intel.com ([143.182.124.21]:20076 "EHLO mga03.intel.com"
+	Thu, 6 Aug 2009 09:09:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42904 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751554AbZHFNGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 09:06:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,333,1246863600"; 
-   d="scan'208";a="172992097"
-Date: Thu, 6 Aug 2009 21:06:31 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
+	id S1753242AbZHFNJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 09:09:34 -0400
+Message-ID: <4A7AD5DF.7090801@redhat.com>
+Date: Thu, 06 Aug 2009 09:08:47 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: Andrea Arcangeli <aarcange@redhat.com>
+CC: Wu Fengguang <fengguang.wu@intel.com>,
        "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
        "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>, Avi Kivity <avi@redhat.com>,
        Hugh Dickins <hugh.dickins@tiscali.co.uk>,
        Andrew Morton <akpm@linux-foundation.org>,
        Christoph Lameter <cl@linux-foundation.org>,
@@ -26,58 +27,32 @@ Cc: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
        Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
        linux-mm <linux-mm@kvack.org>
 Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-Message-ID: <20090806130631.GB6162@localhost>
-References: <20090805024058.GA8886@localhost> <20090805155805.GC23385@random.random> <20090806100824.GO23385@random.random> <4A7AAE07.1010202@redhat.com> <20090806102057.GQ23385@random.random> <20090806105932.GA1569@localhost> <4A7AC201.4010202@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A7AC201.4010202@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20090805024058.GA8886@localhost> <20090805155805.GC23385@random.random> <20090806100824.GO23385@random.random>
+In-Reply-To: <20090806100824.GO23385@random.random>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 07:44:01PM +0800, Avi Kivity wrote:
-> On 08/06/2009 01:59 PM, Wu Fengguang wrote:
+Andrea Arcangeli wrote:
 
-scheme KEEP_MOST:
+> Likely we need a cut-off point, if we detect it takes more than X
+> seconds to scan the whole active list, we start ignoring young bits,
 
->> How about, for every N pages that you scan, evict at least 1 page,
->> regardless of young bit status?  That limits overscanning to a N:1
->> ratio.  With N=250 we'll spend at most 25 usec in order to locate one
->> page to evict.
+We could just make this depend on the calculated inactive_ratio,
+which depends on the size of the list.
 
-scheme DROP_CONTINUOUS:
+For small systems, it may make sense to make every accessed bit
+count, because the working set will often approach the size of
+memory.
 
-> > This is a quick hack to materialize the idea. It remembers roughly
-> > the last 32*SWAP_CLUSTER_MAX=1024 active (mapped) pages scanned,
-> > and if _all of them_ are referenced, then the referenced bit is
-> > probably meaningless and should not be taken seriously.
+On very large systems, the working set may also approach the
+size of memory, but the inactive list only contains a small
+percentage of the pages, so there is enough space for everything.
 
-> I don't think we should ignore the referenced bit. There could still be 
-> a large batch of unreferenced pages later on that we should 
-> preferentially swap. If we swap at least 1 page for every 250 scanned, 
-> after 4K swaps we will have traversed 1M pages, enough to find them.
+Say, if the inactive_ratio is 3 or less, make the accessed bit
+on the active lists count.
 
-I guess both schemes have unacceptable flaws.
-
-For JVM/BIGMEM workload, most pages would be found referenced _all the time_.
-So the KEEP_MOST scheme could increase reclaim overheads by N=250 times;
-while the DROP_CONTINUOUS scheme is effectively zero cost.
-
-However, the DROP_CONTINUOUS scheme does bring more _indeterminacy_.
-It can behave vastly different on single active task and multi ones.
-It is short sighted and can be cheated by bursty activities.
-
-> > As a refinement, the static variable 'recent_all_referenced' could be
-> > moved to struct zone or made a per-cpu variable.
-> 
-> Definitely this should be made part of the zone structure, consider the 
-> original report where the problem occurs in a 128MB zone (where we can 
-> expect many pages to have their referenced bit set).
-
-Good point. Here the cgroup list is highly stressed, while the global
-zones are idling.
-
-Thanks,
-Fengguang
+-- 
+All rights reversed.
