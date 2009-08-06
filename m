@@ -1,52 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbZHFF4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbZHFGBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbZHFF4R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 01:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbZHFF4Q
+	id S1754030AbZHFGBG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 02:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZHFGBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 01:56:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48600 "EHLO mx2.redhat.com"
+	Thu, 6 Aug 2009 02:01:06 -0400
+Received: from kroah.org ([198.145.64.141]:41814 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753766AbZHFF4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 01:56:15 -0400
-Message-ID: <4A7A70E5.2010204@redhat.com>
-Date: Thu, 06 Aug 2009 13:57:57 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+	id S1752529AbZHFGBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 02:01:05 -0400
+Date: Wed, 5 Aug 2009 22:09:32 -0700
+From: Greg KH <greg@kroah.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       zhifeng.cai@atheros.com, stephen.chen@atheros.com,
+       linux-usb@vger.kernel.org
+Subject: Re: [PATCH] pci_ids.h: add new Atheros USB vendor ID
+Message-ID: <20090806050932.GA25015@kroah.com>
+References: <1249523981-26601-1-git-send-email-lrodriguez@atheros.com>
+ <1249532170.21101.3.camel@localhost.localdomain>
+ <43e72e890908052126v53aa1b4sb7a48e19f98fdfa6@mail.gmail.com>
+ <1249533357.21101.5.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Neil Horman <nhorman@redhat.com>, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 0/7] Implement crashkernel=auto
-References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>	<m1eirqtmey.fsf@fess.ebiederm.org>	<20090805140408.GJ7259@hmsreliant.think-freely.org>	<m1skg5vpgg.fsf@fess.ebiederm.org> <4A7A3A78.7080200@redhat.com>	<m1y6pxr737.fsf@fess.ebiederm.org> <4A7A506B.2060008@redhat.com> <m1ljlxsiox.fsf@fess.ebiederm.org>
-In-Reply-To: <m1ljlxsiox.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249533357.21101.5.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Amerigo Wang <amwang@redhat.com> writes:
->
->   
->>> No the crashdump mechanism is useless because user space is already
->>> broken and unusable.
->>>       
->> Again, why broken?
->>     
->
-> To get a stock stat drive by hand I had to list about 5 kernel modules
-> in the right magic order in /etc/kdump.conf
->
-> Neither mount by label or mount by uuid when specified in /etc/kdump.conf
-> I had to hack mkdumprd to get an initrd that even finds the proper disk
-> to mount.
->   
+On Wed, Aug 05, 2009 at 09:35:57PM -0700, Marcel Holtmann wrote:
+> Hi Luiz,
+> 
+> > >> New Atheros USB devices will use 0x0cf3. The first device
+> > >> will be ar9271, for which we are adding support for.
+> > >>
+> > >> Cc: zhifeng.cai@atheros.com
+> > >> Cc: stephen.chen@atheros.com
+> > >> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+> > >> ---
+> > >>
+> > >> John, sending this through you as this is only
+> > >> specific to wireless, at least at the moment.
+> > >>
+> > >>  include/linux/pci_ids.h |    1 +
+> > >>  1 files changed, 1 insertions(+), 0 deletions(-)
+> > >>
+> > >> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+> > >> index 73b46b6..27f4e6b 100644
+> > >> --- a/include/linux/pci_ids.h
+> > >> +++ b/include/linux/pci_ids.h
+> > >> @@ -2170,6 +2170,7 @@
+> > >>  #define PCI_DEVICE_ID_BCM1250_HT     0x0002
+> > >>
+> > >>  #define PCI_VENDOR_ID_ATHEROS                0x168c
+> > >> +#define PCI_VENDOR_ID_ATHEROS_USB    0x0cf3
+> > >
+> > > this is confusing the hell out of me. What are you adding here.
+> > 
+> > No you're right, my fault.
+> > 
+> > > A USB
+> > > vendor id or a PCI one. Is the ar9271 a PCI device or a USB device?
+> > 
+> > Its only USB.
+> > 
+> > Thanks... hm I see no USB vendor id headers. Guess we won't need to add this.
+> 
+> the closest we have is drivers/hid/hid-ids.h and we might just should
+> have Greg create a usb-ids.h file.
 
-You are saying that there is some difficulty to make a initrd for kdump, 
-but I am sorry that I can't see any relations between this and my patch. 
-What is your point here?
+Ick, no, there's no such file for a good reason.  Put your device ids in
+the driver files, no need to share it across the whole kernel.
 
+thanks,
+
+greg k-h
