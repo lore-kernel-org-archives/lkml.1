@@ -1,124 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbZHFIbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbZHFIbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754444AbZHFIbh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 04:31:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbZHFIbh
+	id S1754512AbZHFIbx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 04:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbZHFIbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 04:31:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55638 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752491AbZHFIbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 04:31:35 -0400
-Date: Thu, 6 Aug 2009 10:31:02 +0200
-From: Jiri Pirko <jpirko@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       eric.dumazet@gmail.com
-Subject: Re: [PATCH] net: Fix spinlock use in alloc_netdev_mq()
-Message-ID: <20090806083102.GA3737@psychotron.englab.brq.redhat.com>
-References: <20090804.125742.32009006.davem@davemloft.net> <20090805070205.GA8741@elte.hu> <20090805071411.GA9217@elte.hu> <20090805071658.GA14073@elte.hu> <20090805084746.GA3897@psychotron.englab.brq.redhat.com> <20090805101327.2c49cc62.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090805101327.2c49cc62.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 6 Aug 2009 04:31:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59202 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754494AbZHFIbv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 04:31:51 -0400
+Date: Thu, 6 Aug 2009 01:31:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2009-08-06-00-30 uploaded
+Message-Id: <20090806013144.8c3dbfae.akpm@linux-foundation.org>
+In-Reply-To: <20090806172341.17a34d60.kamezawa.hiroyu@jp.fujitsu.com>
+References: <200908060733.n767X6mN023120@imap1.linux-foundation.org>
+	<20090806172341.17a34d60.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wed, Aug 05, 2009 at 07:13:27PM CEST, akpm@linux-foundation.org wrote:
->On Wed, 5 Aug 2009 10:47:47 +0200 Jiri Pirko <jpirko@redhat.com> wrote:
->
->> >it's using an zero-initialized spinlock. This is a side-effect of:
->> >
->> >        dev_unicast_init(dev);
->> >
->> >in alloc_netdev_mq() making use of dev->addr_list_lock.
->> >
->> >The device has just been allocated freshly, it's not accessible
->> >anywhere yet so no locking is needed at all - in fact it's wrong
->> >to lock it here (the lock isnt initialized yet).
->> 
->> Yes this looks like the right approach. Sorry for this bug :(
->
->Really?
->
->> >--- a/net/core/dev.c
->> >+++ b/net/core/dev.c
->> >@@ -4007,9 +4007,7 @@ static void dev_unicast_flush(struct net_device *dev)
->> > 
->> > static void dev_unicast_init(struct net_device *dev)
->> > {
->> >-	netif_addr_lock_bh(dev);
->> > 	__hw_addr_init(&dev->uc);
->> >-	netif_addr_unlock_bh(dev);
->> > }
->
->This means that the net_device is still floating around for quite a
->long time with an uninitialised spinlock, so it will be quite easy for
->the same problem to reoccur as the code evolves.
->
->It would be more robust were we to initialise that lock close to the
->netdev's allocation site.
+On Thu, 6 Aug 2009 17:23:41 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Hmm, I see your point here. Eric previously posted patch which moved spin lock
-init into alloc_netdev_mq(). But he was worried about having it here and
-netdev_set_addr_lockdep_class() in register_netdevice() (because before
-dev_unicast_init() dev->type is not set). So how about the following patch?
+> On Thu, 06 Aug 2009 00:33:06 -0700
+> akpm@linux-foundation.org wrote:
+> 
+> > The mm-of-the-moment snapshot 2009-08-06-00-30 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > and will soon be available at
+> > 
+> >    git://git.zen-sources.org/zen/mmotm.git
+> > 
+> > It contains the following patches against 2.6.31-rc5:
+> > 
+> 
+> Known issue ?
 
-[PATCH net-2.6] net: move address lists spinlock closer to alloc and do unicast_init locking
+yup.
 
-Move spin_lock_init(), netdev_set_addr_lockdep_class() and dev_unicast_init()
-right after setup is called from alloc_netdev_mq(). In that moment dev->type is
-initialized. List is not needed to be initialized earlier. Also restore
-previously removed locking in dev_unicast_init().
+> [    1.227119] INFO: trying to register non-static key.
+> [    1.227300] the code is fine but needs lockdep annotation.
+> [    1.227569] turning off the locking correctness validator.
+> [    1.227590] Pid: 1, comm: swapper Not tainted 2.6.31-rc5-mm1 #1
+> [    1.227609] Call Trace:
+> [    1.228000]  [<ffffffff81062978>] __lock_acquire+0xf70/0x174d
+> [    1.228000]  [<ffffffff813b541f>] ? __hw_addr_add+0x7c/0x115
+> [    1.228000]  [<ffffffff81060b6d>] ? mark_held_locks+0x4d/0x6b
+> [    1.228000]  [<ffffffff810bbf1c>] ? kmem_cache_alloc+0xa9/0x10c
+> [    1.228000]  [<ffffffff81060de0>] ? trace_hardirqs_on_caller+0x10b/0x12f
+> [    1.228000]  [<ffffffff81063216>] lock_acquire+0xc1/0xe5
+> [    1.228000]  [<ffffffff813b9f0e>] ? alloc_netdev_mq+0x12a/0x214
+> [    1.228000]  [<ffffffff814dd0a9>] _spin_lock_bh+0x31/0x3d
+> [    1.228000]  [<ffffffff813b9f0e>] ? alloc_netdev_mq+0x12a/0x214
+> [    1.228000]  [<ffffffff813b9f0e>] alloc_netdev_mq+0x12a/0x214
+> [    1.228000]  [<ffffffff812eedeb>] ? loopback_setup+0x0/0x7b
+> [    1.228000]  [<ffffffff8184aa7c>] loopback_net_init+0x30/0x7d
+> [    1.228000]  [<ffffffff813b37be>] register_pernet_device+0x2d/0x5a
+> [    1.228000]  [<ffffffff81851c15>] net_dev_init+0x143/0x1a1
+> [    1.228000]  [<ffffffff81851ad2>] ? net_dev_init+0x0/0x1a1
+> [    1.228000]  [<ffffffff8100905c>] do_one_initcall+0x56/0x130
+> [    1.228000]  [<ffffffff81084c95>] ? register_irq_proc+0xb0/0xcc
+> [    1.228000]  [<ffffffff81110000>] ? proc_fill_cache+0x27/0x132
+> [    1.228000]  [<ffffffff81820678>] kernel_init+0x168/0x1be
+> [    1.228000]  [<ffffffff8100cb5a>] child_rip+0xa/0x20
+> [    1.228000]  [<ffffffff8100c53c>] ? restore_args+0x0/0x30
+> [    1.228000]  [<ffffffff810acb75>] ? __get_vm_area_node+0x198/0x1e3
+> [    1.228000]  [<ffffffff81055fc7>] ? up+0xf/0x39
+> [    1.228000]  [<ffffffff81820510>] ? kernel_init+0x0/0x1be
+> [    1.228000]  [<ffffffff8100cb50>] ? child_rip+0x0/0x20
+> [    1.241276] cfg80211: Calling CRDA to update world regulatory domain
 
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+I think it's already fixed, actually.
 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 6a94475..916a6d0 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -4007,7 +4007,9 @@ static void dev_unicast_flush(struct net_device *dev)
- 
- static void dev_unicast_init(struct net_device *dev)
- {
-+	netif_addr_lock_bh(dev);
- 	__hw_addr_init(&dev->uc);
-+	netif_addr_unlock_bh(dev);
- }
- 
- 
-@@ -4726,8 +4728,6 @@ int register_netdevice(struct net_device *dev)
- 	BUG_ON(dev->reg_state != NETREG_UNINITIALIZED);
- 	BUG_ON(!net);
- 
--	spin_lock_init(&dev->addr_list_lock);
--	netdev_set_addr_lockdep_class(dev);
- 	netdev_init_queue_locks(dev);
- 
- 	dev->iflink = -1;
-@@ -5107,8 +5107,6 @@ struct net_device *alloc_netdev_mq(int sizeof_priv, const char *name,
- 	if (dev_addr_init(dev))
- 		goto free_tx;
- 
--	dev_unicast_init(dev);
--
- 	dev_net_set(dev, &init_net);
- 
- 	dev->_tx = tx;
-@@ -5123,6 +5121,11 @@ struct net_device *alloc_netdev_mq(int sizeof_priv, const char *name,
- 	dev->priv_flags = IFF_XMIT_DST_RELEASE;
- 	setup(dev);
- 	strcpy(dev->name, name);
-+
-+	spin_lock_init(&dev->addr_list_lock);
-+	netdev_set_addr_lockdep_class(dev);
-+	dev_unicast_init(dev);
-+
- 	return dev;
- 
- free_tx:
->
