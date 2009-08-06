@@ -1,80 +1,315 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbZHFTC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbZHFTKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755996AbZHFTC4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 15:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbZHFTC4
+	id S1756120AbZHFTKk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 15:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755835AbZHFTKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 15:02:56 -0400
-Received: from mail4-relais-sop.national.inria.fr ([192.134.164.105]:33251
-	"EHLO mail4-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753343AbZHFTCz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 15:02:55 -0400
-X-IronPort-AV: E=Sophos;i="4.43,335,1246831200"; 
-   d="scan'208";a="44412405"
-Message-ID: <4A7B28EA.20903@inria.fr>
-Date: Thu, 06 Aug 2009 21:03:06 +0200
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
+	Thu, 6 Aug 2009 15:10:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56527 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755686AbZHFTKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 15:10:39 -0400
+Date: Thu, 6 Aug 2009 21:05:57 +0200
+From: Oleg Nesterov <oleg@redhat.com>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, paulus@samba.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf tools: Fix reading of perf.data file header
-References: <4A3FEF75.2020804@inria.fr> <20090623131450.GA31519@elte.hu>	 <20090623134749.GA6897@elte.hu> <4A40DFF5.7010207@inria.fr>	 <20090623143601.GA13415@elte.hu> <4A40F31F.4030609@inria.fr>	 <20090629192913.GA29295@elte.hu>  <4A7B0C02.7060704@inria.fr>	 <1249580428.4975.14.camel@laptop>  <4A7B175B.8030000@inria.fr> <1249585061.4975.17.camel@laptop>
-In-Reply-To: <1249585061.4975.17.camel@laptop>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Cc: Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
+       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
+       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
+       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
+       roland@redhat.com
+Subject: Re: [PATCH 3/2 -v4] fcntl: F_[SG]ETOWN_EX
+Message-ID: <20090806190557.GA5244@redhat.com>
+References: <20090803171619.GA17876@redhat.com> <1249321637.7924.163.camel@twins> <20090803180602.GA19719@redhat.com> <1249324619.4842.1.camel@laptop> <20090803190231.GA22313@redhat.com> <1249385966.7924.204.camel@twins> <20090804162033.GB5211@redhat.com> <1249404763.4762.26.camel@laptop> <20090804171905.GA9080@redhat.com> <1249564477.32113.383.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249564477.32113.383.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-$ /mnt/scratch/bgoglin/cpunode/linux-2.6.31/tools/perf/perf report -D |
-grep _READ | sort -k5
-0x8bb8 [0x30]: PERF_EVENT_READ: 6268 6268 raw 0x1000001e0 494628
-0x8fc0 [0x30]: PERF_EVENT_READ: 6268 6268 raw 0x1000002e0 209113
-0x9698 [0x30]: PERF_EVENT_READ: 6268 6268 raw 0x1000004e0 307215
-0x9cf8 [0x30]: PERF_EVENT_READ: 6268 6268 raw 0x1000008e0 9203221
-0x8a08 [0x30]: PERF_EVENT_READ: 6268 6269 raw 0x1000001e0 9210788
-0x9020 [0x30]: PERF_EVENT_READ: 6268 6269 raw 0x1000002e0 302344
-0x9608 [0x30]: PERF_EVENT_READ: 6268 6269 raw 0x1000004e0 198705
-0x9d28 [0x30]: PERF_EVENT_READ: 6268 6269 raw 0x1000008e0 473471
-[...]
-
-Now I know which thread actually reads from where.
-Looks like we're good to go now! thanks a lot Peter!
-
-Tested-by: Brice Goglin <Brice.Goglin@inria.fr>
-
-Brice
-
-
-
-Peter Zijlstra wrote:
-> Subject: perf tools: Fix reading of perf.data file header
+On 08/06, Peter Zijlstra wrote:
 >
-> A silly mistake made us re-read the first attribute for every attribute.
+> Subject: fcntl: F_[SG]ETOWN_EX
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date: Fri, 31 Jul 2009 10:35:30 +0200
 >
+> In order to direct the SIGIO signal to a particular thread of a
+> multi-threaded application we cannot, like suggested by the manpage, put
+> a TID into the regular fcntl(F_SETOWN) call. It will still be send to
+> the whole process of which that thread is part.
+>
+> Since people do want to properly direct SIGIO we introduce F_SETOWN_EX.
+>
+> The need to direct SIGIO comes from self-monitoring profiling such as
+> with perf-counters. Perf-counters uses SIGIO to notify that new sample
+> data is available. If the signal is delivered to the same task that
+> generated the new sample it can augment that data by inspecting the
+> task's user-space state right after it returns from the kernel. This
+> is esp. convenient for interpreted or virtual machine driven
+> environments.
+>
+> Both F_SETOWN_EX and F_GETOWN_EX take a pointer to a struct f_owner_ex
+> as argument:
+>
+> struct f_owner_ex {
+> 	int   type;
+> 	pid_t pid;
+> };
+>
+> Where type is one of F_OWNER_TID, F_OWNER_PID or F_OWNER_GID.
+
+I think the patch is right.
+
+Reviewed-by: Oleg Nesterov <oleg@redhat.com>
+
 > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 > ---
-> diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-> index 450384b..95a44bc 100644
-> --- a/tools/perf/util/header.c
-> +++ b/tools/perf/util/header.c
-> @@ -213,9 +213,10 @@ struct perf_header *perf_header__read(int fd)
+>  arch/alpha/include/asm/fcntl.h  |    2 
+>  arch/parisc/include/asm/fcntl.h |    2 
+>  fs/fcntl.c                      |  108 +++++++++++++++++++++++++++++++++++++---
+>  include/asm-generic/fcntl.h     |   13 ++++
+>  4 files changed, 117 insertions(+), 8 deletions(-)
+> 
+> Index: linux-2.6/arch/parisc/include/asm/fcntl.h
+> ===================================================================
+> --- linux-2.6.orig/arch/parisc/include/asm/fcntl.h
+> +++ linux-2.6/arch/parisc/include/asm/fcntl.h
+> @@ -28,6 +28,8 @@
+>  #define F_SETOWN	12	/*  for sockets. */
+>  #define F_SETSIG	13	/*  for sockets. */
+>  #define F_GETSIG	14	/*  for sockets. */
+> +#define F_GETOWN_EX	15
+> +#define F_SETOWN_EX	16
 >  
->  	for (i = 0; i < nr_attrs; i++) {
->  		struct perf_header_attr *attr;
-> -		off_t tmp = lseek(fd, 0, SEEK_CUR);
-> +		off_t tmp;
+>  /* for posix fcntl() and lockf() */
+>  #define F_RDLCK		01
+> Index: linux-2.6/fs/fcntl.c
+> ===================================================================
+> --- linux-2.6.orig/fs/fcntl.c
+> +++ linux-2.6/fs/fcntl.c
+> @@ -263,6 +263,79 @@ pid_t f_getown(struct file *filp)
+>  	return pid;
+>  }
 >  
->  		do_read(fd, &f_attr, sizeof(f_attr));
-> +		tmp = lseek(fd, 0, SEEK_CUR);
+> +static int f_setown_ex(struct file *filp, unsigned long arg)
+> +{
+> +	struct f_owner_ex * __user owner_p = (void * __user)arg;
+> +	struct f_owner_ex owner;
+> +	struct pid *pid;
+> +	int type;
+> +	int ret;
+> +
+> +	ret = copy_from_user(&owner, owner_p, sizeof(owner));
+> +	if (ret)
+> +		return ret;
+> +
+> +	switch (owner.type) {
+> +	case F_OWNER_TID:
+> +		type = PIDTYPE_MAX;
+> +		break;
+> +
+> +	case F_OWNER_PID:
+> +		type = PIDTYPE_PID;
+> +		break;
+> +
+> +	case F_OWNER_GID:
+> +		type = PIDTYPE_PGID;
+> +		break;
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	rcu_read_lock();
+> +	pid = find_vpid(owner.pid);
+> +	if (owner.pid && !pid)
+> +		ret = -ESRCH;
+> +	else
+> +		ret = __f_setown(filp, pid, type, 1);
+> +	rcu_read_unlock();
+> +
+> +	return ret;
+> +}
+> +
+> +static int f_getown_ex(struct file *filp, unsigned long arg)
+> +{
+> +	struct f_owner_ex * __user owner_p = (void * __user)arg;
+> +	struct f_owner_ex owner;
+> +	int ret = 0;
+> +
+> +	read_lock(&filp->f_owner.lock);
+> +	owner.pid = pid_vnr(filp->f_owner.pid);
+> +	switch (filp->f_owner.pid_type) {
+> +	case PIDTYPE_MAX:
+> +		owner.type = F_OWNER_TID;
+> +		break;
+> +
+> +	case PIDTYPE_PID:
+> +		owner.type = F_OWNER_PID;
+> +		break;
+> +
+> +	case PIDTYPE_PGID:
+> +		owner.type = F_OWNER_GID;
+> +		break;
+> +
+> +	default:
+> +		WARN_ON(1);
+> +		ret = -EINVAL;
+> +		break;
+> +	}
+> +	read_unlock(&filp->f_owner.lock);
+> +
+> +	if (!ret)
+> +		ret = copy_to_user(owner_p, &owner, sizeof(owner));
+> +	return ret;
+> +}
+> +
+>  static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
+>  		struct file *filp)
+>  {
+> @@ -313,6 +386,12 @@ static long do_fcntl(int fd, unsigned in
+>  	case F_SETOWN:
+>  		err = f_setown(filp, arg, 1);
+>  		break;
+> +	case F_GETOWN_EX:
+> +		err = f_getown_ex(filp, arg);
+> +		break;
+> +	case F_SETOWN_EX:
+> +		err = f_setown_ex(filp, arg);
+> +		break;
+>  	case F_GETSIG:
+>  		err = filp->f_owner.signum;
+>  		break;
+> @@ -428,8 +507,7 @@ static inline int sigio_perm(struct task
 >  
->  		attr = perf_header_attr__new(&f_attr.attr);
+>  static void send_sigio_to_task(struct task_struct *p,
+>  			       struct fown_struct *fown,
+> -			       int fd,
+> -			       int reason)
+> +			       int fd, int reason, int group)
+>  {
+>  	/*
+>  	 * F_SETSIG can change ->signum lockless in parallel, make
+> @@ -461,11 +539,11 @@ static void send_sigio_to_task(struct ta
+>  			else
+>  				si.si_band = band_table[reason - POLL_IN];
+>  			si.si_fd    = fd;
+> -			if (!do_send_sig_info(signum, &si, p, true))
+> +			if (!do_send_sig_info(signum, &si, p, group))
+>  				break;
+>  		/* fall-through: fall back on the old plain SIGIO signal */
+>  		case 0:
+> -			do_send_sig_info(SIGIO, SEND_SIG_PRIV, p, true);
+> +			do_send_sig_info(SIGIO, SEND_SIG_PRIV, p, group);
+>  	}
+>  }
 >  
->
->
->   
+> @@ -474,16 +552,23 @@ void send_sigio(struct fown_struct *fown
+>  	struct task_struct *p;
+>  	enum pid_type type;
+>  	struct pid *pid;
+> +	int group = 1;
+>  	
+>  	read_lock(&fown->lock);
+> +
+>  	type = fown->pid_type;
+> +	if (type == PIDTYPE_MAX) {
+> +		group = 0;
+> +		type = PIDTYPE_PID;
+> +	}
+> +
+>  	pid = fown->pid;
+>  	if (!pid)
+>  		goto out_unlock_fown;
+>  	
+>  	read_lock(&tasklist_lock);
+>  	do_each_pid_task(pid, type, p) {
+> -		send_sigio_to_task(p, fown, fd, band);
+> +		send_sigio_to_task(p, fown, fd, band, group);
+>  	} while_each_pid_task(pid, type, p);
+>  	read_unlock(&tasklist_lock);
+>   out_unlock_fown:
+> @@ -491,10 +576,10 @@ void send_sigio(struct fown_struct *fown
+>  }
+>  
+>  static void send_sigurg_to_task(struct task_struct *p,
+> -                                struct fown_struct *fown)
+> +				struct fown_struct *fown, int group)
+>  {
+>  	if (sigio_perm(p, fown, SIGURG))
+> -		group_send_sig_info(SIGURG, SEND_SIG_PRIV, p);
+> +		do_send_sig_info(SIGURG, SEND_SIG_PRIV, p, group);
+>  }
+>  
+>  int send_sigurg(struct fown_struct *fown)
+> @@ -502,10 +587,17 @@ int send_sigurg(struct fown_struct *fown
+>  	struct task_struct *p;
+>  	enum pid_type type;
+>  	struct pid *pid;
+> +	int group = 1;
+>  	int ret = 0;
+>  	
+>  	read_lock(&fown->lock);
+> +
+>  	type = fown->pid_type;
+> +	if (type == PIDTYPE_MAX) {
+> +		group = 0;
+> +		type = PIDTYPE_PID;
+> +	}
+> +
+>  	pid = fown->pid;
+>  	if (!pid)
+>  		goto out_unlock_fown;
+> @@ -514,7 +606,7 @@ int send_sigurg(struct fown_struct *fown
+>  	
+>  	read_lock(&tasklist_lock);
+>  	do_each_pid_task(pid, type, p) {
+> -		send_sigurg_to_task(p, fown);
+> +		send_sigurg_to_task(p, fown, group);
+>  	} while_each_pid_task(pid, type, p);
+>  	read_unlock(&tasklist_lock);
+>   out_unlock_fown:
+> Index: linux-2.6/include/asm-generic/fcntl.h
+> ===================================================================
+> --- linux-2.6.orig/include/asm-generic/fcntl.h
+> +++ linux-2.6/include/asm-generic/fcntl.h
+> @@ -73,6 +73,19 @@
+>  #define F_SETSIG	10	/* for sockets. */
+>  #define F_GETSIG	11	/* for sockets. */
+>  #endif
+> +#ifndef F_SETOWN_EX
+> +#define F_SETOWN_EX	12
+> +#define F_GETOWN_EX	13
+> +#endif
+> +
+> +#define F_OWNER_TID	0
+> +#define F_OWNER_PID	1
+> +#define F_OWNER_GID	2
+> +
+> +struct f_owner_ex {
+> +	int	type;
+> +	pid_t	pid;
+> +};
+>  
+>  /* for F_[GET|SET]FL */
+>  #define FD_CLOEXEC	1	/* actually anything with low bit set goes */
+> Index: linux-2.6/arch/alpha/include/asm/fcntl.h
+> ===================================================================
+> --- linux-2.6.orig/arch/alpha/include/asm/fcntl.h
+> +++ linux-2.6/arch/alpha/include/asm/fcntl.h
+> @@ -26,6 +26,8 @@
+>  #define F_GETOWN	6	/*  for sockets. */
+>  #define F_SETSIG	10	/*  for sockets. */
+>  #define F_GETSIG	11	/*  for sockets. */
+> +#define F_SETOWN_EX	12
+> +#define F_GETOWN_EX	13
+>  
+>  /* for posix fcntl() and lockf() */
+>  #define F_RDLCK		1
+> 
+> 
 
