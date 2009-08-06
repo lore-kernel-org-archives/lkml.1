@@ -1,82 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbZHFKLJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbZHFKM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbZHFKLJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 06:11:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbZHFKLI
+	id S1754869AbZHFKM6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 06:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbZHFKM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 06:11:08 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48966 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753567AbZHFKLH (ORCPT
+	Thu, 6 Aug 2009 06:12:57 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:55988 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754811AbZHFKM4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 06:11:07 -0400
-Date: Thu, 6 Aug 2009 12:10:59 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-Cc: Eric Paris <eparis@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
-       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
-       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
-       Douglas Leeder <douglas.leeder@sophos.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "david@lang.hm" <david@lang.hm>,
-       "jengelh@medozas.de" <jengelh@medozas.de>,
-       "aviro@redhat.com" <aviro@redhat.com>,
-       "mrkafk@gmail.com" <mrkafk@gmail.com>,
-       "alexl@redhat.com" <alexl@redhat.com>, "jack@suse.cz" <jack@suse.cz>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "mmorley@hcl.in" <mmorley@hcl.in>
-Subject: Re: fanotify - overall design before I start sending patches
-Message-ID: <20090806101059.GD31370@elf.ucw.cz>
-References: <1248466429.3567.82.camel@localhost> <20090805020534.GB1354@ucw.cz> <200908051746.17903.tvrtko.ursulin@sophos.com>
+	Thu, 6 Aug 2009 06:12:56 -0400
+X-Greylist: delayed 393 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Aug 2009 06:12:56 EDT
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: How to efficiently handle DMA and cache on ARMv7 ? (was "Is get_user_pages() enough to prevent pages from being swapped out ?")
+Date: Thu, 6 Aug 2009 12:08:21 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30.3; KDE/4.2.4; x86_64; ; )
+Cc: Robin Holt <holt@sgi.com>, linux-kernel@vger.kernel.org,
+       "v4l2_linux" <linux-media@vger.kernel.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200908051746.17903.tvrtko.ursulin@sophos.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908061208.22131.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-08-05 17:46:16, Tvrtko Ursulin wrote:
-> On Wednesday 05 August 2009 03:05:34 Pavel Machek wrote:
-> > BTW my -@suse.cz address no longer works. pavel@ucw.cz should be ok.
-> >
-> > > If a FAN_ACCESS_PERM or FAN_OPEN_PERM event is received the listener
-> > > must send a response before the 5 second timeout.  If no response is
-> > > sent before the 5 second timeout the original operation is allowed.  If
-> > > this happens too many times (10 in a row) the fanotify group is evicted
-> > > from the kernel and will not get any new events.  Sending a response is
-> > > done using the setsockopt() call with the socket options set to
-> > > FANOTIFY_ACCESS_RESPONSE.  The buffer should contain a structure like:
-> >
-> > The timeout part of interface is very ugly. Will fanotify users have
-> > to be realtime/mlocked?
-> 
-> Why do you think it is very ugly?
+[Resent with an updated subject, this time CC'ing linux-arm-kernel]
 
-Do I need to explain?
+I've spent the last few days "playing" with get_user_pages() and mlock() and 
+got some interesting results. It turned out that cache coherency comes into 
+play at some point, making the overall problem more complex.
 
-> Just to make sure you haven't missed this - it is not that they have to 
-> complete the whole operation before the timeout period (since you mention 
-> realtime/mlock I suspect this is what you think?), but _during_ the operation 
-> they have to show that they are active by sending something like keep alive 
-> messages.
-> 
-> Or you are worried about failing to meet even that on a loaded system? There 
-> has to be something like this otherwise hung userspace client would kill the 
-> whole system.
+Here's my current setup:
 
-Of course, I'm worried about failing to meet this on loaded
-system. And the fact that I _have_ to worry about that means that
-interface is ugly/broken.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+- OMAP processor, based on an ARMv7 core
+- MMU and IOMMU
+- VIPT non-aliasing data cache
+- video capture driver that transfers data to memory using DMA
+- video capture application that pass userspace pointers to video buffers to 
+the driver
+
+My goal is to make sure that, upon DMA completion, the correct data will be 
+available to the userspace application.
+
+The first problem was to pin pages to memory, to make sure they will not be 
+freed when the DMA is in progress. videobug-dma-sg uses get_user_pages() for 
+that, and Hugh Dickins nicely explained to me why this is enough.
+
+The second problem is to ensure cache coherency. As the userspace application 
+will read data from the video buffers, those buffers will end up being cached 
+in the processor's data cache. The driver does need to invalidate the cache 
+before starting the DMA operation (userspace could in theory write to the 
+buffers, but the data will be overwritten by DMA anyway, so there's no need to 
+clean the cache).
+
+As the cache is of the VIPT (Virtual Index Physical Tag) type, cache 
+invalidation can either be done globally (in which case the cache is flushed 
+instead of being invalidated) or based on virtual addresses. In the last case 
+the processor will need to look physical addresses up, either in the TLB or 
+through hardware table walk.
+
+I can see three solutions to the DMA/cache problem.
+
+1. Flushing the whole data cache right before starting the DMA transfer. 
+There's no API for that in the ARM architecture, so a whole I+D cache is 
+required. This is quite costly, we're talking about around 30 flushes per 
+second, but it doesn't involve the MMU. That's the solution that I currently 
+use.
+
+2. Invalidating only the cache lines that store video buffer data. This 
+requires a TLB lookup or a hardware table walk, so the userspace application 
+MM context needs to be available (no problem there as where's flushing in 
+userspace context) and all pages need to be mapped properly. This can be a 
+problem as, as Hugh pointed out, pages can still be unmapped from the 
+userspace context after get_user_pages() returns. I have experienced one oops 
+due to a kernel paging request failure:
+
+        Unable to handle kernel paging request at virtual address 44e12000
+        pgd = c8698000
+        [44e12000] *pgd=8a4fd031, *pte=8cfda1cd, *ppte=00000000
+        Internal error: Oops: 817 [#1] PREEMPT
+        PC is at v7_dma_inv_range+0x2c/0x44
+
+Fixing this requires more investigation, and I'm not sure how to proceed to 
+find out if the page fault is really caused by pages being unmapped from the 
+userspace context. Help would be appreciated.
+
+3. Mark the pages as non-cacheable. Depending on how the buffers are then used 
+by userspace, the additional cache misses might destroy any benefit I would 
+get from not flushing the cache before DMA. I'm not sure how to mark a bunch 
+of pages as non-cacheable though. What usually happens is that video drivers 
+allocate DMA-coherent memory themselves, but in this case I need to deal with 
+an arbitrary buffer allocated by userspace. If someone has any experience with 
+this, it would be appreciated.
+
+Regards,
+
+Laurent Pinchart
+
