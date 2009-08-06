@@ -1,52 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752306AbZHFEfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171AbZHFEgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752306AbZHFEfs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 00:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZHFEfr
+	id S1753171AbZHFEgH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 00:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZHFEgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 00:35:47 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58646 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751287AbZHFEfq (ORCPT
+	Thu, 6 Aug 2009 00:36:05 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:40787 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751287AbZHFEgD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 00:35:46 -0400
-Message-ID: <4A7A5D9D.7030305@zytor.com>
-Date: Wed, 05 Aug 2009 21:35:41 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: Mike Snitzer <snitzer@gmail.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [md PATCH 8/8] md: Use revalidate_disk to effect changes in size
- 	of device.
-References: <20090802215444.4198.83094.stgit@notabene.brown>	<20090802215818.4198.77041.stgit@notabene.brown>	<4A7A0287.5010505@zytor.com>	<170fa0d20908051803ud6ef819xdad3cafe44cc1fb8@mail.gmail.com>	<4A7A2EA6.9020603@zytor.com> <19066.19060.95471.616532@notabene.brown>
-In-Reply-To: <19066.19060.95471.616532@notabene.brown>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 6 Aug 2009 00:36:03 -0400
+Subject: Re: [PATCH] pci_ids.h: add new Atheros USB vendor ID
+From: Marcel Holtmann <marcel@holtmann.org>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: linville@tuxdriver.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, zhifeng.cai@atheros.com,
+       stephen.chen@atheros.com, linux-usb@vger.kernel.org
+In-Reply-To: <43e72e890908052126v53aa1b4sb7a48e19f98fdfa6@mail.gmail.com>
+References: <1249523981-26601-1-git-send-email-lrodriguez@atheros.com>
+	 <1249532170.21101.3.camel@localhost.localdomain>
+	 <43e72e890908052126v53aa1b4sb7a48e19f98fdfa6@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 05 Aug 2009 21:35:57 -0700
+Message-Id: <1249533357.21101.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/05/2009 08:13 PM, Neil Brown wrote:
+Hi Luiz,
 
+> >> New Atheros USB devices will use 0x0cf3. The first device
+> >> will be ar9271, for which we are adding support for.
+> >>
+> >> Cc: zhifeng.cai@atheros.com
+> >> Cc: stephen.chen@atheros.com
+> >> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+> >> ---
+> >>
+> >> John, sending this through you as this is only
+> >> specific to wireless, at least at the moment.
+> >>
+> >>  include/linux/pci_ids.h |    1 +
+> >>  1 files changed, 1 insertions(+), 0 deletions(-)
+> >>
+> >> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+> >> index 73b46b6..27f4e6b 100644
+> >> --- a/include/linux/pci_ids.h
+> >> +++ b/include/linux/pci_ids.h
+> >> @@ -2170,6 +2170,7 @@
+> >>  #define PCI_DEVICE_ID_BCM1250_HT     0x0002
+> >>
+> >>  #define PCI_VENDOR_ID_ATHEROS                0x168c
+> >> +#define PCI_VENDOR_ID_ATHEROS_USB    0x0cf3
+> >
+> > this is confusing the hell out of me. What are you adding here.
 > 
-> Thanks for the reports guys.
+> No you're right, my fault.
 > 
-> I managed to reproduce the lockup and I think this patch should fix
-> it.
-> If you could review/test I would appreciate it.
+> > A USB
+> > vendor id or a PCI one. Is the ar9271 a PCI device or a USB device?
 > 
-> Thanks,
-> NeilBrown
+> Its only USB.
 > 
+> Thanks... hm I see no USB vendor id headers. Guess we won't need to add this.
 
-This patch makes my system boot, whereas previously it would deadlock
-100% of the time.
+the closest we have is drivers/hid/hid-ids.h and we might just should
+have Greg create a usb-ids.h file.
 
-	-hpa
+Regards
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Marcel
+
 
