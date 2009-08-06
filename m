@@ -1,108 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbZHFIH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbZHFIHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752703AbZHFIH1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 04:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZHFIH0
+	id S1754235AbZHFIHo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 04:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbZHFIHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 04:07:26 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:34523 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751575AbZHFIHY (ORCPT
+	Thu, 6 Aug 2009 04:07:43 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:62894 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752730AbZHFIHk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 04:07:24 -0400
+	Thu, 6 Aug 2009 04:07:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=E1KSMInxmkh/5QHM/K/tp06nt5Yd97wTx1ajZfVOWhXL69J2t2xHN9YqStn3o7daMP
-         k3tj3QCo0gR+CEc0FE6dsTpqzOaQnQXNF/xNIjGF+co7eoCm9qr7j9t8tueVgdmVjG/A
-         n7+MHSIS3wfWsUXVtte8S3BXjuGAXFdtgl9oI=
-Date: Thu, 6 Aug 2009 10:07:19 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Borislav Petkov <borislav.petkov@amd.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Li Zefan <lizf@cn.fujitsu.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>
-Subject: Re: linux-next: manual merge of the edac-amd tree with the rr tree
-Message-ID: <20090806080719.GB13566@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Borislav Petkov <borislav.petkov@amd.com>,
-	linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Li Zefan <lizf@cn.fujitsu.com>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Andreas Herrmann <andreas.herrmann3@amd.com>
-References: <20090806175152.1e0b96cf.sfr@canb.auug.org.au>
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MLTXiLQ2k7wk0+aDanqdkXicLanb/46j/RLirNx6lf6OssQbWVp8qZjUd6GPb2PBwt
+         +JcQlAfjNoFgHni/yjyZdeFihumwU5CakC/f1ZRWdhh5jwVnApILIjHdv1RuNxHjf/DD
+         XXd5qB8WDCSa8Wddh58QhKzF5Y92Ywo1MPjvM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090806175152.1e0b96cf.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <2f11576a0908052213m3fba4154ifb73ab1ae2ea74d6@mail.gmail.com>
+References: <20090804191031.6A3D.A69D9226@jp.fujitsu.com>
+	 <20090805163945.056c463c.akpm@linux-foundation.org>
+	 <2f11576a0908052213m3fba4154ifb73ab1ae2ea74d6@mail.gmail.com>
+Date: Thu, 6 Aug 2009 17:07:41 +0900
+Message-ID: <28c262360908060107i4d1d23f3h47c112b48f1d8e48@mail.gmail.com>
+Subject: Re: [PATCH for 2.6.31 0/4] fix oom_adj regression v2
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@redhat.com>, linux-mm <linux-mm@kvack.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi, Kosaki.
 
-On Thu, Aug 06, 2009 at 05:51:52PM +1000, Stephen Rothwell wrote:
-> Hi Borislav,
-> 
-> Today's linux-next merge of the edac-amd tree got a conflict in
-> arch/x86/kernel/smpboot.c between commit
-> d39044d21e1a2d3713f1329ad22d23df5d20140b ("cpumask: use zalloc_cpumask_var
-> () where possible") from the rr tree and commit
-> a763af6587fbead6cee75ad3ae14709fa67e7dbb ("x86: provide CPU topology
-> information for multi-node processors") from the edac-amd tree.
-> 
-> I fixed it up (see below) and can carry the fix as necessary.
+On Thu, Aug 6, 2009 at 2:13 PM, KOSAKI
+Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
+>> So I merged these but I have a feeling that this isn't the last I'll be
+>> hearing on the topic ;)
+>>
+>> Given the amount of churn, the amount of discussion and the size of the
+>> patches, this doesn't look like something we should push into 2.6.31.
+>>
+>> If we think that the 2ff05b2b regression is sufficiently serious to be
+>> a must-fix for 2.6.31 then can we please find something safer and
+>> smaller?  Like reverting 2ff05b2b?
+>
+> I don't think the serious problem is only  this issue, I oppose to
+> ignore regression
+> bug report ;-)
+>
+> Yes, your point makes sense. then, I'll make two patch series.
+> 1. reverting 2ff05b2b for 2.6.31
+> 2. retry fix oom livelock for -mm
+>
+> I expect I can do that next sunday.
+>
+>
+>> These patches clash with the controversial
+>> mm-introduce-proc-pid-oom_adj_child.patch, so I've disabled that patch
+>> now.
+>
+> I think we can drop this because workaround patch is only needed until
+> the issue not fixed.
 
-I guess this is the best solution for now. Andreas' latest patches went
-out yesterday and they too contain the
 
-alloc_cpumask_var
-cpumask_clear
+I looked over your this patches.
+I can't find out merge point our both idea.
 
-order. Which means, this fix will have to be applied then between the
-tip and the rr trees after Ingo merges Andreas' stuff, so please hold on
-to it until after the merge window.
+I think it would be better than mine.
+
+As kame pointed out, you patch can solve long stall time of do_each_thread
+as well as livelock.
+
+So I will wait for you to finish this work and review then.
+I ask you add me in CC, then. :)
 
 Thanks.
 
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> 
-> diff --cc arch/x86/kernel/smpboot.c
-> index 70bd79b,5428337..0000000
-> --- a/arch/x86/kernel/smpboot.c
-> +++ b/arch/x86/kernel/smpboot.c
-> @@@ -1057,9 -1068,14 +1068,10 @@@ void __init native_smp_prepare_cpus(uns
->   #endif
->   	current_thread_info()->cpu = 0;  /* needed? */
->   	for_each_possible_cpu(i) {
->  -		alloc_cpumask_var(&per_cpu(cpu_sibling_map, i), GFP_KERNEL);
->  -		alloc_cpumask_var(&per_cpu(cpu_core_map, i), GFP_KERNEL);
->  -		alloc_cpumask_var(&per_cpu(cpu_node_map, i), GFP_KERNEL);
->  -		alloc_cpumask_var(&cpu_data(i).llc_shared_map, GFP_KERNEL);
->  -		cpumask_clear(per_cpu(cpu_core_map, i));
->  -		cpumask_clear(per_cpu(cpu_node_map, i));
->  -		cpumask_clear(per_cpu(cpu_sibling_map, i));
->  -		cpumask_clear(cpu_data(i).llc_shared_map);
->  +		zalloc_cpumask_var(&per_cpu(cpu_sibling_map, i), GFP_KERNEL);
->  +		zalloc_cpumask_var(&per_cpu(cpu_core_map, i), GFP_KERNEL);
-> ++		zalloc_cpumask_var(&per_cpu(cpu_node_map, i), GFP_KERNEL);
->  +		zalloc_cpumask_var(&cpu_data(i).llc_shared_map, GFP_KERNEL);
->   	}
->   	set_cpu_sibling_map(0);
->   
+>
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a hrefmailto:"dont@kvack.org"> email@kvack.org </a>
+>
+
+
 
 -- 
-Regards/Gruss,
-    Boris.
+Kind regards,
+Minchan Kim
