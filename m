@@ -1,136 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbZHFPrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbZHFPst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159AbZHFPrq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 11:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbZHFPrp
+	id S1756153AbZHFPst (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 11:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755884AbZHFPss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 11:47:45 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:35587 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755318AbZHFPro (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 11:47:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=qX2cq36GqO8pcftjkowrwdHRIwbdbBG5XpVWaUSQKX0hiWk8xrJk257rxGZelYG1TE
-         1y8vDT3e0f7BVIrsLxfGl6Wx8AKTsEE4viNXPbUr1TwKNnxV115tJ2XWReXo+RzQsC+1
-         N/pXMuaIJjHvOPXJQqEWbfvab8nbipNroEmQg=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] pata_atiixp: fix slave device support
-Date: Thu, 6 Aug 2009 17:47:05 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc5-next-20090806; KDE/4.2.4; i686; ; )
-Cc: Krystian Juskowiak <jusko@tlen.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Borislav Petkov <bbpetkov@yahoo.de>,
-       Robert Hancock <hancockrwd@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200908061740.15902.bzolnier@gmail.com>
-In-Reply-To: <200908061740.15902.bzolnier@gmail.com>
+	Thu, 6 Aug 2009 11:48:48 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:49433 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755844AbZHFPsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 11:48:47 -0400
+Date: Thu, 6 Aug 2009 16:48:47 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, lwoodman@redhat.com,
+       peterz@infradead.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Fr?d?ric Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 4/4] tracing, page-allocator: Add a postprocessing
+	script for page-allocator-related ftrace events
+Message-ID: <20090806154847.GA6915@csn.ul.ie>
+References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie> <1249409546-6343-5-git-send-email-mel@csn.ul.ie> <20090804112246.4e6d0ab1.akpm@linux-foundation.org> <4A787D84.2030207@redhat.com> <20090804121332.46df33a7.akpm@linux-foundation.org> <20090804204857.GA32092@csn.ul.ie> <20090805074103.GD19322@elte.hu> <20090805090742.GA21950@csn.ul.ie> <20090805102750.GA2488@cmpxchg.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200908061747.05944.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090805102750.GA2488@cmpxchg.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 August 2009 17:40:15 Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] pata_atiixp: fix slave device support
+On Wed, Aug 05, 2009 at 12:27:50PM +0200, Johannes Weiner wrote:
+> On Wed, Aug 05, 2009 at 10:07:43AM +0100, Mel Gorman wrote:
+> 
+> > I also decided to just deal with the page allocator and not the MM as a whole
+> > figuring that reviewing all MM tracepoints at the same time would be too much
+> > to chew on and decide "are these the right tracepoints?". My expectation is
+> > that there would need to be at least one set per headings;
+> > 
+> > page allocator
+> >   subsys: kmem
+> >   prefix: mm_page*
+> >   example use: estimate zone lock contention
+> > 
+> > o slab allocator (already done)
+> >   subsys: kmem
+> >   prefix: kmem_* (although this wasn't consistent, e.g. kmalloc vs kmem_kmalloc)
+> >   example use: measure allocation times for slab, slub, slqb
+> > 
+> > o high-level reclaim, kswapd wakeups, direct reclaim, lumpy triggers
+> >   subsys: vmscan
+> >   prefix: mm_vmscan*
+> >   example use: estimate memory pressure
+> > 
+> > o low-level reclaim, list rotations, pages scanned, types of pages moving etc.
+> >   subsys: vmscan
+> >   prefix: mm_vmscan*
+> >   (debugging VM tunables such as swappiness or why kswapd so active)
+> > 
+> > The following might also be useful for kernel developers but maybe less
+> > useful in general so would be harder to justify.
+> > 
+> > o fault activity, anon, file, swap ins/outs 
+> > o page cache activity
+> > o readahead
+> > o VM/FS, writeback, pdflush
+> > o hugepage reservations, pool activity, faulting
+> > o hotplug
+> 
+> Maybe if more people would tell how they currently use tracepoints in
+> the MM we can find some common ground on what can be useful to more
+> than one person and why?
+> 
 
-Argh, I pushed the "Send" button too quick..
+Not a bad plan at all. I've added patch describing the kmem trace points
+and some notes on how they might be used.
 
-Below version with the correct patch description
-(I doubt that this fix will help with bug #13921)..
+> FWIW, I recently started using tracepoints at the following places for
+> looking at swap code behaviour:
+> 
+> 	o swap slot alloc/free	[type, offset]
+> 	o swap slot read/write	[type, offset]
+> 	o swapcache add/delete	[type, offset]
+> 	o swap fault/evict	[page->mapping, page->index, type, offset]
+> 
+> This gives detail beyond vmstat's possibilities at the cost of 8 lines
+> of trace_swap_foo() distributed over 5 files.
+> 
+> I have not aggregated the output so far, just looked at the raw data
+> and enjoyed reading how the swap slot allocator behaves in reality
+> (you can probably integrate the traces into snapshots of the whole
+> swap space layout), 
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH v2] pata_atiixp: fix second channel support
+Can seekwatcher also show the access pattern for swap? Whether it can or not,
+you could use points like that to show what correlation, if any, there is
+between location on swap and process ownership.
 
-PIO and MWDMA timings are never programmed for the second channel
-because timing registers are treated as 16-bit long ones.
+> what load behaviour triggers insane swap IO
+> patterns, in what context is readahead reading the wrong pages etc.,
+> stuff you wouldn't see when starting out with statistical
+> aggregations.
+> 
+> Now, these data are pretty specialized and probably only few people
+> will make use of them, but OTOH, the cost they impose on the traced
+> code is so miniscule that it would be a much greater pain to 1) know
+> about and find third party patches and 2) apply, possibly forward-port
+> third party patches.
 
-The bug is an attixp -> pata_atiixp regression and goes back to:
+Somewhat agreed although without seeing the tracepoints and thinking
+about how they might be used, I can't say much further.
 
-	commit 669a5db411d85a14f86cd92bc16bf7ab5b8aa235
-	Author: Jeff Garzik <jeff@garzik.org>
-	Date:   Tue Aug 29 18:12:40 2006 -0400
+I think the next round of patches might give a reasonable template on how
+tracepoints can be proposed, reviewed and justified.
 
-	    [libata] Add a bunch of PATA drivers.
-
-Cc: Krystian Juskowiak <jusko@tlen.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Borislav Petkov <bbpetkov@yahoo.de>
-Cc: Robert Hancock <hancockrwd@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-After this patch pata_atiixp still have two bugs (+ few superfluous oddities)
-not present in atiixp (although not as severe as this one)..
-
- drivers/ata/pata_atiixp.c |   19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
-
-Index: b/drivers/ata/pata_atiixp.c
-===================================================================
---- a/drivers/ata/pata_atiixp.c
-+++ b/drivers/ata/pata_atiixp.c
-@@ -1,6 +1,7 @@
- /*
-  * pata_atiixp.c 	- ATI PATA for new ATA layer
-  *			  (C) 2005 Red Hat Inc
-+ *			  (C) 2009 Bartlomiej Zolnierkiewicz
-  *
-  * Based on
-  *
-@@ -61,20 +62,19 @@ static void atiixp_set_pio_timing(struct
- 
- 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
- 	int dn = 2 * ap->port_no + adev->devno;
--
--	/* Check this is correct - the order is odd in both drivers */
- 	int timing_shift = (16 * ap->port_no) + 8 * (adev->devno ^ 1);
--	u16 pio_mode_data, pio_timing_data;
-+	u32 pio_timing_data;
-+	u16 pio_mode_data;
- 
- 	pci_read_config_word(pdev, ATIIXP_IDE_PIO_MODE, &pio_mode_data);
- 	pio_mode_data &= ~(0x7 << (4 * dn));
- 	pio_mode_data |= pio << (4 * dn);
- 	pci_write_config_word(pdev, ATIIXP_IDE_PIO_MODE, pio_mode_data);
- 
--	pci_read_config_word(pdev, ATIIXP_IDE_PIO_TIMING, &pio_timing_data);
-+	pci_read_config_dword(pdev, ATIIXP_IDE_PIO_TIMING, &pio_timing_data);
- 	pio_timing_data &= ~(0xFF << timing_shift);
- 	pio_timing_data |= (pio_timings[pio] << timing_shift);
--	pci_write_config_word(pdev, ATIIXP_IDE_PIO_TIMING, pio_timing_data);
-+	pci_write_config_dword(pdev, ATIIXP_IDE_PIO_TIMING, pio_timing_data);
- }
- 
- /**
-@@ -119,16 +119,17 @@ static void atiixp_set_dmamode(struct at
- 		udma_mode_data |= dma << (4 * dn);
- 		pci_write_config_word(pdev, ATIIXP_IDE_UDMA_MODE, udma_mode_data);
- 	} else {
--		u16 mwdma_timing_data;
--		/* Check this is correct - the order is odd in both drivers */
- 		int timing_shift = (16 * ap->port_no) + 8 * (adev->devno ^ 1);
-+		u32 mwdma_timing_data;
- 
- 		dma -= XFER_MW_DMA_0;
- 
--		pci_read_config_word(pdev, ATIIXP_IDE_MWDMA_TIMING, &mwdma_timing_data);
-+		pci_read_config_dword(pdev, ATIIXP_IDE_MWDMA_TIMING,
-+				      &mwdma_timing_data);
- 		mwdma_timing_data &= ~(0xFF << timing_shift);
- 		mwdma_timing_data |= (mwdma_timings[dma] << timing_shift);
--		pci_write_config_word(pdev, ATIIXP_IDE_MWDMA_TIMING, mwdma_timing_data);
-+		pci_write_config_dword(pdev, ATIIXP_IDE_MWDMA_TIMING,
-+				       mwdma_timing_data);
- 	}
- 	/*
- 	 *	We must now look at the PIO mode situation. We may need to
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
