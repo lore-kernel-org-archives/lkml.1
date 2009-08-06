@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbZHFIvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbZHFJEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754556AbZHFIvs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 04:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbZHFIvs
+	id S1754592AbZHFJEv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 05:04:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZHFJEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 04:51:48 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:37477 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752859AbZHFIvr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 04:51:47 -0400
-Date: Thu, 6 Aug 2009 10:51:44 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Frans Pop <elendil@planet.nl>, pHilipp Zabel <philipp.zabel@gmail.com>,
-       albin.tonnerre@free-electrons.com, dmitry.torokhov@gmail.com,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Subject: Re: [PATCH] PM: Add convenience macro to make switching to
-	dev_pm_ops less error-prone
-Message-ID: <20090806085144.GS13236@buzzloop.caiaq.de>
-References: <20090803163304.GF5002@laptop> <200908052205.14222.rjw@sisk.pl> <200908052222.31707.elendil@planet.nl> <200908052330.08452.rjw@sisk.pl>
+	Thu, 6 Aug 2009 05:04:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33592 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751232AbZHFJEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 05:04:50 -0400
+Message-ID: <4A7A9C91.6070002@redhat.com>
+Date: Thu, 06 Aug 2009 17:04:17 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908052330.08452.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Neil Horman <nhorman@redhat.com>, linux-kernel@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Andi Kleen <andi@firstfloor.org>, Bernhard Walle <bwalle@suse.de>
+Subject: Re: [Patch 0/7] Implement crashkernel=auto
+References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>	<m1eirqtmey.fsf@fess.ebiederm.org>	<20090805140408.GJ7259@hmsreliant.think-freely.org>	<m1skg5vpgg.fsf@fess.ebiederm.org> <4A7A3A78.7080200@redhat.com>	<m1y6pxr737.fsf@fess.ebiederm.org> <4A7A506B.2060008@redhat.com>	<m1ljlxsiox.fsf@fess.ebiederm.org> <4A7A70E5.2010204@redhat.com>	<m1bpmtqxjh.fsf@fess.ebiederm.org> <4A7A7A0F.6070906@redhat.com>	<m1iqh1nxv3.fsf@fess.ebiederm.org> <m13a85nxab.fsf@fess.ebiederm.org>
+In-Reply-To: <m13a85nxab.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 11:30:07PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday 05 August 2009, Frans Pop wrote:
-> > Rafael J. Wysocki wrote:
-> > 
-> > > +#define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
-> > > +struct dev_pm_ops name = { \
-> > > +       .suspend = suspend_fn, \
-> > > +       .resume = resume_fn, \
-> > > +       .freeze = suspend_fn, \
-> > > +       .thaw = resume_fn, \
-> > > +       .poweroff = suspend_fn, \
-> > > +       .resume = resume_fn, \
-> > 
-> > That defines .resume twice. Guess the last should be restore.
-> 
-> Yes, thanks to you and Philipp for noticing that and sorry for the mistake.
+Eric W. Biederman wrote:
+> Hmm.  I half take it back.  How is crashkernel=auto and then shrinking
+> the reserved size better than the extended syntax Bernhard Walle
+> introduced nearly two years ago?
+>   
 
-When is a good point to resend patches that use this macro? I guess they
-won't make it to .31 anyway, right? So I just wait for the next merge
-window?
+You mean something like crashkernel=512M-2G:64M,2G-:128M?
+Isn't it longer and more complex than "crashkernel=auto" for an end user?
 
-Daniel
+Hmm, this makes me to think that "crashkernel=auto" can be a replacement 
+for that extended syntax...
 
