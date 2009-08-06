@@ -1,104 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbZHFKM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbZHFKNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869AbZHFKM6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 06:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbZHFKM5
+	id S1754882AbZHFKNy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 06:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793AbZHFKNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 06:12:57 -0400
-Received: from perceval.irobotique.be ([92.243.18.41]:55988 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754811AbZHFKM4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 06:12:56 -0400
-X-Greylist: delayed 393 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Aug 2009 06:12:56 EDT
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: How to efficiently handle DMA and cache on ARMv7 ? (was "Is get_user_pages() enough to prevent pages from being swapped out ?")
-Date: Thu, 6 Aug 2009 12:08:21 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30.3; KDE/4.2.4; x86_64; ; )
-Cc: Robin Holt <holt@sgi.com>, linux-kernel@vger.kernel.org,
-       "v4l2_linux" <linux-media@vger.kernel.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk
+	Thu, 6 Aug 2009 06:13:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59498 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754822AbZHFKNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 06:13:53 -0400
+Message-ID: <4A7AAE07.1010202@redhat.com>
+Date: Thu, 06 Aug 2009 13:18:47 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Andrea Arcangeli <aarcange@redhat.com>
+CC: Wu Fengguang <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+References: <20090805024058.GA8886@localhost> <20090805155805.GC23385@random.random> <20090806100824.GO23385@random.random>
+In-Reply-To: <20090806100824.GO23385@random.random>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908061208.22131.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Resent with an updated subject, this time CC'ing linux-arm-kernel]
+On 08/06/2009 01:08 PM, Andrea Arcangeli wrote:
+> After some conversation it seems reactivating on large systems
+> generates troubles to the VM as young bit have excessive time to be
+> reactivated, giving troubles to shrink active list. I see that, so
+> then the check should be still nuked, but the unconditional
+> deactivation should happen instead. Otherwise it's trivial to put the
+> VM to its knees and DoS it with a simple mmap of a file with MAP_EXEC
+> as parameter of mmap. My whole point is that deciding if activating or
+> deactivating pages can't be in function  of VM_EXEC, and clearly it
+> helps on desktops but then it probably is a signal that the VM isn't
+> good enough by itself to identify the important working set using
+> young bits and stuff on desktop systems, and if there's a good reason
+> to not activate, we shouldn't activate the VM_EXEC either as anything
+> and anybody can generate a file mapping with VM_EXEC set...
+>    
 
-I've spent the last few days "playing" with get_user_pages() and mlock() and 
-got some interesting results. It turned out that cache coherency comes into 
-play at some point, making the overall problem more complex.
+Reasonable; if you depend on a hint from userspace, that hint can be 
+used against you.
 
-Here's my current setup:
+> Likely we need a cut-off point, if we detect it takes more than X
+> seconds to scan the whole active list, we start ignoring young bits,
+> as young bits don't provide any meaningful information then and they
+> just hang the VM in preventing it to shrink active list and looping
+> over it endlessy with million pages inside that list. But on small
+> systems if inactive list is short it may be too quick to just clear
+> the young bit and only giving it time to be re-enabled in inactive
+> list. That may be the source of the problem. Actually I'm speculating
+> here, because I barely understood that this is swapin... not sure
+> exactly what this regression is about but testing the patch posted is
+> good idea and it will tell us if we just need to dynamically
+> differentiating the algorithm between large and small systems and start
+> ignoring young bits only at some point.
+>    
 
-- OMAP processor, based on an ARMv7 core
-- MMU and IOMMU
-- VIPT non-aliasing data cache
-- video capture driver that transfers data to memory using DMA
-- video capture application that pass userspace pointers to video buffers to 
-the driver
+How about, for every N pages that you scan, evict at least 1 page, 
+regardless of young bit status?  That limits overscanning to a N:1 
+ratio.  With N=250 we'll spend at most 25 usec in order to locate one 
+page to evict.
 
-My goal is to make sure that, upon DMA completion, the correct data will be 
-available to the userspace application.
 
-The first problem was to pin pages to memory, to make sure they will not be 
-freed when the DMA is in progress. videobug-dma-sg uses get_user_pages() for 
-that, and Hugh Dickins nicely explained to me why this is enough.
-
-The second problem is to ensure cache coherency. As the userspace application 
-will read data from the video buffers, those buffers will end up being cached 
-in the processor's data cache. The driver does need to invalidate the cache 
-before starting the DMA operation (userspace could in theory write to the 
-buffers, but the data will be overwritten by DMA anyway, so there's no need to 
-clean the cache).
-
-As the cache is of the VIPT (Virtual Index Physical Tag) type, cache 
-invalidation can either be done globally (in which case the cache is flushed 
-instead of being invalidated) or based on virtual addresses. In the last case 
-the processor will need to look physical addresses up, either in the TLB or 
-through hardware table walk.
-
-I can see three solutions to the DMA/cache problem.
-
-1. Flushing the whole data cache right before starting the DMA transfer. 
-There's no API for that in the ARM architecture, so a whole I+D cache is 
-required. This is quite costly, we're talking about around 30 flushes per 
-second, but it doesn't involve the MMU. That's the solution that I currently 
-use.
-
-2. Invalidating only the cache lines that store video buffer data. This 
-requires a TLB lookup or a hardware table walk, so the userspace application 
-MM context needs to be available (no problem there as where's flushing in 
-userspace context) and all pages need to be mapped properly. This can be a 
-problem as, as Hugh pointed out, pages can still be unmapped from the 
-userspace context after get_user_pages() returns. I have experienced one oops 
-due to a kernel paging request failure:
-
-        Unable to handle kernel paging request at virtual address 44e12000
-        pgd = c8698000
-        [44e12000] *pgd=8a4fd031, *pte=8cfda1cd, *ppte=00000000
-        Internal error: Oops: 817 [#1] PREEMPT
-        PC is at v7_dma_inv_range+0x2c/0x44
-
-Fixing this requires more investigation, and I'm not sure how to proceed to 
-find out if the page fault is really caused by pages being unmapped from the 
-userspace context. Help would be appreciated.
-
-3. Mark the pages as non-cacheable. Depending on how the buffers are then used 
-by userspace, the additional cache misses might destroy any benefit I would 
-get from not flushing the cache before DMA. I'm not sure how to mark a bunch 
-of pages as non-cacheable though. What usually happens is that video drivers 
-allocate DMA-coherent memory themselves, but in this case I need to deal with 
-an arbitrary buffer allocated by userspace. If someone has any experience with 
-this, it would be appreciated.
-
-Regards,
-
-Laurent Pinchart
+-- 
+error compiling committee.c: too many arguments to function
 
