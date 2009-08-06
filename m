@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbZHFKHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbZHFKJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754779AbZHFKHJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 06:07:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZHFKHI
+	id S1754842AbZHFKJe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 06:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbZHFKJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 06:07:08 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38018 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751355AbZHFKHH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 06:07:07 -0400
-Date: Thu, 6 Aug 2009 12:07:01 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: kernel list <linux-kernel@vger.kernel.org>, davem@davemloft.net,
-       mouw@nl.linux.org
-Subject: Re: linux-arm-kernel useless for development (was Re: Your message
-	to Linux-arm-kernel awaits moderator approval)
-Message-ID: <20090806100700.GC31370@elf.ucw.cz>
-References: <mailman.3653.1249217530.31043.linux-arm-kernel@lists.arm.linux.org.uk> <20090804100051.GA17106@elf.ucw.cz> <20090804222840.GC18365@flint.arm.linux.org.uk>
+	Thu, 6 Aug 2009 06:09:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58040 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751246AbZHFKJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 06:09:31 -0400
+Date: Thu, 6 Aug 2009 12:08:24 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Rik van Riel <riel@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>, Avi Kivity <avi@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+Message-ID: <20090806100824.GO23385@random.random>
+References: <20090805024058.GA8886@localhost>
+ <20090805155805.GC23385@random.random>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090804222840.GC18365@flint.arm.linux.org.uk>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090805155805.GC23385@random.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-08-04 23:28:40, Russell King wrote:
-> On Tue, Aug 04, 2009 at 12:00:51PM +0200, Pavel Machek wrote:
+On Wed, Aug 05, 2009 at 05:58:05PM +0200, Andrea Arcangeli wrote:
+> On Wed, Aug 05, 2009 at 10:40:58AM +0800, Wu Fengguang wrote:
+> >  			 */
+> > -			if ((vm_flags & VM_EXEC) && !PageAnon(page)) {
+> > +			if ((vm_flags & VM_EXEC) || PageAnon(page)) {
+> >  				list_add(&page->lru, &l_active);
+> >  				continue;
+> >  			}
 > > 
-> > Please fix your mailinglist.
-> > 
-> > You claimed that it is possible to crosspost between lkml and lakml,
-> > yet the lakml does everything to prevent that -- even in case as
-> > simple as reporting that regression that affects arm.
 > 
-> Given your attitude, I'm going to say I'm NOT going to do a damned
-> thing if you can't talk to me in a sane and civilised way.
+> Please nuke the whole check and do an unconditional list_add;
+> continue; there.
 
-Fine. You are unwilling to fix the mailinglist,
+After some conversation it seems reactivating on large systems
+generates troubles to the VM as young bit have excessive time to be
+reactivated, giving troubles to shrink active list. I see that, so
+then the check should be still nuked, but the unconditional
+deactivation should happen instead. Otherwise it's trivial to put the
+VM to its knees and DoS it with a simple mmap of a file with MAP_EXEC
+as parameter of mmap. My whole point is that deciding if activating or
+deactivating pages can't be in function  of VM_EXEC, and clearly it
+helps on desktops but then it probably is a signal that the VM isn't
+good enough by itself to identify the important working set using
+young bits and stuff on desktop systems, and if there's a good reason
+to not activate, we shouldn't activate the VM_EXEC either as anything
+and anybody can generate a file mapping with VM_EXEC set...
 
-> Treat me like shit and you will be treated as shit.
-
-and your behaviour leaves quite a lot to be desired, so... can we
-simply move mailinglist to someone who can (and is willing) to
-actually maintain it, like vger?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Likely we need a cut-off point, if we detect it takes more than X
+seconds to scan the whole active list, we start ignoring young bits,
+as young bits don't provide any meaningful information then and they
+just hang the VM in preventing it to shrink active list and looping
+over it endlessy with million pages inside that list. But on small
+systems if inactive list is short it may be too quick to just clear
+the young bit and only giving it time to be re-enabled in inactive
+list. That may be the source of the problem. Actually I'm speculating
+here, because I barely understood that this is swapin... not sure
+exactly what this regression is about but testing the patch posted is
+good idea and it will tell us if we just need to dynamically
+differentiating the algorithm between large and small systems and start
+ignoring young bits only at some point.
