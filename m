@@ -1,76 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbZHFQ2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbZHFQ3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755953AbZHFQ2Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 12:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbZHFQ2Q
+	id S1756183AbZHFQ3O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 12:29:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbZHFQ3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 12:28:16 -0400
-Received: from emulex.emulex.com ([138.239.112.1]:51540 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753187AbZHFQ2P convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 12:28:15 -0400
-From: Chetan.Loke@Emulex.Com
-To: <tony@linx.net>
-CC: <hancockrwd@gmail.com>, <jgarzik@pobox.com>, <linux-ide@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <philipl@overt.org>
-Date: Thu, 6 Aug 2009 09:28:02 -0700
-Subject: RE: [PATCH 2.6.32 v2] MCP55 SATA2 conditional MSI support for
- sata_nv
-Thread-Topic: [PATCH 2.6.32 v2] MCP55 SATA2 conditional MSI support for
- sata_nv
-Thread-Index: AcoWrvIBnurx2YazRAe6I2hKNhAWsgAAjpRQ
-Message-ID: <412A05BA40734D4887DBC67661F433080D7322B1@EXMAIL.ad.emulex.com>
-References: <20090805192055.8F2DE1007C@gold.linx.net>
-	 <4A7A16C9.6030500@gmail.com>
-	 <412A05BA40734D4887DBC67661F433080D73228B@EXMAIL.ad.emulex.com>
- <1249574363.4530.23.camel@localhost>
-In-Reply-To: <1249574363.4530.23.camel@localhost>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
+	Thu, 6 Aug 2009 12:29:13 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:30791 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752922AbZHFQ3M convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-ghaskins@novell.com;5:2>);
+	Thu, 6 Aug 2009 12:29:12 -0400
+Message-Id: <4A7ACC940200005A00051C43@sinclair.provo.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 Beta 
+Date: Thu, 06 Aug 2009 10:29:08 -0600
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Arnd Bergmann" <arnd@arndb.de>
+Cc: <alacrityvm-devel@lists.sourceforge.net>, "Avi Kivity" <avi@redhat.com>,
+       "Michael S. Tsirkin" <mst@redhat.com>, <kvm@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+Subject: Re: [PATCH 0/7] AlacrityVM guest drivers Reply-To:
+References: <20090803171030.17268.26962.stgit@dev.haskins.net>
+ <4A7AE150.7040009@redhat.com>
+ <4A7AAB1A0200005A00051BED@sinclair.provo.novell.com>
+ <200908061740.04276.arnd@arndb.de>
+In-Reply-To: <200908061740.04276.arnd@arndb.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-MIME-Version: 1.0
-X-OriginalArrivalTime: 06 Aug 2009 16:28:05.0000 (UTC) FILETIME=[DFE81880:01CA16B2]
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Tony Vroon [mailto:tony@linx.net]
-> Sent: Thursday, August 06, 2009 11:59 AM
-> To: Loke,Chetan
-> Cc: hancockrwd@gmail.com; jgarzik@pobox.com; linux-ide@vger.kernel.org;
-> linux-kernel@vger.kernel.org; philipl@overt.org
-> Subject: RE: [PATCH 2.6.32 v2] MCP55 SATA2 conditional MSI support for
-> sata_nv
+>>> On 8/6/2009 at 11:40 AM, in message <200908061740.04276.arnd@arndb.de>, Arnd
+Bergmann <arnd@arndb.de> wrote: 
+> On Thursday 06 August 2009, Gregory Haskins wrote:
+>> We can exchange out the "virtio-pci" module like this:
+>> 
+>>   (guest-side)
+>> |--------------------------
+>> | virtio-net
+>> |--------------------------
+>> | virtio-ring
+>> |--------------------------
+>> | virtio-bus
+>> |--------------------------
+>> | virtio-vbus
+>> |--------------------------
+>> | vbus-proxy
+>> |--------------------------
+>> | vbus-connector
+>> |--------------------------
+>>                       |
+>>                    (vbus)
+>>                       |
+>> |--------------------------
+>> | kvm.ko
+>> |--------------------------
+>> | vbus-connector
+>> |--------------------------
+>> | vbus
+>> |--------------------------
+>> | virtio-net-tap (vbus model)
+>> |--------------------------
+>> | netif
+>> |--------------------------
+>>      (host-side)
+>> 
+>> 
+>> So virtio-net runs unmodified.  What is "competing" here is "virtio-pci" vs 
+> "virtio-vbus".
+>> Also, venet vs virtio-net are technically competing.  But to say "virtio vs 
+> vbus" is inaccurate, IMO.
 > 
-> > disable_msi() is missing right?
 > 
-> I didn't add that as none of the other drivers have it:
-
-Then they would leak the MSI-vectors if request_irq fails.
-
-
-> chainsaw@amalthea /cvs/linux-2.6/drivers/ata $ grep _msi * | grep pci
-> ahci.c:		pci_enable_msi(pdev);
-> sata_mv.c:	if (msi && pci_enable_msi(pdev) == 0)
-> sata_vsc.c:	if (pci_enable_msi(pdev) == 0)
+> I think what's confusing everyone is that you are competing on multiple
+> issues:
 > 
-> (This is a tree without the sata_nv change I submitted)
+> 1. Implementation of bus probing: both vbus and virtio are backed by
+> PCI devices and can be backed by something else (e.g. virtio by lguest
+> or even by vbus).
+
+More specifically, vbus-proxy and virtio-bus can be backed by modular adapters.
+
+vbus-proxy can be backed by vbus-pcibridge (as it is in AlacrityVM).  It was backed by KVM-hypercalls in previous releases, but we have deprecated/dropped that connector.  Other types of connectors are possible...
+
+virtio-bus can be backed by virtio-pci, virtio-lguest, virtio-s390, and virtio-vbus (which is backed by vbus-proxy, et. al.)
+
+"vbus" itself is actually the host-side container technology which vbus-proxy connects to.  This is an important distinction.
+
 > 
-> I do believe it is safe to shut the interrupt down and unload the
-> handler whilst it is still in MSI mode. At least, I don't see the libata
-> core special-casing it in any way.
+> 2. Exchange of metadata: virtio uses a config space, vbus uses devcall
+> to do the same.
 
-If I'm not wrong then that's how it's supposed to be done. free_irq and then disable_msi. You can't reverse the order. Also the driver should know when to quiesce the ASIC. So quiesce first and then shutdown everything.
+Sort of.  You can use devcall() to implement something like config-space (and in fact, we do use it like this for some operations).  But this can also be fast path (for when you need synchronous behavior).
 
+This has various uses, such as when you need synchronous updates from non-preemptible guest code (cpupri, for instance, for -rt)
 
-> Regards,
-> Tony V.
+> 
+> 3. User data transport: virtio has virtqueues, vbus has shm/ioq.
 
-Regards
-Chetan
+Not quite:  vbus has shm + shm-signal.  You can then overlay shared-memory protocols over that, such as virtqueues, ioq, or even non-ring constructs.
+
+I also consider the synchronous call() method to be part of the transport (tho more for niche devices, like -rt)
+
+> 
+> I think these three are the main differences, and the venet vs. virtio-net
+> question comes down to which interface the drivers use for each aspect. Do
+> you agree with this interpretation?
+> 
+> Now to draw conclusions from each of these is of course highly subjective,
+> but this is how I view it:
+> 
+> 1. The bus probing is roughly equivalent, they both work and the
+> virtio method seems to need a little less code but that could be fixed
+> by slimming down the vbus code as I mentioned in my comments on the
+> pci-to-vbus bridge code. However, I would much prefer not to have both
+> of them, and virtio came first.
+> 
+> 2. the two methods (devcall/config space) are more or less equivalent
+> and you should be able to implement each one through the other one. The
+> virtio design was driven by making it look similar to PCI, the vbus
+> design was driven by making it easy to implement in a host kernel. I
+> don't care too much about these, as they can probably coexist without
+> causing any trouble. For a (hypothetical) vbus-in-virtio device,
+> a devcall can be a config-set/config-get pair, for a virtio-in-vbus,
+> you can do a config-get and a config-set devcall and be happy. Each
+> could be done in a trivial helper library.
+
+Yep, in fact I publish something close to what I think you are talking about back in April
+
+http://lkml.org/lkml/2009/4/21/427
+
+> 
+> 3. The ioq method seems to be the real core of your work that makes
+> venet perform better than virtio-net with its virtqueues. I don't see
+> any reason to doubt that your claim is correct. My conclusion from
+> this would be to add support for ioq to virtio devices, alongside
+> virtqueues, but to leave out the extra bus_type and probing method.
+
+While I appreciate the sentiment, I doubt that is actually whats helping here.
+
+There are a variety of factors that I poured into venet/vbus that I think contribute to its superior performance.  However, the difference in the ring design I do not think is one if them.  In fact, in many ways I think Rusty's design might turn out to be faster if put side by side because he was much more careful with cacheline alignment than I was.  Also note that I was careful to not pick one ring vs the other ;)  They both should work.
+
+IMO, we are only looking at the tip of the iceberg when looking at this purely as the difference between virtio-pci vs virtio-vbus, or venet vs virtio-net.
+
+Really, the big thing I am working on here is the host side device-model.  The idea here was to design a bus model that was conducive to high performance, software to software IO that would work in a variety of environments (that may or may not have PCI).  KVM is one such environment, but I also have people looking at building other types of containers, and even physical systems (host+blade kind of setups).
+
+The idea is that the "connector" is modular, and then something like virtio-net or venet "just work": in kvm, in the userspace container, on the blade system. 
+
+It provides a management infrastructure that (hopefully) makes sense for these different types of containers, regardless of whether they have PCI, QEMU, etc (e.g. things that are inherent to KVM, but not others).
+
+I hope this helps to clarify the project :)
+
+Kind Regards,
+-Greg
