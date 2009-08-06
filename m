@@ -1,92 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755152AbZHFL5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbZHFL6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755152AbZHFL5O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 07:57:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbZHFL5N
+	id S1755186AbZHFL6u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 07:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZHFL6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 07:57:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54944 "EHLO mx3.mail.elte.hu"
+	Thu, 6 Aug 2009 07:58:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46570 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752911AbZHFL5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 07:57:12 -0400
-Date: Thu, 6 Aug 2009 13:57:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org
-Subject: Re: [PATCH 2/2 2.6.31-rc5 REPOST] percpu, sparc64: fix sparse
-	possible cpu map handling
-Message-ID: <20090806115705.GB10734@elte.hu>
-References: <4A7AA368.8080606@kernel.org> <4A7AA416.9070901@kernel.org>
+	id S1754337AbZHFL6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 07:58:49 -0400
+Date: Thu, 6 Aug 2009 11:57:59 GMT
+From: tip-bot for Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, dwmw2@infradead.org,
+       benh@kernel.crashing.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+       dwmw2@infradead.org, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <19066.48028.446975.501454@cargo.ozlabs.ibm.com>
+References: <19066.48028.446975.501454@cargo.ozlabs.ibm.com>
+Subject: [tip:perfcounters/urgent] perf_counter/powerpc: Check oprofile_cpu_type for NULL before using it
+Message-ID: <tip-e0d82a0a4e9841b787e6431ccfbb515546c55dc2@git.kernel.org>
+Git-Commit-ID: e0d82a0a4e9841b787e6431ccfbb515546c55dc2
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <4A7AA416.9070901@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 06 Aug 2009 11:58:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  e0d82a0a4e9841b787e6431ccfbb515546c55dc2
+Gitweb:     http://git.kernel.org/tip/e0d82a0a4e9841b787e6431ccfbb515546c55dc2
+Author:     Benjamin Herrenschmidt <benh@kernel.crashing.org>
+AuthorDate: Thu, 6 Aug 2009 21:16:44 +1000
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 6 Aug 2009 13:55:09 +0200
 
-* Tejun Heo <tj@kernel.org> wrote:
+perf_counter/powerpc: Check oprofile_cpu_type for NULL before using it
 
-> percpu code has been assuming num_possible_cpus() == nr_cpu_ids which
-> is incorrect if cpu_possible_map contains holes.  This causes percpu
-> code to access beyond allocated memories and vmalloc areas.  On a
-> sparc64 machine with cpus 0 and 2 (u60), this triggers the following
-> warning or fails boot.
-> 
->  WARNING: at /devel/tj/os/work/mm/vmalloc.c:106 vmap_page_range_noflush+0x1f0/0x240()
->  Modules linked in:
->  Call Trace:
->   [00000000004b17d0] vmap_page_range_noflush+0x1f0/0x240
->   [00000000004b1840] map_vm_area+0x20/0x60
->   [00000000004b1950] __vmalloc_area_node+0xd0/0x160
->   [0000000000593434] deflate_init+0x14/0xe0
->   [0000000000583b94] __crypto_alloc_tfm+0xd4/0x1e0
->   [00000000005844f0] crypto_alloc_base+0x50/0xa0
->   [000000000058b898] alg_test_comp+0x18/0x80
->   [000000000058dad4] alg_test+0x54/0x180
->   [000000000058af00] cryptomgr_test+0x40/0x60
->   [0000000000473098] kthread+0x58/0x80
->   [000000000042b590] kernel_thread+0x30/0x60
->   [0000000000472fd0] kthreadd+0xf0/0x160
->  ---[ end trace 429b268a213317ba ]---
-> 
-> This patch fixes generic percpu functions and sparc64
-> setup_per_cpu_areas() so that they handle sparse cpu_possible_map
-> properly.
-> 
-> Please note that on x86, cpu_possible_map() doesn't contain holes and
-> thus num_possible_cpus() == nr_cpu_ids and this patch doesn't cause
-> any behavior difference.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: David S. Miller <davem@davemloft.net>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> ---
-> As written in the previous mail, this fixes rather critical boot
-> problem on sparc64.  Upon ack, I can get it through the percpu tree.
-> Not really sure who could ack this one other than David tho.  Anyone?
-> 
-> Thanks.
-> 
->  arch/sparc/kernel/smp_64.c     |    4 ++--
->  arch/x86/kernel/setup_percpu.c |   14 +++++++-------
->  mm/percpu.c                    |   31 +++++++++++++++++++------------
->  3 files changed, 28 insertions(+), 21 deletions(-)
+If the current CPU doesn't support performance counters,
+cur_cpu_spec->oprofile_cpu_type can be NULL. The current
+perf_counter modules don't test for that case and would thus
+crash at boot time.
 
-for the x86 bits:
+Bug reported by David Woodhouse.
 
- Acked-by: Ingo Molnar <mingo@elte.hu>
+Reported-by: David Woodhouse <dwmw2@infradead.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+LKML-Reference: <19066.48028.446975.501454@cargo.ozlabs.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Once Dave acks it i suspect you can send it to Linus directly?
 
-	Ingo
+---
+ arch/powerpc/kernel/mpc7450-pmu.c |    3 ++-
+ arch/powerpc/kernel/power4-pmu.c  |    3 ++-
+ arch/powerpc/kernel/power5+-pmu.c |    5 +++--
+ arch/powerpc/kernel/power5-pmu.c  |    3 ++-
+ arch/powerpc/kernel/power6-pmu.c  |    3 ++-
+ arch/powerpc/kernel/power7-pmu.c  |    3 ++-
+ arch/powerpc/kernel/ppc970-pmu.c  |    5 +++--
+ 7 files changed, 16 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/kernel/mpc7450-pmu.c b/arch/powerpc/kernel/mpc7450-pmu.c
+index c244133..cc466d0 100644
+--- a/arch/powerpc/kernel/mpc7450-pmu.c
++++ b/arch/powerpc/kernel/mpc7450-pmu.c
+@@ -407,7 +407,8 @@ struct power_pmu mpc7450_pmu = {
+ 
+ static int init_mpc7450_pmu(void)
+ {
+-	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc/7450"))
++	if (!cur_cpu_spec->oprofile_cpu_type ||
++	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc/7450"))
+ 		return -ENODEV;
+ 
+ 	return register_power_pmu(&mpc7450_pmu);
+diff --git a/arch/powerpc/kernel/power4-pmu.c b/arch/powerpc/kernel/power4-pmu.c
+index db90b0c..3c90a3d 100644
+--- a/arch/powerpc/kernel/power4-pmu.c
++++ b/arch/powerpc/kernel/power4-pmu.c
+@@ -606,7 +606,8 @@ static struct power_pmu power4_pmu = {
+ 
+ static int init_power4_pmu(void)
+ {
+-	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power4"))
++	if (!cur_cpu_spec->oprofile_cpu_type ||
++	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power4"))
+ 		return -ENODEV;
+ 
+ 	return register_power_pmu(&power4_pmu);
+diff --git a/arch/powerpc/kernel/power5+-pmu.c b/arch/powerpc/kernel/power5+-pmu.c
+index f4adca8..31918af 100644
+--- a/arch/powerpc/kernel/power5+-pmu.c
++++ b/arch/powerpc/kernel/power5+-pmu.c
+@@ -678,8 +678,9 @@ static struct power_pmu power5p_pmu = {
+ 
+ static int init_power5p_pmu(void)
+ {
+-	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5+")
+-	    && strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5++"))
++	if (!cur_cpu_spec->oprofile_cpu_type ||
++	    (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5+")
++	     && strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5++")))
+ 		return -ENODEV;
+ 
+ 	return register_power_pmu(&power5p_pmu);
+diff --git a/arch/powerpc/kernel/power5-pmu.c b/arch/powerpc/kernel/power5-pmu.c
+index 29b2c6c..867f6f6 100644
+--- a/arch/powerpc/kernel/power5-pmu.c
++++ b/arch/powerpc/kernel/power5-pmu.c
+@@ -618,7 +618,8 @@ static struct power_pmu power5_pmu = {
+ 
+ static int init_power5_pmu(void)
+ {
+-	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5"))
++	if (!cur_cpu_spec->oprofile_cpu_type ||
++	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5"))
+ 		return -ENODEV;
+ 
+ 	return register_power_pmu(&power5_pmu);
+diff --git a/arch/powerpc/kernel/power6-pmu.c b/arch/powerpc/kernel/power6-pmu.c
+index 09ae5bf..fa21890 100644
+--- a/arch/powerpc/kernel/power6-pmu.c
++++ b/arch/powerpc/kernel/power6-pmu.c
+@@ -537,7 +537,8 @@ static struct power_pmu power6_pmu = {
+ 
+ static int init_power6_pmu(void)
+ {
+-	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power6"))
++	if (!cur_cpu_spec->oprofile_cpu_type ||
++	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power6"))
+ 		return -ENODEV;
+ 
+ 	return register_power_pmu(&power6_pmu);
+diff --git a/arch/powerpc/kernel/power7-pmu.c b/arch/powerpc/kernel/power7-pmu.c
+index 5a9f5cb..388cf57 100644
+--- a/arch/powerpc/kernel/power7-pmu.c
++++ b/arch/powerpc/kernel/power7-pmu.c
+@@ -366,7 +366,8 @@ static struct power_pmu power7_pmu = {
+ 
+ static int init_power7_pmu(void)
+ {
+-	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power7"))
++	if (!cur_cpu_spec->oprofile_cpu_type ||
++	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power7"))
+ 		return -ENODEV;
+ 
+ 	return register_power_pmu(&power7_pmu);
+diff --git a/arch/powerpc/kernel/ppc970-pmu.c b/arch/powerpc/kernel/ppc970-pmu.c
+index 833097a..75dccb7 100644
+--- a/arch/powerpc/kernel/ppc970-pmu.c
++++ b/arch/powerpc/kernel/ppc970-pmu.c
+@@ -488,8 +488,9 @@ static struct power_pmu ppc970_pmu = {
+ 
+ static int init_ppc970_pmu(void)
+ {
+-	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/970")
+-	    && strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/970MP"))
++	if (!cur_cpu_spec->oprofile_cpu_type ||
++	    (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/970")
++	     && strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/970MP")))
+ 		return -ENODEV;
+ 
+ 	return register_power_pmu(&ppc970_pmu);
