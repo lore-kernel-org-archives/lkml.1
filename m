@@ -1,44 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbZHFUPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932163AbZHFUPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756704AbZHFUPi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 16:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbZHFUPh
+	id S932163AbZHFUPv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 16:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756710AbZHFUPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 16:15:37 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:59825 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756185AbZHFUPg (ORCPT
+	Thu, 6 Aug 2009 16:15:50 -0400
+Received: from mail-fx0-f228.google.com ([209.85.220.228]:43142 "EHLO
+	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756706AbZHFUPt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 16:15:36 -0400
-Date: Thu, 6 Aug 2009 21:15:27 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: David Xiao <dxiao@broadcom.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-       Ben Dooks <ben-linux@fluff.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       v4l2_linux <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is get_user_pages() enough to prevent pages from being swapped out ?")
-Message-ID: <20090806201527.GA8725@shareable.org>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806114619.GW2080@trinity.fluff.org> <200908061506.23874.laurent.pinchart@ideasonboard.com> <1249584374.29182.20.camel@david-laptop>
+	Thu, 6 Aug 2009 16:15:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=G9h86WdDu5y8ov78tWgN8W7f4vAr1aLxKRf55wA3KIzPncwDATtCsluNtjokIuKetr
+         +/Gsvmts2L5hKweCerVDUCvHQOdlmw9QYFwiUMtWuJI6O4Ij1Q2jcDDhCrnAzlu3D/gu
+         cHczDnf5yWq7xE9MvKKbPVoCTakebLI6eFT0Q=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249584374.29182.20.camel@david-laptop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <43e72e890908061232k467ba1f7iece5d0aa9bece811@mail.gmail.com>
+References: <b637ec0b0908061130w399eb1c6oc3a31640a76398c5@mail.gmail.com>
+	 <20090806183247.GI26809@tuxdriver.com>
+	 <b637ec0b0908061226m33203bco7ac38cecb939b382@mail.gmail.com>
+	 <43e72e890908061232k467ba1f7iece5d0aa9bece811@mail.gmail.com>
+Date: Thu, 6 Aug 2009 22:15:48 +0200
+Message-ID: <b637ec0b0908061315s3614603dya1ac800445b748bf@mail.gmail.com>
+Subject: Re: WARNING: at net/mac80211/mlme.c:2292 ieee80211_sta_work+0x97/0xd2d 
+	[mac80211]()
+From: Fabio Comolli <fabio.comolli@gmail.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-wireless@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Xiao wrote:
-> Another approach is working from a different direction: the kernel
-> allocates the non-cached buffer and then mmap() into user space. I have
-> done that in similar situation to try to achieve "zero-copy". 
+Hi Luis.
+I'm using 2.6.31-rc5 and I'm not using wireless-testing.
 
-open(O_DIRECT) does DMA to arbitrary pages allocated by userspace, and
-O_DIRECT is used by some important applications, so the problem still
-needs to be solved in general.
+Regards,
+Fabio
 
--- Jamie
+
+
+On Thu, Aug 6, 2009 at 9:32 PM, Luis R. Rodriguez<mcgrof@gmail.com> wrote:
+> On Thu, Aug 6, 2009 at 12:26 PM, Fabio Comolli<fabio.comolli@gmail.com> wrote:
+>> Hi John. I'm using ath5k .
+>>
+>> The card is a:
+>>
+>> 01:00.0 Ethernet controller: Atheros Communications Inc. AR5001
+>> Wireless Network Adapter (rev 01)
+>>
+>> with PCI ID:
+>>
+>> 01:00.0 0200: 168c:001c (rev 01)
+>
+> What kernel?
+>
+> This is probably a driver/mac80211 adding work into the mac80211
+> workqueue during the susend --> resume cycle. We recently changed the
+> warning to be moved onto the actual caller who does the queue_work()
+> so we don't have to guess at this and do a painful debugging.
+>
+> I suspect you are not using the latest wireless-testing.
+>
+>  Luis
+>
