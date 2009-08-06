@@ -1,110 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbZHFKSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754937AbZHFKU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754907AbZHFKSX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 06:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754483AbZHFKSX
+	id S1754937AbZHFKU3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 06:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbZHFKU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 06:18:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60830 "EHLO mx2.redhat.com"
+	Thu, 6 Aug 2009 06:20:28 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:38322 "EHLO pmx1.sophos.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751645AbZHFKSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 06:18:22 -0400
-Date: Thu, 6 Aug 2009 13:17:02 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: linux-kernel@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [PATCH 0/7] AlacrityVM guest drivers Reply-To:
-Message-ID: <20090806101702.GA10605@redhat.com>
-References: <20090803171030.17268.26962.stgit@dev.haskins.net> <20090806081955.GA9752@redhat.com>
+	id S1752243AbZHFKU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 06:20:27 -0400
+From: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+Organization: Sophos Plc
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: fanotify - overall design before I start sending patches
+Date: Thu, 6 Aug 2009 11:20:25 +0100
+User-Agent: KMail/1.9.10
+Cc: Eric Paris <eparis@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
+       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
+       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
+       Douglas Leeder <douglas.leeder@sophos.com>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "arjan@infradead.org" <arjan@infradead.org>,
+       "david@lang.hm" <david@lang.hm>,
+       "jengelh@medozas.de" <jengelh@medozas.de>,
+       "aviro@redhat.com" <aviro@redhat.com>,
+       "mrkafk@gmail.com" <mrkafk@gmail.com>,
+       "alexl@redhat.com" <alexl@redhat.com>, "jack@suse.cz" <jack@suse.cz>,
+       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "mmorley@hcl.in" <mmorley@hcl.in>
+References: <1248466429.3567.82.camel@localhost> <200908051746.17903.tvrtko.ursulin@sophos.com> <20090806101059.GD31370@elf.ucw.cz>
+In-Reply-To: <20090806101059.GD31370@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200908061120.26866.tvrtko.ursulin@sophos.com>
+X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 06/08/2009 11:20:27,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 06/08/2009 11:20:27,
+	Serialize complete at 06/08/2009 11:20:27
+X-TNEFEvaluated: 1
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20090806081955.GA9752@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 11:19:56AM +0300, Michael S. Tsirkin wrote:
-> On Mon, Aug 03, 2009 at 01:17:30PM -0400, Gregory Haskins wrote:
-> > (Applies to v2.6.31-rc5, proposed for linux-next after review is complete)
-> 
-> These are guest drivers, right? Merging the guest first means relying on
-> kernel interface from an out of tree driver, which well might change
-> before it goes in.  Would it make more sense to start merging with the
-> host side of the project?
-> 
-> > This series implements the guest-side drivers for accelerated IO
-> > when running on top of the AlacrityVM hypervisor, the details of
-> > which you can find here:
-> > 
-> > http://developer.novell.com/wiki/index.php/AlacrityVM
-> 
-> Since AlacrityVM is kvm based, Cc kvm@vger.kernel.org.
-> 
-> > This series includes the basic plumbing, as well as the driver for
-> > accelerated 802.x (ethernet) networking.
-> 
-> The graphs comparing virtio with vbus look interesting.
-> However, they do not compare apples to apples, do they?
-> These compare userspace virtio with kernel vbus, where for
-> apples to apples comparison one would need to compare
-> kernel virtio with kernel vbus. Right?
+On Thursday 06 August 2009 11:10:59 Pavel Machek wrote:
+> On Wed 2009-08-05 17:46:16, Tvrtko Ursulin wrote:
+> > Just to make sure you haven't missed this - it is not that they have to
+> > complete the whole operation before the timeout period (since you mention
+> > realtime/mlock I suspect this is what you think?), but _during_ the
+> > operation they have to show that they are active by sending something
+> > like keep alive messages.
+> >
+> > Or you are worried about failing to meet even that on a loaded system?
+> > There has to be something like this otherwise hung userspace client would
+> > kill the whole system.
+>
+> Of course, I'm worried about failing to meet this on loaded
+> system. And the fact that I _have_ to worry about that means that
+> interface is ugly/broken.
 
-Or userspace virtio with userspace vbus.
+Would you prefer an infinite timeout instead? Maybe Eric could make it 
+configurable. Or you have some other alternative ideas?
 
-> > Regards,
-> > -Greg
-> > 
-> > ---
-> > 
-> > Gregory Haskins (7):
-> >       venet: add scatter-gather/GSO support
-> >       net: Add vbus_enet driver
-> >       ioq: add driver-side vbus helpers
-> >       vbus-proxy: add a pci-to-vbus bridge
-> >       vbus: add a "vbus-proxy" bus model for vbus_driver objects
-> >       ioq: Add basic definitions for a shared-memory, lockless queue
-> >       shm-signal: shared-memory signals
-> > 
-> > 
-> >  arch/x86/Kconfig            |    2 
-> >  drivers/Makefile            |    1 
-> >  drivers/net/Kconfig         |   14 +
-> >  drivers/net/Makefile        |    1 
-> >  drivers/net/vbus-enet.c     |  899 +++++++++++++++++++++++++++++++++++++++++++
-> >  drivers/vbus/Kconfig        |   24 +
-> >  drivers/vbus/Makefile       |    6 
-> >  drivers/vbus/bus-proxy.c    |  216 ++++++++++
-> >  drivers/vbus/pci-bridge.c   |  824 +++++++++++++++++++++++++++++++++++++++
-> >  include/linux/Kbuild        |    4 
-> >  include/linux/ioq.h         |  415 ++++++++++++++++++++
-> >  include/linux/shm_signal.h  |  189 +++++++++
-> >  include/linux/vbus_driver.h |   80 ++++
-> >  include/linux/vbus_pci.h    |  127 ++++++
-> >  include/linux/venet.h       |   84 ++++
-> >  lib/Kconfig                 |   21 +
-> >  lib/Makefile                |    2 
-> >  lib/ioq.c                   |  294 ++++++++++++++
-> >  lib/shm_signal.c            |  192 +++++++++
-> >  19 files changed, 3395 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/net/vbus-enet.c
-> >  create mode 100644 drivers/vbus/Kconfig
-> >  create mode 100644 drivers/vbus/Makefile
-> >  create mode 100644 drivers/vbus/bus-proxy.c
-> >  create mode 100644 drivers/vbus/pci-bridge.c
-> >  create mode 100644 include/linux/ioq.h
-> >  create mode 100644 include/linux/shm_signal.h
-> >  create mode 100644 include/linux/vbus_driver.h
-> >  create mode 100644 include/linux/vbus_pci.h
-> >  create mode 100644 include/linux/venet.h
-> >  create mode 100644 lib/ioq.c
-> >  create mode 100644 lib/shm_signal.c
-> > 
-> > -- 
-> > Signature
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe netdev" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Tvrtko
