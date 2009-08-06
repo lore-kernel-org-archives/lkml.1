@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbZHFMeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbZHFMin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284AbZHFMeT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 08:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbZHFMeS
+	id S1755083AbZHFMin (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 08:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZHFMim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 08:34:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33011 "EHLO mx3.mail.elte.hu"
+	Thu, 6 Aug 2009 08:38:42 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59406 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752931AbZHFMeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 08:34:17 -0400
-Date: Thu, 6 Aug 2009 14:34:07 +0200
+	id S1751972AbZHFMil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 08:38:41 -0400
+Date: Thu, 6 Aug 2009 14:38:29 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, tglx@linutronix.de, airlied@gmail.com
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/urgent] tracing: do not use functions starting
-	with .L in recordmcount.pl
-Message-ID: <20090806123407.GC15314@elte.hu>
-References: <alpine.DEB.2.00.0908052011590.5010@gandalf.stny.rr.com> <tip-3f6e968ef4e1d8d93d8a8505461b0e50a9e97ad8@git.kernel.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, chris.mason@oracle.com, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/urgent] ftrace: Fix perf-tracepoint OOPS
+Message-ID: <20090806123829.GE15314@elte.hu>
+References: <1249497664.5890.4.camel@laptop> <tip-af6af30c0fcd77e621638e53ef8b176bca8bd3b4@git.kernel.org> <1249549910.32113.70.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <tip-3f6e968ef4e1d8d93d8a8505461b0e50a9e97ad8@git.kernel.org>
+In-Reply-To: <1249549910.32113.70.camel@twins>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -35,33 +35,59 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* tip-bot for Steven Rostedt <rostedt@goodmis.org> wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-> Commit-ID:  3f6e968ef4e1d8d93d8a8505461b0e50a9e97ad8
-> Gitweb:     http://git.kernel.org/tip/3f6e968ef4e1d8d93d8a8505461b0e50a9e97ad8
-> Author:     Steven Rostedt <rostedt@goodmis.org>
-> AuthorDate: Wed, 5 Aug 2009 22:00:14 -0400
-> Committer:  Steven Rostedt <rostedt@goodmis.org>
-> CommitDate: Wed, 5 Aug 2009 22:45:07 -0400
 > 
-> tracing: do not use functions starting with .L in recordmcount.pl
+> > [ v2: fix build error in the !CONFIG_EVENT_PROFILE case ]
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > 
+> > 
+> > ---
+> >  include/linux/ftrace_event.h       |    8 +++-----
+> >  kernel/trace/trace_event_profile.c |    2 +-
+> >  kernel/trace/trace_events.c        |    2 +-
+> >  3 files changed, 5 insertions(+), 7 deletions(-)
+> > 
+> > diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+> > index 5c093ff..d7cd193 100644
+> > --- a/include/linux/ftrace_event.h
+> > +++ b/include/linux/ftrace_event.h
+> > @@ -119,11 +119,9 @@ struct ftrace_event_call {
+> >  	void			*filter;
+> >  	void			*mod;
+> >  
+> > -#ifdef CONFIG_EVENT_PROFILE
+> > -	atomic_t	profile_count;
+> > -	int		(*profile_enable)(struct ftrace_event_call *);
+> > -	void		(*profile_disable)(struct ftrace_event_call *);
+> > -#endif
+> > +	atomic_t		profile_count;
+> > +	int			(*profile_enable)(struct ftrace_event_call *);
+> > +	void			(*profile_disable)(struct ftrace_event_call *);
+> >  };
 > 
-> On Wed, 5 Aug 2009, Ingo Molnar wrote:
-> > * Dave Airlie <airlied@gmail.com> wrote:
-> >
-> > > Hey,
-> > >
-> > > So I spent 3-4 hrs today (I'm stupid yes) tracking down a .o
-> > > breakage by blaming rawhide gcc/binutils as I was using make
-> > > V=1and seeing only the compiler chain running,
-> >
-> > Hm, is this that powerpc related build bug you just reported?
+> Ah, I would have added ifdefs around the below bit.
+> 
+> > diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+> > index 23d2972..e75276a 100644
+> > --- a/kernel/trace/trace_events.c
+> > +++ b/kernel/trace/trace_events.c
+> > @@ -940,7 +940,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+> >  		entry = trace_create_file("enable", 0644, call->dir, call,
+> >  					  enable);
+> >  
+> > -	if (call->id)
+> #ifdef CONFIG_EVENT_PROFILE
+> > +	if (call->id && call->profile_enable)
+> >  		entry = trace_create_file("id", 0444, call->dir, call,
+> >  					  id);
+> #endif
+> 
+> Like that, but I guess this works too ;-)
 
-Btw., a small nitpick for future commit logs: it would have been 
-nice to keep this email quote excerpt out of the changelog, it looks 
-a bit messy. If it contains useful info then it can be paraphrased 
-into the usual 'Dave Airlie reported ...' sentence(s).
-
-Thanks,
+i think CONFIG_EVENT_PROFILE should go away - it's clearly a core 
+functionality of ftrace. Whenever we hit a Kconfig induced build 
+breakage we should first consider reducing the Kconfig complexity a 
+bit.
 
 	Ingo
