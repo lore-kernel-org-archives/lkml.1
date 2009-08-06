@@ -1,63 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbZHFJLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbZHFJLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754665AbZHFJLG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 05:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754629AbZHFJLF
+	id S1754699AbZHFJLT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 05:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbZHFJLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 05:11:05 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:45546 "EHLO smtps.tip.net.au"
+	Thu, 6 Aug 2009 05:11:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34639 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754502AbZHFJLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 05:11:04 -0400
-Date: Thu, 6 Aug 2009 19:10:54 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Airlie <airlied@linux.ie>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: linux-next: agp tree build failure
-Message-Id: <20090806191054.74c475e5.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__6_Aug_2009_19_10_54_+1000_2YRhpA1pP0vl_79g"
+	id S1754560AbZHFJLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 05:11:05 -0400
+Date: Thu, 6 Aug 2009 11:10:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Valdis.Kletnieks@vt.edu
+Subject: Re: perf: "Longum est iter per praecepta, breve et efficax per
+	exempla"
+Message-ID: <20090806091059.GB28585@elte.hu>
+References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie> <1249409546-6343-5-git-send-email-mel@csn.ul.ie> <20090804112246.4e6d0ab1.akpm@linux-foundation.org> <20090804195717.GA5998@elte.hu> <16246.1249484030@turing-police.cc.vt.edu> <20090805185334.GA4535@Pilar.aei.mpg.de> <84144f020908060008x34a320e2nc6a6bf8a665e51b4@mail.gmail.com> <20090806083219.GA4163@Pilar.aei.mpg.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090806083219.GA4163@Pilar.aei.mpg.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__6_Aug_2009_19_10_54_+1000_2YRhpA1pP0vl_79g
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Dave,
+* Carlos R. Mafra <crmafra2@gmail.com> wrote:
 
-Today's linux-next build (powerpc allyesconfig) failed like this:
+> Hi Pekka,
+> 
+> On Thu  6.Aug'09 at 10:08:44 +0300, Pekka Enberg wrote:
+> > Hi Carlos,
+> > 
+> > On Wed, Aug 5, 2009 at 9:53 PM, Carlos R. Mafra<crmafra2@gmail.com> wrote:
+> > > A few examples of how 'perf' can be used, from an e-mail by
+> > > Ingo Molnar http://lkml.org/lkml/2009/8/4/346.
+> > >
+> > > Signed-off-by: Carlos R. Mafra <crmafra2@gmail.com>
+> > > ---
+> > >
+> > > This "patch" is my way of _suggesting_ some "documentation by examples"
+> > > of what 'perf' can do to the guys who can really write it :-)
+> > 
+> > I was also looking for a perf "cookbook" and Ingo suggested we should
+> > put this stuff on the kernel.org wiki:
+> > 
+> > http://perf.wiki.kernel.org/index.php/Main_Page
+> > 
+> > How about just putting the email there?
+> 
+> First of all I just would like to rephrase my comment in the 
+> patch.
+> 
+> It was not meant to be a suggestion for Ingo to write more 
+> documentation per se, it was my way of pointing out that such 
+> "documentation" is useful for beginners and that I, as Valdis, 
+> appreciated reading it. So it was more of a "keep coming" and 
+> don't rephrain from writing these examples in the e-mails kind of 
+> thing.
 
-drivers/char/agp/uninorth-agp.c: In function 'uninorth_configure':
-drivers/char/agp/uninorth-agp.c:138: error: 'struct agp_bridge_data' has no=
- member named 'scratch_page_real'
+yeah, that's very useful to newbies, i agree.
 
-Caused by commit c2980d8c2961113f24863f70d8ad016f55224c81 ("agp: Switch
-agp_{un,}map_page() to take struct page * argument").
+I'm not very good at coming up with examples for beginners myself 
+(probably partly because i'm already across the learning curve and 
+partly because i wrote portions of it so it's 'obvious' to my own 
+subjective experience) - so help is welcome.
 
-I have reverted that commit for today (and
-6a12235c7d2d75c7d94b9afcaaecd422ff845ce0 ("agp: kill phys_to_gart() and
-gart_to_phys()") which depends on it).
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Another area that could be improved is to make the screen that comes 
+up when 'perf' is typed a bit more self-explanatory. Maybe print the 
+URL to your "Beginner's Page" wiki page in that place?
 
---Signature=_Thu__6_Aug_2009_19_10_54_+1000_2YRhpA1pP0vl_79g
-Content-Type: application/pgp-signature
+Patches are much welcome for that area as well, of course.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> Now about the wiki. Yeah, that sounds great and I didn't know 
+> about it yesterday. It will be nice if the wiki becomes a place 
+> where people can look for such usage examples.
 
-iEYEARECAAYFAkp6nh4ACgkQjjKRsyhoI8yG+ACgiDuqTHx9Xdoo9ROc1sLLu56X
-lIkAn38k4pPv7vFIirwtLJbcstHRAr9r
-=Yb4M
------END PGP SIGNATURE-----
+Thanks,
 
---Signature=_Thu__6_Aug_2009_19_10_54_+1000_2YRhpA1pP0vl_79g--
+	Ingo
