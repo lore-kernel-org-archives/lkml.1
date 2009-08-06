@@ -1,116 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbZHFK6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752859AbZHFK7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752744AbZHFK6F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 06:58:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbZHFK6E
+	id S1752859AbZHFK7h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 06:59:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbZHFK7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 06:58:04 -0400
-Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:2444 "EHLO
-	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751521AbZHFK6D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 06:58:03 -0400
-Date: Thu, 6 Aug 2009 12:57:51 +0200
-From: Erik Mouw <mouw@nl.linux.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: linux-arm-kernel useless for development (was Re: Your message
- to Linux-arm-kernel awaits moderator approval)
-Message-ID: <20090806125751.7d0253ce@nij0285>
-In-Reply-To: <20090804223922.GD18365@flint.arm.linux.org.uk>
-References: <mailman.3653.1249217530.31043.linux-arm-kernel@lists.arm.linux.org.uk>
-	<20090804100051.GA17106@elf.ucw.cz>
-	<20090804223922.GD18365@flint.arm.linux.org.uk>
-Organization: Eric Conspiracy Secret Labs
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/5OHIOm_b=6KNEay4KTmvj1t";
- protocol="application/pgp-signature"
+	Thu, 6 Aug 2009 06:59:36 -0400
+Received: from mga03.intel.com ([143.182.124.21]:47113 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751521AbZHFK7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 06:59:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,332,1246863600"; 
+   d="scan'208";a="172958471"
+Date: Thu, 6 Aug 2009 18:59:32 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Avi Kivity <avi@redhat.com>, Rik van Riel <riel@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+Message-ID: <20090806105932.GA1569@localhost>
+References: <20090805024058.GA8886@localhost> <20090805155805.GC23385@random.random> <20090806100824.GO23385@random.random> <4A7AAE07.1010202@redhat.com> <20090806102057.GQ23385@random.random>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090806102057.GQ23385@random.random>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/5OHIOm_b=6KNEay4KTmvj1t
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Thu, Aug 06, 2009 at 06:20:57PM +0800, Andrea Arcangeli wrote:
+> On Thu, Aug 06, 2009 at 01:18:47PM +0300, Avi Kivity wrote:
+> > Reasonable; if you depend on a hint from userspace, that hint can be 
+> > used against you.
+> 
+> Correct, that is my whole point. Also we never know if applications
+> are mmapping huge files with MAP_EXEC just because they might need to
+> trampoline once in a while, or do some little JIT thing once in a
+> while. Sometime people open files with O_RDWR even if they only need
+> O_RDONLY. It's not a bug, but radically altering VM behavior because
+> of a bitflag doesn't sound good to me.
+> 
+> I certainly see this tends to help as it will reactivate all
+> .text. But this signals current VM behavior is not ok for small
+> systems IMHO if such an hack is required. I prefer a dynamic algorithm
+> that when active list grow too much stop reactivating pages and
+> reduces the time for young bit activation only to the time the page
+> sits on the inactive list. And if active list is small (like 128M
+> system) we  fully trust young bit and if it set, we don't allow it to
+> go in inactive list as it's quick enough to scan the whole active
+> list, and young bit is meaningful there.
+> 
+> The issue I can see is with huge system and million pages in active
+> list, by the time we can it all, too much time has passed and we don't
+> get any meaningful information out of young bit. Things are radically
+> different on all regular workstations, and frankly regular
+> workstations are very important too, as I suspect there are more users
+> running on <64G systems than on >64G systems.
+> 
+> > How about, for every N pages that you scan, evict at least 1 page, 
+> > regardless of young bit status?  That limits overscanning to a N:1 
+> > ratio.  With N=250 we'll spend at most 25 usec in order to locate one 
+> > page to evict.
+> 
+> Yes exactly, something like that I think will be dynamic, and then we
+> can drop VM_EXEC check and solve the issues on large systems while
+> still not almost totally ignoring young bit on small systems.
 
-On Tue, 4 Aug 2009 23:39:22 +0100
-Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+This is a quick hack to materialize the idea. It remembers roughly
+the last 32*SWAP_CLUSTER_MAX=1024 active (mapped) pages scanned,
+and if _all of them_ are referenced, then the referenced bit is
+probably meaningless and should not be taken seriously.
 
-> Erik,
->=20
-> Since Pavel is incapable of copying you (and seemingly believes
-> that I'm solely responsible for admin'ing these lists), maybe
-> you'd like to respond to this, which is another of Pavel's
-> spontaneous public community wide whinges about linux-arm-kernel?
+As a refinement, the static variable 'recent_all_referenced' could be
+moved to struct zone or made a per-cpu variable.
 
-(Sorry about the delay, Russell)
+Thanks,
+Fengguang
 
-> On Tue, Aug 04, 2009 at 12:00:51PM +0200, Pavel Machek wrote:
-> >=20
-> > Please fix your mailinglist.
-> >=20
-> > You claimed that it is possible to crosspost between lkml and lakml,
-> > yet the lakml does everything to prevent that -- even in case as
-> > simple as reporting that regression that affects arm.
-> >=20
-> > Please fix it.
+---
+ mm/vmscan.c |   28 +++++++++++++++-------------
+ 1 file changed, 15 insertions(+), 13 deletions(-)
 
-It is indeed possible to cross post between lkml and lakml. The easiest
-way to do that is to subscribe to the list and tell Mailman that you
-don't want to receive any messages.
-
-> > 								Pavel
-> >=20
-> > On Sun 2009-08-02 13:52:10,
-> > linux-arm-kernel-bounces@lists.arm.linux.org.uk wrote:
-> > > Your mail to 'Linux-arm-kernel' with the subject
-> > >=20
-> > >     Re: [Bug #13833] Kernel Oops when trying to suspend with ubifs
-> > > mounted on block2mtd mtd device
-> > >=20
-> > > Is being held until the list moderator can review it for approval.
-> > >=20
-> > > The reason it is being held:
-> > >=20
-> > >     Too many recipients to the message
-> > >=20
-> > > Either the message will get posted to the list, or you will
-> > > receive notification of the moderator's decision.  If you would
-> > > like to cancel this posting, please visit the following URL:
-> > >=20
-> > >     http://lists.arm.linux.org.uk/mailman/confirm/linux-arm-kernel/f8=
-f1b8bf951193aa673ceab3235d78c807c858da
-
-Mailman doesn't like too many recipients. Don't care about that,
-Russell or myself will approve your message anyway, it just takes a bit
-longer.
-
-When I get such a Mailman message from a list I just shrug. The
-moderator will take care eventually and if he rejects it I don't care.
-Suggest you try to do the same, there are may more important things
-than a message that doesn't get it to a list.
-
-
-Regards,
-
-Erik
-
---=20
-Erik Mouw -- mouw@nl.linux.org
-GPG key fingerprint: D6AC 7F15 A26E C5C4 62E0  4A58 FCF9 551C 9B48 B68D
-
---Sig_/5OHIOm_b=6KNEay4KTmvj1t
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkp6ty8ACgkQ/PlVHJtIto2tPgCfa0mE24GE61SP2ux0ZHhjDhqV
-bQMAmwaKiv5NSp78ATvafd+kCtScx6gI
-=v6mA
------END PGP SIGNATURE-----
-
---Sig_/5OHIOm_b=6KNEay4KTmvj1t--
+--- linux.orig/mm/vmscan.c	2009-08-06 18:31:20.000000000 +0800
++++ linux/mm/vmscan.c	2009-08-06 18:51:58.000000000 +0800
+@@ -1239,6 +1239,9 @@ static void move_active_pages_to_lru(str
+ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+ 			struct scan_control *sc, int priority, int file)
+ {
++	static unsigned int recent_all_referenced;
++	int all_referenced = 1;
++	int referenced_bit_ok;
+ 	unsigned long pgmoved;
+ 	unsigned long pgscanned;
+ 	unsigned long vm_flags;
+@@ -1267,6 +1270,8 @@ static void shrink_active_list(unsigned 
+ 		__mod_zone_page_state(zone, NR_ACTIVE_FILE, -pgmoved);
+ 	else
+ 		__mod_zone_page_state(zone, NR_ACTIVE_ANON, -pgmoved);
++
++	referenced_bit_ok = !recent_all_referenced;
+ 	spin_unlock_irq(&zone->lru_lock);
+ 
+ 	pgmoved = 0;  /* count referenced (mapping) mapped pages */
+@@ -1281,19 +1286,15 @@ static void shrink_active_list(unsigned 
+ 		}
+ 
+ 		/* page_referenced clears PageReferenced */
+-		if (page_mapping_inuse(page) &&
+-		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
+-			pgmoved++;
+-			/*
+-			 * Identify referenced, file-backed active pages and
+-			 * give them one more trip around the active list. So
+-			 * that executable code get better chances to stay in
+-			 * memory under moderate memory pressure.
+-			 *
+-			 * Also protect anon pages: swapping could be costly,
+-			 * and KVM guest's referenced bit is helpful.
+-			 */
+-			if ((vm_flags & VM_EXEC) || PageAnon(page)) {
++		if (page_mapping_inuse(page)) {
++			referenced = page_referenced(page, 0, sc->mem_cgroup,
++						     &vm_flags);
++			if (referenced)
++				pgmoved++;
++			else
++				all_referenced = 0;
++
++			if (referenced && referenced_bit_ok) {
+ 				list_add(&page->lru, &l_active);
+ 				continue;
+ 			}
+@@ -1319,6 +1320,7 @@ static void shrink_active_list(unsigned 
+ 	move_active_pages_to_lru(zone, &l_inactive,
+ 						LRU_BASE   + file * LRU_FILE);
+ 
++	recent_all_referenced = (recent_all_referenced << 1) | all_referenced;
+ 	spin_unlock_irq(&zone->lru_lock);
+ }
+ 
