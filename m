@@ -1,166 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752225AbZHFKwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbZHFK6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752225AbZHFKwb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 06:52:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbZHFKwa
+	id S1752744AbZHFK6F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 06:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbZHFK6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 06:52:30 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35068 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751332AbZHFKw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 06:52:29 -0400
-Date: Thu, 6 Aug 2009 12:51:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 0/26] oprofile: Performance counter multiplexing
-Message-ID: <20090806105134.GD11236@elte.hu>
-References: <1248800846-25422-1-git-send-email-robert.richter@amd.com> <20090803112220.GA22936@elte.hu> <20090803072522.1d90f15c@infradead.org> <20090804201109.GA21386@elte.hu> <20090805123501.GF14610@erda.amd.com> <84144f020908060031vb48b983m6e6b1b521e01d6aa@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020908060031vb48b983m6e6b1b521e01d6aa@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 6 Aug 2009 06:58:04 -0400
+Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:2444 "EHLO
+	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751521AbZHFK6D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 06:58:03 -0400
+Date: Thu, 6 Aug 2009 12:57:51 +0200
+From: Erik Mouw <mouw@nl.linux.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: linux-arm-kernel useless for development (was Re: Your message
+ to Linux-arm-kernel awaits moderator approval)
+Message-ID: <20090806125751.7d0253ce@nij0285>
+In-Reply-To: <20090804223922.GD18365@flint.arm.linux.org.uk>
+References: <mailman.3653.1249217530.31043.linux-arm-kernel@lists.arm.linux.org.uk>
+	<20090804100051.GA17106@elf.ucw.cz>
+	<20090804223922.GD18365@flint.arm.linux.org.uk>
+Organization: Eric Conspiracy Secret Labs
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+ boundary="Sig_/5OHIOm_b=6KNEay4KTmvj1t";
+ protocol="application/pgp-signature"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Sig_/5OHIOm_b=6KNEay4KTmvj1t
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+On Tue, 4 Aug 2009 23:39:22 +0100
+Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-> Hi Robert,
-> 
-> On Wed, Aug 5, 2009 at 3:35 PM, Robert Richter<robert.richter@amd.com> wrote:
->
-> > The question is more if it makes sense. It's new to me dropping 
-> > user/kernel interfaces that are in use and forcing its 
-> > developers to rewrite their code. Oprofile is actively developed 
-> > and in many distros. It supports architectures perfcounters 
-> > doesn't. So, what do you want?
-> 
-> Maybe we can keep the ABIs in place but use a common machinery 
-> under the hood for both perf and oprofile? That said, I do expect 
-> oprofile ABIs to be special meaning that there's probably not a 
-> whole lot users other than the oprofile user-space tool? So if do 
-> convert the user-space tool to use sys_perf_counter_open() and put 
-> the in-kernel oprofile code into deep-maintenance mode, maybe we 
-> can eventually get rid of it?
+> Erik,
+>=20
+> Since Pavel is incapable of copying you (and seemingly believes
+> that I'm solely responsible for admin'ing these lists), maybe
+> you'd like to respond to this, which is another of Pavel's
+> spontaneous public community wide whinges about linux-arm-kernel?
 
-Note, we dont need to (and dont want to) 'get rid of oprofile' - 
-that's not the point. Nobody is arguing for instant removal of 
-oprofile.
+(Sorry about the delay, Russell)
 
-All i'm arguing for is to not rewrite all oprofile drivers while we 
-try to extend perfcounters support. Robert's series does exactly 
-that and that's where my unhappiness comes from ...
+> On Tue, Aug 04, 2009 at 12:00:51PM +0200, Pavel Machek wrote:
+> >=20
+> > Please fix your mailinglist.
+> >=20
+> > You claimed that it is possible to crosspost between lkml and lakml,
+> > yet the lakml does everything to prevent that -- even in case as
+> > simple as reporting that regression that affects arm.
+> >=20
+> > Please fix it.
 
-As you note it below, in terms of development it's quite a 
-distraction to have active development in both facilities, when 
-oprofile is arguably on the to-be-obsoleted side of the equation. 
+It is indeed possible to cross post between lkml and lakml. The easiest
+way to do that is to subscribe to the list and tell Mailman that you
+don't want to receive any messages.
 
-Converting the user-space oprofile tools: instead of some in-kernel 
-wrappery, the right approach is to use the already existing high 
-level interface: to use sys_perf_counter_open() in the oprofile 
-daemon.
+> > 								Pavel
+> >=20
+> > On Sun 2009-08-02 13:52:10,
+> > linux-arm-kernel-bounces@lists.arm.linux.org.uk wrote:
+> > > Your mail to 'Linux-arm-kernel' with the subject
+> > >=20
+> > >     Re: [Bug #13833] Kernel Oops when trying to suspend with ubifs
+> > > mounted on block2mtd mtd device
+> > >=20
+> > > Is being held until the list moderator can review it for approval.
+> > >=20
+> > > The reason it is being held:
+> > >=20
+> > >     Too many recipients to the message
+> > >=20
+> > > Either the message will get posted to the list, or you will
+> > > receive notification of the moderator's decision.  If you would
+> > > like to cancel this posting, please visit the following URL:
+> > >=20
+> > >     http://lists.arm.linux.org.uk/mailman/confirm/linux-arm-kernel/f8=
+f1b8bf951193aa673ceab3235d78c807c858da
 
-It only affects the sample collection daemon (which is a small 
-portion of oprofile user-space) and needs no kernel changes. This is 
-what i suggested to Robert before and i've seen no argument why this 
-cannot be done.
+Mailman doesn't like too many recipients. Don't care about that,
+Russell or myself will approve your message anyway, it just takes a bit
+longer.
 
-An added bonus is that the legacy oprofile kernel ABI can stay 
-completely untouched. (and the oprofile tooling can fall back to it)
+When I get such a Mailman message from a list I just shrug. The
+moderator will take care eventually and if he rejects it I don't care.
+Suggest you try to do the same, there are may more important things
+than a message that doesn't get it to a list.
 
-And yes, AFAIK oprofile user-space is pretty much the only 
-user-space app that relies on the oprofile ABI - at least in the OSS 
-space. Robert, is there perhaps some bin-only oprofile based tool 
-that you implied before? Which one is it?
 
-> That said, the lack of architecture support for perf is definitely 
-> a blocker here...
+Regards,
 
-Note, here's the current (roughly calculated, possibly inaccurate) 
-platform support matrix between oprofile and perfcounters:
+Erik
 
-    + : hw support available
-    0 : sw support available
-    - : no support
+--=20
+Erik Mouw -- mouw@nl.linux.org
+GPG key fingerprint: D6AC 7F15 A26E C5C4 62E0  4A58 FCF9 551C 9B48 B68D
 
-                        oprofile     perfcounters
-   alpha                   +             -
-   arm                     +             -
-   avr32                   +             -
-   blackfin                -             -
-   cris                    -             -
-   frv                     -             0
-   h8300                   -             -
-   ia64                    +             -
-   m32r                    -             -
-   m68k                    -             -
-   m68knommu               -             -
-   microblaze              -             -
-   mips                    +             0
-   mn10300                 -             -
-   parisc                  -             0
-   powerpc                 +             +
-   s390                    0             0
-   sh                      +             0
-   sparc                   0             0-[pending]
-   x86                     +             +
-   xtensa                  -             -
+--Sig_/5OHIOm_b=6KNEay4KTmvj1t
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-Takeaway points:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
- - out of 20 hardware architectures, 8 have oprofile hw-PMU
-   support, 2 have timer-fallback support, 11 are not supported at 
-   all.
+iEYEARECAAYFAkp6ty8ACgkQ/PlVHJtIto2tPgCfa0mE24GE61SP2ux0ZHhjDhqV
+bQMAmwaKiv5NSp78ATvafd+kCtScx6gI
+=v6mA
+-----END PGP SIGNATURE-----
 
- - out of 20 hardware architectures, 2 have perfcounters hw-PMU 
-   support, 6 have sw event support, 12 are not supported at all.
-
-The architectures with the biggest practical weight are: x86, 
-powerpc, arm, mips.
-
-So there's a gap but it's not "all architectures" and the transition 
-to perfcounters is well underway. Still, oprofile obviously leads 
-(it has a 10 years headway) - and it's needed as a compatibility 
-option during the migration and even if perf had equivalent support 
-it would _still_ be around for some time as a pure ABI compatibility 
-thing.
-
-> On Wed, Aug 5, 2009 at 3:35 PM, Robert Richter<robert.richter@amd.com> wrote:
->
-> > And why not having more than one profiling subsystem in the 
-> > kernel? I see also more than one type of car on the street 
-> > though all of them have 4 wheels.
-> 
-> Well, so far I've only had bad experiences with duplicate 
-> functionality in the kernel be it a core kernel subsystem like 
-> slab or a device driver (broadcom and e100 come to mind). The 
-> problem is that you fragment tester and developer base and end up 
-> with a different set of bugs for each of the duplicate components 
-> causing more work than necessary. And what eventually happens is 
-> that you have only one component that's under active development 
-> but you can't get rid of the less active ones because people 
-> depend on them and the active one has corner case bugs that just 
-> don't get fixed.
-
-Correct. That's my main point.
-
-	Ingo
+--Sig_/5OHIOm_b=6KNEay4KTmvj1t--
