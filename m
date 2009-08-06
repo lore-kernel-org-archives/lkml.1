@@ -1,78 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751659AbZHFE1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbZHFE2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751659AbZHFE1P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 00:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbZHFE1P
+	id S1752116AbZHFE2q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 00:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbZHFE2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 00:27:15 -0400
-Received: from mail-yw0-f183.google.com ([209.85.211.183]:37622 "EHLO
-	mail-yw0-f183.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750785AbZHFE1O convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 00:27:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=QEiex+3u/LkNdjyvFpnkKc1ACzZnuShs/7U6fDbpkHfOnc9nInYashvGTWdyzrKn79
-         toCukeXKygeqAm1n5qCvekm5tHU1bpkt3QCNNgiLySfckvKPHkmwJRb+jZLW49IjvyT+
-         tBvR9vlBDmQuqfc5y+519nhuucaMLQXNVGRbE=
+	Thu, 6 Aug 2009 00:28:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55274 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751461AbZHFE2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 00:28:44 -0400
+Date: Thu, 6 Aug 2009 04:27:33 GMT
+From: tip-bot for Peter Zijlstra <peterz@infradead.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, peterz@infradead.org, chris.mason@oracle.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, chris.mason@oracle.com, a.p.zijlstra@chello.nl,
+       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1249497664.5890.4.camel@laptop>
+References: <1249497664.5890.4.camel@laptop>
+Subject: [tip:perfcounters/urgent] ftrace: Fix perf-tracepoint OOPS
+Message-ID: <tip-af6af30c0fcd77e621638e53ef8b176bca8bd3b4@git.kernel.org>
+Git-Commit-ID: af6af30c0fcd77e621638e53ef8b176bca8bd3b4
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <1249532170.21101.3.camel@localhost.localdomain>
-References: <1249523981-26601-1-git-send-email-lrodriguez@atheros.com> 
-	<1249532170.21101.3.camel@localhost.localdomain>
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Date: Wed, 5 Aug 2009 21:26:54 -0700
-X-Google-Sender-Auth: ad18d3eecc8c464f
-Message-ID: <43e72e890908052126v53aa1b4sb7a48e19f98fdfa6@mail.gmail.com>
-Subject: Re: [PATCH] pci_ids.h: add new Atheros USB vendor ID
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, zhifeng.cai@atheros.com,
-       stephen.chen@atheros.com
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 06 Aug 2009 04:27:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 5, 2009 at 9:16 PM, Marcel Holtmann<marcel@holtmann.org> wrote:
-> Hi Luiz,
->
->> New Atheros USB devices will use 0x0cf3. The first device
->> will be ar9271, for which we are adding support for.
->>
->> Cc: zhifeng.cai@atheros.com
->> Cc: stephen.chen@atheros.com
->> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
->> ---
->>
->> John, sending this through you as this is only
->> specific to wireless, at least at the moment.
->>
->>  include/linux/pci_ids.h |    1 +
->>  1 files changed, 1 insertions(+), 0 deletions(-)
->>
->> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
->> index 73b46b6..27f4e6b 100644
->> --- a/include/linux/pci_ids.h
->> +++ b/include/linux/pci_ids.h
->> @@ -2170,6 +2170,7 @@
->>  #define PCI_DEVICE_ID_BCM1250_HT     0x0002
->>
->>  #define PCI_VENDOR_ID_ATHEROS                0x168c
->> +#define PCI_VENDOR_ID_ATHEROS_USB    0x0cf3
->
-> this is confusing the hell out of me. What are you adding here.
+Commit-ID:  af6af30c0fcd77e621638e53ef8b176bca8bd3b4
+Gitweb:     http://git.kernel.org/tip/af6af30c0fcd77e621638e53ef8b176bca8bd3b4
+Author:     Peter Zijlstra <peterz@infradead.org>
+AuthorDate: Wed, 5 Aug 2009 20:41:04 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 6 Aug 2009 06:26:09 +0200
 
-No you're right, my fault.
+ftrace: Fix perf-tracepoint OOPS
 
-> A USB
-> vendor id or a PCI one. Is the ar9271 a PCI device or a USB device?
+Not all tracepoints are created equal, in specific the ftrace
+tracepoints are created with TRACE_EVENT_FORMAT() which does
+not generate the needed bits to tie them into perf counters.
 
-Its only USB.
+For those events, don't create the 'id' file and fail
+->profile_enable when their ID is specified through other
+means.
 
-Thanks... hm I see no USB vendor id headers. Guess we won't need to add this.
+Reported-by: Chris Mason <chris.mason@oracle.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <1249497664.5890.4.camel@laptop>
+[ v2: fix build error in the !CONFIG_EVENT_PROFILE case ]
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-  Luis
+
+---
+ include/linux/ftrace_event.h       |    8 +++-----
+ kernel/trace/trace_event_profile.c |    2 +-
+ kernel/trace/trace_events.c        |    2 +-
+ 3 files changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+index 5c093ff..d7cd193 100644
+--- a/include/linux/ftrace_event.h
++++ b/include/linux/ftrace_event.h
+@@ -119,11 +119,9 @@ struct ftrace_event_call {
+ 	void			*filter;
+ 	void			*mod;
+ 
+-#ifdef CONFIG_EVENT_PROFILE
+-	atomic_t	profile_count;
+-	int		(*profile_enable)(struct ftrace_event_call *);
+-	void		(*profile_disable)(struct ftrace_event_call *);
+-#endif
++	atomic_t		profile_count;
++	int			(*profile_enable)(struct ftrace_event_call *);
++	void			(*profile_disable)(struct ftrace_event_call *);
+ };
+ 
+ #define MAX_FILTER_PRED		32
+diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
+index 5b5895a..11ba5bb 100644
+--- a/kernel/trace/trace_event_profile.c
++++ b/kernel/trace/trace_event_profile.c
+@@ -14,7 +14,7 @@ int ftrace_profile_enable(int event_id)
+ 
+ 	mutex_lock(&event_mutex);
+ 	list_for_each_entry(event, &ftrace_events, list) {
+-		if (event->id == event_id) {
++		if (event->id == event_id && event->profile_enable) {
+ 			ret = event->profile_enable(event);
+ 			break;
+ 		}
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 23d2972..e75276a 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -940,7 +940,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 		entry = trace_create_file("enable", 0644, call->dir, call,
+ 					  enable);
+ 
+-	if (call->id)
++	if (call->id && call->profile_enable)
+ 		entry = trace_create_file("id", 0444, call->dir, call,
+ 					  id);
+ 
