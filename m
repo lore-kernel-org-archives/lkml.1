@@ -1,122 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756321AbZHFSqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753744AbZHFSwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756321AbZHFSqa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 14:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756120AbZHFSq3
+	id S1753744AbZHFSwo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 14:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZHFSwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 14:46:29 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:1208 "EHLO mms1.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756115AbZHFSq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 14:46:28 -0400
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was
- "Is get_user_pages() enough to prevent pages from being swapped out ?")
-From: "David Xiao" <dxiao@broadcom.com>
-To: "Laurent Pinchart" <laurent.pinchart@ideasonboard.com>
-cc: "Ben Dooks" <ben-linux@fluff.org>,
-       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
-       "Robin Holt" <holt@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       v4l2_linux <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-In-Reply-To: <200908061506.23874.laurent.pinchart@ideasonboard.com>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com>
- <20090806114619.GW2080@trinity.fluff.org>
- <200908061506.23874.laurent.pinchart@ideasonboard.com>
-Date: Thu, 6 Aug 2009 11:46:14 -0700
-Message-ID: <1249584374.29182.20.camel@david-laptop>
-MIME-Version: 1.0
-X-Mailer: Evolution 2.26.1
-X-WSS-ID: 6665FB7D3704674188-01-01
+	Thu, 6 Aug 2009 14:52:43 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4496 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752717AbZHFSwm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 14:52:42 -0400
+Subject: Re: [PATCH] pci_ids.h: add new Atheros USB vendor ID
+From: Joe Perches <joe@perches.com>
+To: Dave Jones <davej@redhat.com>
+Cc: Greg KH <greg@kroah.com>, Marcel Holtmann <marcel@holtmann.org>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       zhifeng.cai@atheros.com, stephen.chen@atheros.com,
+       linux-usb@vger.kernel.org
+In-Reply-To: <20090806181546.GA11589@redhat.com>
+References: <1249523981-26601-1-git-send-email-lrodriguez@atheros.com>
+	 <1249532170.21101.3.camel@localhost.localdomain>
+	 <43e72e890908052126v53aa1b4sb7a48e19f98fdfa6@mail.gmail.com>
+	 <1249533357.21101.5.camel@localhost.localdomain>
+	 <20090806050932.GA25015@kroah.com>  <20090806181546.GA11589@redhat.com>
 Content-Type: text/plain
+Date: Thu, 06 Aug 2009 11:50:39 -0700
+Message-Id: <1249584639.3467.60.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-06 at 06:06 -0700, Laurent Pinchart wrote:
-> Hi Ben,
-> 
-> On Thursday 06 August 2009 13:46:19 Ben Dooks wrote:
-> > On Thu, Aug 06, 2009 at 12:08:21PM +0200, Laurent Pinchart wrote:
-> [snip]
-> > >
-> > > The second problem is to ensure cache coherency. As the userspace
-> > > application will read data from the video buffers, those buffers will end
-> > > up being cached in the processor's data cache. The driver does need to
-> > > invalidate the cache before starting the DMA operation (userspace could
-> > > in theory write to the buffers, but the data will be overwritten by DMA
-> > > anyway, so there's no need to clean the cache).
-> >
-> > You'll need to clean the write buffers, otherwise the CPU may have data
-> > queued that it has yet to write back to memory.
-> 
-> Good points, thanks.
+On Thu, 2009-08-06 at 14:15 -0400, Dave Jones wrote:
+> On Wed, Aug 05, 2009 at 10:09:32PM -0700, Greg Kroah-Hartman wrote:
+>  > > the closest we have is drivers/hid/hid-ids.h and we might just should
+>  > > have Greg create a usb-ids.h file.
+>  > Ick, no, there's no such file for a good reason.  Put your device ids in
+>  > the driver files, no need to share it across the whole kernel.
+> I agree. In fact, I'd go further, and say that the bulk of what we have
+> in pci_ids.h is also pointlessly shared. Only a tiny fraction of the device
+> entries in that file are used by multiple files in the kernel.
 
-   I thought this should have been taken care of by the CPU specific
-dma_inv_range routine. However, In arch/arm/mm/cache-v7.c,
-v7_dma_inv_range does not drain the write buffer; and the
-v6_dma_inv_range does that in the end of all the cache maintenance
-operaitons.
-   So this is probably something Russel can clarify.
+I created some scripts a while ago to go through the
+kernel to convert struct pci_device definitions to use
+PCI_VDEVICE and PCI_DEVICE.
 
-> 
-> > > As the cache is of the VIPT (Virtual Index Physical Tag) type, cache
-> > > invalidation can either be done globally (in which case the cache is
-> > > flushed instead of being invalidated) or based on virtual addresses. In
-> > > the last case the processor will need to look physical addresses up,
-> > > either in the TLB or through hardware table walk.
-> > >
-> > > I can see three solutions to the DMA/cache problem.
-> > >
-> > > 1. Flushing the whole data cache right before starting the DMA transfer.
-> > > There's no API for that in the ARM architecture, so a whole I+D cache is
-> > > required. This is quite costly, we're talking about around 30 flushes per
-> > > second, but it doesn't involve the MMU. That's the solution that I
-> > > currently use.
-> > >
-> > > 2. Invalidating only the cache lines that store video buffer data. This
-> > > requires a TLB lookup or a hardware table walk, so the userspace
-> > > application MM context needs to be available (no problem there as where's
-> > > flushing in userspace context) and all pages need to be mapped properly.
-> > > This can be a problem as, as Hugh pointed out, pages can still be
-> > > unmapped from the userspace context after get_user_pages() returns. I
-> > > have experienced one oops due to a kernel paging request failure:
-> >
-> > If you already know the virtual addresses of the buffers, why do you need
-> > a TLB lookup (or am I being dense here?)
-> 
-> The virtual address is used to compute the cache lines index, and the physical 
-> address is then used when comparing the cache line tag. So the processor (or 
-> actually the CP15 coprocessor if I'm not wrong) does a TLB lookup to get the 
-> physical address during cache invalidation/flushing.
-> 
-> > >         Unable to handle kernel paging request at virtual address
-> > > 44e12000 pgd = c8698000
-> > >         [44e12000] *pgd=8a4fd031, *pte=8cfda1cd, *ppte=00000000
-> > >         Internal error: Oops: 817 [#1] PREEMPT
-> > >         PC is at v7_dma_inv_range+0x2c/0x44
-> > >
-> > > Fixing this requires more investigation, and I'm not sure how to proceed
-> > > to find out if the page fault is really caused by pages being unmapped
-> > > from the userspace context. Help would be appreciated.
-> > >
-> > > 3. Mark the pages as non-cacheable. Depending on how the buffers are then
-> > > used by userspace, the additional cache misses might destroy any benefit
-> > > I would get from not flushing the cache before DMA. I'm not sure how to
-> > > mark a bunch of pages as non-cacheable though. What usually happens is
-> > > that video drivers allocate DMA-coherent memory themselves, but in this
-> > > case I need to deal with an arbitrary buffer allocated by userspace. If
-> > > someone has any experience with this, it would be appreciated.
-> 
+I could move definitions out of the pci_ids.h file at
+the same time and closer to their actual use if those
+definitions were not globally used.  Maybe move them
+by module or by specific file.
 
-Another approach is working from a different direction: the kernel
-allocates the non-cached buffer and then mmap() into user space. I have
-done that in similar situation to try to achieve "zero-copy". 
+Perhaps like this example unsigned, not to be applied,
+patch below:
 
-
-David
+diff --git a/drivers/usb/host/ohci-pci.c b/drivers/usb/host/ohci-pci.c
+index d2ba04d..e978eb8 100644
+--- a/drivers/usb/host/ohci-pci.c
++++ b/drivers/usb/host/ohci-pci.c
+@@ -264,30 +264,12 @@ static void amd_iso_dev_put(void)
+ 
+ /* List of quirks for OHCI */
+ static const struct pci_device_id ohci_pci_quirks[] = {
+-	{
+-		PCI_DEVICE(PCI_VENDOR_ID_AMD, 0x740c),
+-		.driver_data = (unsigned long)ohci_quirk_amd756,
+-	},
+-	{
+-		PCI_DEVICE(PCI_VENDOR_ID_OPTI, 0xc861),
+-		.driver_data = (unsigned long)ohci_quirk_opti,
+-	},
+-	{
+-		PCI_DEVICE(PCI_VENDOR_ID_NS, PCI_ANY_ID),
+-		.driver_data = (unsigned long)ohci_quirk_ns,
+-	},
+-	{
+-		PCI_DEVICE(PCI_VENDOR_ID_COMPAQ, 0xa0f8),
+-		.driver_data = (unsigned long)ohci_quirk_zfmicro,
+-	},
+-	{
+-		PCI_DEVICE(PCI_VENDOR_ID_TOSHIBA_2, 0x01b6),
+-		.driver_data = (unsigned long)ohci_quirk_toshiba_scc,
+-	},
+-	{
+-		PCI_DEVICE(PCI_VENDOR_ID_NEC, PCI_DEVICE_ID_NEC_USB),
+-		.driver_data = (unsigned long)ohci_quirk_nec,
+-	},
++	{ PCI_UNNAMED_DEVICE(AMD, 0x740c), .driver_data = (unsigned long)ohci_quirk_amd756 },
++	{ PCI_UNNAMED_DEVICE(OPTI, 0xc861), .driver_data = (unsigned long)ohci_quirk_opti },
++	{ PCI_UNNAMED_DEVICE(NS, PCI_ANY_ID), .driver_data = (unsigned long)ohci_quirk_ns },
++	{ PCI_UNNAMED_DEVICE(COMPAQ, 0xa0f8), .driver_data = (unsigned long)ohci_quirk_zfmicro },
++	{ PCI_UNNAMED_DEVICE(TOSHIBA_2, 0x01b6), .driver_data = (unsigned long)ohci_quirk_toshiba_scc },
++	{ PCI_NAMED_DEVICE(NEC, NEC_USB), .driver_data = (unsigned long)ohci_quirk_nec },
+ 	{
+ 		/* Toshiba portege 4000 */
+ 		.vendor		= PCI_VENDOR_ID_AL,
+@@ -296,22 +278,10 @@ static const struct pci_device_id ohci_pci_quirks[] = {
+ 		.subdevice	= 0x0004,
+ 		.driver_data	= (unsigned long) broken_suspend,
+ 	},
+-	{
+-		PCI_DEVICE(PCI_VENDOR_ID_ITE, 0x8152),
+-		.driver_data = (unsigned long) broken_suspend,
+-	},
+-	{
+-		PCI_DEVICE(PCI_VENDOR_ID_ATI, 0x4397),
+-		.driver_data = (unsigned long)ohci_quirk_amd700,
+-	},
+-	{
+-		PCI_DEVICE(PCI_VENDOR_ID_ATI, 0x4398),
+-		.driver_data = (unsigned long)ohci_quirk_amd700,
+-	},
+-	{
+-		PCI_DEVICE(PCI_VENDOR_ID_ATI, 0x4399),
+-		.driver_data = (unsigned long)ohci_quirk_amd700,
+-	},
++	{ PCI_UNNAMED_DEVICE(ITE, 0x8152), .driver_data = (kernel_ulong_t)broken_suspend },
++	{ PCI_UNNAMED_DEVICE(ATI, 0x4397), .driver_data = (kernel_ulong_t)ohci_quirk_amd700 },
++	{ PCI_UNNAMED_DEVICE(ATI, 0x4398), .driver_data = (kernel_ulong_t)ohci_quirk_amd700 },
++	{ PCI_UNNAMED_DEVICE(ATI, 0x4399), .driver_data = (kernel_ulong_t)ohci_quirk_amd700 },
+ 
+ 	/* FIXME for some of the early AMD 760 southbridges, OHCI
+ 	 * won't work at all.  blacklist them.
+diff --git a/drivers/usb/host/whci/hcd.c b/drivers/usb/host/whci/hcd.c
+index e019a50..91e6563 100644
+--- a/drivers/usb/host/whci/hcd.c
++++ b/drivers/usb/host/whci/hcd.c
+@@ -351,7 +351,7 @@ static void __exit whci_hc_driver_exit(void)
+ module_exit(whci_hc_driver_exit);
+ 
+ /* PCI device ID's that we handle (so it gets loaded) */
+-static struct pci_device_id whci_hcd_id_table[] = {
++static const struct pci_device_id whci_hcd_id_table[]  = {
+ 	{ PCI_DEVICE_CLASS(PCI_CLASS_WIRELESS_WHCI, ~0) },
+ 	{ /* empty last entry */ }
+ };
 
 
