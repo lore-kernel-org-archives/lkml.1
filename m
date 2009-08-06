@@ -1,130 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbZHFQVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbZHFQZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165AbZHFQVp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 12:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755704AbZHFQVo
+	id S1756164AbZHFQZk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 12:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbZHFQZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 12:21:44 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4218 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752966AbZHFQVo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 12:21:44 -0400
-Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
- sections
-From: Joe Perches <joe@perches.com>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       David John <davidjon@xenontk.org>, Pavel Machek <pavel@ucw.cz>,
-       Erik Mouw <mouw@nl.linux.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
-In-Reply-To: <20090806150322.GX2080@trinity.fluff.org>
-References: <20090804100051.GA17106@elf.ucw.cz>
-	 <20090804223922.GD18365@flint.arm.linux.org.uk>
-	 <20090806125751.7d0253ce@nij0285> <20090806113104.GK31370@elf.ucw.cz>
-	 <20090806120826.GC27773@flint.arm.linux.org.uk>
-	 <4A7ACC8D.7030706@xenontk.org>
-	 <20090806124048.GD27773@flint.arm.linux.org.uk>
-	 <1249563730.10297.13.camel@Joe-Laptop.home>
-	 <20090806133349.GF27773@flint.arm.linux.org.uk>
-	 <1249568614.10297.20.camel@Joe-Laptop.home>
-	 <20090806150322.GX2080@trinity.fluff.org>
-Content-Type: text/plain
-Date: Thu, 06 Aug 2009 09:18:48 -0700
-Message-Id: <1249575528.3467.9.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Aug 2009 12:25:39 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43249 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752555AbZHFQZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 12:25:39 -0400
+Date: Thu, 6 Aug 2009 17:25:39 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [PATCH] page-allocator: Remove dead function free_cold_page()
+Message-ID: <20090806162539.GE6915@csn.ul.ie>
+References: <20090805102817.GE21950@csn.ul.ie> <20090805185247.86766d80.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090805185247.86766d80.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-06 at 16:03 +0100, Ben Dooks wrote:
-> On Thu, Aug 06, 2009 at 07:23:34AM -0700, Joe Perches wrote:
-> > On Thu, 2009-08-06 at 14:33 +0100, Russell King wrote:
-> > > On Thu, Aug 06, 2009 at 06:02:10AM -0700, Joe Perches wrote:
-> > > > I suspect a vger based ARM list would not require you to "run" it.
-> > > There is already a vger based ARM list.  I see no signs of people
-> > > moving over to it.  I summise that is because most people don't
-> > > have a problem, and most people are happy with the existing lists
-> > > as they stand.  Could it be that it's only a minority who are
-> > > having issues.  I don't know.
-> > 
-> > Perhaps there is too little exposure of the
-> > linux-arm@vger.kernel.org mailing list.
+On Wed, Aug 05, 2009 at 06:52:47PM -0700, Andrew Morton wrote:
+> On Wed, 5 Aug 2009 11:28:17 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
 > 
-> I'm not subscribed, please do not add any of the samsung entries
-> with linux-arm@vger.kernel.org list.
+> > The function free_cold_page() has no callers so delete it.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > --- 
+> >  include/linux/gfp.h |    1 -
+> >  mm/page_alloc.c     |    5 -----
+> >  2 files changed, 6 deletions(-)
+> > 
+> > diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+> > index 7c777a0..c32bfa8 100644
+> > --- a/include/linux/gfp.h
+> > +++ b/include/linux/gfp.h
+> > @@ -326,7 +326,6 @@ void free_pages_exact(void *virt, size_t size);
+> >  extern void __free_pages(struct page *page, unsigned int order);
+> >  extern void free_pages(unsigned long addr, unsigned int order);
+> >  extern void free_hot_page(struct page *page);
+> > -extern void free_cold_page(struct page *page);
+> >  
+> >  #define __free_page(page) __free_pages((page), 0)
+> >  #define free_page(addr) free_pages((addr),0)
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index d052abb..36758db 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1065,11 +1065,6 @@ void free_hot_page(struct page *page)
+> >  	free_hot_cold_page(page, 0);
+> >  }
+> >  	
+> > -void free_cold_page(struct page *page)
+> > -{
+> > -	free_hot_cold_page(page, 1);
+> > -}
+> > -
+> >  /*
+> >   * split_page takes a non-compound higher-order page, and splits it into
+> >   * n (1<<order) sub-pages: page[0..n]
+> 
+> Well I spose so.  But the function is valid and might need to be
+> resurrected at any stage.  We could `#if 0' it to save a few bytes of
+> text, perhaps.
+> 
 
-Perhaps this patch is more palatable.  It's certainly shorter.
+We could although the code is so trivial, it's not like it's hard to
+reimplement.
 
-It does add both linux-arm-kernel and linux-arm to section
-SIMTEC EB2410ITX (BAST).  By the way, another section you
-maintain, SIMTEC EB110ATX (Chalice CATS), has neither a
-pattern entry nor a mailing list entry.  Should it?
+> I wonder how many free_page() callers should really be calling
+> free_cold_page().  c'mon, write a thingy to work it out ;) You can
+> query a page's hotness by timing how long it takes to read all its
+> cachelines.
+> 
 
-Signed-off-by: Joe Perches <joe@perches.com>
+Hmm, interesting idea, I'll give it more of a think and see what falls
+out!
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index b1114cf..04c13c5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -498,9 +498,11 @@ F:	arch/arm/include/asm/floppy.h
- ARM PORT
- M:	Russell King <linux@arm.linux.org.uk>
- L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
-+L:	linux-arm@vger.kernel.org
- W:	http://www.arm.linux.org.uk/
- S:	Maintained
- F:	arch/arm/
-+F:	drivers/*/arm/
- 
- ARM PRIMECELL MMCI PL180/1 DRIVER
- S:	Orphan
-@@ -2047,6 +2049,7 @@ FREESCALE IMX / MXC FRAMEBUFFER DRIVER
- M:	Sascha Hauer <kernel@pengutronix.de>
- L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
- L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
-+L:	linux-arm@vger.kernel.org
- S:	Maintained
- F:	arch/arm/plat-mxc/include/mach/imxfb.h
- F:	drivers/video/imxfb.c
-@@ -2616,6 +2619,8 @@ F:	drivers/dma/iop-adma.c
- 
- INTEL IXP4XX QMGR, NPE, ETHERNET and HSS SUPPORT
- M:	Krzysztof Halasa <khc@pm.waw.pl>
-+L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
-+L:	linux-arm@vger.kernel.org
- S:	Maintained
- F:	arch/arm/mach-ixp4xx/include/mach/qmgr.h
- F:	arch/arm/mach-ixp4xx/include/mach/npe.h
-@@ -4093,6 +4098,7 @@ PXA2xx/PXA3xx SUPPORT
- M:	Eric Miao <eric.y.miao@gmail.com>
- M:	Russell King <linux@arm.linux.org.uk>
- L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
-+L:	linux-arm@vger.kernel.org
- S:	Maintained
- F:	arch/arm/mach-pxa/
- F:	drivers/pcmcia/pxa2xx*
-@@ -4548,6 +4554,7 @@ SHARP LH SUPPORT (LH7952X & LH7A40X)
- M:	Marc Singer <elf@buici.com>
- W:	http://projects.buici.com/arm
- L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
-+L:	linux-arm@vger.kernel.org
- S:	Maintained
- F:	Documentation/arm/Sharp-LH/ADC-LH7-Touchscreen
- F:	arch/arm/mach-lh7a40x/
-@@ -4570,6 +4577,8 @@ S:	Supported
- SIMTEC EB2410ITX (BAST)
- P:	Ben Dooks
- M:	Vincent Sanders <support@simtec.co.uk>
-+L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
-+L:	linux-arm@vger.kernel.org
- W:	http://www.simtec.co.uk/products/EB2410ITX/
- S:	Supported
- F:	arch/arm/mach-s3c2410/
-
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
