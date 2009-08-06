@@ -1,211 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756909AbZHFXIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbZHFXMC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756909AbZHFXIS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 19:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbZHFXIR
+	id S1756911AbZHFXMC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 19:12:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756858AbZHFXMC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 19:08:17 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40505 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756875AbZHFXIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 19:08:16 -0400
-X-Authenticated: #1587495
-X-Provags-ID: V01U2FsdGVkX19jfFQTVbxj9KdPnFBcpVXlaVpWVq0BmCD6HEsey5
-	PelR/DsyYIFIjr
-From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: patch thinkpad-acpi-fix-incorrect-use-of-tpacpi_brght_mode_ecnvram.patch added to 2.6.30-stable tree
-Date: Fri, 7 Aug 2009 01:08:10 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-sidux-amd64; KDE/4.3.0; x86_64; ; )
-Cc: hmh@hmh.eng.br, gregkh@suse.de, len.brown@intel.com,
-       ranma+kernel@tdiedrich.de, stable@kernel.org
-References: <20090805205011.57FB548DF1@coco.kroah.org>
-In-Reply-To: <20090805205011.57FB548DF1@coco.kroah.org>
+	Thu, 6 Aug 2009 19:12:02 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:44903 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756848AbZHFXMA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 19:12:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=CRDhgKPN2EXNss7aw6shSetPxdVNTLgQA0zmCtI5f1sawjc/f1KdTjenIBEWlMe7Y1
+         8pm8fskQVx9Qh4fLpOWhjoWVm1T+9S/O2DIx8Tfmo++QtQlYAyaIa69MR+rgLqVkodeO
+         ElUc5MjQa3IvcyhRlarNt5537tL1JHBo9cn4I=
+Message-ID: <4A7B633C.3040500@gmail.com>
+Date: Thu, 06 Aug 2009 17:11:56 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Chetan.Loke@Emulex.Com
+CC: tony@linx.net, jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, philipl@overt.org,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 2.6.32 v2] MCP55 SATA2 conditional MSI support for sata_nv
+References: <20090805192055.8F2DE1007C@gold.linx.net>	 <4A7A16C9.6030500@gmail.com>	 <412A05BA40734D4887DBC67661F433080D73228B@EXMAIL.ad.emulex.com> <1249574363.4530.23.camel@localhost> <412A05BA40734D4887DBC67661F433080D7322B1@EXMAIL.ad.emulex.com>
+In-Reply-To: <412A05BA40734D4887DBC67661F433080D7322B1@EXMAIL.ad.emulex.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908070108.15095.s.L-H@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On 08/06/2009 10:28 AM, Chetan.Loke@Emulex.Com wrote:
+>> -----Original Message-----
+>> From: Tony Vroon [mailto:tony@linx.net]
+>> Sent: Thursday, August 06, 2009 11:59 AM
+>> To: Loke,Chetan
+>> Cc: hancockrwd@gmail.com; jgarzik@pobox.com; linux-ide@vger.kernel.org;
+>> linux-kernel@vger.kernel.org; philipl@overt.org
+>> Subject: RE: [PATCH 2.6.32 v2] MCP55 SATA2 conditional MSI support for
+>> sata_nv
+>>
+>>> disable_msi() is missing right?
+>> I didn't add that as none of the other drivers have it:
+>
+> Then they would leak the MSI-vectors if request_irq fails.
+>
+>
+>> chainsaw@amalthea /cvs/linux-2.6/drivers/ata $ grep _msi * | grep pci
+>> ahci.c:		pci_enable_msi(pdev);
+>> sata_mv.c:	if (msi&&  pci_enable_msi(pdev) == 0)
+>> sata_vsc.c:	if (pci_enable_msi(pdev) == 0)
+>>
+>> (This is a tree without the sata_nv change I submitted)
+>>
+>> I do believe it is safe to shut the interrupt down and unload the
+>> handler whilst it is still in MSI mode. At least, I don't see the libata
+>> core special-casing it in any way.
+>
+> If I'm not wrong then that's how it's supposed to be done. free_irq and then disable_msi. You can't reverse the order. Also the driver should know when to quiesce the ASIC. So quiesce first and then shutdown everything.
 
-On Friday 07 August 2009, gregkh@suse.de wrote:
-> This is a note to let you know that we have just queued up the patch titled
-> 
->     Subject: thinkpad-acpi: fix incorrect use of TPACPI_BRGHT_MODE_ECNVRAM
-> 
-> to the 2.6.30-stable tree.  Its filename is
-> 
->     thinkpad-acpi-fix-incorrect-use-of-tpacpi_brght_mode_ecnvram.patch
-> 
-> A git repo of this tree can be found at 
->     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-> 
-> 
-> From 59fe4fe34d7afdf63208124f313be9056feaa2f4 Mon Sep 17 00:00:00 2001
-> From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-> Date: Sat, 1 Aug 2009 12:04:20 -0300
-> Subject: thinkpad-acpi: fix incorrect use of TPACPI_BRGHT_MODE_ECNVRAM
-
-This patch fails to compile if applied to 2.6.30 + current stable queue.
-
-drivers/platform/x86/thinkpad_acpi.c:5769: error: array type has incomplete element type         
-drivers/platform/x86/thinkpad_acpi.c:5771: error: implicit declaration of function 'TPACPI_Q_IBM'
-drivers/platform/x86/thinkpad_acpi.c: In function 'brightness_init':                             
-drivers/platform/x86/thinkpad_acpi.c:5799: error: implicit declaration of function 'tpacpi_check_quirks'                                                                                          
-drivers/platform/x86/thinkpad_acpi.c:5800: warning: type defaults to 'int' in declaration of 'type name'                                                                                          
-drivers/platform/x86/thinkpad_acpi.c:5800: warning: type defaults to 'int' in declaration of 'type name'                                                                                          
-drivers/platform/x86/thinkpad_acpi.c:5800: error: size of array 'type name' is negative          
-make[6]: *** [drivers/platform/x86/thinkpad_acpi.o] Error 1                                      
-make[5]: *** [drivers/platform/x86] Error 2                                                      
-make[4]: *** [drivers/platform] Error 2                                                          
-make[4]: *** Waiting for unfinished jobs....      
-
-It seems to depend on the new quirk handling, introduced in:
-
-commit 7d95a3d564901e88ed42810f054e579874151999
-Author: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Date:   Sat May 30 13:25:06 2009 -0300
-
-    thinkpad-acpi: add quirklist engine
-
-    Add a quirklist engine suitable for matching ThinkPad firmware,
-    and change the code to use it.
-
-    Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-Regards
-	Stefan Lippers-Hollmann
-
--- 
-> From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-> 
-> commit 59fe4fe34d7afdf63208124f313be9056feaa2f4 upstream.
-> 
-> HBRV-based default selection of backlight control strategy didn't work
-> well, at least the X41 defines it but doesn't use it and I don't think
-> it will stop there.
-> 
-> Switch to a white/blacklist.  All models that have HBRV defined have
-> been included in the list, and initially all ATI GPUs will get
-> ECNVRAM, and the Intel GPUs will get UCMS_STEP.
-> 
-> Symptoms of incorrect backlight mode selection are:
-> 
-> 1. Non-working backlight control through sysfs;
-> 
-> 2. Backlight gets reset to the lowest level at every shutdown, reboot
->    and when thinkpad-acpi gets unloaded;
-> 
-> This fixes a regression in 2.6.30, bugzilla #13826
-> 
-> Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-> Reported-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
->  drivers/platform/x86/thinkpad_acpi.c |   61 ++++++++++++++++++++++++++---------
->  1 file changed, 47 insertions(+), 14 deletions(-)
-> 
-> --- a/drivers/platform/x86/thinkpad_acpi.c
-> +++ b/drivers/platform/x86/thinkpad_acpi.c
-> @@ -5757,14 +5757,48 @@ static struct backlight_ops ibm_backligh
->  
->  /* --------------------------------------------------------------------- */
->  
-> +/*
-> + * These are only useful for models that have only one possibility
-> + * of GPU.  If the BIOS model handles both ATI and Intel, don't use
-> + * these quirks.
-> + */
-> +#define TPACPI_BRGHT_Q_NOEC	0x0001	/* Must NOT use EC HBRV */
-> +#define TPACPI_BRGHT_Q_EC	0x0002  /* Should or must use EC HBRV */
-> +#define TPACPI_BRGHT_Q_ASK	0x8000	/* Ask for user report */
-> +
-> +static const struct tpacpi_quirk brightness_quirk_table[] __initconst = {
-> +	/* Models with ATI GPUs known to require ECNVRAM mode */
-> +	TPACPI_Q_IBM('1', 'Y', TPACPI_BRGHT_Q_EC),	/* T43/p ATI */
-> +
-> +	/* Models with ATI GPUs (waiting confirmation) */
-> +	TPACPI_Q_IBM('1', 'R', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
-> +	TPACPI_Q_IBM('1', 'Q', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
-> +	TPACPI_Q_IBM('7', '6', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
-> +	TPACPI_Q_IBM('7', '8', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
-> +
-> +	/* Models with Intel Extreme Graphics 2 (waiting confirmation) */
-> +	TPACPI_Q_IBM('1', 'V', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
-> +	TPACPI_Q_IBM('1', 'W', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
-> +	TPACPI_Q_IBM('1', 'U', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
-> +
-> +	/* Models with Intel GMA900 */
-> +	TPACPI_Q_IBM('7', '0', TPACPI_BRGHT_Q_NOEC),	/* T43, R52 */
-> +	TPACPI_Q_IBM('7', '4', TPACPI_BRGHT_Q_NOEC),	/* X41 */
-> +	TPACPI_Q_IBM('7', '5', TPACPI_BRGHT_Q_NOEC),	/* X41 Tablet */
-> +};
-> +
->  static int __init brightness_init(struct ibm_init_struct *iibm)
->  {
->  	int b;
-> +	unsigned long quirks;
->  
->  	vdbg_printk(TPACPI_DBG_INIT, "initializing brightness subdriver\n");
->  
->  	mutex_init(&brightness_mutex);
->  
-> +	quirks = tpacpi_check_quirks(brightness_quirk_table,
-> +				ARRAY_SIZE(brightness_quirk_table));
-> +
->  	/*
->  	 * We always attempt to detect acpi support, so as to switch
->  	 * Lenovo Vista BIOS to ACPI brightness mode even if we are not
-> @@ -5821,23 +5855,13 @@ static int __init brightness_init(struct
->  	/* TPACPI_BRGHT_MODE_AUTO not implemented yet, just use default */
->  	if (brightness_mode == TPACPI_BRGHT_MODE_AUTO ||
->  	    brightness_mode == TPACPI_BRGHT_MODE_MAX) {
-> -		if (thinkpad_id.vendor == PCI_VENDOR_ID_IBM) {
-> -			/*
-> -			 * IBM models that define HBRV probably have
-> -			 * EC-based backlight level control
-> -			 */
-> -			if (acpi_evalf(ec_handle, NULL, "HBRV", "qd"))
-> -				/* T40-T43, R50-R52, R50e, R51e, X31-X41 */
-> -				brightness_mode = TPACPI_BRGHT_MODE_ECNVRAM;
-> -			else
-> -				/* all other IBM ThinkPads */
-> -				brightness_mode = TPACPI_BRGHT_MODE_UCMS_STEP;
-> -		} else
-> -			/* All Lenovo ThinkPads */
-> +		if (quirks & TPACPI_BRGHT_Q_EC)
-> +			brightness_mode = TPACPI_BRGHT_MODE_ECNVRAM;
-> +		else
->  			brightness_mode = TPACPI_BRGHT_MODE_UCMS_STEP;
->  
->  		dbg_printk(TPACPI_DBG_BRGHT,
-> -			   "selected brightness_mode=%d\n",
-> +			   "driver auto-selected brightness_mode=%d\n",
->  			   brightness_mode);
->  	}
->  
-> @@ -5858,6 +5882,15 @@ static int __init brightness_init(struct
->  	vdbg_printk(TPACPI_DBG_INIT | TPACPI_DBG_BRGHT,
->  			"brightness is supported\n");
->  
-> +	if (quirks & TPACPI_BRGHT_Q_ASK) {
-> +		printk(TPACPI_NOTICE
-> +			"brightness: will use unverified default: "
-> +			"brightness_mode=%d\n", brightness_mode);
-> +		printk(TPACPI_NOTICE
-> +			"brightness: please report to %s whether it works well "
-> +			"or not on your ThinkPad\n", TPACPI_MAIL);
-> +	}
-> +
->  	ibm_backlight_device->props.max_brightness =
->  				(tp_features.bright_16levels)? 15 : 7;
->  	ibm_backlight_device->props.brightness = b & TP_EC_BACKLIGHT_LVLMSK;
+Seems like devres should handle this somehow, or else something in 
+libata core.. Tejun?
