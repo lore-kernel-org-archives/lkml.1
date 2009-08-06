@@ -1,667 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbZHFWUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbZHFW0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754607AbZHFWUV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 18:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbZHFWUU
+	id S1754742AbZHFW0E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 18:26:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZHFW0D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 18:20:20 -0400
-Received: from mga11.intel.com ([192.55.52.93]:38445 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752759AbZHFWUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 18:20:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,337,1246863600"; 
-   d="scan'208";a="481448989"
-From: Mark Allyn <mark.a.allyn@intel.com>
-To: linux-kernel@vger.kernel.org, alan@linux.intel.com,
-       charles.f.johnson@intel.com, greg@kroah.com
-Cc: Mark Allyn <mark.a.allyn@intel.com>
-Subject: [PATCH] Restricted access regions register driver revision 2 (moving to staging)
-Date: Thu,  6 Aug 2009 15:21:12 -0700
-Message-Id: <1249597272-16185-1-git-send-email-mark.a.allyn@intel.com>
-X-Mailer: git-send-email 1.6.0.6
+	Thu, 6 Aug 2009 18:26:03 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58210 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754670AbZHFW0C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 18:26:02 -0400
+Date: Thu, 6 Aug 2009 23:25:43 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: David Xiao <dxiao@broadcom.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       Ben Dooks <ben-linux@fluff.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       v4l2_linux <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
+	get_user_pages() enough to prevent pages from being swapped out ?")
+Message-ID: <20090806222543.GG31579@n2100.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806114619.GW2080@trinity.fluff.org> <200908061506.23874.laurent.pinchart@ideasonboard.com> <1249584374.29182.20.camel@david-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249584374.29182.20.camel@david-laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Upstream revision 3 of the restricted access memory registry
- kernel driver;
+On Thu, Aug 06, 2009 at 11:46:14AM -0700, David Xiao wrote:
+> On Thu, 2009-08-06 at 06:06 -0700, Laurent Pinchart wrote:
+> > Hi Ben,
+> > 
+> > On Thursday 06 August 2009 13:46:19 Ben Dooks wrote:
+> > > On Thu, Aug 06, 2009 at 12:08:21PM +0200, Laurent Pinchart wrote:
+> > [snip]
+> > > >
+> > > > The second problem is to ensure cache coherency. As the userspace
+> > > > application will read data from the video buffers, those buffers will end
+> > > > up being cached in the processor's data cache. The driver does need to
+> > > > invalidate the cache before starting the DMA operation (userspace could
+> > > > in theory write to the buffers, but the data will be overwritten by DMA
+> > > > anyway, so there's no need to clean the cache).
+> > >
+> > > You'll need to clean the write buffers, otherwise the CPU may have data
+> > > queued that it has yet to write back to memory.
+> > 
+> > Good points, thanks.
+> 
+>    I thought this should have been taken care of by the CPU specific
+> dma_inv_range routine. However, In arch/arm/mm/cache-v7.c,
+> v7_dma_inv_range does not drain the write buffer; and the
+> v6_dma_inv_range does that in the end of all the cache maintenance
+> operaitons.
 
- Moving to staging per Alan Cox's suggestion
+There's no such thing as "drain write buffer" in ARMv7.  There are
+barriers instead, in particular dsb, which replaces the original
+"drain write buffer" instruction.
 
- For the upstream community, this is revision 3. Changes are the
- relocation of this driver to the staging area and add TODO file
+As far as userspace DMA coherency, the only way you could do it with
+current kernel APIs is by using get_user_pages(), creating a scatterlist
+from those, and then passing it to dma_map_sg().  While the device has
+ownership of the SG, userspace must _not_ touch the buffer until after
+DMA has completed.
 
- This is the Linux driver for the restricted access memory
- region control registers. The restricted access memory
- regions are regions of memory on the MID platform that
- are configured so that they cannot be accessed by processes 
- running on the main x86 system processor. They can only be
- accessed by dedicated system peripherals.
-
- Signed-off-by: Mark Allyn <mark.a.allyn@intel.com>
-
- Date: August 6, 2009
-
----
- drivers/staging/Kconfig                     |    2 +
- drivers/staging/Makefile                    |    1 +
- drivers/staging/rar_register/Kconfig        |   15 +
- drivers/staging/rar_register/Makefile       |    3 +
- drivers/staging/rar_register/rar_register.c |  547 +++++++++++++++++++++++++++
- 5 files changed, 568 insertions(+), 0 deletions(-)
- create mode 100644 drivers/staging/rar_register/Kconfig
- create mode 100644 drivers/staging/rar_register/Makefile
- create mode 100644 drivers/staging/rar_register/TODO
- create mode 100644 drivers/staging/rar_register/rar_register.c
-
-diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
-index 348bf61..5294008 100644
---- a/drivers/staging/Kconfig
-+++ b/drivers/staging/Kconfig
-@@ -129,5 +129,7 @@ source "drivers/staging/pata_rdc/Kconfig"
- 
- source "drivers/staging/udlfb/Kconfig"
- 
-+source "drivers/staging/rar_register/Kconfig"
-+
- endif # !STAGING_EXCLUDE_BUILD
- endif # STAGING
-diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
-index 8d61d7b..929dbf7 100644
---- a/drivers/staging/Makefile
-+++ b/drivers/staging/Makefile
-@@ -46,3 +46,4 @@ obj-$(CONFIG_VT6655)		+= vt6655/
- obj-$(CONFIG_USB_CPC)		+= cpc-usb/
- obj-$(CONFIG_RDC_17F3101X)	+= pata_rdc/
- obj-$(CONFIG_FB_UDL)		+= udlfb/
-+obj-$(CONFIG_RAR_REGISTER)	+= rar_register/
-diff --git a/drivers/staging/rar_register/Kconfig b/drivers/staging/rar_register/Kconfig
-new file mode 100644
-index 0000000..e951162
---- /dev/null
-+++ b/drivers/staging/rar_register/Kconfig
-@@ -0,0 +1,15 @@
-+#
-+# Serial device configuration
-+#
-+
-+menu "RAR Register Driver"
-+
-+config RAR_REGISTER
-+	tristate "Intel Restricted Access Region Register Driver"
-+	depends on MRST
-+	default y
-+	---help---
-+		This driver allows other kernel drivers access to the
-+		contents of the restricted access region registers. 
-+
-+endmenu
-diff --git a/drivers/staging/rar_register/Makefile b/drivers/staging/rar_register/Makefile
-new file mode 100644
-index 0000000..63ba70e
---- /dev/null
-+++ b/drivers/staging/rar_register/Makefile
-@@ -0,0 +1,3 @@
-+EXTRA_CFLAGS += -DLITTLE__ENDIAN 
-+obj-$(CONFIG_RAR_REGISTER) += rar_register.o
-+rar_register_driver-objs := rar_register.o
-diff --git a/drivers/staging/rar_register/TODO b/drivers/staging/rar_register/TODO
-new file mode 100644
-index 0000000..e69de29
-diff --git a/drivers/staging/rar_register/rar_register.c b/drivers/staging/rar_register/rar_register.c
-new file mode 100644
-index 0000000..3e4933a
---- /dev/null
-+++ b/drivers/staging/rar_register/rar_register.c
-@@ -0,0 +1,547 @@
-+/*
-+ *  rar_register.c - An Intel Restricted Access Region register driver
-+ *
-+ *  Copyright(c) 2009 Intel Corporation. All rights reserved.
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License as
-+ *  published by the Free Software Foundation; either version 2 of the
-+ *  License, or (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-+ *  02111-1307, USA.
-+ *
-+ * -------------------------------------------------------------------
-+ *
-+ *  20090702 Ossama Othman <ossama.othman@intel.com>
-+ *      Removed unnecessary include directives
-+ *      Cleaned up spinlocks.
-+ *      Cleaned up logging.
-+ *      Improved invalid parameter checks.
-+ *      Fixed and simplified RAR address retrieval and RAR locking
-+ *      code.
-+ *
-+ *  20090626 Mark Allyn <mark.a.allyn@intel.com>
-+ *      Initial publish
-+ */
-+
-+#include <linux/rar/rar_register.h>
-+
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/spinlock.h>
-+#include <linux/device.h>
-+
-+
-+/* PCI vendor id for controller */
-+#define VENDOR_ID 0x8086
-+
-+/* PCI device id for controller */
-+#define DEVICE_ID 0x4110
-+
-+
-+/* === Lincroft Message Bus Interface === */
-+/* Message Control Register */
-+#define LNC_MCR_OFFSET 0xD0
-+
-+/* Message Data Register */
-+#define LNC_MDR_OFFSET 0xD4
-+
-+/* Message Opcodes */
-+#define LNC_MESSAGE_READ_OPCODE  0xD0
-+#define LNC_MESSAGE_WRITE_OPCODE 0xE0
-+
-+/* Message Write Byte Enables */
-+#define LNC_MESSAGE_BYTE_WRITE_ENABLES 0xF
-+
-+/* B-unit Port */
-+#define LNC_BUNIT_PORT 0x3
-+
-+/* === Lincroft B-Unit Registers - Programmed by IA32 firmware === */
-+#define LNC_BRAR0L  0x10
-+#define LNC_BRAR0H  0x11
-+#define LNC_BRAR1L  0x12
-+#define LNC_BRAR1H  0x13
-+
-+/* Reserved for SeP */
-+#define LNC_BRAR2L  0x14
-+#define LNC_BRAR2H  0x15
-+
-+
-+
-+static DEFINE_SPINLOCK(rar_spinlock_lock);
-+unsigned long rar_flags;
-+
-+static DEFINE_SPINLOCK(lnc_reg_lock);
-+unsigned long lnc_reg_flags;
-+
-+/* RAR Physical Address Range */
-+struct RAR_address_range {
-+	u32 low;
-+	u32 high;
-+};
-+
-+/* Structure containing low and high RAR register offsets. */
-+struct RAR_offsets {
-+	u32 low; /* Register offset for low RAR physical address. */
-+	u32 high; /* Register offset for high RAR physical address. */
-+};
-+
-+static struct RAR_offsets const rar_offsets[] = {
-+	{ LNC_BRAR0L, LNC_BRAR0H },
-+	{ LNC_BRAR1L, LNC_BRAR1H },
-+	{ LNC_BRAR2L, LNC_BRAR2H }
-+};
-+
-+static struct pci_dev *rar_dev;
-+static u32 registered;
-+
-+/* Moorestown supports three restricted access regions. */
-+#define MRST_NUM_RAR 3
-+
-+static struct RAR_address_range rar_addr[MRST_NUM_RAR];
-+
-+/* prototype for init */
-+static int __init rar_init_handler(void);
-+static void __exit rar_exit_handler(void);
-+
-+const struct pci_device_id rar_pci_id_tbl[] = {
-+	{ PCI_DEVICE(VENDOR_ID, DEVICE_ID) },
-+	{ 0 }
-+};
-+
-+MODULE_DEVICE_TABLE(pci, rar_pci_id_tbl);
-+
-+/*
-+ * Function that is activated on the succesful probe of the RAR
-+ * device (Moorestown host controller).
-+ */
-+int rar_probe(struct pci_dev *dev, const struct pci_device_id *id);
-+
-+/* field for registering driver to PCI device */
-+static struct pci_driver rar_pci_driver = {
-+	.name = "rar_register",
-+	.id_table = rar_pci_id_tbl,
-+	.probe = rar_probe
-+};
-+
-+const struct pci_device_id *my_id_table = rar_pci_id_tbl;
-+int (*my_probe) (struct pci_dev *dev, const struct pci_device_id *id) =
-+	rar_probe;
-+
-+/* This function is used to retrieved RAR info using the IPC message
-+   bus interface */
-+static int memrar_get_rar_addr(struct pci_dev *pdev,
-+			       int offset,
-+			       u32 *addr)
-+{
-+	/*
-+	 * ======== The Lincroft Message Bus Interface ========
-+	 * Lincroft registers may be obtained from the PCI
-+	 * (the Host Bridge) using the Lincroft Message Bus
-+	 * Interface.  That message bus interface is generally
-+	 * comprised of two registers: a control register (MCR, 0xDO)
-+	 * and a data register (MDR, 0xD4).
-+	 *
-+	 * The MCR (message control register) format is the following:
-+	 *   1.  [31:24]: Opcode
-+	 *   2.  [23:16]: Port
-+	 *   3.  [15:8]: Register Offset
-+	 *   4.  [7:4]: Byte Enables (use 0xF to set all of these bits
-+	 *              to 1)
-+	 *   5.  [3:0]: reserved
-+	 *
-+	 *  Read (0xD0) and write (0xE0) opcodes are written to the
-+	 *  control register when reading and writing to Lincroft
-+	 *  registers, respectively.
-+	 *
-+	 *  We're interested in registers found in the Lincroft
-+	 *  B-unit.  The B-unit port is 0x3.
-+	 *
-+	 *  The six B-unit RAR register offsets we use are listed
-+	 *  earlier in this file.
-+	 *
-+	 *  Lastly writing to the MCR register requires the "Byte
-+	 *  enables" bits to be set to 1.  This may be achieved by
-+	 *  writing 0xF at bit 4.
-+	 *
-+	 * The MDR (message data register) format is the following:
-+	 *   1. [31:0]: Read/Write Data
-+	 *
-+	 *  Data being read from this register is only available after
-+	 *  writing the appropriate control message to the MCR
-+	 *  register.
-+	 *
-+	 *  Data being written to this register must be written before
-+	 *  writing the appropriate control message to the MCR
-+	 *  register.
-+	 */
-+
-+	int result;
-+
-+	/* Construct control message */
-+	u32 const message =
-+		(LNC_MESSAGE_READ_OPCODE << 24)
-+		| (LNC_BUNIT_PORT << 16)
-+		| (offset << 8)
-+		| (LNC_MESSAGE_BYTE_WRITE_ENABLES << 4);
-+	
-+
-+	dev_dbg(&pdev->dev, "Offset for 'get' LNC MSG is %x\n", offset);
-+
-+	if (addr == 0) {
-+		WARN_ON(1);
-+		return -EINVAL;
-+	}
-+
-+	spin_lock_irqsave(&lnc_reg_lock, lnc_reg_flags);
-+
-+	/* Send the control message */
-+	result = pci_write_config_dword(pdev,
-+					LNC_MCR_OFFSET,
-+					message);
-+
-+	dev_dbg(&pdev->dev,
-+		"Result from send ctl register is %x\n",
-+		result);
-+
-+	if (!result)
-+	{
-+		result = pci_read_config_dword(pdev,
-+					       LNC_MDR_OFFSET,
-+					       addr);
-+
-+		dev_dbg(&pdev->dev,
-+			"Result from read data register is %x\n",
-+			result);
-+
-+		dev_dbg(&pdev->dev,
-+			"Value read from data register is %x\n",
-+			*addr);
-+	}
-+
-+	spin_unlock_irqrestore(&lnc_reg_lock, lnc_reg_flags);
-+
-+	return result;
-+}
-+
-+static int memrar_set_rar_addr(struct pci_dev *pdev,
-+			       int offset,
-+			       u32 addr)
-+{
-+	/*
-+	 *  Data being written to this register must be written before
-+	 *  writing the appropriate control message to the MCR
-+	 *  register.
-+	 *
-+	 *  @note See memrar_get_rar_addr() for a description of the
-+	 *        message bus interface being used here.
-+	 */
-+
-+	int result = 0;
-+
-+	/* Construct control message */
-+	u32 const message =
-+	       (LNC_MESSAGE_WRITE_OPCODE << 24)
-+	       | (LNC_BUNIT_PORT << 16)
-+	       | (offset << 8)
-+	       | (LNC_MESSAGE_BYTE_WRITE_ENABLES << 4);
-+
-+	if (addr == 0) {
-+		WARN_ON(1);
-+		return -EINVAL;
-+	
-+	}
-+
-+	spin_lock_irqsave(&lnc_reg_lock, lnc_reg_flags);
-+
-+	dev_dbg(&pdev->dev,
-+		"Offset for 'set' LNC MSG is %x\n", offset);
-+
-+	/* Send the control message */
-+	result = pci_write_config_dword(pdev,
-+					LNC_MDR_OFFSET,
-+					addr);
-+
-+	dev_dbg(&pdev->dev,
-+		"Result from write data register is %x\n",
-+		result);
-+
-+	if (!result)
-+	{
-+		dev_dbg(&pdev->dev,
-+			"Value written to data register is %x\n",
-+			addr);
-+
-+		result = pci_write_config_dword(pdev,
-+						LNC_MCR_OFFSET,
-+						message);
-+
-+		dev_dbg(&pdev->dev,
-+			"Result from send ctl register is %x\n",
-+			result);
-+	
-+	}
-+
-+	spin_unlock_irqrestore(&lnc_reg_lock, lnc_reg_flags);
-+
-+	return result;
-+}
-+
-+/*
-+ * Initialize RAR parameters, such as physical addresses, etc.
-+ */
-+static int memrar_init_rar_params(struct pci_dev *pdev)
-+{
-+	size_t const num_offsets = ARRAY_SIZE(rar_offsets);
-+	struct RAR_offsets const *end = rar_offsets + num_offsets;
-+	struct RAR_offsets const *i;
-+	struct pci_dev *my_pdev;
-+	unsigned int n = 0;
-+	int result = 0;
-+
-+	/* Retrieve RAR start and end physical addresses. */
-+
-+	/*
-+	 * Access the RAR registers through the Lincroft Message Bus
-+	 * Interface on PCI device: 00:00.0 Host bridge.
-+	 */
-+
-+	/* struct pci_dev *pdev = pci_get_bus_and_slot(0, PCI_DEVFN(0,0)); */
-+
-+	my_pdev = pci_dev_get(pdev);
-+
-+	if (my_pdev == NULL) {
-+		WARN_ON(1);
-+		return -ENODEV;
-+	}
-+
-+	for (i = rar_offsets; i != end; ++i, ++n) {
-+		if (memrar_get_rar_addr(my_pdev,
-+					i->low,
-+					&(rar_addr[n].low)) != 0
-+		    || memrar_get_rar_addr(my_pdev,
-+					   i->high,
-+					   &(rar_addr[n].high)) != 0) {
-+			result = -1;
-+			break;
-+		}
-+
-+		/*
-+		 * Only the upper 22 bits of the RAR addresses are
-+		 * stored in their corresponding RAR registers so we
-+		 * must set the lower 10 bits accordingly.
-+		 *
-+		 * The low address has its lower 10 bits cleared, and
-+		 * the high address has all its lower 10 bits set,
-+		 * e.g.:
-+		 *
-+		 *   low = 0x2ffffc00
-+		 *  high = 0x3fffffff
-+		 *
-+		 * This is not arbitrary, and is actually how RAR
-+		 * addressing/configuration works.
-+		 */
-+		rar_addr[n].low  &= 0xfffffc00u;  /* Clear bits 9:0 */
-+		rar_addr[n].high |= 0x3ffu;       /* Set   bits 9:0 */
-+	}
-+	
-+        /* Done accessing the device. */
-+	/* pci_dev_put(pdev); */
-+
-+	if (result == 0) {
-+		size_t z;
-+		for (z = 0; z != MRST_NUM_RAR; ++z)
-+		{
-+			/*
-+			 * "BRAR" refers to the RAR registers in the
-+			 * Lincroft B-unit.
-+			 */
-+			dev_info(&pdev->dev,
-+				 "BRAR[%u] physical address range = "
-+				 "[0x%08x, 0x%08x]\n",
-+				 z,
-+				 rar_addr[z].low,
-+				 rar_addr[z].high);
-+		}
-+	}
-+
-+	return result;
-+}
-+
-+/*
-+ * This function registers the driver with the device subsystem (
-+ * either PCI, USB, etc).
-+*/
-+static int __init rar_init_handler(void)
-+{
-+	return pci_register_driver(&rar_pci_driver);
-+}
-+
-+static void __exit rar_exit_handler(void)
-+{
-+	pci_unregister_driver(&rar_pci_driver);
-+}
-+
-+module_init(rar_init_handler);
-+module_exit(rar_exit_handler);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("Intel Restricted Access Region Register Driver");
-+
-+/*
-+ * Function that is activaed on the succesful probe of the RAR device
-+ * (Moorestown host controller).
-+ */
-+int rar_probe(struct pci_dev *dev, const struct pci_device_id *id)
-+{
-+	int error;
-+	registered = 0;
-+
-+	dev_dbg(&dev->dev,
-+		"PCI probe starting\n");
-+
-+	/* enable the device */
-+	error = pci_enable_device(dev);
-+	if (error)
-+	{
-+		dev_err(&dev->dev,
-+			"Error enabling RAR register PCI device\n");
-+		goto end_function;
-+	}
-+
-+	/* Initialize the RAR parameters, which have to be retrieved */
-+	/* via the message bus service */
-+	error = memrar_init_rar_params(dev);
-+	if (error)
-+	{
-+		pci_disable_device(dev);
-+
-+		dev_err(&dev->dev,
-+			"Error retrieving RAR addresses\n");
-+
-+		goto end_function;
-+	}
-+
-+	rar_dev = dev;
-+	registered = 1;
-+
-+end_function:
-+
-+	return error;
-+}
-+
-+
-+/* The rar_get_address function is used by other device drivers
-+ * to obtain RAR address information on a RAR. It takes three
-+ * parameters:
-+ *
-+ * int rar_index
-+ * The rar_index is an index to the rar for which you wish to retrieve
-+ * the address information.
-+ * Values can be 0,1, or 2.
-+ *
-+ * 
-+ *
-+ * The function returns a 0 upon success or a -1 if there is no RAR
-+ * facility on this system.
-+ */
-+int rar_get_address(int rar_index,
-+		    u32 *start_address,
-+		    u32 *end_address)
-+{
-+	int result = -ENODEV;
-+
-+	if (registered)
-+	{
-+		if (start_address == 0
-+		    || end_address == 0
-+		    || rar_index >= MRST_NUM_RAR
-+		    || rar_index < 0)
-+		{
-+			result = -EINVAL;
-+		}
-+		else
-+		{
-+			*start_address = rar_addr[rar_index].low;
-+			*end_address   = rar_addr[rar_index].high;
-+			result = 0;
-+		}
-+	}
-+
-+	return result;
-+}
-+EXPORT_SYMBOL(rar_get_address);
-+
-+/* The lock_rar function is ued by other device drivers to lock an RAR.
-+ * once an RAR is locked, it stays locked until the next system reboot.
-+ * The function takes one parameter:
-+ *
-+ * int rar_index
-+ * The rar_index is an index to the rar that you want to lock.
-+ * Values can be 0,1, or 2.
-+ *
-+ * The function returns a 0 upon success or a -1 if there is no RAR
-+ * facility on this system.
-+ */
-+int rar_lock(int rar_index)
-+{
-+	int result = -ENODEV;
-+
-+	if  (rar_index >= MRST_NUM_RAR || rar_index < 0)
-+	{
-+		result = -EINVAL;
-+		goto exit_rar_lock;
-+	}
-+
-+	spin_lock_irqsave(&rar_spinlock_lock, rar_flags);
-+
-+	if (registered)
-+	{
-+		/*
-+		 * Clear bits 4:0 in low register to lock.
-+		 * Clear bits 8,4:0 in high register to lock.
-+		 *
-+		 * The rest of the lower 10 bits in both registers are
-+		 * unused so we might as well clear them all.
-+		 */
-+		u32 const low  = rar_addr[rar_index].low  & 0xfffffc00u;
-+		u32 const high = rar_addr[rar_index].high & 0xfffffc00u;
-+
-+		/*
-+		 * Now program the register using the Lincroft message
-+		 * bus interface.
-+		 */
-+		result = memrar_set_rar_addr(rar_dev,
-+					     rar_offsets[rar_index].low,
-+					     low);
-+
-+		if (result == 0)
-+			result =
-+				memrar_set_rar_addr(
-+					rar_dev,
-+					rar_offsets[rar_index].high,
-+					high);
-+	}
-+
-+	spin_unlock_irqrestore(&rar_spinlock_lock, rar_flags);
-+
-+exit_rar_lock:
-+
-+	return result;
-+}
-+EXPORT_SYMBOL(rar_lock);
-+
-+
-+/*
-+  Local Variables:
-+    c-file-style: "linux"
-+  End:
-+*/
--- 
-1.6.0.6
-
+However, that won't work with ARMv7's speculative prefetching.  I'm
+afraid with such things, DMA direct into userspace mappings becomes a
+_lot_ harder, and lets face it, lots of Linux drivers just aren't going
+to bother supporting this - we can't currently get agreement to have an
+API to map DMA coherent pages into userspace!
