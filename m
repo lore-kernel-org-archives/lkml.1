@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754120AbZHFGHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbZHFGHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754120AbZHFGHf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 02:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbZHFGHf
+	id S1754127AbZHFGHw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 02:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbZHFGHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 02:07:35 -0400
-Received: from [222.73.24.84] ([222.73.24.84]:57812 "EHLO song.cn.fujitsu.com"
+	Thu, 6 Aug 2009 02:07:51 -0400
+Received: from [222.73.24.84] ([222.73.24.84]:54634 "EHLO song.cn.fujitsu.com"
 	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754069AbZHFGHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 02:07:33 -0400
-Message-ID: <4A7A72CF.9070808@cn.fujitsu.com>
-Date: Thu, 06 Aug 2009 14:06:07 +0800
+	id S1752496AbZHFGHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 02:07:50 -0400
+Message-ID: <4A7A72DF.6030009@cn.fujitsu.com>
+Date: Thu, 06 Aug 2009 14:06:23 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
 To: =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <f.weisbecker@gmail.com>
 CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] tracing/filters: Add filter_type to struct ftrace_event_field
+Subject: [PATCH 2/3] tracing/filters: Add __field_ext() to TRACE_EVENT
 References: <4A7A72BD.5030201@cn.fujitsu.com>
 In-Reply-To: <4A7A72BD.5030201@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -26,117 +26,210 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The type of a field is stored as a string in @type, and here
-we add @filter_type which is an enum value.
+Add __field_ext(), so a field can be assigned to a specific
+filter_type, which matches a corresponding filter function.
 
-This prepares for later patches, so we can specifically assign
-different @filter_type for the same @type.
-
-For example normally a "char *" field is treated as a ptr,
-but we may want it to be treated as a string when doing filting.
+For example, a later patch will allow this:
+	__field_ext(const char *, str, FILTER_PTR_STR);
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/trace/trace.h               |    2 ++
- kernel/trace/trace_events.c        |    2 ++
- kernel/trace/trace_events_filter.c |   21 +++++++++++++--------
- 3 files changed, 17 insertions(+), 8 deletions(-)
+ include/linux/ftrace_event.h       |   11 +++++++++--
+ include/trace/ftrace.h             |   28 ++++++++++++++++++++++------
+ kernel/trace/trace_events.c        |    9 +++++++--
+ kernel/trace/trace_events_filter.c |    6 ------
+ kernel/trace/trace_export.c        |    7 ++++---
+ 5 files changed, 42 insertions(+), 19 deletions(-)
 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 3a87d46..b168927 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -759,6 +759,7 @@ struct ftrace_event_field {
- 	struct list_head	link;
- 	char			*name;
- 	char			*type;
-+	int			filter_type;
- 	int			offset;
- 	int			size;
- 	int			is_signed;
-@@ -804,6 +805,7 @@ extern int apply_subsystem_event_filter(struct event_subsystem *system,
- 					char *filter_string);
- extern void print_subsystem_event_filter(struct event_subsystem *system,
- 					 struct trace_seq *s);
-+extern int filter_assign_type(const char *type);
+diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+index 26d3673..14c388e 100644
+--- a/include/linux/ftrace_event.h
++++ b/include/linux/ftrace_event.h
+@@ -138,8 +138,15 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
+ 					void *rec,
+ 					struct ring_buffer_event *event);
  
- static inline int
- filter_check_discard(struct ftrace_event_call *call, void *rec,
++enum {
++	FILTER_STATIC_STRING = 1,
++	FILTER_DYN_STRING,
++	FILTER_OTHER,
++};
++
+ extern int trace_define_field(struct ftrace_event_call *call, char *type,
+-			      char *name, int offset, int size, int is_signed);
++			      char *name, int offset, int size,
++			      int is_signed, int filter_type);
+ 
+ #define is_signed_type(type)	(((type)(-1)) < 0)
+ 
+@@ -167,7 +174,7 @@ do {									\
+ #define __common_field(type, item, is_signed)				\
+ 	ret = trace_define_field(event_call, #type, "common_" #item,	\
+ 				 offsetof(typeof(field.ent), item),	\
+-				 sizeof(field.ent.item), is_signed);	\
++				 sizeof(field.ent.item), is_signed, -1);\
+ 	if (ret)							\
+ 		return ret;
+ 
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index 380b603..8d8518f 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -21,6 +21,9 @@
+ #undef __field
+ #define __field(type, item)		type	item;
+ 
++#undef __field_ext
++#define __field_ext(type, item, filter_type)	type	item;
++
+ #undef __array
+ #define __array(type, item, len)	type	item[len];
+ 
+@@ -64,6 +67,9 @@
+ #undef __field
+ #define __field(type, item);
+ 
++#undef __field_ext
++#define __field_ext(type, item, filter_type);
++
+ #undef __array
+ #define __array(type, item, len)
+ 
+@@ -110,6 +116,9 @@
+ 	if (!ret)							\
+ 		return 0;
+ 
++#undef __field_ext
++#define __field_ext(type, item, filter_type)	__field(type, item)
++
+ #undef __array
+ #define __array(type, item, len)						\
+ 	ret = trace_seq_printf(s, "\tfield:" #type " " #item "[" #len "];\t"	\
+@@ -264,28 +273,32 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+ 	
+ #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+ 
+-#undef __field
+-#define __field(type, item)						\
++#undef __field_ext
++#define __field_ext(type, item, filter_type)				\
+ 	ret = trace_define_field(event_call, #type, #item,		\
+ 				 offsetof(typeof(field), item),		\
+-				 sizeof(field.item), is_signed_type(type));	\
++				 sizeof(field.item),			\
++				 is_signed_type(type), filter_type);	\
+ 	if (ret)							\
+ 		return ret;
+ 
++#undef __field
++#define __field(type, item)	__field_ext(type, item, -1)
++
+ #undef __array
+ #define __array(type, item, len)					\
+ 	BUILD_BUG_ON(len > MAX_FILTER_STR_VAL);				\
+ 	ret = trace_define_field(event_call, #type "[" #len "]", #item,	\
+ 				 offsetof(typeof(field), item),		\
+-				 sizeof(field.item), 0);		\
++				 sizeof(field.item), 0, -1);		\
+ 	if (ret)							\
+ 		return ret;
+ 
+ #undef __dynamic_array
+ #define __dynamic_array(type, item, len)				       \
+ 	ret = trace_define_field(event_call, "__data_loc " #type "[]", #item,  \
+-				offsetof(typeof(field), __data_loc_##item),    \
+-				 sizeof(field.__data_loc_##item), 0);
++				 offsetof(typeof(field), __data_loc_##item),   \
++				 sizeof(field.__data_loc_##item), 0, -1);
+ 
+ #undef __string
+ #define __string(item, src) __dynamic_array(char, item, -1)
+@@ -322,6 +335,9 @@ ftrace_define_fields_##call(void)					\
+ #undef __field
+ #define __field(type, item)
+ 
++#undef __field_ext
++#define __field_ext(type, item, filter_type)
++
+ #undef __array
+ #define __array(type, item, len)
+ 
 diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 90cdec5..71b2085 100644
+index 71b2085..0cbad89 100644
 --- a/kernel/trace/trace_events.c
 +++ b/kernel/trace/trace_events.c
-@@ -44,9 +44,11 @@ int trace_define_field(struct ftrace_event_call *call, char *type,
+@@ -28,7 +28,8 @@ DEFINE_MUTEX(event_mutex);
+ LIST_HEAD(ftrace_events);
+ 
+ int trace_define_field(struct ftrace_event_call *call, char *type,
+-		       char *name, int offset, int size, int is_signed)
++		       char *name, int offset, int size,
++		       int is_signed, int filter_type)
+ {
+ 	struct ftrace_event_field *field;
+ 
+@@ -44,7 +45,11 @@ int trace_define_field(struct ftrace_event_call *call, char *type,
  	if (!field->type)
  		goto err;
  
-+	field->filter_type = filter_assign_type(type);
+-	field->filter_type = filter_assign_type(type);
++	if (filter_type == -1)
++		field->filter_type = filter_assign_type(type);
++	else
++		field->filter_type = filter_type;
++
  	field->offset = offset;
  	field->size = size;
  	field->is_signed = is_signed;
-+
- 	list_add(&field->link, &call->fields);
- 
- 	return 0;
 diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 27c2dbe..4c8c5fd 100644
+index 4c8c5fd..5e7f031 100644
 --- a/kernel/trace/trace_events_filter.c
 +++ b/kernel/trace/trace_events_filter.c
-@@ -477,10 +477,11 @@ static int filter_add_pred_fn(struct filter_parse_state *ps,
- 
- enum {
- 	FILTER_STATIC_STRING = 1,
--	FILTER_DYN_STRING
-+	FILTER_DYN_STRING,
-+	FILTER_OTHER,
- };
- 
--static int is_string_field(const char *type)
-+int filter_assign_type(const char *type)
- {
- 	if (strstr(type, "__data_loc") && strstr(type, "char"))
- 		return FILTER_DYN_STRING;
-@@ -488,12 +489,18 @@ static int is_string_field(const char *type)
- 	if (strchr(type, '[') && strstr(type, "char"))
- 		return FILTER_STATIC_STRING;
- 
--	return 0;
-+	return FILTER_OTHER;
-+}
-+
-+static bool is_string_field(struct ftrace_event_field *field)
-+{
-+	return field->filter_type == FILTER_DYN_STRING ||
-+	       field->filter_type == FILTER_STATIC_STRING;
+@@ -475,12 +475,6 @@ static int filter_add_pred_fn(struct filter_parse_state *ps,
+ 	return 0;
  }
  
- static int is_legal_op(struct ftrace_event_field *field, int op)
+-enum {
+-	FILTER_STATIC_STRING = 1,
+-	FILTER_DYN_STRING,
+-	FILTER_OTHER,
+-};
+-
+ int filter_assign_type(const char *type)
  {
--	if (is_string_field(field->type) && (op != OP_EQ && op != OP_NE))
-+	if (is_string_field(field) && (op != OP_EQ && op != OP_NE))
- 		return 0;
+ 	if (strstr(type, "__data_loc") && strstr(type, "char"))
+diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+index d06cf89..4a9f273 100644
+--- a/kernel/trace/trace_export.c
++++ b/kernel/trace/trace_export.c
+@@ -156,7 +156,8 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ #define TRACE_FIELD(type, item, assign)					\
+ 	ret = trace_define_field(event_call, #type, #item,		\
+ 				 offsetof(typeof(field), item),		\
+-				 sizeof(field.item), is_signed_type(type));	\
++				 sizeof(field.item),			\
++				 is_signed_type(type), -1);		\
+ 	if (ret)							\
+ 		return ret;
  
- 	return 1;
-@@ -550,7 +557,6 @@ static int filter_add_pred(struct filter_parse_state *ps,
- 	struct ftrace_event_field *field;
- 	filter_pred_fn_t fn;
- 	unsigned long long val;
--	int string_type;
- 	int ret;
+@@ -164,7 +165,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ #define TRACE_FIELD_SPECIAL(type, item, len, cmd)			\
+ 	ret = trace_define_field(event_call, #type "[" #len "]", #item,	\
+ 				 offsetof(typeof(field), item),		\
+-				 sizeof(field.item), 0);		\
++				 sizeof(field.item), 0, -1);		\
+ 	if (ret)							\
+ 		return ret;
  
- 	pred->fn = filter_pred_none;
-@@ -578,9 +584,8 @@ static int filter_add_pred(struct filter_parse_state *ps,
- 		return -EINVAL;
- 	}
+@@ -172,7 +173,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ #define TRACE_FIELD_SIGN(type, item, assign, is_signed)			\
+ 	ret = trace_define_field(event_call, #type, #item,		\
+ 				 offsetof(typeof(field), item),		\
+-				 sizeof(field.item), is_signed);	\
++				 sizeof(field.item), is_signed, -1);	\
+ 	if (ret)							\
+ 		return ret;
  
--	string_type = is_string_field(field->type);
--	if (string_type) {
--		if (string_type == FILTER_STATIC_STRING)
-+	if (is_string_field(field)) {
-+		if (field->filter_type == FILTER_STATIC_STRING)
- 			fn = filter_pred_string;
- 		else
- 			fn = filter_pred_strloc;
 -- 
 1.6.3
 
