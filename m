@@ -1,93 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbZHFQI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbZHFQKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756216AbZHFQI5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 12:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZHFQI4
+	id S1755960AbZHFQKH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 12:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbZHFQKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 12:08:56 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:47437 "EHLO
-	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751719AbZHFQIz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 12:08:55 -0400
-X-SpamScore: -23
-X-BigFish: VPS-23(zz1432R14c3M98dN4015L1442Ja4a4kzz1202hzzz32i21ch6bh203h61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KNYQ6F-02-IRT-02
-X-M-MSG: 
-Date: Thu, 6 Aug 2009 18:08:35 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Brice Goglin <Brice.Goglin@inria.fr>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Borislav Petkov <borislav.petkov@amd.com>
-Subject: Re: [PATCH 0/5 v4] x86: Adapt CPU topology detection for AMD
-	Magny-Cours
-Message-ID: <20090806160835.GD7198@alberich.amd.com>
-References: <20090805154402.GA6520@alberich.amd.com> <4A79EA5A.7040308@inria.fr> <20090806104240.GC7198@alberich.amd.com> <4A7ACBAF.8040305@inria.fr>
+	Thu, 6 Aug 2009 12:10:06 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:56214 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754641AbZHFQKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 12:10:05 -0400
+Date: Thu, 6 Aug 2009 17:10:06 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Larry Woodman <lwoodman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: riel@redhat.com, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [PATCH 0/4] Add some trace events for the page allocator v4
+Message-ID: <20090806161005.GD6915@csn.ul.ie>
+References: <1249574827-18745-1-git-send-email-mel@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <4A7ACBAF.8040305@inria.fr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 06 Aug 2009 16:08:35.0582 (UTC) FILETIME=[26E111E0:01CA16B0]
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <1249574827-18745-1-git-send-email-mel@csn.ul.ie>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 02:25:19PM +0200, Brice Goglin wrote:
-> Andreas Herrmann wrote:
-> > Of course I thought also to implement it this way because it looks
-> > more consistent, but IMHO the patches are less intrusive if this
-> > scheme is _not_ used. Instead I kept core_siblings as is ("for
-> > historic reasons", nobody needs to accustom to new semantics). And use
-> > cpu_node_siblings where it really matters.
-> >   
+On Thu, Aug 06, 2009 at 05:07:01PM +0100, Mel Gorman wrote:
+> This is V4 of a patchset to add some trace points for the page allocator. The
+> largest changes in this version is performance improvements and expansion
+> of the post-processing script as well as some documentation. There were minor changes
+> elsewhere that are described in the changelog.
 > 
-> Well, core_siblings and cpu_node_sibling will only be different on
-> Magny-Cours anyway. So even if core_siblings becomes "all cores in
-> cpu_node" instead of "all cores in socket", it won't actually break any
-> existing setup. I personally prefer having the same kind of semantics
-> for all foo_siblings rather than having something with a different
-> meaning between core and thread.
 
-You just want to have the user interface adapted to your
-semantics. I.e. you want to have following attributes:
-(from Documentation/cputopology.txt)
+Cack, the subject should be 0/6 of course, not 0/4
 
- 1) /sys/devices/system/cpu/cpuX/topology/physical_package_id:
- represent the physical package id of  cpu X;
- 2) /sys/devices/system/cpu/cpuX/topology/core_id:
- represent the cpu core id to cpu X;
- 3) /sys/devices/system/cpu/cpuX/topology/cpu_node_id:
- represent the processor internal node_id to cpu X;
- 4) /sys/devices/system/cpu/cpuX/topology/thread_siblings:
- represent the thread siblings to cpu X in the same core;
- 5) /sys/devices/system/cpu/cpuX/topology/core_siblings:
- represent the thread siblings to cpu X in the same processor internal node;
- 6) /sys/devices/system/cpu/cpuX/topology/cpu_node_siblings:
- represent the thread siblings to cpu X in the same physical package;
+> <SNIP>
+> 
+>  Documentation/trace/events-kmem.txt                |  107 ++++++
+>  .../postprocess/trace-pagealloc-postprocess.pl     |  356 ++++++++++++++++++++
+>  Documentation/trace/tracepoint-analysis.txt        |  327 ++++++++++++++++++
+>  include/trace/events/kmem.h                        |  177 ++++++++++
+>  mm/page_alloc.c                                    |   16 +-
+>  5 files changed, 982 insertions(+), 1 deletions(-)
+>  create mode 100644 Documentation/trace/events-kmem.txt
+>  create mode 100755 Documentation/trace/postprocess/trace-pagealloc-postprocess.pl
+>  create mode 100644 Documentation/trace/tracepoint-analysis.txt
+> 
+> Mel Gorman (6):
+>   tracing, page-allocator: Add trace events for page allocation and
+>     page freeing
+>   tracing, page-allocator: Add trace events for anti-fragmentation
+>     falling back to other migratetypes
+>   tracing, page-allocator: Add trace event for page traffic related to
+>     the buddy lists
+>   tracing, page-allocator: Add a postprocessing script for
+>     page-allocator-related ftrace events
+>   tracing, documentation: Add a document describing how to do some
+>     performance analysis with tracepoints
+>   tracing, documentation: Add a document on the kmem tracepoints
+> 
 
- Note: In case of multi-node processors (e.g. Magny-Cours) 5 and 6
- differ. For all other CPUs 5 and 6 provide similar values and
- cpu_node_id is 0.
+Similarly, I should have stripped this junk away before tending. The
+real diffstat is below. Sorry
 
-Ok, I can modify the first two patches accordingly to swap the two
-attributes and also provide an update for the documentation file.
-
-(But I will keep the internal identifiers for the cpu_node stuff
-as is.)
-
-
-Thanks,
-Andreas
+>  Documentation/trace/events-kmem.txt                |  107 ++++++
+>  .../postprocess/trace-pagealloc-postprocess.pl     |  356 ++++++++++++++++++++
+>  Documentation/trace/tracepoint-analysis.txt        |  327 ++++++++++++++++++
+>  include/trace/events/kmem.h                        |  177 ++++++++++
+>  mm/page_alloc.c                                    |   15 +-
+>  5 files changed, 981 insertions(+), 1 deletions(-)
+>  create mode 100644 Documentation/trace/events-kmem.txt
+>  create mode 100755 Documentation/trace/postprocess/trace-pagealloc-postprocess.pl
+>  create mode 100644 Documentation/trace/tracepoint-analysis.txt
+> 
 
 -- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
