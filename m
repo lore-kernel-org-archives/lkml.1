@@ -1,268 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753923AbZHFCon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZHFCif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753923AbZHFCon (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 22:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbZHFCom
+	id S1753392AbZHFCif (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 22:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbZHFCie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 22:44:42 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3244 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753662AbZHFCnx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 22:43:53 -0400
-From: Joe Perches <joe@perches.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Julia Lawall <julia@diku.dk>,
-       Greg KH <greg@kroah.com>
-Subject: [PATCH 7/7] scripts/get_maintainer.pl: Add --remove-duplicates
-Date: Wed,  5 Aug 2009 19:43:48 -0700
-Message-Id: <69586591a85a204f51197da6335d5bb58e54d414.1249525834.git.joe@perches.com>
-X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
-In-Reply-To: <cover.1249525834.git.joe@perches.com>
-References: <cover.1249525834.git.joe@perches.com>
+	Wed, 5 Aug 2009 22:38:34 -0400
+Received: from [222.73.24.84] ([222.73.24.84]:64732 "EHLO song.cn.fujitsu.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751668AbZHFCie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 22:38:34 -0400
+Message-ID: <4A7A4212.9050700@cn.fujitsu.com>
+Date: Thu, 06 Aug 2009 10:38:10 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Anton Blanchard <anton@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH v5 3/3] ftrace: add tracepoint for itimer
+References: <4A7A4153.3040207@cn.fujitsu.com> <4A7A41A2.9000903@cn.fujitsu.com>
+In-Reply-To: <4A7A41A2.9000903@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow control over the elimination of duplicate email names and addresses
+Those tracepoints are wanted and useful:
+1: We can detect a itimer's delay
+2: We can monitor the lifecycle and behaviors of a itimer
 
---remove-duplicates will use the first email name or address presented
---noremove-duplicates will emit all names and addresses
+Thus they help in analysing and debuging.
 
---remove-duplicates is enabled by default
+Great thanks to Thomas for giving me so many valuable advices.
 
-For instance:
+There have two case: 
+case 1, if we use ITIMER_REAL itimer:
+Example ftrace output:
+  main-1517  [000]   288.826521: hrtimer_start: timer=ce807544 func=it_real_fn expires=289327664443 ns softexpires=289327664443 ns
+  main-1517  [000]   288.826524: itimer_state: which=0 expires=0 it_value=0.500 it_interval=0.0
+  main-1517  [000]   288.827313: hrtimer_expire: timer=ce807544 now=289327958161 ns
+  main-1517  [000]   288.827314: hrtimer_cancel: timer=ce807544
+  main-1517  [000]   288.827315: itimer_expire: pid=1517 which=0 now=0
+  main-1517  [000]   288.827319: hrtimer_callback_done: timer=ce807544
+  main-1517  [000]   288.827463: itimer_state: which=0 expires=0 it_value=0.0 it_interval=0.0
 
-$ ./scripts/get_maintainer.pl -f drivers/char/tty_ioctl.c
-Greg Kroah-Hartman <gregkh@suse.de>
-Alan Cox <alan@linux.intel.com>
-Mike Frysinger <vapier@gentoo.org>
-Alexey Dobriyan <adobriyan@gmail.com>
-linux-kernel@vger.kernel.org
+ITIMER_REAL itime use hrtimer to calculate time, so we can cooperate with
+hrtimer's tracepoint to get it's delay.
 
-$ ./scripts/get_maintainer.pl -f --noremove-duplicates drivers/char/tty_ioctl.c
-Greg Kroah-Hartman <gregkh@suse.de>
-Alan Cox <alan@redhat.com>
-Alan Cox <alan@linux.intel.com>
-Alan Cox <alan@lxorguk.ukuu.org.uk>
-Mike Frysinger <vapier@gentoo.org>
-Alexey Dobriyan <adobriyan@gmail.com>
-linux-kernel@vger.kernel.org
+from this output information, the process set up a ITIMER_REAL
+iteimr(which=0), use a hrtime which address is ce807544, we can get the
+delay is 289327958161-289327664443=293718 ns
 
-Using --remove-duplicates could eliminate multiple maintainers that
-share the same name but not the same email address.
-
-Signed-off-by: Joe Perches <joe@perches.com>
----
- scripts/get_maintainer.pl |  110 +++++++++++++++++++++++----------------------
- 1 files changed, 56 insertions(+), 54 deletions(-)
-
-diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
-index a0ccc72..b8d1223 100755
---- a/scripts/get_maintainer.pl
-+++ b/scripts/get_maintainer.pl
-@@ -30,6 +30,7 @@ my $email_git_max_maintainers = 5;
- my $email_git_min_percent = 5;
- my $email_git_since = "1-year-ago";
- my $email_git_blame = 0;
-+my $email_remove_duplicates = 1;
- my $output_multiline = 1;
- my $output_separator = ", ";
- my $scm = 0;
-@@ -71,6 +72,7 @@ if (!GetOptions(
- 		'git-min-percent=i' => \$email_git_min_percent,
- 		'git-since=s' => \$email_git_since,
- 		'git-blame!' => \$email_git_blame,
-+		'remove-duplicates!' => \$email_remove_duplicates,
- 		'm!' => \$email_maintainer,
- 		'n!' => \$email_usename,
- 		'l!' => \$email_list,
-@@ -158,32 +160,28 @@ close(MAINT);
- 
- my %mailmap;
- 
--open(MAILMAP, "<${lk_path}.mailmap") || warn "$P: Can't open .mailmap\n";
--while (<MAILMAP>) {
--    my $line = $_;
--
--    next if ($line =~ m/^\s*#/);
--    next if ($line =~ m/^\s*$/);
-+if ($email_remove_duplicates) {
-+    open(MAILMAP, "<${lk_path}.mailmap") || warn "$P: Can't open .mailmap\n";
-+    while (<MAILMAP>) {
-+	my $line = $_;
- 
--    my ($name, $address) = parse_email($line);
--    $line = format_email($name, $address);
-+	next if ($line =~ m/^\s*#/);
-+	next if ($line =~ m/^\s*$/);
- 
--    next if ($line =~ m/^\s*$/);
-+	my ($name, $address) = parse_email($line);
-+	$line = format_email($name, $address);
- 
--    if (exists($mailmap{$name})) {
--	my $obj = $mailmap{$name};
--	push(@$obj, $address);
--    } else {
--	my @arr = ($address);
--	$mailmap{$name} = \@arr;
--    }
--}
--close(MAILMAP);
-+	next if ($line =~ m/^\s*$/);
- 
--foreach my $name (sort {$mailmap{$a} <=> $mailmap{$b}} keys %mailmap) {
--    my $obj = $mailmap{$name};
--    foreach my $address (@$obj) {
-+	if (exists($mailmap{$name})) {
-+	    my $obj = $mailmap{$name};
-+	    push(@$obj, $address);
-+	} else {
-+	    my @arr = ($address);
-+	    $mailmap{$name} = \@arr;
-+	}
-     }
-+    close(MAILMAP);
- }
- 
- ## use the filenames on the command line or find the filenames in the patchfiles
-@@ -373,6 +371,7 @@ MAINTAINER field selection options:
-     --n => include name 'Full Name <addr\@domain.tld>'
-     --l => include list(s) if any
-     --s => include subscriber only list(s) if any
-+    --remove-duplicates => minimize duplicate email names/addresses
-   --scm => print SCM tree(s) if any
-   --status => print status if any
-   --subsystem => print subsystem name if any
-@@ -389,7 +388,7 @@ Other options:
-   --help => show this help information
- 
- Default options:
--  [--email --git --m --n --l --multiline --pattern-depth=0]
-+  [--email --git --m --n --l --multiline --pattern-depth=0 --remove-duplicates]
- 
- Notes:
-   Using "-f directory" may give unexpected results:
-@@ -438,12 +437,12 @@ sub parse_email {
-     my $name = "";
-     my $address = "";
- 
--    if ($formatted_email =~ /^([^<]+)<(.*\@.*)>.*$/) {
-+    if ($formatted_email =~ /^([^<]+)<(.+\@.*)>.*$/) {
- 	$name = $1;
- 	$address = $2;
--    } elsif ($formatted_email =~ /^\s*<(.*\@.*)>.*$/) {
-+    } elsif ($formatted_email =~ /^\s*<(.+\@\S*)>.*$/) {
- 	$address = $1;
--    } elsif ($formatted_email =~ /^\s*(.*\@.*)$/) {
-+    } elsif ($formatted_email =~ /^(.+\@\S*)$/) {
- 	$address = $1;
-     }
- 
-@@ -542,14 +541,16 @@ sub add_categories {
-     }
- }
- 
--sub email_address_inuse {
--    my ($test_address) = @_;
-- 
--    foreach my $line (@email_to) {
--	my ($name, $address) = parse_email($line);
-+my %email_hash_name;
-+my %email_hash_address;
-+
-+sub email_inuse {
-+    my ($name, $address) = @_;
-+
-+    return 1 if (($name eq "") && ($address eq ""));
-+    return 1 if (($name ne "") && exists($email_hash_name{$name}));
-+    return 1 if (($address ne "") && exists($email_hash_address{$address}));
- 
--	return 1 if ($address eq $test_address);
--    }
-     return 0;
- }
- 
-@@ -558,8 +559,12 @@ sub push_email_address {
- 
-     my ($name, $address) = parse_email($line);
- 
--    if (!email_address_inuse($address)) {
-+    if (!$email_remove_duplicates) {
- 	push(@email_to, format_email($name, $address));
-+    } elsif (!email_inuse($name, $address)) {
-+	push(@email_to, format_email($name, $address));
-+	$email_hash_name{$name}++;
-+	$email_hash_address{$address}++;
-     }
- }
+case 2, if we use ITIMER_VIRTUAL/ITIMER_PROF itimer:
+Example ftrace output:
+  main-5409  [001] 12763.874835: itimer_state: which=1 expires=2 it_value=0.500 it_interval=0.500
+  main-5409  [001] 12763.883495: itimer_expire: pid=5409 which=1 now=2
+  main-5409  [001] 12763.883712: itimer_state: which=1 expires=0 it_value=0.0 it_interval=0.0
   
-@@ -600,6 +605,9 @@ sub mailmap {
- 	my ($name, $address) = parse_email($line);
- 	if (!exists($hash{$name})) {
- 	    $hash{$name} = $address;
-+	} elsif ($address ne $hash{$name}) {
-+	    $address = $hash{$name};
-+	    $line = format_email($name, $address);
+from this, we can know the itimer delay is 2-2=0 jiffies.
+
+Changelog:
+v1->v2:
+Remove ktime_to_ns() in TP_fast_assign()
+v2->v3:
+Below changes are all base on Thomas's suggestion:
+1: Remove ITIMER_REAL's timer address and 'state' from trace_itimer_state()
+2: Don't save task's name in trace_itimer_state()
+3: Save task's pid instead of task's name in trace_itimer_expire()
+v3->v4:
+Modify other two patches in this patchset
+v4->v5:
+Rebase the patch against latest tip tree
+
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ include/trace/events/timer.h |   65 ++++++++++++++++++++++++++++++++++++++++++
+ kernel/itimer.c              |    5 +++
+ kernel/posix-cpu-timers.c    |    3 ++
+ 3 files changed, 73 insertions(+), 0 deletions(-)
+
+diff --git a/include/trace/events/timer.h b/include/trace/events/timer.h
+index dd2f133..11bdb47 100644
+--- a/include/trace/events/timer.h
++++ b/include/trace/events/timer.h
+@@ -261,6 +261,71 @@ TRACE_EVENT(hrtimer_cancel,
+ 	TP_printk("timer=%p", __entry->timer)
+ );
+ 
++/**
++ * itimer_state - called when itimer is started or canceled
++ * @which: name of the interval timer
++ * @value: the itimer's value, itimer is canceled if value->it_value is zero,
++ * 	   otherwise is started
++ * @expires: the itimer's expire time
++ **/
++TRACE_EVENT(itimer_state,
++
++	TP_PROTO(int which, const struct itimerval *const value, cputime_t expires),
++
++	TP_ARGS(which, value, expires),
++
++	TP_STRUCT__entry(
++		__field(	int,		which		)
++		__field(	cputime_t,	expires		)
++		__field(	long,		value_sec	)
++		__field(	long,		value_usec	)
++		__field(	long,		interval_sec	)
++		__field(	long,		interval_usec	)
++	),
++
++	TP_fast_assign(
++		__entry->which		= which;
++		__entry->expires	= expires;
++		__entry->value_sec	= value->it_value.tv_sec;
++		__entry->value_usec	= value->it_value.tv_usec;
++		__entry->interval_sec	= value->it_interval.tv_sec;
++		__entry->interval_usec	= value->it_interval.tv_usec;
++	),
++
++	TP_printk("which=%d expires=%lu it_value=%lu.%lu it_interval=%lu.%lu",
++		  __entry->which, __entry->expires,
++		  __entry->value_sec, __entry->value_usec,
++		  __entry->interval_sec, __entry->interval_usec)
++);
++
++/**
++ * itimer_expire: called when itimer expires
++ * @which: name of the interval timer
++ * @pid: pid of process which owns the itimer
++ * @now: current time, used to calculate the latency of itimer
++ **/
++TRACE_EVENT(itimer_expire,
++
++	TP_PROTO(int which, struct pid *pid, cputime_t now),
++
++	TP_ARGS(which, pid, now),
++
++	TP_STRUCT__entry(
++		__field( int ,		which	)
++		__field( int,		pid	)
++		__field( cputime_t,	now	)
++	),
++
++	TP_fast_assign(
++		__entry->which	= which;
++		__entry->now	= now;
++		__entry->pid	= pid_vnr(pid);
++	),
++
++	TP_printk("pid=%d which=%d now=%lu", __entry->pid, __entry->which,
++		  __entry->now)
++);
++
+ #endif /*  _TRACE_TIMER_H */
+ 
+ /* This part must be outside protection */
+diff --git a/kernel/itimer.c b/kernel/itimer.c
+index 8078a32..a3ceb34 100644
+--- a/kernel/itimer.c
++++ b/kernel/itimer.c
+@@ -12,6 +12,7 @@
+ #include <linux/time.h>
+ #include <linux/posix-timers.h>
+ #include <linux/hrtimer.h>
++#include <trace/events/timer.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -122,6 +123,7 @@ enum hrtimer_restart it_real_fn(struct hrtimer *timer)
+ 	struct signal_struct *sig =
+ 		container_of(timer, struct signal_struct, real_timer);
+ 
++	trace_itimer_expire(ITIMER_REAL, sig->leader_pid, 0);
+ 	kill_pid_info(SIGALRM, SEND_SIG_PRIV, sig->leader_pid);
+ 
+ 	return HRTIMER_NORESTART;
+@@ -166,6 +168,8 @@ static void set_cpu_itimer(struct task_struct *tsk, unsigned int clock_id,
  	}
- 	if (exists($mailmap{$name})) {
- 	    my $obj = $mailmap{$name};
-@@ -652,31 +660,23 @@ sub recent_git_signoffs {
+ 	it->expires = nval;
+ 	it->incr = ninterval;
++	trace_itimer_state(clock_id == CPUCLOCK_VIRT ? ITIMER_VIRTUAL : ITIMER_PROF,
++			   value, nval);
  
-     $total_sign_offs = @lines;
+ 	spin_unlock_irq(&tsk->sighand->siglock);
  
--    @lines = mailmap(@lines);
-+    if ($email_remove_duplicates) {
-+	@lines = mailmap(@lines);
-+    }
+@@ -217,6 +221,7 @@ again:
+ 		} else
+ 			tsk->signal->it_real_incr.tv64 = 0;
  
-     @lines = sort(@lines);
-+
-     # uniq -c
--    foreach my $line (@lines) {
--	$hash{$line}++;
--    }
-+    $hash{$_}++ for @lines;
-+
-     # sort -rn
--    @lines = ();
-     foreach my $line (sort {$hash{$b} <=> $hash{$a}} keys %hash) {
--	push(@lines,"$hash{$line}	$line");
--    }
--
--    foreach my $line (@lines) {
--	if ($line =~ m/([0-9]+)\s+(.*)/) {
--	    my $sign_offs = $1;
--	    $line = $2;
--	    $count++;
--	    if ($sign_offs < $email_git_min_signatures ||
--	        $count > $email_git_max_maintainers ||
--		$sign_offs * 100 / $total_sign_offs < $email_git_min_percent) {
--		last;
--	    }
--	    push_email_address($line);
--	}
-+	my $sign_offs = $hash{$line};
-+	$count++;
-+	last if ($sign_offs < $email_git_min_signatures ||
-+		 $count > $email_git_max_maintainers ||
-+		 $sign_offs * 100 / $total_sign_offs < $email_git_min_percent);
-+	push_email_address($line);
-     }
- }
++		trace_itimer_state(ITIMER_REAL, value, 0);
+ 		spin_unlock_irq(&tsk->sighand->siglock);
+ 		break;
+ 	case ITIMER_VIRTUAL:
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index 18bdde6..f1dbab9 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -8,6 +8,7 @@
+ #include <linux/math64.h>
+ #include <asm/uaccess.h>
+ #include <linux/kernel_stat.h>
++#include <trace/events/timer.h>
  
-@@ -743,7 +743,9 @@ sub git_assign_blame {
+ /*
+  * Called after updating RLIMIT_CPU to set timer expiration if necessary.
+@@ -1092,6 +1093,8 @@ static void check_cpu_itimer(struct task_struct *tsk, struct cpu_itimer *it,
+ 		} else
+ 			it->expires = cputime_zero;
  
- 	$total_sign_offs += @lines;
++		trace_itimer_expire(signo == SIGPROF ? ITIMER_PROF : ITIMER_VIRTUAL,
++				    tsk->signal->leader_pid, cur_time);
+ 		__group_send_sig_info(signo, SEND_SIG_PRIV, tsk);
+ 	}
  
--	@lines = mailmap(@lines);
-+	if ($email_remove_duplicates) {
-+	    @lines = mailmap(@lines);
-+	}
- 
- 	$hash{$_}++ for @lines;
-     }
 -- 
-1.6.3.1.10.g659a0.dirty
+1.6.1.2
+
 
