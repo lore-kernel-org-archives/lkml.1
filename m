@@ -1,84 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbZHFQs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZHFQu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756252AbZHFQs2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 12:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbZHFQs2
+	id S1756057AbZHFQu4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 12:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZHFQuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 12:48:28 -0400
-Received: from mo-p00-ob.rzone.de ([81.169.146.161]:12313 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752555AbZHFQs1 (ORCPT
+	Thu, 6 Aug 2009 12:50:55 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:48621 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751509AbZHFQuz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 12:48:27 -0400
-X-RZG-AUTH: :I2ANY0W6W/eA95XfH/xfO6gOxLxTty/udEMngcJ/VAKW226lDNJVyuYLJjI9PtQ=
-X-RZG-CLASS-ID: mo00
-Message-ID: <4A7B0957.5020808@hartkopp.net>
-Date: Thu, 06 Aug 2009 18:48:23 +0200
-From: Oliver Hartkopp <oliver@hartkopp.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Thu, 6 Aug 2009 12:50:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :x-enigmail-version:content-type:content-transfer-encoding;
+        b=GK0slmelpB7siFIWOQ1ruQWj4oujlYZrwWXbcmMhXnDQgHhY/KeYt5OG8WC2hOyY8p
+         v28CZjNO9YK757Mhlk0xI5U6NA0n0pm0TlJcLvVS6yabGpgQ4Z2KxNw9e0tQ/gMjQf0B
+         9DfNQgeUAAJjd0RwIUifihVYG95qAT56En7mE=
+Message-ID: <4A7B09E6.7070900@gmail.com>
+Date: Thu, 06 Aug 2009 13:50:46 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090725)
 MIME-Version: 1.0
-To: Luotao Fu <l.fu@pengutronix.de>
-CC: socketcan-users@lists.berlios.de,
-       Michael Olbrich <m.olbrich@pengutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Socketcan-users] [PATCH] CAN: make checking in can_rcv less
- restrictive
-References: <1249572295-7801-1-git-send-email-l.fu@pengutronix.de>
-In-Reply-To: <1249572295-7801-1-git-send-email-l.fu@pengutronix.de>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: X86_FEATURE_LAHF_LM set incorrectly (likely due to BIOS bug)
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luotao Fu wrote:
-> From: Michael Olbrich <m.olbrich@pengutronix.de>
-> 
-> Checking for can frame format in can_rcv() is too restrictive. BUG_ON is way too
-> heavy for the case that the can interface probably received a can frame with
-> malicious format. Further it can be used for DDOS attack since BUG_ON can lead
-> to kernel panic. Hence we turn this to WARN_ON instead.
-> 
-> Signed-off-by: Michael Olbrich <m.olbrich@pengutronix.de>
-> Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
-> ---
->  net/can/af_can.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/net/can/af_can.c b/net/can/af_can.c
-> index e733725..e6dcf4b 100644
-> --- a/net/can/af_can.c
-> +++ b/net/can/af_can.c
-> @@ -656,7 +656,7 @@ static int can_rcv(struct sk_buff *skb, struct net_device *dev,
->  		return 0;
->  	}
->  
-> -	BUG_ON(skb->len != sizeof(struct can_frame) || cf->can_dlc > 8);
-> +	WARN_ON(skb->len != sizeof(struct can_frame) || cf->can_dlc > 8);
->  
->  	/* update statistics */
->  	can_stats.rx_frames++;
 
-NAK.
+Hi,
 
-The CAN applications can rely on getting proper CAN frames with this check. It
-was introduced some time ago together with several other sanity checks - even
-on the TX path.
+I have an AMD Athlon64 processor:
 
-The CAN core *only* consumes skbuffs originated from a CAN netdevice
-(ARPHRD_CAN).
+processor	: 0
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 4
+model name	: AMD Athlon(tm) 64 Processor 2800+
+stepping	: 10
+cpu MHz		: 1800.000
+cache size	: 512 KB
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 1
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext lm 3dnowext 3dnow rep_good lahf_lm
+bogomips	: 3600.25
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management: ts fid vid ttp
 
-When this BUG() triggers, someone provided a definitely broken *CAN* network
-driver, and this needs to be fixed on that level. It is really not that
-problematic to ensure proper CAN frames on driver level ... this sanity check
-should not be needed to be performed by every single application.
+As you can see, the lahf_lm feature is reported as being present,
+but the lahf/sahf instructions are not actually supported by this
+processor.  A simple program:
 
-Btw. the SocketCAN core ML and probably the netdev ML are the better places to
-post CAN specific stuff the first time.
+int main() {
+	asm("lahf");
+}
 
-Regards,
-Oliver
 
-ps. If you have a use-case to make a DDOS via CAN bus - please let me know.
-I'm always interested doing strange things on CAN ;-)
+results in:
+
+$ ./a.out
+Illegal instruction
+
+I think the problem is with my BIOS, because, in the following guide
+from AMD:
+
+http://support.amd.com/us/Processor_TechDocs/25759.pdf
+
+Erratum 110 indicates that some CPUs will not report the LAHF
+capability, even if they have it, and the BIOS should write to a
+specific MSR bit in order to get the feature reported as present (for
+processors that support LAHF).  I believe that perhaps my BIOS is
+writing to that bit unconditionally, and this causes my CPU to report
+support for the feature.
+
+If I am correct, would it be appropriate to add a check somewhere in
+the CPU feature code to detect early Athlon 64 processors like mine
+and clear that feature flag, in case other BIOSes have made the same
+mistake?  If so, is there some kind of quirk mechanism for this, or
+should I prepare a patch that adds the check directly to the feature
+checking code?
+
+Thanks,
+
+-- 
+Kevin Winchester
+
