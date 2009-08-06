@@ -1,44 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932259AbZHFXVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932274AbZHFXXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932259AbZHFXVt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 19:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932234AbZHFXVt
+	id S932274AbZHFXXi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 19:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932201AbZHFXXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 19:21:49 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34667 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932214AbZHFXVs (ORCPT
+	Thu, 6 Aug 2009 19:23:37 -0400
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:43807 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932191AbZHFXXg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 19:21:48 -0400
-Date: Fri, 7 Aug 2009 00:22:50 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Greg KH <greg@kroah.com>
-Cc: Mark Allyn <mark.a.allyn@intel.com>, linux-kernel@vger.kernel.org,
-       alan@linux.intel.com, charles.f.johnson@intel.com
-Subject: Re: [PATCH] Restricted access regions register driver revision 2
- (moving to staging)
-Message-ID: <20090807002250.67807c57@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090806224848.GA15537@kroah.com>
-References: <1249597272-16185-1-git-send-email-mark.a.allyn@intel.com>
-	<20090806224848.GA15537@kroah.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Aug 2009 19:23:36 -0400
+Date: Thu, 6 Aug 2009 16:23:36 -0700
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, alacrityvm-devel@lists.sourceforge.net,
+       Avi Kivity <avi@redhat.com>, "Michael S. Tsirkin" <mst@redhat.com>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 0/7] AlacrityVM guest drivers Reply-To:
+Message-ID: <20090806232335.GC20758@ovro.caltech.edu>
+References: <20090803171030.17268.26962.stgit@dev.haskins.net> <4A7AE150.7040009@redhat.com> <4A7AAB1A0200005A00051BED@sinclair.provo.novell.com> <200908061740.04276.arnd@arndb.de> <4A7ACC940200005A00051C43@sinclair.provo.novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A7ACC940200005A00051C43@sinclair.provo.novell.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 06 Aug 2009 16:23:37 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Aug 2009 15:48:48 -0700
-Greg KH <greg@kroah.com> wrote:
+On Thu, Aug 06, 2009 at 10:29:08AM -0600, Gregory Haskins wrote:
+> >>> On 8/6/2009 at 11:40 AM, in message <200908061740.04276.arnd@arndb.de>, Arnd
+> Bergmann <arnd@arndb.de> wrote: 
+> > On Thursday 06 August 2009, Gregory Haskins wrote:
 
-> On Thu, Aug 06, 2009 at 03:21:12PM -0700, Mark Allyn wrote:
-> >  Upstream revision 3 of the restricted access memory registry
-> >  kernel driver;
+[ big snip ]
+
 > > 
-> >  Moving to staging per Alan Cox's suggestion
+> > 3. The ioq method seems to be the real core of your work that makes
+> > venet perform better than virtio-net with its virtqueues. I don't see
+> > any reason to doubt that your claim is correct. My conclusion from
+> > this would be to add support for ioq to virtio devices, alongside
+> > virtqueues, but to leave out the extra bus_type and probing method.
 > 
-> Heh, Alan just sent me this already in his series of 13 patches.  Do you
-> have any objection to that version, it looks to be the same as this one.
+> While I appreciate the sentiment, I doubt that is actually whats helping here.
+> 
+> There are a variety of factors that I poured into venet/vbus that I think contribute to its superior performance.  However, the difference in the ring design I do not think is one if them.  In fact, in many ways I think Rusty's design might turn out to be faster if put side by side because he was much more careful with cacheline alignment than I was.  Also note that I was careful to not pick one ring vs the other ;)  They both should work.
 
-Got some more for you as well shortly. Seem to be up to 22 ;)
+IMO, the virtio vring design is very well thought out. I found it
+relatively easy to port to a host+blade setup, and run virtio-net over a
+physical PCI bus, connecting two physical CPUs.
+
+> 
+> IMO, we are only looking at the tip of the iceberg when looking at this purely as the difference between virtio-pci vs virtio-vbus, or venet vs virtio-net.
+> 
+> Really, the big thing I am working on here is the host side device-model.  The idea here was to design a bus model that was conducive to high performance, software to software IO that would work in a variety of environments (that may or may not have PCI).  KVM is one such environment, but I also have people looking at building other types of containers, and even physical systems (host+blade kind of setups).
+> 
+> The idea is that the "connector" is modular, and then something like virtio-net or venet "just work": in kvm, in the userspace container, on the blade system. 
+> 
+> It provides a management infrastructure that (hopefully) makes sense for these different types of containers, regardless of whether they have PCI, QEMU, etc (e.g. things that are inherent to KVM, but not others).
+> 
+> I hope this helps to clarify the project :)
+> 
+
+I think this is the major benefit of vbus. I've only started studying
+the vbus code, so I don't have lots to say yet. The overview of the
+management interface makes it look pretty good.
+
+Getting two virtio-net drivers hooked together in my virtio-over-PCI
+patches was nasty. If you read the thread that followed, you'll see
+the lack of a management interface as a concern of mine. It was
+basically decided that it could come "later". The configfs interface
+vbus provides is pretty nice, IMO.
+
+Just my two cents,
+Ira
