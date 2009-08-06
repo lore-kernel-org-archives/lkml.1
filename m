@@ -1,46 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbZHFSiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755770AbZHFSqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754107AbZHFSiT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 14:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbZHFSiR
+	id S1755770AbZHFSqH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 14:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbZHFSqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 14:38:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53453 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751205AbZHFSiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 14:38:15 -0400
-Subject: Re: security module question
-From: Eric Paris <eparis@redhat.com>
-To: James Morris <jmorris@namei.org>
-Cc: Justin Banks <justinb@bakbone.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <alpine.LRH.2.00.0908051159100.29562@tundra.namei.org>
-References: <20090804220632.GG26133@bleen>
-	 <alpine.LRH.2.00.0908051159100.29562@tundra.namei.org>
-Content-Type: text/plain
-Date: Thu, 06 Aug 2009 14:38:08 -0400
-Message-Id: <1249583888.20644.37.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Aug 2009 14:46:07 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:54216 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754389AbZHFSqF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 14:46:05 -0400
+Date: Thu, 6 Aug 2009 14:32:48 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-wireless@vger.kernel.org
+Subject: Re: WARNING: at net/mac80211/mlme.c:2292
+	ieee80211_sta_work+0x97/0xd2d [mac80211]()
+Message-ID: <20090806183247.GI26809@tuxdriver.com>
+References: <b637ec0b0908061130w399eb1c6oc3a31640a76398c5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b637ec0b0908061130w399eb1c6oc3a31640a76398c5@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-05 at 12:02 +1000, James Morris wrote:
-> On Tue, 4 Aug 2009, Justin Banks wrote:
+What driver are you using?
+
+On Thu, Aug 06, 2009 at 08:30:23PM +0200, Fabio Comolli wrote:
+> Just got this after a resume from suspend-to-ram. Wifi needed to be
+> disabled and reenabled (with hardware Fn+F2 key - this is an eeePC900)
+> to function  again.
 > 
-> > Hello - I'm trying to implement a security module that will allow or
-> > disallow writes on files by byte ranges. Is there a way to use
-> > inode_permission() to do this, or is there an alternative route I should
-> > take? It doesn't look like inode_permission() will give me the data I
-> > need (offset + length of write).
+> 
+> [  919.858759] ------------[ cut here ]------------
+> [  919.858787] WARNING: at net/mac80211/mlme.c:2292
+> ieee80211_sta_work+0x97/0xd2d [mac80211]()
+> [  919.858791] Hardware name: 900
+> [  919.858793] Modules linked in: uvcvideo videodev v4l1_compat arc4
+> ecb ath5k mac80211 ath cfg80211
+> [  919.860022] Pid: 793, comm: phy0 Tainted: G   M       2.6.31-rc5 #11
+> [  919.860025] Call Trace:
+> [  919.860035]  [<c10209cf>] warn_slowpath_common+0x65/0x7c
+> [  919.860058]  [<f83d621e>] ? ieee80211_sta_work+0x97/0xd2d [mac80211]
+> [  919.860064]  [<c10209f3>] warn_slowpath_null+0xd/0x10
+> [  919.860086]  [<f83d621e>] ieee80211_sta_work+0x97/0xd2d [mac80211]
+> [  919.860092]  [<c101bb2b>] ? __wake_up+0x2f/0x56
+> [  919.860097]  [<c101bb39>] ? __wake_up+0x3d/0x56
+> [  919.860103]  [<c102eb04>] ? insert_work+0x96/0x9f
+> [  919.860108]  [<c102ed63>] ? __queue_work+0x32/0x49
+> [  919.860113]  [<c102eda1>] ? queue_work_on+0x27/0x2f
+> [  919.860119]  [<c102f52f>] ? queue_work+0x2d/0x45
+> [  919.860140]  [<f83d3324>] ?
+> ieee80211_ibss_notify_scan_completed+0x63/0x68 [mac80211]
+> [  919.860162]  [<f83d1059>] ? ieee80211_scan_completed+0x320/0x328 [mac80211]
+> [  919.860184]  [<f83d1160>] ? ieee80211_scan_work+0xb5/0x171 [mac80211]
+> [  919.860190]  [<c102f075>] worker_thread+0x15d/0x204
+> [  919.860211]  [<f83d6187>] ? ieee80211_sta_work+0x0/0xd2d [mac80211]
+> [  919.860218]  [<c1032217>] ? autoremove_wake_function+0x0/0x2f
+> [  919.860223]  [<c102ef18>] ? worker_thread+0x0/0x204
+> [  919.860229]  [<c1031fab>] kthread+0x63/0x68
+> [  919.860234]  [<c1031f48>] ? kthread+0x0/0x68
+> [  919.860240]  [<c1002f93>] kernel_thread_helper+0x7/0x10
+> [  919.860244] ---[ end trace 7a3a8d08c5a7bedf ]---
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-There is nothing that can do that.  Neither fanotify nor the LSM.
-Biggest problem is mmap.....
-
-I think there was past kernel module which did this, but I don't
-remember what they were called.  Nothing which tracks this and could be
-used was ever reasonable for the mainline kernel.
-
--Eric
-
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
