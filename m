@@ -1,127 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbZHGNDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbZHGNEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757892AbZHGNDY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 09:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756066AbZHGNDY
+	id S1756001AbZHGNEk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 09:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbZHGNEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 09:03:24 -0400
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:34940
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932223AbZHGNDX (ORCPT
+	Fri, 7 Aug 2009 09:04:39 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:58425 "EHLO
+	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753008AbZHGNEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 09:03:23 -0400
-X-SpamScore: 1
-X-BigFish: VPS1(zzzz1202hzzz32i6bh203h62h)
+	Fri, 7 Aug 2009 09:04:38 -0400
+X-SpamScore: 5
+X-BigFish: VPS5(z34a4jzzz1202hzzz32i6bh203h43j62h)
 X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KO0C9D-02-3ZR-02
+X-WSS-ID: 0KO0CBF-01-2GZ-02
 X-M-MSG: 
-Date: Fri, 7 Aug 2009 15:02:42 +0200
+Date: Fri, 7 Aug 2009 15:04:15 +0200
 From: Andreas Herrmann <andreas.herrmann3@amd.com>
 To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>
 CC: linux-kernel@vger.kernel.org, Borislav Petkov <borislav.petkov@amd.com>,
        Brice Goglin <Brice.Goglin@inria.fr>
-Subject: [PATCH 5/8] x86, cacheinfo: Fixup L3 cache information for AMD
-	multi-node processors
-Message-ID: <20090807130242.GX6520@alberich.amd.com>
+Subject: [PATCH 6/8] x86, mcheck: Make use of cpu_node_mask instead of
+	cpu_core_mask
+Message-ID: <20090807130415.GY6520@alberich.amd.com>
 References: <20090807125609.GH7198@alberich.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
 In-Reply-To: <20090807125609.GH7198@alberich.amd.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 07 Aug 2009 13:02:43.0334 (UTC) FILETIME=[5A08D260:01CA175F]
+X-OriginalArrivalTime: 07 Aug 2009 13:04:15.0492 (UTC) FILETIME=[90F70440:01CA175F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-L3 cache size, associativity and shared_cpu information need to be
-adapted to show information for an internal node instead of the
-entire physical package.
+This fixes threshold_bank4 support on multi-node processors.
+
+We need to create 2 sets of symlinks for sibling shared banks -- one
+set for each internal node, symlinks of each set should target the
+first core on same internal node.
+
+Currently only one set is created where all symlinks are targeting
+the first core of the entire socket.
 
 Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
- arch/x86/kernel/cpu/intel_cacheinfo.c |   30 ++++++++++++++++++++----------
- 1 files changed, 20 insertions(+), 10 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce_amd.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 306bf0d..4fa232a 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -241,7 +241,7 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	case 0:
- 		if (!l1->val)
- 			return;
--		assoc = l1->assoc;
-+		assoc = assocs[l1->assoc];
- 		line_size = l1->line_size;
- 		lines_per_tag = l1->lines_per_tag;
- 		size_in_kb = l1->size_in_kb;
-@@ -249,7 +249,7 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	case 2:
- 		if (!l2.val)
- 			return;
--		assoc = l2.assoc;
-+		assoc = assocs[l2.assoc];
- 		line_size = l2.line_size;
- 		lines_per_tag = l2.lines_per_tag;
- 		/* cpu_data has errata corrections for K7 applied */
-@@ -258,10 +258,14 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	case 3:
- 		if (!l3.val)
- 			return;
--		assoc = l3.assoc;
-+		assoc = assocs[l3.assoc];
- 		line_size = l3.line_size;
- 		lines_per_tag = l3.lines_per_tag;
- 		size_in_kb = l3.size_encoded * 512;
-+		if (boot_cpu_has(X86_FEATURE_AMD_DCM)) {
-+			size_in_kb = size_in_kb >> 1;
-+			assoc = assoc >> 1;
-+		}
- 		break;
- 	default:
- 		return;
-@@ -270,18 +274,14 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	eax->split.is_self_initializing = 1;
- 	eax->split.type = types[leaf];
- 	eax->split.level = levels[leaf];
--	if (leaf == 3)
--		eax->split.num_threads_sharing =
--			current_cpu_data.x86_max_cores - 1;
--	else
--		eax->split.num_threads_sharing = 0;
-+	eax->split.num_threads_sharing = 0;
- 	eax->split.num_cores_on_die = current_cpu_data.x86_max_cores - 1;
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd.c b/arch/x86/kernel/cpu/mcheck/mce_amd.c
+index ddae216..595cbe5 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_amd.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_amd.c
+@@ -494,7 +494,7 @@ static __cpuinit int threshold_create_bank(unsigned int cpu, unsigned int bank)
  
+ #ifdef CONFIG_SMP
+ 	if (cpu_data(cpu).cpu_core_id && shared_bank[bank]) {	/* symlink */
+-		i = cpumask_first(cpu_core_mask(cpu));
++		i = cpumask_first(cpu_node_mask(cpu));
  
--	if (assoc == 0xf)
-+	if (assoc == 0xffff)
- 		eax->split.is_fully_associative = 1;
- 	ebx->split.coherency_line_size = line_size - 1;
--	ebx->split.ways_of_associativity = assocs[assoc] - 1;
-+	ebx->split.ways_of_associativity = assoc - 1;
- 	ebx->split.physical_line_partition = lines_per_tag - 1;
- 	ecx->split.number_of_sets = (size_in_kb * 1024) / line_size /
- 		(ebx->split.ways_of_associativity + 1) - 1;
-@@ -523,6 +523,16 @@ static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index)
- 	int index_msb, i;
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
+ 		/* first core not up yet */
+ 		if (cpu_data(i).cpu_core_id)
+@@ -514,7 +514,7 @@ static __cpuinit int threshold_create_bank(unsigned int cpu, unsigned int bank)
+ 		if (err)
+ 			goto out;
  
-+	if ((index == 3) && (c->x86_vendor == X86_VENDOR_AMD)) {
-+		for_each_online_cpu(i) {
-+			if (!per_cpu(cpuid4_info, i))
-+				continue;
-+			this_leaf = CPUID4_INFO_IDX(i, index);
-+			cpumask_copy(to_cpumask(this_leaf->shared_cpu_map),
-+				     topology_core_cpumask(i));
-+		}
-+		return;
-+	}
- 	this_leaf = CPUID4_INFO_IDX(cpu, index);
- 	num_threads_sharing = 1 + this_leaf->eax.split.num_threads_sharing;
+-		cpumask_copy(b->cpus, cpu_core_mask(cpu));
++		cpumask_copy(b->cpus, cpu_node_mask(cpu));
+ 		per_cpu(threshold_banks, cpu)[bank] = b;
  
+ 		goto out;
+@@ -539,7 +539,7 @@ static __cpuinit int threshold_create_bank(unsigned int cpu, unsigned int bank)
+ #ifndef CONFIG_SMP
+ 	cpumask_setall(b->cpus);
+ #else
+-	cpumask_copy(b->cpus, cpu_core_mask(cpu));
++	cpumask_copy(b->cpus, cpu_node_mask(cpu));
+ #endif
+ 
+ 	per_cpu(threshold_banks, cpu)[bank] = b;
 -- 
 1.6.3.3
 
