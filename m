@@ -1,87 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933811AbZHGU3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933850AbZHGUaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933811AbZHGU3j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:29:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932721AbZHGU3i
+	id S933850AbZHGUaE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933754AbZHGUaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:29:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36469 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933730AbZHGU3i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:29:38 -0400
-Subject: Re: [PATCH] perfcounters: Support for ftrace event records sampling
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>
-In-Reply-To: <20090807202105.GB4999@nowhere>
-References: <1249601154-5597-1-git-send-email-fweisbec@gmail.com>
-	 <1249641477.32113.664.camel@twins> <1249675747.8088.5.camel@laptop>
-	 <20090807202105.GB4999@nowhere>
+	Fri, 7 Aug 2009 16:30:03 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:39329 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932721AbZHGUaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 16:30:00 -0400
+Subject: Re: [GIT pull] timers fixes for 2.6.31
+From: john stultz <johnstul@us.ibm.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090807101847.2ee08c76@skybase>
+References: <alpine.LFD.2.00.0907302158180.2936@localhost.localdomain>
+	 <alpine.LFD.2.01.0907301648540.3161@localhost.localdomain>
+	 <20090731123711.GA5421@elte.hu>
+	 <1f1b08da0908061536o57cebeb6r2f522cb3c5419e1@mail.gmail.com>
+	 <20090807101847.2ee08c76@skybase>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 07 Aug 2009 22:28:51 +0200
-Message-Id: <1249676931.17467.7.camel@twins>
+Date: Fri, 07 Aug 2009 13:28:55 -0700
+Message-Id: <1249676935.7185.4.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-07 at 22:21 +0200, Frederic Weisbecker wrote:
-> On Fri, Aug 07, 2009 at 10:09:07PM +0200, Peter Zijlstra wrote:
-> > On Fri, 2009-08-07 at 12:38 +0200, Peter Zijlstra wrote:
-> > > > +static void ftrace_profile_##call(proto)                             \
-> > > > +{                                                                    \
-> > > > +     struct ftrace_data_offsets_##call __maybe_unused __data_offsets;\
-> > > > +     struct ftrace_event_call *event_call = &event_##call;           \
-> > > > +     extern void perf_tpcounter_event(int, u64, u64, void *, int);   \
-> > > > +     struct ftrace_raw_##call *entry;                                \
-> > > > +     u64 __addr = 0, __count = 1;                                    \
-> > > > +     unsigned long irq_flags;                                        \
-> > > > +     int __entry_size;                                               \
-> > > > +     int __data_size;                                                \
-> > > > +     int pc;                                                         \
-> > > > +                                                                     \
-> > > > +     local_save_flags(irq_flags);                                    \
-> > > > +     pc = preempt_count();                                           \
-> > > > +                                                                     \
-> > > > +     __data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
-> > > > +     __entry_size = __data_size + sizeof(*entry);                    \
-> > > > +                                                                     \
-> > > > +     do {                                                            \
-> > > > +             char raw_data[__entry_size];                            \
-> > > > +             struct trace_entry *ent;                                \
-> > > > +                                                                     \
-> > > > +             entry = (struct ftrace_raw_##call *)raw_data;           \
-> > > > +             ent = &entry->ent;                                      \
-> > > > +             tracing_generic_entry_update(ent, irq_flags, pc);       \
-> > > > +             ent->type = event_call->id;                             \
-> > > > +                                                                     \
-> > > > +             tstruct                                                 \
-> > > > +                                                                     \
-> > > > +             { assign; }                                             \
-> > > > +                                                                     \
-> > > > +             perf_tpcounter_event(event_call->id, __addr, __count, entry,\
-> > > > +                          __entry_size);                             \
-> > > > +     } while (0);                                                    \
-> > > > +                                                                     \
-> > > > +}
-> > > 
-> > > ok, so the one concern I have here is that the data needs to fit on the
-> > > stack. What if someone puts a large string in the data?
-> > 
-> > Also, how NMI safe is all that?
+On Fri, 2009-08-07 at 10:18 +0200, Martin Schwidefsky wrote:
+> On Thu, 6 Aug 2009 15:36:36 -0700
+> john stultz <johnstul@us.ibm.com> wrote:
+>  
+> > Splitting this up has been on my list for awhile, but I've never
+> > gotten to it. However, Martin Schwidefsky has been doing a great job
+> > with his latest patches cleaning up some of uglier parts of the
+> > timekeeping/clocksource interactions. There is still lots of  changes
+> > I'd like to see, but they will take time as we still haven't gotten
+> > all the arches over to GENERIC_TIME, so some cruft has to stick
+> > around.   But Martin's patches are a great big step towards it and
+> > hopefully his patches will be ready for .32.
 > 
-> 
-> Everything is allocated in the stack. It's NMI safe AFAICS, am I missing
-> something?
+> The question what we do with the mult_orig on clocksource
+> enable/disable is one of the remaining open issues with my patch set.
+> With the NTP adjusted multiplicator in the struct timekeeper we don't
+> have a convenient place to keep the NTP adjusted multiplier while a
+> clocksource is disabled. My initial thought was: why do we store the
+> old multiplier at all? Its not that the clocksource changes all the
+> time and NTP will catch up again if it is changed. Just start from
+> scratch with the initial multiplicator.
 
-I've no idea what all those trace calls do, I was hoping you would and
-say, sure, no problem ;-)
+Indeed, we don't need to store the adjusted multiplier while a
+clocksource is not in use. We just have to make sure every time it is
+used, we start with the same original multiplier, so we have a constant
+base from which the NTP freq adjustment can be made upon.
+
+I think you're approach (keeping the clocksource mult untouched, and
+keeping the adjusted mult in the timekeeper structure)is fine.
+
+thanks
+-john
+
