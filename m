@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932736AbZHGPPJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbZHGPUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932736AbZHGPPJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 11:15:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757293AbZHGPPI
+	id S1753590AbZHGPUZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 11:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZHGPUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 11:15:08 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60420 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756213AbZHGPPH (ORCPT
+	Fri, 7 Aug 2009 11:20:24 -0400
+Received: from mail-pz0-f196.google.com ([209.85.222.196]:45755 "EHLO
+	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753289AbZHGPUY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 11:15:07 -0400
-Date: Fri, 7 Aug 2009 11:15:05 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Eric Dumazet <eric.dumazet@gmail.com>
-cc: linux kernel <linux-kernel@vger.kernel.org>, stable@kernel.org
-Subject: Re: [PATCH] ring-buffer: Fix memleak in ring_buffer_free()
-In-Reply-To: <4A7C06B9.2090302@gmail.com>
-Message-ID: <alpine.DEB.2.00.0908071113420.10926@gandalf.stny.rr.com>
-References: <4A7C06B9.2090302@gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 7 Aug 2009 11:20:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=DB4kHe7gLMbi9wwBHbG3WaPFgNVxJb3TxI3zmQquAb3DXFVI+Ue5FvXnZdaUI/nG/6
+         xyPyPQR/9TcGyJ4hXaTGsNUoRbLTlEHSy3Vi/bYeB8tYQyOTtzJzu3+HQV+hO3qbyRXW
+         WqybcWj+GhVsm02phgbd2hY8BotpjXNP/2ZpM=
+Date: Fri, 7 Aug 2009 23:28:46 +0800
+From: JiSheng Zhang <jszhang3@gmail.com>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "dwmw2@infradead.org" <dwmw2@infradead.org>,
+       "rmk@arm.linux.org.uk" <rmk@arm.linux.org.uk>,
+       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>
+Subject: Re: [UBI UBIFS] replace vmalloc with kmalloc
+Message-ID: <20090807232846.34bffdeb@ustc>
+In-Reply-To: <4A7BF1C3.4050602@nokia.com>
+References: <2df346410908070202i6c16008ckc145559a474129c6@mail.gmail.com>
+	<4A7BF1C3.4050602@nokia.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 7 Aug 2009, Eric Dumazet wrote:
-
-> I noticed oprofile memleaked in linux-2.6 current tree,
-> and tracked this ring-buffer leak.
+Adrian Hunter <adrian.hunter@nokia.com> wrote:
 > 
-> This is a stable candidate.
+> vmalloc allows large (> 128KiB) buffers, but kmalloc doesn't.
+> So we presently have no choice but to use vmalloc.
 
-Thanks! I'll pull it in now.
-
--- Steve
+But vmalloced buffer can't be easily passed to DMA, is there better choice?
 
 > 
-> [PATCH] ring-buffer: Fix memleak in ring_buffer_free()
-> 
-> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-> ---
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index bf27bb7..c1d874e 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -735,6 +735,7 @@ ring_buffer_free(struct ring_buffer *buffer)
->  
->  	put_online_cpus();
->  
-> +	kfree(buffer->buffers);
->  	free_cpumask_var(buffer->cpumask);
->  
->  	kfree(buffer);
-> 
+> I do not know what hardware you have or exactly what driver you
+> are using, but we have UBIFS on OneNAND using DMA.
+
+An arm soc board, the controller driver hasn't been merged upstream.
+> See drivers/mtd/onenand/omap2.c
+>
+
+One limit of the omap2.c is that the buffer passed to DMA can't be larger than
+PAGESIZE?
+
+Jisheng
+
