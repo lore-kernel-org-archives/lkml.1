@@ -1,62 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbZHGGrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbZHGGuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755630AbZHGGrT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 02:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755068AbZHGGrS
+	id S1756307AbZHGGuP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 02:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbZHGGuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 02:47:18 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50497 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754811AbZHGGrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 02:47:17 -0400
-Date: Fri, 7 Aug 2009 16:47:05 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Arnd Bergmann <arnd@arndb.de>, Jan Engelhardt <jengelh@medozas.de>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: linux-next: manual merge of the tip tree with the net tree
-Message-Id: <20090807164705.725869c1.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__7_Aug_2009_16_47_05_+1000_gbXiJbopbeIYiJGx"
+	Fri, 7 Aug 2009 02:50:14 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38704 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754982AbZHGGuO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 02:50:14 -0400
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Make shr to divide by power of 2
+From: Andi Kleen <andi@firstfloor.org>
+References: <20090806180930.GA3004@localdomain.by>
+Date: Fri, 07 Aug 2009 08:50:12 +0200
+In-Reply-To: <20090806180930.GA3004@localdomain.by> (Sergey Senozhatsky's message of "Thu, 6 Aug 2009 21:09:30 +0300")
+Message-ID: <87d478i0d7.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__7_Aug_2009_16_47_05_+1000_gbXiJbopbeIYiJGx
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Sergey Senozhatsky <sergey.senozhatsky@gmail.com> writes:
+>
+> Of course, compiler supposed to do something like
+> 	add    $0x7,%eax
+> 	shr    $0x3,%eax
+> instead of div. Should we rely on this?
 
-Hi all,
+Yes. We should rely on this. 
 
-Today's linux-next merge of the tip tree got a conflict in
-arch/x86/include/asm/socket.h between commits
-49c794e94649020248e37b78db16cd25bad38b4f ("net: implement a SO_PROTOCOL
-getsockoption") and 0d6038ee76f2e06b79d0465807f67e86bf4025de ("net:
-implement a SO_DOMAIN getsockoption") from the net tree and commit
-73a2d096fdf23aa841f7595d114a11ec85a85e4d ("x86: remove all now-duplicate
-header files") from the tip tree.
+-Andi
 
-The latter change supercedes the former ones, so I used the latter.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__7_Aug_2009_16_47_05_+1000_gbXiJbopbeIYiJGx
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkp7zekACgkQjjKRsyhoI8yHwQCeI73rOR2k31OPIbpJ/L9ODabl
-tvkAoITX+nUI6Cfxs9QJf8/e4tXMcyeA
-=UJzM
------END PGP SIGNATURE-----
-
---Signature=_Fri__7_Aug_2009_16_47_05_+1000_gbXiJbopbeIYiJGx--
+-- 
+ak@linux.intel.com -- Speaking for myself only.
