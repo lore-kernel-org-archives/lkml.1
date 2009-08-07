@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933391AbZHGT6L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933492AbZHGT6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933391AbZHGT6L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 15:58:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933285AbZHGT6K
+	id S933492AbZHGT6Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 15:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933467AbZHGT6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 15:58:10 -0400
-Received: from ru.mvista.com ([213.79.90.228]:2249 "EHLO
+	Fri, 7 Aug 2009 15:58:23 -0400
+Received: from ru.mvista.com ([213.79.90.228]:2286 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933363AbZHGT6I (ORCPT
+	by vger.kernel.org with ESMTP id S933270AbZHGT6W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 15:58:08 -0400
-Date: Fri, 7 Aug 2009 23:58:08 +0400
+	Fri, 7 Aug 2009 15:58:22 -0400
+Date: Fri, 7 Aug 2009 23:58:22 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Pierre Ossman <pierre@ossman.eu>, Kumar Gala <galak@kernel.crashing.org>,
        David Vrabel <david.vrabel@csr.com>, Ben Dooks <ben@fluff.org>,
        Sascha Hauer <s.hauer@pengutronix.de>, linux-kernel@vger.kernel.org,
        sdhci-devel@lists.ossman.eu, linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/7] sdhci-of: Fix high-speed cards recognition
-Message-ID: <20090807195808.GC2735@oksana.dev.rtsoft.ru>
+Subject: [PATCH 7/7] powerpc/85xx: Add eSDHC support for MPC8536DS boards
+Message-ID: <20090807195822.GG2735@oksana.dev.rtsoft.ru>
 References: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -29,106 +29,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-eSDHC fails to recognize some SDHS cards, throwing timeout errors:
+This patch simply adds sdhci node to the device tree.
 
-  mmc0: error -110 whilst initialising SD card
-
-That's because we calculate timeout value in a wrong way: on eSDHC
-hosts the timeout clock is derivied from the SD clock, which is set
-dynamically.
-
-As David Vrabel suggested, deriving timeout clock from SD clock is
-a common scheme, so let's implement DATA_TIMEOUT_USES_SDCLK quirk
-and use it for eSDHC hosts.
-
-Also, from now on we don't need esdhc_get_timeout_clock() callback,
-so remove it.
+We specify clock-frequency manually, so that eSDHC will work without
+upgrading U-Boot. Though, that'll only work for default setup (1500
+MHz) on new board revisions. For non-default setups, it's recommended
+to upgrade U-Boot, since it will fixup clock-frequency automatically.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci-of.c |    9 +--------
- drivers/mmc/host/sdhci.c    |    9 +++++++--
- drivers/mmc/host/sdhci.h    |    2 ++
- 3 files changed, 10 insertions(+), 10 deletions(-)
+ arch/powerpc/boot/dts/mpc8536ds.dts |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-index 8440fd9..004f24d 100644
---- a/drivers/mmc/host/sdhci-of.c
-+++ b/drivers/mmc/host/sdhci-of.c
-@@ -172,19 +172,13 @@ static unsigned int esdhc_get_min_clock(struct sdhci_host *host)
- 	return of_host->clock / 256 / 16;
- }
+diff --git a/arch/powerpc/boot/dts/mpc8536ds.dts b/arch/powerpc/boot/dts/mpc8536ds.dts
+index 22caf69..815cebb 100644
+--- a/arch/powerpc/boot/dts/mpc8536ds.dts
++++ b/arch/powerpc/boot/dts/mpc8536ds.dts
+@@ -250,6 +250,14 @@
+ 			phy_type = "ulpi";
+ 		};
  
--static unsigned int esdhc_get_timeout_clock(struct sdhci_host *host)
--{
--	struct sdhci_of_host *of_host = sdhci_priv(host);
--
--	return of_host->clock / 1000;
--}
--
- static struct sdhci_of_data sdhci_esdhc = {
- 	.quirks = SDHCI_QUIRK_FORCE_BLK_SZ_2048 |
- 		  SDHCI_QUIRK_BROKEN_CARD_DETECTION |
- 		  SDHCI_QUIRK_INVERTED_WRITE_PROTECT |
- 		  SDHCI_QUIRK_NO_BUSY_IRQ |
- 		  SDHCI_QUIRK_NONSTANDARD_CLOCK |
-+		  SDHCI_QUIRK_DATA_TIMEOUT_USES_SDCLK |
- 		  SDHCI_QUIRK_PIO_NEEDS_DELAY |
- 		  SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET |
- 		  SDHCI_QUIRK_NO_CARD_NO_RESET,
-@@ -199,7 +193,6 @@ static struct sdhci_of_data sdhci_esdhc = {
- 		.enable_dma = esdhc_enable_dma,
- 		.get_max_clock = esdhc_get_max_clock,
- 		.get_min_clock = esdhc_get_min_clock,
--		.get_timeout_clock = esdhc_get_timeout_clock,
- 	},
- };
- 
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index fc96f8c..288e40b 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -591,6 +591,9 @@ static u8 sdhci_calc_timeout(struct sdhci_host *host, struct mmc_data *data)
- 	target_timeout = data->timeout_ns / 1000 +
- 		data->timeout_clks / host->clock;
- 
-+	if (host->quirks & SDHCI_QUIRK_DATA_TIMEOUT_USES_SDCLK)
-+		host->timeout_clk = host->clock / 1000;
++		sdhci@2e000 {
++			compatible = "fsl,mpc8536-esdhc", "fsl,esdhc";
++			reg = <0x2e000 0x1000>;
++			interrupts = <72 0x2>;
++			interrupt-parent = <&mpic>;
++			clock-frequency = <250000000>;
++		};
 +
- 	/*
- 	 * Figure out needed cycles.
- 	 * We do this in steps in order to fit inside a 32 bit int.
-@@ -1757,13 +1760,15 @@ int sdhci_add_host(struct sdhci_host *host)
- 	host->timeout_clk =
- 		(caps & SDHCI_TIMEOUT_CLK_MASK) >> SDHCI_TIMEOUT_CLK_SHIFT;
- 	if (host->timeout_clk == 0) {
--		if (!host->ops->get_timeout_clock) {
-+		if (host->ops->get_timeout_clock) {
-+			host->timeout_clk = host->ops->get_timeout_clock(host);
-+		} else if (!(host->quirks &
-+				SDHCI_QUIRK_DATA_TIMEOUT_USES_SDCLK)) {
- 			printk(KERN_ERR
- 			       "%s: Hardware doesn't specify timeout clock "
- 			       "frequency.\n", mmc_hostname(mmc));
- 			return -ENODEV;
- 		}
--		host->timeout_clk = host->ops->get_timeout_clock(host);
- 	}
- 	if (caps & SDHCI_TIMEOUT_CLK_UNIT)
- 		host->timeout_clk *= 1000;
-diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index c77e9ff..afda7f1 100644
---- a/drivers/mmc/host/sdhci.h
-+++ b/drivers/mmc/host/sdhci.h
-@@ -232,6 +232,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_FORCE_1_BIT_DATA			(1<<22)
- /* Controller needs 10ms delay between applying power and clock */
- #define SDHCI_QUIRK_DELAY_AFTER_POWER			(1<<23)
-+/* Controller uses SDCLK instead of TMCLK for data timeouts */
-+#define SDHCI_QUIRK_DATA_TIMEOUT_USES_SDCLK		(1<<24)
- 
- 	int			irq;		/* Device IRQ */
- 	void __iomem *		ioaddr;		/* Mapped address */
+ 		serial0: serial@4500 {
+ 			cell-index = <0>;
+ 			device_type = "serial";
 -- 
 1.6.3.3
-
