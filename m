@@ -1,67 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbZHGQON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbZHGQQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008AbZHGQON (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 12:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753808AbZHGQOM
+	id S1754029AbZHGQQj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 12:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbZHGQQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 12:14:12 -0400
-Received: from automation-pros.com ([72.243.156.18]:44925 "EHLO
-	smtp.automation-pros.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753804AbZHGQOM (ORCPT
+	Fri, 7 Aug 2009 12:16:39 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35251 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753899AbZHGQQi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 12:14:12 -0400
-X-Greylist: delayed 1335 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Aug 2009 12:14:11 EDT
-Message-ID: <4A7C4C8C.1050006@turmel.org>
-Date: Fri, 07 Aug 2009 11:47:24 -0400
-From: Phil Turmel <philip@turmel.org>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: David Dillow <dave@thedillows.org>, Andi Kleen <andi@firstfloor.org>,
-       Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Jan Blunck <jblunck@suse.de>, Harald Hoyer <harald@redhat.com>,
-       Scott James Remnant <scott@ubuntu.com>
-Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
- /dev
-References: <20090805171513.GA10443@kroah.com> <20090805192037.19c54c4d@lxorguk.ukuu.org.uk> <20090805182805.GA7534@kroah.com> <20090805185136.GA21442@kroah.com> <87ljlxhrnr.fsf@basil.nowhere.org> <1249575658.19886.8.camel@lap75545.ornl.gov> <20090806183147.GA28409@suse.de>
-In-Reply-To: <20090806183147.GA28409@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 7 Aug 2009 12:16:38 -0400
+Subject: Re: [RT] Lockdep warning on boot with 2.6.31-rc5-rt1.1
+From: Peter Zijlstra <peterz@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Clark Williams <williams@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "greg@kroah.com" <greg@kroah.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Kay Sievers <kay.sievers@vrfy.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908071154530.3063-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0908071154530.3063-100000@iolanthe.rowland.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Fri, 07 Aug 2009 18:15:54 +0200
+Message-Id: <1249661754.32113.747.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Thu, Aug 06, 2009 at 12:20:58PM -0400, David Dillow wrote:
->> On Thu, 2009-08-06 at 17:46 +0200, Andi Kleen wrote:
->>> Greg KH <greg@kroah.com> writes:
->>>> It makes the userspace boot process much simpler and easier to maintain,
->>>> as well as providing a way to handle rescue disks and images trivially,
->>>> and it makes the kernel _less_ dependant on the early userspace bootup
->>>> scripts.
->>> As a initrd less kernel user I can really only agree: getting rid
->>> of the udev-in-initrd requirement would be a big step forward
->>> in usability. Typically I always have to pre populate 
->>> a on disk /dev manually first to get my kernels to boot.
->> If you use mount by label or UUID, you still need udev (or other tools)
->> in the initrd to find the right disk, correct?
+On Fri, 2009-08-07 at 12:04 -0400, Alan Stern wrote:
+> On Fri, 7 Aug 2009, Peter Zijlstra wrote:
 > 
-> Yes, you would.
+> > On Fri, 2009-08-07 at 09:46 -0500, Clark Williams wrote:
+> > > Peter,
+> > > 
+> > > I'm getting this warning from lockdep when booting on my T60. 
+> > > 
+> > > The two addresses reported (0xffffffff812664a2 and 0xffffffff812664ae)
+> > > actually bracket one call to mutex_lock() in driver_attach() so I'm not
+> > > sure what the complaint is.
 > 
+> > Oh, that's tglx who's gone wild with sem->mutex conversions.
+> 
+> Is this code available somewhere?
 
-Might be straying off-topic here, but I find software raid to be 
-particularly useful in this case.  I've been using it on my home server 
-for a few years now, including through the transition from ide to 
-libata.  The kernel autostart for md devices has been rock-solid, and 
-successfully hides the real device name.  No initramfs required.
+Its in the -rt tree, but this patch was posted to lkml at:
+  http://lkml.org/lkml/2009/7/26/36
 
-You might want to adapt the md+lvm setup from the gentoo docs [1], even 
-if you only have one disk (degraded mirror).  The only gotcha I've 
-encountered was forgetting to set up grub after replacing a failed disk, 
-and it happened to be first in line in the BIOS.  Didn't notice 'till an 
-extended power outage forced a reboot.
+The -rt tree can be found in various places, but while tglx is out
+celebrating his holidays the latest can be found through:
+  http://lkml.org/lkml/2009/8/5/406
 
-Phil
+> > It used to be that _all_ dev->sem instances were taken on suspend or
+> > something like that, I think that got fixed a long while back.
+> > 
+> > I'd have to look at what the current locking requirements for dev->sem
+> > are. 
+> 
+> It is supposed to be locked whenever the driver core invokes a probe, 
+> remove, or PM-related callback.  Under some circumstances, the parent's 
+> semaphore is supposed to be locked as well.  Individual subsystems may 
+> have their own requirements in addition to these.
+> 
+> The ordering requirement is: Don't try to acquire a device's lock if
+> you already hold the lock for a non-ancestor device.  More generally
+> (if more obscurely): If you already hold device A's lock, then don't
+> try to acquire the lock for device B unless you already hold the lock
+> for A & B's most recent common ancestor.
+> 
+> > I remember talking to Alan on several occasions about this, and I just
+> > went over some of the old emails, but I must say the precise
+> > requirements stay hidden from me. Also, I'm not sure these emails are
+> > still representative of the current state.
+> 
+> I think they are, pretty much.  The real problem, of course, is that 
+> lockdep doesn't understand tree-structured lock orderings.  Hence it 
+> isn't practical to convert dev->sem into a mutex.
 
-[1] http://www.gentoo.org/doc/en/gentoo-x86+raid+lvm2-quickinstall.xml
+Right, well it would if we'd make every instance a class, but since
+classes should reside in static storage this is far from trivial.
+
+If we'd be able to find a mapping such that we can use a limited number
+of these classes to represent the needed structure then we're good.
+
+I think I proposed adding a class to each driver or something, but then
+you countered that a single driver could register itself at conflicting
+places in the device tree.
+
+Still it might be worth to try that and see where we'll end up and
+possibly fix up a few drivers to be more intelligent.
+
+/me ponders
+
+Nested busses would be interesting though, suppose we assign a class to
+a USB bus driver, and we chain USB hubs, you'd get a nesting of similar
+classes and that'd upset lockdep again :/
+
+
+The other proposal was creating a fixed list of classes and register
+each device at a class corresponding to its depth in the tree. I can't
+remember what was wrong with that, but I seem to have been persuaded
+that that was hard too.
+
+
