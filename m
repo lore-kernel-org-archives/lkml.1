@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbZHGQjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbZHGQk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754076AbZHGQjl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 12:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033AbZHGQjl
+	id S1754125AbZHGQk5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 12:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbZHGQk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 12:39:41 -0400
-Received: from ru.mvista.com ([213.79.90.228]:1683 "EHLO
+	Fri, 7 Aug 2009 12:40:56 -0400
+Received: from ru.mvista.com ([213.79.90.228]:1716 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753185AbZHGQjk (ORCPT
+	by vger.kernel.org with ESMTP id S1754051AbZHGQk4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 12:39:40 -0400
-Date: Fri, 7 Aug 2009 20:39:40 +0400
+	Fri, 7 Aug 2009 12:40:56 -0400
+Date: Fri, 7 Aug 2009 20:40:57 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Pierre Ossman <pierre@ossman.eu>, Kumar Gala <galak@kernel.crashing.org>,
        Ben Dooks <ben@fluff.org>, Sascha Hauer <s.hauer@pengutronix.de>,
        linux-kernel@vger.kernel.org, sdhci-devel@lists.ossman.eu,
        linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/4] sdhci-of: Some fixes for high-speed and 4-bit SD cards
-Message-ID: <20090807163940.GA29192@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
+Subject: [PATCH 1/4] sdhci-of: Fix SD clock calculation
+Message-ID: <20090807164057.GA13464@oksana.dev.rtsoft.ru>
+References: <20090807163940.GA29192@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20090807163940.GA29192@oksana.dev.rtsoft.ru>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Linear divisor's values in a register start at 0 (zero means
+"divide by 1"). Before this patch the code didn't account that
+fact, so SD cards were running underclocked.
 
-Finally I've got a bunch of SD cards to test eSDHC in various ways,
-and more importantly now I have a lot of SDHS cards. ;-)
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/mmc/host/sdhci-of.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-So, here are few fixes that make eSDHC work flawlessly on MPC83xx
-SOCs with all SD and MMC cards that I have.
-
-On MPC85xx (namely MPC8536 and MPC8569) SOCs there is one issue:
-the cards can be detected and read just fine, but writing doesn't
-work (no interrupts received). I'm currently investigating this.
-
-Thanks,
-
+diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
+index 9088443..92b5667 100644
+--- a/drivers/mmc/host/sdhci-of.c
++++ b/drivers/mmc/host/sdhci-of.c
+@@ -136,6 +136,7 @@ static void esdhc_set_clock(struct sdhci_host *host, unsigned int clock)
+ 	}
+ 
+ 	pre_div >>= 1;
++	div--;
+ 
+ 	setbits32(host->ioaddr + ESDHC_SYSTEM_CONTROL, ESDHC_CLOCK_IPGEN |
+ 		  ESDHC_CLOCK_HCKEN | ESDHC_CLOCK_PEREN |
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.6.3.3
+
