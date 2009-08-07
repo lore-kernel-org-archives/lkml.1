@@ -1,116 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932637AbZHGO5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932670AbZHGO54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932637AbZHGO5d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 10:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932564AbZHGO5c
+	id S932670AbZHGO54 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 10:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932643AbZHGO5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 10:57:32 -0400
-Received: from mail-bw0-f215.google.com ([209.85.218.215]:52638 "EHLO
-	mail-bw0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932168AbZHGO5b convert rfc822-to-8bit (ORCPT
+	Fri, 7 Aug 2009 10:57:55 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:59367 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932644AbZHGO5y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 10:57:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Jrkg3429luZigV9tYXDOoauBfyySt2WfjXlsJul18a2CImGqLhBkG3P+wo/ZxA5yCb
-         gN7gdo0ZcmyyYL5xE8/6KeWVGp7f6BhHGOVYplQ0kvuD+04e2Pwm+Rohxi8jfPqI52t5
-         mtop52ZeyL9Lif02nq3LoXDL8c6KZ9lQ6/wqY=
+	Fri, 7 Aug 2009 10:57:54 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Gregory Haskins" <ghaskins@novell.com>
+Subject: Re: [PATCH 4/7] vbus-proxy: add a pci-to-vbus bridge
+Date: Fri, 7 Aug 2009 16:57:32 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
+Cc: alacrityvm-devel@lists.sourceforge.net,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+References: <20090803171030.17268.26962.stgit@dev.haskins.net> <200908070057.54795.arnd@arndb.de> <4A7B78580200005A00051D50@sinclair.provo.novell.com>
+In-Reply-To: <4A7B78580200005A00051D50@sinclair.provo.novell.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-In-Reply-To: <20090807134803.GA7545@tuxdriver.com>
-References: <c6b1100b0908070350t3101030bs4b3d2e7485ad9aee@mail.gmail.com>
-	 <200908071324.45269.elendil@planet.nl>
-	 <c6b1100b0908070556sb3f4f80sc757d8b100cbcb3c@mail.gmail.com>
-	 <20090807134803.GA7545@tuxdriver.com>
-Date: Fri, 7 Aug 2009 15:57:30 +0100
-Message-ID: <c6b1100b0908070757t7b973180s17959e0f46347d5d@mail.gmail.com>
-Subject: Re: ath5k - strange regulatory domain change
-From: Chris Clayton <chris2553@googlemail.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Frans Pop <elendil@planet.nl>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908071657.32858.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX194QYhYTmZsqVH/tScS0zCEE3Wp79Vo2Ef2KjH
+ fgGPrTMKSbhJMz+yR3/dj/AD3yPTNOKHLIw/01gRlAr7GMZwQt
+ TWvqArgyBr5s1lqLMC7Gg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi John,
+On Friday 07 August 2009, Gregory Haskins wrote:
+> >>> Arnd Bergmann <arnd@arndb.de> wrote: 
+> > On Thursday 06 August 2009, Gregory Haskins wrote:
+> > 
+> > >     2b) I also want to collapse multiple interrupts together so as to 
+> > > minimize the context switch rate (inject + EIO overhead).  My design 
+> > > effectively has "NAPI" for interrupt handling.  This helps when the system 
+> > > needs it the most: heavy IO.
+> > 
+> > That sounds like a very useful concept in general, but this seems to be a
+> > detail of the interrupt controller implementation. If the IO-APIC cannot
+> > do what you want here, maybe we just need a paravirtual IRQ controller
+> > driver, like e.g. the PS3 has.
+> 
+> Yeah, I agree this could be a function of the APIC code.  Do note that I
+> mentioned this in passing to Avi a few months ago but FWIW he indicated
+> at that time that he is not interested in making the APIC PV.
+> 
+> Also, I almost forgot an important one.  Add:
+> 
+>    2c) Interrupt prioritization.  I want to be able to assign priority
+>    to interrupts and handle them in priority order.
 
-2009/8/7 John W. Linville <linville@tuxdriver.com>:
-> On Fri, Aug 07, 2009 at 01:56:43PM +0100, Chris Clayton wrote:
->> Thanks Frans,
->>
->> 2009/8/7 Frans Pop <elendil@planet.nl>:
->> > Chris Clayton wrote:
->> >> Because of some problems with my Belkin Wireless G card  (model
->> >> F5D7010) and the rt61pci driver, I've started to use a "no-name" card
->> >> that is supported by the ath5k driver.
->> >>
->> >> A problem is that I have come across is that for some reason the CN
->> >> regulatory domain is being set automatically. This doesn't happen with
->> >> the Belkin (rt61) card. I have the following line in
->> >> /etc/modprobe.d/modprobe.conf to set the regulatory domain to GB:
->> >>
->> >> options cfg80211 ieee80211_regdom=GB
->> >
->> > This issue has already been discussed extensively (after I reported it).
->> > Please see the following thread: http://lkml.org/lkml/2009/7/8/421. It
->> > contains a lot of information from the wireless maintainers.
->> >
->>
->> To sum this up then (as I understand things):
->>
->> 1. I am the system administrator (root);
->> 2. I am using a valid (albeit deprecated from 2.6.31) method to tell
->> the wireless infrastructure that I want the regulatory domain set to
->> GB;
->> 3. GB is a valid code; and
->> 4. the wireless infrastructure sets the regulatory domain to CN.
->> 5. in 2.6.30, the wireless infrastructure does what I (the root user)
->> tell it to do.
->>
->> That's a regression in my book. Oh well! I do have the iw and crda
->> applications installed, so I've taken that route of setting the
->> regulatory domain to GB.
->
-> Are you actually getting the wrong regulatory rules enforced?  Or are
-> you merely bothered that it is reporting "CN" instead of "GB"?
->
+I think this part of the interface has developed into the wrong direction
+because you confused two questions:
 
-I'm not sure whether it's wrong or not. To these dmesg snippets from
-my original post look wrong because one of the frequency ranges listed
-for CN is outside those listed for GB and one of the CN max_eirp
-entries is not preent in the GB list. Whether that is OK or not I
-don't know and can't find (lay user) documentation to tell me.
+1. should you build an advanced interrupt mechanism for virtual drivers?
+2. how should you build an advanced interrupt mechanism for virtual drivers?
 
-cfg80211: Regulatory domain changed to country: GB
-        (start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp)
-        (2402000 KHz - 2482000 KHz @ 40000 KHz), (N/A, 2000 mBm)
-        (5170000 KHz - 5250000 KHz @ 40000 KHz), (N/A, 2000 mBm)
-        (5250000 KHz - 5330000 KHz @ 40000 KHz), (N/A, 2000 mBm)
-        (5490000 KHz - 5710000 KHz @ 40000 KHz), (N/A, 2700 mBm)
+My guess is that when Avi said he did not want a paravirtual IO-APIC,
+he implied that the existing one is good enough (maybe Avi can clarify that
+point himself) answering question 1, while you took that as an indication
+that the code should live elsewhere instead, answering question 2.
 
-cfg80211: Regulatory domain changed to country: CN
-        (start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp)
-        (2402000 KHz - 2482000 KHz @ 40000 KHz), (N/A, 2000 mBm)
-        (5735000 KHz - 5835000 KHz @ 40000 KHz), (N/A, 3000 mBm)
+What you built with the shm-signal code is essentially a paravirtual nested
+interrupt controller by another name, and deeply integrated into a new
+bigger subsystem. I believe that this has significant disadvantages
+over the approach of making it a standard interrupt controller driver:
 
+* It completely avoids the infrastructure that we have built into Linux
+  to deal with interrupts, e.g. /proc/interrupts statistics, IRQ
+  balancing and CPU affinity.
 
-Thanks
+* It makes it impossible to quantify the value of the feature to start with,
+  which could be used to answer question 1 above.
 
-Chris
+* Less importantly, it does not work with any other drivers that might
+  also benefit from a new interrupt controller -- if it is indeed better
+  than the one we already have.
 
-> John
-> --
-> John W. Linville                Someday the world will need a hero, and you
-> linville@tuxdriver.com                  might be all we have.  Be ready.
->
-
-
-
--- 
-No, Sir; there is nothing which has yet been contrived by man, by which
-so much happiness is produced as by a good tavern or inn - Doctor Samuel
-Johnson
+	Arnd <><
