@@ -1,140 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbZHGIuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932239AbZHGIwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757277AbZHGIuH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 04:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757225AbZHGIuG
+	id S932239AbZHGIwp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 04:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757179AbZHGIwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 04:50:06 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:40363 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755187AbZHGIuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 04:50:04 -0400
-Date: Fri, 7 Aug 2009 10:50:04 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Eric.Moore@lsi.com
-Subject: Re: [PATCH 1/3] block: add blk-iopoll, a NAPI like approach for
-	block  devices
-Message-ID: <20090807085004.GV12579@kernel.dk>
-References: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com> <1249588685-4662-2-git-send-email-jens.axboe@oracle.com> <20090806223257.0c33cf15@lxorguk.ukuu.org.uk> <20090807063745.GQ12579@kernel.dk> <4A7BE80A.6080808@garzik.org>
+	Fri, 7 Aug 2009 04:52:44 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:63241 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757070AbZHGIwn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 04:52:43 -0400
+From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+To: ext Jarkko Nikula <jhnikula@gmail.com>
+Subject: Re: [alsa-devel] [PATCH][2.6.31-rc5] ARM: OMAP: McBSP: Fix ASoC on OMAP1510 by fixing API of omap_mcbsp_start/stop
+Date: Fri, 7 Aug 2009 11:51:43 +0300
+User-Agent: KMail/1.11.4 (Linux/2.6.30-gentoo-r4; KDE/4.2.4; i686; ; )
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>,
+       Tony Lindgren <tony@atomide.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+References: <1249628387-7372-1-git-send-email-jhnikula@gmail.com> <200908071130.54337.peter.ujfalusi@nokia.com> <20090807114757.0067a707.jhnikula@gmail.com>
+In-Reply-To: <20090807114757.0067a707.jhnikula@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <4A7BE80A.6080808@garzik.org>
+Message-Id: <200908071151.44083.peter.ujfalusi@nokia.com>
+X-OriginalArrivalTime: 07 Aug 2009 08:51:50.0254 (UTC) FILETIME=[4DB318E0:01CA173C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07 2009, Jeff Garzik wrote:
-> Jens Axboe wrote:
->> On Thu, Aug 06 2009, Alan Cox wrote:
->>>> doing the command completion when the irq occurs, schedule a dedicated
->>>> softirq in the hopes that we will complete more IO when the iopoll
->>>> handler is invoked. Devices have a budget of commands assigned, and will
->>>> stay in polled mode as long as they continue to consume their budget
->>>> from the iopoll softirq handler. If they do not, the device is set back
->>>> to interrupt completion mode.
->>> This seems a little odd for pure ATA except for NCQ commands. Normal ATA
->>> is notoriously completion/reissue latency sensitive [to the point I
->>> suspect we should be dequeuing 2 commands from SCSI and loading the next
->>> in the completion handler as soon as we recover the result task file and
->>> see no error rather than going up and down the stack)
->>
->> Yes certainly, it's only for devices that do queuing. If they don't,
->> then we will always have just the one command to complete. So not much
->> to poll! As to pre-prep for extra latency intensive devices, have you
->> tried experimenting with just pretending that non-ncq devices in libata
->> have a queue depth of 2? That should ensure that the first command
->> available upon completion of the existing command is already prepped.
->> Not sure how much time that would save, I would hope that our prep phase
->> isn't too slow to begin with (or that would be the place to fix :-)
->>
->>> What do the numbers look like ?
->>
->> On a slow box (with many cores), the benefits are quite huge:
->>
->>
->> blocksize       blk-iopoll      IOPS    IRQ/sec         Commands/IRQ
->> --------------------------------------------------------------------
->> 512b            0               25168   ~19500          1,3
->> 512b            1               30355     ~750          40
->> 4096b           0               25612   ~21500          1,2
->> 4096b           1               30231    ~1200          25
->>
->> I suspect there's some cache interaction going on here too, but the
->> numbers do look very good. On a faster box (and different architecture),
->> on a test that does 50k IOPS, they perform identically but the iopoll
->> approach uses less CPU. The interrupt rate drops from 55k ints/sec to
->> 39-40k ints/sec for that case.
+On Friday 07 August 2009 11:47:57 ext Jarkko Nikula wrote:
+> On Fri, 7 Aug 2009 11:30:54 +0300
 >
-> It's easy to move work from one place to another, so I would definitely  
-> expect that IRQ/sec drops...  but these are the more relevant numbers, 
-> IMO:
+> Peter Ujfalusi <peter.ujfalusi@nokia.com> wrote:
+> > Looks nice, but I would have done it a bit differently...
 >
-> * CPU usage before/after
-> * latency before/after
-
-As I mentioned in the 0/3 email, latency for my tests were as good or
-better than the original an CPU usage was lower. The former must largely
-be due to decreased latency in commands successfully retired in addition
-to the one that triggered the IRQ, since the latency for the first
-command should be a little higher. Since we use softirq completion for
-the command in the FIRST place anyway, it probably wont make any
-difference (and this latency for the first command should be almost
-immeasurably from the non-iopoll path).
-
-> Also, and even for storage where command queueing is _possible_, there  
-> is a problem case we saw with NAPI:  sometimes the combination of a fast  
-> computer and an under-100%-utilization workload can imply repeated cycles 
-> of
+> ...
 >
-> 	spin lock
-> 	irq disable
-> 	blk_iopoll_sched()
-> 	spin unlock
+> > > -void omap_mcbsp_start(unsigned int id);
+> > > -void omap_mcbsp_stop(unsigned int id);
+> > > +void omap_mcbsp_start(unsigned int id, int tx, int rx);
+> > > +void omap_mcbsp_stop(unsigned int id, int tx, int rx);
+> >
+> > void omap_mcbsp_start(unsigned int id, int dir);
+> > void omap_mcbsp_stop(unsigned int id, int dir);
 >
-> 	spin lock
-> 	handle a single command completion
-> 	spin unlock
-> 	blk_iopoll_complete()
->
-> which not only erases the benefit, but winds up being more costly, both  
-> in terms of CPU usage and in terms of latency.
+> Valid point and cleans up a bit the ALSA SoC part of the patch.
+> However I didn't want to limit this generic arch/arm/plat-omap/mcbsp.c
+> into audio use case only. My change still allows to start transmitter
+> and receiver exactly at the same time. Might be worth if the
+> generic McBSP driver is used for something else than audio.
 
-It's clear that if you always only retire a single command AND you need
-to lock at both ends, then it'll never be a win. I guess we could detect
-such cases and be more cautious about when to enter iopoll, if that is
-an issue. The ahci case looks like what you describe and I'm not seeing
-any issues on the laptop, but I do concede that this is something to
-look out for. If you look at the mpt conversion, we don't get cache line
-bouncing on a lock there. As I also wrote, ahci is only really
-interesting for test purposes, I don't envision a lot of real world win
-there. But it widens the scope for testing :-)
-
-> This makes measuring the problem much more difficult; the interesting  
-> case I am highlighting does not occur when using a benchmarking tool to  
-> keep a storage device at 100% utilization.
-
-Of course not, that case is primarily interesting to gauge potential
-best case wins.
-
-> We don't want to optimize for the 100%-load case at the expense of the  
-> _common case_, which is IMO utilization below 100%.  Servers are not  
-> 100% busy all the time, which opens the possibility that a  
-> split-completion scheme such as the one presented can actually use  
-> _more_ CPU than the current, unmodified 2.6.31-rc kernel.
-
-Depends, if the common case doesn't really suffer, then it doesn't
-matter. Graceful load handling is important.
-
-> I'm not NAK'ing...  just inserting some relevant NAPI field experience,  
-> and hoping for some numbers that better measure the costs/benefits.
-
-Appreciate you looking over this, and I'll certainly be posting some
-more numbers on this. It'll largely depend on both storage, controller,
-and worload.
+Good point.
 
 -- 
-Jens Axboe
-
+Péter
