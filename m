@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbZHGJY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbZHGJdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755478AbZHGJY6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 05:24:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbZHGJY6
+	id S1755628AbZHGJdy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 05:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZHGJdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 05:24:58 -0400
-Received: from mail.free-electrons.com ([88.191.76.200]:58269 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751836AbZHGJY5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 05:24:57 -0400
-Date: Fri, 7 Aug 2009 11:24:52 +0200
-From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: sam@ravnborg.org, hpa@zytor.com, alain@knaff.lu,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 4/6] Add support for LZO-compressed kernels for ARM
-Message-ID: <20090807092423.GA4455@laptop>
-References: <20090731093107.GA29704@merkur.ravnborg.org>
- <1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com>
- <1249311501-23102-2-git-send-email-albin.tonnerre@free-electrons.com>
- <1249311501-23102-3-git-send-email-albin.tonnerre@free-electrons.com>
- <1249311501-23102-4-git-send-email-albin.tonnerre@free-electrons.com>
- <20090806224055.GH31579@n2100.arm.linux.org.uk>
+	Fri, 7 Aug 2009 05:33:53 -0400
+Received: from [222.73.24.84] ([222.73.24.84]:55712 "EHLO song.cn.fujitsu.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751925AbZHGJdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 05:33:52 -0400
+Message-ID: <4A7BF5B3.6060202@cn.fujitsu.com>
+Date: Fri, 07 Aug 2009 17:36:51 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20090806224055.GH31579@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Re: [PATCH 2/2] ftrace: Unify effect of writing to trace_options
+ and option/*
+References: <4A7A4D7B.7010706@cn.fujitsu.com> <4A7A4DBC.6020403@cn.fujitsu.com> <4A7A6470.60305@cn.fujitsu.com>
+In-Reply-To: <4A7A6470.60305@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 11:40:55PM +0100, Russell King - ARM Linux wrote :
-> On Mon, Aug 03, 2009 at 04:58:19PM +0200, Albin Tonnerre wrote:
-> > This is the second part of patch. This part includes:
-> >  - changes to ach/arch/boot/Makefile to make it easier to add new
-> >    compression types
-> >  - new piggy.lzo.S necessary for lzo compression
-> >  - changes in arch/arm/boot/compressed/misc.c to allow the use of lzo or
-> >    gzip, depending on the config
-> >  - Kconfig support
+Li Zefan wrote:
+> Zhaolei wrote:
+>> "echo noglobal-clock > trace_options" can be used to change trace
+>> clock but "echo 0 > options/global-clock" can't.
+>>
+>> We can fix it by using set_tracer_flags() in trace_options_core_write().
+>>
+> 
+> Nice catch.
+> 
+>> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+>> ---
+>>  kernel/trace/trace.c |    5 ++---
+>>  1 files changed, 2 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+>> index 464b7bb..2fa2bac 100644
+>> --- a/kernel/trace/trace.c
+>> +++ b/kernel/trace/trace.c
+>> @@ -3893,12 +3893,11 @@ trace_options_core_write(struct file *filp, const char __user *ubuf, size_t cnt,
+>>  
+>>  	switch (val) {
+>>  	case 0:
+>> -		trace_flags &= ~(1 << index);
+>> +		set_tracer_flags(1 << index, 0);
+>>  		break;
+>>  	case 1:
+>> -		trace_flags |= 1 << index;
+>> +		set_tracer_flags(1 << index, 1);
+>>  		break;
+>> -
+>>  	default:
+>>  		return -EINVAL;
+>>  	}
+> 
+> The whole switch statement can be simplied:
+> 
+> 	if (val != 0 || val != 1)
+> 		return -EINVAL;
+> 	set_tracer_flags(1 << index, val);
 
-> FYI, with these patches applied and selecting GZIP method, I get
-> linker errors.  I've been unable to track down what's going on, but
-> it appears to be a libgcc issue.
+Hello, Li
 
-> In spite of the decompressor being built as an EABI object, gcc seems
-> to be issuing calls to __umodsi3, which isn't in the EABI libgcc
-> (they're called something different - don't ask.)
+Thanks.
+V2 will send.
 
-I also happen to have issues related to the linker not finding __aeabi_uidivmod,
-but only when compiling with CONFIG_CC_OPTIMIZE_FOR_SIZE. Is it similar for you,
-or does it also fail when compiling with -O2 ?
+Thanks
+Zhaolei
 
-> So I think these patches need further testing and evaluation on ARM
-> before they can be merged.  Moreover, I'd like to see some comparisons
-> between the _current_ gzip method, the new gzip method and the lzo
-> method on ARM.
-
-I don't have my ARM platforms at hand, but I'll so these comparisons in a couple
-days when I access to them again.
-
-Regards,
--- 
-Albin Tonnerre, Free Electrons
-Kernel, drivers and embedded Linux development,
-consulting, training and support.
-http://free-electrons.com
