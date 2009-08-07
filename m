@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757140AbZHGH4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbZHGH4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757140AbZHGH4Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 03:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757092AbZHGH4X
+	id S1757160AbZHGH4m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 03:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757137AbZHGH4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 03:56:23 -0400
-Received: from perceval.irobotique.be ([92.243.18.41]:51666 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757071AbZHGH4X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 03:56:23 -0400
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: "David Xiao" <dxiao@broadcom.com>
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is get_user_pages() enough to prevent pages from being swapped out ?")
-Date: Fri, 7 Aug 2009 09:58:30 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30.3; KDE/4.2.4; x86_64; ; )
-Cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
-       "Ben Dooks" <ben-linux@fluff.org>,
-       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
-       "Robin Holt" <holt@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "v4l2_linux" <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806222543.GG31579@n2100.arm.linux.org.uk> <1249624766.32621.61.camel@david-laptop>
-In-Reply-To: <1249624766.32621.61.camel@david-laptop>
+	Fri, 7 Aug 2009 03:56:42 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46272 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757021AbZHGH4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 03:56:41 -0400
+Date: Fri, 7 Aug 2009 09:55:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Larry Woodman <lwoodman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [PATCH 3/6] tracing, page-allocator: Add trace event for page
+	traffic related to the buddy lists
+Message-ID: <20090807075555.GA21165@elte.hu>
+References: <1249574827-18745-1-git-send-email-mel@csn.ul.ie> <1249574827-18745-4-git-send-email-mel@csn.ul.ie> <20090807075317.GC20292@elte.hu>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200908070958.31322.laurent.pinchart@ideasonboard.com>
+In-Reply-To: <20090807075317.GC20292@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 07 August 2009 07:59:26 David Xiao wrote:
-> On Thu, 2009-08-06 at 15:25 -0700, Russell King - ARM Linux wrote:
-> > As far as userspace DMA coherency, the only way you could do it with
-> > current kernel APIs is by using get_user_pages(), creating a scatterlist
-> > from those, and then passing it to dma_map_sg().  While the device has
-> > ownership of the SG, userspace must _not_ touch the buffer until after
-> > DMA has completed.
-> >
-> > However, that won't work with ARMv7's speculative prefetching.  I'm
-> > afraid with such things, DMA direct into userspace mappings becomes a
-> > _lot_ harder, and lets face it, lots of Linux drivers just aren't going
-> > to bother supporting this - we can't currently get agreement to have an
-> > API to map DMA coherent pages into userspace!
->
-> The V7 speculative prefetching will then probably apply to DMA coherency
-> issue in general, both kernel and user space DMAs. Could this be
-> addressed by inside the dma_unmap_sg/single() calling dma_cache_maint()
-> when the direction is DMA_FROM_DEVICE/DMA_BIDIRECTIONAL, to basically
-> invalidate the related cache lines in case any filled by prefetching?
-> Assuming dma_unmap_sg/single() is called after each DMA operation is
-> completed.
 
-Sorry about this, but I'm not sure to understand the speculative prefetching 
-cache issue completely.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-My understanding is that, even if userspace doesn't touch the DMA buffer while 
-DMA is in progress, it could still read from locations close to the buffer, 
-resulting in a speculative prefetch of data in the buffer. Those data would 
-then end up in the D-cache, and would not be coherent with what the device 
-transfers.
+> 
+> * Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > +TRACE_EVENT(mm_page_pcpu_drain,
+> > +
+> > +	TP_PROTO(struct page *page, int order, int migratetype),
+> > +
+> > +	TP_ARGS(page, order, migratetype),
+> > +
+> > +	TP_STRUCT__entry(
+> > +		__field(	struct page *,	page		)
+> > +		__field(	int,		order		)
+> > +		__field(	int,		migratetype	)
+> > +	),
+> > +
+> > +	TP_fast_assign(
+> > +		__entry->page		= page;
+> > +		__entry->order		= order;
+> > +		__entry->migratetype	= migratetype;
+> > +	),
+> > +
+> > +	TP_printk("page=%p pfn=%lu order=%d cpu=%d migratetype=%d",
+> > +		__entry->page,
+> > +		page_to_pfn(__entry->page),
+> > +		__entry->order,
+> > +		smp_processor_id(),
+> > +		__entry->migratetype)
+> 
+> > +	trace_mm_page_alloc_zone_locked(page, order, migratetype, order == 0);
+> 
+> This can be optimized further by omitting the migratetype field and 
+> adding something like this:
 
-If that's correct, how do we avoid the problem in the general case of DMA to 
-kernel-allocated buffers ?
+erm, cut & pasted the wrong thing, i meant:
 
-Regards,
+s/migratetype/percpu_refill
 
-Laurent Pinchart
-
+	Ingo
