@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755780AbZHGJo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbZHGJuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755780AbZHGJo2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 05:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbZHGJo1
+	id S1755869AbZHGJuF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 05:50:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbZHGJuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 05:44:27 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38643 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751925AbZHGJo0 (ORCPT
+	Fri, 7 Aug 2009 05:50:04 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:18362 "EHLO
+	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751831AbZHGJuC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 05:44:26 -0400
-Date: Fri, 7 Aug 2009 10:44:04 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Adrian Hunter <adrian.hunter@nokia.com>
-Cc: JiSheng Zhang <jszhang3@gmail.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dwmw2@infradead.org" <dwmw2@infradead.org>,
-       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>
-Subject: Re: [UBI UBIFS] replace vmalloc with kmalloc
-Message-ID: <20090807094404.GA10603@flint.arm.linux.org.uk>
-References: <2df346410908070202i6c16008ckc145559a474129c6@mail.gmail.com> <4A7BF1C3.4050602@nokia.com>
+	Fri, 7 Aug 2009 05:50:02 -0400
+X-SpamScore: -1
+X-BigFish: VPS-1(zz4015Lzz1202hzzz32i203h43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KO03B4-04-L86-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>
+CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/21] Nested SVM cleanups v2
+Date: Fri, 7 Aug 2009 11:49:27 +0200
+Message-ID: <1249638588-10982-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.3.3
+X-OriginalArrivalTime: 07 Aug 2009 09:49:50.0624 (UTC) FILETIME=[68296A00:01CA1744]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A7BF1C3.4050602@nokia.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 12:20:03PM +0300, Adrian Hunter wrote:
-> vmalloc allows large (> 128KiB) buffers, but kmalloc doesn't.
-> So we presently have no choice but to use vmalloc.
->
-> I do not know what hardware you have or exactly what driver you
-> are using, but we have UBIFS on OneNAND using DMA.
-> See drivers/mtd/onenand/omap2.c
+Hi,
 
-Hmm.  Looking at that code, it's unsafe:
+this is the second and extended version of my patchset to clean up the code for
+SVM virtualization in KVM. The patchset was tested with KVM on KVM and showed
+no regressions. It was tested with Nested Paging and with Shadow Paging on the
+first-level guest. 
+As a major change this patchset enables the nested SVM code by
+default. It is still required to start qemu with -enable-nesting,
+though.
 
-        if (buf >= high_memory) {
-                struct page *p1;
+Changes to the previous version:
 
-                if (((size_t)buf & PAGE_MASK) !=
-                    ((size_t)(buf + count - 1) & PAGE_MASK))
-                        goto out_copy;
-                p1 = vmalloc_to_page(buf);
-                if (!p1)
-                        goto out_copy;
-                buf = page_address(p1) + ((size_t)buf & ~PAGE_MASK);
-        }
-...
-        dma_dst = dma_map_single(&c->pdev->dev, buf, count, DMA_FROM_DEVICE);
+	* added Acked-by tags
+	* added missing patch descriptions
+	* addressed review comments
+	* dropped dynamic debugging patch (will be replaced by change
+	  to tracing infrastructure)
+	* dropped patch moving nested #pf handling because it broke
+	  nested SVM with shadow paging
+	* added more cleanups (e.g. removed nested_svm_do and
+	  function pointer code flow)
+	* fixed 2 minor issues
+	* enabled nested svm by default
 
-If you consider a VIVT cache, and with vmalloc'd pages you're passing
-a *different* virtual address to the DMA functions, it's not going to
-touch the cachelines associated with the vmalloc mapping.
+Thanks,
 
-The above *may* work for VIPT caches provided both the vmalloc and
-kernel direct mappings are of the same colour.  If not, this really
-isn't going to be reliable for the same reason.
+	Joerg
 
-Basically, what's going in there is *totally* unsafe.  I hope you
-don't place important data on this NAND device.
+Diffstat:
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+ arch/x86/kvm/svm.c |  637 +++++++++++++++++++++++++++++-----------------------
+ 1 files changed, 358 insertions(+), 279 deletions(-)
+
+Shortlog:
+
+Joerg Roedel (21):
+      kvm/svm: add helper functions for global interrupt flag
+      kvm/svm: optimize nested #vmexit
+      kvm/svm: optimize nested vmrun
+      kvm/svm: copy only necessary parts of the control area on vmrun/vmexit
+      kvm/svm: complete interrupts after handling nested exits
+      kvm/svm: move nested svm state into seperate struct
+      kvm/svm: cache nested intercepts
+      kvm/svm: consolidate nested_svm_exit_handled
+      kvm/svm: do nested vmexit in nested_svm_exit_handled
+      kvm/svm: simplify nested_svm_check_exception
+      kvm/svm: get rid of nested_svm_vmexit_real
+      kvm/svm: clean up nested_svm_exit_handled_msr
+      kvm/svm: clean up nestec vmload/vmsave paths
+      kvm/svm: clean up nested vmrun path
+      kvm/svm: remove nested_svm_do and helper functions
+      kvm/svm: handle errors in vmrun emulation path appropriatly
+      kvm/svm: move special nested exit handling to separate function
+      kvm/svm: remove unnecessary is_nested check from svm_cpu_run
+      kvm/svm: move nested_svm_intr main logic out of if-clause
+      kvm/svm: check for nested VINTR flag in svm_interrupt_allowed
+      kvm/svm: enable nested svm by default
+
+
+
