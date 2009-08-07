@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757073AbZHGHiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932158AbZHGHjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757073AbZHGHiJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 03:38:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbZHGHiJ
+	id S932158AbZHGHjt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 03:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757065AbZHGHjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 03:38:09 -0400
-Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:49244 "EHLO
-	mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756983AbZHGHiI (ORCPT
+	Fri, 7 Aug 2009 03:39:49 -0400
+Received: from mail-yw0-f177.google.com ([209.85.211.177]:50509 "EHLO
+	mail-yw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757035AbZHGHjs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 03:38:08 -0400
-X-IronPort-AV: E=Sophos;i="4.43,340,1246831200"; 
-   d="scan'208";a="30883782"
-Message-ID: <4A7BD9EC.8000801@inria.fr>
-Date: Fri, 07 Aug 2009 09:38:20 +0200
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 7 Aug 2009 03:39:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FjZ0NFDQyjx14+sQC9acAsLJOIs681ChYaxmZe7YNDmX6o1x8Td7U/uWUFlE8yTBrW
+         vK4jWbSqgb6DgaQ0TP7gAgzHGuO6+u8BCobo328bks5Zia6jmWYL7UqY8om6mgzsxZ/t
+         ZiYgROf9fB/DcvMcdGeYRYhPleNzJgLiaOlyo=
+Date: Fri, 7 Aug 2009 10:42:51 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Make shr to divide by power of 2
+Message-ID: <20090807074251.GB3004@localdomain.by>
+References: <20090806180930.GA3004@localdomain.by>
+ <87d478i0d7.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf tools: Fix reading of perf.data file header
-References: <20090623143601.GA13415@elte.hu> <4A40F31F.4030609@inria.fr> <20090629192913.GA29295@elte.hu> <4A7B0C02.7060704@inria.fr> <1249580428.4975.14.camel@laptop> <4A7B175B.8030000@inria.fr> <1249585061.4975.17.camel@laptop> <4A7B28EA.20903@inria.fr> <20090806195924.GA22411@elte.hu> <4A7B68C3.7040706@inria.fr> <20090807063226.GA29532@elte.hu>
-In-Reply-To: <20090807063226.GA29532@elte.hu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="bCsyhTFzCvuiizWE"
+Content-Disposition: inline
+In-Reply-To: <87d478i0d7.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> Ok, there's indeed a flag clash with -s/--sort as you noticed.
->
-> -S looks good to me, how about going one step further and changing 
-> perf record to use -S/--stat as well, to make the flag consistent 
-> across all tools?
->   
 
-Sure, but perf stat already uses -S for --scale :)
+--bCsyhTFzCvuiizWE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Brice
+On (08/07/09 08:50), Andi Kleen wrote:
+> Sergey Senozhatsky <sergey.senozhatsky@gmail.com> writes:
+> >
+> > Of course, compiler supposed to do something like
+> > 	add    $0x7,%eax
+> > 	shr    $0x3,%eax
+> > instead of div. Should we rely on this?
+>=20
+> Yes. We should rely on this.=20
+>=20
 
+grep -cR '>> 3' bitblit.c=20
+5
+
+and only 1 '/8'.
+
+	Sergey
+
+--bCsyhTFzCvuiizWE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iJwEAQECAAYFAkp72vsACgkQfKHnntdSXjTEZQP7B6BHZEMJ2o/kZAVuF9qxYqVM
+wCf9edPCpkgPFY/hNRiLKCuPzhDf9agMAlL1hK1ikVDd8dkyLV7MNtWo6fZjsG4r
+/iKwYalSme2y6KGK4s9DfUy/RYi0YzApuV6/f+uaBMCUfZH65fY97twGAvp4AyCc
+LsIf8jURvoWZdkewBhU=
+=gHJ8
+-----END PGP SIGNATURE-----
+
+--bCsyhTFzCvuiizWE--
