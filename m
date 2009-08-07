@@ -1,82 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbZHGK4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757507AbZHGK5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757498AbZHGK4j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 06:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757417AbZHGK4i
+	id S1757507AbZHGK5d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 06:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757450AbZHGK5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 06:56:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54129 "EHLO mx3.mail.elte.hu"
+	Fri, 7 Aug 2009 06:57:33 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:39534 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757233AbZHGK4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 06:56:37 -0400
-Date: Fri, 7 Aug 2009 12:56:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+	id S1757417AbZHGK5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 06:57:32 -0400
+Date: Fri, 7 Aug 2009 11:57:33 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Larry Woodman <lwoodman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
        Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v5 1/3] ftrace: add tracepoint for timer
-Message-ID: <20090807105616.GA24916@elte.hu>
-References: <4A7A4153.3040207@cn.fujitsu.com> <20090806024804.GB4685@kryten> <4A7A4C45.3040008@cn.fujitsu.com>
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [PATCH 2/6] tracing, page-allocator: Add trace events for
+	anti-fragmentation falling back to other migratetypes
+Message-ID: <20090807105732.GB18134@csn.ul.ie>
+References: <1249574827-18745-1-git-send-email-mel@csn.ul.ie> <1249574827-18745-3-git-send-email-mel@csn.ul.ie> <20090807080249.GA21821@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <4A7A4C45.3040008@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090807080249.GA21821@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
-
-> Anton Blanchard wrote:
-> > Hi,
-> > 
-> >> Example ftrace output:
-> >>   insmod-1712  [000]   145.901459: timer_init: timer=d0ace4b4
-> >>   insmod-1712  [000]   145.901469: timer_start: timer=d0ace4b4 func=timer_fun expires=4294813629 timeout=199
-> >>   <idle>-0     [000]   146.100230: timer_cancel: timer=d0ace4b4
-> >>   <idle>-0     [000]   146.100233: timer_expire: timer=d0ace4b4 jiffies=4294813629
-> >>   <idle>-0     [000]   146.100627: timer_callback_done: func=d0ace4b4
-> > 
-> > Sorry I haven't followed the thread, but I was wondering why you 
-> > changed the name of the entry and exit tracepoints (ie 
-> > timer_entry/timer_exit).
-> > 
-> > I think consistent naming is important to match the other static 
-> > tracepoints, such as softirq_entry/softirq_exit, 
-> > irq_entry/irq_exit and tasklet_entry/tasklet_exit.
+On Fri, Aug 07, 2009 at 10:02:49AM +0200, Ingo Molnar wrote:
 > 
-> I rename timer_entry/timer_exit to 
-> timer_expire/timer_callback_done just to match this series:
+> * Mel Gorman <mel@csn.ul.ie> wrote:
 > 
-> *_init() -> *_start() -> *_expire()...
+> > +++ b/mm/page_alloc.c
+> > @@ -839,6 +839,12 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
+> >  							start_migratetype);
+> >  
+> >  			expand(zone, page, order, current_order, area, migratetype);
+> > +
+> > +			trace_mm_page_alloc_extfrag(page, order, current_order,
+> > +				start_migratetype, migratetype,
+> > +				current_order < pageblock_order,
+> > +				migratetype == start_migratetype);
 > 
-> It's a complete timer's lifecycle.
+> This tracepoint too should be optimized some more:
+> 
+>  - pageblock_order can be passed down verbatim instead of the 
+>    'current_order < pageblock_order': it means one comparison less 
+>    in the fast-path, plus it gives more trace information as well.
+> 
+>  - migratetype == start_migratetype check is superfluous as both 
+>    values are already traced. This property can be added to the 
+>    TP_printk() post-processing stage instead, if the pretty-printing 
+>    is desired.
+> 
 
-timer _handler_ entry/exit is a pretty good lifecycle name as well - 
-and it nicely fits into the irq/softirq naming Anton mentioned. 
-Maybe this list:
+I think what you're saying that it's better to handle additional information
+like this in TP_printk always. That's what I've changed both of these into
+at least. I didn't even need to pass down pageblock_order because it should
+be available in the post-processing context from a header.
 
- timer_init
- timer_start
- timer_expire_entry
- timer_expire_exit
- timer_cancel
+The additional parameters are not being passed down any more and the
+TP_printk looks like
 
-works for you Anton?
+        TP_printk("page=%p pfn=%lu alloc_order=%d fallback_order=%d pageblock_order=%d alloc_migratetype=%d fallback_migratetype=%d fragmenting=%d change_ownership=%d",
+                __entry->page,
+                page_to_pfn(__entry->page),
+                __entry->alloc_order,
+                __entry->fallback_order,
+                pageblock_order,
+                __entry->alloc_migratetype,
+                __entry->fallback_migratetype,
+                __entry->fallback_order < pageblock_order,
+                __entry->alloc_migratetype == __entry->fallback_migratetype)
 
-	Ingo
+Is that what you meant?
+
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
