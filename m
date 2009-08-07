@@ -1,83 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933846AbZHGUc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933860AbZHGUgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933846AbZHGUc0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:32:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933749AbZHGUcZ
+	id S933860AbZHGUgN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:36:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932737AbZHGUgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:32:25 -0400
-Received: from bar.sig21.net ([80.81.252.164]:54404 "EHLO bar.sig21.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932664AbZHGUcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:32:24 -0400
-Date: Fri, 7 Aug 2009 22:32:26 +0200
-From: Johannes Stezenbach <js@sig21.net>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       reinette chatre <reinette.chatre@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: iwlwifi (4965) regression since 2.6.30
-Message-ID: <20090807203226.GA13867@sig21.net>
-References: <1248710775.9958.0.camel@johannes.local>
- <20090728112102.GA3382@ics.muni.cz>
- <1249336021.30019.4304.camel@rc-desk>
- <20090804084903.GV3382@ics.muni.cz>
- <1249426183.30019.4581.camel@rc-desk>
- <20090804225626.GZ3382@ics.muni.cz>
- <1249429081.30019.4588.camel@rc-desk>
- <20090806132244.GC15867@khazad-dum.debian.net>
- <20090806224110.GJ3382@ics.muni.cz>
- <20090806230704.GA14381@khazad-dum.debian.net>
+	Fri, 7 Aug 2009 16:36:12 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:5057 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933749AbZHGUgM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 16:36:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MI83kUULc1/pHNj9aXhH6mRQ2GaPzmeqFuHlbXd6xgfhVPUsbiTh740IjJufUFIKRD
+         ebURHNhe5HJPVoLXButtgQ2J2dA+DCC1LX34p84dTow/99AxxJy3gfAiqMe8v8T7BVyT
+         Q9gOQXTWxU3J1/vwzAXXFWgzE4zU2SUN4CXt4=
+Date: Fri, 7 Aug 2009 22:36:08 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH] perfcounters: Support for ftrace event records sampling
+Message-ID: <20090807203607.GG4999@nowhere>
+References: <1249601154-5597-1-git-send-email-fweisbec@gmail.com> <1249641477.32113.664.camel@twins> <1249675747.8088.5.camel@laptop> <20090807202105.GB4999@nowhere> <1249676931.17467.7.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090806230704.GA14381@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Spam-21-Score: -3.5 (---)
-X-Spam-21-Report: No, score=-3.5 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.868,BAYES_00=-2.599 autolearn=no
+In-Reply-To: <1249676931.17467.7.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 08:07:04PM -0300, Henrique de Moraes Holschuh wrote:
-> On Fri, 07 Aug 2009, Lukas Hejtmanek wrote:
-> > 0x0004 = 238  # KEY_WLAN
+On Fri, Aug 07, 2009 at 10:28:51PM +0200, Peter Zijlstra wrote:
+> On Fri, 2009-08-07 at 22:21 +0200, Frederic Weisbecker wrote:
+> > On Fri, Aug 07, 2009 at 10:09:07PM +0200, Peter Zijlstra wrote:
+> > > On Fri, 2009-08-07 at 12:38 +0200, Peter Zijlstra wrote:
+> > > > > +static void ftrace_profile_##call(proto)                             \
+> > > > > +{                                                                    \
+> > > > > +     struct ftrace_data_offsets_##call __maybe_unused __data_offsets;\
+> > > > > +     struct ftrace_event_call *event_call = &event_##call;           \
+> > > > > +     extern void perf_tpcounter_event(int, u64, u64, void *, int);   \
+> > > > > +     struct ftrace_raw_##call *entry;                                \
+> > > > > +     u64 __addr = 0, __count = 1;                                    \
+> > > > > +     unsigned long irq_flags;                                        \
+> > > > > +     int __entry_size;                                               \
+> > > > > +     int __data_size;                                                \
+> > > > > +     int pc;                                                         \
+> > > > > +                                                                     \
+> > > > > +     local_save_flags(irq_flags);                                    \
+> > > > > +     pc = preempt_count();                                           \
+> > > > > +                                                                     \
+> > > > > +     __data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
+> > > > > +     __entry_size = __data_size + sizeof(*entry);                    \
+> > > > > +                                                                     \
+> > > > > +     do {                                                            \
+> > > > > +             char raw_data[__entry_size];                            \
+> > > > > +             struct trace_entry *ent;                                \
+> > > > > +                                                                     \
+> > > > > +             entry = (struct ftrace_raw_##call *)raw_data;           \
+> > > > > +             ent = &entry->ent;                                      \
+> > > > > +             tracing_generic_entry_update(ent, irq_flags, pc);       \
+> > > > > +             ent->type = event_call->id;                             \
+> > > > > +                                                                     \
+> > > > > +             tstruct                                                 \
+> > > > > +                                                                     \
+> > > > > +             { assign; }                                             \
+> > > > > +                                                                     \
+> > > > > +             perf_tpcounter_event(event_call->id, __addr, __count, entry,\
+> > > > > +                          __entry_size);                             \
+> > > > > +     } while (0);                                                    \
+> > > > > +                                                                     \
+> > > > > +}
+> > > > 
+> > > > ok, so the one concern I have here is that the data needs to fit on the
+> > > > stack. What if someone puts a large string in the data?
+> > > 
+> > > Also, how NMI safe is all that?
+> > 
+> > 
+> > Everything is allocated in the stack. It's NMI safe AFAICS, am I missing
+> > something?
 > 
-> This means any rfkill input handler (be it in kernel or userspace) will
-> toggle your WLAN cards when fn+f5 is pressed.  You can just assign a
-> different keycode to it (use KEY_RESERVED or KEY_UNKNOWN if you don't want
-> the key to do anything).
-> 
-> If you unmask the key on hotkey_mask, it will revert to BIOS actions, which
-> depending on the thinkpad, might cause it to operate on bluetooth, wwan,
-> etc...
-
-I have a related question, sorry if I hijack the thread...
-
-When thinkpad-acpi grew rfkill support a few kernel versions back
-it forced Bluetooth on at boot time. Since I almost never use
-Bluetooth I want it off to save power. The workaround I came up
-with was to enable CONFIG_RFKILL and add rfkill.default_state=0
-to the kernel cmdline.  Now this workaround also disables WLAN :-(
-My workaround for my workaround (heh!) was to add
-  pre-up echo 1 > `ls /sys/class/ieee80211/phy0/rfkill*/state`
-in /etc/network/interfaces.  It would be nice to have a better
-way to select boot-up defaults.
+> I've no idea what all those trace calls do, I was hoping you would and
+> say, sure, no problem ;-)
 
 
-In Documentation/laptops/thinkpad-acpi.txt there is this comment
-for FN+F5:
+Ah ok :)
+To sum up, everything there is allocated in the stack, it's an issue
+as you reported but beside that it makes it all NMI safe.
 
-   Should be used to turn on/off all radios (Bluetooth+W-WAN+WLAN), really.
+ftrace_get_offset_#call() get the __dynamic_array/__string things
+and computes the total _local_ string length.
+It also fills __data_offsets with the dynamic arrays offset, __data_offset
+is also in the stack.
 
-I disagree.  Why would anyone turn off all radios at once?
-What I want is to disable the radios I don't need to save power,
-so IMHO there should be different keys for Bluetooth and WLAN
-(and W-WAN where present).
+tracing_entry_generic_update() fills *ent (stack allocated) with the standard
+informations (irq_flags, preempt_count, etc...).
 
-The BIOS does the right thing for me, it disables Bluetoth by default
-until enabled with Fn-F5, and WLAN is always enabled.  For me
-the rfkill support is a regression, not progress.
+And that's it :)
 
-
-Johannes
