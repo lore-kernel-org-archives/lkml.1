@@ -1,113 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933949AbZHGVnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbZHGVp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933949AbZHGVnQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 17:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932659AbZHGVnP
+	id S1756631AbZHGVp1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 17:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbZHGVp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 17:43:15 -0400
-Received: from www84.your-server.de ([213.133.104.84]:49505 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932539AbZHGVnO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 17:43:14 -0400
-Subject: Re: [PATCH] Fix proc_file_write missing ppos update
-From: Stefani Seibold <stefani@seibold.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <20090807135806.ffd068e9.akpm@linux-foundation.org>
-References: <1249676830.27640.16.camel@wall-e>
-	 <20090807135806.ffd068e9.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 07 Aug 2009 23:43:07 +0200
-Message-Id: <1249681387.17422.10.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Fri, 7 Aug 2009 17:45:26 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:51805 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752910AbZHGVpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 17:45:25 -0400
+Message-ID: <4A7CA06E.1090904@us.ibm.com>
+Date: Fri, 07 Aug 2009 14:45:18 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+MIME-Version: 1.0
+To: "lkml, " <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       John Kacur <jkacur@redhat.com>, Eric Dumazet <eric.dumazet@gmail.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       John Stultz <johnstul@linux.vnet.ibm.com>
+Subject: [PATCH] futex: Fix handling of bad requeue syscall pairing
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, den 07.08.2009, 13:58 -0700 schrieb Andrew Morton: 
-> On Fri, 07 Aug 2009 22:27:10 +0200
-> Stefani Seibold <stefani@seibold.net> wrote:
-> 
-> > The following fix a long standing issue in the proc_file_write function,
-> > which doesn't update the ppos file position pointer.
-> > 
-> > This prevent the usage of multiple sequently writes on an opened proc
-> > file, because it is impossible to distinguish these due the offset is
-> > always 0.
-> > 
-> > Signed-off-by: Stefani Seibold <stefani@seibold.net>
-> > 
-> >  generic.c |    3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > --- linux-2.6.31-rc4.orig/fs/proc/generic.c	2009-08-07 22:05:57.000000000 +0200
-> > +++ linux-2.6.30-rc4/fs/proc/generic.c	2009-08-07 22:06:22.000000000 +0200
-> > @@ -219,9 +219,10 @@
-> >  		pde->pde_users++;
-> >  		spin_unlock(&pde->pde_unload_lock);
-> >  
-> > -		/* FIXME: does this routine need ppos?  probably... */
-> >  		rv = pde->write_proc(file, buffer, count, pde->data);
-> >  		pde_users_dec(pde);
-> > +		if (rv > 0)
-> > +			*ppos += rv;
-> >  	}
-> >  	return rv;
-> >  }
-> 
-> Yes, that's odd.
-> 
-> I worry that there might be procfs write handlers which are looking at
-> *ppos and whose behaviour might be altered by this patch.
-> 
-> <searches a bit>
-> 
-> Look at arch/s390/appldata/appldata_base.c:appldata_timer_handler().
-> 
-> static int
-> appldata_timer_handler(ctl_table *ctl, int write, struct file *filp,
-> 			   void __user *buffer, size_t *lenp, loff_t *ppos)
-> {
-> 	int len;
-> 	char buf[2];
-> 
-> 	if (!*lenp || *ppos) {
-> 		*lenp = 0;
-> 		return 0;
-> 	}
-> 
-> 
+From: Darren Hart <dvhltc@us.ibm.com>
 
-This function will be handled IMHO by the proc_sys_call_handler which
-has nothing to do with the proc_file_write.
-/proc/sys/... file access should be not touched because there are
-handled differently. 
+If futex_requeue(requeue_pi=1) finds a futex_q that was created by a call
+other than futex_wait_requeue_pi(), the q.rt_waiter will be null.  If so,
+this will result in an oops from the following call graph:
 
-> Prior to your change, an application which opened that proc file and
-> repeatedly wrote to the fd would repeatedly start and stop the timer.
-> 
-> After your change, the second and successive writes would have no
-> effect unless the application was changed to lseek back to the start of
-> the "file".
-> 
-> And that was just the second file I looked at via
-> 
-> 	$EDITOR $(grep -l '[*]ppos' $(grep -rl _proc_ .))
+futex_requeue()
+  rt_mutex_start_proxy_lock()
+    task_blocks_on_rt_mutex()
+      waiter->task dereference
+        OOPS
 
-Yes, i think you are right, i have forseen also that there maybe some
-pitfalls. The question is: is there any appplication which will be
-broken by this patch?
+We currently WARN_ON() if this is detected, clearly this is inadequate.
+If we detect a mis-pairing in futex_requeue(), bail out, sending -EINVAL
+to user-space.
 
-So what is your suggestion? Should we drop this patch or should we
-analyze the users and fix it?
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+CC: Eric Dumazet <eric.dumazet@gmail.com>
+CC: John Kacur <jkacur@redhat.com>
+CC: Dinakar Guniguntala <dino@in.ibm.com>
+CC: John Stultz <johnstul@us.ibm.com>
+---
 
-My opinion is to fix it, because it is wrong and it limits the usage of
-the proc_write operation. Many embedded developers like me count on proc
-support, because it is much simpler to use than the seqfile thing.
+ kernel/futex.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
 
 
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 578c7b7..d806d6c 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -1306,8 +1306,15 @@ retry_private:
+ 		if (!match_futex(&this->key, &key1))
+ 			continue;
+ 
+-		WARN_ON(!requeue_pi && this->rt_waiter);
+-		WARN_ON(requeue_pi && !this->rt_waiter);
++		/*
++		 * FUTEX_WAIT_REQEUE_PI and FUTEX_CMP_REQUEUE_PI should always
++		 * be paired with each other and no other futex ops.
++		 */
++		if (requeue_pi && !this->rt_waiter ||
++		    !requeue_pi && this->rt_waiter) {
++			ret = -EINVAL;
++			break;
++		}
+ 
+ 		/*
+ 		 * Wake nr_wake waiters.  For requeue_pi, if we acquired the
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
