@@ -1,210 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbZHGFLL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755715AbZHGFTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756406AbZHGFLL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 01:11:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbZHGFLK
+	id S1755715AbZHGFTf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 01:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbZHGFTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 01:11:10 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:42831 "EHLO
+	Fri, 7 Aug 2009 01:19:34 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:39089 "EHLO
 	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753625AbZHGFLJ (ORCPT
+	with ESMTP id S1750822AbZHGFTe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 01:11:09 -0400
+	Fri, 7 Aug 2009 01:19:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Ua5J32IHglTFHvVNZp2wYOw+zq1uTV5RVAwC5F0ylNLWIhvXf2Xb9jl3ukJdWhu7bC
-         wAFm46fEtg3DkWsfmOkYnACJDB3xEpKcQGNWHxtk/1rxlLTOdt9zU4U+L9xzp9lRqiIA
-         GJSlOaN4bwpW4/nJFEQI5zJtqirJErM9iFGQI=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TpH39QWmjINwls8Ln0Dl4z5EKeRYTX4Y24yywBkaPNRb+3QTP2LfN3szkV30wHOXfp
+         ZYqVQGQ/1nBeQVSUk+xxmDcGO0COinEzb7mPRQJDD5x9toZ2tWgKJB1oTjaa2+NibjOQ
+         fXY4ogS5ewgTAQMcI2+kolV3gWg3jgRp4yXmM=
+Date: Fri, 7 Aug 2009 07:19:31 +0200
 From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [PATCH] perf tools: Fix cumul hit based sub-total
-Date: Fri,  7 Aug 2009 07:11:05 +0200
-Message-Id: <1249621865-9325-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC][PATCH 4/5] tracing/filters: Provide basic regex support
+Message-ID: <20090807051930.GA9182@nowhere>
+References: <1249111408-8657-1-git-send-email-fweisbec@gmail.com> <1249111408-8657-5-git-send-email-fweisbec@gmail.com> <4A76782E.4030803@cn.fujitsu.com> <20090805224709.GH5025@nowhere> <4A7A2E73.7030403@cn.fujitsu.com> <20090806014941.GA24609@nowhere> <1249618497.30024.36.camel@tropicana>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249618497.30024.36.camel@tropicana>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The callchain fractal mode builds each new total hits in a new branch
-of profiling by using the parent's hits of the current branch plus the
-hits of the children.
+On Thu, Aug 06, 2009 at 11:14:57PM -0500, Tom Zanussi wrote:
+> Hi Frederic,
+> 
+> On Thu, 2009-08-06 at 03:49 +0200, Frederic Weisbecker wrote:
+> > On Thu, Aug 06, 2009 at 09:14:27AM +0800, Li Zefan wrote:
+> > > Frederic Weisbecker wrote:
+> > > > On Mon, Aug 03, 2009 at 01:39:58PM +0800, Li Zefan wrote:
+> > > >> Frederic Weisbecker wrote:
+> > > >>> This patch provides basic support for regular expressions in filters.
+> > > >>> The common filter file doesn't support any regex but a new
+> > > >>> filter_regex file is created for each subsystem/event.
+> > > >>>
+> > > >>> It supports the following types of regexp:
+> > > >>>
+> > > >>> - *match_beginning
+> > > >>> - *match_middle*
+> > > >>> - match_end*
+> > > >>> - !don't match
+> > > >>>
+> > > >> I don't see why adding "filter_regex" is necessary, why not just make
+> > > >> "filter" support regex?
+> > > > 
+> > > > I did that because I feared about people beeing unable to filter using
+> > > > * as a real character inside a filter string.
+> > > > If we are using only one file, we are forced to get the '*' interpreted.
+> > > > That would also break the ABI.
+> > > > 
+> > > 
+> > > I think we don't maintain stable ABI for debugfs and we've been changing
+> > > the "ABI" in debugfs/tracing/, but of course we shouldn't change it
+> > > without good reasons.
+> > 
+> > 
+> > Yeah. May be I'm too much careful there but i prefer not to take the risk.
+> > 
+> >  
+> > > One alternative is to use '"' to prevent '*' to be translated, but seems
+> > > using "filter_regex" is more convenient, so I agree with this patch.
+> > 
+> > 
+> > The problem is that most of the time, the '"' is about mandatory to delimit
+> > a string.
+> > Say you want to filter the lock name &REISERFS_SB(sb)->lock, you can't do that
+> > by just typing:
+> > 
+> > echo name == &REISERFS_SB(sb)->lock > events/lockdep/filter
+> > 
+> > because the '&' character is considered as an operator and that will trigger
+> > an error.
+> > Instead you must type:
+> > 
+> > echo 'name == "&REISERFS_SB(sb)->lock"' > events/lockdep/filter
+> > 
+> > The '' are there to delimit the string for echo, and the "" are interpreted
+> > by the filter api which take it as a whole string and not strings interleaved
+> > with operators. I even fear - and > may be considered as operators if we omit
+> > the "".
+> > 
+> > I also thought about using an antislash for those who don't want the * to
+> > be interpreted. But although it seems intuitive, it's not as much as two
+> > distinct and visible files.
+> > 
+> > Also, we can think about the fact the regexp support could be extended one
+> > day if someone needs to. And we could then encounter even more ambiguous
+> > characters such as $, ^, [, {, etc...
+> > 
+> 
+> This a nice new feature - I considered doing it (not complete regexp
+> support, just * in strings) for the original patch, but ran out of time
+> - glad you added it.
+> 
+> I still think it makes sense to have some basic support for * in the
+> regular filter file, so I'd vote for getting rid of the filter_regex
+> file for now and just adding * support with the antislash escape to the
+> regular filter file.  If you later wanted to add more full-fledged
+> regexp support and it didn't make sense to do it in the regular filter
+> file, then you could go crazy and add the filter_regex later...
 
-This is wrong, the total hits of a branch should be made of the sum of
-every children hits, we must ignore the parent hits in this scope.
 
-This patch also fixes another mistakes with the hit counting.
+Ok, if you and Li both prefer the single file, I'm fine with that.
+It shouldn't really harm.
+I'll change that in the next version.
 
-Now the rates are corrects.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <efault@gmx.de>
----
- tools/perf/builtin-report.c |    4 ++--
- tools/perf/util/callchain.c |   27 ++++++++++++++++-----------
- tools/perf/util/callchain.h |    7 ++++++-
- 3 files changed, 24 insertions(+), 14 deletions(-)
-
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 8cb58d6..da402e1 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -901,7 +901,7 @@ callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
- 	int i;
- 
- 	if (callchain_param.mode == CHAIN_GRAPH_REL)
--		new_total = self->cumul_hit;
-+		new_total = self->children_hit;
- 	else
- 		new_total = total_samples;
- 
-@@ -930,7 +930,7 @@ callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
- 			ret += ipchain__fprintf_graph(fp, chain, depth,
- 						      new_depth_mask, i++,
- 						      new_total,
--						      child->cumul_hit);
-+						      cumul_hits(child));
- 		}
- 		ret += callchain__fprintf_graph(fp, child, new_total,
- 						depth + 1,
-diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
-index 9d3c814..98c5627 100644
---- a/tools/perf/util/callchain.c
-+++ b/tools/perf/util/callchain.c
-@@ -26,10 +26,14 @@ rb_insert_callchain(struct rb_root *root, struct callchain_node *chain,
- 	struct rb_node **p = &root->rb_node;
- 	struct rb_node *parent = NULL;
- 	struct callchain_node *rnode;
-+	u64 chain_cumul = cumul_hits(chain);
- 
- 	while (*p) {
-+		u64 rnode_cumul;
-+
- 		parent = *p;
- 		rnode = rb_entry(parent, struct callchain_node, rb_node);
-+		rnode_cumul = cumul_hits(rnode);
- 
- 		switch (mode) {
- 		case CHAIN_FLAT:
-@@ -40,7 +44,7 @@ rb_insert_callchain(struct rb_root *root, struct callchain_node *chain,
- 			break;
- 		case CHAIN_GRAPH_ABS: /* Falldown */
- 		case CHAIN_GRAPH_REL:
--			if (rnode->cumul_hit < chain->cumul_hit)
-+			if (rnode_cumul < chain_cumul)
- 				p = &(*p)->rb_left;
- 			else
- 				p = &(*p)->rb_right;
-@@ -87,7 +91,7 @@ static void __sort_chain_graph_abs(struct callchain_node *node,
- 
- 	chain_for_each_child(child, node) {
- 		__sort_chain_graph_abs(child, min_hit);
--		if (child->cumul_hit >= min_hit)
-+		if (cumul_hits(child) >= min_hit)
- 			rb_insert_callchain(&node->rb_root, child,
- 					    CHAIN_GRAPH_ABS);
- 	}
-@@ -108,11 +112,11 @@ static void __sort_chain_graph_rel(struct callchain_node *node,
- 	u64 min_hit;
- 
- 	node->rb_root = RB_ROOT;
--	min_hit = node->cumul_hit * min_percent / 100.0;
-+	min_hit = node->children_hit * min_percent / 100.0;
- 
- 	chain_for_each_child(child, node) {
- 		__sort_chain_graph_rel(child, min_percent);
--		if (child->cumul_hit >= min_hit)
-+		if (cumul_hits(child) >= min_hit)
- 			rb_insert_callchain(&node->rb_root, child,
- 					    CHAIN_GRAPH_REL);
- 	}
-@@ -211,7 +215,8 @@ add_child(struct callchain_node *parent, struct ip_callchain *chain,
- 	new = create_child(parent, false);
- 	fill_node(new, chain, start, syms);
- 
--	new->cumul_hit = new->hit = 1;
-+	new->children_hit = 0;
-+	new->hit = 1;
- }
- 
- /*
-@@ -241,7 +246,8 @@ split_add_child(struct callchain_node *parent, struct ip_callchain *chain,
- 
- 	/* split the hits */
- 	new->hit = parent->hit;
--	new->cumul_hit = parent->cumul_hit;
-+	new->children_hit = parent->children_hit;
-+	parent->children_hit = cumul_hits(new);
- 	new->val_nr = parent->val_nr - idx_local;
- 	parent->val_nr = idx_local;
- 
-@@ -249,6 +255,7 @@ split_add_child(struct callchain_node *parent, struct ip_callchain *chain,
- 	if (idx_total < chain->nr) {
- 		parent->hit = 0;
- 		add_child(parent, chain, idx_total, syms);
-+		parent->children_hit++;
- 	} else {
- 		parent->hit = 1;
- 	}
-@@ -269,13 +276,13 @@ __append_chain_children(struct callchain_node *root, struct ip_callchain *chain,
- 		unsigned int ret = __append_chain(rnode, chain, start, syms);
- 
- 		if (!ret)
--			goto cumul;
-+			goto inc_children_hit;
- 	}
- 	/* nothing in children, add to the current node */
- 	add_child(root, chain, start, syms);
- 
--cumul:
--	root->cumul_hit++;
-+inc_children_hit:
-+	root->children_hit++;
- }
- 
- static int
-@@ -317,8 +324,6 @@ __append_chain(struct callchain_node *root, struct ip_callchain *chain,
- 	/* we match 100% of the path, increment the hit */
- 	if (i - start == root->val_nr && i == chain->nr) {
- 		root->hit++;
--		root->cumul_hit++;
--
- 		return 0;
- 	}
- 
-diff --git a/tools/perf/util/callchain.h b/tools/perf/util/callchain.h
-index 7812122..b2d128e 100644
---- a/tools/perf/util/callchain.h
-+++ b/tools/perf/util/callchain.h
-@@ -21,7 +21,7 @@ struct callchain_node {
- 	struct rb_root		rb_root; /* sorted tree of children */
- 	unsigned int		val_nr;
- 	u64			hit;
--	u64			cumul_hit; /* hit + hits of children */
-+	u64			children_hit;
- };
- 
- struct callchain_param;
-@@ -48,6 +48,11 @@ static inline void callchain_init(struct callchain_node *node)
- 	INIT_LIST_HEAD(&node->val);
- }
- 
-+static inline u64 cumul_hits(struct callchain_node *node)
-+{
-+	return node->hit + node->children_hit;
-+}
-+
- int register_callchain_param(struct callchain_param *param);
- void append_chain(struct callchain_node *root, struct ip_callchain *chain,
- 		  struct symbol **syms);
--- 
-1.6.2.3
+Thanks.
 
