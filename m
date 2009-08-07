@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbZHGBgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbZHGBka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753629AbZHGBgl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 21:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZHGBgk
+	id S1754110AbZHGBka (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 21:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZHGBka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 21:36:40 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:50653 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbZHGBgk (ORCPT
+	Thu, 6 Aug 2009 21:40:30 -0400
+Received: from mail-pz0-f179.google.com ([209.85.222.179]:60061 "EHLO
+	mail-pz0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752371AbZHGBk3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 21:36:40 -0400
-Date: Fri, 07 Aug 2009 10:36:40 +0900 (JST)
-Message-Id: <20090807.103640.104065157.ryov@valinux.co.jp>
-To: agk@redhat.com
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Subject: Re: [PATCH] dm-ioband-v1.12.3: I/O bandwidth controller
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090731.130333.104034609.ryov@valinux.co.jp>
-References: <20090731.130333.104034609.ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Aug 2009 21:40:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=rNjbToACq+StIWuVNb1368xYOg8jEQutZFNkWVM/Id4gME3oWg8glyq6EbslzHWeFp
+         gE8tadBTV6v59TokF8RG3Fxytm4Ass4vTqmXxC39NKoiuMlWliOIymhCu5KD1x9boScP
+         84IV6mQA11wU3Aya2pa5+jtU5Yf1uWeK3MktU=
+Date: Fri, 7 Aug 2009 09:42:34 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>
+Cc: linux-kernel@vger.kernel.org, arjan@infradead.org
+Subject: Re: [PATCH] markup_oops: Use modinfo to avoid confusion with
+	underscored module names
+Message-ID: <20090807014234.GA5047@cr0.nay.redhat.com>
+References: <1249561315-2227-1-git-send-email-ozan@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1249561315-2227-1-git-send-email-ozan@pardus.org.tr>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alasdair,
-
-Ryo Tsuruta <ryov@valinux.co.jp> wrote:
-> Hi Alasdair,
+On Thu, Aug 06, 2009 at 03:21:55PM +0300, Ozan Çağlayan wrote:
+>When EIP is at a module having an underscore in its name, the current
+>code fails to find it because the module filenames has '-' instead of
+>'_'.
+>
+>Use modinfo to correctly get the full path to the module.
+>
+>Signed-off-by: Ozan Çağlayan <ozan@pardus.org.tr>
+>---
+>This is just a trivial patch to pinpoint the problem. Usage of modinfo is faster than
+>searching through the filesystem but may not be desirable as it brings a dependency
+>to module-init-tools. Replacing underscore occurences by '-' can be another solution.
+>
+> scripts/markup_oops.pl |    5 +----
+> 1 files changed, 1 insertions(+), 4 deletions(-)
+>
+>diff --git a/scripts/markup_oops.pl b/scripts/markup_oops.pl
+>index 8977401..bc14f4c 100644
+>--- a/scripts/markup_oops.pl
+>+++ b/scripts/markup_oops.pl
+>@@ -184,10 +184,7 @@ if ($target eq "0") {
 > 
-> This is dm-ioband v1.12.3 release that is a minor update to avoid
-> sparse warnings other than related to the event tracing. (I used
-> sparse-2009-07-29.)
-> 
-> This patch can be applied to the current dm-devel tree and 2.6.31-rc4,
-> so could you please replace dm-add-ioband.patch in your tree with this?
-> And I would appreciate it if you would let me know your thoughts about
-> merging dm-ioband to upstream.
+> # if it's a module, we need to find the .ko file and calculate a load offset
+> if ($module ne "") {
+>-	my $dir = dirname($filename);
+>-	$dir = $dir . "/";
+>-	my $mod = $module . ".ko";
+>-	my $modulefile = `find $dir -name $mod | head -1`;
+>+	my $modulefile = `modinfo $module | grep 'filename' | gawk '{ print \$2 }'`;
 
-The dm-ioband patch in the dm-devel tree is still older. Could you
-please update it with the new patch? And could you please let me know
-your thoughts about dm-ioband?
 
-Thanks,
-Ryo Tsuruta
+I know this works, but how about grep '^filename:' ? This is more strict.
+
+Also, although on most Linux awk is just a symbol link to gawk,
+but it is still better to use awk instead of gawk for portability reason.
+
+
+> 	chomp($modulefile);
+> 	$filename = $modulefile;
+> 	if ($filename eq "") {
