@@ -1,63 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756720AbZHGNyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbZHGNzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756720AbZHGNyP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 09:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756178AbZHGNyO
+	id S1757082AbZHGNzf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 09:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbZHGNze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 09:54:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37074 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753553AbZHGNyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 09:54:13 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH update x2] PM: Introduce core framework for run-time PM of I/O devices (rev. 13)
-Date: Fri, 7 Aug 2009 15:54:47 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0908061257490.2937-100000@iolanthe.rowland.org> <200908062353.14822.rjw@sisk.pl> <aec7e5c30908070045t6214ce68kcecdc835c2ab7bff@mail.gmail.com>
-In-Reply-To: <aec7e5c30908070045t6214ce68kcecdc835c2ab7bff@mail.gmail.com>
+	Fri, 7 Aug 2009 09:55:34 -0400
+Received: from mail.free-electrons.com ([88.191.76.200]:50170 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753573AbZHGNze (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 09:55:34 -0400
+Date: Fri, 7 Aug 2009 15:55:24 +0200
+From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+To: Matthieu CASTET <matthieu.castet@parrot.com>
+Cc: Alain Knaff <alain@knaff.lu>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       "sam@ravnborg.org" <sam@ravnborg.org>, "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/6] Add support for LZO-compressed kernels for ARM
+Message-ID: <20090807135524.GF4455@laptop>
+References: <1249311501-23102-2-git-send-email-albin.tonnerre@free-electrons.com>
+ <1249311501-23102-3-git-send-email-albin.tonnerre@free-electrons.com>
+ <1249311501-23102-4-git-send-email-albin.tonnerre@free-electrons.com>
+ <20090806224055.GH31579@n2100.arm.linux.org.uk>
+ <20090807092423.GA4455@laptop>
+ <4A7BF5B8.4030907@knaff.lu>
+ <20090807102117.GB4455@laptop>
+ <4A7C14EB.1060701@parrot.com>
+ <20090807130130.GE4455@laptop>
+ <4A7C2BA4.7030408@parrot.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908071554.48070.rjw@sisk.pl>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A7C2BA4.7030408@parrot.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 07 August 2009, Magnus Damm wrote:
-> On Fri, Aug 7, 2009 at 6:53 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > Subject: PM: Introduce core framework for run-time PM of I/O devices (rev. 13)
-> >
-> > Introduce a core framework for run-time power management of I/O
-> > devices.  Add device run-time PM fields to 'struct dev_pm_info'
-> > and device run-time PM callbacks to 'struct dev_pm_ops'.  Introduce
-> > a run-time PM workqueue and define some device run-time PM helper
-> > functions at the core level.  Document all these things.
-> >
-> > Special thanks to Alan Stern for his help with the design and
-> > multiple detailed reviews of the pereceding versions of this patch
-> > and to Magnus Damm for testing feedback.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> I've rebased my series of patches to v13. My platform device Runtime
-> PM code for SuperH works well with drivers for i2c, uio and fbdev with
-> v13. Thank you. I'll post a SuperH specific patch set some time next
-> week.
-> 
-> Anyway, I'm not far from an "Acked-by", but please look at the following series:
-> 
-> [PATCH 00/05] PM: Runtime PM v13 for Platform Devices 20090807
-> 
-> Maybe there is some code in there that you can include in v14? Let me know!
+On Fri, Aug 07, 2009 at 03:27:00PM +0200, Matthieu CASTET wrote :
+> Albin Tonnerre a écrit :
+> > On Fri, Aug 07, 2009 at 01:50:03PM +0200, Matthieu CASTET wrote :
+> >> Albin Tonnerre a écrit :
+> >>> On Fri, Aug 07, 2009 at 11:36:56AM +0200, Alain Knaff wrote :
+> >>>> On 08/07/09 11:24, Albin Tonnerre wrote:
 
-I will.
+> >>>>> Regards,
 
-Thanks,
-Rafael
+> >>>> Could it be that the patches that remove division (zutil.h and inflate.c)
+> >>>> have somehow not been applied?
+
+> >>> Indeed, they've not been applied. However, I'd rather try to understand why
+> >>> exactly this is an issue when compiling with -Os and not -O2 instead of working
+> >>> around it by removing the divisions.
+
+> >> Look at the generated code.
+
+> >> Arm doesn't have division instruction.
+> >> May be at -Os gcc emit a call to the software division, but at -O2 it
+> >> manage to optimise the division (transform it in shift, inline some
+> >> builtin, ...).
+
+> > Yes, I figured that out. What I don't get, though, is that it fails while the
+> > software division symbol (__aeabi_uidivmod here) does seem to be provided by
+> > libgcc.
+
+> AFAIK we don't link the kernel with libgcc.
+> That's why the kernel provide __aeabi_* in arch/arm/lib
+
+That's true for the actual kernel image, but not for the bootstrap code we use
+when compiling compressed kernels. arch/arm/boot/compressed/Makefile uses
+libgcc, unless I'm overlooking something here:
+
+  arm-unknown-linux-uclibcgnueabi-ld -EL    --defsym zreladdr=0x20008000
+  --defsym initrd_phys=0x20410000 --defsym params_phys=0x20000100 -p
+  --no-undefined -X
+  /home/albin/x-tools/arm-unknown-linux-uclibcgnueabi/lib/gcc/arm-unknown-linux-uclibcgnueabi/4.3.2/libgcc.a
+  -T arch/arm/boot/compressed/vmlinux.lds arch/arm/boot/compressed/head.o
+  arch/arm/boot/compressed/piggy.gzip.o arch/arm/boot/compressed/misc.o -o
+  arch/arm/boot/compressed/vmlinux
+
+
+Regards,
+-- 
+Albin Tonnerre, Free Electrons
+Kernel, drivers and embedded Linux development,
+consulting, training and support.
+http://free-electrons.com
