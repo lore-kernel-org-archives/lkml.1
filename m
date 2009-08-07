@@ -1,627 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933747AbZHGU0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933766AbZHGU0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933747AbZHGU0X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933685AbZHGU0W
+	id S933766AbZHGU0g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933750AbZHGU0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:26:22 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:22406 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932633AbZHGU0U (ORCPT
+	Fri, 7 Aug 2009 16:26:35 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:41030 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933702AbZHGU0e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:26:20 -0400
-Date: Fri, 7 Aug 2009 23:27:00 +0300
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Anuj Aggarwal <anuj.aggarwal@ti.com>
-Cc: "broonie@sirena.org.uk" <broonie@sirena.org.uk>,
-       "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-i2c@vger.kernel.org
-Subject: Re: [PATCH 3/8] Regulator: Add TPS6507x regulator driver
-Message-ID: <20090807202700.GE9780@nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <1249658766-10859-1-git-send-email-anuj.aggarwal@ti.com>
+	Fri, 7 Aug 2009 16:26:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QzZXNkcHEK/Iw9+vsUPP206Li6jVx1pnSf3PKKcx+GtDMfuHVxLYq7bqEzgtVi1kHl
+         IzC6rJdJ91N7MAMEpxDN071PA7lb6UuTXBK4Zdi9+MnQ5w+KcQ65ZHEBngiB3qDSaPae
+         Ry08J4S8gniZ+KGUL9mGMc0AHZWYglltxUa00=
+Date: Fri, 7 Aug 2009 22:26:31 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH] perfcounters: Support for ftrace event records sampling
+Message-ID: <20090807202630.GE4999@nowhere>
+References: <1249601154-5597-1-git-send-email-fweisbec@gmail.com> <1249641477.32113.664.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249658766-10859-1-git-send-email-anuj.aggarwal@ti.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 07 Aug 2009 20:25:48.0295 (UTC) FILETIME=[3FE7F170:01CA179D]
-X-Nokia-AV: Clean
+In-Reply-To: <1249641477.32113.664.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 05:26:06PM +0200, ext Anuj Aggarwal wrote:
-> Adding support for TI TPS6507x regulator driver
+On Fri, Aug 07, 2009 at 12:37:57PM +0200, Peter Zijlstra wrote:
+> On Fri, 2009-08-07 at 01:25 +0200, Frederic Weisbecker wrote:
+> > This patch brings the kernel side support for ftrace event record
+> > sampling.
+> > 
+> > A new counter attribute is added: PERF_SAMPLE_TP_RECORD which requests
+> > ftrace events record sampling.
+> > 
 > 
-> Signed-off-by: Anuj Aggarwal <anuj.aggarwal@ti.com>
-> ---
->  drivers/regulator/tps6507x-regulator.c |  563 ++++++++++++++++++++++++++++++++
->  1 files changed, 563 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/regulator/tps6507x-regulator.c
+> > +	PERF_SAMPLE_TP_RECORD			= 1U << 10,
 > 
-> diff --git a/drivers/regulator/tps6507x-regulator.c b/drivers/regulator/tps6507x-regulator.c
-> new file mode 100644
-> index 0000000..c5e319c
-> --- /dev/null
-> +++ b/drivers/regulator/tps6507x-regulator.c
-> @@ -0,0 +1,563 @@
-> +/*
-> + * tps6507x-regulator.c
-> + *
-> + * Regulator driver for TPS65073 PMIC
-> + *
-> + * Copyright (C) 2009 Texas Instrument Incorporated - http://www.ti.com/
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License as
-> + * published by the Free Software Foundation version 2.
-> + *
-> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any kind,
-> + * whether express or implied; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> + * General Public License for more details.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/init.h>
-> +#include <linux/err.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/regulator/driver.h>
-> +#include <linux/regulator/machine.h>
-> +#include <linux/mfd/tps6507x.h>
-> +#include <linux/i2c.h>
-> +#include <linux/delay.h>
-> +
-> +struct tps_info {
-> +       const char *name;
-> +       unsigned min_uV;
-> +       unsigned max_uV;
-> +       bool fixed;
-> +       u8 table_len;
-> +       const u16 *table;
-> +};
-> +
-> +struct tps_pmic {
-> +       struct regulator_desc desc[TPS6507X_NUM_REGULATOR];
-> +       struct i2c_client *client;
-> +       struct regulator_dev *rdev[TPS6507X_NUM_REGULATOR];
-> +       struct tps_info *info[TPS6507X_NUM_REGULATOR];
-> +};
-> +
-> +static inline int tps_6507x_read_reg(struct tps_pmic *tps, u8 reg, u8 *val)
-> +{
-> +       int status;
-> +
-> +       status = i2c_smbus_read_byte_data(tps->client, reg);
-> +       *val = status;
-> +       if (status < 0)
-> +               return status;
-> +       return 0;
-
-same comments as previous patch.
-
-> +}
-> +
-> +static inline int tps_6507x_write_reg(struct tps_pmic *tps, u8 reg, u8 val)
-> +{
-> +       return i2c_smbus_write_byte_data(tps->client, reg, val);
-> +}
-> +
-> +static int tps_6507x_set_bits(struct tps_pmic *tps, u8 reg, u8 mask)
-> +{
-> +       u8 data;
-> +       int err;
-> +
-> +       err = tps_6507x_read_reg(tps, reg, &data);
-> +       if (err) {
-> +               pr_err("Read from reg 0x%x failed\n", reg);
-> +               return err;
-> +       }
-> +
-> +       data |= mask;
-> +
-> +       return tps_6507x_write_reg(tps, reg, data);
-> +}
-> +
-> +static int tps_6507x_clear_bits(struct tps_pmic *tps, u8 reg, u8 mask)
-> +{
-> +       u8 data;
-> +       int err;
-> +
-> +       err = tps_6507x_read_reg(tps, reg, &data);
-> +       if (err) {
-> +               pr_err("Read from reg 0x%x failed\n", reg);
-> +               return err;
-> +       }
-> +
-> +       data &= ~mask;
-> +
-> +       return tps_6507x_write_reg(tps, reg, data);
-> +}
-> +
-> +static int tps6507x_dcdc_is_enabled(struct regulator_dev *dev)
-> +{
-> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
-> +       int dcdc = rdev_get_id(dev);
-> +       int ret;
-> +       u8 shift;
-> +       unsigned char reg_ctrl;
-> +
-> +       if (dcdc < TPS6507X_DCDC_1 || dcdc > TPS6507X_DCDC_3)
-> +               return -EINVAL;
-> +
-> +       shift = TPS6507X_MAX_REG_ID - dcdc;
-> +       ret = tps_6507x_read_reg(tps, TPS6507X_REG_CON_CTRL1, &reg_ctrl);
-> +
-> +       if (ret == 0) {
-> +               reg_ctrl &= (1 << shift);
-> +               return reg_ctrl ? 1 : 0;
-> +       } else
-> +               return ret;
-> +}
-> +
-> +static int tps6507x_ldo_is_enabled(struct regulator_dev *dev)
-> +{
-> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
-> +       int ldo = rdev_get_id(dev);
-> +       int ret;
-> +       u8 shift;
-> +       unsigned char reg_ctrl;
-> +
-> +       if (ldo < TPS6507X_LDO_1 || ldo > TPS6507X_LDO_2)
-> +               return -EINVAL;
-> +
-> +       shift = TPS6507X_MAX_REG_ID - ldo;
-> +       ret = tps_6507x_read_reg(tps, TPS6507X_REG_CON_CTRL1, &reg_ctrl);
-> +
-> +       if (ret == 0) {
-> +               reg_ctrl &= (1 << shift);
-> +               return reg_ctrl ? 1 : 0;
-> +       } else
-> +               return ret;
-> +}
-> +
-> +static int tps6507x_dcdc_enable(struct regulator_dev *dev)
-> +{
-> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
-> +       int dcdc = rdev_get_id(dev);
-> +       u8 shift;
-> +
-> +       if (dcdc < TPS6507X_DCDC_1 || dcdc > TPS6507X_DCDC_3)
-> +               return -EINVAL;
-> +
-> +       shift = TPS6507X_MAX_REG_ID - dcdc;
-> +       return tps_6507x_set_bits(tps, TPS6507X_REG_CON_CTRL1, 1 << shift);
-> +}
-> +
-> +static int tps6507x_dcdc_disable(struct regulator_dev *dev)
-> +{
-> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
-> +       int dcdc = rdev_get_id(dev);
-> +       u8 shift;
-> +
-> +       if (dcdc < TPS6507X_DCDC_1 || dcdc > TPS6507X_DCDC_3)
-> +               return -EINVAL;
-> +
-> +       shift = TPS6507X_MAX_REG_ID - dcdc;
-> +       return tps_6507x_clear_bits(tps, TPS6507X_REG_CON_CTRL1, 1 << shift);
-> +}
-> +
-> +static int tps6507x_ldo_enable(struct regulator_dev *dev)
-> +{
-> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
-> +       int ldo = rdev_get_id(dev);
-> +       u8 shift;
-> +
-> +       if (ldo < TPS6507X_LDO_1 || ldo > TPS6507X_LDO_2)
-> +               return -EINVAL;
-> +
-> +       shift = TPS6507X_MAX_REG_ID - ldo;
-> +       return tps_6507x_set_bits(tps, TPS6507X_REG_CON_CTRL1, 1 << shift);
-> +}
-> +
-> +static int tps6507x_ldo_disable(struct regulator_dev *dev)
-> +{
-> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
-> +       int ldo = rdev_get_id(dev);
-> +       u8 shift;
-> +
-> +       if (ldo < TPS6507X_LDO_1 || ldo > TPS6507X_LDO_2)
-> +               return -EINVAL;
-> +
-> +       shift = TPS6507X_MAX_REG_ID - ldo;
-> +       return tps_6507x_clear_bits(tps, TPS6507X_REG_CON_CTRL1, 1 << shift);
-> +}
-> +
-> +static int tps6507x_dcdc_get_voltage(struct regulator_dev *dev)
-> +{
-> +       unsigned char reg_ctrl;
-> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
-> +       int dcdc = rdev_get_id(dev);
-> +       u8 reg;
-> +       int ret;
-> +
-> +       switch (dcdc) {
-> +       case TPS6507X_DCDC_1:
-> +               reg = TPS6507X_REG_DEFDCDC1;
-> +               break;
-> +       case TPS6507X_DCDC_2:
-> +               reg = TPS6507X_REG_DEFDCDC2_LOW;
-> +               break;
-> +       case TPS6507X_DCDC_3:
-> +               reg = TPS6507X_REG_DEFDCDC3_LOW;
-> +               break;
-> +       default:
-> +               return -EINVAL;
-> +       }
-> +
-> +       ret = tps_6507x_read_reg(tps, reg, &reg_ctrl);
-> +       if (ret < 0)
-> +               return ret;
-> +
-> +       reg_ctrl &= TPS6507X_DEFDCDCX_DCDC_MASK;
-> +       return tps->info[dcdc]->table[reg_ctrl] * 1000;
-> +}
-> +
-> +static int tps6507x_dcdc_set_voltage(struct regulator_dev *dev,
-> +                               int min_uV, int max_uV)
-> +{
-> +       unsigned char reg_ctrl;
-> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
-> +       int dcdc = rdev_get_id(dev);
-> +       u8 reg;
-> +       int vsel, ret;
-> +
-> +       switch (dcdc) {
-> +       case TPS6507X_DCDC_1:
-> +               reg = TPS6507X_REG_DEFDCDC1;
-> +               break;
-> +       case TPS6507X_DCDC_2:
-> +               reg = TPS6507X_REG_DEFDCDC2_LOW;
-> +               break;
-> +       case TPS6507X_DCDC_3:
-> +               reg = TPS6507X_REG_DEFDCDC3_LOW;
-> +               break;
-> +       default:
-> +               return -EINVAL;
-> +       }
-> +
-> +       if (min_uV < tps->info[dcdc]->min_uV
-> +                       || min_uV > tps->info[dcdc]->max_uV)
-> +               return -EINVAL;
-> +       if (max_uV < tps->info[dcdc]->min_uV
-> +                       || max_uV > tps->info[dcdc]->max_uV)
-> +               return -EINVAL;
-> +
-> +       for (vsel = 0; vsel < tps->info[dcdc]->table_len; vsel++) {
-> +               int mV = tps->info[dcdc]->table[vsel];
-> +               int uV = mV * 1000;
-> +
-> +               /* Break at the first in-range value */
-> +               if (min_uV <= uV && uV <= max_uV)
-> +                       break;
-> +       }
-> +
-> +       ret = tps_6507x_read_reg(tps, reg, &reg_ctrl);
-> +       if (ret < 0)
-> +               return ret;
-> +
-> +       reg_ctrl &= ~TPS6507X_DEFDCDCX_DCDC_MASK;
-> +       reg_ctrl |= vsel;
-> +
-> +       return tps_6507x_write_reg(tps, reg, reg_ctrl);
-> +}
-> +
-> +static int tps6507x_ldo_get_voltage(struct regulator_dev *dev)
-> +{
-> +       unsigned char reg_ctrl;
-> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
-> +       int ldo = rdev_get_id(dev);
-> +       u8 reg, mask;
-> +       int ret;
-> +
-> +       if (ldo < TPS6507X_LDO_1 || ldo > TPS6507X_LDO_2)
-> +               return -EINVAL;
-> +       else {
-> +               reg = (ldo == TPS6507X_LDO_1 ?
-> +                       TPS6507X_REG_LDO_CTRL1 : TPS6507X_REG_DEFLDO2);
-> +               mask = (ldo == TPS6507X_LDO_1 ?
-> +                       TPS6507X_REG_LDO_CTRL1_LDO1_MASK :
-> +                               TPS6507X_REG_DEFLDO2_LDO2_MASK);
-> +       }
-> +
-> +       ret = tps_6507x_read_reg(tps, reg, &reg_ctrl);
-> +       if (ret < 0)
-> +               return ret;
-> +
-> +       reg_ctrl &= mask;
-> +       return tps->info[ldo]->table[reg_ctrl] * 1000;
-> +}
-> +
-> +static int tps6507x_ldo_set_voltage(struct regulator_dev *dev,
-> +                               int min_uV, int max_uV)
-> +{
-> +       unsigned char reg_ctrl;
-> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
-> +       int ldo = rdev_get_id(dev);
-> +       u8 reg, mask;
-> +       int vsel, ret;
-> +
-> +       if (ldo < TPS6507X_LDO_1 || ldo > TPS6507X_LDO_2)
-> +               return -EINVAL;
-> +       else {
-> +               reg = (ldo == TPS6507X_LDO_1 ?
-> +                       TPS6507X_REG_LDO_CTRL1 : TPS6507X_REG_DEFLDO2);
-> +               mask = (ldo == TPS6507X_LDO_1 ?
-> +                       TPS6507X_REG_LDO_CTRL1_LDO1_MASK :
-> +                               TPS6507X_REG_DEFLDO2_LDO2_MASK);
-> +       }
-> +
-> +       if (min_uV < tps->info[ldo]->min_uV || min_uV > tps->info[ldo]->max_uV)
-> +               return -EINVAL;
-> +       if (max_uV < tps->info[ldo]->min_uV || max_uV > tps->info[ldo]->max_uV)
-> +               return -EINVAL;
-> +
-> +       for (vsel = 0; vsel < tps->info[ldo]->table_len; vsel++) {
-> +               int mV = tps->info[ldo]->table[vsel];
-> +               int uV = mV * 1000;
-> +
-> +               /* Break at the first in-range value */
-> +               if (min_uV <= uV && uV <= max_uV)
-> +                       break;
-> +       }
-> +
-> +       ret = tps_6507x_read_reg(tps, reg, &reg_ctrl);
-> +       if (ret < 0)
-> +               return ret;
-> +
-> +       reg_ctrl &= ~mask;
-> +       reg_ctrl |= vsel;
-> +
-> +       return tps_6507x_write_reg(tps, reg, reg_ctrl);
-> +}
-> +
-> +/* Operations permitted on VDCDCx */
-> +static struct regulator_ops tps6507x_dcdc_ops = {
-> +       .is_enabled = tps6507x_dcdc_is_enabled,
-> +       .enable = tps6507x_dcdc_enable,
-> +       .disable = tps6507x_dcdc_disable,
-> +       .get_voltage = tps6507x_dcdc_get_voltage,
-> +       .set_voltage = tps6507x_dcdc_set_voltage,
-> +};
-> +
-> +/* Operations permitted on LDOx */
-> +static struct regulator_ops tps6507x_ldo_ops = {
-> +       .is_enabled = tps6507x_ldo_is_enabled,
-> +       .enable = tps6507x_ldo_enable,
-> +       .disable = tps6507x_ldo_disable,
-> +       .get_voltage = tps6507x_ldo_get_voltage,
-> +       .set_voltage = tps6507x_ldo_set_voltage,
-> +};
-> +
-> +static
-> +int tps_6507x_probe(struct i2c_client *client, const struct i2c_device_id *id)
-> +{
-> +       static int desc_id;
-> +       const struct tps_info *info = (void *)id->driver_data;
-> +       struct regulator_init_data *init_data;
-> +       struct regulator_dev *rdev;
-> +       struct tps_pmic *tps;
-> +       int i;
-> +
-> +       if (!i2c_check_functionality(client->adapter,
-> +                               I2C_FUNC_SMBUS_BYTE_DATA))
-> +               return -EIO;
-> +
-> +       /**
-> +        * init_data points to array of regulator_init structures
-> +        * coming from the board-evm file.
-> +        */
-> +       init_data = client->dev.platform_data;
-> +
-> +       if (!init_data)
-> +               return -EIO;
-> +
-> +       tps = kzalloc(sizeof(*tps), GFP_KERNEL);
-> +       if (!tps)
-> +               return -ENOMEM;
-> +
-> +       /* common for all regulators */
-> +       tps->client = client;
-> +
-> +       for (i = 0; i < TPS6507X_NUM_REGULATOR; i++, info++, init_data++) {
-> +               /* Register the regulators */
-> +               tps->info[i] = info;
-> +               tps->desc[i].name = info->name;
-> +               tps->desc[i].id = desc_id++;
-> +               tps->desc[i].ops = (i > TPS6507X_DCDC_3 ?
-> +                               &tps6507x_ldo_ops : &tps6507x_dcdc_ops);
-> +               tps->desc[i].type = REGULATOR_VOLTAGE;
-> +               tps->desc[i].owner = THIS_MODULE;
-> +
-> +               rdev = regulator_register(&tps->desc[i],
-> +                                       &client->dev, init_data, tps);
-> +               if (IS_ERR(rdev)) {
-> +                       dev_err(&client->dev, "failed to register %s\n",
-> +                                       id->name);
-> +                       kfree(tps);
-> +                       return PTR_ERR(rdev);
-> +               }
-> +
-> +               /* Save regulator for cleanup */
-> +               tps->rdev[i] = rdev;
-> +       }
-> +
-> +       i2c_set_clientdata(client, tps);
-> +
-> +       return 0;
-> +}
-> +
-> +/**
-> + * tps_6507x_remove - TPS6507x driver i2c remove handler
-> + * @client: i2c driver client device structure
-> + *
-> + * Unregister TPS driver as an i2c client device driver
-> + */
-> +static int __devexit tps_6507x_remove(struct i2c_client *client)
-> +{
-> +       struct tps_pmic *tps = i2c_get_clientdata(client);
-> +       int i;
-> +
-> +       for (i = 0; i < TPS6507X_NUM_REGULATOR; i++)
-> +               regulator_unregister(tps->rdev[i]);
-> +
-> +       tps->client = NULL;
-> +
-> +       /* clear the client data in i2c */
-> +       i2c_set_clientdata(client, NULL);
-> +       kfree(tps);
-> +
-> +       return 0;
-> +}
-> +
-> +/* Supported voltage values for regulators (in milliVolts) */
-> +static const u16 VDCDCx_VSEL_table[] = {
-> +       725, 750, 775, 800,
-> +       825, 850, 875, 900,
-> +       925, 950, 975, 1000,
-> +       1025, 1050, 1075, 1100,
-> +       1125, 1150, 1175, 1200,
-> +       1225, 1250, 1275, 1300,
-> +       1325, 1350, 1375, 1400,
-> +       1425, 1450, 1475, 1500,
-> +       1550, 1600, 1650, 1700,
-> +       1750, 1800, 1850, 1900,
-> +       1950, 2000, 2050, 2100,
-> +       2150, 2200, 2250, 2300,
-> +       2350, 2400, 2450, 2500,
-> +       2550, 2600, 2650, 2700,
-> +       2750, 2800, 2850, 2900,
-> +       3000, 3100, 3200, 3300,
-> +};
-> +
-> +static const u16 LDO1_VSEL_table[] = {
-> +       1000, 1100, 1200, 1250,
-> +       1300, 1350, 1400, 1500,
-> +       1600, 1800, 2500, 2750,
-> +       2800, 3000, 3100, 3300,
-> +};
-> +
-> +static const u16 LDO2_VSEL_table[] = {
-> +       725, 750, 775, 800,
-> +       825, 850, 875, 900,
-> +       925, 950, 975, 1000,
-> +       1025, 1050, 1075, 1100,
-> +       1125, 1150, 1175, 1200,
-> +       1225, 1250, 1275, 1300,
-> +       1325, 1350, 1375, 1400,
-> +       1425, 1450, 1475, 1500,
-> +       1550, 1600, 1650, 1700,
-> +       1750, 1800, 1850, 1900,
-> +       1950, 2000, 2050, 2100,
-> +       2150, 2200, 2250, 2300,
-> +       2350, 2400, 2450, 2500,
-> +       2550, 2600, 2650, 2700,
-> +       2750, 2800, 2850, 2900,
-> +       3000, 3100, 3200, 3300,
-> +};
-> +
-> +static const struct tps_info tps6507x_regs[] = {
-> +       {
-> +       .name = "VDCDC1",
-> +       .min_uV = 725000,
-> +       .max_uV = 3300000,
-> +       .fixed = 0,
-> +       .table_len = ARRAY_SIZE(VDCDCx_VSEL_table),
-> +       .table = VDCDCx_VSEL_table,
-> +       },
-> +       {
-> +       .name = "VDCDC2",
-> +       .min_uV = 725000,
-> +       .max_uV = 3300000,
-> +       .fixed = 0,
-> +       .table_len = ARRAY_SIZE(VDCDCx_VSEL_table),
-> +       .table = VDCDCx_VSEL_table,
-> +       },
-> +       {
-> +       .name = "VDCDC3",
-> +       .min_uV = 725000,
-> +       .max_uV = 3300000,
-> +       .fixed = 0,
-> +       .table_len = ARRAY_SIZE(VDCDCx_VSEL_table),
-> +       .table = VDCDCx_VSEL_table,
-> +       },
-> +       {
-> +       .name = "LDO1",
-> +       .min_uV = 1000000,
-> +       .max_uV = 3300000,
-> +       .fixed = 0,
-> +       .table_len = ARRAY_SIZE(LDO1_VSEL_table),
-> +       .table = LDO1_VSEL_table,
-> +       },
-> +       {
-> +       .name = "LDO2",
-> +       .min_uV = 725000,
-> +       .max_uV = 3300000,
-> +       .fixed = 0,
-> +       .table_len = ARRAY_SIZE(LDO2_VSEL_table),
-> +       .table = LDO2_VSEL_table,
-> +       },
-> +};
-> +
-> +static const struct i2c_device_id tps_6507x_id = {
-> +       .name = "tps6507x",
-> +       .driver_data = (unsigned long) &tps6507x_regs[0],
-> +};
-> +MODULE_DEVICE_TABLE(i2c, tps_6507x_id);
-> +
-> +static struct i2c_driver tps_6507x_i2c_driver = {
-> +       .driver = {
-> +               .name = "tps_6507x_pwr",
-> +               .owner = THIS_MODULE,
-> +       },
-> +       .probe = tps_6507x_probe,
-> +       .remove = __devexit_p(tps_6507x_remove),
-> +       .id_table = &tps_6507x_id,
-> +};
-> +
-> +/**
-> + * tps_6507x_init
-> + *
-> + * Module init function
-> + */
-> +static int __init tps_6507x_init(void)
-> +{
-> +       return i2c_add_driver(&tps_6507x_i2c_driver);
-> +}
-> +subsys_initcall(tps_6507x_init);
-> +
-> +/**
-> + * tps_6507x_cleanup
-> + *
-> + * Module exit function
-> + */
-> +static void __exit tps_6507x_cleanup(void)
-> +{
-> +       i2c_del_driver(&tps_6507x_i2c_driver);
-> +}
-> +module_exit(tps_6507x_cleanup);
-> +
-> +MODULE_AUTHOR("Texas Instruments");
-> +MODULE_DESCRIPTION("TPS6507x voltage regulator driver");
-> +MODULE_LICENSE("GPLv2");
-> --
-> 1.6.2.4
+> I'd really want this thing called PERF_SAMPLE_RAW
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> > -	PERF_SAMPLE_MAX = 1U << 10,		/* non-ABI */
+> > +	PERF_SAMPLE_MAX = 1U << 11,		/* non-ABI */
+> >  };
+> >  
+> >  /*
+> > @@ -413,6 +414,11 @@ struct perf_callchain_entry {
+> >  	__u64				ip[PERF_MAX_STACK_DEPTH];
+> >  };
+> >  
+> > +struct perf_tracepoint_record {
+> > +	int				size;
+> > +	char				*record;
+> > +};
+> 
+> Which would make this:
+> 
+> struct perf_raw_record {
+> 	u32	size;
+> 	void 	*data;
+> };
+> 
+> >  struct task_struct;
+> >  
+> >  /**
+> > @@ -681,6 +687,7 @@ struct perf_sample_data {
+> >  	struct pt_regs			*regs;
+> >  	u64				addr;
+> >  	u64				period;
+> > +	void				*private;
+> >  };
+> 
+> might as well make that struct perf_raw_record *raw;
 
--- 
-balbi
+
+
+Ok. Yeah that's far more generic (and typed).
+
+
+> 
+> > @@ -649,5 +617,99 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+> >  
+> >  #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+> >  
+> > +/*
+> > + * Define the insertion callback to profile events
+> > + *
+> > + * The job is very similar to ftrace_raw_event_<call> except that we don't
+> > + * insert in the ring buffer but in a perf counter.
+> > + *
+> > + * static void ftrace_profile_<call>(proto)
+> > + * {
+> > + *	struct ftrace_data_offsets_<call> __maybe_unused __data_offsets;
+> > + *	struct ftrace_event_call *event_call = &event_<call>;
+> > + *	extern void perf_tpcounter_event(int, u64, u64, void *, int);
+> > + *	struct ftrace_raw_##call *entry;
+> > + *	u64 __addr = 0, __count = 1;
+> > + *	unsigned long irq_flags;
+> > + *	int __entry_size;
+> > + *	int __data_size;
+> > + *	int pc;
+> > + *
+> > + *	local_save_flags(irq_flags);
+> > + *	pc = preempt_count();
+> > + *
+> > + *	__data_size = ftrace_get_offsets_<call>(&__data_offsets, args);
+> > + *	__entry_size = __data_size + sizeof(*entry);
+> > + *
+> > + *	do {
+> > + *		char raw_data[__entry_size]; <- allocate our sample in the stack
+> > + *		struct trace_entry *ent;
+> > + *
+> > + *		entry = (struct ftrace_raw_<call> *)raw_data;
+> > + *		ent = &entry->ent;
+> > + *		tracing_generic_entry_update(ent, irq_flags, pc);
+> > + *		ent->type = event_call->id;
+> > + *
+> > + *		<tstruct> <- do some jobs with dynamic arrays
+> > + *
+> > + *		<assign>  <- affect our values
+> > + *
+> > + *		perf_tpcounter_event(event_call->id, __addr, __count, entry,
+> > + *			     __entry_size);  <- submit them to perf counter
+> > + *	} while (0);
+> > + *
+> > + * }
+> > + */
+> > +
+> > +#ifdef CONFIG_EVENT_PROFILE
+> > +
+> > +#undef __perf_addr
+> > +#define __perf_addr(a) __addr = (a)
+> > +
+> > +#undef __perf_count
+> > +#define __perf_count(c) __count = (c)
+> > +
+> > +#undef TRACE_EVENT
+> > +#define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
+> > +static void ftrace_profile_##call(proto)				\
+> > +{									\
+> > +	struct ftrace_data_offsets_##call __maybe_unused __data_offsets;\
+> > +	struct ftrace_event_call *event_call = &event_##call;		\
+> > +	extern void perf_tpcounter_event(int, u64, u64, void *, int);	\
+> > +	struct ftrace_raw_##call *entry;				\
+> > +	u64 __addr = 0, __count = 1;					\
+> > +	unsigned long irq_flags;					\
+> > +	int __entry_size;						\
+> > +	int __data_size;						\
+> > +	int pc;								\
+> > +									\
+> > +	local_save_flags(irq_flags);					\
+> > +	pc = preempt_count();						\
+> > +									\
+> > +	__data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
+> > +	__entry_size = __data_size + sizeof(*entry);			\
+> > +									\
+> > +	do {								\
+> > +		char raw_data[__entry_size];				\
+> > +		struct trace_entry *ent;				\
+> > +									\
+> > +		entry = (struct ftrace_raw_##call *)raw_data;		\
+> > +		ent = &entry->ent;					\
+> > +		tracing_generic_entry_update(ent, irq_flags, pc);	\
+> > +		ent->type = event_call->id;				\
+> > +									\
+> > +		tstruct							\
+> > +									\
+> > +		{ assign; }						\
+> > +									\
+> > +		perf_tpcounter_event(event_call->id, __addr, __count, entry,\
+> > +			     __entry_size);				\
+> > +	} while (0);							\
+> > +									\
+> > +}
+> 
+> ok, so the one concern I have here is that the data needs to fit on the
+> stack. What if someone puts a large string in the data?
+
+
+
+Yeah, I'll try to fix this by storing strings as pointers and copy
+them in perf counter output only.
+
+TODO-listed, with all the above.
+
+
+
+> > +
+> > +#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+> > +#endif /* CONFIG_EVENT_PROFILE */
+> > +
+> >  #undef _TRACE_PROFILE_INIT
+> >  
+> > diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+> > index 06d210c..93f4312 100644
+> > --- a/kernel/perf_counter.c
+> > +++ b/kernel/perf_counter.c
+> > @@ -2646,6 +2646,7 @@ static void perf_counter_output(struct perf_counter *counter, int nmi,
+> >  		u64 counter;
+> >  	} group_entry;
+> >  	struct perf_callchain_entry *callchain = NULL;
+> > +	struct perf_tracepoint_record *tp;
+> >  	int callchain_size = 0;
+> >  	u64 time;
+> >  	struct {
+> > @@ -2714,6 +2715,11 @@ static void perf_counter_output(struct perf_counter *counter, int nmi,
+> >  			header.size += sizeof(u64);
+> >  	}
+> >  
+> > +	if (sample_type & PERF_SAMPLE_TP_RECORD) {
+> > +		tp = data->private;
+> > +		header.size += tp->size;
+> > +	}
+> > +
+> >  	ret = perf_output_begin(&handle, counter, header.size, nmi, 1);
+> >  	if (ret)
+> >  		return;
+> > @@ -2777,6 +2783,9 @@ static void perf_counter_output(struct perf_counter *counter, int nmi,
+> >  		}
+> >  	}
+> >  
+> > +	if (sample_type & PERF_SAMPLE_TP_RECORD)
+> > +		perf_output_copy(&handle, tp->record, tp->size);
+> > +
+> >  	perf_output_end(&handle);
+> >  }
+> 
+> You seem to fail to round up to a multiple of u64 somewhere along the
+> line, that'll mess things up as events are supposed to be u64 aligned.
+
+
+Indeed.
+
+
+
+> 
+> > diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+> > index 6da0992..90c9808 100644
+> > --- a/tools/perf/builtin-record.c
+> > +++ b/tools/perf/builtin-record.c
+> > @@ -412,6 +412,7 @@ static void create_counter(int counter, int cpu, pid_t pid)
+> >  	if (call_graph)
+> >  		attr->sample_type	|= PERF_SAMPLE_CALLCHAIN;
+> >  
+> > +
+> >  	attr->mmap		= track;
+> >  	attr->comm		= track;
+> >  	attr->inherit		= (cpu < 0) && inherit;
+> 
+> Do we really need that extra whitespace?
+
+
+Sorry, I added the explicit PERF_SAMPLE_TP_RECORD here to test this patch
+and forgot the newline when I removed it :-s
+
