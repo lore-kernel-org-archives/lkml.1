@@ -1,410 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757190AbZHGIHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbZHGII2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757190AbZHGIHo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 04:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbZHGIHn
+	id S1757195AbZHGII2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 04:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757076AbZHGII1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 04:07:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38088 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754982AbZHGIHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 04:07:38 -0400
-Date: Fri, 7 Aug 2009 10:07:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mel Gorman <mel@csn.ul.ie>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, eduard@elte.hu
-Cc: Larry Woodman <lwoodman@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [PATCH 5/6] tracing, documentation: Add a document describing
-	how to do some performance analysis with tracepoints
-Message-ID: <20090807080707.GB21821@elte.hu>
-References: <1249574827-18745-1-git-send-email-mel@csn.ul.ie> <1249574827-18745-6-git-send-email-mel@csn.ul.ie>
+	Fri, 7 Aug 2009 04:08:27 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41862 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754982AbZHGIIY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 04:08:24 -0400
+Date: Fri, 7 Aug 2009 09:08:11 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: David Xiao <dxiao@broadcom.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       Ben Dooks <ben-linux@fluff.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       v4l2_linux <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
+	get_user_pages() enough to prevent pages from being swapped out ?")
+Message-ID: <20090807080811.GA18343@n2100.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806114619.GW2080@trinity.fluff.org> <200908061506.23874.laurent.pinchart@ideasonboard.com> <1249584374.29182.20.camel@david-laptop> <20090806222543.GG31579@n2100.arm.linux.org.uk> <1249624766.32621.61.camel@david-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249574827-18745-6-git-send-email-mel@csn.ul.ie>
+In-Reply-To: <1249624766.32621.61.camel@david-laptop>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 06, 2009 at 10:59:26PM -0700, David Xiao wrote:
+> The V7 speculative prefetching will then probably apply to DMA coherency
+> issue in general, both kernel and user space DMAs. Could this be
+> addressed by inside the dma_unmap_sg/single() calling dma_cache_maint()
+> when the direction is DMA_FROM_DEVICE/DMA_BIDIRECTIONAL, to basically
+> invalidate the related cache lines in case any filled by prefetching?
+> Assuming dma_unmap_sg/single() is called after each DMA operation is
+> completed. 
 
-* Mel Gorman <mel@csn.ul.ie> wrote:
+It's something that I was going to look at, and it's probably going to
+have to be something I do blind - I currently have no MPCore platform,
+and even if my Realview EB worked, it doesn't use DMA at all.
 
-> The documentation for ftrace, events and tracepoints is pretty 
-> extensive. Similarly, the perf PCL tools help files --help are 
-> there and the code simple enough to figure out what much of the 
-> switches mean. However, pulling the discrete bits and pieces 
-> together and translating that into "how do I solve a problem" 
-> requires a fair amount of imagination.
-> 
-> This patch adds a simple document intended to get someone started 
-> on the different ways of using tracepoints to gather meaningful 
-> data.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> ---
->  Documentation/trace/tracepoint-analysis.txt |  327 +++++++++++++++++++++++++++
->  1 files changed, 327 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/trace/tracepoint-analysis.txt
-> 
-> diff --git a/Documentation/trace/tracepoint-analysis.txt b/Documentation/trace/tracepoint-analysis.txt
-> new file mode 100644
-> index 0000000..e7a7d3e
-> --- /dev/null
-> +++ b/Documentation/trace/tracepoint-analysis.txt
-> @@ -0,0 +1,327 @@
-> +		Notes on Analysing Behaviour Using Events and Tracepoints
-> +
-> +			Documentation written by Mel Gorman
-> +		PCL information heavily based on email from Ingo Molnar
-> +
-> +1. Introduction
-> +===============
-> +
-> +Tracepoints (see Documentation/trace/tracepoints.txt) can be used without
-> +creating custom kernel modules to register probe functions using the event
-> +tracing infrastructure.
-> +
-> +Simplistically, tracepoints will represent an important event that when can
-> +be taken in conjunction with other tracepoints to build a "Big Picture" of
-> +what is going on within the system. There are a large number of methods for
-> +gathering and interpreting these events. Lacking any current Best Practises,
-> +this document describes some of the methods that can be used.
-> +
-> +This document assumes that debugfs is mounted on /sys/kernel/debug and that
-> +the appropriate tracing options have been configured into the kernel. It is
-> +assumed that the PCL tool tools/perf has been installed and is in your path.
-> +
-> +2. Listing Available Events
-> +===========================
-> +
-> +2.1 Standard Utilities
-> +----------------------
-> +
-> +All possible events are visible from /sys/kernel/debug/tracing/events. Simply
-> +calling
-> +
-> +  $ find /sys/kernel/debug/tracing/events -type d
-> +
-> +will give a fair indication of the number of events available.
-> +
-> +2.2 PCL
-> +-------
-> +
-> +Discovery and enumeration of all counters and events, including tracepoints
-> +are available with the perf tool. Getting a list of available events is a
-> +simple case of
-> +
-> +  $ perf list 2>&1 | grep Tracepoint
-> +  ext4:ext4_free_inode                     [Tracepoint event]
-> +  ext4:ext4_request_inode                  [Tracepoint event]
-> +  ext4:ext4_allocate_inode                 [Tracepoint event]
-> +  ext4:ext4_write_begin                    [Tracepoint event]
-> +  ext4:ext4_ordered_write_end              [Tracepoint event]
-> +  [ .... remaining output snipped .... ]
-> +
-> +
-> +2. Enabling Events
-> +==================
-> +
-> +2.1 System-Wide Event Enabling
-> +------------------------------
-> +
-> +See Documentation/trace/events.txt for a proper description on how events
-> +can be enabled system-wide. A short example of enabling all events related
-> +to page allocation would look something like
-> +
-> +  $ for i in `find /sys/kernel/debug/tracing/events -name "enable" | grep mm_`; do echo 1 > $i; done
-> +
-> +2.2 System-Wide Event Enabling with SystemTap
-> +---------------------------------------------
-> +
-> +In SystemTap, tracepoints are accessible using the kernel.trace() function
-> +call. The following is an example that reports every 5 seconds what processes
-> +were allocating the pages.
-> +
-> +  global page_allocs
-> +
-> +  probe kernel.trace("mm_page_alloc") {
-> +  	page_allocs[execname()]++
-> +  }
-> +
-> +  function print_count() {
-> +  	printf ("%-25s %-s\n", "#Pages Allocated", "Process Name")
-> +  	foreach (proc in page_allocs-)
-> +  		printf("%-25d %s\n", page_allocs[proc], proc)
-> +  	printf ("\n")
-> +  	delete page_allocs
-> +  }
-> +
-> +  probe timer.s(5) {
-> +          print_count()
-> +  }
-> +
-> +2.3 System-Wide Event Enabling with PCL
-> +---------------------------------------
-> +
-> +By specifying the -a switch and analysing sleep, the system-wide events
-> +for a duration of time can be examined.
-> +
-> + $ perf stat -a \
-> +	-e kmem:mm_page_alloc -e kmem:mm_page_free_direct \
-> +	-e kmem:mm_pagevec_free \
-> +	sleep 10
-> + Performance counter stats for 'sleep 10':
-> +
-> +           9630  kmem:mm_page_alloc      
-> +           2143  kmem:mm_page_free_direct
-> +           7424  kmem:mm_pagevec_free    
-> +
-> +   10.002577764  seconds time elapsed
-> +
-> +Similarly, one could execute a shell and exit it as desired to get a report
-> +at that point.
-> +
-> +2.4 Local Event Enabling
-> +------------------------
-> +
-> +Documentation/trace/ftrace.txt describes how to enable events on a per-thread
-> +basis using set_ftrace_pid.
-> +
-> +2.5 Local Event Enablement with PCL
-> +-----------------------------------
-> +
-> +Events can be activate and tracked for the duration of a process on a local
-> +basis using PCL such as follows.
-> +
-> +  $ perf stat -e kmem:mm_page_alloc -e kmem:mm_page_free_direct \
-> +		 -e kmem:mm_pagevec_free ./hackbench 10
-> +  Time: 0.909
-> +
-> +    Performance counter stats for './hackbench 10':
-> +
-> +          17803  kmem:mm_page_alloc      
-> +          12398  kmem:mm_page_free_direct
-> +           4827  kmem:mm_pagevec_free    
-> +
-> +    0.973913387  seconds time elapsed
-> +
-> +3. Event Filtering
-> +==================
-> +
-> +Documentation/trace/ftrace.txt covers in-depth how to filter events in
-> +ftrace.  Obviously using grep and awk of trace_pipe is an option as well
-> +as any script reading trace_pipe.
-> +
-> +4. Analysing Event Variances with PCL
-> +=====================================
-> +
-> +Any workload can exhibit variances between runs and it can be important
-> +to know what the standard deviation in. By and large, this is left to the
-> +performance analyst to do it by hand. In the event that the discrete event
-> +occurrences are useful to the performance analyst, then perf can be used.
-> +
-> +  $ perf stat --repeat 5 -e kmem:mm_page_alloc -e kmem:mm_page_free_direct
-> +			-e kmem:mm_pagevec_free ./hackbench 10
-> +  Time: 0.890
-> +  Time: 0.895
-> +  Time: 0.915
-> +  Time: 1.001
-> +  Time: 0.899
-> +
-> +   Performance counter stats for './hackbench 10' (5 runs):
-> +
-> +          16630  kmem:mm_page_alloc         ( +-   3.542% )
-> +          11486  kmem:mm_page_free_direct   ( +-   4.771% )
-> +           4730  kmem:mm_pagevec_free       ( +-   2.325% )
-> +
-> +    0.982653002  seconds time elapsed   ( +-   1.448% )
-> +
-> +In the event that some higher-level event is required that depends on some
-> +aggregation of discrete events, then a script would need to be developed.
-> +
-> +Using --repeat, it is also possible to view how events are fluctuating over
-> +time on a system wide basis using -a and sleep.
-> +
-> +  $ perf stat -e kmem:mm_page_alloc -e kmem:mm_page_free_direct \
-> +		-e kmem:mm_pagevec_free \
-> +		-a --repeat 10 \
-> +		sleep 1
-> +  Performance counter stats for 'sleep 1' (10 runs):
-> +
-> +           1066  kmem:mm_page_alloc         ( +-  26.148% )
-> +            182  kmem:mm_page_free_direct   ( +-   5.464% )
-> +            890  kmem:mm_pagevec_free       ( +-  30.079% )
-> +
-> +    1.002251757  seconds time elapsed   ( +-   0.005% )
-> +
-> +5. Higher-Level Analysis with Helper Scripts
-> +============================================
-> +
-> +When events are enabled the events that are triggering can be read from
-> +/sys/kernel/debug/tracing/trace_pipe in human-readable format although binary
-> +options exist as well. By post-processing the output, further information can
-> +be gathered on-line as appropriate. Examples of post-processing might include
-> +
-> +  o Reading information from /proc for the PID that triggered the event
-> +  o Deriving a higher-level event from a series of lower-level events.
-> +  o Calculate latencies between two events
-> +
-> +Documentation/trace/postprocess/trace-pagealloc-postprocess.pl is an example
-> +script that can read trace_pipe from STDIN or a copy of a trace. When used
-> +on-line, it can be interrupted once to generate a report without existing
-> +and twice to exit.
-> +
-> +Simplistically, the script just reads STDIN and counts up events but it
-> +also can do more such as
-> +
-> +  o Derive high-level events from many low-level events. If a number of pages
-> +    are freed to the main allocator from the per-CPU lists, it recognises
-> +    that as one per-CPU drain even though there is no specific tracepoint
-> +    for that event
-> +  o It can aggregate based on PID or individual process number
-> +  o In the event memory is getting externally fragmented, it reports
-> +    on whether the fragmentation event was severe or moderate.
-> +  o When receiving an event about a PID, it can record who the parent was so
-> +    that if large numbers of events are coming from very short-lived
-> +    processes, the parent process responsible for creating all the helpers
-> +    can be identified
-> +
-> +6. Lower-Level Analysis with PCL
-> +================================
-> +
-> +There may also be a requirement to identify what functions with a program
-> +were generating events within the kernel. To begin this sort of analysis, the
-> +data must be recorded. At the time of writing, this required root
-> +
-> +  $ perf record -c 1 \
-> +	-e kmem:mm_page_alloc -e kmem:mm_page_free_direct \
-> +	-e kmem:mm_pagevec_free \
-> +	./hackbench 10
-> +  Time: 0.894
-> +  [ perf record: Captured and wrote 0.733 MB perf.data (~32010 samples) ]
-> +
-> +Note the use of '-c 1' to set the event period to sample. The default sample
-> +period is quite high to minimise overhead but the information collected can be
-> +very coarse as a result.
-> +
-> +This record outputted a file called perf.data which can be analysed using
-> +perf report.
-> +
-> +  $ perf report
-> +  # Samples: 30922
-> +  #
-> +  # Overhead    Command                     Shared Object
-> +  # ........  .........  ................................
-> +  #
-> +      87.27%  hackbench  [vdso]                          
-> +       6.85%  hackbench  /lib/i686/cmov/libc-2.9.so      
-> +       2.62%  hackbench  /lib/ld-2.9.so                  
-> +       1.52%       perf  [vdso]                          
-> +       1.22%  hackbench  ./hackbench                     
-> +       0.48%  hackbench  [kernel]                        
-> +       0.02%       perf  /lib/i686/cmov/libc-2.9.so      
-> +       0.01%       perf  /usr/bin/perf                   
-> +       0.01%       perf  /lib/ld-2.9.so                  
-> +       0.00%  hackbench  /lib/i686/cmov/libpthread-2.9.so
-> +  #
-> +  # (For more details, try: perf report --sort comm,dso,symbol)
-> +  #
-> +
-> +According to this, the vast majority of events occured triggered on events
-> +within the VDSO. With simple binaries, this will often be the case so lets
-> +take a slightly different example. In the course of writing this, it was
-> +noticed that X was generating an insane amount of page allocations so lets look
-> +at it
-> +
-> +  $ perf record -c 1 -f \
-> +		-e kmem:mm_page_alloc -e kmem:mm_page_free_direct \
-> +		-e kmem:mm_pagevec_free \
-> +		-p `pidof X`
-> +
-> +This was interrupted after a few seconds and
-> +
-> +  $ perf report
-> +  # Samples: 27666
-> +  #
-> +  # Overhead  Command                            Shared Object
-> +  # ........  .......  .......................................
-> +  #
-> +      51.95%     Xorg  [vdso]                                 
-> +      47.95%     Xorg  /opt/gfx-test/lib/libpixman-1.so.0.13.1
-> +       0.09%     Xorg  /lib/i686/cmov/libc-2.9.so             
-> +       0.01%     Xorg  [kernel]                               
-> +  #
-> +  # (For more details, try: perf report --sort comm,dso,symbol)
-> +  #
-> +
-> +So, almost half of the events are occuring in a library. To get an idea which
-> +symbol.
-> +
-> +  $ perf report --sort comm,dso,symbol
-> +  # Samples: 27666
-> +  #
-> +  # Overhead  Command                            Shared Object  Symbol
-> +  # ........  .......  .......................................  ......
-> +  #
-> +      51.95%     Xorg  [vdso]                                   [.] 0x000000ffffe424
-> +      47.93%     Xorg  /opt/gfx-test/lib/libpixman-1.so.0.13.1  [.] pixmanFillsse2
-> +       0.09%     Xorg  /lib/i686/cmov/libc-2.9.so               [.] _int_malloc
-> +       0.01%     Xorg  /opt/gfx-test/lib/libpixman-1.so.0.13.1  [.] pixman_region32_copy_f
-> +       0.01%     Xorg  [kernel]                                 [k] read_hpet
-> +       0.01%     Xorg  /opt/gfx-test/lib/libpixman-1.so.0.13.1  [.] get_fast_path
-> +       0.00%     Xorg  [kernel]                                 [k] ftrace_trace_userstack
-> +
-> +To see where within the function pixmanFillsse2 things are going wrong
-> +
-> +  $ perf annotate pixmanFillsse2
-> +  [ ... ]
-> +    0.00 :         34eeb:       0f 18 08                prefetcht0 (%eax)
-> +         :      }
-> +         :
-> +         :      extern __inline void __attribute__((__gnu_inline__, __always_inline__, _
-> +         :      _mm_store_si128 (__m128i *__P, __m128i __B) :      {
-> +         :        *__P = __B;
-> +   12.40 :         34eee:       66 0f 7f 80 40 ff ff    movdqa %xmm0,-0xc0(%eax)
-> +    0.00 :         34ef5:       ff 
-> +   12.40 :         34ef6:       66 0f 7f 80 50 ff ff    movdqa %xmm0,-0xb0(%eax)
-> +    0.00 :         34efd:       ff 
-> +   12.39 :         34efe:       66 0f 7f 80 60 ff ff    movdqa %xmm0,-0xa0(%eax)
-> +    0.00 :         34f05:       ff 
-> +   12.67 :         34f06:       66 0f 7f 80 70 ff ff    movdqa %xmm0,-0x90(%eax)
-> +    0.00 :         34f0d:       ff 
-> +   12.58 :         34f0e:       66 0f 7f 40 80          movdqa %xmm0,-0x80(%eax)
-> +   12.31 :         34f13:       66 0f 7f 40 90          movdqa %xmm0,-0x70(%eax)
-> +   12.40 :         34f18:       66 0f 7f 40 a0          movdqa %xmm0,-0x60(%eax)
-> +   12.31 :         34f1d:       66 0f 7f 40 b0          movdqa %xmm0,-0x50(%eax)
-> +
-> +At a glance, it looks like the time is being spent copying pixmaps to
-> +the card.  Further investigation would be needed to determine why pixmaps
-> +are being copied around so much but a starting point would be to take an
-> +ancient build of libpixmap out of the library path where it was totally
-> +forgotten about from months ago!
+However, it's not trivial - the unmap functions don't have all the
+necessary information.  dma_unmap_single() has the DMA address, which
+we can convert to the original virtual address via dma_to_virt().
+However, dma_unmap_page() can't translate back to a virtual page
+since we're missing some information there.
 
-This is a very nice and comprehensive description!
-
-I'm wondering: would you mind if we integrated the analysis ideas 
-from your perl script into 'perf trace'? Those kinds of high-level 
-counts and summaries are useful not just for MM events.
-
-Another thing that was raise dbefore is a 'perf mem' special-purpose 
-tool to help the analysis of all things memory related: leak 
-detection, high level stats, etc. That could have some turn-key 
-modes of analysis for the page allocator too.
-
-perf will do a proper format-string evaluation of 
-/debug/tracing/events/*/format as well, thus any tweaks to the 
-tracepoints get automatically adopted to.
-
-	Ingo
+It bugs me that the DMA API is restrictive in the information which
+architectures can retain across a mapping which makes this non-trivial.
+Had I known of these issues when the DMA API was originally being
+discussed, I'd have suggested that we have an arch-specific dma_map
+struct which could contain whatever information was required, rather
+than requiring the driver to maintain the handle/size/direction/etc
+between each of the calls.  That would mean we could retain the virtual
+address/struct page rather than having to work it back in some way.
