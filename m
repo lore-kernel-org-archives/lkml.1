@@ -1,237 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757491AbZHGOEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbZHGOQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757491AbZHGOEi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 10:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757399AbZHGOEi
+	id S1757505AbZHGOQv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 10:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757322AbZHGOQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 10:04:38 -0400
-Received: from mail-bw0-f215.google.com ([209.85.218.215]:58988 "EHLO
-	mail-bw0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757352AbZHGOEh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 10:04:37 -0400
-X-Greylist: delayed 449 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Aug 2009 10:04:36 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=TcUyD5JSi6lxjkwxXfccWCkZh8Y1nZs7rl216ah84r5zthswP0YA1/Ihf7a1o/cIlb
-         CtVrGUwcXZy4dKI7YzpZHFZDo6BM/RMrm613bE0toKe6mTWGNKwl9Yuuy8FQZ+F9H8Ks
-         qQKXIsm0RPPO5FTqmq6MEIVgH6aX/PyV/o7uc=
+	Fri, 7 Aug 2009 10:16:51 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:39352 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757308AbZHGOQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 10:16:50 -0400
+Date: Fri, 7 Aug 2009 15:16:50 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Larry Woodman <lwoodman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Fr?d?ric Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 4/6] tracing, page-allocator: Add a postprocessing
+	script for page-allocator-related ftrace events
+Message-ID: <20090807141650.GA24148@csn.ul.ie>
+References: <1249574827-18745-1-git-send-email-mel@csn.ul.ie> <1249574827-18745-5-git-send-email-mel@csn.ul.ie> <20090807080018.GD20292@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <19066.19060.95471.616532@notabene.brown>
-References: <20090802215444.4198.83094.stgit@notabene.brown>
-	 <20090802215818.4198.77041.stgit@notabene.brown>
-	 <4A7A0287.5010505@zytor.com>
-	 <170fa0d20908051803ud6ef819xdad3cafe44cc1fb8@mail.gmail.com>
-	 <4A7A2EA6.9020603@zytor.com> <19066.19060.95471.616532@notabene.brown>
-Date: Fri, 7 Aug 2009 09:57:06 -0400
-Message-ID: <170fa0d20908070657x1206f4ebp5f434ed63386b073@mail.gmail.com>
-Subject: Re: [md PATCH 8/8] md: Use revalidate_disk to effect changes in size 
-	of device.
-From: Mike Snitzer <snitzer@gmail.com>
-To: Neil Brown <neilb@suse.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090807080018.GD20292@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 5, 2009 at 11:13 PM, Neil Brown<neilb@suse.de> wrote:
-> On Wednesday August 5, hpa@zytor.com wrote:
->> On 08/05/2009 06:03 PM, Mike Snitzer wrote:
->> > On Wed, Aug 5, 2009 at 6:07 PM, H. Peter Anvin<hpa@zytor.com> wrote:
->> >> On 08/02/2009 02:58 PM, NeilBrown wrote:
->> >>> As revalidate_disk calls check_disk_size_change, it will cause
->> >>> any capacity change of a gendisk to be propagated to the blockdev
->> >>> inode.  So use that instead of mucking about with locks and
->> >>> i_size_write.
->> >>>
->> >>> Also add a call to revalidate_disk in do_md_run and a few other places
->> >>> where the gendisk capacity is changed.
->> >>>
->> >> This patch causes my Fedora 11 system with all filesystems on RAID-1 to
->> >> not boot (it hangs in early userspace, Ctrl-Alt-Del reboots the system.)
->> >
->> > I reported similar findings, with some more detail, relative to
->> > Fedora's rawhide here:
->> > http://lkml.org/lkml/2009/8/5/275
->>
->> Sounds to be the same, yes.
->
-> Thanks for the reports guys.
->
-> I managed to reproduce the lockup and I think this patch should fix
-> it.
-> If you could review/test I would appreciate it.
->
-> Thanks,
-> NeilBrown
->
->
-> From cf90cb85596d05d9595bb8ee4cadb7d4091212b5 Mon Sep 17 00:00:00 2001
-> From: NeilBrown <neilb@suse.de>
-> Date: Thu, 6 Aug 2009 13:10:43 +1000
-> Subject: [PATCH] Remove deadlock potential in md_open
->
-> A recent commit:
->  commit 449aad3e25358812c43afc60918c5ad3819488e7
->
-> introduced the possibility of an A-B/B-A deadlock between
-> bd_mutex and reconfig_mutex.
->
-> __blkdev_get holds bd_mutex while calling md_open which takes
->   reconfig_mutex,
-> do_md_run is always called with reconfig_mutex held, and it now
->   takes bd_mutex in the call the revalidate_disk.
->
-> This potential deadlock was not caught by lockdep due to the
-> use of mutex_lock_interruptible_nexted which was introduced
-> by
->   commit d63a5a74dee87883fda6b7d170244acaac5b05e8
-> do avoid a warning of an impossible deadlock.
->
-> It is quite possible to split reconfig_mutex in to two locks.
-> One protects the array data structures while it is being
-> reconfigured, the other ensures that an array is never even partially
-> open while it is being deactivated.
->
-> So create a new lock, open_mutex, just to ensure exclusion between
-> 'open' and 'stop'.
->
-> This avoids the deadlock and also avoid the lockdep warning mentioned
-> in commit d63a5a74d
->
-> Reported-by: "Mike Snitzer" <snitzer@gmail.com>
-> Reported-by: "H. Peter Anvin" <hpa@zytor.com>
-> Signed-off-by: NeilBrown <neilb@suse.de>
+On Fri, Aug 07, 2009 at 10:00:18AM +0200, Ingo Molnar wrote:
+> 
+> * Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > This patch adds a simple post-processing script for the 
+> > page-allocator-related trace events. It can be used to give an 
+> > indication of who the most allocator-intensive processes are and 
+> > how often the zone lock was taken during the tracing period. 
+> > Example output looks like
+> 
+> Note, this script hard-codes certain aspects of the output format:
+> 
 
-Neil,
+Yes, I noted that to some extent in the header with "The accuracy of the
+parser may vary considerably" knowing that significant changes in the output
+format would bust the script.
 
-I finally tested this with the LVM testsuite's
-t-pvcreate-operation-md.sh script that I mentioned here:
-http://lkml.org/lkml/2009/8/5/275
+> +my $regex_traceevent =
+> +'\s*([a-zA-Z0-9-]*)\s*(\[[0-9]*\])\s*([0-9.]*):\s*([a-zA-Z_]*):\s*(.*)';
+> +my $regex_fragdetails = 'page=([0-9a-f]*) pfn=([0-9]*) alloc_order=([0-9]*)
+> +fallback_order=([0-9]*) pageblock_order=([0-9]*) alloc_migratetype=([0-9]*)
+> +fallback_migratetype=([0-9]*) fragmenting=([0-9]) change_ownership=([0-9])';
+> +my $regex_statname = '[-0-9]*\s\((.*)\).*';
+> +my $regex_statppid = '[-0-9]*\s\(.*\)\s[A-Za-z]\s([0-9]*).*';
+> 
+> the proper appproach is to parse /debug/tracing/events/mm/*/format. 
+> That is why we emit a format string - to detach tools and reduce the 
+> semi-ABI effect.
+> 
 
-The test succeeds but unfortunately triggers the following lockdep warning:
+Building a regularly expression is a tad messy but I can certainly do a
+better job than currently. The information on every tracepoint seems
+static so it doesn't need to be discovered but the trace format of the
+details needs to be verified. I did the following and it should
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.31-0.125.rc5.git2.snitm.x86_64 #1
--------------------------------------------------------
-mdadm/1348 is trying to acquire lock:
- (&bdev->bd_mutex){+.+.+.}, at: [<ffffffff811809dc>]
-bd_release_from_disk+0x49/0x113
+o Ignore unrecognised fields in the middle of the format string
+o Exit if expected fields do not exist
+o It's not pasted, but it'll warn if the regex fails to match
 
-but task is already holding lock:
- (&new->open_mutex){+.+...}, at: [<ffffffff81418ac7>] do_md_stop+0x3f/0x529
+Downsides include that I now hardcode the mount point of debugfs.
 
-which lock already depends on the new lock.
+Basically, this can still break but it's more robust than it was.
 
-the existing dependency chain (in reverse order) is:
+# Defaults for dynamically discovered regex's
+my $regex_fragdetails_default = 'page=([0-9a-f]*) pfn=([0-9]*) alloc_order=([-0-9]*) fallback_order=([-0-9]*) pageblock_order=([-0-9]*) alloc_migratetype=([-0-9]*) fallback_migratetype=([-0-9]*) fragmenting=([-0-9]) change_ownership=([-0-9])';
 
--> #2 (&new->open_mutex){+.+...}:
-       [<ffffffff8109ed70>] __lock_acquire+0x990/0xb29
-       [<ffffffff810a0298>] lock_acquire+0xd5/0x115
-       [<ffffffff8152e318>] __mutex_lock_common+0x5d/0x3b0
-       [<ffffffff8152e6b8>] mutex_lock_interruptible_nested+0x4d/0x68
-       [<ffffffff8141e683>] md_open+0x71/0xb3
-       [<ffffffff81181821>] __blkdev_get+0xe1/0x37e
-       [<ffffffff81181900>] __blkdev_get+0x1c0/0x37e
-       [<ffffffff81181ae1>] blkdev_get+0x23/0x39
-       [<ffffffff81181b7c>] blkdev_open+0x85/0xd1
-       [<ffffffff8114f909>] __dentry_open+0x1af/0x303
-       [<ffffffff81150da8>] nameidata_to_filp+0x55/0x7d
-       [<ffffffff8115ecb1>] do_filp_open+0x504/0x960
-       [<ffffffff8114f595>] do_sys_open+0x70/0x12e
-       [<ffffffff8114f6c0>] sys_open+0x33/0x49
-       [<ffffffff810141c2>] system_call_fastpath+0x16/0x1b
-       [<ffffffffffffffff>] 0xffffffffffffffff
+# Dyanically discovered regex
+my $regex_fragdetails;
 
--> #1 (&bdev->bd_mutex/1){+.+...}:
-       [<ffffffff8109ed70>] __lock_acquire+0x990/0xb29
-       [<ffffffff810a0298>] lock_acquire+0xd5/0x115
-       [<ffffffff8152e318>] __mutex_lock_common+0x5d/0x3b0
-       [<ffffffff8152e789>] mutex_lock_nested+0x4d/0x6a
-       [<ffffffff811817ce>] __blkdev_get+0x8e/0x37e
-       [<ffffffff81181900>] __blkdev_get+0x1c0/0x37e
-       [<ffffffff81181ae1>] blkdev_get+0x23/0x39
-       [<ffffffff81181b7c>] blkdev_open+0x85/0xd1
-       [<ffffffff8114f909>] __dentry_open+0x1af/0x303
-       [<ffffffff81150da8>] nameidata_to_filp+0x55/0x7d
-       [<ffffffff8115ecb1>] do_filp_open+0x504/0x960
-       [<ffffffff8114f595>] do_sys_open+0x70/0x12e
-       [<ffffffff8114f6c0>] sys_open+0x33/0x49
-       [<ffffffff810141c2>] system_call_fastpath+0x16/0x1b
-       [<ffffffffffffffff>] 0xffffffffffffffff
+# Static regex used. Specified like this for readability and for use with /o
+#                      (process_pid)     (cpus      )   ( time  )   (tpoint    ) (details)
+my $regex_traceevent = '\s*([a-zA-Z0-9-]*)\s*(\[[0-9]*\])\s*([0-9.]*):\s*([a-zA-Z_]*):\s*(.*)';
+my $regex_statname = '[-0-9]*\s\((.*)\).*';
+my $regex_statppid = '[-0-9]*\s\(.*\)\s[A-Za-z]\s([0-9]*).*';
 
--> #0 (&bdev->bd_mutex){+.+.+.}:
-       [<ffffffff8109ec64>] __lock_acquire+0x884/0xb29
-       [<ffffffff810a0298>] lock_acquire+0xd5/0x115
-       [<ffffffff8152e318>] __mutex_lock_common+0x5d/0x3b0
-       [<ffffffff8152e789>] mutex_lock_nested+0x4d/0x6a
-       [<ffffffff811809dc>] bd_release_from_disk+0x49/0x113
-       [<ffffffff81415cd5>] unbind_rdev_from_array+0x5f/0x148
-       [<ffffffff81416f96>] kick_rdev_from_array+0x25/0x48
-       [<ffffffff81417011>] export_array+0x58/0xc2
-       [<ffffffff81418d57>] do_md_stop+0x2cf/0x529
-       [<ffffffff8141d7ab>] md_ioctl+0xa5e/0xffe
-       [<ffffffff8128141f>] __blkdev_driver_ioctl+0x4b/0xa2
-       [<ffffffff81281d9b>] blkdev_ioctl+0x881/0x8ee
-       [<ffffffff81181f54>] block_ioctl+0x50/0x68
-       [<ffffffff81161466>] vfs_ioctl+0x3e/0xa2
-       [<ffffffff81161a03>] do_vfs_ioctl+0x499/0x500
-       [<ffffffff81161ad5>] sys_ioctl+0x6b/0xa2
-       [<ffffffff810141c2>] system_call_fastpath+0x16/0x1b
-       [<ffffffffffffffff>] 0xffffffffffffffff
+sub generate_traceevent_regex {
+	my $event = shift;
+	my $default = shift;
+	my @fields = @_;
+	my $regex;
 
-other info that might help us debug this:
+	# Read the event format or use the default
+	if (!open (FORMAT, "/sys/kernel/debug/tracing/events/$event/format")) {
+		$regex = $default;
+	} else {
+		my $line;
+		while (!eof(FORMAT)) {
+			$line = <FORMAT>;
+			if ($line =~ /^print fmt:\s"(.*)",.*/) {
+				$regex = $1;
+				$regex =~ s/%p/\([0-9a-f]*\)/g;
+				$regex =~ s/%d/\([-0-9]*\)/g;
+				$regex =~ s/%lu/\([0-9]*\)/g;
+			}
+		}
+	}
 
-2 locks held by mdadm/1348:
- #0:  (&new->reconfig_mutex){+.+.+.}, at: [<ffffffff81415e82>]
-mddev_lock+0x2a/0x40
- #1:  (&new->open_mutex){+.+...}, at: [<ffffffff81418ac7>] do_md_stop+0x3f/0x529
+	# Verify fields are in the right order
+	my $tuple;
+	foreach $tuple (split /\s/, $regex) {
+		my ($key, $value) = split(/=/, $tuple);
+		my $expected = shift;
+		if ($key ne $expected) {
+			print("WARNING: Format not as expected '$key' != '$expected'");
+			$regex =~ s/$key=\((.*)\)/$key=$1/;
+		}
+	}
+	if (defined $_) {
+		die("Fewer fields than expected in format");
+	}
 
-stack backtrace:
-Pid: 1348, comm: mdadm Tainted: G        W
-2.6.31-0.125.rc5.git2.snitm.x86_64 #1
-Call Trace:
- [<ffffffff8109e3c1>] print_circular_bug_tail+0x80/0x9f
- [<ffffffff8109ec64>] __lock_acquire+0x884/0xb29
- [<ffffffff811809dc>] ? bd_release_from_disk+0x49/0x113
- [<ffffffff81014d10>] ? restore_args+0x0/0x30
- [<ffffffff811809dc>] ? bd_release_from_disk+0x49/0x113
- [<ffffffff810a0298>] lock_acquire+0xd5/0x115
- [<ffffffff811809dc>] ? bd_release_from_disk+0x49/0x113
- [<ffffffff8152e318>] __mutex_lock_common+0x5d/0x3b0
- [<ffffffff811809dc>] ? bd_release_from_disk+0x49/0x113
- [<ffffffff811809dc>] ? bd_release_from_disk+0x49/0x113
- [<ffffffff810537e7>] ? need_resched+0x36/0x54
- [<ffffffff8152fbdf>] ? _spin_unlock_irq+0x46/0x61
- [<ffffffff8152e789>] mutex_lock_nested+0x4d/0x6a
- [<ffffffff811809dc>] bd_release_from_disk+0x49/0x113
- [<ffffffff81415cd5>] unbind_rdev_from_array+0x5f/0x148
- [<ffffffff81416f96>] kick_rdev_from_array+0x25/0x48
- [<ffffffff81082dd6>] ? flush_workqueue+0x0/0xd1
- [<ffffffff81417011>] export_array+0x58/0xc2
- [<ffffffff81418d57>] do_md_stop+0x2cf/0x529
- [<ffffffff8152e6b8>] ? mutex_lock_interruptible_nested+0x4d/0x68
- [<ffffffff8141d7ab>] md_ioctl+0xa5e/0xffe
- [<ffffffff8109e710>] ? __lock_acquire+0x330/0xb29
- [<ffffffff8103bd8f>] ? pvclock_clocksource_read+0x56/0xa6
- [<ffffffff8128141f>] __blkdev_driver_ioctl+0x4b/0xa2
- [<ffffffff8109bc58>] ? lock_release_holdtime+0x61/0x7c
- [<ffffffff81281d9b>] blkdev_ioctl+0x881/0x8ee
- [<ffffffff81246cb1>] ? __rcu_read_unlock+0x34/0x4a
- [<ffffffff812472c9>] ? avc_has_perm_noaudit+0x358/0x37d
- [<ffffffff8109d37a>] ? mark_lock+0x31/0x221
- [<ffffffff81247bee>] ? avc_has_perm+0x60/0x86
- [<ffffffff8103bd8f>] ? pvclock_clocksource_read+0x56/0xa6
- [<ffffffff812492b3>] ? inode_has_perm+0x7d/0xa0
- [<ffffffff815305e6>] ? _spin_unlock_irqrestore+0x5e/0x83
- [<ffffffff81181f54>] block_ioctl+0x50/0x68
- [<ffffffff81161466>] vfs_ioctl+0x3e/0xa2
- [<ffffffff81161a03>] do_vfs_ioctl+0x499/0x500
- [<ffffffff81161ad5>] sys_ioctl+0x6b/0xa2
- [<ffffffff810141c2>] system_call_fastpath+0x16/0x1b
+	return $regex;
+}
+$regex_fragdetails = generate_traceevent_regex("kmem/mm_page_alloc_extfrag",
+			$regex_fragdetails_default,
+			"page", "pfn",
+			"alloc_order", "fallback_order", "pageblock_order",
+			"alloc_migratetype", "fallback_migratetype",
+			"fragmenting", "change_ownership");
+
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
