@@ -1,62 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbZHGUyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755118AbZHGUzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755183AbZHGUyM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:54:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZHGUyM
+	id S1755118AbZHGUzG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:55:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbZHGUzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:54:12 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:50913 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752716AbZHGUyL (ORCPT
+	Fri, 7 Aug 2009 16:55:04 -0400
+Received: from smtp-out25.alice.it ([85.33.2.25]:2732 "EHLO
+	smtp-out25.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751648AbZHGUzD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:54:11 -0400
-Date: Fri, 7 Aug 2009 22:54:11 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH 6/6] [ARM] Use atomic_spin_lock/atomic_spin_unlock for
-	irqdesc lock
-Message-ID: <20090807205411.GA2422@pengutronix.de>
-References: <20090807203939.GA19374@pengutronix.de> <1249677761-19470-6-git-send-email-u.kleine-koenig@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1249677761-19470-6-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Fri, 7 Aug 2009 16:55:03 -0400
+From: Daniel Ribeiro <drwyrm@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Cc: Daniel Ribeiro <drwyrm@gmail.com>, eric.y.miao@gmail.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, openezx-devel@lists.openezx.org,
+       Ilya Petrov <ilya.muromec@gmail.com>,
+       Antonio Ospite <ospite@studenti.unina.it>
+Subject: [PATCH v3] input: PCAP2 misc input driver
+Date: Fri,  7 Aug 2009 22:54:16 +0200
+Message-Id: <1249678456-15381-1-git-send-email-drwyrm@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
+X-OriginalArrivalTime: 07 Aug 2009 20:54:43.0572 (UTC) FILETIME=[4A363340:01CA17A1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+This is a driver for misc input events for the PCAP2 PMIC, it handles
+the Power key and the Headphone button.
 
-> diff --git a/mm/highmem.c b/mm/highmem.c
-> index 66e915a..214eefd 100644
-> --- a/mm/highmem.c
-> +++ b/mm/highmem.c
-> @@ -372,8 +372,8 @@ void *kmap_high_get(struct page *page)
->  	lock_kmap_any(flags);
->  	vaddr = (unsigned long)page_address(page);
->  	if (vaddr) {
-> -		BUG_ON(pkmap_count[PKMAP_NR(vaddr)] < 1);
-> -		pkmap_count[PKMAP_NR(vaddr)]++;
-> +		BUG_ON(atomic_read(&pkmap_count[PKMAP_NR(vaddr)]) < 1);
-> +		atomic_add(1, pkmap_count[PKMAP_NR(vaddr)]);
->  	}
->  	unlock_kmap_any(flags);
->  	return (void*) vaddr;
-ups, this hunk doesn't belong here.  I will follow up with a corrected
-patch.
+Signed-off-by: Daniel Ribeiro <drwyrm@gmail.com>
+Signed-off-by: Ilya Petrov <ilya.muromec@gmail.com>
+Signed-off-by: Antonio Ospite <ospite@studenti.unina.it>
 
-Sorry
-Uwe
+---
 
+Changes since v2:
+  * Get pcap data from the parent device, don't abuse
+    platform device drvdata
+
+pcap_keys v2 is here: http://patchwork.kernel.org/patch/38863/
+
+ drivers/input/misc/Kconfig     |   11 +++
+ drivers/input/misc/Makefile    |    1 +
+ drivers/input/misc/pcap_keys.c |  144 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 156 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
+index 1acfa3a..b9cbb5e 100644
+--- a/drivers/input/misc/Kconfig
++++ b/drivers/input/misc/Kconfig
+@@ -269,4 +269,15 @@ config INPUT_DM355EVM
+ 
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called dm355evm_keys.
++
++config INPUT_PCAP
++	tristate "Motorola EZX PCAP misc input events"
++	depends on EZX_PCAP
++	help
++	  Say Y here if you want to use Power key and Headphone button
++	  on Motorola EZX phones.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called pcap_keys.
++
+ endif
+diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
+index 0d979fd..679bae3 100644
+--- a/drivers/input/misc/Makefile
++++ b/drivers/input/misc/Makefile
+@@ -26,3 +26,4 @@ obj-$(CONFIG_INPUT_TWL4030_PWRBUTTON)	+= twl4030-pwrbutton.o
+ obj-$(CONFIG_INPUT_UINPUT)		+= uinput.o
+ obj-$(CONFIG_INPUT_WISTRON_BTNS)	+= wistron_btns.o
+ obj-$(CONFIG_INPUT_YEALINK)		+= yealink.o
++obj-$(CONFIG_INPUT_PCAP)		+= pcap_keys.o
+diff --git a/drivers/input/misc/pcap_keys.c b/drivers/input/misc/pcap_keys.c
+new file mode 100644
+index 0000000..7ea9693
+--- /dev/null
++++ b/drivers/input/misc/pcap_keys.c
+@@ -0,0 +1,144 @@
++/*
++ *  Input driver for PCAP events:
++ *   * Power key
++ *   * Headphone button
++ *
++ *  Copyright (c) 2008,2009 Ilya Petrov <ilya.muromec@gmail.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/platform_device.h>
++#include <linux/input.h>
++#include <linux/mfd/ezx-pcap.h>
++
++struct pcap_keys {
++	struct pcap_chip *pcap;
++	struct input_dev *input;
++};
++
++/* PCAP2 interrupts us on keypress */
++static irqreturn_t pcap_keys_handler(int irq, void *_pcap_keys)
++{
++	struct pcap_keys *pcap_keys = _pcap_keys;
++	int pirq = irq_to_pcap(pcap_keys->pcap, irq);
++	u32 pstat;
++
++	ezx_pcap_read(pcap_keys->pcap, PCAP_REG_PSTAT, &pstat);
++	pstat &= 1 << pirq;
++
++	switch (pirq) {
++	case PCAP_IRQ_ONOFF:
++		input_report_key(pcap_keys->input, KEY_POWER, !pstat);
++		break;
++	case PCAP_IRQ_MIC:
++		input_report_key(pcap_keys->input, KEY_HP, !pstat);
++		break;
++	}
++
++	input_sync(pcap_keys->input);
++
++	return IRQ_HANDLED;
++}
++
++static int __devinit pcap_keys_probe(struct platform_device *pdev)
++{
++	int err = -ENOMEM;
++	struct pcap_keys *pcap_keys;
++	struct input_dev *input_dev;
++
++	pcap_keys = kmalloc(sizeof(struct pcap_keys), GFP_KERNEL);
++	if (!pcap_keys)
++		return err;
++
++	pcap_keys->pcap = dev_get_drvdata(pdev->dev.parent);
++
++	input_dev = input_allocate_device();
++	if (!input_dev)
++		goto fail;
++
++	pcap_keys->input = input_dev;
++
++	platform_set_drvdata(pdev, pcap_keys);
++	input_dev->name = pdev->name;
++	input_dev->phys = "pcap-keys/input0";
++	input_dev->id.bustype = BUS_HOST;
++	input_dev->dev.parent = &pdev->dev;
++
++	__set_bit(EV_KEY, input_dev->evbit);
++	__set_bit(KEY_POWER, input_dev->keybit);
++	__set_bit(KEY_HP, input_dev->keybit);
++
++	err = input_register_device(input_dev);
++	if (err)
++		goto fail_allocate;
++
++	err = request_irq(pcap_to_irq(pcap_keys->pcap, PCAP_IRQ_ONOFF),
++			pcap_keys_handler, 0, "Power key", pcap_keys);
++	if (err)
++		goto fail_register;
++
++	err = request_irq(pcap_to_irq(pcap_keys->pcap, PCAP_IRQ_MIC),
++			pcap_keys_handler, 0, "Headphone button", pcap_keys);
++	if (err)
++		goto fail_pwrkey;
++
++	return 0;
++
++fail_pwrkey:
++	free_irq(pcap_to_irq(pcap_keys->pcap, PCAP_IRQ_ONOFF), pcap_keys);
++fail_register:
++	input_unregister_device(input_dev);
++	goto fail;
++fail_allocate:
++	input_free_device(input_dev);
++fail:
++	kfree(pcap_keys);
++	return err;
++}
++
++static int __devexit pcap_keys_remove(struct platform_device *pdev)
++{
++	struct pcap_keys *pcap_keys = platform_get_drvdata(pdev);
++
++	free_irq(pcap_to_irq(pcap_keys->pcap, PCAP_IRQ_ONOFF), pcap_keys);
++	free_irq(pcap_to_irq(pcap_keys->pcap, PCAP_IRQ_MIC), pcap_keys);
++
++	input_unregister_device(pcap_keys->input);
++	kfree(pcap_keys);
++
++	return 0;
++}
++
++static struct platform_driver pcap_keys_device_driver = {
++	.probe		= pcap_keys_probe,
++	.remove		= __devexit_p(pcap_keys_remove),
++	.driver		= {
++		.name	= "pcap-keys",
++		.owner	= THIS_MODULE,
++	}
++};
++
++static int __init pcap_keys_init(void)
++{
++	return platform_driver_register(&pcap_keys_device_driver);
++};
++
++static void __exit pcap_keys_exit(void)
++{
++	platform_driver_unregister(&pcap_keys_device_driver);
++};
++
++module_init(pcap_keys_init);
++module_exit(pcap_keys_exit);
++
++MODULE_DESCRIPTION("Motorola PCAP2 input events driver");
++MODULE_AUTHOR("Ilya Petrov <ilya.muromec@gmail.com>");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:pcap_keys");
 -- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+tg: (9097083..) ezx/pcap_keys (depends on: ezx/local/pcap)
