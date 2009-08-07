@@ -1,113 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932623AbZHGOq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932637AbZHGO5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932623AbZHGOq0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 10:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932593AbZHGOqZ
+	id S932637AbZHGO5d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 10:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932564AbZHGO5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 10:46:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53148 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932574AbZHGOqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 10:46:24 -0400
-Date: Fri, 7 Aug 2009 09:46:08 -0500
-From: Clark Williams <williams@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
-Subject: [RT] Lockdep warning on boot with 2.6.31-rc5-rt1.1
-Message-ID: <20090807094608.4b0efea1@torg>
-Organization: Red Hat, Inc
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/Fv2+NwoBsXTwCjJOA_tm_kG"; protocol="application/pgp-signature"
+	Fri, 7 Aug 2009 10:57:32 -0400
+Received: from mail-bw0-f215.google.com ([209.85.218.215]:52638 "EHLO
+	mail-bw0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932168AbZHGO5b convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 10:57:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Jrkg3429luZigV9tYXDOoauBfyySt2WfjXlsJul18a2CImGqLhBkG3P+wo/ZxA5yCb
+         gN7gdo0ZcmyyYL5xE8/6KeWVGp7f6BhHGOVYplQ0kvuD+04e2Pwm+Rohxi8jfPqI52t5
+         mtop52ZeyL9Lif02nq3LoXDL8c6KZ9lQ6/wqY=
+MIME-Version: 1.0
+In-Reply-To: <20090807134803.GA7545@tuxdriver.com>
+References: <c6b1100b0908070350t3101030bs4b3d2e7485ad9aee@mail.gmail.com>
+	 <200908071324.45269.elendil@planet.nl>
+	 <c6b1100b0908070556sb3f4f80sc757d8b100cbcb3c@mail.gmail.com>
+	 <20090807134803.GA7545@tuxdriver.com>
+Date: Fri, 7 Aug 2009 15:57:30 +0100
+Message-ID: <c6b1100b0908070757t7b973180s17959e0f46347d5d@mail.gmail.com>
+Subject: Re: ath5k - strange regulatory domain change
+From: Chris Clayton <chris2553@googlemail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Frans Pop <elendil@planet.nl>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/Fv2+NwoBsXTwCjJOA_tm_kG
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hi John,
 
-Peter,
+2009/8/7 John W. Linville <linville@tuxdriver.com>:
+> On Fri, Aug 07, 2009 at 01:56:43PM +0100, Chris Clayton wrote:
+>> Thanks Frans,
+>>
+>> 2009/8/7 Frans Pop <elendil@planet.nl>:
+>> > Chris Clayton wrote:
+>> >> Because of some problems with my Belkin Wireless G card  (model
+>> >> F5D7010) and the rt61pci driver, I've started to use a "no-name" card
+>> >> that is supported by the ath5k driver.
+>> >>
+>> >> A problem is that I have come across is that for some reason the CN
+>> >> regulatory domain is being set automatically. This doesn't happen with
+>> >> the Belkin (rt61) card. I have the following line in
+>> >> /etc/modprobe.d/modprobe.conf to set the regulatory domain to GB:
+>> >>
+>> >> options cfg80211 ieee80211_regdom=GB
+>> >
+>> > This issue has already been discussed extensively (after I reported it).
+>> > Please see the following thread: http://lkml.org/lkml/2009/7/8/421. It
+>> > contains a lot of information from the wireless maintainers.
+>> >
+>>
+>> To sum this up then (as I understand things):
+>>
+>> 1. I am the system administrator (root);
+>> 2. I am using a valid (albeit deprecated from 2.6.31) method to tell
+>> the wireless infrastructure that I want the regulatory domain set to
+>> GB;
+>> 3. GB is a valid code; and
+>> 4. the wireless infrastructure sets the regulatory domain to CN.
+>> 5. in 2.6.30, the wireless infrastructure does what I (the root user)
+>> tell it to do.
+>>
+>> That's a regression in my book. Oh well! I do have the iw and crda
+>> applications installed, so I've taken that route of setting the
+>> regulatory domain to GB.
+>
+> Are you actually getting the wrong regulatory rules enforced?  Or are
+> you merely bothered that it is reporting "CN" instead of "GB"?
+>
 
-I'm getting this warning from lockdep when booting on my T60.=20
+I'm not sure whether it's wrong or not. To these dmesg snippets from
+my original post look wrong because one of the frequency ranges listed
+for CN is outside those listed for GB and one of the CN max_eirp
+entries is not preent in the GB list. Whether that is OK or not I
+don't know and can't find (lay user) documentation to tell me.
 
-The two addresses reported (0xffffffff812664a2 and 0xffffffff812664ae)
-actually bracket one call to mutex_lock() in driver_attach() so I'm not
-sure what the complaint is.
+cfg80211: Regulatory domain changed to country: GB
+        (start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp)
+        (2402000 KHz - 2482000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+        (5170000 KHz - 5250000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+        (5250000 KHz - 5330000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+        (5490000 KHz - 5710000 KHz @ 40000 KHz), (N/A, 2700 mBm)
 
-Clark
+cfg80211: Regulatory domain changed to country: CN
+        (start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp)
+        (2402000 KHz - 2482000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+        (5735000 KHz - 5835000 KHz @ 40000 KHz), (N/A, 3000 mBm)
 
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-[ INFO: possible recursive locking detected ]
-2.6.31-rc5-rt1.1 #37
----------------------------------------------
-swapper/1 is trying to acquire lock:
- (&dev->mutex){+.+...}, at: [<ffffffff812664ae>]
-__driver_attach+0x48/0x81
 
-but task is already holding lock:
- (&dev->mutex){+.+...}, at: [<ffffffff812664a2>]
-__driver_attach+0x3c/0x81
+Thanks
 
-other info that might help us debug this:
-1 lock held by swapper/1:
- #0:  (&dev->mutex){+.+...}, at: [<ffffffff812664a2>]
-__driver_attach+0x3c/0x81
+Chris
 
-stack backtrace:
-Pid: 1, comm: swapper Not tainted 2.6.31-rc5-rt1.1 #37
-Call Trace:
- [<ffffffff81071e38>] __lock_acquire+0x14ae/0x153c
- [<ffffffff812664ae>] ? __driver_attach+0x48/0x81
- [<ffffffff81071fc3>] lock_acquire+0xfd/0x129
- [<ffffffff812664ae>] ? __driver_attach+0x48/0x81
- [<ffffffff8137b667>] _mutex_lock+0x31/0x40
- [<ffffffff812664ae>] ? __driver_attach+0x48/0x81
- [<ffffffff812664ae>] __driver_attach+0x48/0x81
- [<ffffffff81266466>] ? __driver_attach+0x0/0x81
- [<ffffffff81265b9c>] bus_for_each_dev+0x59/0x8e
- [<ffffffff81266245>] driver_attach+0x1e/0x20
- [<ffffffff81265465>] bus_add_driver+0x13f/0x288
- [<ffffffff812667b3>] driver_register+0x9d/0x10e
- [<ffffffff81207e26>] acpi_bus_register_driver+0x43/0x45
- [<ffffffff815f5fdf>] acpi_ec_init+0x37/0x55
- [<ffffffff815f5d47>] acpi_init+0x224/0x265
- [<ffffffff815f5b23>] ? acpi_init+0x0/0x265
- [<ffffffff81009080>] do_one_initcall+0x75/0x18a
- [<ffffffff8106dd0a>] ? put_lock_stats+0xe/0x27
- [<ffffffff8137b3d1>] ? rt_spin_unlock+0x23/0x6d
- [<ffffffff8106dcc8>] ? get_lock_stats+0x16/0x4a
- [<ffffffff8106dcc8>] ? get_lock_stats+0x16/0x4a
- [<ffffffff81145616>] ? proc_register+0x18c/0x1a2
- [<ffffffff8137e6fe>] ? sub_preempt_count+0x35/0x49
- [<ffffffff8106dd0a>] ? put_lock_stats+0xe/0x27
- [<ffffffff8106de1c>] ? lock_release_holdtime+0xf9/0xfe
- [<ffffffff8137b3d1>] ? rt_spin_unlock+0x23/0x6d
- [<ffffffff81145616>] ? proc_register+0x18c/0x1a2
- [<ffffffff8114574a>] ? create_proc_entry+0x79/0x91
- [<ffffffff8109c069>] ? register_irq_proc+0xb3/0xcf
- [<ffffffff81140000>] ? pde_users_dec+0x20/0x45
- [<ffffffff815d370a>] kernel_init+0x17e/0x28b
- [<ffffffff8100d15a>] child_rip+0xa/0x20
- [<ffffffff8100ca94>] ? restore_args+0x0/0x30
- [<ffffffff815d358c>] ? kernel_init+0x0/0x28b
- [<ffffffff8100d150>] ? child_rip+0x0/0x20
----------------------------
-| preempt count: 00000000 ]
-| 0-level deep critical section nesting:
-----------------------------------------
+> John
+> --
+> John W. Linville                Someday the world will need a hero, and you
+> linville@tuxdriver.com                  might be all we have.  Be ready.
+>
 
---Sig_/Fv2+NwoBsXTwCjJOA_tm_kG
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
 
-iEYEARECAAYFAkp8PjMACgkQHyuj/+TTEp2UKACeOFDs1K228u0OMDfNKMqlmFMW
-gI4AoK6hntlHpoQbbLvZ/ZVBlzSeDNWi
-=cAA4
------END PGP SIGNATURE-----
-
---Sig_/Fv2+NwoBsXTwCjJOA_tm_kG--
+-- 
+No, Sir; there is nothing which has yet been contrived by man, by which
+so much happiness is produced as by a good tavern or inn - Doctor Samuel
+Johnson
