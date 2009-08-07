@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbZHGRmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbZHGRoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754816AbZHGRmM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 13:42:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbZHGRmK
+	id S1754754AbZHGRoj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 13:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbZHGRoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 13:42:10 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:20166 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754558AbZHGRmI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 13:42:08 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAM8DfEqrR7MV/2dsb2JhbAC4IYgrkB8FhBY
-X-IronPort-AV: E=Sophos;i="4.43,343,1246838400"; 
-   d="scan'208";a="225058157"
-Date: Fri, 7 Aug 2009 10:42:09 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-usb@vger.kernel.org, greg@kroah.com,
-       linux-scsi@vger.kernel.org, netdev@vger.kernel.org, arjan@infradead.org
-Subject: Re: [PATCH 2/7 v3] initdev:kernel:USB init device discovery
-	notification
-Message-ID: <20090807174209.GB30450@cuplxvomd02.corp.sa.net>
-References: <9b2b86520908070832p2d1658b0t8b1d89d1a034bb9a@mail.gmail.com> <Pine.LNX.4.44L0.0908071142260.3063-100000@iolanthe.rowland.org> <9b2b86520908071017h606e595fr4488d6ff61cb337c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9b2b86520908071017h606e595fr4488d6ff61cb337c@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-1; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+	Fri, 7 Aug 2009 13:44:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60993 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753227AbZHGRoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 13:44:37 -0400
+Subject: Re: fanotify - overall design before I start sending patches
+From: Eric Paris <eparis@redhat.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: a.p.zijlstra@chello.nl, tvrtko.ursulin@sophos.com,
+       douglas.leeder@sophos.com, pavel@ucw.cz, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, malware-list@dmesg.printk.net,
+       Valdis.Kletnieks@vt.edu, greg@kroah.com, jcm@redhat.com, tytso@mit.edu,
+       arjan@infradead.org, david@lang.hm, jengelh@medozas.de,
+       aviro@redhat.com, mrkafk@gmail.com, alexl@redhat.com, hch@infradead.org,
+       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in
+In-Reply-To: <E1MZSQZ-0002as-FA@pomaz-ex.szeredi.hu>
+References: <1248466429.3567.82.camel@localhost> <4A7AAE89.20205@sophos.com>
+	 <1249554548.32113.137.camel@twins>
+	 <200908061159.45550.tvrtko.ursulin@sophos.com>
+	 <1249557831.32113.234.camel@twins>
+	 <1249582695.20644.35.camel@dhcp231-106.rdu.redhat.com>
+	 <E1MZSQZ-0002as-FA@pomaz-ex.szeredi.hu>
+Content-Type: text/plain
+Date: Fri, 07 Aug 2009 13:43:10 -0400
+Message-Id: <1249666990.2694.6.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 06:17:51PM +0100, Alan Jenkins wrote:
-> On 8/7/09, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Fri, 7 Aug 2009, Alan Jenkins wrote:
-> >
-> >> > +/* The mask of possible USB boot devices depends on what drivers and
-> >> > + * options have been configured into the kernel.  There are too many
-> >> > + * USB network config options to list here, so just assume it is always
-> >> > + * possible to have a USB network device.
-> >> > + */
-> >>
-> >> That could be fixed though.  Make the "USB Network Adaptors" menu into
-> >> an option.  Then you just have e.g. "CONFIG_NETDEV_USB", plus the two
-> >> class devices outside the menu (CONFIG_USB_ACM and CONFIG_USB_WDM).
+On Fri, 2009-08-07 at 18:36 +0200, Miklos Szeredi wrote:
+> On Thu, 06 Aug 2009, Eric Paris wrote:
+> > just work.  The whole reason for the timeout is because I don't trust
+> > userspace not to get it wrong and I'd rather not lose my box because of
+> > it.
 > 
-> Oops, scratch WDM.  It doesn't actually provide a network device
-> (otherwise it would depend on NET).
-> 
-> > That could be done.  It might even meet with the approval of the
-> > networking maintainer, independent of this patch series.
-> >
-> > But what if somebody adds yet another networking class driver outside
-> > the menu?
-> 
-> Hmm.
-> 
-> Ok, how about a single (hidden) USB_HAS_NETDEV.  NETDEV_USB and
-> USB_ACM select USB_HAS_NETDEV.
-> 
-> Textual juxtaposition or simple copy+paste inside class/Kconfig should
-> help it get picked up.  And I'd add a comment pointing the bewildered
-> to the definition of usb_initdev_mask.
-> 
-> I'll write a patch for your inspection this evening.
+> IMO this has nothing to do with userspace(*) and everything to do with
+> complexity.  Virus scanning is complex and any such code, whether
+> runing in userspace or not, can easily screw up and freeze the system.
 
-I remember thinking about this and seem to recall that Alan Stern and I
-tossed this idea around, but didn't act on it. Such a thing holds potential
-for avoiding an unnecessary delay during boot. Whether it actually makes
-things faster in a given configuration will depend on that configuration's
-critical path, but I would welcome such a patch on the basis that it's
-unlikely to hurt and could improve boot times in some circumstances.
+I agree, 'userspace' was not the best term.  Let me rephrase:
 
-> Alan
+"The whole reason for the timeout is because I don't trust anything not
+to get it wrong and I'd rather not lose my box because of it."
+
+> The way to solve that is not to implement hacks on the kernel
+> interface, but rather by separating the complex parts and implementing
+> a simple watchdog layer on top of that, that makes sure things don't
+> go wrong.
+
+So you would argue that every fanotify listener implement their own
+watchdog layer that may or may not be correct rather than do a single
+watchdog layer for everyone?  And that's better?
+
+-Eric
+
