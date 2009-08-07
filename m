@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZHGRlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZHGRkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbZHGRlO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 13:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754597AbZHGRlM
+	id S1754739AbZHGRkW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 13:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932118AbZHGRkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 13:41:12 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:42828 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932076AbZHGRkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 7 Aug 2009 13:40:19 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:42798 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754666AbZHGRkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 13:40:17 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Larry Woodman <lwoodman@redhat.com>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: riel@redhat.com, Peter Zijlstra <peterz@infradead.org>,
        LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
        Mel Gorman <mel@csn.ul.ie>
-Subject: [PATCH 6/6] tracing, documentation: Add a document on the kmem tracepoints
-Date: Fri,  7 Aug 2009 18:40:15 +0100
-Message-Id: <1249666815-28784-7-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 1/6] tracing, page-allocator: Add trace events for page allocation and page freeing
+Date: Fri,  7 Aug 2009 18:40:10 +0100
+Message-Id: <1249666815-28784-2-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1249666815-28784-1-git-send-email-mel@csn.ul.ie>
 References: <1249666815-28784-1-git-send-email-mel@csn.ul.ie>
@@ -25,130 +25,153 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Knowing tracepoints exist is not quite the same as knowing what they
-should be used for. This patch adds a document giving a basic
-description of the kmem tracepoints and why they might be useful to a
-performance analyst.
+This patch adds trace events for the allocation and freeing of pages,
+including the freeing of pagevecs.  Using the events, it will be known what
+struct page and pfns are being allocated and freed and what the call site
+was in many cases.
+
+The page alloc tracepoints be used as an indicator as to whether the workload
+was heavily dependant on the page allocator or not. You can make a guess based
+on vmstat but you can't get a per-process breakdown. Depending on the call
+path, the call_site for page allocation may be __get_free_pages() instead
+of a useful callsite. Instead of passing down a return address similar to
+slab debugging, the user should enable the stacktrace and seg-addr options
+to get a proper stack trace.
+
+The pagevec free tracepoint has a different usecase. It can be used to get
+a idea of how many pages are being dumped off the LRU and whether it is
+kswapd doing the work or a process doing direct reclaim.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Acked-by: Rik van Riel <riel@redhat.com>
 ---
- Documentation/trace/events-kmem.txt |  107 +++++++++++++++++++++++++++++++++++
- 1 files changed, 107 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/trace/events-kmem.txt
+ include/trace/events/kmem.h |   74 +++++++++++++++++++++++++++++++++++++++++++
+ mm/page_alloc.c             |    7 +++-
+ 2 files changed, 80 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/trace/events-kmem.txt b/Documentation/trace/events-kmem.txt
-new file mode 100644
-index 0000000..6ef2a86
---- /dev/null
-+++ b/Documentation/trace/events-kmem.txt
-@@ -0,0 +1,107 @@
-+			Subsystem Trace Points: kmem
+diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
+index 1493c54..0d358a0 100644
+--- a/include/trace/events/kmem.h
++++ b/include/trace/events/kmem.h
+@@ -225,6 +225,80 @@ TRACE_EVENT(kmem_cache_free,
+ 
+ 	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
+ );
 +
-+The tracing system kmem captures events related to object and page allocation
-+within the kernel. Broadly speaking there are four major subheadings.
++TRACE_EVENT(mm_page_free_direct,
 +
-+  o Slab allocation of small objects of unknown type (kmalloc)
-+  o Slab allocation of small objects of known type
-+  o Page allocation
-+  o Per-CPU Allocator Activity
-+  o External Fragmentation
++	TP_PROTO(struct page *page, unsigned int order),
 +
-+This document will describe what each of the tracepoints are and why they
-+might be useful.
++	TP_ARGS(page, order),
 +
-+1. Slab allocation of small objects of unknown type
-+===================================================
-+kmalloc		call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s
-+kmalloc_node	call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s node=%d
-+kfree		call_site=%lx ptr=%p
++	TP_STRUCT__entry(
++		__field(	struct page *,	page		)
++		__field(	unsigned int,	order		)
++	),
 +
-+Heavy activity for these events may indicate that a specific cache is
-+justified, particularly if kmalloc slab pages are getting significantly
-+internal fragmented as a result of the allocation pattern. By correlating
-+kmalloc with kfree, it may be possible to identify memory leaks and where
-+the allocation sites were.
++	TP_fast_assign(
++		__entry->page		= page;
++		__entry->order		= order;
++	),
 +
++	TP_printk("page=%p pfn=%lu order=%d",
++			__entry->page,
++			page_to_pfn(__entry->page),
++			__entry->order)
++);
 +
-+2. Slab allocation of small objects of known type
-+=================================================
-+kmem_cache_alloc	call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s
-+kmem_cache_alloc_node	call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s node=%d
-+kmem_cache_free		call_site=%lx ptr=%p
++TRACE_EVENT(mm_pagevec_free,
 +
-+These events are similar in usage to the kmalloc-related events except that
-+it is likely easier to pin the event down to a specific cache. At the time
-+of writing, no information is available on what slab is being allocated from,
-+but the call_site can usually be used to extrapolate that information
++	TP_PROTO(struct page *page, int cold),
 +
-+3. Page allocation
-+==================
-+mm_page_alloc		  page=%p pfn=%lu order=%d migratetype=%d gfp_flags=%s
-+mm_page_alloc_zone_locked page=%p pfn=%lu order=%u migratetype=%d cpu=%d percpu_refill=%d
-+mm_page_free_direct	  page=%p pfn=%lu order=%d
-+mm_pagevec_free		  page=%p pfn=%lu order=%d cold=%d
++	TP_ARGS(page, cold),
 +
-+These four events deal with page allocation and freeing. mm_page_alloc is
-+a simple indicator of page allocator activity. Pages may be allocated from
-+the per-CPU allocator (high performance) or the buddy allocator.
++	TP_STRUCT__entry(
++		__field(	struct page *,	page		)
++		__field(	int,		cold		)
++	),
 +
-+If pages are allocated directly from the buddy allocator, the
-+mm_page_alloc_zone_locked event is triggered. This event is important as high
-+amounts of activity imply high activity on the zone->lock. Taking this lock
-+impairs performance by disabling interrupts, dirtying cache lines between
-+CPUs and serialising many CPUs.
++	TP_fast_assign(
++		__entry->page		= page;
++		__entry->cold		= cold;
++	),
 +
-+When a page is freed directly by the caller, the mm_page_free_direct event
-+is triggered. Significant amounts of activity here could indicate that the
-+callers should be batching their activities.
++	TP_printk("page=%p pfn=%lu order=0 cold=%d",
++			__entry->page,
++			page_to_pfn(__entry->page),
++			__entry->cold)
++);
 +
-+When pages are freed using a pagevec, the mm_pagevec_free is
-+triggered. Broadly speaking, pages are taken off the LRU lock in bulk and
-+freed in batch with a pagevec. Significant amounts of activity here could
-+indicate that the system is under memory pressure and can also indicate
-+contention on the zone->lru_lock.
++TRACE_EVENT(mm_page_alloc,
 +
-+4. Per-CPU Allocator Activity
-+=============================
-+mm_page_alloc_zone_locked	page=%p pfn=%lu order=%u migratetype=%d cpu=%d percpu_refill=%d
-+mm_page_pcpu_drain		page=%p pfn=%lu order=%d cpu=%d migratetype=%d
++	TP_PROTO(struct page *page, unsigned int order,
++			gfp_t gfp_flags, int migratetype),
 +
-+In front of the page allocator is a per-cpu page allocator. It exists only
-+for order-0 pages, reduces contention on the zone->lock and reduces the
-+amount of writing on struct page.
++	TP_ARGS(page, order, gfp_flags, migratetype),
 +
-+When a per-CPU list is empty or pages of the wrong type are allocated,
-+the zone->lock will be taken once and the per-CPU list refilled. The event
-+triggered is mm_page_alloc_zone_locked for each page allocated with the
-+event indicating whether it is for a percpu_refill or not.
++	TP_STRUCT__entry(
++		__field(	struct page *,	page		)
++		__field(	unsigned int,	order		)
++		__field(	gfp_t,		gfp_flags	)
++		__field(	int,		migratetype	)
++	),
 +
-+When the per-CPU list is too full, a number of pages are freed, each one
-+which triggers a mm_page_pcpu_drain event.
++	TP_fast_assign(
++		__entry->page		= page;
++		__entry->order		= order;
++		__entry->gfp_flags	= gfp_flags;
++		__entry->migratetype	= migratetype;
++	),
 +
-+The individual nature of the events are so that pages can be tracked
-+between allocation and freeing. A number of drain or refill pages that occur
-+consecutively imply the zone->lock being taken once. Large amounts of PCP
-+refills and drains could imply an imbalance between CPUs where too much work
-+is being concentrated in one place. It could also indicate that the per-CPU
-+lists should be a larger size. Finally, large amounts of refills on one CPU
-+and drains on another could be a factor in causing large amounts of cache
-+line bounces due to writes between CPUs and worth investigating if pages
-+can be allocated and freed on the same CPU through some algorithm change.
++	TP_printk("page=%p pfn=%lu order=%d migratetype=%d gfp_flags=%s",
++		__entry->page,
++		page_to_pfn(__entry->page),
++		__entry->order,
++		__entry->migratetype,
++		show_gfp_flags(__entry->gfp_flags))
++);
 +
-+5. External Fragmentation
-+=========================
-+mm_page_alloc_extfrag		page=%p pfn=%lu alloc_order=%d fallback_order=%d pageblock_order=%d alloc_migratetype=%d fallback_migratetype=%d fragmenting=%d change_ownership=%d
-+
-+External fragmentation affects whether a high-order allocation will be
-+successful or not. For some types of hardware, this is important although
-+it is avoided where possible. If the system is using huge pages and needs
-+to be able to resize the pool over the lifetime of the system, this value
-+is important.
-+
-+Large numbers of this event implies that memory is fragmenting and
-+high-order allocations will start failing at some time in the future. One
-+means of reducing the occurange of this event is to increase the size of
-+min_free_kbytes in increments of 3*pageblock_size*nr_online_nodes where
-+pageblock_size is usually the size of the default hugepage size.
+ #endif /* _TRACE_KMEM_H */
+ 
+ /* This part must be outside protection */
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index d052abb..440c439 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1062,6 +1062,7 @@ static void free_hot_cold_page(struct page *page, int cold)
+ 
+ void free_hot_page(struct page *page)
+ {
++	trace_mm_page_free_direct(page, 0);
+ 	free_hot_cold_page(page, 0);
+ }
+ 	
+@@ -1905,6 +1906,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+ 				zonelist, high_zoneidx, nodemask,
+ 				preferred_zone, migratetype);
+ 
++	trace_mm_page_alloc(page, order, gfp_mask, migratetype);
+ 	return page;
+ }
+ EXPORT_SYMBOL(__alloc_pages_nodemask);
+@@ -1945,13 +1947,16 @@ void __pagevec_free(struct pagevec *pvec)
+ {
+ 	int i = pagevec_count(pvec);
+ 
+-	while (--i >= 0)
++	while (--i >= 0) {
++		trace_mm_pagevec_free(pvec->pages[i], pvec->cold);
+ 		free_hot_cold_page(pvec->pages[i], pvec->cold);
++	}
+ }
+ 
+ void __free_pages(struct page *page, unsigned int order)
+ {
+ 	if (put_page_testzero(page)) {
++		trace_mm_page_free_direct(page, order);
+ 		if (order == 0)
+ 			free_hot_page(page);
+ 		else
 -- 
 1.6.3.3
 
