@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756424AbZHGDHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756986AbZHGDbF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756424AbZHGDHg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 23:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbZHGDHg
+	id S1756986AbZHGDbF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 23:31:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbZHGDbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 23:07:36 -0400
-Received: from dakia2.marvell.com ([65.219.4.35]:55214 "EHLO
-	dakia2.marvell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbZHGDHf (ORCPT
+	Thu, 6 Aug 2009 23:31:05 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:65389 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752166AbZHGDbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 23:07:35 -0400
-X-ASG-Debug-ID: 1249614456-7d7900e20000-xx1T2L
-X-Barracuda-URL: http://10.68.76.222:80/cgi-bin/mark.cgi
-Date: Thu, 6 Aug 2009 23:07:33 -0400 (EDT)
-From: Nicolas Pitre <nico@marvell.com>
-X-X-Sender: nico@xanadu.home
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: Dhaval Vasa <dhaval.vasa@einfochips.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Rabeeh Khoury <rabeeh@marvell.com>
-X-ASG-Orig-Subj: Re: [PATCH] [ARM] Kirkwood: Marvell OpenRD-Base board support added
- to v2.6.31-rc5
-Subject: Re: [PATCH] [ARM] Kirkwood: Marvell OpenRD-Base board support added
- to v2.6.31-rc5
-In-Reply-To: <20090806230726.GA19624@fluff.org.uk>
-Message-ID: <alpine.LFD.2.00.0908062303390.16073@xanadu.home>
-References: <1249567753-724-1-git-send-email-dhaval.vasa@einfochips.com> <20090806230726.GA19624@fluff.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 6 Aug 2009 23:31:03 -0400
+Date: Thu, 6 Aug 2009 23:31:03 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Li Zefan <lizf@cn.fujitsu.com>
+cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] tracing/filters: Support filtering for char *
+ strings
+In-Reply-To: <4A7B9E6B.2090202@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0908062328140.2840@gandalf.stny.rr.com>
+References: <4A7A72BD.5030201@cn.fujitsu.com> <4A7A72FA.9040102@cn.fujitsu.com> <alpine.DEB.2.00.0908061020240.9870@gandalf.stny.rr.com> <4A7B8149.3070901@cn.fujitsu.com> <alpine.DEB.2.00.0908062251230.2840@gandalf.stny.rr.com> <4A7B9BB5.3040005@cn.fujitsu.com>
+ <alpine.DEB.2.00.0908062321420.2840@gandalf.stny.rr.com> <4A7B9E6B.2090202@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Barracuda-Connect: maili.marvell.com[10.68.76.51]
-X-Barracuda-Start-Time: 1249614456
-X-Barracuda-Virus-Scanned: by dakia2.marvell.com at marvell.com
-X-Barracuda-Spam-Score: -1002.00
-X-Barracuda-Spam-Status: No, SCORE=-1002.00 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=1000.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Aug 2009, Ben Dooks wrote:
 
-> On Thu, Aug 06, 2009 at 07:39:13PM +0530, Dhaval Vasa wrote:
-> > reference:
-> > http://open-rd.org
-> > http://code.google.com/p/openrd
+On Fri, 7 Aug 2009, Li Zefan wrote:
+
+> Steven Rostedt wrote:
+> > Ah, so the answer I'm looking for is:
 > > 
-> > This patch is tested for:
-> > 1. Boot from DRAM/NAND flash
-> > 2. NAND read/write/erase
-> > 3. GbE0
-> > 4. USB read/write
+> > The filtering will not dereference "char *" unless the developer 
+> > explicitly sets FILTER_PTR_STR in __field_ext.
 > > 
-> > FIXME:
-> > 1. SD/UART1 selection
-> > 2. MPP configuration (currently, default)
-> > 3. PEX
+> > Is this above statement correct?
 > > 
-> > Signed-off-by: Dhaval Vasa <dhaval.vasa@einfochips.com>
 > 
-> You forgot to cc: linux-arm-kernel@lists.arm.linux.org.uk, although
-> someone really should issue a MAINTAINERS entry for that machine
-> directory.
+> Exactly. Sorry that I didn't explain it clearly in the
+> first place. :)
 
-Yep, I'll take care of it.
+No problem. It is quite often that things so blatantly obvious to a 
+developer is totally foreign for the observer, that the simple explanation 
+is commonly overlooked.
 
-> > ---
-> >  arch/arm/mach-kirkwood/Kconfig             |    5 ++
-> >  arch/arm/mach-kirkwood/Makefile            |    1 +
-> >  arch/arm/mach-kirkwood/openrd_base-setup.c |   79 ++++++++++++++++++++++++++++
-> >  3 files changed, 85 insertions(+), 0 deletions(-)
-> >  create mode 100644 arch/arm/mach-kirkwood/openrd_base-setup.c
-> 
-> call this openrd.c or openrd_base.c, the -setup is redundant as
-> these directories are suposed to have the machine setup files in
-> them.
+I'll pull in your patches, with the -1 update, as well as adding my 
+above statement to this patch's change log.
 
-The *-setup.c is the existing naming sheme used for the Orion and 
-Kirkwood architectures to contain board setup code instead of common IRQ 
-or timer code for example.  So it is fine.
+I'll queue it for 32.
 
+Thanks!
 
-Nicolas
+-- Steve
+
