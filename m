@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZHGI1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbZHGIbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757254AbZHGI1d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 04:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757112AbZHGI1d
+	id S1757267AbZHGIbd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 04:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757257AbZHGIbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 04:27:33 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37323 "EHLO mx3.mail.elte.hu"
+	Fri, 7 Aug 2009 04:31:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48882 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757056AbZHGI1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 04:27:31 -0400
-Date: Fri, 7 Aug 2009 10:27:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Brice Goglin <Brice.Goglin@inria.fr>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf tools: Fix reading of perf.data file header
-Message-ID: <20090807082727.GB23910@elte.hu>
-References: <1249580428.4975.14.camel@laptop> <4A7B175B.8030000@inria.fr> <1249585061.4975.17.camel@laptop> <4A7B28EA.20903@inria.fr> <20090806195924.GA22411@elte.hu> <4A7B68C3.7040706@inria.fr> <20090807063226.GA29532@elte.hu> <4A7BD9EC.8000801@inria.fr> <20090807074525.GA20292@elte.hu> <4A7BE35F.4060604@inria.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+	id S1757256AbZHGIbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 04:31:31 -0400
+Date: Fri, 7 Aug 2009 08:30:52 GMT
+From: tip-bot for Brice Goglin <Brice.Goglin@inria.fr>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Brice.Goglin@inria.fr, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, Brice.Goglin@inria.fr,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
 In-Reply-To: <4A7BE35F.4060604@inria.fr>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <4A7BE35F.4060604@inria.fr>
+Subject: [tip:perfcounters/core] perf stat: Rename -S/--scale to -c/--scale
+Message-ID: <tip-d4b2db0a624500c978f14393e6933d5d6aa552d2@git.kernel.org>
+Git-Commit-ID: d4b2db0a624500c978f14393e6933d5d6aa552d2
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 07 Aug 2009 08:30:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  d4b2db0a624500c978f14393e6933d5d6aa552d2
+Gitweb:     http://git.kernel.org/tip/d4b2db0a624500c978f14393e6933d5d6aa552d2
+Author:     Brice Goglin <Brice.Goglin@inria.fr>
+AuthorDate: Fri, 7 Aug 2009 10:18:39 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 7 Aug 2009 10:26:12 +0200
 
-* Brice Goglin <Brice.Goglin@inria.fr> wrote:
-
-> [PATCH] perf stat: change -S for --scale into -c
-
-Applied, thanks Brice!
-
-Find below the full changelog - i filled in the 'why' bits.
-
-	Ingo
-
-------------------------->
->From d4b2db0a624500c978f14393e6933d5d6aa552d2 Mon Sep 17 00:00:00 2001
-From: Brice Goglin <Brice.Goglin@inria.fr>
-Date: Fri, 7 Aug 2009 10:18:39 +0200
-Subject: [PATCH] perf stat: Rename -S/--scale to -c/--scale
+perf stat: Rename -S/--scale to -c/--scale
 
 We want to use a coherent flag for -S/--stat across all tools,
 so free up -S in perf stat.
@@ -58,6 +49,8 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: paulus@samba.org
 LKML-Reference: <4A7BE35F.4060604@inria.fr>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
  tools/perf/Documentation/perf-stat.txt |    2 +-
  tools/perf/builtin-stat.c              |    2 +-
