@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932823AbZHGUjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933869AbZHGUmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932823AbZHGUjk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbZHGUjk
+	id S933869AbZHGUmw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754460AbZHGUmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:39:40 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:52383 "EHLO
+	Fri, 7 Aug 2009 16:42:51 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:33071 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752166AbZHGUjj (ORCPT
+	with ESMTP id S1752911AbZHGUmu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:39:39 -0400
-Date: Fri, 7 Aug 2009 22:39:39 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	Fri, 7 Aug 2009 16:42:50 -0400
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Thomas Gleixner <tglx@linutronix.de>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        rt-users <linux-rt-users@vger.kernel.org>
-Subject: Re: [ANNOUNCE] 2.6.31-rc4-rt1
-Message-ID: <20090807203939.GA19374@pengutronix.de>
-References: <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
+Subject: [PATCH 6/6] [ARM] Use atomic_spin_lock/atomic_spin_unlock for irqdesc lock
+Date: Fri,  7 Aug 2009 22:42:41 +0200
+Message-Id: <1249677761-19470-6-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <20090807203939.GA19374@pengutronix.de>
+References: <20090807203939.GA19374@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
 X-SA-Exim-Mail-From: ukl@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
@@ -33,14 +32,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->    2) I'm going on vacation for 10 days. Please send patches and
->    bugreports^Wsuccess stories to the mailinglist as usual. There are
->    folks looking out.
-Here come a few that fix stuff for ARM.  Expect some more later.
+This was missed in commit
 
-Best regards
-Uwe
+	fd2bde5 (genirq: Convert irqdesc lock to atomic_spinlock)
 
+Signed-off-by: Uwe Kleine-KÃ¶nig <u.kleine-koenig@pengutronix.de>
+---
+ arch/arm/include/asm/mach/irq.h |    4 ++--
+ mm/highmem.c                    |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/include/asm/mach/irq.h b/arch/arm/include/asm/mach/irq.h
+index acac530..3981cf2 100644
+--- a/arch/arm/include/asm/mach/irq.h
++++ b/arch/arm/include/asm/mach/irq.h
+@@ -26,9 +26,9 @@ extern int show_fiq_list(struct seq_file *, void *);
+  */
+ #define do_bad_IRQ(irq,desc)				\
+ do {							\
+-	spin_lock(&desc->lock);				\
++	atomic_spin_lock(&desc->lock);			\
+ 	handle_bad_irq(irq, desc);			\
+-	spin_unlock(&desc->lock);			\
++	atomic_spin_unlock(&desc->lock);		\
+ } while(0)
+ 
+ #endif
+diff --git a/mm/highmem.c b/mm/highmem.c
+index 66e915a..214eefd 100644
+--- a/mm/highmem.c
++++ b/mm/highmem.c
+@@ -372,8 +372,8 @@ void *kmap_high_get(struct page *page)
+ 	lock_kmap_any(flags);
+ 	vaddr = (unsigned long)page_address(page);
+ 	if (vaddr) {
+-		BUG_ON(pkmap_count[PKMAP_NR(vaddr)] < 1);
+-		pkmap_count[PKMAP_NR(vaddr)]++;
++		BUG_ON(atomic_read(&pkmap_count[PKMAP_NR(vaddr)]) < 1);
++		atomic_add(1, pkmap_count[PKMAP_NR(vaddr)]);
+ 	}
+ 	unlock_kmap_any(flags);
+ 	return (void*) vaddr;
 -- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+1.6.3.3
+
