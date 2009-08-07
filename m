@@ -1,67 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbZHGR3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932074AbZHGRbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754522AbZHGR3l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 13:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbZHGR3k
+	id S932074AbZHGRbT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 13:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbZHGRbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 13:29:40 -0400
-Received: from anna.cs.tau.ac.il ([132.67.192.229]:46222 "EHLO cs.tau.ac.il"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751631AbZHGR3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 13:29:39 -0400
-Date: Fri, 7 Aug 2009 20:29:38 +0300
-To: linux-kernel@vger.kernel.org
-Cc: nzaidenberg@mac.com, Nezer.Zaidenberg@edfenergy.com,
-       scipioenterprises@yahoo.com, tomerma1@post.tau.ac.il
-Subject: Asynchronous Mirror
-Message-ID: <20090807172938.GA1882@localhost.localdomain>
+	Fri, 7 Aug 2009 13:31:19 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:46586 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753572AbZHGRbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 13:31:18 -0400
+Date: Fri, 7 Aug 2009 18:31:18 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Larry Woodman <lwoodman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [PATCH 1/4] tracing, page-allocator: Add trace events for page
+	allocation and page freeing
+Message-ID: <20090807173118.GA10446@csn.ul.ie>
+References: <20090805165302.5BC8.A69D9226@jp.fujitsu.com> <20090805094019.GB21950@csn.ul.ie> <20090807100502.5BDC.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="Kernel Mail"
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: tomerma1@tau.ac.il (Tomer Margalit)
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090807100502.5BDC.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Aug 07, 2009 at 10:17:57AM +0900, KOSAKI Motohiro wrote:
+> 
+> > > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > > > index d052abb..843bdec 100644
+> > > > --- a/mm/page_alloc.c
+> > > > +++ b/mm/page_alloc.c
+> > > > @@ -1905,6 +1905,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+> > > >  				zonelist, high_zoneidx, nodemask,
+> > > >  				preferred_zone, migratetype);
+> > > >  
+> > > > +	trace_mm_page_alloc(_RET_IP_, page, order, gfp_mask, migratetype);
+> > > >  	return page;
+> > > >  }
+> > > 
+> > > In almost case, __alloc_pages_nodemask() is called from alloc_pages_current().
+> > > Can you add call_site argument? (likes slab_alloc)
+> > > 
+> > 
+> > In the NUMA case, this will be true but addressing it involves passing down
+> > an additional argument in the non-tracing case which I wanted to avoid.
+> > As the stacktrace option is available to ftrace, I think I'll drop call_site
+> > altogether as anyone who really needs that information has options.
+> 
+> Insted, can we move this tracepoint to alloc_pages_current(), alloc_pages_node() et al ?
+> On page tracking case, call_site information is one of most frequently used one.
+> if we need multiple trace combination, it become hard to use and reduce usefulness a bit.
+> 
 
-I am currently writing a (BSD licensed) asynchronous mirror device, as part of a workshop for Tel Aviv University (under the direction of Nezer Zaidenberg).
+Ok, lets think about that. The potential points that would need
+annotation are
 
-The purpose of the device is to be able to attach to an existing device, intercept the incoming writes, and send them to a remote location (and remote here means other side of the world).
-The asynchronous part is that the device keeps a window of about a minute of writes and makes sure it sends all of it (if more writes are recieved while the window is full, they are blocked until the it clears).
+	o alloc_pages_current
+	o alloc_page_vma
+	o alloc_pages_node
+	o alloc_pages_exact_node
 
-I am in charge of writing the kernel part of it, and so ive written an alpha version (Located in "http://www.cs.tau.ac.il/~tomerma1/amirror_src.zip")).
+The inlined functions that call those and should preserve the call_site
+are
 
-Right now the driver is designed like this (right now it is designed only for one asynchronous mirror device):
-There are two modules. The main module creates a device on top of the target device, intercepts writes, and puts them in a kernel buffer (several dozen pages - but will be changed to the whole window to save copies).
-The other module creates a device, only to be used by a daemon. The daemon allocates a buffer (the send window) and creates two threads - one ioctls the other module, and stays in the ioctl. The ioctl/daemon thread continously copies the kernel buffer to the daemon buffer. The other thread just sends whatever is in the send buffer.
+	o alloc_pages
 
-Right now im trying to get rid of the other module and put the ioctl in the main module (and just tell the daemon to ioctl the main module).
-However, this causes a problem that i cant explain...
-When i do a write to the device (offset: 0, data: "a" (len: 1)), the following thing happens:
-1) The device is opened.
-2) A read is issued (as it should to get the data that must be rewritten in the rest of the page ).
-3) The device is closed and the write ends successfully.
-4) 30+ seconds afterwards the actual write is recieved.
+The slightly lower functions they call are as follows. These cannot
+trigger a tracepoint event because it would look like a duplicate.
 
-When i use two modules, this never happens - the write comes before the device is closed, and (i think, no proof though) the write ends after the write is issued. Needless to say that i added an idle ioctl that just waits to the two-module version and the same thing (as the single-module version) happens (hinting that the ioctl is changing some things).
+	o __alloc_pages_nodemask
+		- called by __alloc_pages
+	o __alloc_pages
+		- called by alloc_page_interleave() but event logged
+		- called by alloc_pages_node but event logged
+		- called by alloc_pages_exact_node but event logged
 
-Since it seems like the ioctl causes the problem i will probably change the ioctl to spawn a kernel thread and work from there (hoping that will solve it).
+The more problematic ones are
 
-(BTW, im using a custom make_request function (i call blk_queue_make_request)).
+	o __get_free_pages
+	o get_zeroed_page
+	o alloc_pages_exact
 
-I would appreciate it if you could help me with the following:
-1) Why is the ioctl causing this sort of behavior (if there is no ioctl in the same module it seems to be ok...)?
-2) Does the custom make_request function promise me that EVERY bio recieved by the device is directly handed to my make_request function? Or is there some kind of schedualer that hands me the requests (I looked at the I/O schedualer algorithm in the biodoc.txt, but it seems to be relevant only for devices that use a request_queue)?
-3) I saw (in the generic_make_request code) that only one make request can be active at a time... Is that something i can/should base my code on?
-4) Can generic_make_request be called several times? Cause in the code 
-(blk-core.c) the first line checks that current->bio_tail is non-null and then dereferences, and the last line changes it to null.. If generic_make_request can be called several times then how do you know that they cant mess each other up (i havent seen any locking (in the low level at least))?
-5) I have assumed in the code that the bios that i get are sector aligned and are in sector multiples... Is that a correct assumption? (cause i havent seen an exact statement that that is the case anywhere...) Also (sorry, silly question, but i dont like assuming things) would it be valid to assume that the size of a page (kmap(p) where p is struct page) is PAGE_SIZE (or more specifically, is the maximal length for a single bio_vec PAGE_SIZE?)?
-6) Im currently using generic_make_request to resubmit a bio (or returning non-zero in make_request and changing bi_bdev to the target)... Does it resubmit it to the request_queue in the usual way? Or does it bypass it somehow?
-7) About my open and release, i thought that the proper thing to put there is the target device's open and release (so that target device can prepare), but as far as i could see, in the raid implementation (md.c i think), the open and release methods dont tell the underlying devices to open/release... So, should i forget about it? or is it important?
-8) I dont use procfs or sysfs at all, and i intend on using only ioctls for special commands... However in several places it was written that sysfs is supposed to introduce standartization to the driver model (didnt really try to understand it cause ioctls are fine by me)... Should i reconsider not using sysfs/procfs?
-9) Any suggestions for the code/interesting features would be most welcome.
+The are all real functions that call down to functions that would log
+events already based on your suggestion - alloc_pages_current() in
+particularly.
 
-Thanks in advance,
-         Tomer
+Looking at it, it would appear the page allocator API would need a fair
+amount of reschuffling to preserve call_site and not duplicate events or
+else to pass call_site down through the API even in the non-tracing case.
+Minimally, that makes it a standalone patch but it would also need a good
+explanation as to why capturing the stack trace on the event is not enough
+to track the page for things like catching memory leaks.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
