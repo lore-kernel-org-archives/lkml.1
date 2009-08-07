@@ -1,85 +1,526 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933698AbZHGUXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933721AbZHGUX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933698AbZHGUXs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932621AbZHGUXs
+	id S933721AbZHGUX5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:23:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933702AbZHGUX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:23:48 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:37970 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932587AbZHGUXr (ORCPT
+	Fri, 7 Aug 2009 16:23:56 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:38996 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932621AbZHGUXv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:23:47 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Eric Paris <eparis@redhat.com>
-Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
-       esandeen@redhat.com, eteo@redhat.com, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk
-Subject: Re: [Patch v3] vfs: allow file truncations when both suid and write permissions set
-References: <20090807100743.5822.90612.sendpatchset@localhost.localdomain>
-	<1249675025.2694.15.camel@dhcp231-106.rdu.redhat.com>
-Date: Sat, 08 Aug 2009 05:23:44 +0900
-In-Reply-To: <1249675025.2694.15.camel@dhcp231-106.rdu.redhat.com> (Eric
-	Paris's message of "Fri, 07 Aug 2009 15:57:05 -0400")
-Message-ID: <87prb7v0dr.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Fri, 7 Aug 2009 16:23:51 -0400
+Date: Fri, 7 Aug 2009 23:24:56 +0300
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: ext Anuj Aggarwal <anuj.aggarwal@ti.com>
+Cc: "broonie@sirena.org.uk" <broonie@sirena.org.uk>,
+       "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-i2c@vger.kernel.org
+Subject: Re: [PATCH 1/8] Regulator: Add TPS65023 regulator driver
+Message-ID: <20090807202456.GC9780@nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <1249658726-10769-1-git-send-email-anuj.aggarwal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Disposition: inline
+In-Reply-To: <1249658726-10769-1-git-send-email-anuj.aggarwal@ti.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 07 Aug 2009 20:23:39.0376 (UTC) FILETIME=[F3107700:01CA179C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Paris <eparis@redhat.com> writes:
+Hi,
 
-> On Fri, 2009-08-07 at 06:05 -0400, Amerigo Wang wrote:
->> V2 -> V3:
->> Call notify_change() before clearing suid/sgid.
->> Thanks to OGAWA Hirofumi.
->> 
->> V1 -> V2:
->> Introduce dentry_remove_suid(), and use it in do_truncate().
->> Thanks to Eric Paris.
->> 
->> 
->> When suid is set and the non-owner user has write permission,
->> any writing into this file should be allowed and suid should be
->> removed after that.
->> 
->> However, current kernel only allows writing without truncations,
->> when we do truncations on that file, we get EPERM. This is a bug.
->> 
->> Steps to reproduce this bug:
->> 
->> % ls -l rootdir/file1
->> -rwsrwsrwx 1 root root 3 Jun 25 15:42 rootdir/file1
->> % echo h > rootdir/file1
->> zsh: operation not permitted: rootdir/file1
->> % ls -l rootdir/file1
->> -rwsrwsrwx 1 root root 3 Jun 25 15:42 rootdir/file1
->> % echo h >> rootdir/file1
->> % ls -l rootdir/file1
->> -rwxrwxrwx 1 root root 5 Jun 25 16:34 rootdir/file1
->> 
->> This patch fixes it.
->> 
->> Signed-off-by: WANG Cong <amwang@redhat.com>
->> Cc: Eric Sandeen <esandeen@redhat.com>
->> Cc: Eric Paris <eparis@redhat.com>
->> Cc: Eugene Teo <eteo@redhat.com>
->> Cc: Al Viro <viro@zeniv.linux.org.uk>
->> Cc: hirofumi@mail.parknet.co.jp
->
-> I was thinking about this and kept telling myself I was going to test v2
-> before I ack/nak.  Clearly we shouldn't for the dropping of SUID if the
-> process didn't have permission to change the ATTR_SIZE.
->
-> Acked-by: Eric Paris <eparis@redhat.com>
+Adding linux-i2c to the loop.
 
-BTW, Do you know why doesn't security modules fix the handling of
-do_truncate() (i.e. ATTR_MODE | ATTR_SIZE). And why doesn't it allow to
-pass ATTR_FORCE for it?
+On Fri, Aug 07, 2009 at 05:25:26PM +0200, ext Anuj Aggarwal wrote:
+> +static inline int tps_65023_read_reg(struct tps_pmic *tps, u8 reg, u8 *val)
+> +{
+> +       int status;
+> +
+> +       status = i2c_smbus_read_byte_data(tps->client, reg);
+> +       *val = status;
+> +       if (status < 0)
+> +               return status;
+> +       return 0;
+> +}
 
-Thanks.
+make this:
+
+static inline int tps_65023_read_reg(struct tps_pmic *tps, u8 reg)
+{
+       return i2c_smbus_read_byte_data(tps->client, reg);
+}
+
+ad change the users likewise.
+
+> +static inline int tps_65023_write_reg(struct tps_pmic *tps, u8 reg, u8 val)
+> +{
+> +       return i2c_smbus_write_byte_data(tps->client, reg, val);
+> +}
+> +
+> +static int tps_65023_set_bits(struct tps_pmic *tps, u8 reg, u8 mask)
+> +{
+> +       u8 data;
+> +       int err;
+> +
+> +       err = tps_65023_read_reg(tps, reg, &data);
+
+then this would become:
+
+	data = tps_65023_read_reg(tps, reg);
+	if (data < 0) {
+> +       if (err) {
+> +               pr_err("Read from reg 0x%x failed\n", reg);
+
+this should use dev_dbg(); you have a device struct inside the
+i2c_client, use it.
+
+> +               return err;
+> +       }
+> +
+> +       data |= mask;
+> +
+> +       return tps_65023_write_reg(tps, reg, data);
+> +}
+> +
+> +static int tps_65023_clear_bits(struct tps_pmic *tps, u8 reg, u8 mask)
+> +{
+> +       u8 data;
+> +       int err;
+> +
+> +       err = tps_65023_read_reg(tps, reg, &data);
+> +       if (err) {
+
+ditto
+
+> +               pr_err("Read from reg 0x%x failed\n", reg);
+
+ditto
+
+> +               return err;
+> +       }
+> +
+> +       data &= ~mask;
+> +
+> +       return tps_65023_write_reg(tps, reg, data);
+> +}
+> +
+> +static int tps65023_dcdc_is_enabled(struct regulator_dev *dev)
+> +{
+> +       unsigned char reg_ctrl;
+> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
+> +       int dcdc = rdev_get_id(dev);
+> +       int ret;
+> +       u8 shift;
+> +
+> +       if (dcdc < TPS65023_DCDC_1 || dcdc > TPS65023_DCDC_3)
+> +               return -EINVAL;
+> +
+> +       shift = TPS65023_NUM_REGULATOR - dcdc;
+> +       ret = tps_65023_read_reg(tps, TPS65023_REG_REG_CTRL, &reg_ctrl);
+> +
+> +       if (ret == 0) {
+> +               reg_ctrl &= (1 << shift);
+> +               return reg_ctrl ? 1 : 0;
+> +       } else
+> +               return ret;
+> +}
+> +
+> +static int tps65023_ldo_is_enabled(struct regulator_dev *dev)
+> +{
+> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
+> +       int ldo = rdev_get_id(dev);
+> +       int ret;
+> +       u8 shift;
+> +       unsigned char reg_ctrl;
+> +
+> +       if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
+> +               return -EINVAL;
+> +
+> +       shift = (ldo == TPS65023_LDO_1 ? 1 : 2);
+> +       ret = tps_65023_read_reg(tps, TPS65023_REG_REG_CTRL, &reg_ctrl);
+> +
+> +       if (ret == 0) {
+> +               reg_ctrl &= (1 << shift);
+> +               return reg_ctrl ? 1 : 0;
+> +       } else
+> +               return ret;
+> +}
+> +
+> +static int tps65023_dcdc_enable(struct regulator_dev *dev)
+> +{
+> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
+> +       int dcdc = rdev_get_id(dev);
+> +       u8 shift;
+> +
+> +       if (dcdc < TPS65023_DCDC_1 || dcdc > TPS65023_DCDC_3)
+> +               return -EINVAL;
+> +
+> +       shift = TPS65023_NUM_REGULATOR - dcdc;
+> +       return tps_65023_set_bits(tps, TPS65023_REG_REG_CTRL, 1 << shift);
+> +}
+> +
+> +static int tps65023_dcdc_disable(struct regulator_dev *dev)
+> +{
+> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
+> +       int dcdc = rdev_get_id(dev);
+> +       u8 shift;
+> +
+> +       if (dcdc < TPS65023_DCDC_1 || dcdc > TPS65023_DCDC_3)
+> +               return -EINVAL;
+> +
+> +       shift = TPS65023_NUM_REGULATOR - dcdc;
+> +       return tps_65023_clear_bits(tps, TPS65023_REG_REG_CTRL, 1 << shift);
+> +}
+> +
+> +static int tps65023_ldo_enable(struct regulator_dev *dev)
+> +{
+> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
+> +       int ldo = rdev_get_id(dev);
+> +       u8 shift;
+> +
+> +       if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
+> +               return -EINVAL;
+> +
+> +       shift = (ldo == TPS65023_LDO_1 ? 1 : 2);
+> +       return tps_65023_set_bits(tps, TPS65023_REG_REG_CTRL, 1 << shift);
+> +}
+> +
+> +static int tps65023_ldo_disable(struct regulator_dev *dev)
+> +{
+> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
+> +       int ldo = rdev_get_id(dev);
+> +       u8 shift;
+> +
+> +       if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
+> +               return -EINVAL;
+> +
+> +       shift = (ldo == TPS65023_LDO_1 ? 1 : 2);
+> +       return tps_65023_clear_bits(tps, TPS65023_REG_REG_CTRL, 1 << shift);
+> +}
+> +
+> +static int tps65023_dcdc_get_voltage(struct regulator_dev *dev)
+> +{
+> +       unsigned char reg_ctrl;
+> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
+> +       int dcdc = rdev_get_id(dev);
+> +       int ret;
+> +
+> +       if (dcdc < TPS65023_DCDC_1 || dcdc > TPS65023_DCDC_3)
+> +               return -EINVAL;
+> +
+> +       if (dcdc == TPS65023_DCDC_1) {
+> +               ret = tps_65023_read_reg(tps, TPS65023_REG_DEF_CORE, &reg_ctrl);
+> +               if (ret < 0)
+> +                       return ret;
+> +               reg_ctrl &= (tps->info[dcdc]->table_len - 1);
+> +               return tps->info[dcdc]->table[reg_ctrl] * 1000;
+> +       } else
+> +               return tps->info[dcdc]->min_uV;
+> +}
+> +
+> +static int tps65023_dcdc_set_voltage(struct regulator_dev *dev,
+> +                               int min_uV, int max_uV)
+> +{
+> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
+> +       int dcdc = rdev_get_id(dev);
+> +       int vsel;
+> +
+> +       if (dcdc != TPS65023_DCDC_1)
+> +               return -EINVAL;
+> +
+> +       if (min_uV < tps->info[dcdc]->min_uV
+> +                       || min_uV > tps->info[dcdc]->max_uV)
+> +               return -EINVAL;
+> +       if (max_uV < tps->info[dcdc]->min_uV
+> +                       || max_uV > tps->info[dcdc]->max_uV)
+> +               return -EINVAL;
+> +
+> +       for (vsel = 0; vsel < tps->info[dcdc]->table_len; vsel++) {
+> +               int mV = tps->info[dcdc]->table[vsel];
+> +               int uV = mV * 1000;
+> +
+> +               /* Break at the first in-range value */
+> +               if (min_uV <= uV && uV <= max_uV)
+> +                       break;
+> +       }
+> +
+> +       /* write to the register */
+> +       return tps_65023_write_reg(tps, TPS65023_REG_DEF_CORE, vsel);
+> +}
+> +
+> +static int tps65023_ldo_get_voltage(struct regulator_dev *dev)
+> +{
+> +       unsigned char reg_ctrl;
+> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
+> +       int ldo = rdev_get_id(dev);
+> +       int ret;
+> +
+> +       if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
+> +               return -EINVAL;
+> +
+> +       ret = tps_65023_read_reg(tps, TPS65023_REG_LDO_CTRL, &reg_ctrl);
+> +       if (ret < 0)
+> +               return ret;
+> +
+> +       reg_ctrl >>= (TPS65023_LDO_CTRL_LDOx_SHIFT(ldo - TPS65023_LDO_1));
+> +       reg_ctrl &= (tps->info[ldo]->table_len - 1);
+> +       return tps->info[ldo]->table[reg_ctrl] * 1000;
+> +}
+> +
+> +static int tps65023_ldo_set_voltage(struct regulator_dev *dev,
+> +                               int min_uV, int max_uV)
+> +{
+> +       struct tps_pmic *tps = rdev_get_drvdata(dev);
+> +       int ldo = rdev_get_id(dev);
+> +       int vsel;
+> +       int ret;
+> +       unsigned char reg_ctrl;
+> +
+> +       if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
+> +               return -EINVAL;
+> +
+> +       if (min_uV < tps->info[ldo]->min_uV || min_uV > tps->info[ldo]->max_uV)
+> +               return -EINVAL;
+> +       if (max_uV < tps->info[ldo]->min_uV || max_uV > tps->info[ldo]->max_uV)
+> +               return -EINVAL;
+> +
+> +       for (vsel = 0; vsel < tps->info[ldo]->table_len; vsel++) {
+> +               int mV = tps->info[ldo]->table[vsel];
+> +               int uV = mV * 1000;
+> +
+> +               /* Break at the first in-range value */
+> +               if (min_uV <= uV && uV <= max_uV)
+> +                       break;
+> +       }
+> +
+> +       ret = tps_65023_read_reg(tps, TPS65023_REG_LDO_CTRL, &reg_ctrl);
+> +
+> +       if (ret < 0)
+> +               return ret;
+> +
+> +       reg_ctrl &= TPS65023_LDO_CTRL_LDOx_MASK(ldo - TPS65023_LDO_1);
+> +       reg_ctrl |=
+> +               (vsel << (TPS65023_LDO_CTRL_LDOx_SHIFT(ldo - TPS65023_LDO_1)));
+> +       return tps_65023_write_reg(tps, TPS65023_REG_LDO_CTRL, reg_ctrl);
+> +}
+> +
+> +/* Operations permitted on VDCDCx */
+> +static struct regulator_ops tps65023_dcdc_ops = {
+> +       .is_enabled = tps65023_dcdc_is_enabled,
+> +       .enable = tps65023_dcdc_enable,
+> +       .disable = tps65023_dcdc_disable,
+> +       .get_voltage = tps65023_dcdc_get_voltage,
+> +       .set_voltage = tps65023_dcdc_set_voltage,
+> +};
+> +
+> +/* Operations permitted on LDOx */
+> +static struct regulator_ops tps65023_ldo_ops = {
+> +       .is_enabled = tps65023_ldo_is_enabled,
+> +       .enable = tps65023_ldo_enable,
+> +       .disable = tps65023_ldo_disable,
+> +       .get_voltage = tps65023_ldo_get_voltage,
+> +       .set_voltage = tps65023_ldo_set_voltage,
+> +};
+> +
+> +static
+> +int tps_65023_probe(struct i2c_client *client, const struct i2c_device_id *id)
+> +{
+> +       static int desc_id;
+> +       const struct tps_info *info = (void *)id->driver_data;
+> +       struct regulator_init_data *init_data;
+> +       struct regulator_dev *rdev;
+> +       struct tps_pmic *tps;
+> +       int i;
+> +
+> +       if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
+> +               return -EIO;
+> +
+> +       /**
+> +        * init_data points to array of regulator_init structures
+> +        * coming from the board-evm file.
+> +        */
+> +       init_data = client->dev.platform_data;
+> +
+> +       if (!init_data)
+> +               return -EIO;
+> +
+> +       tps = kzalloc(sizeof(*tps), GFP_KERNEL);
+> +       if (!tps)
+> +               return -ENOMEM;
+> +
+> +       tps->client = client;
+> +
+> +       for (i = 0; i < TPS65023_NUM_REGULATOR; i++, info++, init_data++) {
+> +               /* Store regulator specific information */
+> +               tps->info[i] = info;
+> +
+> +               tps->desc[i].name = info->name;
+> +               tps->desc[i].id = desc_id++;
+> +               tps->desc[i].ops = (i > TPS65023_DCDC_3 ?
+> +                                       &tps65023_ldo_ops : &tps65023_dcdc_ops);
+> +               tps->desc[i].type = REGULATOR_VOLTAGE;
+> +               tps->desc[i].owner = THIS_MODULE;
+> +
+> +               /* Register the regulators */
+> +               rdev = regulator_register(&tps->desc[i], &client->dev,
+> +                                                               init_data, tps);
+> +               if (IS_ERR(rdev)) {
+> +                       dev_err(&client->dev, "failed to register %s\n",
+> +                               id->name);
+> +                       kfree(tps);
+> +                       return PTR_ERR(rdev);
+> +               }
+> +
+> +               /* Save regulator for cleanup */
+> +               tps->rdev[i] = rdev;
+> +       }
+> +
+> +       i2c_set_clientdata(client, tps);
+> +
+> +       return 0;
+> +}
+> +
+> +/**
+> + * tps_65023_remove - TPS65023 driver i2c remove handler
+> + * @client: i2c driver client device structure
+> + *
+> + * Unregister TPS driver as an i2c client device driver
+> + */
+> +static int __devexit tps_65023_remove(struct i2c_client *client)
+> +{
+> +       struct tps_pmic *tps = i2c_get_clientdata(client);
+> +       int i;
+> +
+> +       for (i = 0; i < TPS65023_NUM_REGULATOR; i++)
+> +               regulator_unregister(tps->rdev[i]);
+> +
+> +       tps->client = NULL;
+> +
+> +       /* clear the client data in i2c */
+> +       i2c_set_clientdata(client, NULL);
+> +       kfree(tps);
+> +
+> +       return 0;
+> +}
+> +
+> +/* Supported voltage values for regulators */
+> +static const u16 VDCDC1_VSEL_table[] = {
+> +       800, 825, 850, 875,
+> +       900, 925, 950, 975,
+> +       1000, 1025, 1050, 1075,
+> +       1100, 1125, 1150, 1175,
+> +       1200, 1225, 1250, 1275,
+> +       1300, 1325, 1350, 1375,
+> +       1400, 1425, 1450, 1475,
+> +       1500, 1525, 1550, 1600,
+> +};
+> +
+> +static const u16 LDO1_VSEL_table[] = {
+> +       1000, 1100, 1300, 1800,
+> +       2200, 2600, 2800, 3150,
+> +};
+> +
+> +static const u16 LDO2_VSEL_table[] = {
+> +       1050, 1200, 1300, 1800,
+> +       2500, 2800, 3000, 3300,
+> +};
+> +
+> +static const struct tps_info tps65023_regs[] = {
+> +       {
+> +       .name = "VDCDC1",
+> +       .min_uV =  800000,
+> +       .max_uV = 1600000,
+> +       .fixed = 0,
+> +       .table_len = ARRAY_SIZE(VDCDC1_VSEL_table),
+> +       .table = VDCDC1_VSEL_table,
+> +       },
+> +       {
+> +       .name = "VDCDC2",
+> +       .min_uV =  3300000,
+> +       .max_uV = 3300000,
+> +       .fixed = 1,
+> +       .table_len = 0,
+> +       },
+> +       {
+> +       .name = "VDCDC3",
+> +       .min_uV =  1800000,
+> +       .max_uV = 1800000,
+> +       .fixed = 1,
+> +       .table_len = 0,
+> +       },
+> +       {
+> +       .name = "LDO1",
+> +       .min_uV = 1000000,
+> +       .max_uV = 3150000,
+> +       .fixed = 0,
+> +       .table_len = ARRAY_SIZE(LDO1_VSEL_table),
+> +       .table = LDO1_VSEL_table,
+> +       },
+> +       {
+> +       .name = "LDO2",
+> +       .min_uV = 1050000,
+> +       .max_uV = 3300000,
+> +       .fixed = 0,
+> +       .table_len = ARRAY_SIZE(LDO2_VSEL_table),
+> +       .table = LDO2_VSEL_table,
+> +       },
+> +};
+> +
+> +static const struct i2c_device_id tps_65023_id = {
+> +       .name = "tps65023",
+> +       .driver_data = (unsigned long) &tps65023_regs[0],
+> +};
+> +
+> +MODULE_DEVICE_TABLE(i2c, tps_65023_id);
+> +
+> +static struct i2c_driver tps_65023_i2c_driver = {
+> +       .driver = {
+> +               .name = "tps_65023_pwr",
+> +               .owner = THIS_MODULE,
+> +       },
+> +       .probe = tps_65023_probe,
+> +       .remove = __devexit_p(tps_65023_remove),
+> +       .id_table = &tps_65023_id,
+> +};
+> +
+> +/**
+> + * tps_65023_init
+> + *
+> + * Module init function
+> + */
+> +static int __init tps_65023_init(void)
+> +{
+> +       return i2c_add_driver(&tps_65023_i2c_driver);
+> +}
+> +subsys_initcall(tps_65023_init);
+> +
+> +/**
+> + * tps_65023_cleanup
+> + *
+> + * Module exit function
+> + */
+> +static void __exit tps_65023_cleanup(void)
+> +{
+> +       i2c_del_driver(&tps_65023_i2c_driver);
+> +}
+> +module_exit(tps_65023_cleanup);
+> +
+> +MODULE_AUTHOR("Texas Instruments");
+> +MODULE_DESCRIPTION("TPS65023 voltage regulator driver");
+> +MODULE_LICENSE("GPLv2");
+> --
+> 1.6.2.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+balbi
