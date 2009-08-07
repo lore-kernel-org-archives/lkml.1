@@ -1,113 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756934AbZHGHFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbZHGHHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756934AbZHGHFm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 03:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755609AbZHGHFm
+	id S1756971AbZHGHHW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 03:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbZHGHHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 03:05:42 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:55617 "EHLO mgw1.diku.dk"
+	Fri, 7 Aug 2009 03:07:21 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:50993 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755546AbZHGHFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 03:05:41 -0400
-Date: Fri, 7 Aug 2009 09:00:34 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: "Daniel K." <dk@uw.no>
-Cc: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/3] arch/powerpc: Add kmalloc NULL tests
-In-Reply-To: <4A7BCAF1.5070605@uw.no>
-Message-ID: <Pine.LNX.4.64.0908070859540.20445@pc-004.diku.dk>
-References: <Pine.LNX.4.64.0908062203380.19100@ask.diku.dk> <4A7BCAF1.5070605@uw.no>
+	id S1754982AbZHGHHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 03:07:21 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19067.53473.239250.278692@cargo.ozlabs.ibm.com>
+Date: Fri, 7 Aug 2009 16:59:45 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: [PATCH] perf_counter/powerpc: Avoid oops on cpus without perf_counter hardware support
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+If we have the powerpc perf_counter backend compiled in, but the cpu
+we are running on is one where we don't support the PMU, we currently
+oops in hw_perf_group_sched_in if we try to use any counters, because
+ppmu is NULL in that case, and we unconditionally dereference ppmu.
 
-Check that the result of kmalloc/kzalloc is not NULL before dereferencing it.
+This fixes the problem by adding a check if ppmu is NULL at the
+beginning of hw_perf_group_sched_in, and also at the beginning of the
+other functions that get called from the perf_counter core, i.e.
+hw_perf_disable, hw_perf_enable, and hw_perf_counter_setup.
 
-The semantic match that finds this problem is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@@
-expression *x;
-identifier f;
-constant char *C;
-@@
-
-x = \(kmalloc\|kcalloc\|kzalloc\)(...);
-... when != x == NULL
-    when != x != NULL
-    when != (x || ...)
-(
-kfree(x)
-|
-f(...,C,...,x,...)
-|
-*f(...,x,...)
-|
-*x->f
-)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/sysdev/fsl_rio.c       |   18 ++++++++++++++----
- 1 files changed, 14 insertions(+), 4 deletions(-)
+This also needs to go in 2.6.31.
 
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index cbb3bed..757a83f 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -1057,6 +1057,10 @@ int fsl_rio_setup(struct of_device *dev)
- 			law_start, law_size);
+ arch/powerpc/kernel/perf_counter.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
+index 809fdf9..70e1f57 100644
+--- a/arch/powerpc/kernel/perf_counter.c
++++ b/arch/powerpc/kernel/perf_counter.c
+@@ -518,6 +518,8 @@ void hw_perf_disable(void)
+ 	struct cpu_hw_counters *cpuhw;
+ 	unsigned long flags;
  
- 	ops = kmalloc(sizeof(struct rio_ops), GFP_KERNEL);
-+	if (!ops) {
-+		rc = -ENOMEM;
-+		goto err_ops;
-+	}
- 	ops->lcread = fsl_local_config_read;
- 	ops->lcwrite = fsl_local_config_write;
- 	ops->cread = fsl_rio_config_read;
-@@ -1064,6 +1068,10 @@ int fsl_rio_setup(struct of_device *dev)
- 	ops->dsend = fsl_rio_doorbell_send;
++	if (!ppmu)
++		return;
+ 	local_irq_save(flags);
+ 	cpuhw = &__get_cpu_var(cpu_hw_counters);
  
- 	port = kzalloc(sizeof(struct rio_mport), GFP_KERNEL);
-+	if (!port) {
-+		rc = -ENOMEM;
-+		goto err_port;
-+	}
- 	port->id = 0;
- 	port->index = 0;
+@@ -572,6 +574,8 @@ void hw_perf_enable(void)
+ 	int n_lim;
+ 	int idx;
  
-@@ -1071,7 +1079,7 @@ int fsl_rio_setup(struct of_device *dev)
- 	if (!priv) {
- 		printk(KERN_ERR "Can't alloc memory for 'priv'\n");
- 		rc = -ENOMEM;
--		goto err;
-+		goto err_priv;
- 	}
++	if (!ppmu)
++		return;
+ 	local_irq_save(flags);
+ 	cpuhw = &__get_cpu_var(cpu_hw_counters);
+ 	if (!cpuhw->disabled) {
+@@ -737,6 +741,8 @@ int hw_perf_group_sched_in(struct perf_counter *group_leader,
+ 	long i, n, n0;
+ 	struct perf_counter *sub;
  
- 	INIT_LIST_HEAD(&port->dbells);
-@@ -1169,11 +1177,13 @@ int fsl_rio_setup(struct of_device *dev)
++	if (!ppmu)
++		return 0;
+ 	cpuhw = &__get_cpu_var(cpu_hw_counters);
+ 	n0 = cpuhw->n_counters;
+ 	n = collect_events(group_leader, ppmu->n_counter - n0,
+@@ -1281,6 +1287,8 @@ void hw_perf_counter_setup(int cpu)
+ {
+ 	struct cpu_hw_counters *cpuhw = &per_cpu(cpu_hw_counters, cpu);
  
- 	return 0;
- err:
--	if (priv)
--		iounmap(priv->regs_win);
--	kfree(ops);
-+	iounmap(priv->regs_win);
- 	kfree(priv);
-+err_priv:
- 	kfree(port);
-+err_port:
-+	kfree(ops);
-+err_ops:
- 	return rc;
++	if (!ppmu)
++		return;
+ 	memset(cpuhw, 0, sizeof(*cpuhw));
+ 	cpuhw->mmcr[0] = MMCR0_FC;
  }
- 
+-- 
+1.6.0.4
+
