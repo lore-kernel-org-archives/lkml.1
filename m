@@ -1,75 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbZHGAAD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZHGABr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756669AbZHGAAD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 20:00:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbZHGAAB
+	id S1756916AbZHGABr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 20:01:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756602AbZHGABq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 20:00:01 -0400
-Received: from cantor.suse.de ([195.135.220.2]:38443 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755686AbZHGAAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 20:00:00 -0400
-Date: Thu, 6 Aug 2009 16:58:52 -0700
-From: Greg KH <gregkh@suse.de>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Andreas Mohr <andi@lisas.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
-Subject: Re: [BUG] git 2.6.31-rc3'ish: "<kobject> does not have a release()
- function, it is broken and must be fixed."
-Message-ID: <20090806235852.GA29688@suse.de>
-References: <20090716181256.GA11157@rhlx01.hs-esslingen.de>
- <20090716225525.GC1548@suse.de>
- <adabpmsg01a.fsf@cisco.com>
- <20090806205019.GA12988@rhlx01.hs-esslingen.de>
- <20090806223205.GD14792@suse.de>
- <adaiqh0ec8c.fsf@cisco.com>
+	Thu, 6 Aug 2009 20:01:46 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:51657 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756599AbZHGABq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 20:01:46 -0400
+Date: Thu, 6 Aug 2009 20:01:44 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Greg KH <gregkh@suse.de>, Roland Dreier <rdreier@cisco.com>,
+       Matt Fleming <matt@console-pimps.org>,
+       David Kiliani <mail@davidkiliani.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL][2.6.31] tracing: have recordmcount.pl handle a section
+ with only weak functions
+In-Reply-To: <20090806233208.GA29339@suse.de>
+Message-ID: <alpine.DEB.2.00.0908062000400.2840@gandalf.stny.rr.com>
+References: <ada4oskfwtp.fsf@cisco.com> <alpine.DEB.2.00.0908061745430.2840@gandalf.stny.rr.com> <20090806222906.GA14792@suse.de> <alpine.DEB.2.00.0908061844300.2840@gandalf.stny.rr.com> <alpine.DEB.2.00.0908061849260.2840@gandalf.stny.rr.com>
+ <adamy6ceeig.fsf@cisco.com> <20090806233208.GA29339@suse.de>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adaiqh0ec8c.fsf@cisco.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 04:47:31PM -0700, Roland Dreier wrote:
-> 
->  > Kay, we were cleaning up the kobject name stuff then, and we thought
->  > that this release function wasn't used anymore.  But in looking at the
->  > code, I can't see where the kobject is actually freed.  What am I
->  > missing?
-> 
-> the kobject in question is freed at
-> 
->   free_module() ->
->     mod_kobject_remove() ->
->       mod_sysfs_fini() ->
->         kobject_put(&mod->mkobj.kobj);
-> 
-> (in kernel/module.c)
 
-Ah, that makes sense.
+Ingo,
 
-This is because we can't "free" the kobject here, because the kobject is
-part of the larger struct module structure.  And the kobject is not
-being used as a reference count for the whole structure, it's being used
-just to create the sysfs directories.
+Please pull the latest tip/tracing/urgent tree, which can be found at:
 
-So we can't have a release function, because if we did, it would have to
-do nothing.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/urgent
 
-And yes, this isn't "correct" and is what I make fun of lots of people
-for doing all the time now.  But Rusty did this a long time ago before I
-realized it :)
 
-Patches to fix this up "properly" are gladly accepted, just watch out,
-that code path is nasty.
+Steven Rostedt (1):
+      tracing: have recordmcount.pl handle a section with only weak functions
 
-So yes, the warning when kobject debugging is enabled is correct, that
-kobject usage is "wrong" and should be fixed one of these days.
+----
+ scripts/recordmcount.pl |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+---------------------------
+commit 0484219980fd985528f66bf620362859e617bb37
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Thu Aug 6 19:53:18 2009 -0400
 
-I'll add it to the end of my long TODO list :(
+    tracing: have recordmcount.pl handle a section with only weak functions
+    
+    Roland Dreier found that a section that contained only a weak function
+    in one of the staging drivers and this caused recordmcount.pl to spit
+    out a warning and fail.  Although it is strange that a driver would have
+    a weak function, and this function only be used in one place, it should
+    not be something to make recordmcount.pl fail.
+    
+    This patch fixes the issue in a simple manner. If only weak functions
+    exist in a section, than that section will not be recorded.
+    
+    Reported-by: Roland Dreier <rdreier@cisco.com>
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-thanks,
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index 4889c44..911ba7f 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -393,7 +393,7 @@ while (<IN>) {
+ 	    $read_function = 0;
+ 	}
+ 	# print out any recorded offsets
+-	update_funcs() if ($text_found);
++	update_funcs() if (defined($ref_func));
+ 
+ 	# reset all markers and arrays
+ 	$text_found = 0;
+@@ -444,7 +444,7 @@ while (<IN>) {
+ }
+ 
+ # dump out anymore offsets that may have been found
+-update_funcs() if ($text_found);
++update_funcs() if (defined($ref_func));
+ 
+ # If we did not find any mcount callers, we are done (do nothing).
+ if (!$opened) {
 
-greg k-h
+
