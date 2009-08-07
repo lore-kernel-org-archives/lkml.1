@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbZHGQuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbZHGQuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754244AbZHGQuM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 12:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZHGQuK
+	id S1754279AbZHGQuR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 12:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbZHGQuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 12:50:10 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53407 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754091AbZHGQuH (ORCPT
+	Fri, 7 Aug 2009 12:50:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49746 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754204AbZHGQuO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 12:50:07 -0400
-Subject: Re: [RT] Lockdep warning on boot with 2.6.31-rc5-rt1.1
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Clark Williams <williams@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "greg@kroah.com" <greg@kroah.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Kay Sievers <kay.sievers@vrfy.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908071241170.4758-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0908071241170.4758-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 07 Aug 2009 18:49:45 +0200
-Message-Id: <1249663785.32113.754.camel@twins>
+	Fri, 7 Aug 2009 12:50:14 -0400
+Date: Fri, 7 Aug 2009 09:49:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2009-08-06-00-30 uploaded
+Message-Id: <20090807094944.eed4bfb8.akpm@linux-foundation.org>
+In-Reply-To: <20090807134659.GA2093@darkstar>
+References: <200908060733.n767X6mN023120@imap1.linux-foundation.org>
+	<20090807134659.GA2093@darkstar>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-07 at 12:45 -0400, Alan Stern wrote:
-> On Fri, 7 Aug 2009, Peter Zijlstra wrote:
+On Fri, 7 Aug 2009 21:47:00 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
 
-> > The other proposal was creating a fixed list of classes and register
-> > each device at a class corresponding to its depth in the tree. I can't
-> > remember what was wrong with that, but I seem to have been persuaded
-> > that that was hard too.
+> Hi, andrew
 > 
-> It probably would work for the most part.  However a possible scenario
-> involves first locking a parent and then locking all its children.  (I
-> don't know if this ever happens anywhere, but it might.)  This can't
-> cause a deadlock but it would run into trouble with depth-based
-> classes.
+> Booting with this release, init (maybe getty?) reports something like:
+> 
+> INIT: open /dev/console failed with input/output error
+> 
+> 2.6.31-rc5 is fine.
+> 
+> Any hints to find the root problem?
 
-If you know which parent is locked, we can solve that with
-mutex_lock_nest_lock() [ doesn't currently exist, but is analogous to
-spin_lock_nest_lock() ] and together with
-http://lkml.org/lkml/2009/7/23/222 that would allow you to lock up to
-2048 children.
+Not really, sorry.  Might be tty changes in linux-next?
 
-Would something like that work?
+> Another problem:
+> 
+> When I moving mouse or pressing key the screen will become black, then restore the normal screen.
 
+There have been quite a lot of X problems lately.
+
+Could you test the bare linux-next please?
