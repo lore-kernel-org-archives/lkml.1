@@ -1,188 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932238AbZHGXU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932301AbZHGXWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932238AbZHGXU0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 19:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932136AbZHGXU0
+	id S932301AbZHGXWt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 19:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932167AbZHGXWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 19:20:26 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:22427 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932118AbZHGXUY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 19:20:24 -0400
-Date: Fri, 7 Aug 2009 13:23:36 -1000 (HST)
-From: Jeff Roberson <jroberson@jroberson.net>
-X-X-Sender: jroberson@desktop
-To: linux-kernel@vger.kernel.org
-Subject: Bugs in intel 5400 EDAC driver
-Message-ID: <alpine.BSF.2.00.0908071312030.19226@desktop>
-User-Agent: Alpine 2.00 (BSF 1167 2008-08-23)
+	Fri, 7 Aug 2009 19:22:48 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49859 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932136AbZHGXWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 19:22:48 -0400
+Date: Sat, 8 Aug 2009 01:22:45 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [Bug #13739] 2.6.30 leaking keys on console switch
+In-Reply-To: <7ixSg7D88bK.A.gcF._pgdKB@chimera>
+Message-ID: <alpine.LNX.2.00.0908080122130.25797@wotan.suse.de>
+References: <upey9ZSfnaF.A.-oE.rpgdKB@chimera> <7ixSg7D88bK.A.gcF._pgdKB@chimera>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="2547152148-1566623238-1249687418=:19226"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sun, 2 Aug 2009, Rafael J. Wysocki wrote:
 
---2547152148-1566623238-1249687418=:19226
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13739
+> Subject		: 2.6.30 leaking keys on console switch
+> Submitter	: Andi Kleen <andi@firstfloor.org>
+> Date		: 2009-07-07 8:44 (27 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124695628924382&w=4
+> Handled-By	: Jiri Kosina <jkosina@suse.cz>
 
-Hello,
-
-The i5400 EDAC driver has several bugs with chip-select row computation 
-which most likely lead to bugs in detailed error reporting.  Attempts to 
-contact the authors have gone mostly unanswered so I am presenting my diff 
-here.  I do not subscribe to lkml and would appreciate being kept in the 
-cc.
-
-The most egregious problem was miscalculating the addresses of MTR 
-registers after register 0 by assuming they are 32bit rather than 16. 
-This caused the driver to miss half of the memories.  Most motherboards 
-tend to have only 8 dimm slots and not 16, so this may not have been 
-noticed before.
-
-Further, the row calculations multiplied the number of dimms several 
-times, ultimately ending up with a maximum row of 32.  The chipset only 
-supports 4 dimms in each of 4 channels, so csrow could not be higher than 
-4 unless you use a row per-rank with dual-rank dimms.  I opted to 
-eliminate this behavior as it is confusing to the user and the error 
-reporting works by slot and not rank.  This gives a much clearer view of 
-memory by slot and channel in /sys.
+Andi, did the bisection reveal anything?
 
 Thanks,
-Jeff
---2547152148-1566623238-1249687418=:19226
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name=edac-5400.diff
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.BSF.2.00.0908071323360.19226@desktop>
-Content-Description: 
-Content-Disposition: attachment; filename=edac-5400.diff
 
-ZGlmZiAtciAxN2FjMWM0Y2JjYTkgZHJpdmVycy9lZGFjL2k1NDAwX2VkYWMu
-Yw0KLS0tIGEvZHJpdmVycy9lZGFjL2k1NDAwX2VkYWMuYwlUaHUgSnVsIDMw
-IDE4OjM4OjIyIDIwMDkgLTA3MDANCisrKyBiL2RyaXZlcnMvZWRhYy9pNTQw
-MF9lZGFjLmMJRnJpIEF1ZyAwNyAxNjowOTo1MSAyMDA5IC0wNzAwDQpAQCAt
-NDYsOSArNDYsMTAgQEANCiAvKiBMaW1pdHMgZm9yIGk1NDAwICovDQogI2Rl
-ZmluZSBOVU1fTVRSU19QRVJfQlJBTkNICTQNCiAjZGVmaW5lIENIQU5ORUxT
-X1BFUl9CUkFOQ0gJMg0KKyNkZWZpbmUgTUFYX0RJTU1TX1BFUl9DSEFOTkVM
-CU5VTV9NVFJTX1BFUl9CUkFOQ0gNCiAjZGVmaW5lCU1BWF9DSEFOTkVMUwkJ
-NA0KLSNkZWZpbmUgTUFYX0RJTU1TCQkoTUFYX0NIQU5ORUxTICogNCkJLyog
-VXAgdG8gNCBESU1NJ3MgcGVyIGNoYW5uZWwgKi8NCi0jZGVmaW5lIE1BWF9D
-U1JPV1MJCShNQVhfRElNTVMgKiAyKQkJLyogbWF4IHBvc3NpYmxlIGNzcm93
-cyBwZXIgY2hhbm5lbCAqLw0KKy8qIG1heCBwb3NzaWJsZSBjc3Jvd3MgcGVy
-IGNoYW5uZWwgKi8NCisjZGVmaW5lIE1BWF9DU1JPV1MJCShNQVhfRElNTVNf
-UEVSX0NIQU5ORUwpDQogDQogLyogRGV2aWNlIDE2LA0KICAqIEZ1bmN0aW9u
-IDA6IFN5c3RlbSBBZGRyZXNzDQpAQCAtMzMxLDcgKzMzMiw2IEBADQogDQog
-c3RydWN0IGk1NDAwX2RpbW1faW5mbyB7DQogCWludCBtZWdhYnl0ZXM7CQkv
-KiBzaXplLCAwIG1lYW5zIG5vdCBwcmVzZW50ICAqLw0KLQlpbnQgZHVhbF9y
-YW5rOw0KIH07DQogDQogLyogZHJpdmVyIHByaXZhdGUgZGF0YSBzdHJ1Y3R1
-cmUgKi8NCkBAIC04NDksMTEgKzg0OSw5IEBADQogCWludCBuOw0KIA0KIAkv
-KiBUaGVyZSBpcyBvbmUgTVRSIGZvciBlYWNoIHNsb3QgcGFpciBvZiBGQi1E
-SU1NcywNCi0JICAgRWFjaCBzbG90IG1heSBoYXZlIG9uZSBvciB0d28gcmFu
-a3MgKDIgY3Nyb3dzKSwNCiAJICAgRWFjaCBzbG90IHBhaXIgbWF5IGJlIGF0
-IGJyYW5jaCAwIG9yIGJyYW5jaCAxLg0KLQkgICBTbywgY3Nyb3cgc2hvdWxk
-IGJlIGRpdmlkZWQgYnkgZWlnaHQNCiAJICovDQotCW4gPSBjc3JvdyA+PiAz
-Ow0KKwluID0gY3Nyb3c7DQogDQogCWlmIChuID49IE5VTV9NVFJTX1BFUl9C
-UkFOQ0gpIHsNCiAJCWRlYnVnZjAoIkVSUk9SOiB0cnlpbmcgdG8gYWNjZXNz
-IGFuIGludmFsaWQgY3Nyb3c6ICVkXG4iLA0KQEAgLTkwNSwyNSArOTAzLDIy
-IEBADQogCQlhbWJfcHJlc2VudF9yZWcgPSBkZXRlcm1pbmVfYW1iX3ByZXNl
-bnRfcmVnKHB2dCwgY2hhbm5lbCk7DQogDQogCQkvKiBEZXRlcm1pbmUgaWYg
-dGhlcmUgaXMgYSBESU1NIHByZXNlbnQgaW4gdGhpcyBESU1NIHNsb3QgKi8N
-Ci0JCWlmIChhbWJfcHJlc2VudF9yZWcgJiAoMSA8PCAoY3Nyb3cgPj4gMSkp
-KSB7DQotCQkJZGluZm8tPmR1YWxfcmFuayA9IE1UUl9ESU1NX1JBTksobXRy
-KTsNCisJCWlmIChhbWJfcHJlc2VudF9yZWcgJiAoMSA8PCBjc3JvdykpIHsN
-CisJCQkvKiBTdGFydCB3aXRoIHRoZSBudW1iZXIgb2YgYml0cyBmb3IgYSBC
-YW5rDQorCQkJICogb24gdGhlIERSQU0gKi8NCisJCQlhZGRyQml0cyA9IE1U
-Ul9EUkFNX0JBTktTX0FERFJfQklUUyhtdHIpOw0KKwkJCS8qIEFkZCB0aGVu
-dW1iZXIgb2YgUk9XIGJpdHMgKi8NCisJCQlhZGRyQml0cyArPSBNVFJfRElN
-TV9ST1dTX0FERFJfQklUUyhtdHIpOw0KKwkJCS8qIGFkZCB0aGUgbnVtYmVy
-IG9mIENPTFVNTiBiaXRzICovDQorCQkJYWRkckJpdHMgKz0gTVRSX0RJTU1f
-Q09MU19BRERSX0JJVFMobXRyKTsNCisJCQkvKiBhZGQgdGhlIG51bWJlciBv
-ZiBSQU5LIGJpdHMgKi8NCisJCQlhZGRyQml0cyArPSBNVFJfRElNTV9SQU5L
-KG10cik7DQogDQotCQkJaWYgKCEoKGRpbmZvLT5kdWFsX3JhbmsgPT0gMCkg
-JiYNCi0JCQkJKChjc3JvdyAmIDB4MSkgPT0gMHgxKSkpIHsNCi0JCQkJLyog
-U3RhcnQgd2l0aCB0aGUgbnVtYmVyIG9mIGJpdHMgZm9yIGEgQmFuaw0KLQkJ
-CQkgKiBvbiB0aGUgRFJBTSAqLw0KLQkJCQlhZGRyQml0cyA9IE1UUl9EUkFN
-X0JBTktTX0FERFJfQklUUyhtdHIpOw0KLQkJCQkvKiBBZGQgdGhlbnVtYmVy
-IG9mIFJPVyBiaXRzICovDQotCQkJCWFkZHJCaXRzICs9IE1UUl9ESU1NX1JP
-V1NfQUREUl9CSVRTKG10cik7DQotCQkJCS8qIGFkZCB0aGUgbnVtYmVyIG9m
-IENPTFVNTiBiaXRzICovDQotCQkJCWFkZHJCaXRzICs9IE1UUl9ESU1NX0NP
-TFNfQUREUl9CSVRTKG10cik7DQorCQkJYWRkckJpdHMgKz0gNjsJLyogYWRk
-IDY0IGJpdHMgcGVyIERJTU0gKi8NCisJCQlhZGRyQml0cyAtPSAyMDsJLyog
-ZGl2aWRlIGJ5IDJeXjIwICovDQorCQkJYWRkckJpdHMgLT0gMzsJLyogOCBi
-aXRzIHBlciBieXRlcyAqLw0KIA0KLQkJCQlhZGRyQml0cyArPSA2OwkvKiBh
-ZGQgNjQgYml0cyBwZXIgRElNTSAqLw0KLQkJCQlhZGRyQml0cyAtPSAyMDsJ
-LyogZGl2aWRlIGJ5IDJeXjIwICovDQotCQkJCWFkZHJCaXRzIC09IDM7CS8q
-IDggYml0cyBwZXIgYnl0ZXMgKi8NCi0NCi0JCQkJZGluZm8tPm1lZ2FieXRl
-cyA9IDEgPDwgYWRkckJpdHM7DQotCQkJfQ0KKwkJCWRpbmZvLT5tZWdhYnl0
-ZXMgPSAxIDw8IGFkZHJCaXRzOw0KIAkJfQ0KIAl9DQogfQ0KQEAgLTk1MSwx
-MiArOTQ2LDEyIEBADQogCQlyZXR1cm47DQogCX0NCiANCi0JLyogU2NhbiBh
-bGwgdGhlIGFjdHVhbCBDU1JPV1MgKHdoaWNoIGlzICMgb2YgRElNTVMgKiAy
-KQ0KKwkvKiBTY2FuIGFsbCB0aGUgYWN0dWFsIENTUk9XUw0KIAkgKiBhbmQg
-Y2FsY3VsYXRlIHRoZSBpbmZvcm1hdGlvbiBmb3IgZWFjaCBESU1NDQogCSAq
-IFN0YXJ0IHdpdGggdGhlIGhpZ2hlc3QgY3Nyb3cgZmlyc3QsIHRvIGRpc3Bs
-YXkgaXQgZmlyc3QNCiAJICogYW5kIHdvcmsgdG93YXJkIHRoZSAwdGggY3Ny
-b3cNCiAJICovDQotCW1heF9jc3Jvd3MgPSBwdnQtPm1heGRpbW1wZXJjaCAq
-IDI7DQorCW1heF9jc3Jvd3MgPSBwdnQtPm1heGRpbW1wZXJjaDsNCiAJZm9y
-IChjc3JvdyA9IG1heF9jc3Jvd3MgLSAxOyBjc3JvdyA+PSAwOyBjc3Jvdy0t
-KSB7DQogDQogCQkvKiBvbiBhbiBvZGQgY3Nyb3csIGZpcnN0IG91dHB1dCBh
-ICdib3VuZGFyeScgbWFya2VyLA0KQEAgLTEwNjQsNyArMTA1OSw3IEBADQog
-DQogCS8qIEdldCB0aGUgc2V0IG9mIE1UUlswLTNdIHJlZ3MgYnkgZWFjaCBi
-cmFuY2ggKi8NCiAJZm9yIChzbG90X3JvdyA9IDA7IHNsb3Rfcm93IDwgTlVN
-X01UUlNfUEVSX0JSQU5DSDsgc2xvdF9yb3crKykgew0KLQkJaW50IHdoZXJl
-ID0gTVRSMCArIChzbG90X3JvdyAqIHNpemVvZih1MzIpKTsNCisJCWludCB3
-aGVyZSA9IE1UUjAgKyAoc2xvdF9yb3cgKiBzaXplb2YodTE2KSk7DQogDQog
-CQkvKiBCcmFuY2ggMCBzZXQgb2YgTVRSIHJlZ2lzdGVycyAqLw0KIAkJcGNp
-X3JlYWRfY29uZmlnX3dvcmQocHZ0LT5icmFuY2hfMCwgd2hlcmUsDQpAQCAt
-MTE0Niw3ICsxMTQxLDcgQEANCiAJcHZ0ID0gbWNpLT5wdnRfaW5mbzsNCiAN
-CiAJY2hhbm5lbF9jb3VudCA9IHB2dC0+bWF4Y2g7DQotCW1heF9jc3Jvd3Mg
-PSBwdnQtPm1heGRpbW1wZXJjaCAqIDI7DQorCW1heF9jc3Jvd3MgPSBwdnQt
-Pm1heGRpbW1wZXJjaDsNCiANCiAJZW1wdHkgPSAxOwkJLyogQXNzdW1lIE5P
-IG1lbW9yeSAqLw0KIA0KQEAgLTEyMTUsMjggKzEyMTAsNiBAQA0KIH0NCiAN
-CiAvKg0KLSAqIGk1NDAwX2dldF9kaW1tX2FuZF9jaGFubmVsX2NvdW50cyhw
-ZGV2LCAmbnVtX2Nzcm93cywgJm51bV9jaGFubmVscykNCi0gKg0KLSAqCWFz
-ayB0aGUgZGV2aWNlIGhvdyBtYW55IGNoYW5uZWxzIGFyZSBwcmVzZW50IGFu
-ZCBob3cgbWFueSBDU1JPV1MNCi0gKgkgYXMgd2VsbA0KLSAqLw0KLXN0YXRp
-YyB2b2lkIGk1NDAwX2dldF9kaW1tX2FuZF9jaGFubmVsX2NvdW50cyhzdHJ1
-Y3QgcGNpX2RldiAqcGRldiwNCi0JCQkJCWludCAqbnVtX2RpbW1zX3Blcl9j
-aGFubmVsLA0KLQkJCQkJaW50ICpudW1fY2hhbm5lbHMpDQotew0KLQl1OCB2
-YWx1ZTsNCi0NCi0JLyogTmVlZCB0byByZXRyaWV2ZSBqdXN0IGhvdyBtYW55
-IGNoYW5uZWxzIGFuZCBkaW1tcyBwZXIgY2hhbm5lbCBhcmUNCi0JICogc3Vw
-cG9ydGVkIG9uIHRoaXMgbWVtb3J5IGNvbnRyb2xsZXINCi0JICovDQotCXBj
-aV9yZWFkX2NvbmZpZ19ieXRlKHBkZXYsIE1BWERJTU1QRVJDSCwgJnZhbHVl
-KTsNCi0JKm51bV9kaW1tc19wZXJfY2hhbm5lbCA9IChpbnQpdmFsdWUgKiAy
-Ow0KLQ0KLQlwY2lfcmVhZF9jb25maWdfYnl0ZShwZGV2LCBNQVhDSCwgJnZh
-bHVlKTsNCi0JKm51bV9jaGFubmVscyA9IChpbnQpdmFsdWU7DQotfQ0KLQ0K
-LS8qDQogICoJaTU0MDBfcHJvYmUxCVByb2JlIGZvciBPTkUgaW5zdGFuY2Ug
-b2YgZGV2aWNlIHRvIHNlZSBpZiBpdCBpcw0KICAqCQkJcHJlc2VudC4NCiAg
-KglyZXR1cm46DQpAQCAtMTI2MywyMiArMTIzNiwxNiBAQA0KIAlpZiAoUENJ
-X0ZVTkMocGRldi0+ZGV2Zm4pICE9IDApDQogCQlyZXR1cm4gLUVOT0RFVjsN
-CiANCi0JLyogQXNrIHRoZSBkZXZpY2VzIGZvciB0aGUgbnVtYmVyIG9mIENT
-Uk9XUyBhbmQgQ0hBTk5FTFMgc28NCi0JICogdGhhdCB3ZSBjYW4gY2FsY3Vs
-YXRlIHRoZSBtZW1vcnkgcmVzb3VyY2VzLCBldGMNCi0JICoNCi0JICogVGhl
-IENoaXBzZXQgd2lsbCByZXBvcnQgd2hhdCBpdCBjYW4gaGFuZGxlIHdoaWNo
-IHdpbGwgYmUgZ3JlYXRlcg0KLQkgKiBvciBlcXVhbCB0byB3aGF0IHRoZSBt
-b3RoZXJib2FyZCBtYW51ZmFjdHVyZXIgd2lsbCBpbXBsZW1lbnQuDQotCSAq
-DQotCSAqIEFzIHdlIGRvbid0IGhhdmUgYSBtb3RoZXJib2FyZCBpZGVudGlm
-aWNhdGlvbiByb3V0aW5lIHRvIGRldGVybWluZQ0KKwkvKiBBcyB3ZSBkb24n
-dCBoYXZlIGEgbW90aGVyYm9hcmQgaWRlbnRpZmljYXRpb24gcm91dGluZSB0
-byBkZXRlcm1pbmUNCiAJICogYWN0dWFsIG51bWJlciBvZiBzbG90cy9kaW1t
-cyBwZXIgY2hhbm5lbCwgd2UgdGh1cyB1dGlsaXplIHRoZQ0KIAkgKiByZXNv
-dXJjZSBhcyBzcGVjaWZpZWQgYnkgdGhlIGNoaXBzZXQuIFRodXMsIHdlIG1p
-Z2h0IGhhdmUNCiAJICogaGF2ZSBtb3JlIERJTU1zIHBlciBjaGFubmVsIHRo
-YW4gYWN0dWFsbHkgb24gdGhlIG1vYm8sIGJ1dCB0aGlzDQogCSAqIGFsbG93
-cyB0aGUgZHJpdmVyIHRvIHN1cHBvcnQgdXB0byB0aGUgY2hpcHNldCBtYXgs
-IHdpdGhvdXQNCiAJICogc29tZSBmYW5jeSBtb2JvIGRldGVybWluYXRpb24u
-DQogCSAqLw0KLQlpNTQwMF9nZXRfZGltbV9hbmRfY2hhbm5lbF9jb3VudHMo
-cGRldiwgJm51bV9kaW1tc19wZXJfY2hhbm5lbCwNCi0JCQkJCSZudW1fY2hh
-bm5lbHMpOw0KLQludW1fY3Nyb3dzID0gbnVtX2RpbW1zX3Blcl9jaGFubmVs
-ICogMjsNCisJbnVtX2RpbW1zX3Blcl9jaGFubmVsID0gTUFYX0RJTU1TX1BF
-Ul9DSEFOTkVMOw0KKwludW1fY2hhbm5lbHMgPSBNQVhfQ0hBTk5FTFM7DQor
-CW51bV9jc3Jvd3MgPSBudW1fZGltbXNfcGVyX2NoYW5uZWw7DQogDQogCWRl
-YnVnZjAoIk1DOiAlcygpOiBOdW1iZXIgb2YgLSBDaGFubmVscz0gJWQgIERJ
-TU1TPSAlZCAgQ1NST1dTPSAlZFxuIiwNCiAJCV9fZnVuY19fLCBudW1fY2hh
-bm5lbHMsIG51bV9kaW1tc19wZXJfY2hhbm5lbCwgbnVtX2Nzcm93cyk7DQo=
-
---2547152148-1566623238-1249687418=:19226--
+-- 
+Jiri Kosina
+SUSE Labs
