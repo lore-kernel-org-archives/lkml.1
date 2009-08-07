@@ -1,225 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932267AbZHGHkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbZHGHkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932267AbZHGHkn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 03:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932212AbZHGHkm
+	id S932293AbZHGHkw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 03:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932287AbZHGHku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 03:40:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53894 "EHLO hera.kernel.org"
+	Fri, 7 Aug 2009 03:40:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53897 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932216AbZHGHkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 03:40:40 -0400
-Date: Fri, 7 Aug 2009 07:39:36 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+	id S932212AbZHGHkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 03:40:46 -0400
+Date: Fri, 7 Aug 2009 07:40:14 GMT
+From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, penberg@cs.helsinki.fi, efault@gmx.de,
-       peterz@infradead.org, fweisbec@gmail.com, tglx@linutronix.de,
+       mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de,
        mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       penberg@cs.helsinki.fi, peterz@infradead.org, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1249621865-9325-1-git-send-email-fweisbec@gmail.com>
-References: <1249621865-9325-1-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/urgent] perf tools: Fix call-chain cumul hit based sub-total (fractal mode)
-Message-ID: <tip-35281b7c4d6f4ae33e6c3e3b0920e86a99c60aa2@git.kernel.org>
-Git-Commit-ID: 35281b7c4d6f4ae33e6c3e3b0920e86a99c60aa2
+       linux-kernel@vger.kernel.org, peterz@infradead.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090806174317.GC4339@ghostprotocols.net>
+References: <20090806174317.GC4339@ghostprotocols.net>
+Subject: [tip:perfcounters/urgent] perf report: Help the finding of symbol bugs - show the symtab origin (DSO, build-id, kernel, etc)
+Message-ID: <tip-eeafb52ac8fa0fddcabe3d6e28c38d5c948d327e@git.kernel.org>
+Git-Commit-ID: eeafb52ac8fa0fddcabe3d6e28c38d5c948d327e
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 07 Aug 2009 07:39:49 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 07 Aug 2009 07:40:15 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  35281b7c4d6f4ae33e6c3e3b0920e86a99c60aa2
-Gitweb:     http://git.kernel.org/tip/35281b7c4d6f4ae33e6c3e3b0920e86a99c60aa2
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Fri, 7 Aug 2009 07:11:05 +0200
+Commit-ID:  eeafb52ac8fa0fddcabe3d6e28c38d5c948d327e
+Gitweb:     http://git.kernel.org/tip/eeafb52ac8fa0fddcabe3d6e28c38d5c948d327e
+Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
+AuthorDate: Thu, 6 Aug 2009 14:43:17 -0300
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 7 Aug 2009 09:37:23 +0200
+CommitDate: Fri, 7 Aug 2009 09:37:31 +0200
 
-perf tools: Fix call-chain cumul hit based sub-total (fractal mode)
+perf report: Help the finding of symbol bugs - show the symtab origin (DSO, build-id, kernel, etc)
 
-The callchain fractal mode builds each new total hits in a new
-branch of profiling by using the parent's hits of the current
-branch plus the hits of the children.
+Used with perf report --verbose:
 
-This is wrong, the total hits of a branch should be made of the
-sum of every children hits, we must ignore the parent hits in
-this scope.
+[acme@doppio linux-2.6-tip]$ perf report -v | head -16
+     5.17%  firefox  /usr/lib64/xulrunner-1.9.1/libxul.so   0x00000000005d8eee f [.] imgContainer::DrawFrameTo(gfxIImageFrame*, gfxIImageFrame*, nsRect&)
+     2.56%  firefox  /lib64/libpthread-2.10.1.so            0x0000000000008e02 d [.] __pthread_mutex_lock_internal
+     1.94%  firefox  /usr/lib64/xulrunner-1.9.1/libxul.so   0x0000000000d0af8f f [.] SearchTable
+     1.75%  firefox  [kernel]                               0xffffffffff60013b k [.] vread_hpet
+     1.63%  firefox  /lib64/libpthread-2.10.1.so            0x000000000000a404 d [.] __pthread_mutex_unlock
+     1.47%  firefox  /usr/lib64/xulrunner-1.9.1/libmozjs.so 0x00000000000482ea f [.] js_Interpret
+     1.42%  firefox  /usr/lib64/xulrunner-1.9.1/libmozjs.so 0x000000000003eda3 f [.] JS_CallTracer
+     1.24%  firefox  [kernel]                               0xffffffff8102ca4a k [k] read_hpet
+     1.16%  firefox  [kernel]                               0xffffffff810f3dd4 k [k] fget_light
+     1.11%  firefox  /usr/lib64/xulrunner-1.9.1/libmozjs.so 0x00000000000567ff f [.] js_TraceObject
+     0.98%  firefox  /usr/lib64/firefox-3.5.2/firefox       0x000000000000dd23 b [.] arena_ralloc
+[acme@doppio linux-2.6-tip]$
 
-This patch also fixes another mistake with the hit counting.
+The new field is just after the symbol address. To help in
+figuring out symbol resolution bugs.
 
-Now the rates are correct.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-LKML-Reference: <1249621865-9325-1-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <20090806174317.GC4339@ghostprotocols.net>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-report.c |    4 ++--
- tools/perf/util/callchain.c |   27 ++++++++++++++++-----------
- tools/perf/util/callchain.h |    7 ++++++-
- 3 files changed, 24 insertions(+), 14 deletions(-)
+ tools/perf/builtin-report.c |    3 +-
+ tools/perf/util/symbol.c    |   57 ++++++++++++++++++++++++++++++++++--------
+ tools/perf/util/symbol.h    |    2 +
+ 3 files changed, 50 insertions(+), 12 deletions(-)
 
 diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 8cb58d6..da402e1 100644
+index 8420546..a5e2f8d 100644
 --- a/tools/perf/builtin-report.c
 +++ b/tools/perf/builtin-report.c
-@@ -901,7 +901,7 @@ callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
- 	int i;
+@@ -700,7 +700,8 @@ sort__sym_print(FILE *fp, struct hist_entry *self, unsigned int width __used)
+ 	size_t ret = 0;
  
- 	if (callchain_param.mode == CHAIN_GRAPH_REL)
--		new_total = self->cumul_hit;
-+		new_total = self->children_hit;
- 	else
- 		new_total = total_samples;
+ 	if (verbose)
+-		ret += repsep_fprintf(fp, "%#018llx  ", (u64)self->ip);
++		ret += repsep_fprintf(fp, "%#018llx %c ", (u64)self->ip,
++				      dso__symtab_origin(self->dso));
  
-@@ -930,7 +930,7 @@ callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
- 			ret += ipchain__fprintf_graph(fp, chain, depth,
- 						      new_depth_mask, i++,
- 						      new_total,
--						      child->cumul_hit);
-+						      cumul_hits(child));
- 		}
- 		ret += callchain__fprintf_graph(fp, child, new_total,
- 						depth + 1,
-diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
-index 9d3c814..98c5627 100644
---- a/tools/perf/util/callchain.c
-+++ b/tools/perf/util/callchain.c
-@@ -26,10 +26,14 @@ rb_insert_callchain(struct rb_root *root, struct callchain_node *chain,
- 	struct rb_node **p = &root->rb_node;
- 	struct rb_node *parent = NULL;
- 	struct callchain_node *rnode;
-+	u64 chain_cumul = cumul_hits(chain);
+ 	ret += repsep_fprintf(fp, "[%c] ", self->level);
+ 	if (self->sym) {
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index 16ddca2..f1dcede 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -24,6 +24,16 @@ const char *sym_hist_filter;
+ #define DMGL_ANSI        (1 << 1)       /* Include const, volatile, etc */
+ #endif
  
- 	while (*p) {
-+		u64 rnode_cumul;
++enum dso_origin {
++	DSO__ORIG_KERNEL = 0,
++	DSO__ORIG_JAVA_JIT,
++	DSO__ORIG_FEDORA,
++	DSO__ORIG_UBUNTU,
++	DSO__ORIG_BUILDID,
++	DSO__ORIG_DSO,
++	DSO__ORIG_NOT_FOUND,
++};
 +
- 		parent = *p;
- 		rnode = rb_entry(parent, struct callchain_node, rb_node);
-+		rnode_cumul = cumul_hits(rnode);
- 
- 		switch (mode) {
- 		case CHAIN_FLAT:
-@@ -40,7 +44,7 @@ rb_insert_callchain(struct rb_root *root, struct callchain_node *chain,
- 			break;
- 		case CHAIN_GRAPH_ABS: /* Falldown */
- 		case CHAIN_GRAPH_REL:
--			if (rnode->cumul_hit < chain->cumul_hit)
-+			if (rnode_cumul < chain_cumul)
- 				p = &(*p)->rb_left;
- 			else
- 				p = &(*p)->rb_right;
-@@ -87,7 +91,7 @@ static void __sort_chain_graph_abs(struct callchain_node *node,
- 
- 	chain_for_each_child(child, node) {
- 		__sort_chain_graph_abs(child, min_hit);
--		if (child->cumul_hit >= min_hit)
-+		if (cumul_hits(child) >= min_hit)
- 			rb_insert_callchain(&node->rb_root, child,
- 					    CHAIN_GRAPH_ABS);
+ static struct symbol *symbol__new(u64 start, u64 len,
+ 				  const char *name, unsigned int priv_size,
+ 				  u64 obj_start, int verbose)
+@@ -81,6 +91,7 @@ struct dso *dso__new(const char *name, unsigned int sym_priv_size)
+ 		self->sym_priv_size = sym_priv_size;
+ 		self->find_symbol = dso__find_symbol;
+ 		self->slen_calculated = 0;
++		self->origin = DSO__ORIG_NOT_FOUND;
  	}
-@@ -108,11 +112,11 @@ static void __sort_chain_graph_rel(struct callchain_node *node,
- 	u64 min_hit;
  
- 	node->rb_root = RB_ROOT;
--	min_hit = node->cumul_hit * min_percent / 100.0;
-+	min_hit = node->children_hit * min_percent / 100.0;
- 
- 	chain_for_each_child(child, node) {
- 		__sort_chain_graph_rel(child, min_percent);
--		if (child->cumul_hit >= min_hit)
-+		if (cumul_hits(child) >= min_hit)
- 			rb_insert_callchain(&node->rb_root, child,
- 					    CHAIN_GRAPH_REL);
+ 	return self;
+@@ -710,7 +721,7 @@ static char *dso__read_build_id(struct dso *self, int verbose)
+ 		++raw;
+ 		bid += 2;
  	}
-@@ -211,7 +215,8 @@ add_child(struct callchain_node *parent, struct ip_callchain *chain,
- 	new = create_child(parent, false);
- 	fill_node(new, chain, start, syms);
- 
--	new->cumul_hit = new->hit = 1;
-+	new->children_hit = 0;
-+	new->hit = 1;
+-	if (verbose)
++	if (verbose >= 2)
+ 		printf("%s(%s): %s\n", __func__, self->name, build_id);
+ out_elf_end:
+ 	elf_end(elf);
+@@ -720,11 +731,26 @@ out:
+ 	return build_id;
  }
  
- /*
-@@ -241,7 +246,8 @@ split_add_child(struct callchain_node *parent, struct ip_callchain *chain,
- 
- 	/* split the hits */
- 	new->hit = parent->hit;
--	new->cumul_hit = parent->cumul_hit;
-+	new->children_hit = parent->children_hit;
-+	parent->children_hit = cumul_hits(new);
- 	new->val_nr = parent->val_nr - idx_local;
- 	parent->val_nr = idx_local;
- 
-@@ -249,6 +255,7 @@ split_add_child(struct callchain_node *parent, struct ip_callchain *chain,
- 	if (idx_total < chain->nr) {
- 		parent->hit = 0;
- 		add_child(parent, chain, idx_total, syms);
-+		parent->children_hit++;
- 	} else {
- 		parent->hit = 1;
- 	}
-@@ -269,13 +276,13 @@ __append_chain_children(struct callchain_node *root, struct ip_callchain *chain,
- 		unsigned int ret = __append_chain(rnode, chain, start, syms);
- 
- 		if (!ret)
--			goto cumul;
-+			goto inc_children_hit;
- 	}
- 	/* nothing in children, add to the current node */
- 	add_child(root, chain, start, syms);
- 
--cumul:
--	root->cumul_hit++;
-+inc_children_hit:
-+	root->children_hit++;
- }
- 
- static int
-@@ -317,8 +324,6 @@ __append_chain(struct callchain_node *root, struct ip_callchain *chain,
- 	/* we match 100% of the path, increment the hit */
- 	if (i - start == root->val_nr && i == chain->nr) {
- 		root->hit++;
--		root->cumul_hit++;
--
- 		return 0;
- 	}
- 
-diff --git a/tools/perf/util/callchain.h b/tools/perf/util/callchain.h
-index 7812122..b2d128e 100644
---- a/tools/perf/util/callchain.h
-+++ b/tools/perf/util/callchain.h
-@@ -21,7 +21,7 @@ struct callchain_node {
- 	struct rb_root		rb_root; /* sorted tree of children */
- 	unsigned int		val_nr;
- 	u64			hit;
--	u64			cumul_hit; /* hit + hits of children */
-+	u64			children_hit;
- };
- 
- struct callchain_param;
-@@ -48,6 +48,11 @@ static inline void callchain_init(struct callchain_node *node)
- 	INIT_LIST_HEAD(&node->val);
- }
- 
-+static inline u64 cumul_hits(struct callchain_node *node)
++char dso__symtab_origin(const struct dso *self)
 +{
-+	return node->hit + node->children_hit;
++	static const char origin[] = {
++		[DSO__ORIG_KERNEL] =   'k',
++		[DSO__ORIG_JAVA_JIT] = 'j',
++		[DSO__ORIG_FEDORA] =   'f',
++		[DSO__ORIG_UBUNTU] =   'u',
++		[DSO__ORIG_BUILDID] =  'b',
++		[DSO__ORIG_DSO] =      'd',
++	};
++
++	if (self == NULL || self->origin == DSO__ORIG_NOT_FOUND)
++		return '!';
++	return origin[self->origin];
 +}
 +
- int register_callchain_param(struct callchain_param *param);
- void append_chain(struct callchain_node *root, struct ip_callchain *chain,
- 		  struct symbol **syms);
+ int dso__load(struct dso *self, symbol_filter_t filter, int verbose)
+ {
+ 	int size = PATH_MAX;
+ 	char *name = malloc(size), *build_id = NULL;
+-	int variant = 0;
+ 	int ret = -1;
+ 	int fd;
+ 
+@@ -733,19 +759,26 @@ int dso__load(struct dso *self, symbol_filter_t filter, int verbose)
+ 
+ 	self->adjust_symbols = 0;
+ 
+-	if (strncmp(self->name, "/tmp/perf-", 10) == 0)
+-		return dso__load_perf_map(self, filter, verbose);
++	if (strncmp(self->name, "/tmp/perf-", 10) == 0) {
++		ret = dso__load_perf_map(self, filter, verbose);
++		self->origin = ret > 0 ? DSO__ORIG_JAVA_JIT :
++					 DSO__ORIG_NOT_FOUND;
++		return ret;
++	}
++
++	self->origin = DSO__ORIG_FEDORA - 1;
+ 
+ more:
+ 	do {
+-		switch (variant) {
+-		case 0: /* Fedora */
++		self->origin++;
++		switch (self->origin) {
++		case DSO__ORIG_FEDORA:
+ 			snprintf(name, size, "/usr/lib/debug%s.debug", self->name);
+ 			break;
+-		case 1: /* Ubuntu */
++		case DSO__ORIG_UBUNTU:
+ 			snprintf(name, size, "/usr/lib/debug%s", self->name);
+ 			break;
+-		case 2:
++		case DSO__ORIG_BUILDID:
+ 			build_id = dso__read_build_id(self, verbose);
+ 			if (build_id != NULL) {
+ 				snprintf(name, size,
+@@ -754,16 +787,15 @@ more:
+ 				free(build_id);
+ 				break;
+ 			}
+-			variant++;
++			self->origin++;
+ 			/* Fall thru */
+-		case 3: /* Sane people */
++		case DSO__ORIG_DSO:
+ 			snprintf(name, size, "%s", self->name);
+ 			break;
+ 
+ 		default:
+ 			goto out;
+ 		}
+-		variant++;
+ 
+ 		fd = open(name, O_RDONLY);
+ 	} while (fd < 0);
+@@ -899,6 +931,9 @@ int dso__load_kernel(struct dso *self, const char *vmlinux,
+ 	if (err <= 0)
+ 		err = dso__load_kallsyms(self, filter, verbose);
+ 
++	if (err > 0)
++		self->origin = DSO__ORIG_KERNEL;
++
+ 	return err;
+ }
+ 
+diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+index 2f92b21..1e003ec 100644
+--- a/tools/perf/util/symbol.h
++++ b/tools/perf/util/symbol.h
+@@ -26,6 +26,7 @@ struct dso {
+ 	unsigned int	 sym_priv_size;
+ 	unsigned char	 adjust_symbols;
+ 	unsigned char	 slen_calculated;
++	unsigned char	 origin;
+ 	char		 name[0];
+ };
+ 
+@@ -49,6 +50,7 @@ int dso__load_modules(struct dso *self, symbol_filter_t filter, int verbose);
+ int dso__load(struct dso *self, symbol_filter_t filter, int verbose);
+ 
+ size_t dso__fprintf(struct dso *self, FILE *fp);
++char dso__symtab_origin(const struct dso *self);
+ 
+ void symbol__init(void);
+ #endif /* _PERF_SYMBOL_ */
