@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932330AbZHGLJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbZHGLJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932330AbZHGLJK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 07:09:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbZHGLJJ
+	id S932403AbZHGLJV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 07:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932347AbZHGLJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 07:09:09 -0400
-Received: from us.einfochips.com ([74.54.47.34]:51313 "EHLO us.einfochips.com"
+	Fri, 7 Aug 2009 07:09:19 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:44141 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755830AbZHGLJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 07:09:08 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Aug 2009 07:09:08 EDT
-Message-ID: <4A7C0A16.4050202@einfochips.com>
-Date: Fri, 07 Aug 2009 16:33:50 +0530
-From: Dhaval Vasa <dhaval.vasa@einfochips.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	id S932336AbZHGLJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 07:09:16 -0400
+Date: Fri, 7 Aug 2009 12:09:15 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Larry Woodman <lwoodman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [PATCH 3/6] tracing, page-allocator: Add trace event for page
+	traffic related to the buddy lists
+Message-ID: <20090807110915.GD18134@csn.ul.ie>
+References: <1249574827-18745-1-git-send-email-mel@csn.ul.ie> <1249574827-18745-4-git-send-email-mel@csn.ul.ie> <20090807075317.GC20292@elte.hu>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: ftdi_sio: add product_id for Marvell OpenRD Base,
- Client
-References: <1249569566-824-1-git-send-email-dhaval.vasa@einfochips.com> <20090806152135.GA26445@suse.de>
-In-Reply-To: <20090806152135.GA26445@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090807075317.GC20292@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Thu, Aug 06, 2009 at 08:09:26PM +0530, Dhaval Vasa wrote:
->> reference:
->> http://www.open-rd.org
->>
->> Signed-off-by: Dhaval Vasa <dhaval.vasa@einfochips.com>
->> ---
->>  drivers/usb/serial/ftdi_sio.h |    7 +++++++
->>  1 files changed, 7 insertions(+), 0 deletions(-)
+On Fri, Aug 07, 2009 at 09:53:17AM +0200, Ingo Molnar wrote:
 > 
-> You also need to change ftdi_sio.c in order to add support for this
-> device id.  Care to redo the patch?
+> * Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > +TRACE_EVENT(mm_page_pcpu_drain,
+> > +
+> > +	TP_PROTO(struct page *page, int order, int migratetype),
+> > +
+> > +	TP_ARGS(page, order, migratetype),
+> > +
+> > +	TP_STRUCT__entry(
+> > +		__field(	struct page *,	page		)
+> > +		__field(	int,		order		)
+> > +		__field(	int,		migratetype	)
+> > +	),
+> > +
+> > +	TP_fast_assign(
+> > +		__entry->page		= page;
+> > +		__entry->order		= order;
+> > +		__entry->migratetype	= migratetype;
+> > +	),
+> > +
+> > +	TP_printk("page=%p pfn=%lu order=%d cpu=%d migratetype=%d",
+> > +		__entry->page,
+> > +		page_to_pfn(__entry->page),
+> > +		__entry->order,
+> > +		smp_processor_id(),
+> > +		__entry->migratetype)
+> 
+> > +	trace_mm_page_alloc_zone_locked(page, order, migratetype, order == 0);
+> 
+> This can be optimized further by omitting the migratetype field and 
+> adding something like this:
+> 
+> 	TP_printk("page=%p pfn=%lu order=%d cpu=%d migratetype=%d",
+> 		__entry->page,
+> 		page_to_pfn(__entry->page),
+> 		__entry->order,
+> 		smp_processor_id(),
+> 		__entry->order == 0);
+> 
+> The advantage is 4 bytes less in the record and a shorter tracepoint 
+> fast-path - while still having the same output.
+> 
 
-Yes, I will; thanks for pointing out.  I am again submitting patch.
+Knowing you meant percpu_refill, it's now been figured out in TP_printk
+instead of in the code.
 
-- Dhaval
 -- 
-_____________________________________________________________________
-Disclaimer: This e-mail message and all attachments transmitted with it
-are intended solely for the use of the addressee and may contain legally
-privileged and confidential information. If the reader of this message
-is not the intended recipient, or an employee or agent responsible for
-delivering this message to the intended recipient, you are hereby
-notified that any dissemination, distribution, copying, or other use of
-this message or its attachments is strictly prohibited. If you have
-received this message in error, please notify the sender immediately by
-replying to this message and please delete it from your computer. Any
-views expressed in this message are those of the individual sender
-unless otherwise stated.Company has taken enough precautions to prevent
-the spread of viruses. However the company accepts no liability for any
-damage caused by any virus transmitted by this email.
-_____________________________________________________________________
- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
