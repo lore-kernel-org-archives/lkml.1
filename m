@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933647AbZHGUK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933652AbZHGUQC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933647AbZHGUK7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933596AbZHGUK7
+	id S933652AbZHGUQC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:16:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933604AbZHGUQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:10:59 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52792 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933581AbZHGUK6 (ORCPT
+	Fri, 7 Aug 2009 16:16:01 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:39832 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933596AbZHGUQA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:10:58 -0400
-Subject: Re: [PATCH] perfcounters: Support for ftrace event records sampling
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>
-In-Reply-To: <1249641477.32113.664.camel@twins>
-References: <1249601154-5597-1-git-send-email-fweisbec@gmail.com>
-	 <1249641477.32113.664.camel@twins>
-Content-Type: text/plain
-Date: Fri, 07 Aug 2009 22:09:07 +0200
-Message-Id: <1249675747.8088.5.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Aug 2009 16:16:00 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; CHARSET=US-ASCII
+Date: Fri, 07 Aug 2009 14:14:47 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 3/4] vfs: change sb->s_maxbytes to a loff_t
+In-reply-to: <1249671461-9071-4-git-send-email-jlayton@redhat.com>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
+       msb@google.com, viro@zeniv.linux.org.uk, hannes@cmpxchg.org
+Message-id: <20090807201447.GQ3340@webber.adilger.int>
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <1249671461-9071-1-git-send-email-jlayton@redhat.com>
+ <1249671461-9071-4-git-send-email-jlayton@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-07 at 12:38 +0200, Peter Zijlstra wrote:
-> > +static void ftrace_profile_##call(proto)                             \
-> > +{                                                                    \
-> > +     struct ftrace_data_offsets_##call __maybe_unused __data_offsets;\
-> > +     struct ftrace_event_call *event_call = &event_##call;           \
-> > +     extern void perf_tpcounter_event(int, u64, u64, void *, int);   \
-> > +     struct ftrace_raw_##call *entry;                                \
-> > +     u64 __addr = 0, __count = 1;                                    \
-> > +     unsigned long irq_flags;                                        \
-> > +     int __entry_size;                                               \
-> > +     int __data_size;                                                \
-> > +     int pc;                                                         \
-> > +                                                                     \
-> > +     local_save_flags(irq_flags);                                    \
-> > +     pc = preempt_count();                                           \
-> > +                                                                     \
-> > +     __data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
-> > +     __entry_size = __data_size + sizeof(*entry);                    \
-> > +                                                                     \
-> > +     do {                                                            \
-> > +             char raw_data[__entry_size];                            \
-> > +             struct trace_entry *ent;                                \
-> > +                                                                     \
-> > +             entry = (struct ftrace_raw_##call *)raw_data;           \
-> > +             ent = &entry->ent;                                      \
-> > +             tracing_generic_entry_update(ent, irq_flags, pc);       \
-> > +             ent->type = event_call->id;                             \
-> > +                                                                     \
-> > +             tstruct                                                 \
-> > +                                                                     \
-> > +             { assign; }                                             \
-> > +                                                                     \
-> > +             perf_tpcounter_event(event_call->id, __addr, __count, entry,\
-> > +                          __entry_size);                             \
-> > +     } while (0);                                                    \
-> > +                                                                     \
-> > +}
-> 
-> ok, so the one concern I have here is that the data needs to fit on the
-> stack. What if someone puts a large string in the data?
+On Aug 07, 2009  14:57 -0400, Jeff Layton wrote:
+> +	/*
+> +	 * filesystems should never set s_maxbytes larger than MAX_LFS_FILESIZE
+> +	 * but s_maxbytes was an unsigned long long for many releases. Throw
+> +	 * this warning for a little while to try and catch filesystems that
+> +	 * violate this rule. This warning can be removed in 2.6.34.
+> +	 */
+> +	WARN(((unsigned long long) mnt->mnt_sb->s_maxbytes > MAX_LFS_FILESIZE),
+> +		"WARNING: %s sets sb->s_maxbytes too large (%llu)", type->name,
+> +		(unsigned long long) mnt->mnt_sb->s_maxbytes);
 
-Also, how NMI safe is all that?
+Rather than removing this check, it should be changed into a BUG_ON() so
+that no filesystems are added/modified to get it wrong.  We hit this
+problem once in the past also...
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
