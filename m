@@ -1,153 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757704AbZHGMOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757714AbZHGMPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757704AbZHGMOt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 08:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757617AbZHGMOs
+	id S1757714AbZHGMPr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 08:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757634AbZHGMPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 08:14:48 -0400
-Received: from mga11.intel.com ([192.55.52.93]:22065 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757201AbZHGMOr convert rfc822-to-8bit (ORCPT
+	Fri, 7 Aug 2009 08:15:46 -0400
+Received: from mail-pz0-f179.google.com ([209.85.222.179]:51432 "EHLO
+	mail-pz0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756361AbZHGMPp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 08:14:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,341,1246863600"; 
-   d="scan'208";a="481617240"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 7 Aug 2009 13:14:32 +0100
-Subject: RE: [patch] x86, perf_counter, bts: add bts to perf_counter
-Thread-Topic: [patch] x86, perf_counter, bts: add bts to perf_counter
-Thread-Index: AcoXUl7mta8lSBIWTRS8KzHNDCUjdQAAacug
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF09C@irsmsx504.ger.corp.intel.com>
-References: <20090804111412.GA20942@elte.hu>
- <20090804113555.GA28198@elte.hu>
- <928CFBE8E7CB0040959E56B4EA41A77EC1BFEEE3@irsmsx504.ger.corp.intel.com>
- <1249633282.32113.613.camel@twins>
- <928CFBE8E7CB0040959E56B4EA41A77EC1BFEFEB@irsmsx504.ger.corp.intel.com>
- <20090807103127.GA23139@elte.hu> <20090807103610.GA23728@elte.hu>
- <928CFBE8E7CB0040959E56B4EA41A77EC1BFF02D@irsmsx504.ger.corp.intel.com>
- <928CFBE8E7CB0040959E56B4EA41A77EC1BFF048@irsmsx504.ger.corp.intel.com>
- <20090807112634.GC30014@elte.hu> <20090807112931.GA31401@elte.hu>
-In-Reply-To: <20090807112931.GA31401@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	Fri, 7 Aug 2009 08:15:45 -0400
+X-Greylist: delayed 353 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Aug 2009 08:15:45 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ujuWL4XVxjPh8B78x7bV96+/VJUyJ14pQMUhBva+P8TwnbZT8ttAyOYgjHkd75y4FT
+         5l2T9nyKSqb7dhKcLH7/eFpAM+1ZQfZ4WeJ+d8yhpe1RL/f9haTz77BN05WlQO4vg2qw
+         tPOhb1bDzP/HA7gg0wfOY/GPySopTsXJxv4j4=
+Message-ID: <4A7C1979.9020508@gmail.com>
+Date: Fri, 07 Aug 2009 20:09:29 +0800
+From: Xiao Guangrong <ericxiao.gr@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+To: Ingo Molnar <mingo@elte.hu>
+CC: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v5 1/3] ftrace: add tracepoint for timer
+References: <4A7A4153.3040207@cn.fujitsu.com> <20090806024804.GB4685@kryten> <4A7A4C45.3040008@cn.fujitsu.com> <20090807105616.GA24916@elte.hu>
+In-Reply-To: <20090807105616.GA24916@elte.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Ingo Molnar [mailto:mingo@elte.hu]
->Sent: Friday, August 07, 2009 1:30 PM
->To: Metzger, Markus T
->Cc: Peter Zijlstra; tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; linux-
->kernel@vger.kernel.org
->Subject: Re: [patch] x86, perf_counter, bts: add bts to perf_counter
->
->
->* Ingo Molnar <mingo@elte.hu> wrote:
->
->> btw., the number of samples seems to be varying too widely:
+Ingo Molnar wrote:
+> * Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
+> 
+>> Anton Blanchard wrote:
+>>> Hi,
+>>>
+>>>> Example ftrace output:
+>>>>   insmod-1712  [000]   145.901459: timer_init: timer=d0ace4b4
+>>>>   insmod-1712  [000]   145.901469: timer_start: timer=d0ace4b4 func=timer_fun expires=4294813629 timeout=199
+>>>>   <idle>-0     [000]   146.100230: timer_cancel: timer=d0ace4b4
+>>>>   <idle>-0     [000]   146.100233: timer_expire: timer=d0ace4b4 jiffies=4294813629
+>>>>   <idle>-0     [000]   146.100627: timer_callback_done: func=d0ace4b4
+>>> Sorry I haven't followed the thread, but I was wondering why you 
+>>> changed the name of the entry and exit tracepoints (ie 
+>>> timer_entry/timer_exit).
+>>>
+>>> I think consistent naming is important to match the other static 
+>>> tracepoints, such as softirq_entry/softirq_exit, 
+>>> irq_entry/irq_exit and tasklet_entry/tasklet_exit.
+>> I rename timer_entry/timer_exit to 
+>> timer_expire/timer_callback_done just to match this series:
 >>
->> titan:~> for ((i=0;i<10;i++)); do perf record -f -e branches:u -c 1 true 2>/dev/null; perf report |
->head -1; done
->> # Samples: 28784
->> # Samples: 24063
->> # Samples: 22788
->> # Samples: 30449
->> # Samples: 15335
->> # Samples: 30557
->> # Samples: 24010
->> # Samples: 23866
->> # Samples: 24877
->> # Samples: 24330
+>> *_init() -> *_start() -> *_expire()...
 >>
->> compared to the branch-stat itself:
->>
->> titan:~> perf stat -v --repeat 10 -e branches:u true
->> [ perf stat: executing run #1 ... ]
->> [ perf stat: executing run #2 ... ]
->> [ perf stat: executing run #3 ... ]
->> [ perf stat: executing run #4 ... ]
->> [ perf stat: executing run #5 ... ]
->> [ perf stat: executing run #6 ... ]
->> [ perf stat: executing run #7 ... ]
->> [ perf stat: executing run #8 ... ]
->> [ perf stat: executing run #9 ... ]
->> [ perf stat: executing run #10 ... ]
->>
->>  Performance counter stats for 'true' (10 runs):
->>
->>           23851  branches                   ( +-   0.000% )
->>
->>     0.000639653  seconds time elapsed   ( +-   2.474% )
->>
->> do we lose records in the recording?
->
->i doubt it's lost records. Even with SCHED_FIFO sampling and with a
->huge, 512 MB mmap ring-buffer we get a BTS sample count variation in
->the +- 10% range:
->
->titan:/home/mingo> for ((i=0;i<10;i++)); do perf record -r 1 -m
->131072 -f -e branches:u -c 1 true 2>/dev/null; perf report | head
->-1; done
-># Samples: 24860
-># Samples: 24177
-># Samples: 26165
-># Samples: 25682
-># Samples: 29175
-># Samples: 23136
-># Samples: 27102
-># Samples: 29888
-># Samples: 25524
-># Samples: 24266
->
->(and these are all just user-mode executions)
+>> It's a complete timer's lifecycle.
+> 
+> timer _handler_ entry/exit is a pretty good lifecycle name as well - 
+> and it nicely fits into the irq/softirq naming Anton mentioned. 
+> Maybe this list:
+> 
 
+Hi Ingo,
 
-Hmmm, we do get a single branch record for the transition from kernel to user mode.
-We should therefore expect some deviation, but 10% sounds too much to me.
+Yeah, maybe you are right.
+I'll fix those, or do you mind apply this patchset first and I'll send
+a fix patch for those?
 
-Perf record traces itself and then exec's the application you want to trace.
-So, you would get a mix of perf trace and actual application trace. That could explain
-a 10% deviation.
+Thank you very much!
+Xiao
 
-Perf stat, on the other hand, seems to go through some effort to only trace the
-actual application.
-
-What do you think?
-
-In my tests, I'm looking for deterministic trace, e.g. on-the-spot branches for
-for(;;) {} loops or a branch to 0 for a null function pointer call. I pretty much
-ignored the 'noise' around that.
-
-
-regards,
-markus.
-
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+>  timer_init
+>  timer_start
+>  timer_expire_entry
+>  timer_expire_exit
+>  timer_cancel
+> 
+> works for you Anton?
+> 
+> 	Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
