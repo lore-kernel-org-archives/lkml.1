@@ -1,110 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933663AbZHGUQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933672AbZHGUSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933663AbZHGUQd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933603AbZHGUQc
+	id S933672AbZHGUSn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:18:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933582AbZHGUSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:16:32 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:9563 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932579AbZHGUQc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:16:32 -0400
-Subject: [PATCH] Remove double removal of blktrace directory
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: lizf@cn.fujitsu.com, Jens Axboe <jens.axboe@oracle.com>, mingo@elte.hu,
-       raspl@linux.vnet.ibm.com
-Content-Type: multipart/mixed; boundary="=-knyGGx+RHbOpzByYNfD6"
-Date: Fri, 07 Aug 2009 16:16:29 -0400
-Message-Id: <1249676189.25874.4.camel@cail>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 7 Aug 2009 16:18:42 -0400
+Received: from mail.lang.hm ([64.81.33.126]:35586 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932605AbZHGUSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 16:18:41 -0400
+Date: Fri, 7 Aug 2009 13:17:31 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: "Fischer, Anna" <anna.fischer@hp.com>
+cc: Stephen Hemminger <shemminger@vyatta.com>,
+       "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>,
+       "drobbins@funtoo.org" <drobbins@funtoo.org>,
+       "'Arnd Bergmann'" <arnd@arndb.de>,
+       "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
+       "mst@redhat.com" <mst@redhat.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "bridge@lists.linux-foundation.org" 
+	<bridge@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ogerlitz@voltaire.com" <ogerlitz@voltaire.com>,
+       "evb@yahoogroups.com" <evb@yahoogroups.com>,
+       "davem@davemloft.net" <davem@davemloft.net>
+Subject: RE: [Bridge] [PATCH] macvlan: add tap device backend
+In-Reply-To: <0199E0D51A61344794750DC57738F58E6D6A6CD7FE@GVW1118EXC.americas.hpqcorp.net>
+Message-ID: <alpine.DEB.1.10.0908071313260.28013@asgard.lang.hm>
+References: <0199E0D51A61344794750DC57738F58E6D6A6CD7F6@GVW1118EXC.americas.hpqcorp.net> <004f01ca1792$b24a7a90$16df6fb0$@edu> <20090807123554.7c2bc27c@nehalam> <0199E0D51A61344794750DC57738F58E6D6A6CD7FE@GVW1118EXC.americas.hpqcorp.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 7 Aug 2009, Fischer, Anna wrote:
 
---=-knyGGx+RHbOpzByYNfD6
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+> Subject: RE: [Bridge] [PATCH] macvlan: add tap device backend
+> 
+>> Subject: Re: [Bridge] [PATCH] macvlan: add tap device backend
+>>
+>> On Fri, 7 Aug 2009 12:10:07 -0700
+>> "Paul Congdon \(UC Davis\)" <ptcongdon@ucdavis.edu> wrote:
+>>
+>>> Responding to Daniel's questions...
+>>>
+>>>> I have some general questions about the intended use and benefits
+>> of
+>>>> VEPA, from an IT perspective:
+>>>>
+>>>> In which virtual machine setups and technologies do you forsee this
+>>>> interface being used?
+>>>
+>>> The benefit of VEPA is the coordination and unification with the
+>> external network switch.  So, in environments where you are
+>> needing/wanting your feature rich, wire speed, external network device
+>> (firewall/switch/IPS/content-filter) to provide consistent policy
+>> enforcement, and you want your VMs traffic to be subject to that
+>> enforcement, you will want their traffic directed externally.  Perhaps
+>> you have some VMs that are on a DMZ or clustering an application or
+>> implementing a multi-tier application where you would normally place a
+>> firewall in-between the tiers.
+>>
+>> I do have to raise the point that Linux is perfectly capable of keeping
+>> up without
+>> the need of an external switch.  Whether you want policy external or
+>> internal is
+>> a architecture decision that should not be driven by mis-information
+>> about performance.
+>
+> VEPA is not only about enabling faster packet processing (like firewall/switch/IPS/content-filter etc) by doing this on the external switch.
+>
+> Due to rather low performance of software-based I/O virtualization approaches a lot of effort has recently been going into hardware-based implementations of virtual network interfaces like SRIOV NICs provide. Without VEPA, such a NIC would have to implement sophisticated virtual switching capabilities. VEPA however is very simple and therefore perfectly suited for a hardware-based implementation. So in the future, it will give you direct I/O like performance and all the capabilities your adjacent switch provides.
+>
 
+the performance overhead isn't from switching the packets, it's from 
+running the firewall/IDS/etc software on the same system.
 
+with VEPA the communications from one VM to another VM running on the same 
+host will be forced to go out the interface to the datacenter switching 
+fabric. The overall performance of the network link will be slightly 
+slower, but it allows for other devices to be inserted into the path.
 
---=-knyGGx+RHbOpzByYNfD6
-Content-Disposition: attachment; filename="patch.txt"
-Content-Type: text/plain; name="patch.txt"; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+this is something that I would want available if I were to start using VMs 
+for things. I don't want to have to duplicate my IDS/firewalling functions 
+within each host system as well as having them as part of the switching 
+fabric.
 
-Remove double removal of blktrace directory
-
-commit fd51d251e4cdb21f68e9dbc4336514d64a105a79
-Author: Stefan Raspl <raspl@linux.vnet.ibm.com>
-Date:   Tue May 19 09:59:08 2009 +0200
-
-    blktrace: remove debugfs entries on bad path
-
-added in an explicit invocation of debugfs_remove for bt->dir, in
-blk_remove_buf_file_callback we are also getting the directory removed. On
-occasion I am seeing memory corruption that I have bisected down to
-this commit. [The testing involves a (long) series of I/O benchmarks
-with blktrace invoked around the actual runs.] I believe that this
-committed patch is correct, but the problem actually lies in the code
-in blk_remove_buf_file_callback.
-
-With this patch I am able to consistently get complete runs whereas
-previously I could not get a single run to complete.
-
-The first part of the patch simply moves the debugfs_remove below the
-relay_close: the relay_close call will remove files under bt->dir, and
-so we should not remove the directory until all the files we created
-have been removed. (Note: This is not sufficient to fix the problem -
-the file system code has ref counts on the directoy, so our invocation
-does not cause the directory to actually be removed. Nonetheless, we
-should not rely upon that feature.)
-
-Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
----
- kernel/trace/blktrace.c |   12 +-----------
- 1 files changed, 1 insertions(+), 11 deletions(-)
-
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 1090b0a..7a34cb5 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -267,8 +267,8 @@ static void blk_trace_free(struct blk_trace *bt)
- {
- 	debugfs_remove(bt->msg_file);
- 	debugfs_remove(bt->dropped_file);
--	debugfs_remove(bt->dir);
- 	relay_close(bt->rchan);
-+	debugfs_remove(bt->dir);
- 	free_percpu(bt->sequence);
- 	free_percpu(bt->msg_data);
- 	kfree(bt);
-@@ -378,18 +378,8 @@ static int blk_subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
- 
- static int blk_remove_buf_file_callback(struct dentry *dentry)
- {
--	struct dentry *parent = dentry->d_parent;
- 	debugfs_remove(dentry);
- 
--	/*
--	* this will fail for all but the last file, but that is ok. what we
--	* care about is the top level buts->name directory going away, when
--	* the last trace file is gone. Then we don't have to rmdir() that
--	* manually on trace stop, so it nicely solves the issue with
--	* force killing of running traces.
--	*/
--
--	debugfs_remove(parent);
- 	return 0;
- }
- 
--- 
-1.6.0.4
-
-
-
---=-knyGGx+RHbOpzByYNfD6--
-
+David Lang
