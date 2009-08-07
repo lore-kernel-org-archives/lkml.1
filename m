@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932271AbZHGSRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932343AbZHGSRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932271AbZHGSRp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 14:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932146AbZHGSRo
+	id S932343AbZHGSRt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 14:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932292AbZHGSRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 14:17:44 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:57296 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754921AbZHGSRn (ORCPT
+	Fri, 7 Aug 2009 14:17:48 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:26426 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932146AbZHGSRq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 14:17:43 -0400
-Date: Fri, 7 Aug 2009 11:16:59 -0700
+	Fri, 7 Aug 2009 14:17:46 -0400
+Date: Fri, 7 Aug 2009 11:17:04 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>,
-       jens.axboe@oracle.com
+To: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh@suse.de,
+       akpm <akpm@linux-foundation.org>
 Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -next] block: blk-iopoll sysctl iff CONFIG_BLOCK
-Message-Id: <20090807111659.3d8da27f.randy.dunlap@oracle.com>
+Subject: [PATCH -next] staging/hv: blk dev depends on SCSI
+Message-Id: <20090807111704.b7b79983.randy.dunlap@oracle.com>
 In-Reply-To: <20090807183118.e71b4db2.sfr@canb.auug.org.au>
 References: <20090807183118.e71b4db2.sfr@canb.auug.org.au>
 Organization: Oracle Linux Eng.
@@ -24,43 +24,36 @@ X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt018.oracle.com [141.146.116.27]
+X-Source-IP: abhmt016.oracle.com [141.146.116.25]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010207.4A7C6FB4.0049:SCFSTAT5015188,ss=1,fgs=0
+X-CT-RefId: str=0001.0A010201.4A7C6FB8.00A3:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-New block-iopoll sysctl should be surrounded by CONFIG_BLOCK to
-prevent build error:
+hv block driver uses scsi_*() interfaces so it should depend on SCSI.
 
-kernel/built-in.o:(.data+0x2990): undefined reference to `blk_iopoll_enabled'
+ERROR: "scsi_normalize_sense" [drivers/staging/hv/hv_blkvsc.ko] undefined!
+ERROR: "scsi_print_sense_hdr" [drivers/staging/hv/hv_blkvsc.ko] undefined!
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- kernel/sysctl.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/staging/hv/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-next-20090807.orig/kernel/sysctl.c
-+++ linux-next-20090807/kernel/sysctl.c
-@@ -990,6 +990,7 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= &proc_dointvec,
- 	},
- #endif
-+#ifdef CONFIG_BLOCK
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "blk_iopoll",
-@@ -998,6 +999,7 @@ static struct ctl_table kern_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
-+#endif
- /*
-  * NOTE: do not add new entries to this table unless you have read
-  * Documentation/sysctl/ctl_unnumbered.txt
+--- linux-next-20090807.orig/drivers/staging/hv/Kconfig
++++ linux-next-20090807/drivers/staging/hv/Kconfig
+@@ -15,7 +15,7 @@ config HYPERV_STORAGE
+ 
+ config HYPERV_BLOCK
+ 	tristate "Microsoft Hyper-V virtual block driver"
+-	depends on BLOCK && m
++	depends on BLOCK && SCSI && m
+ 	default n
+ 	help
+ 	  Select this option to enable the Hyper-V virtual block driver.
 
 
 ---
