@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757035AbZHGHpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757098AbZHGHpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757035AbZHGHpb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 03:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755546AbZHGHpb
+	id S1757098AbZHGHpf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 03:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757080AbZHGHpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 03:45:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39320 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754982AbZHGHpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 03:45:30 -0400
-Date: Fri, 7 Aug 2009 09:45:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Brice Goglin <Brice.Goglin@inria.fr>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf tools: Fix reading of perf.data file header
-Message-ID: <20090807074525.GA20292@elte.hu>
-References: <20090629192913.GA29295@elte.hu> <4A7B0C02.7060704@inria.fr> <1249580428.4975.14.camel@laptop> <4A7B175B.8030000@inria.fr> <1249585061.4975.17.camel@laptop> <4A7B28EA.20903@inria.fr> <20090806195924.GA22411@elte.hu> <4A7B68C3.7040706@inria.fr> <20090807063226.GA29532@elte.hu> <4A7BD9EC.8000801@inria.fr>
+	Fri, 7 Aug 2009 03:45:33 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:47948 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755546AbZHGHpc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 03:45:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MbRNXqTBd2EJkFJp7JcvmELX/US0Z8YpTCTGpTHCfZuFgJpaTdxpsUXXaiz/BquBNT
+         WPvhEH7Kgjxj3gElJwaNkEa3Jnk+yJDwHoFN32pH4EtuviPCBdH+xurFW74xOEz+CgMj
+         k1Fe1DrpVlQLO9rjYoaoICgRCwysxPyBNjsek=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A7BD9EC.8000801@inria.fr>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200908062353.14822.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0908061257490.2937-100000@iolanthe.rowland.org>
+	 <200908062353.14822.rjw@sisk.pl>
+Date: Fri, 7 Aug 2009 16:45:31 +0900
+Message-ID: <aec7e5c30908070045t6214ce68kcecdc835c2ab7bff@mail.gmail.com>
+Subject: Re: [PATCH update x2] PM: Introduce core framework for run-time PM of 
+	I/O devices (rev. 13)
+From: Magnus Damm <magnus.damm@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 7, 2009 at 6:53 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM: Introduce core framework for run-time PM of I/O devices (rev. 13)
+>
+> Introduce a core framework for run-time power management of I/O
+> devices.  Add device run-time PM fields to 'struct dev_pm_info'
+> and device run-time PM callbacks to 'struct dev_pm_ops'.  Introduce
+> a run-time PM workqueue and define some device run-time PM helper
+> functions at the core level.  Document all these things.
+>
+> Special thanks to Alan Stern for his help with the design and
+> multiple detailed reviews of the pereceding versions of this patch
+> and to Magnus Damm for testing feedback.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-* Brice Goglin <Brice.Goglin@inria.fr> wrote:
+I've rebased my series of patches to v13. My platform device Runtime
+PM code for SuperH works well with drivers for i2c, uio and fbdev with
+v13. Thank you. I'll post a SuperH specific patch set some time next
+week.
 
-> Ingo Molnar wrote:
-> > Ok, there's indeed a flag clash with -s/--sort as you noticed.
-> >
-> > -S looks good to me, how about going one step further and changing 
-> > perf record to use -S/--stat as well, to make the flag consistent 
-> > across all tools?
-> 
-> Sure, but perf stat already uses -S for --scale :)
+Anyway, I'm not far from an "Acked-by", but please look at the following series:
 
-heh :-)
+[PATCH 00/05] PM: Runtime PM v13 for Platform Devices 20090807
 
-I completely forgot about it. And since we now have --scale enabled 
-by default (and it doesnt make much sense to disable it i guess), it 
-would not be a big issue to rename that -c/--scale to free up that 
-flag for -S/--stat?
+Maybe there is some code in there that you can include in v14? Let me know!
 
-	Ingo
+Cheers,
+
+/ magnus
