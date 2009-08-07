@@ -1,136 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932691AbZHGPFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932724AbZHGPG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932691AbZHGPFv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 11:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932643AbZHGPFu
+	id S932724AbZHGPG0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 11:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932698AbZHGPGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 11:05:50 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:65534 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932627AbZHGPFt (ORCPT
+	Fri, 7 Aug 2009 11:06:25 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1936 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932643AbZHGPGY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 11:05:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=Ov5OVVy2rN2I3ZOCRdtOEKGY9Uq66v+Ugbu+a1ZSfr/9/KTjcDVvIP0xVUr3hm/4pQ
-         IJ0PLY/CexqV3ftfka/Jm/T+K6f01RwhMopDh0hekrxyRVaCbtTa4MXs/HnFmfZF0Qt8
-         NuMzW/Q9vtWvCJ1xT2dFaC8k5tAqL9xlKM4wY=
-Message-ID: <4A7C42C8.5050608@gmail.com>
-Date: Fri, 07 Aug 2009 11:05:44 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: "Michael S. Tsirkin" <mst@redhat.com>,
-       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [PATCH 0/7] AlacrityVM guest drivers
-References: <20090803171030.17268.26962.stgit@dev.haskins.net> <20090806081955.GA9752@redhat.com> <4A7C37E5.4040302@codemonkey.ws>
-In-Reply-To: <4A7C37E5.4040302@codemonkey.ws>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigDD6D7DE8A19889E7EA51257E"
+	Fri, 7 Aug 2009 11:06:24 -0400
+Subject: Re: [PATCH] MAINTAINERS: Add list entries
+ linux-arm@vger.kernel.org and linux-arm-kernel@ to OMAP sections
+From: Joe Perches <joe@perches.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, linux-arm@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Felipe Balbi <felipe.balbi@nokia.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090807080102.GV2358@atomide.com>
+References: <1249576450.3467.25.camel@Joe-Laptop.home>
+	 <20090807080102.GV2358@atomide.com>
+Content-Type: text/plain
+Date: Fri, 07 Aug 2009 08:06:20 -0700
+Message-Id: <1249657581.3467.76.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigDD6D7DE8A19889E7EA51257E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2009-08-07 at 11:01 +0300, Tony Lindgren wrote:
+> * Joe Perches <joe@perches.com> [090806 19:35]:
+> > Perhaps it's useful for OMAP patches and bug reports
+> > to CC entries to the primary and secondary ARM lists.
+> > Added a pattern entry for OMAP USB as well.
+> ... I think let's not add the drivers. The related driver list
+> and linux-omap list should be enough for these.
 
-Anthony Liguori wrote:
-> Michael S. Tsirkin wrote:
->>
->>> This series includes the basic plumbing, as well as the driver for
->>> accelerated 802.x (ethernet) networking.
->>>    =20
->>
->> The graphs comparing virtio with vbus look interesting.
->>  =20
->=20
-> 1gbit throughput on a 10gbit link?  I have a hard time believing that.
->=20
-> I've seen much higher myself.  Can you describe your test setup in more=
+Fine by me.  I fixed up your M: entry as well.
 
-> detail?
+Signed-off-by: Joe Perches <joe@perches.com>
 
-Sure,
-
-For those graphs, two 8-core x86_64 boxes with Chelsio T3 10GE connected
-back to back via cross over with 1500mtu.  The kernel version was as
-posted.  The qemu version was generally something very close to
-qemu-kvm.git HEAD at the time the data was gathered, but unfortunately I
-didn't seem to log this info.
-
-For KVM, we take one of those boxes and run a bridge+tap configuration
-on top of that.  We always run the server on the bare-metal machine on
-the remote side of the link regardless of whether we run the client in a
-VM or baremetal.
-
-For guests, virtio-net and venet connect to the same linux bridge
-instance, I just "ifdown eth0 / ifup eth1" (or vice versa) and repeat
-the same test.  I do this multiple times (usually about 10) and average
-the result.  I use several different programs, such as netperf, rsync,
-and ping to take measurements.
-
-That said, note that the graphs were from earlier kernel runs (2.6.28,
-29-rc8).  The most recent data I can find that I published is for
-2.6.29, announced with the vbus-v3 release back in April:
-
-http://lkml.org/lkml/2009/4/21/408
-
-In it, the virtio-net throughput numbers are substantially higher and
-possibly more in line with your expectations (4.5gb/s) (though notably
-still lagging venet, which weighed in at 5.6gb/s).
-
-Generally, I find that the virtio-net exhibits non-deterministic results
-from release to release.  I suspect (as we have discussed) the
-tx-mitigation scheme.  Some releases buffer the daylights out of the
-stream, and virtio gets close(r) throughput (e.g. 4.5g vs 5.8g, but
-absolutely terrible latency (4000us vs 65us).  Other releases it seems
-to operate with more of a compromise (1.3gb/s vs 3.8gb/s, but 350us vs
-85us).
-
-I do not understand what causes the virtio performance fluctuation, as I
-use the same kernel config across builds, and I do not typically change
-the qemu userspace.  Note that some general fluctuation is evident
-across the board just from kernel to kernel.  I am referring to more of
-the disparity in throughput vs latency than the ultimate numbers, as all
-targets seem to scale max throughput about the same per kernel.
-
-That said, I know I need to redo the graphs against HEAD (31-rc5, and
-perhaps 30, and kvm.git).  I've been heads down with the eventfd
-interfaces since vbus-v3 so I havent been as active with generating the
-results. I did confirm that vbus-v4 (alacrityvm-v0.1) still produces a
-similar graph, but I didn't gather the data as scientifically as I would
-feel comfortable publishing a graph for.  This is on the TODO list.
-
-If there is another patch-series/tree I should be using for comparison,
-please point me at it.
-
-HTH
-
-Kind Regards,
--Greg
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b1114cf..6a82733 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3660,8 +3660,10 @@ F:	drivers/video/riva/
+ F:	drivers/video/nvidia/
+ 
+ OMAP SUPPORT
+-M:	"Tony Lindgren <tony@atomide.com>" <tony@atomide.com>
++M:	Tony Lindgren <tony@atomide.com>
+ L:	linux-omap@vger.kernel.org
++L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.muru.com/linux/omap/
+ W:	http://linux.omap.com/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git
+@@ -3671,12 +3673,16 @@ F:	arch/arm/*omap*
+ OMAP CLOCK FRAMEWORK SUPPORT
+ M:	Paul Walmsley <paul@pwsan.com>
+ L:	linux-omap@vger.kernel.org
++L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ S:	Maintained
+ F:	arch/arm/*omap*/*clock*
+ 
+ OMAP POWER MANAGEMENT SUPPORT
+ M:	Kevin Hilman <khilman@deeprootsystems.com>
+ L:	linux-omap@vger.kernel.org
++L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ S:	Maintained
+ F:	arch/arm/*omap*/*pm*
+ 
 
 
---------------enigDD6D7DE8A19889E7EA51257E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkp8QsgACgkQP5K2CMvXmqFUDgCcCtEq2PSKDkISw0/H2jQTDhKG
-3PMAnjSZ7zETv4xR52xzlNJVAZOojVrI
-=QpOe
------END PGP SIGNATURE-----
-
---------------enigDD6D7DE8A19889E7EA51257E--
