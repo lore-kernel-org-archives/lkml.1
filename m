@@ -1,119 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932569AbZHGOan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932584AbZHGOgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932569AbZHGOan (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 10:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932547AbZHGOam
+	id S932584AbZHGOgJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 10:36:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932558AbZHGOgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 10:30:42 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:42450 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932525AbZHGOal (ORCPT
+	Fri, 7 Aug 2009 10:36:08 -0400
+Received: from lon1-post-2.mail.demon.net ([195.173.77.149]:48954 "EHLO
+	lon1-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932211AbZHGOgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 10:30:41 -0400
-Message-ID: <4A7C3A6C.4050907@us.ibm.com>
-Date: Fri, 07 Aug 2009 07:30:04 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
-MIME-Version: 1.0
-To: Sripathi Kodi <sripathik@in.ibm.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [ANNOUNCE] 2.6.31-rc4-rt1
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain> <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <20090807095603.44c21333@sripathi.ibm.com>
-In-Reply-To: <20090807095603.44c21333@sripathi.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 7 Aug 2009 10:36:08 -0400
+Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm <linux-mm@kvack.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>
+In-Reply-To: <1249647601.32113.700.camel@twins>
+References: <1245839904.3210.85.camel@localhost.localdomain>
+	 <1249647601.32113.700.camel@twins>
+Content-Type: text/plain
+Date: Fri, 07 Aug 2009 15:36:01 +0100
+Message-Id: <1249655761.2719.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sripathi Kodi wrote:
-> On Thu, 30 Jul 2009 02:48:04 +0200 (CEST)
-> Thomas Gleixner <tglx@linutronix.de> wrote:
+On Fri, 2009-08-07 at 14:20 +0200, Peter Zijlstra wrote:
+> On Wed, 2009-06-24 at 11:38 +0100, Richard Kennedy wrote:
+...
+> OK, so Chris ran into this bit yesterday, complaining that he'd only get
+> very few write requests and couldn't saturate his IO channel.
 > 
->> We are pleased to announce the next update to our new preempt-rt
->> series.
->>
->>     - update to 2.6.31-rc4
->>
->> This is a major rework of the rt patch series. Thanks to Clark
->> Williams and John Kacur for providing the merge to 2.6.30 while I was
->> stabilizing .29-rt. While the 30-rt series looked quite stable, we
->> decided to skip 30-rt entirely to keep track with the ongoing mainline
->> development for various reaons. The .31-rt series is planned to be
->> stabilized as we have done with .29-rt.
+> Now, since writing out everything once there's something to do sucks for
+> Richard, but only writing out stuff when we're over the limit sucks for
+> Chris (since we can only be over the limit a little), the best thing
+> would be to only write out when we're over the background limit. Since
+> that is the low watermark we use for throttling it makes sense that we
+> try to write out when above that.
 > 
-> I searched the mails in this chain, but did not find the following
-> BUG reported yet. I hit this once while booting up.
+> However, since there's a lack of bdi_background_thresh, and I don't
+> think introducing one just for this is really justified. How about the
+> below?
+> 
+> Chris how did this work for you? Richard, does this make things suck for
+> you again?
+> 
+> ---
+>  mm/page-writeback.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index 81627eb..92f42d6 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -545,7 +545,7 @@ static void balance_dirty_pages(struct address_space *mapping)
+>  		 * threshold otherwise wait until the disk writes catch
+>  		 * up.
+>  		 */
+> -		if (bdi_nr_reclaimable > bdi_thresh) {
+> +		if (bdi_nr_reclaimable > bdi_thresh/2) {
+>  			writeback_inodes(&wbc);
+>  			pages_written += write_chunk - wbc.nr_to_write;
+>  			get_dirty_limits(&background_thresh, &dirty_thresh,
+> 
+> 
+I'll run some tests and let you know :)
 
-I hit this occasionally as well.
+But what if someone has changed the vm settings?
+Maybe something like 
+	(bdi_thresh * dirty_background_ratio / dirty_ratio)
+might be better ?
 
---
-Darren
+Chris, what sort of workload are you having problems with?
 
-> 
-> INIT: version 2.86 bootingBUG: unable to handle kernel NULL pointer dereference at 0000000000000024
-> IP: [<ffffffff81050fe6>] try_to_wake_up+0x3b/0x2e2
-> PGD 0 
-> Oops: 0000 [#1] PREEMPT SMP 
-> last sysfs file: /sys/block/sda/dev
-> CPU 5 
-> Modules linked in: dm_region_hash dm_log dm_mod ata_piix libata shpchp mptsas mptscsih mptbase scsi_transport_sas sd_mod scsi_mod crc_t10dif ext3 jbd mbcache uhci_hcd ohci_hcd ehci_hcd
-> Pid: 0, comm: swapper Not tainted 2.6.31-rc4-rt1 #1 IBM eServer BladeCenter HS21 -[7995AAA]-
-> RIP: 0010:[<ffffffff81050fe6>]  [<ffffffff81050fe6>] try_to_wake_up+0x3b/0x2e2
-> RSP: 0018:ffff880028199e38  EFLAGS: 00010082
-> RAX: 0000000000000000 RBX: 000000000000001e RCX: 0000000000000000
-> RDX: 0000000000000000 RSI: 000000000000001e RDI: 0000000000000000
-> RBP: ffff880028199e88 R08: b000000000000000 R09: 0000000000000001
-> R10: 0000000000000001 R11: 017dbbb7ec537836 R12: 0000000000000000
-> R13: 0000000000000001 R14: 0000000000000000 R15: 0000000000000000
-> FS:  0000000000000000(0000) GS:ffff880028196000(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 0000000000000024 CR3: 0000000001001000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process swapper (pid: 0, threadinfo ffff88022f342000, task ffff88022f340000)
-> Stack:
->  ffffffff810bd00b 00000000ec537836 ffffffff81619840 ffff88022c58e640
-> <0> 017dbbb7ec537836 ffffffff81619840 ffff88022c58e640 0000000000000001
-> <0> 0000000000000004 0000000000000000 ffff880028199ea8 ffffffff810513fb
-> Call Trace:
->  <IRQ> 
->  [<ffffffff810bd00b>] ? handle_edge_irq+0x35/0x13d
->  [<ffffffff810513fb>] wake_up_process+0x2a/0x40
->  [<ffffffff810baf12>] handle_IRQ_event+0x169/0x1a1
->  [<ffffffff810bd0b7>] handle_edge_irq+0xe1/0x13d
->  [<ffffffff8100f031>] handle_irq+0x9d/0xbf
->  [<ffffffff8100acc9>] ? exit_idle+0x33/0x49
->  [<ffffffff813f0b12>] do_IRQ+0x72/0xd9
->  [<ffffffff8100cc93>] ret_from_intr+0x0/0xa
->  <EOI> 
->  [<ffffffff810151dd>] ? mwait_idle+0x8b/0xb2
->  [<ffffffff810151d0>] ? mwait_idle+0x7e/0xb2
->  [<ffffffff8100abfe>] ? enter_idle+0x38/0x4e
->  [<ffffffff8100b3da>] ? cpu_idle+0xae/0x100
->  [<ffffffff813e3f4e>] ? start_secondary+0x19d/0x1b8
-> Code: 28 0f 1f 44 00 00 65 48 8b 04 25 28 00 00 00 48 89 45 d0 31 c0 80 3d 09 e4 5c 00 00 41 89 d6 89 4d bc 49 89 fc 89 f3 44 0f 49 f0 <83> 7f 24 63 44 0f 4e f0 48 8d 75 c8 89 db e8 95 53 ff ff 48 89 
-> RIP  [<ffffffff81050fe6>] try_to_wake_up+0x3b/0x2e2
->  RSP <ffff880028199e38>
-> CR2: 0000000000000024
-> ---[ end trace f21e517c335b6dab ]---
-> Kernel panic - not syncing: Fatal exception in interrupt
-> 
-> Thanks,
-> Sripathi.
-> 
-> <snip>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+regards
+Richard
 
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
