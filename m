@@ -1,144 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbZHGJvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbZHGJxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757338AbZHGJvo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 05:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932243AbZHGJu6
+	id S1757359AbZHGJxq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 05:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757082AbZHGJuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 05:50:58 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:20607 "EHLO
-	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757176AbZHGJuj (ORCPT
+	Fri, 7 Aug 2009 05:50:32 -0400
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:45387 "EHLO
+	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755905AbZHGJuI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 05:50:39 -0400
+	Fri, 7 Aug 2009 05:50:08 -0400
 X-SpamScore: 3
 X-BigFish: VPS3(zzzz1202hzzz32i203h43j62h)
 X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KO03B6-04-L88-01
+X-FB-SS: 5,
+X-WSS-ID: 0KO03B9-04-L8B-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>
 CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 02/21] kvm/svm: optimize nested #vmexit
-Date: Fri, 7 Aug 2009 11:49:29 +0200
-Message-ID: <1249638588-10982-3-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 07/21] kvm/svm: cache nested intercepts
+Date: Fri, 7 Aug 2009 11:49:34 +0200
+Message-ID: <1249638588-10982-8-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1249638588-10982-1-git-send-email-joerg.roedel@amd.com>
 References: <1249638588-10982-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 07 Aug 2009 09:49:50.0671 (UTC) FILETIME=[683095F0:01CA1744]
+X-OriginalArrivalTime: 07 Aug 2009 09:49:50.0983 (UTC) FILETIME=[68603170:01CA1744]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is more efficient to copy only the relevant parts of the vmcb back to
-the nested vmcb when we emulate an vmexit.
+When the nested intercepts are cached we don't need to call
+get_user_pages and/or map the nested vmcb on every nested #vmexit to
+check who will handle the intercept.
+Further this patch aligns the emulated svm behavior better to real
+hardware.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-Acked-by: Alexander Graf <agraf@suse.de>
 ---
- arch/x86/kvm/svm.c |   68 +++++++++++++++++++++++++--------------------------
- 1 files changed, 33 insertions(+), 35 deletions(-)
+ arch/x86/kvm/svm.c |   30 +++++++++++++++++++++++-------
+ 1 files changed, 23 insertions(+), 7 deletions(-)
 
 diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 8eb0852..02ebc3f 100644
+index b4e2587..75fdfe7 100644
 --- a/arch/x86/kvm/svm.c
 +++ b/arch/x86/kvm/svm.c
-@@ -1575,53 +1575,52 @@ static int nested_svm_vmexit_real(struct vcpu_svm *svm, void *arg1,
+@@ -80,6 +80,15 @@ struct nested_state {
+ 
+ 	/* gpa pointers to the real vectors */
+ 	u64 vmcb_msrpm;
++
++	/* cache for intercepts of the guest */
++	u16 intercept_cr_read;
++	u16 intercept_cr_write;
++	u16 intercept_dr_read;
++	u16 intercept_dr_write;
++	u32 intercept_exceptions;
++	u64 intercept;
++
+ };
+ 
+ struct vcpu_svm {
+@@ -1455,7 +1464,6 @@ static int nested_svm_exit_handled_real(struct vcpu_svm *svm,
+ 					void *arg2,
+ 					void *opaque)
  {
- 	struct vmcb *nested_vmcb = (struct vmcb *)arg1;
- 	struct vmcb *hsave = svm->hsave;
--	u64 nested_save[] = { nested_vmcb->save.cr0,
--			      nested_vmcb->save.cr3,
--			      nested_vmcb->save.cr4,
--			      nested_vmcb->save.efer,
--			      nested_vmcb->control.intercept_cr_read,
--			      nested_vmcb->control.intercept_cr_write,
--			      nested_vmcb->control.intercept_dr_read,
--			      nested_vmcb->control.intercept_dr_write,
--			      nested_vmcb->control.intercept_exceptions,
--			      nested_vmcb->control.intercept,
--			      nested_vmcb->control.msrpm_base_pa,
--			      nested_vmcb->control.iopm_base_pa,
--			      nested_vmcb->control.tsc_offset };
-+	struct vmcb *vmcb = svm->vmcb;
+-	struct vmcb *nested_vmcb = (struct vmcb *)arg1;
+ 	bool kvm_overrides = *(bool *)opaque;
+ 	u32 exit_code = svm->vmcb->control.exit_code;
  
- 	/* Give the current vmcb to the guest */
--	memcpy(nested_vmcb, svm->vmcb, sizeof(struct vmcb));
--	nested_vmcb->save.cr0 = nested_save[0];
--	if (!npt_enabled)
--		nested_vmcb->save.cr3 = nested_save[1];
--	nested_vmcb->save.cr4 = nested_save[2];
--	nested_vmcb->save.efer = nested_save[3];
--	nested_vmcb->control.intercept_cr_read = nested_save[4];
--	nested_vmcb->control.intercept_cr_write = nested_save[5];
--	nested_vmcb->control.intercept_dr_read = nested_save[6];
--	nested_vmcb->control.intercept_dr_write = nested_save[7];
--	nested_vmcb->control.intercept_exceptions = nested_save[8];
--	nested_vmcb->control.intercept = nested_save[9];
--	nested_vmcb->control.msrpm_base_pa = nested_save[10];
--	nested_vmcb->control.iopm_base_pa = nested_save[11];
--	nested_vmcb->control.tsc_offset = nested_save[12];
-+	disable_gif(svm);
+@@ -1482,38 +1490,38 @@ static int nested_svm_exit_handled_real(struct vcpu_svm *svm,
+ 	switch (exit_code) {
+ 	case SVM_EXIT_READ_CR0 ... SVM_EXIT_READ_CR8: {
+ 		u32 cr_bits = 1 << (exit_code - SVM_EXIT_READ_CR0);
+-		if (nested_vmcb->control.intercept_cr_read & cr_bits)
++		if (svm->nested.intercept_cr_read & cr_bits)
+ 			return 1;
+ 		break;
+ 	}
+ 	case SVM_EXIT_WRITE_CR0 ... SVM_EXIT_WRITE_CR8: {
+ 		u32 cr_bits = 1 << (exit_code - SVM_EXIT_WRITE_CR0);
+-		if (nested_vmcb->control.intercept_cr_write & cr_bits)
++		if (svm->nested.intercept_cr_write & cr_bits)
+ 			return 1;
+ 		break;
+ 	}
+ 	case SVM_EXIT_READ_DR0 ... SVM_EXIT_READ_DR7: {
+ 		u32 dr_bits = 1 << (exit_code - SVM_EXIT_READ_DR0);
+-		if (nested_vmcb->control.intercept_dr_read & dr_bits)
++		if (svm->nested.intercept_dr_read & dr_bits)
+ 			return 1;
+ 		break;
+ 	}
+ 	case SVM_EXIT_WRITE_DR0 ... SVM_EXIT_WRITE_DR7: {
+ 		u32 dr_bits = 1 << (exit_code - SVM_EXIT_WRITE_DR0);
+-		if (nested_vmcb->control.intercept_dr_write & dr_bits)
++		if (svm->nested.intercept_dr_write & dr_bits)
+ 			return 1;
+ 		break;
+ 	}
+ 	case SVM_EXIT_EXCP_BASE ... SVM_EXIT_EXCP_BASE + 0x1f: {
+ 		u32 excp_bits = 1 << (exit_code - SVM_EXIT_EXCP_BASE);
+-		if (nested_vmcb->control.intercept_exceptions & excp_bits)
++		if (svm->nested.intercept_exceptions & excp_bits)
+ 			return 1;
+ 		break;
+ 	}
+ 	default: {
+ 		u64 exit_bits = 1ULL << (exit_code - SVM_EXIT_INTR);
+ 		nsvm_printk("exit code: 0x%x\n", exit_code);
+-		if (nested_vmcb->control.intercept & exit_bits)
++		if (svm->nested.intercept & exit_bits)
+ 			return 1;
+ 	}
+ 	}
+@@ -1804,6 +1812,14 @@ static int nested_svm_vmrun(struct vcpu_svm *svm, void *arg1,
+ 
+ 	svm->nested.vmcb_msrpm = nested_vmcb->control.msrpm_base_pa;
+ 
++	/* cache intercepts */
++	svm->nested.intercept_cr_read    = nested_vmcb->control.intercept_cr_read;
++	svm->nested.intercept_cr_write   = nested_vmcb->control.intercept_cr_write;
++	svm->nested.intercept_dr_read    = nested_vmcb->control.intercept_dr_read;
++	svm->nested.intercept_dr_write   = nested_vmcb->control.intercept_dr_write;
++	svm->nested.intercept_exceptions = nested_vmcb->control.intercept_exceptions;
++	svm->nested.intercept            = nested_vmcb->control.intercept;
 +
-+	nested_vmcb->save.es     = vmcb->save.es;
-+	nested_vmcb->save.cs     = vmcb->save.cs;
-+	nested_vmcb->save.ss     = vmcb->save.ss;
-+	nested_vmcb->save.ds     = vmcb->save.ds;
-+	nested_vmcb->save.gdtr   = vmcb->save.gdtr;
-+	nested_vmcb->save.idtr   = vmcb->save.idtr;
-+	if (npt_enabled)
-+		nested_vmcb->save.cr3    = vmcb->save.cr3;
-+	nested_vmcb->save.cr2    = vmcb->save.cr2;
-+	nested_vmcb->save.rflags = vmcb->save.rflags;
-+	nested_vmcb->save.rip    = vmcb->save.rip;
-+	nested_vmcb->save.rsp    = vmcb->save.rsp;
-+	nested_vmcb->save.rax    = vmcb->save.rax;
-+	nested_vmcb->save.dr7    = vmcb->save.dr7;
-+	nested_vmcb->save.dr6    = vmcb->save.dr6;
-+	nested_vmcb->save.cpl    = vmcb->save.cpl;
-+
-+	nested_vmcb->control.int_ctl           = vmcb->control.int_ctl;
-+	nested_vmcb->control.int_vector        = vmcb->control.int_vector;
-+	nested_vmcb->control.int_state         = vmcb->control.int_state;
-+	nested_vmcb->control.exit_code         = vmcb->control.exit_code;
-+	nested_vmcb->control.exit_code_hi      = vmcb->control.exit_code_hi;
-+	nested_vmcb->control.exit_info_1       = vmcb->control.exit_info_1;
-+	nested_vmcb->control.exit_info_2       = vmcb->control.exit_info_2;
-+	nested_vmcb->control.exit_int_info     = vmcb->control.exit_int_info;
-+	nested_vmcb->control.exit_int_info_err = vmcb->control.exit_int_info_err;
-+	nested_vmcb->control.tlb_ctl           = 0;
-+	nested_vmcb->control.event_inj         = 0;
-+	nested_vmcb->control.event_inj_err     = 0;
- 
- 	/* We always set V_INTR_MASKING and remember the old value in hflags */
- 	if (!(svm->vcpu.arch.hflags & HF_VINTR_MASK))
- 		nested_vmcb->control.int_ctl &= ~V_INTR_MASKING_MASK;
- 
--	if ((nested_vmcb->control.int_ctl & V_IRQ_MASK) &&
--	    (nested_vmcb->control.int_vector)) {
--		nsvm_printk("WARNING: IRQ 0x%x still enabled on #VMEXIT\n",
--				nested_vmcb->control.int_vector);
--	}
--
- 	/* Restore the original control entries */
- 	svm->vmcb->control = hsave->control;
- 
- 	/* Kill any pending exceptions */
- 	if (svm->vcpu.arch.exception.pending == true)
- 		nsvm_printk("WARNING: Pending Exception\n");
-+
- 	kvm_clear_exception_queue(&svm->vcpu);
- 	kvm_clear_interrupt_queue(&svm->vcpu);
- 
-@@ -1649,7 +1648,6 @@ static int nested_svm_vmexit_real(struct vcpu_svm *svm, void *arg1,
- 	svm->vmcb->save.cpl = 0;
- 	svm->vmcb->control.exit_int_info = 0;
- 
--	disable_gif(svm);
- 	/* Exit nested SVM mode */
- 	svm->nested_vmcb = 0;
- 
+ 	force_new_asid(&svm->vcpu);
+ 	svm->vmcb->control.exit_int_info = nested_vmcb->control.exit_int_info;
+ 	svm->vmcb->control.exit_int_info_err = nested_vmcb->control.exit_int_info_err;
 -- 
 1.6.3.3
 
