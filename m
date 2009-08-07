@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933898AbZHGUmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933983AbZHGUnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933898AbZHGUmx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933871AbZHGUmw
+	id S933983AbZHGUnR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933964AbZHGUnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:42:52 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:33073 "EHLO
+	Fri, 7 Aug 2009 16:43:15 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:33112 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753273AbZHGUmv (ORCPT
+	with ESMTP id S933965AbZHGUnK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:42:51 -0400
+	Fri, 7 Aug 2009 16:43:10 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Thomas Gleixner <tglx@linutronix.de>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        rt-users <linux-rt-users@vger.kernel.org>,
        Russell King <linux@arm.linux.org.uk>,
-       Brian Swetland <swetland@google.com>
-Subject: [PATCH 3/6] [ARM] msm: include linux/cache.h in proc_comm.c
-Date: Fri,  7 Aug 2009 22:42:38 +0200
-Message-Id: <1249677761-19470-3-git-send-email-u.kleine-koenig@pengutronix.de>
+       Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Lennert Buytenhek <kernel@wantstofly.org>, netdev@vger.kernel.org
+Subject: [PATCH 5/6] [NET] ixp2000/enp2611: don't set non-existent member get_stats
+Date: Fri,  7 Aug 2009 22:42:40 +0200
+Message-Id: <1249677761-19470-5-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <20090807203939.GA19374@pengutronix.de>
 References: <20090807203939.GA19374@pengutronix.de>
@@ -34,35 +35,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes a a build failure for 2.6.31-rc4-rt1 (ARCH=arm,
-msm_defconfig):
+This fixes a build failure for 2.6.31-rc5 (ARCH=arm, ixp2000_defconfig):
 
-  CC      arch/arm/mach-msm/proc_comm.o
-/ptx/work/octopus/WORK_2_A/ukl/gsrc/linux-2.6/arch/arm/mach-msm/proc_comm.c:43: error: expected '=', ',', ';', 'asm' or '__attribute__' before '__cacheline_aligned_in_smp'
-/ptx/work/octopus/WORK_2_A/ukl/gsrc/linux-2.6/arch/arm/mach-msm/proc_comm.c: In function 'msm_proc_comm':
-/ptx/work/octopus/WORK_2_A/ukl/gsrc/linux-2.6/arch/arm/mach-msm/proc_comm.c:76: error: 'proc_comm_lock' undeclared (first use in this function)
-/ptx/work/octopus/WORK_2_A/ukl/gsrc/linux-2.6/arch/arm/mach-msm/proc_comm.c:76: error: (Each undeclared identifier is reported only once
-/ptx/work/octopus/WORK_2_A/ukl/gsrc/linux-2.6/arch/arm/mach-msm/proc_comm.c:76: error: for each function it appears in.)
+	  CC      drivers/net/ixp2000/enp2611.o
+	drivers/net/ixp2000/enp2611.c: In function 'enp2611_init_module':
+	drivers/net/ixp2000/enp2611.c:213: error: 'struct net_device' has no member named 'get_stats'
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Brian Swetland <swetland@google.com>
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: Lennert Buytenhek <kernel@wantstofly.org>
+Cc: netdev@vger.kernel.org
 ---
- arch/arm/mach-msm/proc_comm.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Hello,
 
-diff --git a/arch/arm/mach-msm/proc_comm.c b/arch/arm/mach-msm/proc_comm.c
-index 915ee70..e825c36 100644
---- a/arch/arm/mach-msm/proc_comm.c
-+++ b/arch/arm/mach-msm/proc_comm.c
-@@ -14,6 +14,7 @@
-  *
-  */
+obviously this has the downside that the stats won't work, I let the fix
+for someone else :-)
+
+Best regards
+Uwe
+---
+ drivers/net/ixp2000/enp2611.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/ixp2000/enp2611.c b/drivers/net/ixp2000/enp2611.c
+index b02a981..d6ef176 100644
+--- a/drivers/net/ixp2000/enp2611.c
++++ b/drivers/net/ixp2000/enp2611.c
+@@ -210,7 +210,7 @@ static int __init enp2611_init_module(void)
+ 			return -ENOMEM;
+ 		}
  
-+#include <linux/cache.h>
- #include <linux/delay.h>
- #include <linux/errno.h>
- #include <linux/io.h>
+-		nds[i]->get_stats = enp2611_get_stats;
++		/* nds[i]->get_stats = enp2611_get_stats; */
+ 		pm3386_init_port(i);
+ 		pm3386_get_mac(i, nds[i]->dev_addr);
+ 	}
 -- 
 1.6.3.3
 
