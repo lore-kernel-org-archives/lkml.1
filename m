@@ -1,87 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbZHGIXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbZHGI0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757242AbZHGIXZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 04:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757090AbZHGIXY
+	id S1757249AbZHGI0Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 04:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757084AbZHGI0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 04:23:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53583 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757025AbZHGIXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 04:23:22 -0400
-Date: Fri, 7 Aug 2009 10:23:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Brice Goglin <Brice.Goglin@inria.fr>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf tools: Fix reading of perf.data file header
-Message-ID: <20090807082318.GA23910@elte.hu>
-References: <1249580428.4975.14.camel@laptop> <4A7B175B.8030000@inria.fr> <1249585061.4975.17.camel@laptop> <4A7B28EA.20903@inria.fr> <20090806195924.GA22411@elte.hu> <4A7B68C3.7040706@inria.fr> <20090807063226.GA29532@elte.hu> <4A7BD9EC.8000801@inria.fr> <20090807074525.GA20292@elte.hu> <4A7BE35F.4060604@inria.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A7BE35F.4060604@inria.fr>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 7 Aug 2009 04:26:24 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33483 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757051AbZHGI0W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 04:26:22 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 7 Aug 2009 17:24:25 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Avi Kivity <avi@redhat.com>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+Message-Id: <20090807172425.8554da30.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <661de9470908070054l2fa99ac6w6cac2be63cd5d91f@mail.gmail.com>
+References: <4A7AC201.4010202@redhat.com>
+	<4A7AD6EB.9090208@redhat.com>
+	<20090807120857.5BE2.A69D9226@jp.fujitsu.com>
+	<661de9470908070054l2fa99ac6w6cac2be63cd5d91f@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 7 Aug 2009 13:24:34 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-* Brice Goglin <Brice.Goglin@inria.fr> wrote:
-
-> Ingo Molnar wrote:
-> > I completely forgot about it. And since we now have --scale enabled 
-> > by default (and it doesnt make much sense to disable it i guess), it 
-> > would not be a big issue to rename that -c/--scale to free up that 
-> > flag for -S/--stat?
-> >
-> > 	Ingo
-> >   
+> On Fri, Aug 7, 2009 at 8:41 AM, KOSAKI
+> Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
+> > Current memcgroup logic also use recent_scan/recent_rotate statistics.
+> > Isn't it enought?
 > 
+> I don't understand the context, I'll look at the problem when I am
+> back (I am away from work for the next few days).
 > 
-> Here you are. But how do you switch "scale" off now that it's 
-> disabled by default? I tried --scale=0, --no-scale and so on 
-> without apparently succeeding.
+Brief summary: (please point out if not correct)
 
---no-scale seems to work here:
+prepare a memcg with
+	memory.limit_in_bytex=128MB
 
-aldebaran:~> perf stat --no-scale -e 0:0 -e 0:0 -e 0:0 -e 0:0 -e 0:0 
--e 0:0 -e 0:0 -e 0:0 ~/loop_1b_instructions
+Run kvm on it, and use apps, those working-set is near to 256MB (then, heavy swap)
+In this case,
+  - Anon memory are swapped-out even while there are file caches.
+    Especially, a page for stack which is frequently accessed can be
+    easily swapped out, again and again.
 
- Performance counter stats for '/home/mingo/loop_1b_instructions':
+One of reasone is a recent change as:
+"a page mapped with VM_EXEC is not pageout even if no reference"
 
-      469128160  cycles                  
-      469072870  cycles                  
-      470517049  cycles                  
-      473750835  cycles                  
-      476987439  cycles                  
-      477364955  cycles                  
-      474188871  cycles                  
-      470950809  cycles                  
+Without memcg, a user can use Gigabytes of memory, above change
+is very welcomed.
 
-    0.237171581  seconds time elapsed
+Then, current point is "how we can handle this case without bad effect".
 
-aldebaran:~> perf stat --scale -e 0:0 -e 0:0 -e 0:0 -e 0:0 -e 0:0 -e 
-0:0 -e 0:0 -e 0:0 ~/loop_1b_instructions
+One possibility I wonder is this is a problem of configuration mistake.
+setting memory.memsw.limit_in_bytes to be proper value may change bahavior.
+But it seems just a workaround.
 
- Performance counter stats for '/home/mingo/loop_1b_instructions':
+Can't we find algorithmic/heuristic way to avoid too much swap-out ?
+I think memcg can check # of swap-ins, but now, we don't have a tag
+to see the sign of "recently swapped-out page is reused" case or
+executable file pages are too much.
 
-      756242908  cycles                    (scaled from 62.00%)
-      756238670  cycles                    (scaled from 62.00%)
-      756237417  cycles                    (scaled from 62.23%)
-      756093940  cycles                    (scaled from 62.66%)
-      756097133  cycles                    (scaled from 63.08%)
-      756141523  cycles                    (scaled from 63.10%)
-      756142674  cycles                    (scaled from 62.68%)
-      756154220  cycles                    (scaled from 62.26%)
+I wonder we can comapre
+    # of pageouted file-caches v.s. # of swapout anon.
+and keeping  "# of pageouted file-caches < # of swapout anon." (or use swappiness)
+This state can be checked by recalim_stat. (per memcg)
+Hmm?
 
-    0.236972028  seconds time elapsed
+I'm sorry I'll be on a trip Aug/11-Aug/17 and response will be delayed.
 
-	Ingo
+Thanks,
+-Kame
+
