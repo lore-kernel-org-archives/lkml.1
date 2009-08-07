@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbZHGH0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbZHGH1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756988AbZHGH0g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 03:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbZHGH0f
+	id S1757037AbZHGH1t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 03:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbZHGH1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 03:26:35 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:64114 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755168AbZHGH0f convert rfc822-to-8bit (ORCPT
+	Fri, 7 Aug 2009 03:27:48 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:48019 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755560AbZHGH1s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 03:26:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UgEU/iYxWyGyUDL6RamagF4kTvYxw1c63zIW7niNEIkcNckCvzjn1eG1EZgATtsD8B
-         /NhluQ3lq7Ga/qQqcUADota5sX1a00EAQk0FgVOW646TFUziP0uzjqjZzAc1WioxVrEu
-         rlQaaoLVjJxOeGEL/3yttew12yyMhbFzVeudQ=
+	Fri, 7 Aug 2009 03:27:48 -0400
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: "David Xiao" <dxiao@broadcom.com>
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is get_user_pages() enough to prevent pages from being swapped out ?")
+Date: Fri, 7 Aug 2009 09:29:53 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30.3; KDE/4.2.4; x86_64; ; )
+Cc: "Ben Dooks" <ben-linux@fluff.org>,
+       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
+       "Robin Holt" <holt@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "v4l2_linux" <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <200908061506.23874.laurent.pinchart@ideasonboard.com> <1249584374.29182.20.camel@david-laptop>
+In-Reply-To: <1249584374.29182.20.camel@david-laptop>
 MIME-Version: 1.0
-In-Reply-To: <adafxc4g1e7.fsf@cisco.com>
-References: <e2e108260908060943u344bbe03k2baab01b204c9cca@mail.gmail.com>
-	 <adad478hmi8.fsf@cisco.com>
-	 <e2e108260908061146y47ae45f5j6b8085d44cd1c45b@mail.gmail.com>
-	 <adaocqsg339.fsf@cisco.com>
-	 <e2e108260908061229v2c605aabp7cf66cbe568d6755@mail.gmail.com>
-	 <adafxc4g1e7.fsf@cisco.com>
-Date: Fri, 7 Aug 2009 09:26:33 +0200
-Message-ID: <e2e108260908070026s10658adl2c4a9a5b3eba1a08@mail.gmail.com>
-Subject: Re: [ofa-general] IB kernel modules and the kobject release() method
-From: Bart Van Assche <bart.vanassche@gmail.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: OpenIB <general@lists.openfabrics.org>,
-       LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908070929.53873.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 6, 2009 at 9:58 PM, Roland Dreier<rdreier@cisco.com> wrote:
->
->  > Are you sure that this indicates a shortcoming in the kobject
->  > debugging code ? The most recent messages related to the message "does
->  > not have a release() function, it is broken and must be fixed" I could
->  > find on the LKML date from July 16, 2009
->  > (http://lkml.org/lkml/2009/7/16/306 and
->  > http://lkml.org/lkml/2009/7/16/391). As you can see Greg KH
->  > acknowledges that if this message is logged that this indicates a
->  > problem that should be fixed.
->
-> I'm not sure -- I just assume that the core module unloading code is
-> working OK, since it is so heavily tested.  If there were really a "must
-> be fixed" problem with module unloading then someone would surely have
-> hit more than a warning message.
+On Thursday 06 August 2009 20:46:14 David Xiao wrote:
 
-(added Greg KH and the LKML in CC)
+[snip]
 
-I tried to look up more information about kobjects. The comment of
-commit 7a6a41615bfb2f03ce797bc24104c50b42c935e5 suggests that in the
-past the function kobject_cleanup() did not free the memory allocated
-for static kobject names but that this was the responsibility of the
-release() function. This should have been fixed in the current version
-of kobject_cleanup(). So I'm wondering whether the message that
-kobjects that do not have a release() function are broken still makes
-sense ?
+> Another approach is working from a different direction: the kernel
+> allocates the non-cached buffer and then mmap() into user space. I have
+> done that in similar situation to try to achieve "zero-copy".
 
-See also
-* http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7a6a41615bfb2f03ce797bc24104c50b42c935e5.
-* http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.30.y.git;a=blob;f=lib/kobject.c
+That's what most drivers do. While it's probably the easiest solution in many 
+cases, it will sometimes introduce additional memcpy() operations that I'd 
+like to avoid.
 
-Bart.
+Think about the simple following use case. An application wants to display 
+video it acquires from the device to the screen using Xv. The video buffer is 
+allocated by Xv. Using the v4l2 user pointer streaming method, the device can 
+DMA directly to the Xv buffer. Using driver-allocated buffers, a memcpy() is 
+required between the v4l2 buffer and the Xv buffer.
+
+Regards,
+
+Laurent Pinchart
+
