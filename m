@@ -1,42 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbZHGO0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbZHGO0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757915AbZHGO0Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 10:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757906AbZHGO0Q
+	id S1757917AbZHGO0h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 10:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757919AbZHGO0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 10:26:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60356 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757905AbZHGO0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 10:26:15 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <s5hy6pvygh4.wl%tiwai@suse.de>
-References: <s5hy6pvygh4.wl%tiwai@suse.de> <s5hvdmos4i8.wl%tiwai@suse.de> <alpine.DEB.2.01.0906211926080.6439@bogon> <6950.1245661098@redhat.com> <3776.1249406624@redhat.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: dhowells@redhat.com, peterz@infradead.org,
-       Linux filesystem caching discussion list 
-	<linux-cachefs@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Linux-cachefs] CacheFiles: Readpage failed on backing file
-Date: Fri, 07 Aug 2009 15:26:04 +0100
-Message-ID: <14978.1249655164@redhat.com>
+	Fri, 7 Aug 2009 10:26:36 -0400
+Received: from mail-pz0-f195.google.com ([209.85.222.195]:59325 "EHLO
+	mail-pz0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757898AbZHGO0f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 10:26:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=nkeWYraSQ0L602cRomUUqJTqxwg7mH3pg9kB6lUlS2orhKByqZPGQDiEwlShixbfKM
+         4ToTK9ztsus15UGsxkZa5PZfT5THX2u25bFDKVUVs+zZGsCu7rLb6dcnnvRjoNO2oL5w
+         qIl3N7EAGUHcLVylhfZcwGB130ihhYVyzo7wM=
+Date: Fri, 7 Aug 2009 10:26:32 -0400
+From: Josh Boyer <jwboyer@gmail.com>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: JiSheng Zhang <jszhang3@gmail.com>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "dwmw2@infradead.org" <dwmw2@infradead.org>,
+       "rmk@arm.linux.org.uk" <rmk@arm.linux.org.uk>,
+       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>
+Subject: Re: [UBI UBIFS] replace vmalloc with kmalloc
+Message-ID: <20090807142632.GN3095@hansolo.jdub.homelinux.org>
+References: <2df346410908070202i6c16008ckc145559a474129c6@mail.gmail.com> <4A7BF1C3.4050602@nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A7BF1C3.4050602@nokia.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai <tiwai@suse.de> wrote:
+On Fri, Aug 07, 2009 at 12:20:03PM +0300, Adrian Hunter wrote:
+> JiSheng Zhang wrote:
+>> If nandflash driver use DMA to support UBI and UBIFS i/o, there will
+>> be panic like
+>> the following. This is because UBI and UBIFS use vmalloced buffer
+>> somewhere while
+>> nandflash driver put the buffer under DMA and DMA support doesn't like vmalloced
+>> memory.
+>> [  412.369280] UBIFS: default file-system created
+>> [  412.374879] Unable to handle kernel NULL pointer dereference at
+>> virtual address 00000000
+>> [  412.383177] UBIFS: background thread "ubifs_bgt0_0" started, PID 887
+>> [  412.389656] pgd = c0004000
+>> [  412.392419] [00000000] *pgd=00000000
+>> [  412.396117] Internal error: Oops: 817 [#1] PREEMPT
+>>
+>> Yes, I know kmalloc may fail when memory get fragmented, but I grep the UBI and
+>> UBIFS's source, there are six .c files and seven .c files using
+>> vmalloc, the function
+>> which call vmalloc are all called during the ubi being attached and
+>> the volume being
+>> mounted. In embedded system, this mainly happen during kernel boot, it
+>> should succeed.
+>>
+>> After replacing vmalloc with kmalloc, ubi and ubifs runs fine on my
+>> board. I can alos upload
+>> a patch.
+>>
+>> Comments are welcomed!
+>
+> vmalloc allows large (> 128KiB) buffers, but kmalloc doesn't.
+> So we presently have no choice but to use vmalloc.
 
-> OK, I've been running the patched kernel for a day, and it seems working
-> fine.  FWIW, I applied your previous fix
->     CacheFiles: Handle truncate unlocking the page we're reading
-> as well.
-> 
-> Tested-by: Takashi Iwai <tiwai@suse.de>
+You could use get_free_pages to get up to 2MiB, no?
 
-Thanks!
-
-David
+josh
