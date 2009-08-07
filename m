@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932961AbZHGTBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933005AbZHGTCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932961AbZHGTBx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 15:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932908AbZHGTBx
+	id S933005AbZHGTCF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 15:02:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932975AbZHGTCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 15:01:53 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:44739 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932854AbZHGTBw (ORCPT
+	Fri, 7 Aug 2009 15:02:04 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39252 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932964AbZHGTCB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 15:01:52 -0400
-Date: Fri, 7 Aug 2009 15:01:09 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] Btrfs fixes for 2.6.31-rc
-Message-ID: <20090807190109.GI17129@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org
+	Fri, 7 Aug 2009 15:02:01 -0400
+Date: Fri, 7 Aug 2009 20:01:45 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Robin Holt <holt@sgi.com>
+Cc: Laurent Desnogues <laurent.desnogues@gmail.com>,
+       Jamie Lokier <jamie@shareable.org>,
+       Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       David Xiao <dxiao@broadcom.com>, Ben Dooks <ben-linux@fluff.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       v4l2_linux <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
+	get_user_pages() enough to prevent pages from being swapped out ?")
+Message-ID: <20090807190145.GA31543@n2100.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806222543.GG31579@n2100.arm.linux.org.uk> <1249624766.32621.61.camel@david-laptop> <200908070958.31322.laurent.pinchart@ideasonboard.com> <20090807081041.GB18343@n2100.arm.linux.org.uk> <20090807095426.GI8725@shareable.org> <761ea48b0908070507n5c580455pb86e5240a7cf6c0c@mail.gmail.com> <20090807131501.GD2763@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: abhmt015.oracle.com [141.146.116.24]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010206.4A7C79F7.014C:SCFSTAT5015188,ss=1,fgs=0
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090807131501.GD2763@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+On Fri, Aug 07, 2009 at 08:15:01AM -0500, Robin Holt wrote:
+> On Fri, Aug 07, 2009 at 02:07:43PM +0200, Laurent Desnogues wrote:
+> > On Fri, Aug 7, 2009 at 11:54 AM, Jamie Lokier<jamie@shareable.org> wrote:
+> > >
+> > > 1. Does the architecture not prevent speculative instruction
+> > > prefetches from crossing a page boundary?  It would be handy under the
+> > > circumstances.
+> > 
+> > There's no such restriction in ARMv7 architecture.
+> 
+> Doesn't it prevent them for uncached areas?
 
-Linus, please pull these from the master branch of:
+"Uncached areas" is very very fuzzy.  Are you talking about a non-cachable
+memory mapping, or a strongly ordered mapping.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git
+I'm afraid that we're going to have to require more precise use of language
+to describe these things - wolley statements like "uncached areas" are now
+just too ambiguous.
 
-These are relatively small bug fixes, including two fixes for 
-tree-log recovery on mount (one oops and one infinite loop).
+> I _THOUGHT_ there was an
+> alloc_consistent (or something like that) call on ARM which gave you
+> an uncached mapping where you could do DMA.
 
-Bartlomiej Zolnierkiewicz (1) commits (+1/-2):
-    Btrfs: remove superfluous NULL pointer check in btrfs_rename()
+The dma_alloc_coherent() does _remap_ memory into a strongly ordered
+mapping.  However, the fully cached mapping remains, which means that
+the CPU can still speculatively prefetch from that memory.
 
-Chris Mason (1) commits (+17/-4):
-    Btrfs: make sure the async caching thread advances the key
+Since we map the fully cached mapping using section (or even supersection)
+mappings for TLB efficiency, we can't change the memory type on a
+per-page basis.
 
-Josef Bacik (1) commits (+64/-9):
-    Btrfs: fix btrfs_remove_from_free_space corner case
+> I also thought there was a dma_* set of functions which remapped as
+> uncached before DMA begins and remapped as normal after DMA has been
+> completed.
 
-Julia Lawall (1) commits (+3/-3):
-    Btrfs: correct error-handling zlib error handling
-
-Yan Zheng (1) commits (+7/-2):
-    Btrfs: fix balancing oops when invalidate_inode_pages2 returns EBUSY
-
-Total: (5) commits
-
- fs/btrfs/extent-tree.c      |   21 ++++++++++--
- fs/btrfs/free-space-cache.c |   73 ++++++++++++++++++++++++++++++++++++++------
- fs/btrfs/inode.c            |    3 -
- fs/btrfs/relocation.c       |    9 ++++-
- fs/btrfs/zlib.c             |    6 +--
- 5 files changed, 92 insertions(+), 20 deletions(-)
+You're talking about the deprecated DMA bounce code there.  It's
+basically the same problem since it uses the dma_alloc_coherent()
+interface to gain a source of DMA-able memory.
