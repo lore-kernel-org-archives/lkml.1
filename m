@@ -1,96 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbZHGLNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbZHGLRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757542AbZHGLNW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 07:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757356AbZHGLNV
+	id S1757535AbZHGLRy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 07:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757025AbZHGLRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 07:13:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37831 "EHLO hera.kernel.org"
+	Fri, 7 Aug 2009 07:17:53 -0400
+Received: from mga02.intel.com ([134.134.136.20]:61763 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757110AbZHGLNU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 07:13:20 -0400
-Date: Fri, 7 Aug 2009 11:12:37 GMT
-From: tip-bot for Peter Zijlstra <peterz@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, rostedt@goodmis.org,
-       chris.mason@oracle.com, tglx@linutronix.de, jbaron@redhat.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, rostedt@goodmis.org,
-       chris.mason@oracle.com, tglx@linutronix.de, jbaron@redhat.com,
-       mingo@elte.hu
-In-Reply-To: <1249570134.32113.483.camel@twins>
-References: <1249570134.32113.483.camel@twins>
-Subject: [tip:perfcounters/urgent] perf: Don't list tracepoints without an id
-Message-ID: <tip-79e372825f775fabd2219c9c45fbdff93c24cd3f@git.kernel.org>
-Git-Commit-ID: 79e372825f775fabd2219c9c45fbdff93c24cd3f
-X-Mailer: tip-git-log-daemon
+	id S1757082AbZHGLRw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 07:17:52 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,341,1246863600"; 
+   d="scan'208";a="539399134"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Fri, 7 Aug 2009 12:17:49 +0100
+Subject: RE: [patch] x86, perf_counter, bts: add bts to perf_counter
+Thread-Topic: [patch] x86, perf_counter, bts: add bts to perf_counter
+Thread-Index: AcoXSvdqme4zxLlOT7S/yZM2AuSWLgAAqN/gAACUolA=
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF048@irsmsx504.ger.corp.intel.com>
+References: <20090721155648.A17047@sedona.ch.intel.com>
+ <1249381489.7924.186.camel@twins> <20090804111412.GA20942@elte.hu>
+ <20090804113555.GA28198@elte.hu>
+ <928CFBE8E7CB0040959E56B4EA41A77EC1BFEEE3@irsmsx504.ger.corp.intel.com>
+ <1249633282.32113.613.camel@twins>
+ <928CFBE8E7CB0040959E56B4EA41A77EC1BFEFEB@irsmsx504.ger.corp.intel.com>
+ <20090807103127.GA23139@elte.hu> <20090807103610.GA23728@elte.hu>
+ <928CFBE8E7CB0040959E56B4EA41A77EC1BFF02D@irsmsx504.ger.corp.intel.com>
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF02D@irsmsx504.ger.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 07 Aug 2009 11:12:38 +0000 (UTC)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  79e372825f775fabd2219c9c45fbdff93c24cd3f
-Gitweb:     http://git.kernel.org/tip/79e372825f775fabd2219c9c45fbdff93c24cd3f
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Thu, 6 Aug 2009 16:48:54 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 7 Aug 2009 13:09:10 +0200
+>-----Original Message-----
+>From: Metzger, Markus T
+>Sent: Friday, August 07, 2009 12:58 PM
+>To: Ingo Molnar
+>Cc: Peter Zijlstra; tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; linux-
+>kernel@vger.kernel.org
+>Subject: RE: [patch] x86, perf_counter, bts: add bts to perf_counter
+>
+>
+>
+>>-----Original Message-----
+>>From: Ingo Molnar [mailto:mingo@elte.hu]
+>>Sent: Friday, August 07, 2009 12:36 PM
+>>To: Metzger, Markus T
+>>Cc: Peter Zijlstra; tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; linux-
+>>kernel@vger.kernel.org
+>>Subject: Re: [patch] x86, perf_counter, bts: add bts to perf_counter
+>>
+>>
+>>this simple test still locks up on latest -tip (which has your
+>>latest patch):
+>>
+>>  titan:~> perf record -f -e branches -c 1 ./loop_1b_instructions
+>>
+>>on a Core2Duo CPU.
+>
+>This time, I can't reproduce the problem. I'm running three "perf record" of simple endless
+>loop programs in parallel since several minutes on my a-few-days-old -tip plus my patch.
 
-perf: Don't list tracepoints without an id
 
-Stop perf list from displaying tracepoints without an id file,
-those are special tracepoints that are not interfaced to
-perfcounters.
+Ingo, what exactly do you mean by "locks up"? Is the kernel hanging or is perf record hanging?
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Jason Baron <jbaron@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Chris Mason <chris.mason@oracle.com>
-LKML-Reference: <1249570134.32113.483.camel@twins>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+What I'm seeing is that perf record hangs when I try to ^C it. It tries to collect the rest of
+the branch trace but trace is generated so fast that it never completes.
 
+regards,
+markus.
 
----
- tools/perf/util/parse-events.c |   18 +++++++++++++++++-
- 1 files changed, 17 insertions(+), 1 deletions(-)
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index f77407b..4858d83 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -121,13 +121,29 @@ static unsigned long hw_cache_stat[C(MAX)] = {
- 	   (strcmp(sys_dirent.d_name, ".")) &&				       \
- 	   (strcmp(sys_dirent.d_name, "..")))
- 
-+static int tp_event_has_id(struct dirent *sys_dir, struct dirent *evt_dir)
-+{
-+	char evt_path[MAXPATHLEN];
-+	int fd;
-+
-+	snprintf(evt_path, MAXPATHLEN, "%s/%s/%s/id", debugfs_path,
-+			sys_dir->d_name, evt_dir->d_name);
-+	fd = open(evt_path, O_RDONLY);
-+	if (fd < 0)
-+		return -EINVAL;
-+	close(fd);
-+
-+	return 0;
-+}
-+
- #define for_each_event(sys_dirent, evt_dir, evt_dirent, evt_next, file, st)    \
- 	while (!readdir_r(evt_dir, &evt_dirent, &evt_next) && evt_next)        \
- 	if (snprintf(file, MAXPATHLEN, "%s/%s/%s", debugfs_path,	       \
- 		     sys_dirent.d_name, evt_dirent.d_name) &&		       \
- 	   (!stat(file, &st)) && (S_ISDIR(st.st_mode)) &&		       \
- 	   (strcmp(evt_dirent.d_name, ".")) &&				       \
--	   (strcmp(evt_dirent.d_name, "..")))
-+	   (strcmp(evt_dirent.d_name, "..")) &&				       \
-+	   (!tp_event_has_id(&sys_dirent, &evt_dirent)))
- 
- #define MAX_EVENT_LENGTH 30
- 
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
