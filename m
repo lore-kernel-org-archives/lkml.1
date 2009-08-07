@@ -1,90 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbZHGU6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbZHGU6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbZHGU6d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZHGU6c
+	id S1755333AbZHGU6u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755286AbZHGU6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:58:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55896 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751586AbZHGU6b (ORCPT
+	Fri, 7 Aug 2009 16:58:49 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:18208 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755283AbZHGU6r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:58:31 -0400
-Date: Fri, 7 Aug 2009 13:58:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] Fix proc_file_write missing ppos update
-Message-Id: <20090807135806.ffd068e9.akpm@linux-foundation.org>
-In-Reply-To: <1249676830.27640.16.camel@wall-e>
-References: <1249676830.27640.16.camel@wall-e>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Aug 2009 16:58:47 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:references:
+	mime-version:content-type:content-disposition:in-reply-to:
+	x-operating-system:user-agent:x-system-of-record;
+	b=PwSHsg3pRzVKqlJbhNrMPk3fDA9rKbfSczm2OhFK/ZvSOmy+nmFsbbcjlKD2pwu5t
+	C8EV7sNL9EkmOHdplz9rg==
+Date: Fri, 7 Aug 2009 13:58:33 -0700
+From: Mandeep Singh Baines <msb@google.com>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
+       viro@zeniv.linux.org.uk, hannes@cmpxchg.org
+Subject: Re: [PATCH 4/4] vfs: remove redundant checks in do_sendfile
+Message-ID: <20090807205833.GA24668@google.com>
+References: <1249671461-9071-1-git-send-email-jlayton@redhat.com> <1249671461-9071-5-git-send-email-jlayton@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249671461-9071-5-git-send-email-jlayton@redhat.com>
+X-Operating-System: Linux/2.6.24-gg24-generic (x86_64)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 07 Aug 2009 22:27:10 +0200
-Stefani Seibold <stefani@seibold.net> wrote:
-
-> The following fix a long standing issue in the proc_file_write function,
-> which doesn't update the ppos file position pointer.
+Jeff Layton (jlayton@redhat.com) wrote:
+> As Johannes Weiner pointed out, a couple of the range checks in do_sendfile
+> are redundant and are already checked in rw_verify_area.
 > 
-> This prevent the usage of multiple sequently writes on an opened proc
-> file, because it is impossible to distinguish these due the offset is
-> always 0.
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> ---
+>  fs/read_write.c |   11 -----------
+>  1 files changed, 0 insertions(+), 11 deletions(-)
 > 
-> Signed-off-by: Stefani Seibold <stefani@seibold.net>
-> 
->  generic.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6.31-rc4.orig/fs/proc/generic.c	2009-08-07 22:05:57.000000000 +0200
-> +++ linux-2.6.30-rc4/fs/proc/generic.c	2009-08-07 22:06:22.000000000 +0200
-> @@ -219,9 +219,10 @@
->  		pde->pde_users++;
->  		spin_unlock(&pde->pde_unload_lock);
+> diff --git a/fs/read_write.c b/fs/read_write.c
+> index 6c8c55d..9c3d98b 100644
+> --- a/fs/read_write.c
+> +++ b/fs/read_write.c
+> @@ -792,7 +792,6 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+>  {
+>  	struct file * in_file, * out_file;
+>  	struct inode * in_inode, * out_inode;
+> -	loff_t pos;
+>  	ssize_t retval;
+>  	int fput_needed_in, fput_needed_out, fl;
 >  
-> -		/* FIXME: does this routine need ppos?  probably... */
->  		rv = pde->write_proc(file, buffer, count, pde->data);
->  		pde_users_dec(pde);
-> +		if (rv > 0)
-> +			*ppos += rv;
->  	}
->  	return rv;
->  }
+> @@ -838,17 +837,7 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+>  	if (!max)
+>  		max = min(in_inode->i_sb->s_maxbytes, out_inode->i_sb->s_maxbytes);
+>  
+> -	pos = *ppos;
+>  	retval = -EINVAL;
+> -	if (unlikely(pos < 0))
+> -		goto fput_out;
 
-Yes, that's odd.
+Agree. This check is redundant.
 
-I worry that there might be procfs write handlers which are looking at
-*ppos and whose behaviour might be altered by this patch.
+> -	if (unlikely(pos + count > max)) {
 
-<searches a bit>
+rw_verify_area does not check s_maxbytes so aren't the checks against
+max still required?
 
-Look at arch/s390/appldata/appldata_base.c:appldata_timer_handler().
-
-static int
-appldata_timer_handler(ctl_table *ctl, int write, struct file *filp,
-			   void __user *buffer, size_t *lenp, loff_t *ppos)
-{
-	int len;
-	char buf[2];
-
-	if (!*lenp || *ppos) {
-		*lenp = 0;
-		return 0;
-	}
-
-
-Prior to your change, an application which opened that proc file and
-repeatedly wrote to the fd would repeatedly start and stop the timer.
-
-After your change, the second and successive writes would have no
-effect unless the application was changed to lseek back to the start of
-the "file".
-
-And that was just the second file I looked at via
-
-	$EDITOR $(grep -l '[*]ppos' $(grep -rl _proc_ .))
+> -		retval = -EOVERFLOW;
+> -		if (pos >= max)
+> -			goto fput_out;
+> -		count = max - pos;
+> -	}
+> -
+>  	fl = 0;
+>  #if 0
+>  	/*
+> -- 
+> 1.6.0.6
+> 
