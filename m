@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbZHGL53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbZHGMCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757641AbZHGL53 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 07:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757608AbZHGL52
+	id S1757568AbZHGMCc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 08:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbZHGMCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 07:57:28 -0400
-Received: from viefep14-int.chello.at ([62.179.121.34]:11049 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757514AbZHGL52 (ORCPT
+	Fri, 7 Aug 2009 08:02:31 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:62603 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751144AbZHGMCb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 07:57:28 -0400
-X-SourceIP: 213.93.53.227
-Subject: RE: [patch] x86, perf_counter, bts: add bts to perf_counter
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "oleg@redhat.com" <oleg@redhat.com>
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF07F@irsmsx504.ger.corp.intel.com>
-References: <20090807092256.A6083@sedona.ch.intel.com>
-	 <1249645524.32113.688.camel@twins>
-	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF07F@irsmsx504.ger.corp.intel.com>
-Content-Type: text/plain
-Date: Fri, 07 Aug 2009 13:57:09 +0200
-Message-Id: <1249646229.32113.692.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 7 Aug 2009 08:02:31 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 3/5] tty: handle VT specific compat ioctls in vt driver
+Date: Fri, 7 Aug 2009 14:02:11 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>
+References: <1249564170-18627-1-git-send-email-arnd@arndb.de> <200908070904.11260.arnd@arndb.de> <20090807080428.GB4955@nowhere>
+In-Reply-To: <20090807080428.GB4955@nowhere>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908071402.11217.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18hXX+oFMons3SHInebfRB57kBLHZ0+gWfthkq
+ 78dfBACTXTuKH7DK3JfbqIiesQcCy/kZnF4oEdBTvB9y591tvr
+ ev0tAUbAizSVKYx1bQ6bg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-07 at 12:51 +0100, Metzger, Markus T wrote:
-> >-----Original Message-----
-> >From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
-> >Sent: Friday, August 07, 2009 1:45 PM
-> >To: Metzger, Markus T
-> >Cc: linux-kernel@vger.kernel.org; mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com;
-> >markus.t.metzger@gmail.com; oleg@redhat.com
-> >Subject: Re: [patch] x86, perf_counter, bts: add bts to perf_counter
-> >
-> >On Fri, 2009-08-07 at 09:22 +0200, Markus Metzger wrote:
-> >> @@ -721,9 +903,13 @@ static int __hw_perf_counter_init(struct
-> >>         err = 0;
-> >>         if (!atomic_inc_not_zero(&active_counters)) {
-> >>                 mutex_lock(&pmc_reserve_mutex);
-> >> -               if (atomic_read(&active_counters) == 0 && !reserve_pmc_hardware())
-> >> -                       err = -EBUSY;
-> >> -               else
-> >> +               if (atomic_read(&active_counters) == 0) {
-> >> +                       if (!reserve_pmc_hardware())
-> >> +                               err = -EBUSY;
-> >> +                       else
-> >> +                               reserve_bts_hardware();
-> >> +               }
-> >> +               if (!err)
-> >>                         atomic_inc(&active_counters);
-> >>                 mutex_unlock(&pmc_reserve_mutex);
-> >>         }
-> >
-> >You loose the reserve_bts_hardware() error case there.
-> 
-> 
-> That had been intentional since I consider BTS somewhat optional. In case it is not available or
-> fails to initialize, e.g. out of memory, we fall back to normal profiling.
-> 
-> Now that I think about it again, I guess that's not what a (debugger) user would expect.
-> An error might be more appropriate in that case.
-> 
-> I'll change it.
+On Friday 07 August 2009, Frederic Weisbecker wrote:
+> Ok. This looks like a nice series. A bkl pushdown that only goes down
+> in one site among several others enlightens the understanding of what it
+> is protecting (beside the nice fact it also burned three bkl callsites :-)
 
-If there's hardware that supports intel perfmon v2+ but doesn't have BTS
-(I don't think so) then we shouldn't fail it hard on not present.
+Thanks!
 
-But if the BTS stuff should always be present on the hardware then we
-can indeed unconditionally fail.
+Well, most importantly patch 5/5 fixes a long-standing bug where we held
+the BKL in lots of places that were already proven not to need it, or
+alternatively held it twice (nested) in the ioctls that may still need it.
 
+I did patch 3/5 this way because I read that you were working on BKL
+removal for TTY and wanted to do my share by removing the dependency
+on the code that I care about (fs/compat_ioctl.h).
+
+	Arnd <><
