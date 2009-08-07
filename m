@@ -1,82 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbZHGX11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbZHGXmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757013AbZHGX11 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 19:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756696AbZHGX1N
+	id S1757218AbZHGXmW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 19:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbZHGXmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 19:27:13 -0400
-Received: from kroah.org ([198.145.64.141]:42916 "EHLO coco.kroah.org"
+	Fri, 7 Aug 2009 19:42:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38609 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755993AbZHGX1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 19:27:11 -0400
-Date: Fri, 7 Aug 2009 16:26:07 -0700
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, devel@linuxdriverproject.or
-Subject: [GIT PATCH] STAGING fixes for 2.6.31-rc5-git tree
-Message-ID: <20090807232607.GB31885@kroah.com>
+	id S1757142AbZHGXmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 19:42:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
+Date: Sat, 8 Aug 2009 01:42:38 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       "linux-acpi" <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
+       "dtor@mail.ru" <dtor@mail.ru>
+References: <Pine.LNX.4.44L0.0908041330040.3102-100000@iolanthe.rowland.org> <1249436851.2670.422.camel@rzhang-dt>
+In-Reply-To: <1249436851.2670.422.camel@rzhang-dt>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908080142.38226.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are a few patches for the drivers/staging/ section of the kernel,
-for your git tree.
+On Wednesday 05 August 2009, Zhang Rui wrote:
+> On Wed, 2009-08-05 at 01:33 +0800, Alan Stern wrote:
+> > On Tue, 4 Aug 2009, Rafael J. Wysocki wrote:
+> > 
+> > > Not only that.  I'd like to simplify the design, because IMO using one async
+> > > domain would be much more straightforward than using multiple ones.
+> > 
+> > > If I understand the async framework correctly, the domains are only used for
+> > > synchronization, ie. if you want to wait for a group of async operations to
+> > > complete, you can put them all into one domain and then call
+> > > async_synchronize_full_domain() to wait for them all together.
+> > > 
+> > > You don't need multiple domains to run multiple things in parallel.
+> > 
+> > There's a basic confusion going on here.
+> > 
+> > Rui is using "async domain" to mean a collection of devices which 
+> > will be suspended or resumed serially.  Different domains run in 
+> > parallel.
+> > 
+> > Rafael is using "async domain" to mean a collection of devices which 
+> > will be suspended or resumed in parallel.  Different domains run 
+> > serially.
+> > 
+> cool, thanks for stating the confusion so clearly, Alan. :)
+> 
+> Hi, Rafael,
+> 
+> maybe there is still some confusions about my proposal.
+> 
+> I re-read kernel/async.c file, and notice that Arjan calls the domain as
+> *_synchronization_* domain. sorry I use the wrong word before.
+> 
+> And I use the synchronization domains just to keep devices dependency.
+> 
+> First, the general idea is to suspend/resume those slow devices in
+> parallel. So we don't suspend/resume them synchronously, instead, we
+> move these actions to the global domain.
+> 
+> Then, I found that these actions can not be run asynchronously because
+> they depend on other devices.
+> For example, sd depends on SATA controller, we should make sure the PM
+> callbacks of sd and ahci sata controller are run serially. so a
+> synchronization domain is created for them.
+> This is how multiple synchronization domains come from in this proposal.
 
-These patches do:
-	- revert a change in the tree that broke a lot of users of the
-	  rt2870 driver
-	- build dependancy fixes
-	- rtl8192su build error fix
-	- new device id for rt2870
-	- buffer overflow for rspiusb driver
+I think I understand now, thanks.
 
-All of these are contained within the drivers/staging tree, and have
-been in the linux-next and -mm trees for a while now.
+However, I'd like to avoid any naming confusion in future, so let's follow the
+convention of async.c, please.
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/staging-2.6.git/
-
-The patches will be sent as a follow-on to this message to the
-driver-devel list for people to see.
-
-thanks,
-
-greg k-h
-
---------------
-
- drivers/staging/b3dfg/Kconfig                      |    1 +
- drivers/staging/heci/Kconfig                       |    1 +
- drivers/staging/rspiusb/rspiusb.c                  |    2 +
- drivers/staging/rt2860/rt_linux.h                  |   13 +---
- drivers/staging/rt2870/2870_main_dev.c             |   67 +++++++++++++-------
- drivers/staging/rt2870/common/2870_rtmp_init.c     |   33 +++++-----
- drivers/staging/rt2870/common/rtusb_io.c           |    3 +-
- drivers/staging/rt2870/rt2870.h                    |    9 ++-
- drivers/staging/rtl8192su/ieee80211.h              |    2 +-
- drivers/staging/rtl8192su/ieee80211/ieee80211.h    |    2 +-
- drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c |    3 +-
- drivers/staging/rtl8192su/r8192U_core.c            |    2 +-
- 12 files changed, 80 insertions(+), 58 deletions(-)
-
----------------
-
-Greg Kroah-Hartman (1):
-      Staging: rtl8192su: fix build error
-
-Jakob Gruber (1):
-      Staging: rt2870: Add USB ID for Linksys, Planex Communications, Belkin
-
-Jeff Mahoney (1):
-      staging: add dependencies on PCI for drivers that require it
-
-Mike Galbraith (1):
-      Staging: rt2870: Revert d44ca7 Removal of kernel_thread() API
-
-Roel Kluin (1):
-      Staging: rspiusb: Fix buffer overflow
-
+Best,
+Rafael
