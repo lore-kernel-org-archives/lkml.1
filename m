@@ -1,79 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933828AbZHGU2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933811AbZHGU3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933828AbZHGU2l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933783AbZHGU2k
+	id S933811AbZHGU3j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932721AbZHGU3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:28:40 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:54183 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932643AbZHGU2i (ORCPT
+	Fri, 7 Aug 2009 16:29:38 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36469 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933730AbZHGU3i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:28:38 -0400
-Date: Fri, 7 Aug 2009 21:28:29 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Robin Holt <holt@sgi.com>, Laurent Desnogues <laurent.desnogues@gmail.com>,
-       Jamie Lokier <jamie@shareable.org>, David Xiao <dxiao@broadcom.com>,
-       Ben Dooks <ben-linux@fluff.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       v4l2_linux <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
-	get_user_pages() enough to prevent pages from being swapped out ?")
-Message-ID: <20090807202829.GF31543@n2100.arm.linux.org.uk>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090807131501.GD2763@sgi.com> <20090807190145.GA31543@n2100.arm.linux.org.uk> <200908072211.45283.laurent.pinchart@ideasonboard.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200908072211.45283.laurent.pinchart@ideasonboard.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 7 Aug 2009 16:29:38 -0400
+Subject: Re: [PATCH] perfcounters: Support for ftrace event records sampling
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>
+In-Reply-To: <20090807202105.GB4999@nowhere>
+References: <1249601154-5597-1-git-send-email-fweisbec@gmail.com>
+	 <1249641477.32113.664.camel@twins> <1249675747.8088.5.camel@laptop>
+	 <20090807202105.GB4999@nowhere>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 07 Aug 2009 22:28:51 +0200
+Message-Id: <1249676931.17467.7.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 10:11:40PM +0200, Laurent Pinchart wrote:
-> Ok. Maybe the kernel mapping from L_PTE_MT_UNCACHED to strongly ordered for 
-> ARMv6 and up (not sure about how it worked for previous versions) brought some 
-> confusion. I'll try to be more precise now.
-
-It's something we should correct.
-
-> Does that mean that, in theory, all DMA transfers in the DMA_FROM_DEVICE 
-> direction are currently broken on ARMv7 ?
-
-Technically, yes.  I haven't had a stream of bug reports which tends
-to suggest that either the speculation isn't that aggressive in current
-silicon, or we're just lucky so far.
-
-> The ARM Architecture Reference Manual (ARM DDI 0100I) states that
-
-Bear in mind that DDI0100 is out of date now.  There's a different
-document number for it (I forget what it is.)
-
-> "• If the same memory locations are marked as having different memory types 
-> (Normal, Device, or Strongly Ordered), for example by the use of synonyms in a 
-> virtual to physical address mapping, UNPREDICTABLE behavior results.
+On Fri, 2009-08-07 at 22:21 +0200, Frederic Weisbecker wrote:
+> On Fri, Aug 07, 2009 at 10:09:07PM +0200, Peter Zijlstra wrote:
+> > On Fri, 2009-08-07 at 12:38 +0200, Peter Zijlstra wrote:
+> > > > +static void ftrace_profile_##call(proto)                             \
+> > > > +{                                                                    \
+> > > > +     struct ftrace_data_offsets_##call __maybe_unused __data_offsets;\
+> > > > +     struct ftrace_event_call *event_call = &event_##call;           \
+> > > > +     extern void perf_tpcounter_event(int, u64, u64, void *, int);   \
+> > > > +     struct ftrace_raw_##call *entry;                                \
+> > > > +     u64 __addr = 0, __count = 1;                                    \
+> > > > +     unsigned long irq_flags;                                        \
+> > > > +     int __entry_size;                                               \
+> > > > +     int __data_size;                                                \
+> > > > +     int pc;                                                         \
+> > > > +                                                                     \
+> > > > +     local_save_flags(irq_flags);                                    \
+> > > > +     pc = preempt_count();                                           \
+> > > > +                                                                     \
+> > > > +     __data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
+> > > > +     __entry_size = __data_size + sizeof(*entry);                    \
+> > > > +                                                                     \
+> > > > +     do {                                                            \
+> > > > +             char raw_data[__entry_size];                            \
+> > > > +             struct trace_entry *ent;                                \
+> > > > +                                                                     \
+> > > > +             entry = (struct ftrace_raw_##call *)raw_data;           \
+> > > > +             ent = &entry->ent;                                      \
+> > > > +             tracing_generic_entry_update(ent, irq_flags, pc);       \
+> > > > +             ent->type = event_call->id;                             \
+> > > > +                                                                     \
+> > > > +             tstruct                                                 \
+> > > > +                                                                     \
+> > > > +             { assign; }                                             \
+> > > > +                                                                     \
+> > > > +             perf_tpcounter_event(event_call->id, __addr, __count, entry,\
+> > > > +                          __entry_size);                             \
+> > > > +     } while (0);                                                    \
+> > > > +                                                                     \
+> > > > +}
+> > > 
+> > > ok, so the one concern I have here is that the data needs to fit on the
+> > > stack. What if someone puts a large string in the data?
+> > 
+> > Also, how NMI safe is all that?
 > 
-> • If the same memory locations are marked as having different cacheable 
-> attributes, for example by the use of synonyms in a virtual to physical 
-> address mapping, UNPREDICTABLE behavior results."
+> 
+> Everything is allocated in the stack. It's NMI safe AFAICS, am I missing
+> something?
 
-Both of these we end up doing.  The current position is "yes, umm, we're
-not sure what we can do about that"... which also happens to be mine as
-well.  Currently, my best solution is to go for minimal lowmem and
-maximal highmem - so _everything_ gets mapped in on an as required
-basis.
-
-> This would be broken if a fully cached Normal mapping already existed for 
-> those physical pages. You seem to imply that's the case, but I'm not sure to 
-> understand why.
-
-The kernel direct mapping maps all system (low) memory with normal
-memory cacheable attributes.
-
-So using vmalloc, dma_alloc_coherent, using pages in userspace all
-create duplicate mappings of pages.
+I've no idea what all those trace calls do, I was hoping you would and
+say, sure, no problem ;-)
