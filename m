@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932158AbZHGHjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932202AbZHGHke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932158AbZHGHjt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 03:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757065AbZHGHjt
+	id S932202AbZHGHke (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 03:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757086AbZHGHke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 03:39:49 -0400
-Received: from mail-yw0-f177.google.com ([209.85.211.177]:50509 "EHLO
-	mail-yw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757035AbZHGHjs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 03:39:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=FjZ0NFDQyjx14+sQC9acAsLJOIs681ChYaxmZe7YNDmX6o1x8Td7U/uWUFlE8yTBrW
-         vK4jWbSqgb6DgaQ0TP7gAgzHGuO6+u8BCobo328bks5Zia6jmWYL7UqY8om6mgzsxZ/t
-         ZiYgROf9fB/DcvMcdGeYRYhPleNzJgLiaOlyo=
-Date: Fri, 7 Aug 2009 10:42:51 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make shr to divide by power of 2
-Message-ID: <20090807074251.GB3004@localdomain.by>
-References: <20090806180930.GA3004@localdomain.by>
- <87d478i0d7.fsf@basil.nowhere.org>
+	Fri, 7 Aug 2009 03:40:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53888 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757035AbZHGHkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 03:40:33 -0400
+Date: Fri, 7 Aug 2009 07:39:49 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Brice.Goglin@inria.fr, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, Brice.Goglin@inria.fr,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1249585061.4975.17.camel@laptop>
+References: <1249585061.4975.17.camel@laptop>
+Subject: [tip:perfcounters/urgent] perf tools: Fix multi-counter stat bug caused by incorrect reading of perf.data file header
+Message-ID: <tip-ce71e78d91c4e7c02ce85f26319e53a824be4ffb@git.kernel.org>
+Git-Commit-ID: ce71e78d91c4e7c02ce85f26319e53a824be4ffb
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bCsyhTFzCvuiizWE"
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <87d478i0d7.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 07 Aug 2009 07:39:49 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  ce71e78d91c4e7c02ce85f26319e53a824be4ffb
+Gitweb:     http://git.kernel.org/tip/ce71e78d91c4e7c02ce85f26319e53a824be4ffb
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Thu, 6 Aug 2009 20:57:41 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 7 Aug 2009 09:37:29 +0200
 
---bCsyhTFzCvuiizWE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+perf tools: Fix multi-counter stat bug caused by incorrect reading of perf.data file header
 
-On (08/07/09 08:50), Andi Kleen wrote:
-> Sergey Senozhatsky <sergey.senozhatsky@gmail.com> writes:
-> >
-> > Of course, compiler supposed to do something like
-> > 	add    $0x7,%eax
-> > 	shr    $0x3,%eax
-> > instead of div. Should we rely on this?
->=20
-> Yes. We should rely on this.=20
->=20
+Brice Goglin reported that only the first result from a
+multi-counter perf record --stat run is accurate, the
+rest looks bogus.
 
-grep -cR '>> 3' bitblit.c=20
-5
+A silly mistake made us re-read the first attribute for
+every recorded attribute.
 
-and only 1 '/8'.
+Reported-by: Brice Goglin <Brice.Goglin@inria.fr>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Tested-by: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: paulus@samba.org
+LKML-Reference: <1249585061.4975.17.camel@laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-	Sergey
 
---bCsyhTFzCvuiizWE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+---
+ tools/perf/util/header.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iJwEAQECAAYFAkp72vsACgkQfKHnntdSXjTEZQP7B6BHZEMJ2o/kZAVuF9qxYqVM
-wCf9edPCpkgPFY/hNRiLKCuPzhDf9agMAlL1hK1ikVDd8dkyLV7MNtWo6fZjsG4r
-/iKwYalSme2y6KGK4s9DfUy/RYi0YzApuV6/f+uaBMCUfZH65fY97twGAvp4AyCc
-LsIf8jURvoWZdkewBhU=
-=gHJ8
------END PGP SIGNATURE-----
-
---bCsyhTFzCvuiizWE--
+diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+index 450384b..95a44bc 100644
+--- a/tools/perf/util/header.c
++++ b/tools/perf/util/header.c
+@@ -213,9 +213,10 @@ struct perf_header *perf_header__read(int fd)
+ 
+ 	for (i = 0; i < nr_attrs; i++) {
+ 		struct perf_header_attr *attr;
+-		off_t tmp = lseek(fd, 0, SEEK_CUR);
++		off_t tmp;
+ 
+ 		do_read(fd, &f_attr, sizeof(f_attr));
++		tmp = lseek(fd, 0, SEEK_CUR);
+ 
+ 		attr = perf_header_attr__new(&f_attr.attr);
+ 
