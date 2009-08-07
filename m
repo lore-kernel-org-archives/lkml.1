@@ -1,92 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbZHGKu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbZHGKud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757490AbZHGKu1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 06:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757479AbZHGKu0
+	id S1757501AbZHGKud (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 06:50:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757491AbZHGKuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 06:50:26 -0400
-Received: from [222.73.24.84] ([222.73.24.84]:56563 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757439AbZHGKuY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 06:50:24 -0400
-Message-ID: <4A7C07A1.6070807@cn.fujitsu.com>
-Date: Fri, 07 Aug 2009 18:53:21 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 7 Aug 2009 06:50:32 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:35722 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757479AbZHGKua (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 06:50:30 -0400
+Message-ID: <4A7C06B9.2090302@gmail.com>
+Date: Fri, 07 Aug 2009 12:49:29 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <srostedt@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 1/2] ftrace: Rename set_tracer_flags()'s local variable
- trace_flags
-References: <4A7A4D7B.7010706@cn.fujitsu.com> <4A7A4DBC.6020403@cn.fujitsu.com> <4A7A6470.60305@cn.fujitsu.com>
-In-Reply-To: <4A7A6470.60305@cn.fujitsu.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: linux kernel <linux-kernel@vger.kernel.org>, stable@kernel.org
+Subject: [PATCH] ring-buffer: Fix memleak in ring_buffer_free()
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 07 Aug 2009 12:49:30 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-set_tracer_flags() have a local variable named trace_flags which have
-same name with global one.
-Actually, using tracer_flags should be better by its meaning.
+I noticed oprofile memleaked in linux-2.6 current tree,
+and tracked this ring-buffer leak.
 
-Changelog:
-v1->v2: Simplied another patch in this patchset, no change in this patch.
+This is a stable candidate.
 
-[ Impact: cleanup ]
+[PATCH] ring-buffer: Fix memleak in ring_buffer_free()
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 ---
- kernel/trace/trace.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 6344573..6c5f67f 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2117,23 +2117,23 @@ tracing_trace_options_read(struct file *filp, char __user *ubuf,
- /* Try to assign a tracer specific option */
- static int set_tracer_option(struct tracer *trace, char *cmp, int neg)
- {
--	struct tracer_flags *trace_flags = trace->flags;
-+	struct tracer_flags *tracer_flags = trace->flags;
- 	struct tracer_opt *opts = NULL;
- 	int ret = 0, i = 0;
- 	int len;
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index bf27bb7..c1d874e 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -735,6 +735,7 @@ ring_buffer_free(struct ring_buffer *buffer)
  
--	for (i = 0; trace_flags->opts[i].name; i++) {
--		opts = &trace_flags->opts[i];
-+	for (i = 0; tracer_flags->opts[i].name; i++) {
-+		opts = &tracer_flags->opts[i];
- 		len = strlen(opts->name);
+ 	put_online_cpus();
  
- 		if (strncmp(cmp, opts->name, len) == 0) {
--			ret = trace->set_flag(trace_flags->val,
-+			ret = trace->set_flag(tracer_flags->val,
- 				opts->bit, !neg);
- 			break;
- 		}
- 	}
- 	/* Not found */
--	if (!trace_flags->opts[i].name)
-+	if (!tracer_flags->opts[i].name)
- 		return -EINVAL;
++	kfree(buffer->buffers);
+ 	free_cpumask_var(buffer->cpumask);
  
- 	/* Refused to handle */
-@@ -2141,9 +2141,9 @@ static int set_tracer_option(struct tracer *trace, char *cmp, int neg)
- 		return ret;
- 
- 	if (neg)
--		trace_flags->val &= ~opts->bit;
-+		tracer_flags->val &= ~opts->bit;
- 	else
--		trace_flags->val |= opts->bit;
-+		tracer_flags->val |= opts->bit;
- 
- 	return 0;
- }
--- 
-1.5.5.3
-
-
+ 	kfree(buffer);
