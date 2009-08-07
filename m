@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757890AbZHGNB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757903AbZHGNBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757890AbZHGNB1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 09:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757875AbZHGNB1
+	id S1757903AbZHGNBn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 09:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757893AbZHGNBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 09:01:27 -0400
-Received: from viefep19-int.chello.at ([62.179.121.39]:58611 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757874AbZHGNB0 (ORCPT
+	Fri, 7 Aug 2009 09:01:42 -0400
+Received: from mail.free-electrons.com ([88.191.76.200]:46265 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757873AbZHGNBl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 09:01:26 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: perf-record fix and UI improvement
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Pierre Habouzit <pierre.habouzit@intersec.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1249647361-11582-1-git-send-email-pierre.habouzit@intersec.com>
-References: <1249647361-11582-1-git-send-email-pierre.habouzit@intersec.com>
-Content-Type: text/plain
-Date: Fri, 07 Aug 2009 15:01:06 +0200
-Message-Id: <1249650066.32113.706.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Aug 2009 09:01:41 -0400
+Date: Fri, 7 Aug 2009 15:01:30 +0200
+From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+To: Matthieu CASTET <matthieu.castet@parrot.com>
+Cc: Alain Knaff <alain@knaff.lu>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       "sam@ravnborg.org" <sam@ravnborg.org>, "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/6] Add support for LZO-compressed kernels for ARM
+Message-ID: <20090807130130.GE4455@laptop>
+References: <20090731093107.GA29704@merkur.ravnborg.org>
+ <1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com>
+ <1249311501-23102-2-git-send-email-albin.tonnerre@free-electrons.com>
+ <1249311501-23102-3-git-send-email-albin.tonnerre@free-electrons.com>
+ <1249311501-23102-4-git-send-email-albin.tonnerre@free-electrons.com>
+ <20090806224055.GH31579@n2100.arm.linux.org.uk>
+ <20090807092423.GA4455@laptop>
+ <4A7BF5B8.4030907@knaff.lu>
+ <20090807102117.GB4455@laptop>
+ <4A7C14EB.1060701@parrot.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A7C14EB.1060701@parrot.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-07 at 14:15 +0200, Pierre Habouzit wrote:
-> While toying with perf, I've noticed that perf record can easily enter
-> a busy loop when doing something as silly as:
-> 
->     $ perf record -A ls
-> 
-> I've searched why and here are the patches:
-> 
->  [PATCH 1/2] perf util: do_read should fail on EOF instead of busy-looping.
-> 
->    Yeah, do_read here really wants to read a known size, not being able
->    to should die(), not busy-lopp ;)
->    That was the cause for the bug.
-> 
-> 
->  [PATCH 2/2] perf-record: improve -A UI for empty or non-existent perf.data
-> 
->    Though with 1/2 `git record -A ls` would then fail miserably with
->    some kind of "cannot read" error, which sucks. So this patch
->    understands -A as a "append or create if file is empty or inexistant"
-> 
->    This fact may deserve to be documented properly, if so just tell me
->    I'll send an updated patch for Documentation/
-> 
-> 
-> I'm kind of new to the kernel world, so I hope I sent the patches to the
-> proper persons.
+On Fri, Aug 07, 2009 at 01:50:03PM +0200, Matthieu CASTET wrote :
+> Albin Tonnerre a écrit :
+> > On Fri, Aug 07, 2009 at 11:36:56AM +0200, Alain Knaff wrote :
+> >> On 08/07/09 11:24, Albin Tonnerre wrote:
 
-You did well for a first time ;-)
+> >>> Regards,
 
-The things you can improve for next time are:
+> >> Could it be that the patches that remove division (zutil.h and inflate.c)
+> >> have somehow not been applied?
 
- - placing these nice descriptions you made above into the patches
-themselves, as esp the first patch has an empty changelog.
+> > Indeed, they've not been applied. However, I'd rather try to understand why
+> > exactly this is an issue when compiling with -Os and not -O2 instead of working
+> > around it by removing the divisions.
 
- - get your email right :-)
+> Look at the generated code.
 
-Anyway, I think Ingo already fixed that up for you, so
+> Arm doesn't have division instruction.
+> May be at -Os gcc emit a call to the software division, but at -O2 it
+> manage to optimise the division (transform it in shift, inline some
+> builtin, ...).
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Yes, I figured that out. What I don't get, though, is that it fails while the
+software division symbol (__aeabi_uidivmod here) does seem to be provided by
+libgcc.
 
+Regards,
+-- 
+Albin Tonnerre, Free Electrons
+Kernel, drivers and embedded Linux development,
+consulting, training and support.
+http://free-electrons.com
