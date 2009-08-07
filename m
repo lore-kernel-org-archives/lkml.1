@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbZHGR2O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbZHGR3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753255AbZHGR2O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 13:28:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbZHGR2N
+	id S1754522AbZHGR3l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 13:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbZHGR3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 13:28:13 -0400
-Received: from mail-bw0-f215.google.com ([209.85.218.215]:65346 "EHLO
-	mail-bw0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751570AbZHGR2N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 13:28:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=ezrmkjOH6nSvZP/1FwhuKFGSF2+y123oLsrebGxN07jNWN5ZvTiYnYsFZQ8+w75w5Q
-         nKAkGQQcixK3FQmz2BRjIDU0d2DQnEjwgIcP5t2QIvddDw+dFcCqnQrQ5re13x5zWKd0
-         hwwnFcV6lfeQgQ/hbrLW8N0NWoXkspK029QIs=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [patch 4/6] ide: allow ide_dev_read_id() to be called from the IRQ context
-Date: Fri, 7 Aug 2009 19:27:36 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc5-00246-g90bc1a6; KDE/4.2.4; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200907011835.27586.bzolnier@gmail.com> <200908071355.21648.bzolnier@gmail.com> <20090807.090158.45976865.davem@davemloft.net>
-In-Reply-To: <20090807.090158.45976865.davem@davemloft.net>
+	Fri, 7 Aug 2009 13:29:40 -0400
+Received: from anna.cs.tau.ac.il ([132.67.192.229]:46222 "EHLO cs.tau.ac.il"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751631AbZHGR3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 13:29:39 -0400
+Date: Fri, 7 Aug 2009 20:29:38 +0300
+To: linux-kernel@vger.kernel.org
+Cc: nzaidenberg@mac.com, Nezer.Zaidenberg@edfenergy.com,
+       scipioenterprises@yahoo.com, tomerma1@post.tau.ac.il
+Subject: Asynchronous Mirror
+Message-ID: <20090807172938.GA1882@localhost.localdomain>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200908071927.36367.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="Kernel Mail"
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: tomerma1@tau.ac.il (Tomer Margalit)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 07 August 2009 18:01:58 David Miller wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Date: Fri, 7 Aug 2009 13:55:21 +0200
-> 
-> > On Wednesday 01 July 2009 22:47:29 David Miller wrote:
-> >> Will get to it before the end of the weekend.
-> >> 
-> >> If I fail or abort, I'll integrate your version of the fix Bart, don't
-> >> worry :)
-> > 
-> > Not that I'm worried but just out of curiosity..
-> > 
-> > Could you please tell me which week/month/year are we talking about here?
-> 
-> I became busier than I expected here in New York :-)
+Hi,
 
-I would say that this is a bit unprofessional attitude which normally
-is not accepted by PNAELV people.. :-)
+I am currently writing a (BSD licensed) asynchronous mirror device, as part of a workshop for Tel Aviv University (under the direction of Nezer Zaidenberg).
 
-> Actually both patches #4 and #5 are in my ide-next-2.6 tree, I just
-> need to publish it out to kernel.org and update the patchwork status
-> on these patches.
+The purpose of the device is to be able to attach to an existing device, intercept the incoming writes, and send them to a remote location (and remote here means other side of the world).
+The asynchronous part is that the device keeps a window of about a minute of writes and makes sure it sends all of it (if more writes are recieved while the window is full, they are blocked until the it clears).
 
-Are you trying to tell me that after 6 weeks there is still no public
-tree to hold future IDE changes?
+I am in charge of writing the kernel part of it, and so ive written an alpha version (Located in "http://www.cs.tau.ac.il/~tomerma1/amirror_src.zip")).
 
-If this is indeed a case here I hope that it will get addressed ASAP.
+Right now the driver is designed like this (right now it is designed only for one asynchronous mirror device):
+There are two modules. The main module creates a device on top of the target device, intercepts writes, and puts them in a kernel buffer (several dozen pages - but will be changed to the whole window to save copies).
+The other module creates a device, only to be used by a daemon. The daemon allocates a buffer (the send window) and creates two threads - one ioctls the other module, and stays in the ioctl. The ioctl/daemon thread continously copies the kernel buffer to the daemon buffer. The other thread just sends whatever is in the send buffer.
+
+Right now im trying to get rid of the other module and put the ioctl in the main module (and just tell the daemon to ioctl the main module).
+However, this causes a problem that i cant explain...
+When i do a write to the device (offset: 0, data: "a" (len: 1)), the following thing happens:
+1) The device is opened.
+2) A read is issued (as it should to get the data that must be rewritten in the rest of the page ).
+3) The device is closed and the write ends successfully.
+4) 30+ seconds afterwards the actual write is recieved.
+
+When i use two modules, this never happens - the write comes before the device is closed, and (i think, no proof though) the write ends after the write is issued. Needless to say that i added an idle ioctl that just waits to the two-module version and the same thing (as the single-module version) happens (hinting that the ioctl is changing some things).
+
+Since it seems like the ioctl causes the problem i will probably change the ioctl to spawn a kernel thread and work from there (hoping that will solve it).
+
+(BTW, im using a custom make_request function (i call blk_queue_make_request)).
+
+I would appreciate it if you could help me with the following:
+1) Why is the ioctl causing this sort of behavior (if there is no ioctl in the same module it seems to be ok...)?
+2) Does the custom make_request function promise me that EVERY bio recieved by the device is directly handed to my make_request function? Or is there some kind of schedualer that hands me the requests (I looked at the I/O schedualer algorithm in the biodoc.txt, but it seems to be relevant only for devices that use a request_queue)?
+3) I saw (in the generic_make_request code) that only one make request can be active at a time... Is that something i can/should base my code on?
+4) Can generic_make_request be called several times? Cause in the code 
+(blk-core.c) the first line checks that current->bio_tail is non-null and then dereferences, and the last line changes it to null.. If generic_make_request can be called several times then how do you know that they cant mess each other up (i havent seen any locking (in the low level at least))?
+5) I have assumed in the code that the bios that i get are sector aligned and are in sector multiples... Is that a correct assumption? (cause i havent seen an exact statement that that is the case anywhere...) Also (sorry, silly question, but i dont like assuming things) would it be valid to assume that the size of a page (kmap(p) where p is struct page) is PAGE_SIZE (or more specifically, is the maximal length for a single bio_vec PAGE_SIZE?)?
+6) Im currently using generic_make_request to resubmit a bio (or returning non-zero in make_request and changing bi_bdev to the target)... Does it resubmit it to the request_queue in the usual way? Or does it bypass it somehow?
+7) About my open and release, i thought that the proper thing to put there is the target device's open and release (so that target device can prepare), but as far as i could see, in the raid implementation (md.c i think), the open and release methods dont tell the underlying devices to open/release... So, should i forget about it? or is it important?
+8) I dont use procfs or sysfs at all, and i intend on using only ioctls for special commands... However in several places it was written that sysfs is supposed to introduce standartization to the driver model (didnt really try to understand it cause ioctls are fine by me)... Should i reconsider not using sysfs/procfs?
+9) Any suggestions for the code/interesting features would be most welcome.
+
+Thanks in advance,
+         Tomer
