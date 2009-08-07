@@ -1,125 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755715AbZHGFTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932132AbZHGFXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755715AbZHGFTf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 01:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbZHGFTe
+	id S932132AbZHGFXT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 01:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbZHGFXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 01:19:34 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:39089 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750822AbZHGFTe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 01:19:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=TpH39QWmjINwls8Ln0Dl4z5EKeRYTX4Y24yywBkaPNRb+3QTP2LfN3szkV30wHOXfp
-         ZYqVQGQ/1nBeQVSUk+xxmDcGO0COinEzb7mPRQJDD5x9toZ2tWgKJB1oTjaa2+NibjOQ
-         fXY4ogS5ewgTAQMcI2+kolV3gWg3jgRp4yXmM=
-Date: Fri, 7 Aug 2009 07:19:31 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC][PATCH 4/5] tracing/filters: Provide basic regex support
-Message-ID: <20090807051930.GA9182@nowhere>
-References: <1249111408-8657-1-git-send-email-fweisbec@gmail.com> <1249111408-8657-5-git-send-email-fweisbec@gmail.com> <4A76782E.4030803@cn.fujitsu.com> <20090805224709.GH5025@nowhere> <4A7A2E73.7030403@cn.fujitsu.com> <20090806014941.GA24609@nowhere> <1249618497.30024.36.camel@tropicana>
+	Fri, 7 Aug 2009 01:23:19 -0400
+Received: from kroah.org ([198.145.64.141]:49249 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750822AbZHGFXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 01:23:18 -0400
+Date: Thu, 6 Aug 2009 22:20:15 -0700
+From: Greg KH <greg@kroah.com>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Jan Blunck <jblunck@suse.de>, gregkh@suse.de,
+       Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+ /dev
+Message-ID: <20090807052015.GA24615@kroah.com>
+References: <20090805171513.GA10443@kroah.com>
+ <200908070703.40706.a1426z@gawab.com>
+ <20090807042544.GA24299@kroah.com>
+ <200908070804.08156.a1426z@gawab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249618497.30024.36.camel@tropicana>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200908070804.08156.a1426z@gawab.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 11:14:57PM -0500, Tom Zanussi wrote:
-> Hi Frederic,
+On Fri, Aug 07, 2009 at 08:04:08AM +0300, Al Boldi wrote:
+> Greg KH wrote:
+> > On Fri, Aug 07, 2009 at 07:03:40AM +0300, Al Boldi wrote:
+> > > Greg KH wrote:
+> > > > On Thu, Aug 06, 2009 at 11:18:05PM +0300, Al Boldi wrote:
+> > > > > So really, if devtmpfs compares to udev speeds then this just looks
+> > > > > like a devfs comeback.  Remember, devfs was really slow.
+> > > >
+> > > > Again, there is no "speed" for devtmpfs on its own, the device nodes
+> > > > just appear when the devices are added to the kernel, the speed of that
+> > > > depends on the device discovery within the kernel, nothing else.
+> > >
+> > > So on bootup this would mean a lot of discovery.
+> >
+> > Yes, all of this happens within the kernel, like normal.  What are you
+> > getting at?
 > 
-> On Thu, 2009-08-06 at 03:49 +0200, Frederic Weisbecker wrote:
-> > On Thu, Aug 06, 2009 at 09:14:27AM +0800, Li Zefan wrote:
-> > > Frederic Weisbecker wrote:
-> > > > On Mon, Aug 03, 2009 at 01:39:58PM +0800, Li Zefan wrote:
-> > > >> Frederic Weisbecker wrote:
-> > > >>> This patch provides basic support for regular expressions in filters.
-> > > >>> The common filter file doesn't support any regex but a new
-> > > >>> filter_regex file is created for each subsystem/event.
-> > > >>>
-> > > >>> It supports the following types of regexp:
-> > > >>>
-> > > >>> - *match_beginning
-> > > >>> - *match_middle*
-> > > >>> - match_end*
-> > > >>> - !don't match
-> > > >>>
-> > > >> I don't see why adding "filter_regex" is necessary, why not just make
-> > > >> "filter" support regex?
-> > > > 
-> > > > I did that because I feared about people beeing unable to filter using
-> > > > * as a real character inside a filter string.
-> > > > If we are using only one file, we are forced to get the '*' interpreted.
-> > > > That would also break the ABI.
-> > > > 
-> > > 
-> > > I think we don't maintain stable ABI for debugfs and we've been changing
-> > > the "ABI" in debugfs/tracing/, but of course we shouldn't change it
-> > > without good reasons.
-> > 
-> > 
-> > Yeah. May be I'm too much careful there but i prefer not to take the risk.
-> > 
-> >  
-> > > One alternative is to use '"' to prevent '*' to be translated, but seems
-> > > using "filter_regex" is more convenient, so I agree with this patch.
-> > 
-> > 
-> > The problem is that most of the time, the '"' is about mandatory to delimit
-> > a string.
-> > Say you want to filter the lock name &REISERFS_SB(sb)->lock, you can't do that
-> > by just typing:
-> > 
-> > echo name == &REISERFS_SB(sb)->lock > events/lockdep/filter
-> > 
-> > because the '&' character is considered as an operator and that will trigger
-> > an error.
-> > Instead you must type:
-> > 
-> > echo 'name == "&REISERFS_SB(sb)->lock"' > events/lockdep/filter
-> > 
-> > The '' are there to delimit the string for echo, and the "" are interpreted
-> > by the filter api which take it as a whole string and not strings interleaved
-> > with operators. I even fear - and > may be considered as operators if we omit
-> > the "".
-> > 
-> > I also thought about using an antislash for those who don't want the * to
-> > be interpreted. But although it seems intuitive, it's not as much as two
-> > distinct and visible files.
-> > 
-> > Also, we can think about the fact the regexp support could be extended one
-> > day if someone needs to. And we could then encounter even more ambiguous
-> > characters such as $, ^, [, {, etc...
-> > 
+> I am getting at boot delay.  A lot of discovery means a lot of delay.
+> A lot of delay means people will stick with static /dev.
+
+Um, again, I don't think you understand this patch at all.
+
+> > > I think we could get some big speedup, by just dumping the possible
+> > > non-realized device list on bootup, and then just refine it on physical
+> > > access.  This could make devtmpfs an acceptable replacement to static
+> > > /dev.
+> >
+> > Um, that's exactly what devtmpfs does, it creates the nodes based on
+> > the fact that the devices were physically (or virtually for some
+> > devices) discovered and registered with the kernel.  This happens at the
+> > same time the existing uevents are generated and sent out to userspace.
 > 
-> This a nice new feature - I considered doing it (not complete regexp
-> support, just * in strings) for the original patch, but ran out of time
-> - glad you added it.
-> 
-> I still think it makes sense to have some basic support for * in the
-> regular filter file, so I'd vote for getting rid of the filter_regex
-> file for now and just adding * support with the antislash escape to the
-> regular filter file.  If you later wanted to add more full-fledged
-> regexp support and it didn't make sense to do it in the regular filter
-> file, then you could go crazy and add the filter_regex later...
+> The question is, how fast can devtmpfs get the device list from the kernel on 
+> bootup?  How much faster than udev?  How much slower than static /dev?
 
+It's much faster than udev, and is equivalent to a static /dev with the
+exception that the group and permission settings that you are used to.
+udev then needs to come along and make those settings, but that's so
+frickin fast it's amazing.
 
-Ok, if you and Li both prefer the single file, I'm fine with that.
-It shouldn't really harm.
-I'll change that in the next version.
+So, test it out and see if you want to verify this.  The developers at
+suse, red hat, and ubuntu that do this kind of work did validate this
+and put their name on this patch.
 
-Thanks.
+thanks,
 
+greg k-h
