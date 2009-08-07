@@ -1,37 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbZHGJPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbZHGJUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753248AbZHGJPA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 05:15:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZHGJPA
+	id S1753459AbZHGJUB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 05:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZHGJUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 05:15:00 -0400
-Received: from co203.xi-lite.net ([149.6.83.203]:33822 "EHLO co203.xi-lite.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751925AbZHGJO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 05:14:59 -0400
-Message-ID: <4A7BF091.5040605@parrot.com>
-Date: Fri, 7 Aug 2009 11:14:57 +0200
-From: Matthieu CASTET <matthieu.castet@parrot.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Fri, 7 Aug 2009 05:20:00 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:61481 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752709AbZHGJUA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 05:20:00 -0400
+Message-ID: <4A7BF1C3.4050602@nokia.com>
+Date: Fri, 07 Aug 2009 12:20:03 +0300
+From: Adrian Hunter <adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
 To: JiSheng Zhang <jszhang3@gmail.com>
 CC: "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "Artem.Bityutskiy@nokia.com" <Artem.Bityutskiy@nokia.com>,
-       "dwmw2@infradead.org" <dwmw2@infradead.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "dwmw2@infradead.org" <dwmw2@infradead.org>,
        "rmk@arm.linux.org.uk" <rmk@arm.linux.org.uk>,
-       "adrian.hunter@nokia.com" <adrian.hunter@nokia.com>
+       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>
 Subject: Re: [UBI UBIFS] replace vmalloc with kmalloc
 References: <2df346410908070202i6c16008ckc145559a474129c6@mail.gmail.com>
 In-Reply-To: <2df346410908070202i6c16008ckc145559a474129c6@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Aug 2009 09:19:34.0182 (UTC) FILETIME=[2D7A5C60:01CA1740]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-JiSheng Zhang a écrit :
+JiSheng Zhang wrote:
 > If nandflash driver use DMA to support UBI and UBIFS i/o, there will
 > be panic like
 > the following. This is because UBI and UBIFS use vmalloced buffer
@@ -59,8 +60,11 @@ JiSheng Zhang a écrit :
 > a patch.
 > 
 > Comments are welcomed!
-> 
-mtd is not DMA safe. So patching UBI and UBIFS is not enought.
 
+vmalloc allows large (> 128KiB) buffers, but kmalloc doesn't.
+So we presently have no choice but to use vmalloc.
 
-Matthieu
+I do not know what hardware you have or exactly what driver you
+are using, but we have UBIFS on OneNAND using DMA.
+See drivers/mtd/onenand/omap2.c
+
