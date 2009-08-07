@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752073AbZHGEHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752016AbZHGEJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752073AbZHGEHF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 00:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZHGEHE
+	id S1752016AbZHGEJE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 00:09:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbZHGEJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 00:07:04 -0400
-Received: from kroah.org ([198.145.64.141]:45024 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751613AbZHGEHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 00:07:03 -0400
-Date: Thu, 6 Aug 2009 21:05:54 -0700
-From: Greg KH <greg@kroah.com>
-To: Tejun Heo <teheo@suse.de>
-Cc: Al Viro <viro@ftp.linux.org.uk>, Takashi Iwai <tiwai@suse.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, cguthrie@mandriva.org
-Subject: Re: [PATCH 1/2] chrdev: implement __[un]register_chrdev()
-Message-ID: <20090807040554.GB24046@kroah.com>
-References: <4A79283E.7030202@kernel.org>
- <20090805161643.GA28436@kroah.com>
- <4A79B3A6.7090109@kernel.org>
- <20090805164919.GA27457@kroah.com>
- <4A79BB04.8000408@kernel.org>
- <20090805171547.GB10443@kroah.com>
- <4A7A6FAE.8020503@kernel.org>
- <4A7A90AB.3050407@suse.de>
- <20090806195848.GA29827@kroah.com>
- <4A7B92CC.2080006@suse.de>
+	Fri, 7 Aug 2009 00:09:03 -0400
+Received: from mo-p00-ob.rzone.de ([81.169.146.161]:57763 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043AbZHGEJB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 00:09:01 -0400
+X-RZG-AUTH: :P2MHfkW8eP4Mre39l357AZT/I7AY/7nT2yrT1q0ngWNsKR9Dbc7nsXJ75kzGpLGTzXI=
+X-RZG-CLASS-ID: mo00
+Message-ID: <4A7BA8DB.2030102@hartkopp.net>
+Date: Fri, 07 Aug 2009 06:08:59 +0200
+From: Oliver Hartkopp <socketcan@hartkopp.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A7B92CC.2080006@suse.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Luotao Fu <l.fu@pengutronix.de>
+CC: socketcan-users@lists.berlios.de,
+       Michael Olbrich <m.olbrich@pengutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Socketcan-users] [PATCH] CAN: make checking in can_rcv	less
+ restrictive
+References: <1249572295-7801-1-git-send-email-l.fu@pengutronix.de>	<4A7B0957.5020808@hartkopp.net>	<20090806201740.GA7067@pengutronix.de> <20090806210230.GA22418@pengutronix.de>
+In-Reply-To: <20090806210230.GA22418@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 11:34:52AM +0900, Tejun Heo wrote:
-> Hello, Greg.
+Luotao Fu wrote:
+> Hi Oliver (again ;-)),
 > 
-> Greg KH wrote:
-> >> For now, it looks like adding the __ prefixed versions seems to be the
-> >> proper solution.  It's strange to provide the helper interface only
-> >> for full minor acquisitions anyway.  Let's do naming cleanup later.
-> >> How does that sound?
-> > 
-> > Well, what's the odds that I can get you to do cleanup now?  :)
+> On Thu, Aug 06, 2009 at 10:17:40PM +0200, Luotao Fu wrote:
+>> Hi Oliver,
+>>
+>> On Thu, Aug 06, 2009 at 06:48:23PM +0200, Oliver Hartkopp wrote:
+> ....
+>>> When this BUG() triggers, someone provided a definitely broken *CAN* network
+>>> driver, and this needsfp to be fixed on that level. 
+>> In our case a sender (a FPGA) generates correct can frames carrying
+>> wrong dlc length. This way the can driver on our side runs into the bug
+>> though the driver itself is allright. The opposite needed to be fixed,
+>> not our side.  Though we do suffer a system crash only because the
+>> sender sends trash into the can network. This is imo quite bad.
+>>
 > 
-> I'd be happy to but whether cleaning it up would be benefitial or not
-> is a bit unclear.  We have 214 users of [un]register_chrdev_region()
-> and 118 users of [un]register_chrdev().  So, renaming the latter to,
-> say, create/destroy_chrdev() and make it take @baseminor and
-> @nr_minors should do it but I'm not quite sure whether it would worth
-> touching all those files.  Maybe it's better left as a mess like the
-> page allocation functions?
+> /me answering myself
+> had a closer look again. Seemed you are right. The can driver should
+> have get the can_dlc right prior to passing the message a level higher.
 
-Yeah, I guess it's easier to leave it alone for now.  If I ever get
-bored, I'll work on cleaning them up :)
+Hi Luotao,
 
-thanks,
+just one additional point i discovered after sending my last reply:
 
-greg k-h
+When can_dlc is not in the CAN conform value range from 0..8, you can really
+get into trouble when accessing the CAN frames payload by using the can_dlc as
+an index (a usual use-case):
+
+        for (i = 0; i < frame.can_dlc; i++) {
+                my_userdata[i] = frame.data[i];
+                printf("%02X ", frame.data[i]);
+        }
+
+In this case you might access values outside the data[8] array.
+
+And this is definitely a bad idea when you're writing to my_userdata[].
+
+Best regards,
+Oliver
+
