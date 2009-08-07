@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZHGBSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbZHGBVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbZHGBSE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 21:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbZHGBSD
+	id S1756879AbZHGBVq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 21:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbZHGBVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 21:18:03 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46162 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754509AbZHGBSC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 21:18:02 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 1/4] tracing, page-allocator: Add trace events for page allocation and page freeing
-Cc: kosaki.motohiro@jp.fujitsu.com, Larry Woodman <lwoodman@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-In-Reply-To: <20090805094019.GB21950@csn.ul.ie>
-References: <20090805165302.5BC8.A69D9226@jp.fujitsu.com> <20090805094019.GB21950@csn.ul.ie>
-Message-Id: <20090807100502.5BDC.A69D9226@jp.fujitsu.com>
+	Thu, 6 Aug 2009 21:21:46 -0400
+Received: from [222.73.24.84] ([222.73.24.84]:52995 "EHLO song.cn.fujitsu.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756495AbZHGBVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 21:21:45 -0400
+Message-ID: <4A7B8149.3070901@cn.fujitsu.com>
+Date: Fri, 07 Aug 2009 09:20:09 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <f.weisbecker@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] tracing/filters: Support filtering for char * strings
+References: <4A7A72BD.5030201@cn.fujitsu.com> <4A7A72FA.9040102@cn.fujitsu.com> <alpine.DEB.2.00.0908061020240.9870@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0908061020240.9870@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri,  7 Aug 2009 10:17:57 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > > index d052abb..843bdec 100644
-> > > --- a/mm/page_alloc.c
-> > > +++ b/mm/page_alloc.c
-> > > @@ -1905,6 +1905,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
-> > >  				zonelist, high_zoneidx, nodemask,
-> > >  				preferred_zone, migratetype);
-> > >  
-> > > +	trace_mm_page_alloc(_RET_IP_, page, order, gfp_mask, migratetype);
-> > >  	return page;
-> > >  }
-> > 
-> > In almost case, __alloc_pages_nodemask() is called from alloc_pages_current().
-> > Can you add call_site argument? (likes slab_alloc)
-> > 
+>>  	if (is_string_field(field)) {
+>> +		pred->str_len = field->size;
+>> +
+>>  		if (field->filter_type == FILTER_STATIC_STRING)
+>>  			fn = filter_pred_string;
+>> -		else
+>> +		else if (field->filter_type == FILTER_DYN_STRING)
+>>  			fn = filter_pred_strloc;
+>> -		pred->str_len = field->size;
+>> +		else {
+>> +			fn = filter_pred_pchar;
+>> +			pred->str_len = strlen(pred->str_val);
+>> +		}
 > 
-> In the NUMA case, this will be true but addressing it involves passing down
-> an additional argument in the non-tracing case which I wanted to avoid.
-> As the stacktrace option is available to ftrace, I think I'll drop call_site
-> altogether as anyone who really needs that information has options.
+> I'm a little dense here, where do we protect against someone making a 
+> tracepoint that points to unsafe data?
+> 
 
-Insted, can we move this tracepoint to alloc_pages_current(), alloc_pages_node() et al ?
-On page tracking case, call_site information is one of most frequently used one.
-if we need multiple trace combination, it become hard to use and reduce usefulness a bit.
+We can't prevent anyone from doing insane things deliberately, but
+we prevent from doing wrong things unconsciously.
 
+Only if a TRACE_EVENT has a field defined as:
 
+	__field_ext(char *, name, FILTER_PTR_STR)
+
+Here using FILTER_PTR_STR explicitly, he should know what he's doing.
+
+Anyway, he can make a ptr pointing to unsafe data this way:
+
+	TP_STRUCT__entry(
+		__field(char *, name)
+	)
+	TP_printk("%s", name)
 
