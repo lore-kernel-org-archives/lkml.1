@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbZHGW0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbZHGW1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754601AbZHGW0H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 18:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZHGW0G
+	id S1754702AbZHGW1x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 18:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZHGW1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 18:26:06 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:2305 "EHLO mms1.broadcom.com"
+	Fri, 7 Aug 2009 18:27:52 -0400
+Received: from cmpxchg.org ([85.214.51.133]:49601 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751528AbZHGW0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 18:26:05 -0400
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was
- "Is get_user_pages() enough to prevent pages from being swapped out ?")
-From: "David Xiao" <dxiao@broadcom.com>
-To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-cc: "Laurent Pinchart" <laurent.pinchart@ideasonboard.com>,
-       "Robin Holt" <holt@sgi.com>,
-       "Laurent Desnogues" <laurent.desnogues@gmail.com>,
-       "Jamie Lokier" <jamie@shareable.org>, "Ben Dooks" <ben-linux@fluff.org>,
-       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       v4l2_linux <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-In-Reply-To: <20090807202829.GF31543@n2100.arm.linux.org.uk>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com>
- <20090807131501.GD2763@sgi.com>
- <20090807190145.GA31543@n2100.arm.linux.org.uk>
- <200908072211.45283.laurent.pinchart@ideasonboard.com>
- <20090807202829.GF31543@n2100.arm.linux.org.uk>
-Date: Fri, 7 Aug 2009 15:25:52 -0700
-Message-ID: <1249683952.4671.41.camel@david-laptop>
-MIME-Version: 1.0
-X-Mailer: Evolution 2.26.1
-X-WSS-ID: 6662767B3706291777-01-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+	id S1751528AbZHGW1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 18:27:51 -0400
+Date: Sat, 8 Aug 2009 00:28:13 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
+       msb@google.com, viro@zeniv.linux.org.uk
+Subject: Re: [PATCH 1/4] vfs: make get_sb_pseudo set s_maxbytes to value that can be cast to signed
+Message-ID: <20090807222813.GB28019@cmpxchg.org>
+References: <1249671461-9071-1-git-send-email-jlayton@redhat.com> <1249671461-9071-2-git-send-email-jlayton@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249671461-9071-2-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-07 at 13:28 -0700, Russell King - ARM Linux wrote:
+On Fri, Aug 07, 2009 at 02:57:38PM -0400, Jeff Layton wrote:
+> This patch is a counterpart to the CIFS patch posted yesterday. I
+> believe either patch will fix the problem seen in do_sendfile since the
+> smaller s_maxbytes value for the two superblocks is used there.
 
-> The kernel direct mapping maps all system (low) memory with normal
-> memory cacheable attributes.
+This refers to the 'yesterday' 2-3 weeks ago, no? :-)
+
+> get_sb_pseudo sets s_maxbytes to ~0ULL, which becomes negative when cast
+> to a signed value. Fix it to use MAX_LFS_FILESIZE which casts properly
+> to a positive signed value.
+
+I think the proper term is 'converted' in this case, not 'cast'.  Even
+without casts it gets converted by arithmetic operands.
+
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+
+Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
+
+> ---
+>  fs/libfs.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> So using vmalloc, dma_alloc_coherent, using pages in userspace all
-> create duplicate mappings of pages.
-> 
-
-If we do want to remove all these duplicate mappings, as part of
-solution to deal with the speculative prefetching, probably one way is
-to not map all the RAM into the direct-mapped space at paging_init()
-time, and instead map them on-demand by different upper layer allocation
-functions, such as vmalloc/dma_alloc_coherent/do_brk/kmalloc/
-get_free_pages/etc. But then the distinction between upper layer
-allocation functions and non-upper layer ones must be made clear though.
-
-I know that mapping the RAM at paging_init() time can take advantage of
-1M section mapping most of the time, and thus save many 1KB L2 page
-tables. But a lot of memory still ends up being remapped with L2 page
-tables later on, and meanwhile 1KB might not be as "precious" as it used
-to be as well-:)
-
-David    
-
-
-
+> diff --git a/fs/libfs.c b/fs/libfs.c
+> index ddfa899..dcec3d3 100644
+> --- a/fs/libfs.c
+> +++ b/fs/libfs.c
+> @@ -217,7 +217,7 @@ int get_sb_pseudo(struct file_system_type *fs_type, char *name,
+>  		return PTR_ERR(s);
+>  
+>  	s->s_flags = MS_NOUSER;
+> -	s->s_maxbytes = ~0ULL;
+> +	s->s_maxbytes = MAX_LFS_FILESIZE;
+>  	s->s_blocksize = PAGE_SIZE;
+>  	s->s_blocksize_bits = PAGE_SHIFT;
+>  	s->s_magic = magic;
+> -- 
+> 1.6.0.6
