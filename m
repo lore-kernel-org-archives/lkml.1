@@ -1,79 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbZHGRvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbZHGSEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754889AbZHGRvi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 13:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbZHGRvh
+	id S1754957AbZHGSEU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 14:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbZHGSES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 13:51:37 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:56277 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754631AbZHGRvh (ORCPT
+	Fri, 7 Aug 2009 14:04:18 -0400
+Received: from mail-yw0-f177.google.com ([209.85.211.177]:44988 "EHLO
+	mail-yw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754900AbZHGSEQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 13:51:37 -0400
+	Fri, 7 Aug 2009 14:04:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=TlLowmTfZHpcYDVlaLY6g1volUvQn3rFNel7hYPTLl0W5Jg+EX3Zru6A3TewX6fJTN
-         yyrHw+YrBalHpehy3ZfFKJpkv4nWl87Syi1qH+ucumq3Zrt6JtJdIZ1UmKrLxKzY83Oc
-         XPk2dqCrfEfJAId0QYDLWpAkl+aONhNC6P91g=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=eIyjPwuib0SlwNx+Qk5BtSYOuC+vSBNoyy+k5tXi33Tn5ayUloHhn8bm16YsSiVL87
+         UViW9FuFNEeFsOamHam58OpYB0OWT9iQkvxaUUxwtc85Bd1ueHXJE+Aau4DLdam57/Cb
+         DFJKU16l6xmSfDPm8XE0Zr36fR9x/p1Ri7l+I=
+Message-ID: <4A7C6C95.7020008@gmail.com>
+Date: Fri, 07 Aug 2009 14:04:05 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-In-Reply-To: <200908071939.49627.elendil@planet.nl>
-References: <c6b1100b0908070350t3101030bs4b3d2e7485ad9aee@mail.gmail.com> 
-	<20090807151304.GE7545@tuxdriver.com> <43e72e890908071013w28644e70h5323e19d19da33a2@mail.gmail.com> 
-	<200908071939.49627.elendil@planet.nl>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Fri, 7 Aug 2009 10:51:17 -0700
-Message-ID: <43e72e890908071051w1f306349rfab32de80759006e@mail.gmail.com>
-Subject: Re: ath5k - strange regulatory domain change
-To: Frans Pop <elendil@planet.nl>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Chris Clayton <chris2553@googlemail.com>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [PATCH 0/7] AlacrityVM guest drivers
+References: <20090803171030.17268.26962.stgit@dev.haskins.net> <20090806081955.GA9752@redhat.com> <4A7C37E5.4040302@codemonkey.ws> <4A7C42C8.5050608@gmail.com> <4A7C4C50.5040503@codemonkey.ws>
+In-Reply-To: <4A7C4C50.5040503@codemonkey.ws>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigF78B3F0A78DC3F64F403EF27"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 7, 2009 at 10:39 AM, Frans Pop<elendil@planet.nl> wrote:
-> On Friday 07 August 2009, you wrote:
->> The way the EEPROM was programmed for this type of
->> regulatory domain was to give you a group number under which other
->> countries fall under. If you ended up getting a direct alpha2
->> programmed in the EEPROM instead you would still end up matching the
->> alpha2 to a group number. The group number leads you to a regulatory
->> domain that all those countries in that group number adhere to. So it
->> was a way to group up regulatory domain rules between countries. The
->> "CN" you see just so happens to be the alpha2 for the first country in
->> the same group regulatory domain group.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigF78B3F0A78DC3F64F403EF27
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Anthony Liguori wrote:
+> Gregory Haskins wrote:
+>> That said, note that the graphs were from earlier kernel runs (2.6.28,=
+
+>> 29-rc8).  The most recent data I can find that I published is for
+>> 2.6.29, announced with the vbus-v3 release back in April:
 >>
->> What we can do is to elaborate on that on the dmesg and also maybe
->
-> That would be very welcome.
->
->> pick the most common country on the group so it will tend to match the
->> country users are on.
->
-> I think that would just be moving the problem from one group of users to
-> another, possibly only marginally smaller, group of users.
->
-> As far as I can see the largest group is ETSI1_WORLD and contains 33
-> countries, followed by NULL1_WORLD (is that a real group?) with 22.
-> That's probably too many to list them all.
-> OTOH, all other groups contain at most 7 countries, which could possibly
-> be listed.
->
-> Probably the simplest option would be to just display some identification
-> of the domain group itself and point users to documentation which
-> explains what countries fall under what groups. That would at least avoid
-> the confusion caused by randomly picking a matching country.
-> Variation could be to display the country if the group only contains one
-> country, but that could also be considered an inconsistent user
-> interface.
+>> http://lkml.org/lkml/2009/4/21/408
+>>
+>> In it, the virtio-net throughput numbers are substantially higher and
+>> possibly more in line with your expectations (4.5gb/s) (though notably=
 
-Or maybe see if the currently set regulatory domain matches an alpha2
-in the group, if so then just display the same alpha2. Will take a
-look.
+>> still lagging venet, which weighed in at 5.6gb/s).
+>>  =20
+>=20
+> Okay, that makes more sense.  Would be nice to update the graphs as the=
+y
+> make virtio look really, really bad :-)
 
-  Luis
+Yeah, they are certainly ripe for an update.  (Note that I was
+unilaterally stale on venet numbers, too) ;)
+
+>=20
+>> Generally, I find that the virtio-net exhibits non-deterministic resul=
+ts
+>> from release to release.  I suspect (as we have discussed) the
+>> tx-mitigation scheme.  Some releases buffer the daylights out of the
+>> stream, and virtio gets close(r) throughput (e.g. 4.5g vs 5.8g, but
+>> absolutely terrible latency (4000us vs 65us).  Other releases it seems=
+
+>> to operate with more of a compromise (1.3gb/s vs 3.8gb/s, but 350us vs=
+
+>> 85us).
+>>  =20
+>=20
+> Are you using kvm modules or a new kernel?
+
+I just build the entire kernel from git.
+
+> There was some timer
+> infrastructure changes around 28/29 and it's possible that the system
+> your on is now detecting an hpet which will result in a better time
+> source.  That could have an affect on mitigation.
+
+Yeah, I suspect you are right.  I always kept the .config and machine
+constant, but I *do* bounce around kernel versions so perhaps I got
+hosed by a make-oldconfig cycle somewhere along the way.
+
+>=20
+>> If there is another patch-series/tree I should be using for comparison=
+,
+>> please point me at it.
+>>  =20
+>=20
+> No, I think it's fair to look at upstream Linux.  Looking at the latest=
+
+> bits would be nice though because there are some virtio friendly change=
+s
+> recently like MSI-x and GRO.
+
+Yeah, I will definitely include kvm.git in addition to whatever is
+current from Linus.  I already have adopted using the latest
+qemu-kvm.git into my workflow.
+
+Regards,
+-Greg
+
+
+--------------enigF78B3F0A78DC3F64F403EF27
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkp8bJUACgkQP5K2CMvXmqHs+gCfRyYqGSgtnS8hkuH/K4N8SyEA
+Ez8Anj/LAO66fxdRYI3elp6czuQYokpf
+=m3aa
+-----END PGP SIGNATURE-----
+
+--------------enigF78B3F0A78DC3F64F403EF27--
