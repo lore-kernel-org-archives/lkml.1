@@ -1,83 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbZHGGhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415AbZHGGii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbZHGGhr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 02:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbZHGGhq
+	id S1755415AbZHGGii (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 02:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbZHGGii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 02:37:46 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:50714 "EHLO kernel.dk"
+	Fri, 7 Aug 2009 02:38:38 -0400
+Received: from in.cluded.net ([195.159.98.120]:33605 "EHLO in.cluded.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755314AbZHGGhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 02:37:45 -0400
-Date: Fri, 7 Aug 2009 08:37:45 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Eric.Moore@lsi.com, jeff@garzik.org
-Subject: Re: [PATCH 1/3] block: add blk-iopoll, a NAPI like approach for
-	block devices
-Message-ID: <20090807063745.GQ12579@kernel.dk>
-References: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com> <1249588685-4662-2-git-send-email-jens.axboe@oracle.com> <20090806223257.0c33cf15@lxorguk.ukuu.org.uk>
+	id S1753962AbZHGGih (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 02:38:37 -0400
+Message-ID: <4A7BCAF1.5070605@uw.no>
+Date: Fri, 07 Aug 2009 06:34:25 +0000
+From: "Daniel K." <dk@uw.no>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9a1) Gecko/20060307 SeaMonkey/1.5a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090806223257.0c33cf15@lxorguk.ukuu.org.uk>
+To: Julia Lawall <julia@diku.dk>
+CC: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1/3] arch/powerpc: Add kmalloc NULL tests
+References: <Pine.LNX.4.64.0908062203380.19100@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0908062203380.19100@ask.diku.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06 2009, Alan Cox wrote:
-> > doing the command completion when the irq occurs, schedule a dedicated
-> > softirq in the hopes that we will complete more IO when the iopoll
-> > handler is invoked. Devices have a budget of commands assigned, and will
-> > stay in polled mode as long as they continue to consume their budget
-> > from the iopoll softirq handler. If they do not, the device is set back
-> > to interrupt completion mode.
-> 
-> This seems a little odd for pure ATA except for NCQ commands. Normal ATA
-> is notoriously completion/reissue latency sensitive [to the point I
-> suspect we should be dequeuing 2 commands from SCSI and loading the next
-> in the completion handler as soon as we recover the result task file and
-> see no error rather than going up and down the stack)
+Julia Lawall wrote:
+> --- a/arch/powerpc/sysdev/fsl_rio.c
+> +++ b/arch/powerpc/sysdev/fsl_rio.c
+> @@ -1057,6 +1057,10 @@ int fsl_rio_setup(struct of_device *dev)
+>  			law_start, law_size);
+>  
+>  	ops = kmalloc(sizeof(struct rio_ops), GFP_KERNEL);
+> +	if (!ops) {
+> +		rc = -ENOMEM;
+> +		goto err_ops;
+> +	}
+>  	ops->lcread = fsl_local_config_read;
+>  	ops->lcwrite = fsl_local_config_write;
+>  	ops->cread = fsl_rio_config_read;
+> @@ -1064,6 +1068,10 @@ int fsl_rio_setup(struct of_device *dev)
+>  	ops->dsend = fsl_rio_doorbell_send;
+>  
+>  	port = kzalloc(sizeof(struct rio_mport), GFP_KERNEL);
+> +	if (!port) {
+> +		rc = -ENOMEM;
+> +		goto err_port;
+> +	}
+>  	port->id = 0;
+>  	port->index = 0;
+>  
+> @@ -1071,7 +1079,7 @@ int fsl_rio_setup(struct of_device *dev)
+>  	if (!priv) {
+>  		printk(KERN_ERR "Can't alloc memory for 'priv'\n");
+>  		rc = -ENOMEM;
+> -		goto err;
+> +		goto err_priv;
+>  	}
+>  
+>  	INIT_LIST_HEAD(&port->dbells);
+> @@ -1169,13 +1177,15 @@ int fsl_rio_setup(struct of_device *dev)
+>  
+>  	return 0;
+>  err:
+> -	if (priv)
+> -		iounmap(priv->regs_win);
+> -	kfree(ops);
+> +	iounmap(priv->regs_win);
+> +err_priv:
+>  	kfree(priv);
+> +err_port:
+>  	kfree(port);
+> +err_ops:
+> +	kfree(ops);
+>  	return rc;
 
-Yes certainly, it's only for devices that do queuing. If they don't,
-then we will always have just the one command to complete. So not much
-to poll! As to pre-prep for extra latency intensive devices, have you
-tried experimenting with just pretending that non-ncq devices in libata
-have a queue depth of 2? That should ensure that the first command
-available upon completion of the existing command is already prepped.
-Not sure how much time that would save, I would hope that our prep phase
-isn't too slow to begin with (or that would be the place to fix :-)
+There seems to be a goto-off-by-one error here.
 
-> What do the numbers look like ?
+If xxxx = kxalloc() fails, you goto err_xxxx, and do a kfree(xxxx) where xxxx is
+already proven to be NULL.
 
-On a slow box (with many cores), the benefits are quite huge:
+Is there a reason for this that eludes me?
 
 
-blocksize       blk-iopoll      IOPS    IRQ/sec         Commands/IRQ
---------------------------------------------------------------------
-512b            0               25168   ~19500          1,3
-512b            1               30355     ~750          40
-4096b           0               25612   ~21500          1,2
-4096b           1               30231    ~1200          25
+I'd expect that last hunk to look something like
 
-I suspect there's some cache interaction going on here too, but the
-numbers do look very good. On a faster box (and different architecture),
-on a test that does 50k IOPS, they perform identically but the iopoll
-approach uses less CPU. The interrupt rate drops from 55k ints/sec to
-39-40k ints/sec for that case.
+@@ -1169,13 +1177,15 @@ int fsl_rio_setup(struct of_device *dev)
+ 
+ 	return 0;
+ err:
+-	if (priv)
+-		iounmap(priv->regs_win);
+-	kfree(ops);
++	iounmap(priv->regs_win);
+ 	kfree(priv);
++err_priv:
+ 	kfree(port);
++err_port:
++	kfree(ops);
++err_ops:
+ 	return rc;
+ }
 
-These are all synthetic IO only benchmarks, I hope to have some numbers
-for some mixed benchmarks soon too.
 
-> > This patch holds the core bits for blk-iopoll, device driver support
-> > sold separately.
-> 
-> You've been at Oracle too long ;) You'll be telling me its not a
-> supported configuration next.
-
-;-)
-
--- 
-Jens Axboe
-
+Daniel K.
