@@ -1,106 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbZHGIbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757296AbZHGIcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757290AbZHGIbo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 04:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757257AbZHGIbm
+	id S1757296AbZHGIcX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 04:32:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbZHGIcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 04:31:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48936 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757153AbZHGIbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 04:31:35 -0400
-Date: Fri, 7 Aug 2009 08:31:05 GMT
-From: tip-bot for Paul Mackerras <paulus@samba.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <19067.53473.239250.278692@cargo.ozlabs.ibm.com>
-References: <19067.53473.239250.278692@cargo.ozlabs.ibm.com>
-Subject: [tip:perfcounters/urgent] perf_counter/powerpc: Avoid oops on cpus without perf_counter hardware support
-Message-ID: <tip-e136499a084c0b921dd0c7a338e4454be158d9f9@git.kernel.org>
-Git-Commit-ID: e136499a084c0b921dd0c7a338e4454be158d9f9
-X-Mailer: tip-git-log-daemon
+	Fri, 7 Aug 2009 04:32:21 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:42104 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757283AbZHGIcS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 04:32:18 -0400
+From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+To: alsa-devel@alsa-project.org
+Subject: Re: [alsa-devel] [PATCH][2.6.31-rc5] ARM: OMAP: McBSP: Fix ASoC on OMAP1510 by fixing API of omap_mcbsp_start/stop
+Date: Fri, 7 Aug 2009 11:30:54 +0300
+User-Agent: KMail/1.11.4 (Linux/2.6.30-gentoo-r4; KDE/4.2.4; i686; ; )
+Cc: ext Jarkko Nikula <jhnikula@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>,
+       Tony Lindgren <tony@atomide.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+References: <1249628387-7372-1-git-send-email-jhnikula@gmail.com>
+In-Reply-To: <1249628387-7372-1-git-send-email-jhnikula@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 07 Aug 2009 08:31:06 +0000 (UTC)
+Message-Id: <200908071130.54337.peter.ujfalusi@nokia.com>
+X-OriginalArrivalTime: 07 Aug 2009 08:30:59.0527 (UTC) FILETIME=[64354D70:01CA1739]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e136499a084c0b921dd0c7a338e4454be158d9f9
-Gitweb:     http://git.kernel.org/tip/e136499a084c0b921dd0c7a338e4454be158d9f9
-Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Fri, 7 Aug 2009 16:59:45 +1000
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 7 Aug 2009 10:29:16 +0200
+On Friday 07 August 2009 09:59:47 ext Jarkko Nikula wrote:
+> Simultaneous audio playback and capture on OMAP1510 can cause that second
+> stream is stalled if there is enough delay between startup of the audio
+> streams.
+>
+> Current implementation of the omap_mcbsp_start is starting both transmitter
+> and receiver at the same time and it is called only for firstly started
+> audio stream from the OMAP McBSP based ASoC DAI driver.
+>
+> Since DMA request lines on OMAP1510 are edge sensitive, the DMA request is
+> missed if there is no DMA transfer set up at that time when the first word
+> after McBSP startup is transmitted. The problem hasn't noted before since
+> later OMAPs are using level sensitive DMA request lines.
+>
+> Fix the problem by changing API of omap_mcbsp_start and omap_mcbsp_stop by
+> allowing to start and stop individually McBSP transmitter and receiver
+> logics. Then call those functions individually for both audio playback
+> and capture streams. This ensures that DMA transfer is setup before
+> transmitter or receiver is started.
 
-perf_counter/powerpc: Avoid oops on cpus without perf_counter hardware support
+Looks nice, but I would have done it a bit differently...
 
-If we have the powerpc perf_counter backend compiled in, but
-the cpu we are running on is one where we don't support the
-PMU, we currently oops in hw_perf_group_sched_in if we try to
-use any counters, because ppmu is NULL in that case, and we
-unconditionally dereference ppmu.
+>
+> Thanks to Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> for detailed problem
+> analysis and Peter Ujfalusi <peter.ujfalusi@nokia.com> for info about DMA
+> request line behavior differences between the OMAP generations.
+>
+> Reported-and-tested-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+> Signed-off-by: Jarkko Nikula <jhnikula@gmail.com>
+> Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Cc: Tony Lindgren <tony@atomide.com>
+> ---
+>  arch/arm/plat-omap/include/mach/mcbsp.h |    4 +-
+>  arch/arm/plat-omap/mcbsp.c              |   50
+> +++++++++++++++++++----------- sound/soc/omap/omap-mcbsp.c             |  
+> 10 +++---
+>  3 files changed, 39 insertions(+), 25 deletions(-)
+>
+> diff --git a/arch/arm/plat-omap/include/mach/mcbsp.h
+> b/arch/arm/plat-omap/include/mach/mcbsp.h index bb154ea..57249bb 100644
+> --- a/arch/arm/plat-omap/include/mach/mcbsp.h
+> +++ b/arch/arm/plat-omap/include/mach/mcbsp.h
+> @@ -387,8 +387,8 @@ void omap_mcbsp_register_board_cfg(struct
+> omap_mcbsp_platform_data *config, void omap_mcbsp_config(unsigned int id,
+> const struct omap_mcbsp_reg_cfg * config); int omap_mcbsp_request(unsigned
+> int id);
+>  void omap_mcbsp_free(unsigned int id);
+> -void omap_mcbsp_start(unsigned int id);
+> -void omap_mcbsp_stop(unsigned int id);
+> +void omap_mcbsp_start(unsigned int id, int tx, int rx);
+> +void omap_mcbsp_stop(unsigned int id, int tx, int rx);
 
-This fixes the problem by adding a check if ppmu is NULL at the
-beginning of hw_perf_group_sched_in, and also at the beginning
-of the other functions that get called from the perf_counter
-core, i.e. hw_perf_disable, hw_perf_enable, and
-hw_perf_counter_setup.
+void omap_mcbsp_start(unsigned int id, int dir);
+void omap_mcbsp_stop(unsigned int id, int dir);
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: benh@kernel.crashing.org
-LKML-Reference: <19067.53473.239250.278692@cargo.ozlabs.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>  void omap_mcbsp_xmit_word(unsigned int id, u32 word);
+>  u32 omap_mcbsp_recv_word(unsigned int id);
+>
+> diff --git a/arch/arm/plat-omap/mcbsp.c b/arch/arm/plat-omap/mcbsp.c
+> index efa0e01..a3d2313 100644
+> --- a/arch/arm/plat-omap/mcbsp.c
+> +++ b/arch/arm/plat-omap/mcbsp.c
+> @@ -328,14 +328,15 @@ void omap_mcbsp_free(unsigned int id)
+>  EXPORT_SYMBOL(omap_mcbsp_free);
+>
+>  /*
+> - * Here we start the McBSP, by enabling the sample
+> - * generator, both transmitter and receivers,
+> - * and the frame sync.
+> + * Here we start the McBSP, by enabling transmitter, receiver or both.
+> + * If no transmitter or receiver is active prior calling, then sample-rate
+> + * generator and frame sync are started.
+
+ * dir == 0: tx
+ * dir == 1: rx
+
+>   */
+> -void omap_mcbsp_start(unsigned int id)
+> +void omap_mcbsp_start(unsigned int id, int tx, int rx)
+
+void omap_mcbsp_start(unsigned int id, int dir)
+
+>  {
+>  	struct omap_mcbsp *mcbsp;
+>  	void __iomem *io_base;
+> +	int idle;
+>  	u16 w;
+
+...
+
+>  	/* Enable transmitter and receiver */
+>  	w = OMAP_MCBSP_READ(io_base, SPCR2);
+> -	OMAP_MCBSP_WRITE(io_base, SPCR2, w | 1);
+> +	OMAP_MCBSP_WRITE(io_base, SPCR2, w | (tx & 1));
+>
+>  	w = OMAP_MCBSP_READ(io_base, SPCR1);
+> -	OMAP_MCBSP_WRITE(io_base, SPCR1, w | 1);
+> +	OMAP_MCBSP_WRITE(io_base, SPCR1, w | (rx & 1));
+
+	if (dir) {
+		/* RX: Enable receiver */
+	  	w = OMAP_MCBSP_READ(io_base, SPCR1);
+		OMAP_MCBSP_WRITE(io_base, SPCR1, w | 1);
+	} else {
+		/* TX: Enable transmitter */
+	  	w = OMAP_MCBSP_READ(io_base, SPCR2);
+		OMAP_MCBSP_WRITE(io_base, SPCR2, w | 1);
+	}
+
+>  	udelay(100);
+
+...
+
+> -void omap_mcbsp_stop(unsigned int id)
+> +void omap_mcbsp_stop(unsigned int id, int tx, int rx)
+
+void omap_mcbsp_stop(unsigned int id, int dir)
+
+>  {
+>  	struct omap_mcbsp *mcbsp;
+>  	void __iomem *io_base;
+> +	int idle;
+>  	u16 w;
+>
+>  	if (!omap_mcbsp_check_valid_id(id)) {
+> @@ -386,15 +395,20 @@ void omap_mcbsp_stop(unsigned int id)
+>
+>  	/* Reset transmitter */
+>  	w = OMAP_MCBSP_READ(io_base, SPCR2);
+> -	OMAP_MCBSP_WRITE(io_base, SPCR2, w & ~(1));
+> +	OMAP_MCBSP_WRITE(io_base, SPCR2, w & ~(tx & 1));
+>
+>  	/* Reset receiver */
+>  	w = OMAP_MCBSP_READ(io_base, SPCR1);
+> -	OMAP_MCBSP_WRITE(io_base, SPCR1, w & ~(1));
+> +	OMAP_MCBSP_WRITE(io_base, SPCR1, w & ~(rx & 1));
+
+	if (dir) {
+	  	/* RX: Reset receiver */
+	  	w = OMAP_MCBSP_READ(io_base, SPCR1);
+		OMAP_MCBSP_WRITE(io_base, SPCR1, w | ~(1));
+	} else {
+		/* TX: Reset transmitter */
+	  	w = OMAP_MCBSP_READ(io_base, SPCR2);
+		OMAP_MCBSP_WRITE(io_base, SPCR2, w | ~(1));
+	}
 
 
----
- arch/powerpc/kernel/perf_counter.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+> -	/* Reset the sample rate generator */
+> -	w = OMAP_MCBSP_READ(io_base, SPCR2);
+> -	OMAP_MCBSP_WRITE(io_base, SPCR2, w & ~(1 << 6));
+> +	idle = !((OMAP_MCBSP_READ(io_base, SPCR2) |
+> +		  OMAP_MCBSP_READ(io_base, SPCR1)) & 1);
+> +
+> +	if (idle) {
+> +		/* Reset the sample rate generator */
+> +		w = OMAP_MCBSP_READ(io_base, SPCR2);
+> +		OMAP_MCBSP_WRITE(io_base, SPCR2, w & ~(1 << 6));
+> +	}
+>  }
+>  EXPORT_SYMBOL(omap_mcbsp_stop);
+>
+> diff --git a/sound/soc/omap/omap-mcbsp.c b/sound/soc/omap/omap-mcbsp.c
+> index a5d46a7..6a837ff 100644
+> --- a/sound/soc/omap/omap-mcbsp.c
+> +++ b/sound/soc/omap/omap-mcbsp.c
+> @@ -183,21 +183,21 @@ static int omap_mcbsp_dai_trigger(struct
+> snd_pcm_substream *substream, int cmd, struct snd_soc_pcm_runtime *rtd =
+> substream->private_data;
+>  	struct snd_soc_dai *cpu_dai = rtd->dai->cpu_dai;
+>  	struct omap_mcbsp_data *mcbsp_data = to_mcbsp(cpu_dai->private_data);
+> -	int err = 0;
+> +	int err = 0, play = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 809fdf9..70e1f57 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -518,6 +518,8 @@ void hw_perf_disable(void)
- 	struct cpu_hw_counters *cpuhw;
- 	unsigned long flags;
- 
-+	if (!ppmu)
-+		return;
- 	local_irq_save(flags);
- 	cpuhw = &__get_cpu_var(cpu_hw_counters);
- 
-@@ -572,6 +574,8 @@ void hw_perf_enable(void)
- 	int n_lim;
- 	int idx;
- 
-+	if (!ppmu)
-+		return;
- 	local_irq_save(flags);
- 	cpuhw = &__get_cpu_var(cpu_hw_counters);
- 	if (!cpuhw->disabled) {
-@@ -737,6 +741,8 @@ int hw_perf_group_sched_in(struct perf_counter *group_leader,
- 	long i, n, n0;
- 	struct perf_counter *sub;
- 
-+	if (!ppmu)
-+		return 0;
- 	cpuhw = &__get_cpu_var(cpu_hw_counters);
- 	n0 = cpuhw->n_counters;
- 	n = collect_events(group_leader, ppmu->n_counter - n0,
-@@ -1281,6 +1287,8 @@ void hw_perf_counter_setup(int cpu)
- {
- 	struct cpu_hw_counters *cpuhw = &per_cpu(cpu_hw_counters, cpu);
- 
-+	if (!ppmu)
-+		return;
- 	memset(cpuhw, 0, sizeof(*cpuhw));
- 	cpuhw->mmcr[0] = MMCR0_FC;
- }
+no need for this change.
+
+>
+>  	switch (cmd) {
+>  	case SNDRV_PCM_TRIGGER_START:
+>  	case SNDRV_PCM_TRIGGER_RESUME:
+>  	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
+> -		if (!mcbsp_data->active++)
+> -			omap_mcbsp_start(mcbsp_data->bus_id);
+> +		mcbsp_data->active++;
+> +		omap_mcbsp_start(mcbsp_data->bus_id, play, !play);
+
+		omap_mcbsp_start(mcbsp_data->bus_id, substream->stream);
+
+>  		break;
+>
+>  	case SNDRV_PCM_TRIGGER_STOP:
+>  	case SNDRV_PCM_TRIGGER_SUSPEND:
+>  	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
+> -		if (!--mcbsp_data->active)
+> -			omap_mcbsp_stop(mcbsp_data->bus_id);
+> +		omap_mcbsp_stop(mcbsp_data->bus_id, play, !play);
+
+		omap_mcbsp_stop(mcbsp_data->bus_id, substream->stream);
+
+
+> +		mcbsp_data->active--;
+>  		break;
+>  	default:
+>  		err = -EINVAL;
+
+-- 
+Péter
