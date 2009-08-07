@@ -1,93 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933672AbZHGUSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933683AbZHGUVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933672AbZHGUSn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933582AbZHGUSm
+	id S933683AbZHGUVL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:21:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933582AbZHGUVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:18:42 -0400
-Received: from mail.lang.hm ([64.81.33.126]:35586 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932605AbZHGUSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:18:41 -0400
-Date: Fri, 7 Aug 2009 13:17:31 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Fischer, Anna" <anna.fischer@hp.com>
-cc: Stephen Hemminger <shemminger@vyatta.com>,
-       "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>,
-       "drobbins@funtoo.org" <drobbins@funtoo.org>,
-       "'Arnd Bergmann'" <arnd@arndb.de>,
-       "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
-       "mst@redhat.com" <mst@redhat.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "bridge@lists.linux-foundation.org" 
-	<bridge@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ogerlitz@voltaire.com" <ogerlitz@voltaire.com>,
-       "evb@yahoogroups.com" <evb@yahoogroups.com>,
-       "davem@davemloft.net" <davem@davemloft.net>
-Subject: RE: [Bridge] [PATCH] macvlan: add tap device backend
-In-Reply-To: <0199E0D51A61344794750DC57738F58E6D6A6CD7FE@GVW1118EXC.americas.hpqcorp.net>
-Message-ID: <alpine.DEB.1.10.0908071313260.28013@asgard.lang.hm>
-References: <0199E0D51A61344794750DC57738F58E6D6A6CD7F6@GVW1118EXC.americas.hpqcorp.net> <004f01ca1792$b24a7a90$16df6fb0$@edu> <20090807123554.7c2bc27c@nehalam> <0199E0D51A61344794750DC57738F58E6D6A6CD7FE@GVW1118EXC.americas.hpqcorp.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 7 Aug 2009 16:21:10 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:11253 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933608AbZHGUVJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 16:21:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Hi4vwCGAp492QFI+cADdeLFpT/byJRrwPQNHDwQUTPTGO/TTQBwpZJsuHMxf7RUhHn
+         NNllMaIXpF+/xN6uzc9tiVwZsxjTKNoVIhcoF/MjzmNv3NVyTZ1LKQ6E50/bzR+/MUE0
+         0yGysA+kAYzqJZhEvvMze6ItfkmzYBqlcoX68=
+Date: Fri, 7 Aug 2009 22:21:06 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH] perfcounters: Support for ftrace event records sampling
+Message-ID: <20090807202105.GB4999@nowhere>
+References: <1249601154-5597-1-git-send-email-fweisbec@gmail.com> <1249641477.32113.664.camel@twins> <1249675747.8088.5.camel@laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249675747.8088.5.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Aug 2009, Fischer, Anna wrote:
-
-> Subject: RE: [Bridge] [PATCH] macvlan: add tap device backend
+On Fri, Aug 07, 2009 at 10:09:07PM +0200, Peter Zijlstra wrote:
+> On Fri, 2009-08-07 at 12:38 +0200, Peter Zijlstra wrote:
+> > > +static void ftrace_profile_##call(proto)                             \
+> > > +{                                                                    \
+> > > +     struct ftrace_data_offsets_##call __maybe_unused __data_offsets;\
+> > > +     struct ftrace_event_call *event_call = &event_##call;           \
+> > > +     extern void perf_tpcounter_event(int, u64, u64, void *, int);   \
+> > > +     struct ftrace_raw_##call *entry;                                \
+> > > +     u64 __addr = 0, __count = 1;                                    \
+> > > +     unsigned long irq_flags;                                        \
+> > > +     int __entry_size;                                               \
+> > > +     int __data_size;                                                \
+> > > +     int pc;                                                         \
+> > > +                                                                     \
+> > > +     local_save_flags(irq_flags);                                    \
+> > > +     pc = preempt_count();                                           \
+> > > +                                                                     \
+> > > +     __data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
+> > > +     __entry_size = __data_size + sizeof(*entry);                    \
+> > > +                                                                     \
+> > > +     do {                                                            \
+> > > +             char raw_data[__entry_size];                            \
+> > > +             struct trace_entry *ent;                                \
+> > > +                                                                     \
+> > > +             entry = (struct ftrace_raw_##call *)raw_data;           \
+> > > +             ent = &entry->ent;                                      \
+> > > +             tracing_generic_entry_update(ent, irq_flags, pc);       \
+> > > +             ent->type = event_call->id;                             \
+> > > +                                                                     \
+> > > +             tstruct                                                 \
+> > > +                                                                     \
+> > > +             { assign; }                                             \
+> > > +                                                                     \
+> > > +             perf_tpcounter_event(event_call->id, __addr, __count, entry,\
+> > > +                          __entry_size);                             \
+> > > +     } while (0);                                                    \
+> > > +                                                                     \
+> > > +}
+> > 
+> > ok, so the one concern I have here is that the data needs to fit on the
+> > stack. What if someone puts a large string in the data?
 > 
->> Subject: Re: [Bridge] [PATCH] macvlan: add tap device backend
->>
->> On Fri, 7 Aug 2009 12:10:07 -0700
->> "Paul Congdon \(UC Davis\)" <ptcongdon@ucdavis.edu> wrote:
->>
->>> Responding to Daniel's questions...
->>>
->>>> I have some general questions about the intended use and benefits
->> of
->>>> VEPA, from an IT perspective:
->>>>
->>>> In which virtual machine setups and technologies do you forsee this
->>>> interface being used?
->>>
->>> The benefit of VEPA is the coordination and unification with the
->> external network switch.  So, in environments where you are
->> needing/wanting your feature rich, wire speed, external network device
->> (firewall/switch/IPS/content-filter) to provide consistent policy
->> enforcement, and you want your VMs traffic to be subject to that
->> enforcement, you will want their traffic directed externally.  Perhaps
->> you have some VMs that are on a DMZ or clustering an application or
->> implementing a multi-tier application where you would normally place a
->> firewall in-between the tiers.
->>
->> I do have to raise the point that Linux is perfectly capable of keeping
->> up without
->> the need of an external switch.  Whether you want policy external or
->> internal is
->> a architecture decision that should not be driven by mis-information
->> about performance.
->
-> VEPA is not only about enabling faster packet processing (like firewall/switch/IPS/content-filter etc) by doing this on the external switch.
->
-> Due to rather low performance of software-based I/O virtualization approaches a lot of effort has recently been going into hardware-based implementations of virtual network interfaces like SRIOV NICs provide. Without VEPA, such a NIC would have to implement sophisticated virtual switching capabilities. VEPA however is very simple and therefore perfectly suited for a hardware-based implementation. So in the future, it will give you direct I/O like performance and all the capabilities your adjacent switch provides.
->
+> Also, how NMI safe is all that?
 
-the performance overhead isn't from switching the packets, it's from 
-running the firewall/IDS/etc software on the same system.
 
-with VEPA the communications from one VM to another VM running on the same 
-host will be forced to go out the interface to the datacenter switching 
-fabric. The overall performance of the network link will be slightly 
-slower, but it allows for other devices to be inserted into the path.
+Everything is allocated in the stack. It's NMI safe AFAICS, am I missing
+something?
 
-this is something that I would want available if I were to start using VMs 
-for things. I don't want to have to duplicate my IDS/firewalling functions 
-within each host system as well as having them as part of the switching 
-fabric.
-
-David Lang
