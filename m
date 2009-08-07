@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbZHGPq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753540AbZHGPvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753203AbZHGPq2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 11:46:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbZHGPq2
+	id S1753540AbZHGPvl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 11:51:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbZHGPvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 11:46:28 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:18314 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753070AbZHGPq0 (ORCPT
+	Fri, 7 Aug 2009 11:51:40 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:52595 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753387AbZHGPvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 11:46:26 -0400
-Message-ID: <4A7C4C50.5040503@codemonkey.ws>
-Date: Fri, 07 Aug 2009 10:46:24 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 7 Aug 2009 11:51:40 -0400
+Message-ID: <4A7C4D6C.6050101@nortel.com>
+Date: Fri, 07 Aug 2009 09:51:08 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>,
-       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [PATCH 0/7] AlacrityVM guest drivers
-References: <20090803171030.17268.26962.stgit@dev.haskins.net> <20090806081955.GA9752@redhat.com> <4A7C37E5.4040302@codemonkey.ws> <4A7C42C8.5050608@gmail.com>
-In-Reply-To: <4A7C42C8.5050608@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Greg KH <greg@kroah.com>
+CC: Al Boldi <a1426z@gawab.com>, Andi Kleen <andi@firstfloor.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
+       gregkh@suse.de, Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+ /dev
+References: <20090805171513.GA10443@kroah.com> <200908070703.40706.a1426z@gawab.com> <20090807042544.GA24299@kroah.com> <200908070804.08156.a1426z@gawab.com> <20090807052015.GA24615@kroah.com>
+In-Reply-To: <20090807052015.GA24615@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Aug 2009 15:51:09.0135 (UTC) FILETIME=[E18FADF0:01CA1776]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> That said, note that the graphs were from earlier kernel runs (2.6.28,
-> 29-rc8).  The most recent data I can find that I published is for
-> 2.6.29, announced with the vbus-v3 release back in April:
->
-> http://lkml.org/lkml/2009/4/21/408
->
-> In it, the virtio-net throughput numbers are substantially higher and
-> possibly more in line with your expectations (4.5gb/s) (though notably
-> still lagging venet, which weighed in at 5.6gb/s).
->   
+Greg KH wrote:
+> On Fri, Aug 07, 2009 at 08:04:08AM +0300, Al Boldi wrote:
 
-Okay, that makes more sense.  Would be nice to update the graphs as they 
-make virtio look really, really bad :-)
+>> The question is, how fast can devtmpfs get the device list from the kernel on 
+>> bootup?  How much faster than udev?  How much slower than static /dev?
+> 
+> It's much faster than udev, and is equivalent to a static /dev with the
+> exception that the group and permission settings that you are used to.
+> udev then needs to come along and make those settings, but that's so
+> frickin fast it's amazing.
 
-> Generally, I find that the virtio-net exhibits non-deterministic results
-> from release to release.  I suspect (as we have discussed) the
-> tx-mitigation scheme.  Some releases buffer the daylights out of the
-> stream, and virtio gets close(r) throughput (e.g. 4.5g vs 5.8g, but
-> absolutely terrible latency (4000us vs 65us).  Other releases it seems
-> to operate with more of a compromise (1.3gb/s vs 3.8gb/s, but 350us vs
-> 85us).
->   
+Earlier in the thread you indicated a 0.5sec speedup over udev.  Is that
+really considered "much faster"?
 
-Are you using kvm modules or a new kernel?  There was some timer 
-infrastructure changes around 28/29 and it's possible that the system 
-your on is now detecting an hpet which will result in a better time 
-source.  That could have an affect on mitigation.
+I do agree that it makes sense to do this, but more from an elegance
+view than a performance one.
 
-> If there is another patch-series/tree I should be using for comparison,
-> please point me at it.
->   
+Chris
 
-No, I think it's fair to look at upstream Linux.  Looking at the latest 
-bits would be nice though because there are some virtio friendly changes 
-recently like MSI-x and GRO.
-
-Since you're using the latest vbus bits, it makes sense to compare 
-against the latest virtio bits.
-
-Regards,
-
-Anthony Liguori
