@@ -1,55 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbZHGLuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932423AbZHGLvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757602AbZHGLuX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 07:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757178AbZHGLuX
+	id S932423AbZHGLvJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 07:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932336AbZHGLvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 07:50:23 -0400
-Received: from co203.xi-lite.net ([149.6.83.203]:50507 "EHLO co203.xi-lite.net"
+	Fri, 7 Aug 2009 07:51:08 -0400
+Received: from mga01.intel.com ([192.55.52.88]:7007 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751144AbZHGLuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 07:50:22 -0400
-Message-ID: <4A7C14EB.1060701@parrot.com>
-Date: Fri, 7 Aug 2009 13:50:03 +0200
-From: Matthieu CASTET <matthieu.castet@parrot.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	id S932223AbZHGLvH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 07:51:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,341,1246863600"; 
+   d="scan'208";a="714757378"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "oleg@redhat.com" <oleg@redhat.com>
+Date: Fri, 7 Aug 2009 12:51:04 +0100
+Subject: RE: [patch] x86, perf_counter, bts: add bts to perf_counter
+Thread-Topic: [patch] x86, perf_counter, bts: add bts to perf_counter
+Thread-Index: AcoXVJoUJcVeFyrVS/2gd0sKdSKllwAADmLg
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF07F@irsmsx504.ger.corp.intel.com>
+References: <20090807092256.A6083@sedona.ch.intel.com>
+ <1249645524.32113.688.camel@twins>
+In-Reply-To: <1249645524.32113.688.camel@twins>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-CC: Alain Knaff <alain@knaff.lu>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       "sam@ravnborg.org" <sam@ravnborg.org>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/6] Add support for LZO-compressed kernels for ARM
-References: <20090731093107.GA29704@merkur.ravnborg.org> <1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-2-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-3-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-4-git-send-email-albin.tonnerre@free-electrons.com> <20090806224055.GH31579@n2100.arm.linux.org.uk> <20090807092423.GA4455@laptop> <4A7BF5B8.4030907@knaff.lu> <20090807102117.GB4455@laptop>
-In-Reply-To: <20090807102117.GB4455@laptop>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Albin Tonnerre a écrit :
-> On Fri, Aug 07, 2009 at 11:36:56AM +0200, Alain Knaff wrote :
->> On 08/07/09 11:24, Albin Tonnerre wrote:
-> 
->>> Regards,
-> 
->> Could it be that the patches that remove division (zutil.h and inflate.c)
->> have somehow not been applied?
-> 
-> Indeed, they've not been applied. However, I'd rather try to understand why
-> exactly this is an issue when compiling with -Os and not -O2 instead of working
-> around it by removing the divisions.
-> 
-Look at the generated code.
+>-----Original Message-----
+>From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
+>Sent: Friday, August 07, 2009 1:45 PM
+>To: Metzger, Markus T
+>Cc: linux-kernel@vger.kernel.org; mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com;
+>markus.t.metzger@gmail.com; oleg@redhat.com
+>Subject: Re: [patch] x86, perf_counter, bts: add bts to perf_counter
+>
+>On Fri, 2009-08-07 at 09:22 +0200, Markus Metzger wrote:
+>> @@ -721,9 +903,13 @@ static int __hw_perf_counter_init(struct
+>>         err = 0;
+>>         if (!atomic_inc_not_zero(&active_counters)) {
+>>                 mutex_lock(&pmc_reserve_mutex);
+>> -               if (atomic_read(&active_counters) == 0 && !reserve_pmc_hardware())
+>> -                       err = -EBUSY;
+>> -               else
+>> +               if (atomic_read(&active_counters) == 0) {
+>> +                       if (!reserve_pmc_hardware())
+>> +                               err = -EBUSY;
+>> +                       else
+>> +                               reserve_bts_hardware();
+>> +               }
+>> +               if (!err)
+>>                         atomic_inc(&active_counters);
+>>                 mutex_unlock(&pmc_reserve_mutex);
+>>         }
+>
+>You loose the reserve_bts_hardware() error case there.
 
-Arm doesn't have division instruction.
-May be at -Os gcc emit a call to the software division, but at -O2 it
-manage to optimise the division (transform it in shift, inline some
-builtin, ...).
 
+That had been intentional since I consider BTS somewhat optional. In case it is not available or
+fails to initialize, e.g. out of memory, we fall back to normal profiling.
 
-Matthieu
+Now that I think about it again, I guess that's not what a (debugger) user would expect.
+An error might be more appropriate in that case.
+
+I'll change it.
+
+thanks and regards,
+markus.
+
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
