@@ -1,53 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942AbZHGQHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbZHGQJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753942AbZHGQHa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 12:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZHGQH3
+	id S1753953AbZHGQJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 12:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbZHGQJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 12:07:29 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:45161 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752523AbZHGQH2 (ORCPT
+	Fri, 7 Aug 2009 12:09:27 -0400
+Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:56562 "EHLO
+	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753751AbZHGQJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 12:07:28 -0400
-Date: Fri, 7 Aug 2009 17:07:29 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Anuj Aggarwal <anuj.aggarwal@ti.com>
-Cc: lrg@slimlogic.co.uk, linux-omap@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/8] Regulator: Adding TPS65023 and TPS6507x in Kconfig
-	and Makefile
-Message-ID: <20090807160728.GL639@sirena.org.uk>
-References: <1249658960-11021-1-git-send-email-anuj.aggarwal@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249658960-11021-1-git-send-email-anuj.aggarwal@ti.com>
-X-Cookie: Sic Transit Gloria Thursdi.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+	Fri, 7 Aug 2009 12:09:27 -0400
+Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090807152210.GH17129@think>
+References: <1245839904.3210.85.camel@localhost.localdomain>
+	 <1249647601.32113.700.camel@twins>
+	 <1249655761.2719.11.camel@localhost.localdomain>
+	 <20090807152210.GH17129@think>
+Content-Type: text/plain
+Date: Fri, 07 Aug 2009 17:09:21 +0100
+Message-Id: <1249661361.2719.36.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 08:59:20PM +0530, Anuj Aggarwal wrote:
+On Fri, 2009-08-07 at 11:22 -0400, Chris Mason wrote:
+> On Fri, Aug 07, 2009 at 03:36:01PM +0100, Richard Kennedy wrote:
+> > On Fri, 2009-08-07 at 14:20 +0200, Peter Zijlstra wrote:
+> > > On Wed, 2009-06-24 at 11:38 +0100, Richard Kennedy wrote:
+> > ...
+> > > OK, so Chris ran into this bit yesterday, complaining that he'd only get
+> > > very few write requests and couldn't saturate his IO channel.
+> > > 
+> > > Now, since writing out everything once there's something to do sucks for
+> > > Richard, but only writing out stuff when we're over the limit sucks for
+> > > Chris (since we can only be over the limit a little), the best thing
+> > > would be to only write out when we're over the background limit. Since
+> > > that is the low watermark we use for throttling it makes sense that we
+> > > try to write out when above that.
+> > > 
+> > > However, since there's a lack of bdi_background_thresh, and I don't
+> > > think introducing one just for this is really justified. How about the
+> > > below?
+> > > 
+> > > Chris how did this work for you? Richard, does this make things suck for
+> > > you again?
+> > > 
+> > > ---
+> > >  mm/page-writeback.c |    2 +-
+> > >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> > > index 81627eb..92f42d6 100644
+> > > --- a/mm/page-writeback.c
+> > > +++ b/mm/page-writeback.c
+> > > @@ -545,7 +545,7 @@ static void balance_dirty_pages(struct address_space *mapping)
+> > >  		 * threshold otherwise wait until the disk writes catch
+> > >  		 * up.
+> > >  		 */
+> > > -		if (bdi_nr_reclaimable > bdi_thresh) {
+> > > +		if (bdi_nr_reclaimable > bdi_thresh/2) {
+> 
+> My patch had two extra spaces ;)
+> 
+> > >  			writeback_inodes(&wbc);
+> > >  			pages_written += write_chunk - wbc.nr_to_write;
+> > >  			get_dirty_limits(&background_thresh, &dirty_thresh,
+> > > 
+> > > 
+> > I'll run some tests and let you know :)
+> > 
+> > But what if someone has changed the vm settings?
+> > Maybe something like 
+> > 	(bdi_thresh * dirty_background_ratio / dirty_ratio)
+> > might be better ?
+> > 
+> > Chris, what sort of workload are you having problems with?
+> 
+> So, buffered writeback in general has a bunch of interesting features
+> right now, and to be honest I'm having a hard time untangling all of it.
+> It doesn't help that each of our filesystems is reacting differently.
+> 
+> Btrfs and XFS both use helper threads to process IO completion.  This
+> means that we tend to collect more writeback pages than the other
+> filesystems do.
+> 
+> The end result of this is that O_DIRECT is dramatically faster than
+> buffered on every streaming write workload I've tried.  I'm still trying
+> to sort out exactly where buffered IO is going wrong.
+> 
+> -chris
+> 
+Yes, it's all pretty complex.
+With a large number of pages in writeback do you think that the total
+dirty pages goes over the threshold ?
+I do wonder how long we get stuck in congestion_wait, it may be
+interesting to see if reducing its timeout has any effect. 
 
-> +config REGULATOR_TPS65023
-> +	tristate "TI TPS65023 Power regulators"
-> +	depends on OMAP3EVM_TPS65023
-> +	help
+I've been experimenting with rewriting balance_dirty_pages to reduce the
+number of calls to global_page_state. Those counters share a cacheline
+and are fairly hot. So far it's looking good & improving simple write
+performance particularly when the write size is just over the dirty
+threshold.
 
-...
+regard
+Richard
 
-> +config REGULATOR_TPS65073
-> +	tristate "TI TPS65073 Power regulators"
-> +	depends on OMAP3EVM_TPS65073
-
-These dependencies on the OMAP3EVM seem very wrong - the only dependency
-I'd expect would be on I2C (or a MFD core for the .
-
-Also, the Kconfig stuff says TPS65073 but the driver said it supported
-the entire TPS6507x line.  I'd expect these to be consistent with each
-other.
