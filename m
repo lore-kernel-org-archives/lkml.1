@@ -1,90 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932541AbZHGNCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbZHGNDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932541AbZHGNCP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 09:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757878AbZHGNCO
+	id S1757892AbZHGNDY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 09:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756066AbZHGNDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 09:02:14 -0400
-Received: from mail-bw0-f215.google.com ([209.85.218.215]:44910 "EHLO
-	mail-bw0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757879AbZHGNCN convert rfc822-to-8bit (ORCPT
+	Fri, 7 Aug 2009 09:03:24 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:34940
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932223AbZHGNDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 09:02:13 -0400
-X-Greylist: delayed 328 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Aug 2009 09:02:12 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=YTrXKQLSrYminpkoZjpnnmxPRXqd+lTe98qRcWX+coEisrexX4ii3vaiYNk0QskOWM
-         dhJ1CZGeuIBZBQcKf5nnw4hXA53ImFIRRdgvjfufCl39c9nuwacwf7vP3xa8xCRHFNyu
-         lebhKRZ47SjIL+36bP6rtn72mIjO04utQnYcA=
+	Fri, 7 Aug 2009 09:03:23 -0400
+X-SpamScore: 1
+X-BigFish: VPS1(zzzz1202hzzz32i6bh203h62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KO0C9D-02-3ZR-02
+X-M-MSG: 
+Date: Fri, 7 Aug 2009 15:02:42 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel@vger.kernel.org, Borislav Petkov <borislav.petkov@amd.com>,
+       Brice Goglin <Brice.Goglin@inria.fr>
+Subject: [PATCH 5/8] x86, cacheinfo: Fixup L3 cache information for AMD
+	multi-node processors
+Message-ID: <20090807130242.GX6520@alberich.amd.com>
+References: <20090807125609.GH7198@alberich.amd.com>
 MIME-Version: 1.0
-In-Reply-To: <200908071324.45269.elendil@planet.nl>
-References: <c6b1100b0908070350t3101030bs4b3d2e7485ad9aee@mail.gmail.com>
-	 <200908071324.45269.elendil@planet.nl>
-Date: Fri, 7 Aug 2009 13:56:43 +0100
-Message-ID: <c6b1100b0908070556sb3f4f80sc757d8b100cbcb3c@mail.gmail.com>
-Subject: Re: ath5k - strange regulatory domain change
-From: Chris Clayton <chris2553@googlemail.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090807125609.GH7198@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 07 Aug 2009 13:02:43.0334 (UTC) FILETIME=[5A08D260:01CA175F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Frans,
+L3 cache size, associativity and shared_cpu information need to be
+adapted to show information for an internal node instead of the
+entire physical package.
 
-2009/8/7 Frans Pop <elendil@planet.nl>:
-> Chris Clayton wrote:
->> Because of some problems with my Belkin Wireless G card  (model
->> F5D7010) and the rt61pci driver, I've started to use a "no-name" card
->> that is supported by the ath5k driver.
->>
->> A problem is that I have come across is that for some reason the CN
->> regulatory domain is being set automatically. This doesn't happen with
->> the Belkin (rt61) card. I have the following line in
->> /etc/modprobe.d/modprobe.conf to set the regulatory domain to GB:
->>
->> options cfg80211 ieee80211_regdom=GB
->
-> This issue has already been discussed extensively (after I reported it).
-> Please see the following thread: http://lkml.org/lkml/2009/7/8/421. It
-> contains a lot of information from the wireless maintainers.
->
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/kernel/cpu/intel_cacheinfo.c |   30 ++++++++++++++++++++----------
+ 1 files changed, 20 insertions(+), 10 deletions(-)
 
-To sum this up then (as I understand things):
-
-1. I am the system administrator (root);
-2. I am using a valid (albeit deprecated from 2.6.31) method to tell
-the wireless infrastructure that I want the regulatory domain set to
-GB;
-3. GB is a valid code; and
-4. the wireless infrastructure sets the regulatory domain to CN.
-5. in 2.6.30, the wireless infrastructure does what I (the root user)
-tell it to do.
-
-That's a regression in my book. Oh well! I do have the iw and crda
-applications installed, so I've taken that route of setting the
-regulatory domain to GB.
-
-Interestingly, if I make no attempt to set the regulatory domain at
-all, it get sets to World and CN never comes into it. It's only if I
-try to set it to GB via the module parameter that it gets set to CN.
-To me, that seems broken.
-
-Thanks again,
-
-Chris
-
-> Cheers.
-> FJP
->
-
-
-
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 306bf0d..4fa232a 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -241,7 +241,7 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
+ 	case 0:
+ 		if (!l1->val)
+ 			return;
+-		assoc = l1->assoc;
++		assoc = assocs[l1->assoc];
+ 		line_size = l1->line_size;
+ 		lines_per_tag = l1->lines_per_tag;
+ 		size_in_kb = l1->size_in_kb;
+@@ -249,7 +249,7 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
+ 	case 2:
+ 		if (!l2.val)
+ 			return;
+-		assoc = l2.assoc;
++		assoc = assocs[l2.assoc];
+ 		line_size = l2.line_size;
+ 		lines_per_tag = l2.lines_per_tag;
+ 		/* cpu_data has errata corrections for K7 applied */
+@@ -258,10 +258,14 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
+ 	case 3:
+ 		if (!l3.val)
+ 			return;
+-		assoc = l3.assoc;
++		assoc = assocs[l3.assoc];
+ 		line_size = l3.line_size;
+ 		lines_per_tag = l3.lines_per_tag;
+ 		size_in_kb = l3.size_encoded * 512;
++		if (boot_cpu_has(X86_FEATURE_AMD_DCM)) {
++			size_in_kb = size_in_kb >> 1;
++			assoc = assoc >> 1;
++		}
+ 		break;
+ 	default:
+ 		return;
+@@ -270,18 +274,14 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
+ 	eax->split.is_self_initializing = 1;
+ 	eax->split.type = types[leaf];
+ 	eax->split.level = levels[leaf];
+-	if (leaf == 3)
+-		eax->split.num_threads_sharing =
+-			current_cpu_data.x86_max_cores - 1;
+-	else
+-		eax->split.num_threads_sharing = 0;
++	eax->split.num_threads_sharing = 0;
+ 	eax->split.num_cores_on_die = current_cpu_data.x86_max_cores - 1;
+ 
+ 
+-	if (assoc == 0xf)
++	if (assoc == 0xffff)
+ 		eax->split.is_fully_associative = 1;
+ 	ebx->split.coherency_line_size = line_size - 1;
+-	ebx->split.ways_of_associativity = assocs[assoc] - 1;
++	ebx->split.ways_of_associativity = assoc - 1;
+ 	ebx->split.physical_line_partition = lines_per_tag - 1;
+ 	ecx->split.number_of_sets = (size_in_kb * 1024) / line_size /
+ 		(ebx->split.ways_of_associativity + 1) - 1;
+@@ -523,6 +523,16 @@ static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index)
+ 	int index_msb, i;
+ 	struct cpuinfo_x86 *c = &cpu_data(cpu);
+ 
++	if ((index == 3) && (c->x86_vendor == X86_VENDOR_AMD)) {
++		for_each_online_cpu(i) {
++			if (!per_cpu(cpuid4_info, i))
++				continue;
++			this_leaf = CPUID4_INFO_IDX(i, index);
++			cpumask_copy(to_cpumask(this_leaf->shared_cpu_map),
++				     topology_core_cpumask(i));
++		}
++		return;
++	}
+ 	this_leaf = CPUID4_INFO_IDX(cpu, index);
+ 	num_threads_sharing = 1 + this_leaf->eax.split.num_threads_sharing;
+ 
 -- 
-No, Sir; there is nothing which has yet been contrived by man, by which
-so much happiness is produced as by a good tavern or inn - Doctor Samuel
-Johnson
+1.6.3.3
+
+
+
