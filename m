@@ -1,65 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932971AbZHGS6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932951AbZHGS6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932971AbZHGS6n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 14:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932956AbZHGS6k
+	id S932951AbZHGS6b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 14:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932853AbZHGS63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 14:58:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56760 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932912AbZHGS6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 14:58:37 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
-       msb@google.com, viro@zeniv.linux.org.uk, hannes@cmpxchg.org
-Subject: [PATCH 4/4] vfs: remove redundant checks in do_sendfile
-Date: Fri,  7 Aug 2009 14:57:41 -0400
-Message-Id: <1249671461-9071-5-git-send-email-jlayton@redhat.com>
-In-Reply-To: <1249671461-9071-1-git-send-email-jlayton@redhat.com>
-References: <1249671461-9071-1-git-send-email-jlayton@redhat.com>
+	Fri, 7 Aug 2009 14:58:29 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:13232 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755089AbZHGS6E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 14:58:04 -0400
+From: "Paul Congdon \(UC Davis\)" <ptcongdon@ucdavis.edu>
+To: "'Stephen Hemminger'" <shemminger@linux-foundation.org>,
+       "'Fischer, Anna'" <anna.fischer@hp.com>
+Cc: <bridge@lists.linux-foundation.org>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>, <virtualization@lists.linux-foundation.org>,
+       <evb@yahoogroups.com>, <davem@davemloft.net>, <kaber@trash.net>,
+       <adobriyan@gmail.com>, "'Arnd Bergmann'" <arnd@arndb.de>
+References: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net> <20090806210002.75beb7c6@nehalam>
+In-Reply-To: <20090806210002.75beb7c6@nehalam>
+Subject: RE: [PATCH][RFC] net/bridge: add basic VEPA support
+Date: Fri, 7 Aug 2009 11:58:00 -0700
+Message-ID: <004e01ca1790$fec36c30$fc4a4490$@edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+thread-index: AcoXE6cs1H0VRvvIS+KijAKFQw9qpAAfUd/w
+Content-Language: en-us
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As Johannes Weiner pointed out, a couple of the range checks in do_sendfile
-are redundant and are already checked in rw_verify_area.
+> 
+> After reading more about this, I am not convinced this should be part 
+> of the bridge code. The bridge code really consists of two parts:
+> forwarding table and optional spanning tree. Well the VEPA code short 
+> circuits both of these; it can't imagine it working with STP turned 
+> on. The only part of bridge code that really gets used by this are the 
+> receive packet hooks and the crufty old API.
+> 
+> So instead of adding more stuff to existing bridge code, why not have 
+> a new driver for just VEPA. You could do it with a simple version of 
+> macvlan type driver.
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/read_write.c |   11 -----------
- 1 files changed, 0 insertions(+), 11 deletions(-)
+Stephen,
 
-diff --git a/fs/read_write.c b/fs/read_write.c
-index 6c8c55d..9c3d98b 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -792,7 +792,6 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
- {
- 	struct file * in_file, * out_file;
- 	struct inode * in_inode, * out_inode;
--	loff_t pos;
- 	ssize_t retval;
- 	int fput_needed_in, fput_needed_out, fl;
+Thanks for your comments and questions.  We do believe the bridge code is
+the right place for this, so I'd like to embellish on that a bit more to
+help persuade you.  Sorry for the long winded response, but here are some
+thoughts:
+
+- First and foremost, VEPA is going to be a standard addition to the IEEE
+802.1Q specification.  The working group agreed at the last meeting to
+pursue a project to augment the bridge standard with hairpin mode (aka
+reflective relay) and a remote filtering service (VEPA).  See for details:
+http://www.ieee802.org/1/files/public/docs2009/new-evb-congdon-evbPar5C-0709
+-v01.pdf
+
+- The VEPA functionality was really a pretty small change to the code with
+low risk and wouldn't seem to warrant an entire new driver or module.
+
+- There are good use cases where VMs will want to have some of their
+interfaces attached to bridges and others to bridges operating in VEPA mode.
+In other words, we see simultaneous operation of the bridge code and VEPA
+occurring, so having as much of the underlying code as common as possible
+would seem to be beneficial. 
+
+- By augmenting the bridge code with VEPA there is a great amount of re-use
+achieved.  It works wherever the bridge code works and doesn't need anything
+special to support KVM, XEN, and all the hooks, etc...
+
+- The hardware vendors building SR-IOV NICs with embedded switches will be
+adding VEPA mode, so by keeping the bridge module in sync would be
+consistent with this trend and direction.  It will be possible to extend the
+hardware implementations by cascading a software bridge and/or VEPA, so
+being in sync with the architecture would make this more consistent.
  
-@@ -838,17 +837,7 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
- 	if (!max)
- 		max = min(in_inode->i_sb->s_maxbytes, out_inode->i_sb->s_maxbytes);
- 
--	pos = *ppos;
- 	retval = -EINVAL;
--	if (unlikely(pos < 0))
--		goto fput_out;
--	if (unlikely(pos + count > max)) {
--		retval = -EOVERFLOW;
--		if (pos >= max)
--			goto fput_out;
--		count = max - pos;
--	}
--
- 	fl = 0;
- #if 0
- 	/*
--- 
-1.6.0.6
+- The forwarding table is still needed and used on inbound traffic to
+deliver frames to the correct virtual interfaces and to filter any reflected
+frames.  A new driver would have to basically implement an equivalent
+forwarding table anyway.  As I understand the current macvlan type driver,
+it wouldn't filter multicast frames properly without such a table.
+
+- It seems the hairpin mode would be needed in the bridge module whether
+VEPA was added to the bridge module or a new driver.  Having the associated
+changes together in the same code could aid in understanding and deployment.
+
+As I understand the macvlan code, it currently doesn't allow two VMs on the
+same machine to communicate with one another.  I could imagine a hairpin
+mode on the adjacent bridge making this possible, but the macvlan code would
+need to be updated to filter reflected frames so a source did not receive
+his own packet.  I could imagine this being done as well, but to also
+support selective multicast usage, something similar to the bridge
+forwarding table would be needed.  I think putting VEPA into a new driver
+would cause you to implement many things the bridge code already supports.
+Given that we expect the bridge standard to ultimately include VEPA, and the
+new functions are basic forwarding operations, it seems to make most sense
+to keep this consistent with the bridge module.
+
+Paul
 
