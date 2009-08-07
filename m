@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754308AbZHGQuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbZHGQu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754308AbZHGQuV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 12:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbZHGQuR
+	id S1754386AbZHGQu3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 12:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbZHGQu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 12:50:17 -0400
-Received: from ru.mvista.com ([213.79.90.228]:1777 "EHLO
+	Fri, 7 Aug 2009 12:50:26 -0400
+Received: from ru.mvista.com ([213.79.90.228]:1785 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754248AbZHGQuP (ORCPT
+	by vger.kernel.org with ESMTP id S1754331AbZHGQuX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 12:50:15 -0400
-Date: Fri, 7 Aug 2009 20:50:15 +0400
+	Fri, 7 Aug 2009 12:50:23 -0400
+Date: Fri, 7 Aug 2009 20:50:24 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Pierre Ossman <pierre@ossman.eu>, Kumar Gala <galak@kernel.crashing.org>,
        Ben Dooks <ben@fluff.org>, Sascha Hauer <s.hauer@pengutronix.de>,
        linux-kernel@vger.kernel.org, sdhci-devel@lists.ossman.eu,
        linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/4] sdhci-of: Fix high-speed cards recognition
-Message-ID: <20090807165015.GB524@oksana.dev.rtsoft.ru>
+Subject: [PATCH 4/4] sdhci-of: Cleanup eSDHC's set_clock() a little bit
+Message-ID: <20090807165024.GC524@oksana.dev.rtsoft.ru>
 References: <20090807163940.GA29192@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -29,75 +29,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-eSDHC fails to recognize some SDHS cards, throwing timeout errors:
+- Get rid of incomprehensible "if { for { if } }" construction for the
+  exponential divisor calculation. The first if statement isn't correct
+  at all, since it should check for "host->max_clk / pre_div / 16 >
+  clock". The error doesn't cause any bugs because the check in the for
+  loop does the right thing, and so the outer check becomes useless;
 
-  mmc0: error -110 whilst initialising SD card
+- For the linear divisor do the same: a single while statement is more
+  readable than for + if construction;
 
-That's because we calculate timeout value in a wrong way: on eSDHC
-hosts the timeout clock is derivied from the SD clock, which is set
-dynamically.
-
-This patch fixes the issue by introducing and implementing
-DYNAMIC_TIMEOUT_CLOCK quirk for sdhci-of driver.
+- Add dev_dbg() that prints desired and actual clock frequency.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci-of.c |    5 ++---
- drivers/mmc/host/sdhci.c    |    4 ++++
- drivers/mmc/host/sdhci.h    |    2 ++
- 3 files changed, 8 insertions(+), 3 deletions(-)
+ drivers/mmc/host/sdhci-of.c |   19 ++++++++-----------
+ 1 files changed, 8 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-index 8440fd9..b6ff2e8 100644
+index b6ff2e8..bbdd468 100644
 --- a/drivers/mmc/host/sdhci-of.c
 +++ b/drivers/mmc/host/sdhci-of.c
-@@ -174,9 +174,7 @@ static unsigned int esdhc_get_min_clock(struct sdhci_host *host)
+@@ -120,8 +120,8 @@ static void esdhc_writeb(struct sdhci_host *host, u8 val, int reg)
  
- static unsigned int esdhc_get_timeout_clock(struct sdhci_host *host)
+ static void esdhc_set_clock(struct sdhci_host *host, unsigned int clock)
  {
--	struct sdhci_of_host *of_host = sdhci_priv(host);
--
--	return of_host->clock / 1000;
-+	return host->clock / 1000;
- }
+-	int div;
+ 	int pre_div = 2;
++	int div = 1;
  
- static struct sdhci_of_data sdhci_esdhc = {
-@@ -185,6 +183,7 @@ static struct sdhci_of_data sdhci_esdhc = {
- 		  SDHCI_QUIRK_INVERTED_WRITE_PROTECT |
- 		  SDHCI_QUIRK_NO_BUSY_IRQ |
- 		  SDHCI_QUIRK_NONSTANDARD_CLOCK |
-+		  SDHCI_QUIRK_DYNAMIC_TIMEOUT_CLOCK |
- 		  SDHCI_QUIRK_PIO_NEEDS_DELAY |
- 		  SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET |
- 		  SDHCI_QUIRK_NO_CARD_NO_RESET,
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index fc96f8c..0f273fe 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -591,6 +591,10 @@ static u8 sdhci_calc_timeout(struct sdhci_host *host, struct mmc_data *data)
- 	target_timeout = data->timeout_ns / 1000 +
- 		data->timeout_clks / host->clock;
+ 	clrbits32(host->ioaddr + ESDHC_SYSTEM_CONTROL, ESDHC_CLOCK_IPGEN |
+ 		  ESDHC_CLOCK_HCKEN | ESDHC_CLOCK_PEREN | ESDHC_CLOCK_MASK);
+@@ -129,17 +129,14 @@ static void esdhc_set_clock(struct sdhci_host *host, unsigned int clock)
+ 	if (clock == 0)
+ 		goto out;
  
-+	if (host->quirks & SDHCI_QUIRK_DYNAMIC_TIMEOUT_CLOCK &&
-+			host->ops->get_timeout_clock)
-+		host->timeout_clk = host->ops->get_timeout_clock(host);
+-	if (host->max_clk / 16 > clock) {
+-		for (; pre_div < 256; pre_div *= 2) {
+-			if (host->max_clk / pre_div < clock * 16)
+-				break;
+-		}
+-	}
++	while (host->max_clk / pre_div / 16 > clock && pre_div < 256)
++		pre_div *= 2;
+ 
+-	for (div = 1; div <= 16; div++) {
+-		if (host->max_clk / (div * pre_div) <= clock)
+-			break;
+-	}
++	while (host->max_clk / pre_div / div > clock && div < 16)
++		div++;
 +
- 	/*
- 	 * Figure out needed cycles.
- 	 * We do this in steps in order to fit inside a 32 bit int.
-diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index c77e9ff..44b1dcc 100644
---- a/drivers/mmc/host/sdhci.h
-+++ b/drivers/mmc/host/sdhci.h
-@@ -232,6 +232,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_FORCE_1_BIT_DATA			(1<<22)
- /* Controller needs 10ms delay between applying power and clock */
- #define SDHCI_QUIRK_DELAY_AFTER_POWER			(1<<23)
-+/* Controller has dynamic timeout clock management */
-+#define SDHCI_QUIRK_DYNAMIC_TIMEOUT_CLOCK		(1<<24)
++	dev_dbg(mmc_dev(host->mmc), "desired SD clock: %d, actual: %d\n",
++		clock, host->max_clk / pre_div / div);
  
- 	int			irq;		/* Device IRQ */
- 	void __iomem *		ioaddr;		/* Mapped address */
+ 	pre_div >>= 1;
+ 	div--;
 -- 
 1.6.3.3
-
