@@ -1,80 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbZHGIS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbZHGISx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbZHGIS3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 04:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757080AbZHGIS2
+	id S1757237AbZHGISx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 04:18:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757207AbZHGISw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 04:18:28 -0400
-Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:28221 "EHLO
-	mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757033AbZHGIS1 (ORCPT
+	Fri, 7 Aug 2009 04:18:52 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:43191 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757070AbZHGISu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 04:18:27 -0400
-X-IronPort-AV: E=Sophos;i="4.43,340,1246831200"; 
-   d="scan'208";a="30885698"
-Message-ID: <4A7BE35F.4060604@inria.fr>
-Date: Fri, 07 Aug 2009 10:18:39 +0200
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
+	Fri, 7 Aug 2009 04:18:50 -0400
+Date: Fri, 7 Aug 2009 10:18:47 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf tools: Fix reading of perf.data file header
-References: <20090629192913.GA29295@elte.hu> <4A7B0C02.7060704@inria.fr> <1249580428.4975.14.camel@laptop> <4A7B175B.8030000@inria.fr> <1249585061.4975.17.camel@laptop> <4A7B28EA.20903@inria.fr> <20090806195924.GA22411@elte.hu> <4A7B68C3.7040706@inria.fr> <20090807063226.GA29532@elte.hu> <4A7BD9EC.8000801@inria.fr> <20090807074525.GA20292@elte.hu>
-In-Reply-To: <20090807074525.GA20292@elte.hu>
-X-Enigmail-Version: 0.95.0
+Subject: Re: [GIT pull] timers fixes for 2.6.31
+Message-ID: <20090807101847.2ee08c76@skybase>
+In-Reply-To: <1f1b08da0908061536o57cebeb6r2f522cb3c5419e1@mail.gmail.com>
+References: <alpine.LFD.2.00.0907302158180.2936@localhost.localdomain>
+	<alpine.LFD.2.01.0907301648540.3161@localhost.localdomain>
+	<20090731123711.GA5421@elte.hu>
+	<1f1b08da0908061536o57cebeb6r2f522cb3c5419e1@mail.gmail.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> I completely forgot about it. And since we now have --scale enabled 
-> by default (and it doesnt make much sense to disable it i guess), it 
-> would not be a big issue to rename that -c/--scale to free up that 
-> flag for -S/--stat?
->
-> 	Ingo
->   
+On Thu, 6 Aug 2009 15:36:36 -0700
+john stultz <johnstul@us.ibm.com> wrote:
 
+> On Fri, Jul 31, 2009 at 5:37 AM, Ingo Molnar<mingo@elte.hu> wrote:
+> > [ Markus, John: the fix looks right for .31 but i think there's two
+> >  small structural problems with this code, which might have
+> >  contributed to the bug to happen to begin with:
+> >
+> >  Firstly, ->mult_orig is a slight misnomer - if it was named
+> >  properly we wouldnt even need the comments to explain how to use
+> >  and update it. It's the unadjusted multiplicator while _orig
+> >  patterns in the kernel generally suggest some sort of save/restore
+> >  pattern (which this is not).
+> >
+> >  I'd suggest to rename it to ->mult_unadjusted, ->mult_raw or
+> >  ->mult_static instead. This field has not gotten into many
+> >  clocksource drivers yet so it's easy to do. For .32 obviously.
+> >
+> >  Secondly, the broader design question is: why are clocksource
+> >  drivers mucking around with NTP details? Whether NTP is running
+> >  should be a transparent detail to drivers and if such details are
+> >  visible in low level driver (which they are in
+> >  arch/arm/plat-omap/common.c et al) that's sign of uncleanliness.
+> >  Mind improving that? (for .32 too)
+> 
+> Well, the clocksources aren't really mucking with NTP details, but NTP
+> mucks with the clocksource.  And so this was a way to try to preserve
+> the original mult value,  and I'll admit was a bit stapled on.  This
+> mostly comes from how the clocksource structure has swelled over time
+> to include quite a bit of timekeeping specific information.
+> 
+> Splitting this up has been on my list for awhile, but I've never
+> gotten to it. However, Martin Schwidefsky has been doing a great job
+> with his latest patches cleaning up some of uglier parts of the
+> timekeeping/clocksource interactions. There is still lots of  changes
+> I'd like to see, but they will take time as we still haven't gotten
+> all the arches over to GENERIC_TIME, so some cruft has to stick
+> around.   But Martin's patches are a great big step towards it and
+> hopefully his patches will be ready for .32.
 
-Here you are. But how do you switch "scale" off now that it's disabled
-by default?
-I tried --scale=0, --no-scale and so on without apparently succeeding.
+The question what we do with the mult_orig on clocksource
+enable/disable is one of the remaining open issues with my patch set.
+With the NTP adjusted multiplicator in the struct timekeeper we don't
+have a convenient place to keep the NTP adjusted multiplier while a
+clocksource is disabled. My initial thought was: why do we store the
+old multiplier at all? Its not that the clocksource changes all the
+time and NTP will catch up again if it is changed. Just start from
+scratch with the initial multiplicator.
 
-Brice
+-- 
+blue skies,
+   Martin.
 
-[PATCH] perf stat: change -S for --scale into -c
-
-Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
-
-Index: linux-rc/tools/perf/Documentation/perf-stat.txt
-===================================================================
---- linux-rc.orig/tools/perf/Documentation/perf-stat.txt	2009-08-07 10:09:40.000000000 +0200
-+++ linux-rc/tools/perf/Documentation/perf-stat.txt	2009-08-07 10:09:46.000000000 +0200
-@@ -40,7 +40,7 @@
- -a::
-         system-wide collection
- 
---S::
-+-c::
-         scale counter values
- 
- EXAMPLES
-Index: linux-rc/tools/perf/builtin-stat.c
-===================================================================
---- linux-rc.orig/tools/perf/builtin-stat.c	2009-08-07 09:46:49.000000000 +0200
-+++ linux-rc/tools/perf/builtin-stat.c	2009-08-07 10:07:44.000000000 +0200
-@@ -496,7 +496,7 @@
- 		    "stat events on existing pid"),
- 	OPT_BOOLEAN('a', "all-cpus", &system_wide,
- 		    "system-wide collection from all CPUs"),
--	OPT_BOOLEAN('S', "scale", &scale,
-+	OPT_BOOLEAN('c', "scale", &scale,
- 		    "scale/normalize counters"),
- 	OPT_BOOLEAN('v', "verbose", &verbose,
- 		    "be more verbose (show counter open errors, etc)"),
-
+"Reality continues to ruin my life." - Calvin.
 
