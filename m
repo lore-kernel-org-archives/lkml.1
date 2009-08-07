@@ -1,92 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbZHGNzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757257AbZHGN7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757082AbZHGNzf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 09:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbZHGNze
+	id S1757257AbZHGN7l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 09:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755308AbZHGN7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 09:55:34 -0400
-Received: from mail.free-electrons.com ([88.191.76.200]:50170 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753573AbZHGNze (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 09:55:34 -0400
-Date: Fri, 7 Aug 2009 15:55:24 +0200
-From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-To: Matthieu CASTET <matthieu.castet@parrot.com>
-Cc: Alain Knaff <alain@knaff.lu>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       "sam@ravnborg.org" <sam@ravnborg.org>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/6] Add support for LZO-compressed kernels for ARM
-Message-ID: <20090807135524.GF4455@laptop>
-References: <1249311501-23102-2-git-send-email-albin.tonnerre@free-electrons.com>
- <1249311501-23102-3-git-send-email-albin.tonnerre@free-electrons.com>
- <1249311501-23102-4-git-send-email-albin.tonnerre@free-electrons.com>
- <20090806224055.GH31579@n2100.arm.linux.org.uk>
- <20090807092423.GA4455@laptop>
- <4A7BF5B8.4030907@knaff.lu>
- <20090807102117.GB4455@laptop>
- <4A7C14EB.1060701@parrot.com>
- <20090807130130.GE4455@laptop>
- <4A7C2BA4.7030408@parrot.com>
+	Fri, 7 Aug 2009 09:59:41 -0400
+Received: from pan.madism.org ([88.191.52.104]:44904 "EHLO hermes.madism.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753553AbZHGN7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 09:59:40 -0400
+Date: Fri, 7 Aug 2009 15:59:39 +0200
+From: Pierre Habouzit <pierre.habouzit@intersec.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Pierre Habouzit <pierre.habouzit@intersec.com>,
+       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: perf-record fix and UI improvement
+Message-ID: <20090807135938.GB4844@laphroaig.corp>
+References: <1249647361-11582-1-git-send-email-pierre.habouzit@intersec.com>
+ <1249650066.32113.706.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A7C2BA4.7030408@parrot.com>
+In-Reply-To: <1249650066.32113.706.camel@twins>
+X-Face: $(^e[V4D-[`f2EmMGz@fgWK!e.B~2g.{08lKPU(nc1J~z\4B>*JEVq:E]7G-\6$Ycr4<;Z!|VY6Grt]+RsS$IMV)f>2)M="tY:ZPcU;&%it2D81X^kNya0=L]"vZmLP+UmKhgq+u*\.dJ8G!N&=EvlD
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 03:27:00PM +0200, Matthieu CASTET wrote :
-> Albin Tonnerre a écrit :
-> > On Fri, Aug 07, 2009 at 01:50:03PM +0200, Matthieu CASTET wrote :
-> >> Albin Tonnerre a écrit :
-> >>> On Fri, Aug 07, 2009 at 11:36:56AM +0200, Alain Knaff wrote :
-> >>>> On 08/07/09 11:24, Albin Tonnerre wrote:
+On Fri, Aug 07, 2009 at 03:01:06PM +0200, Peter Zijlstra wrote:
+> On Fri, 2009-08-07 at 14:15 +0200, Pierre Habouzit wrote:
+> > I'm kind of new to the kernel world, so I hope I sent the patches to the
+> > proper persons.
+> 
+> You did well for a first time ;-)
 
-> >>>>> Regards,
-
-> >>>> Could it be that the patches that remove division (zutil.h and inflate.c)
-> >>>> have somehow not been applied?
-
-> >>> Indeed, they've not been applied. However, I'd rather try to understand why
-> >>> exactly this is an issue when compiling with -Os and not -O2 instead of working
-> >>> around it by removing the divisions.
-
-> >> Look at the generated code.
-
-> >> Arm doesn't have division instruction.
-> >> May be at -Os gcc emit a call to the software division, but at -O2 it
-> >> manage to optimise the division (transform it in shift, inline some
-> >> builtin, ...).
-
-> > Yes, I figured that out. What I don't get, though, is that it fails while the
-> > software division symbol (__aeabi_uidivmod here) does seem to be provided by
-> > libgcc.
-
-> AFAIK we don't link the kernel with libgcc.
-> That's why the kernel provide __aeabi_* in arch/arm/lib
-
-That's true for the actual kernel image, but not for the bootstrap code we use
-when compiling compressed kernels. arch/arm/boot/compressed/Makefile uses
-libgcc, unless I'm overlooking something here:
-
-  arm-unknown-linux-uclibcgnueabi-ld -EL    --defsym zreladdr=0x20008000
-  --defsym initrd_phys=0x20410000 --defsym params_phys=0x20000100 -p
-  --no-undefined -X
-  /home/albin/x-tools/arm-unknown-linux-uclibcgnueabi/lib/gcc/arm-unknown-linux-uclibcgnueabi/4.3.2/libgcc.a
-  -T arch/arm/boot/compressed/vmlinux.lds arch/arm/boot/compressed/head.o
-  arch/arm/boot/compressed/piggy.gzip.o arch/arm/boot/compressed/misc.o -o
-  arch/arm/boot/compressed/vmlinux
+Well, sending patches is not really a first time, I kind of wrote most
+of util/strbuf.[hc] and util/parse-options.[hc] ;)
 
 
-Regards,
+> The things you can improve for next time are:
+> 
+>  - placing these nice descriptions you made above into the patches
+> themselves, as esp the first patch has an empty changelog.
+
+Right.
+
+>  - get your email right :-)
+
+*blush*
+
+> Anyway, I think Ingo already fixed that up for you, so
+> 
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+Wonderful, thanks.
+
 -- 
-Albin Tonnerre, Free Electrons
-Kernel, drivers and embedded Linux development,
-consulting, training and support.
-http://free-electrons.com
+Intersec <http://www.intersec.com>
+Pierre Habouzit <pierre.habouzit@intersec.com>
+TÃ©l : +33 (0)1 5570 3346
+Mob : +33 (0)6 1636 8131
+Fax : +33 (0)1 5570 3332
+37 Rue Pierre Lhomme
+92400 Courbevoie
