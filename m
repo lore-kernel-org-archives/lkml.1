@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757128AbZHGHyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757140AbZHGH4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757128AbZHGHyf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 03:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757090AbZHGHyf
+	id S1757140AbZHGH4Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 03:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757092AbZHGH4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 03:54:35 -0400
-Received: from mail-yx0-f175.google.com ([209.85.210.175]:59678 "EHLO
-	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757086AbZHGHye (ORCPT
+	Fri, 7 Aug 2009 03:56:23 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:51666 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757071AbZHGH4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 03:54:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=RXGMvwStKw8LkTDpFSJzbGuS0l4iNrPkXVL3GmLerGYMvlajKl3J1OgJ73v2pyZto8
-         /SOioI0rUwhIYmxNae3foLGyugIPLBreDIY2tq6Rqlsj8OH9eTFv+w7REtT8qyM86Sm1
-         NDvDqS/iNTyZWhPK5ivMd2cC+tEYIxUT4k+Pg=
+	Fri, 7 Aug 2009 03:56:23 -0400
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: "David Xiao" <dxiao@broadcom.com>
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is get_user_pages() enough to prevent pages from being swapped out ?")
+Date: Fri, 7 Aug 2009 09:58:30 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30.3; KDE/4.2.4; x86_64; ; )
+Cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       "Ben Dooks" <ben-linux@fluff.org>,
+       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
+       "Robin Holt" <holt@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "v4l2_linux" <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806222543.GG31579@n2100.arm.linux.org.uk> <1249624766.32621.61.camel@david-laptop>
+In-Reply-To: <1249624766.32621.61.camel@david-laptop>
 MIME-Version: 1.0
-In-Reply-To: <20090807120857.5BE2.A69D9226@jp.fujitsu.com>
-References: <4A7AC201.4010202@redhat.com> <4A7AD6EB.9090208@redhat.com>
-	 <20090807120857.5BE2.A69D9226@jp.fujitsu.com>
-Date: Fri, 7 Aug 2009 13:24:34 +0530
-X-Google-Sender-Auth: 2460932469c9a29c
-Message-ID: <661de9470908070054l2fa99ac6w6cac2be63cd5d91f@mail.gmail.com>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>, Avi Kivity <avi@redhat.com>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908070958.31322.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 7, 2009 at 8:41 AM, KOSAKI
-Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
-> (cc to memcg folks)
+On Friday 07 August 2009 07:59:26 David Xiao wrote:
+> On Thu, 2009-08-06 at 15:25 -0700, Russell King - ARM Linux wrote:
+> > As far as userspace DMA coherency, the only way you could do it with
+> > current kernel APIs is by using get_user_pages(), creating a scatterlist
+> > from those, and then passing it to dma_map_sg().  While the device has
+> > ownership of the SG, userspace must _not_ touch the buffer until after
+> > DMA has completed.
+> >
+> > However, that won't work with ARMv7's speculative prefetching.  I'm
+> > afraid with such things, DMA direct into userspace mappings becomes a
+> > _lot_ harder, and lets face it, lots of Linux drivers just aren't going
+> > to bother supporting this - we can't currently get agreement to have an
+> > API to map DMA coherent pages into userspace!
 >
->> Avi Kivity wrote:
->> > On 08/06/2009 01:59 PM, Wu Fengguang wrote:
->>
->> >> As a refinement, the static variable 'recent_all_referenced' could be
->> >> moved to struct zone or made a per-cpu variable.
->> >
->> > Definitely this should be made part of the zone structure, consider the
->> > original report where the problem occurs in a 128MB zone (where we can
->> > expect many pages to have their referenced bit set).
->>
->> The problem did not occur in a 128MB zone, but in a 128MB cgroup.
->>
->> Putting it in the zone means that the cgroup, which may have
->> different behaviour from the rest of the zone, due to excessive
->> memory pressure inside the cgroup, does not get the right
->> statistics.
->
-> maybe, I heven't catch your point.
->
-> Current memcgroup logic also use recent_scan/recent_rotate statistics.
-> Isn't it enought?
+> The V7 speculative prefetching will then probably apply to DMA coherency
+> issue in general, both kernel and user space DMAs. Could this be
+> addressed by inside the dma_unmap_sg/single() calling dma_cache_maint()
+> when the direction is DMA_FROM_DEVICE/DMA_BIDIRECTIONAL, to basically
+> invalidate the related cache lines in case any filled by prefetching?
+> Assuming dma_unmap_sg/single() is called after each DMA operation is
+> completed.
 
-I don't understand the context, I'll look at the problem when I am
-back (I am away from work for the next few days).
+Sorry about this, but I'm not sure to understand the speculative prefetching 
+cache issue completely.
 
-Balbir
+My understanding is that, even if userspace doesn't touch the DMA buffer while 
+DMA is in progress, it could still read from locations close to the buffer, 
+resulting in a speculative prefetch of data in the buffer. Those data would 
+then end up in the D-cache, and would not be coherent with what the device 
+transfers.
+
+If that's correct, how do we avoid the problem in the general case of DMA to 
+kernel-allocated buffers ?
+
+Regards,
+
+Laurent Pinchart
+
