@@ -1,98 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbZHGL3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757573AbZHGLbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757570AbZHGL3n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 07:29:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757567AbZHGL3m
+	id S1757573AbZHGLbe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 07:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757559AbZHGLbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 07:29:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60304 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757566AbZHGL3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 07:29:39 -0400
-Date: Fri, 7 Aug 2009 13:29:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] x86, perf_counter, bts: add bts to perf_counter
-Message-ID: <20090807112931.GA31401@elte.hu>
-References: <20090804111412.GA20942@elte.hu> <20090804113555.GA28198@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77EC1BFEEE3@irsmsx504.ger.corp.intel.com> <1249633282.32113.613.camel@twins> <928CFBE8E7CB0040959E56B4EA41A77EC1BFEFEB@irsmsx504.ger.corp.intel.com> <20090807103127.GA23139@elte.hu> <20090807103610.GA23728@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77EC1BFF02D@irsmsx504.ger.corp.intel.com> <928CFBE8E7CB0040959E56B4EA41A77EC1BFF048@irsmsx504.ger.corp.intel.com> <20090807112634.GC30014@elte.hu>
+	Fri, 7 Aug 2009 07:31:33 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:58125 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752371AbZHGLbb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 07:31:31 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [PATCH][RFC] net/bridge: add basic VEPA support
+Date: Fri, 7 Aug 2009 13:29:44 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
+Cc: "Fischer, Anna" <anna.fischer@hp.com>,
+       "bridge@lists.linux-foundation.org" 
+	<bridge@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "evb@yahoogroups.com" <evb@yahoogroups.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "kaber@trash.net" <kaber@trash.net>,
+       "adobriyan@gmail.com" <adobriyan@gmail.com>,
+       "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>,
+       Or Gerlitz <ogerlitz@voltaire.com>
+References: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net> <20090806210002.75beb7c6@nehalam>
+In-Reply-To: <20090806210002.75beb7c6@nehalam>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090807112634.GC30014@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908071329.44437.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19Zda0kEeFPzMjbv0mtGtuQF1WAJeFHqokL4pW
+ OhB+fTMEhx8YZYfY4YF3NS5r9c6KoMW3nzYoMV3Et4nTghb/Fp
+ OSyDzp4KKUetY7W46TXrw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 07 August 2009, Stephen Hemminger wrote:
+> So instead of adding more stuff to existing bridge code, why not
+> have a new driver for just VEPA. You could
+> do it with a simple version of macvlan type driver.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+The current macvlan driver already does the downstream side of
+VEPA and only needs a connection to KVM et al, either using
+Or's qemu packet socket interface, or using the macvtap driver
+I posted.
 
-> btw., the number of samples seems to be varying too widely:
-> 
-> titan:~> for ((i=0;i<10;i++)); do perf record -f -e branches:u -c 1 true 2>/dev/null; perf report | head -1; done
-> # Samples: 28784
-> # Samples: 24063
-> # Samples: 22788
-> # Samples: 30449
-> # Samples: 15335
-> # Samples: 30557
-> # Samples: 24010
-> # Samples: 23866
-> # Samples: 24877
-> # Samples: 24330
-> 
-> compared to the branch-stat itself:
-> 
-> titan:~> perf stat -v --repeat 10 -e branches:u true
-> [ perf stat: executing run #1 ... ]
-> [ perf stat: executing run #2 ... ]
-> [ perf stat: executing run #3 ... ]
-> [ perf stat: executing run #4 ... ]
-> [ perf stat: executing run #5 ... ]
-> [ perf stat: executing run #6 ... ]
-> [ perf stat: executing run #7 ... ]
-> [ perf stat: executing run #8 ... ]
-> [ perf stat: executing run #9 ... ]
-> [ perf stat: executing run #10 ... ]
-> 
->  Performance counter stats for 'true' (10 runs):
-> 
->           23851  branches                   ( +-   0.000% )
-> 
->     0.000639653  seconds time elapsed   ( +-   2.474% )
-> 
-> do we lose records in the recording?
+Now Anna's patch also addresses the upstream side of VEPA, by
+making it possible for the bridge code to send frames back
+in the bridge code that they were received from, if that port
+is marked as a hairpin mode port.
 
-i doubt it's lost records. Even with SCHED_FIFO sampling and with a 
-huge, 512 MB mmap ring-buffer we get a BTS sample count variation in 
-the +- 10% range:
+Is your suggestion to do that part also with a macvlan type driver?
+I've thought about this before, and I guess that would mean
+basically the same as the macvlan driver, except hashing the
+source MAC address instead of the destination MAC address for
+inbound frames. That way you should be able to do something
+like:
 
-titan:/home/mingo> for ((i=0;i<10;i++)); do perf record -r 1 -m 
-131072 -f -e branches:u -c 1 true 2>/dev/null; perf report | head 
--1; done
-# Samples: 24860
-# Samples: 24177
-# Samples: 26165
-# Samples: 25682
-# Samples: 29175
-# Samples: 23136
-# Samples: 27102
-# Samples: 29888
-# Samples: 25524
-# Samples: 24266
+            Host A                             Host B
 
-(and these are all just user-mode executions)
+      /- nalvcam0 -\                   /- macvlan0 - 192.168.1.1
+br0 -|              |- ethA === ethB -|
+      \- nalvcam1 -/                   \- macvlan1 - 192.168.1.2
+  
+Now assuming that macvlan0 and macvlan1 are in different
+network namespaces or belong to different KVM guests, these
+guests would be able to communicate with each other through
+the bridge on host A, which can set the policy (using ebtables)
+for this communication and get interface statistics on its
+nalvcam interfaces. Also, instead of having the br0, Host A could
+assign an IP addresses to the two nalvcam interfaces that host
+B has, and use IP forwarding between the guests of host B.
 
-	Ingo
+	Arnd <><
