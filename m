@@ -1,52 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755668AbZHGWod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbZHGWr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755668AbZHGWod (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 18:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbZHGWoc
+	id S1753293AbZHGWr4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 18:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbZHGWrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 18:44:32 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:50667 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753394AbZHGWob (ORCPT
+	Fri, 7 Aug 2009 18:47:55 -0400
+Received: from ppp121-45-198-187.lns10.adl2.internode.on.net ([121.45.198.187]:50953
+	"EHLO audi.shelbyville.oz" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751539AbZHGWrz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 18:44:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=QWGK7FdYQFObCnUc0ogqQQwX6e0PietmhpHwjcf2az1ViUnGOcqmsMFmxZCJSoETOG
-         f+7lUneIPpJ+wrBmp0uJt92gbtTyAMba/HGGrjz0i0fx+/jXfFhH3KMz+RYLW8t49vDS
-         COMBsOobevrma+sJtNIAbHLuZCXTNjJSjYKQk=
-Message-ID: <4A7CAF28.8020908@gmail.com>
-Date: Sat, 08 Aug 2009 00:48:08 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Fri, 7 Aug 2009 18:47:55 -0400
+X-Greylist: delayed 539 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Aug 2009 18:47:54 EDT
+Date: Sat, 8 Aug 2009 08:08:51 +0930
+From: Ron <ron@debian.org>
+To: Nicolas Pitre <nico@cam.org>
+Cc: Dhaval Vasa <dhaval.vasa@einfochips.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Rabeeh Khoury <rabeeh@marvell.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: [PATCH] [ARM] Kirkwood: Initialise SATA for OpenRD-Base
+Message-ID: <20090807223851.GR11898@audi.shelbyville.oz>
+References: <1249567753-724-1-git-send-email-dhaval.vasa@einfochips.com>
+ <alpine.LFD.2.00.0908071149460.16073@xanadu.home>
 MIME-Version: 1.0
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fat: Read buffer overflow
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0908071149460.16073@xanadu.home>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If len is less or equal to 0, this results in a read of s[-1].
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Signed-off-by: Ron Lee <ron@debian.org>
 ---
-diff --git a/fs/fat/namei_vfat.c b/fs/fat/namei_vfat.c
-index 6f27853..114ff6d 100644
---- a/fs/fat/namei_vfat.c
-+++ b/fs/fat/namei_vfat.c
-@@ -202,6 +202,9 @@ static inline int vfat_is_used_badchars(const wchar_t *s, int len)
- {
- 	int i;
+
+Please include this patch in with that set also.  I can confirm this
+enables me to boot an OpenRD-Base board from SATA with 2.6.31-rc5.
+
+ arch/arm/mach-kirkwood/openrd_base-setup.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-kirkwood/openrd_base-setup.c b/arch/arm/mach-kirkwood/openrd_base-setup.c
+index 6e290fd..d8c846d 100644
+--- a/arch/arm/mach-kirkwood/openrd_base-setup.c
++++ b/arch/arm/mach-kirkwood/openrd_base-setup.c
+@@ -12,6 +12,7 @@
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
+ #include <linux/mtd/partitions.h>
++#include <linux/ata_platform.h>
+ #include <linux/mv643xx_eth.h>
+ #include <linux/gpio.h>
+ #include <linux/leds.h>
+@@ -42,6 +43,10 @@ static struct mv643xx_eth_platform_data openrd_base_ge00_data = {
+ 	.phy_addr	= MV643XX_ETH_PHY_ADDR(8),
+ };
  
-+	if (len <= 0)
-+		return -EINVAL;
++static struct mv_sata_platform_data openrd_base_sata_data = {
++	.n_ports	= 2,
++};
 +
- 	for (i = 0; i < len; i++)
- 		if (vfat_bad_char(s[i]))
- 			return -EINVAL;
+ static struct mvsdio_platform_data openrd_base_mvsdio_data = {
+ 	.gpio_card_detect = MPP29_GPIO,	/* MPP29 used as SD card detect */
+ };
+@@ -64,6 +69,7 @@ static void __init openrd_base_init(void)
+ 	kirkwood_ehci_init();
+ 
+ 	kirkwood_ge00_init(&openrd_base_ge00_data);
++	kirkwood_sata_init(&openrd_base_sata_data);
+ 	kirkwood_sdio_init(&openrd_base_mvsdio_data);
+ }
+ 
+-- 
+1.6.3.3
+
