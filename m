@@ -1,127 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbZHGFoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbZHGFyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752907AbZHGFoi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 01:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbZHGFoh
+	id S1753176AbZHGFyR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 01:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZHGFyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 01:44:37 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:21774 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750810AbZHGFog (ORCPT
+	Fri, 7 Aug 2009 01:54:16 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:35392 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750810AbZHGFyQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 01:44:36 -0400
+	Fri, 7 Aug 2009 01:54:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=RTH2DJAaptZb8BpL+ZkHboSZgHQSM1xOh+nonDVf2Ha5cY8XBdcEl03zRuzJbygpRZ
-         kLMC4s5BKWfNcR5Oin6PGGSURFn+PJD6A3QmYuGijXKRT7rTCcMKJUrvBDhDhGWLyqIr
-         4Wd7em7iV1Aqc7Me8UJFggZLG25tRvi9K3BeI=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=JwAVHAOij9jnon1EbOC5RM5Epm6bC9+tKCZiYkvyTY02feg9QJGjLdNIXtpQyqHGk9
+         IA7TmImfaGB369zZWwAa/vkDTuZQXV4pwGgRVesM/zHl4uB/8GvCDACnlQtqGoZebTdO
+         SU1HB/I6A8E/XlBJYjKkpQ1DnAZrn7iDZUFxQ=
+Date: Fri, 7 Aug 2009 07:54:13 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mark Gross <mgross@linux.intel.com>
+Subject: Re: [PATCH 1/2] pm_qos: remove BKL
+Message-ID: <20090807055412.GB9182@nowhere>
+References: <20090806135841.46682114@bike.lwn.net> <20090806135953.7706e57d@bike.lwn.net>
 MIME-Version: 1.0
-Date: Fri, 7 Aug 2009 13:36:30 +0800
-Message-ID: <86bb1aef0908062236w1912a909yfa892d40f1776e08@mail.gmail.com>
-Subject: [PATCH] amd64_edac: Rewrite unganged mode code of 
-	f10_early_channel_count
-From: wan wei <onewayforever@gmail.com>
-To: Borislav Petkov <borislav.petkov@amd.com>, dougthompson@xmission.com
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090806135953.7706e57d@bike.lwn.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-     I rechecked the f10_early_channel_count function, and found more
-bugs in unganged mode. This patch will fix  bugs under following
-conditions,
-    a. only one DIMM in each channelof the node,
-    b. two DIMMs are populated in the same channel of the node,
-    c. there is no DIMM in a node(other than node 0),
-    a and b  mean both dbam should be checked in any condition,  and c
-means even channels==0 is ok.
+On Thu, Aug 06, 2009 at 01:59:53PM -0600, Jonathan Corbet wrote:
+> pm_qos_power_open got its lock_kernel() calls from the open() pushdown.  A
+> look at the code shows that the only global resources accessed are
+> pm_qos_array and "name".  pm_qos_array doesn't change (things pointed to
+> therein do change, but they are atomics and/or are protected by
+> pm_qos_lock).  Accesses to "name" are totally unprotected with or without
+> the BKL; that will be fixed shortly.  The BKL is not helpful here; take it
+> out.
+> 
+> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+> ---
+>  kernel/pm_qos_params.c |    8 +-------
+>  1 files changed, 1 insertions(+), 7 deletions(-)
+> 
+> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> index dfdec52..d96b83e 100644
+> --- a/kernel/pm_qos_params.c
+> +++ b/kernel/pm_qos_params.c
+> @@ -29,7 +29,6 @@
+>  
+>  #include <linux/pm_qos_params.h>
+>  #include <linux/sched.h>
+> -#include <linux/smp_lock.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/slab.h>
+>  #include <linux/time.h>
+> @@ -352,20 +351,15 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
+>  	int ret;
+>  	long pm_qos_class;
+>  
+> -	lock_kernel();
+>  	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
 
-the patch has been tested and works well in  this  4 ways machine:
-   node 0:  2 DIMMS on each channel
-   node11: no DIMMS
-   node2:  2 DIMM on the chanel 0
-   node3:  one DIMM on each channel
 
-thanks :-)
 
-Signed-off-by: Wan Wei<wanwei@mail.dawning.com.cn>
+Yeah, AFAICS, the pm_qos_array reading doesn't need to be protected.
+It is statically defined and the array itself is never changed. And
+as you said, its content are atomically changed.
 
----
- drivers/edac/amd64_edac.c |   46 ++++++++++++++------------------------------
- 1 files changed, 15 insertions(+), 31 deletions(-)
+And the field we are reading here is pm_qos_power_miscdev.minor.
+It doesn't seem to be changed anywhere.
 
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index e2a10bc..7a328fa 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -1200,6 +1200,7 @@ static int f10_early_channel_count(struct amd64_pvt *pvt)
- {
- 	int err = 0, channels = 0;
- 	u32 dbam;
-+	int i;
+Well these field are changed but only on init time, through
+register_pm_qos_misc(). But the I guess it's not racy against this
+open call.
 
- 	err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCLR_0, &pvt->dclr0);
- 	if (err)
-@@ -1236,40 +1237,23 @@ static int f10_early_channel_count(struct
-amd64_pvt *pvt)
- 	if (err)
- 		goto err_reg;
 
--	if (DBAM_DIMM(0, dbam) > 0)
--		channels++;
--	if (DBAM_DIMM(1, dbam) > 0)
--		channels++;
--	if (DBAM_DIMM(2, dbam) > 0)
--		channels++;
--	if (DBAM_DIMM(3, dbam) > 0)
--		channels++;
--
--	/* If more than 2 DIMMs are present, then we have 2 channels */
--	if (channels > 2)
--		channels = 2;
--	else if (channels == 0) {
--		/* No DIMMs on DCT0, so look at DCT1 */
--		err = pci_read_config_dword(pvt->dram_f2_ctl, DBAM1, &dbam);
--		if (err)
--			goto err_reg;
--
--		if (DBAM_DIMM(0, dbam) > 0)
-+	for (i = 0; i < 4; i++) {
-+		if (DBAM_DIMM(i, dbam) > 0) {
- 			channels++;
--		if (DBAM_DIMM(1, dbam) > 0)
--			channels++;
--		if (DBAM_DIMM(2, dbam) > 0)
--			channels++;
--		if (DBAM_DIMM(3, dbam) > 0)
--			channels++;
--
--		if (channels > 2)
--			channels = 2;
-+			break;
-+		}
- 	}
 
--	/* If we found ALL 0 values, then assume just ONE DIMM-ONE Channel */
--	if (channels == 0)
--		channels = 1;
-+	err = pci_read_config_dword(pvt->dram_f2_ctl, DBAM1, &dbam);
-+	if (err)
-+		goto err_reg;
-+
-+	for (i = 0; i < 4; i++) {
-+		if (DBAM_DIMM(i, dbam) > 0) {
-+			channels++;
-+			break;
-+		}
-+	}
+>  	if (pm_qos_class >= 0) {
+>  		filp->private_data = (void *)pm_qos_class;
+>  		sprintf(name, "process_%d", current->pid);
+>  		ret = pm_qos_add_requirement(pm_qos_class, name,
+>  					PM_QOS_DEFAULT_VALUE);
 
- 	debugf0("MCT channel count: %d\n", channels);
 
--- 
-1.4.4.2
+The only thing that doesn't seem protected inside
+pm_qos_add_requirement is the read of pm_qos_array[pm_qos_class]->default_value
+
+But again, this field seems statically defined and never changed later.
+
+The rest of pm_qos_add_requirement() and update_target() is protected
+by pm_qos_lock.
+
+May be the last doubt could be the blocking_notifier_call_chain() call from
+update_target(). Not sure if these notifier handlers can expect to be called
+concurrently?
+
+Thanks,
+Frederic.
+
+
+
+> -		if (ret >= 0) {
+> -			unlock_kernel();
+> +		if (ret >= 0)
+>  			return 0;
+> -		}
+>  	}
+> -	unlock_kernel();
+> -
+>  	return -EPERM;
+>  }
+>  
+> -- 
+> 1.6.2.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
