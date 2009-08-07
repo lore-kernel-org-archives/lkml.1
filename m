@@ -1,113 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752748AbZHGPZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752902AbZHGP0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752748AbZHGPZy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 11:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZHGPZx
+	id S1752902AbZHGP0S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 11:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbZHGP0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 11:25:53 -0400
-Received: from bear.ext.ti.com ([192.94.94.41]:51092 "EHLO bear.ext.ti.com"
+	Fri, 7 Aug 2009 11:26:16 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:44983 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752277AbZHGPZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 11:25:51 -0400
-From: Anuj Aggarwal <anuj.aggarwal@ti.com>
-To: broonie@sirena.org.uk, lrg@slimlogic.co.uk, linux-omap@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Cc: Anuj Aggarwal <anuj.aggarwal@ti.com>
-Subject: [PATCH 2/8] Regulator: Adding header file for TPS65023
-Date: Fri,  7 Aug 2009 20:55:36 +0530
-Message-Id: <1249658736-10811-1-git-send-email-anuj.aggarwal@ti.com>
-X-Mailer: git-send-email 1.6.2.4
+	id S1752644AbZHGP0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 11:26:15 -0400
+Date: Fri, 7 Aug 2009 16:26:16 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Larry Woodman <lwoodman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [PATCH 2/6] tracing, page-allocator: Add trace events for
+	anti-fragmentation falling back to other migratetypes
+Message-ID: <20090807152616.GD24148@csn.ul.ie>
+References: <1249574827-18745-1-git-send-email-mel@csn.ul.ie> <1249574827-18745-3-git-send-email-mel@csn.ul.ie> <20090807080249.GA21821@elte.hu> <20090807105732.GB18134@csn.ul.ie> <20090807110203.GC24916@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090807110203.GC24916@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 07, 2009 at 01:02:03PM +0200, Ingo Molnar wrote:
+> 
+> * Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > On Fri, Aug 07, 2009 at 10:02:49AM +0200, Ingo Molnar wrote:
+> > > 
+> > > * Mel Gorman <mel@csn.ul.ie> wrote:
+> > > 
+> > > > +++ b/mm/page_alloc.c
+> > > > @@ -839,6 +839,12 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
+> > > >  							start_migratetype);
+> > > >  
+> > > >  			expand(zone, page, order, current_order, area, migratetype);
+> > > > +
+> > > > +			trace_mm_page_alloc_extfrag(page, order, current_order,
+> > > > +				start_migratetype, migratetype,
+> > > > +				current_order < pageblock_order,
+> > > > +				migratetype == start_migratetype);
+> > > 
+> > > This tracepoint too should be optimized some more:
+> > > 
+> > >  - pageblock_order can be passed down verbatim instead of the 
+> > >    'current_order < pageblock_order': it means one comparison less 
+> > >    in the fast-path, plus it gives more trace information as well.
+> > > 
+> > >  - migratetype == start_migratetype check is superfluous as both 
+> > >    values are already traced. This property can be added to the 
+> > >    TP_printk() post-processing stage instead, if the pretty-printing 
+> > >    is desired.
+> > > 
+> > 
+> > I think what you're saying that it's better to handle additional 
+> > information like this in TP_printk always. That's what I've 
+> > changed both of these into at least. I didn't even need to pass 
+> > down pageblock_order because it should be available in the 
+> > post-processing context from a header.
+> 
+> yeah. I formulated my suggestions in a trace-output-invariant way. 
+> If some information can be omitted altogether from the trace, the 
+> better.
+> 
 
-Signed-off-by: Anuj Aggarwal <anuj.aggarwal@ti.com>
----
- include/linux/regulator/tps65023.h |   74 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 74 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/regulator/tps65023.h
+Yeah, it's an obvious point once thought about for more than a second. When
+I wrote it this way, it was because I wanted to work out the higher-level
+workings near the code in case it's assumptions went out of date and the
+tracepoint was forgotten about, just as comments going out of date. However,
+it's not much protection, tracepoints are just something that will need to
+have to be remembered when changing existing assumptions.
 
-diff --git a/include/linux/regulator/tps65023.h b/include/linux/regulator/tps65023.h
-new file mode 100644
-index 0000000..6afba6c
---- /dev/null
-+++ b/include/linux/regulator/tps65023.h
-@@ -0,0 +1,74 @@
-+/*
-+ * tps65023.h
-+ *
-+ * Header file for TI TPS65023 Regulator
-+ *
-+ * Copyright (C) 2009 Texas Instrument Incorporated - http://www.ti.com/
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation version 2.
-+ *
-+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any kind,
-+ * whether express or implied; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+/* Register definitions */
-+#define	TPS65023_REG_VERSION		0
-+#define	TPS65023_REG_PGOODZ		1
-+#define	TPS65023_REG_MASK		2
-+#define	TPS65023_REG_REG_CTRL		3
-+#define	TPS65023_REG_CON_CTRL		4
-+#define	TPS65023_REG_CON_CTRL2		5
-+#define	TPS65023_REG_DEF_CORE		6
-+#define	TPS65023_REG_DEFSLEW		7
-+#define	TPS65023_REG_LDO_CTRL		8
-+
-+/* PGOODZ bitfields */
-+#define	TPS65023_PGOODZ_PWRFAILZ	BIT(7)
-+#define	TPS65023_PGOODZ_LOWBATTZ	BIT(6)
-+#define	TPS65023_PGOODZ_VDCDC1		BIT(5)
-+#define	TPS65023_PGOODZ_VDCDC2		BIT(4)
-+#define	TPS65023_PGOODZ_VDCDC3		BIT(3)
-+#define	TPS65023_PGOODZ_LDO2		BIT(2)
-+#define	TPS65023_PGOODZ_LDO1		BIT(1)
-+
-+/* MASK bitfields */
-+#define	TPS65023_MASK_PWRFAILZ		BIT(7)
-+#define	TPS65023_MASK_LOWBATTZ		BIT(6)
-+#define	TPS65023_MASK_VDCDC1		BIT(5)
-+#define	TPS65023_MASK_VDCDC2		BIT(4)
-+#define	TPS65023_MASK_VDCDC3		BIT(3)
-+#define	TPS65023_MASK_LDO2		BIT(2)
-+#define	TPS65023_MASK_LDO1		BIT(1)
-+
-+/* REG_CTRL bitfields */
-+#define TPS65023_REG_CTRL_VDCDC1_EN	BIT(5)
-+#define TPS65023_REG_CTRL_VDCDC2_EN	BIT(4)
-+#define TPS65023_REG_CTRL_VDCDC3_EN	BIT(3)
-+#define TPS65023_REG_CTRL_LDO2_EN	BIT(2)
-+#define TPS65023_REG_CTRL_LDO1_EN	BIT(1)
-+
-+/* LDO_CTRL bitfields */
-+#define TPS65023_LDO_CTRL_LDOx_SHIFT(ldo_id)	((ldo_id)*4)
-+#define TPS65023_LDO_CTRL_LDOx_MASK(ldo_id)	(0xF0 >> ((ldo_id)*4))
-+
-+/* Number of step-down converters available */
-+#define TPS65023_NUM_DCDC		3
-+/* Number of LDO voltage regulators  available */
-+#define TPS65023_NUM_LDO		2
-+/* Number of total regulators available */
-+#define TPS65023_NUM_REGULATOR	(TPS65023_NUM_DCDC + TPS65023_NUM_LDO)
-+
-+/* DCDC's */
-+#define TPS65023_DCDC_1			0
-+#define TPS65023_DCDC_2			1
-+#define TPS65023_DCDC_3			2
-+/* LDOs */
-+#define TPS65023_LDO_1			3
-+#define TPS65023_LDO_2			4
-+
-+#define TPS65023_MAX_REG_ID		TPS65023_LDO_2
-+
+> > The additional parameters are not being passed down any more and 
+> > the TP_printk looks like
+> > 
+> >         TP_printk("page=%p pfn=%lu alloc_order=%d fallback_order=%d pageblock_order=%d alloc_migratetype=%d fallback_migratetype=%d fragmenting=%d change_ownership=%d",
+> >                 __entry->page,
+> >                 page_to_pfn(__entry->page),
+> >                 __entry->alloc_order,
+> >                 __entry->fallback_order,
+> >                 pageblock_order,
+> >                 __entry->alloc_migratetype,
+> >                 __entry->fallback_migratetype,
+> >                 __entry->fallback_order < pageblock_order,
+> >                 __entry->alloc_migratetype == __entry->fallback_migratetype)
+> > 
+> > Is that what you meant?
+> 
+> yeah, this looks more compact.
+> 
+> A detail: we might still want to pass in pageblock_order somehow - 
+> for example 'perf' will get access to the raw binary record but wont 
+> run the above printk line.
+> 
+
+It's invariant for the lifetime of the system so it shouldn't be part of the
+record. Often it can be reliably guessed because it's based on the default
+hugepage size that can be allocated from the buddy lists.
+
+x86-without-PAE:	pageblock == 10
+x86-with-PAE:		pageblock == 9
+x86-64:			pageblock == 9  (even if 1GB pages are available)
+ppc64:			pageblock == 12 (4K base page) or 8 (64K base page)
+ia64:			depends on boot parameters
+other cases:		pageblock == MAX_ORDER-1
+
+So perf can make a reasonably guess that can be specified from command-line
+if absolutly necessary.
+
 -- 
-1.6.2.4
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
