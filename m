@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbZHGQnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162AbZHGQpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbZHGQnQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 12:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZHGQnQ
+	id S1754162AbZHGQpk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 12:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbZHGQpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 12:43:16 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2056 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754061AbZHGQnP (ORCPT
+	Fri, 7 Aug 2009 12:45:39 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:52665 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754066AbZHGQpi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 12:43:15 -0400
-Subject: [PATCH] MAINTAINERS: additional NETWORKING [GENERAL] and
- NETWORKING DRIVERS patterns
-From: Joe Perches <joe@perches.com>
-To: David Miller <davem@davemloft.net>
-Cc: sposelenov@emcraft.com, linux-kernel@vger.kernel.org, wd@denx.de,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090807.090353.191304972.davem@davemloft.net>
-References: <20090618183738.662f7ef1@emcraft.com>
-	 <20090807153106.335b1b8f@emcraft.com>
-	 <20090807.090353.191304972.davem@davemloft.net>
-Content-Type: text/plain
-Date: Fri, 07 Aug 2009 09:43:01 -0700
-Message-Id: <1249663381.3467.80.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Aug 2009 12:45:38 -0400
+Date: Fri, 7 Aug 2009 12:45:37 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Clark Williams <williams@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "greg@kroah.com" <greg@kroah.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [RT] Lockdep warning on boot with 2.6.31-rc5-rt1.1
+In-Reply-To: <1249661754.32113.747.camel@twins>
+Message-ID: <Pine.LNX.4.44L0.0908071241170.4758-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-07 at 09:03 -0700, David Miller wrote:
-> From: Sergei Poselenov <sposelenov@emcraft.com>
-> > Unfortunately, received no replies, but the problem still persists.
-> I guarantee you'll get more responses if you send networking bug
-> reports at least CC:'d to netdev@vger.kernel.org
+On Fri, 7 Aug 2009, Peter Zijlstra wrote:
 
-Perhaps this will help get cc's to the right places.
+> > I think they are, pretty much.  The real problem, of course, is that 
+> > lockdep doesn't understand tree-structured lock orderings.  Hence it 
+> > isn't practical to convert dev->sem into a mutex.
+> 
+> Right, well it would if we'd make every instance a class, but since
+> classes should reside in static storage this is far from trivial.
+> 
+> If we'd be able to find a mapping such that we can use a limited number
+> of these classes to represent the needed structure then we're good.
+> 
+> I think I proposed adding a class to each driver or something, but then
+> you countered that a single driver could register itself at conflicting
+> places in the device tree.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+Also there can be devices in the tree that don't have any driver.  And 
+there can be devices that have the same driver as their children.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index b1114cf..0b697a1 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3555,6 +3555,9 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.git
- S:	Maintained
- F:	net/
- F:	include/net/
-+F:	include/linux/in.h
-+F:	include/linux/net.h
-+F:	include/linux/netdevice.h
- 
- NETWORKING [IPv4/IPv6]
- M:	"David S. Miller" <davem@davemloft.net>
-@@ -3590,6 +3593,8 @@ W:	http://www.linuxfoundation.org/en/Net
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.git
- S:	Odd Fixes
- F:	drivers/net/
-+F:	include/linux/if_*
-+F:	include/linux/*device.h
- 
- NETXEN (1/10) GbE SUPPORT
- M:	Dhananjay Phadke <dhananjay@netxen.com>
+> Still it might be worth to try that and see where we'll end up and
+> possibly fix up a few drivers to be more intelligent.
+> 
+> /me ponders
+> 
+> Nested busses would be interesting though, suppose we assign a class to
+> a USB bus driver, and we chain USB hubs, you'd get a nesting of similar
+> classes and that'd upset lockdep again :/
 
+Yep.
+
+> The other proposal was creating a fixed list of classes and register
+> each device at a class corresponding to its depth in the tree. I can't
+> remember what was wrong with that, but I seem to have been persuaded
+> that that was hard too.
+
+It probably would work for the most part.  However a possible scenario
+involves first locking a parent and then locking all its children.  (I
+don't know if this ever happens anywhere, but it might.)  This can't
+cause a deadlock but it would run into trouble with depth-based
+classes.
+
+Alan Stern
 
