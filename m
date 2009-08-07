@@ -1,82 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbZHGPlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbZHGPoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753301AbZHGPlX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 11:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZHGPlX
+	id S1753260AbZHGPoa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 11:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbZHGPo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 11:41:23 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55007 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752935AbZHGPlW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 11:41:22 -0400
-Date: Fri, 7 Aug 2009 11:41:23 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Magnus Damm <magnus.damm@gmail.com>, Greg KH <gregkh@suse.de>,
-       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH update x2] PM: Introduce core framework for run-time PM
- of I/O devices (rev. 13)
-In-Reply-To: <200908062353.14822.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0908071130440.3063-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 7 Aug 2009 11:44:29 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:7605 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752131AbZHGPo2 convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-ghaskins@novell.com;4:1>);
+	Fri, 7 Aug 2009 11:44:28 -0400
+Message-Id: <4A7C13990200005A00051DCD@sinclair.provo.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 Beta 
+Date: Fri, 07 Aug 2009 09:44:25 -0600
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Arnd Bergmann" <arnd@arndb.de>
+Cc: <alacrityvm-devel@lists.sourceforge.net>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>
+Subject: Re: [PATCH 4/7] vbus-proxy: add a pci-to-vbus bridge
+References: <20090803171030.17268.26962.stgit@dev.haskins.net>
+ <200908070057.54795.arnd@arndb.de>
+ <4A7B78580200005A00051D50@sinclair.provo.novell.com>
+ <200908071657.32858.arnd@arndb.de>
+In-Reply-To: <200908071657.32858.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Aug 2009, Rafael J. Wysocki wrote:
-
-> Hi,
+>>> On 8/7/2009 at 10:57 AM, in message <200908071657.32858.arnd@arndb.de>, Arnd
+Bergmann <arnd@arndb.de> wrote: 
+> On Friday 07 August 2009, Gregory Haskins wrote:
+>> >>> Arnd Bergmann <arnd@arndb.de> wrote: 
+>> > On Thursday 06 August 2009, Gregory Haskins wrote:
+>> > 
+>> > >     2b) I also want to collapse multiple interrupts together so as to 
+>> > > minimize the context switch rate (inject + EIO overhead).  My design 
+>> > > effectively has "NAPI" for interrupt handling.  This helps when the system 
 > 
-> The patch below should address all of your most recent comments.
+>> > > needs it the most: heavy IO.
+>> > 
+>> > That sounds like a very useful concept in general, but this seems to be a
+>> > detail of the interrupt controller implementation. If the IO-APIC cannot
+>> > do what you want here, maybe we just need a paravirtual IRQ controller
+>> > driver, like e.g. the PS3 has.
+>> 
+>> Yeah, I agree this could be a function of the APIC code.  Do note that I
+>> mentioned this in passing to Avi a few months ago but FWIW he indicated
+>> at that time that he is not interested in making the APIC PV.
+>> 
+>> Also, I almost forgot an important one.  Add:
+>> 
+>>    2c) Interrupt prioritization.  I want to be able to assign priority
+>>    to interrupts and handle them in priority order.
+> 
+> I think this part of the interface has developed into the wrong direction
+> because you confused two questions:
+> 
+> 1. should you build an advanced interrupt mechanism for virtual drivers?
+> 2. how should you build an advanced interrupt mechanism for virtual drivers?
+> 
+> My guess is that when Avi said he did not want a paravirtual IO-APIC,
+> he implied that the existing one is good enough (maybe Avi can clarify that
+> point himself) answering question 1, while you took that as an indication
+> that the code should live elsewhere instead, answering question 2.
+> 
+> What you built with the shm-signal code is essentially a paravirtual nested
+> interrupt controller by another name, and deeply integrated into a new
+> bigger subsystem. I believe that this has significant disadvantages
+> over the approach of making it a standard interrupt controller driver:
+> 
+> * It completely avoids the infrastructure that we have built into Linux
+>   to deal with interrupts, e.g. /proc/interrupts statistics, IRQ
+>   balancing and CPU affinity.
+> 
+> * It makes it impossible to quantify the value of the feature to start with,
+>   which could be used to answer question 1 above.
+> 
+> * Less importantly, it does not work with any other drivers that might
+>   also benefit from a new interrupt controller -- if it is indeed better
+>   than the one we already have.
+> 
+> 	Arnd <><
 
-Only two comments.
+Hi Arnd,
 
+I don't strongly disagree with anything you said (except for perhaps that I confused the question).  I agree that the PCI-bridge effectively implements something akin to an interrupt controller.  I agree that this interrupt controller, if indeed superior (I believe it is), can only benefit devices inherently behind the bridge instead of all of KVM (this in of itself doesnt bother me, as I plan on all my performance work to be based on that bus, but I digress.  Also note that this is not dissimilar to other bridge+bus (think usb, scsi) operation).  I agree that a potentially more ideal solution would be if we had a proper generic PV interrupt controller that exhibited similar traits as to what I describe (priority, inject+EIO overhead reduction, etc) so that all of KVM benefited.
 
-> +static int __pm_request_idle(struct device *dev)
-> +{
-...
-> +	if (dev->power.request_pending) {
-> +		/* Any requests other then RPM_REQ_IDLE take precedence. */
-> +		if (dev->power.request != RPM_REQ_NONE)
+The issue wasn't that I didn't know these things.  The issue is that I have no control over whether such an intrusive change to KVM (and the guest arch code) is accepted (and at least one relevant maintainer expressed dissatisfaction (*) at the idea when proposed) Conversely, I am the maintainer of AlacrityVM, so I do have control over the bridge design. ;)  Also note that this particular design decision is completely encapsulated within alacrityvm's components.  IOW, I am not foisting my ideas on the entire kernel tree:  If someone doesn't like what I have done, they can choose not to use alacrity and its like my ideas never existed.  The important thing with this distinction is I am not changing how core linux or core kvm works in the process, only the one little piece of the world that particularly interests me.
 
-Replace != with ==.
+That said, if attitudes about some of these ideas have changed, I may be able to break that piece out and start submitting it to kvm@ as some kind of pv interrupt controller.  I would only be interested in doing so if Avi et. al. express an openness to the idea...I.e.. I don't want to waste my time any more than any one elses.
 
-> +			dev->power.request = RPM_REQ_IDLE;
-> +		else if (dev->power.request != RPM_REQ_IDLE)
-> +			retval = -EAGAIN;
-> +		return retval;
+Kind Regards,
+-Greg
 
-
-> --- linux-2.6.orig/drivers/base/dd.c
-> +++ linux-2.6/drivers/base/dd.c
-...
-> @@ -306,6 +317,8 @@ static void __device_release_driver(stru
->  
->  	drv = dev->driver;
->  	if (drv) {
-> +		pm_runtime_disable(dev);
-> +
->  		driver_sysfs_remove(dev);
->  
->  		if (dev->bus)
-> @@ -324,6 +337,8 @@ static void __device_release_driver(stru
->  			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
->  						     BUS_NOTIFY_UNBOUND_DRIVER,
->  						     dev);
-> +
-> +		pm_runtime_enable(dev);
->  	}
->  }
-
-We may need to be more careful here.  The driver's remove method may
-want to do some runtime PM stuff to the device before giving up
-control.  On the other hand I'm not sure what _should_ be done here, so
-I can't suggest anything better.
-
-Alan Stern
+(*) I think Avi said something to the effect of "you are falling into the 'lets PV the world' trap"
 
