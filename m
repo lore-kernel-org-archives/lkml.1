@@ -1,60 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933775AbZHGU1E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933805AbZHGU1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933775AbZHGU1E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:27:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933707AbZHGU1C
+	id S933805AbZHGU1O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:27:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933781AbZHGU1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:27:02 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55481 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933685AbZHGU1B (ORCPT
+	Fri, 7 Aug 2009 16:27:12 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:62539 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933779AbZHGU1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:27:01 -0400
-Message-ID: <4A7C8CD3.1090404@zytor.com>
-Date: Fri, 07 Aug 2009 13:21:39 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-CC: Albin Tonnerre <albin.tonnerre@free-electrons.com>,
-       Matthieu CASTET <matthieu.castet@parrot.com>,
-       Alain Knaff <alain@knaff.lu>, "sam@ravnborg.org" <sam@ravnborg.org>,
+	Fri, 7 Aug 2009 16:27:08 -0400
+Date: Fri, 7 Aug 2009 23:27:51 +0300
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: ext Anuj Aggarwal <anuj.aggarwal@ti.com>
+Cc: "broonie@sirena.org.uk" <broonie@sirena.org.uk>,
+       "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/6] Add support for LZO-compressed kernels for ARM
-References: <1249311501-23102-3-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-4-git-send-email-albin.tonnerre@free-electrons.com> <20090806224055.GH31579@n2100.arm.linux.org.uk> <20090807092423.GA4455@laptop> <4A7BF5B8.4030907@knaff.lu> <20090807102117.GB4455@laptop> <4A7C14EB.1060701@parrot.com> <20090807130130.GE4455@laptop> <4A7C2BA4.7030408@parrot.com> <20090807135524.GF4455@laptop> <20090807200001.GE31543@n2100.arm.linux.org.uk>
-In-Reply-To: <20090807200001.GE31543@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       linux-i2c@vger.kernel.org
+Subject: Re: [PATCH 4/8] Regulator: Adding header file for TI TPS6507x
+ regulator driver
+Message-ID: <20090807202751.GF9780@nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <1249658954-10977-1-git-send-email-anuj.aggarwal@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249658954-10977-1-git-send-email-anuj.aggarwal@ti.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 07 Aug 2009 20:26:33.0747 (UTC) FILETIME=[5AFF5E30:01CA179D]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/07/2009 01:00 PM, Russell King - ARM Linux wrote:
-> On Fri, Aug 07, 2009 at 03:55:24PM +0200, Albin Tonnerre wrote:
->> That's true for the actual kernel image, but not for the bootstrap code we use
->> when compiling compressed kernels. arch/arm/boot/compressed/Makefile uses
->> libgcc, unless I'm overlooking something here:
->>
->>   arm-unknown-linux-uclibcgnueabi-ld -EL    --defsym zreladdr=0x20008000
->>   --defsym initrd_phys=0x20410000 --defsym params_phys=0x20000100 -p
->>   --no-undefined -X
->>   /home/albin/x-tools/arm-unknown-linux-uclibcgnueabi/lib/gcc/arm-unknown-linux-uclibcgnueabi/4.3.2/libgcc.a
->>   -T arch/arm/boot/compressed/vmlinux.lds arch/arm/boot/compressed/head.o
->>   arch/arm/boot/compressed/piggy.gzip.o arch/arm/boot/compressed/misc.o -o
->>   arch/arm/boot/compressed/vmlinux
-> 
-> It's because libgcc appears in the wrong place in the command line, and
-> due to the way kbuild works, we can't get it into the right place easily.
-> 
-> Linkers are sensitive to the order of archives on the command line - its
-> pointless having an archive as the first file argument because none of
-> the contained objects will ever be pulled in.
-> 
-> Sam - any ideas how to solve this?
+move this to the driver, unless any other piece of code will use it,
+which seems unlikely.
 
-Can we use the group feature of ld for this?
+On Fri, Aug 07, 2009 at 05:29:14PM +0200, ext Anuj Aggarwal wrote:
+> 
+> Signed-off-by: Anuj Aggarwal <anuj.aggarwal@ti.com>
+> ---
+>  include/linux/mfd/tps6507x.h |   93 ++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 93 insertions(+), 0 deletions(-)
+>  create mode 100644 include/linux/mfd/tps6507x.h
+> 
+> diff --git a/include/linux/mfd/tps6507x.h b/include/linux/mfd/tps6507x.h
+> new file mode 100644
+> index 0000000..069b02a
+> --- /dev/null
+> +++ b/include/linux/mfd/tps6507x.h
+> @@ -0,0 +1,93 @@
+> +/*
+> + * tps6507x.h
+> + *
+> + * Header file for TI TPS6507x Regulators
+> + *
+> + * Copyright (C) 2009 Texas Instrument Incorporated - http://www.ti.com/
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License as
+> + * published by the Free Software Foundation version 2.
+> + *
+> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any kind,
+> + * whether express or implied; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + */
+> +
+> +/* Register definitions */
+> +#define	TPS6507X_REG_PPATH1				0X01
+> +#define	TPS6507X_REG_INT				0X02
+> +#define	TPS6507X_REG_CHGCONFIG0				0X03
+> +#define	TPS6507X_REG_CHGCONFIG1				0X04
+> +#define	TPS6507X_REG_CHGCONFIG2				0X05
+> +#define	TPS6507X_REG_CHGCONFIG3				0X06
+> +#define	TPS6507X_REG_REG_ADCONFIG			0X07
+> +#define	TPS6507X_REG_TSCMODE				0X08
+> +#define	TPS6507X_REG_ADRESULT_1				0X09
+> +#define	TPS6507X_REG_ADRESULT_2				0X0A
+> +#define	TPS6507X_REG_PGOOD				0X0B
+> +#define	TPS6507X_REG_PGOODMASK				0X0C
+> +#define	TPS6507X_REG_CON_CTRL1				0X0D
+> +#define	TPS6507X_REG_CON_CTRL2				0X0E
+> +#define	TPS6507X_REG_CON_CTRL3				0X0F
+> +#define	TPS6507X_REG_DEFDCDC1				0X10
+> +#define	TPS6507X_REG_DEFDCDC2_LOW			0X11
+> +#define	TPS6507X_REG_DEFDCDC2_HIGH			0X12
+> +#define	TPS6507X_REG_DEFDCDC3_LOW			0X13
+> +#define	TPS6507X_REG_DEFDCDC3_HIGH			0X14
+> +#define	TPS6507X_REG_DEFSLEW				0X15
+> +#define	TPS6507X_REG_LDO_CTRL1				0X16
+> +#define	TPS6507X_REG_DEFLDO2				0X17
+> +#define	TPS6507X_REG_WLED_CTRL1				0X18
+> +#define	TPS6507X_REG_WLED_CTRL2				0X19
+> +
+> +/* CON_CTRL1 bitfields */
+> +#define	TPS6507X_CON_CTRL1_DCDC1_ENABLE		BIT(4)
+> +#define	TPS6507X_CON_CTRL1_DCDC2_ENABLE		BIT(3)
+> +#define	TPS6507X_CON_CTRL1_DCDC3_ENABLE		BIT(2)
+> +#define	TPS6507X_CON_CTRL1_LDO1_ENABLE		BIT(1)
+> +#define	TPS6507X_CON_CTRL1_LDO2_ENABLE		BIT(0)
+> +
+> +/* DEFDCDC1 bitfields */
+> +#define TPS6507X_DEFDCDC1_DCDC1_EXT_ADJ_EN	BIT(7)
+> +#define TPS6507X_DEFDCDC1_DCDC1_MASK		0X3F
+> +
+> +/* DEFDCDC2_LOW bitfields */
+> +#define TPS6507X_DEFDCDC2_LOW_DCDC2_MASK	0X3F
+> +
+> +/* DEFDCDC2_HIGH bitfields */
+> +#define TPS6507X_DEFDCDC2_HIGH_DCDC2_MASK	0X3F
+> +
+> +/* DEFDCDC3_LOW bitfields */
+> +#define TPS6507X_DEFDCDC3_LOW_DCDC3_MASK	0X3F
+> +
+> +/* DEFDCDC3_HIGH bitfields */
+> +#define TPS6507X_DEFDCDC3_HIGH_DCDC3_MASK	0X3F
+> +
+> +/* TPS6507X_REG_LDO_CTRL1 bitfields */
+> +#define TPS6507X_REG_LDO_CTRL1_LDO1_MASK	0X0F
+> +
+> +/* TPS6507X_REG_DEFLDO2 bitfields */
+> +#define TPS6507X_REG_DEFLDO2_LDO2_MASK		0X3F
+> +
+> +/* VDCDC MASK */
+> +#define TPS6507X_DEFDCDCX_DCDC_MASK		0X3F
+> +
+> +/* DCDC's */
+> +#define TPS6507X_DCDC_1				0
+> +#define TPS6507X_DCDC_2				1
+> +#define TPS6507X_DCDC_3				2
+> +/* LDOs */
+> +#define TPS6507X_LDO_1				3
+> +#define TPS6507X_LDO_2				4
+> +
+> +#define TPS6507X_MAX_REG_ID			TPS6507X_LDO_2
+> +
+> +/* Number of step-down converters available */
+> +#define TPS6507X_NUM_DCDC			3
+> +/* Number of LDO voltage regulators  available */
+> +#define TPS6507X_NUM_LDO			2
+> +/* Number of total regulators available */
+> +#define TPS6507X_NUM_REGULATOR		(TPS6507X_NUM_DCDC + TPS6507X_NUM_LDO)
+> +
+> -- 
+> 1.6.2.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-	-hpa
-
+-- 
+balbi
