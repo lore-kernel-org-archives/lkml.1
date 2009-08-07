@@ -1,109 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZHGVIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbZHGVRI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbZHGVIU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 17:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755050AbZHGVIT
+	id S1755810AbZHGVRI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 17:17:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424AbZHGVRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 17:08:19 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:55517 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752801AbZHGVIS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 17:08:18 -0400
-Date: Fri, 7 Aug 2009 23:08:16 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Albin Tonnerre <albin.tonnerre@free-electrons.com>,
-       Matthieu CASTET <matthieu.castet@parrot.com>,
-       Alain Knaff <alain@knaff.lu>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/6] Add support for LZO-compressed kernels for ARM
-Message-ID: <20090807210816.GA29797@merkur.ravnborg.org>
-References: <1249311501-23102-4-git-send-email-albin.tonnerre@free-electrons.com> <20090806224055.GH31579@n2100.arm.linux.org.uk> <20090807092423.GA4455@laptop> <4A7BF5B8.4030907@knaff.lu> <20090807102117.GB4455@laptop> <4A7C14EB.1060701@parrot.com> <20090807130130.GE4455@laptop> <4A7C2BA4.7030408@parrot.com> <20090807135524.GF4455@laptop> <20090807200001.GE31543@n2100.arm.linux.org.uk>
+	Fri, 7 Aug 2009 17:17:07 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:60503 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753077AbZHGVRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 17:17:06 -0400
+Date: Fri, 7 Aug 2009 23:16:58 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Johannes Stezenbach <js@sig21.net>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       reinette chatre <reinette.chatre@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: iwlwifi (4965) regression since 2.6.30
+Message-ID: <20090807211658.GM3382@ics.muni.cz>
+References: <20090728112102.GA3382@ics.muni.cz>
+ <1249336021.30019.4304.camel@rc-desk>
+ <20090804084903.GV3382@ics.muni.cz>
+ <1249426183.30019.4581.camel@rc-desk>
+ <20090804225626.GZ3382@ics.muni.cz>
+ <1249429081.30019.4588.camel@rc-desk>
+ <20090806132244.GC15867@khazad-dum.debian.net>
+ <20090806224110.GJ3382@ics.muni.cz>
+ <20090806230704.GA14381@khazad-dum.debian.net>
+ <20090807203226.GA13867@sig21.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-In-Reply-To: <20090807200001.GE31543@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090807203226.GA13867@sig21.net>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Fri, 07 Aug 2009 23:16:56 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 09:00:01PM +0100, Russell King - ARM Linux wrote:
-> On Fri, Aug 07, 2009 at 03:55:24PM +0200, Albin Tonnerre wrote:
-> > That's true for the actual kernel image, but not for the bootstrap code we use
-> > when compiling compressed kernels. arch/arm/boot/compressed/Makefile uses
-> > libgcc, unless I'm overlooking something here:
-> > 
-> >   arm-unknown-linux-uclibcgnueabi-ld -EL    --defsym zreladdr=0x20008000
-> >   --defsym initrd_phys=0x20410000 --defsym params_phys=0x20000100 -p
-> >   --no-undefined -X
-> >   /home/albin/x-tools/arm-unknown-linux-uclibcgnueabi/lib/gcc/arm-unknown-linux-uclibcgnueabi/4.3.2/libgcc.a
-> >   -T arch/arm/boot/compressed/vmlinux.lds arch/arm/boot/compressed/head.o
-> >   arch/arm/boot/compressed/piggy.gzip.o arch/arm/boot/compressed/misc.o -o
-> >   arch/arm/boot/compressed/vmlinux
+On Fri, Aug 07, 2009 at 10:32:26PM +0200, Johannes Stezenbach wrote:
+> In Documentation/laptops/thinkpad-acpi.txt there is this comment
+> for FN+F5:
 > 
-> It's because libgcc appears in the wrong place in the command line, and
-> due to the way kbuild works, we can't get it into the right place easily.
+>    Should be used to turn on/off all radios (Bluetooth+W-WAN+WLAN), really.
 > 
-> Linkers are sensitive to the order of archives on the command line - its
-> pointless having an archive as the first file argument because none of
-> the contained objects will ever be pulled in.
-> 
-> Sam - any ideas how to solve this?
+> I disagree.  Why would anyone turn off all radios at once?
+> What I want is to disable the radios I don't need to save power,
+> so IMHO there should be different keys for Bluetooth and WLAN
+> (and W-WAN where present).
 
-We could add libgcc as a prerequisite.
-Untested patch below.
+in my case, it disables only WLAN. BT is untouched.
 
-
-This is a ittle hackish - otherwise we have to change the
-definition of ld or use a private version.
-
-I added explanations for some of the linker symbols when
-I was there. I cannot the ld options.
-
-If you decide to use this it has my:
-
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-
-
-	Sam
-
-
-diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
-index ce39dc5..4f980f2 100644
---- a/arch/arm/boot/compressed/Makefile
-+++ b/arch/arm/boot/compressed/Makefile
-@@ -87,15 +87,24 @@ endif
- ifneq ($(PARAMS_PHYS),)
- LDFLAGS_vmlinux += --defsym params_phys=$(PARAMS_PHYS)
- endif
--LDFLAGS_vmlinux += -p --no-undefined -X \
--       $(shell $(CC) $(KBUILD_CFLAGS) --print-libgcc-file-name) -T
-+
-+# ?
-+LDFLAGS_vmlinux += -p
-+# Report unresolved symbol references
-+LDFLAGS_vmlinux += --no-undefined
-+# Delete all temporary local symbols
-+LDFLAGS_vmlinux += -X
-+# Next argument is a linker script
-+LDFLAGS_vmlinux += -T
-+
-+libgcc = $(shell $(CC) $(KBUILD_CFLAGS) --print-libgcc-file-name)
- 
- # Don't allow any static data in misc.o, which
- # would otherwise mess up our GOT table
- CFLAGS_misc.o := -Dstatic=
- 
- $(obj)/vmlinux: $(obj)/vmlinux.lds $(obj)/$(HEAD) $(obj)/piggy.o \
--               $(addprefix $(obj)/, $(OBJS)) FORCE
-+               $(addprefix $(obj)/, $(OBJS)) $(libgcc) FORCE
-        $(call if_changed,ld)
-        @:
- 
-
-
-	Sam
+-- 
+Luká¹ Hejtmánek
