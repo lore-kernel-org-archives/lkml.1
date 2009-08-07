@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933694AbZHGUWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933698AbZHGUXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933694AbZHGUWG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:22:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933654AbZHGUWF
+	id S933698AbZHGUXs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:23:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932621AbZHGUXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:22:05 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:60183 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933631AbZHGUWD (ORCPT
+	Fri, 7 Aug 2009 16:23:48 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:37970 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932587AbZHGUXr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:22:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=gI9BvJG6P9R7LUO+/E2cZHCM0en6UjjmpA80gH7PKBlLNKP2GCi+1j+v/QSMU5l8fL
-         xng0rnR+01cIr71CugK/BkB9mpc/ZTHkCAQOBZ8s44g2nJ1XU2j9nl9m5bLo8H4R9KaP
-         BJShOWZzIvE8zJYX6MFFpFlEiWHkRT1P/bQgc=
-Date: Fri, 7 Aug 2009 22:22:01 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, tzanussi@gmail.com, lizf@cn.fujitsu.com,
-       a.p.zijlstra@chello.nl, penberg@cs.helsinki.fi, efault@gmx.de,
-       eduard.munteanu@linux360.ro, rostedt@goodmis.org, tglx@linutronix.de,
-       laijs@cn.fujitsu.com, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/tracing] perf_counter: Support for ftrace
-	event records sampling
-Message-ID: <20090807202159.GC4999@nowhere>
-References: <1249601154-5597-1-git-send-email-fweisbec@gmail.com> <tip-24cb4fabe71f1d896b504cec82277ad7426a3d6d@git.kernel.org> <20090807101136.GA20896@elte.hu>
+	Fri, 7 Aug 2009 16:23:47 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Eric Paris <eparis@redhat.com>
+Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
+       esandeen@redhat.com, eteo@redhat.com, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, viro@zeniv.linux.org.uk
+Subject: Re: [Patch v3] vfs: allow file truncations when both suid and write permissions set
+References: <20090807100743.5822.90612.sendpatchset@localhost.localdomain>
+	<1249675025.2694.15.camel@dhcp231-106.rdu.redhat.com>
+Date: Sat, 08 Aug 2009 05:23:44 +0900
+In-Reply-To: <1249675025.2694.15.camel@dhcp231-106.rdu.redhat.com> (Eric
+	Paris's message of "Fri, 07 Aug 2009 15:57:05 -0400")
+Message-ID: <87prb7v0dr.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090807101136.GA20896@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 12:11:36PM +0200, Ingo Molnar wrote:
-> 
-> * tip-bot for Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > Commit-ID:  24cb4fabe71f1d896b504cec82277ad7426a3d6d
-> > Gitweb:     http://git.kernel.org/tip/24cb4fabe71f1d896b504cec82277ad7426a3d6d
-> > Author:     Frederic Weisbecker <fweisbec@gmail.com>
-> > AuthorDate: Fri, 7 Aug 2009 01:25:54 +0200
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Fri, 7 Aug 2009 09:30:33 +0200
-> > 
-> > perf_counter: Support for ftrace event records sampling
-> 
-> this commit triggers a new build warning:
-> 
-> kernel/perf_counter.c: In function ‘perf_counter_output’:
-> kernel/perf_counter.c:2650: warning: ‘tp’ may be used uninitialized in this function
-> 
-> 	Ingo
+Eric Paris <eparis@redhat.com> writes:
 
+> On Fri, 2009-08-07 at 06:05 -0400, Amerigo Wang wrote:
+>> V2 -> V3:
+>> Call notify_change() before clearing suid/sgid.
+>> Thanks to OGAWA Hirofumi.
+>> 
+>> V1 -> V2:
+>> Introduce dentry_remove_suid(), and use it in do_truncate().
+>> Thanks to Eric Paris.
+>> 
+>> 
+>> When suid is set and the non-owner user has write permission,
+>> any writing into this file should be allowed and suid should be
+>> removed after that.
+>> 
+>> However, current kernel only allows writing without truncations,
+>> when we do truncations on that file, we get EPERM. This is a bug.
+>> 
+>> Steps to reproduce this bug:
+>> 
+>> % ls -l rootdir/file1
+>> -rwsrwsrwx 1 root root 3 Jun 25 15:42 rootdir/file1
+>> % echo h > rootdir/file1
+>> zsh: operation not permitted: rootdir/file1
+>> % ls -l rootdir/file1
+>> -rwsrwsrwx 1 root root 3 Jun 25 15:42 rootdir/file1
+>> % echo h >> rootdir/file1
+>> % ls -l rootdir/file1
+>> -rwxrwxrwx 1 root root 5 Jun 25 16:34 rootdir/file1
+>> 
+>> This patch fixes it.
+>> 
+>> Signed-off-by: WANG Cong <amwang@redhat.com>
+>> Cc: Eric Sandeen <esandeen@redhat.com>
+>> Cc: Eric Paris <eparis@redhat.com>
+>> Cc: Eugene Teo <eteo@redhat.com>
+>> Cc: Al Viro <viro@zeniv.linux.org.uk>
+>> Cc: hirofumi@mail.parknet.co.jp
+>
+> I was thinking about this and kept telling myself I was going to test v2
+> before I ack/nak.  Clearly we shouldn't for the dropping of SUID if the
+> process didn't have permission to change the ATTR_SIZE.
+>
+> Acked-by: Eric Paris <eparis@redhat.com>
 
-Ok, I'll fix it, thanks.
+BTW, Do you know why doesn't security modules fix the handling of
+do_truncate() (i.e. ATTR_MODE | ATTR_SIZE). And why doesn't it allow to
+pass ATTR_FORCE for it?
 
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
