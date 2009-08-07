@@ -1,40 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbZHGGuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbZHGGud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756307AbZHGGuP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 02:50:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbZHGGuO
+	id S1756754AbZHGGud (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 02:50:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756572AbZHGGud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 02:50:14 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38704 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754982AbZHGGuO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 02:50:14 -0400
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make shr to divide by power of 2
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090806180930.GA3004@localdomain.by>
-Date: Fri, 07 Aug 2009 08:50:12 +0200
-In-Reply-To: <20090806180930.GA3004@localdomain.by> (Sergey Senozhatsky's message of "Thu, 6 Aug 2009 21:09:30 +0300")
-Message-ID: <87d478i0d7.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Fri, 7 Aug 2009 02:50:33 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49705 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754982AbZHGGuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 02:50:32 -0400
+Date: Fri, 7 Aug 2009 08:50:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Greg KH <gregkh@suse.de>, Roland Dreier <rdreier@cisco.com>,
+       Matt Fleming <matt@console-pimps.org>,
+       David Kiliani <mail@davidkiliani.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL][2.6.31] tracing: have recordmcount.pl handle a
+	section with only weak functions
+Message-ID: <20090807065018.GA4118@elte.hu>
+References: <ada4oskfwtp.fsf@cisco.com> <alpine.DEB.2.00.0908061745430.2840@gandalf.stny.rr.com> <20090806222906.GA14792@suse.de> <alpine.DEB.2.00.0908061844300.2840@gandalf.stny.rr.com> <alpine.DEB.2.00.0908061849260.2840@gandalf.stny.rr.com> <adamy6ceeig.fsf@cisco.com> <20090806233208.GA29339@suse.de> <alpine.DEB.2.00.0908062000400.2840@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0908062000400.2840@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergey Senozhatsky <sergey.senozhatsky@gmail.com> writes:
->
-> Of course, compiler supposed to do something like
-> 	add    $0x7,%eax
-> 	shr    $0x3,%eax
-> instead of div. Should we rely on this?
 
-Yes. We should rely on this. 
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
--Andi
+> 
+> Ingo,
+> 
+> Please pull the latest tip/tracing/urgent tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/urgent
+> 
+> 
+> Steven Rostedt (1):
+>       tracing: have recordmcount.pl handle a section with only weak functions
+> 
+> ----
+>  scripts/recordmcount.pl |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+pulled, thanks Steve!
+
+	Ingo
