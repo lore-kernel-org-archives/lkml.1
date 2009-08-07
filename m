@@ -1,19 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933102AbZHGTQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933131AbZHGTUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933102AbZHGTQm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 15:16:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933049AbZHGTQm
+	id S933131AbZHGTUY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 15:20:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933112AbZHGTUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 15:16:42 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58070 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932998AbZHGTQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 15:16:41 -0400
-X-Authenticated: #2360897
-X-Provags-ID: V01U2FsdGVkX198pFoNV5R8ELVUTl6JNoWyiOJPHdiaO4xzKL+HaB
-	GMqg21nI/fJM/2
-Message-ID: <4A7C7D95.4030900@gmx.de>
-Date: Fri, 07 Aug 2009 21:16:37 +0200
+	Fri, 7 Aug 2009 15:20:23 -0400
+Received: from relay2.mail.vrmd.de ([81.28.224.28]:41126 "EHLO
+	relay2.mail.vrmd.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933108AbZHGTUW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 15:20:22 -0400
+Message-ID: <4A7C7AEA.7080800@gmx.de>
+Date: Fri, 07 Aug 2009 21:05:14 +0200
 From: Bernhard Walle <bernhard.walle@gmx.de>
 User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
@@ -31,8 +29,7 @@ X-Enigmail-Version: 0.95.7
 OpenPGP: id=DDAF6454
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+X-Relay-User: bernhard@bwalle.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -87,4 +84,3 @@ system is just to specify the correct root partition?
 
 Regards,
 Bernhard
-
