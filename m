@@ -1,84 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbZHGNKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbZHGNPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756168AbZHGNKN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 09:10:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755948AbZHGNKN
+	id S1756196AbZHGNPK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 09:15:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756066AbZHGNPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 09:10:13 -0400
-Received: from mail-bw0-f215.google.com ([209.85.218.215]:34614 "EHLO
-	mail-bw0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755912AbZHGNKL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 09:10:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=L4S/SA11kg0e6o6KrNBh3XkH7vSrJfnU3iYYn2Kzpq1lXE9F+GEvlWqB9VIqIb2CcF
-         esl5D7T/RolpK/nxlwLkABhJNL22tSoO0e0ggZZJJT/GlaVYRDLrgy6iySUjt5Fa6Dxb
-         zgfilSuDywZeeY/xpKLflPxr9ss7X1ArWyUjI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Lin Ming <ming.m.lin@intel.com>, "Brown, Len" <len.brown@intel.com>
-Subject: Re: [PATCH] acpi: fix acpi_device_{install,remove}_notify_handler() for _HID-less devices
-Date: Fri, 7 Aug 2009 15:09:17 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc5-00246-g90bc1a6; KDE/4.2.4; i686; ; )
-Cc: "Moore, Robert" <robert.moore@intel.com>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+	Fri, 7 Aug 2009 09:15:09 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:48856 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755786AbZHGNPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 09:15:07 -0400
+Date: Fri, 7 Aug 2009 08:15:01 -0500
+From: Robin Holt <holt@sgi.com>
+To: Laurent Desnogues <laurent.desnogues@gmail.com>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       David Xiao <dxiao@broadcom.com>, Ben Dooks <ben-linux@fluff.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200908062141.52501.bzolnier@gmail.com> <1249606433.7301.23.camel@minggr.sh.intel.com>
-In-Reply-To: <1249606433.7301.23.camel@minggr.sh.intel.com>
+       v4l2_linux <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
+	get_user_pages() enough to prevent pages from being swapped out ?")
+Message-ID: <20090807131501.GD2763@sgi.com>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806222543.GG31579@n2100.arm.linux.org.uk> <1249624766.32621.61.camel@david-laptop> <200908070958.31322.laurent.pinchart@ideasonboard.com> <20090807081041.GB18343@n2100.arm.linux.org.uk> <20090807095426.GI8725@shareable.org> <761ea48b0908070507n5c580455pb86e5240a7cf6c0c@mail.gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200908071509.17402.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <761ea48b0908070507n5c580455pb86e5240a7cf6c0c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 07, 2009 at 02:07:43PM +0200, Laurent Desnogues wrote:
+> On Fri, Aug 7, 2009 at 11:54 AM, Jamie Lokier<jamie@shareable.org> wrote:
+> >
+> > 1. Does the architecture not prevent speculative instruction
+> > prefetches from crossing a page boundary?  It would be handy under the
+> > circumstances.
+> 
+> There's no such restriction in ARMv7 architecture.
 
-Hi,
+Doesn't it prevent them for uncached areas?  I _THOUGHT_ there was an
+alloc_consistent (or something like that) call on ARM which gave you
+an uncached mapping where you could do DMA.  I also thought there was
+a dma_* set of functions which remapped as uncached before DMA begins
+and remapped as normal after DMA has been completed.
 
-On Friday 07 August 2009 02:53:53 Lin Ming wrote:
-> On Fri, 2009-08-07 at 03:41 +0800, Bartlomiej Zolnierkiewicz wrote:
-> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > Subject: [PATCH] acpi: fix acpi_device_{install,remove}_notify_handler() for _HID-less devices
-> 
-> Hi,
-> 
-> The patch in -mm tree titled
-> "acpi-fix-null-bug-for-hid-uid-string-2.patch"
-> has fixed this regression.
-> Would you please give it a try?
-> 
-> The patch attached below.
-> 
-> Subject: acpi: fix NULL bug for HID/UID string
-> From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> 
-> acpi_device->pnp.hardware_id and unique_id are now allocated pointers,
-> replacing the previous arrays.  acpi_device_install_notify_handler()
-> oopsed on the NULL hid when probing the video device, and perhaps other
-> uses are vulnerable too.  So initialize those pointers to empty strings
-> when there is no hid or uid.  Also, free hardware_id and unique_id when
-> when acpi_device is going to be freed.
-> 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-> Cc: Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Sorry for the fuzzy recollection.  I am dredging from 2.6.21 timeframe.
 
-Hugh's patch also fixes the problem and I like it more than mine version
-(BTW mmotm still contains older acpi-fix-null-bug-for-hid-uid-string.patch
-not acpi-fix-null-bug-for-hid-uid-string-2.patch).
-
-Andrew, could mmotm be somehow integrated with -next (the above bug was
-fixed in mmotm two weeks ago already)?  If you're worried about affecting
--next's quality, worry not, it really can't be much worse than it is now
-(at least we would have all outstanding patches really in the one place)..
-
-Thanks,
-Bart
+Robin
