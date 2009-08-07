@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbZHGI70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbZHGJCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279AbZHGI70 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 04:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757110AbZHGI7Z
+	id S1757261AbZHGJCo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 05:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbZHGJCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 04:59:25 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:36667 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757056AbZHGI7Y (ORCPT
+	Fri, 7 Aug 2009 05:02:43 -0400
+Received: from mail-pz0-f195.google.com ([209.85.222.195]:56617 "EHLO
+	mail-pz0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754811AbZHGJCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 04:59:24 -0400
-Date: Fri, 7 Aug 2009 09:59:02 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Douglas Leeder <douglas.leeder@sophos.com>,
-       Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
-       Eric Paris <eparis@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
-       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
-       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "david@lang.hm" <david@lang.hm>,
-       "jengelh@medozas.de" <jengelh@medozas.de>,
-       "aviro@redhat.com" <aviro@redhat.com>,
-       "mrkafk@gmail.com" <mrkafk@gmail.com>,
-       "alexl@redhat.com" <alexl@redhat.com>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "mmorley@hcl.in" <mmorley@hcl.in>
-Subject: Re: fanotify - overall design before I start sending patches
-Message-ID: <20090807085902.GB24689@shareable.org>
-References: <1248466429.3567.82.camel@localhost> <20090805020534.GB1354@ucw.cz> <200908051746.17903.tvrtko.ursulin@sophos.com> <20090806101059.GD31370@elf.ucw.cz> <4A7AAE89.20205@sophos.com> <20090806102252.GG31370@elf.ucw.cz>
+	Fri, 7 Aug 2009 05:02:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=LoUpKd0KknWy29QzT/3iBbX9BFtofZXmBgCwYYWAuyilwueGySLjw1FIqaF0/PdPtV
+         CiBY+whgYHyZdMmAEreOFqRnjP/6qxrVrh50/JimLDRji4l0QjZG7idWE9qTaNtJZtIf
+         Xs2jl6ufzEd617a9d6+XmoY3Hrv79DalOqLTE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090806102252.GG31370@elf.ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Date: Fri, 7 Aug 2009 17:02:43 +0800
+Message-ID: <2df346410908070202i6c16008ckc145559a474129c6@mail.gmail.com>
+Subject: [UBI UBIFS] replace vmalloc with kmalloc
+From: JiSheng Zhang <jszhang3@gmail.com>
+To: linux-mtd@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org, rmk@arm.linux.org.uk,
+       adrian.hunter@nokia.com, Artem.Bityutskiy@nokia.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Thu 2009-08-06 11:20:57, Douglas Leeder wrote:
-> > You mean that in 5 seconds, you won't have any point when you can tell
-> > the kernel, "I'm still working"?
-> 
-> Yes. Try make -j on your machine one day.
+If nandflash driver use DMA to support UBI and UBIFS i/o, there will
+be panic like
+the following. This is because UBI and UBIFS use vmalloced buffer
+somewhere while
+nandflash driver put the buffer under DMA and DMA support doesn't like vmalloced
+memory.
+[  412.369280] UBIFS: default file-system created
+[  412.374879] Unable to handle kernel NULL pointer dereference at
+virtual address 00000000
+[  412.383177] UBIFS: background thread "ubifs_bgt0_0" started, PID 887
+[  412.389656] pgd = c0004000
+[  412.392419] [00000000] *pgd=00000000
+[  412.396117] Internal error: Oops: 817 [#1] PREEMPT
 
-Ironically, some users report that Tracker (which uses inotify, hence
-the irony) can make their system unresponsive for more than 5 seconds. :-)
+Yes, I know kmalloc may fail when memory get fragmented, but I grep the UBI and
+UBIFS's source, there are six .c files and seven .c files using
+vmalloc, the function
+which call vmalloc are all called during the ubi being attached and
+the volume being
+mounted. In embedded system, this mainly happen during kernel boot, it
+should succeed.
 
--- Jamie
+After replacing vmalloc with kmalloc, ubi and ubifs runs fine on my
+board. I can alos upload
+a patch.
+
+Comments are welcomed!
+
+Jisheng
