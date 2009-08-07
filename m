@@ -1,41 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbZHGRlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbZHGRmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754771AbZHGRlX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 13:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbZHGRlT
+	id S1754816AbZHGRmM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 13:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbZHGRmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 13:41:19 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:37674 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754597AbZHGRlS (ORCPT
+	Fri, 7 Aug 2009 13:42:10 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:20166 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754558AbZHGRmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 13:41:18 -0400
-Subject: Re: sco connection issue for BlueZ 4.x on kernel 2.6.29
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Lan Zhu <zhu.lan.cn@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <113d36d80908070307o340aee88s956e6e1ee02c0b77@mail.gmail.com>
-References: <113d36d80908070307o340aee88s956e6e1ee02c0b77@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 07 Aug 2009 10:41:04 -0700
-Message-Id: <1249666864.30166.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Aug 2009 13:42:08 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAM8DfEqrR7MV/2dsb2JhbAC4IYgrkB8FhBY
+X-IronPort-AV: E=Sophos;i="4.43,343,1246838400"; 
+   d="scan'208";a="225058157"
+Date: Fri, 7 Aug 2009 10:42:09 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-usb@vger.kernel.org, greg@kroah.com,
+       linux-scsi@vger.kernel.org, netdev@vger.kernel.org, arjan@infradead.org
+Subject: Re: [PATCH 2/7 v3] initdev:kernel:USB init device discovery
+	notification
+Message-ID: <20090807174209.GB30450@cuplxvomd02.corp.sa.net>
+References: <9b2b86520908070832p2d1658b0t8b1d89d1a034bb9a@mail.gmail.com> <Pine.LNX.4.44L0.0908071142260.3063-100000@iolanthe.rowland.org> <9b2b86520908071017h606e595fr4488d6ff61cb337c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9b2b86520908071017h606e595fr4488d6ff61cb337c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-1; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Lan,
+On Fri, Aug 07, 2009 at 06:17:51PM +0100, Alan Jenkins wrote:
+> On 8/7/09, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Fri, 7 Aug 2009, Alan Jenkins wrote:
+> >
+> >> > +/* The mask of possible USB boot devices depends on what drivers and
+> >> > + * options have been configured into the kernel.  There are too many
+> >> > + * USB network config options to list here, so just assume it is always
+> >> > + * possible to have a USB network device.
+> >> > + */
+> >>
+> >> That could be fixed though.  Make the "USB Network Adaptors" menu into
+> >> an option.  Then you just have e.g. "CONFIG_NETDEV_USB", plus the two
+> >> class devices outside the menu (CONFIG_USB_ACM and CONFIG_USB_WDM).
+> 
+> Oops, scratch WDM.  It doesn't actually provide a network device
+> (otherwise it would depend on NET).
+> 
+> > That could be done.  It might even meet with the approval of the
+> > networking maintainer, independent of this patch series.
+> >
+> > But what if somebody adds yet another networking class driver outside
+> > the menu?
+> 
+> Hmm.
+> 
+> Ok, how about a single (hidden) USB_HAS_NETDEV.  NETDEV_USB and
+> USB_ACM select USB_HAS_NETDEV.
+> 
+> Textual juxtaposition or simple copy+paste inside class/Kconfig should
+> help it get picked up.  And I'd add a comment pointing the bewildered
+> to the definition of usb_initdev_mask.
+> 
+> I'll write a patch for your inspection this evening.
 
-> Can not accept incoming SCO connection. Kernel version 2.6.29. Kernel
-> log is as below. Is this a kernel bug? Is there any fix already for
-> this?
+I remember thinking about this and seem to recall that Alan Stern and I
+tossed this idea around, but didn't act on it. Such a thing holds potential
+for avoiding an unnecessary delay during boot. Whether it actually makes
+things faster in a given configuration will depend on that configuration's
+critical path, but I would welcome such a patch on the basis that it's
+unlikely to hurt and could improve boot times in some circumstances.
 
-use the linux-bluetooth@vger.kernel.org mailing list for this.
-
-Regards
-
-Marcel
-
-
+> Alan
