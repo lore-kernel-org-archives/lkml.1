@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZHGCfD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756424AbZHGDHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbZHGCfD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 22:35:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756408AbZHGCfB
+	id S1756424AbZHGDHg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 23:07:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbZHGDHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 22:35:01 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50220 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756367AbZHGCfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 22:35:00 -0400
-Message-ID: <4A7B92CC.2080006@suse.de>
-Date: Fri, 07 Aug 2009 11:34:52 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Thu, 6 Aug 2009 23:07:36 -0400
+Received: from dakia2.marvell.com ([65.219.4.35]:55214 "EHLO
+	dakia2.marvell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751384AbZHGDHf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 23:07:35 -0400
+X-ASG-Debug-ID: 1249614456-7d7900e20000-xx1T2L
+X-Barracuda-URL: http://10.68.76.222:80/cgi-bin/mark.cgi
+Date: Thu, 6 Aug 2009 23:07:33 -0400 (EDT)
+From: Nicolas Pitre <nico@marvell.com>
+X-X-Sender: nico@xanadu.home
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Dhaval Vasa <dhaval.vasa@einfochips.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Rabeeh Khoury <rabeeh@marvell.com>
+X-ASG-Orig-Subj: Re: [PATCH] [ARM] Kirkwood: Marvell OpenRD-Base board support added
+ to v2.6.31-rc5
+Subject: Re: [PATCH] [ARM] Kirkwood: Marvell OpenRD-Base board support added
+ to v2.6.31-rc5
+In-Reply-To: <20090806230726.GA19624@fluff.org.uk>
+Message-ID: <alpine.LFD.2.00.0908062303390.16073@xanadu.home>
+References: <1249567753-724-1-git-send-email-dhaval.vasa@einfochips.com> <20090806230726.GA19624@fluff.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-Cc: Al Viro <viro@ftp.linux.org.uk>, Takashi Iwai <tiwai@suse.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, cguthrie@mandriva.org
-Subject: Re: [PATCH 1/2] chrdev: implement __[un]register_chrdev()
-References: <4A79283E.7030202@kernel.org> <20090805161643.GA28436@kroah.com> <4A79B3A6.7090109@kernel.org> <20090805164919.GA27457@kroah.com> <4A79BB04.8000408@kernel.org> <20090805171547.GB10443@kroah.com> <4A7A6FAE.8020503@kernel.org> <4A7A90AB.3050407@suse.de> <20090806195848.GA29827@kroah.com>
-In-Reply-To: <20090806195848.GA29827@kroah.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Barracuda-Connect: maili.marvell.com[10.68.76.51]
+X-Barracuda-Start-Time: 1249614456
+X-Barracuda-Virus-Scanned: by dakia2.marvell.com at marvell.com
+X-Barracuda-Spam-Score: -1002.00
+X-Barracuda-Spam-Status: No, SCORE=-1002.00 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=1000.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Greg.
+On Thu, 6 Aug 2009, Ben Dooks wrote:
 
-Greg KH wrote:
->> For now, it looks like adding the __ prefixed versions seems to be the
->> proper solution.  It's strange to provide the helper interface only
->> for full minor acquisitions anyway.  Let's do naming cleanup later.
->> How does that sound?
+> On Thu, Aug 06, 2009 at 07:39:13PM +0530, Dhaval Vasa wrote:
+> > reference:
+> > http://open-rd.org
+> > http://code.google.com/p/openrd
+> > 
+> > This patch is tested for:
+> > 1. Boot from DRAM/NAND flash
+> > 2. NAND read/write/erase
+> > 3. GbE0
+> > 4. USB read/write
+> > 
+> > FIXME:
+> > 1. SD/UART1 selection
+> > 2. MPP configuration (currently, default)
+> > 3. PEX
+> > 
+> > Signed-off-by: Dhaval Vasa <dhaval.vasa@einfochips.com>
 > 
-> Well, what's the odds that I can get you to do cleanup now?  :)
+> You forgot to cc: linux-arm-kernel@lists.arm.linux.org.uk, although
+> someone really should issue a MAINTAINERS entry for that machine
+> directory.
 
-I'd be happy to but whether cleaning it up would be benefitial or not
-is a bit unclear.  We have 214 users of [un]register_chrdev_region()
-and 118 users of [un]register_chrdev().  So, renaming the latter to,
-say, create/destroy_chrdev() and make it take @baseminor and
-@nr_minors should do it but I'm not quite sure whether it would worth
-touching all those files.  Maybe it's better left as a mess like the
-page allocation functions?
+Yep, I'll take care of it.
 
-> Sure, I'll take this, only if Takashi wants the other stuff that
-> depends on it.  Let me know.
+> > ---
+> >  arch/arm/mach-kirkwood/Kconfig             |    5 ++
+> >  arch/arm/mach-kirkwood/Makefile            |    1 +
+> >  arch/arm/mach-kirkwood/openrd_base-setup.c |   79 ++++++++++++++++++++++++++++
+> >  3 files changed, 85 insertions(+), 0 deletions(-)
+> >  create mode 100644 arch/arm/mach-kirkwood/openrd_base-setup.c
+> 
+> call this openrd.c or openrd_base.c, the -setup is redundant as
+> these directories are suposed to have the machine setup files in
+> them.
 
-Thanks.
+The *-setup.c is the existing naming sheme used for the Orion and 
+Kirkwood architectures to contain board setup code instead of common IRQ 
+or timer code for example.  So it is fine.
 
--- 
-tejun
+
+Nicolas
