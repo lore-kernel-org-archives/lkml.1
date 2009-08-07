@@ -1,119 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbZHGRKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbZHGRN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754473AbZHGRKh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 13:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbZHGRKh
+	id S1754504AbZHGRN0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 13:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbZHGRN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 13:10:37 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:57264 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752466AbZHGRKg (ORCPT
+	Fri, 7 Aug 2009 13:13:26 -0400
+Received: from mail-yw0-f177.google.com ([209.85.211.177]:44722 "EHLO
+	mail-yw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754205AbZHGRNZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 13:10:36 -0400
-Date: Fri, 7 Aug 2009 10:08:48 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       earl_chew@agilent.com, alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
-       oleg@redhat.com
-Subject: Re: [PATCH 2/3] exec: let do_coredump limit the number of
- concurrent dumps to pipes (v9)
-Message-Id: <20090807100848.9805841b.randy.dunlap@oracle.com>
-In-Reply-To: <20090720162901.GB9060@hmsreliant.think-freely.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org>
-	<20090703104447.GA19371@hmsreliant.think-freely.org>
-	<20090720154938.GA8563@hmsreliant.think-freely.org>
-	<20090720162901.GB9060@hmsreliant.think-freely.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt016.oracle.com [141.146.116.25]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4A7C5FBA.0089:SCFSTAT5015188,ss=1,fgs=0
+	Fri, 7 Aug 2009 13:13:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=efWQ1ZV3QoOC7Iix0AceOGVbkmYyhtPadWB2D7ZXZ2AN/j/46dcTZYTSvIk2dp0422
+         KFibmEcN+Snzd9CdP9Q8rwCFcCXkk+Mz0YY2kKQyoHxym61kGUT37lqdDTbvpGEUk55h
+         wT1vmghR60ieSQkTVUZgLy8fvO7CcZJ1VBmxk=
+MIME-Version: 1.0
+In-Reply-To: <20090807151304.GE7545@tuxdriver.com>
+References: <c6b1100b0908070350t3101030bs4b3d2e7485ad9aee@mail.gmail.com> 
+	<200908071324.45269.elendil@planet.nl> <c6b1100b0908070556sb3f4f80sc757d8b100cbcb3c@mail.gmail.com> 
+	<20090807134803.GA7545@tuxdriver.com> <c6b1100b0908070757t7b973180s17959e0f46347d5d@mail.gmail.com> 
+	<20090807151304.GE7545@tuxdriver.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Fri, 7 Aug 2009 10:13:05 -0700
+Message-ID: <43e72e890908071013w28644e70h5323e19d19da33a2@mail.gmail.com>
+Subject: Re: ath5k - strange regulatory domain change
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Chris Clayton <chris2553@googlemail.com>, Frans Pop <elendil@planet.nl>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Jul 2009 12:29:01 -0400 Neil Horman wrote:
+On Fri, Aug 7, 2009 at 8:16 AM, John W. Linville<linville@tuxdriver.com> wrote:
+> On Fri, Aug 07, 2009 at 03:57:30PM +0100, Chris Clayton wrote:
+>> 2009/8/7 John W. Linville <linville@tuxdriver.com>:
+>> > On Fri, Aug 07, 2009 at 01:56:43PM +0100, Chris Clayton wrote:
+>
+>> >> To sum this up then (as I understand things):
+>> >>
+>> >> 1. I am the system administrator (root);
+>> >> 2. I am using a valid (albeit deprecated from 2.6.31) method to tell
+>> >> the wireless infrastructure that I want the regulatory domain set to
+>> >> GB;
+>> >> 3. GB is a valid code; and
+>> >> 4. the wireless infrastructure sets the regulatory domain to CN.
+>> >> 5. in 2.6.30, the wireless infrastructure does what I (the root user)
+>> >> tell it to do.
+>> >>
+>> >> That's a regression in my book. Oh well! I do have the iw and crda
+>> >> applications installed, so I've taken that route of setting the
+>> >> regulatory domain to GB.
+>> >
+>> > Are you actually getting the wrong regulatory rules enforced?  Or are
+>> > you merely bothered that it is reporting "CN" instead of "GB"?
+>> >
+>>
+>> I'm not sure whether it's wrong or not. To these dmesg snippets from
+>> my original post look wrong because one of the frequency ranges listed
+>> for CN is outside those listed for GB and one of the CN max_eirp
+>> entries is not preent in the GB list. Whether that is OK or not I
+>> don't know and can't find (lay user) documentation to tell me.
+>>
+>> cfg80211: Regulatory domain changed to country: GB
+>>         (start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp)
+>>         (2402000 KHz - 2482000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+>>         (5170000 KHz - 5250000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+>>         (5250000 KHz - 5330000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+>>         (5490000 KHz - 5710000 KHz @ 40000 KHz), (N/A, 2700 mBm)
+>>
+>> cfg80211: Regulatory domain changed to country: CN
+>>         (start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp)
+>>         (2402000 KHz - 2482000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+>>         (5735000 KHz - 5835000 KHz @ 40000 KHz), (N/A, 3000 mBm)
+>
+> It looks like a mismatch to me.  Luis, can you sort this out?
 
-> core_pattern: Introduce core pipe limiting sysctl
-> 
-> Since we can dump cores to pipe, rather than directly to the filesystem, we
-> create a condition in which a user can create a very high load on the system
-> simply by running bad applications.  If the pipe reader specified in
-> core_pattern is poorly written, we can have lots of ourstandig resources and
-> processes in the system.  This sysctl introduces an ability to limit that
-> resource consumption.  core_pipe_limit defines how many in-flight dumps may be
-> run in parallel, dumps beyond this value are skipped and a note is made in the
-> kernel log.  A special value of 0 in core_pipe_limit denotes unlimited core
-> dumps may be handled (this is the default value).
-> 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> Reported-by: Earl Chew <earl_chew@agilent.com>
-> 
-> 
->  Documentation/sysctl/kernel.txt |   22 ++++++++++++++++++++++
->  fs/exec.c                       |   25 +++++++++++++++++++------
->  kernel/sysctl.c                 |    9 +++++++++
->  3 files changed, 50 insertions(+), 6 deletions(-)
-> 
-> diff --git a/Documentation/sysctl/kernel.txt b/Documentation/sysctl/kernel.txt
-> index 382cfd8..7706b6a 100644
-> --- a/Documentation/sysctl/kernel.txt
-> +++ b/Documentation/sysctl/kernel.txt
-> @@ -21,6 +21,7 @@ show up in /proc/sys/kernel:
->  - acct
->  - auto_msgmni
->  - core_pattern
-> +- core_pipe_limit
->  - core_uses_pid
->  - ctrl-alt-del
->  - dentry-state
-> @@ -119,6 +120,27 @@ core_pattern is used to specify a core dumpfile pattern name.
->  
->  ==============================================================
->  
-> +core_pipe_limit:
-> +
-> +This sysctl is only applicable when core_pattern is configured to pipe core
-> +files to user space helper a (when the first character of core_pattern is a '|',
+There is no regression at all, ath5k *got* regulatory domain as of
+2.6.31, before that the EEPROM was never read for regulatory domain
+treatment. So what you see happening on 2.6.31 is interpretation of
+the EEPROM as the vendor designed it and using the regulatory
+infrastructure to help compliance. The "CN" is the first alpha2 that
+the atheros card's programmed EEPROM regulatory domain code matches
+to, so all there is here is a lack of clarity to the user of what was
+done and that can be fixed.
 
-         to a user space helper (
+Let me elaborate: Atheros EEPROM can be programmed by 3 types of
+regulatory domains, I've documented this on the wiki for the shared
+ath.ko module [1]. When you get a "regpair" there is no direct 1-1
+country mapping. The way the EEPROM was programmed for this type of
+regulatory domain was to give you a group number under which other
+countries fall under. If you ended up getting a direct alpha2
+programmed in the EEPROM instead you would still end up matching the
+alpha2 to a group number. The group number leads you to a regulatory
+domain that all those countries in that group number adhere to. So it
+was a way to group up regulatory domain rules between countries. The
+"CN" you see just so happens to be the alpha2 for the first country in
+the same group regulatory domain group.
 
-> +see above).  When collecting cores via a pipe to an application, it is
-> +occasionally usefull for the collecting application to gather data about the
+What we can do is to elaborate on that on the dmesg and also maybe
+pick the most common country on the group so it will tend to match the
+country users are on.
 
-                useful
+I am seeing if we can deprecate the group stuff on Atheros EEPROM but
+that will take some time.
 
-> +crashing process from its /proc/pid directory.  In order to do this safely, the
-> +kernel must wait for the collecting process to exit, so as not to remove the
-> +crashing processes proc files prematurely.  This in turn creates the possibility
+[1] http://wireless.kernel.org/en/users/Drivers/ath
 
-            process's (?)
-
-> +that a misbehaving userspace collecting process can block the reaping of a
-> +crashed process simply by never exiting.  This sysctl defends against that.  It
-> +defines how many concurrent crashing processes may be piped to user space
-> +applications in parallel.  If this value is exceeded, then those crashing
-> +processes above that value are noted via the kernel log and their cores are
-> +skipped.  0 is a special value, indicating that unlimited processes may be
-> +captured in parallel, but that no waiting will take place (i.e. the collecting
-> +process is not guaranteed access to /proc/<crahing pid>/).  This value defaults
-
-                                             <crashing pid>
-
-> +to 0.
-> +
-> +==============================================================
-> +
->  core_uses_pid:
->  
->  The default coredump filename is "core".  By setting
-
-
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+  Luis
