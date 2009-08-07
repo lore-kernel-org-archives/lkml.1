@@ -1,79 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbZHGJdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755696AbZHGJgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755628AbZHGJdy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 05:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZHGJdx
+	id S1755696AbZHGJgV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 05:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZHGJgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 05:33:53 -0400
-Received: from [222.73.24.84] ([222.73.24.84]:55712 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751925AbZHGJdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 05:33:52 -0400
-Message-ID: <4A7BF5B3.6060202@cn.fujitsu.com>
-Date: Fri, 07 Aug 2009 17:36:51 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 7 Aug 2009 05:36:21 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:60765 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752410AbZHGJgU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 05:36:20 -0400
+Date: Fri, 7 Aug 2009 10:34:59 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Cc: sam@ravnborg.org, hpa@zytor.com, alain@knaff.lu,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 4/6] Add support for LZO-compressed kernels for ARM
+Message-ID: <20090807093459.GB20011@n2100.arm.linux.org.uk>
+References: <20090731093107.GA29704@merkur.ravnborg.org> <1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-2-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-3-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-4-git-send-email-albin.tonnerre@free-electrons.com> <20090806224055.GH31579@n2100.arm.linux.org.uk> <20090807092423.GA4455@laptop>
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Re: [PATCH 2/2] ftrace: Unify effect of writing to trace_options
- and option/*
-References: <4A7A4D7B.7010706@cn.fujitsu.com> <4A7A4DBC.6020403@cn.fujitsu.com> <4A7A6470.60305@cn.fujitsu.com>
-In-Reply-To: <4A7A6470.60305@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090807092423.GA4455@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> Zhaolei wrote:
->> "echo noglobal-clock > trace_options" can be used to change trace
->> clock but "echo 0 > options/global-clock" can't.
->>
->> We can fix it by using set_tracer_flags() in trace_options_core_write().
->>
-> 
-> Nice catch.
-> 
->> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
->> ---
->>  kernel/trace/trace.c |    5 ++---
->>  1 files changed, 2 insertions(+), 3 deletions(-)
->>
->> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
->> index 464b7bb..2fa2bac 100644
->> --- a/kernel/trace/trace.c
->> +++ b/kernel/trace/trace.c
->> @@ -3893,12 +3893,11 @@ trace_options_core_write(struct file *filp, const char __user *ubuf, size_t cnt,
->>  
->>  	switch (val) {
->>  	case 0:
->> -		trace_flags &= ~(1 << index);
->> +		set_tracer_flags(1 << index, 0);
->>  		break;
->>  	case 1:
->> -		trace_flags |= 1 << index;
->> +		set_tracer_flags(1 << index, 1);
->>  		break;
->> -
->>  	default:
->>  		return -EINVAL;
->>  	}
-> 
-> The whole switch statement can be simplied:
-> 
-> 	if (val != 0 || val != 1)
-> 		return -EINVAL;
-> 	set_tracer_flags(1 << index, val);
+On Fri, Aug 07, 2009 at 11:24:52AM +0200, Albin Tonnerre wrote:
+> I also happen to have issues related to the linker not finding __aeabi_uidivmod,
+> but only when compiling with CONFIG_CC_OPTIMIZE_FOR_SIZE. Is it similar for you,
+> or does it also fail when compiling with -O2 ?
 
-Hello, Li
-
-Thanks.
-V2 will send.
-
-Thanks
-Zhaolei
-
+I tend not to build with -O2 because it seems to tickle compiler bugs
+(which is the reverse of -Os on x86.)  I'll give it a go over the
+next few days.
