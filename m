@@ -1,100 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757015AbZHGDeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750905AbZHGEAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757015AbZHGDeu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 23:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756969AbZHGDet
+	id S1750905AbZHGEAt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 00:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750750AbZHGEAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 23:34:49 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:36297 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756949AbZHGDes (ORCPT
+	Fri, 7 Aug 2009 00:00:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56217 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750705AbZHGEAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 23:34:48 -0400
-Date: Fri, 7 Aug 2009 12:34:48 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       Magnus Damm <damm@igel.co.jp>, David Woodhouse <dwmw2@infradead.org>,
-       linux-mtd@lists.infradead.org
-Subject: Re: mmotm 2009-08-06-00-30 uploaded (mtd)
-Message-ID: <20090807033448.GA32592@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	linux-kernel@vger.kernel.org, Magnus Damm <damm@igel.co.jp>,
-	David Woodhouse <dwmw2@infradead.org>,
-	linux-mtd@lists.infradead.org
-References: <200908060733.n767X6mN023120@imap1.linux-foundation.org> <20090806190233.6d4b4e28.randy.dunlap@oracle.com> <20090806192513.53f6488b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090806192513.53f6488b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 7 Aug 2009 00:00:47 -0400
+Date: Thu, 6 Aug 2009 21:00:02 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: "Fischer, Anna" <anna.fischer@hp.com>
+Cc: "bridge@lists.linux-foundation.org" 
+	<bridge@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "evb@yahoogroups.com" <evb@yahoogroups.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "kaber@trash.net" <kaber@trash.net>,
+       "adobriyan@gmail.com" <adobriyan@gmail.com>,
+       Arnd Bergmann <arnd@arndb.de>,
+       "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>
+Subject: Re: [PATCH][RFC] net/bridge: add basic VEPA support
+Message-ID: <20090806210002.75beb7c6@nehalam>
+In-Reply-To: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net>
+References: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 07:25:13PM -0700, Andrew Morton wrote:
-> On Thu, 6 Aug 2009 19:02:33 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Mon, 15 Jun 2009 17:33:10 +0000
+"Fischer, Anna" <anna.fischer@hp.com> wrote:
+
+> This patch adds basic Virtual Ethernet Port Aggregator (VEPA)
+> capabilities to the Linux kernel Ethernet bridging code.
 > 
-> > On Thu, 06 Aug 2009 00:33:06 -0700 akpm@linux-foundation.org wrote:
-> > 
-> > > The mm-of-the-moment snapshot 2009-08-06-00-30 has been uploaded to
-> > > 
-> > >    http://userweb.kernel.org/~akpm/mmotm/
-> > > 
-> > > and will soon be available at
-> > > 
-> > >    git://git.zen-sources.org/zen/mmotm.git
-> > > 
-> > > It contains the following patches against 2.6.31-rc5:
-> > 
-> > 
-> > 
-> > drivers/built-in.o: In function `generic_onenand_remove':
-> > generic.c:(.devexit.text+0x1b8e): undefined reference to `del_mtd_partitions'
-> > 
-> > config attached.
+> A Virtual Ethernet Port Aggregator (VEPA) is a capability within
+> a physical end station that collaborates with an adjacent, external
+> bridge to provide distributed bridging support between multiple
+> virtual end stations and external networks. The VEPA collaborates
+> by forwarding all station-originated frames to the adjacent bridge
+> for frame processing and frame relay (including so-called 'hairpin'
+> forwarding) and by steering and replicating frames received from
+> the VEPA uplink to the appropriate destinations. A VEPA may be
+> implemented in software or in conjunction with embedded hardware.
 > 
-> Thanks.  It's mtd-make-onenand-genericc-more-generic.patch.
+> In particular, the patch extends the Linux Ethernet bridge to act as
+> (1) a VEPA - for this we have added VEPA forwarding functionality and
+>     added a configuration option for a VEPA uplink port, or as
+> (2) a bridge supporting 'hairpin' forwarding - for this we have added a
+>     bridge port 'hairpin' mode which allows sending frames back out
+>     through the port the frame was received on.
 > 
-Wow, I guess ARM people don't do randconfigs.
+> Configuration of VEPA capabilities through Linux userspace bridge
+> utilities is provided by an additional patch 'bridge-utils: add
+> basic VEPA support'.
 
----
+After reading more about this, I am not convinced this should be part
+of the bridge code. The bridge code really consists of two parts:
+forwarding table and optional spanning tree. Well the VEPA code
+short circuits both of these; it can't imagine it working
+with STP turned on. The only part of bridge code that really gets
+used by this are the receive packet hooks and the crufty old
+API.
 
-[PATCH] mtd: onenand: select MTD_PARTITIONS.
-
-All of the onenand drivers depend on mtd partition support being compiled
-in, so just select it. Fixes up build breakage:
-
-drivers/built-in.o: In function `generic_onenand_remove':
-generic.c:(.devexit.text+0x80): undefined reference to `del_mtd_partitions'
-
-Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-
----
-
- drivers/mtd/onenand/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/mtd/onenand/Kconfig b/drivers/mtd/onenand/Kconfig
-index 2d6b7c1..a38f580 100644
---- a/drivers/mtd/onenand/Kconfig
-+++ b/drivers/mtd/onenand/Kconfig
-@@ -5,6 +5,7 @@
- menuconfig MTD_ONENAND
- 	tristate "OneNAND Device Support"
- 	depends on MTD
-+	select MTD_PARTITIONS
- 	help
- 	  This enables support for accessing all type of OneNAND flash
- 	  devices. For further information see
-@@ -65,7 +66,6 @@ config MTD_ONENAND_2X_PROGRAM
- 
- config MTD_ONENAND_SIM
- 	tristate "OneNAND simulator support"
--	depends on MTD_PARTITIONS
- 	help
- 	  The simulator may simulate various OneNAND flash chips for the
- 	  OneNAND MTD layer.
+So instead of adding more stuff to existing bridge code, why not
+have a new driver for just VEPA. You could
+do it with a simple version of macvlan type driver.
