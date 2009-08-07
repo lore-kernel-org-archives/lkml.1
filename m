@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbZHGQhC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754114AbZHGQjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbZHGQhC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 12:37:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbZHGQhB
+	id S1754114AbZHGQjz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 12:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZHGQjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 12:37:01 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:43233 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754018AbZHGQhA (ORCPT
+	Fri, 7 Aug 2009 12:39:54 -0400
+Received: from viefep15-int.chello.at ([62.179.121.35]:62218 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754080AbZHGQjx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 12:37:00 -0400
-To: eparis@redhat.com
-CC: a.p.zijlstra@chello.nl, tvrtko.ursulin@sophos.com,
-       douglas.leeder@sophos.com, pavel@ucw.cz, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, malware-list@dmesg.printk.net,
-       Valdis.Kletnieks@vt.edu, greg@kroah.com, jcm@redhat.com, tytso@mit.edu,
-       arjan@infradead.org, david@lang.hm, jengelh@medozas.de,
-       aviro@redhat.com, mrkafk@gmail.com, alexl@redhat.com, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in
-In-reply-to: <1249582695.20644.35.camel@dhcp231-106.rdu.redhat.com> (message
-	from Eric Paris on Thu, 06 Aug 2009 14:18:15 -0400)
-Subject: Re: fanotify - overall design before I start sending patches
-References: <1248466429.3567.82.camel@localhost> <4A7AAE89.20205@sophos.com>
-	 <1249554548.32113.137.camel@twins>
-	 <200908061159.45550.tvrtko.ursulin@sophos.com>
-	 <1249557831.32113.234.camel@twins> <1249582695.20644.35.camel@dhcp231-106.rdu.redhat.com>
-Message-Id: <E1MZSQZ-0002as-FA@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 07 Aug 2009 18:36:23 +0200
+	Fri, 7 Aug 2009 12:39:53 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [patch] x86, perf_counter, bts: add bts to perf_counter
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Markus Metzger <markus.t.metzger@intel.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, markus.t.metzger@gmail.com, oleg@redhat.com
+In-Reply-To: <20090807092256.A6083@sedona.ch.intel.com>
+References: <20090807092256.A6083@sedona.ch.intel.com>
+Content-Type: text/plain
+Date: Fri, 07 Aug 2009 18:39:36 +0200
+Message-Id: <1249663176.32113.750.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Aug 2009, Eric Paris wrote:
-> just work.  The whole reason for the timeout is because I don't trust
-> userspace not to get it wrong and I'd rather not lose my box because of
-> it.
+On Fri, 2009-08-07 at 09:22 +0200, Markus Metzger wrote:
+> Implement a performance counter with:
+>     attr.type           = PERF_TYPE_HARDWARE
+>     attr.config         = PERF_COUNT_HW_BRANCH_INSTRUCTIONS
+>     attr.sample_period  = 1
+> 
+> using branch trace store (BTS) on x86 hardware, if available.
+> 
+> The from and to address for each branch can be sampled using:
+>     PERF_SAMPLE_IP      for the from address
+>     PERF_SAMPLE_ADDR    for the to address
 
-IMO this has nothing to do with userspace(*) and everything to do with
-complexity.  Virus scanning is complex and any such code, whether
-runing in userspace or not, can easily screw up and freeze the system.
 
-The way to solve that is not to implement hacks on the kernel
-interface, but rather by separating the complex parts and implementing
-a simple watchdog layer on top of that, that makes sure things don't
-go wrong.
+The patch seems to forget one fundamental aspect, it doesn't provide a
+counter.
 
-(*) We _must_ trust privileged userspace not to screw up.  System
-scripts can easily do much worse damage than freezing filesystem
-operations.  Just think "rm -rf /".
+The 'fake' fixed purpose counter we create only provides event samples,
+but it does not provide a counter abstraction, so people who'd expect
+read() to return the current count of things will get 0.
 
-Thanks,
-Miklos
+We could fix this by keeping a software counter along with it that
+counts the number of BTS entries processed so far.
+
+
+
