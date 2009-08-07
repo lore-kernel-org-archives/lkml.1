@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbZHGIxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757294AbZHGIyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757284AbZHGIxm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 04:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757204AbZHGIxl
+	id S1757294AbZHGIyH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 04:54:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757270AbZHGIyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 04:53:41 -0400
-Received: from telenet.ba.be ([81.83.8.189]:58303 "EHLO antispam.ba.be"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757198AbZHGIxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 04:53:41 -0400
-X-Greylist: delayed 1267 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Aug 2009 04:53:40 EDT
-From: Maarten Vanraes <maarten.vanraes@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: ipmisensors
-Date: Fri, 7 Aug 2009 10:30:37 +0200
-User-Agent: KMail/1.9.9
+	Fri, 7 Aug 2009 04:54:06 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:58866 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757272AbZHGIyF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 04:54:05 -0400
+From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+To: alsa-devel@alsa-project.org
+Subject: Re: [alsa-devel] [PATCH][2.6.31-rc5] ARM: OMAP: McBSP: Fix ASoC on OMAP1510 by fixing API of omap_mcbsp_start/stop
+Date: Fri, 7 Aug 2009 11:52:47 +0300
+User-Agent: KMail/1.11.4 (Linux/2.6.30-gentoo-r4; KDE/4.2.4; i686; ; )
+Cc: ext Jarkko Nikula <jhnikula@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>,
+       Tony Lindgren <tony@atomide.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+References: <1249628387-7372-1-git-send-email-jhnikula@gmail.com>
+In-Reply-To: <1249628387-7372-1-git-send-email-jhnikula@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200908071030.38084.maarten.vanraes@gmail.com>
+Message-Id: <200908071152.47243.peter.ujfalusi@nokia.com>
+X-OriginalArrivalTime: 07 Aug 2009 08:52:51.0814 (UTC) FILETIME=[72646860:01CA173C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Friday 07 August 2009 09:59:47 ext Jarkko Nikula wrote:
+> Simultaneous audio playback and capture on OMAP1510 can cause that second
+> stream is stalled if there is enough delay between startup of the audio
+> streams.
+>
+> Current implementation of the omap_mcbsp_start is starting both transmitter
+> and receiver at the same time and it is called only for firstly started
+> audio stream from the OMAP McBSP based ASoC DAI driver.
+>
+> Since DMA request lines on OMAP1510 are edge sensitive, the DMA request is
+> missed if there is no DMA transfer set up at that time when the first word
+> after McBSP startup is transmitted. The problem hasn't noted before since
+> later OMAPs are using level sensitive DMA request lines.
+>
+> Fix the problem by changing API of omap_mcbsp_start and omap_mcbsp_stop by
+> allowing to start and stop individually McBSP transmitter and receiver
+> logics. Then call those functions individually for both audio playback
+> and capture streams. This ensures that DMA transfer is setup before
+> transmitter or receiver is started.
+>
+> Thanks to Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> for detailed problem
+> analysis and Peter Ujfalusi <peter.ujfalusi@nokia.com> for info about DMA
+> request line behavior differences between the OMAP generations.
+>
+> Reported-and-tested-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+> Signed-off-by: Jarkko Nikula <jhnikula@gmail.com>
+> Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Cc: Tony Lindgren <tony@atomide.com>
+> ---
+>  arch/arm/plat-omap/include/mach/mcbsp.h |    4 +-
+>  arch/arm/plat-omap/mcbsp.c              |   50
+> +++++++++++++++++++----------- sound/soc/omap/omap-mcbsp.c             |  
+> 10 +++---
+>  3 files changed, 39 insertions(+), 25 deletions(-)
 
-( I would like to request that you CC me in replies )
-
-I'm trying to fix the ipmisensors patch to 2.6.30.2 (which is the xen-based 
-kernel i now use; the patch was written for 2.6.17 and contains numerous 
-deprecated code)
-
-I do have the problem that the ipmi_msghandler module doesn't seem to generate 
-events at modprobe.
-
-the  ipmisensors_new_smi, ipmisensors_smi_gone &  ipmisensors_msg_handler are 
-never executed...
-
-can i get any hints?
-
-Kind regards,
-
-Maarten
-
-
-/* ipmisensors driver data */
-static struct ipmisensors_data driver_data = {
-        .driver_name = "bmc",
-        .bmc_data = LIST_HEAD_INIT(driver_data.bmc_data),
-        .interfaces = 0,
-        .smi_watcher = {
-                        .owner = THIS_MODULE,
-                        .new_smi = ipmisensors_new_smi,
-                        .smi_gone = ipmisensors_smi_gone,
-                        },
-        .ipmi_hndlrs = {
-                        .ipmi_recv_hndl = ipmisensors_msg_handler,
-                        },
-};
-
-....
-
-in __init function:
-
-        /* register IPMI interface callback(s) */
-        error = ipmi_smi_watcher_register(&driver_data.smi_watcher);
-        if (error) {
-                printk(KERN_WARNING
-                       "ipmisensors: can't register smi watcher\n");
-                return error;
-        }
+Acked-by: Peter Ujfalusi <peter.ujfalusi@nokia.com>
 
