@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbZHGLew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbZHGLhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757589AbZHGLew (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 07:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbZHGLev
+	id S1757578AbZHGLhr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 07:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbZHGLhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 07:34:51 -0400
-Received: from mga14.intel.com ([143.182.124.37]:46280 "EHLO mga14.intel.com"
+	Fri, 7 Aug 2009 07:37:46 -0400
+Received: from mga01.intel.com ([192.55.52.88]:60731 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757557AbZHGLev convert rfc822-to-8bit (ORCPT
+	id S1752028AbZHGLhq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 07:34:51 -0400
+	Fri, 7 Aug 2009 07:37:46 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.43,341,1246863600"; 
-   d="scan'208";a="173371595"
+   d="scan'208";a="714754668"
 From: "Metzger, Markus T" <markus.t.metzger@intel.com>
 To: Ingo Molnar <mingo@elte.hu>
 CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -20,11 +20,11 @@ CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        "hpa@zytor.com" <hpa@zytor.com>,
        "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 7 Aug 2009 12:34:46 +0100
+Date: Fri, 7 Aug 2009 12:37:42 +0100
 Subject: RE: [patch] x86, perf_counter, bts: add bts to perf_counter
 Thread-Topic: [patch] x86, perf_counter, bts: add bts to perf_counter
-Thread-Index: AcoXUQDlO2l7mf6tTTqOwLuV7Qbv8AAAYE5w
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF05E@irsmsx504.ger.corp.intel.com>
+Thread-Index: AcoXUQDlO2l7mf6tTTqOwLuV7Qbv8AAAlULg
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF06B@irsmsx504.ger.corp.intel.com>
 References: <20090721155648.A17047@sedona.ch.intel.com>
  <1249381489.7924.186.camel@twins> <20090804111412.GA20942@elte.hu>
  <20090804113555.GA28198@elte.hu>
@@ -59,38 +59,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 >note, i had this running in the background, as root:
 >
 >/home/mingo/bin/perf top >/dev/null 2>/dev/null&
->
->that is what interacted most likely.
-
-I'll try that, as well.
 
 
-> I killed that task and did a
->user-space only recording via:
->
->titan:~> perf record -f -e branches:u -c 1 ./loop_1b_instructions
->
->and that succeeded:
->
->^C[ perf record: Captured and wrote 827.901 MB perf.data (~36171547 samples) ]
->
->to make BTS sampling really practical we need a 'flight data
->recorder' mode for the mmap buffer (overwrite mode), right? Peter
->sent you a patch for that some time ago - did anything good happen
->to that patch?
+I can reproduce the kernel hang in that case.
 
-You mean the patch to find the beginning of the buffer?
+I'll look into it.
 
-Seems that we only get one type of record in those buffers, so a debugger can read
-the trace from tail to head.
-
-I had been expecting that we can have multiple counters write into the same mmap
-buffer, but when I actually tried to do that, it looked like I would need a separate
-mmap buffer per counter.
-
-thanks and regards,
+regards,
 markus.
-
 ---------------------------------------------------------------------
 Intel GmbH
 Dornacher Strasse 1
