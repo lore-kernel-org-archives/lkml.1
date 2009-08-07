@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbZHGH4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757145AbZHGIAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757160AbZHGH4m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 03:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757137AbZHGH4m
+	id S1757145AbZHGIAu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 04:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756983AbZHGIAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 03:56:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46272 "EHLO mx3.mail.elte.hu"
+	Fri, 7 Aug 2009 04:00:49 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55666 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757021AbZHGH4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 03:56:41 -0400
-Date: Fri, 7 Aug 2009 09:55:55 +0200
+	id S1755187AbZHGIAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 04:00:49 -0400
+Date: Fri, 7 Aug 2009 10:00:18 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Mel Gorman <mel@csn.ul.ie>
 Cc: Larry Woodman <lwoodman@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
        Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [PATCH 3/6] tracing, page-allocator: Add trace event for page
-	traffic related to the buddy lists
-Message-ID: <20090807075555.GA21165@elte.hu>
-References: <1249574827-18745-1-git-send-email-mel@csn.ul.ie> <1249574827-18745-4-git-send-email-mel@csn.ul.ie> <20090807075317.GC20292@elte.hu>
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 4/6] tracing, page-allocator: Add a postprocessing
+	script for page-allocator-related ftrace events
+Message-ID: <20090807080018.GD20292@elte.hu>
+References: <1249574827-18745-1-git-send-email-mel@csn.ul.ie> <1249574827-18745-5-git-send-email-mel@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090807075317.GC20292@elte.hu>
+In-Reply-To: <1249574827-18745-5-git-send-email-mel@csn.ul.ie>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,43 +38,26 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+* Mel Gorman <mel@csn.ul.ie> wrote:
 
-> 
-> * Mel Gorman <mel@csn.ul.ie> wrote:
-> 
-> > +TRACE_EVENT(mm_page_pcpu_drain,
-> > +
-> > +	TP_PROTO(struct page *page, int order, int migratetype),
-> > +
-> > +	TP_ARGS(page, order, migratetype),
-> > +
-> > +	TP_STRUCT__entry(
-> > +		__field(	struct page *,	page		)
-> > +		__field(	int,		order		)
-> > +		__field(	int,		migratetype	)
-> > +	),
-> > +
-> > +	TP_fast_assign(
-> > +		__entry->page		= page;
-> > +		__entry->order		= order;
-> > +		__entry->migratetype	= migratetype;
-> > +	),
-> > +
-> > +	TP_printk("page=%p pfn=%lu order=%d cpu=%d migratetype=%d",
-> > +		__entry->page,
-> > +		page_to_pfn(__entry->page),
-> > +		__entry->order,
-> > +		smp_processor_id(),
-> > +		__entry->migratetype)
-> 
-> > +	trace_mm_page_alloc_zone_locked(page, order, migratetype, order == 0);
-> 
-> This can be optimized further by omitting the migratetype field and 
-> adding something like this:
+> This patch adds a simple post-processing script for the 
+> page-allocator-related trace events. It can be used to give an 
+> indication of who the most allocator-intensive processes are and 
+> how often the zone lock was taken during the tracing period. 
+> Example output looks like
 
-erm, cut & pasted the wrong thing, i meant:
+Note, this script hard-codes certain aspects of the output format:
 
-s/migratetype/percpu_refill
++my $regex_traceevent =
++'\s*([a-zA-Z0-9-]*)\s*(\[[0-9]*\])\s*([0-9.]*):\s*([a-zA-Z_]*):\s*(.*)';
++my $regex_fragdetails = 'page=([0-9a-f]*) pfn=([0-9]*) alloc_order=([0-9]*)
++fallback_order=([0-9]*) pageblock_order=([0-9]*) alloc_migratetype=([0-9]*)
++fallback_migratetype=([0-9]*) fragmenting=([0-9]) change_ownership=([0-9])';
++my $regex_statname = '[-0-9]*\s\((.*)\).*';
++my $regex_statppid = '[-0-9]*\s\(.*\)\s[A-Za-z]\s([0-9]*).*';
+
+the proper appproach is to parse /debug/tracing/events/mm/*/format. 
+That is why we emit a format string - to detach tools and reduce the 
+semi-ABI effect.
 
 	Ingo
