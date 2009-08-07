@@ -1,78 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756304AbZHGLVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbZHGLY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756304AbZHGLVY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 07:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZHGLVX
+	id S1757417AbZHGLY3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 07:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbZHGLY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 07:21:23 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:40462 "EHLO gir.skynet.ie"
+	Fri, 7 Aug 2009 07:24:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37876 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750879AbZHGLVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 07:21:23 -0400
-Date: Fri, 7 Aug 2009 12:21:24 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org
-cc: linux-kernel@vger.kernel.org
-Subject: [update 2 git pull] drm-fixes
-Message-ID: <alpine.DEB.2.00.0908071220120.30840@skynet.skynet.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1752028AbZHGLY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 07:24:29 -0400
+Date: Fri, 7 Aug 2009 13:24:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] x86, perf_counter, bts: add bts to perf_counter
+Message-ID: <20090807112421.GB30014@elte.hu>
+References: <1249381489.7924.186.camel@twins> <20090804111412.GA20942@elte.hu> <20090804113555.GA28198@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77EC1BFEEE3@irsmsx504.ger.corp.intel.com> <1249633282.32113.613.camel@twins> <928CFBE8E7CB0040959E56B4EA41A77EC1BFEFEB@irsmsx504.ger.corp.intel.com> <20090807103127.GA23139@elte.hu> <20090807103610.GA23728@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77EC1BFF02D@irsmsx504.ger.corp.intel.com> <928CFBE8E7CB0040959E56B4EA41A77EC1BFF048@irsmsx504.ger.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF048@irsmsx504.ger.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0015]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi Linus,
+* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
 
-Please pull the 'drm-fixes' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-fixes
+> Ingo, what exactly do you mean by "locks up"? Is the kernel 
+> hanging or is perf record hanging?
 
-threw another patch in here, after doing some suspend/resume testing 
-today. so rs880 pci ids, and a radeon kms TTM patch + radeon kms 
-suspend/resume fix.
+it was a hard hang - box was not pingable, etc.
 
-Dave.
-
- drivers/gpu/drm/radeon/r600_cp.c       |   22 +++++++++++++++-------
- drivers/gpu/drm/radeon/radeon_device.c |    4 +++-
- drivers/gpu/drm/radeon/radeon_drv.h    |    1 +
- drivers/gpu/drm/radeon/radeon_object.c |    2 +-
- include/drm/drm_pciids.h               |    5 +++++
- 5 files changed, 25 insertions(+), 9 deletions(-)
-
-commit 17332925d7b11bb6c2d0c49450ae58dd836005da
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Fri Aug 7 11:03:26 2009 +1000
-
-    drm/radeon/kms: setup MC/VRAM the same way for suspend/resume
-    
-    we should align the GTT after VRAM no matter what, as we can
-    come back from resume and put in a different place and bad things happen.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 985fe845aea9cd56fd351800302270444556e45a
-Author: Jerome Glisse <jglisse@redhat.com>
-Date:   Wed Jul 29 18:55:53 2009 +0200
-
-    drm/radeon/kms: Fix caching mode selection for GTT object
-    
-    GTT object can either be cached,uncached or wc just let core ttm
-    pick the best mode according to how the bo driver and GTT memory
-    type was initialized.
-    
-    Signed-off-by: Jerome Glisse <jglisse@redhat.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 6502fbfaf81b09b3f474bb7b3796257e9450273e
-Author: Alex Deucher <alexdeucher@gmail.com>
-Date:   Tue Aug 4 11:24:24 2009 -0400
-
-    drm/radeon: Add support for RS880 chips
-    
-    These are new AMD IGP chips
-    
-    Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
+	Ingo
