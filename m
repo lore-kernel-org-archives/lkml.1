@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933463AbZHGT6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933576AbZHGUBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933463AbZHGT6S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 15:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933270AbZHGT6P
+	id S933576AbZHGUBb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933185AbZHGUBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 15:58:15 -0400
-Received: from ru.mvista.com ([213.79.90.228]:2264 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933363AbZHGT6L (ORCPT
+	Fri, 7 Aug 2009 16:01:31 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34820 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933520AbZHGUBa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 15:58:11 -0400
-Date: Fri, 7 Aug 2009 23:58:11 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pierre Ossman <pierre@ossman.eu>, Kumar Gala <galak@kernel.crashing.org>,
-       David Vrabel <david.vrabel@csr.com>, Ben Dooks <ben@fluff.org>,
-       Sascha Hauer <s.hauer@pengutronix.de>, linux-kernel@vger.kernel.org,
-       sdhci-devel@lists.ossman.eu, linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/7] sdhci-of: Don't hard-code inverted write-protect quirk
-Message-ID: <20090807195811.GE2735@oksana.dev.rtsoft.ru>
-References: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
+	Fri, 7 Aug 2009 16:01:30 -0400
+Date: Fri, 7 Aug 2009 21:00:01 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Cc: Matthieu CASTET <matthieu.castet@parrot.com>, Alain Knaff <alain@knaff.lu>,
+       "sam@ravnborg.org" <sam@ravnborg.org>, "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/6] Add support for LZO-compressed kernels for ARM
+Message-ID: <20090807200001.GE31543@n2100.arm.linux.org.uk>
+References: <1249311501-23102-3-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-4-git-send-email-albin.tonnerre@free-electrons.com> <20090806224055.GH31579@n2100.arm.linux.org.uk> <20090807092423.GA4455@laptop> <4A7BF5B8.4030907@knaff.lu> <20090807102117.GB4455@laptop> <4A7C14EB.1060701@parrot.com> <20090807130130.GE4455@laptop> <4A7C2BA4.7030408@parrot.com> <20090807135524.GF4455@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090807135524.GF4455@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MPC85xx SOCs have normal write-protect state reporting, so we shouldn't
-hard-code the quirk.
+On Fri, Aug 07, 2009 at 03:55:24PM +0200, Albin Tonnerre wrote:
+> That's true for the actual kernel image, but not for the bootstrap code we use
+> when compiling compressed kernels. arch/arm/boot/compressed/Makefile uses
+> libgcc, unless I'm overlooking something here:
+> 
+>   arm-unknown-linux-uclibcgnueabi-ld -EL    --defsym zreladdr=0x20008000
+>   --defsym initrd_phys=0x20410000 --defsym params_phys=0x20000100 -p
+>   --no-undefined -X
+>   /home/albin/x-tools/arm-unknown-linux-uclibcgnueabi/lib/gcc/arm-unknown-linux-uclibcgnueabi/4.3.2/libgcc.a
+>   -T arch/arm/boot/compressed/vmlinux.lds arch/arm/boot/compressed/head.o
+>   arch/arm/boot/compressed/piggy.gzip.o arch/arm/boot/compressed/misc.o -o
+>   arch/arm/boot/compressed/vmlinux
 
-Instead, look for "sdhci,wp-inverted" property, plus check for
-mpc837x_{rdb,mds} machines since older device trees don't specify the
-new property.
+It's because libgcc appears in the wrong place in the command line, and
+due to the way kbuild works, we can't get it into the right place easily.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/mmc/host/sdhci-of.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+Linkers are sensitive to the order of archives on the command line - its
+pointless having an archive as the first file argument because none of
+the contained objects will ever be pulled in.
 
-diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-index 004f24d..87aaf4b 100644
---- a/drivers/mmc/host/sdhci-of.c
-+++ b/drivers/mmc/host/sdhci-of.c
-@@ -21,6 +21,7 @@
- #include <linux/of.h>
- #include <linux/of_platform.h>
- #include <linux/mmc/host.h>
-+#include <asm/machdep.h>
- #include "sdhci.h"
- 
- struct sdhci_of_data {
-@@ -175,7 +176,6 @@ static unsigned int esdhc_get_min_clock(struct sdhci_host *host)
- static struct sdhci_of_data sdhci_esdhc = {
- 	.quirks = SDHCI_QUIRK_FORCE_BLK_SZ_2048 |
- 		  SDHCI_QUIRK_BROKEN_CARD_DETECTION |
--		  SDHCI_QUIRK_INVERTED_WRITE_PROTECT |
- 		  SDHCI_QUIRK_NO_BUSY_IRQ |
- 		  SDHCI_QUIRK_NONSTANDARD_CLOCK |
- 		  SDHCI_QUIRK_DATA_TIMEOUT_USES_SDCLK |
-@@ -219,6 +219,15 @@ static int sdhci_of_resume(struct of_device *ofdev)
- 
- #endif
- 
-+static bool __devinit sdhci_of_wp_inverted(struct device_node *np)
-+{
-+	if (of_get_property(np, "sdhci,wp-inverted", NULL))
-+		return true;
-+
-+	/* Old device trees don't have the wp-inverted property. */
-+	return machine_is(mpc837x_rdb) || machine_is(mpc837x_mds);
-+}
-+
- static int __devinit sdhci_of_probe(struct of_device *ofdev,
- 				 const struct of_device_id *match)
- {
-@@ -261,6 +270,9 @@ static int __devinit sdhci_of_probe(struct of_device *ofdev,
- 	if (of_get_property(np, "sdhci,1-bit-only", NULL))
- 		host->quirks |= SDHCI_QUIRK_FORCE_1_BIT_DATA;
- 
-+	if (sdhci_of_wp_inverted(np))
-+		host->quirks |= SDHCI_QUIRK_INVERTED_WRITE_PROTECT;
-+
- 	clk = of_get_property(np, "clock-frequency", &size);
- 	if (clk && size == sizeof(*clk) && *clk)
- 		of_host->clock = *clk;
--- 
-1.6.3.3
-
+Sam - any ideas how to solve this?
