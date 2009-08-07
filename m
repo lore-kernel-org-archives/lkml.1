@@ -1,109 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbZHGGEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbZHGGKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753554AbZHGGEB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 02:04:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbZHGGEA
+	id S1754227AbZHGGKq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 02:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbZHGGKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 02:04:00 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:39819 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752740AbZHGGEA (ORCPT
+	Fri, 7 Aug 2009 02:10:46 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:51445 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752695AbZHGGKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 02:04:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=WBszdF2mZUflPSjH27fwapD3rtTPesfuBpc3w65H9zZ+KNGXp2lvMIAyCW/zPOYLVR
-         g9OhmRR4kJ9ry0rDMZc0OaH5S+NCcvQa/h95xpsAU6KER7di4IG3I4t2IEaOLpbu3uUA
-         ulkkBvxZFnBzcjo2NfOaEX7psFANL7UdKB1N0=
-Date: Fri, 7 Aug 2009 08:03:56 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mark Gross <mgross@linux.intel.com>
-Subject: Re: [PATCH 2/2] pm_qos: clean up racy "name" variable
-Message-ID: <20090807060355.GC9182@nowhere>
-References: <20090806135841.46682114@bike.lwn.net> <20090806200509.2320a3fd@bike.lwn.net>
+	Fri, 7 Aug 2009 02:10:45 -0400
+Date: Thu, 6 Aug 2009 23:11:03 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Oren Laadan <orenl@cs.columbia.edu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, serue@us.ibm.com,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Containers <containers@lists.linux-foundation.org>,
+       sukadev@us.ibm.com
+Subject: [RFC][v4][PATCH 0/7] clone_with_pids() system call
+Message-ID: <20090807061103.GA19343@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090806200509.2320a3fd@bike.lwn.net>
+X-Operating-System: Linux 2.0.32 on an i486
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 08:05:09PM -0600, Jonathan Corbet wrote:
-> "name" is an awful name for a file-global variable.  It was used in
-> three different functions, with no mutual exclusion.  But it's just a
-> tiny, temporary string; let's just move it onto the stack in the
-> functions that need it.  Also use snprintf() just in case.
-> 
-> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-> ---
->  kernel/pm_qos_params.c |   12 +++++++-----
->  1 files changed, 7 insertions(+), 5 deletions(-)
-> 
-> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> index d96b83e..3db49b9 100644
-> --- a/kernel/pm_qos_params.c
-> +++ b/kernel/pm_qos_params.c
-> @@ -343,18 +343,18 @@ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_remove_notifier);
->  
-> -#define PID_NAME_LEN sizeof("process_1234567890")
-> -static char name[PID_NAME_LEN];
-> +#define PID_NAME_LEN 32
->  
->  static int pm_qos_power_open(struct inode *inode, struct file *filp)
->  {
->  	int ret;
->  	long pm_qos_class;
-> +	char name[PID_NAME_LEN];
->  
->  	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
->  	if (pm_qos_class >= 0) {
->  		filp->private_data = (void *)pm_qos_class;
-> -		sprintf(name, "process_%d", current->pid);
-> +		snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
->  		ret = pm_qos_add_requirement(pm_qos_class, name,
->  					PM_QOS_DEFAULT_VALUE);
->  		if (ret >= 0)
-> @@ -366,9 +366,10 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
->  static int pm_qos_power_release(struct inode *inode, struct file *filp)
->  {
->  	int pm_qos_class;
-> +	char name[PID_NAME_LEN];
->  
->  	pm_qos_class = (long)filp->private_data;
-> -	sprintf(name, "process_%d", current->pid);
-> +	snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
->  	pm_qos_remove_requirement(pm_qos_class, name);
->  
->  	return 0;
-> @@ -379,13 +380,14 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
->  {
->  	s32 value;
->  	int pm_qos_class;
-> +	char name[PID_NAME_LEN];
->  
->  	pm_qos_class = (long)filp->private_data;
->  	if (count != sizeof(s32))
->  		return -EINVAL;
->  	if (copy_from_user(&value, buf, sizeof(s32)))
->  		return -EFAULT;
-> -	sprintf(name, "process_%d", current->pid);
-> +	snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
->  	pm_qos_update_requirement(pm_qos_class, name, value);
->  
->  	return  sizeof(s32);
 
 
-Oh, and nothing was protecting this string between open/write/release...
-So, double effect, bkl killing, and race condition fixed!
+=== NEW CLONE() SYSTEM CALL:
 
-Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com> (if that matters, I
-don't know much this file...)
+To support application checkpoint/restart, a task must have the same pid it
+had when it was checkpointed.  When containers are nested, the tasks within
+the containers exist in multiple pid namespaces and hence have multiple pids
+to specify during restart.
 
+This patchset implements a new system call, clone_with_pids() that lets a
+process specify the pids of the child process.
+
+Patches 1 through 5 are helpers and we believe they are needed for application
+restart, regardless of the kernel implementation of application restart.
+
+Patch 7/7 defines a prototype of the new system call.
+
+=== IMPORTANT TODO:
+
+clone() system call has another limitation - all available bits in clone-flags
+are in use and any new clone-flag will need a variant of the clone() system
+call. 
+
+It appears to make sense to try and extend this new system call to address
+this limitation as well. The basic requirements of a new clone system call
+could then be summarized as:
+
+	- do everything clone() does today, and
+	- give application an ability to choose pids for the child process
+	  in all ancestor pid namespaces, and
+	- allow more clone_flags
+
+Contstraints:
+
+	- system-calls are restricted to 6 parameters and clone() already
+	  takes 5 parameters, any extension to clone() interface would require
+	  one or more copy_from_user().
+
+	- does copy_from_user() of a few words have a significant impact on
+	  the total cost of clone() ?
+
+Based on these requirements and constraints, we have been exploring a couple
+of system call interfaces and appreciate any iput.  
+
+1. =====
+
+	#if 64bit
+	#define CLONE_FLAGS_WORDS	1
+	#else
+	#define CLONE_FLAGS_WORDS	2
+	#endif
+
+        struct pid_set {
+                int num_pids;
+                pid_t *pids;
+        };
+
+	typedef struct {
+		unsigned long flags[CLONE_FLAGS_WORDS];
+	} clone_flags_t;
+
+	int clone_extended(clone_flags_t *flags, void *child_stack, int *unused,
+		int *parent_tid, int *child_tid, struct pid_set *pid_set);
+
+	Pros:
+		- extendible clone_flags (like sigset_t)
+
+	Cons:
+		- copy_from_user() needed on all architectures (we maybe able
+		  to play some tricks with 'clone_flags_t' to avoid the copy
+		  on 64-bit archtitectures till N_CLONE_FLAGS exceeds 64).
+
+		- Both applications and kernel must use interfaces equivalent
+		  to sigsetops(3) to test/set/clear clone flags.
+2. ======
+
+	struct clone_info {
+		int num_clone_high_words;
+		int *flags_high;
+		struct pid_set pid_set;
+	}
+
+        int clone_extended(int flags_low, void *child_stack, void *unused,
+		int *parent_tid, int *child_tid, struct clone_info *clone_info);
+
+	Pros:
+		- copy_from_user() needed only for new flags and pid_set
+
+	Cons:
+		- splitting the high and low clone-flags is awkward ?
+
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
