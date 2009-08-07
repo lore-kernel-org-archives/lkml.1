@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932864AbZHGPLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932736AbZHGPPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932864AbZHGPLm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 11:11:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932841AbZHGPLk
+	id S932736AbZHGPPJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 11:15:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757293AbZHGPPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 11:11:40 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:57726 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932804AbZHGPLi (ORCPT
+	Fri, 7 Aug 2009 11:15:08 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60420 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756213AbZHGPPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 11:11:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=UvlAYWGz9j+CLY/fdE3iXsfY5LZ2OfAvBpkzjApxAjhZBRPpCMy0jJKMqSw6wEIJTr
-         ay5UtgDZA/rQvvCbf7axod6Kt7B3LZrLCyUhxutAaM5pNm+XBj3hJ5jDdNwlrKJa4aEz
-         42Q072rrm/ySqK8ae+rv6gemlmnY08EnHaMW8=
-Message-ID: <4A7C4501.7070700@gmail.com>
-Date: Fri, 07 Aug 2009 17:15:13 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Fri, 7 Aug 2009 11:15:07 -0400
+Date: Fri, 7 Aug 2009 11:15:05 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Eric Dumazet <eric.dumazet@gmail.com>
+cc: linux kernel <linux-kernel@vger.kernel.org>, stable@kernel.org
+Subject: Re: [PATCH] ring-buffer: Fix memleak in ring_buffer_free()
+In-Reply-To: <4A7C06B9.2090302@gmail.com>
+Message-ID: <alpine.DEB.2.00.0908071113420.10926@gandalf.stny.rr.com>
+References: <4A7C06B9.2090302@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: drzeus@drzeus.cx, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] sdio: Read buffer overflow
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the loop breaks with an index of 0, then we read before the array.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/mmc/core/sdio_cis.c b/drivers/mmc/core/sdio_cis.c
-index 963f293..0f8853c 100644
---- a/drivers/mmc/core/sdio_cis.c
-+++ b/drivers/mmc/core/sdio_cis.c
-@@ -40,7 +40,7 @@ static int cistpl_vers_1(struct mmc_card *card, struct sdio_func *func,
- 			nr_strings++;
- 	}
- 
--	if (buf[i-1] != '\0') {
-+	if (i != 0 && buf[i-1] != '\0') {
- 		printk(KERN_WARNING "SDIO: ignoring broken CISTPL_VERS_1\n");
- 		return 0;
- 	}
+
+On Fri, 7 Aug 2009, Eric Dumazet wrote:
+
+> I noticed oprofile memleaked in linux-2.6 current tree,
+> and tracked this ring-buffer leak.
+> 
+> This is a stable candidate.
+
+Thanks! I'll pull it in now.
+
+-- Steve
+
+> 
+> [PATCH] ring-buffer: Fix memleak in ring_buffer_free()
+> 
+> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+> ---
+> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> index bf27bb7..c1d874e 100644
+> --- a/kernel/trace/ring_buffer.c
+> +++ b/kernel/trace/ring_buffer.c
+> @@ -735,6 +735,7 @@ ring_buffer_free(struct ring_buffer *buffer)
+>  
+>  	put_online_cpus();
+>  
+> +	kfree(buffer->buffers);
+>  	free_cpumask_var(buffer->cpumask);
+>  
+>  	kfree(buffer);
+> 
