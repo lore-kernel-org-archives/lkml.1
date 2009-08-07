@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933850AbZHGUaE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933846AbZHGUc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933850AbZHGUaE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:30:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933754AbZHGUaD
+	id S933846AbZHGUc0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:32:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933749AbZHGUcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:30:03 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:39329 "EHLO e2.ny.us.ibm.com"
+	Fri, 7 Aug 2009 16:32:25 -0400
+Received: from bar.sig21.net ([80.81.252.164]:54404 "EHLO bar.sig21.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932721AbZHGUaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:30:00 -0400
-Subject: Re: [GIT pull] timers fixes for 2.6.31
-From: john stultz <johnstul@us.ibm.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090807101847.2ee08c76@skybase>
-References: <alpine.LFD.2.00.0907302158180.2936@localhost.localdomain>
-	 <alpine.LFD.2.01.0907301648540.3161@localhost.localdomain>
-	 <20090731123711.GA5421@elte.hu>
-	 <1f1b08da0908061536o57cebeb6r2f522cb3c5419e1@mail.gmail.com>
-	 <20090807101847.2ee08c76@skybase>
-Content-Type: text/plain
-Date: Fri, 07 Aug 2009 13:28:55 -0700
-Message-Id: <1249676935.7185.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S932664AbZHGUcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 16:32:24 -0400
+Date: Fri, 7 Aug 2009 22:32:26 +0200
+From: Johannes Stezenbach <js@sig21.net>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
+       reinette chatre <reinette.chatre@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: iwlwifi (4965) regression since 2.6.30
+Message-ID: <20090807203226.GA13867@sig21.net>
+References: <1248710775.9958.0.camel@johannes.local>
+ <20090728112102.GA3382@ics.muni.cz>
+ <1249336021.30019.4304.camel@rc-desk>
+ <20090804084903.GV3382@ics.muni.cz>
+ <1249426183.30019.4581.camel@rc-desk>
+ <20090804225626.GZ3382@ics.muni.cz>
+ <1249429081.30019.4588.camel@rc-desk>
+ <20090806132244.GC15867@khazad-dum.debian.net>
+ <20090806224110.GJ3382@ics.muni.cz>
+ <20090806230704.GA14381@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090806230704.GA14381@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Spam-21-Score: -3.5 (---)
+X-Spam-21-Report: No, score=-3.5 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.868,BAYES_00=-2.599 autolearn=no
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-07 at 10:18 +0200, Martin Schwidefsky wrote:
-> On Thu, 6 Aug 2009 15:36:36 -0700
-> john stultz <johnstul@us.ibm.com> wrote:
->  
-> > Splitting this up has been on my list for awhile, but I've never
-> > gotten to it. However, Martin Schwidefsky has been doing a great job
-> > with his latest patches cleaning up some of uglier parts of the
-> > timekeeping/clocksource interactions. There is still lots of  changes
-> > I'd like to see, but they will take time as we still haven't gotten
-> > all the arches over to GENERIC_TIME, so some cruft has to stick
-> > around.   But Martin's patches are a great big step towards it and
-> > hopefully his patches will be ready for .32.
+On Thu, Aug 06, 2009 at 08:07:04PM -0300, Henrique de Moraes Holschuh wrote:
+> On Fri, 07 Aug 2009, Lukas Hejtmanek wrote:
+> > 0x0004 = 238  # KEY_WLAN
 > 
-> The question what we do with the mult_orig on clocksource
-> enable/disable is one of the remaining open issues with my patch set.
-> With the NTP adjusted multiplicator in the struct timekeeper we don't
-> have a convenient place to keep the NTP adjusted multiplier while a
-> clocksource is disabled. My initial thought was: why do we store the
-> old multiplier at all? Its not that the clocksource changes all the
-> time and NTP will catch up again if it is changed. Just start from
-> scratch with the initial multiplicator.
+> This means any rfkill input handler (be it in kernel or userspace) will
+> toggle your WLAN cards when fn+f5 is pressed.  You can just assign a
+> different keycode to it (use KEY_RESERVED or KEY_UNKNOWN if you don't want
+> the key to do anything).
+> 
+> If you unmask the key on hotkey_mask, it will revert to BIOS actions, which
+> depending on the thinkpad, might cause it to operate on bluetooth, wwan,
+> etc...
 
-Indeed, we don't need to store the adjusted multiplier while a
-clocksource is not in use. We just have to make sure every time it is
-used, we start with the same original multiplier, so we have a constant
-base from which the NTP freq adjustment can be made upon.
+I have a related question, sorry if I hijack the thread...
 
-I think you're approach (keeping the clocksource mult untouched, and
-keeping the adjusted mult in the timekeeper structure)is fine.
+When thinkpad-acpi grew rfkill support a few kernel versions back
+it forced Bluetooth on at boot time. Since I almost never use
+Bluetooth I want it off to save power. The workaround I came up
+with was to enable CONFIG_RFKILL and add rfkill.default_state=0
+to the kernel cmdline.  Now this workaround also disables WLAN :-(
+My workaround for my workaround (heh!) was to add
+  pre-up echo 1 > `ls /sys/class/ieee80211/phy0/rfkill*/state`
+in /etc/network/interfaces.  It would be nice to have a better
+way to select boot-up defaults.
 
-thanks
--john
 
+In Documentation/laptops/thinkpad-acpi.txt there is this comment
+for FN+F5:
+
+   Should be used to turn on/off all radios (Bluetooth+W-WAN+WLAN), really.
+
+I disagree.  Why would anyone turn off all radios at once?
+What I want is to disable the radios I don't need to save power,
+so IMHO there should be different keys for Bluetooth and WLAN
+(and W-WAN where present).
+
+The BIOS does the right thing for me, it disables Bluetoth by default
+until enabled with Fn-F5, and WLAN is always enabled.  For me
+the rfkill support is a regression, not progress.
+
+
+Johannes
