@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbZHGAYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbZHGAdB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756943AbZHGAYx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 20:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756722AbZHGAYw
+	id S1756731AbZHGAdB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 20:33:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756266AbZHGAdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 20:24:52 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:48497 "EHLO e9.ny.us.ibm.com"
+	Thu, 6 Aug 2009 20:33:00 -0400
+Received: from kroah.org ([198.145.64.141]:56204 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756697AbZHGAYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 20:24:51 -0400
-Message-ID: <4A7B7449.7070008@us.ibm.com>
-Date: Thu, 06 Aug 2009 17:24:41 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	id S1751712AbZHGAc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Aug 2009 20:32:59 -0400
+Date: Thu, 6 Aug 2009 17:27:48 -0700
+From: Greg KH <greg@kroah.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       linux-kernel@vger.kernel.org, Jan Blunck <jblunck@suse.de>,
+       gregkh@suse.de, Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+ /dev
+Message-ID: <20090807002748.GA30062@kroah.com>
+References: <20090805171513.GA10443@kroah.com>
+ <9b2b86520908051355o79699e99ke045b635c6b443ad@mail.gmail.com>
+ <20090806000659.GA22754@kroah.com>
+ <ac3eb2510908051719o61e1d42er750fe837c824bc0@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-CC: tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       mingo@elte.hu, dino@in.ibm.com, johnstul@us.ibm.com,
-       John Kacur <jkacur@redhat.com>
-Subject: Re: [PATCH 1/2] Update woken requeued futex_q lock_ptr
-References: <4A7A009E.2000202@us.ibm.com> <4A7A016C.1090002@us.ibm.com> <4A7A66D7.3090203@us.ibm.com>
-In-Reply-To: <4A7A66D7.3090203@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ac3eb2510908051719o61e1d42er750fe837c824bc0@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Darren Hart wrote:
-> Darren Hart wrote:
->> futex_requeue() can acquire the lock on behalf of a waiter during the 
->> requeue
->> loop in the event of a lock steal or owner died. 
->> futex_wait_requeue_pi() cleans
->> up the pi_state owner, using the lock_ptr to protect against 
->> concurrent access
->> to the pi_state.  The pi_state is found on the requeue target futex 
->> hash bucket
->> so the lock_ptr needs to be updated accordingly.  The problem 
->> manifested by
->> triggering the WARN_ON in lookup_pi_state() about the pid != 
->> pi_state->owner
->> pid.
->> The astute reviewer will note that still exists a race between the time
->> futex_requeue() releases hb2->lock() and the time when 
->> futex_wait_requeue_pi()
->> acquires it.  During this time the pi_state and the futex uaddr are 
->> not in sync
->> with the rt_mutex ownership.  This patch closes the window to the 
->> point where
->> my tests now pass, but we still need to address it.
->>
->> Note: Please apply to mainline and rt
->>
+On Thu, Aug 06, 2009 at 02:19:23AM +0200, Kay Sievers wrote:
+> On Thu, Aug 6, 2009 at 02:06, Greg KH<greg@kroah.com> wrote:
+> > On Wed, Aug 05, 2009 at 09:55:49PM +0100, Alan Jenkins wrote:
 > 
+> >> > +                   err = vfs_mkdir(nd.path.dentry->d_inode,
+> >> > +                                   dentry, 0775);
+> >>
+> >> Is there a typo here?  I think the mode should be 0755.   0755 is used
+> >> below, and that does fit better with the 0600 mode for device nodes.
+> >
+> > Yeah, I think you are correct.  Kay, any objection to me making this
+> > change?
 > 
->> static inline
->> -void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key)
->> +void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key,
->> +               struct futex_hash_bucket *hb)
->> {
->>     drop_futex_key_refs(&q->key);
->>     get_futex_key_refs(key);
->>     q->key = *key;
->> +    q->lock_ptr = &hb->lock;
-> 
-> Hrm... turns out changing this breaks the 
-> handle_early_requeue_pi_wakeup() logic.  I'll have to respin this patch 
-> to account for that as well.  Please hold off on this patch.
+> No, sure no objection. It sounds right to use 0755.
+> I was just waiting if more things to fix come up. :)
 
-In fact, this doesn't affect the handle_early_requeue_pi_wakeup() code 
-in the slightest.  It only needs to hold a hb->lock (either one is 
-adequate) to ensure the requeue routine has completed.  By changing the 
-q->lock_ptr of the waiter to hb2->lock we ensure the pi_state is 
-protected from concurrent access by futex_wait_requeue_pi() and new 
-contending threads.
+I've made this fix in the version in my tree now.
 
-Ingo, please apply to tip/urgent.
+thanks,
 
-Thanks,
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+greg k-h
