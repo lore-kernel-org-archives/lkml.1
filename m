@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbZHGL0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757554AbZHGL17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757545AbZHGL0q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 07:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbZHGL0p
+	id S1757554AbZHGL17 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 07:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756081AbZHGL17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 07:26:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38501 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751144AbZHGL0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 07:26:45 -0400
-Date: Fri, 7 Aug 2009 13:26:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] x86, perf_counter, bts: add bts to perf_counter
-Message-ID: <20090807112634.GC30014@elte.hu>
-References: <1249381489.7924.186.camel@twins> <20090804111412.GA20942@elte.hu> <20090804113555.GA28198@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77EC1BFEEE3@irsmsx504.ger.corp.intel.com> <1249633282.32113.613.camel@twins> <928CFBE8E7CB0040959E56B4EA41A77EC1BFEFEB@irsmsx504.ger.corp.intel.com> <20090807103127.GA23139@elte.hu> <20090807103610.GA23728@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77EC1BFF02D@irsmsx504.ger.corp.intel.com> <928CFBE8E7CB0040959E56B4EA41A77EC1BFF048@irsmsx504.ger.corp.intel.com>
+	Fri, 7 Aug 2009 07:27:59 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:59128 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752516AbZHGL16 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 07:27:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        b=XxV2Zn41giVYQdGxDPV1wJCLJYfKwpBY9RJV52VoJ2X8gi0B4RNxXkB5Is/U8Gm50x
+         11HUAEicamavL5KXIz2BNsbdTU6i9Wbq9NwR+qRiffhB89OwdXkaz2CjDEcxr3zUgNIU
+         0BrYMYq0lgGQJy3Rhk0SoWWTitBnAtNJKuIAU=
+Message-ID: <4A7C0FB8.8040304@gmail.com>
+Date: Fri, 07 Aug 2009 13:27:52 +0200
+From: Henk Martijn <h.h.martijn@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF048@irsmsx504.ger.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       jpirko@redhat.com, eric.dumazet@gmail.com, davem@davemloft.net
+Subject: Re: [bisected] boot speed regression in current git
+References: <4A7BFCC4.8060006@gmail.com> <200908071254.20163.elendil@planet.nl>
+In-Reply-To: <200908071254.20163.elendil@planet.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Frans Pop wrote:
+>> I bisected this to "net: restore the original spinlock to protect
+>> unicast list" commit: a6ac65db2329e7685299666f5f7b6093c7b0f3a0
+>> reverting this commit gives me back 20 s in boot time.
+> 
+> Try adding this patch from Ingo. It will probably fix the issue:
+> http://marc.info/?l=linux-kernel&m=124945666109347&w=2
+> 
+> Cheers,
+> FJP
+> 
+Jep, Ingo's patch fixed it. 
 
-btw., the number of samples seems to be varying too widely:
+Thanks!
 
-titan:~> for ((i=0;i<10;i++)); do perf record -f -e branches:u -c 1 true 2>/dev/null; perf report | head -1; done
-# Samples: 28784
-# Samples: 24063
-# Samples: 22788
-# Samples: 30449
-# Samples: 15335
-# Samples: 30557
-# Samples: 24010
-# Samples: 23866
-# Samples: 24877
-# Samples: 24330
-
-compared to the branch-stat itself:
-
-titan:~> perf stat -v --repeat 10 -e branches:u true
-[ perf stat: executing run #1 ... ]
-[ perf stat: executing run #2 ... ]
-[ perf stat: executing run #3 ... ]
-[ perf stat: executing run #4 ... ]
-[ perf stat: executing run #5 ... ]
-[ perf stat: executing run #6 ... ]
-[ perf stat: executing run #7 ... ]
-[ perf stat: executing run #8 ... ]
-[ perf stat: executing run #9 ... ]
-[ perf stat: executing run #10 ... ]
-
- Performance counter stats for 'true' (10 runs):
-
-          23851  branches                   ( +-   0.000% )
-
-    0.000639653  seconds time elapsed   ( +-   2.474% )
-
-do we lose records in the recording?
-
-	Ingo
+/Henk
