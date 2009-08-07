@@ -1,63 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757145AbZHGIAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757171AbZHGIBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757145AbZHGIAu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 04:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756983AbZHGIAt
+	id S1757171AbZHGIBO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 04:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757112AbZHGIBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 04:00:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55666 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755187AbZHGIAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 04:00:49 -0400
-Date: Fri, 7 Aug 2009 10:00:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Larry Woodman <lwoodman@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 4/6] tracing, page-allocator: Add a postprocessing
-	script for page-allocator-related ftrace events
-Message-ID: <20090807080018.GD20292@elte.hu>
-References: <1249574827-18745-1-git-send-email-mel@csn.ul.ie> <1249574827-18745-5-git-send-email-mel@csn.ul.ie>
+	Fri, 7 Aug 2009 04:01:13 -0400
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:59627 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757052AbZHGIBM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 04:01:12 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+WEROOn05AiHeH5fAWnwwQ
+Date: Fri, 7 Aug 2009 11:01:04 +0300
+From: Tony Lindgren <tony@atomide.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-omap@vger.kernel.org, linux-arm@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Felipe Balbi <felipe.balbi@nokia.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] MAINTAINERS: Add list entries
+	linux-arm@vger.kernel.org and linux-arm-kernel@ to OMAP sections
+Message-ID: <20090807080102.GV2358@atomide.com>
+References: <1249576450.3467.25.camel@Joe-Laptop.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249574827-18745-5-git-send-email-mel@csn.ul.ie>
+In-Reply-To: <1249576450.3467.25.camel@Joe-Laptop.home>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Mel Gorman <mel@csn.ul.ie> wrote:
+* Joe Perches <joe@perches.com> [090806 19:35]:
+> Perhaps it's useful for OMAP patches and bug reports
+> to CC entries to the primary and secondary ARM lists.
+> 
+> Added a pattern entry for OMAP USB as well.
 
-> This patch adds a simple post-processing script for the 
-> page-allocator-related trace events. It can be used to give an 
-> indication of who the most allocator-intensive processes are and 
-> how often the zone lock was taken during the tracing period. 
-> Example output looks like
+Good idea, except maybe let's leave out all the driver parts
+because that will cause tons of extra noise on the lists,
+see below.
 
-Note, this script hard-codes certain aspects of the output format:
+> 
+> Signed-off-by: Joe Perches
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index b1114cf..f237765 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3662,6 +3662,8 @@ F:	drivers/video/nvidia/
+>  OMAP SUPPORT
+>  M:	"Tony Lindgren <tony@atomide.com>" <tony@atomide.com>
+>  L:	linux-omap@vger.kernel.org
+> +L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+> +L:	linux-arm@vger.kernel.org
+>  W:	http://www.muru.com/linux/omap/
+>  W:	http://linux.omap.com/
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git
+> @@ -3671,12 +3673,16 @@ F:	arch/arm/*omap*
+>  OMAP CLOCK FRAMEWORK SUPPORT
+>  M:	Paul Walmsley <paul@pwsan.com>
+>  L:	linux-omap@vger.kernel.org
+> +L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+> +L:	linux-arm@vger.kernel.org
+>  S:	Maintained
+>  F:	arch/arm/*omap*/*clock*
+>  
+>  OMAP POWER MANAGEMENT SUPPORT
+>  M:	Kevin Hilman <khilman@deeprootsystems.com>
+>  L:	linux-omap@vger.kernel.org
+> +L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+> +L:	linux-arm@vger.kernel.org
+>  S:	Maintained
+>  F:	arch/arm/*omap*/*pm*
+>  
+All the above look good to me, but..
 
-+my $regex_traceevent =
-+'\s*([a-zA-Z0-9-]*)\s*(\[[0-9]*\])\s*([0-9.]*):\s*([a-zA-Z_]*):\s*(.*)';
-+my $regex_fragdetails = 'page=([0-9a-f]*) pfn=([0-9]*) alloc_order=([0-9]*)
-+fallback_order=([0-9]*) pageblock_order=([0-9]*) alloc_migratetype=([0-9]*)
-+fallback_migratetype=([0-9]*) fragmenting=([0-9]) change_ownership=([0-9])';
-+my $regex_statname = '[-0-9]*\s\((.*)\).*';
-+my $regex_statppid = '[-0-9]*\s\(.*\)\s[A-Za-z]\s([0-9]*).*';
+> @@ -3684,6 +3690,8 @@ OMAP AUDIO SUPPORT
+>  M:	Jarkko Nikula <jhnikula@gmail.com>
+>  L:	alsa-devel@alsa-project.org (subscribers-only)
+>  L:	linux-omap@vger.kernel.org
+> +L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+> +L:	linux-arm@vger.kernel.org
+>  S:	Maintained
+>  F:	sound/soc/omap/
+>  
+> @@ -3691,17 +3699,24 @@ OMAP FRAMEBUFFER SUPPORT
+>  M:	Imre Deak <imre.deak@nokia.com>
+>  L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+>  L:	linux-omap@vger.kernel.org
+> +L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+> +L:	linux-arm@vger.kernel.org
+>  S:	Maintained
+>  F:	drivers/video/omap/
+>  
+>  OMAP MMC SUPPORT
+>  M:	Jarkko Lavinen <jarkko.lavinen@nokia.com>
+>  L:	linux-omap@vger.kernel.org
+> +L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+> +L:	linux-arm@vger.kernel.org
+>  S:	Maintained
+>  F:	drivers/mmc/host/*omap*
+>  
+>  OMAP RANDOM NUMBER GENERATOR SUPPORT
+>  M:	Deepak Saxena <dsaxena@plexity.net>
+> +L:	linux-omap@vger.kernel.org
+> +L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+> +L:	linux-arm@vger.kernel.org
+>  S:	Maintained
+>  F:	drivers/char/hw_random/omap-rng.c
+>  
+> @@ -3710,7 +3725,10 @@ M:	Felipe Balbi <felipe.balbi@nokia.com>
+>  M:	David Brownell <dbrownell@users.sourceforge.net>
+>  L:	linux-usb@vger.kernel.org
+>  L:	linux-omap@vger.kernel.org
+> +L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+> +L:	linux-arm@vger.kernel.org
+>  S:	Maintained
+> +F:	drivers/usb/*/*omap*
+>  
+>  OMFS FILESYSTEM
+>  M:	Bob Copeland <me@bobcopeland.com>
 
-the proper appproach is to parse /debug/tracing/events/mm/*/format. 
-That is why we emit a format string - to detach tools and reduce the 
-semi-ABI effect.
+... I think let's not add the drivers. The related driver list
+and linux-omap list should be enough for these.
 
-	Ingo
+Regards,
+
+Tony
