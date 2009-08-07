@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbZHGVV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbZHGV0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756132AbZHGVV4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 17:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbZHGVV4
+	id S1756224AbZHGV0a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 17:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbZHGV03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 17:21:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53517 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753397AbZHGVVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 17:21:55 -0400
-Subject: Re: Libertas: Association request to the driver failed
-From: Dan Williams <dcbw@redhat.com>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090807191156.GS19257@buzzloop.caiaq.de>
-References: <20090807191156.GS19257@buzzloop.caiaq.de>
-Content-Type: text/plain
-Date: Fri, 07 Aug 2009 16:21:37 -0500
-Message-Id: <1249680097.26088.40.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Fri, 7 Aug 2009 17:26:29 -0400
+Received: from mail.gmx.net ([213.165.64.20]:46769 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753699AbZHGV03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 17:26:29 -0400
+X-Authenticated: #2360897
+X-Provags-ID: V01U2FsdGVkX1+lafVas2alARIaQnJIiD7wLWjBxpwXCOwZNmbKGW
+	MNPcfw5x8T/F9A
+Message-ID: <4A7C9BF1.8070700@gmx.de>
+Date: Fri, 07 Aug 2009 23:26:09 +0200
+From: Bernhard Walle <bernhard.walle@gmx.de>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Amerigo Wang <amwang@redhat.com>, Neil Horman <nhorman@redhat.com>,
+       linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [Patch 0/7] Implement crashkernel=auto
+References: <4A7A3A78.7080200@redhat.com> <m1y6pxr737.fsf@fess.ebiederm.org> <4A7A506B.2060008@redhat.com> <m1ljlxsiox.fsf@fess.ebiederm.org> <4A7A70E5.2010204@redhat.com> <m1bpmtqxjh.fsf@fess.ebiederm.org> <4A7A7A0F.6070906@redhat.com> <m1iqh1nxv3.fsf@fess.ebiederm.org> <4A7A9E54.60705@redhat.com> <m1iqgze740.fsf@fess.ebiederm.org> <20090807210306.GA25609@basil.fritz.box>
+In-Reply-To: <20090807210306.GA25609@basil.fritz.box>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-07 at 21:11 +0200, Daniel Mack wrote:
-> Since a recent merge of the wireless tree to Linus' master, my SDIO
-> connected libertas module fails to connect to our WLAN.
+Andi Kleen schrieb:
+>> As an initial approximation I would use a 32nd of low memory.
 > 
-> 'iwlist scanning' works fine, but wpa_supplicant keeps on spitting out
-> the following message:
+> That means a 1TB machine will have a 32GB crash kernel.
 > 
->   CTRL-EVENT-SCAN-RESULTS 
->   Trying to associate with 00:04:0e:4b:c7:b3 (SSID='caiaq' freq=2437 MHz)
->   Association request to the driver failed
+> Surely that's excessive?!?
 > 
-> Haven't done any bisect or deeper inspection of recent changes yet. Can
-> anyone point me in some direction maybe? The change must have been
-> introduced between -rc3 and -rc5. My userspace did not change since
-> then.
+> It would be repeating all the same mistakes people made with hash tables
+> several years ago.
 
-That error actually means nothing and I believe the log message has been
-removed in recent supplicant versions.  It simply means that the driver
-doesn't support some of the random ioctls that the supplicant tries, but
-most of the time, that's not a problem.
+The idea of Eric was to shrink the reserved memory in an init script. I
+doubt that the 1 TB machine will have any problems or performance issue
+when booting with (1 TB - 32 GB) memory.
 
-What you can do for the time being is increase the association timeout
-(which gets lowered to like 5 seconds if that message is printed because
-the driver returned -1 from wpa_drv_associate()), and see if the card
-does in fact associate after 10 or 15 seconds.  That is a useful point
-of debugging information.
+> It doesn't sound reasonable to Andi.
+> 
+> Why do you even want to grow the crash kernel that much? Is there
+> any real problem with a 64-128MB crash kernel?
 
-Dan
+Try it out. No chance for 64-128MB crashkernel on "medium" IA64 machines.
 
 
+Regards,
+Bernhard
