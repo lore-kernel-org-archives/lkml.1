@@ -1,81 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbZHGLJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757533AbZHGLNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932403AbZHGLJV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 07:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932347AbZHGLJT
+	id S1757533AbZHGLNB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 07:13:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757110AbZHGLNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 07:09:19 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:44141 "EHLO gir.skynet.ie"
+	Fri, 7 Aug 2009 07:13:00 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37923 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932336AbZHGLJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 07:09:16 -0400
-Date: Fri, 7 Aug 2009 12:09:15 +0100
+	id S1757164AbZHGLNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 07:13:00 -0400
+Date: Fri, 7 Aug 2009 12:13:01 +0100
 From: Mel Gorman <mel@csn.ul.ie>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Larry Woodman <lwoodman@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [PATCH 3/6] tracing, page-allocator: Add trace event for page
-	traffic related to the buddy lists
-Message-ID: <20090807110915.GD18134@csn.ul.ie>
-References: <1249574827-18745-1-git-send-email-mel@csn.ul.ie> <1249574827-18745-4-git-send-email-mel@csn.ul.ie> <20090807075317.GC20292@elte.hu>
+To: "Li, Ming Chun" <macli@brc.ubc.ca>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [PATCH 4/6] tracing, page-allocator: Add a postprocessing
+	script for page-allocator-related ftrace events
+Message-ID: <20090807111300.GE18134@csn.ul.ie>
+References: <1249574827-18745-1-git-send-email-mel@csn.ul.ie> <1249574827-18745-5-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.00.0908061358250.13451@mail.selltech.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090807075317.GC20292@elte.hu>
+In-Reply-To: <alpine.DEB.1.00.0908061358250.13451@mail.selltech.ca>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 09:53:17AM +0200, Ingo Molnar wrote:
+On Thu, Aug 06, 2009 at 02:07:33PM -0700, Li, Ming Chun wrote:
+> On Thu, 6 Aug 2009, Mel Gorman wrote:
 > 
-> * Mel Gorman <mel@csn.ul.ie> wrote:
-> 
-> > +TRACE_EVENT(mm_page_pcpu_drain,
-> > +
-> > +	TP_PROTO(struct page *page, int order, int migratetype),
-> > +
-> > +	TP_ARGS(page, order, migratetype),
-> > +
-> > +	TP_STRUCT__entry(
-> > +		__field(	struct page *,	page		)
-> > +		__field(	int,		order		)
-> > +		__field(	int,		migratetype	)
-> > +	),
-> > +
-> > +	TP_fast_assign(
-> > +		__entry->page		= page;
-> > +		__entry->order		= order;
-> > +		__entry->migratetype	= migratetype;
-> > +	),
-> > +
-> > +	TP_printk("page=%p pfn=%lu order=%d cpu=%d migratetype=%d",
-> > +		__entry->page,
-> > +		page_to_pfn(__entry->page),
-> > +		__entry->order,
-> > +		smp_processor_id(),
-> > +		__entry->migratetype)
-> 
-> > +	trace_mm_page_alloc_zone_locked(page, order, migratetype, order == 0);
-> 
-> This can be optimized further by omitting the migratetype field and 
-> adding something like this:
-> 
-> 	TP_printk("page=%p pfn=%lu order=%d cpu=%d migratetype=%d",
-> 		__entry->page,
-> 		page_to_pfn(__entry->page),
-> 		__entry->order,
-> 		smp_processor_id(),
-> 		__entry->order == 0);
-> 
-> The advantage is 4 bytes less in the record and a shorter tracepoint 
-> fast-path - while still having the same output.
+> Code style nitpick, There are four trailing whitespace errors while 
+> applying this script patch, use ./scripts/checkpatch.pl would tell which 
+> lines have trailing whitespace.
 > 
 
-Knowing you meant percpu_refill, it's now been figured out in TP_printk
-instead of in the code.
+Fixed now. I had been ignoring the checkpatch output to some extent as
+it were so many warnings about the formatting. It was one of those
+cases where it looked better without checkpatch but that's no excuse for
+the whitespace :)
+
+Thanks
+
+> <SNIP>
 
 -- 
 Mel Gorman
