@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbZHGII2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757203AbZHGIK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757195AbZHGII2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 04:08:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757076AbZHGII1
+	id S1757203AbZHGIK4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 04:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbZHGIKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 04:08:27 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41862 "EHLO
+	Fri, 7 Aug 2009 04:10:51 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41869 "EHLO
 	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754982AbZHGIIY (ORCPT
+	with ESMTP id S1757157AbZHGIKt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 04:08:24 -0400
-Date: Fri, 7 Aug 2009 09:08:11 +0100
+	Fri, 7 Aug 2009 04:10:49 -0400
+Date: Fri, 7 Aug 2009 09:10:41 +0100
 From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: David Xiao <dxiao@broadcom.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-       Ben Dooks <ben-linux@fluff.org>,
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: David Xiao <dxiao@broadcom.com>, Ben Dooks <ben-linux@fluff.org>,
        Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        v4l2_linux <linux-media@vger.kernel.org>,
@@ -22,41 +21,25 @@ Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
 	<linux-arm-kernel@lists.arm.linux.org.uk>
 Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
 	get_user_pages() enough to prevent pages from being swapped out ?")
-Message-ID: <20090807080811.GA18343@n2100.arm.linux.org.uk>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806114619.GW2080@trinity.fluff.org> <200908061506.23874.laurent.pinchart@ideasonboard.com> <1249584374.29182.20.camel@david-laptop> <20090806222543.GG31579@n2100.arm.linux.org.uk> <1249624766.32621.61.camel@david-laptop>
+Message-ID: <20090807081041.GB18343@n2100.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806222543.GG31579@n2100.arm.linux.org.uk> <1249624766.32621.61.camel@david-laptop> <200908070958.31322.laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249624766.32621.61.camel@david-laptop>
+In-Reply-To: <200908070958.31322.laurent.pinchart@ideasonboard.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 10:59:26PM -0700, David Xiao wrote:
-> The V7 speculative prefetching will then probably apply to DMA coherency
-> issue in general, both kernel and user space DMAs. Could this be
-> addressed by inside the dma_unmap_sg/single() calling dma_cache_maint()
-> when the direction is DMA_FROM_DEVICE/DMA_BIDIRECTIONAL, to basically
-> invalidate the related cache lines in case any filled by prefetching?
-> Assuming dma_unmap_sg/single() is called after each DMA operation is
-> completed. 
+On Fri, Aug 07, 2009 at 09:58:30AM +0200, Laurent Pinchart wrote:
+> Sorry about this, but I'm not sure to understand the speculative prefetching 
+> cache issue completely.
 
-It's something that I was going to look at, and it's probably going to
-have to be something I do blind - I currently have no MPCore platform,
-and even if my Realview EB worked, it doesn't use DMA at all.
+The general case with speculative prefetching is that if memory is
+accessible, it can be prefetched.
 
-However, it's not trivial - the unmap functions don't have all the
-necessary information.  dma_unmap_single() has the DMA address, which
-we can convert to the original virtual address via dma_to_virt().
-However, dma_unmap_page() can't translate back to a virtual page
-since we're missing some information there.
-
-It bugs me that the DMA API is restrictive in the information which
-architectures can retain across a mapping which makes this non-trivial.
-Had I known of these issues when the DMA API was originally being
-discussed, I'd have suggested that we have an arch-specific dma_map
-struct which could contain whatever information was required, rather
-than requiring the driver to maintain the handle/size/direction/etc
-between each of the calls.  That would mean we could retain the virtual
-address/struct page rather than having to work it back in some way.
+In other words, if we mapped devices without NX (non-exec) set, the
+CPU can prefetch instructions from devices, causing random read
+accesses.  Yes, I know it sounds crazy, but that's what I'm told
+_can_ happen.
