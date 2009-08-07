@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbZHGIM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbZHGINZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757216AbZHGIM3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 04:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757192AbZHGIM2
+	id S1757220AbZHGINZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 04:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757200AbZHGINY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 04:12:28 -0400
-Received: from co203.xi-lite.net ([149.6.83.203]:57618 "EHLO co203.xi-lite.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757197AbZHGIM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 04:12:27 -0400
-Message-ID: <4A7BE1E7.60203@parrot.com>
-Date: Fri, 7 Aug 2009 10:12:23 +0200
-From: Matthieu CASTET <matthieu.castet@parrot.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
-MIME-Version: 1.0
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-CC: David Xiao <dxiao@broadcom.com>, Ben Dooks <ben-linux@fluff.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       v4l2_linux <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is	get_user_pages()
- enough to prevent pages from being swapped out ?")
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com>	<200908061506.23874.laurent.pinchart@ideasonboard.com>	<1249584374.29182.20.camel@david-laptop> <200908070929.53873.laurent.pinchart@ideasonboard.com>
-In-Reply-To: <200908070929.53873.laurent.pinchart@ideasonboard.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 8bit
+	Fri, 7 Aug 2009 04:13:24 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46714 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757192AbZHGINX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 04:13:23 -0400
+Subject: Re: [PATCH] perf tools: Fix cumul hit based sub-total
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <1249621865-9325-1-git-send-email-fweisbec@gmail.com>
+References: <1249621865-9325-1-git-send-email-fweisbec@gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 07 Aug 2009 10:12:58 +0200
+Message-Id: <1249632778.32113.608.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Laurent Pinchart a écrit :
-> On Thursday 06 August 2009 20:46:14 David Xiao wrote:
+On Fri, 2009-08-07 at 07:11 +0200, Frederic Weisbecker wrote:
+> The callchain fractal mode builds each new total hits in a new branch
+> of profiling by using the parent's hits of the current branch plus the
+> hits of the children.
 > 
-> Think about the simple following use case. An application wants to display 
-> video it acquires from the device to the screen using Xv. The video buffer is 
-> allocated by Xv. Using the v4l2 user pointer streaming method, the device can 
-> DMA directly to the Xv buffer. Using driver-allocated buffers, a memcpy() is 
-> required between the v4l2 buffer and the Xv buffer.
+> This is wrong, the total hits of a branch should be made of the sum of
+> every children hits, we must ignore the parent hits in this scope.
 > 
-v4l2 got an API (overlay IRRC) that allow drivers to write directly in
-framebuffer memory.
-BTW Xv buffer is not always in video memory and the X driver can do a
-memcpy.
+> This patch also fixes another mistakes with the hit counting.
+> 
+> Now the rates are corrects.
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Mike Galbraith <efault@gmx.de>
+> ---
+
+Ah will this fix these instances where you'd have things like
+
+                |                     page_fault
+                |                     |
+                |                     |--100.00%-- __strcmp_sse2
+                |                     |          copy_dep_chain
+                |                     |          __libc_start_main
+                |                     |
+                |                      --100.00%-- gettimeofday
+                |                                __libc_start_main
 
 
-Matthieu
+I was meaning to poke you about that :-)
