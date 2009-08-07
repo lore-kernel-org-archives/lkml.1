@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbZHGQk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbZHGQnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbZHGQk5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 12:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbZHGQk4
+	id S1754146AbZHGQnQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 12:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZHGQnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 12:40:56 -0400
-Received: from ru.mvista.com ([213.79.90.228]:1716 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754051AbZHGQk4 (ORCPT
+	Fri, 7 Aug 2009 12:43:16 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2056 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754061AbZHGQnP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 12:40:56 -0400
-Date: Fri, 7 Aug 2009 20:40:57 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pierre Ossman <pierre@ossman.eu>, Kumar Gala <galak@kernel.crashing.org>,
-       Ben Dooks <ben@fluff.org>, Sascha Hauer <s.hauer@pengutronix.de>,
-       linux-kernel@vger.kernel.org, sdhci-devel@lists.ossman.eu,
-       linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/4] sdhci-of: Fix SD clock calculation
-Message-ID: <20090807164057.GA13464@oksana.dev.rtsoft.ru>
-References: <20090807163940.GA29192@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090807163940.GA29192@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 7 Aug 2009 12:43:15 -0400
+Subject: [PATCH] MAINTAINERS: additional NETWORKING [GENERAL] and
+ NETWORKING DRIVERS patterns
+From: Joe Perches <joe@perches.com>
+To: David Miller <davem@davemloft.net>
+Cc: sposelenov@emcraft.com, linux-kernel@vger.kernel.org, wd@denx.de,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090807.090353.191304972.davem@davemloft.net>
+References: <20090618183738.662f7ef1@emcraft.com>
+	 <20090807153106.335b1b8f@emcraft.com>
+	 <20090807.090353.191304972.davem@davemloft.net>
+Content-Type: text/plain
+Date: Fri, 07 Aug 2009 09:43:01 -0700
+Message-Id: <1249663381.3467.80.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linear divisor's values in a register start at 0 (zero means
-"divide by 1"). Before this patch the code didn't account that
-fact, so SD cards were running underclocked.
+On Fri, 2009-08-07 at 09:03 -0700, David Miller wrote:
+> From: Sergei Poselenov <sposelenov@emcraft.com>
+> > Unfortunately, received no replies, but the problem still persists.
+> I guarantee you'll get more responses if you send networking bug
+> reports at least CC:'d to netdev@vger.kernel.org
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/mmc/host/sdhci-of.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Perhaps this will help get cc's to the right places.
 
-diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-index 9088443..92b5667 100644
---- a/drivers/mmc/host/sdhci-of.c
-+++ b/drivers/mmc/host/sdhci-of.c
-@@ -136,6 +136,7 @@ static void esdhc_set_clock(struct sdhci_host *host, unsigned int clock)
- 	}
+Signed-off-by: Joe Perches <joe@perches.com>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b1114cf..0b697a1 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3555,6 +3555,9 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.git
+ S:	Maintained
+ F:	net/
+ F:	include/net/
++F:	include/linux/in.h
++F:	include/linux/net.h
++F:	include/linux/netdevice.h
  
- 	pre_div >>= 1;
-+	div--;
+ NETWORKING [IPv4/IPv6]
+ M:	"David S. Miller" <davem@davemloft.net>
+@@ -3590,6 +3593,8 @@ W:	http://www.linuxfoundation.org/en/Net
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.git
+ S:	Odd Fixes
+ F:	drivers/net/
++F:	include/linux/if_*
++F:	include/linux/*device.h
  
- 	setbits32(host->ioaddr + ESDHC_SYSTEM_CONTROL, ESDHC_CLOCK_IPGEN |
- 		  ESDHC_CLOCK_HCKEN | ESDHC_CLOCK_PEREN |
--- 
-1.6.3.3
+ NETXEN (1/10) GbE SUPPORT
+ M:	Dhananjay Phadke <dhananjay@netxen.com>
+
 
