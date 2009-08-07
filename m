@@ -1,109 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933860AbZHGUgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753625AbZHGUij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933860AbZHGUgN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:36:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932737AbZHGUgM
+	id S1753625AbZHGUij (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbZHGUii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:36:12 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:5057 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933749AbZHGUgM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:36:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=MI83kUULc1/pHNj9aXhH6mRQ2GaPzmeqFuHlbXd6xgfhVPUsbiTh740IjJufUFIKRD
-         ebURHNhe5HJPVoLXButtgQ2J2dA+DCC1LX34p84dTow/99AxxJy3gfAiqMe8v8T7BVyT
-         Q9gOQXTWxU3J1/vwzAXXFWgzE4zU2SUN4CXt4=
-Date: Fri, 7 Aug 2009 22:36:08 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH] perfcounters: Support for ftrace event records sampling
-Message-ID: <20090807203607.GG4999@nowhere>
-References: <1249601154-5597-1-git-send-email-fweisbec@gmail.com> <1249641477.32113.664.camel@twins> <1249675747.8088.5.camel@laptop> <20090807202105.GB4999@nowhere> <1249676931.17467.7.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249676931.17467.7.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 7 Aug 2009 16:38:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58133 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751789AbZHGUih (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 16:38:37 -0400
+Subject: Re: [Patch v3] vfs: allow file truncations when both suid and
+ write permissions set
+From: Eric Paris <eparis@redhat.com>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
+       esandeen@redhat.com, eteo@redhat.com, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, viro@zeniv.linux.org.uk, sds@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <87prb7v0dr.fsf@devron.myhome.or.jp>
+References: <20090807100743.5822.90612.sendpatchset@localhost.localdomain>
+	 <1249675025.2694.15.camel@dhcp231-106.rdu.redhat.com>
+	 <87prb7v0dr.fsf@devron.myhome.or.jp>
+Content-Type: text/plain
+Date: Fri, 07 Aug 2009 16:38:01 -0400
+Message-Id: <1249677481.2694.22.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 10:28:51PM +0200, Peter Zijlstra wrote:
-> On Fri, 2009-08-07 at 22:21 +0200, Frederic Weisbecker wrote:
-> > On Fri, Aug 07, 2009 at 10:09:07PM +0200, Peter Zijlstra wrote:
-> > > On Fri, 2009-08-07 at 12:38 +0200, Peter Zijlstra wrote:
-> > > > > +static void ftrace_profile_##call(proto)                             \
-> > > > > +{                                                                    \
-> > > > > +     struct ftrace_data_offsets_##call __maybe_unused __data_offsets;\
-> > > > > +     struct ftrace_event_call *event_call = &event_##call;           \
-> > > > > +     extern void perf_tpcounter_event(int, u64, u64, void *, int);   \
-> > > > > +     struct ftrace_raw_##call *entry;                                \
-> > > > > +     u64 __addr = 0, __count = 1;                                    \
-> > > > > +     unsigned long irq_flags;                                        \
-> > > > > +     int __entry_size;                                               \
-> > > > > +     int __data_size;                                                \
-> > > > > +     int pc;                                                         \
-> > > > > +                                                                     \
-> > > > > +     local_save_flags(irq_flags);                                    \
-> > > > > +     pc = preempt_count();                                           \
-> > > > > +                                                                     \
-> > > > > +     __data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
-> > > > > +     __entry_size = __data_size + sizeof(*entry);                    \
-> > > > > +                                                                     \
-> > > > > +     do {                                                            \
-> > > > > +             char raw_data[__entry_size];                            \
-> > > > > +             struct trace_entry *ent;                                \
-> > > > > +                                                                     \
-> > > > > +             entry = (struct ftrace_raw_##call *)raw_data;           \
-> > > > > +             ent = &entry->ent;                                      \
-> > > > > +             tracing_generic_entry_update(ent, irq_flags, pc);       \
-> > > > > +             ent->type = event_call->id;                             \
-> > > > > +                                                                     \
-> > > > > +             tstruct                                                 \
-> > > > > +                                                                     \
-> > > > > +             { assign; }                                             \
-> > > > > +                                                                     \
-> > > > > +             perf_tpcounter_event(event_call->id, __addr, __count, entry,\
-> > > > > +                          __entry_size);                             \
-> > > > > +     } while (0);                                                    \
-> > > > > +                                                                     \
-> > > > > +}
-> > > > 
-> > > > ok, so the one concern I have here is that the data needs to fit on the
-> > > > stack. What if someone puts a large string in the data?
-> > > 
-> > > Also, how NMI safe is all that?
-> > 
-> > 
-> > Everything is allocated in the stack. It's NMI safe AFAICS, am I missing
-> > something?
+On Sat, 2009-08-08 at 05:23 +0900, OGAWA Hirofumi wrote:
+> Eric Paris <eparis@redhat.com> writes:
 > 
-> I've no idea what all those trace calls do, I was hoping you would and
-> say, sure, no problem ;-)
+> > On Fri, 2009-08-07 at 06:05 -0400, Amerigo Wang wrote:
+> >> V2 -> V3:
+> >> Call notify_change() before clearing suid/sgid.
+> >> Thanks to OGAWA Hirofumi.
+> >> 
+> >> V1 -> V2:
+> >> Introduce dentry_remove_suid(), and use it in do_truncate().
+> >> Thanks to Eric Paris.
+> >> 
+> >> 
+> >> When suid is set and the non-owner user has write permission,
+> >> any writing into this file should be allowed and suid should be
+> >> removed after that.
+> >> 
+> >> However, current kernel only allows writing without truncations,
+> >> when we do truncations on that file, we get EPERM. This is a bug.
+> >> 
+> >> Steps to reproduce this bug:
+> >> 
+> >> % ls -l rootdir/file1
+> >> -rwsrwsrwx 1 root root 3 Jun 25 15:42 rootdir/file1
+> >> % echo h > rootdir/file1
+> >> zsh: operation not permitted: rootdir/file1
+> >> % ls -l rootdir/file1
+> >> -rwsrwsrwx 1 root root 3 Jun 25 15:42 rootdir/file1
+> >> % echo h >> rootdir/file1
+> >> % ls -l rootdir/file1
+> >> -rwxrwxrwx 1 root root 5 Jun 25 16:34 rootdir/file1
+> >> 
+> >> This patch fixes it.
+> >> 
+> >> Signed-off-by: WANG Cong <amwang@redhat.com>
+> >> Cc: Eric Sandeen <esandeen@redhat.com>
+> >> Cc: Eric Paris <eparis@redhat.com>
+> >> Cc: Eugene Teo <eteo@redhat.com>
+> >> Cc: Al Viro <viro@zeniv.linux.org.uk>
+> >> Cc: hirofumi@mail.parknet.co.jp
+> >
+> > I was thinking about this and kept telling myself I was going to test v2
+> > before I ack/nak.  Clearly we shouldn't for the dropping of SUID if the
+> > process didn't have permission to change the ATTR_SIZE.
+> >
+> > Acked-by: Eric Paris <eparis@redhat.com>
+> 
+> BTW, Do you know why doesn't security modules fix the handling of
+> do_truncate() (i.e. ATTR_MODE | ATTR_SIZE). And why doesn't it allow to
+> pass ATTR_FORCE for it?
 
+I'm not sure what you mean.  I understood ATTR_FORCE to mean 'I am magic
+and get to override all security checks."  Which is why nothing should
+ever be using ATTR_FORCE with things other than SUID.
 
-Ah ok :)
-To sum up, everything there is allocated in the stack, it's an issue
-as you reported but beside that it makes it all NMI safe.
+I guess we could somehow force logic into the LSM to make it only apply
+to SUID and friends but I'm not sure it buys us anything.
 
-ftrace_get_offset_#call() get the __dynamic_array/__string things
-and computes the total _local_ string length.
-It also fills __data_offsets with the dynamic arrays offset, __data_offset
-is also in the stack.
-
-tracing_entry_generic_update() fills *ent (stack allocated) with the standard
-informations (irq_flags, preempt_count, etc...).
-
-And that's it :)
+-Eric
 
