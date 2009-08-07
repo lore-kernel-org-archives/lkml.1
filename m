@@ -1,113 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932212AbZHGIit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757125AbZHGIqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932212AbZHGIit (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 04:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757197AbZHGIis
+	id S1757125AbZHGIqs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 04:46:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757033AbZHGIqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 04:38:48 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44816 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757090AbZHGIio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 04:38:44 -0400
-Message-ID: <4A7BE80A.6080808@garzik.org>
-Date: Fri, 07 Aug 2009 04:38:34 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Eric.Moore@lsi.com
-Subject: Re: [PATCH 1/3] block: add blk-iopoll, a NAPI like approach for	block
- devices
-References: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com> <1249588685-4662-2-git-send-email-jens.axboe@oracle.com> <20090806223257.0c33cf15@lxorguk.ukuu.org.uk> <20090807063745.GQ12579@kernel.dk>
-In-Reply-To: <20090807063745.GQ12579@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 7 Aug 2009 04:46:47 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:46637 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754811AbZHGIqq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 04:46:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=uM3QByJfSt+7JzoCJZgeC12+vBW7TEf9Nmblx0hCFUiwtIHFdLiEjSch3LGdJJcGc8
+         lfGxu6yFDSW2Wa4sGVd+G166NQgeIZo7ASR4x9q8nYar3zZdr9ZlROh64AMXERmN1RLC
+         Jg//cKiYsla98o5siCXpdMMEAoqZEVNvmp6rA=
+Date: Fri, 7 Aug 2009 11:47:57 +0300
+From: Jarkko Nikula <jhnikula@gmail.com>
+To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+Cc: alsa-devel@alsa-project.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>,
+       Tony Lindgren <tony@atomide.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Subject: Re: [alsa-devel] [PATCH][2.6.31-rc5] ARM: OMAP: McBSP: Fix ASoC on
+ OMAP1510 by fixing API of omap_mcbsp_start/stop
+Message-Id: <20090807114757.0067a707.jhnikula@gmail.com>
+In-Reply-To: <200908071130.54337.peter.ujfalusi@nokia.com>
+References: <1249628387-7372-1-git-send-email-jhnikula@gmail.com>
+	<200908071130.54337.peter.ujfalusi@nokia.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Thu, Aug 06 2009, Alan Cox wrote:
->>> doing the command completion when the irq occurs, schedule a dedicated
->>> softirq in the hopes that we will complete more IO when the iopoll
->>> handler is invoked. Devices have a budget of commands assigned, and will
->>> stay in polled mode as long as they continue to consume their budget
->>> from the iopoll softirq handler. If they do not, the device is set back
->>> to interrupt completion mode.
->> This seems a little odd for pure ATA except for NCQ commands. Normal ATA
->> is notoriously completion/reissue latency sensitive [to the point I
->> suspect we should be dequeuing 2 commands from SCSI and loading the next
->> in the completion handler as soon as we recover the result task file and
->> see no error rather than going up and down the stack)
+On Fri, 7 Aug 2009 11:30:54 +0300
+Peter Ujfalusi <peter.ujfalusi@nokia.com> wrote:
+
+> Looks nice, but I would have done it a bit differently...
 > 
-> Yes certainly, it's only for devices that do queuing. If they don't,
-> then we will always have just the one command to complete. So not much
-> to poll! As to pre-prep for extra latency intensive devices, have you
-> tried experimenting with just pretending that non-ncq devices in libata
-> have a queue depth of 2? That should ensure that the first command
-> available upon completion of the existing command is already prepped.
-> Not sure how much time that would save, I would hope that our prep phase
-> isn't too slow to begin with (or that would be the place to fix :-)
+...
+> > -void omap_mcbsp_start(unsigned int id);
+> > -void omap_mcbsp_stop(unsigned int id);
+> > +void omap_mcbsp_start(unsigned int id, int tx, int rx);
+> > +void omap_mcbsp_stop(unsigned int id, int tx, int rx);
 > 
->> What do the numbers look like ?
+> void omap_mcbsp_start(unsigned int id, int dir);
+> void omap_mcbsp_stop(unsigned int id, int dir);
 > 
-> On a slow box (with many cores), the benefits are quite huge:
-> 
-> 
-> blocksize       blk-iopoll      IOPS    IRQ/sec         Commands/IRQ
-> --------------------------------------------------------------------
-> 512b            0               25168   ~19500          1,3
-> 512b            1               30355     ~750          40
-> 4096b           0               25612   ~21500          1,2
-> 4096b           1               30231    ~1200          25
-> 
-> I suspect there's some cache interaction going on here too, but the
-> numbers do look very good. On a faster box (and different architecture),
-> on a test that does 50k IOPS, they perform identically but the iopoll
-> approach uses less CPU. The interrupt rate drops from 55k ints/sec to
-> 39-40k ints/sec for that case.
-
-It's easy to move work from one place to another, so I would definitely 
-expect that IRQ/sec drops...  but these are the more relevant numbers, IMO:
-
-* CPU usage before/after
-* latency before/after
-
-Also, and even for storage where command queueing is _possible_, there 
-is a problem case we saw with NAPI:  sometimes the combination of a fast 
-computer and an under-100%-utilization workload can imply repeated cycles of
-
-	spin lock
-	irq disable
-	blk_iopoll_sched()
-	spin unlock
-
-	spin lock
-	handle a single command completion
-	spin unlock
-	blk_iopoll_complete()
-
-which not only erases the benefit, but winds up being more costly, both 
-in terms of CPU usage and in terms of latency.
-
-This makes measuring the problem much more difficult; the interesting 
-case I am highlighting does not occur when using a benchmarking tool to 
-keep a storage device at 100% utilization.
-
-We don't want to optimize for the 100%-load case at the expense of the 
-_common case_, which is IMO utilization below 100%.  Servers are not 
-100% busy all the time, which opens the possibility that a 
-split-completion scheme such as the one presented can actually use 
-_more_ CPU than the current, unmodified 2.6.31-rc kernel.
-
-I'm not NAK'ing...  just inserting some relevant NAPI field experience, 
-and hoping for some numbers that better measure the costs/benefits.
-
-	Jeff
+Valid point and cleans up a bit the ALSA SoC part of the patch.
+However I didn't want to limit this generic arch/arm/plat-omap/mcbsp.c
+into audio use case only. My change still allows to start transmitter
+and receiver exactly at the same time. Might be worth if the
+generic McBSP driver is used for something else than audio.
 
 
-
+-- 
+Jarkko
