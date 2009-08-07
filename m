@@ -1,78 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755803AbZHGGh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbZHGGhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755803AbZHGGh5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 02:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755034AbZHGGh4
+	id S1755568AbZHGGhr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 02:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbZHGGhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 02:37:56 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41647 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755187AbZHGGhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 7 Aug 2009 02:37:46 -0400
-Date: Fri, 7 Aug 2009 06:37:07 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Brice.Goglin@inria.fr, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, Brice.Goglin@inria.fr,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1249585061.4975.17.camel@laptop>
-References: <1249585061.4975.17.camel@laptop>
-Subject: [tip:perfcounters/urgent] perf tools: Fix multi-counter stat bug caused by incorrect reading of perf.data file header
-Message-ID: <tip-28d4db10a0f2a2a6cb9a843522f433ff0185c784@git.kernel.org>
-Git-Commit-ID: 28d4db10a0f2a2a6cb9a843522f433ff0185c784
-X-Mailer: tip-git-log-daemon
+Received: from brick.kernel.dk ([93.163.65.50]:50714 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755314AbZHGGhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 02:37:45 -0400
+Date: Fri, 7 Aug 2009 08:37:45 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Eric.Moore@lsi.com, jeff@garzik.org
+Subject: Re: [PATCH 1/3] block: add blk-iopoll, a NAPI like approach for
+	block devices
+Message-ID: <20090807063745.GQ12579@kernel.dk>
+References: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com> <1249588685-4662-2-git-send-email-jens.axboe@oracle.com> <20090806223257.0c33cf15@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 07 Aug 2009 06:37:08 +0000 (UTC)
+In-Reply-To: <20090806223257.0c33cf15@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  28d4db10a0f2a2a6cb9a843522f433ff0185c784
-Gitweb:     http://git.kernel.org/tip/28d4db10a0f2a2a6cb9a843522f433ff0185c784
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Thu, 6 Aug 2009 20:57:41 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 7 Aug 2009 08:32:55 +0200
+On Thu, Aug 06 2009, Alan Cox wrote:
+> > doing the command completion when the irq occurs, schedule a dedicated
+> > softirq in the hopes that we will complete more IO when the iopoll
+> > handler is invoked. Devices have a budget of commands assigned, and will
+> > stay in polled mode as long as they continue to consume their budget
+> > from the iopoll softirq handler. If they do not, the device is set back
+> > to interrupt completion mode.
+> 
+> This seems a little odd for pure ATA except for NCQ commands. Normal ATA
+> is notoriously completion/reissue latency sensitive [to the point I
+> suspect we should be dequeuing 2 commands from SCSI and loading the next
+> in the completion handler as soon as we recover the result task file and
+> see no error rather than going up and down the stack)
 
-perf tools: Fix multi-counter stat bug caused by incorrect reading of perf.data file header
+Yes certainly, it's only for devices that do queuing. If they don't,
+then we will always have just the one command to complete. So not much
+to poll! As to pre-prep for extra latency intensive devices, have you
+tried experimenting with just pretending that non-ncq devices in libata
+have a queue depth of 2? That should ensure that the first command
+available upon completion of the existing command is already prepped.
+Not sure how much time that would save, I would hope that our prep phase
+isn't too slow to begin with (or that would be the place to fix :-)
 
-Brice Goglin reported that only the first result from a
-multi-counter perf record --stat run is accurate, the
-rest looks bogus.
+> What do the numbers look like ?
 
-A silly mistake made us re-read the first attribute for
-every recorded attribute.
-
-Reported-by: Brice Goglin <Brice.Goglin@inria.fr>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Tested-by: Brice Goglin <Brice.Goglin@inria.fr>
-Cc: paulus@samba.org
-LKML-Reference: <1249585061.4975.17.camel@laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+On a slow box (with many cores), the benefits are quite huge:
 
 
----
- tools/perf/util/header.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+blocksize       blk-iopoll      IOPS    IRQ/sec         Commands/IRQ
+--------------------------------------------------------------------
+512b            0               25168   ~19500          1,3
+512b            1               30355     ~750          40
+4096b           0               25612   ~21500          1,2
+4096b           1               30231    ~1200          25
 
-diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index 450384b..95a44bc 100644
---- a/tools/perf/util/header.c
-+++ b/tools/perf/util/header.c
-@@ -213,9 +213,10 @@ struct perf_header *perf_header__read(int fd)
- 
- 	for (i = 0; i < nr_attrs; i++) {
- 		struct perf_header_attr *attr;
--		off_t tmp = lseek(fd, 0, SEEK_CUR);
-+		off_t tmp;
- 
- 		do_read(fd, &f_attr, sizeof(f_attr));
-+		tmp = lseek(fd, 0, SEEK_CUR);
- 
- 		attr = perf_header_attr__new(&f_attr.attr);
- 
+I suspect there's some cache interaction going on here too, but the
+numbers do look very good. On a faster box (and different architecture),
+on a test that does 50k IOPS, they perform identically but the iopoll
+approach uses less CPU. The interrupt rate drops from 55k ints/sec to
+39-40k ints/sec for that case.
+
+These are all synthetic IO only benchmarks, I hope to have some numbers
+for some mixed benchmarks soon too.
+
+> > This patch holds the core bits for blk-iopoll, device driver support
+> > sold separately.
+> 
+> You've been at Oracle too long ;) You'll be telling me its not a
+> supported configuration next.
+
+;-)
+
+-- 
+Jens Axboe
+
