@@ -1,23 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933869AbZHGUmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933962AbZHGUnE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933869AbZHGUmw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754460AbZHGUmv
+	id S933962AbZHGUnE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:43:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933925AbZHGUnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:42:51 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:33071 "EHLO
+	Fri, 7 Aug 2009 16:43:01 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:33084 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752911AbZHGUmu (ORCPT
+	with ESMTP id S932143AbZHGUm6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:42:50 -0400
+	Fri, 7 Aug 2009 16:42:58 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Thomas Gleixner <tglx@linutronix.de>
 Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>
-Subject: [PATCH 6/6] [ARM] Use atomic_spin_lock/atomic_spin_unlock for irqdesc lock
-Date: Fri,  7 Aug 2009 22:42:41 +0200
-Message-Id: <1249677761-19470-6-git-send-email-u.kleine-koenig@pengutronix.de>
+       rt-users <linux-rt-users@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
+       Jaroslav Kysela <perex@perex.cz>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>, Ben Dooks <ben-linux@fluff.org>,
+       Timur Tabi <timur@freescale.com>, Eric Miao <eric.miao@marvell.com>,
+       alsa-devel@alsa-project.org
+Subject: [PATCH 2/6] s3c2443-ac97: convert semaphore to mutex
+Date: Fri,  7 Aug 2009 22:42:37 +0200
+Message-Id: <1249677761-19470-2-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <20090807203939.GA19374@pengutronix.de>
 References: <20090807203939.GA19374@pengutronix.de>
@@ -32,47 +37,81 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This was missed in commit
+This fixes a build failure for 2.6.31-rc4-rt1 (ARCH=arm, s3c2410_defconfig):
 
-	fd2bde5 (genirq: Convert irqdesc lock to atomic_spinlock)
+	  CC [M]  sound/soc/s3c24xx/s3c2443-ac97.o
+	sound/soc/s3c24xx/s3c2443-ac97.c:50: warning: type defaults to 'int' in declaration of 'DECLARE_MUTEX'
+	sound/soc/s3c24xx/s3c2443-ac97.c:50: warning: parameter names (without types) in function declaration
+	sound/soc/s3c24xx/s3c2443-ac97.c: In function 's3c2443_ac97_read':
+	sound/soc/s3c24xx/s3c2443-ac97.c:59: error: 'ac97_mutex' undeclared (first use in this function)
+	sound/soc/s3c24xx/s3c2443-ac97.c:59: error: (Each undeclared identifier is reported only once
+	sound/soc/s3c24xx/s3c2443-ac97.c:59: error: for each function it appears in.)
+	sound/soc/s3c24xx/s3c2443-ac97.c: In function 's3c2443_ac97_write':
+	sound/soc/s3c24xx/s3c2443-ac97.c:93: error: 'ac97_mutex' undeclared (first use in this function)
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Takashi Iwai <tiwai@suse.de>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: Ben Dooks <ben-linux@fluff.org>
+Cc: Timur Tabi <timur@freescale.com>
+Cc: Eric Miao <eric.miao@marvell.com>
+Cc: alsa-devel@alsa-project.org
+Cc: linux-kernel@vger.kernel.org
 ---
- arch/arm/include/asm/mach/irq.h |    4 ++--
- mm/highmem.c                    |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ sound/soc/s3c24xx/s3c2443-ac97.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/include/asm/mach/irq.h b/arch/arm/include/asm/mach/irq.h
-index acac530..3981cf2 100644
---- a/arch/arm/include/asm/mach/irq.h
-+++ b/arch/arm/include/asm/mach/irq.h
-@@ -26,9 +26,9 @@ extern int show_fiq_list(struct seq_file *, void *);
-  */
- #define do_bad_IRQ(irq,desc)				\
- do {							\
--	spin_lock(&desc->lock);				\
-+	atomic_spin_lock(&desc->lock);			\
- 	handle_bad_irq(irq, desc);			\
--	spin_unlock(&desc->lock);			\
-+	atomic_spin_unlock(&desc->lock);		\
- } while(0)
+diff --git a/sound/soc/s3c24xx/s3c2443-ac97.c b/sound/soc/s3c24xx/s3c2443-ac97.c
+index 3f03d5d..bf16f20 100644
+--- a/sound/soc/s3c24xx/s3c2443-ac97.c
++++ b/sound/soc/s3c24xx/s3c2443-ac97.c
+@@ -47,7 +47,7 @@ static struct s3c24xx_ac97_info s3c24xx_ac97;
  
- #endif
-diff --git a/mm/highmem.c b/mm/highmem.c
-index 66e915a..214eefd 100644
---- a/mm/highmem.c
-+++ b/mm/highmem.c
-@@ -372,8 +372,8 @@ void *kmap_high_get(struct page *page)
- 	lock_kmap_any(flags);
- 	vaddr = (unsigned long)page_address(page);
- 	if (vaddr) {
--		BUG_ON(pkmap_count[PKMAP_NR(vaddr)] < 1);
--		pkmap_count[PKMAP_NR(vaddr)]++;
-+		BUG_ON(atomic_read(&pkmap_count[PKMAP_NR(vaddr)]) < 1);
-+		atomic_add(1, pkmap_count[PKMAP_NR(vaddr)]);
- 	}
- 	unlock_kmap_any(flags);
- 	return (void*) vaddr;
+ static DECLARE_COMPLETION(ac97_completion);
+ static u32 codec_ready;
+-static DECLARE_MUTEX(ac97_mutex);
++static DEFINE_MUTEX(ac97_mutex);
+ 
+ static unsigned short s3c2443_ac97_read(struct snd_ac97 *ac97,
+ 	unsigned short reg)
+@@ -56,7 +56,7 @@ static unsigned short s3c2443_ac97_read(struct snd_ac97 *ac97,
+ 	u32 ac_codec_cmd;
+ 	u32 stat, addr, data;
+ 
+-	down(&ac97_mutex);
++	mutex_lock(&ac97_mutex);
+ 
+ 	codec_ready = S3C_AC97_GLBSTAT_CODECREADY;
+ 	ac_codec_cmd = readl(s3c24xx_ac97.regs + S3C_AC97_CODEC_CMD);
+@@ -79,7 +79,7 @@ static unsigned short s3c2443_ac97_read(struct snd_ac97 *ac97,
+ 		printk(KERN_ERR "s3c24xx-ac97: req addr = %02x,"
+ 				" rep addr = %02x\n", reg, addr);
+ 
+-	up(&ac97_mutex);
++	mutex_unlock(&ac97_mutex);
+ 
+ 	return (unsigned short)data;
+ }
+@@ -90,7 +90,7 @@ static void s3c2443_ac97_write(struct snd_ac97 *ac97, unsigned short reg,
+ 	u32 ac_glbctrl;
+ 	u32 ac_codec_cmd;
+ 
+-	down(&ac97_mutex);
++	mutex_lock(&ac97_mutex);
+ 
+ 	codec_ready = S3C_AC97_GLBSTAT_CODECREADY;
+ 	ac_codec_cmd = readl(s3c24xx_ac97.regs + S3C_AC97_CODEC_CMD);
+@@ -109,7 +109,7 @@ static void s3c2443_ac97_write(struct snd_ac97 *ac97, unsigned short reg,
+ 	ac_codec_cmd |= S3C_AC97_CODEC_CMD_READ;
+ 	writel(ac_codec_cmd, s3c24xx_ac97.regs + S3C_AC97_CODEC_CMD);
+ 
+-	up(&ac97_mutex);
++	mutex_unlock(&ac97_mutex);
+ 
+ }
+ 
 -- 
 1.6.3.3
 
