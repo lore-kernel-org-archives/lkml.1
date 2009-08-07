@@ -1,99 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932423AbZHGLvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932473AbZHGLvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932423AbZHGLvJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 07:51:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932336AbZHGLvI
+	id S932473AbZHGLvw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 07:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932382AbZHGLvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 07:51:08 -0400
-Received: from mga01.intel.com ([192.55.52.88]:7007 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932223AbZHGLvH convert rfc822-to-8bit (ORCPT
+	Fri, 7 Aug 2009 07:51:51 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:40371 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932374AbZHGLvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 07:51:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,341,1246863600"; 
-   d="scan'208";a="714757378"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "oleg@redhat.com" <oleg@redhat.com>
-Date: Fri, 7 Aug 2009 12:51:04 +0100
-Subject: RE: [patch] x86, perf_counter, bts: add bts to perf_counter
-Thread-Topic: [patch] x86, perf_counter, bts: add bts to perf_counter
-Thread-Index: AcoXVJoUJcVeFyrVS/2gd0sKdSKllwAADmLg
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF07F@irsmsx504.ger.corp.intel.com>
-References: <20090807092256.A6083@sedona.ch.intel.com>
- <1249645524.32113.688.camel@twins>
-In-Reply-To: <1249645524.32113.688.camel@twins>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	Fri, 7 Aug 2009 07:51:50 -0400
+Message-ID: <4A7C154F.8010904@monstr.eu>
+Date: Fri, 07 Aug 2009 13:51:43 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+To: microblaze-uclinux@itee.uq.edu.au
+CC: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>
+Subject: Re: [microblaze-uclinux] [PATCH] microblaze: convert to asm-generic/hardirq.h
+References: <20090804145319.GI20487@lst.de> <4A7AEEEC.2040400@monstr.eu> <20090806210038.GA5147@lst.de>
+In-Reply-To: <20090806210038.GA5147@lst.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
->Sent: Friday, August 07, 2009 1:45 PM
->To: Metzger, Markus T
->Cc: linux-kernel@vger.kernel.org; mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com;
->markus.t.metzger@gmail.com; oleg@redhat.com
->Subject: Re: [patch] x86, perf_counter, bts: add bts to perf_counter
->
->On Fri, 2009-08-07 at 09:22 +0200, Markus Metzger wrote:
->> @@ -721,9 +903,13 @@ static int __hw_perf_counter_init(struct
->>         err = 0;
->>         if (!atomic_inc_not_zero(&active_counters)) {
->>                 mutex_lock(&pmc_reserve_mutex);
->> -               if (atomic_read(&active_counters) == 0 && !reserve_pmc_hardware())
->> -                       err = -EBUSY;
->> -               else
->> +               if (atomic_read(&active_counters) == 0) {
->> +                       if (!reserve_pmc_hardware())
->> +                               err = -EBUSY;
->> +                       else
->> +                               reserve_bts_hardware();
->> +               }
->> +               if (!err)
->>                         atomic_inc(&active_counters);
->>                 mutex_unlock(&pmc_reserve_mutex);
->>         }
->
->You loose the reserve_bts_hardware() error case there.
 
 
-That had been intentional since I consider BTS somewhat optional. In case it is not available or
-fails to initialize, e.g. out of memory, we fall back to normal profiling.
+Christoph Hellwig wrote:
+> On Thu, Aug 06, 2009 at 04:55:40PM +0200, Michal Simek wrote:
+>> Hi Christoph,
+>>
+>> Can you please change your patch title?
+>> You are removing ack_bad_irq not convert to hardirq.h
+>>
+>> But anyway will be worth to remove it from other archs too.
+> 
+> Oh sorry, I copied the patch from various other architectures I touched
+> at the same time.  I have been wading throug all architectures to
+> convert them to asm-generic/hardirq.h and the generic ack_bad_irq and
+> sent out lots of patches for it.  A couple of architectures do count
+> bad irqs instead of just printing a message, but even those counters
+> could be unified.  The only genirq architectecture that does something
+> weird in ack_bad_irq is mips.
 
-Now that I think about it again, I guess that's not what a (debugger) user would expect.
-An error might be more appropriate in that case.
+No worries. Added to next branch.
 
-I'll change it.
+Thanks,
+Michal
 
-thanks and regards,
-markus.
 
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+> 
+> --
+> 
+> 
+> Subject: microblaze: use the generic ack_bad_irq implementation
+> From: Christoph Hellwig <hch@lst.de>
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> 
+> Index: linux-2.6/arch/microblaze/include/asm/hardirq.h
+> ===================================================================
+> --- linux-2.6.orig/arch/microblaze/include/asm/hardirq.h	2009-07-27 14:32:58.596148711 +0200
+> +++ linux-2.6/arch/microblaze/include/asm/hardirq.h	2009-07-27 14:56:30.691912378 +0200
+> @@ -12,8 +12,6 @@
+>  /* should be defined in each interrupt controller driver */
+>  extern unsigned int get_irq(struct pt_regs *regs);
+>  
+> -#define ack_bad_irq ack_bad_irq
+> -void ack_bad_irq(unsigned int irq);
+>  #include <asm-generic/hardirq.h>
+>  
+>  #endif /* _ASM_MICROBLAZE_HARDIRQ_H */
+> Index: linux-2.6/arch/microblaze/kernel/irq.c
+> ===================================================================
+> --- linux-2.6.orig/arch/microblaze/kernel/irq.c	2009-07-27 14:53:45.847149312 +0200
+> +++ linux-2.6/arch/microblaze/kernel/irq.c	2009-07-27 14:56:37.121902184 +0200
+> @@ -30,15 +30,6 @@ unsigned int irq_of_parse_and_map(struct
+>  }
+>  EXPORT_SYMBOL_GPL(irq_of_parse_and_map);
+>  
+> -/*
+> - * 'what should we do if we get a hw irq event on an illegal vector'.
+> - * each architecture has to answer this themselves.
+> - */
+> -void ack_bad_irq(unsigned int irq)
+> -{
+> -	printk(KERN_WARNING "unexpected IRQ trap at vector %02x\n", irq);
+> -}
+> -
+>  static u32 concurrent_irq;
+>  
+>  void do_IRQ(struct pt_regs *regs)
+> ___________________________
+> microblaze-uclinux mailing list
+> microblaze-uclinux@itee.uq.edu.au
+> Project Home Page : http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux
+> Mailing List Archive : http://www.itee.uq.edu.au/~listarch/microblaze-uclinux/
+> 
+> 
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
+Microblaze U-BOOT custodian
