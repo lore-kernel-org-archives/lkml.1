@@ -1,86 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933131AbZHGTUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933144AbZHGTVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933131AbZHGTUY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 15:20:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933112AbZHGTUX
+	id S933144AbZHGTVp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 15:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933109AbZHGTVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 15:20:23 -0400
-Received: from relay2.mail.vrmd.de ([81.28.224.28]:41126 "EHLO
-	relay2.mail.vrmd.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933108AbZHGTUW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 15:20:22 -0400
-Message-ID: <4A7C7AEA.7080800@gmx.de>
-Date: Fri, 07 Aug 2009 21:05:14 +0200
-From: Bernhard Walle <bernhard.walle@gmx.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Fri, 7 Aug 2009 15:21:44 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:33834 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933046AbZHGTVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 15:21:43 -0400
+Date: Fri, 7 Aug 2009 21:21:44 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -next] block: blk-iopoll sysctl iff CONFIG_BLOCK
+Message-ID: <20090807192144.GZ12579@kernel.dk>
+References: <20090807183118.e71b4db2.sfr@canb.auug.org.au> <20090807111659.3d8da27f.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Amerigo Wang <amwang@redhat.com>
-CC: linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 4/7] ia64: implement crashkernel=auto
-References: <20090806062125.5578.72123.sendpatchset@localhost.localdomain> <20090806062211.5578.59301.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090806062211.5578.59301.sendpatchset@localhost.localdomain>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=DDAF6454
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-Relay-User: bernhard@bwalle.de
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090807111659.3d8da27f.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amerigo Wang schrieb:
->  
-> +#ifdef CONFIG_KEXEC_AUTO_RESERVE
-> +#ifdef KEXEC_AUTO_RESERVED_SIZE
-> +#undef KEXEC_AUTO_RESERVED_SIZE
-> +#endif
-> +#define KEXEC_AUTO_RESERVED_SIZE (1ULL<<28) /* 256M */
-> +#include <asm-generic/kexec.h>
-> +#endif
-> +
->  extern struct kimage *ia64_kimage;
+On Fri, Aug 07 2009, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> New block-iopoll sysctl should be surrounded by CONFIG_BLOCK to
+> prevent build error:
+> 
+> kernel/built-in.o:(.data+0x2990): undefined reference to `blk_iopoll_enabled'
 
-IMO that's way too small for practial use on IA64 systems.
+Thanks, I'll just kill off this sysctl, it should be driver controller
+anyway. Was just easier for testing :-)
 
-For SLES11, which is based on Linux 2.6.28 IIRC, we use following memory
-size values in the YaST2 kdump module which configures the crashkernel
-parameter (this is YCP syntax, but I think everybody understands it):
+-- 
+Jens Axboe
 
-> // bnc #446480 - Fine-tune kdump memory proposal
-> if ((Arch::ia64()) && (total_memory >= 1024))
-> {
->     integer total_memory_gigabyte = total_memory/1024;
->     if ((total_memory_gigabyte >= 1) && (total_memory_gigabyte <12))
->         alocated_memory = "256";
->     else if ((total_memory_gigabyte >= 12) && (total_memory_gigabyte <128))
->         alocated_memory = "512";
->     else if ((total_memory_gigabyte >= 128) && (total_memory_gigabyte <256))
->         alocated_memory = "768";
->     else if ((total_memory_gigabyte >= 256) && (total_memory_gigabyte <378))
->         alocated_memory = "1024";
->     else if ((total_memory_gigabyte >= 378) && (total_memory_gigabyte <512))
->         alocated_memory = "1536";
->     else if ((total_memory_gigabyte >= 512) && (total_memory_gigabyte <768))
->         alocated_memory = "2048";
->     else if (total_memory_gigabyte >= 768)
->         alocated_memory = "3072";
-> }
-
-I got that assumtions from SGI (and they are known to have large IA64
-systems) and I think the values were tested.
-
-But IMO it doesn't make sense to put such policy decisions in the
-kernel. I see no advantage for that. The average user doesn't have to
-write crashkernel parameters, they use the values that the distribution
-ships. Or do you think that an average user knows what a UUID of a file
-system is just to specify the correct root partition?
-
-
-Regards,
-Bernhard
