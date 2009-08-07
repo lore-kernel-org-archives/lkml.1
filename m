@@ -1,53 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932301AbZHGXWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbZHGX1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932301AbZHGXWt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 19:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932167AbZHGXWs
+	id S1756777AbZHGX1N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 19:27:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756576AbZHGX1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 19:22:48 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49859 "EHLO mx1.suse.de"
+	Fri, 7 Aug 2009 19:27:11 -0400
+Received: from kroah.org ([198.145.64.141]:42913 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932136AbZHGXWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 19:22:48 -0400
-Date: Sat, 8 Aug 2009 01:22:45 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [Bug #13739] 2.6.30 leaking keys on console switch
-In-Reply-To: <7ixSg7D88bK.A.gcF._pgdKB@chimera>
-Message-ID: <alpine.LNX.2.00.0908080122130.25797@wotan.suse.de>
-References: <upey9ZSfnaF.A.-oE.rpgdKB@chimera> <7ixSg7D88bK.A.gcF._pgdKB@chimera>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1755950AbZHGX1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 19:27:10 -0400
+Date: Fri, 7 Aug 2009 16:25:23 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB patches for 2.6.31-rc5-git
+Message-ID: <20090807232523.GA31885@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Aug 2009, Rafael J. Wysocki wrote:
+Here are some USB patches for your kernel tree.
 
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.29 and 2.6.30.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13739
-> Subject		: 2.6.30 leaking keys on console switch
-> Submitter	: Andi Kleen <andi@firstfloor.org>
-> Date		: 2009-07-07 8:44 (27 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124695628924382&w=4
-> Handled-By	: Jiri Kosina <jkosina@suse.cz>
+They fix:
+	- some ehci warnings that people (including myself) are seeing.
+	- musb driver fixes
+	- new device ids
+	- cdc-acm bugfix that solves a regression that was reported
+	- other minor fixes
 
-Andi, did the bisection reveal anything?
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-Thanks,
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
 
--- 
-Jiri Kosina
-SUSE Labs
+thanks,
+
+greg k-h
+
+------------
+
+
+ arch/arm/configs/omap3_evm_defconfig |    2 +-
+ arch/arm/mach-omap2/board-omap3evm.c |    5 +++++
+ arch/arm/mach-omap2/usb-musb.c       |   21 ---------------------
+ drivers/usb/class/cdc-acm.c          |   10 +++++-----
+ drivers/usb/class/cdc-acm.h          |    2 ++
+ drivers/usb/core/devio.c             |   10 ++++++----
+ drivers/usb/host/ehci-hcd.c          |    3 ++-
+ drivers/usb/host/ehci-q.c            |   15 +++++++--------
+ drivers/usb/host/ehci-sched.c        |    1 +
+ drivers/usb/musb/Kconfig             |    1 +
+ drivers/usb/serial/ftdi_sio.c        |    3 +++
+ drivers/usb/serial/ftdi_sio.h        |   14 ++++++++++++++
+ drivers/usb/serial/pl2303.c          |    1 +
+ drivers/usb/serial/pl2303.h          |    4 ++++
+ drivers/usb/storage/unusual_devs.h   |    7 +++++++
+ 15 files changed, 59 insertions(+), 40 deletions(-)
+
+---------------
+
+Alan Stern (3):
+      USB: usbfs: fix -ENOENT error code to be -ENODEV
+      USB: EHCI: fix two new bugs related to Clear-TT-Buffer
+      USB: EHCI: fix counting of transaction error retries
+
+Dhaval Vasa (1):
+      USB: ftdi_sio: add product_id for Marvell OpenRD Base, Client
+
+Gupta, Ajay Kumar (1):
+      USB: musb: fix the nop registration for OMAP3EVM
+
+Khanh-Dang Nguyen Thu Lam (1):
+      USB: pl2303: New vendor and product id
+
+Marko Hänninen (1):
+      USB: ftdi_sio: add vendor and product id for Bayer glucose meter serial converter cable
+
+Michael Buesch (1):
+      USB: devio: Properly do access_ok() checks
+
+Oliver Neukum (1):
+      USB: fix oops on disconnect in cdc-acm
+
+Rogerio Brito (1):
+      USB: storage: include Prolific Technology USB drive in unusual_devs list
+
