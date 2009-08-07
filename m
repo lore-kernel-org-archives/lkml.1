@@ -1,104 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932951AbZHGS6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932987AbZHGS6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932951AbZHGS6b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 14:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932853AbZHGS63
+	id S932987AbZHGS6o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 14:58:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932507AbZHGS6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 14:58:29 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:13232 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755089AbZHGS6E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 14:58:04 -0400
-From: "Paul Congdon \(UC Davis\)" <ptcongdon@ucdavis.edu>
-To: "'Stephen Hemminger'" <shemminger@linux-foundation.org>,
-       "'Fischer, Anna'" <anna.fischer@hp.com>
-Cc: <bridge@lists.linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       <netdev@vger.kernel.org>, <virtualization@lists.linux-foundation.org>,
-       <evb@yahoogroups.com>, <davem@davemloft.net>, <kaber@trash.net>,
-       <adobriyan@gmail.com>, "'Arnd Bergmann'" <arnd@arndb.de>
-References: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net> <20090806210002.75beb7c6@nehalam>
-In-Reply-To: <20090806210002.75beb7c6@nehalam>
-Subject: RE: [PATCH][RFC] net/bridge: add basic VEPA support
-Date: Fri, 7 Aug 2009 11:58:00 -0700
-Message-ID: <004e01ca1790$fec36c30$fc4a4490$@edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-thread-index: AcoXE6cs1H0VRvvIS+KijAKFQw9qpAAfUd/w
-Content-Language: en-us
+	Fri, 7 Aug 2009 14:58:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56761 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932954AbZHGS6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 14:58:38 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
+       msb@google.com, viro@zeniv.linux.org.uk, hannes@cmpxchg.org
+Subject: [PATCH 3/4] vfs: change sb->s_maxbytes to a loff_t
+Date: Fri,  7 Aug 2009 14:57:40 -0400
+Message-Id: <1249671461-9071-4-git-send-email-jlayton@redhat.com>
+In-Reply-To: <1249671461-9071-1-git-send-email-jlayton@redhat.com>
+References: <1249671461-9071-1-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> After reading more about this, I am not convinced this should be part 
-> of the bridge code. The bridge code really consists of two parts:
-> forwarding table and optional spanning tree. Well the VEPA code short 
-> circuits both of these; it can't imagine it working with STP turned 
-> on. The only part of bridge code that really gets used by this are the 
-> receive packet hooks and the crufty old API.
-> 
-> So instead of adding more stuff to existing bridge code, why not have 
-> a new driver for just VEPA. You could do it with a simple version of 
-> macvlan type driver.
+sb->s_maxbytes is supposed to indicate the maximum size of a file that
+can exist on the filesystem. It's declared as an unsigned long long.
 
-Stephen,
+Even if a filesystem has no inherent limit that prevents it from using
+every bit in that unsigned long long, it's still problematic to set it
+to anything larger than MAX_LFS_FILESIZE. A lot of places implicitly
+cast s_maxbytes to a signed value when doing comparisons against it
+(usually using loff_t on the other side of the comparison). If it's
+set too large then this cast makes it a negative number and generally
+breaks the comparison.
 
-Thanks for your comments and questions.  We do believe the bridge code is
-the right place for this, so I'd like to embellish on that a bit more to
-help persuade you.  Sorry for the long winded response, but here are some
-thoughts:
+Change s_maxbytes to be loff_t instead. That should help eliminate the
+temptation to set it too large by making it a signed value.
 
-- First and foremost, VEPA is going to be a standard addition to the IEEE
-802.1Q specification.  The working group agreed at the last meeting to
-pursue a project to augment the bridge standard with hairpin mode (aka
-reflective relay) and a remote filtering service (VEPA).  See for details:
-http://www.ieee802.org/1/files/public/docs2009/new-evb-congdon-evbPar5C-0709
--v01.pdf
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
+ fs/super.c         |   10 ++++++++++
+ include/linux/fs.h |    2 +-
+ 2 files changed, 11 insertions(+), 1 deletions(-)
 
-- The VEPA functionality was really a pretty small change to the code with
-low risk and wouldn't seem to warrant an entire new driver or module.
-
-- There are good use cases where VMs will want to have some of their
-interfaces attached to bridges and others to bridges operating in VEPA mode.
-In other words, we see simultaneous operation of the bridge code and VEPA
-occurring, so having as much of the underlying code as common as possible
-would seem to be beneficial. 
-
-- By augmenting the bridge code with VEPA there is a great amount of re-use
-achieved.  It works wherever the bridge code works and doesn't need anything
-special to support KVM, XEN, and all the hooks, etc...
-
-- The hardware vendors building SR-IOV NICs with embedded switches will be
-adding VEPA mode, so by keeping the bridge module in sync would be
-consistent with this trend and direction.  It will be possible to extend the
-hardware implementations by cascading a software bridge and/or VEPA, so
-being in sync with the architecture would make this more consistent.
+diff --git a/fs/super.c b/fs/super.c
+index 2761d3e..929d55d 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -889,6 +889,16 @@ vfs_kern_mount(struct file_system_type *type, int flags, const char *name, void
+  	if (error)
+  		goto out_sb;
  
-- The forwarding table is still needed and used on inbound traffic to
-deliver frames to the correct virtual interfaces and to filter any reflected
-frames.  A new driver would have to basically implement an equivalent
-forwarding table anyway.  As I understand the current macvlan type driver,
-it wouldn't filter multicast frames properly without such a table.
-
-- It seems the hairpin mode would be needed in the bridge module whether
-VEPA was added to the bridge module or a new driver.  Having the associated
-changes together in the same code could aid in understanding and deployment.
-
-As I understand the macvlan code, it currently doesn't allow two VMs on the
-same machine to communicate with one another.  I could imagine a hairpin
-mode on the adjacent bridge making this possible, but the macvlan code would
-need to be updated to filter reflected frames so a source did not receive
-his own packet.  I could imagine this being done as well, but to also
-support selective multicast usage, something similar to the bridge
-forwarding table would be needed.  I think putting VEPA into a new driver
-would cause you to implement many things the bridge code already supports.
-Given that we expect the bridge standard to ultimately include VEPA, and the
-new functions are basic forwarding operations, it seems to make most sense
-to keep this consistent with the bridge module.
-
-Paul
++	/*
++	 * filesystems should never set s_maxbytes larger than MAX_LFS_FILESIZE
++	 * but s_maxbytes was an unsigned long long for many releases. Throw
++	 * this warning for a little while to try and catch filesystems that
++	 * violate this rule. This warning can be removed in 2.6.34.
++	 */
++	WARN(((unsigned long long) mnt->mnt_sb->s_maxbytes > MAX_LFS_FILESIZE),
++		"WARNING: %s sets sb->s_maxbytes too large (%llu)", type->name,
++		(unsigned long long) mnt->mnt_sb->s_maxbytes);
++
+ 	mnt->mnt_mountpoint = mnt->mnt_root;
+ 	mnt->mnt_parent = mnt;
+ 	up_write(&mnt->mnt_sb->s_umount);
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index a36ffa5..25d9743 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1316,7 +1316,7 @@ struct super_block {
+ 	unsigned long		s_blocksize;
+ 	unsigned char		s_blocksize_bits;
+ 	unsigned char		s_dirt;
+-	unsigned long long	s_maxbytes;	/* Max file size */
++	loff_t			s_maxbytes;	/* Max file size */
+ 	struct file_system_type	*s_type;
+ 	const struct super_operations	*s_op;
+ 	struct dquot_operations	*dq_op;
+-- 
+1.6.0.6
 
