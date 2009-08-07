@@ -1,46 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbZHGRgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbZHGRg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932086AbZHGRgD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 13:36:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbZHGRgC
+	id S1754640AbZHGRg5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 13:36:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbZHGRg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 13:36:02 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48233
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754618AbZHGRgB (ORCPT
+	Fri, 7 Aug 2009 13:36:56 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:65463 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754538AbZHGRgz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 13:36:01 -0400
-Date: Fri, 07 Aug 2009 10:36:10 -0700 (PDT)
-Message-Id: <20090807.103610.209136140.davem@davemloft.net>
-To: bzolnier@gmail.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/6] ide: allow ide_dev_read_id() to be called from the
- IRQ context
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200908071927.36367.bzolnier@gmail.com>
-References: <200908071355.21648.bzolnier@gmail.com>
-	<20090807.090158.45976865.davem@davemloft.net>
-	<200908071927.36367.bzolnier@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Aug 2009 13:36:55 -0400
+Date: Fri, 7 Aug 2009 13:36:54 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       linux kernel <linux-kernel@vger.kernel.org>, stable@kernel.org
+Subject: [GIT PULL] ring-buffer: Fix memleak in ring_buffer_free()
+In-Reply-To: <4A7C06B9.2090302@gmail.com>
+Message-ID: <alpine.DEB.2.00.0908071335380.1251@gandalf.stny.rr.com>
+References: <4A7C06B9.2090302@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date: Fri, 7 Aug 2009 19:27:36 +0200
 
-> Are you trying to tell me that after 6 weeks there is still no public
-> tree to hold future IDE changes?
-> 
-> If this is indeed a case here I hope that it will get addressed ASAP.
+Ingo,
 
-IDE is deep maintainence, we shouldn't be doing lots of changes,
-cleanups, and things of this nature.  So urgency and timeliness
-is on a sincerely different scale for it.
+Please pull the latest tip/tracing/urgent tree, which can be found at:
 
-On the other hand, if you've been looking, I've been applying
-networking patches to net-2.6 and net-next-2.6 by the truckload
-on a daily basis because it is in active development.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/urgent
+
+
+Eric Dumazet (1):
+      ring-buffer: Fix memleak in ring_buffer_free()
+
+----
+ kernel/trace/ring_buffer.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+---------------------------
+commit bd3f02212d6a457267e0c9c02c426151c436d9d4
+Author: Eric Dumazet <eric.dumazet@gmail.com>
+Date:   Fri Aug 7 12:49:29 2009 +0200
+
+    ring-buffer: Fix memleak in ring_buffer_free()
+    
+    I noticed oprofile memleaked in linux-2.6 current tree,
+    and tracked this ring-buffer leak.
+    
+    Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+    LKML-Reference: <4A7C06B9.2090302@gmail.com>
+    Cc: stable@kernel.org
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index d4d3580..a330513 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -735,6 +735,7 @@ ring_buffer_free(struct ring_buffer *buffer)
+ 
+ 	put_online_cpus();
+ 
++	kfree(buffer->buffers);
+ 	free_cpumask_var(buffer->cpumask);
+ 
+ 	kfree(buffer);
