@@ -1,147 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752993AbZHGPaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbZHGPbJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752993AbZHGPaL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 11:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbZHGP3w
+	id S1752812AbZHGPbJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 11:31:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZHGPbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 11:29:52 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:59006 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752755AbZHGP3v (ORCPT
+	Fri, 7 Aug 2009 11:31:08 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:60433 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751619AbZHGPbH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 11:29:51 -0400
-From: Anuj Aggarwal <anuj.aggarwal@ti.com>
-To: broonie@sirena.org.uk, lrg@slimlogic.co.uk, linux-omap@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Cc: Anuj Aggarwal <anuj.aggarwal@ti.com>
-Subject: [PATCH 8/8] Regulator: Added board-dependent code for TPS65073
-Date: Fri,  7 Aug 2009 20:59:34 +0530
-Message-Id: <1249658974-11151-1-git-send-email-anuj.aggarwal@ti.com>
-X-Mailer: git-send-email 1.6.2.4
+	Fri, 7 Aug 2009 11:31:07 -0400
+Date: Fri, 7 Aug 2009 11:16:47 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Chris Clayton <chris2553@googlemail.com>
+Cc: Frans Pop <elendil@planet.nl>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mcgrof@gmail.com
+Subject: Re: ath5k - strange regulatory domain change
+Message-ID: <20090807151304.GE7545@tuxdriver.com>
+References: <c6b1100b0908070350t3101030bs4b3d2e7485ad9aee@mail.gmail.com> <200908071324.45269.elendil@planet.nl> <c6b1100b0908070556sb3f4f80sc757d8b100cbcb3c@mail.gmail.com> <20090807134803.GA7545@tuxdriver.com> <c6b1100b0908070757t7b973180s17959e0f46347d5d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c6b1100b0908070757t7b973180s17959e0f46347d5d@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added OMAP35x specific code for TPS65073 in board-omap35x-pmic.c
+On Fri, Aug 07, 2009 at 03:57:30PM +0100, Chris Clayton wrote:
+> 2009/8/7 John W. Linville <linville@tuxdriver.com>:
+> > On Fri, Aug 07, 2009 at 01:56:43PM +0100, Chris Clayton wrote:
 
-Signed-off-by: Anuj Aggarwal <anuj.aggarwal@ti.com>
----
- arch/arm/mach-omap2/board-omap35x-pmic.c |   95 +++++++++++++++++++++++++++++-
- 1 files changed, 94 insertions(+), 1 deletions(-)
+> >> To sum this up then (as I understand things):
+> >>
+> >> 1. I am the system administrator (root);
+> >> 2. I am using a valid (albeit deprecated from 2.6.31) method to tell
+> >> the wireless infrastructure that I want the regulatory domain set to
+> >> GB;
+> >> 3. GB is a valid code; and
+> >> 4. the wireless infrastructure sets the regulatory domain to CN.
+> >> 5. in 2.6.30, the wireless infrastructure does what I (the root user)
+> >> tell it to do.
+> >>
+> >> That's a regression in my book. Oh well! I do have the iw and crda
+> >> applications installed, so I've taken that route of setting the
+> >> regulatory domain to GB.
+> >
+> > Are you actually getting the wrong regulatory rules enforced?  Or are
+> > you merely bothered that it is reporting "CN" instead of "GB"?
+> >
+> 
+> I'm not sure whether it's wrong or not. To these dmesg snippets from
+> my original post look wrong because one of the frequency ranges listed
+> for CN is outside those listed for GB and one of the CN max_eirp
+> entries is not preent in the GB list. Whether that is OK or not I
+> don't know and can't find (lay user) documentation to tell me.
+> 
+> cfg80211: Regulatory domain changed to country: GB
+>         (start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp)
+>         (2402000 KHz - 2482000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+>         (5170000 KHz - 5250000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+>         (5250000 KHz - 5330000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+>         (5490000 KHz - 5710000 KHz @ 40000 KHz), (N/A, 2700 mBm)
+> 
+> cfg80211: Regulatory domain changed to country: CN
+>         (start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp)
+>         (2402000 KHz - 2482000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+>         (5735000 KHz - 5835000 KHz @ 40000 KHz), (N/A, 3000 mBm)
 
-diff --git a/arch/arm/mach-omap2/board-omap35x-pmic.c b/arch/arm/mach-omap2/board-omap35x-pmic.c
-index 0bf47fd..2c33965 100644
---- a/arch/arm/mach-omap2/board-omap35x-pmic.c
-+++ b/arch/arm/mach-omap2/board-omap35x-pmic.c
-@@ -124,6 +124,98 @@ static struct i2c_board_info __initdata board_tps65023_instances[] = {
- /*
-  * Definitions specific to TPS65073
-  */
-+#if defined(CONFIG_OMAP3EVM_TPS65073)
-+/* MPU voltage regulator of DCDC type */
-+struct regulator_consumer_supply tps65073_mpu_consumers = {
-+	.supply = "vdd1",
-+};
-+
-+/* CORE voltage regulator of DCDC type */
-+struct regulator_consumer_supply tps65073_core_consumers = {
-+	.supply = "vdd2",
-+};
-+
-+/* SRAM/MEM/WKUP_BG/VDDS voltage regulator of DCDC type */
-+struct regulator_consumer_supply tps65073_vdds_consumers = {
-+	.supply = "vdds",
-+};
-+
-+/* DPLL voltage regulator of LDO type */
-+struct regulator_consumer_supply tps65073_dpll_consumers = {
-+	.supply = "dpll",
-+};
-+
-+/* MMC voltage regulator of LDO type */
-+struct regulator_consumer_supply tps65073_mmc_consumers = {
-+	.supply = "mmc",
-+};
-+
-+struct regulator_init_data tps65073_regulator_data[] = {
-+	{
-+		.constraints = {
-+			.min_uV = 725000,
-+			.max_uV = 3300000,
-+			.valid_ops_mask = (REGULATOR_CHANGE_VOLTAGE |
-+				REGULATOR_CHANGE_STATUS),
-+			.boot_on = 1,
-+		},
-+		.num_consumer_supplies = 1,
-+		.consumer_supplies = &tps65073_vdds_consumers,
-+	},
-+	{
-+		.constraints = {
-+			.min_uV = 725000,
-+			.max_uV = 3300000,
-+			.valid_ops_mask = (REGULATOR_CHANGE_VOLTAGE |
-+				REGULATOR_CHANGE_STATUS),
-+			.boot_on = 1,
-+		},
-+		.num_consumer_supplies = 1,
-+		.consumer_supplies = &tps65073_core_consumers,
-+	},
-+	{
-+		.constraints = {
-+			.min_uV = 725000,
-+			.max_uV = 3300000,
-+			.valid_ops_mask = (REGULATOR_CHANGE_VOLTAGE |
-+				REGULATOR_CHANGE_STATUS),
-+			.boot_on = 1,
-+		},
-+		.num_consumer_supplies = 1,
-+		.consumer_supplies = &tps65073_mpu_consumers,
-+	},
-+	{
-+		.constraints = {
-+			.min_uV = 1000000,
-+			.max_uV = 3300000,
-+			.valid_ops_mask = (REGULATOR_CHANGE_VOLTAGE |
-+				REGULATOR_CHANGE_STATUS),
-+			.boot_on = 1,
-+		},
-+		.num_consumer_supplies = 1,
-+		.consumer_supplies = &tps65073_dpll_consumers,
-+	},
-+	{
-+		.constraints = {
-+			.min_uV = 725000,
-+			.max_uV = 3300000,
-+			.valid_ops_mask = (REGULATOR_CHANGE_VOLTAGE |
-+				REGULATOR_CHANGE_STATUS),
-+			.boot_on = 1,
-+		},
-+		.num_consumer_supplies = 1,
-+		.consumer_supplies = &tps65073_mmc_consumers,
-+	},
-+};
-+
-+static struct i2c_board_info __initdata board_tps65073_instances[] = {
-+	{
-+		I2C_BOARD_INFO("tps6507x", 0x48),
-+		.flags = I2C_CLIENT_WAKE,
-+		.platform_data = &tps65073_regulator_data[0],
-+	},
-+};
-+#endif
- 
- static int flag_pmic_twl4030;
- static int flag_pmic_tps6235x;
-@@ -204,7 +296,8 @@ int oma35x_pmic_init(void)
- #endif
- 
- #if defined(CONFIG_OMAP3EVM_TPS65073)
--	/* do stuff specific to TPS65073 */
-+	omap_register_i2c_bus(1, 400, board_tps65073_instances,
-+		ARRAY_SIZE(board_tps65073_instances));
- #endif
- 
- 	return 0;
+It looks like a mismatch to me.  Luis, can you sort this out?
+
+John
 -- 
-1.6.2.4
-
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
