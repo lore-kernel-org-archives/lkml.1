@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753041AbZHGPff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084AbZHGPkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753041AbZHGPff (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 11:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbZHGPff
+	id S1753084AbZHGPkL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 11:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbZHGPkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 11:35:35 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:53854 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752597AbZHGPfe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 11:35:34 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Chris Clayton <chris2553@googlemail.com>
-Subject: Re: ath5k - strange regulatory domain change
-Date: Fri, 7 Aug 2009 17:35:32 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <c6b1100b0908070350t3101030bs4b3d2e7485ad9aee@mail.gmail.com> <200908071324.45269.elendil@planet.nl> <200908071324.45269.elendil@planet.nl> <c6b1100b0908070556sb3f4f80sc757d8b100cbcb3c@mail.gmail.com>
-In-reply-To: <c6b1100b0908070556sb3f4f80sc757d8b100cbcb3c@mail.gmail.com>
+	Fri, 7 Aug 2009 11:40:11 -0400
+Received: from kroah.org ([198.145.64.141]:44878 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752854AbZHGPkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 11:40:10 -0400
+Date: Fri, 7 Aug 2009 08:13:20 -0700
+From: Greg KH <greg@kroah.com>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Jan Blunck <jblunck@suse.de>, gregkh@suse.de,
+       Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+ /dev
+Message-ID: <20090807151320.GA26639@kroah.com>
+References: <20090805171513.GA10443@kroah.com>
+ <200908070804.08156.a1426z@gawab.com>
+ <20090807052015.GA24615@kroah.com>
+ <200908071549.21416.a1426z@gawab.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200908071735.33428.elendil@planet.nl>
-X-OriginalArrivalTime: 07 Aug 2009 15:35:34.0162 (UTC) FILETIME=[B4461F20:01CA1774]
+In-Reply-To: <200908071549.21416.a1426z@gawab.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Clayton wrote:
-> That's a regression in my book. Oh well! I do have the iw and crda
-> applications installed, so I've taken that route of setting the
-> regulatory domain to GB.
+On Fri, Aug 07, 2009 at 03:49:21PM +0300, Al Boldi wrote:
+> Greg KH wrote:
+> > It's much faster than udev, and is equivalent to a static /dev with the
+> > exception that the group and permission settings that you are used to.
+> > udev then needs to come along and make those settings, but that's so
+> > frickin fast it's amazing.
+> 
+> Sounds great!
+> 
+> > So, test it out and see if you want to verify this.
+> 
+> Ok, can you post a patch against .30?
 
-Somewhere in that thread I pointed to Luis explained that using the 
-cfg80211 module parameter is deprecated if you're using those 
-applications. So I think that is indeed the correct way to solve it.
+If you look in the lkml archives, the first versions of this were posted
+against .30 if you wish to try them out.
 
-If you did not have those applications installed, the GB setting from the 
-module parameter would still be honored.
+thanks,
 
-Cheers,
-FJP
+greg k-h
