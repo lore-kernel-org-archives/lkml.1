@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbZHGBK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZHGBSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756859AbZHGBK7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Aug 2009 21:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756743AbZHGBK6
+	id S1756806AbZHGBSE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Aug 2009 21:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbZHGBSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Aug 2009 21:10:58 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:31663 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752371AbZHGBK5 (ORCPT
+	Thu, 6 Aug 2009 21:18:03 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46162 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754509AbZHGBSC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Aug 2009 21:10:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=KWhW+4aqEmorL4P/1BwfTpcsKkpTjTVOvG13r+t/2llf0acXxyPPye5AhOQbskbuK8
-         +HbSMAn9RV3dv/o5lIIK79oWIFhaIrnUDV6bVwfXvHok0ACXrH6aI1jSM0JIsu5akC++
-         Ab4QrwCPfYpS45/dV2P5n8xcdYuT5CjyFfSjM=
-Date: Fri, 7 Aug 2009 09:10:51 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2009-08-06-00-30 uploaded
-Message-ID: <20090807011051.GA3597@darkstar>
-References: <200908060733.n767X6mN023120@imap1.linux-foundation.org>
+	Thu, 6 Aug 2009 21:18:02 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 1/4] tracing, page-allocator: Add trace events for page allocation and page freeing
+Cc: kosaki.motohiro@jp.fujitsu.com, Larry Woodman <lwoodman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+In-Reply-To: <20090805094019.GB21950@csn.ul.ie>
+References: <20090805165302.5BC8.A69D9226@jp.fujitsu.com> <20090805094019.GB21950@csn.ul.ie>
+Message-Id: <20090807100502.5BDC.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908060733.n767X6mN023120@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri,  7 Aug 2009 10:17:57 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 12:33:06AM -0700, akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2009-08-06-00-30 has been uploaded to
+
+> > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > > index d052abb..843bdec 100644
+> > > --- a/mm/page_alloc.c
+> > > +++ b/mm/page_alloc.c
+> > > @@ -1905,6 +1905,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+> > >  				zonelist, high_zoneidx, nodemask,
+> > >  				preferred_zone, migratetype);
+> > >  
+> > > +	trace_mm_page_alloc(_RET_IP_, page, order, gfp_mask, migratetype);
+> > >  	return page;
+> > >  }
+> > 
+> > In almost case, __alloc_pages_nodemask() is called from alloc_pages_current().
+> > Can you add call_site argument? (likes slab_alloc)
+> > 
 > 
->    http://userweb.kernel.org/~akpm/mmotm/
-> 
-> and will soon be available at
-> 
->    git://git.zen-sources.org/zen/mmotm.git
-> 
-> It contains the following patches against 2.6.31-rc5:
-> 
+> In the NUMA case, this will be true but addressing it involves passing down
+> an additional argument in the non-tracing case which I wanted to avoid.
+> As the stacktrace option is available to ftrace, I think I'll drop call_site
+> altogether as anyone who really needs that information has options.
 
-Hi, andrew
+Insted, can we move this tracepoint to alloc_pages_current(), alloc_pages_node() et al ?
+On page tracking case, call_site information is one of most frequently used one.
+if we need multiple trace combination, it become hard to use and reduce usefulness a bit.
 
-Following a fix for the build warning about unused variable.
----
 
-Fix build warning about the unused variable in char_dev.c:267
 
-Remove the unused char *s
-
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
---
-fs/char_dev.c |    1 -
-1 file changed, 1 deletion(-)
-
---- linux-2.6.30.orig/fs/char_dev.c	2009-08-05 14:04:59.000000000 +0800
-+++ linux-2.6.30/fs/char_dev.c	2009-08-06 20:48:24.000000000 +0800
-@@ -264,7 +264,6 @@ int register_chrdev(unsigned int major, 
- {
- 	struct char_device_struct *cd;
- 	struct cdev *cdev;
--	char *s;
- 	int err = -ENOMEM;
- 
- 	cd = __register_chrdev_region(major, 0, 256, name);
