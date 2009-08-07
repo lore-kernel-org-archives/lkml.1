@@ -1,67 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbZHGK64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932305AbZHGLAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757523AbZHGK64 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 06:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbZHGK64
+	id S932305AbZHGLAH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 07:00:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757464AbZHGLAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 06:58:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46974 "EHLO mx3.mail.elte.hu"
+	Fri, 7 Aug 2009 07:00:05 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:39725 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755830AbZHGK6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 06:58:55 -0400
-Date: Fri, 7 Aug 2009 12:58:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH] perfcounters: Support for ftrace event records sampling
-Message-ID: <20090807105835.GB24916@elte.hu>
-References: <1249601154-5597-1-git-send-email-fweisbec@gmail.com> <1249641477.32113.664.camel@twins>
+	id S1757450AbZHGLAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 07:00:04 -0400
+Date: Fri, 7 Aug 2009 12:00:05 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Larry Woodman <lwoodman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [PATCH 3/6] tracing, page-allocator: Add trace event for page
+	traffic related to the buddy lists
+Message-ID: <20090807110004.GC18134@csn.ul.ie>
+References: <1249574827-18745-1-git-send-email-mel@csn.ul.ie> <1249574827-18745-4-git-send-email-mel@csn.ul.ie> <4A7BE015.6030002@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <1249641477.32113.664.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4A7BE015.6030002@cn.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Fri, 2009-08-07 at 01:25 +0200, Frederic Weisbecker wrote:
-> > This patch brings the kernel side support for ftrace event record
-> > sampling.
-> > 
-> > A new counter attribute is added: PERF_SAMPLE_TP_RECORD which requests
-> > ftrace events record sampling.
-> > 
+On Fri, Aug 07, 2009 at 04:04:37PM +0800, Li Zefan wrote:
+> > +TRACE_EVENT(mm_page_alloc_zone_locked,
+> > +
+> > +	TP_PROTO(struct page *page, unsigned int order,
+> > +				int migratetype, int percpu_refill),
+> > +
+> > +	TP_ARGS(page, order, migratetype, percpu_refill),
+> > +
+> > +	TP_STRUCT__entry(
+> > +		__field(	struct page *,	page		)
+> > +		__field(	unsigned int,	order		)
+> > +		__field(	int,		migratetype	)
+> > +		__field(	int,		percpu_refill	)
+> > +	),
+> > +
+> > +	TP_fast_assign(
+> > +		__entry->page		= page;
+> > +		__entry->order		= order;
+> > +		__entry->migratetype	= migratetype;
+> > +		__entry->percpu_refill	= percpu_refill;
+> > +	),
+> > +
+> > +	TP_printk("page=%p pfn=%lu order=%u migratetype=%d cpu=%d percpu_refill=%d",
+> > +		__entry->page,
+> > +		page_to_pfn(__entry->page),
+> > +		__entry->order,
+> > +		__entry->migratetype,
+> > +		smp_processor_id(),
 > 
-> > +	PERF_SAMPLE_TP_RECORD			= 1U << 10,
+> This is the cpu when printk() is called, but not the cpu when
+> this event happens.
 > 
-> I'd really want this thing called PERF_SAMPLE_RAW
+> And this information has already been stored, and is printed
+> if context-info option is set, which is set by default.
+> 
 
-yeah, i'd agree. I suggested to Frederic to use TP_RECORD but in 
-hindsight we are better off to handle PERF_SAMPLE_RAW as a 'non-ABI' 
-embelishment of samples, of not firmly defined content.
+/me slaps self
 
-In the tracepoint case, that extra raw content is defined by:
+I even know the CPU column was there in the trace output. What was I
+thinking :/
 
-   /debug/tracing/events/*/format
+Thanks
 
-and subject to changes.
+> > +		__entry->percpu_refill)
+> > +);
+> > +
+> > +TRACE_EVENT(mm_page_pcpu_drain,
+> > +
+> > +	TP_PROTO(struct page *page, int order, int migratetype),
+> > +
+> > +	TP_ARGS(page, order, migratetype),
+> > +
+> > +	TP_STRUCT__entry(
+> > +		__field(	struct page *,	page		)
+> > +		__field(	int,		order		)
+> > +		__field(	int,		migratetype	)
+> > +	),
+> > +
+> > +	TP_fast_assign(
+> > +		__entry->page		= page;
+> > +		__entry->order		= order;
+> > +		__entry->migratetype	= migratetype;
+> > +	),
+> > +
+> > +	TP_printk("page=%p pfn=%lu order=%d cpu=%d migratetype=%d",
+> > +		__entry->page,
+> > +		page_to_pfn(__entry->page),
+> > +		__entry->order,
+> > +		smp_processor_id(),
+> 
+> ditto
+> 
+> > +		__entry->migratetype)
+> > +);
+> > +
+> 
 
-	Ingo
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
