@@ -1,72 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbZHGWv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbZHGWvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755690AbZHGWv0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 18:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754947AbZHGWvZ
+	id S1756134AbZHGWvd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 18:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbZHGWvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 18:51:25 -0400
-Received: from cmpxchg.org ([85.214.51.133]:39515 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754774AbZHGWvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 18:51:24 -0400
-Date: Sat, 8 Aug 2009 00:51:46 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
-       msb@google.com, viro@zeniv.linux.org.uk
-Subject: Re: [PATCH 3/4] vfs: change sb->s_maxbytes to a loff_t
-Message-ID: <20090807225146.GC28019@cmpxchg.org>
-References: <1249671461-9071-1-git-send-email-jlayton@redhat.com> <1249671461-9071-4-git-send-email-jlayton@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249671461-9071-4-git-send-email-jlayton@redhat.com>
+	Fri, 7 Aug 2009 18:51:31 -0400
+Received: from fmmailgate05.web.de ([217.72.192.243]:52032 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755832AbZHGWv3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 18:51:29 -0400
+Date: Sat, 08 Aug 2009 00:51:29 +0200
+Message-Id: <859079895@web.de>
+MIME-Version: 1.0
+From: devzero@web.de
+To: Martin Rogge <marogge@onlinehome.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.30.1-4 kernels freezes dual pentium-3 system
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1/zX7wA/f7z/Vst6VMCxkGuLnhr6smTJ3KmQ1kMyl384ev2/
+ QRp33BvffTQl59BgcSeOGu+iGElamjC5j4eWmbOI2LvHdzh02w=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 02:57:40PM -0400, Jeff Layton wrote:
-> sb->s_maxbytes is supposed to indicate the maximum size of a file that
-> can exist on the filesystem. It's declared as an unsigned long long.
-> 
-> Even if a filesystem has no inherent limit that prevents it from using
-> every bit in that unsigned long long, it's still problematic to set it
-> to anything larger than MAX_LFS_FILESIZE. A lot of places implicitly
-> cast s_maxbytes to a signed value when doing comparisons against it
-> (usually using loff_t on the other side of the comparison). If it's
-> set too large then this cast makes it a negative number and generally
-> breaks the comparison.
-> 
-> Change s_maxbytes to be loff_t instead. That should help eliminate the
-> temptation to set it too large by making it a signed value.
-> 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> ---
->  fs/super.c         |   10 ++++++++++
->  include/linux/fs.h |    2 +-
->  2 files changed, 11 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/super.c b/fs/super.c
-> index 2761d3e..929d55d 100644
-> --- a/fs/super.c
-> +++ b/fs/super.c
-> @@ -889,6 +889,16 @@ vfs_kern_mount(struct file_system_type *type, int flags, const char *name, void
->   	if (error)
->   		goto out_sb;
->  
-> +	/*
-> +	 * filesystems should never set s_maxbytes larger than MAX_LFS_FILESIZE
-> +	 * but s_maxbytes was an unsigned long long for many releases. Throw
-> +	 * this warning for a little while to try and catch filesystems that
-> +	 * violate this rule. This warning can be removed in 2.6.34.
-> +	 */
-> +	WARN(((unsigned long long) mnt->mnt_sb->s_maxbytes > MAX_LFS_FILESIZE),
-> +		"WARNING: %s sets sb->s_maxbytes too large (%llu)", type->name,
-> +		(unsigned long long) mnt->mnt_sb->s_maxbytes);
+>Box  works  works fine and very stable under 2.6.29.5 kernel, although
+>it is angry of buggy MP table (see app. #2 below). But sometimes, this
+>kernel  correctly  reboots  the  system  at all, but this happens very
+>rarely.  In  most cases, nobody detects the box was rebooted. And this
+>is satisfactory for me.
 
-Since it's signed now, you could just check for it being < 0, no?
+so, what is it - stable or not stable ?
 
-I don't like the warning much, though.  It seems to be a random check
-for a bug that has been fixed now.  We don't check other errors from
-->get_sb() either.
+if sometimes "this kernel correctly reboots the system", do you mean that
+happens spontaneously, i.e. without being actively triggered ?
+
+how can this box work fine then or at least being considered "stable" then ?
+
+there is already an issue there, and if it behaves different with 2.6.30, it
+may be that the newer kernel triggers the existing problem in a different 
+way.
+
+>As I said earlier, bisecting may be unpractical, because each iteration may 
+>take days or weeks.
+afaik, you can also bisect on a different (i.e. faster) box.
+
+i think it would be more interesting if there is anything in dmesg on such lockup.
+if not, maybe you can hook up a serial console or netconsole and trigger sysrq when 
+you have another lockup.
+
+regards
+roland
+
+
+
+List:       linux-kernel
+Subject:    2.6.30.1-4 kernels freezes dual pentium-3 system
+From:       Осипов Станислав
+Date:       2009-08-03 8:44:26
+Message-ID: 569920565.20090803124426 () mail ! ru
+[Download message RAW]
+
+I  have  a  dual  Pentium-3 system. It based on Asus CUR-DLS mainboard
+with  2  Pentium-3EB  1000MHz (133 MHz FSB) installed. Also, i'm using
+hardware  RAID  controller  3ware  Escalade 7506-4LP, installed in the
+PCI-X  expansion  slot.  This  RAID is only one disk system in the box
+(RAID-5 on 4 IDE HDD 120GB from Seagate).
+
+Box  works  works fine and very stable under 2.6.29.5 kernel, although
+it is angry of buggy MP table (see app. #2 below). But sometimes, this
+kernel  correctly  reboots  the  system  at all, but this happens very
+rarely.  In  most cases, nobody detects the box was rebooted. And this
+is satisfactory for me.
+
+But  under 2.6.30.x kernels box freezes without any alerts. TTL before
+freezing  is  about 5-30 mins. I don't know why that shit happens. I'm
+ready to send any debug informations about this custom trouble, but if
+the specialists will request it with instructions for me.
+
+Appendix #1: lspci
+
+======================================================================
+
+00:00.0 Host bridge: Broadcom CNB20LE Host Bridge (rev 05)
+00:00.1 Host bridge: Broadcom CNB20LE Host Bridge (rev 05)
+00:02.0 Ethernet controller: Intel Corporation 82557/8/9/0/1 Ethernet Pro 100 (rev \
+08) 00:04.0 Ethernet controller: 3Com Corporation 3c905B 100BaseTX [Cyclone]
+00:07.0 VGA compatible controller: ATI Technologies Inc Rage XL (rev 27)
+00:0f.0 ISA bridge: Broadcom OSB4 South Bridge (rev 50)
+00:0f.1 IDE interface: Broadcom OSB4 IDE Controller
+01:02.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5701 Gigabit Ethernet \
+(rev 15) 01:03.0 RAID bus controller: 3ware Inc 7xxx/8xxx-series PATA/SATA-RAID (rev \
+01) 01:05.0 SCSI storage controller: LSI Logic / Symbios Logic 53c1010 Ultra3 SCSI \
+Adapter (rev 01) 01:05.1 SCSI storage controller: LSI Logic / Symbios Logic 53c1010 \
+Ultra3 SCSI Adapter (rev 01)
+
+________________________________________________________________
+Neu: WEB.DE Doppel-FLAT mit Internet-Flatrate + Telefon-Flatrate
+f�r nur 19,99 Euro/mtl.!* http://produkte.web.de/go/02/
+
