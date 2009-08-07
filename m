@@ -1,69 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933615AbZHGUJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933644AbZHGUJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933615AbZHGUJq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933581AbZHGUJp
+	id S933644AbZHGUJy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:09:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933622AbZHGUJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:09:45 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:8170 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933562AbZHGUJo (ORCPT
+	Fri, 7 Aug 2009 16:09:52 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:38281 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933619AbZHGUJu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:09:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:reply-to:user-agent:mime-version:to:cc
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        b=lqHplIeii/waGZ00Bl/shLL4xLBGTVK9woi+P+Rj3UXGywV0+GLOoRakRl8wlyp3Xs
-         3RtJrevQAOuVGZiJx8TsbfAKbnUqOr2dw08/mqKJB1Op2OaRjjQ+xYDxYacC+aXuNFBG
-         NwrPH8Ar2iFrzw2c3KRO/BmTcpe1LEZVzUt+o=
-Message-ID: <4A7C8A04.3060005@googlemail.com>
-Date: Fri, 07 Aug 2009 21:09:40 +0100
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Reply-To: alan-jenkins@tuffmail.co.uk
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Fri, 7 Aug 2009 16:09:50 -0400
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is get_user_pages() enough to prevent pages from being swapped out ?")
+Date: Fri, 7 Aug 2009 22:11:40 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30.3; KDE/4.2.4; x86_64; ; )
+Cc: Robin Holt <holt@sgi.com>, Laurent Desnogues <laurent.desnogues@gmail.com>,
+       Jamie Lokier <jamie@shareable.org>, David Xiao <dxiao@broadcom.com>,
+       Ben Dooks <ben-linux@fluff.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "v4l2_linux" <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090807131501.GD2763@sgi.com> <20090807190145.GA31543@n2100.arm.linux.org.uk>
+In-Reply-To: <20090807190145.GA31543@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-To: David VomLehn <dvomlehn@cisco.com>
-CC: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-usb@vger.kernel.org, greg@kroah.com,
-       linux-scsi@vger.kernel.org, netdev@vger.kernel.org, arjan@infradead.org
-Subject: Re: [PATCH 2/7 v3] initdev:kernel:USB init device discovery notification
-References: <9b2b86520908070832p2d1658b0t8b1d89d1a034bb9a@mail.gmail.com> <Pine.LNX.4.44L0.0908071142260.3063-100000@iolanthe.rowland.org> <9b2b86520908071017h606e595fr4488d6ff61cb337c@mail.gmail.com> <20090807174209.GB30450@cuplxvomd02.corp.sa.net>
-In-Reply-To: <20090807174209.GB30450@cuplxvomd02.corp.sa.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200908072211.45283.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David VomLehn wrote:
-> On Fri, Aug 07, 2009 at 06:17:51PM +0100, Alan Jenkins wrote:
->   
->> On 8/7/09, Alan Stern <stern@rowland.harvard.edu> wrote:
->>     
->>> On Fri, 7 Aug 2009, Alan Jenkins wrote:
->>>
->>>       
->>>>> +/* The mask of possible USB boot devices depends on what drivers and
->>>>> + * options have been configured into the kernel.  There are too many
->>>>> + * USB network config options to list here, so just assume it is always
->>>>> + * possible to have a USB network device.
->>>>> + */
->>>>>           
->>>> That could be fixed though.  Make the "USB Network Adaptors" menu into
->>>> an option.
+On Friday 07 August 2009 21:01:45 Russell King - ARM Linux wrote:
+> On Fri, Aug 07, 2009 at 08:15:01AM -0500, Robin Holt wrote:
+> > On Fri, Aug 07, 2009 at 02:07:43PM +0200, Laurent Desnogues wrote:
+> > > On Fri, Aug 7, 2009 at 11:54 AM, Jamie Lokier<jamie@shareable.org> 
+wrote:
+> > > > 1. Does the architecture not prevent speculative instruction
+> > > > prefetches from crossing a page boundary?  It would be handy under
+> > > > the circumstances.
+> > >
+> > > There's no such restriction in ARMv7 architecture.
+> >
+> > Doesn't it prevent them for uncached areas?
+>
+> "Uncached areas" is very very fuzzy.  Are you talking about a non-cachable
+> memory mapping, or a strongly ordered mapping.
+>
+> I'm afraid that we're going to have to require more precise use of language
+> to describe these things - wolley statements like "uncached areas" are now
+> just too ambiguous.
 
-> I remember thinking about this and seem to recall that Alan Stern and I
-> tossed this idea around, but didn't act on it. Such a thing holds potential
-> for avoiding an unnecessary delay during boot. Whether it actually makes
-> things faster in a given configuration will depend on that configuration's
-> critical path, but I would welcome such a patch on the basis that it's
-> unlikely to hurt and could improve boot times in some circumstances.
->   
+Ok. Maybe the kernel mapping from L_PTE_MT_UNCACHED to strongly ordered for 
+ARMv6 and up (not sure about how it worked for previous versions) brought some 
+confusion. I'll try to be more precise now.
 
-Bother, I see why this doesn't work now.  There are all the USB
-*wireless* network drivers outside the menu.
+> > I _THOUGHT_ there was an alloc_consistent (or something like that) call on
+> > ARM which gave you an uncached mapping where you could do DMA.
+>
+> The dma_alloc_coherent() does _remap_ memory into a strongly ordered
+> mapping.  However, the fully cached mapping remains, which means that
+> the CPU can still speculatively prefetch from that memory.
 
-Thanks anyway
-Alan
+Does that mean that, in theory, all DMA transfers in the DMA_FROM_DEVICE 
+direction are currently broken on ARMv7 ?
+
+The ARM Architecture Reference Manual (ARM DDI 0100I) states that
+
+"• If the same memory locations are marked as having different memory types 
+(Normal, Device, or Strongly Ordered), for example by the use of synonyms in a 
+virtual to physical address mapping, UNPREDICTABLE behavior results.
+
+• If the same memory locations are marked as having different cacheable 
+attributes, for example by the use of synonyms in a virtual to physical 
+address mapping, UNPREDICTABLE behavior results."
+
+dma_alloc_coherent() ends up calling __dma_alloc(), which allocates pages 
+using alloc_pages(), flushes the data cache for the allocated virtual range 
+and then simply remaps the pages using PTEs previously allocated from the 
+kernel MM.
+
+This would be broken if a fully cached Normal mapping already existed for 
+those physical pages. You seem to imply that's the case, but I'm not sure to 
+understand why.
+
+> Since we map the fully cached mapping using section (or even supersection)
+> mappings for TLB efficiency, we can't change the memory type on a
+> per-page basis.
+>
+> > I also thought there was a dma_* set of functions which remapped as
+> > uncached before DMA begins and remapped as normal after DMA has been
+> > completed.
+>
+> You're talking about the deprecated DMA bounce code there.  It's
+> basically the same problem since it uses the dma_alloc_coherent()
+> interface to gain a source of DMA-able memory.
+
+Regards,
+
+Laurent Pinchart
+
