@@ -1,638 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbZHGHXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbZHGH0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756857AbZHGHXG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 03:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbZHGHXF
+	id S1756988AbZHGH0g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 03:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbZHGH0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 03:23:05 -0400
-Received: from mga02.intel.com ([134.134.136.20]:24125 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754982AbZHGHXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 03:23:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,340,1246863600"; 
-   d="scan'208";a="539356945"
-Date: Fri, 7 Aug 2009 09:22:56 +0200
-From: Markus Metzger <markus.t.metzger@intel.com>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com
-Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, oleg@redhat.com,
-       a.p.zijlstra@chello.nl
-Subject: [patch] x86, perf_counter, bts: add bts to perf_counter
-Message-ID: <20090807092256.A6083@sedona.ch.intel.com>
-Mime-Version: 1.0
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Aug 2009 03:26:35 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:64114 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755168AbZHGH0f convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 03:26:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=UgEU/iYxWyGyUDL6RamagF4kTvYxw1c63zIW7niNEIkcNckCvzjn1eG1EZgATtsD8B
+         /NhluQ3lq7Ga/qQqcUADota5sX1a00EAQk0FgVOW646TFUziP0uzjqjZzAc1WioxVrEu
+         rlQaaoLVjJxOeGEL/3yttew12yyMhbFzVeudQ=
+MIME-Version: 1.0
+In-Reply-To: <adafxc4g1e7.fsf@cisco.com>
+References: <e2e108260908060943u344bbe03k2baab01b204c9cca@mail.gmail.com>
+	 <adad478hmi8.fsf@cisco.com>
+	 <e2e108260908061146y47ae45f5j6b8085d44cd1c45b@mail.gmail.com>
+	 <adaocqsg339.fsf@cisco.com>
+	 <e2e108260908061229v2c605aabp7cf66cbe568d6755@mail.gmail.com>
+	 <adafxc4g1e7.fsf@cisco.com>
+Date: Fri, 7 Aug 2009 09:26:33 +0200
+Message-ID: <e2e108260908070026s10658adl2c4a9a5b3eba1a08@mail.gmail.com>
+Subject: Re: [ofa-general] IB kernel modules and the kobject release() method
+From: Bart Van Assche <bart.vanassche@gmail.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: OpenIB <general@lists.openfabrics.org>,
+       LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement a performance counter with:
-    attr.type           = PERF_TYPE_HARDWARE
-    attr.config         = PERF_COUNT_HW_BRANCH_INSTRUCTIONS
-    attr.sample_period  = 1
+On Thu, Aug 6, 2009 at 9:58 PM, Roland Dreier<rdreier@cisco.com> wrote:
+>
+>  > Are you sure that this indicates a shortcoming in the kobject
+>  > debugging code ? The most recent messages related to the message "does
+>  > not have a release() function, it is broken and must be fixed" I could
+>  > find on the LKML date from July 16, 2009
+>  > (http://lkml.org/lkml/2009/7/16/306 and
+>  > http://lkml.org/lkml/2009/7/16/391). As you can see Greg KH
+>  > acknowledges that if this message is logged that this indicates a
+>  > problem that should be fixed.
+>
+> I'm not sure -- I just assume that the core module unloading code is
+> working OK, since it is so heavily tested.  If there were really a "must
+> be fixed" problem with module unloading then someone would surely have
+> hit more than a warning message.
 
-using branch trace store (BTS) on x86 hardware, if available.
+(added Greg KH and the LKML in CC)
 
-The from and to address for each branch can be sampled using:
-    PERF_SAMPLE_IP      for the from address
-    PERF_SAMPLE_ADDR    for the to address
+I tried to look up more information about kobjects. The comment of
+commit 7a6a41615bfb2f03ce797bc24104c50b42c935e5 suggests that in the
+past the function kobject_cleanup() did not free the memory allocated
+for static kobject names but that this was the responsibility of the
+release() function. This should have been fixed in the current version
+of kobject_cleanup(). So I'm wondering whether the message that
+kobjects that do not have a release() function are broken still makes
+sense ?
 
+See also
+* http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7a6a41615bfb2f03ce797bc24104c50b42c935e5.
+* http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.30.y.git;a=blob;f=lib/kobject.c
 
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
- arch/x86/include/asm/perf_counter.h |   10 	10 +	0 -	0 !
- arch/x86/kernel/cpu/perf_counter.c  |  325 	319 +	6 -	0 !
- include/linux/perf_counter.h        |    2 	2 +	0 -	0 !
- kernel/perf_counter.c               |   10 	9 +	1 -	0 !
- 4 files changed, 340 insertions(+), 7 deletions(-)
-
-Index: b/arch/x86/kernel/cpu/perf_counter.c
-===================================================================
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -6,6 +6,7 @@
-  *  Copyright (C) 2009 Jaswinder Singh Rajput
-  *  Copyright (C) 2009 Advanced Micro Devices, Inc., Robert Richter
-  *  Copyright (C) 2008-2009 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
-+ *  Copyright (C) 2009 Intel Corporation, <markus.t.metzger@intel.com>
-  *
-  *  For licencing details see kernel-base/COPYING
-  */
-@@ -20,6 +21,7 @@
- #include <linux/sched.h>
- #include <linux/uaccess.h>
- #include <linux/highmem.h>
-+#include <linux/cpu.h>
- 
- #include <asm/apic.h>
- #include <asm/stacktrace.h>
-@@ -27,12 +29,52 @@
- 
- static u64 perf_counter_mask __read_mostly;
- 
-+/* The maximal number of PEBS counters: */
-+#define MAX_PEBS_COUNTERS	4
-+
-+/* The size of a BTS record in bytes: */
-+#define BTS_RECORD_SIZE		24
-+
-+/* The size of a per-cpu BTS buffer in bytes: */
-+#define BTS_BUFFER_SIZE		(BTS_RECORD_SIZE * 1024)
-+
-+/* The BTS overflow threshold in bytes from the end of the buffer: */
-+#define BTS_OVFL_TH		(BTS_RECORD_SIZE * 64)
-+
-+
-+/*
-+ * Bits in the debugctlmsr controlling branch tracing.
-+ */
-+#define X86_DEBUGCTL_TR			(1 << 6)
-+#define X86_DEBUGCTL_BTS		(1 << 7)
-+#define X86_DEBUGCTL_BTINT		(1 << 8)
-+#define X86_DEBUGCTL_BTS_OFF_OS		(1 << 9)
-+#define X86_DEBUGCTL_BTS_OFF_USR	(1 << 10)
-+
-+/*
-+ * A debug store configuration.
-+ *
-+ * We only support architectures that use 64bit fields.
-+ */
-+struct debug_store {
-+	u64	bts_buffer_base;
-+	u64	bts_index;
-+	u64	bts_absolute_maximum;
-+	u64	bts_interrupt_threshold;
-+	u64	pebs_buffer_base;
-+	u64	pebs_index;
-+	u64	pebs_absolute_maximum;
-+	u64	pebs_interrupt_threshold;
-+	u64	pebs_counter_reset[MAX_PEBS_COUNTERS];
-+};
-+
- struct cpu_hw_counters {
- 	struct perf_counter	*counters[X86_PMC_IDX_MAX];
- 	unsigned long		used_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
- 	unsigned long		active_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
- 	unsigned long		interrupts;
- 	int			enabled;
-+	struct debug_store	*ds;
- };
- 
- /*
-@@ -57,6 +99,8 @@ struct x86_pmu {
- 	u64		counter_mask;
- 	u64		max_period;
- 	u64		intel_ctrl;
-+	void		(*enable_bts)(u64 config);
-+	void		(*disable_bts)(void);
- };
- 
- static struct x86_pmu x86_pmu __read_mostly;
-@@ -576,6 +620,9 @@ x86_perf_counter_update(struct perf_coun
- 	u64 prev_raw_count, new_raw_count;
- 	s64 delta;
- 
-+	if (idx == X86_PMC_IDX_FIXED_BTS)
-+		return 0;
-+
- 	/*
- 	 * Careful: an NMI might modify the previous counter value.
- 	 *
-@@ -659,10 +706,109 @@ static void release_pmc_hardware(void)
- 		enable_lapic_nmi_watchdog();
- }
- 
-+static inline bool bts_available(void)
-+{
-+	return x86_pmu.enable_bts != NULL;
-+}
-+
-+static inline void init_debug_store_on_cpu(int cpu)
-+{
-+	struct debug_store *ds = per_cpu(cpu_hw_counters, cpu).ds;
-+
-+	if (!ds)
-+		return;
-+
-+	wrmsr_on_cpu(cpu, MSR_IA32_DS_AREA,
-+		     (u32)((u64)(long)ds), (u32)((u64)(long)ds >> 32));
-+}
-+
-+static inline void fini_debug_store_on_cpu(int cpu)
-+{
-+	if (!per_cpu(cpu_hw_counters, cpu).ds)
-+		return;
-+
-+	wrmsr_on_cpu(cpu, MSR_IA32_DS_AREA, 0, 0);
-+}
-+
-+static void release_bts_hardware(void)
-+{
-+	int cpu;
-+
-+	if (!bts_available())
-+		return;
-+
-+	get_online_cpus();
-+
-+	for_each_online_cpu(cpu)
-+		fini_debug_store_on_cpu(cpu);
-+
-+	for_each_possible_cpu(cpu) {
-+		struct debug_store *ds = per_cpu(cpu_hw_counters, cpu).ds;
-+
-+		if (!ds)
-+			continue;
-+
-+		per_cpu(cpu_hw_counters, cpu).ds = NULL;
-+
-+		kfree((void *)(long)ds->bts_buffer_base);
-+		kfree(ds);
-+	}
-+
-+	put_online_cpus();
-+}
-+
-+static int reserve_bts_hardware(void)
-+{
-+	int cpu, err = 0;
-+
-+	if (!bts_available())
-+		return -EOPNOTSUPP;
-+
-+	get_online_cpus();
-+
-+	for_each_possible_cpu(cpu) {
-+		struct debug_store *ds;
-+		void *buffer;
-+
-+		err = -ENOMEM;
-+		buffer = kzalloc(BTS_BUFFER_SIZE, GFP_KERNEL);
-+		if (unlikely(!buffer))
-+			break;
-+
-+		ds = kzalloc(sizeof(*ds), GFP_KERNEL);
-+		if (unlikely(!ds)) {
-+			kfree(buffer);
-+			break;
-+		}
-+
-+		ds->bts_buffer_base = (u64)(long)buffer;
-+		ds->bts_index = ds->bts_buffer_base;
-+		ds->bts_absolute_maximum =
-+			ds->bts_buffer_base + BTS_BUFFER_SIZE;
-+		ds->bts_interrupt_threshold =
-+			ds->bts_absolute_maximum - BTS_OVFL_TH;
-+
-+		per_cpu(cpu_hw_counters, cpu).ds = ds;
-+		err = 0;
-+	}
-+
-+	if (err)
-+		release_bts_hardware();
-+	else {
-+		for_each_online_cpu(cpu)
-+			init_debug_store_on_cpu(cpu);
-+	}
-+
-+	put_online_cpus();
-+
-+	return err;
-+}
-+
- static void hw_perf_counter_destroy(struct perf_counter *counter)
- {
- 	if (atomic_dec_and_mutex_lock(&active_counters, &pmc_reserve_mutex)) {
- 		release_pmc_hardware();
-+		release_bts_hardware();
- 		mutex_unlock(&pmc_reserve_mutex);
- 	}
- }
-@@ -705,6 +851,42 @@ set_ext_hw_attr(struct hw_perf_counter *
- 	return 0;
- }
- 
-+static void intel_pmu_enable_bts(u64 config)
-+{
-+	unsigned long debugctlmsr;
-+
-+	debugctlmsr = get_debugctlmsr();
-+
-+	debugctlmsr |= X86_DEBUGCTL_TR;
-+	debugctlmsr |= X86_DEBUGCTL_BTS;
-+	debugctlmsr |= X86_DEBUGCTL_BTINT;
-+
-+	if (!(config & ARCH_PERFMON_EVENTSEL_OS))
-+		debugctlmsr |= X86_DEBUGCTL_BTS_OFF_OS;
-+
-+	if (!(config & ARCH_PERFMON_EVENTSEL_USR))
-+		debugctlmsr |= X86_DEBUGCTL_BTS_OFF_USR;
-+
-+	update_debugctlmsr(debugctlmsr);
-+}
-+
-+static void intel_pmu_disable_bts(void)
-+{
-+	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
-+	unsigned long debugctlmsr;
-+
-+	if (!cpuc->ds)
-+		return;
-+
-+	debugctlmsr = get_debugctlmsr();
-+
-+	debugctlmsr &=
-+		~(X86_DEBUGCTL_TR | X86_DEBUGCTL_BTS | X86_DEBUGCTL_BTINT |
-+		  X86_DEBUGCTL_BTS_OFF_OS | X86_DEBUGCTL_BTS_OFF_USR);
-+
-+	update_debugctlmsr(debugctlmsr);
-+}
-+
- /*
-  * Setup the hardware configuration for a given attr_type
-  */
-@@ -721,9 +903,13 @@ static int __hw_perf_counter_init(struct
- 	err = 0;
- 	if (!atomic_inc_not_zero(&active_counters)) {
- 		mutex_lock(&pmc_reserve_mutex);
--		if (atomic_read(&active_counters) == 0 && !reserve_pmc_hardware())
--			err = -EBUSY;
--		else
-+		if (atomic_read(&active_counters) == 0) {
-+			if (!reserve_pmc_hardware())
-+				err = -EBUSY;
-+			else
-+				reserve_bts_hardware();
-+		}
-+		if (!err)
- 			atomic_inc(&active_counters);
- 		mutex_unlock(&pmc_reserve_mutex);
- 	}
-@@ -801,7 +987,18 @@ static void p6_pmu_disable_all(void)
- 
- static void intel_pmu_disable_all(void)
- {
-+	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
-+
-+	if (!cpuc->enabled)
-+		return;
-+
-+	cpuc->enabled = 0;
-+	barrier();
-+
- 	wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, 0);
-+
-+	if (test_bit(X86_PMC_IDX_FIXED_BTS, cpuc->active_mask))
-+		intel_pmu_disable_bts();
- }
- 
- static void amd_pmu_disable_all(void)
-@@ -859,7 +1056,25 @@ static void p6_pmu_enable_all(void)
- 
- static void intel_pmu_enable_all(void)
- {
-+	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
-+
-+	if (cpuc->enabled)
-+		return;
-+
-+	cpuc->enabled = 1;
-+	barrier();
-+
- 	wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, x86_pmu.intel_ctrl);
-+
-+	if (test_bit(X86_PMC_IDX_FIXED_BTS, cpuc->active_mask)) {
-+		struct perf_counter *counter =
-+			cpuc->counters[X86_PMC_IDX_FIXED_BTS];
-+
-+		if (WARN_ON_ONCE(!counter))
-+			return;
-+
-+		intel_pmu_enable_bts(counter->hw.config);
-+	}
- }
- 
- static void amd_pmu_enable_all(void)
-@@ -946,6 +1161,11 @@ p6_pmu_disable_counter(struct hw_perf_co
- static inline void
- intel_pmu_disable_counter(struct hw_perf_counter *hwc, int idx)
- {
-+	if (unlikely(idx == X86_PMC_IDX_FIXED_BTS)) {
-+		intel_pmu_disable_bts();
-+		return;
-+	}
-+
- 	if (unlikely(hwc->config_base == MSR_ARCH_PERFMON_FIXED_CTR_CTRL)) {
- 		intel_pmu_disable_fixed(hwc, idx);
- 		return;
-@@ -974,6 +1194,9 @@ x86_perf_counter_set_period(struct perf_
- 	s64 period = hwc->sample_period;
- 	int err, ret = 0;
- 
-+	if (idx == X86_PMC_IDX_FIXED_BTS)
-+		return 0;
-+
- 	/*
- 	 * If we are way outside a reasoable range then just skip forward:
- 	 */
-@@ -1056,6 +1279,14 @@ static void p6_pmu_enable_counter(struct
- 
- static void intel_pmu_enable_counter(struct hw_perf_counter *hwc, int idx)
- {
-+	if (unlikely(idx == X86_PMC_IDX_FIXED_BTS)) {
-+		if (!__get_cpu_var(cpu_hw_counters).enabled)
-+			return;
-+
-+		intel_pmu_enable_bts(hwc->config);
-+		return;
-+	}
-+
- 	if (unlikely(hwc->config_base == MSR_ARCH_PERFMON_FIXED_CTR_CTRL)) {
- 		intel_pmu_enable_fixed(hwc, idx);
- 		return;
-@@ -1077,11 +1308,16 @@ fixed_mode_idx(struct perf_counter *coun
- {
- 	unsigned int event;
- 
-+	event = hwc->config & ARCH_PERFMON_EVENT_MASK;
-+
-+	if (unlikely((event ==
-+		      x86_pmu.event_map(PERF_COUNT_HW_BRANCH_INSTRUCTIONS)) &&
-+		     (hwc->sample_period == 1)))
-+		return X86_PMC_IDX_FIXED_BTS;
-+
- 	if (!x86_pmu.num_counters_fixed)
- 		return -1;
- 
--	event = hwc->config & ARCH_PERFMON_EVENT_MASK;
--
- 	if (unlikely(event == x86_pmu.event_map(PERF_COUNT_HW_INSTRUCTIONS)))
- 		return X86_PMC_IDX_FIXED_INSTRUCTIONS;
- 	if (unlikely(event == x86_pmu.event_map(PERF_COUNT_HW_CPU_CYCLES)))
-@@ -1102,7 +1338,25 @@ static int x86_pmu_enable(struct perf_co
- 	int idx;
- 
- 	idx = fixed_mode_idx(counter, hwc);
--	if (idx >= 0) {
-+	if (idx == X86_PMC_IDX_FIXED_BTS) {
-+		/*
-+		 * Try to use BTS for branch tracing. If that is not
-+		 * available, try to get a generic counter.
-+		 */
-+		if (unlikely(!cpuc->ds))
-+			goto try_generic;
-+
-+		/*
-+		 * Try to get the fixed counter, if that is already taken
-+		 * then try to get a generic counter:
-+		 */
-+		if (test_and_set_bit(idx, cpuc->used_mask))
-+			goto try_generic;
-+
-+		hwc->config_base	= 0;
-+		hwc->counter_base	= 0;
-+		hwc->idx		= idx;
-+	} else if (idx >= 0) {
- 		/*
- 		 * Try to get the fixed counter, if that is already taken
- 		 * then try to get a generic counter:
-@@ -1213,6 +1467,45 @@ void perf_counter_print_debug(void)
- 	local_irq_restore(flags);
- }
- 
-+static void intel_pmu_drain_bts_buffer(struct cpu_hw_counters *cpuc,
-+				       struct perf_sample_data *data)
-+{
-+	struct debug_store *ds = cpuc->ds;
-+	struct bts_record {
-+		u64	from;
-+		u64	to;
-+		u64	flags;
-+	};
-+	struct perf_counter *counter = cpuc->counters[X86_PMC_IDX_FIXED_BTS];
-+	unsigned long orig_ip = data->regs->ip;
-+	u64 at;
-+
-+	if (!counter)
-+		return;
-+
-+	if (!ds)
-+		return;
-+
-+	for (at = ds->bts_buffer_base;
-+	     at < ds->bts_index;
-+	     at += sizeof(struct bts_record)) {
-+		struct bts_record *rec = (struct bts_record *)(long)at;
-+
-+		data->regs->ip	= rec->from;
-+		data->addr	= rec->to;
-+
-+		perf_counter_output(counter, 1, data);
-+	}
-+
-+	ds->bts_index = ds->bts_buffer_base;
-+
-+	data->regs->ip	= orig_ip;
-+	data->addr	= 0;
-+
-+	/* There's new data available. */
-+	counter->pending_kill = POLL_IN;
-+}
-+
- static void x86_pmu_disable(struct perf_counter *counter)
- {
- 	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
-@@ -1237,6 +1530,15 @@ static void x86_pmu_disable(struct perf_
- 	 * that we are disabling:
- 	 */
- 	x86_perf_counter_update(counter, hwc, idx);
-+
-+	/* Drain the remaining BTS records. */
-+	if (unlikely(idx == X86_PMC_IDX_FIXED_BTS)) {
-+		struct perf_sample_data data;
-+		struct pt_regs regs;
-+
-+		data.regs = &regs;
-+		intel_pmu_drain_bts_buffer(cpuc, &data);
-+	}
- 	cpuc->counters[idx] = NULL;
- 	clear_bit(idx, cpuc->used_mask);
- 
-@@ -1264,6 +1566,7 @@ static int intel_pmu_save_and_restart(st
- 
- static void intel_pmu_reset(void)
- {
-+	struct debug_store *ds = __get_cpu_var(cpu_hw_counters).ds;
- 	unsigned long flags;
- 	int idx;
- 
-@@ -1281,6 +1584,8 @@ static void intel_pmu_reset(void)
- 	for (idx = 0; idx < x86_pmu.num_counters_fixed; idx++) {
- 		checking_wrmsrl(MSR_ARCH_PERFMON_FIXED_CTR0 + idx, 0ull);
- 	}
-+	if (ds)
-+		ds->bts_index = ds->bts_buffer_base;
- 
- 	local_irq_restore(flags);
- }
-@@ -1346,6 +1651,7 @@ static int intel_pmu_handle_irq(struct p
- 	cpuc = &__get_cpu_var(cpu_hw_counters);
- 
- 	perf_disable();
-+	intel_pmu_drain_bts_buffer(cpuc, &data);
- 	status = intel_pmu_get_status();
- 	if (!status) {
- 		perf_enable();
-@@ -1547,6 +1853,8 @@ static struct x86_pmu intel_pmu = {
- 	 * the generic counter period:
- 	 */
- 	.max_period		= (1ULL << 31) - 1,
-+	.enable_bts		= intel_pmu_enable_bts,
-+	.disable_bts		= intel_pmu_disable_bts,
- };
- 
- static struct x86_pmu amd_pmu = {
-@@ -1936,3 +2244,8 @@ struct perf_callchain_entry *perf_callch
- 
- 	return entry;
- }
-+
-+void hw_perf_counter_setup_online(int cpu)
-+{
-+	init_debug_store_on_cpu(cpu);
-+}
-Index: b/include/linux/perf_counter.h
-===================================================================
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -685,6 +685,8 @@ struct perf_sample_data {
- 
- extern int perf_counter_overflow(struct perf_counter *counter, int nmi,
- 				 struct perf_sample_data *data);
-+extern void perf_counter_output(struct perf_counter *counter, int nmi,
-+				struct perf_sample_data *data);
- 
- /*
-  * Return 1 for a software counter, 0 for a hardware counter
-Index: b/kernel/perf_counter.c
-===================================================================
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -88,6 +88,7 @@ void __weak hw_perf_disable(void)		{ bar
- void __weak hw_perf_enable(void)		{ barrier(); }
- 
- void __weak hw_perf_counter_setup(int cpu)	{ barrier(); }
-+void __weak hw_perf_counter_setup_online(int cpu)	{ barrier(); }
- 
- int __weak
- hw_perf_group_sched_in(struct perf_counter *group_leader,
-@@ -2630,7 +2631,7 @@ static u32 perf_counter_tid(struct perf_
- 	return task_pid_nr_ns(p, counter->ns);
- }
- 
--static void perf_counter_output(struct perf_counter *counter, int nmi,
-+void perf_counter_output(struct perf_counter *counter, int nmi,
- 				struct perf_sample_data *data)
- {
- 	int ret;
-@@ -4549,6 +4550,11 @@ perf_cpu_notify(struct notifier_block *s
- 		perf_counter_init_cpu(cpu);
- 		break;
- 
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+		hw_perf_counter_setup_online(cpu);
-+		break;
-+
- 	case CPU_DOWN_PREPARE:
- 	case CPU_DOWN_PREPARE_FROZEN:
- 		perf_counter_exit_cpu(cpu);
-@@ -4573,6 +4579,8 @@ void __init perf_counter_init(void)
- {
- 	perf_cpu_notify(&perf_cpu_nb, (unsigned long)CPU_UP_PREPARE,
- 			(void *)(long)smp_processor_id());
-+	perf_cpu_notify(&perf_cpu_nb, (unsigned long)CPU_ONLINE,
-+			(void *)(long)smp_processor_id());
- 	register_cpu_notifier(&perf_cpu_nb);
- }
- 
-Index: b/arch/x86/include/asm/perf_counter.h
-===================================================================
---- a/arch/x86/include/asm/perf_counter.h
-+++ b/arch/x86/include/asm/perf_counter.h
-@@ -84,6 +84,16 @@ union cpuid10_edx {
- #define MSR_ARCH_PERFMON_FIXED_CTR2			0x30b
- #define X86_PMC_IDX_FIXED_BUS_CYCLES			(X86_PMC_IDX_FIXED + 2)
- 
-+/*
-+ * We model BTS tracing as another fixed-mode PMC.
-+ *
-+ * We choose a value in the middle of the fixed counter range, since lower
-+ * values are used by actual fixed counters and higher values are used
-+ * to indicate other overflow conditions in the PERF_GLOBAL_STATUS msr.
-+ */
-+#define X86_PMC_IDX_FIXED_BTS				(X86_PMC_IDX_FIXED + 16)
-+
-+
- #ifdef CONFIG_PERF_COUNTERS
- extern void init_hw_perf_counters(void);
- extern void perf_counters_lapic_init(void);
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+Bart.
