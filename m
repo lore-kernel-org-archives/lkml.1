@@ -1,91 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZHGWVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbZHGW0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbZHGWVA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 18:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZHGWU7
+	id S1754601AbZHGW0H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 18:26:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZHGW0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 18:20:59 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:40921 "EHLO e4.ny.us.ibm.com"
+	Fri, 7 Aug 2009 18:26:06 -0400
+Received: from mms1.broadcom.com ([216.31.210.17]:2305 "EHLO mms1.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753191AbZHGWU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 18:20:58 -0400
-Message-ID: <4A7CA8C0.7010809@us.ibm.com>
-Date: Fri, 07 Aug 2009 15:20:48 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	id S1751528AbZHGW0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 18:26:05 -0400
+X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was
+ "Is get_user_pages() enough to prevent pages from being swapped out ?")
+From: "David Xiao" <dxiao@broadcom.com>
+To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+cc: "Laurent Pinchart" <laurent.pinchart@ideasonboard.com>,
+       "Robin Holt" <holt@sgi.com>,
+       "Laurent Desnogues" <laurent.desnogues@gmail.com>,
+       "Jamie Lokier" <jamie@shareable.org>, "Ben Dooks" <ben-linux@fluff.org>,
+       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       v4l2_linux <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+In-Reply-To: <20090807202829.GF31543@n2100.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com>
+ <20090807131501.GD2763@sgi.com>
+ <20090807190145.GA31543@n2100.arm.linux.org.uk>
+ <200908072211.45283.laurent.pinchart@ideasonboard.com>
+ <20090807202829.GF31543@n2100.arm.linux.org.uk>
+Date: Fri, 7 Aug 2009 15:25:52 -0700
+Message-ID: <1249683952.4671.41.camel@david-laptop>
 MIME-Version: 1.0
-To: "lkml, " <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       John Kacur <jkacur@redhat.com>, Eric Dumazet <eric.dumazet@gmail.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-Subject: [PATCH V2] futex: Fix handling of bad requeue syscall pairing
-References: <4A7CA06E.1090904@us.ibm.com>
-In-Reply-To: <4A7CA06E.1090904@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+X-Mailer: Evolution 2.26.1
+X-WSS-ID: 6662767B3706291777-01-01
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Darren Hart <dvhltc@us.ibm.com>
+On Fri, 2009-08-07 at 13:28 -0700, Russell King - ARM Linux wrote:
 
-If futex_requeue(requeue_pi=1) finds a futex_q that was created by a call
-other the futex_wait_requeue_pi(), the q.rt_waiter may be null.  If so,
-this will result in an oops from the following call graph:
+> The kernel direct mapping maps all system (low) memory with normal
+> memory cacheable attributes.
+> 
+> So using vmalloc, dma_alloc_coherent, using pages in userspace all
+> create duplicate mappings of pages.
+> 
 
-futex_requeue()
-  rt_mutex_start_proxy_lock()
-    task_blocks_on_rt_mutex()
-      waiter->task dereference
-        OOPS
+If we do want to remove all these duplicate mappings, as part of
+solution to deal with the speculative prefetching, probably one way is
+to not map all the RAM into the direct-mapped space at paging_init()
+time, and instead map them on-demand by different upper layer allocation
+functions, such as vmalloc/dma_alloc_coherent/do_brk/kmalloc/
+get_free_pages/etc. But then the distinction between upper layer
+allocation functions and non-upper layer ones must be made clear though.
 
-We currently WARN_ON() if this is detected, clearly this is inadequate.
-If we detect a mispairing in futex_requeue(), bail out, seding -EINVAL to
-user-space.
+I know that mapping the RAM at paging_init() time can take advantage of
+1M section mapping most of the time, and thus save many 1KB L2 page
+tables. But a lot of memory still ends up being remapped with L2 page
+tables later on, and meanwhile 1KB might not be as "precious" as it used
+to be as well-:)
 
-V2: Fix parenthesis warnings.
-
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-CC: Eric Dumazet <eric.dumazet@gmail.com>
-CC: Dinakar Guniguntala <dino@in.ibm.com>
-CC: John Stultz <johnstul@us.ibm.com>
----
-
- kernel/futex.c |   11 +++++++++--
- 1 files changed, 9 insertions(+), 2 deletions(-)
+David    
 
 
-diff --git a/kernel/futex.c b/kernel/futex.c
-index df30983..4705d89 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1306,8 +1306,15 @@ retry_private:
- 		if (!match_futex(&this->key, &key1))
- 			continue;
- 
--		WARN_ON(!requeue_pi && this->rt_waiter);
--		WARN_ON(requeue_pi && !this->rt_waiter);
-+		/*
-+		 * FUTEX_WAIT_REQEUE_PI and FUTEX_CMP_REQUEUE_PI should always
-+		 * be paired with each other and no other futex ops.
-+		 */
-+		if ((requeue_pi && !this->rt_waiter) ||
-+		    (!requeue_pi && this->rt_waiter)) {
-+			ret = -EINVAL;
-+			break;
-+		}
- 
- 		/*
- 		 * Wake nr_wake waiters.  For requeue_pi, if we acquired the
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+
