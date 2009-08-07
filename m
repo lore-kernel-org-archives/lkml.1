@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752824AbZHGPc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753041AbZHGPff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752824AbZHGPc4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 11:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbZHGPcz
+	id S1753041AbZHGPff (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 11:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbZHGPff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 11:32:55 -0400
-Received: from mail-fx0-f228.google.com ([209.85.220.228]:42171 "EHLO
-	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751757AbZHGPcx (ORCPT
+	Fri, 7 Aug 2009 11:35:35 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:53854 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752597AbZHGPfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 11:32:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZmzvOZnInArBp9hRLlxDIMaL2dtRgcSBzh40kszaKDPDZqQIFS7CLi2n7HIX1TAzAs
-         YBFVKNzj4WDofRSZqWxRPSu3b42Ff5Lhtl0Fz85VeKNIE9SbepfQepOej5IhQNkQGTkS
-         2RA4xXAgsx9u++HxqPMRj/A8OcmcG2HGkZL/I=
+	Fri, 7 Aug 2009 11:35:34 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Chris Clayton <chris2553@googlemail.com>
+Subject: Re: ath5k - strange regulatory domain change
+Date: Fri, 7 Aug 2009 17:35:32 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <c6b1100b0908070350t3101030bs4b3d2e7485ad9aee@mail.gmail.com> <200908071324.45269.elendil@planet.nl> <200908071324.45269.elendil@planet.nl> <c6b1100b0908070556sb3f4f80sc757d8b100cbcb3c@mail.gmail.com>
+In-reply-To: <c6b1100b0908070556sb3f4f80sc757d8b100cbcb3c@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090804221506.GA9256@cuplxvomd02.corp.sa.net>
-References: <20090804221506.GA9256@cuplxvomd02.corp.sa.net>
-Date: Fri, 7 Aug 2009 16:32:52 +0100
-Message-ID: <9b2b86520908070832p2d1658b0t8b1d89d1a034bb9a@mail.gmail.com>
-Subject: Re: [PATCH 2/7 v3] initdev:kernel:USB init device discovery 
-	notification
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: David VomLehn <dvomlehn@cisco.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-usb@vger.kernel.org, greg@kroah.com, linux-scsi@vger.kernel.org,
-       netdev@vger.kernel.org, arjan@infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908071735.33428.elendil@planet.nl>
+X-OriginalArrivalTime: 07 Aug 2009 15:35:34.0162 (UTC) FILETIME=[B4461F20:01CA1774]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/4/09, David VomLehn <dvomlehn@cisco.com> wrote:
-> From: Alan Stern <stern@rowland.harvard.edu>
->
-> Use init device discovery infrastructure to provide notification of
-> availability of USB devices.
->
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> Signed-off-by: David VomLehn <dvomlehn@cisco.com>
-> ---
->  drivers/usb/core/hub.c |   26 ++++++++++++++++++++++++++
->  1 files changed, 26 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-> index be86ae3..08baee0 100644
-> --- a/drivers/usb/core/hub.c
-> +++ b/drivers/usb/core/hub.c
-> @@ -37,6 +37,20 @@
->  #endif
->  #endif
->
-> +/* The mask of possible USB boot devices depends on what drivers and
-> + * options have been configured into the kernel.  There are too many
-> + * USB network config options to list here, so just assume it is always
-> + * possible to have a USB network device.
-> + */
+Chris Clayton wrote:
+> That's a regression in my book. Oh well! I do have the iw and crda
+> applications installed, so I've taken that route of setting the
+> regulatory domain to GB.
 
-That could be fixed though.  Make the "USB Network Adaptors" menu into
-an option.  Then you just have e.g. "CONFIG_NETDEV_USB", plus the two
-class devices outside the menu (CONFIG_USB_ACM and CONFIG_USB_WDM).
+Somewhere in that thread I pointed to Luis explained that using the 
+cfg80211 module parameter is deprecated if you're using those 
+applications. So I think that is indeed the correct way to solve it.
 
-Alan
+If you did not have those applications installed, the GB setting from the 
+module parameter would still be honored.
+
+Cheers,
+FJP
