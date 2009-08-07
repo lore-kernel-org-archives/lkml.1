@@ -1,88 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933192AbZHGThY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933223AbZHGTov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933192AbZHGThY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 15:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933169AbZHGThY
+	id S933223AbZHGTov (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 15:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933185AbZHGTou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 15:37:24 -0400
-Received: from relay2.mail.vrmd.de ([81.28.224.28]:35959 "EHLO
-	relay2.mail.vrmd.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933133AbZHGThX (ORCPT
+	Fri, 7 Aug 2009 15:44:50 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:42470 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933183AbZHGTot convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 15:37:23 -0400
-X-Greylist: delayed 1279 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Aug 2009 15:37:22 EDT
-Message-ID: <4A7C7D6D.3020706@bwalle.de>
-Date: Fri, 07 Aug 2009 21:15:57 +0200
-From: Bernhard Walle <bernhard@bwalle.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Fri, 7 Aug 2009 15:44:49 -0400
+From: "Fischer, Anna" <anna.fischer@hp.com>
+To: Stephen Hemminger <shemminger@vyatta.com>,
+       "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>
+CC: "drobbins@funtoo.org" <drobbins@funtoo.org>,
+       "'Paul Congdon (UC Davis)'" <ptcongdon@ucdavis.edu>,
+       "'Arnd Bergmann'" <arnd@arndb.de>,
+       "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
+       "mst@redhat.com" <mst@redhat.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "bridge@lists.linux-foundation.org" 
+	<bridge@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ogerlitz@voltaire.com" <ogerlitz@voltaire.com>,
+       "evb@yahoogroups.com" <evb@yahoogroups.com>,
+       "davem@davemloft.net" <davem@davemloft.net>
+Date: Fri, 7 Aug 2009 19:44:05 +0000
+Subject: RE: [Bridge] [PATCH] macvlan: add tap device backend
+Thread-Topic: [Bridge] [PATCH] macvlan: add tap device backend
+Thread-Index: AcoXlku48gvPISxkTrOr0lW5rje2tQAACARw
+Message-ID: <0199E0D51A61344794750DC57738F58E6D6A6CD7FE@GVW1118EXC.americas.hpqcorp.net>
+References: <0199E0D51A61344794750DC57738F58E6D6A6CD7F6@GVW1118EXC.americas.hpqcorp.net>
+	<004f01ca1792$b24a7a90$16df6fb0$@edu> <20090807123554.7c2bc27c@nehalam>
+In-Reply-To: <20090807123554.7c2bc27c@nehalam>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Amerigo Wang <amwang@redhat.com>
-CC: linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 4/7] ia64: implement crashkernel=auto
-References: <20090806062125.5578.72123.sendpatchset@localhost.localdomain> <20090806062211.5578.59301.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090806062211.5578.59301.sendpatchset@localhost.localdomain>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=DDAF6454
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-Relay-User: bernhard@bwalle.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amerigo Wang schrieb:
->  
-> +#ifdef CONFIG_KEXEC_AUTO_RESERVE
-> +#ifdef KEXEC_AUTO_RESERVED_SIZE
-> +#undef KEXEC_AUTO_RESERVED_SIZE
-> +#endif
-> +#define KEXEC_AUTO_RESERVED_SIZE (1ULL<<28) /* 256M */
-> +#include <asm-generic/kexec.h>
-> +#endif
-> +
->  extern struct kimage *ia64_kimage;
+> Subject: Re: [Bridge] [PATCH] macvlan: add tap device backend
+> 
+> On Fri, 7 Aug 2009 12:10:07 -0700
+> "Paul Congdon \(UC Davis\)" <ptcongdon@ucdavis.edu> wrote:
+> 
+> > Responding to Daniel's questions...
+> >
+> > > I have some general questions about the intended use and benefits
+> of
+> > > VEPA, from an IT perspective:
+> > >
+> > > In which virtual machine setups and technologies do you forsee this
+> > > interface being used?
+> >
+> > The benefit of VEPA is the coordination and unification with the
+> external network switch.  So, in environments where you are
+> needing/wanting your feature rich, wire speed, external network device
+> (firewall/switch/IPS/content-filter) to provide consistent policy
+> enforcement, and you want your VMs traffic to be subject to that
+> enforcement, you will want their traffic directed externally.  Perhaps
+> you have some VMs that are on a DMZ or clustering an application or
+> implementing a multi-tier application where you would normally place a
+> firewall in-between the tiers.
+> 
+> I do have to raise the point that Linux is perfectly capable of keeping
+> up without
+> the need of an external switch.  Whether you want policy external or
+> internal is
+> a architecture decision that should not be driven by mis-information
+> about performance.
 
-IMO that's way too small for practial use on IA64 systems.
+VEPA is not only about enabling faster packet processing (like firewall/switch/IPS/content-filter etc) by doing this on the external switch.
 
-For SLES11, which is based on Linux 2.6.28 IIRC, we use following memory
-size values in the YaST2 kdump module which configures the crashkernel
-parameter (this is YCP syntax, but I think everybody understands it):
+Due to rather low performance of software-based I/O virtualization approaches a lot of effort has recently been going into hardware-based implementations of virtual network interfaces like SRIOV NICs provide. Without VEPA, such a NIC would have to implement sophisticated virtual switching capabilities. VEPA however is very simple and therefore perfectly suited for a hardware-based implementation. So in the future, it will give you direct I/O like performance and all the capabilities your adjacent switch provides.
 
-> // bnc #446480 - Fine-tune kdump memory proposal
-> if ((Arch::ia64()) && (total_memory >= 1024))
-> {
->     integer total_memory_gigabyte = total_memory/1024;
->     if ((total_memory_gigabyte >= 1) && (total_memory_gigabyte <12))
->         alocated_memory = "256";
->     else if ((total_memory_gigabyte >= 12) && (total_memory_gigabyte <128))
->         alocated_memory = "512";
->     else if ((total_memory_gigabyte >= 128) && (total_memory_gigabyte <256))
->         alocated_memory = "768";
->     else if ((total_memory_gigabyte >= 256) && (total_memory_gigabyte <378))
->         alocated_memory = "1024";
->     else if ((total_memory_gigabyte >= 378) && (total_memory_gigabyte <512))
->         alocated_memory = "1536";
->     else if ((total_memory_gigabyte >= 512) && (total_memory_gigabyte <768))
->         alocated_memory = "2048";
->     else if (total_memory_gigabyte >= 768)
->         alocated_memory = "3072";
-> }
-
-I got that assumtions from SGI (and they are known to have large IA64
-systems) and I think the values were tested.
-
-But IMO it doesn't make sense to put such policy decisions in the
-kernel. I see no advantage for that. The average user doesn't have to
-write crashkernel parameters, they use the values that the distribution
-ships. Or do you think that an average user knows what a UUID of a file
-system is just to specify the correct root partition?
-
-
-Regards,
-Bernhard
-
+Anna
