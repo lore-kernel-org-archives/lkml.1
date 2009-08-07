@@ -1,91 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbZHGJuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbZHGJuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755869AbZHGJuF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 05:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbZHGJuE
+	id S1755990AbZHGJuX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 05:50:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbZHGJuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 05:50:04 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:18362 "EHLO
-	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751831AbZHGJuC (ORCPT
+	Fri, 7 Aug 2009 05:50:20 -0400
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:3589 "EHLO
+	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755909AbZHGJuJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 05:50:02 -0400
-X-SpamScore: -1
-X-BigFish: VPS-1(zz4015Lzz1202hzzz32i203h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KO03B4-04-L86-01
+	Fri, 7 Aug 2009 05:50:09 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i203h43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KO03BC-03-0WX-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>
 CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 0/21] Nested SVM cleanups v2
-Date: Fri, 7 Aug 2009 11:49:27 +0200
-Message-ID: <1249638588-10982-1-git-send-email-joerg.roedel@amd.com>
+       linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 13/21] kvm/svm: clean up nestec vmload/vmsave paths
+Date: Fri, 7 Aug 2009 11:49:40 +0200
+Message-ID: <1249638588-10982-14-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.3.3
-X-OriginalArrivalTime: 07 Aug 2009 09:49:50.0624 (UTC) FILETIME=[68296A00:01CA1744]
+In-Reply-To: <1249638588-10982-1-git-send-email-joerg.roedel@amd.com>
+References: <1249638588-10982-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 07 Aug 2009 09:49:51.0202 (UTC) FILETIME=[68819C20:01CA1744]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This patch removes the usage of nested_svm_do from the vmload and
+vmsave emulation code paths.
 
-this is the second and extended version of my patchset to clean up the code for
-SVM virtualization in KVM. The patchset was tested with KVM on KVM and showed
-no regressions. It was tested with Nested Paging and with Shadow Paging on the
-first-level guest. 
-As a major change this patchset enables the nested SVM code by
-default. It is still required to start qemu with -enable-nesting,
-though.
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kvm/svm.c |   36 +++++++++++++++++-------------------
+ 1 files changed, 17 insertions(+), 19 deletions(-)
 
-Changes to the previous version:
-
-	* added Acked-by tags
-	* added missing patch descriptions
-	* addressed review comments
-	* dropped dynamic debugging patch (will be replaced by change
-	  to tracing infrastructure)
-	* dropped patch moving nested #pf handling because it broke
-	  nested SVM with shadow paging
-	* added more cleanups (e.g. removed nested_svm_do and
-	  function pointer code flow)
-	* fixed 2 minor issues
-	* enabled nested svm by default
-
-Thanks,
-
-	Joerg
-
-Diffstat:
-
- arch/x86/kvm/svm.c |  637 +++++++++++++++++++++++++++++-----------------------
- 1 files changed, 358 insertions(+), 279 deletions(-)
-
-Shortlog:
-
-Joerg Roedel (21):
-      kvm/svm: add helper functions for global interrupt flag
-      kvm/svm: optimize nested #vmexit
-      kvm/svm: optimize nested vmrun
-      kvm/svm: copy only necessary parts of the control area on vmrun/vmexit
-      kvm/svm: complete interrupts after handling nested exits
-      kvm/svm: move nested svm state into seperate struct
-      kvm/svm: cache nested intercepts
-      kvm/svm: consolidate nested_svm_exit_handled
-      kvm/svm: do nested vmexit in nested_svm_exit_handled
-      kvm/svm: simplify nested_svm_check_exception
-      kvm/svm: get rid of nested_svm_vmexit_real
-      kvm/svm: clean up nested_svm_exit_handled_msr
-      kvm/svm: clean up nestec vmload/vmsave paths
-      kvm/svm: clean up nested vmrun path
-      kvm/svm: remove nested_svm_do and helper functions
-      kvm/svm: handle errors in vmrun emulation path appropriatly
-      kvm/svm: move special nested exit handling to separate function
-      kvm/svm: remove unnecessary is_nested check from svm_cpu_run
-      kvm/svm: move nested_svm_intr main logic out of if-clause
-      kvm/svm: check for nested VINTR flag in svm_interrupt_allowed
-      kvm/svm: enable nested svm by default
-
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 448d493..c2ca953 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -129,8 +129,6 @@ static void svm_complete_interrupts(struct vcpu_svm *svm);
+ 
+ static int nested_svm_exit_handled(struct vcpu_svm *svm, bool kvm_override);
+ static int nested_svm_vmexit(struct vcpu_svm *svm);
+-static int nested_svm_vmsave(struct vcpu_svm *svm, void *nested_vmcb,
+-			     void *arg2, void *opaque);
+ static int nested_svm_check_exception(struct vcpu_svm *svm, unsigned nr,
+ 				      bool has_error_code, u32 error_code);
+ 
+@@ -1871,7 +1869,7 @@ static int nested_svm_vmrun(struct vcpu_svm *svm, void *arg1,
+ 	return 0;
+ }
+ 
+-static int nested_svm_vmloadsave(struct vmcb *from_vmcb, struct vmcb *to_vmcb)
++static void nested_svm_vmloadsave(struct vmcb *from_vmcb, struct vmcb *to_vmcb)
+ {
+ 	to_vmcb->save.fs = from_vmcb->save.fs;
+ 	to_vmcb->save.gs = from_vmcb->save.gs;
+@@ -1885,44 +1883,44 @@ static int nested_svm_vmloadsave(struct vmcb *from_vmcb, struct vmcb *to_vmcb)
+ 	to_vmcb->save.sysenter_cs = from_vmcb->save.sysenter_cs;
+ 	to_vmcb->save.sysenter_esp = from_vmcb->save.sysenter_esp;
+ 	to_vmcb->save.sysenter_eip = from_vmcb->save.sysenter_eip;
+-
+-	return 1;
+-}
+-
+-static int nested_svm_vmload(struct vcpu_svm *svm, void *nested_vmcb,
+-			     void *arg2, void *opaque)
+-{
+-	return nested_svm_vmloadsave((struct vmcb *)nested_vmcb, svm->vmcb);
+-}
+-
+-static int nested_svm_vmsave(struct vcpu_svm *svm, void *nested_vmcb,
+-			     void *arg2, void *opaque)
+-{
+-	return nested_svm_vmloadsave(svm->vmcb, (struct vmcb *)nested_vmcb);
+ }
+ 
+ static int vmload_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ {
++	struct vmcb *nested_vmcb;
++
+ 	if (nested_svm_check_permissions(svm))
+ 		return 1;
+ 
+ 	svm->next_rip = kvm_rip_read(&svm->vcpu) + 3;
+ 	skip_emulated_instruction(&svm->vcpu);
+ 
+-	nested_svm_do(svm, svm->vmcb->save.rax, 0, NULL, nested_svm_vmload);
++	nested_vmcb = nested_svm_map(svm, svm->vmcb->save.rax, KM_USER0);
++	if (!nested_vmcb)
++		return 1;
++
++	nested_svm_vmloadsave(nested_vmcb, svm->vmcb);
++	nested_svm_unmap(nested_vmcb, KM_USER0);
+ 
+ 	return 1;
+ }
+ 
+ static int vmsave_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ {
++	struct vmcb *nested_vmcb;
++
+ 	if (nested_svm_check_permissions(svm))
+ 		return 1;
+ 
+ 	svm->next_rip = kvm_rip_read(&svm->vcpu) + 3;
+ 	skip_emulated_instruction(&svm->vcpu);
+ 
+-	nested_svm_do(svm, svm->vmcb->save.rax, 0, NULL, nested_svm_vmsave);
++	nested_vmcb = nested_svm_map(svm, svm->vmcb->save.rax, KM_USER0);
++	if (!nested_vmcb)
++		return 1;
++
++	nested_svm_vmloadsave(svm->vmcb, nested_vmcb);
++	nested_svm_unmap(nested_vmcb, KM_USER0);
+ 
+ 	return 1;
+ }
+-- 
+1.6.3.3
 
 
