@@ -1,61 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757620AbZHGL4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbZHGL53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757620AbZHGL4Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 07:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757559AbZHGL4P
+	id S1757641AbZHGL53 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 07:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757608AbZHGL52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 07:56:15 -0400
-Received: from mail-fx0-f228.google.com ([209.85.220.228]:62242 "EHLO
-	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757373AbZHGL4O (ORCPT
+	Fri, 7 Aug 2009 07:57:28 -0400
+Received: from viefep14-int.chello.at ([62.179.121.34]:11049 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757514AbZHGL52 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 07:56:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=l2DCk3iNMHnAaged/reDY18SkUttXsGcGPpc29Kn3qZA/Mf2i90Cmwj1Z5fx2RkUKY
-         JIQD3rNbccSn+oEFAEdBUxuaP5p6qOd6R0C5o3M9iE/SWcduTDVE1upMNdz0TQmG5kah
-         cqCfW8tknapffIpcw2mzCs+26Ht8YX2M9jHfA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [patch 4/6] ide: allow ide_dev_read_id() to be called from the IRQ context
-Date: Fri, 7 Aug 2009 13:55:21 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc4-next-20090731-05372-g784fb81; KDE/4.2.4; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090624.025518.75726622.davem@davemloft.net> <200907011835.27586.bzolnier@gmail.com> <20090701.134729.13610576.davem@davemloft.net>
-In-Reply-To: <20090701.134729.13610576.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200908071355.21648.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Fri, 7 Aug 2009 07:57:28 -0400
+X-SourceIP: 213.93.53.227
+Subject: RE: [patch] x86, perf_counter, bts: add bts to perf_counter
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "oleg@redhat.com" <oleg@redhat.com>
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF07F@irsmsx504.ger.corp.intel.com>
+References: <20090807092256.A6083@sedona.ch.intel.com>
+	 <1249645524.32113.688.camel@twins>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF07F@irsmsx504.ger.corp.intel.com>
+Content-Type: text/plain
+Date: Fri, 07 Aug 2009 13:57:09 +0200
+Message-Id: <1249646229.32113.692.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 July 2009 22:47:29 David Miller wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Date: Wed, 1 Jul 2009 18:35:27 +0200
+On Fri, 2009-08-07 at 12:51 +0100, Metzger, Markus T wrote:
+> >-----Original Message-----
+> >From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
+> >Sent: Friday, August 07, 2009 1:45 PM
+> >To: Metzger, Markus T
+> >Cc: linux-kernel@vger.kernel.org; mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com;
+> >markus.t.metzger@gmail.com; oleg@redhat.com
+> >Subject: Re: [patch] x86, perf_counter, bts: add bts to perf_counter
+> >
+> >On Fri, 2009-08-07 at 09:22 +0200, Markus Metzger wrote:
+> >> @@ -721,9 +903,13 @@ static int __hw_perf_counter_init(struct
+> >>         err = 0;
+> >>         if (!atomic_inc_not_zero(&active_counters)) {
+> >>                 mutex_lock(&pmc_reserve_mutex);
+> >> -               if (atomic_read(&active_counters) == 0 && !reserve_pmc_hardware())
+> >> -                       err = -EBUSY;
+> >> -               else
+> >> +               if (atomic_read(&active_counters) == 0) {
+> >> +                       if (!reserve_pmc_hardware())
+> >> +                               err = -EBUSY;
+> >> +                       else
+> >> +                               reserve_bts_hardware();
+> >> +               }
+> >> +               if (!err)
+> >>                         atomic_inc(&active_counters);
+> >>                 mutex_unlock(&pmc_reserve_mutex);
+> >>         }
+> >
+> >You loose the reserve_bts_hardware() error case there.
 > 
-> > On Wednesday 24 June 2009 12:48:20 Bartlomiej Zolnierkiewicz wrote:
-> >> On Wednesday 24 June 2009 11:55:18 David Miller wrote:
-> > 
-> > [...]
-> > 
-> >> > I know you're busy, so I'll try to draft something up myself.
-> >> 
-> >> Ok, thanks.
-> > 
-> > Any news about these fixes?
 > 
-> Will get to it before the end of the weekend.
+> That had been intentional since I consider BTS somewhat optional. In case it is not available or
+> fails to initialize, e.g. out of memory, we fall back to normal profiling.
 > 
-> If I fail or abort, I'll integrate your version of the fix Bart, don't
-> worry :)
+> Now that I think about it again, I guess that's not what a (debugger) user would expect.
+> An error might be more appropriate in that case.
+> 
+> I'll change it.
 
-Not that I'm worried but just out of curiosity..
+If there's hardware that supports intel perfmon v2+ but doesn't have BTS
+(I don't think so) then we shouldn't fail it hard on not present.
 
-Could you please tell me which week/month/year are we talking about here?
+But if the BTS stuff should always be present on the hardware then we
+can indeed unconditionally fail.
+
