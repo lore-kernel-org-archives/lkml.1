@@ -1,77 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbZHGWr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbZHGWv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753293AbZHGWr4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 18:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbZHGWrz
+	id S1755690AbZHGWv0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 18:51:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754947AbZHGWvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 18:47:55 -0400
-Received: from ppp121-45-198-187.lns10.adl2.internode.on.net ([121.45.198.187]:50953
-	"EHLO audi.shelbyville.oz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751539AbZHGWrz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 18:47:55 -0400
-X-Greylist: delayed 539 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Aug 2009 18:47:54 EDT
-Date: Sat, 8 Aug 2009 08:08:51 +0930
-From: Ron <ron@debian.org>
-To: Nicolas Pitre <nico@cam.org>
-Cc: Dhaval Vasa <dhaval.vasa@einfochips.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Rabeeh Khoury <rabeeh@marvell.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: [PATCH] [ARM] Kirkwood: Initialise SATA for OpenRD-Base
-Message-ID: <20090807223851.GR11898@audi.shelbyville.oz>
-References: <1249567753-724-1-git-send-email-dhaval.vasa@einfochips.com>
- <alpine.LFD.2.00.0908071149460.16073@xanadu.home>
-MIME-Version: 1.0
+	Fri, 7 Aug 2009 18:51:25 -0400
+Received: from cmpxchg.org ([85.214.51.133]:39515 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754774AbZHGWvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 18:51:24 -0400
+Date: Sat, 8 Aug 2009 00:51:46 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
+       msb@google.com, viro@zeniv.linux.org.uk
+Subject: Re: [PATCH 3/4] vfs: change sb->s_maxbytes to a loff_t
+Message-ID: <20090807225146.GC28019@cmpxchg.org>
+References: <1249671461-9071-1-git-send-email-jlayton@redhat.com> <1249671461-9071-4-git-send-email-jlayton@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0908071149460.16073@xanadu.home>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1249671461-9071-4-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 07, 2009 at 02:57:40PM -0400, Jeff Layton wrote:
+> sb->s_maxbytes is supposed to indicate the maximum size of a file that
+> can exist on the filesystem. It's declared as an unsigned long long.
+> 
+> Even if a filesystem has no inherent limit that prevents it from using
+> every bit in that unsigned long long, it's still problematic to set it
+> to anything larger than MAX_LFS_FILESIZE. A lot of places implicitly
+> cast s_maxbytes to a signed value when doing comparisons against it
+> (usually using loff_t on the other side of the comparison). If it's
+> set too large then this cast makes it a negative number and generally
+> breaks the comparison.
+> 
+> Change s_maxbytes to be loff_t instead. That should help eliminate the
+> temptation to set it too large by making it a signed value.
+> 
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> ---
+>  fs/super.c         |   10 ++++++++++
+>  include/linux/fs.h |    2 +-
+>  2 files changed, 11 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/super.c b/fs/super.c
+> index 2761d3e..929d55d 100644
+> --- a/fs/super.c
+> +++ b/fs/super.c
+> @@ -889,6 +889,16 @@ vfs_kern_mount(struct file_system_type *type, int flags, const char *name, void
+>   	if (error)
+>   		goto out_sb;
+>  
+> +	/*
+> +	 * filesystems should never set s_maxbytes larger than MAX_LFS_FILESIZE
+> +	 * but s_maxbytes was an unsigned long long for many releases. Throw
+> +	 * this warning for a little while to try and catch filesystems that
+> +	 * violate this rule. This warning can be removed in 2.6.34.
+> +	 */
+> +	WARN(((unsigned long long) mnt->mnt_sb->s_maxbytes > MAX_LFS_FILESIZE),
+> +		"WARNING: %s sets sb->s_maxbytes too large (%llu)", type->name,
+> +		(unsigned long long) mnt->mnt_sb->s_maxbytes);
 
-Signed-off-by: Ron Lee <ron@debian.org>
----
+Since it's signed now, you could just check for it being < 0, no?
 
-Please include this patch in with that set also.  I can confirm this
-enables me to boot an OpenRD-Base board from SATA with 2.6.31-rc5.
-
- arch/arm/mach-kirkwood/openrd_base-setup.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
-
-diff --git a/arch/arm/mach-kirkwood/openrd_base-setup.c b/arch/arm/mach-kirkwood/openrd_base-setup.c
-index 6e290fd..d8c846d 100644
---- a/arch/arm/mach-kirkwood/openrd_base-setup.c
-+++ b/arch/arm/mach-kirkwood/openrd_base-setup.c
-@@ -12,6 +12,7 @@
- #include <linux/init.h>
- #include <linux/platform_device.h>
- #include <linux/mtd/partitions.h>
-+#include <linux/ata_platform.h>
- #include <linux/mv643xx_eth.h>
- #include <linux/gpio.h>
- #include <linux/leds.h>
-@@ -42,6 +43,10 @@ static struct mv643xx_eth_platform_data openrd_base_ge00_data = {
- 	.phy_addr	= MV643XX_ETH_PHY_ADDR(8),
- };
- 
-+static struct mv_sata_platform_data openrd_base_sata_data = {
-+	.n_ports	= 2,
-+};
-+
- static struct mvsdio_platform_data openrd_base_mvsdio_data = {
- 	.gpio_card_detect = MPP29_GPIO,	/* MPP29 used as SD card detect */
- };
-@@ -64,6 +69,7 @@ static void __init openrd_base_init(void)
- 	kirkwood_ehci_init();
- 
- 	kirkwood_ge00_init(&openrd_base_ge00_data);
-+	kirkwood_sata_init(&openrd_base_sata_data);
- 	kirkwood_sdio_init(&openrd_base_mvsdio_data);
- }
- 
--- 
-1.6.3.3
-
+I don't like the warning much, though.  It seems to be a random check
+for a bug that has been fixed now.  We don't check other errors from
+->get_sb() either.
