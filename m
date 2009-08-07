@@ -1,192 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756294AbZHGNPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238AbZHGNRF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756294AbZHGNPf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 09:15:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbZHGNPe
+	id S1756238AbZHGNRF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 09:17:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbZHGNRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 09:15:34 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:45847 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756178AbZHGNPb (ORCPT
+	Fri, 7 Aug 2009 09:17:04 -0400
+Received: from mail-fx0-f228.google.com ([209.85.220.228]:47551 "EHLO
+	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755786AbZHGNRC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 09:15:31 -0400
-Date: Fri, 7 Aug 2009 15:15:29 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Subject: [BUG] race of RCU vs NOHU
-Message-ID: <20090807151529.2806b8b4@skybase>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 7 Aug 2009 09:17:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=WUi7uVzQxXlZnbWYPB8B9YND0HJanfS+9mmxUnqDVCD0Ern4lD5Sgwafd2T8nDWuoi
+         W6ndNfKtkRbT0FWN2b2z4nuft1SE9ZygpwZb3JxFxnsb/+y0zP1lXZvA2JIu6FcV9p4k
+         7mNDfb1UOS+UwK5+FMFfTfgxY7VIkhB60AFno=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: Tree for August 6
+Date: Fri, 7 Aug 2009 15:15:45 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc5-00246-g90bc1a6; KDE/4.2.4; i686; ; )
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <20090806192209.513abec7.sfr@canb.auug.org.au> <200908062250.51498.bzolnier@gmail.com>
+In-Reply-To: <200908062250.51498.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908071515.45169.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
-I analysed a dump of a hanging 2.6.30 system and found what I think is
-a bug of RCU vs NOHZ. There are a number of patches ontop of that
-kernel but they should be independent of the bug.
+On Thursday 06 August 2009 22:50:50 Bartlomiej Zolnierkiewicz wrote:
+> On Thursday 06 August 2009 11:22:09 Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > Changes since 20090805:
+> 
+> At the moment -next is completely unusable for anything other than
+> detecting merge conflicts..  Running -next was never a completely
+> smooth experience but for a past year it was more-or-less doable.
+> However the last two months have been an absolute horror and I've
+> been hitting issues way faster than I was able to trace/report
+> them properly..
+> 
+> Right now I still have following *outstanding* issues (on just *one*
+> machine/distribution):
+> 
+> - Random (after some long hours) order:6 mode:0x8020 page allocation
+>   failure (when ipw2200 driver reloads firmware on firmware error).
+> 
+>   [ I had first thought that it was caused by SLQB (which got enabled
+>     as default somewhere along the way) but it also happens with SLUB
+>     and I have good reasons to believe that is caused by heavy mm
+>     changes first seen in next-20090618 (I've been testing next-20090617
+>     for many days and it never happened there), the last confirmed
+>     release with the problem is next-20090728. ]
 
-The systems has 4 cpus and uses classic RCU. cpus #0, #2 and #3 woke up
-recently, cpu #1 has been sleeping for 5 minutes, but there is a pending
-rcu batch. The timer wheel for cpu #1 is empty, it will continue to
-sleep for NEXT_TIMER_MAX_DELTA ticks.
+If anyone is interested in the full log of the problem:
 
-Now if I look at the RCU data structures I find this:
-
-rcu_ctrlblk
->> px *(struct rcu_ctrlblk *) 0x810000
-struct rcu_ctrlblk {
-        cur = 0xffffffffffffff99
-        completed = 0xffffffffffffff98
-        pending = 0xffffffffffffff99
-        signaled = 0x0
-        lock = spinlock_t {
-                raw_lock = raw_spinlock_t {
-                        owner_cpu = 0x0
-                }
-                break_lock = 0x0
-                magic = 0xdead4ead
-                owner_cpu = 0xffffffff
-                owner = 0xffffffffffffffff
-                dep_map = struct lockdep_map {
-                        key = 0x810118
-                        class_cache = 0xcbcff0
-                        name = 0x63e944
-                        cpu = 0x0
-                        ip = 0x1a7f64
-                }
-        }
-        cpumask = {
-                [0] 0x2
-        }
-}
-
-rcu_data cpu #0
->> px *(struct rcu_data *) 0x872f8430
-struct rcu_data {
-        quiescbatch = 0xffffffffffffff99
-        passed_quiesc = 0x1
-        qs_pending = 0x0
-        batch = 0xffffffffffffff97
-        nxtlist = (nil)
-        nxttail = {
-                [0]         0x872f8448
-                [1]         0x872f8448
-                [2]         0x872f8448
-        }
-        qlen = 0x0
-        donelist = (nil)
-        donetail = 0x872f8470
-        blimit = 0xa
-        cpu = 0x0
-        barrier = struct rcu_head {
-                next = (nil)
-                func = 0x0
-        }
-}
-
-rcu_data cpu #1
->> px *(struct rcu_data *) 0x874be430
-struct rcu_data {
-        quiescbatch = 0xffffffffffffff98
-        passed_quiesc = 0x1
-        qs_pending = 0x0
-        batch = 0xffffffffffffff97
-        nxtlist = (nil)
-        nxttail = {
-                [0]         0x874be448
-                [1]         0x874be448
-                [2]         0x874be448
-        }
-        qlen = 0x0
-        donelist = (nil)
-        donetail = 0x874be470
-        blimit = 0xa
-        cpu = 0x1
-        barrier = struct rcu_head {
-                next = (nil)
-                func = 0x0
-        }
-}
-
-rcu_data cpu #2
->> px *(struct rcu_data *) 0x87684430
-struct rcu_data {
-        quiescbatch = 0xffffffffffffff99
-        passed_quiesc = 0x1
-        qs_pending = 0x0
-        batch = 0xffffffffffffff99
-        nxtlist = 0xffc1fc18
-        nxttail = {
-                [0]         0x87684448
-                [1]         0x87684448
-                [2]         0xffc1fc18
-        }
-        qlen = 0x1
-        donelist = (nil)
-        donetail = 0x87684470
-        blimit = 0xa
-        cpu = 0x2
-        barrier = struct rcu_head {
-                next = (nil)
-                func = 0x0
-        }
-}
-
-rcu_data cpu #3
->> px *(struct rcu_data *) 0x8784a430
-struct rcu_data {
-        quiescbatch = 0xffffffffffffff99
-        passed_quiesc = 0x1
-        qs_pending = 0x0
-        batch = 0xffffffffffffff63
-        nxtlist = (nil)
-        nxttail = {
-                [0]         0x8784a448
-                [1]         0x8784a448
-                [2]         0x8784a448
-        }
-        qlen = 0x0
-        donelist = (nil)
-        donetail = 0x8784a470
-        blimit = 0xa
-        cpu = 0x3
-        barrier = struct rcu_head {
-                next = (nil)
-                func = 0x0
-        }
-}
-
-At the time cpu #1 went to sleep rcu_needs_cpu must have answered false,
-otherwise a 1 tick delay would have been programmed. rcu_pending compares
-rcu_ctrlblk.cur with rcu_data.quiescbatch for cpu #1. So these two must
-have been equal otherwise rcu_needs_cpu would have answered true.
-That means that the rcu_needs_cpu check has been completed before
-rcu_start_batch for batch 0xffffffffffffff99. The bit for cpu #1 is
-still set in the rcu_ctrlblk.cpumask, therefore the bit for cpu #1
-in nohz_cpu_mask can not have been set at the time rcu_start_batch has
-completed. That gives the following race (cpu 0 is starting the batch,
-cpu 1 is going to sleep):
-
-cpu 1: tick_nohz_stop_sched_tick: rcu_needs_cpu();
-cpu 0: rcu_start_batch: rcp->cur++;
-cpu 0: rcu_start_batch: cpumask_andnot(to_cpumask(rcp->cpumask),
-					cpu_online_mask, nonz_cpu_mask);
-cpu 1: tick_nohz_stop_schedk_tick: cpumask_set_cpu(1, nohz_cpu_mask);
-
-The order of i) setting the bit in nohz_cpu_mask and ii) the rcu_needs_cpu()
-check in tick_nohz_stop_sched_tick is wrong, no? Or did I miss some suble
-check that comes afterwards ?
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+ipw2200: Firmware error detected.  Restarting.
+ipw2200/0: page allocation failure. order:6, mode:0x8020
+Pid: 1004, comm: ipw2200/0 Not tainted 2.6.31-rc4-next-20090728-04869-gdae50fe-dirty #51
+Call Trace:
+ [<c0396a2c>] ? printk+0xf/0x13
+ [<c0169ec1>] __alloc_pages_nodemask+0x3dd/0x41f
+ [<c0106907>] dma_generic_alloc_coherent+0x53/0xb8
+ [<c01068b4>] ? dma_generic_alloc_coherent+0x0/0xb8
+ [<e159d12f>] ipw_load_firmware+0x8c/0x4f8 [ipw2200]
+ [<c01029fc>] ? restore_all_notrace+0x0/0x18
+ [<e1599e4d>] ? ipw_stop_nic+0x2b/0x5d [ipw2200]
+ [<e15a194e>] ipw_load+0x8b2/0xf94 [ipw2200]
+ [<c0399680>] ? _spin_unlock_irqrestore+0x36/0x51
+ [<e15a57be>] ipw_up+0xe1/0x5c6 [ipw2200]
+ [<e15a3834>] ? ipw_down+0x1f7/0x1ff [ipw2200]
+ [<e15a5cd5>] ipw_adapter_restart+0x32/0x46 [ipw2200]
+ [<e15a5d0a>] ipw_bg_adapter_restart+0x21/0x2c [ipw2200]
+ [<c0139aac>] worker_thread+0x15e/0x240
+ [<c0139a6a>] ? worker_thread+0x11c/0x240
+ [<e15a5ce9>] ? ipw_bg_adapter_restart+0x0/0x2c [ipw2200]
+ [<c013ce99>] ? autoremove_wake_function+0x0/0x2f
+ [<c013994e>] ? worker_thread+0x0/0x240
+ [<c013cc5f>] kthread+0x66/0x6b
+ [<c013cbf9>] ? kthread+0x0/0x6b
+ [<c01034eb>] kernel_thread_helper+0x7/0x10
+Mem-Info:
+DMA per-cpu:
+CPU    0: hi:    0, btch:   1 usd:   0
+Normal per-cpu:
+CPU    0: hi:  186, btch:  31 usd: 178
+Active_anon:22467 active_file:10815 inactive_anon:22483
+ inactive_file:28605 unevictable:2 dirty:626 writeback:190 unstable:0
+ free:28497 slab:4190 mapped:5638 pagetables:895 bounce:0
+DMA free:2084kB min:84kB low:104kB high:124kB active_anon:732kB inactive_anon:996kB active_file:652kB inactive_file:1980kB unevictable:0kB present:15868kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 492 492
+Normal free:111904kB min:2792kB low:3488kB high:4188kB active_anon:89136kB inactive_anon:88936kB active_file:42608kB inactive_file:112440kB unevictable:8kB present:503872kB pages_scanned:53 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0
+DMA: 9*4kB 4*8kB 6*16kB 2*32kB 1*64kB 0*128kB 1*256kB 1*512kB 1*1024kB 0*2048kB 0*4096kB = 2084kB
+Normal: 12926*4kB 2437*8kB 1294*16kB 479*32kB 63*64kB 5*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 111904kB
+40160 total pagecache pages
+0 pages in swap cache
+Swap cache stats: add 0, delete 0, find 0/0
+Free swap  = 0kB
+Total swap = 0kB
+131056 pages RAM
+3587 pages reserved
+50606 pages shared
+66006 pages non-shared
+ipw2200: Unable to load firmware: -12
+ipw2200: Unable to load firmware: -12
+ipw2200: Failed to up device
