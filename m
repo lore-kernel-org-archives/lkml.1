@@ -1,62 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbZHGJ70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbZHGKGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757379AbZHGJ70 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 05:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbZHGJ7Z
+	id S1757123AbZHGKGS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 06:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbZHGKGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 05:59:25 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58172 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753134AbZHGJ7Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 05:59:24 -0400
-Date: Fri, 7 Aug 2009 10:59:12 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-       David Xiao <dxiao@broadcom.com>, Ben Dooks <ben-linux@fluff.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       v4l2_linux <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
-	get_user_pages() enough to prevent pages from being swapped out ?")
-Message-ID: <20090807095912.GA21199@n2100.arm.linux.org.uk>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806222543.GG31579@n2100.arm.linux.org.uk> <1249624766.32621.61.camel@david-laptop> <200908070958.31322.laurent.pinchart@ideasonboard.com> <20090807081041.GB18343@n2100.arm.linux.org.uk> <20090807095426.GI8725@shareable.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090807095426.GI8725@shareable.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 7 Aug 2009 06:06:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54572 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753185AbZHGKGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 06:06:16 -0400
+Date: Fri, 7 Aug 2009 06:05:22 -0400
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: esandeen@redhat.com, eteo@redhat.com, eparis@redhat.com,
+       Amerigo Wang <amwang@redhat.com>, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, hirofumi@mail.parknet.co.jp,
+       viro@zeniv.linux.org.uk
+Message-Id: <20090807100743.5822.90612.sendpatchset@localhost.localdomain>
+Subject: [Patch v3] vfs: allow file truncations when both suid and write permissions set
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 10:54:27AM +0100, Jamie Lokier wrote:
-> Russell King - ARM Linux wrote:
-> > On Fri, Aug 07, 2009 at 09:58:30AM +0200, Laurent Pinchart wrote:
-> > > Sorry about this, but I'm not sure to understand the speculative prefetching 
-> > > cache issue completely.
-> > 
-> > The general case with speculative prefetching is that if memory is
-> > accessible, it can be prefetched.
-> > 
-> > In other words, if we mapped devices without NX (non-exec) set, the
-> > CPU can prefetch instructions from devices, causing random read
-> > accesses.  Yes, I know it sounds crazy, but that's what I'm told
-> > _can_ happen.
-> 
-> 1. Does the architecture not prevent speculative instruction
-> prefetches from crossing a page boundary?  It would be handy under the
-> circumstances.
-> 
-> 2. Is NX available on all the CPUs with speculative prefetching
-> behaviour?  If it is, just use that for device mappings?
 
-I was using it as an example.  Setting NX doesn't stop _data_ speculative
-prefetching to _memory_ areas (as opposed to device areas.)
+V2 -> V3:
+Call notify_change() before clearing suid/sgid.
+Thanks to OGAWA Hirofumi.
 
-Getting things like the right memory attributes in place and ensuring
-people don't abuse them is the first step towards getting this stuff
-right.  It's an ongoing project.
+V1 -> V2:
+Introduce dentry_remove_suid(), and use it in do_truncate().
+Thanks to Eric Paris.
+
+
+When suid is set and the non-owner user has write permission,
+any writing into this file should be allowed and suid should be
+removed after that.
+
+However, current kernel only allows writing without truncations,
+when we do truncations on that file, we get EPERM. This is a bug.
+
+Steps to reproduce this bug:
+
+% ls -l rootdir/file1
+-rwsrwsrwx 1 root root 3 Jun 25 15:42 rootdir/file1
+% echo h > rootdir/file1
+zsh: operation not permitted: rootdir/file1
+% ls -l rootdir/file1
+-rwsrwsrwx 1 root root 3 Jun 25 15:42 rootdir/file1
+% echo h >> rootdir/file1
+% ls -l rootdir/file1
+-rwxrwxrwx 1 root root 5 Jun 25 16:34 rootdir/file1
+
+This patch fixes it.
+
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: Eric Sandeen <esandeen@redhat.com>
+Cc: Eric Paris <eparis@redhat.com>
+Cc: Eugene Teo <eteo@redhat.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: hirofumi@mail.parknet.co.jp
+
+---
+diff --git a/fs/open.c b/fs/open.c
+index dd98e80..159f5b3 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -213,11 +213,15 @@ int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
+ 		newattrs.ia_valid |= ATTR_FILE;
+ 	}
+ 
+-	/* Remove suid/sgid on truncate too */
+-	newattrs.ia_valid |= should_remove_suid(dentry);
+-
+ 	mutex_lock(&dentry->d_inode->i_mutex);
+ 	err = notify_change(dentry, &newattrs);
++	if (err)
++		goto unlock;
++
++	/* Remove suid/sgid on truncate too */
++	err = dentry_remove_suid(dentry);
++
++ unlock:
+ 	mutex_unlock(&dentry->d_inode->i_mutex);
+ 	return err;
+ }
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index a36ffa5..0481f11 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2167,6 +2167,7 @@ extern void destroy_inode(struct inode *);
+ extern struct inode *new_inode(struct super_block *);
+ extern int should_remove_suid(struct dentry *);
+ extern int file_remove_suid(struct file *);
++extern int dentry_remove_suid(struct dentry *);
+ 
+ extern void __insert_inode_hash(struct inode *, unsigned long hashval);
+ extern void remove_inode_hash(struct inode *);
+diff --git a/mm/filemap.c b/mm/filemap.c
+index ccea3b6..33d94ad 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1839,9 +1839,11 @@ static int __remove_suid(struct dentry *dentry, int kill)
+ 	return notify_change(dentry, &newattrs);
+ }
+ 
+-int file_remove_suid(struct file *file)
++/*
++ * Note: you need to hold i_mutex before call this.
++ */
++int dentry_remove_suid(struct dentry *dentry)
+ {
+-	struct dentry *dentry = file->f_path.dentry;
+ 	int killsuid = should_remove_suid(dentry);
+ 	int killpriv = security_inode_need_killpriv(dentry);
+ 	int error = 0;
+@@ -1855,6 +1857,12 @@ int file_remove_suid(struct file *file)
+ 
+ 	return error;
+ }
++
++int file_remove_suid(struct file *file)
++{
++	struct dentry *dentry = file->f_path.dentry;
++	return dentry_remove_suid(dentry);
++}
+ EXPORT_SYMBOL(file_remove_suid);
+ 
+ static size_t __iovec_copy_from_user_inatomic(char *vaddr,
