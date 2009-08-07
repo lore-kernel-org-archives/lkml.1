@@ -1,106 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933644AbZHGUJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933647AbZHGUK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933644AbZHGUJy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 16:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933622AbZHGUJw
+	id S933647AbZHGUK7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 16:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933596AbZHGUK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 16:09:52 -0400
-Received: from perceval.irobotique.be ([92.243.18.41]:38281 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933619AbZHGUJu convert rfc822-to-8bit (ORCPT
+	Fri, 7 Aug 2009 16:10:59 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52792 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933581AbZHGUK6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 16:09:50 -0400
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is get_user_pages() enough to prevent pages from being swapped out ?")
-Date: Fri, 7 Aug 2009 22:11:40 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30.3; KDE/4.2.4; x86_64; ; )
-Cc: Robin Holt <holt@sgi.com>, Laurent Desnogues <laurent.desnogues@gmail.com>,
-       Jamie Lokier <jamie@shareable.org>, David Xiao <dxiao@broadcom.com>,
-       Ben Dooks <ben-linux@fluff.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "v4l2_linux" <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090807131501.GD2763@sgi.com> <20090807190145.GA31543@n2100.arm.linux.org.uk>
-In-Reply-To: <20090807190145.GA31543@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200908072211.45283.laurent.pinchart@ideasonboard.com>
+	Fri, 7 Aug 2009 16:10:58 -0400
+Subject: Re: [PATCH] perfcounters: Support for ftrace event records sampling
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>
+In-Reply-To: <1249641477.32113.664.camel@twins>
+References: <1249601154-5597-1-git-send-email-fweisbec@gmail.com>
+	 <1249641477.32113.664.camel@twins>
+Content-Type: text/plain
+Date: Fri, 07 Aug 2009 22:09:07 +0200
+Message-Id: <1249675747.8088.5.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 07 August 2009 21:01:45 Russell King - ARM Linux wrote:
-> On Fri, Aug 07, 2009 at 08:15:01AM -0500, Robin Holt wrote:
-> > On Fri, Aug 07, 2009 at 02:07:43PM +0200, Laurent Desnogues wrote:
-> > > On Fri, Aug 7, 2009 at 11:54 AM, Jamie Lokier<jamie@shareable.org> 
-wrote:
-> > > > 1. Does the architecture not prevent speculative instruction
-> > > > prefetches from crossing a page boundary?  It would be handy under
-> > > > the circumstances.
-> > >
-> > > There's no such restriction in ARMv7 architecture.
-> >
-> > Doesn't it prevent them for uncached areas?
->
-> "Uncached areas" is very very fuzzy.  Are you talking about a non-cachable
-> memory mapping, or a strongly ordered mapping.
->
-> I'm afraid that we're going to have to require more precise use of language
-> to describe these things - wolley statements like "uncached areas" are now
-> just too ambiguous.
+On Fri, 2009-08-07 at 12:38 +0200, Peter Zijlstra wrote:
+> > +static void ftrace_profile_##call(proto)                             \
+> > +{                                                                    \
+> > +     struct ftrace_data_offsets_##call __maybe_unused __data_offsets;\
+> > +     struct ftrace_event_call *event_call = &event_##call;           \
+> > +     extern void perf_tpcounter_event(int, u64, u64, void *, int);   \
+> > +     struct ftrace_raw_##call *entry;                                \
+> > +     u64 __addr = 0, __count = 1;                                    \
+> > +     unsigned long irq_flags;                                        \
+> > +     int __entry_size;                                               \
+> > +     int __data_size;                                                \
+> > +     int pc;                                                         \
+> > +                                                                     \
+> > +     local_save_flags(irq_flags);                                    \
+> > +     pc = preempt_count();                                           \
+> > +                                                                     \
+> > +     __data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
+> > +     __entry_size = __data_size + sizeof(*entry);                    \
+> > +                                                                     \
+> > +     do {                                                            \
+> > +             char raw_data[__entry_size];                            \
+> > +             struct trace_entry *ent;                                \
+> > +                                                                     \
+> > +             entry = (struct ftrace_raw_##call *)raw_data;           \
+> > +             ent = &entry->ent;                                      \
+> > +             tracing_generic_entry_update(ent, irq_flags, pc);       \
+> > +             ent->type = event_call->id;                             \
+> > +                                                                     \
+> > +             tstruct                                                 \
+> > +                                                                     \
+> > +             { assign; }                                             \
+> > +                                                                     \
+> > +             perf_tpcounter_event(event_call->id, __addr, __count, entry,\
+> > +                          __entry_size);                             \
+> > +     } while (0);                                                    \
+> > +                                                                     \
+> > +}
+> 
+> ok, so the one concern I have here is that the data needs to fit on the
+> stack. What if someone puts a large string in the data?
 
-Ok. Maybe the kernel mapping from L_PTE_MT_UNCACHED to strongly ordered for 
-ARMv6 and up (not sure about how it worked for previous versions) brought some 
-confusion. I'll try to be more precise now.
-
-> > I _THOUGHT_ there was an alloc_consistent (or something like that) call on
-> > ARM which gave you an uncached mapping where you could do DMA.
->
-> The dma_alloc_coherent() does _remap_ memory into a strongly ordered
-> mapping.  However, the fully cached mapping remains, which means that
-> the CPU can still speculatively prefetch from that memory.
-
-Does that mean that, in theory, all DMA transfers in the DMA_FROM_DEVICE 
-direction are currently broken on ARMv7 ?
-
-The ARM Architecture Reference Manual (ARM DDI 0100I) states that
-
-"• If the same memory locations are marked as having different memory types 
-(Normal, Device, or Strongly Ordered), for example by the use of synonyms in a 
-virtual to physical address mapping, UNPREDICTABLE behavior results.
-
-• If the same memory locations are marked as having different cacheable 
-attributes, for example by the use of synonyms in a virtual to physical 
-address mapping, UNPREDICTABLE behavior results."
-
-dma_alloc_coherent() ends up calling __dma_alloc(), which allocates pages 
-using alloc_pages(), flushes the data cache for the allocated virtual range 
-and then simply remaps the pages using PTEs previously allocated from the 
-kernel MM.
-
-This would be broken if a fully cached Normal mapping already existed for 
-those physical pages. You seem to imply that's the case, but I'm not sure to 
-understand why.
-
-> Since we map the fully cached mapping using section (or even supersection)
-> mappings for TLB efficiency, we can't change the memory type on a
-> per-page basis.
->
-> > I also thought there was a dma_* set of functions which remapped as
-> > uncached before DMA begins and remapped as normal after DMA has been
-> > completed.
->
-> You're talking about the deprecated DMA bounce code there.  It's
-> basically the same problem since it uses the dma_alloc_coherent()
-> interface to gain a source of DMA-able memory.
-
-Regards,
-
-Laurent Pinchart
+Also, how NMI safe is all that?
 
