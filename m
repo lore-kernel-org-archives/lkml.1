@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbZHGISx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbZHGIVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbZHGISx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 04:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757207AbZHGISw
+	id S1757239AbZHGIVp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 04:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757200AbZHGIVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 04:18:52 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:43191 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757070AbZHGISu convert rfc822-to-8bit (ORCPT
+	Fri, 7 Aug 2009 04:21:44 -0400
+Received: from viefep14-int.chello.at ([62.179.121.34]:24164 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757089AbZHGIVn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 04:18:50 -0400
-Date: Fri, 7 Aug 2009 10:18:47 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT pull] timers fixes for 2.6.31
-Message-ID: <20090807101847.2ee08c76@skybase>
-In-Reply-To: <1f1b08da0908061536o57cebeb6r2f522cb3c5419e1@mail.gmail.com>
-References: <alpine.LFD.2.00.0907302158180.2936@localhost.localdomain>
-	<alpine.LFD.2.01.0907301648540.3161@localhost.localdomain>
-	<20090731123711.GA5421@elte.hu>
-	<1f1b08da0908061536o57cebeb6r2f522cb3c5419e1@mail.gmail.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	Fri, 7 Aug 2009 04:21:43 -0400
+X-SourceIP: 213.93.53.227
+Subject: RE: [patch] x86, perf_counter, bts: add bts to perf_counter
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EC1BFEEE3@irsmsx504.ger.corp.intel.com>
+References: <20090721155648.A17047@sedona.ch.intel.com>
+	 <1249381489.7924.186.camel@twins> <20090804111412.GA20942@elte.hu>
+	 <20090804113555.GA28198@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFEEE3@irsmsx504.ger.corp.intel.com>
+Content-Type: text/plain
+Date: Fri, 07 Aug 2009 10:21:22 +0200
+Message-Id: <1249633282.32113.613.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Aug 2009 15:36:36 -0700
-john stultz <johnstul@us.ibm.com> wrote:
+On Fri, 2009-08-07 at 08:29 +0100, Metzger, Markus T wrote:
 
-> On Fri, Jul 31, 2009 at 5:37 AM, Ingo Molnar<mingo@elte.hu> wrote:
-> > [ Markus, John: the fix looks right for .31 but i think there's two
-> >  small structural problems with this code, which might have
-> >  contributed to the bug to happen to begin with:
-> >
-> >  Firstly, ->mult_orig is a slight misnomer - if it was named
-> >  properly we wouldnt even need the comments to explain how to use
-> >  and update it. It's the unadjusted multiplicator while _orig
-> >  patterns in the kernel generally suggest some sort of save/restore
-> >  pattern (which this is not).
-> >
-> >  I'd suggest to rename it to ->mult_unadjusted, ->mult_raw or
-> >  ->mult_static instead. This field has not gotten into many
-> >  clocksource drivers yet so it's easy to do. For .32 obviously.
-> >
-> >  Secondly, the broader design question is: why are clocksource
-> >  drivers mucking around with NTP details? Whether NTP is running
-> >  should be a transparent detail to drivers and if such details are
-> >  visible in low level driver (which they are in
-> >  arch/arm/plat-omap/common.c et al) that's sign of uncleanliness.
-> >  Mind improving that? (for .32 too)
-> 
-> Well, the clocksources aren't really mucking with NTP details, but NTP
-> mucks with the clocksource.  And so this was a way to try to preserve
-> the original mult value,  and I'll admit was a bit stapled on.  This
-> mostly comes from how the clocksource structure has swelled over time
-> to include quite a bit of timekeeping specific information.
-> 
-> Splitting this up has been on my list for awhile, but I've never
-> gotten to it. However, Martin Schwidefsky has been doing a great job
-> with his latest patches cleaning up some of uglier parts of the
-> timekeeping/clocksource interactions. There is still lots of  changes
-> I'd like to see, but they will take time as we still haven't gotten
-> all the arches over to GENERIC_TIME, so some cruft has to stick
-> around.   But Martin's patches are a great big step towards it and
-> hopefully his patches will be ready for .32.
+> I incorporated Peter's review comments, except that I would not enforce sample_period == 1
+> when branch tracing is requested. There might be users who want to sample the IP every 100.000'th
+> branch for profiling reasons.
 
-The question what we do with the mult_orig on clocksource
-enable/disable is one of the remaining open issues with my patch set.
-With the NTP adjusted multiplicator in the struct timekeeper we don't
-have a convenient place to keep the NTP adjusted multiplier while a
-clocksource is disabled. My initial thought was: why do we store the
-old multiplier at all? Its not that the clocksource changes all the
-time and NTP will catch up again if it is changed. Just start from
-scratch with the initial multiplicator.
+But in case you don't set sample_period==1 then you won't be able to
+match the BTS counter:
 
--- 
-blue skies,
-   Martin.
++       if (unlikely((event ==
++                     x86_pmu.event_map(PERF_COUNT_HW_BRANCH_INSTRUCTIONS)) &&
++                    (hwc->sample_period == 1)))
++               return X86_PMC_IDX_FIXED_BTS;
 
-"Reality continues to ruin my life." - Calvin.
+Also,
+
++               /*
++                * Try to use BTS for branch tracing. If that is not
++                * available, try to get a generic counter.
++                */
++               if (unlikely(!cpuc->ds))
++                       goto try_generic;
+
+How will be use a generic counter for BTS, will it generate an NMI for
+every encountered branch? That might very will hit the throttle as that
+might be many.
+
+Would it not be better to force sample_period==1 usage onto the BTS and
+simply fail if its not available?
+
+
 
