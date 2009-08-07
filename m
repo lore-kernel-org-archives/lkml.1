@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933005AbZHGTCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932975AbZHGTDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933005AbZHGTCF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 15:02:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932975AbZHGTCE
+	id S932975AbZHGTDt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 15:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932903AbZHGTDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 15:02:04 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39252 "EHLO
+	Fri, 7 Aug 2009 15:03:48 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39271 "EHLO
 	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932964AbZHGTCB (ORCPT
+	with ESMTP id S932817AbZHGTDr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 15:02:01 -0400
-Date: Fri, 7 Aug 2009 20:01:45 +0100
+	Fri, 7 Aug 2009 15:03:47 -0400
+Date: Fri, 7 Aug 2009 20:03:36 +0100
 From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Robin Holt <holt@sgi.com>
-Cc: Laurent Desnogues <laurent.desnogues@gmail.com>,
-       Jamie Lokier <jamie@shareable.org>,
+To: Jamie Lokier <jamie@shareable.org>
+Cc: David Xiao <dxiao@broadcom.com>,
        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-       David Xiao <dxiao@broadcom.com>, Ben Dooks <ben-linux@fluff.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Ben Dooks <ben-linux@fluff.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        v4l2_linux <linux-media@vger.kernel.org>,
        "linux-arm-kernel@lists.arm.linux.org.uk" 
 	<linux-arm-kernel@lists.arm.linux.org.uk>
 Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
 	get_user_pages() enough to prevent pages from being swapped out ?")
-Message-ID: <20090807190145.GA31543@n2100.arm.linux.org.uk>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806222543.GG31579@n2100.arm.linux.org.uk> <1249624766.32621.61.camel@david-laptop> <200908070958.31322.laurent.pinchart@ideasonboard.com> <20090807081041.GB18343@n2100.arm.linux.org.uk> <20090807095426.GI8725@shareable.org> <761ea48b0908070507n5c580455pb86e5240a7cf6c0c@mail.gmail.com> <20090807131501.GD2763@sgi.com>
+Message-ID: <20090807190336.GB31543@n2100.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806114619.GW2080@trinity.fluff.org> <200908061506.23874.laurent.pinchart@ideasonboard.com> <1249584374.29182.20.camel@david-laptop> <20090806222543.GG31579@n2100.arm.linux.org.uk> <1249624766.32621.61.camel@david-laptop> <20090807102339.GK8725@shareable.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090807131501.GD2763@sgi.com>
+In-Reply-To: <20090807102339.GK8725@shareable.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 08:15:01AM -0500, Robin Holt wrote:
-> On Fri, Aug 07, 2009 at 02:07:43PM +0200, Laurent Desnogues wrote:
-> > On Fri, Aug 7, 2009 at 11:54 AM, Jamie Lokier<jamie@shareable.org> wrote:
-> > >
-> > > 1. Does the architecture not prevent speculative instruction
-> > > prefetches from crossing a page boundary?  It would be handy under the
-> > > circumstances.
+On Fri, Aug 07, 2009 at 11:23:39AM +0100, Jamie Lokier wrote:
+> David Xiao wrote:
+> > > However, that won't work with ARMv7's speculative prefetching.  I'm
+> > > afraid with such things, DMA direct into userspace mappings becomes a
+> > > _lot_ harder, and lets face it, lots of Linux drivers just aren't going
+> > > to bother supporting this - we can't currently get agreement to have an
+> > > API to map DMA coherent pages into userspace!
 > > 
-> > There's no such restriction in ARMv7 architecture.
+> > The V7 speculative prefetching will then probably apply to DMA coherency
+> > issue in general, both kernel and user space DMAs. Could this be
+> > addressed by inside the dma_unmap_sg/single() calling dma_cache_maint()
+> > when the direction is DMA_FROM_DEVICE/DMA_BIDIRECTIONAL, to basically
+> > invalidate the related cache lines in case any filled by prefetching?
+> > Assuming dma_unmap_sg/single() is called after each DMA operation is
+> > completed. 
 > 
-> Doesn't it prevent them for uncached areas?
+> If it's possible, surely its essential because of O_DIRECT file and
+> block I/O?
 
-"Uncached areas" is very very fuzzy.  Are you talking about a non-cachable
-memory mapping, or a strongly ordered mapping.
-
-I'm afraid that we're going to have to require more precise use of language
-to describe these things - wolley statements like "uncached areas" are now
-just too ambiguous.
-
-> I _THOUGHT_ there was an
-> alloc_consistent (or something like that) call on ARM which gave you
-> an uncached mapping where you could do DMA.
-
-The dma_alloc_coherent() does _remap_ memory into a strongly ordered
-mapping.  However, the fully cached mapping remains, which means that
-the CPU can still speculatively prefetch from that memory.
-
-Since we map the fully cached mapping using section (or even supersection)
-mappings for TLB efficiency, we can't change the memory type on a
-per-page basis.
-
-> I also thought there was a dma_* set of functions which remapped as
-> uncached before DMA begins and remapped as normal after DMA has been
-> completed.
-
-You're talking about the deprecated DMA bounce code there.  It's
-basically the same problem since it uses the dma_alloc_coherent()
-interface to gain a source of DMA-able memory.
+The problem is that you require a _VIRTUAL_ address.  The unmap functions
+do not have that information passed to them, so we need some way of
+maintaining that or calculating it.  I've covered that issue in my
+postings this morning (please follow up there instead.)
