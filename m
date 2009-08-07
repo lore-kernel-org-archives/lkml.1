@@ -1,78 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbZHGVlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932503AbZHGVmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755481AbZHGVlu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 17:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbZHGVlu
+	id S932503AbZHGVmz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 17:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbZHGVmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 17:41:50 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:54406 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753216AbZHGVlt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 17:41:49 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [Bridge] [PATCH] macvlan: add tap device backend
-Date: Fri, 7 Aug 2009 23:38:57 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
-Cc: "Paul Congdon \(UC Davis\)" <ptcongdon@ucdavis.edu>, drobbins@funtoo.org,
-       "'Fischer, Anna'" <anna.fischer@hp.com>, herbert@gondor.apana.org.au,
-       mst@redhat.com, netdev@vger.kernel.org,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       ogerlitz@voltaire.com, evb@yahoogroups.com, davem@davemloft.net
-References: <0199E0D51A61344794750DC57738F58E6D6A6CD7F6@GVW1118EXC.americas.hpqcorp.net> <004f01ca1792$b24a7a90$16df6fb0$@edu> <20090807123554.7c2bc27c@nehalam>
-In-Reply-To: <20090807123554.7c2bc27c@nehalam>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 7 Aug 2009 17:42:54 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:56890 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751667AbZHGVmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 17:42:53 -0400
+Message-ID: <4A7C9FD6.6060408@us.ibm.com>
+Date: Fri, 07 Aug 2009 14:42:46 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: "lkml, " <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       John Stultz <johnstul@linux.vnet.ibm.com>,
+       John Kacur <jkacur@redhat.com>
+Subject: [PATCH] futex: Update futex_q lock_ptr on requeue proxy lock (resend)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908072338.57895.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/0zqJiuo0wwS4g9kAEeTOZFzWfD9jRKTsb5JJ
- OV6x1wMptV/fWu00/IShL5bB2nMlIEYaiLNVScvP0eXgTBxSjz
- c66j9gT4qdX0tnzDfqNAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 07 August 2009, Stephen Hemminger wrote:
-> On Fri, 7 Aug 2009 12:10:07 -0700
-> "Paul Congdon \(UC Davis\)" <ptcongdon@ucdavis.edu> wrote:
-> 
-> > Responding to Daniel's questions...
-> > 
-> > > I have some general questions about the intended use and benefits of 
-> > > VEPA, from an IT perspective:
-> > > 
-> > > In which virtual machine setups and technologies do you forsee this 
-> > > interface being used?
-> > 
-> > The benefit of VEPA is the coordination and unification with the
-> > external network switch.  So, in environments where you are
-> > needing/wanting your feature rich, wire speed, external network
-> > device (firewall/switch/IPS/content-filter) to provide consistent
-> > policy enforcement, and you want your VMs traffic to be subject to
-> > that enforcement, you will want their traffic directed externally.
-> > Perhaps you have some VMs that are on a DMZ or clustering an 
-> > application or implementing a multi-tier application where you
-> > would normally place a firewall in-between the tiers.
-> 
-> I do have to raise the point that Linux is perfectly capable of keeping up without
-> the need of an external switch.  Whether you want policy external or internal is
-> a architecture decision that should not be driven by mis-information about performance.
+From: Darren Hart <dvhltc@us.ibm.com>
 
-In general, I agree that Linux on a decent virtual machine host will be
-able to handle forwarding of network data fast enough, often faster than
-the external connectivity allows if it needs to transmit every frame twice.
+futex_requeue() can acquire the lock on behalf of a waiter early on or during
+the requeue loop if it is uncontended or in the event of a lock steal or owner
+died. On wakeup, the waiter (in futex_wait_requeue_pi()) cleans up the pi_state
+owner using the lock_ptr to protect against concurrent access to the pi_state.
+The pi_state is hung off futex_q's on the requeue target futex hash bucket so
+the lock_ptr needs to be updated accordingly.
 
-However, there is a tradeoff between CPU cycles and I/O bandwidth. If your
-application needs lots of CPU but you have spare capacity on the PCI bus, the
-network wire and the external switch, VEPA can also be a win on the performance
-side. As always, performance depends on the application, even if it's not the
-main driving factor here.
+The problem manifested by triggering the WARN_ON in lookup_pi_state() about the
+pid != pi_state->owner->pid.  With this patch, the pi_state is properly guarded
+against concurrent access via the requeue target hb lock.
 
-	Arnd <><
+The astute reviewer may notice that there is a window of time between when
+futex_requeue() unlocks the hb locks and when futex_wait_requeue_pi() will
+acquire hb2->lock.  During this time the pi_state and uval are not in sync with
+the underlying rtmutex owner (but the uval does indicate there are waiters, so
+no atomic changes will occur in userspace).  However, this is not a problem.
+Should a contending thread enter lookup_pi_state() and acquire hb2->lock before
+the ownership is fixed up, it will find the pi_state hung off a waiter's
+(possibly the pending owner's) futex_q and block on the rtmutex.  Once
+futex_wait_requeue_pi() fixes up the owner, it will also move the pi_state from
+the old owner's task->pi_state_list to its own.
+
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+CC: Eric Dumazet <eric.dumazet@gmail.com>
+CC: John Kacur <jkacur@redhat.com>
+CC: Dinakar Guniguntala <dino@in.ibm.com>
+CC: John Stultz <johnstul@us.ibm.com>
+---
+
+ kernel/futex.c |   17 +++++++++++++----
+ 1 files changed, 13 insertions(+), 4 deletions(-)
+
+
+diff --git a/kernel/futex.c b/kernel/futex.c
+index abce822..578c7b7 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -1059,15 +1059,19 @@ void requeue_futex(struct futex_q *q, struct futex_hash_bucket *hb1,
+  * requeue_pi_wake_futex() - Wake a task that acquired the lock during requeue
+  * q:	the futex_q
+  * key:	the key of the requeue target futex
++ * hb:  the hash_bucket of the requeue target futex
+  *
+  * During futex_requeue, with requeue_pi=1, it is possible to acquire the
+  * target futex if it is uncontended or via a lock steal.  Set the futex_q key
+  * to the requeue target futex so the waiter can detect the wakeup on the right
+  * futex, but remove it from the hb and NULL the rt_waiter so it can detect
+- * atomic lock acquisition.  Must be called with the q->lock_ptr held.
++ * atomic lock acquisition.  Set the q->lock_ptr to the requeue target hb->lock
++ * to protect access to the pi_state to fixup the owner later.  Must be called
++ * with both q->lock_ptr and hb->lock held.
+  */
+ static inline
+-void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key)
++void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key,
++			   struct futex_hash_bucket *hb)
+ {
+ 	drop_futex_key_refs(&q->key);
+ 	get_futex_key_refs(key);
+@@ -1079,6 +1083,11 @@ void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key)
+ 	WARN_ON(!q->rt_waiter);
+ 	q->rt_waiter = NULL;
+ 
++	q->lock_ptr = &hb->lock;
++#ifdef CONFIG_DEBUG_PI_LIST
++	q->list.plist.slock = &hb->lock;
++#endif
++
+ 	wake_up_state(q->task, TASK_NORMAL);
+ }
+ 
+@@ -1137,7 +1146,7 @@ static int futex_proxy_trylock_atomic(u32 __user *pifutex,
+ 	ret = futex_lock_pi_atomic(pifutex, hb2, key2, ps, top_waiter->task,
+ 				   set_waiters);
+ 	if (ret == 1)
+-		requeue_pi_wake_futex(top_waiter, key2);
++		requeue_pi_wake_futex(top_waiter, key2, hb2);
+ 
+ 	return ret;
+ }
+@@ -1323,7 +1332,7 @@ retry_private:
+ 							this->task, 1);
+ 			if (ret == 1) {
+ 				/* We got the lock. */
+-				requeue_pi_wake_futex(this, &key2);
++				requeue_pi_wake_futex(this, &key2, hb2);
+ 				continue;
+ 			} else if (ret) {
+ 				/* -EDEADLK */
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
