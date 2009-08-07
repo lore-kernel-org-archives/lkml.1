@@ -1,83 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbZHGSyG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbZHGS6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755109AbZHGSyG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 14:54:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbZHGSyF
+	id S1755060AbZHGS6F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 14:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755112AbZHGS6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 14:54:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39011 "EHLO mx2.redhat.com"
+	Fri, 7 Aug 2009 14:58:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56744 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755048AbZHGSyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 14:54:04 -0400
-Subject: [PATCH] security: define round_hint_to_min in !CONFIG_SECURITY
-From: Eric Paris <eparis@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: jmorris@namei.org
-Content-Type: text/plain
-Date: Fri, 07 Aug 2009 14:53:57 -0400
-Message-Id: <1249671237.2694.11.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1755060AbZHGS6C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 14:58:02 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
+       msb@google.com, viro@zeniv.linux.org.uk, hannes@cmpxchg.org
+Subject: [PATCH 2/4] vfs: explicitly cast s_maxbytes in fiemap_check_ranges
+Date: Fri,  7 Aug 2009 14:57:39 -0400
+Message-Id: <1249671461-9071-3-git-send-email-jlayton@redhat.com>
+In-Reply-To: <1249671461-9071-1-git-send-email-jlayton@redhat.com>
+References: <1249671461-9071-1-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the header files to define round_hint_to_min() and to define
-mmap_min_addr_handler() in the !CONFIG_SECURITY case.
+If fiemap_check_ranges is passed a large enough value, then it's
+possible that the value would be cast to a signed value for comparison
+against s_maxbytes when we change it to loff_t. Make sure that doesn't
+happen by explicitly casting s_maxbytes to an unsigned value for the
+purposes of comparison.
 
-Built and tested with !CONFIG_SECURITY
-
-Signed-off-by: Eric Paris <eparis@redhat.com>
-
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
 ---
+ fs/ioctl.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 7b43115..57ead99 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -121,6 +121,21 @@ struct request_sock;
- #define LSM_UNSAFE_PTRACE	2
- #define LSM_UNSAFE_PTRACE_CAP	4
- 
-+/*
-+ * If a hint addr is less than mmap_min_addr change hint to be as
-+ * low as possible but still greater than mmap_min_addr
-+ */
-+static inline unsigned long round_hint_to_min(unsigned long hint)
-+{
-+	hint &= PAGE_MASK;
-+	if (((void *)hint != NULL) &&
-+	    (hint < mmap_min_addr))
-+		return PAGE_ALIGN(mmap_min_addr);
-+	return hint;
-+}
-+extern int mmap_min_addr_handler(struct ctl_table *table, int write, struct file *filp,
-+				 void __user *buffer, size_t *lenp, loff_t *ppos);
+diff --git a/fs/ioctl.c b/fs/ioctl.c
+index 5612880..7b17a14 100644
+--- a/fs/ioctl.c
++++ b/fs/ioctl.c
+@@ -162,20 +162,21 @@ EXPORT_SYMBOL(fiemap_check_flags);
+ static int fiemap_check_ranges(struct super_block *sb,
+ 			       u64 start, u64 len, u64 *new_len)
+ {
++	u64 maxbytes = (u64) sb->s_maxbytes;
 +
- #ifdef CONFIG_SECURITY
+ 	*new_len = len;
  
- struct security_mnt_opts {
-@@ -149,21 +164,6 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
- 	opts->num_mnt_opts = 0;
+ 	if (len == 0)
+ 		return -EINVAL;
+ 
+-	if (start > sb->s_maxbytes)
++	if (start > maxbytes)
+ 		return -EFBIG;
+ 
+ 	/*
+ 	 * Shrink request scope to what the fs can actually handle.
+ 	 */
+-	if ((len > sb->s_maxbytes) ||
+-	    (sb->s_maxbytes - len) < start)
+-		*new_len = sb->s_maxbytes - start;
++	if (len > maxbytes || (maxbytes - len) < start)
++		*new_len = maxbytes - start;
+ 
+ 	return 0;
  }
- 
--/*
-- * If a hint addr is less than mmap_min_addr change hint to be as
-- * low as possible but still greater than mmap_min_addr
-- */
--static inline unsigned long round_hint_to_min(unsigned long hint)
--{
--	hint &= PAGE_MASK;
--	if (((void *)hint != NULL) &&
--	    (hint < mmap_min_addr))
--		return PAGE_ALIGN(mmap_min_addr);
--	return hint;
--}
--
--extern int mmap_min_addr_handler(struct ctl_table *table, int write, struct file *filp,
--				 void __user *buffer, size_t *lenp, loff_t *ppos);
- /**
-  * struct security_operations - main security structure
-  *
-
+-- 
+1.6.0.6
 
