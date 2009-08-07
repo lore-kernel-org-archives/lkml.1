@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbZHGQrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbZHGQuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172AbZHGQrT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 12:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZHGQrS
+	id S1754244AbZHGQuM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 12:50:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZHGQuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 12:47:18 -0400
-Received: from cluster-g.mailcontrol.com ([208.87.233.190]:41657 "EHLO
-	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754065AbZHGQrS (ORCPT
+	Fri, 7 Aug 2009 12:50:10 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53407 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754091AbZHGQuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 12:47:18 -0400
-Message-ID: <4A7C5A3D.4090309@csr.com>
-Date: Fri, 07 Aug 2009 17:45:49 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
-MIME-Version: 1.0
-To: Roel Kluin <roel.kluin@gmail.com>
-CC: drzeus@drzeus.cx, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] sdio: Read buffer overflow
-References: <4A7C4501.7070700@gmail.com>
-In-Reply-To: <4A7C4501.7070700@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 7 Aug 2009 12:50:07 -0400
+Subject: Re: [RT] Lockdep warning on boot with 2.6.31-rc5-rt1.1
+From: Peter Zijlstra <peterz@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Clark Williams <williams@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "greg@kroah.com" <greg@kroah.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Kay Sievers <kay.sievers@vrfy.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908071241170.4758-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0908071241170.4758-100000@iolanthe.rowland.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Aug 2009 16:45:49.0887 (UTC) FILETIME=[850AB4F0:01CA177E]
+Date: Fri, 07 Aug 2009 18:49:45 +0200
+Message-Id: <1249663785.32113.754.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roel Kluin wrote:
-> If the loop breaks with an index of 0, then we read before the array.
+On Fri, 2009-08-07 at 12:45 -0400, Alan Stern wrote:
+> On Fri, 7 Aug 2009, Peter Zijlstra wrote:
 
-This isn't a helpful subject or changelog comment really.  Suggest
+> > The other proposal was creating a fixed list of classes and register
+> > each device at a class corresponding to its depth in the tree. I can't
+> > remember what was wrong with that, but I seem to have been persuaded
+> > that that was hard too.
+> 
+> It probably would work for the most part.  However a possible scenario
+> involves first locking a parent and then locking all its children.  (I
+> don't know if this ever happens anywhere, but it might.)  This can't
+> cause a deadlock but it would run into trouble with depth-based
+> classes.
 
-sdio: avoid buffer underrun when parsing an invalid CISTPL_VERS_1
+If you know which parent is locked, we can solve that with
+mutex_lock_nest_lock() [ doesn't currently exist, but is analogous to
+spin_lock_nest_lock() ] and together with
+http://lkml.org/lkml/2009/7/23/222 that would allow you to lock up to
+2048 children.
 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> diff --git a/drivers/mmc/core/sdio_cis.c b/drivers/mmc/core/sdio_cis.c
-> index 963f293..0f8853c 100644
-> --- a/drivers/mmc/core/sdio_cis.c
-> +++ b/drivers/mmc/core/sdio_cis.c
-> @@ -40,7 +40,7 @@ static int cistpl_vers_1(struct mmc_card *card, struct sdio_func *func,
->  			nr_strings++;
->  	}
->  
-> -	if (buf[i-1] != '\0') {
-> +	if (i != 0 && buf[i-1] != '\0') {
+Would something like that work?
 
-Looking at the PC Card 8.0 spec (vol 4, section 3.2.10) this test could
-simply be:
-
-if (nr_strings < 4) {
-
->  		printk(KERN_WARNING "SDIO: ignoring broken CISTPL_VERS_1\n");
->  		return 0;
->  	}
--- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
-
-
-'member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom'
