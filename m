@@ -1,214 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbZHGG6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbZHGHE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756619AbZHGG6x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 02:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbZHGG6w
+	id S1756804AbZHGHE0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 03:04:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbZHGHEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 02:58:52 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:57884 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754982AbZHGG6v (ORCPT
+	Fri, 7 Aug 2009 03:04:25 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:61386 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755168AbZHGHEY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 02:58:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Hl9LOirXZU7N7i/ffB4TyFC8v0tO8MK3ORpoyDylV0iTWfoHcf0Qx7BQtKGBazPQ+R
-         zwdKS+hEL/SzhOHB4DFQltq24zhdFjVs2+N5cHJ8VU0i7/Z3Ty29OGBmmoAl/vgcLVaH
-         dvkZgseqvQ7VZHMuLZ0D2VBvq77Ybahtn8P/s=
-From: Jarkko Nikula <jhnikula@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>, linux-omap@vger.kernel.org,
-       alsa-devel@alsa-project.org, Jarkko Nikula <jhnikula@gmail.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Tony Lindgren <tony@atomide.com>
-Subject: [PATCH][2.6.31-rc5] ARM: OMAP: McBSP: Fix ASoC on OMAP1510 by fixing API of omap_mcbsp_start/stop
-Date: Fri,  7 Aug 2009 09:59:47 +0300
-Message-Id: <1249628387-7372-1-git-send-email-jhnikula@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
+	Fri, 7 Aug 2009 03:04:24 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 3/5] tty: handle VT specific compat ioctls in vt driver
+Date: Fri, 7 Aug 2009 09:04:11 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>
+References: <1249564170-18627-1-git-send-email-arnd@arndb.de> <1249564170-18627-4-git-send-email-arnd@arndb.de> <20090807062356.GA4955@nowhere>
+In-Reply-To: <20090807062356.GA4955@nowhere>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908070904.11260.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+pLgAd9GdY3BHGbnWz4PWE82UiW+kcOY0dUfW
+ ZH127FGFgUz5/vrNYWNxdkQDZzd2KVzCNwBpGzYL0Uo2VGM6AO
+ 1ViFXJZ1+Ibu/vFb1DroQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simultaneous audio playback and capture on OMAP1510 can cause that second
-stream is stalled if there is enough delay between startup of the audio
-streams.
+On Friday 07 August 2009, Frederic Weisbecker wrote:
 
-Current implementation of the omap_mcbsp_start is starting both transmitter
-and receiver at the same time and it is called only for firstly started
-audio stream from the OMAP McBSP based ASoC DAI driver.
+> On Thu, Aug 06, 2009 at 03:09:28PM +0200, Arnd Bergmann wrote:
+> > The VT specific compat_ioctl handlers are the only ones
+> > in common code that require the BKL. Moving them into
+> > the vt driver lets us remove the BKL from the other handlers
+> > and cleans up the code.
+> 
+> 
+> Why does it require the bkl?
+> 
 
-Since DMA request lines on OMAP1510 are edge sensitive, the DMA request is
-missed if there is no DMA transfer set up at that time when the first word
-after McBSP startup is transmitted. The problem hasn't noted before since
-later OMAPs are using level sensitive DMA request lines.
+All the VT ioctls are currently called under the BKL. I did not try
+to find out why that is but simply kept that state. All other
+compat ioctl do not interact with device driver state at all,
+so they obviously do not need the BKL.
 
-Fix the problem by changing API of omap_mcbsp_start and omap_mcbsp_stop by
-allowing to start and stop individually McBSP transmitter and receiver
-logics. Then call those functions individually for both audio playback
-and capture streams. This ensures that DMA transfer is setup before
-transmitter or receiver is started.
+> > +
+> > +long vt_compat_ioctl(struct tty_struct *tty, struct file * file,
+> > +	     unsigned int cmd, unsigned long arg)
+> > +{
+> > +	struct vc_data *vc = tty->driver_data;
+> > +	struct console_font_op op;	/* used in multiple places here */
+> > +	struct kbd_struct *kbd;
+> > +	unsigned int console;
+> > +	void __user *up = (void __user *)arg;
+> > +	int perm;
+> > +	int ret = 0;
+> > +
+> > +	console = vc->vc_num;
+> > +
+> > +	lock_kernel();
+> 
+> 
+> 
+> It would be really nice to add a comment here that explain what it
+> is protecting.
+> I would like to work on removing the bkl from tty, and such nude lock_kernel()
+> don't help much to work in this area.
+> This is more than ever a FUD lock, nothing about its role in tty in the Lockronomicon,
+> and even not in the comments :-)
 
-Thanks to Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> for detailed problem
-analysis and Peter Ujfalusi <peter.ujfalusi@nokia.com> for info about DMA
-request line behavior differences between the OMAP generations.
+This function is a straight copy from vt_ioctl, with the data structures replaced,
+and calling it vt_ioctl where they are identical.
 
-Reported-and-tested-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Signed-off-by: Jarkko Nikula <jhnikula@gmail.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Tony Lindgren <tony@atomide.com>
----
- arch/arm/plat-omap/include/mach/mcbsp.h |    4 +-
- arch/arm/plat-omap/mcbsp.c              |   50 +++++++++++++++++++-----------
- sound/soc/omap/omap-mcbsp.c             |   10 +++---
- 3 files changed, 39 insertions(+), 25 deletions(-)
+You are right that this needs more code comments to make that obvious.
 
-diff --git a/arch/arm/plat-omap/include/mach/mcbsp.h b/arch/arm/plat-omap/include/mach/mcbsp.h
-index bb154ea..57249bb 100644
---- a/arch/arm/plat-omap/include/mach/mcbsp.h
-+++ b/arch/arm/plat-omap/include/mach/mcbsp.h
-@@ -387,8 +387,8 @@ void omap_mcbsp_register_board_cfg(struct omap_mcbsp_platform_data *config,
- void omap_mcbsp_config(unsigned int id, const struct omap_mcbsp_reg_cfg * config);
- int omap_mcbsp_request(unsigned int id);
- void omap_mcbsp_free(unsigned int id);
--void omap_mcbsp_start(unsigned int id);
--void omap_mcbsp_stop(unsigned int id);
-+void omap_mcbsp_start(unsigned int id, int tx, int rx);
-+void omap_mcbsp_stop(unsigned int id, int tx, int rx);
- void omap_mcbsp_xmit_word(unsigned int id, u32 word);
- u32 omap_mcbsp_recv_word(unsigned int id);
- 
-diff --git a/arch/arm/plat-omap/mcbsp.c b/arch/arm/plat-omap/mcbsp.c
-index efa0e01..a3d2313 100644
---- a/arch/arm/plat-omap/mcbsp.c
-+++ b/arch/arm/plat-omap/mcbsp.c
-@@ -328,14 +328,15 @@ void omap_mcbsp_free(unsigned int id)
- EXPORT_SYMBOL(omap_mcbsp_free);
- 
- /*
-- * Here we start the McBSP, by enabling the sample
-- * generator, both transmitter and receivers,
-- * and the frame sync.
-+ * Here we start the McBSP, by enabling transmitter, receiver or both.
-+ * If no transmitter or receiver is active prior calling, then sample-rate
-+ * generator and frame sync are started.
-  */
--void omap_mcbsp_start(unsigned int id)
-+void omap_mcbsp_start(unsigned int id, int tx, int rx)
- {
- 	struct omap_mcbsp *mcbsp;
- 	void __iomem *io_base;
-+	int idle;
- 	u16 w;
- 
- 	if (!omap_mcbsp_check_valid_id(id)) {
-@@ -348,32 +349,40 @@ void omap_mcbsp_start(unsigned int id)
- 	mcbsp->rx_word_length = (OMAP_MCBSP_READ(io_base, RCR1) >> 5) & 0x7;
- 	mcbsp->tx_word_length = (OMAP_MCBSP_READ(io_base, XCR1) >> 5) & 0x7;
- 
--	/* Start the sample generator */
--	w = OMAP_MCBSP_READ(io_base, SPCR2);
--	OMAP_MCBSP_WRITE(io_base, SPCR2, w | (1 << 6));
-+	idle = !((OMAP_MCBSP_READ(io_base, SPCR2) |
-+		  OMAP_MCBSP_READ(io_base, SPCR1)) & 1);
-+
-+	if (idle) {
-+		/* Start the sample generator */
-+		w = OMAP_MCBSP_READ(io_base, SPCR2);
-+		OMAP_MCBSP_WRITE(io_base, SPCR2, w | (1 << 6));
-+	}
- 
- 	/* Enable transmitter and receiver */
- 	w = OMAP_MCBSP_READ(io_base, SPCR2);
--	OMAP_MCBSP_WRITE(io_base, SPCR2, w | 1);
-+	OMAP_MCBSP_WRITE(io_base, SPCR2, w | (tx & 1));
- 
- 	w = OMAP_MCBSP_READ(io_base, SPCR1);
--	OMAP_MCBSP_WRITE(io_base, SPCR1, w | 1);
-+	OMAP_MCBSP_WRITE(io_base, SPCR1, w | (rx & 1));
- 
- 	udelay(100);
- 
--	/* Start frame sync */
--	w = OMAP_MCBSP_READ(io_base, SPCR2);
--	OMAP_MCBSP_WRITE(io_base, SPCR2, w | (1 << 7));
-+	if (idle) {
-+		/* Start frame sync */
-+		w = OMAP_MCBSP_READ(io_base, SPCR2);
-+		OMAP_MCBSP_WRITE(io_base, SPCR2, w | (1 << 7));
-+	}
- 
- 	/* Dump McBSP Regs */
- 	omap_mcbsp_dump_reg(id);
- }
- EXPORT_SYMBOL(omap_mcbsp_start);
- 
--void omap_mcbsp_stop(unsigned int id)
-+void omap_mcbsp_stop(unsigned int id, int tx, int rx)
- {
- 	struct omap_mcbsp *mcbsp;
- 	void __iomem *io_base;
-+	int idle;
- 	u16 w;
- 
- 	if (!omap_mcbsp_check_valid_id(id)) {
-@@ -386,15 +395,20 @@ void omap_mcbsp_stop(unsigned int id)
- 
- 	/* Reset transmitter */
- 	w = OMAP_MCBSP_READ(io_base, SPCR2);
--	OMAP_MCBSP_WRITE(io_base, SPCR2, w & ~(1));
-+	OMAP_MCBSP_WRITE(io_base, SPCR2, w & ~(tx & 1));
- 
- 	/* Reset receiver */
- 	w = OMAP_MCBSP_READ(io_base, SPCR1);
--	OMAP_MCBSP_WRITE(io_base, SPCR1, w & ~(1));
-+	OMAP_MCBSP_WRITE(io_base, SPCR1, w & ~(rx & 1));
- 
--	/* Reset the sample rate generator */
--	w = OMAP_MCBSP_READ(io_base, SPCR2);
--	OMAP_MCBSP_WRITE(io_base, SPCR2, w & ~(1 << 6));
-+	idle = !((OMAP_MCBSP_READ(io_base, SPCR2) |
-+		  OMAP_MCBSP_READ(io_base, SPCR1)) & 1);
-+
-+	if (idle) {
-+		/* Reset the sample rate generator */
-+		w = OMAP_MCBSP_READ(io_base, SPCR2);
-+		OMAP_MCBSP_WRITE(io_base, SPCR2, w & ~(1 << 6));
-+	}
- }
- EXPORT_SYMBOL(omap_mcbsp_stop);
- 
-diff --git a/sound/soc/omap/omap-mcbsp.c b/sound/soc/omap/omap-mcbsp.c
-index a5d46a7..6a837ff 100644
---- a/sound/soc/omap/omap-mcbsp.c
-+++ b/sound/soc/omap/omap-mcbsp.c
-@@ -183,21 +183,21 @@ static int omap_mcbsp_dai_trigger(struct snd_pcm_substream *substream, int cmd,
- 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
- 	struct snd_soc_dai *cpu_dai = rtd->dai->cpu_dai;
- 	struct omap_mcbsp_data *mcbsp_data = to_mcbsp(cpu_dai->private_data);
--	int err = 0;
-+	int err = 0, play = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
- 
- 	switch (cmd) {
- 	case SNDRV_PCM_TRIGGER_START:
- 	case SNDRV_PCM_TRIGGER_RESUME:
- 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
--		if (!mcbsp_data->active++)
--			omap_mcbsp_start(mcbsp_data->bus_id);
-+		mcbsp_data->active++;
-+		omap_mcbsp_start(mcbsp_data->bus_id, play, !play);
- 		break;
- 
- 	case SNDRV_PCM_TRIGGER_STOP:
- 	case SNDRV_PCM_TRIGGER_SUSPEND:
- 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
--		if (!--mcbsp_data->active)
--			omap_mcbsp_stop(mcbsp_data->bus_id);
-+		omap_mcbsp_stop(mcbsp_data->bus_id, play, !play);
-+		mcbsp_data->active--;
- 		break;
- 	default:
- 		err = -EINVAL;
--- 
-1.6.3.3
-
+	Arnd <><
