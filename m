@@ -1,111 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbZHGRJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbZHGRKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754226AbZHGRJe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 13:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbZHGRJd
+	id S1754473AbZHGRKh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 13:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbZHGRKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 13:09:33 -0400
-Received: from bar.sig21.net ([80.81.252.164]:37298 "EHLO bar.sig21.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752818AbZHGRJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 13:09:33 -0400
-Date: Fri, 7 Aug 2009 19:09:42 +0200
-From: Johannes Stezenbach <js@sig21.net>
-To: x86@kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.31-rc5 regression: x86 MCE malfunction on Thinkpad T42p
-Message-ID: <20090807170942.GB9177@sig21.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Spam-21-Score: -3.4 (---)
-X-Spam-21-Report: No, score=-3.4 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=1.007,BAYES_00=-2.599 autolearn=no
+	Fri, 7 Aug 2009 13:10:37 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:57264 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752466AbZHGRKg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 13:10:36 -0400
+Date: Fri, 7 Aug 2009 10:08:48 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       earl_chew@agilent.com, alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
+       oleg@redhat.com
+Subject: Re: [PATCH 2/3] exec: let do_coredump limit the number of
+ concurrent dumps to pipes (v9)
+Message-Id: <20090807100848.9805841b.randy.dunlap@oracle.com>
+In-Reply-To: <20090720162901.GB9060@hmsreliant.think-freely.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org>
+	<20090703104447.GA19371@hmsreliant.think-freely.org>
+	<20090720154938.GA8563@hmsreliant.think-freely.org>
+	<20090720162901.GB9060@hmsreliant.think-freely.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt016.oracle.com [141.146.116.25]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.4A7C5FBA.0089:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 20 Jul 2009 12:29:01 -0400 Neil Horman wrote:
 
-I'm currently running linux-2.6.31-rc5-246-g90bc1a6 on
-an old Thinkpad T42p.  During boot I get the following:
+> core_pattern: Introduce core pipe limiting sysctl
+> 
+> Since we can dump cores to pipe, rather than directly to the filesystem, we
+> create a condition in which a user can create a very high load on the system
+> simply by running bad applications.  If the pipe reader specified in
+> core_pattern is poorly written, we can have lots of ourstandig resources and
+> processes in the system.  This sysctl introduces an ability to limit that
+> resource consumption.  core_pipe_limit defines how many in-flight dumps may be
+> run in parallel, dumps beyond this value are skipped and a note is made in the
+> kernel log.  A special value of 0 in core_pipe_limit denotes unlimited core
+> dumps may be handled (this is the default value).
+> 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> Reported-by: Earl Chew <earl_chew@agilent.com>
+> 
+> 
+>  Documentation/sysctl/kernel.txt |   22 ++++++++++++++++++++++
+>  fs/exec.c                       |   25 +++++++++++++++++++------
+>  kernel/sysctl.c                 |    9 +++++++++
+>  3 files changed, 50 insertions(+), 6 deletions(-)
+> 
+> diff --git a/Documentation/sysctl/kernel.txt b/Documentation/sysctl/kernel.txt
+> index 382cfd8..7706b6a 100644
+> --- a/Documentation/sysctl/kernel.txt
+> +++ b/Documentation/sysctl/kernel.txt
+> @@ -21,6 +21,7 @@ show up in /proc/sys/kernel:
+>  - acct
+>  - auto_msgmni
+>  - core_pattern
+> +- core_pipe_limit
+>  - core_uses_pid
+>  - ctrl-alt-del
+>  - dentry-state
+> @@ -119,6 +120,27 @@ core_pattern is used to specify a core dumpfile pattern name.
+>  
+>  ==============================================================
+>  
+> +core_pipe_limit:
+> +
+> +This sysctl is only applicable when core_pattern is configured to pipe core
+> +files to user space helper a (when the first character of core_pattern is a '|',
 
-   Local APIC disabled by BIOS -- you can enable it with "lapic"
-   APIC: disable apic facility
-   ...
-   mce: CPU supports 5 MCE banks
-   Disabling lock debugging due to kernel taint
-   ------------[ cut here ]------------
-   WARNING: at arch/x86/kernel/apic/apic.c:247 native_apic_write_dummy+0x2d/0x39()
-   Hardware name: 2373Y4M
-   Modules linked in:
-   Pid: 0, comm: swapper Tainted: G   M       2.6.31-rc5 #1
-   Call Trace:
-    [<c10248c1>] warn_slowpath_common+0x60/0x90
-    [<c10248fe>] warn_slowpath_null+0xd/0x10
-    [<c1013139>] native_apic_write_dummy+0x2d/0x39
-    [<c100dcd2>] intel_init_thermal+0xb6/0x144
-    [<c100d517>] ? mce_init+0x33/0xb0
-    [<c100db4b>] mce_intel_feature_init+0xb/0x4c
-    [<c14fc31e>] mcheck_init+0x1e2/0x253
-    [<c14faef4>] identify_cpu+0x30b/0x31b
-    [<c14d9af0>] identify_boot_cpu+0xd/0x23
-    [<c14d9b3c>] check_bugs+0xb/0xd4
-    [<c104f929>] ? delayacct_init+0x42/0x49
-    [<c14d493c>] start_kernel+0x25e/0x26d
-    [<c14d430b>] i386_start_kernel+0x65/0x6a
-   ---[ end trace 4eaa2a86a8e2da22 ]---
-   ...
-   CPU: Intel(R) Pentium(R) M processor 1.80GHz stepping 06
+         to a user space helper (
 
+> +see above).  When collecting cores via a pipe to an application, it is
+> +occasionally usefull for the collecting application to gather data about the
 
-mcelog reports:
+                useful
 
-   HARDWARE ERROR. This is *NOT* a software problem!
-   Please contact your hardware vendor
-   MCE 0
-   CPU 0 BANK 1 
-   TIME 1249662514 Fri Aug  7 18:28:34 2009
-   MCG status:
-   MCi status:
-   Error overflow
-   Uncorrected error
-   Error enabled
-   Processor context corrupt
-   MCA: Unknown Error 30
-   STATUS f200000000000030 MCGSTATUS 0
-   MCGCAP 5 APICID 0 SOCKETID 0 
-   CPUID Vendor Intel Family 6 Model 13
+> +crashing process from its /proc/pid directory.  In order to do this safely, the
+> +kernel must wait for the collecting process to exit, so as not to remove the
+> +crashing processes proc files prematurely.  This in turn creates the possibility
 
+            process's (?)
 
-In .config I have:
+> +that a misbehaving userspace collecting process can block the reaping of a
+> +crashed process simply by never exiting.  This sysctl defends against that.  It
+> +defines how many concurrent crashing processes may be piped to user space
+> +applications in parallel.  If this value is exceeded, then those crashing
+> +processes above that value are noted via the kernel log and their cores are
+> +skipped.  0 is a special value, indicating that unlimited processes may be
+> +captured in parallel, but that no waiting will take place (i.e. the collecting
+> +process is not guaranteed access to /proc/<crahing pid>/).  This value defaults
 
-   CONFIG_X86_UP_APIC=y
-   # CONFIG_X86_UP_IOAPIC is not set
-   CONFIG_X86_LOCAL_APIC=y
-   CONFIG_X86_IO_APIC=y
-   # CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS is not set
-   CONFIG_X86_MCE=y
-   # CONFIG_X86_OLD_MCE is not set
-   CONFIG_X86_NEW_MCE=y
-   CONFIG_X86_MCE_INTEL=y
-   # CONFIG_X86_MCE_AMD is not set
-   # CONFIG_X86_ANCIENT_MCE is not set
-   CONFIG_X86_MCE_THRESHOLD=y
-   # CONFIG_X86_MCE_INJECT is not set
-   CONFIG_X86_THERMAL_VECTOR=y
+                                             <crashing pid>
 
-
-I guess I should try to boot with "lapic"?  But I think
-MCE worked without "lapic" in earlier kernels. On a 2.6.29.1
-kernel dmesg said:
-
-   Local APIC disabled by BIOS -- you can enable it with "lapic"
-   ...
-   Intel machine check architecture supported.
-   Intel machine check reporting enabled on CPU#0.
-
-2.6.29.1 doesn't log any MCE events, so I doubt this is a HW problem.
+> +to 0.
+> +
+> +==============================================================
+> +
+>  core_uses_pid:
+>  
+>  The default coredump filename is "core".  By setting
 
 
-Johannes
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
