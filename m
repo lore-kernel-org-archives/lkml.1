@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbZHGRoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbZHGRq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754754AbZHGRoj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 13:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbZHGRoi
+	id S1754826AbZHGRq7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 13:46:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbZHGRq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 13:44:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60993 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753227AbZHGRoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 13:44:37 -0400
-Subject: Re: fanotify - overall design before I start sending patches
-From: Eric Paris <eparis@redhat.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: a.p.zijlstra@chello.nl, tvrtko.ursulin@sophos.com,
-       douglas.leeder@sophos.com, pavel@ucw.cz, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, malware-list@dmesg.printk.net,
-       Valdis.Kletnieks@vt.edu, greg@kroah.com, jcm@redhat.com, tytso@mit.edu,
-       arjan@infradead.org, david@lang.hm, jengelh@medozas.de,
-       aviro@redhat.com, mrkafk@gmail.com, alexl@redhat.com, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in
-In-Reply-To: <E1MZSQZ-0002as-FA@pomaz-ex.szeredi.hu>
-References: <1248466429.3567.82.camel@localhost> <4A7AAE89.20205@sophos.com>
-	 <1249554548.32113.137.camel@twins>
-	 <200908061159.45550.tvrtko.ursulin@sophos.com>
-	 <1249557831.32113.234.camel@twins>
-	 <1249582695.20644.35.camel@dhcp231-106.rdu.redhat.com>
-	 <E1MZSQZ-0002as-FA@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Date: Fri, 07 Aug 2009 13:43:10 -0400
-Message-Id: <1249666990.2694.6.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
+	Fri, 7 Aug 2009 13:46:58 -0400
+Received: from mail-bw0-f215.google.com ([209.85.218.215]:48860 "EHLO
+	mail-bw0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754645AbZHGRq5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 13:46:57 -0400
+X-Greylist: delayed 1124 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Aug 2009 13:46:56 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=pZbt8n21Z+DfzMilY9nzs2csX7rec0Gv8U+FL+/J1VZyGLvywiA/lrsCz7uPNmc7J2
+         xQwNSnGweKnVhcMUmPl2bF3eXNJm4PDb3mALeH+n8yMuOk+FzY8ofiQsjgLG8PhniEKu
+         K0aUfzw0hhS8ofxyGDG+O5xVM0BHU2vcGP3T4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [patch 4/6] ide: allow ide_dev_read_id() to be called from the IRQ context
+Date: Fri, 7 Aug 2009 19:46:07 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc5-00246-g90bc1a6; KDE/4.2.4; i686; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200908071355.21648.bzolnier@gmail.com> <200908071927.36367.bzolnier@gmail.com> <20090807.103610.209136140.davem@davemloft.net>
+In-Reply-To: <20090807.103610.209136140.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200908071946.07991.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-07 at 18:36 +0200, Miklos Szeredi wrote:
-> On Thu, 06 Aug 2009, Eric Paris wrote:
-> > just work.  The whole reason for the timeout is because I don't trust
-> > userspace not to get it wrong and I'd rather not lose my box because of
-> > it.
+On Friday 07 August 2009 19:36:10 David Miller wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Date: Fri, 7 Aug 2009 19:27:36 +0200
 > 
-> IMO this has nothing to do with userspace(*) and everything to do with
-> complexity.  Virus scanning is complex and any such code, whether
-> runing in userspace or not, can easily screw up and freeze the system.
+> > Are you trying to tell me that after 6 weeks there is still no public
+> > tree to hold future IDE changes?
+> > 
+> > If this is indeed a case here I hope that it will get addressed ASAP.
+> 
+> IDE is deep maintainence, we shouldn't be doing lots of changes,
+> cleanups, and things of this nature.  So urgency and timeliness
+> is on a sincerely different scale for it.
 
-I agree, 'userspace' was not the best term.  Let me rephrase:
+Nobody is saying anything about cleanups and things of this nature..
 
-"The whole reason for the timeout is because I don't trust anything not
-to get it wrong and I'd rather not lose my box because of it."
+> On the other hand, if you've been looking, I've been applying
+> networking patches to net-2.6 and net-next-2.6 by the truckload
+> on a daily basis because it is in active development.
 
-> The way to solve that is not to implement hacks on the kernel
-> interface, but rather by separating the complex parts and implementing
-> a simple watchdog layer on top of that, that makes sure things don't
-> go wrong.
+Excellence in one area doesn't magically translate to other areas,
+especially when said area needs a completely different approach:
 
-So you would argue that every fanotify listener implement their own
-watchdog layer that may or may not be correct rather than do a single
-watchdog layer for everyone?  And that's better?
-
--Eric
-
+I've been looking and I've seen you pushing non-trivial IDE bug-fix
+patches with almost no wider hardware coverage to upstream (i.e. one
+of my own patches which has been _explicitly_ marked as needing more
+linux-next exposure)..
