@@ -1,95 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbZHGWQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbZHGWRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754859AbZHGWQy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 18:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbZHGWQw
+	id S1756860AbZHGWRY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 18:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbZHGWRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 18:16:52 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:46345 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752873AbZHGWQv (ORCPT
+	Fri, 7 Aug 2009 18:17:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57692 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755151AbZHGWRW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 18:16:51 -0400
-To: Bernhard Walle <bernhard.walle@gmx.de>
-Cc: Amerigo Wang <amwang@redhat.com>, Neil Horman <nhorman@redhat.com>,
-       linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Kexec Mailing List <kexec@lists.infradead.org>
-References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>
-	<m1eirqtmey.fsf@fess.ebiederm.org>
-	<20090805140408.GJ7259@hmsreliant.think-freely.org>
-	<m1skg5vpgg.fsf@fess.ebiederm.org> <4A7A3A78.7080200@redhat.com>
-	<m1y6pxr737.fsf@fess.ebiederm.org> <4A7A506B.2060008@redhat.com>
-	<m1ljlxsiox.fsf@fess.ebiederm.org> <4A7A70E5.2010204@redhat.com>
-	<m1bpmtqxjh.fsf@fess.ebiederm.org> <4A7A7A0F.6070906@redhat.com>
-	<m1iqh1nxv3.fsf@fess.ebiederm.org> <4A7A9E54.60705@redhat.com>
-	<m1iqgze740.fsf@fess.ebiederm.org> <4A7C9D48.3030405@gmx.de>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 07 Aug 2009 15:16:43 -0700
-In-Reply-To: <4A7C9D48.3030405@gmx.de> (Bernhard Walle's message of "Fri\, 07 Aug 2009 23\:31\:52 +0200")
-Message-ID: <m1tz0jmfqs.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: bernhard.walle@gmx.de, kexec@lists.infradead.org, andi@firstfloor.org, avorontsov@ru.mvista.com, mingo@elte.hu, akpm@linux-foundation.org, linux-ia64@vger.kernel.org, tony.luck@intel.com, linux-kernel@vger.kernel.org, nhorman@redhat.com, amwang@redhat.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Bernhard Walle <bernhard.walle@gmx.de>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [Patch 0/7] Implement crashkernel=auto
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+	Fri, 7 Aug 2009 18:17:22 -0400
+Date: Fri, 7 Aug 2009 15:16:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] Fix proc_file_write missing ppos update
+Message-Id: <20090807151657.d577dd2d.akpm@linux-foundation.org>
+In-Reply-To: <1249681387.17422.10.camel@wall-e>
+References: <1249676830.27640.16.camel@wall-e>
+	<20090807135806.ffd068e9.akpm@linux-foundation.org>
+	<1249681387.17422.10.camel@wall-e>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernhard Walle <bernhard.walle@gmx.de> writes:
+On Fri, 07 Aug 2009 23:43:07 +0200
+Stefani Seibold <stefani@seibold.net> wrote:
 
-> Eric W. Biederman schrieb:
->> 
->> With the current set of crashkernel= options we are asking the
->> distribution installer to perform magic.  Moving as much of this logic
->> into a normal init script for better maintenance is desirable.
->
-> Not (necessarily) the installer but the program that configures kdump.
-> system-config-kdump on Red Hat, YaST on SUSE.
+> > > +			*ppos += rv;
+> > >  	}
+> > >  	return rv;
+> > >  }
+> > 
+> > Yes, that's odd.
+> > 
+> > I worry that there might be procfs write handlers which are looking at
+> > *ppos and whose behaviour might be altered by this patch.
+> > 
+> > <searches a bit>
+> > 
+> > Look at arch/s390/appldata/appldata_base.c:appldata_timer_handler().
+> > 
+> > static int
+> > appldata_timer_handler(ctl_table *ctl, int write, struct file *filp,
+> > 			   void __user *buffer, size_t *lenp, loff_t *ppos)
+> > {
+> > 	int len;
+> > 	char buf[2];
+> > 
+> > 	if (!*lenp || *ppos) {
+> > 		*lenp = 0;
+> > 		return 0;
+> > 	}
+> > 
+> > 
+> 
+> This function will be handled IMHO by the proc_sys_call_handler which
+> has nothing to do with the proc_file_write.
+> /proc/sys/... file access should be not touched because there are
+> handled differently. 
 
-Right.  Somehow I thought YaST was the installer my mistake.
+hm, OK, fail.
 
->> Bernhard does that sound useful to you?
->
-> I don't see any problems. I don't know how much effort is it to free
-> already reserved crashkernel memory, but I guess it's not really
-> complicated. 
+> > Prior to your change, an application which opened that proc file and
+> > repeatedly wrote to the fd would repeatedly start and stop the timer.
+> > 
+> > After your change, the second and successive writes would have no
+> > effect unless the application was changed to lseek back to the start of
+> > the "file".
+> > 
+> > And that was just the second file I looked at via
+> > 
+> > 	$EDITOR $(grep -l '[*]ppos' $(grep -rl _proc_ .))
+> 
+> Yes, i think you are right, i have forseen also that there maybe some
+> pitfalls. The question is: is there any appplication which will be
+> broken by this patch?
 
-Right.
+There is no way of telling.  We have to assume that there will be such
+code out there.
 
-> Maybe that "1/32" should be specified on the command line like
->
->
-> 	crashkernel=>>5
->
-> (for 1/32*system_memory == system_memory>>5), OTOH I have no real strong
-> opinion.
+> So what is your suggestion? Should we drop this patch or should we
+> analyze the users and fix it?
 
-The idea is for the system to give us as much as it can stand and
-userspace gives the rest back.  The maximum memory any particular
-kernel can stand to give up is a tractable kernel level problem, and
-we can make it autotune like any other kernel tunable.  What a crash
-kernel needs totally depends on the implementation.
+Well.
 
-Eric
+We could review all implementations of ->write_proc.  There only seem
+to be twenty or so.
+
+If any of them will have their behaviour altered by this patch then
+let's look at those on a case-by-case basis and decide whether making
+this change will have an acceptable risk.
+
+If we _do_ find one for which we simply cannot make this behavioural
+change then..  ugh.  We could perhaps add a new `bool
+proc_dir_entry.implement_old_broken_behaviour' and set that flag for
+the offending driver(s) and test it within proc_write_file().
+
+Or we could do
+
+	if (pde->write_proc_new) {
+		rv = pde->write_proc_new(file, buffer, count, pde->data);
+		*ppos += rv;
+	} else {
+		rv = pde->write_proc(file, buffer, count, pde->data);
+	}
+
+which is really the same thing and isn't obviously better ;)
+
+> My opinion is to fix it, because it is wrong and it limits the usage of
+> the proc_write operation. Many embedded developers like me count on proc
+> support, because it is much simpler to use than the seqfile thing.
+> 
