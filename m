@@ -1,82 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932132AbZHGFXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbZHGFoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932132AbZHGFXT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 01:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbZHGFXT
+	id S1752907AbZHGFoi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 01:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbZHGFoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 01:23:19 -0400
-Received: from kroah.org ([198.145.64.141]:49249 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750822AbZHGFXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 01:23:18 -0400
-Date: Thu, 6 Aug 2009 22:20:15 -0700
-From: Greg KH <greg@kroah.com>
-To: Al Boldi <a1426z@gawab.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Jan Blunck <jblunck@suse.de>, gregkh@suse.de,
-       Harald Hoyer <harald@redhat.com>,
-       Scott James Remnant <scott@ubuntu.com>
-Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
- /dev
-Message-ID: <20090807052015.GA24615@kroah.com>
-References: <20090805171513.GA10443@kroah.com>
- <200908070703.40706.a1426z@gawab.com>
- <20090807042544.GA24299@kroah.com>
- <200908070804.08156.a1426z@gawab.com>
+	Fri, 7 Aug 2009 01:44:37 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:21774 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750810AbZHGFog (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 01:44:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=RTH2DJAaptZb8BpL+ZkHboSZgHQSM1xOh+nonDVf2Ha5cY8XBdcEl03zRuzJbygpRZ
+         kLMC4s5BKWfNcR5Oin6PGGSURFn+PJD6A3QmYuGijXKRT7rTCcMKJUrvBDhDhGWLyqIr
+         4Wd7em7iV1Aqc7Me8UJFggZLG25tRvi9K3BeI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908070804.08156.a1426z@gawab.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Date: Fri, 7 Aug 2009 13:36:30 +0800
+Message-ID: <86bb1aef0908062236w1912a909yfa892d40f1776e08@mail.gmail.com>
+Subject: [PATCH] amd64_edac: Rewrite unganged mode code of 
+	f10_early_channel_count
+From: wan wei <onewayforever@gmail.com>
+To: Borislav Petkov <borislav.petkov@amd.com>, dougthompson@xmission.com
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 08:04:08AM +0300, Al Boldi wrote:
-> Greg KH wrote:
-> > On Fri, Aug 07, 2009 at 07:03:40AM +0300, Al Boldi wrote:
-> > > Greg KH wrote:
-> > > > On Thu, Aug 06, 2009 at 11:18:05PM +0300, Al Boldi wrote:
-> > > > > So really, if devtmpfs compares to udev speeds then this just looks
-> > > > > like a devfs comeback.  Remember, devfs was really slow.
-> > > >
-> > > > Again, there is no "speed" for devtmpfs on its own, the device nodes
-> > > > just appear when the devices are added to the kernel, the speed of that
-> > > > depends on the device discovery within the kernel, nothing else.
-> > >
-> > > So on bootup this would mean a lot of discovery.
-> >
-> > Yes, all of this happens within the kernel, like normal.  What are you
-> > getting at?
-> 
-> I am getting at boot delay.  A lot of discovery means a lot of delay.
-> A lot of delay means people will stick with static /dev.
+Hi,
+     I rechecked the f10_early_channel_count function, and found more
+bugs in unganged mode. This patch will fix  bugs under following
+conditions,
+    a. only one DIMM in each channelof the node,
+    b. two DIMMs are populated in the same channel of the node,
+    c. there is no DIMM in a node(other than node 0),
+    a and b  mean both dbam should be checked in any condition,  and c
+means even channels==0 is ok.
 
-Um, again, I don't think you understand this patch at all.
+the patch has been tested and works well in  this  4 ways machine:
+   node 0:  2 DIMMS on each channel
+   node11: no DIMMS
+   node2:  2 DIMM on the chanel 0
+   node3:  one DIMM on each channel
 
-> > > I think we could get some big speedup, by just dumping the possible
-> > > non-realized device list on bootup, and then just refine it on physical
-> > > access.  This could make devtmpfs an acceptable replacement to static
-> > > /dev.
-> >
-> > Um, that's exactly what devtmpfs does, it creates the nodes based on
-> > the fact that the devices were physically (or virtually for some
-> > devices) discovered and registered with the kernel.  This happens at the
-> > same time the existing uevents are generated and sent out to userspace.
-> 
-> The question is, how fast can devtmpfs get the device list from the kernel on 
-> bootup?  How much faster than udev?  How much slower than static /dev?
+thanks :-)
 
-It's much faster than udev, and is equivalent to a static /dev with the
-exception that the group and permission settings that you are used to.
-udev then needs to come along and make those settings, but that's so
-frickin fast it's amazing.
+Signed-off-by: Wan Wei<wanwei@mail.dawning.com.cn>
 
-So, test it out and see if you want to verify this.  The developers at
-suse, red hat, and ubuntu that do this kind of work did validate this
-and put their name on this patch.
+---
+ drivers/edac/amd64_edac.c |   46 ++++++++++++++------------------------------
+ 1 files changed, 15 insertions(+), 31 deletions(-)
 
-thanks,
+diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+index e2a10bc..7a328fa 100644
+--- a/drivers/edac/amd64_edac.c
++++ b/drivers/edac/amd64_edac.c
+@@ -1200,6 +1200,7 @@ static int f10_early_channel_count(struct amd64_pvt *pvt)
+ {
+ 	int err = 0, channels = 0;
+ 	u32 dbam;
++	int i;
 
-greg k-h
+ 	err = pci_read_config_dword(pvt->dram_f2_ctl, F10_DCLR_0, &pvt->dclr0);
+ 	if (err)
+@@ -1236,40 +1237,23 @@ static int f10_early_channel_count(struct
+amd64_pvt *pvt)
+ 	if (err)
+ 		goto err_reg;
+
+-	if (DBAM_DIMM(0, dbam) > 0)
+-		channels++;
+-	if (DBAM_DIMM(1, dbam) > 0)
+-		channels++;
+-	if (DBAM_DIMM(2, dbam) > 0)
+-		channels++;
+-	if (DBAM_DIMM(3, dbam) > 0)
+-		channels++;
+-
+-	/* If more than 2 DIMMs are present, then we have 2 channels */
+-	if (channels > 2)
+-		channels = 2;
+-	else if (channels == 0) {
+-		/* No DIMMs on DCT0, so look at DCT1 */
+-		err = pci_read_config_dword(pvt->dram_f2_ctl, DBAM1, &dbam);
+-		if (err)
+-			goto err_reg;
+-
+-		if (DBAM_DIMM(0, dbam) > 0)
++	for (i = 0; i < 4; i++) {
++		if (DBAM_DIMM(i, dbam) > 0) {
+ 			channels++;
+-		if (DBAM_DIMM(1, dbam) > 0)
+-			channels++;
+-		if (DBAM_DIMM(2, dbam) > 0)
+-			channels++;
+-		if (DBAM_DIMM(3, dbam) > 0)
+-			channels++;
+-
+-		if (channels > 2)
+-			channels = 2;
++			break;
++		}
+ 	}
+
+-	/* If we found ALL 0 values, then assume just ONE DIMM-ONE Channel */
+-	if (channels == 0)
+-		channels = 1;
++	err = pci_read_config_dword(pvt->dram_f2_ctl, DBAM1, &dbam);
++	if (err)
++		goto err_reg;
++
++	for (i = 0; i < 4; i++) {
++		if (DBAM_DIMM(i, dbam) > 0) {
++			channels++;
++			break;
++		}
++	}
+
+ 	debugf0("MCT channel count: %d\n", channels);
+
+-- 
+1.4.4.2
