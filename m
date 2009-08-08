@@ -1,642 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934052AbZHHLoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753707AbZHHLwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934052AbZHHLoK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 07:44:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934029AbZHHLoJ
+	id S1753707AbZHHLwn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 07:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbZHHLwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 07:44:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38456 "EHLO hera.kernel.org"
+	Sat, 8 Aug 2009 07:52:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54988 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934026AbZHHLoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 07:44:07 -0400
-Date: Sat, 8 Aug 2009 11:43:33 GMT
-From: tip-bot for Markus Metzger <markus.t.metzger@intel.com>
+	id S1752028AbZHHLwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 07:52:41 -0400
+Date: Sat, 8 Aug 2009 11:52:03 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, markus.t.metzger@intel.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, markus.t.metzger@intel.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090721155648.A17047@sedona.ch.intel.com>
-References: <20090721155648.A17047@sedona.ch.intel.com>
-Subject: [tip:perfcounters/core] x86, perf_counter, bts: Add BTS support to perfcounters
-Message-ID: <tip-2ef041a4e545c483375a03075fb3b33efaf7a252@git.kernel.org>
-Git-Commit-ID: 2ef041a4e545c483375a03075fb3b33efaf7a252
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
+       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1249690585-9145-4-git-send-email-fweisbec@gmail.com>
+References: <1249690585-9145-4-git-send-email-fweisbec@gmail.com>
+Subject: [tip:perfcounters/core] perf tools: callchain: Fix sum of percentages to be 100% by displaying amount of ignored chains in fractal mode
+Message-ID: <tip-84fce09c6b21ef675de079a724c13a205c89520b@git.kernel.org>
+Git-Commit-ID: 84fce09c6b21ef675de079a724c13a205c89520b
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 08 Aug 2009 11:43:35 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 08 Aug 2009 11:52:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2ef041a4e545c483375a03075fb3b33efaf7a252
-Gitweb:     http://git.kernel.org/tip/2ef041a4e545c483375a03075fb3b33efaf7a252
-Author:     Markus Metzger <markus.t.metzger@intel.com>
-AuthorDate: Tue, 21 Jul 2009 15:56:48 +0200
+Commit-ID:  84fce09c6b21ef675de079a724c13a205c89520b
+Gitweb:     http://git.kernel.org/tip/84fce09c6b21ef675de079a724c13a205c89520b
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Sat, 8 Aug 2009 02:16:25 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 8 Aug 2009 13:37:02 +0200
+CommitDate: Sat, 8 Aug 2009 13:49:21 +0200
 
-x86, perf_counter, bts: Add BTS support to perfcounters
+perf tools: callchain: Fix sum of percentages to be 100% by displaying amount of ignored chains in fractal mode
 
-Implement a performance counter with:
+When we filter the callchains below a given percentage, we
+ignore them and the end result only shows entries that have an
+upper percentage than the filter threshold.
 
-    attr.type           = PERF_TYPE_HARDWARE
-    attr.config         = PERF_COUNT_HW_BRANCH_INSTRUCTIONS
-    attr.sample_period  = 1
+It seems to users then that we have an imbalance in the
+percentage, as if the sum inside a profiled branch doesn't
+reach 100%.
 
-Using branch trace store (BTS) on x86 hardware, if available.
+Since in the past there have been real perf report bugs that
+showed the same sypmtom, it would be nice to assure the user
+that the data is perfect and trustable and it all sums up to
+100.00%.
 
-The from and to address for each branch can be sampled using:
+So fix this by displaying the remaining hits that have been
+filtered but without more detail than their amount in each
+branches. Example while filtering below 50%:
 
-    PERF_SAMPLE_IP      for the from address
-    PERF_SAMPLE_ADDR    for the to address
+7.73%  [k] delay_tsc
+                |
+                |--98.22%-- __const_udelay
+                |          |
+                |          |--86.37%-- ath5k_hw_register_timeout
+                |          |          ath5k_hw_noise_floor_calibration
+                |          |          ath5k_hw_reset
+                |          |          ath5k_reset
+                |          |          ath5k_config
+                |          |          ieee80211_hw_config
+                |          |          |
+                |          |          |--88.53%-- ieee80211_scan_work
+                |          |          |          worker_thread
+                |          |          |          kthread
+                |          |          |          child_rip
+                |          |           --11.47%-- [...]
+                |           --13.63%-- [...]
+                 --1.78%-- [...]
 
-[ v2: address review feedback, fix bugs ]
-
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090721155648.A17047@sedona.ch.intel.com>
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+LKML-Reference: <1249690585-9145-4-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/include/asm/perf_counter.h |   10 +
- arch/x86/kernel/cpu/perf_counter.c  |  325 ++++++++++++++++++++++++++++++++++-
- include/linux/perf_counter.h        |    2 +
- kernel/perf_counter.c               |   10 +-
- 4 files changed, 340 insertions(+), 7 deletions(-)
+ tools/perf/builtin-report.c |   47 ++++++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 44 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/include/asm/perf_counter.h b/arch/x86/include/asm/perf_counter.h
-index fa64e40..e7b7c93 100644
---- a/arch/x86/include/asm/perf_counter.h
-+++ b/arch/x86/include/asm/perf_counter.h
-@@ -84,6 +84,16 @@ union cpuid10_edx {
- #define MSR_ARCH_PERFMON_FIXED_CTR2			0x30b
- #define X86_PMC_IDX_FIXED_BUS_CYCLES			(X86_PMC_IDX_FIXED + 2)
- 
-+/*
-+ * We model BTS tracing as another fixed-mode PMC.
-+ *
-+ * We choose a value in the middle of the fixed counter range, since lower
-+ * values are used by actual fixed counters and higher values are used
-+ * to indicate other overflow conditions in the PERF_GLOBAL_STATUS msr.
-+ */
-+#define X86_PMC_IDX_FIXED_BTS				(X86_PMC_IDX_FIXED + 16)
-+
-+
- #ifdef CONFIG_PERF_COUNTERS
- extern void init_hw_perf_counters(void);
- extern void perf_counters_lapic_init(void);
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index a7aa8f9..b237c18 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -6,6 +6,7 @@
-  *  Copyright (C) 2009 Jaswinder Singh Rajput
-  *  Copyright (C) 2009 Advanced Micro Devices, Inc., Robert Richter
-  *  Copyright (C) 2008-2009 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
-+ *  Copyright (C) 2009 Intel Corporation, <markus.t.metzger@intel.com>
-  *
-  *  For licencing details see kernel-base/COPYING
-  */
-@@ -20,6 +21,7 @@
- #include <linux/sched.h>
- #include <linux/uaccess.h>
- #include <linux/highmem.h>
-+#include <linux/cpu.h>
- 
- #include <asm/apic.h>
- #include <asm/stacktrace.h>
-@@ -27,12 +29,52 @@
- 
- static u64 perf_counter_mask __read_mostly;
- 
-+/* The maximal number of PEBS counters: */
-+#define MAX_PEBS_COUNTERS	4
-+
-+/* The size of a BTS record in bytes: */
-+#define BTS_RECORD_SIZE		24
-+
-+/* The size of a per-cpu BTS buffer in bytes: */
-+#define BTS_BUFFER_SIZE		(BTS_RECORD_SIZE * 1024)
-+
-+/* The BTS overflow threshold in bytes from the end of the buffer: */
-+#define BTS_OVFL_TH		(BTS_RECORD_SIZE * 64)
-+
-+
-+/*
-+ * Bits in the debugctlmsr controlling branch tracing.
-+ */
-+#define X86_DEBUGCTL_TR			(1 << 6)
-+#define X86_DEBUGCTL_BTS		(1 << 7)
-+#define X86_DEBUGCTL_BTINT		(1 << 8)
-+#define X86_DEBUGCTL_BTS_OFF_OS		(1 << 9)
-+#define X86_DEBUGCTL_BTS_OFF_USR	(1 << 10)
-+
-+/*
-+ * A debug store configuration.
-+ *
-+ * We only support architectures that use 64bit fields.
-+ */
-+struct debug_store {
-+	u64	bts_buffer_base;
-+	u64	bts_index;
-+	u64	bts_absolute_maximum;
-+	u64	bts_interrupt_threshold;
-+	u64	pebs_buffer_base;
-+	u64	pebs_index;
-+	u64	pebs_absolute_maximum;
-+	u64	pebs_interrupt_threshold;
-+	u64	pebs_counter_reset[MAX_PEBS_COUNTERS];
-+};
-+
- struct cpu_hw_counters {
- 	struct perf_counter	*counters[X86_PMC_IDX_MAX];
- 	unsigned long		used_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
- 	unsigned long		active_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
- 	unsigned long		interrupts;
- 	int			enabled;
-+	struct debug_store	*ds;
- };
- 
- /*
-@@ -57,6 +99,8 @@ struct x86_pmu {
- 	u64		counter_mask;
- 	u64		max_period;
- 	u64		intel_ctrl;
-+	void		(*enable_bts)(u64 config);
-+	void		(*disable_bts)(void);
- };
- 
- static struct x86_pmu x86_pmu __read_mostly;
-@@ -576,6 +620,9 @@ x86_perf_counter_update(struct perf_counter *counter,
- 	u64 prev_raw_count, new_raw_count;
- 	s64 delta;
- 
-+	if (idx == X86_PMC_IDX_FIXED_BTS)
-+		return 0;
-+
- 	/*
- 	 * Careful: an NMI might modify the previous counter value.
- 	 *
-@@ -659,10 +706,109 @@ static void release_pmc_hardware(void)
- 		enable_lapic_nmi_watchdog();
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index c4a8e10..99274ce 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -891,6 +891,21 @@ ipchain__fprintf_graph(FILE *fp, struct callchain_list *chain, int depth,
+ 	return ret;
  }
  
-+static inline bool bts_available(void)
++static struct symbol *rem_sq_bracket;
++static struct callchain_list rem_hits;
++
++static void init_rem_hits(void)
 +{
-+	return x86_pmu.enable_bts != NULL;
-+}
-+
-+static inline void init_debug_store_on_cpu(int cpu)
-+{
-+	struct debug_store *ds = per_cpu(cpu_hw_counters, cpu).ds;
-+
-+	if (!ds)
-+		return;
-+
-+	wrmsr_on_cpu(cpu, MSR_IA32_DS_AREA,
-+		     (u32)((u64)(long)ds), (u32)((u64)(long)ds >> 32));
-+}
-+
-+static inline void fini_debug_store_on_cpu(int cpu)
-+{
-+	if (!per_cpu(cpu_hw_counters, cpu).ds)
-+		return;
-+
-+	wrmsr_on_cpu(cpu, MSR_IA32_DS_AREA, 0, 0);
-+}
-+
-+static void release_bts_hardware(void)
-+{
-+	int cpu;
-+
-+	if (!bts_available())
-+		return;
-+
-+	get_online_cpus();
-+
-+	for_each_online_cpu(cpu)
-+		fini_debug_store_on_cpu(cpu);
-+
-+	for_each_possible_cpu(cpu) {
-+		struct debug_store *ds = per_cpu(cpu_hw_counters, cpu).ds;
-+
-+		if (!ds)
-+			continue;
-+
-+		per_cpu(cpu_hw_counters, cpu).ds = NULL;
-+
-+		kfree((void *)(long)ds->bts_buffer_base);
-+		kfree(ds);
-+	}
-+
-+	put_online_cpus();
-+}
-+
-+static int reserve_bts_hardware(void)
-+{
-+	int cpu, err = 0;
-+
-+	if (!bts_available())
-+		return -EOPNOTSUPP;
-+
-+	get_online_cpus();
-+
-+	for_each_possible_cpu(cpu) {
-+		struct debug_store *ds;
-+		void *buffer;
-+
-+		err = -ENOMEM;
-+		buffer = kzalloc(BTS_BUFFER_SIZE, GFP_KERNEL);
-+		if (unlikely(!buffer))
-+			break;
-+
-+		ds = kzalloc(sizeof(*ds), GFP_KERNEL);
-+		if (unlikely(!ds)) {
-+			kfree(buffer);
-+			break;
-+		}
-+
-+		ds->bts_buffer_base = (u64)(long)buffer;
-+		ds->bts_index = ds->bts_buffer_base;
-+		ds->bts_absolute_maximum =
-+			ds->bts_buffer_base + BTS_BUFFER_SIZE;
-+		ds->bts_interrupt_threshold =
-+			ds->bts_absolute_maximum - BTS_OVFL_TH;
-+
-+		per_cpu(cpu_hw_counters, cpu).ds = ds;
-+		err = 0;
-+	}
-+
-+	if (err)
-+		release_bts_hardware();
-+	else {
-+		for_each_online_cpu(cpu)
-+			init_debug_store_on_cpu(cpu);
-+	}
-+
-+	put_online_cpus();
-+
-+	return err;
-+}
-+
- static void hw_perf_counter_destroy(struct perf_counter *counter)
- {
- 	if (atomic_dec_and_mutex_lock(&active_counters, &pmc_reserve_mutex)) {
- 		release_pmc_hardware();
-+		release_bts_hardware();
- 		mutex_unlock(&pmc_reserve_mutex);
- 	}
- }
-@@ -705,6 +851,42 @@ set_ext_hw_attr(struct hw_perf_counter *hwc, struct perf_counter_attr *attr)
- 	return 0;
- }
- 
-+static void intel_pmu_enable_bts(u64 config)
-+{
-+	unsigned long debugctlmsr;
-+
-+	debugctlmsr = get_debugctlmsr();
-+
-+	debugctlmsr |= X86_DEBUGCTL_TR;
-+	debugctlmsr |= X86_DEBUGCTL_BTS;
-+	debugctlmsr |= X86_DEBUGCTL_BTINT;
-+
-+	if (!(config & ARCH_PERFMON_EVENTSEL_OS))
-+		debugctlmsr |= X86_DEBUGCTL_BTS_OFF_OS;
-+
-+	if (!(config & ARCH_PERFMON_EVENTSEL_USR))
-+		debugctlmsr |= X86_DEBUGCTL_BTS_OFF_USR;
-+
-+	update_debugctlmsr(debugctlmsr);
-+}
-+
-+static void intel_pmu_disable_bts(void)
-+{
-+	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
-+	unsigned long debugctlmsr;
-+
-+	if (!cpuc->ds)
-+		return;
-+
-+	debugctlmsr = get_debugctlmsr();
-+
-+	debugctlmsr &=
-+		~(X86_DEBUGCTL_TR | X86_DEBUGCTL_BTS | X86_DEBUGCTL_BTINT |
-+		  X86_DEBUGCTL_BTS_OFF_OS | X86_DEBUGCTL_BTS_OFF_USR);
-+
-+	update_debugctlmsr(debugctlmsr);
-+}
-+
- /*
-  * Setup the hardware configuration for a given attr_type
-  */
-@@ -721,9 +903,13 @@ static int __hw_perf_counter_init(struct perf_counter *counter)
- 	err = 0;
- 	if (!atomic_inc_not_zero(&active_counters)) {
- 		mutex_lock(&pmc_reserve_mutex);
--		if (atomic_read(&active_counters) == 0 && !reserve_pmc_hardware())
--			err = -EBUSY;
--		else
-+		if (atomic_read(&active_counters) == 0) {
-+			if (!reserve_pmc_hardware())
-+				err = -EBUSY;
-+			else
-+				reserve_bts_hardware();
-+		}
-+		if (!err)
- 			atomic_inc(&active_counters);
- 		mutex_unlock(&pmc_reserve_mutex);
- 	}
-@@ -801,7 +987,18 @@ static void p6_pmu_disable_all(void)
- 
- static void intel_pmu_disable_all(void)
- {
-+	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
-+
-+	if (!cpuc->enabled)
-+		return;
-+
-+	cpuc->enabled = 0;
-+	barrier();
-+
- 	wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, 0);
-+
-+	if (test_bit(X86_PMC_IDX_FIXED_BTS, cpuc->active_mask))
-+		intel_pmu_disable_bts();
- }
- 
- static void amd_pmu_disable_all(void)
-@@ -859,7 +1056,25 @@ static void p6_pmu_enable_all(void)
- 
- static void intel_pmu_enable_all(void)
- {
-+	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
-+
-+	if (cpuc->enabled)
-+		return;
-+
-+	cpuc->enabled = 1;
-+	barrier();
-+
- 	wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, x86_pmu.intel_ctrl);
-+
-+	if (test_bit(X86_PMC_IDX_FIXED_BTS, cpuc->active_mask)) {
-+		struct perf_counter *counter =
-+			cpuc->counters[X86_PMC_IDX_FIXED_BTS];
-+
-+		if (WARN_ON_ONCE(!counter))
-+			return;
-+
-+		intel_pmu_enable_bts(counter->hw.config);
-+	}
- }
- 
- static void amd_pmu_enable_all(void)
-@@ -946,6 +1161,11 @@ p6_pmu_disable_counter(struct hw_perf_counter *hwc, int idx)
- static inline void
- intel_pmu_disable_counter(struct hw_perf_counter *hwc, int idx)
- {
-+	if (unlikely(idx == X86_PMC_IDX_FIXED_BTS)) {
-+		intel_pmu_disable_bts();
++	rem_sq_bracket = malloc(sizeof(*rem_sq_bracket) + 6);
++	if (!rem_sq_bracket) {
++		fprintf(stderr, "Not enough memory to display remaining hits\n");
 +		return;
 +	}
 +
- 	if (unlikely(hwc->config_base == MSR_ARCH_PERFMON_FIXED_CTR_CTRL)) {
- 		intel_pmu_disable_fixed(hwc, idx);
- 		return;
-@@ -974,6 +1194,9 @@ x86_perf_counter_set_period(struct perf_counter *counter,
- 	s64 period = hwc->sample_period;
- 	int err, ret = 0;
++	strcpy(rem_sq_bracket->name, "[...]");
++	rem_hits.sym = rem_sq_bracket;
++}
++
+ static size_t
+ callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
+ 			u64 total_samples, int depth, int depth_mask)
+@@ -900,6 +915,7 @@ callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
+ 	struct callchain_list *chain;
+ 	int new_depth_mask = depth_mask;
+ 	u64 new_total;
++	u64 remaining;
+ 	size_t ret = 0;
+ 	int i;
  
-+	if (idx == X86_PMC_IDX_FIXED_BTS)
-+		return 0;
-+
- 	/*
- 	 * If we are way outside a reasoable range then just skip forward:
- 	 */
-@@ -1056,6 +1279,14 @@ static void p6_pmu_enable_counter(struct hw_perf_counter *hwc, int idx)
+@@ -908,17 +924,25 @@ callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
+ 	else
+ 		new_total = total_samples;
  
- static void intel_pmu_enable_counter(struct hw_perf_counter *hwc, int idx)
- {
-+	if (unlikely(idx == X86_PMC_IDX_FIXED_BTS)) {
-+		if (!__get_cpu_var(cpu_hw_counters).enabled)
-+			return;
++	remaining = new_total;
 +
-+		intel_pmu_enable_bts(hwc->config);
-+		return;
-+	}
+ 	node = rb_first(&self->rb_root);
+ 	while (node) {
++		u64 cumul;
 +
- 	if (unlikely(hwc->config_base == MSR_ARCH_PERFMON_FIXED_CTR_CTRL)) {
- 		intel_pmu_enable_fixed(hwc, idx);
- 		return;
-@@ -1077,11 +1308,16 @@ fixed_mode_idx(struct perf_counter *counter, struct hw_perf_counter *hwc)
- {
- 	unsigned int event;
+ 		child = rb_entry(node, struct callchain_node, rb_node);
++		cumul = cumul_hits(child);
++		remaining -= cumul;
  
-+	event = hwc->config & ARCH_PERFMON_EVENT_MASK;
-+
-+	if (unlikely((event ==
-+		      x86_pmu.event_map(PERF_COUNT_HW_BRANCH_INSTRUCTIONS)) &&
-+		     (hwc->sample_period == 1)))
-+		return X86_PMC_IDX_FIXED_BTS;
-+
- 	if (!x86_pmu.num_counters_fixed)
- 		return -1;
- 
--	event = hwc->config & ARCH_PERFMON_EVENT_MASK;
--
- 	if (unlikely(event == x86_pmu.event_map(PERF_COUNT_HW_INSTRUCTIONS)))
- 		return X86_PMC_IDX_FIXED_INSTRUCTIONS;
- 	if (unlikely(event == x86_pmu.event_map(PERF_COUNT_HW_CPU_CYCLES)))
-@@ -1102,7 +1338,25 @@ static int x86_pmu_enable(struct perf_counter *counter)
- 	int idx;
- 
- 	idx = fixed_mode_idx(counter, hwc);
--	if (idx >= 0) {
-+	if (idx == X86_PMC_IDX_FIXED_BTS) {
-+		/*
-+		 * Try to use BTS for branch tracing. If that is not
-+		 * available, try to get a generic counter.
-+		 */
-+		if (unlikely(!cpuc->ds))
-+			goto try_generic;
-+
-+		/*
-+		 * Try to get the fixed counter, if that is already taken
-+		 * then try to get a generic counter:
-+		 */
-+		if (test_and_set_bit(idx, cpuc->used_mask))
-+			goto try_generic;
-+
-+		hwc->config_base	= 0;
-+		hwc->counter_base	= 0;
-+		hwc->idx		= idx;
-+	} else if (idx >= 0) {
  		/*
- 		 * Try to get the fixed counter, if that is already taken
- 		 * then try to get a generic counter:
-@@ -1213,6 +1467,45 @@ void perf_counter_print_debug(void)
- 	local_irq_restore(flags);
- }
+ 		 * The depth mask manages the output of pipes that show
+ 		 * the depth. We don't want to keep the pipes of the current
+-		 * level for the last child of this depth
++		 * level for the last child of this depth.
++		 * Except if we have remaining filtered hits. They will
++		 * supersede the last child
+ 		 */
+ 		next = rb_next(node);
+-		if (!next)
++		if (!next && (callchain_param.mode != CHAIN_GRAPH_REL || !remaining))
+ 			new_depth_mask &= ~(1 << (depth - 1));
  
-+static void intel_pmu_drain_bts_buffer(struct cpu_hw_counters *cpuc,
-+				       struct perf_sample_data *data)
-+{
-+	struct debug_store *ds = cpuc->ds;
-+	struct bts_record {
-+		u64	from;
-+		u64	to;
-+		u64	flags;
-+	};
-+	struct perf_counter *counter = cpuc->counters[X86_PMC_IDX_FIXED_BTS];
-+	unsigned long orig_ip = data->regs->ip;
-+	u64 at;
-+
-+	if (!counter)
-+		return;
-+
-+	if (!ds)
-+		return;
-+
-+	for (at = ds->bts_buffer_base;
-+	     at < ds->bts_index;
-+	     at += sizeof(struct bts_record)) {
-+		struct bts_record *rec = (struct bts_record *)(long)at;
-+
-+		data->regs->ip	= rec->from;
-+		data->addr	= rec->to;
-+
-+		perf_counter_output(counter, 1, data);
-+	}
-+
-+	ds->bts_index = ds->bts_buffer_base;
-+
-+	data->regs->ip	= orig_ip;
-+	data->addr	= 0;
-+
-+	/* There's new data available. */
-+	counter->pending_kill = POLL_IN;
-+}
-+
- static void x86_pmu_disable(struct perf_counter *counter)
- {
- 	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
-@@ -1237,6 +1530,15 @@ static void x86_pmu_disable(struct perf_counter *counter)
- 	 * that we are disabling:
- 	 */
- 	x86_perf_counter_update(counter, hwc, idx);
-+
-+	/* Drain the remaining BTS records. */
-+	if (unlikely(idx == X86_PMC_IDX_FIXED_BTS)) {
-+		struct perf_sample_data data;
-+		struct pt_regs regs;
-+
-+		data.regs = &regs;
-+		intel_pmu_drain_bts_buffer(cpuc, &data);
-+	}
- 	cpuc->counters[idx] = NULL;
- 	clear_bit(idx, cpuc->used_mask);
- 
-@@ -1264,6 +1566,7 @@ static int intel_pmu_save_and_restart(struct perf_counter *counter)
- 
- static void intel_pmu_reset(void)
- {
-+	struct debug_store *ds = __get_cpu_var(cpu_hw_counters).ds;
- 	unsigned long flags;
- 	int idx;
- 
-@@ -1281,6 +1584,8 @@ static void intel_pmu_reset(void)
- 	for (idx = 0; idx < x86_pmu.num_counters_fixed; idx++) {
- 		checking_wrmsrl(MSR_ARCH_PERFMON_FIXED_CTR0 + idx, 0ull);
+ 		/*
+@@ -933,7 +957,7 @@ callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
+ 			ret += ipchain__fprintf_graph(fp, chain, depth,
+ 						      new_depth_mask, i++,
+ 						      new_total,
+-						      cumul_hits(child));
++						      cumul);
+ 		}
+ 		ret += callchain__fprintf_graph(fp, child, new_total,
+ 						depth + 1,
+@@ -941,6 +965,19 @@ callchain__fprintf_graph(FILE *fp, struct callchain_node *self,
+ 		node = next;
  	}
-+	if (ds)
-+		ds->bts_index = ds->bts_buffer_base;
  
- 	local_irq_restore(flags);
- }
-@@ -1346,6 +1651,7 @@ static int intel_pmu_handle_irq(struct pt_regs *regs)
- 	cpuc = &__get_cpu_var(cpu_hw_counters);
- 
- 	perf_disable();
-+	intel_pmu_drain_bts_buffer(cpuc, &data);
- 	status = intel_pmu_get_status();
- 	if (!status) {
- 		perf_enable();
-@@ -1547,6 +1853,8 @@ static struct x86_pmu intel_pmu = {
- 	 * the generic counter period:
- 	 */
- 	.max_period		= (1ULL << 31) - 1,
-+	.enable_bts		= intel_pmu_enable_bts,
-+	.disable_bts		= intel_pmu_disable_bts,
- };
- 
- static struct x86_pmu amd_pmu = {
-@@ -1936,3 +2244,8 @@ struct perf_callchain_entry *perf_callchain(struct pt_regs *regs)
- 
- 	return entry;
- }
++	if (callchain_param.mode == CHAIN_GRAPH_REL &&
++		remaining && remaining != new_total) {
 +
-+void hw_perf_counter_setup_online(int cpu)
-+{
-+	init_debug_store_on_cpu(cpu);
-+}
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index a67dd5c..c484834 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -692,6 +692,8 @@ struct perf_sample_data {
- 
- extern int perf_counter_overflow(struct perf_counter *counter, int nmi,
- 				 struct perf_sample_data *data);
-+extern void perf_counter_output(struct perf_counter *counter, int nmi,
-+				struct perf_sample_data *data);
- 
- /*
-  * Return 1 for a software counter, 0 for a hardware counter
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 615440a..142ae5a 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -88,6 +88,7 @@ void __weak hw_perf_disable(void)		{ barrier(); }
- void __weak hw_perf_enable(void)		{ barrier(); }
- 
- void __weak hw_perf_counter_setup(int cpu)	{ barrier(); }
-+void __weak hw_perf_counter_setup_online(int cpu)	{ barrier(); }
- 
- int __weak
- hw_perf_group_sched_in(struct perf_counter *group_leader,
-@@ -2630,7 +2631,7 @@ static u32 perf_counter_tid(struct perf_counter *counter, struct task_struct *p)
- 	return task_pid_nr_ns(p, counter->ns);
++		if (!rem_sq_bracket)
++			return ret;
++
++		new_depth_mask &= ~(1 << (depth - 1));
++
++		ret += ipchain__fprintf_graph(fp, &rem_hits, depth,
++					      new_depth_mask, 0, new_total,
++					      remaining);
++	}
++
+ 	return ret;
  }
  
--static void perf_counter_output(struct perf_counter *counter, int nmi,
-+void perf_counter_output(struct perf_counter *counter, int nmi,
- 				struct perf_sample_data *data)
- {
- 	int ret;
-@@ -4565,6 +4566,11 @@ perf_cpu_notify(struct notifier_block *self, unsigned long action, void *hcpu)
- 		perf_counter_init_cpu(cpu);
- 		break;
+@@ -1361,6 +1398,8 @@ static size_t output__fprintf(FILE *fp, u64 total_samples)
+ 	unsigned int width;
+ 	char *col_width = col_width_list_str;
  
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+		hw_perf_counter_setup_online(cpu);
-+		break;
++	init_rem_hits();
 +
- 	case CPU_DOWN_PREPARE:
- 	case CPU_DOWN_PREPARE_FROZEN:
- 		perf_counter_exit_cpu(cpu);
-@@ -4589,6 +4595,8 @@ void __init perf_counter_init(void)
- {
- 	perf_cpu_notify(&perf_cpu_nb, (unsigned long)CPU_UP_PREPARE,
- 			(void *)(long)smp_processor_id());
-+	perf_cpu_notify(&perf_cpu_nb, (unsigned long)CPU_ONLINE,
-+			(void *)(long)smp_processor_id());
- 	register_cpu_notifier(&perf_cpu_nb);
+ 	fprintf(fp, "# Samples: %Ld\n", (u64)total_samples);
+ 	fprintf(fp, "#\n");
+ 
+@@ -1432,6 +1471,8 @@ print_entries:
+ 	}
+ 	fprintf(fp, "\n");
+ 
++	free(rem_sq_bracket);
++
+ 	return ret;
  }
  
