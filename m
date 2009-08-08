@@ -1,115 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752141AbZHHQWL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752333AbZHHQWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752141AbZHHQWL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 12:22:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZHHQWK
+	id S1752333AbZHHQWP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 12:22:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZHHQWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 12:22:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59996 "EHLO mx2.redhat.com"
+	Sat, 8 Aug 2009 12:22:14 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53430 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750827AbZHHQWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 12:22:10 -0400
-Date: Sat, 8 Aug 2009 12:21:59 -0400
-From: Mike Snitzer <snitzer@redhat.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
-       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Initialize mempool and elevator only for
-	request-based dm devices
-Message-ID: <20090808162156.GA7432@redhat.com>
-References: <200908081026.01097.knikanth@suse.de>
+	id S1751814AbZHHQWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 12:22:11 -0400
+Date: Sat, 8 Aug 2009 16:21:37 GMT
+From: tip-bot for Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, julia@diku.dk, hpa@zytor.com,
+       mingo@redhat.com, bzolnier@gmail.com, eteo@redhat.com, corbet@lwn.net,
+       error27@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, julia@diku.dk,
+       linux-kernel@vger.kernel.org, bzolnier@gmail.com, eteo@redhat.com,
+       corbet@lwn.net, error27@gmail.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <200908062146.03638.bzolnier@gmail.com>
+References: <200908062146.03638.bzolnier@gmail.com>
+Subject: [tip:irq/core] irq: Remove superfluous NULL pointer check in check_irq_resend()
+Message-ID: <tip-139183d579d6097cdbbd64825bbac54d8481a144@git.kernel.org>
+Git-Commit-ID: 139183d579d6097cdbbd64825bbac54d8481a144
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <200908081026.01097.knikanth@suse.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 08 Aug 2009 16:21:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 08 2009 at 12:56am -0400,
-Nikanth Karthikesan <knikanth@suse.de> wrote:
+Commit-ID:  139183d579d6097cdbbd64825bbac54d8481a144
+Gitweb:     http://git.kernel.org/tip/139183d579d6097cdbbd64825bbac54d8481a144
+Author:     Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+AuthorDate: Thu, 6 Aug 2009 21:46:03 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 8 Aug 2009 18:18:05 +0200
 
-> Intialize the request_queue and elevator only when the device is marked as
-> a request-based device. This avoids unnecessary creation of mempool for
-> requests. Also we wrongly initialize the elevator even for bio-based devices.
-> As the /sys/block/dm-*/queue/scheduler is exported for device-mapper devices,
-> it is possible to confuse with scheduler options for bio-based devices where
-> scheduler is not at all used.
-> 
-> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+irq: Remove superfluous NULL pointer check in check_irq_resend()
 
-I like how this clearly splits out request-based DM queue initialization.
+This takes care of the following entry from Dan's list:
 
-More comments below.
+kernel/irq/resend.c +73 check_irq_resend(17) warning: variable derefenced before check 'desc->chip'
 
-> diff --git a/drivers/md/dm.c b/drivers/md/dm.c
-> index 8a311ea..b01dfbe 100644
-> --- a/drivers/md/dm.c
-> +++ b/drivers/md/dm.c
-> @@ -2203,7 +2199,25 @@ int dm_swap_table(struct mapped_device *md, struct dm_table *table)
->  		goto out;
->  	}
->  
-> -	__unbind(md);
-> +	if (md->map)
-> +		__unbind(md);
-> +	else {
-> +	/* new device is being marked as either request-based or bio-based */
-> +		if (dm_table_request_based(table)) {
-> +			/* Initialize queue for request-based dm */
-> +			r = blk_init_allocated_queue(md->queue, dm_request_fn,
-> +								 NULL);
-> +			if (r)
-> +				goto out;
-> +			md->saved_make_request_fn = md->queue->make_request_fn;
-> +			blk_queue_make_request(md->queue, dm_request);
+Reported-by: Dan Carpenter <error27@gmail.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Eugene Teo <eteo@redhat.com>
+Cc: Julia Lawall <julia@diku.dk>
+LKML-Reference: <200908062146.03638.bzolnier@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-This blk_queue_make_request() is redundant as it was already established
-in alloc_dev().  The fact that its behavior is now altered as a result
-of the md->saved_make_request_fn assignment doesn't change the fact that
-the queue will be using dm_request().  Am I missing something?
 
-Also, I think the code should be cleaned up as follows:
+---
+ kernel/irq/resend.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/md/dm.c b/drivers/md/dm.c
-index b01dfbe..1b8aa43 100644
---- a/drivers/md/dm.c
-+++ b/drivers/md/dm.c
-@@ -2199,25 +2199,18 @@ int dm_swap_table(struct mapped_device *md, struct dm_table *table)
- 		goto out;
- 	}
+diff --git a/kernel/irq/resend.c b/kernel/irq/resend.c
+index 89c7117..090c376 100644
+--- a/kernel/irq/resend.c
++++ b/kernel/irq/resend.c
+@@ -70,8 +70,7 @@ void check_irq_resend(struct irq_desc *desc, unsigned int irq)
+ 	if ((status & (IRQ_LEVEL | IRQ_PENDING | IRQ_REPLAY)) == IRQ_PENDING) {
+ 		desc->status = (status & ~IRQ_PENDING) | IRQ_REPLAY;
  
--	if (md->map)
--		__unbind(md);
--	else {
--	/* new device is being marked as either request-based or bio-based */
--		if (dm_table_request_based(table)) {
--			/* Initialize queue for request-based dm */
--			r = blk_init_allocated_queue(md->queue, dm_request_fn,
--								 NULL);
--			if (r)
--				goto out;
--			md->saved_make_request_fn = md->queue->make_request_fn;
--			blk_queue_make_request(md->queue, dm_request);
--			blk_queue_softirq_done(md->queue, dm_softirq_done);
--			blk_queue_prep_rq(md->queue, dm_prep_fn);
--			blk_queue_lld_busy(md->queue, dm_lld_busy);
--
--		}
-+	if (!md->map && dm_table_request_based(table)) {
-+		/* Initialize queue for request-based dm */
-+		r = blk_init_allocated_queue(md->queue, dm_request_fn, NULL);
-+		if (r)
-+			goto out;
-+		md->saved_make_request_fn = md->queue->make_request_fn;
-+		blk_queue_softirq_done(md->queue, dm_softirq_done);
-+		blk_queue_prep_rq(md->queue, dm_prep_fn);
-+		blk_queue_lld_busy(md->queue, dm_lld_busy);
- 	}
- 
-+	__unbind(md);
- 	r = __bind(md, table, &limits);
- 
- out:
+-		if (!desc->chip || !desc->chip->retrigger ||
+-					!desc->chip->retrigger(irq)) {
++		if (!desc->chip->retrigger || !desc->chip->retrigger(irq)) {
+ #ifdef CONFIG_HARDIRQS_SW_RESEND
+ 			/* Set it pending and activate the softirq: */
+ 			set_bit(irq, irqs_resend);
