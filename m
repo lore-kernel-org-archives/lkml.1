@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757381AbZHHAQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbZHHAQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757381AbZHHAQh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 20:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbZHHAQg
+	id S1757273AbZHHAQd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 20:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757053AbZHHAQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 20:16:36 -0400
+	Fri, 7 Aug 2009 20:16:33 -0400
 Received: from mail-gx0-f213.google.com ([209.85.217.213]:53240 "EHLO
 	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757321AbZHHAQf (ORCPT
+	with ESMTP id S1756886AbZHHAQc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 20:16:35 -0400
+	Fri, 7 Aug 2009 20:16:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=qC94KL2UpQTApxdJn9rTCHATt4hU15ajuBkqAqRcBOfX4o16uB2rE0sO0fJ2uDOUPZ
-         t49Rba3vJujLzjKP9tUrWQmj1Xg2TWZ6yDmA9rzmuGD2poRPcUoyfFwf+0nblDsXzopd
-         0awmWWmi/Uzl1Qf4UoKBiPJPN9rv/TEou4IS4=
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=INCXl+T/LO85AdZccEXhQQ1EScjwwaM9OYD/fCmvtwQDbU8B39KNCRMJL0MKDjnDzC
+         JfY46IlpXxDcUrvIgA4WnpgJVfy4bRzriE26NCZrA/TwLf6gvT2HDxVtpowOkYVbxuRA
+         22bqFBORv4kPJFvcdwLRF8Waz6sEEFIYoGLfQ=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -23,21 +23,19 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Mike Galbraith <efault@gmx.de>
-Subject: [PATCH 2/4] perf tools: callchain: Ignore empty callchains
-Date: Sat,  8 Aug 2009 02:16:23 +0200
-Message-Id: <1249690585-9145-2-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 1/4] perf tools: callchain: Warn only once in empty node detection
+Date: Sat,  8 Aug 2009 02:16:22 +0200
+Message-Id: <1249690585-9145-1-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1249690585-9145-1-git-send-email-fweisbec@gmail.com>
-References: <1249690585-9145-1-git-send-email-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the callchain tree comes to insert an empty backtrace, it raises
-a spurious warning about the fact we are inserting an empty.
-This is spurious because the radix tree assumes it did something
-wrong to reach this state. But it didn't, we just met an empty
-callchain that has to be ignored.
+When we fill a new node that is found to be empty (sign of a bug),
+we print a message each time that happens. Sometimes we reach thousands
+of lines printed.
+
+Just warn only once in that case (and use stderr instead of stdout).
 
 Reported-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
@@ -45,21 +43,70 @@ Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Mike Galbraith <efault@gmx.de>
 ---
- tools/perf/util/callchain.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ tools/perf/util/callchain.c |    3 ++-
+ tools/perf/util/util.h      |    3 +++
+ tools/perf/util/wrapper.c   |   16 ++++++++++++++++
+ 3 files changed, 21 insertions(+), 1 deletions(-)
 
 diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
-index ce0c6d4..4c09b25 100644
+index 98c5627..ce0c6d4 100644
 --- a/tools/perf/util/callchain.c
 +++ b/tools/perf/util/callchain.c
-@@ -337,5 +337,7 @@ __append_chain(struct callchain_node *root, struct ip_callchain *chain,
- void append_chain(struct callchain_node *root, struct ip_callchain *chain,
- 		  struct symbol **syms)
- {
-+	if (!chain->nr)
-+		return;
- 	__append_chain_children(root, chain, syms, 0);
+@@ -13,6 +13,7 @@
+ #include <stdio.h>
+ #include <stdbool.h>
+ #include <errno.h>
++#include "util.h"
+ 
+ #include "callchain.h"
+ 
+@@ -203,7 +204,7 @@ fill_node(struct callchain_node *node, struct ip_callchain *chain,
+ 	}
+ 	node->val_nr = chain->nr - start;
+ 	if (!node->val_nr)
+-		printf("Warning: empty node in callchain tree\n");
++		fprintf_once(stderr, "Warning: empty node in callchain tree\n");
  }
+ 
+ static void
+diff --git a/tools/perf/util/util.h b/tools/perf/util/util.h
+index 68fe157..386ea40 100644
+--- a/tools/perf/util/util.h
++++ b/tools/perf/util/util.h
+@@ -148,6 +148,9 @@ static inline const char *skip_prefix(const char *str, const char *prefix)
+ 	return strncmp(str, prefix, len) ? NULL : str + len;
+ }
+ 
++extern int fprintf_once(FILE *fp, const char *fmt, ...)
++	__attribute__((format (printf, 2, 3)));
++
+ #if defined(NO_MMAP) || defined(USE_WIN32_MMAP)
+ 
+ #ifndef PROT_READ
+diff --git a/tools/perf/util/wrapper.c b/tools/perf/util/wrapper.c
+index 4574ac2..026c87c 100644
+--- a/tools/perf/util/wrapper.c
++++ b/tools/perf/util/wrapper.c
+@@ -205,3 +205,19 @@ int xmkstemp(char *template)
+ 		die("Unable to create temporary file: %s", strerror(errno));
+ 	return fd;
+ }
++
++int fprintf_once(FILE *fp, const char *fmt, ...)
++{
++	va_list args;
++	int ret;
++	static int once;
++
++	if (once++)
++		return 1;
++
++	va_start(args, fmt);
++	ret = vfprintf(fp, fmt, args);
++	va_end(args);
++
++	return ret;
++}
 -- 
 1.6.2.3
 
