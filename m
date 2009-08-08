@@ -1,353 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbZHHWlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752898AbZHHWqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752861AbZHHWlt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 18:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZHHWls
+	id S1752898AbZHHWqx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 18:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbZHHWqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 18:41:48 -0400
-Received: from gate.crashing.org ([63.228.1.57]:43078 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752133AbZHHWlq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 18:41:46 -0400
-Subject: Re: [PATCH] Drop superfluous casts in nr_free_pages() callers
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LRH.2.00.0908031808440.11620@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0908031808440.11620@vixen.sonytel.be>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 09 Aug 2009 08:41:33 +1000
-Message-Id: <1249771293.10143.17.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+	Sat, 8 Aug 2009 18:46:53 -0400
+Received: from statler.bytemark.co.uk ([212.110.162.18]:34600 "EHLO
+	statler.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752668AbZHHWqw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 18:46:52 -0400
+X-Greylist: delayed 1243 seconds by postgrey-1.27 at vger.kernel.org; Sat, 08 Aug 2009 18:46:52 EDT
+Date: Sun, 9 Aug 2009 00:25:53 +0200
+From: "Emilio G. Cota" <cota@braap.org>
+To: Greg K-H <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
+       Martyn Welch <martyn.welch@gefanuc.com>,
+       Sebastien Dugue <sebastien.dugue@bull.net>
+Subject: Re: [patch 0/5] [ANNOUNCE] VME Bus drivers and framework for Linux
+Message-ID: <20090808222552.GA27151@braap.org>
+References: <20090803210054.GA28430@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090803210054.GA28430@kroah.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-03 at 18:11 +0200, Geert Uytterhoeven wrote:
-> Commit 96177299416dbccb73b54e6b344260154a445375 ("Drop free_pages()")
-> modified nr_free_pages() to return 'unsigned long' instead of 'unsigned int'.
-> This made the casts to 'unsigned long' in most callers superfluous, hence
-> remove them.
+Greg K-H wrote:
+> Hi all,
 > 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Here's 5 patches from Martyn Welch that adds VME Bus support to the
+> kernel.
+> 
+> Martyn took the time and merged the three different existing
+> implementations for Linux together into something that works, and got
+> the proper legal agreements from all of the affected parties to release
+> the code properly.
+> 
+> I'd like to thank him for taking the time to do this work, it is much
+> appreciated.
+> 
+> These patches all add the code under the drivers/staging/ directory, as
+> there is still a number of things that needs to be done to clean up the
+> code to get it into "proper" mergable state, but it's a great first cut.
+> 
+> Thanks again Martyn!
+> 
+> greg k-h
 
-For arch/powerpc:
+whoops just spotted this.. I had allocated next month for working
+on this, i.e. getting VME support into the kernel.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I work at CERN where we have hundreds of VME crates; we're
+currently moving from LynxOS to real-time linux. The VME chipset
+we're using is the tsi148, for which Sebastien Dugue wrote a
+driver at the beginning of the year.
 
-> ---
-> Tested on ppc64 only
-> 
->  arch/alpha/mm/init.c      |    2 +-
->  arch/alpha/mm/numa.c      |    2 +-
->  arch/arm/mm/init.c        |    4 ++--
->  arch/avr32/mm/init.c      |    2 +-
->  arch/cris/mm/init.c       |    2 +-
->  arch/ia64/mm/init.c       |    2 +-
->  arch/m32r/mm/init.c       |    2 +-
->  arch/m68k/mm/init.c       |    2 +-
->  arch/microblaze/mm/init.c |    2 +-
->  arch/mips/mm/init.c       |    2 +-
->  arch/mn10300/mm/init.c    |    2 +-
->  arch/parisc/mm/init.c     |    2 +-
->  arch/powerpc/mm/mem.c     |    2 +-
->  arch/s390/mm/init.c       |    2 +-
->  arch/sh/mm/init.c         |    2 +-
->  arch/sparc/mm/init_32.c   |    2 +-
->  arch/um/kernel/mem.c      |    2 +-
->  arch/x86/mm/init_32.c     |    2 +-
->  arch/x86/mm/init_64.c     |    2 +-
->  arch/xtensa/mm/init.c     |    2 +-
->  20 files changed, 21 insertions(+), 21 deletions(-)
-> 
-> diff --git a/arch/alpha/mm/init.c b/arch/alpha/mm/init.c
-> index af71d38..a0902c2 100644
-> --- a/arch/alpha/mm/init.c
-> +++ b/arch/alpha/mm/init.c
-> @@ -299,7 +299,7 @@ printk_memory_info(void)
->  	initsize =  (unsigned long) &__init_end - (unsigned long) &__init_begin;
->  
->  	printk("Memory: %luk/%luk available (%luk kernel code, %luk reserved, %luk data, %luk init)\n",
-> -	       (unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
-> +	       nr_free_pages() << (PAGE_SHIFT-10),
->  	       max_mapnr << (PAGE_SHIFT-10),
->  	       codesize >> 10,
->  	       reservedpages << (PAGE_SHIFT-10),
-> diff --git a/arch/alpha/mm/numa.c b/arch/alpha/mm/numa.c
-> index 0eab557..10b4035 100644
-> --- a/arch/alpha/mm/numa.c
-> +++ b/arch/alpha/mm/numa.c
-> @@ -349,7 +349,7 @@ void __init mem_init(void)
->  
->  	printk("Memory: %luk/%luk available (%luk kernel code, %luk reserved, "
->  	       "%luk data, %luk init)\n",
-> -	       (unsigned long)nr_free_pages() << (PAGE_SHIFT-10),
-> +	       nr_free_pages() << (PAGE_SHIFT-10),
->  	       num_physpages << (PAGE_SHIFT-10),
->  	       codesize >> 10,
->  	       reservedpages << (PAGE_SHIFT-10),
-> diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
-> index 8277802..bc927ee 100644
-> --- a/arch/arm/mm/init.c
-> +++ b/arch/arm/mm/init.c
-> @@ -536,8 +536,8 @@ void __init mem_init(void)
->  
->  	printk(KERN_NOTICE "Memory: %luKB available (%dK code, "
->  		"%dK data, %dK init, %luK highmem)\n",
-> -		(unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
-> -		codesize >> 10, datasize >> 10, initsize >> 10,
-> +		nr_free_pages() << (PAGE_SHIFT-10), codesize >> 10,
-> +		datasize >> 10, initsize >> 10,
->  		(unsigned long) (totalhigh_pages << (PAGE_SHIFT-10)));
->  
->  	if (PAGE_SIZE >= 16384 && num_physpages <= 128) {
-> diff --git a/arch/avr32/mm/init.c b/arch/avr32/mm/init.c
-> index e819fa6..376f18c 100644
-> --- a/arch/avr32/mm/init.c
-> +++ b/arch/avr32/mm/init.c
-> @@ -141,7 +141,7 @@ void __init mem_init(void)
->  
->  	printk ("Memory: %luk/%luk available (%dk kernel code, "
->  		"%dk reserved, %dk data, %dk init)\n",
-> -		(unsigned long)nr_free_pages() << (PAGE_SHIFT - 10),
-> +		nr_free_pages() << (PAGE_SHIFT - 10),
->  		totalram_pages << (PAGE_SHIFT - 10),
->  		codesize >> 10,
->  		reservedpages << (PAGE_SHIFT - 10),
-> diff --git a/arch/cris/mm/init.c b/arch/cris/mm/init.c
-> index 514f46a..ff68b9f 100644
-> --- a/arch/cris/mm/init.c
-> +++ b/arch/cris/mm/init.c
-> @@ -54,7 +54,7 @@ mem_init(void)
->          printk(KERN_INFO
->                 "Memory: %luk/%luk available (%dk kernel code, %dk reserved, %dk data, "
->  	       "%dk init)\n" ,
-> -	       (unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
-> +	       nr_free_pages() << (PAGE_SHIFT-10),
->  	       max_mapnr << (PAGE_SHIFT-10),
->  	       codesize >> 10,
->  	       reservedpages << (PAGE_SHIFT-10),
-> diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
-> index b115b3b..1d28624 100644
-> --- a/arch/ia64/mm/init.c
-> +++ b/arch/ia64/mm/init.c
-> @@ -655,7 +655,7 @@ mem_init (void)
->  	initsize =  (unsigned long) __init_end - (unsigned long) __init_begin;
->  
->  	printk(KERN_INFO "Memory: %luk/%luk available (%luk code, %luk reserved, "
-> -	       "%luk data, %luk init)\n", (unsigned long) nr_free_pages() << (PAGE_SHIFT - 10),
-> +	       "%luk data, %luk init)\n", nr_free_pages() << (PAGE_SHIFT - 10),
->  	       num_physpages << (PAGE_SHIFT - 10), codesize >> 10,
->  	       reserved_pages << (PAGE_SHIFT - 10), datasize >> 10, initsize >> 10);
->  
-> diff --git a/arch/m32r/mm/init.c b/arch/m32r/mm/init.c
-> index 24d429f..9f581df 100644
-> --- a/arch/m32r/mm/init.c
-> +++ b/arch/m32r/mm/init.c
-> @@ -171,7 +171,7 @@ void __init mem_init(void)
->  
->  	printk(KERN_INFO "Memory: %luk/%luk available (%dk kernel code, "
->  		"%dk reserved, %dk data, %dk init)\n",
-> -		(unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
-> +		nr_free_pages() << (PAGE_SHIFT-10),
->  		num_physpages << (PAGE_SHIFT-10),
->  		codesize >> 10,
->  		reservedpages << (PAGE_SHIFT-10),
-> diff --git a/arch/m68k/mm/init.c b/arch/m68k/mm/init.c
-> index 0007b2a..774549a 100644
-> --- a/arch/m68k/mm/init.c
-> +++ b/arch/m68k/mm/init.c
-> @@ -126,7 +126,7 @@ void __init mem_init(void)
->  #endif
->  
->  	printk("Memory: %luk/%luk available (%dk kernel code, %dk data, %dk init)\n",
-> -	       (unsigned long)nr_free_pages() << (PAGE_SHIFT-10),
-> +	       nr_free_pages() << (PAGE_SHIFT-10),
->  	       totalram_pages << (PAGE_SHIFT-10),
->  	       codepages << (PAGE_SHIFT-10),
->  	       datapages << (PAGE_SHIFT-10),
-> diff --git a/arch/microblaze/mm/init.c b/arch/microblaze/mm/init.c
-> index 8d92c4e..506df16 100644
-> --- a/arch/microblaze/mm/init.c
-> +++ b/arch/microblaze/mm/init.c
-> @@ -204,7 +204,7 @@ void __init mem_init(void)
->  	totalram_pages += free_all_bootmem();
->  
->  	printk(KERN_INFO "Memory: %luk/%luk available\n",
-> -	       (unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
-> +	       nr_free_pages() << (PAGE_SHIFT-10),
->  	       num_physpages << (PAGE_SHIFT-10));
->  #ifdef CONFIG_MMU
->  	mem_init_done = 1;
-> diff --git a/arch/mips/mm/init.c b/arch/mips/mm/init.c
-> index 0e82050..1f9fced 100644
-> --- a/arch/mips/mm/init.c
-> +++ b/arch/mips/mm/init.c
-> @@ -417,7 +417,7 @@ void __init mem_init(void)
->  
->  	printk(KERN_INFO "Memory: %luk/%luk available (%ldk kernel code, "
->  	       "%ldk reserved, %ldk data, %ldk init, %ldk highmem)\n",
-> -	       (unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
-> +	       nr_free_pages() << (PAGE_SHIFT-10),
->  	       ram << (PAGE_SHIFT-10),
->  	       codesize >> 10,
->  	       reservedpages << (PAGE_SHIFT-10),
-> diff --git a/arch/mn10300/mm/init.c b/arch/mn10300/mm/init.c
-> index 8cee387..ec14205 100644
-> --- a/arch/mn10300/mm/init.c
-> +++ b/arch/mn10300/mm/init.c
-> @@ -112,7 +112,7 @@ void __init mem_init(void)
->  	       "Memory: %luk/%luk available"
->  	       " (%dk kernel code, %dk reserved, %dk data, %dk init,"
->  	       " %ldk highmem)\n",
-> -	       (unsigned long) nr_free_pages() << (PAGE_SHIFT - 10),
-> +	       nr_free_pages() << (PAGE_SHIFT - 10),
->  	       max_mapnr << (PAGE_SHIFT - 10),
->  	       codesize >> 10,
->  	       reservedpages << (PAGE_SHIFT - 10),
-> diff --git a/arch/parisc/mm/init.c b/arch/parisc/mm/init.c
-> index b0831d9..d5aca31 100644
-> --- a/arch/parisc/mm/init.c
-> +++ b/arch/parisc/mm/init.c
-> @@ -506,7 +506,7 @@ void __init mem_init(void)
->  #endif
->  
->  	printk(KERN_INFO "Memory: %luk/%luk available (%dk kernel code, %dk reserved, %dk data, %dk init)\n",
-> -		(unsigned long)nr_free_pages() << (PAGE_SHIFT-10),
-> +		nr_free_pages() << (PAGE_SHIFT-10),
->  		num_physpages << (PAGE_SHIFT-10),
->  		codesize >> 10,
->  		reservedpages << (PAGE_SHIFT-10),
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 579382c..0e5c59b 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -372,7 +372,7 @@ void __init mem_init(void)
->  
->  	printk(KERN_INFO "Memory: %luk/%luk available (%luk kernel code, "
->  	       "%luk reserved, %luk data, %luk bss, %luk init)\n",
-> -		(unsigned long)nr_free_pages() << (PAGE_SHIFT-10),
-> +		nr_free_pages() << (PAGE_SHIFT-10),
->  		num_physpages << (PAGE_SHIFT-10),
->  		codesize >> 10,
->  		reservedpages << (PAGE_SHIFT-10),
-> diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
-> index c634dfb..19f73cb 100644
-> --- a/arch/s390/mm/init.c
-> +++ b/arch/s390/mm/init.c
-> @@ -105,7 +105,7 @@ void __init mem_init(void)
->  	datasize =  (unsigned long) &_edata - (unsigned long) &_etext;
->  	initsize =  (unsigned long) &__init_end - (unsigned long) &__init_begin;
->          printk("Memory: %luk/%luk available (%ldk kernel code, %ldk reserved, %ldk data, %ldk init)\n",
-> -                (unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
-> +                nr_free_pages() << (PAGE_SHIFT-10),
->                  max_mapnr << (PAGE_SHIFT-10),
->                  codesize >> 10,
->                  reservedpages << (PAGE_SHIFT-10),
-> diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
-> index fe532ae..3161a27 100644
-> --- a/arch/sh/mm/init.c
-> +++ b/arch/sh/mm/init.c
-> @@ -224,7 +224,7 @@ void __init mem_init(void)
->  
->  	printk(KERN_INFO "Memory: %luk/%luk available (%dk kernel code, "
->  	       "%dk data, %dk init)\n",
-> -		(unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
-> +		nr_free_pages() << (PAGE_SHIFT-10),
->  		num_physpages << (PAGE_SHIFT-10),
->  		codesize >> 10,
->  		datasize >> 10,
-> diff --git a/arch/sparc/mm/init_32.c b/arch/sparc/mm/init_32.c
-> index 26bb391..ef05f5e 100644
-> --- a/arch/sparc/mm/init_32.c
-> +++ b/arch/sparc/mm/init_32.c
-> @@ -468,7 +468,7 @@ void __init mem_init(void)
->  			reservedpages++;
->  
->  	printk(KERN_INFO "Memory: %luk/%luk available (%dk kernel code, %dk reserved, %dk data, %dk init, %ldk highmem)\n",
-> -	       (unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
-> +	       nr_free_pages() << (PAGE_SHIFT-10),
->  	       num_physpages << (PAGE_SHIFT - 10),
->  	       codepages << (PAGE_SHIFT-10),
->  	       reservedpages << (PAGE_SHIFT - 10),
-> diff --git a/arch/um/kernel/mem.c b/arch/um/kernel/mem.c
-> index 61d7e61..a5d5e70 100644
-> --- a/arch/um/kernel/mem.c
-> +++ b/arch/um/kernel/mem.c
-> @@ -77,7 +77,7 @@ void __init mem_init(void)
->  	num_physpages = totalram_pages;
->  	max_pfn = totalram_pages;
->  	printk(KERN_INFO "Memory: %luk available\n",
-> -	       (unsigned long) nr_free_pages() << (PAGE_SHIFT-10));
-> +	       nr_free_pages() << (PAGE_SHIFT-10));
->  	kmalloc_ok = 1;
->  
->  #ifdef CONFIG_HIGHMEM
-> diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-> index 3cd7711..95e877f 100644
-> --- a/arch/x86/mm/init_32.c
-> +++ b/arch/x86/mm/init_32.c
-> @@ -892,7 +892,7 @@ void __init mem_init(void)
->  
->  	printk(KERN_INFO "Memory: %luk/%luk available (%dk kernel code, "
->  			"%dk reserved, %dk data, %dk init, %ldk highmem)\n",
-> -		(unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
-> +		nr_free_pages() << (PAGE_SHIFT-10),
->  		num_physpages << (PAGE_SHIFT-10),
->  		codesize >> 10,
->  		reservedpages << (PAGE_SHIFT-10),
-> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-> index 6176fe8..44f82a6 100644
-> --- a/arch/x86/mm/init_64.c
-> +++ b/arch/x86/mm/init_64.c
-> @@ -687,7 +687,7 @@ void __init mem_init(void)
->  
->  	printk(KERN_INFO "Memory: %luk/%luk available (%ldk kernel code, "
->  			 "%ldk absent, %ldk reserved, %ldk data, %ldk init)\n",
-> -		(unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
-> +		nr_free_pages() << (PAGE_SHIFT-10),
->  		max_pfn << (PAGE_SHIFT-10),
->  		codesize >> 10,
->  		absent_pages << (PAGE_SHIFT-10),
-> diff --git a/arch/xtensa/mm/init.c b/arch/xtensa/mm/init.c
-> index 427e14f..cdbc27c 100644
-> --- a/arch/xtensa/mm/init.c
-> +++ b/arch/xtensa/mm/init.c
-> @@ -203,7 +203,7 @@ void __init mem_init(void)
->  
->  	printk("Memory: %luk/%luk available (%ldk kernel code, %ldk reserved, "
->  	       "%ldk data, %ldk init %ldk highmem)\n",
-> -	       (unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
-> +	       nr_free_pages() << (PAGE_SHIFT-10),
->  	       ram << (PAGE_SHIFT-10),
->  	       codesize >> 10,
->  	       reservedpages << (PAGE_SHIFT-10),
-> -- 
-> 1.6.2.4
-> 
-> With kind regards,
-> 
-> Geert Uytterhoeven
-> Software Architect
-> Techsoft Centre
-> 
-> Technology and Software Centre Europe
-> The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-> 
-> Phone:    +32 (0)2 700 8453
-> Fax:      +32 (0)2 700 8622
-> E-mail:   Geert.Uytterhoeven@sonycom.com
-> Internet: http://www.sony-europe.com/
-> 
-> A division of Sony Europe (Belgium) N.V.
-> VAT BE 0413.825.160 · RPR Brussels
-> Fortis · BIC GEBABEBB · IBAN BE41293037680010
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arch" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+I'll reply to each of the relevant patches to comment on them.
+Regards,
+E.
