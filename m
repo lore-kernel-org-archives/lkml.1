@@ -1,62 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934007AbZHHKSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbZHHKey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934007AbZHHKSE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 06:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933977AbZHHKSD
+	id S1754951AbZHHKey (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 06:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZHHKey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 06:18:03 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:40043 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933950AbZHHKSD (ORCPT
+	Sat, 8 Aug 2009 06:34:54 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57438 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751648AbZHHKex (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 06:18:03 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Roel Kluin <roel.kluin@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fat: Read buffer overflow
-References: <4A7CAF28.8020908@gmail.com> <87y6pvi5qp.fsf@devron.myhome.or.jp>
-	<84144f020908072356r5cc3100dp79a6a508bafec7c7@mail.gmail.com>
-	<87prb6pqdu.fsf@devron.myhome.or.jp>
-Date: Sat, 08 Aug 2009 19:18:01 +0900
-In-Reply-To: <87prb6pqdu.fsf@devron.myhome.or.jp> (OGAWA Hirofumi's message of
-	"Sat, 08 Aug 2009 19:10:53 +0900")
-Message-ID: <877hxeobhi.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Sat, 8 Aug 2009 06:34:53 -0400
+Date: Sat, 8 Aug 2009 12:34:46 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Eric Paris <eparis@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
+       Douglas Leeder <douglas.leeder@sophos.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
+       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
+       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "arjan@infradead.org" <arjan@infradead.org>,
+       "david@lang.hm" <david@lang.hm>,
+       "jengelh@medozas.de" <jengelh@medozas.de>,
+       "aviro@redhat.com" <aviro@redhat.com>,
+       "mrkafk@gmail.com" <mrkafk@gmail.com>,
+       "alexl@redhat.com" <alexl@redhat.com>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "mmorley@hcl.in" <mmorley@hcl.in>
+Subject: Re: fanotify - overall design before I start sending patches
+Message-ID: <20090808103445.GB9978@elf.ucw.cz>
+References: <1248466429.3567.82.camel@localhost> <4A7AAE89.20205@sophos.com> <1249554548.32113.137.camel@twins> <200908061159.45550.tvrtko.ursulin@sophos.com> <1249557831.32113.234.camel@twins> <1249582695.20644.35.camel@dhcp231-106.rdu.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Disposition: inline
+In-Reply-To: <1249582695.20644.35.camel@dhcp231-106.rdu.redhat.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
+Hi!
 
-> Pekka Enberg <penberg@cs.helsinki.fi> writes:
->
->> Yes, but we pass "ulen" to vfat_is_used_badchars(). The value of
->> "ulen" is a returned in the "longlen" argument of xlate_to_uni() which
->> in turn is calculated as follows for the UTF-8 case:
->>
->>   int name_len = strlen(name);
->>   *outlen = utf8s_to_utf16s(name, PATH_MAX, (wchar_t *) outname);
->>   *outlen -= (name_len - len);
->>   *longlen = *outlen;
->>
->> Maybe "*outlen" can never be negative because of some invariants that
->> I don't see but it's so non-obvious to me that I'd like to see the
->> explicit check in vfat_is_used_badchars().
->
-> Ah, good point. Sorry, I was looking my tree. I'm going to submit the
-> attached patch on next merge window.
->
-> Is this enough for it?
+> > By the above you're hosed anyway since starting a new one will fail due
+> > to there being no daemon, right? Might as well forfeit all security
+> > measures once the daemon dies. That is let security depend on there
+> > being a daemon connected.
+> 
+> Nope.  You should stop calling and thinking of it as a security system.
+> As I've said multiple times it is at best an indexing and integrity
+> checking system.  We fail open.  We don't prevent or care about
+> malicious local attacks.  When a group is evicted everything is going to
+> just work.  The whole reason for the timeout is because I don't trust
+> userspace not to get it wrong and I'd rather not lose my box because of
+> it.  Yes, the reset I'm proposing allows userspace to screw the
 
-BTW, if we want the sanity check of "longlen", I'd like to put it in the
-end of xlate_to_uni(), not vfat_is_used_badchars(). Because I think it's
-job of xlate_to_uni().
+Well, if you are using this for hierarchical storage, then this daemon
+will bring the system down.
 
-Thanks.
+Face it, you _are_ developing a security system; otherwise features of
+fanotify do not make sense. (And you are developing _bad_ security
+system).
+
+So... what about just scrapping the open vetoing -- at least from
+initial version?
+
+> > Seems like a weird thing to me, suppose you DoS the system on purpose
+> > and all clients start getting wonky, you kill them all, and are left
+> > with non, then you cannot access any of your files anymore and
+> > everything grinds to a halt?
+> 
+> Nope, you DoS the system on purpose all the listeners get evicted, now
+> everything else will be able to open/read data without those listeners
+> paying attention.  When a group is evicted it's evicted.  It no longer
+> needs to say yes or no.
+
+Yes so I hammer your web server and you loose your antivirus
+protection. 
+
+> > Like said, having the filesystem block actions based on external
+> > processes seems just asking for trouble.
+> 
+> Or it seems like exactly what hierarchical storage management systems
+> want....
+
+Timeout does not make sense for hierarchical storage.
+									Pavel
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
