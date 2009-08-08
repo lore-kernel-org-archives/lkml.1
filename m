@@ -1,75 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589AbZHHNlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750774AbZHHOCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752589AbZHHNlA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 09:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbZHHNk7
+	id S1750774AbZHHOCo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 10:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750706AbZHHOCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 09:40:59 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33357 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755AbZHHNk6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 09:40:58 -0400
-Date: Sat, 8 Aug 2009 15:40:50 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Trilok Soni <soni.trilok@gmail.com>, Greg KH <greg@kroah.com>
-Cc: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Brian Swetland <swetland@google.com>, dmitry.torokhov@gmail.com,
-       dtor@mail.ru, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org
-Subject: Synaptics touchscreen for HTC Dream: check that smbus is available
-Message-ID: <20090808134049.GA13083@elf.ucw.cz>
-References: <20090714100634.GA4054@elf.ucw.cz> <5d5443650907140320w334864f4uc1ee13ed32fdb874@mail.gmail.com> <20090715133627.GA2538@elf.ucw.cz> <5d5443650907151033w36008b71pe4b32bcea9489b75@mail.gmail.com> <20090721102153.GE4133@elf.ucw.cz> <5d5443650907210334k3f562cebsc665511a161c8639@mail.gmail.com>
+	Sat, 8 Aug 2009 10:02:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40212 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750701AbZHHOCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 10:02:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH update x2] PM: Introduce core framework for run-time PM of I/O devices (rev. 13)
+Date: Sat, 8 Aug 2009 16:03:02 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       Magnus Damm <magnus.damm@gmail.com>, Greg KH <gregkh@suse.de>,
+       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0908071130440.3063-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908071130440.3063-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <5d5443650907210334k3f562cebsc665511a161c8639@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908081603.02713.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> Because this driver is using smbus i2c apis, it will be good to add
-> >> that check too.
-> >
-> > So I should do something like
-> >
-> > if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_WORD_DATA))
-> >        ...
-> >
-> > in addition?
+On Friday 07 August 2009, Alan Stern wrote:
+> On Thu, 6 Aug 2009, Rafael J. Wysocki wrote:
 > 
-> Yes.
+> > Hi,
+> > 
+> > The patch below should address all of your most recent comments.
+> 
+> Only two comments.
+> 
+> 
+> > +static int __pm_request_idle(struct device *dev)
+> > +{
+> ...
+> > +	if (dev->power.request_pending) {
+> > +		/* Any requests other then RPM_REQ_IDLE take precedence. */
+> > +		if (dev->power.request != RPM_REQ_NONE)
+> 
+> Replace != with ==.
 
-Ok, here it is.
+Good catch, thanks!
 
---- 
+> > +			dev->power.request = RPM_REQ_IDLE;
+> > +		else if (dev->power.request != RPM_REQ_IDLE)
+> > +			retval = -EAGAIN;
+> > +		return retval;
+> 
+> 
+> > --- linux-2.6.orig/drivers/base/dd.c
+> > +++ linux-2.6/drivers/base/dd.c
+> ...
+> > @@ -306,6 +317,8 @@ static void __device_release_driver(stru
+> >  
+> >  	drv = dev->driver;
+> >  	if (drv) {
+> > +		pm_runtime_disable(dev);
+> > +
+> >  		driver_sysfs_remove(dev);
+> >  
+> >  		if (dev->bus)
+> > @@ -324,6 +337,8 @@ static void __device_release_driver(stru
+> >  			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+> >  						     BUS_NOTIFY_UNBOUND_DRIVER,
+> >  						     dev);
+> > +
+> > +		pm_runtime_enable(dev);
+> >  	}
+> >  }
+> 
+> We may need to be more careful here.  The driver's remove method may
+> want to do some runtime PM stuff to the device before giving up
+> control.  On the other hand I'm not sure what _should_ be done here, so
+> I can't suggest anything better.
 
-Check that SMBUS APIs are available in touchscreen driver.
-    
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
+Hmm.  Perhaps we can do something along the lines of our .probe() handling.
+Namely, call
 
-diff --git a/drivers/staging/dream/synaptics_i2c_rmi.c b/drivers/staging/dream/synaptics_i2c_rmi.c
-index dc1e3c7..6e23276 100644
---- a/drivers/staging/dream/synaptics_i2c_rmi.c
-+++ b/drivers/staging/dream/synaptics_i2c_rmi.c
-@@ -373,6 +373,12 @@ static int __devinit synaptics_ts_probe(
- 		goto err_check_functionality_failed;
- 	}
- 
-+	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_WORD_DATA)) {
-+		pr_err("synaptics_ts_probe: need I2C_FUNC_SMBUS_WORD_DATA\n");
-+		ret = -ENODEV;
-+		goto err_check_functionality_failed;
-+	}
-+
- 	ts = kzalloc(sizeof(*ts), GFP_KERNEL);
- 	if (ts == NULL) {
- 		ret = -ENOMEM;
+pm_runtime_disable(dev);
+pm_runtime_get_noresume(dev);
+pm_runtime_enable(dev);
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+before and
+
+pm_runtime_put_noidle()
+
+after?  Then, if the driver's or bus type's .remove() needs to resume, it will
+be able to do that right away and if it wants to suspend, it can always call
+pm_runtime_put*(), because our pm_runtime_put_noidle() won't decrease the
+usage counter below zero.
+
+At the same time we can avoid "leftover" suspends that could interfere with
+.remove() in case it needs to access the hardware.
+
+Best,
+Rafael
