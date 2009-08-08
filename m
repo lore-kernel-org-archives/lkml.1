@@ -1,139 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbZHHXr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbZHHX4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753310AbZHHXr2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 19:47:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbZHHXr2
+	id S1753340AbZHHX4g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 19:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbZHHX4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 19:47:28 -0400
-Received: from phunq.net ([64.81.85.152]:44833 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753226AbZHHXr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 19:47:27 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Tux3] Current Activities?
-Date: Sat, 8 Aug 2009 16:47:21 -0700
-User-Agent: KMail/1.9.9
-Cc: Jeff Garzik <jgarzik@pobox.com>, debian developer <debiandev@gmail.com>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, tux3@tux3.org,
-       LKML <linux-kernel@vger.kernel.org>, corbet@lwn.net
-References: <6dcc37b30904291901m7abdd6d7q6f44b2c248ec48c4@mail.gmail.com> <200908010942.52623.phillips@phunq.net> <20090806075246.GA6860@elte.hu>
-In-Reply-To: <20090806075246.GA6860@elte.hu>
+	Sat, 8 Aug 2009 19:56:35 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:45325 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753303AbZHHX4f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 19:56:35 -0400
+Date: Sat, 8 Aug 2009 16:56:34 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Ben Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_PREEMPT_RCU in next/mmotm
+Message-ID: <20090808235634.GB6866@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <Pine.LNX.4.64.0908081956580.12300@sister.anvils>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908081647.21279.phillips@phunq.net>
+In-Reply-To: <Pine.LNX.4.64.0908081956580.12300@sister.anvils>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 August 2009, Ingo Molnar wrote:
+On Sat, Aug 08, 2009 at 08:34:03PM +0100, Hugh Dickins wrote:
+> Hi Paul,
 > 
-> * Daniel Phillips <phillips@phunq.net> wrote:
+> Is CONFIG_PREEMPT_RCU=y expected to be working in -next (or mmotm)?
 > 
-> > [...]  I will say this now: if we are invited to merge in the next 
-> > major release, or in -mm or whatever, we will happily do it. If we 
-> > are not invited to merge, nobody has any cause to complain about 
-> > progress slowing down. [...]
+> I ask because it appears to break down on PowerPC G5 when I try two
+> "make -j20" kernel builds in parallel.  The "filp" slab which usually
+> contains a couple of thousand objects or so, jumps up to a couple of
+> hundred thousand before the builds complete, and continues rising
+> from then on - I think that's a sign of RCU in disgrace?
+> And rebooting hangs thereafter.
+
+That would indeed be bad.
+
+> And I notice that include/linux/rcupreempt.h currently says:
+> static inline void synchronize_rcu_expedited(void)
+> {
+> 	synchronize_rcu();  /* Placeholder for new rcupreempt implementation. */
+> }
+> which gives an impression of work in progress?
+
+Yep, but I would be surprised if this was causing your problem.  In fact,
+I would be surprised if this function was being invoked.  Then again,
+I have been surprised more than once.
+
+For whatever it is worth, with luck, include/linux/rcupreempt.h disappears
+entirely at some point.
+
+> CONFIG_PREEMPT_TREE=y seems okay on PowerPC; and when I briefly tried
+
+CONFIG_TREE_RCU=y, you mean, right?
+
+> CONFIG_PREEMPT_RCU=y on x86_64, it didn't show above symptoms there.
+
+Interesting...
+
+> I did try bisecting yesterday's linux-next git, but that led me to
 > 
-> The thing is, if you are waiting for an 'invite to upstream Linux 
-> merge' that could be a _very_ long wait: i've yet to see a single 
-> one ever since i started hacking Linux ~14 years ago ;-)
-
-Hi Ingo,
-
-We were already sorta-kinda invited to merge, as I read it, having received advice to merge early while the code base remains small
-instead of adding more features and risking premature bloat.  I seem to
-recall there was a dissenter at that time on the basis of lack of
-atomic commit, and we chose to follow the latter advice instead of the
-former, arguably a mistake.
-
-> The model that Linux has been following for the past 10+ years is 
-> for new kernel projects to request inclusion. I.e. you push your 
-> patches upstream: you send patches and a pull request to the 
-> appropriate people/lists such as lkml.
+> commit 8ca17c6082feee5841a7b0e91d00e18c3f85f063
+> Merge: dafcc6e... 7256cf0...
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Mon Aug 3 15:50:37 2009 +0200
 > 
-> This is done so because merging patches is a fundamentally 
-> hierarchical process, and the people merging _your_ patches are the 
-> real maintenance bottleneck, not you.
+>     Merge branch 'core/rcu' into auto-sched-next
 > 
-> So it is not Linus and other maintainers who are searching the web 
-> for projects to merge and sending out 'invites' but the other way 
-> around: projects try to get upstream by submitting patches (which 
-> get reviewed and accepted or rejected).
+> rather than to any particular patch of yours which that merges:
+> which seemed odd, but I'm not accustomed to bisecting next.
 
-With 20-20 hindsight, we should have gone for a merge immediately after
-the SCALE 7X demo, at which time Tux3 was reliably but without
-atomic commit.  Instead, we decided to heed those asking for atomic
-commit before merge.  This turned out to be a bad idea, because my
-available time soon became severely constrained.  Work on atomic commit
-has progressed over the last few months, but slowly.  If we had merged
-back in February this work would have progressed faster and been done
-by now.  As it is, we will probably forge on with the atomic commit work
-rather than changing course and looking for a merge right away, because
-there has been considerable progress in that direction.  Also, my time
-is not quite as constrained as it was - still constrained, but not quite
-as severely as recently.
+I honestly don't know how "git bisect" interacts with merges.
 
-Meanwhile Hirofumi has dauntlessly forged on, extracting design details
-from me, adding some of his own, generally subjecting everything to
-minute scrutiny, and in the process turning out a significant volume of
-high quality code.  If I had to state what the best thing that could
-happen to Tux3 is, it would be: somebody steps up to sponsor Hirofumi.
-He has done all that work strictly as a volunteer without support of any
-kind, and he could use some.  Not to mention the fact that as FAT
-maintainer we would be well served to have Hirofumi in a comfort zone,
-given recent developments on that front.
-
-> So if you'd like your code to be merged upstream you better start 
-> this process now - this alone can take a lot of time: months (or 
-> years in certain cases). But it is still a much shorter time-span 
-> than an 'invite to merge' ;-)
+> Another odd thing is that mmotm .DATE=2009-07-30-05-01, the last
+> I tried before Thursday's, showed no such symptoms: yet appears to
+> contain all the larger RCU changes, just lacking some more recent
+> on/offline race fixes.  I didn't notice any likely difference
+> between those mmotm trees down in arch/powerpc either.
 > 
-> 	Ingo
+> My guess is that there's some other issue which is triggering
+> the RCU disgrace, but that is just a guess.
 
-My "invite to merge" comment was made in the context of various comments
-about insufficiently rapid progress, and should not be taken out of
-context.  We are well aware of the traditional merging procedure.  We
-certainly are not waiting for any maintainer action, but rather for more
-progress from ourselves.  There are various possibilities to speed that
-up.  See "sponsor Hirofumi" above.  I myself do not need sponsorship at
-this point, what I need is more time on my hands, and only I can do
-anything about that.  (As of today, I do have a little more time
-available, hence this post.)
+The one other issue I know of is one that apparently happens only on
+one of Ingo's machines, which suddenly decides that it need not inform
+RCU when onlining a CPU (at boot time).
 
-In fact, our merge process has been in progress since February.  As we
-see it, it goes like this:
+But you seem to be making it past boot, and I would guess that you are
+not doing any hotplug CPU operations, right?
 
-  1) Implement and verify atomic commit correctness at least for a
-     large subset of filesystem operations.
+> Config attached.  Any suggestions?
 
-  2) Clean the kernel part of the code base to a respectable state.
+/me scratches head...  Will try some more CONFIG_PREEMPT_RCU testing
+locally.
 
-  3) Commence our post-address-repost cycle with intent to merge.
-
-We are at step 1 and I can't say how long it will take to get to step 2.
-It is on the way.  Any help we get will hurry it along.
-
-I will very briefly address Ted's question, which amounts to: "why
-do we want Tux3?"  I think Tux3 fills an empty niche in our filesystem
-ecology where a simple, clean and modern general purpose filesystem
-should exist and there is none.  In concrete terms, Tux3 implements a
-single-pointer-per-extent model that Btrfs and ZFS do not.  This allows
-a very simple *physical* design, with much complexity pushed to the
-*logical* level where things generally behave better.  A simple physical
-design offers many benefits, including making it easier to take a run at
-that holiest of holy grails, online check and repair.
-
-In even more concrete terms, Tux3 already demonstrates a tiny memory
-footprint, unlike Btrfs or ZFS.  Its CPU footprint is also tiny.  As
-such, Tux3 could easily run on a cellphone or smaller device, while
-offering a full range of "big filesystem" capabilities.  (Note that
-Zumastor already proves we know how to do replication properly:
-http://zumastor.org/.)
-
-Regards,
-
-Daniel
+							Thanx, Paul
