@@ -1,99 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbZHHV6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752402AbZHHWGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbZHHV6F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 17:58:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbZHHV6E
+	id S1752402AbZHHWGf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 18:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZHHWGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 17:58:04 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:41527 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752666AbZHHV6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 17:58:03 -0400
-Date: Thu, 6 Aug 2009 10:54:01 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: David Brownell <david-b@pacbell.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, nico@cam.org,
-       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
-       manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl, ppisa@pikron.com,
-       jarkko.lavinen@nokia.com, ben@fluff.org, saschasommer@freenet.de,
-       avorontsov@ru.mvista.com, oakad@yahoo.com, ian@mnementh.co.uk,
-       HaraldWelte@viatech.com, JosephChan@via.com.tw, adrian.hunter@nokia.com
-Subject: Re: New MMC maintainer needed
-Message-ID: <20090806105401.1f852995@mjolnir.ossman.eu>
-In-Reply-To: <200908031851.24375.david-b@pacbell.net>
-References: <20090714153601.6dfe70ff@mjolnir.ossman.eu>
-	<20090728222334.0c543c47@mjolnir.ossman.eu>
-	<20090731122623.254fd0f1@mjolnir.ossman.eu>
-	<200908031851.24375.david-b@pacbell.net>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-20598-1249548849-0001-2"
+	Sat, 8 Aug 2009 18:06:34 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:33930 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751558AbZHHWGd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 18:06:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=sRkczgOp+64Rg6HncEe8rkA5VVVSJWP1DEQ5fqVTUsorGYkQFhVKQCml3GwtTAh8Xi
+         xyTcqgzNOp/wjUbUwFS55AQtozWz2xL1aEweWNm1fXu2JJFVs+qt8UYY2GLLjbdXLZPT
+         9e10547Y/8nW2QmLC2Yw3SqET4BbBO5GAjlhc=
+Message-ID: <4A7DF6E6.2030509@gmail.com>
+Date: Sat, 08 Aug 2009 19:06:30 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090725)
+MIME-Version: 1.0
+To: Borislav Petkov <petkovbb@googlemail.com>,
+       Kevin Winchester <kjwinchester@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       LKML <linux-kernel@vger.kernel.org>, borislav.petkov@amd.com
+Subject: Re: [PATCH] x86: clear incorrectly forced X86_FEATURE_LAHF_LM flag
+References: <4A7D673A.1090401@gmail.com> <20090808152016.GB25374@liondog.tnic>
+In-Reply-To: <20090808152016.GB25374@liondog.tnic>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Borislav Petkov wrote:
+> Hi,
+> 
+> On Sat, Aug 08, 2009 at 08:53:30AM -0300, Kevin Winchester wrote:
+>> Due to an erratum with certain AMD Athlon 64 processors, the BIOS may
+>> need to force enable the LAHF_LM capability.  Unfortunately, in at
+>> least one case, the BIOS does this even for processors that do not
+>> support the functionality.
+>>
+>> Add a specific check that will clear the feature bit for processors
+>> known not to support the LAHF/SAHF instructions.
+>>
+>> Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
+>> ---
+>>
+>> While making this change, I noticed the clause above my code:
+>>
+>>     if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
+>>
+>> It does not seem concerned with the possibility that some of the
+>> upper 16 bits of level will be non-zero.  Is this intentional, or
+>> should the upper 16 bits be masked off before the comparisons?
+> 
+> This should be ok because the upper 16 bits are 0x0000 for those
+> revisions and therefore the whole u32 matches. Later revisions have the
+> extended model bumped and they also match.
+> 
+>>  arch/x86/kernel/cpu/amd.c |    8 ++++++++
+>>  1 files changed, 8 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+>> index e2485b0..a2f0fe4 100644
+>> --- a/arch/x86/kernel/cpu/amd.c
+>> +++ b/arch/x86/kernel/cpu/amd.c
+>> @@ -400,6 +400,14 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+>>  		level = cpuid_eax(1);
+>>  		if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
+>>  			set_cpu_cap(c, X86_FEATURE_REP_GOOD);
+>> +
+>> +		/*
+>> +		 * Some BIOSes incorrectly set this feature, but only
+>> +		 * Revision E (with Extended Model = 2) actually supports
+>> +		 * it.
+>> +		 */
+>> +		if (!(level & 0x00020000))
+>> +			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
+> 
+> let me check this internally next week because
+> it seems that according to the Fam 0xf RevGuide
+> (http://support.amd.com/us/Processor_TechDocs/25759.pdf) erratum 110
+> applies to atleast 3 CPU revisions with extended model 0x1 too.
 
---=_freyr.ossman.eu-20598-1249548849-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+You are quite right, I will redo the patch.
 
-On Mon, 3 Aug 2009 18:51:23 -0700
-David Brownell <david-b@pacbell.net> wrote:
+> 
+> By the way, what does /proc/cpuinfo say on your machine?
+> 
 
-> On Friday 31 July 2009, Pierre Ossman wrote:
-> > Restoring back the system state from MMC after a successful hibernation
-> > http://marc.info/?t=3D124818534700003&r=3D1&w=3D2
-> >=20
-> > I don't agree with this approach. The point of the workqueue is so that
-> > the kernel can do things in parallel, so this patch is a step back. The
-> > problem is really with how the kernel doesn't properly cope with
-> > asynchronous disk scanning during bootup. The root_delay parameter was
-> > added for this for the "normal" case, but it seems more work is needed.
->=20
+processor	: 0
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 4
+model name	: AMD Athlon(tm) 64 Processor 2800+
+stepping	: 10
+cpu MHz		: 1800.000
+cache size	: 512 KB
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 1
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext lm 3dnowext 3dnow rep_good
+bogomips	: 3599.75
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management: ts fid vid ttp
 
-(confusion on my end, I wasn't thinking about root_delay but rootwait)
 
-> Doesn't handing of resumes needs more attention overall?
->=20
+-- 
+Kevin Winchester
 
-Very much so. I haven't given that area much love since a) I haven't
-had the time, b) I don't have any systems with fancy enough suspend
-handling to do anything interesting.
-
-> Example, root on eMMC (e.g. a 32-MByte non-removable chip) wouldn't
-> resume at all well the last time I checked ... mounted file systems
-> (not just root) made trouble.  Hardware that reliably reports card
-> insert/remove was rude in the same ways.
-
-The general lack of removal detection during suspend tends to make
-everything more complicated than one would like. But I'm sure it's
-manageable just as long as someone puts enough time into it. I'm still
-very much opposed to just assuming that the user never removes the card
-during suspend though.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-20598-1249548849-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkp6mi4ACgkQ7b8eESbyJLjGwQCfaDZO/QTMSmyt85o5XDJBOxii
-i/wAn3enY3iPeJjHxgkJBsFbDdMR69r7
-=qbfd
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-20598-1249548849-0001-2--
