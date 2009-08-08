@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934154AbZHHMxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934164AbZHHNAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934154AbZHHMxR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 08:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934137AbZHHMxQ
+	id S934164AbZHHNAy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 09:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934145AbZHHNAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 08:53:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40024 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934133AbZHHMxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 08:53:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
-Date: Sat, 8 Aug 2009 14:53:34 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Zhang Rui <rui.zhang@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       "linux-acpi" <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Arjan van de Ven <arjan@linux.intel.com>
-References: <1248404514.2670.107.camel@rzhang-dt> <200908080222.03172.rjw@sisk.pl> <20090808005922.110A3526EA5@mailhub.coreip.homeip.net>
-In-Reply-To: <20090808005922.110A3526EA5@mailhub.coreip.homeip.net>
+	Sat, 8 Aug 2009 09:00:53 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:55085 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934144AbZHHNAx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 09:00:53 -0400
+Message-ID: <4A7D7729.50502@online.de>
+Date: Sat, 08 Aug 2009 15:01:29 +0200
+From: Alexander Koeppe <format_c@online.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: roel.kluin@gmail.com
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fat: Read buffer overflow
+References: <d6Gqb-2HX-3@gated-at.bofh.it>
+In-Reply-To: <d6Gqb-2HX-3@gated-at.bofh.it>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908081453.34718.rjw@sisk.pl>
+X-Provags-ID: V01U2FsdGVkX187kJdDwhqLDgjQEiKg4UrgPJXAHD6kvr8GJe+
+ 2yafxyQmz83by3VVOQ3Pv9HMRkjxQszGr8qESIJY0hT/GzCS/h
+ +uU6AD+Hcx3ExkOWMlBEQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 08 August 2009, Dmitry Torokhov wrote:
-> On Friday 07 August 2009 17:22:03 Rafael J. Wysocki wrote:
-> > +       device_enable_async_pm(&i8042_platform_device->dev, true);
-> > +
+Roel Kluin schrieb:
+> If len is less or equal to 0, this results in a read of s[-1].
 > 
-> Please don't do that, at least not right now. i8042 being the fine
-> piece of {soft,hard}ware as it is will not like when you start banging
-> on all its ports at the same time.
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> diff --git a/fs/fat/namei_vfat.c b/fs/fat/namei_vfat.c
+> index 6f27853..114ff6d 100644
+> --- a/fs/fat/namei_vfat.c
+> +++ b/fs/fat/namei_vfat.c
+> @@ -202,6 +202,9 @@ static inline int vfat_is_used_badchars(const wchar_t *s, int len)
+>  {
+>  	int i;
+>  
+> +	if (len <= 0)
+> +		return -EINVAL;
+> +
+>  	for (i = 0; i < len; i++)
+>  		if (vfat_bad_char(s[i]))
+>  			return -EINVAL;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Don't worry, this patch is only a prototype.
+This seem to be a bit redundant code.
+If len is 0 or less, the loop won't iterate even one time and hence
+not read outside the buffer.
+The only advantage is, that re function signals the invalid argument.
 
-Best,
-Rafael
+-- A.Koeppe
