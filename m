@@ -1,62 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZHHKzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934002AbZHHLQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756223AbZHHKzc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 06:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZHHKzb
+	id S934002AbZHHLQN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 07:16:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbZHHLQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 06:55:31 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38394 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755416AbZHHKza (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 06:55:30 -0400
-Date: Sat, 8 Aug 2009 12:55:24 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Joe Perches <joe@perches.com>, Ben Dooks <ben-linux@fluff.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
-	sections
-Message-ID: <20090808105524.GH9978@elf.ucw.cz>
-References: <20090806113104.GK31370@elf.ucw.cz> <20090806120826.GC27773@flint.arm.linux.org.uk> <4A7ACC8D.7030706@xenontk.org> <20090806124048.GD27773@flint.arm.linux.org.uk> <1249563730.10297.13.camel@Joe-Laptop.home> <20090806133349.GF27773@flint.arm.linux.org.uk> <1249568614.10297.20.camel@Joe-Laptop.home> <20090806150322.GX2080@trinity.fluff.org> <1249575528.3467.9.camel@Joe-Laptop.home> <20090806164001.GA31507@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090806164001.GA31507@flint.arm.linux.org.uk>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 8 Aug 2009 07:16:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34850 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755686AbZHHLQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 07:16:11 -0400
+Date: Sat, 8 Aug 2009 07:15:56 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
+       msb@google.com, viro@zeniv.linux.org.uk
+Subject: Re: [PATCH 3/4] vfs: change sb->s_maxbytes to a loff_t
+Message-ID: <20090808071556.593c2fe9@tlielax.poochiereds.net>
+In-Reply-To: <20090807225146.GC28019@cmpxchg.org>
+References: <1249671461-9071-1-git-send-email-jlayton@redhat.com>
+	<1249671461-9071-4-git-send-email-jlayton@redhat.com>
+	<20090807225146.GC28019@cmpxchg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 8 Aug 2009 00:51:46 +0200
+Johannes Weiner <hannes@cmpxchg.org> wrote:
 
-> > Perhaps this patch is more palatable.  It's certainly shorter.
+> On Fri, Aug 07, 2009 at 02:57:40PM -0400, Jeff Layton wrote:
+> > sb->s_maxbytes is supposed to indicate the maximum size of a file that
+> > can exist on the filesystem. It's declared as an unsigned long long.
 > > 
-> > It does add both linux-arm-kernel and linux-arm to section
-> > SIMTEC EB2410ITX (BAST).  By the way, another section you
-> > maintain, SIMTEC EB110ATX (Chalice CATS), has neither a
-> > pattern entry nor a mailing list entry.  Should it?
+> > Even if a filesystem has no inherent limit that prevents it from using
+> > every bit in that unsigned long long, it's still problematic to set it
+> > to anything larger than MAX_LFS_FILESIZE. A lot of places implicitly
+> > cast s_maxbytes to a signed value when doing comparisons against it
+> > (usually using loff_t on the other side of the comparison). If it's
+> > set too large then this cast makes it a negative number and generally
+> > breaks the comparison.
+> > 
+> > Change s_maxbytes to be loff_t instead. That should help eliminate the
+> > temptation to set it too large by making it a signed value.
+> > 
+> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> > ---
+> >  fs/super.c         |   10 ++++++++++
+> >  include/linux/fs.h |    2 +-
+> >  2 files changed, 11 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/fs/super.c b/fs/super.c
+> > index 2761d3e..929d55d 100644
+> > --- a/fs/super.c
+> > +++ b/fs/super.c
+> > @@ -889,6 +889,16 @@ vfs_kern_mount(struct file_system_type *type, int flags, const char *name, void
+> >   	if (error)
+> >   		goto out_sb;
+> >  
+> > +	/*
+> > +	 * filesystems should never set s_maxbytes larger than MAX_LFS_FILESIZE
+> > +	 * but s_maxbytes was an unsigned long long for many releases. Throw
+> > +	 * this warning for a little while to try and catch filesystems that
+> > +	 * violate this rule. This warning can be removed in 2.6.34.
+> > +	 */
+> > +	WARN(((unsigned long long) mnt->mnt_sb->s_maxbytes > MAX_LFS_FILESIZE),
+> > +		"WARNING: %s sets sb->s_maxbytes too large (%llu)", type->name,
+> > +		(unsigned long long) mnt->mnt_sb->s_maxbytes);
 > 
-> I recently had to remove those pattern entries because they were plainly
-> wrong (thanks to those who didn't CC anyone in the ARM community with
-> those patches.)  
+> Since it's signed now, you could just check for it being < 0, no?
+> 
 
-Hehe, and now ask yourself why lakml list was not CCed. Aha, its
-ethics document periodicaly posted explicitely does not permit
-CCing, and CCing lakml for non-subscribers is impossible.
+Sure, that works too and is probably a little cleaner. I'll change it
+in the next respin to do that.
 
-So, if you want to receive such information, you should either
+> I don't like the warning much, though.  It seems to be a random check
+> for a bug that has been fixed now.  We don't check other errors from
+> ->get_sb() either.
 
-1) monitor lkml
+Ordinarily, I'd agree with this, but we're changing the type of
+s_maxbytes. It's possible that:
 
-2) open up lakml
+A) I missed something in one of the more complex s_maxbytes calculations.
 
-3) subscribe to linux-arm@vger, and slowly redirect trafic there.
-									Pavel
+B) Out of tree filesystems are broken in this way and don't realize it.
+
+I think it makes some sense to burn a couple of CPU cycles in the mount
+codepath for a few releases to try and catch both of these cases. If we
+don't warn this way, then this change could result in more subtle
+breakage.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jeff Layton <jlayton@redhat.com>
