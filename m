@@ -1,145 +1,555 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbZHHBKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932182AbZHHBLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756547AbZHHBKO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 21:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbZHHBKN
+	id S932182AbZHHBLq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 21:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbZHHBLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 21:10:13 -0400
-Received: from mail-fx0-f228.google.com ([209.85.220.228]:33952 "EHLO
-	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752645AbZHHBKL (ORCPT
+	Fri, 7 Aug 2009 21:11:45 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50057 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753101AbZHHBLn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 21:10:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=fkVaMTyRVjoig/S41BcUcktNDyhkj9Qu7VFXlRWnSWaqoNhcl7+l6FyKyQZbO3NyX+
-         NJcJICSbNw23n7/xXrr1ka8qCtGo9CQFfEevxffCyc91zZr/vX/TRaS7tL3ROMXdRKnS
-         Ygf8fQbjM/wa/kiUTvnYQx+kzn+vIOVtn2ueE=
-Date: Sat, 8 Aug 2009 03:10:08 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH 1/4] perf tools: callchain: Warn only once in empty
-	node detection
-Message-ID: <20090808011007.GO4999@nowhere>
-References: <1249690585-9145-1-git-send-email-fweisbec@gmail.com> <20090808010648.GL4339@ghostprotocols.net>
+	Fri, 7 Aug 2009 21:11:43 -0400
+Message-ID: <39eafe409b85053081e9c6826005bb06.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20090807221238.GJ9686@balbir.in.ibm.com>
+References: <20090807221238.GJ9686@balbir.in.ibm.com>
+Date: Sat, 8 Aug 2009 10:11:40 +0900 (JST)
+Subject: Re: Help Resource Counters Scale Better (v2)
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, andi.kleen@intel.com,
+       "Prarit Bhargava" <prarit@redhat.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       "Pavel Emelianov" <xemul@openvz.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090808010648.GL4339@ghostprotocols.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 10:06:48PM -0300, Arnaldo Carvalho de Melo wrote:
-> Em Sat, Aug 08, 2009 at 02:16:22AM +0200, Frederic Weisbecker escreveu:
-> > When we fill a new node that is found to be empty (sign of a bug),
-> > we print a message each time that happens. Sometimes we reach thousands
-> > of lines printed.
-> > 
-> > Just warn only once in that case (and use stderr instead of stdout).
-> 
-> Wouldn't this be better done with a macro so that the every message is
-> print once instead of any fprintf_once message?
+Balbir Singh wrote:
+> Enhancement: For scalability move the resource counter to a percpu counter
+>
+> Changelog v2->v1
+>
+> From: Balbir Singh <balbir@linux.vnet.ibm.com>
+>
+> 1. Updated Documentation (cgroups.txt and resource_counters.txt)
+> 2. Added the notion of tolerance to resource counter initialization
+>
+looks better ..but a few concerns/nitpicks.
 
 
-
-Doh! You're right...
-/me slaps his face.
-
-
- 
-> I think it would even be nice to just use the same thing the kernel
-> uses... WARN_ON_ONCE, and also using asm/bug.h, etc, just add it to
-> tools/perf/util/include/asm, etc.
-> 
+> I tested this patch on my x86_64 box with a regular test for hard
+> limits and a page fault program. I also enabled lockdep and lock_stat
+> clearly shows that the contention on counter->lock is down quite
+> significantly. I tested these patches against an older mmotm, but
+> this should apply cleanly to the 6th August mmotm as well.
+>
+It's always helpful if the numbers are shown.
 
 
-Ok, I'll try that.
+> diff --git a/Documentation/cgroups/memory.txt
+> b/Documentation/cgroups/memory.txt
+> index b871f25..8f86537 100644
+> --- a/Documentation/cgroups/memory.txt
+> +++ b/Documentation/cgroups/memory.txt
+> @@ -13,6 +13,9 @@ c. Provides *zero overhead* for non memory controller
+> users
+>  d. Provides a double LRU: global memory pressure causes reclaim from the
+>     global LRU; a cgroup on hitting a limit, reclaims from the per
+>     cgroup LRU
+> +   NOTE: One can no longer rely on the exact limit. Since we've moved
+> +   to using percpu_counters for resource counters, there is always going
+> +   to be a fuzziness factor depending on the batch value.
+>
+This text is just from our view.
+Please explain to people who reads memcg for the first time.
 
 
+>  Benefits and Purpose of the memory controller
+>
+> diff --git a/Documentation/cgroups/resource_counter.txt
+> b/Documentation/cgroups/resource_counter.txt
+> index 95b24d7..d3b276b 100644
+> --- a/Documentation/cgroups/resource_counter.txt
+> +++ b/Documentation/cgroups/resource_counter.txt
+> @@ -12,12 +12,15 @@ to work with it.
+>
+>  1. Crucial parts of the res_counter structure
+>
+> - a. unsigned long long usage
+> + a. percpu_counter usage
+>
+>   	The usage value shows the amount of a resource that is consumed
+>  	by a group at a given time. The units of measurement should be
+>  	determined by the controller that uses this counter. E.g. it can
+>  	be bytes, items or any other unit the controller operates on.
+> +	NOTE: being a percpu_counter, the way to read the correct value
+> +	at all times makes it unscalable and reading it scalably makes
+> +	the value a little unreliable :)
+>
+ditto.
 
-> That way one can even forget that this is not kernel programming... :-)
+>   b. unsigned long long max_usage
+>
+> @@ -48,7 +51,8 @@ to work with it.
+>  2. Basic accounting routines
+>
+>   a. void res_counter_init(struct res_counter *rc,
+> -				struct res_counter *rc_parent)
+> +				struct res_counter *rc_parent,
+> +				unsigned long tolerance)
+>
+>   	Initializes the resource counter. As usual, should be the first
+>  	routine called for a new counter.
+> @@ -57,6 +61,9 @@ to work with it.
+>  	child -> parent relationship directly in the res_counter structure,
+>  	NULL can be used to define no relationship.
+>
+> +	The tolerance is used to control the batching behaviour of percpu
+> +	counters
+> +
+This description is ambiguous.
+What is the system's total tolerance ?
+    tolerance ?
+    nr_online_cpus * tolerance ?
+    MAX_CPUS * tolerance ?
 
-Hehe :)
+
+>   c. int res_counter_charge(struct res_counter *rc, unsigned long val,
+>  				struct res_counter **limit_fail_at)
+>
+> diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
+> index 731af71..2d412d7 100644
+> --- a/include/linux/res_counter.h
+> +++ b/include/linux/res_counter.h
+> @@ -14,6 +14,7 @@
+>   */
+>
+>  #include <linux/cgroup.h>
+> +#include <linux/percpu_counter.h>
+>
+>  /*
+>   * The core object. the cgroup that wishes to account for some
+> @@ -23,10 +24,6 @@
+>
+>  struct res_counter {
+>  	/*
+> -	 * the current resource consumption level
+> -	 */
+> -	unsigned long long usage;
+> -	/*
+>  	 * the maximal value of the usage from the counter creation
+>  	 */
+>  	unsigned long long max_usage;
+> @@ -48,6 +45,14 @@ struct res_counter {
+>  	 */
+>  	spinlock_t lock;
+>  	/*
+> +	 * the current resource consumption level
+> +	 */
+> +	struct percpu_counter usage;
+> +	/*
+> +	 * Tolerance for the percpu_counter (usage) above
+> +	 */
+> +	unsigned long usage_tolerance;
+> +	/*
+>  	 * Parent counter, used for hierarchial resource accounting
+>  	 */
+>  	struct res_counter *parent;
+> @@ -98,7 +103,8 @@ enum {
+>   * helpers for accounting
+>   */
+>
+> -void res_counter_init(struct res_counter *counter, struct res_counter
+> *parent);
+> +void res_counter_init(struct res_counter *counter, struct res_counter
+> *parent,
+> +			unsigned long usage_tolerance);
+>
+>  /*
+>   * charge - try to consume more resource.
+> @@ -133,7 +139,8 @@ void res_counter_uncharge(struct res_counter *counter,
+> unsigned long val,
+>
+>  static inline bool res_counter_limit_check_locked(struct res_counter
+> *cnt)
+>  {
+> -	if (cnt->usage < cnt->limit)
+> +	unsigned long long usage = percpu_counter_read_positive(&cnt->usage);
+> +	if (usage < cnt->limit)
+>  		return true;
+>
+Hmm. In memcg, this function is not used for busy pass but used for
+important pass to check usage under limit (and continue reclaim)
+
+Can't we add res_clounter_check_locked_exact(), which use
+percpu_counter_sum() later ?
+
+>  	return false;
+> @@ -141,7 +148,8 @@ static inline bool
+> res_counter_limit_check_locked(struct res_counter *cnt)
+>
+>  static inline bool res_counter_soft_limit_check_locked(struct res_counter
+> *cnt)
+>  {
+> -	if (cnt->usage < cnt->soft_limit)
+> +	unsigned long long usage = percpu_counter_read_positive(&cnt->usage);
+> +	if (usage < cnt->soft_limit)
+>  		return true;
+>
+>  	return false;
+> @@ -157,15 +165,15 @@ static inline bool
+> res_counter_soft_limit_check_locked(struct res_counter *cnt)
+>  static inline unsigned long long
+>  res_counter_soft_limit_excess(struct res_counter *cnt)
+>  {
+> -	unsigned long long excess;
+> -	unsigned long flags;
+> +	unsigned long long excess, usage;
+>
+> -	spin_lock_irqsave(&cnt->lock, flags);
+> -	if (cnt->usage <= cnt->soft_limit)
+> +	usage = percpu_counter_read_positive(&cnt->usage);
+> +	preempt_disable();
+> +	if (usage <= cnt->soft_limit)
+>  		excess = 0;
+>  	else
+> -		excess = cnt->usage - cnt->soft_limit;
+> -	spin_unlock_irqrestore(&cnt->lock, flags);
+> +		excess = usage - cnt->soft_limit;
+> +	preempt_enable();
+>  	return excess;
+>  }
+It's not clear why this part uses preempt_disable() instead of
+irqsave(). Could you add comment ?
+(*AND* it seems the caller disable irq....)
 
 
-> - Arnaldo
->  
-> > Reported-by: Ingo Molnar <mingo@elte.hu>
-> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> > Cc: Mike Galbraith <efault@gmx.de>
-> > ---
-> >  tools/perf/util/callchain.c |    3 ++-
-> >  tools/perf/util/util.h      |    3 +++
-> >  tools/perf/util/wrapper.c   |   16 ++++++++++++++++
-> >  3 files changed, 21 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
-> > index 98c5627..ce0c6d4 100644
-> > --- a/tools/perf/util/callchain.c
-> > +++ b/tools/perf/util/callchain.c
-> > @@ -13,6 +13,7 @@
-> >  #include <stdio.h>
-> >  #include <stdbool.h>
-> >  #include <errno.h>
-> > +#include "util.h"
-> >  
-> >  #include "callchain.h"
-> >  
-> > @@ -203,7 +204,7 @@ fill_node(struct callchain_node *node, struct ip_callchain *chain,
-> >  	}
-> >  	node->val_nr = chain->nr - start;
-> >  	if (!node->val_nr)
-> > -		printf("Warning: empty node in callchain tree\n");
-> > +		fprintf_once(stderr, "Warning: empty node in callchain tree\n");
-> >  }
-> >  
-> >  static void
-> > diff --git a/tools/perf/util/util.h b/tools/perf/util/util.h
-> > index 68fe157..386ea40 100644
-> > --- a/tools/perf/util/util.h
-> > +++ b/tools/perf/util/util.h
-> > @@ -148,6 +148,9 @@ static inline const char *skip_prefix(const char *str, const char *prefix)
-> >  	return strncmp(str, prefix, len) ? NULL : str + len;
-> >  }
-> >  
-> > +extern int fprintf_once(FILE *fp, const char *fmt, ...)
-> > +	__attribute__((format (printf, 2, 3)));
-> > +
-> >  #if defined(NO_MMAP) || defined(USE_WIN32_MMAP)
-> >  
-> >  #ifndef PROT_READ
-> > diff --git a/tools/perf/util/wrapper.c b/tools/perf/util/wrapper.c
-> > index 4574ac2..026c87c 100644
-> > --- a/tools/perf/util/wrapper.c
-> > +++ b/tools/perf/util/wrapper.c
-> > @@ -205,3 +205,19 @@ int xmkstemp(char *template)
-> >  		die("Unable to create temporary file: %s", strerror(errno));
-> >  	return fd;
-> >  }
-> > +
-> > +int fprintf_once(FILE *fp, const char *fmt, ...)
-> > +{
-> > +	va_list args;
-> > +	int ret;
-> > +	static int once;
-> > +
-> > +	if (once++)
-> > +		return 1;
-> > +
-> > +	va_start(args, fmt);
-> > +	ret = vfprintf(fp, fmt, args);
-> > +	va_end(args);
-> > +
-> > +	return ret;
-> > +}
-> > -- 
-> > 1.6.2.3
+>
+> @@ -178,9 +186,9 @@ static inline bool
+> res_counter_check_under_limit(struct res_counter *cnt)
+>  	bool ret;
+>  	unsigned long flags;
+>
+> -	spin_lock_irqsave(&cnt->lock, flags);
+> +	local_irq_save(flags);
+>  	ret = res_counter_limit_check_locked(cnt);
+> -	spin_unlock_irqrestore(&cnt->lock, flags);
+> +	local_irq_restore(flags);
+>  	return ret;
+>  }
+>
+> @@ -189,18 +197,19 @@ static inline bool
+> res_counter_check_under_soft_limit(struct res_counter *cnt)
+>  	bool ret;
+>  	unsigned long flags;
+>
+> -	spin_lock_irqsave(&cnt->lock, flags);
+> +	local_irq_save(flags);
+>  	ret = res_counter_soft_limit_check_locked(cnt);
+> -	spin_unlock_irqrestore(&cnt->lock, flags);
+> +	local_irq_restore(flags);
+>  	return ret;
+>  }
+>
+>  static inline void res_counter_reset_max(struct res_counter *cnt)
+>  {
+>  	unsigned long flags;
+> +	unsigned long long usage = percpu_counter_read_positive(&cnt->usage);
+>
+>  	spin_lock_irqsave(&cnt->lock, flags);
+> -	cnt->max_usage = cnt->usage;
+> +	cnt->max_usage = usage;
+>  	spin_unlock_irqrestore(&cnt->lock, flags);
+>  }
+>
+> @@ -217,10 +226,11 @@ static inline int res_counter_set_limit(struct
+> res_counter *cnt,
+>  		unsigned long long limit)
+>  {
+>  	unsigned long flags;
+> +	unsigned long long usage = percpu_counter_read_positive(&cnt->usage);
+>  	int ret = -EBUSY;
+>
+>  	spin_lock_irqsave(&cnt->lock, flags);
+> -	if (cnt->usage <= limit) {
+> +	if (usage <= limit) {
+>  		cnt->limit = limit;
+>  		ret = 0;
+>  	}
+
+For the same reason to check_limit, I want correct number here.
+percpu_counter_sum() is better.
+
+
+> diff --git a/kernel/res_counter.c b/kernel/res_counter.c
+> index 88faec2..ae83168 100644
+> --- a/kernel/res_counter.c
+> +++ b/kernel/res_counter.c
+> @@ -15,24 +15,34 @@
+>  #include <linux/uaccess.h>
+>  #include <linux/mm.h>
+>
+> -void res_counter_init(struct res_counter *counter, struct res_counter
+> *parent)
+> +void res_counter_init(struct res_counter *counter, struct res_counter
+> *parent,
+> +			unsigned long usage_tolerance)
+>  {
+>  	spin_lock_init(&counter->lock);
+> +	percpu_counter_init(&counter->usage, 0);
+>  	counter->limit = RESOURCE_MAX;
+>  	counter->soft_limit = RESOURCE_MAX;
+>  	counter->parent = parent;
+> +	counter->usage_tolerance = usage_tolerance;
+>  }
+>
+>  int res_counter_charge_locked(struct res_counter *counter, unsigned long
+> val)
+>  {
+> -	if (counter->usage + val > counter->limit) {
+> +	unsigned long long usage;
+> +
+> +	usage = percpu_counter_read_positive(&counter->usage);
+> +	if (usage + val > counter->limit) {
+>  		counter->failcnt++;
+>  		return -ENOMEM;
+>  	}
+>
+> -	counter->usage += val;
+> -	if (counter->usage > counter->max_usage)
+> -		counter->max_usage = counter->usage;
+> +	__percpu_counter_add(&counter->usage, val, nr_cpu_ids *
+> +				counter->usage_tolerance);
+> +	if (usage + val > counter->max_usage) {
+> +		spin_lock(&counter->lock);
+> +		counter->max_usage = (usage + val);
+> +		spin_unlock(&counter->lock);
+> +	}
+Hmm...irq is already off here ?
+
+
+>  	return 0;
+>  }
+>
+> @@ -49,7 +59,6 @@ int res_counter_charge(struct res_counter *counter,
+> unsigned long val,
+>  		*soft_limit_fail_at = NULL;
+>  	local_irq_save(flags);
+>  	for (c = counter; c != NULL; c = c->parent) {
+> -		spin_lock(&c->lock);
+>  		ret = res_counter_charge_locked(c, val);
+>  		/*
+>  		 * With soft limits, we return the highest ancestor
+> @@ -58,7 +67,6 @@ int res_counter_charge(struct res_counter *counter,
+> unsigned long val,
+>  		if (soft_limit_fail_at &&
+>  			!res_counter_soft_limit_check_locked(c))
+>  			*soft_limit_fail_at = c;
+> -		spin_unlock(&c->lock);
+>  		if (ret < 0) {
+>  			*limit_fail_at = c;
+>  			goto undo;
+> @@ -68,9 +76,7 @@ int res_counter_charge(struct res_counter *counter,
+> unsigned long val,
+>  	goto done;
+>  undo:
+>  	for (u = counter; u != c; u = u->parent) {
+> -		spin_lock(&u->lock);
+>  		res_counter_uncharge_locked(u, val);
+> -		spin_unlock(&u->lock);
+>  	}
+>  done:
+
+When using hierarchy, tolerance to root node will be bigger.
+Please write this attention to the document.
+
+
+>  	local_irq_restore(flags);
+> @@ -79,10 +85,13 @@ done:
+>
+>  void res_counter_uncharge_locked(struct res_counter *counter, unsigned
+> long val)
+>  {
+> -	if (WARN_ON(counter->usage < val))
+> -		val = counter->usage;
+> +	unsigned long long usage;
+> +
+> +	usage = percpu_counter_read_positive(&counter->usage);
+> +	if (WARN_ON((usage + counter->usage_tolerance * nr_cpu_ids) < val))
+> +		val = usage;
+Is this correct ? (or do we need this WARN_ON ?)
+Hmm. percpu_counter is cpu-hotplug aware. Then,
+nr_cpu_ids is not correct. but nr_onlie_cpus() is heavy..hmm.
+
+
+>
+> -	counter->usage -= val;
+> +	percpu_counter_sub(&counter->usage, val);
+>  }
+>
+>  void res_counter_uncharge(struct res_counter *counter, unsigned long val,
+> @@ -93,12 +102,10 @@ void res_counter_uncharge(struct res_counter
+> *counter, unsigned long val,
+>
+>  	local_irq_save(flags);
+>  	for (c = counter; c != NULL; c = c->parent) {
+> -		spin_lock(&c->lock);
+>  		if (was_soft_limit_excess)
+>  			*was_soft_limit_excess =
+>  				!res_counter_soft_limit_check_locked(c);
+>  		res_counter_uncharge_locked(c, val);
+> -		spin_unlock(&c->lock);
+>  	}
+>  	local_irq_restore(flags);
+>  }
+> @@ -108,8 +115,6 @@ static inline unsigned long long *
+>  res_counter_member(struct res_counter *counter, int member)
+>  {
+>  	switch (member) {
+> -	case RES_USAGE:
+> -		return &counter->usage;
+>  	case RES_MAX_USAGE:
+>  		return &counter->max_usage;
+>  	case RES_LIMIT:
+> @@ -128,11 +133,15 @@ ssize_t res_counter_read(struct res_counter
+> *counter, int member,
+>  		const char __user *userbuf, size_t nbytes, loff_t *pos,
+>  		int (*read_strategy)(unsigned long long val, char *st_buf))
+>  {
+> -	unsigned long long *val;
+> +	unsigned long long *val, usage_val;
+>  	char buf[64], *s;
+>
+>  	s = buf;
+> -	val = res_counter_member(counter, member);
+> +	if (member == RES_USAGE) {
+> +		usage_val = percpu_counter_read_positive(&counter->usage);
+> +		val = &usage_val;
+> +	} else
+> +		val = res_counter_member(counter, member);
+>  	if (read_strategy)
+>  		s += read_strategy(*val, s);
+
+
+>  	else
+> @@ -143,7 +152,10 @@ ssize_t res_counter_read(struct res_counter *counter,
+> int member,
+>
+>  u64 res_counter_read_u64(struct res_counter *counter, int member)
+>  {
+> -	return *res_counter_member(counter, member);
+> +	if (member == RES_USAGE)
+> +		return percpu_counter_read_positive(&counter->usage);
+> +	else
+> +		return *res_counter_member(counter, member);
+>  }
+
+>
+>  int res_counter_memparse_write_strategy(const char *buf,
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 48a38e1..17d305d 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -58,6 +58,19 @@ static DEFINE_MUTEX(memcg_tasklist);	/* can be hold
+> under cgroup_mutex */
+>  #define SOFTLIMIT_EVENTS_THRESH (1000)
+>
+>  /*
+> + * To help resource counters scale, we take a step back
+> + * and allow the counters to be scalable and set a
+> + * batch value such that every addition does not cause
+> + * global synchronization. The side-effect will be visible
+> + * on limit enforcement, where due to this fuzziness,
+> + * we will lose out on inforcing a limit when the usage
+> + * exceeds the limit. The plan however in the long run
+> + * is to allow this value to be controlled. We will
+> + * probably add a new control file for it.
+> + */
+> +#define MEM_CGROUP_RES_ERR_TOLERANCE (4 * PAGE_SIZE)
+
+Considering percpu counter's extra overhead. This number is too small, IMO.
+
+> +
+> +/*
+>   * Statistics for memory cgroup.
+>   */
+>  enum mem_cgroup_stat_index {
+> @@ -2340,7 +2353,7 @@ static int mem_cgroup_force_empty(struct mem_cgroup
+> *mem, bool free_all)
+>  	if (free_all)
+>  		goto try_to_free;
+>  move_account:
+> -	while (mem->res.usage > 0) {
+> +	while (res_counter_read_u64(&mem->res, RES_USAGE) > 0) {
+>  		ret = -EBUSY;
+>  		if (cgroup_task_count(cgrp) || !list_empty(&cgrp->children))
+>  			goto out;
+> @@ -2383,7 +2396,7 @@ try_to_free:
+>  	lru_add_drain_all();
+>  	/* try to free all pages in this cgroup */
+>  	shrink = 1;
+> -	while (nr_retries && mem->res.usage > 0) {
+> +	while (nr_retries && res_counter_read_u64(&mem->res, RES_USAGE) > 0) {
+>  		int progress;
+>
+>  		if (signal_pending(current)) {
+> @@ -2401,7 +2414,7 @@ try_to_free:
+>  	}
+>  	lru_add_drain();
+>  	/* try move_account...there may be some *locked* pages. */
+> -	if (mem->res.usage)
+> +	if (res_counter_read_u64(&mem->res, RES_USAGE))
+>  		goto move_account;
+>  	ret = 0;
+>  	goto out;
+> @@ -3019,8 +3032,10 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct
+> cgroup *cont)
+>  	}
+>
+>  	if (parent && parent->use_hierarchy) {
+> -		res_counter_init(&mem->res, &parent->res);
+> -		res_counter_init(&mem->memsw, &parent->memsw);
+> +		res_counter_init(&mem->res, &parent->res,
+> +			MEM_CGROUP_RES_ERR_TOLERANCE);
+> +		res_counter_init(&mem->memsw, &parent->memsw,
+> +			MEM_CGROUP_RES_ERR_TOLERANCE);
+>  		/*
+>  		 * We increment refcnt of the parent to ensure that we can
+>  		 * safely access it on res_counter_charge/uncharge.
+> @@ -3029,8 +3044,10 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct
+> cgroup *cont)
+>  		 */
+>  		mem_cgroup_get(parent);
+>  	} else {
+> -		res_counter_init(&mem->res, NULL);
+> -		res_counter_init(&mem->memsw, NULL);
+> +		res_counter_init(&mem->res, NULL,
+> +			MEM_CGROUP_RES_ERR_TOLERANCE);
+> +		res_counter_init(&mem->memsw, NULL,
+> +			MEM_CGROUP_RES_ERR_TOLERANCE);
+>  	}
+>  	mem->last_scanned_child = 0;
+>  	spin_lock_init(&mem->reclaim_param_lock);
+>
+
+Thanks,
+-Kame
+
+>
+> --
+> 	Balbir
+>
+
 
