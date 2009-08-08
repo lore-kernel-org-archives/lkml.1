@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933989AbZHHKMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933998AbZHHKNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933989AbZHHKMe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 06:12:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933925AbZHHKMe
+	id S933998AbZHHKNy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 06:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933940AbZHHKNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 06:12:34 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:49485 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755302AbZHHKMd (ORCPT
+	Sat, 8 Aug 2009 06:13:54 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:33021 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933934AbZHHKNx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 06:12:33 -0400
-Subject: Re: [PATCH] fat: Read buffer overflow
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Roel Kluin <roel.kluin@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <87prb6pqdu.fsf@devron.myhome.or.jp>
-References: <4A7CAF28.8020908@gmail.com>
-	 <87y6pvi5qp.fsf@devron.myhome.or.jp>
-	 <84144f020908072356r5cc3100dp79a6a508bafec7c7@mail.gmail.com>
-	 <87prb6pqdu.fsf@devron.myhome.or.jp>
-Date: Sat, 08 Aug 2009 13:12:32 +0300
-Message-Id: <1249726352.8101.0.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Sat, 8 Aug 2009 06:13:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=b5JqBofPp6CXGSDFuUOGpnh5Od3Pk7lkdi8Tq/Fh7+4GMh3Y0PwjeIQRlsTcN/pgKp
+         NR7xqb1dM8XVoqZZtaSI+LP3g38/3Z+xSUJcCZsCRcpTOKxud0lztMJafkcBmIMlKmgF
+         F6pXvP+ilpTD7rlv+TGHzhJdi4VVsLYljfbBQ=
+MIME-Version: 1.0
+In-Reply-To: <20090807094944.eed4bfb8.akpm@linux-foundation.org>
+References: <200908060733.n767X6mN023120@imap1.linux-foundation.org>
+	 <20090807134659.GA2093@darkstar>
+	 <20090807094944.eed4bfb8.akpm@linux-foundation.org>
+Date: Sat, 8 Aug 2009 18:13:53 +0800
+Message-ID: <a8e1da0908080313k65f51185u7329e293a95861a7@mail.gmail.com>
+Subject: Re: mmotm 2009-08-06-00-30 uploaded
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-08-08 at 19:10 +0900, OGAWA Hirofumi wrote:
-> Pekka Enberg <penberg@cs.helsinki.fi> writes:
-> 
-> > Yes, but we pass "ulen" to vfat_is_used_badchars(). The value of
-> > "ulen" is a returned in the "longlen" argument of xlate_to_uni() which
-> > in turn is calculated as follows for the UTF-8 case:
-> >
-> >   int name_len = strlen(name);
-> >   *outlen = utf8s_to_utf16s(name, PATH_MAX, (wchar_t *) outname);
-> >   *outlen -= (name_len - len);
-> >   *longlen = *outlen;
-> >
-> > Maybe "*outlen" can never be negative because of some invariants that
-> > I don't see but it's so non-obvious to me that I'd like to see the
-> > explicit check in vfat_is_used_badchars().
-> 
-> Ah, good point. Sorry, I was looking my tree. I'm going to submit the
-> attached patch on next merge window.
-> 
-> Is this enough for it?
+On Sat, Aug 8, 2009 at 12:49 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
+> On Fri, 7 Aug 2009 21:47:00 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+>
+>> Hi, andrew
+>>
+>> Booting with this release, init (maybe getty?) reports something like:
+>>
+>> INIT: open /dev/console failed with input/output error
+>>
+>> 2.6.31-rc5 is fine.
+>>
+>> Any hints to find the root problem?
+>
+> Not really, sorry.  Might be tty changes in linux-next?
 
-Fine by me!
+I bisected linux-next, find following patch as a result
 
-			Pekka
+commit 65b8c7d9be5862ff8ac839607b444b6f6b11d2fb
+Author: Alan Cox <alan@linux.intel.com>
+Date:   Thu Aug 6 09:58:02 2009 +1000
 
+    cyclades: use the full port_close function
+
+But, I did not select cyclades in my .config, nor do i have the hardware. Weird.
+
+>
+>> Another problem:
+>>
+>> When I moving mouse or pressing key the screen will become black, then restore the normal screen.
+>
+> There have been quite a lot of X problems lately.
+>
+> Could you test the bare linux-next please?
+>
+
+
+
+-- 
+Regards
+dave
