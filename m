@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbZHHXPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbZHHXRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753266AbZHHXPU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 19:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbZHHXPT
+	id S1753278AbZHHXRr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 19:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbZHHXRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 19:15:19 -0400
-Received: from smtp.knology.net ([24.214.63.101]:33893 "EHLO smtp.knology.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753208AbZHHXPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 19:15:17 -0400
-X-Greylist: delayed 438 seconds by postgrey-1.27 at vger.kernel.org; Sat, 08 Aug 2009 19:15:17 EDT
-Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
- /dev
-From: David Dillow <dave@thedillows.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Greg KH <greg@kroah.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
-       Harald Hoyer <harald@redhat.com>,
-       Scott James Remnant <scott@ubuntu.com>
-In-Reply-To: <20090806183147.GA28409@suse.de>
-References: <20090805171513.GA10443@kroah.com>
-	 <20090805192037.19c54c4d@lxorguk.ukuu.org.uk>
-	 <20090805182805.GA7534@kroah.com> <20090805185136.GA21442@kroah.com>
-	 <87ljlxhrnr.fsf@basil.nowhere.org>
-	 <1249575658.19886.8.camel@lap75545.ornl.gov>
-	 <20090806183147.GA28409@suse.de>
-Content-Type: text/plain
-Date: Sat, 08 Aug 2009 19:07:56 -0400
-Message-Id: <1249772876.22248.34.camel@obelisk.thedillows.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+	Sat, 8 Aug 2009 19:17:46 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:39564 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753232AbZHHXRq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 19:17:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=p0bN8tM4HGF1NkqJ/ej7F7akxN4pPO51mPzMvuaxjSbG43WbP6yqvJNDgbIrWQ+4TA
+         Veet8QJtKr6R/tCCIb8ns19Ns/meZ9kwQeJw/AC+vbAtTrERXjYbcRR0x5NwAOdZgnL2
+         Kqt7nt2xEdYh4DVRbpNMra4JfqqX13gQzjG9M=
+Message-ID: <4A7E0797.7060504@gmail.com>
+Date: Sat, 08 Aug 2009 20:17:43 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090725)
+MIME-Version: 1.0
+To: Borislav Petkov <petkovbb@googlemail.com>,
+       Kevin Winchester <kjwinchester@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       LKML <linux-kernel@vger.kernel.org>, borislav.petkov@amd.com
+Subject: [PATCH v2] x86: clear incorrectly forced X86_FEATURE_LAHF_LM flag
+References: <4A7D673A.1090401@gmail.com> <20090808152016.GB25374@liondog.tnic>
+In-Reply-To: <20090808152016.GB25374@liondog.tnic>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-06 at 11:31 -0700, Greg KH wrote:
-> On Thu, Aug 06, 2009 at 12:20:58PM -0400, David Dillow wrote:
-> > If you use mount by label or UUID, you still need udev (or other tools)
-> > in the initrd to find the right disk, correct?
-> 
-> Yes, you would.
-> 
-> > And for distros that want to support that, does this really reduce the
-> > amount of code in the initrd?
-> 
-> Yes it does, see the code in the Novell Moblin images for an example of
-> how to use devtmpfs with udev for how to do this.
+Due to an erratum with certain AMD Athlon 64 processors, the BIOS may
+need to force enable the LAHF_LM capability.  Unfortunately, in at
+least one case, the BIOS does this even for processors that do not
+support the functionality.
 
-I followed up with Greg offline to make sure I was looking at the right
-thing, but the upshot is that Moblin does not use an initrd and devtmpfs
-does not in any way reduce the amount of code for those distros that
-want to support more than the root=/dev/blah syntax.
+Add a specific check that will clear the feature bit for processors
+known not to support the LAHF/SAHF instructions.
 
-Given Eric and Arjan's numbers about the time it takes to populate /dev
-from /sys -- pointing the speed problem squarely at udev or the ruleset
--- I don't see much of a win for devtmpfs other than avoiding a
-static /dev to make init=/bin/sh work. You cannot rely on it for a
-hotplug disk such as USB, as it doesn't do the root=LABEL=usbroot that
-you'd want to do since the location is not stable.
+Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
+---
+ arch/x86/kernel/cpu/amd.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+index e2485b0..7b52787 100644
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -400,6 +400,14 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+ 		level = cpuid_eax(1);
+ 		if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
+ 			set_cpu_cap(c, X86_FEATURE_REP_GOOD);
++
++		/*
++		 * Some BIOSes incorrectly set this feature, but only Revisions
++		 * D (Extended Model = 1) and E (Extended Model = 2) actually
++		 * support it.
++		 */
++		if (!(level & 0x00030000))
++			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
+ 	}
+ 	if (c->x86 == 0x10 || c->x86 == 0x11)
+ 		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
+-- 
+1.6.4
 
 
