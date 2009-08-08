@@ -1,72 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933792AbZHHJOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933863AbZHHJaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933792AbZHHJOH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 05:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933729AbZHHJOG
+	id S933863AbZHHJaB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 05:30:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933819AbZHHJaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 05:14:06 -0400
-Received: from mailhost14.gawab.com ([66.220.20.14]:60269 "HELO
-	info88.gawab.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933723AbZHHJOF (ORCPT
+	Sat, 8 Aug 2009 05:30:00 -0400
+Received: from www84.your-server.de ([213.133.104.84]:49978 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933800AbZHHJ37 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 05:14:05 -0400
-X-Trusted: Whitelisted
-From: Al Boldi <a1426z@gawab.com>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based /dev
-Date: Sat, 8 Aug 2009 12:14:39 +0300
-User-Agent: KMail/1.5
-Cc: Chris Friesen <cfriesen@nortel.com>, Andi Kleen <andi@firstfloor.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
-       gregkh@suse.de, Harald Hoyer <harald@redhat.com>,
-       Scott James Remnant <scott@ubuntu.com>
-References: <20090805171513.GA10443@kroah.com> <200908080017.31376.a1426z@gawab.com> <20090807222449.GA31416@kroah.com>
-In-Reply-To: <20090807222449.GA31416@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 8 Aug 2009 05:29:59 -0400
+Subject: Re: [PATCH] Fix proc_file_write missing ppos update
+From: Stefani Seibold <stefani@seibold.net>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <m1tz0idc5b.fsf@fess.ebiederm.org>
+References: <1249676830.27640.16.camel@wall-e>
+	 <20090807135806.ffd068e9.akpm@linux-foundation.org>
+	 <1249681387.17422.10.camel@wall-e>
+	 <20090807151657.d577dd2d.akpm@linux-foundation.org>
+	 <m1tz0idc5b.fsf@fess.ebiederm.org>
+Content-Type: text/plain
+Date: Sat, 08 Aug 2009 11:29:52 +0200
+Message-Id: <1249723792.31457.14.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908081214.39456.a1426z@gawab.com>
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Sat, Aug 08, 2009 at 12:17:31AM +0300, Al Boldi wrote:
-> > For devtmpfs to be a realistic replacement for static /dev, it has to
-> > be comparable to static /dev in both speed and size.
->
-> Since when is this requirement necessary?  You want something for free
-> in both speed and size?  Well, you got it in speed, but not size, it
-> will take up memory that is swapable, and a tiny ammount of non-swapable
-> kernel memory for the code.
+Am Freitag, den 07.08.2009, 23:59 -0700 schrieb Eric W. Biederman:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> 
+> > On Fri, 07 Aug 2009 23:43:07 +0200
+> > Stefani Seibold <stefani@seibold.net> wrote:
+> >
+> 
+> >> So what is your suggestion? Should we drop this patch or should we
+> >> analyze the users and fix it?
+> >
+> > Well.
+> >
+> > We could review all implementations of ->write_proc.  There only seem
+> > to be twenty or so.
+> >
+> > If any of them will have their behaviour altered by this patch then
+> > let's look at those on a case-by-case basis and decide whether making
+> > this change will have an acceptable risk.
+> >
+> > If we _do_ find one for which we simply cannot make this behavioural
+> > change then..  ugh.  We could perhaps add a new `bool
+> > proc_dir_entry.implement_old_broken_behaviour' and set that flag for
+> > the offending driver(s) and test it within proc_write_file().
+> >
+> > Or we could do
+> >
+> > 	if (pde->write_proc_new) {
+> > 		rv = pde->write_proc_new(file, buffer, count, pde->data);
+> > 		*ppos += rv;
+> > 	} else {
+> > 		rv = pde->write_proc(file, buffer, count, pde->data);
+> > 	}
+> >
+> > which is really the same thing and isn't obviously better ;)
+> >
+> >> My opinion is to fix it, because it is wrong and it limits the usage of
+> >> the proc_write operation. Many embedded developers like me count on proc
+> >> support, because it is much simpler to use than the seqfile thing.
+> 
+> The simple and portable answer is to implement your own file_operations.
+> 
 
-Not so tiny when you count in the hotplug dependency.
+This is what i still doing since a long time:
 
-> > WRT speed, there should be no  slowdown and it should be just as fast
-> > as a "tar -xp < dev.tar".
->
-> Again, where is this requirement coming from?
->
-> Have you timed devtmpfs?
+<CodeSnip>
+ proc_entry = create_proc_entry(procname, S_IRUGO|S_IWUGO, NULL);
 
-Not yet, I am still waiting for the latest patch against .30.
+ proc_entry->read_proc = proc_read_foo;
 
-> > WRT size, it should not be dependent on hotplug, and instead offer
-> > hotplug as an option.
->
-> Um, again, who made up such a requirement?  Are you running systems
-> today with CONFIG_HOTPLUG disabled?  If so, how well is that working for
-> you?
+ bar->proc_file_operations.llseek = proc_entry->proc_fops->llseek;
+ bar->proc_file_operations.read = proc_entry->proc_fops->read;
+ bar->proc_file_operations.write = proc_write_foo;
 
-It's working out quite well.  I don't like hotplug, it's too slow.  I always 
-turn it and module-autoloading off, to achieve a much more responsive system.
+ proc_entry->proc_fops = &bar->proc_file_operations;
+</CodeSnip>
 
+This works very well for me, but it requires some additional step
+because of the buggy interface.
 
-Thanks!
+But the question is: can we fix this bug? 
 
---
-Al
+I will have a look on the current users of proc->write and if there are
+no driver which is depending on the old behavior we can fix it. 
+   
+> It is unlikely that implementing a new totally unstructured proc file is
+> a good idea.
+> 
+
+That is your opinion. I still use it f.e. to access a eeprom.
+ 
+> I'm not quite up to speed on write_proc but I believe we have been spraying
+> read_proc and write_proc because of problems with the interface.
+> 
+
+First: I never noticed a problem with the current proc interface. The
+only issue i figured out is the proc_write ppos problem.
+
+Second: If speed matters or not is a question of the use case. Sometimes
+a simple solution is required.  
+
+Stefani
+
 
