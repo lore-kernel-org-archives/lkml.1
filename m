@@ -1,74 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752333AbZHHQWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbZHHQmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752333AbZHHQWP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 12:22:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZHHQWO
+	id S1752262AbZHHQmQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 12:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbZHHQmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 12:22:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53430 "EHLO hera.kernel.org"
+	Sat, 8 Aug 2009 12:42:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43575 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751814AbZHHQWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 12:22:11 -0400
-Date: Sat, 8 Aug 2009 16:21:37 GMT
-From: tip-bot for Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, julia@diku.dk, hpa@zytor.com,
-       mingo@redhat.com, bzolnier@gmail.com, eteo@redhat.com, corbet@lwn.net,
-       error27@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, julia@diku.dk,
-       linux-kernel@vger.kernel.org, bzolnier@gmail.com, eteo@redhat.com,
-       corbet@lwn.net, error27@gmail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <200908062146.03638.bzolnier@gmail.com>
-References: <200908062146.03638.bzolnier@gmail.com>
-Subject: [tip:irq/core] irq: Remove superfluous NULL pointer check in check_irq_resend()
-Message-ID: <tip-139183d579d6097cdbbd64825bbac54d8481a144@git.kernel.org>
-Git-Commit-ID: 139183d579d6097cdbbd64825bbac54d8481a144
-X-Mailer: tip-git-log-daemon
+	id S1751810AbZHHQmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 12:42:15 -0400
+Date: Sat, 8 Aug 2009 12:42:04 -0400
+From: Mike Snitzer <snitzer@redhat.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 1/2] Allow delaying initialization of queue after
+	allocation
+Message-ID: <20090808164204.GA7714@redhat.com>
+References: <200908081025.58865.knikanth@suse.de> <20090808154240.GA7036@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 08 Aug 2009 16:21:38 +0000 (UTC)
+In-Reply-To: <20090808154240.GA7036@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  139183d579d6097cdbbd64825bbac54d8481a144
-Gitweb:     http://git.kernel.org/tip/139183d579d6097cdbbd64825bbac54d8481a144
-Author:     Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-AuthorDate: Thu, 6 Aug 2009 21:46:03 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 8 Aug 2009 18:18:05 +0200
+On Sat, Aug 08 2009 at 11:42am -0400,
+Mike Snitzer <snitzer@redhat.com> wrote:
 
-irq: Remove superfluous NULL pointer check in check_irq_resend()
+> On Sat, Aug 08 2009 at 12:55am -0400,
+> Nikanth Karthikesan <knikanth@suse.de> wrote:
+> 
+> > Export a way to delay initializing a request_queue after allocating it. This
+> > is needed by device-mapper devices, as they create the queue on device
+> > creation time, but they decide whether it would use the elevator and requests
+> > only after first successful table load. Only request-based dm-devices use the
+> > elevator and requests. Without this either one needs to initialize and free
+> > the mempool and elevator, if it was a bio-based dm-device or leave it
+> > allocated, as it is currently done.
+> > 
+> > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> 
+> This patch needed to be refreshed to account for the changes from this
+> recent commit: a4e7d46407d73f35d217013b363b79a8f8eafcaa
+> 
+> I've attached a refreshed patch.
 
-This takes care of the following entry from Dan's list:
+Err, I dropped a hunk in the process... here is the refreshed patch
+inlined.  Figured I'd save you the busy-work for when you get V2
+together.
 
-kernel/irq/resend.c +73 check_irq_resend(17) warning: variable derefenced before check 'desc->chip'
+> Though I still have questions/feedback below.
 
-Reported-by: Dan Carpenter <error27@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Eugene Teo <eteo@redhat.com>
-Cc: Julia Lawall <julia@diku.dk>
-LKML-Reference: <200908062146.03638.bzolnier@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Hopefully V2 will address my questions/feedback.
 
+Regards,
+Mike
 
 ---
- kernel/irq/resend.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/irq/resend.c b/kernel/irq/resend.c
-index 89c7117..090c376 100644
---- a/kernel/irq/resend.c
-+++ b/kernel/irq/resend.c
-@@ -70,8 +70,7 @@ void check_irq_resend(struct irq_desc *desc, unsigned int irq)
- 	if ((status & (IRQ_LEVEL | IRQ_PENDING | IRQ_REPLAY)) == IRQ_PENDING) {
- 		desc->status = (status & ~IRQ_PENDING) | IRQ_REPLAY;
+Export a way to delay initializing a request_queue after allocating it. This
+is needed by device-mapper devices, as they create the queue on device
+creation time, but they decide whether it would use the elevator and requests
+only after first successful table load. Only request-based dm-devices use the
+elevator and requests. Without this either one needs to initialize and free
+the mempool and elevator, if it was a bio-based dm-device or leave it
+allocated, as it is currently done.
+
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+
+---
+
+Index: linux-2.6/block/blk-core.c
+===================================================================
+--- linux-2.6.orig/block/blk-core.c
++++ linux-2.6/block/blk-core.c
+@@ -495,6 +495,8 @@ struct request_queue *blk_alloc_queue_no
+ 	if (!q)
+ 		return NULL;
  
--		if (!desc->chip || !desc->chip->retrigger ||
--					!desc->chip->retrigger(irq)) {
-+		if (!desc->chip->retrigger || !desc->chip->retrigger(irq)) {
- #ifdef CONFIG_HARDIRQS_SW_RESEND
- 			/* Set it pending and activate the softirq: */
- 			set_bit(irq, irqs_resend);
++	q->node = node_id;
++
+ 	q->backing_dev_info.unplug_io_fn = blk_backing_dev_unplug;
+ 	q->backing_dev_info.unplug_io_data = q;
+ 	q->backing_dev_info.ra_pages =
+@@ -569,12 +571,25 @@ blk_init_queue_node(request_fn_proc *rfn
+ 	if (!q)
+ 		return NULL;
+ 
+-	q->node = node_id;
+-	if (blk_init_free_list(q)) {
++	if (blk_init_allocated_queue(q, rfn, lock)) {
++		blk_put_queue(q);
+ 		kmem_cache_free(blk_requestq_cachep, q);
+ 		return NULL;
+ 	}
+ 
++	return q;
++}
++EXPORT_SYMBOL(blk_init_queue_node);
++
++int blk_init_allocated_queue(struct request_queue *q, request_fn_proc *rfn,
++			     spinlock_t *lock)
++{
++	int err = 0;
++
++	err = blk_init_free_list(q);
++	if (err)
++		goto out;
++
+ 	q->request_fn		= rfn;
+ 	q->prep_rq_fn		= NULL;
+ 	q->unplug_fn		= generic_unplug_device;
+@@ -591,15 +606,20 @@ blk_init_queue_node(request_fn_proc *rfn
+ 	/*
+ 	 * all done
+ 	 */
+-	if (!elevator_init(q, NULL)) {
+-		blk_queue_congestion_threshold(q);
+-		return q;
+-	}
++	err = elevator_init(q, NULL);
++	if (err)
++		goto free_and_out;
+ 
+-	blk_put_queue(q);
+-	return NULL;
++	blk_queue_congestion_threshold(q);
++
++	return 0;
++
++free_and_out:
++	mempool_destroy(q->rq.rq_pool);
++out:
++	return err;
+ }
+-EXPORT_SYMBOL(blk_init_queue_node);
++EXPORT_SYMBOL(blk_init_allocated_queue);
+ 
+ int blk_get_queue(struct request_queue *q)
+ {
+Index: linux-2.6/include/linux/blkdev.h
+===================================================================
+--- linux-2.6.orig/include/linux/blkdev.h
++++ linux-2.6/include/linux/blkdev.h
+@@ -901,6 +901,8 @@ extern void blk_abort_queue(struct reque
+ extern struct request_queue *blk_init_queue_node(request_fn_proc *rfn,
+ 					spinlock_t *lock, int node_id);
+ extern struct request_queue *blk_init_queue(request_fn_proc *, spinlock_t *);
++extern int blk_init_allocated_queue(struct request_queue *q,
++				request_fn_proc *rfn, spinlock_t *lock);
+ extern void blk_cleanup_queue(struct request_queue *);
+ extern void blk_queue_make_request(struct request_queue *, make_request_fn *);
+ extern void blk_queue_bounce_limit(struct request_queue *, u64);
