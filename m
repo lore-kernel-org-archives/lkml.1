@@ -1,83 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbZHHTe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbZHHUPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752995AbZHHTe2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 15:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbZHHTe1
+	id S1753227AbZHHUPJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 16:15:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZHHUPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 15:34:27 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:11620 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750750AbZHHTe1 (ORCPT
+	Sat, 8 Aug 2009 16:15:08 -0400
+Received: from relay1-d.mail.gandi.net ([217.70.183.193]:50184 "EHLO
+	relay1-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753159AbZHHUPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 15:34:27 -0400
-X-Trace: 239550669/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.43.183/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.43.183
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArgFAIhwfUpPRSu3/2dsb2JhbACBUo4cAb8ehBcF
-X-IronPort-AV: E=Sophos;i="4.43,346,1246834800"; 
-   d="scan'208";a="239550669"
-Date: Sat, 8 Aug 2009 20:34:03 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>, Ben Herrenschmidt <benh@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: CONFIG_PREEMPT_RCU in next/mmotm
-Message-ID: <Pine.LNX.4.64.0908081956580.12300@sister.anvils>
+	Sat, 8 Aug 2009 16:15:07 -0400
+X-Greylist: delayed 9359 seconds by postgrey-1.27 at vger.kernel.org; Sat, 08 Aug 2009 16:15:07 EDT
+Date: Sat, 8 Aug 2009 13:15:00 -0700
+From: Josh Triplett <josh@joshtriplett.org>
+To: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>
+Subject: [PATCH] xen: xen_init_cpuid_mask: Zero cx before calling xen_cpuid
+Message-ID: <20090808201500.GA21828@feather>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-TUID: 072517c3027b4590
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
+CPUID function 1 doesn't use cx, but xen_cpuid doesn't know that,
+resulting in this warning:
 
-Is CONFIG_PREEMPT_RCU=y expected to be working in -next (or mmotm)?
+arch/x86/xen/enlighten.c: In function ‘xen_start_kernel’:
+arch/x86/xen/enlighten.c:192: warning: ‘cx’ may be used uninitialized in this function
+arch/x86/xen/enlighten.c:205: note: ‘cx’ was declared here
 
-I ask because it appears to break down on PowerPC G5 when I try two
-"make -j20" kernel builds in parallel.  The "filp" slab which usually
-contains a couple of thousand objects or so, jumps up to a couple of
-hundred thousand before the builds complete, and continues rising
-from then on - I think that's a sign of RCU in disgrace?
-And rebooting hangs thereafter.
+Set cx = 0 to avoid this warning.  This seems preferable to implementing
+a xen_cpuid_nocount without the input constraint for cx, and either of
+those seem preferable to just ignoring the warning.
 
-And I notice that include/linux/rcupreempt.h currently says:
-static inline void synchronize_rcu_expedited(void)
-{
-	synchronize_rcu();  /* Placeholder for new rcupreempt implementation. */
-}
-which gives an impression of work in progress?
+Signed-off-by: Josh Triplett <josh@joshtriplett.org>
+---
 
-CONFIG_PREEMPT_TREE=y seems okay on PowerPC; and when I briefly tried
-CONFIG_PREEMPT_RCU=y on x86_64, it didn't show above symptoms there.
+Build-tested only.
 
-I did try bisecting yesterday's linux-next git, but that led me to
+ arch/x86/xen/enlighten.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-commit 8ca17c6082feee5841a7b0e91d00e18c3f85f063
-Merge: dafcc6e... 7256cf0...
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Mon Aug 3 15:50:37 2009 +0200
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index 0a1700a..6ee2ef8 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -215,6 +215,7 @@ static __init void xen_init_cpuid_mask(void)
+ 			  (1 << X86_FEATURE_ACPI));  /* disable ACPI */
+ 
+ 	ax = 1;
++	cx = 0;
+ 	xen_cpuid(&ax, &bx, &cx, &dx);
+ 
+ 	/* cpuid claims we support xsave; try enabling it to see what happens */
+-- 
+1.5.6.5
 
-    Merge branch 'core/rcu' into auto-sched-next
-
-rather than to any particular patch of yours which that merges:
-which seemed odd, but I'm not accustomed to bisecting next.
-
-Another odd thing is that mmotm .DATE=2009-07-30-05-01, the last
-I tried before Thursday's, showed no such symptoms: yet appears to
-contain all the larger RCU changes, just lacking some more recent
-on/offline race fixes.  I didn't notice any likely difference
-between those mmotm trees down in arch/powerpc either.
-
-My guess is that there's some other issue which is triggering
-the RCU disgrace, but that is just a guess.
-
-Config attached.  Any suggestions?
-
-Thanks,
-Hugh
