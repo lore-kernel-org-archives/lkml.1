@@ -1,99 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZHHIQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932839AbZHHISA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbZHHIQv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 04:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbZHHIQu
+	id S932839AbZHHISA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 04:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbZHHIR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 04:16:50 -0400
-Received: from [222.73.24.84] ([222.73.24.84]:49394 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750987AbZHHIQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 04:16:48 -0400
-Message-ID: <4A7D33FB.6090207@cn.fujitsu.com>
-Date: Sat, 08 Aug 2009 16:14:51 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Sat, 8 Aug 2009 04:17:59 -0400
+Received: from moutng.kundenserver.de ([212.227.17.10]:60947 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750987AbZHHIR6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 04:17:58 -0400
+From: Martin Rogge <marogge@onlinehome.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.30.1-4 kernels freezes dual pentium-3 system
+Date: Sat, 8 Aug 2009 10:19:14 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.30.4; KDE/4.2.1; i686; ; )
+Cc: devzero@web.de
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, ryov@valinux.co.jp, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org
-Subject: Re: [PATCH 22/24] io-controller: Per io group bdi congestion interface
-References: <1248467274-32073-1-git-send-email-vgoyal@redhat.com> <1248467274-32073-23-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1248467274-32073-23-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908081019.15007.marogge@onlinehome.de>
+X-Provags-ID: V01U2FsdGVkX1+LM1YapJRjqotfF2kDTmoLM7/3j6eLlJLJ4oN
+ T2rW3igmsHL/JuHxMKoKqqmKHAgsLwacMqfk/IV+7mqUr7IZk3
+ osuKrpe+q0QQ4RXzUzopA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
-> +/* Set io group congestion on and off thresholds */
-> +void elv_io_group_congestion_threshold(struct request_queue *q,
-> +						struct io_group *iog)
-> +{
-> +	int nr;
-> +
-> +	nr = q->nr_group_requests - (q->nr_group_requests / 8) + 1;
-> +	if (nr > q->nr_group_requests)
-> +		nr = q->nr_group_requests;
-> +	iog->nr_congestion_on = nr;
-> +
-> +	nr = q->nr_group_requests - (q->nr_group_requests / 8)
-> +			- (q->nr_group_requests / 16) - 1;
-> +	if (nr < 1)
-> +		nr = 1;
-> +	iog->nr_congestion_off = nr;
+devzero@web.de wrote:
+> 
 
-Vivek,
+Roland, you seem to reply to a mix of different mails. I skip the comments 
+unrelated to my error report. Btw, since then there have been two more reports 
+on lkml of dual P2 systems locking up with 2.6.30++.
 
-Since we determine whether io group is congenssed or not just by checking 
-iog->nr_congestion_on, we can get rid of iog->nr_congestion_off here.
+> afaik, you can also bisect on a different (i.e. faster) box.
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- block/elevator-fq.c |    6 ------
- block/elevator-fq.h |    3 +--
- 2 files changed, 1 insertions(+), 8 deletions(-)
+Since we are talking about dual-P3, no you can't.
 
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 66b10eb..e73da31 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -1267,12 +1267,6 @@ void elv_io_group_congestion_threshold(struct request_queue *q,
- 	if (nr > q->nr_group_requests)
- 		nr = q->nr_group_requests;
- 	iog->nr_congestion_on = nr;
--
--	nr = q->nr_group_requests - (q->nr_group_requests / 8)
--			- (q->nr_group_requests / 16) - 1;
--	if (nr < 1)
--		nr = 1;
--	iog->nr_congestion_off = nr;
- }
- 
- static inline int elv_is_iog_congested(struct request_queue *q,
-diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-index 0581e55..2815279 100644
---- a/block/elevator-fq.h
-+++ b/block/elevator-fq.h
-@@ -266,9 +266,8 @@ struct io_group {
- 	/* Single ioq per group, used for noop, deadline, anticipatory */
- 	struct io_queue *ioq;
- 
--	/* io group congestion on and off threshold for request descriptors */
-+	/* io group congestion on threshold for request descriptors */
- 	unsigned int nr_congestion_on;
--	unsigned int nr_congestion_off;
- 
- 	/* request list associated with the group */
- 	struct request_list rl;
--- 
-1.5.4.rc3
+> i think it would be more interesting if there is anything in dmesg on such
+
+I posted dmesg etc. yesterday
+
+> lockup. if not, maybe you can hook up a serial console or netconsole and
+> trigger sysrq when you have another lockup.
+
+Network, sysrq and numlock are all unresponsive. Like it says in the Haiku:
+
+A crash reduces
+Your expensive computer
+To a simple stone.
+
+> 
+> regards
+> roland
+
+Martin
 
