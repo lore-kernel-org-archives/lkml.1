@@ -1,75 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933942AbZHHJte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933971AbZHHJtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933942AbZHHJte (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 05:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933851AbZHHJtd
+	id S933971AbZHHJtv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 05:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933954AbZHHJtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 05:49:33 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:57573 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933819AbZHHJtc (ORCPT
+	Sat, 8 Aug 2009 05:49:50 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:44879 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933952AbZHHJts (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 05:49:32 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Paul Congdon \(UC Davis\)" <ptcongdon@ucdavis.edu>
-Subject: Re: [PATCH][RFC] net/bridge: add basic VEPA support
-Date: Sat, 8 Aug 2009 11:49:27 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
-Cc: "'Stephen Hemminger'" <shemminger@linux-foundation.org>,
-       "'Fischer, Anna'" <anna.fischer@hp.com>,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       evb@yahoogroups.com, davem@davemloft.net, kaber@trash.net,
-       adobriyan@gmail.com
-References: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net> <20090806210002.75beb7c6@nehalam> <004e01ca1790$fec36c30$fc4a4490$@edu>
-In-Reply-To: <004e01ca1790$fec36c30$fc4a4490$@edu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Sat, 8 Aug 2009 05:49:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=hUgV/voxXkKZa/c//E90EGRRheqrMjbG9zHKK/lBh4HBEMqHdQOEUK0ffJ4clMR322
+         xpNUDS2YFbWkJ/dx3BiFJYhqZR9nU/K3wDU2EaXXFjfseD9dIVYBmEcO6F9MuZk9uv3m
+         mbSmNvl5QGTphnJGL+1yyzptLGlyIdXTlo9Is=
+Date: Sat, 8 Aug 2009 18:49:07 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Subject: [PATCH tip:x86/asm] x86: Introduce GDT_ENTRY_INIT()
+Message-ID: <20090808094905.GA2954@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908081149.27409.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+bk24Vbo3TCPxFAqFKIWI9sn2VscfU1X1eQn0
- X0tmi5jMUV3MGRuNY9gscxt1iWdDvTjAUQeiPrHysYseNiNajt
- ASPkv51BQIb+mGLBdiUHQ==
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 07 August 2009, Paul Congdon (UC Davis) wrote:
-> As I understand the macvlan code, it currently doesn't allow two VMs on the
-> same machine to communicate with one another. 
+GDT_ENTRY_INIT is static initializer of desc_struct.
 
-There are patches to do that. I think if we add that, there should be
-a way to choose the behavior between either bridging between the
-guests or VEPA.
+We already have similar macro GDT_ENTRY() but it's static
+initializer for u64 and it cannot be used for desc_struct.
 
-> I could imagine a hairpin mode on the adjacent bridge making this
-> possible, but the macvlan code would need to be updated to filter
-> reflected frames so a source did not receive his own packet.
+[hpa@zytor.com: spotted convertion error for GDT_ENTRY_APMBIOS_BASE+2]
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+---
+ arch/x86/include/asm/desc_defs.h      |    6 +++++
+ arch/x86/include/asm/lguest.h         |    5 ++-
+ arch/x86/include/asm/stackprotector.h |    2 +-
+ arch/x86/kernel/apm_32.c              |    2 +-
+ arch/x86/kernel/cpu/common.c          |   40 ++++++++++++++++----------------
+ drivers/pnp/pnpbios/bioscalls.c       |    5 +---
+ 6 files changed, 32 insertions(+), 28 deletions(-)
 
-Right, I missed this point so far. I'll follow up with a patch
-to do that.
-
-> I could imagine this being done as well, but to also
-> support selective multicast usage, something similar to the bridge
-> forwarding table would be needed.  I think putting VEPA into a new driver
-> would cause you to implement many things the bridge code already supports.
-> Given that we expect the bridge standard to ultimately include VEPA, and the
-> new functions are basic forwarding operations, it seems to make most sense
-> to keep this consistent with the bridge module.
-
-This is the interesting part of the discussion. The bridge and macvlan
-drivers certainly have an overlap in functionality and you can argue
-that you only need one. Then again, the bridge code is a little crufty
-and we might not want to add much more to it for functionality that can
-be implemented in a much simpler way elsewhere. My preferred way would
-be to use bridge when you really need 802.1d MAC learning, netfilter-bridge
-and STP, while we put the optimizations for stuff like VMDq, zero-copy
-and multiqueue guest adapters only into the macvlan code.
-
-	Arnd <><
+diff --git a/arch/x86/include/asm/desc_defs.h b/arch/x86/include/asm/desc_defs.h
+index a6adefa..9d66848 100644
+--- a/arch/x86/include/asm/desc_defs.h
++++ b/arch/x86/include/asm/desc_defs.h
+@@ -34,6 +34,12 @@ struct desc_struct {
+ 	};
+ } __attribute__((packed));
+ 
++#define GDT_ENTRY_INIT(flags, base, limit) { { { \
++		.a = ((limit) & 0xffff) | (((base) & 0xffff) << 16), \
++		.b = (((base) & 0xff0000) >> 16) | (((flags) & 0xf0ff) << 8) | \
++			((limit) & 0xf0000) | ((base) & 0xff000000), \
++	} } }
++
+ enum {
+ 	GATE_INTERRUPT = 0xE,
+ 	GATE_TRAP = 0xF,
+diff --git a/arch/x86/include/asm/lguest.h b/arch/x86/include/asm/lguest.h
+index 313389c..94cd698 100644
+--- a/arch/x86/include/asm/lguest.h
++++ b/arch/x86/include/asm/lguest.h
+@@ -91,8 +91,9 @@ static inline void lguest_set_ts(void)
+ }
+ 
+ /* Full 4G segment descriptors, suitable for CS and DS. */
+-#define FULL_EXEC_SEGMENT ((struct desc_struct){ { {0x0000ffff, 0x00cf9b00} } })
+-#define FULL_SEGMENT ((struct desc_struct){ { {0x0000ffff, 0x00cf9300} } })
++#define FULL_EXEC_SEGMENT \
++	((struct desc_struct)GDT_ENTRY_INIT(0xc09b, 0, 0xfffff))
++#define FULL_SEGMENT ((struct desc_struct)GDT_ENTRY_INIT(0xc093, 0, 0xfffff))
+ 
+ #endif /* __ASSEMBLY__ */
+ 
+diff --git a/arch/x86/include/asm/stackprotector.h b/arch/x86/include/asm/stackprotector.h
+index cdc5e0b..44efdff 100644
+--- a/arch/x86/include/asm/stackprotector.h
++++ b/arch/x86/include/asm/stackprotector.h
+@@ -48,7 +48,7 @@
+  * head_32 for boot CPU and setup_per_cpu_areas() for others.
+  */
+ #define GDT_STACK_CANARY_INIT						\
+-	[GDT_ENTRY_STACK_CANARY] = { { { 0x00000018, 0x00409000 } } },
++	[GDT_ENTRY_STACK_CANARY] = GDT_ENTRY_INIT(0x4090, 0, 0x18),
+ 
+ /*
+  * Initialize the stackprotector canary value.
+diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+index b5e841b..febb2da 100644
+--- a/arch/x86/kernel/apm_32.c
++++ b/arch/x86/kernel/apm_32.c
+@@ -403,7 +403,7 @@ static DECLARE_WAIT_QUEUE_HEAD(apm_waitqueue);
+ static DECLARE_WAIT_QUEUE_HEAD(apm_suspend_waitqueue);
+ static struct apm_user *user_list;
+ static DEFINE_SPINLOCK(user_list_lock);
+-static struct desc_struct bad_bios_desc = { { { 0, 0x00409200 } } };
++static struct desc_struct bad_bios_desc = GDT_ENTRY_INIT(0x4092, 0, 0);
+ 
+ static const char driver_version[] = "1.16ac";	/* no spaces */
+ 
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index f1961c0..b5764a2 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -71,45 +71,45 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
+ 	 * TLS descriptors are currently at a different place compared to i386.
+ 	 * Hopefully nobody expects them at a fixed place (Wine?)
+ 	 */
+-	[GDT_ENTRY_KERNEL32_CS]		= { { { 0x0000ffff, 0x00cf9b00 } } },
+-	[GDT_ENTRY_KERNEL_CS]		= { { { 0x0000ffff, 0x00af9b00 } } },
+-	[GDT_ENTRY_KERNEL_DS]		= { { { 0x0000ffff, 0x00cf9300 } } },
+-	[GDT_ENTRY_DEFAULT_USER32_CS]	= { { { 0x0000ffff, 0x00cffb00 } } },
+-	[GDT_ENTRY_DEFAULT_USER_DS]	= { { { 0x0000ffff, 0x00cff300 } } },
+-	[GDT_ENTRY_DEFAULT_USER_CS]	= { { { 0x0000ffff, 0x00affb00 } } },
++	[GDT_ENTRY_KERNEL32_CS]		= GDT_ENTRY_INIT(0xc09b, 0, 0xfffff),
++	[GDT_ENTRY_KERNEL_CS]		= GDT_ENTRY_INIT(0xa09b, 0, 0xfffff),
++	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc093, 0, 0xfffff),
++	[GDT_ENTRY_DEFAULT_USER32_CS]	= GDT_ENTRY_INIT(0xc0fb, 0, 0xfffff),
++	[GDT_ENTRY_DEFAULT_USER_DS]	= GDT_ENTRY_INIT(0xc0f3, 0, 0xfffff),
++	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xa0fb, 0, 0xfffff),
+ #else
+-	[GDT_ENTRY_KERNEL_CS]		= { { { 0x0000ffff, 0x00cf9a00 } } },
+-	[GDT_ENTRY_KERNEL_DS]		= { { { 0x0000ffff, 0x00cf9200 } } },
+-	[GDT_ENTRY_DEFAULT_USER_CS]	= { { { 0x0000ffff, 0x00cffa00 } } },
+-	[GDT_ENTRY_DEFAULT_USER_DS]	= { { { 0x0000ffff, 0x00cff200 } } },
++	[GDT_ENTRY_KERNEL_CS]		= GDT_ENTRY_INIT(0xc09a, 0, 0xfffff),
++	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
++	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xc0fa, 0, 0xfffff),
++	[GDT_ENTRY_DEFAULT_USER_DS]	= GDT_ENTRY_INIT(0xc0f2, 0, 0xfffff),
+ 	/*
+ 	 * Segments used for calling PnP BIOS have byte granularity.
+ 	 * They code segments and data segments have fixed 64k limits,
+ 	 * the transfer segment sizes are set at run time.
+ 	 */
+ 	/* 32-bit code */
+-	[GDT_ENTRY_PNPBIOS_CS32]	= { { { 0x0000ffff, 0x00409a00 } } },
++	[GDT_ENTRY_PNPBIOS_CS32]	= GDT_ENTRY_INIT(0x409a, 0, 0xffff),
+ 	/* 16-bit code */
+-	[GDT_ENTRY_PNPBIOS_CS16]	= { { { 0x0000ffff, 0x00009a00 } } },
++	[GDT_ENTRY_PNPBIOS_CS16]	= GDT_ENTRY_INIT(0x009a, 0, 0xffff),
+ 	/* 16-bit data */
+-	[GDT_ENTRY_PNPBIOS_DS]		= { { { 0x0000ffff, 0x00009200 } } },
++	[GDT_ENTRY_PNPBIOS_DS]		= GDT_ENTRY_INIT(0x0092, 0, 0xffff),
+ 	/* 16-bit data */
+-	[GDT_ENTRY_PNPBIOS_TS1]		= { { { 0x00000000, 0x00009200 } } },
++	[GDT_ENTRY_PNPBIOS_TS1]		= GDT_ENTRY_INIT(0x0092, 0, 0),
+ 	/* 16-bit data */
+-	[GDT_ENTRY_PNPBIOS_TS2]		= { { { 0x00000000, 0x00009200 } } },
++	[GDT_ENTRY_PNPBIOS_TS2]		= GDT_ENTRY_INIT(0x0092, 0, 0),
+ 	/*
+ 	 * The APM segments have byte granularity and their bases
+ 	 * are set at run time.  All have 64k limits.
+ 	 */
+ 	/* 32-bit code */
+-	[GDT_ENTRY_APMBIOS_BASE]	= { { { 0x0000ffff, 0x00409a00 } } },
++	[GDT_ENTRY_APMBIOS_BASE]	= GDT_ENTRY_INIT(0x409a, 0, 0xffff),
+ 	/* 16-bit code */
+-	[GDT_ENTRY_APMBIOS_BASE+1]	= { { { 0x0000ffff, 0x00009a00 } } },
++	[GDT_ENTRY_APMBIOS_BASE+1]	= GDT_ENTRY_INIT(0x009a, 0, 0xffff),
+ 	/* data */
+-	[GDT_ENTRY_APMBIOS_BASE+2]	= { { { 0x0000ffff, 0x00409200 } } },
++	[GDT_ENTRY_APMBIOS_BASE+2]	= GDT_ENTRY_INIT(0x4092, 0, 0xffff),
+ 
+-	[GDT_ENTRY_ESPFIX_SS]		= { { { 0x0000ffff, 0x00cf9200 } } },
+-	[GDT_ENTRY_PERCPU]		= { { { 0x0000ffff, 0x00cf9200 } } },
++	[GDT_ENTRY_ESPFIX_SS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
++	[GDT_ENTRY_PERCPU]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
+ 	GDT_STACK_CANARY_INIT
+ #endif
+ } };
+diff --git a/drivers/char/vr41xx_giu.c b/drivers/char/vr41xx_giu.c
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/drivers/pnp/pnpbios/bioscalls.c b/drivers/pnp/pnpbios/bioscalls.c
+index 45ad3e9..bd035e3 100644
+--- a/drivers/pnp/pnpbios/bioscalls.c
++++ b/drivers/pnp/pnpbios/bioscalls.c
+@@ -60,7 +60,7 @@ do { \
+ 	set_desc_limit(&gdt[(selname) >> 3], (size) - 1); \
+ } while(0)
+ 
+-static struct desc_struct bad_bios_desc;
++static struct desc_struct bad_bios_desc = GDT_ENTRY_INIT(0x4092, 0, 0);
+ 
+ /*
+  * At some point we want to use this stack frame pointer to unwind
+@@ -476,9 +476,6 @@ void pnpbios_calls_init(union pnp_bios_install_struct *header)
+ 	pnp_bios_callpoint.offset = header->fields.pm16offset;
+ 	pnp_bios_callpoint.segment = PNP_CS16;
+ 
+-	bad_bios_desc.a = 0;
+-	bad_bios_desc.b = 0x00409200;
+-
+ 	set_desc_base(&bad_bios_desc, (unsigned long)__va(0x40UL << 4));
+ 	set_desc_limit(&bad_bios_desc, 4095 - (0x40 << 4));
+ 	for_each_possible_cpu(i) {
