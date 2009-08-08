@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757149AbZHHA31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbZHHAbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757149AbZHHA31 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 20:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbZHHA30
+	id S1756361AbZHHAbg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 20:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbZHHAbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 20:29:26 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51886 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756154AbZHHA3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 20:29:25 -0400
-Date: Sat, 8 Aug 2009 02:29:25 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Henning Glawe <glaweh@debian.org>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Ignore Philips IEEE802.15.4 RF Dongle in hid-core
-In-Reply-To: <20090802201812.GA5631@ruprecht.physik.fu-berlin.de>
-Message-ID: <alpine.LNX.2.00.0908080229100.25797@wotan.suse.de>
-References: <20090802201812.GA5631@ruprecht.physik.fu-berlin.de>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 7 Aug 2009 20:31:35 -0400
+Received: from mail-fx0-f228.google.com ([209.85.220.228]:39600 "EHLO
+	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753059AbZHHAbe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 20:31:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=CeIianY0bMiRbHRXwq6pOGbJDwa0bHTtHXB9AyzFO3EXddPlykB13AIi/kCKvju8ss
+         JGA4YqDsf1h0oqTX0q4TIkOlDvKYVWE825Dvd1lSjC+7LHT751g1ndOHAsE1tcsd0Prr
+         J23FwAXhDgez1Wl1aYQ9LPvsYjvrpELlwAhsI=
+Date: Sat, 8 Aug 2009 02:31:33 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jonathan Corbet <corbet@lwn.net>, Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Mark Gross <mgross@linux.intel.com>
+Subject: Re: [PATCH 1/2] pm_qos: remove BKL
+Message-ID: <20090808003130.GJ4999@nowhere>
+References: <20090806135841.46682114@bike.lwn.net> <20090806135953.7706e57d@bike.lwn.net> <20090807055412.GB9182@nowhere> <20090807090818.064d3647@bike.lwn.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090807090818.064d3647@bike.lwn.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Aug 2009, Henning Glawe wrote:
-
-> This usb device claims to be of HID class, but is in fact a 802.15.4
-> lowpan transceiver, therefore the generic HID driver cannot operate this
-> device. A separate driver for this device will be written for this using
-> the new 802.15.4 stack.
+On Fri, Aug 07, 2009 at 09:08:18AM -0600, Jonathan Corbet wrote:
+> On Fri, 7 Aug 2009 07:54:13 +0200
+> Frederic Weisbecker <fweisbec@gmail.com> wrote:
 > 
->  Signed-off-by: Henning Glawe <glaweh@debian.org>
-> ---
->  drivers/hid/hid-core.c |    1 +
->  drivers/hid/hid-ids.h  |    3 +++
->  2 files changed, 4 insertions(+), 0 deletions(-)
+> > May be the last doubt could be the blocking_notifier_call_chain() call from
+> > update_target(). Not sure if these notifier handlers can expect to be called
+> > concurrently?
 > 
-> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-> index 8551693..7755949 100644
-> --- a/drivers/hid/hid-core.c
-> +++ b/drivers/hid/hid-core.c
-> @@ -1618,6 +1618,7 @@ static const struct hid_device_id hid_ignore_list[] = {
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_PANJIT, 0x0002) },
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_PANJIT, 0x0003) },
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_PANJIT, 0x0004) },
-> +	{ HID_USB_DEVICE(USB_VENDOR_ID_PHILIPS, USB_DEVICE_ID_PHILIPS_IEEE802154_DONGLE) },
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_POWERCOM, USB_DEVICE_ID_POWERCOM_UPS) },
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_SOUNDGRAPH, USB_DEVICE_ID_SOUNDGRAPH_IMON_LCD) },
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_SOUNDGRAPH, USB_DEVICE_ID_SOUNDGRAPH_IMON_LCD2) },
-> diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
-> index 4d5ee2b..7f59854 100644
-> --- a/drivers/hid/hid-ids.h
-> +++ b/drivers/hid/hid-ids.h
-> @@ -359,6 +359,9 @@
->  #define USB_VENDOR_ID_PETALYNX		0x18b1
->  #define USB_DEVICE_ID_PETALYNX_MAXTER_REMOTE	0x0037
->  
-> +#define USB_VENDOR_ID_PHILIPS       0x0471
-> +#define USB_DEVICE_ID_PHILIPS_IEEE802154_DONGLE 0x0617
-> +
->  #define USB_VENDOR_ID_PLAYDOTCOM	0x0b43
->  #define USB_DEVICE_ID_PLAYDOTCOM_EMS_USBII	0x0003
+> I will confess that I hadn't audited the notifiers.  One could easily
+> argue that concurrent calls to update_target() are entirely possible
+> with the current code (only one of the callers had BKL protection),
+> but, then, I'm supposed to be trying to make things better.
+> 
+> The notifier call chain is already protected against concurrent
+> modification, but, since an rwsem is used, concurrent calls to the
+> notifiers themselves are possible.  A quick grep shows that, in 2.6.31-rc5,
+> there is exactly one notifier registered.  It's in
+> drivers/cpuidle/cpuidle.c; here's the whole thing:
+> 
+> static void smp_callback(void *v)
+> {
+> 	/* we already woke the CPU up, nothing more to do */
+> }
+> 
+> After deep meditation on possible race condition scenarios, I am force to
+> conclude that this particular notifier already has all of the protection it
+> needs, and that any extra locking is likely to be superfluous.
 
-Appplied, thanks Henning.
 
--- 
-Jiri Kosina
-SUSE Labs
+Hehe :-)
+
+So it would be nice to apply these patches.
+Ingo?
+
+ 
+> Thanks for looking at the patch,
+> 
+> jon
+
