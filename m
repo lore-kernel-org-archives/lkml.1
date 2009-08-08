@@ -1,108 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757660AbZHHCap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbZHHCTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757660AbZHHCap (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 22:30:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbZHHCao
+	id S1755404AbZHHCTO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 22:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZHHCTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 22:30:44 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:41457 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754547AbZHHCan (ORCPT
+	Fri, 7 Aug 2009 22:19:13 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:22903 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751621AbZHHCTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 22:30:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=OlMIxPRmne2eG9dGnLSEWW73Fej46Xj0lm8aizGd0tC1yclt/W96SVcJ90f6z3JtHa
-         U8o/ECgA4HAOZA5rUUb2TYJNzc0JyIArF2OUsYs6AVm+1dsMyh5HP//a6oo43iy5r/Z0
-         8itPLq8wC4lDifq65/7odd8/y/UsR4MsZd2Xk=
-Date: Sat, 8 Aug 2009 04:30:39 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/3] perfcounter: Initialize tracepoint record before
-	any use
-Message-ID: <20090808023038.GA5366@nowhere>
-References: <1249698400-5441-1-git-send-email-fweisbec@gmail.com> <1249698400-5441-2-git-send-email-fweisbec@gmail.com>
+	Fri, 7 Aug 2009 22:19:12 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:date:message-id:subject:from:to:cc:
+	content-type:content-transfer-encoding:x-system-of-record;
+	b=A4ow4ReoMML9fNcz7BcDBKpCuu/L00Yz8g+0tV1M6HXp3LmbEbCJy4aodLNxKSsjD
+	1Py0amppNrExTzllLsbJg==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1249698400-5441-2-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Fri, 7 Aug 2009 19:19:07 -0700
+Message-ID: <a55d774e0908071919s7b365f84o3baa19c8d6fbe899@mail.gmail.com>
+Subject: power_supply class/framework question
+From: Brian Swetland <swetland@google.com>
+To: Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 08, 2009 at 04:26:35AM +0200, Frederic Weisbecker wrote:
-> Despite that the tracepoint record is always present when the
-> PERF_SAMPLE_TP_RECORD flag is set, gcc whines, thinking it might not
-> be initialized:
-> 
-> kernel/perf_counter.c: In function ‘perf_counter_output’:
-> kernel/perf_counter.c:2650: warning: ‘tp’ may be used uninitialized in this function
-> 
-> Then, initialize it to NULL and always check if it's not NULL before
-> dereference it.
-> 
-> Reported-by: Ingo Molnar <mingo@elte.hu>
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> Cc: Mike Galbraith <efault@gmx.de>
-> Cc: Paul Mackerras <paulus@samba.org>
-> ---
+(feel free to redirect me to a different mailing list if there's a
+more appropriate place to ask this question)
 
+I'm working on cleaning up some code to more correctly use the power
+supply framework (have the battery driver receive notification from
+the wall/usb power supplies, etc), and ran into a slight snag.  For
+mobile usb powered devices, we need to know how much current can
+safely be consumed by the charge circuit -- generally this is one of:
+none, <500mA or 1000mA, which correspond to "no power supply", "usb
+power supply", or "wall power supply".
 
-Hmm, sorry I've resent the perf tools series by mistake. Please
-ignore the [PATCH */4] "perf tools: *" series that has already been
-sent.
+I can use power_supply_am_i_supplied() to determine if I'm receiving
+power, but there's no way to determine either how much (if I have one
+power supply that indicates max current available) or which supply (if
+I define a separate "ac" and "usb" power supply).
 
-The only ones are [PATCH */3] perfcounter: *
+I'd be happy to throw together some patches to handle this, but was
+wondering if there was any preference in how such information would be
+made available.
 
-Thanks.
+Thanks,
 
-
->  kernel/perf_counter.c |    7 ++++---
->  1 files changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-> index 142ae5a..a6963e2 100644
-> --- a/kernel/perf_counter.c
-> +++ b/kernel/perf_counter.c
-> @@ -2647,7 +2647,7 @@ void perf_counter_output(struct perf_counter *counter, int nmi,
->  		u64 counter;
->  	} group_entry;
->  	struct perf_callchain_entry *callchain = NULL;
-> -	struct perf_tracepoint_record *tp;
-> +	struct perf_tracepoint_record *tp = NULL;
->  	int callchain_size = 0;
->  	u64 time;
->  	struct {
-> @@ -2718,7 +2718,8 @@ void perf_counter_output(struct perf_counter *counter, int nmi,
->  
->  	if (sample_type & PERF_SAMPLE_TP_RECORD) {
->  		tp = data->private;
-> -		header.size += tp->size;
-> +		if (tp)
-> +			header.size += tp->size;
->  	}
->  
->  	ret = perf_output_begin(&handle, counter, header.size, nmi, 1);
-> @@ -2784,7 +2785,7 @@ void perf_counter_output(struct perf_counter *counter, int nmi,
->  		}
->  	}
->  
-> -	if (sample_type & PERF_SAMPLE_TP_RECORD)
-> +	if ((sample_type & PERF_SAMPLE_TP_RECORD) && tp)
->  		perf_output_copy(&handle, tp->record, tp->size);
->  
->  	perf_output_end(&handle);
-> -- 
-> 1.6.2.3
-> 
-
+Brian
