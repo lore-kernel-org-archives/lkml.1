@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751761AbZHHPRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751831AbZHHPTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751761AbZHHPRi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 11:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbZHHPRh
+	id S1751831AbZHHPTF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 11:19:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbZHHPTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 11:17:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54688 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751543AbZHHPRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 11:17:36 -0400
-Date: Sat, 8 Aug 2009 17:17:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, Borislav Petkov <borislav.petkov@amd.com>,
-       Brice Goglin <Brice.Goglin@inria.fr>
-Subject: Re: [PATCH 0/5 v4] x86: Adapt CPU topology detection for AMD
-	Magny-Cours
-Message-ID: <20090808151731.GD28892@elte.hu>
-References: <20090805154402.GA6520@alberich.amd.com>
+	Sat, 8 Aug 2009 11:19:05 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:59051 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751772AbZHHPTE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 11:19:04 -0400
+Date: Sat, 8 Aug 2009 11:19:02 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Ming Lei <tom.leiming@gmail.com>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       Clark Williams <williams@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "greg@kroah.com" <greg@kroah.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [RT] Lockdep warning on boot with 2.6.31-rc5-rt1.1
+In-Reply-To: <d82e647a0908080206j78a49674i99ba80801398055d@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0908081117040.19562-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090805154402.GA6520@alberich.amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 8 Aug 2009, Ming Lei wrote:
 
-* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+> > The ordering requirement is: Don't try to acquire a device's lock if
+> > you already hold the lock for a non-ancestor device.  More generally
+> > (if more obscurely): If you already hold device A's lock, then don't
+> > try to acquire the lock for device B unless you already hold the lock
+> > for A & B's most recent common ancestor.
+> >
+> 
+> It seems that the following case is very common, and A and B have no
+> common ancestor, but we can hold device A and B's lock at the same
+> time, can't we?
+> 
+> Thanks.
+> 
+> device A  comes in one bus:
+> 	device_add()
+>          ->bus_attach_device()
+>             ->device_attach():drivers/base/dd.c /*holding device A's lock*/
+>                ->...drv->probe()		/*sleep here some time*/
 
-> Note that scheduler adaptions are still under construction/test. 
-> Hope to send first version as RFC by end of this week.
+So right now thread 1 is sleeping.
 
-Ok - i'll wait for those, and they really put all this info into 
-real use so bugs/inefficiencies can be noticed.
+> then device B comes in another bus:
 
-You also indicated that you'll address the feedback from Brice 
-Goglin to make the semantics (and naming) more consistent across the 
-kernel.
+So all this must happen in a different thread, thread 2:
 
-	Ingo
+> 	device_add()
+>          ->bus_attach_device()
+>             ->device_attach():drivers/base/dd.c /*holding device B's lock*/
+>                ->...drv->probe()		/*sleep here some time*/
+
+At this point, thread 1 holds A's lock and thread 2 holds B's lock.  
+Neither thread holds both locks.
+
+Alan Stern
+
