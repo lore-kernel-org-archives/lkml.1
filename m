@@ -1,232 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750866AbZHHODE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750806AbZHHOHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750866AbZHHODE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 10:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbZHHODD
+	id S1750806AbZHHOHn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 10:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbZHHOHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 10:03:03 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48749 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780AbZHHODA (ORCPT
+	Sat, 8 Aug 2009 10:07:42 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:65127 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750706AbZHHOHl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 10:03:00 -0400
-Date: Sat, 8 Aug 2009 16:02:51 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, Greg KH <greg@kroah.com>
-Subject: HTC Dream for staging: small cleanups [was Re: Support for
-	synaptic touchscreen in HTC dream]
-Message-ID: <20090808140250.GC13226@elf.ucw.cz>
-References: <20090714100634.GA4054@elf.ucw.cz> <20090714175201.GB14661@dtor-d630.eng.vmware.com>
+	Sat, 8 Aug 2009 10:07:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=AoTNI40wSt5rOtKyCNUTu5CpfTTKDsLPcYZK+dRSUyWg1taEmaD5DuNovkyTwcAroD
+         djRTBl+whZkabQRJtEsXr4UxZzCCVbm6b+2FsqhcLnKNo4cziS3LeXXtWzr5Wna1BjBb
+         jgbm6G+lbuBOCNcvYuBcjSOtoIrvd1I5dmtnQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090714175201.GB14661@dtor-d630.eng.vmware.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090808120026.GA13183@mit.edu>
+References: <20090807094608.4b0efea1@torg> <20090808120026.GA13183@mit.edu>
+Date: Sat, 8 Aug 2009 22:07:40 +0800
+Message-ID: <a8e1da0908080707y6a2ce4bfud20b496aad297ad8@mail.gmail.com>
+Subject: Re: [RT] Lockdep warning on boot with 2.6.31-rc5-rt1.1
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Theodore Tso <tytso@mit.edu>, Clark Williams <williams@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sat, Aug 8, 2009 at 8:00 PM, Theodore Tso<tytso@mit.edu> wrote:
+> On Fri, Aug 07, 2009 at 09:46:08AM -0500, Clark Williams wrote:
+>> Peter,
+>>
+>> I'm getting this warning from lockdep when booting on my T60.
+>>
+>> The two addresses reported (0xffffffff812664a2 and 0xffffffff812664ae)
+>> actually bracket one call to mutex_lock() in driver_attach() so I'm not
+>> sure what the complaint is.
+>
+> I'm getting a different lockdep warning when booting on my T400 using
+> 2.6.31-rc5; not sure if it's related or not....
+>
+> In any case, it's screwing up the ability for lockdep to find any
+> other problems.
+>
+> [    0.297775] INFO: trying to register non-static key.
+> [    0.297775] the code is fine but needs lockdep annotation.
+> [    0.297775] turning off the locking correctness validator.
+> [    0.297775] Pid: 1, comm: swapper Not tainted 2.6.31-rc5-00256-gf124845 #4
+> [    0.297775] Call Trace:
+> [    0.297775]  [<c0511a2f>] ? printk+0x14/0x1d
+> [    0.297775]  [<c016de1f>] register_lock_class+0x5a/0x2a1
+> [    0.297775]  [<c016e932>] ? mark_lock+0x1e/0x1e4
+> [    0.297775]  [<c016f673>] __lock_acquire+0x9c/0xb1e
+> [    0.297775]  [<c01be910>] ? mod_zone_page_state+0x9f/0xaf
+> [    0.297775]  [<c016ed98>] ? trace_hardirqs_on_caller+0x103/0x124
+> [    0.297775]  [<c016e932>] ? mark_lock+0x1e/0x1e4
+> [    0.297775]  [<c016eb3b>] ? mark_held_locks+0x43/0x5b
+> [    0.297775]  [<c01d490f>] ? kmem_cache_alloc+0xaf/0x127
+> [    0.297775]  [<c016ed98>] ? trace_hardirqs_on_caller+0x103/0x124
+> [    0.297775]  [<c0170189>] lock_acquire+0x94/0xb7
+> [    0.297775]  [<c045d6bd>] ? alloc_netdev_mq+0x105/0x1cc
+> [    0.297775]  [<c0513f8d>] _spin_lock_bh+0x28/0x58
+> [    0.297775]  [<c045d6bd>] ? alloc_netdev_mq+0x105/0x1cc
+> [    0.297775]  [<c045d6bd>] alloc_netdev_mq+0x105/0x1cc
+> [    0.297775]  [<c03f7bbf>] ? loopback_setup+0x0/0x79
+> [    0.297775]  [<c03f7c6f>] loopback_net_init+0x25/0x68
+> [    0.297782]  [<c0457317>] register_pernet_operations+0x2f/0xa1
+> [    0.297832]  [<c0512fcd>] ? mutex_lock_nested+0x33/0x3b
+> [    0.297891]  [<c0457435>] register_pernet_device+0x24/0x4c
+> [    0.297951]  [<c0796a09>] net_dev_init+0x101/0x150
+> [    0.298010]  [<c0796908>] ? net_dev_init+0x0/0x150
+> [    0.298069]  [<c010115c>] do_one_initcall+0x6a/0x177
+> [    0.298127]  [<c016e932>] ? mark_lock+0x1e/0x1e4
+> [    0.298185]  [<c016e932>] ? mark_lock+0x1e/0x1e4
+> [    0.298244]  [<c01b371a>] ? get_page_from_freelist+0x28f/0x3be
+> [    0.298304]  [<c016ed98>] ? trace_hardirqs_on_caller+0x103/0x124
+> [    0.298364]  [<c016edc4>] ? trace_hardirqs_on+0xb/0xd
+> [    0.298423]  [<c016e932>] ? mark_lock+0x1e/0x1e4
+> [    0.298482]  [<c016e932>] ? mark_lock+0x1e/0x1e4
+> [    0.298540]  [<c016edc4>] ? trace_hardirqs_on+0xb/0xd
+> [    0.298600]  [<c03104ad>] ? ida_get_new_above+0x157/0x171
+> [    0.298660]  [<c0213468>] ? proc_register+0x14b/0x15c
+> [    0.298719]  [<c011e5f6>] ? sched_clock+0x8/0xb
+> [    0.298777]  [<c016d9b1>] ? lock_release_holdtime+0x30/0x131
+> [    0.298837]  [<c0213468>] ? proc_register+0x14b/0x15c
+> [    0.298896]  [<c0513dfb>] ? _spin_unlock+0x22/0x25
+> [    0.298954]  [<c0213468>] ? proc_register+0x14b/0x15c
+> [    0.299013]  [<c021359b>] ? create_proc_entry+0x80/0x96
+> [    0.299073]  [<c0191064>] ? register_irq_proc+0x91/0xad
+> [    0.299132]  [<c01910d8>] ? init_irq_proc+0x58/0x65
+> [    0.299191]  [<c0768301>] kernel_init+0x131/0x182
+> [    0.299249]  [<c07681d0>] ? kernel_init+0x0/0x182
+>
 
-> > This adds support for synaptic touchscreen, used in HTC dream
-> > cellphone.
-> > 
-> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> 
-> This is pretty large body of code, could we get a sign-off from Arve as
-> well since he seems to be the author?
+It's a different problem, for this issue please see:
 
-Yes; it is now in staging with his sign-offs.
-
-> > +config TOUCHSCREEN_SYNAPTICS_I2C_RMI
-> > +	tristate "Synaptics i2c touchscreen"
-> > +	depends on I2C
-> > +	help
-> > +	  This enables support for Synaptics RMI over I2C based touchscreens.
-> > +	  Such touchscreen is used in HTC Dream.
-> > +
-> 
-> To compile this driver as a module...
-
-Ok.
-
-> > +static struct workqueue_struct *synaptics_wq;
-> 
-> Do we need a separate workqueue? Is reading the device that slow that we
-> can use keventd?
-
-Added to the TODO.
-
-> > +	int snap_up[2];
-> > +	u32 flags;
-> > +	int (*power)(int on);
-> 
-> 'bool on'?
-
-Added to the TODO.
-
-> > +static int i2c_read(struct synaptics_ts_data *ts, u8 reg, char *msg)
-> > +{
-> > +	int ret = i2c_smbus_read_byte_data(ts->client, 0xf0);
-> 
-> We are not using 'reg'?
-
-Fixed, thanks.
-
-> Some more info as to what you are trying to do here would be nice.
-
-Done, Arve provided a comment.
-
-> > +	input_report_abs(ts->input_dev, ABS_PRESSURE, z);
-> > +	input_report_abs(ts->input_dev, ABS_TOOL_WIDTH, w);
-> > +	input_report_key(ts->input_dev, BTN_TOUCH, finger);
-> > +	finger2_pressed = finger > 1 && finger != 7;
-> > +	input_report_key(ts->input_dev, BTN_2, finger2_pressed);
-> > +	if (finger2_pressed) {
-> > +		input_report_abs(ts->input_dev, ABS_HAT0X, pos[1][0]);
-> > +		input_report_abs(ts->input_dev, ABS_HAT0Y, pos[1][1]);
-> 
-> ABS_HAT is pretty unusual for a touchscreen...
-
-Added to the TODO list. It should be cleaned up before merge.
-
-> > +		if ((buf[14] & 0xc0) != 0x40) {
-> > +			printk(KERN_WARNING "synaptics_ts_work_func:"
-> > +			       " bad read %x %x %x %x %x %x %x %x %x"
-> > +			       " %x %x %x %x %x %x, ret %d\n",
-> > +			       buf[0], buf[1], buf[2], buf[3],
-> > +			       buf[4], buf[5], buf[6], buf[7],
-> > +			       buf[8], buf[9], buf[10], buf[11],
-> > +			       buf[12], buf[13], buf[14], ret);
-> 
-> Umm... for ()?
-
-I removed debugging instead.
-
-> > +static int synaptics_ts_probe(
-> 
-> __devinit()
-
-Done.
-
-> > +	ts->input_dev = input_allocate_device();
-> > +	if (ts->input_dev == NULL) {
-> > +		ret = -ENOMEM;
-> > +		pr_err("synaptics: Failed to allocate input device\n");
-> > +		goto err_input_dev_alloc_failed;
-> > +	}
-> > +	ts->input_dev->name = "synaptics-rmi-touchscreen";
-> 
-> BUS_I2C, etc.
-
-I'm doing this:
-
-	ts->input_dev->name = "synaptics-rmi-touchscreen";
-	ts->input_dev->phys = "msm/input0";
-	ts->input_dev->id.bustype = BUS_I2C;
-
-I don't know if it is right; if you can suggest better strings...
-
-> > +	set_bit(EV_SYN, ts->input_dev->evbit);
-> 
-> __set_bit(), no need to lock the bus.
-
-Done.
-
-> > +	if (client->irq) {
-> > +		ret = request_irq(client->irq, synaptics_ts_irq_handler,
-> > +				  0, client->name, ts);
-> 
-> I think threaded IRQ will fit the bill and will take care of
-> IRQ/workqueue shutdown races. Of course you still need to use workqueue
-> if polling.
-
-Yep, but that's TODO for now.
-
-> > +	pr_info("synaptics: Start touchscreen %s in %s mode\n", 
-> 
-> Probably "synaptics_ts" throughout so nobody is confused?
-
-Yep.
-
-> > +static int synaptics_ts_remove(struct i2c_client *client)
-> 
-> __devexit()
-
-Ok.
-
-> > +MODULE_DESCRIPTION("Synaptics Touchscreen Driver");
-> > +MODULE_LICENSE("GPL");
-> 
-> MODULE_AUTHOR()?
-
-Fixed; this, and some others were fixed before. Here is just the new
-stuff.
-
----
-
-Small fixes to synaptics touchscreen driver, and add a TODO list of
-stuff that should be fixed between merge into kernel proper.
-
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
-
-diff --git a/drivers/staging/dream/Kconfig b/drivers/staging/dream/Kconfig
-index 1fdbd48..e19d403 100644
---- a/drivers/staging/dream/Kconfig
-+++ b/drivers/staging/dream/Kconfig
-@@ -8,4 +8,8 @@ config TOUCHSCREEN_SYNAPTICS_I2C_RMI
- 	help
- 	  This enables support for Synaptics RMI over I2C based touchscreens.
- 
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called synaptics_i2c_rmi.
-+
-+
- 
-diff --git a/drivers/staging/dream/synaptics_i2c_rmi.c b/drivers/staging/dream/synaptics_i2c_rmi.c
-index 6e23276..d786a55 100644
---- a/drivers/staging/dream/synaptics_i2c_rmi.c
-+++ b/drivers/staging/dream/synaptics_i2c_rmi.c
-@@ -189,13 +189,7 @@ static void synaptics_ts_work_func(struct work_struct *work)
- 			continue;
- 		}
- 		if ((buf[14] & 0xc0) != 0x40) {
--			pr_warning("synaptics_ts_work_func:"
--			       " bad read %x %x %x %x %x %x %x %x %x"
--			       " %x %x %x %x %x %x, ret %d\n",
--			       buf[0], buf[1], buf[2], buf[3],
--			       buf[4], buf[5], buf[6], buf[7],
--			       buf[8], buf[9], buf[10], buf[11],
--			       buf[12], buf[13], buf[14], ret);
-+			pr_warning("synaptics_ts_work_func: bad data\n");
- 			if (bad_data)
- 				synaptics_init_panel(ts);
- 			bad_data = 1;
-@@ -517,7 +511,7 @@ static int __devinit synaptics_ts_probe(
- 	register_early_suspend(&ts->early_suspend);
- #endif
- 
--	pr_info("synaptics: Start touchscreen %s in %s mode\n", 
-+	pr_info("synaptics_ts: Start touchscreen %s in %s mode\n", 
- 		ts->input_dev->name, ts->use_irq ? "interrupt" : "polling");
- 
- 	return 0;
-@@ -534,7 +528,7 @@ err_check_functionality_failed:
- 	return ret;
- }
- 
--static int synaptics_ts_remove(struct i2c_client *client)
-+static int __devexit synaptics_ts_remove(struct i2c_client *client)
- {
- 	struct synaptics_ts_data *ts = i2c_get_clientdata(client);
- #ifdef CONFIG_HAS_EARLYSUSPEND
-
+http://lkml.org/lkml/2009/8/5/49
+http://lkml.org/lkml/2009/8/5/51
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Regards
+dave
