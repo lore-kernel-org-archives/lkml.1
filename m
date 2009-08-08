@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbZHHAbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbZHHAe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756361AbZHHAbg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 20:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbZHHAbf
+	id S1756711AbZHHAe7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 20:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbZHHAe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 20:31:35 -0400
-Received: from mail-fx0-f228.google.com ([209.85.220.228]:39600 "EHLO
-	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753059AbZHHAbe (ORCPT
+	Fri, 7 Aug 2009 20:34:59 -0400
+Received: from mail-yw0-f177.google.com ([209.85.211.177]:57827 "EHLO
+	mail-yw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752502AbZHHAe6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 20:31:34 -0400
+	Fri, 7 Aug 2009 20:34:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=CeIianY0bMiRbHRXwq6pOGbJDwa0bHTtHXB9AyzFO3EXddPlykB13AIi/kCKvju8ss
-         JGA4YqDsf1h0oqTX0q4TIkOlDvKYVWE825Dvd1lSjC+7LHT751g1ndOHAsE1tcsd0Prr
-         J23FwAXhDgez1Wl1aYQ9LPvsYjvrpELlwAhsI=
-Date: Sat, 8 Aug 2009 02:31:33 +0200
+        b=PC2d7TIGap/NmoROJn32XclTwXY/c5Xba6WjD17XGyIYM+PqEZ+OMwqbeOgBNe2XbG
+         8GuCIqFhyVLN5RJ051VksmtX29Z0CfW9h687YzScwf9Yn7e7+hp0rnTpphYmU2qye3hK
+         5Lg2UNtWLtkHwx7PP01Z4/t/d+7hMW/MAm5Po=
+Date: Sat, 8 Aug 2009 02:34:53 +0200
 From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jonathan Corbet <corbet@lwn.net>, Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Mark Gross <mgross@linux.intel.com>
-Subject: Re: [PATCH 1/2] pm_qos: remove BKL
-Message-ID: <20090808003130.GJ4999@nowhere>
-References: <20090806135841.46682114@bike.lwn.net> <20090806135953.7706e57d@bike.lwn.net> <20090807055412.GB9182@nowhere> <20090807090818.064d3647@bike.lwn.net>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 3/5] tty: handle VT specific compat ioctls in vt driver
+Message-ID: <20090808003451.GK4999@nowhere>
+References: <1249564170-18627-1-git-send-email-arnd@arndb.de> <200908070904.11260.arnd@arndb.de> <20090807080428.GB4955@nowhere> <200908071402.11217.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090807090818.064d3647@bike.lwn.net>
+In-Reply-To: <200908071402.11217.arnd@arndb.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 09:08:18AM -0600, Jonathan Corbet wrote:
-> On Fri, 7 Aug 2009 07:54:13 +0200
-> Frederic Weisbecker <fweisbec@gmail.com> wrote:
+On Fri, Aug 07, 2009 at 02:02:11PM +0200, Arnd Bergmann wrote:
+> On Friday 07 August 2009, Frederic Weisbecker wrote:
+> > Ok. This looks like a nice series. A bkl pushdown that only goes down
+> > in one site among several others enlightens the understanding of what it
+> > is protecting (beside the nice fact it also burned three bkl callsites :-)
 > 
-> > May be the last doubt could be the blocking_notifier_call_chain() call from
-> > update_target(). Not sure if these notifier handlers can expect to be called
-> > concurrently?
+> Thanks!
 > 
-> I will confess that I hadn't audited the notifiers.  One could easily
-> argue that concurrent calls to update_target() are entirely possible
-> with the current code (only one of the callers had BKL protection),
-> but, then, I'm supposed to be trying to make things better.
+> Well, most importantly patch 5/5 fixes a long-standing bug where we held
+> the BKL in lots of places that were already proven not to need it, or
+> alternatively held it twice (nested) in the ioctls that may still need it.
 > 
-> The notifier call chain is already protected against concurrent
-> modification, but, since an rwsem is used, concurrent calls to the
-> notifiers themselves are possible.  A quick grep shows that, in 2.6.31-rc5,
-> there is exactly one notifier registered.  It's in
-> drivers/cpuidle/cpuidle.c; here's the whole thing:
+> I did patch 3/5 this way because I read that you were working on BKL
+> removal for TTY and wanted to do my share by removing the dependency
+> on the code that I care about (fs/compat_ioctl.h).
 > 
-> static void smp_callback(void *v)
-> {
-> 	/* we already woke the CPU up, nothing more to do */
-> }
-> 
-> After deep meditation on possible race condition scenarios, I am force to
-> conclude that this particular notifier already has all of the protection it
-> needs, and that any extra locking is likely to be superfluous.
+> 	Arnd <><
 
+Thanks!
 
-Hehe :-)
-
-So it would be nice to apply these patches.
-Ingo?
-
- 
-> Thanks for looking at the patch,
-> 
-> jon
+I guess these patches could fit in the tty tree, unless someone has
+objections?
 
