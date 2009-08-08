@@ -1,81 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933712AbZHHJGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933741AbZHHJHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933712AbZHHJGG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 05:06:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933603AbZHHJGF
+	id S933741AbZHHJHe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 05:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933653AbZHHJHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 05:06:05 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:17669 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933645AbZHHJGE convert rfc822-to-8bit (ORCPT
+	Sat, 8 Aug 2009 05:07:33 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:57906 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933603AbZHHJHc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 05:06:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=aV4F3IN8aIYN3qnbIXID1gZ7iJb/m/mxSCGan6Cguz9MhZPgwMvkwoxLeH9kh7xovy
-         cm294Erq4lGhk8LzYsiocMbZmQ1dVHS+RC6fZ71YDMikGdNsxDUfyMukMC5Bxyg+CPy6
-         cJa1D5pjqFlftL46h6x+tNiPTY1xX9CrmV9rA=
+	Sat, 8 Aug 2009 05:07:32 -0400
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.44L0.0908071154530.3063-100000@iolanthe.rowland.org>
-References: <1249657743.32113.733.camel@twins>
-	 <Pine.LNX.4.44L0.0908071154530.3063-100000@iolanthe.rowland.org>
-Date: Sat, 8 Aug 2009 17:06:04 +0800
-Message-ID: <d82e647a0908080206j78a49674i99ba80801398055d@mail.gmail.com>
-Subject: Re: [RT] Lockdep warning on boot with 2.6.31-rc5-rt1.1
-From: Ming Lei <tom.leiming@gmail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Clark Williams <williams@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "greg@kroah.com" <greg@kroah.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Kay Sievers <kay.sievers@vrfy.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+Subject: RE: [RESEND PATCH] gianfar: keep vlan related state when restart
+Date: Sat, 8 Aug 2009 02:07:12 -0700
+Message-ID: <18AEF66AFDF06F4CAAA1D419D000FD33031B485B@az33exm24.fsl.freescale.net>
+In-Reply-To: <1249699012-26379-1-git-send-email-yong.zhang0@gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [RESEND PATCH] gianfar: keep vlan related state when restart
+Thread-Index: AcoX0UcgbTdRmCAFSUu0vrg+N97BsQANTA5w
+References: <1249699012-26379-1-git-send-email-yong.zhang0@gmail.com>
+From: "Haruki Dai-R35557" <Dai.Haruki@freescale.com>
+To: "Yong Zhang" <yong.zhang0@gmail.com>, <davem@davemloft.net>,
+       "Fleming Andy-AFLEMING" <afleming@freescale.com>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/8 Alan Stern <stern@rowland.harvard.edu>:
-> On Fri, 7 Aug 2009, Peter Zijlstra wrote:
+> -----Original Message-----
+> From: Yong Zhang [mailto:yong.zhang0@gmail.com]
+> Sent: Friday, August 07, 2009 9:37 PM
+> To: davem@davemloft.net; Fleming Andy-AFLEMING; Haruki Dai-R35557
+> Cc: netdev@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: [RESEND PATCH] gianfar: keep vlan related state when restart
+> 
+> If vlan has been enabled. ifdown followed by ifup will lost hardware
+> related state.
+> 
+> Also remove duplicated operation in gfar_vlan_rx_register().
+> 
+> Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
 
->> It used to be that _all_ dev->sem instances were taken on suspend or
->> something like that, I think that got fixed a long while back.
->>
->> I'd have to look at what the current locking requirements for dev->sem
->> are.
->
-> It is supposed to be locked whenever the driver core invokes a probe,
-> remove, or PM-related callback.  Under some circumstances, the parent's
-> semaphore is supposed to be locked as well.  Individual subsystems may
-> have their own requirements in addition to these.
->
-> The ordering requirement is: Don't try to acquire a device's lock if
-> you already hold the lock for a non-ancestor device.  More generally
-> (if more obscurely): If you already hold device A's lock, then don't
-> try to acquire the lock for device B unless you already hold the lock
-> for A & B's most recent common ancestor.
->
 
-It seems that the following case is very common, and A and B have no
-common ancestor, but we can hold device A and B's lock at the same
-time, can't we?
+Thanks for the catch. This patch looks fine to me.
 
-Thanks.
+Acked-by: Dai Haruki <dai.haruki@freescale.com>
 
-device A  comes in one bus:
-	device_add()
-         ->bus_attach_device()
-            ->device_attach():drivers/base/dd.c /*holding device A's lock*/
-               ->...drv->probe()		/*sleep here some time*/
 
-then device B comes in another bus:
-	device_add()
-         ->bus_attach_device()
-            ->device_attach():drivers/base/dd.c /*holding device B's lock*/
-               ->...drv->probe()		/*sleep here some time*/
 
--- 
-Lei Ming
+
+> ---
+>  drivers/net/gianfar.c |   12 ++++++++++--
+>  1 files changed, 10 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+> index f8ffcbf..e212f2c 100644
+> --- a/drivers/net/gianfar.c
+> +++ b/drivers/net/gianfar.c
+> @@ -936,6 +936,7 @@ int startup_gfar(struct net_device *dev)
+>  	struct gfar __iomem *regs = priv->regs;
+>  	int err = 0;
+>  	u32 rctrl = 0;
+> +	u32 tctrl = 0;
+>  	u32 attrs = 0;
+> 
+>  	gfar_write(&regs->imask, IMASK_INIT_CLEAR);
+> @@ -1111,11 +1112,19 @@ int startup_gfar(struct net_device *dev)
+>  		rctrl |= RCTRL_PADDING(priv->padding);
+>  	}
+> 
+> +	/* keep vlan related bits if it's enabled */
+> +	if (priv->vlgrp) {
+> +		rctrl |= RCTRL_VLEX | RCTRL_PRSDEP_INIT;
+> +		tctrl |= TCTRL_VLINS;
+> +	}
+> +
+>  	/* Init rctrl based on our settings */
+>  	gfar_write(&priv->regs->rctrl, rctrl);
+> 
+>  	if (dev->features & NETIF_F_IP_CSUM)
+> -		gfar_write(&priv->regs->tctrl, TCTRL_INIT_CSUM);
+> +		tctrl |= TCTRL_INIT_CSUM;
+> +
+> +	gfar_write(&priv->regs->tctrl, tctrl);
+> 
+>  	/* Set the extraction length and index */
+>  	attrs = ATTRELI_EL(priv->rx_stash_size) |
+> @@ -1450,7 +1459,6 @@ static void gfar_vlan_rx_register(struct
+net_device *dev,
+> 
+>  		/* Enable VLAN tag extraction */
+>  		tempval = gfar_read(&priv->regs->rctrl);
+> -		tempval |= RCTRL_VLEX;
+>  		tempval |= (RCTRL_VLEX | RCTRL_PRSDEP_INIT);
+>  		gfar_write(&priv->regs->rctrl, tempval);
+>  	} else {
+> --
+> 1.6.0.4
+
