@@ -1,103 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751867AbZHHPUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbZHHPWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751867AbZHHPUV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 11:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbZHHPUU
+	id S1751893AbZHHPWK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 11:22:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbZHHPWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 11:20:20 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:62937 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751778AbZHHPUT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 11:20:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=RjD82Yp6zw9hgcvquxw+pi6s7DBzWuDejkyLA9go/WjEDNhMfSQnhD4oSNrI0Bv495
-         A/PVnnUjkxBIwA3fK9EbIeuGAM0LTVSp0aFnQgk8as2ldtwgJtW7z5EL0k6I+jOfBL66
-         RFG/jKETC3ntBCZb+gMrd/A02QEZ/PdinsqT4=
-Date: Sat, 8 Aug 2009 17:20:16 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       LKML <linux-kernel@vger.kernel.org>, borislav.petkov@amd.com
-Subject: Re: [PATCH] x86: clear incorrectly forced X86_FEATURE_LAHF_LM flag
-Message-ID: <20090808152016.GB25374@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Kevin Winchester <kjwinchester@gmail.com>,
-	Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Yinghai Lu <yinghai@kernel.org>,
-	Andreas Herrmann <andreas.herrmann3@amd.com>,
-	LKML <linux-kernel@vger.kernel.org>, borislav.petkov@amd.com
-References: <4A7D673A.1090401@gmail.com>
+	Sat, 8 Aug 2009 11:22:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49937 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751794AbZHHPWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 11:22:08 -0400
+Date: Sat, 8 Aug 2009 15:21:35 GMT
+From: tip-bot for Yinghai Lu <yinghai@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <4A785AFF.3050902@kernel.org>
+References: <4A785AFF.3050902@kernel.org>
+Subject: [tip:x86/urgent] x86: Fix MSI-X initialization by using online_mask for x2apic target_cpus
+Message-ID: <tip-087d7e56deffb611a098e7e257388a41edbeef1f@git.kernel.org>
+Git-Commit-ID: 087d7e56deffb611a098e7e257388a41edbeef1f
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <4A7D673A.1090401@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 08 Aug 2009 15:21:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Commit-ID:  087d7e56deffb611a098e7e257388a41edbeef1f
+Gitweb:     http://git.kernel.org/tip/087d7e56deffb611a098e7e257388a41edbeef1f
+Author:     Yinghai Lu <yinghai@kernel.org>
+AuthorDate: Tue, 4 Aug 2009 08:59:59 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 8 Aug 2009 17:04:58 +0200
 
-On Sat, Aug 08, 2009 at 08:53:30AM -0300, Kevin Winchester wrote:
-> Due to an erratum with certain AMD Athlon 64 processors, the BIOS may
-> need to force enable the LAHF_LM capability.  Unfortunately, in at
-> least one case, the BIOS does this even for processors that do not
-> support the functionality.
-> 
-> Add a specific check that will clear the feature bit for processors
-> known not to support the LAHF/SAHF instructions.
-> 
-> Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
-> ---
-> 
-> While making this change, I noticed the clause above my code:
-> 
->     if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
-> 
-> It does not seem concerned with the possibility that some of the
-> upper 16 bits of level will be non-zero.  Is this intentional, or
-> should the upper 16 bits be masked off before the comparisons?
+x86: Fix MSI-X initialization by using online_mask for x2apic target_cpus
 
-This should be ok because the upper 16 bits are 0x0000 for those
-revisions and therefore the whole u32 matches. Later revisions have the
-extended model bumped and they also match.
+found a system where x2apic reports an MSI-X irq initialization
+failure:
 
-> 
->  arch/x86/kernel/cpu/amd.c |    8 ++++++++
->  1 files changed, 8 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-> index e2485b0..a2f0fe4 100644
-> --- a/arch/x86/kernel/cpu/amd.c
-> +++ b/arch/x86/kernel/cpu/amd.c
-> @@ -400,6 +400,14 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
->  		level = cpuid_eax(1);
->  		if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
->  			set_cpu_cap(c, X86_FEATURE_REP_GOOD);
-> +
-> +		/*
-> +		 * Some BIOSes incorrectly set this feature, but only
-> +		 * Revision E (with Extended Model = 2) actually supports
-> +		 * it.
-> +		 */
-> +		if (!(level & 0x00020000))
-> +			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
+[  302.859446] igbvf 0000:81:10.4: enabling device (0000 -> 0002)
+[  302.874369] igbvf 0000:81:10.4: using 64bit DMA mask
+[  302.879023] igbvf 0000:81:10.4: using 64bit consistent DMA mask
+[  302.894386] igbvf 0000:81:10.4: enabling bus mastering
+[  302.898171] igbvf 0000:81:10.4: setting latency timer to 64
+[  302.914050] reserve_memtype added 0xefb08000-0xefb0c000, track uncached-minus, req uncached-minus, ret uncached-minus
+[  302.933839] reserve_memtype added 0xefb28000-0xefb29000, track uncached-minus, req uncached-minus, ret uncached-minus
+[  302.940367]   alloc irq_desc for 265 on node 4
+[  302.956874]   alloc kstat_irqs on node 4
+[  302.959452] alloc irq_2_iommu on node 0
+[  302.974328] igbvf 0000:81:10.4: irq 265 for MSI/MSI-X
+[  302.977778]   alloc irq_desc for 266 on node 4
+[  302.980347]   alloc kstat_irqs on node 4
+[  302.995312] free_memtype request 0xefb28000-0xefb29000
+[  302.998816] igbvf 0000:81:10.4: Failed to initialize MSI-X interrupts.
 
-let me check this internally next week because
-it seems that according to the Fam 0xf RevGuide
-(http://support.amd.com/us/Processor_TechDocs/25759.pdf) erratum 110
-applies to atleast 3 CPU revisions with extended model 0x1 too.
+... it turns out that when trying to enable MSI-X,
+__assign_irq_vector(new, cfg_new, apic->target_cpus()) can not
+get vector because for x2apic target-cpus returns cpumask_of(0)
 
-By the way, what does /proc/cpuinfo say on your machine?
+Update that to online_mask like xapic.
 
--- 
-Regards/Gruss,
-    Boris.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+LKML-Reference: <4A785AFF.3050902@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/apic/x2apic_cluster.c |    8 +++++---
+ arch/x86/kernel/apic/x2apic_phys.c    |    8 +++++---
+ 2 files changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/arch/x86/kernel/apic/x2apic_cluster.c b/arch/x86/kernel/apic/x2apic_cluster.c
+index 2ed4e2b..a5371ec 100644
+--- a/arch/x86/kernel/apic/x2apic_cluster.c
++++ b/arch/x86/kernel/apic/x2apic_cluster.c
+@@ -17,11 +17,13 @@ static int x2apic_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ 	return x2apic_enabled();
+ }
+ 
+-/* Start with all IRQs pointing to boot CPU.  IRQ balancing will shift them. */
+-
++/*
++ * need to use more than cpu 0, because we need more vectors when
++ * MSI-X are used.
++ */
+ static const struct cpumask *x2apic_target_cpus(void)
+ {
+-	return cpumask_of(0);
++	return cpu_online_mask;
+ }
+ 
+ /*
+diff --git a/arch/x86/kernel/apic/x2apic_phys.c b/arch/x86/kernel/apic/x2apic_phys.c
+index 0b631c6..a8989aa 100644
+--- a/arch/x86/kernel/apic/x2apic_phys.c
++++ b/arch/x86/kernel/apic/x2apic_phys.c
+@@ -27,11 +27,13 @@ static int x2apic_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ 		return 0;
+ }
+ 
+-/* Start with all IRQs pointing to boot CPU.  IRQ balancing will shift them. */
+-
++/*
++ * need to use more than cpu 0, because we need more vectors when
++ * MSI-X are used.
++ */
+ static const struct cpumask *x2apic_target_cpus(void)
+ {
+-	return cpumask_of(0);
++	return cpu_online_mask;
+ }
+ 
+ static void x2apic_vector_allocation_domain(int cpu, struct cpumask *retmask)
