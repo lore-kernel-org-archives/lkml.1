@@ -1,162 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932075AbZHHLxE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934029AbZHHLxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932075AbZHHLxE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 07:53:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbZHHLxD
+	id S934029AbZHHLxH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 07:53:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbZHHLxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 07:53:03 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55017 "EHLO hera.kernel.org"
+	Sat, 8 Aug 2009 07:53:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55019 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753968AbZHHLxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753930AbZHHLxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 8 Aug 2009 07:53:01 -0400
-Date: Sat, 8 Aug 2009 11:52:29 GMT
+Date: Sat, 8 Aug 2009 11:51:36 GMT
 From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
        fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
        linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
        efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1249698400-5441-4-git-send-email-fweisbec@gmail.com>
-References: <1249698400-5441-4-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/core] perf_counter: Fix tracepoint sampling to be part of generic sampling
-Message-ID: <tip-6455883ad50c575b0bc5f6d6ab45d42cd56b83c4@git.kernel.org>
-Git-Commit-ID: 6455883ad50c575b0bc5f6d6ab45d42cd56b83c4
+In-Reply-To: <1249690585-9145-2-git-send-email-fweisbec@gmail.com>
+References: <1249690585-9145-2-git-send-email-fweisbec@gmail.com>
+Subject: [tip:perfcounters/core] perf tools: callchain: Fix spurious 'perf report' warnings: ignore empty callchains
+Message-ID: <tip-d6bda845b99fbdfa2f88ac9f82d757297783b5d5@git.kernel.org>
+Git-Commit-ID: d6bda845b99fbdfa2f88ac9f82d757297783b5d5
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 08 Aug 2009 11:52:29 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 08 Aug 2009 11:51:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6455883ad50c575b0bc5f6d6ab45d42cd56b83c4
-Gitweb:     http://git.kernel.org/tip/6455883ad50c575b0bc5f6d6ab45d42cd56b83c4
+Commit-ID:  d6bda845b99fbdfa2f88ac9f82d757297783b5d5
+Gitweb:     http://git.kernel.org/tip/d6bda845b99fbdfa2f88ac9f82d757297783b5d5
 Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Sat, 8 Aug 2009 04:26:37 +0200
+AuthorDate: Sat, 8 Aug 2009 02:16:23 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 8 Aug 2009 13:49:22 +0200
+CommitDate: Sat, 8 Aug 2009 13:49:21 +0200
 
-perf_counter: Fix tracepoint sampling to be part of generic sampling
+perf tools: callchain: Fix spurious 'perf report' warnings: ignore empty callchains
 
-Based on Peter's comments, make tracepoint sampling generic
-just like all the other sampling bits are. This is a rename
-with no code changes:
+When the callchain tree comes to insert an empty backtrace, it
+raises a spurious warning about the fact we are inserting an
+empty. This is spurious because the radix tree assumes it did
+something wrong to reach this state. But it didn't, we just met
+an empty callchain that has to be ignored.
 
-- PERF_SAMPLE_TP_RECORD to PERF_SAMPLE_RAW
-- struct perf_tracepoint_record to perf_raw_record
+This happens occasionally with certain types of call-chain
+recordings. If it happens it's a big nuisance as perf report
+output starts with thousands of warning lines.
 
-We want the system in place that transport tracepoints raw
-samples events into the perf ring buffer to be generalized and
-usable by any type of counter.
-
-Reported-by; Peter Zijlstra <peterz@infradead.org>
+Reported-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1249698400-5441-4-git-send-email-fweisbec@gmail.com>
+LKML-Reference: <1249690585-9145-2-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/perf_counter.h |   10 +++++-----
- kernel/perf_counter.c        |   20 ++++++++++----------
- 2 files changed, 15 insertions(+), 15 deletions(-)
+ tools/perf/util/callchain.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index a67dd5c..2aabe43 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -121,7 +121,7 @@ enum perf_counter_sample_format {
- 	PERF_SAMPLE_CPU				= 1U << 7,
- 	PERF_SAMPLE_PERIOD			= 1U << 8,
- 	PERF_SAMPLE_STREAM_ID			= 1U << 9,
--	PERF_SAMPLE_TP_RECORD			= 1U << 10,
-+	PERF_SAMPLE_RAW				= 1U << 10,
- 
- 	PERF_SAMPLE_MAX = 1U << 11,		/* non-ABI */
- };
-@@ -414,9 +414,9 @@ struct perf_callchain_entry {
- 	__u64				ip[PERF_MAX_STACK_DEPTH];
- };
- 
--struct perf_tracepoint_record {
--	int				size;
--	char				*record;
-+struct perf_raw_record {
-+	u32				size;
-+	void				*data;
- };
- 
- struct task_struct;
-@@ -687,7 +687,7 @@ struct perf_sample_data {
- 	struct pt_regs			*regs;
- 	u64				addr;
- 	u64				period;
--	void				*private;
-+	struct perf_raw_record		*raw;
- };
- 
- extern int perf_counter_overflow(struct perf_counter *counter, int nmi,
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 117622c..0023105 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -2646,7 +2646,7 @@ static void perf_counter_output(struct perf_counter *counter, int nmi,
- 		u64 counter;
- 	} group_entry;
- 	struct perf_callchain_entry *callchain = NULL;
--	struct perf_tracepoint_record *tp = NULL;
-+	struct perf_raw_record *raw = NULL;
- 	int callchain_size = 0;
- 	u64 time;
- 	struct {
-@@ -2715,10 +2715,10 @@ static void perf_counter_output(struct perf_counter *counter, int nmi,
- 			header.size += sizeof(u64);
- 	}
- 
--	if (sample_type & PERF_SAMPLE_TP_RECORD) {
--		tp = data->private;
--		if (tp)
--			header.size += tp->size;
-+	if (sample_type & PERF_SAMPLE_RAW) {
-+		raw = data->raw;
-+		if (raw)
-+			header.size += raw->size;
- 	}
- 
- 	ret = perf_output_begin(&handle, counter, header.size, nmi, 1);
-@@ -2784,8 +2784,8 @@ static void perf_counter_output(struct perf_counter *counter, int nmi,
- 		}
- 	}
- 
--	if ((sample_type & PERF_SAMPLE_TP_RECORD) && tp)
--		perf_output_copy(&handle, tp->record, tp->size);
-+	if ((sample_type & PERF_SAMPLE_RAW) && raw)
-+		perf_output_copy(&handle, raw->data, raw->size);
- 
- 	perf_output_end(&handle);
- }
-@@ -3740,15 +3740,15 @@ static const struct pmu perf_ops_task_clock = {
- void perf_tpcounter_event(int event_id, u64 addr, u64 count, void *record,
- 			  int entry_size)
+diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
+index 98c5627..a8e67aa 100644
+--- a/tools/perf/util/callchain.c
++++ b/tools/perf/util/callchain.c
+@@ -336,5 +336,7 @@ __append_chain(struct callchain_node *root, struct ip_callchain *chain,
+ void append_chain(struct callchain_node *root, struct ip_callchain *chain,
+ 		  struct symbol **syms)
  {
--	struct perf_tracepoint_record tp = {
-+	struct perf_raw_record raw = {
- 		.size = entry_size,
--		.record = record,
-+		.data = record,
- 	};
- 
- 	struct perf_sample_data data = {
- 		.regs = get_irq_regs(),
- 		.addr = addr,
--		.private = &tp,
-+		.raw = &raw,
- 	};
- 
- 	if (!data.regs)
++	if (!chain->nr)
++		return;
+ 	__append_chain_children(root, chain, syms, 0);
+ }
