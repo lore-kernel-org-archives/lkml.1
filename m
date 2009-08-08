@@ -1,94 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbZHHC0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757633AbZHHC0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756816AbZHHC0p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 22:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZHHC0o
+	id S1757633AbZHHC0v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 22:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756655AbZHHC0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 22:26:44 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:34627 "EHLO
+	Fri, 7 Aug 2009 22:26:45 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:26774 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751841AbZHHC0n (ORCPT
+	with ESMTP id S1752838AbZHHC0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 22:26:43 -0400
+	Fri, 7 Aug 2009 22:26:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :mime-version:content-type:content-transfer-encoding;
-        b=CVZa0wnispIhZIgHsCOVBzCebnsqje+PM16g5ZhEMfDDg+VBIpWPjpGinUrpczuHju
-         i64PYsqvQnqANUHyxlhJ1yoGMDNtbp88kxHbz2vhqVjHqhBIkNxU9GHFHhABseuV4+6y
-         KamM8xbOsknKsgD4YPS3cCZgzuJwPOXi5fjE4=
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=U5Hi04aLbsERjj80TIXhos0rNcmZf4IJrWjeiQhVKMW2L7dZKinB427VpV1ZtYeDJm
+         Vd/uxQCD80TRXpDjLpQG/hUqbIJa3oNzUcZPGLPjlpPaCwYv/d+F5ep+3Va9toiBlAw7
+         ARVZzcOpvZouVIiGtvGGP6VACtABv+rVW2XaM=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/3] perfcounter: Initialize tracepoint record before any use
-Date: Sat,  8 Aug 2009 04:26:35 +0200
-Message-Id: <1249698400-5441-2-git-send-email-fweisbec@gmail.com>
+       Mike Galbraith <efault@gmx.de>
+Subject: [PATCH 1/4] perf tools: callchain: Warn only once in empty node detection
+Date: Sat,  8 Aug 2009 04:26:34 +0200
+Message-Id: <1249698400-5441-1-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1249698400-5441-1-git-send-email-fweisbec@gmail.com>
-References: <1249698400-5441-1-git-send-email-fweisbec@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Despite that the tracepoint record is always present when the
-PERF_SAMPLE_TP_RECORD flag is set, gcc whines, thinking it might not
-be initialized:
+When we fill a new node that is found to be empty (sign of a bug),
+we print a message each time that happens. Sometimes we reach thousands
+of lines printed.
 
-kernel/perf_counter.c: In function ‘perf_counter_output’:
-kernel/perf_counter.c:2650: warning: ‘tp’ may be used uninitialized in this function
-
-Then, initialize it to NULL and always check if it's not NULL before
-dereference it.
+Just warn only once in that case (and use stderr instead of stdout).
 
 Reported-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
 ---
- kernel/perf_counter.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ tools/perf/util/callchain.c |    3 ++-
+ tools/perf/util/util.h      |    3 +++
+ tools/perf/util/wrapper.c   |   16 ++++++++++++++++
+ 3 files changed, 21 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 142ae5a..a6963e2 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -2647,7 +2647,7 @@ void perf_counter_output(struct perf_counter *counter, int nmi,
- 		u64 counter;
- 	} group_entry;
- 	struct perf_callchain_entry *callchain = NULL;
--	struct perf_tracepoint_record *tp;
-+	struct perf_tracepoint_record *tp = NULL;
- 	int callchain_size = 0;
- 	u64 time;
- 	struct {
-@@ -2718,7 +2718,8 @@ void perf_counter_output(struct perf_counter *counter, int nmi,
+diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
+index 98c5627..ce0c6d4 100644
+--- a/tools/perf/util/callchain.c
++++ b/tools/perf/util/callchain.c
+@@ -13,6 +13,7 @@
+ #include <stdio.h>
+ #include <stdbool.h>
+ #include <errno.h>
++#include "util.h"
  
- 	if (sample_type & PERF_SAMPLE_TP_RECORD) {
- 		tp = data->private;
--		header.size += tp->size;
-+		if (tp)
-+			header.size += tp->size;
+ #include "callchain.h"
+ 
+@@ -203,7 +204,7 @@ fill_node(struct callchain_node *node, struct ip_callchain *chain,
  	}
+ 	node->val_nr = chain->nr - start;
+ 	if (!node->val_nr)
+-		printf("Warning: empty node in callchain tree\n");
++		fprintf_once(stderr, "Warning: empty node in callchain tree\n");
+ }
  
- 	ret = perf_output_begin(&handle, counter, header.size, nmi, 1);
-@@ -2784,7 +2785,7 @@ void perf_counter_output(struct perf_counter *counter, int nmi,
- 		}
- 	}
+ static void
+diff --git a/tools/perf/util/util.h b/tools/perf/util/util.h
+index 68fe157..386ea40 100644
+--- a/tools/perf/util/util.h
++++ b/tools/perf/util/util.h
+@@ -148,6 +148,9 @@ static inline const char *skip_prefix(const char *str, const char *prefix)
+ 	return strncmp(str, prefix, len) ? NULL : str + len;
+ }
  
--	if (sample_type & PERF_SAMPLE_TP_RECORD)
-+	if ((sample_type & PERF_SAMPLE_TP_RECORD) && tp)
- 		perf_output_copy(&handle, tp->record, tp->size);
++extern int fprintf_once(FILE *fp, const char *fmt, ...)
++	__attribute__((format (printf, 2, 3)));
++
+ #if defined(NO_MMAP) || defined(USE_WIN32_MMAP)
  
- 	perf_output_end(&handle);
+ #ifndef PROT_READ
+diff --git a/tools/perf/util/wrapper.c b/tools/perf/util/wrapper.c
+index 4574ac2..026c87c 100644
+--- a/tools/perf/util/wrapper.c
++++ b/tools/perf/util/wrapper.c
+@@ -205,3 +205,19 @@ int xmkstemp(char *template)
+ 		die("Unable to create temporary file: %s", strerror(errno));
+ 	return fd;
+ }
++
++int fprintf_once(FILE *fp, const char *fmt, ...)
++{
++	va_list args;
++	int ret;
++	static int once;
++
++	if (once++)
++		return 1;
++
++	va_start(args, fmt);
++	ret = vfprintf(fp, fmt, args);
++	va_end(args);
++
++	return ret;
++}
 -- 
 1.6.2.3
 
