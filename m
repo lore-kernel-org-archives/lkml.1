@@ -1,80 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753587AbZHHIDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZHHIQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753587AbZHHIDS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 04:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbZHHIDR
+	id S1754017AbZHHIQv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 04:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbZHHIQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 04:03:17 -0400
-Received: from sh.osrg.net ([192.16.179.4]:46317 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751664AbZHHIDN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 04:03:13 -0400
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-To: linux-fsdevel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       users@nilfs.org, Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH] fs/Kconfig: move nilfs2 outside misc filesystems
-Date: Sat,  8 Aug 2009 17:00:14 +0900
-Message-Id: <1249718414-5282-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.5.6.5
-X-Dispatcher: imput version 20050308(IM148)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Sat, 08 Aug 2009 17:03:06 +0900 (JST)
+	Sat, 8 Aug 2009 04:16:50 -0400
+Received: from [222.73.24.84] ([222.73.24.84]:49394 "EHLO song.cn.fujitsu.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750987AbZHHIQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 04:16:48 -0400
+Message-ID: <4A7D33FB.6090207@cn.fujitsu.com>
+Date: Sat, 08 Aug 2009 16:14:51 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, ryov@valinux.co.jp, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org
+Subject: Re: [PATCH 22/24] io-controller: Per io group bdi congestion interface
+References: <1248467274-32073-1-git-send-email-vgoyal@redhat.com> <1248467274-32073-23-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1248467274-32073-23-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some people asked me questions like the following:
+Vivek Goyal wrote:
+...
+> +/* Set io group congestion on and off thresholds */
+> +void elv_io_group_congestion_threshold(struct request_queue *q,
+> +						struct io_group *iog)
+> +{
+> +	int nr;
+> +
+> +	nr = q->nr_group_requests - (q->nr_group_requests / 8) + 1;
+> +	if (nr > q->nr_group_requests)
+> +		nr = q->nr_group_requests;
+> +	iog->nr_congestion_on = nr;
+> +
+> +	nr = q->nr_group_requests - (q->nr_group_requests / 8)
+> +			- (q->nr_group_requests / 16) - 1;
+> +	if (nr < 1)
+> +		nr = 1;
+> +	iog->nr_congestion_off = nr;
 
-On Wed, 15 Jul 2009 13:11:21 +0200, Leon Woestenberg wrote:
-> just wondering, any reasons why NILFS2 is one of the miscellaneous
-> filesystems and, for example, btrfs, is not in Kconfig?
+Vivek,
 
-Actually, nilfs is NOT a filesystem came from other operating systems,
-but a filesystem created purely for Linux.  Nor is it a flash
-filesystem but that for generic block devices.
+Since we determine whether io group is congenssed or not just by checking 
+iog->nr_congestion_on, we can get rid of iog->nr_congestion_off here.
 
-So, this moves nilfs outside the misc category as I responded in LKML
-"Re: Why does NILFS2 hide under Miscellaneous filesystems?"
-(Message-Id: <20090716.002526.93465395.ryusuke@osrg.net>).
-
-Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 ---
- fs/Kconfig        |    2 +-
- fs/nilfs2/Kconfig |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ block/elevator-fq.c |    6 ------
+ block/elevator-fq.h |    3 +--
+ 2 files changed, 1 insertions(+), 8 deletions(-)
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index 0e7da7b..455aa20 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -43,6 +43,7 @@ source "fs/xfs/Kconfig"
- source "fs/gfs2/Kconfig"
- source "fs/ocfs2/Kconfig"
- source "fs/btrfs/Kconfig"
-+source "fs/nilfs2/Kconfig"
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index 66b10eb..e73da31 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -1267,12 +1267,6 @@ void elv_io_group_congestion_threshold(struct request_queue *q,
+ 	if (nr > q->nr_group_requests)
+ 		nr = q->nr_group_requests;
+ 	iog->nr_congestion_on = nr;
+-
+-	nr = q->nr_group_requests - (q->nr_group_requests / 8)
+-			- (q->nr_group_requests / 16) - 1;
+-	if (nr < 1)
+-		nr = 1;
+-	iog->nr_congestion_off = nr;
+ }
  
- endif # BLOCK
+ static inline int elv_is_iog_congested(struct request_queue *q,
+diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+index 0581e55..2815279 100644
+--- a/block/elevator-fq.h
++++ b/block/elevator-fq.h
+@@ -266,9 +266,8 @@ struct io_group {
+ 	/* Single ioq per group, used for noop, deadline, anticipatory */
+ 	struct io_queue *ioq;
  
-@@ -186,7 +187,6 @@ source "fs/romfs/Kconfig"
- source "fs/sysv/Kconfig"
- source "fs/ufs/Kconfig"
- source "fs/exofs/Kconfig"
--source "fs/nilfs2/Kconfig"
+-	/* io group congestion on and off threshold for request descriptors */
++	/* io group congestion on threshold for request descriptors */
+ 	unsigned int nr_congestion_on;
+-	unsigned int nr_congestion_off;
  
- endif # MISC_FILESYSTEMS
- 
-diff --git a/fs/nilfs2/Kconfig b/fs/nilfs2/Kconfig
-index 72da095..251da07 100644
---- a/fs/nilfs2/Kconfig
-+++ b/fs/nilfs2/Kconfig
-@@ -1,6 +1,6 @@
- config NILFS2_FS
- 	tristate "NILFS2 file system support (EXPERIMENTAL)"
--	depends on BLOCK && EXPERIMENTAL
-+	depends on EXPERIMENTAL
- 	select CRC32
- 	help
- 	  NILFS2 is a log-structured file system (LFS) supporting continuous
+ 	/* request list associated with the group */
+ 	struct request_list rl;
 -- 
-1.6.3.4
+1.5.4.rc3
 
