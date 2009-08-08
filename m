@@ -1,962 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZHHXXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbZHHXr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbZHHXXU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 19:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbZHHXXU
+	id S1753310AbZHHXr2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 19:47:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbZHHXr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 19:23:20 -0400
-Received: from waldorf.bytemark.co.uk ([212.110.162.22]:54143 "EHLO
-	waldorf.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753133AbZHHXXS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 19:23:18 -0400
-Date: Sun, 9 Aug 2009 01:22:59 +0200
-From: "Emilio G. Cota" <cota@braap.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-Cc: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@cern.ch>
-Subject: Re: [patch 2/5] Staging: vme: add VME userspace driver
-Message-ID: <20090808232259.GA29303@braap.org>
-References: <20090803205657.964064732@mini.kroah.org> <20090803210116.GC28430@kroah.com>
+	Sat, 8 Aug 2009 19:47:28 -0400
+Received: from phunq.net ([64.81.85.152]:44833 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753226AbZHHXr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 19:47:27 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Tux3] Current Activities?
+Date: Sat, 8 Aug 2009 16:47:21 -0700
+User-Agent: KMail/1.9.9
+Cc: Jeff Garzik <jgarzik@pobox.com>, debian developer <debiandev@gmail.com>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, tux3@tux3.org,
+       LKML <linux-kernel@vger.kernel.org>, corbet@lwn.net
+References: <6dcc37b30904291901m7abdd6d7q6f44b2c248ec48c4@mail.gmail.com> <200908010942.52623.phillips@phunq.net> <20090806075246.GA6860@elte.hu>
+In-Reply-To: <20090806075246.GA6860@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090803210116.GC28430@kroah.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908081647.21279.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I remember we had a look at the vmelinux interface, but it really
-was so limited that we decided to get rid of it altogether. Do you
-really think it's worth bringing it back to life? Since it's never
-been merged into the kernel, why don't we just get it right this time
-and forget about it?
-
-Instead of using that we implemented a heretic IOCTL-based
-interface for user-space; at least with it you could create a
-driver (with no interrupt support) for a device in user-space.
-We actually don't use it, but well, just to get inspiration, here it
-goes:
-
-/**
- * \name Window management ioctl numbers
- */
-/** Get a physical window attributes */
-#define VME_IOCTL_GET_WINDOW_ATTR       _IOWR('V', 0, struct
-vme_mapping)
-/** Create a physical window */
-#define VME_IOCTL_CREATE_WINDOW         _IOW( 'V', 1, struct
-vme_mapping)
-/** Destroy a physical window */
-#define VME_IOCTL_DESTROY_WINDOW        _IOW( 'V', 2, int)
-/** Create a mapping over a physical window */
-#define VME_IOCTL_FIND_MAPPING          _IOWR('V', 3, struct
-vme_mapping)
-/** Remove a mapping */
-#define VME_IOCTL_RELEASE_MAPPING       _IOW( 'V', 4, struct
-vme_mapping)
-/** Get the create on find failed flag */
-#define VME_IOCTL_GET_CREATE_ON_FIND_FAIL       _IOR( 'V', 5, unsigned
-int)
-/** Set the create on find failed flag */
-#define VME_IOCTL_SET_CREATE_ON_FIND_FAIL       _IOW( 'V', 6, unsigned
-int)
-/** Get the destroy on remove flag */
-#define VME_IOCTL_GET_DESTROY_ON_REMOVE _IOR( 'V', 7, unsigned int)
-/** Set the destroy on remove flag */
-#define VME_IOCTL_SET_DESTROY_ON_REMOVE _IOW( 'V', 8, unsigned int)
-/** Get bus error status */
-#define VME_IOCTL_GET_BUS_ERROR         _IOR( 'V', 9, unsigned int)
-/** Start a DMA transfer */
-#define VME_IOCTL_START_DMA             _IOWR('V', 10, struct vme_dma)
-
-[ grab the code from here: http://repo.or.cz/w/tsi148vmebridge.git .
-  Please note there's some backwards-compatible crap for old user-space
-  LynxOS code, called CES. Ignore it. ]
-
-By the way, please try to be consistent with naming, e.g. I see window,
-then see "image", and I have to think hard to see whether they mean
-the same or not.. err, do they?
-
-E.
-
-(I'll leave this here because of added Cc)
-Greg K-H wrote:
-> From: Martyn Welch <martyn.welch@gefanuc.com>
+On Thursday 06 August 2009, Ingo Molnar wrote:
 > 
-> Adds a VME userspace access driver
+> * Daniel Phillips <phillips@phunq.net> wrote:
 > 
-> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > [...]  I will say this now: if we are invited to merge in the next 
+> > major release, or in -mm or whatever, we will happily do it. If we 
+> > are not invited to merge, nobody has any cause to complain about 
+> > progress slowing down. [...]
 > 
-> ---
->  drivers/staging/vme/Kconfig            |    4 
->  drivers/staging/vme/Makefile           |    2 
->  drivers/staging/vme/devices/Kconfig    |    8 
->  drivers/staging/vme/devices/Makefile   |    5 
->  drivers/staging/vme/devices/vme_user.c |  771 +++++++++++++++++++++++++++++++++
->  drivers/staging/vme/devices/vme_user.h |   43 +
->  6 files changed, 830 insertions(+), 3 deletions(-)
+> The thing is, if you are waiting for an 'invite to upstream Linux 
+> merge' that could be a _very_ long wait: i've yet to see a single 
+> one ever since i started hacking Linux ~14 years ago ;-)
+
+Hi Ingo,
+
+We were already sorta-kinda invited to merge, as I read it, having received advice to merge early while the code base remains small
+instead of adding more features and risking premature bloat.  I seem to
+recall there was a dissenter at that time on the basis of lack of
+atomic commit, and we chose to follow the latter advice instead of the
+former, arguably a mistake.
+
+> The model that Linux has been following for the past 10+ years is 
+> for new kernel projects to request inclusion. I.e. you push your 
+> patches upstream: you send patches and a pull request to the 
+> appropriate people/lists such as lkml.
 > 
-> --- /dev/null
-> +++ b/drivers/staging/vme/devices/Kconfig
-> @@ -0,0 +1,8 @@
-> +comment "VME Device Drivers"
-> +
-> +config VME_USER
-> +	tristate "VME user space access driver"
-> +	help
-> +	  If you say Y here you want to be able to access a limited number of
-> +	  VME windows in a manner at least semi-compatible with the interface
-> +	  provided with the original driver at http://vmelinux.org/.
-> --- /dev/null
-> +++ b/drivers/staging/vme/devices/Makefile
-> @@ -0,0 +1,5 @@
-> +#
-> +# Makefile for the VME device drivers.
-> +#
-> +
-> +obj-$(CONFIG_VME_USER)		+= vme_user.o
-> --- /dev/null
-> +++ b/drivers/staging/vme/devices/vme_user.c
-> @@ -0,0 +1,771 @@
-> +/*
-> + * VMEbus User access driver
-> + *
-> + * Author: Martyn Welch <martyn.welch@gefanuc.com>
-> + * Copyright 2008 GE Fanuc Intelligent Platforms Embedded Systems, Inc.
-> + *
-> + * Based on work by:
-> + *   Tom Armistead and Ajit Prem
-> + *     Copyright 2004 Motorola Inc.
-> + *
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
-> +
-> +#include <linux/cdev.h>
-> +#include <linux/delay.h>
-> +#include <linux/device.h>
-> +#include <linux/dma-mapping.h>
-> +#include <linux/errno.h>
-> +#include <linux/init.h>
-> +#include <linux/ioctl.h>
-> +#include <linux/kernel.h>
-> +#include <linux/mm.h>
-> +#include <linux/module.h>
-> +#include <linux/pagemap.h>
-> +#include <linux/pci.h>
-> +#include <linux/semaphore.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/syscalls.h>
-> +#include <linux/types.h>
-> +#include <linux/version.h>
-> +
-> +#include <asm/io.h>
-> +#include <asm/uaccess.h>
-> +
-> +#include "../vme.h"
-> +#include "vme_user.h"
-> +
-> +/* Currently Documentation/devices.txt defines the following for VME:
-> + *
-> + * 221 char	VME bus
-> + * 		  0 = /dev/bus/vme/m0		First master image
-> + * 		  1 = /dev/bus/vme/m1		Second master image
-> + * 		  2 = /dev/bus/vme/m2		Third master image
-> + * 		  3 = /dev/bus/vme/m3		Fourth master image
-> + * 		  4 = /dev/bus/vme/s0		First slave image
-> + * 		  5 = /dev/bus/vme/s1		Second slave image
-> + * 		  6 = /dev/bus/vme/s2		Third slave image
-> + * 		  7 = /dev/bus/vme/s3		Fourth slave image
-> + * 		  8 = /dev/bus/vme/ctl		Control
-> + *
-> + * 		It is expected that all VME bus drivers will use the
-> + * 		same interface.  For interface documentation see
-> + * 		http://www.vmelinux.org/.
-> + *
-> + * However the VME driver at http://www.vmelinux.org/ is rather old and doesn't
-> + * even support the tsi148 chipset (which has 8 master and 8 slave windows).
-> + * We'll run with this or now as far as possible, however it probably makes
-> + * sense to get rid of the old mappings and just do everything dynamically.
-> + *
-> + * So for now, we'll restrict the driver to providing 4 masters and 4 slaves as
-> + * defined above and try to support at least some of the interface from
-> + * http://www.vmelinux.org/ as an alternative drive can be written providing a
-> + * saner interface later.
-> + */
-> +#define VME_MAJOR	221	/* VME Major Device Number */
-> +#define VME_DEVS	9	/* Number of dev entries */
-> +
-> +#define MASTER_MINOR	0
-> +#define MASTER_MAX	3
-> +#define SLAVE_MINOR	4
-> +#define SLAVE_MAX	7
-> +#define CONTROL_MINOR	8
-> +
-> +#define PCI_BUF_SIZE  0x20000	/* Size of one slave image buffer */
-> +
-> +/*
-> + * Structure to handle image related parameters.
-> + */
-> +typedef struct {
-> +	void __iomem *kern_buf;	/* Buffer address in kernel space */
-> +	dma_addr_t pci_buf;	/* Buffer address in PCI address space */
-> +	unsigned long long size_buf;	/* Buffer size */
-> +	struct semaphore sem;	/* Semaphore for locking image */
-> +	struct device *device;	/* Sysfs device */
-> +	struct vme_resource *resource;	/* VME resource */
-> +	int users;		/* Number of current users */
-> +} image_desc_t;
-> +static image_desc_t image[VME_DEVS];
-> +
-> +typedef struct {
-> +	unsigned long reads;
-> +	unsigned long writes;
-> +	unsigned long ioctls;
-> +	unsigned long irqs;
-> +	unsigned long berrs;
-> +	unsigned long dmaErrors;
-> +	unsigned long timeouts;
-> +	unsigned long external;
-> +} driver_stats_t;
-> +static driver_stats_t statistics;
-> +
-> +struct cdev *vme_user_cdev;		/* Character device */
-> +struct class *vme_user_sysfs_class;	/* Sysfs class */
-> +struct device *vme_user_bridge;		/* Pointer to the bridge device */
-> +
-> +static char driver_name[] = "vme_user";
-> +
-> +static const int type[VME_DEVS] = {	MASTER_MINOR,	MASTER_MINOR,
-> +					MASTER_MINOR,	MASTER_MINOR,
-> +					SLAVE_MINOR,	SLAVE_MINOR,
-> +					SLAVE_MINOR,	SLAVE_MINOR,
-> +					CONTROL_MINOR
-> +				};
-> +
-> +
-> +static int vme_user_open(struct inode *, struct file *);
-> +static int vme_user_release(struct inode *, struct file *);
-> +static ssize_t vme_user_read(struct file *, char *, size_t, loff_t *);
-> +static ssize_t vme_user_write(struct file *, const char *, size_t, loff_t *);
-> +static loff_t vme_user_llseek(struct file *, loff_t, int);
-> +static int vme_user_ioctl(struct inode *, struct file *, unsigned int,
-> +	unsigned long);
-> +
-> +static int __init vme_user_probe(struct device *dev);
-> +
-> +static struct file_operations vme_user_fops = {
-> +        .open = vme_user_open,
-> +        .release = vme_user_release,
-> +        .read = vme_user_read,
-> +        .write = vme_user_write,
-> +        .llseek = vme_user_llseek,
-> +        .ioctl = vme_user_ioctl,
-> +};
-> +
-> +
-> +/*
-> + * Reset all the statistic counters
-> + */
-> +static void reset_counters(void)
-> +{
-> +        statistics.reads = 0;
-> +        statistics.writes = 0;
-> +        statistics.ioctls = 0;
-> +        statistics.irqs = 0;
-> +        statistics.berrs = 0;
-> +        statistics.dmaErrors = 0;
-> +        statistics.timeouts = 0;
-> +}
-> +
-> +void lmcall(int monitor)
-> +{
-> +	printk("Caught Location Monitor %d access\n", monitor);
-> +}
-> +
-> +static void tests(void)
-> +{
-> +	struct vme_resource *dma_res;
-> +	struct vme_dma_list *dma_list;
-> +	struct vme_dma_attr *pattern_attr, *vme_attr;
-> +
-> +	int retval;
-> +	unsigned int data;
-> +
-> +	printk("Running VME DMA test\n");
-> +	dma_res = vme_request_dma(vme_user_bridge);
-> +	dma_list = vme_new_dma_list(dma_res);
-> +	pattern_attr = vme_dma_pattern_attribute(0x0,
-> +		VME_DMA_PATTERN_WORD |
-> +			VME_DMA_PATTERN_INCREMENT);
-> +	vme_attr = vme_dma_vme_attribute(0x10000, VME_A32,
-> +		VME_SCT, VME_D32);
-> +	retval = vme_dma_list_add(dma_list, pattern_attr,
-> +		vme_attr, 0x10000);
-> +#if 0
-> +	vme_dma_free_attribute(vme_attr);
-> +	vme_attr = vme_dma_vme_attribute(0x20000, VME_A32,
-> +		VME_SCT, VME_D32);
-> +	retval = vme_dma_list_add(dma_list, pattern_attr,
-> +		vme_attr, 0x10000);
-> +#endif
-> +	retval = vme_dma_list_exec(dma_list);
-> +	vme_dma_free_attribute(pattern_attr);
-> +	vme_dma_free_attribute(vme_attr);
-> +	vme_dma_list_free(dma_list);
-> +#if 0
-> +	printk("Generating a VME interrupt\n");
-> +	vme_generate_irq(dma_res, 0x3, 0xaa);
-> +	printk("Interrupt returned\n");
-> +#endif
-> +	vme_dma_free(dma_res);
-> +
-> +	/* Attempt RMW */
-> +	data = vme_master_rmw(image[0].resource, 0x80000000, 0x00000000,
-> +		0x80000000, 0);
-> +	printk("RMW returned 0x%8.8x\n", data);
-> +
-> +
-> +	/* Location Monitor */
-> +	printk("vme_lm_set:%d\n", vme_lm_set(vme_user_bridge, 0x60000, VME_A32, VME_SCT | VME_USER | VME_DATA));
-> +	printk("vme_lm_attach:%d\n", vme_lm_attach(vme_user_bridge, 0, lmcall));
-> +
-> +	printk("Board in VME slot:%d\n", vme_slot_get(vme_user_bridge));
-> +}
-> +
-> +static int vme_user_open(struct inode *inode, struct file *file)
-> +{
-> +	int err;
-> +	unsigned int minor = MINOR(inode->i_rdev);
-> +
-> +	down(&image[minor].sem);
-> +	/* Only allow device to be opened if a resource is allocated */
-> +	if (image[minor].resource == NULL) {
-> +		printk(KERN_ERR "No resources allocated for device\n");
-> +		err = -EINVAL;
-> +		goto err_res;
-> +	}
-> +
-> +	/* Increment user count */
-> +	image[minor].users++;
-> +
-> +	up(&image[minor].sem);
-> +
-> +	return 0;
-> +
-> +err_res:
-> +	up(&image[minor].sem);
-> +
-> +	return err;
-> +}
-> +
-> +static int vme_user_release(struct inode *inode, struct file *file)
-> +{
-> +	unsigned int minor = MINOR(inode->i_rdev);
-> +
-> +	down(&image[minor].sem);
-> +
-> +	/* Decrement user count */
-> +	image[minor].users--;
-> +
-> +	up(&image[minor].sem);
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * We are going ot alloc a page during init per window for small transfers.
-> + * Small transfers will go VME -> buffer -> user space. Larger (more than a
-> + * page) transfers will lock the user space buffer into memory and then
-> + * transfer the data directly into the user space buffers.
-> + */
-> +static ssize_t resource_to_user(int minor, char __user *buf, size_t count,
-> +	loff_t *ppos)
-> +{
-> +	ssize_t retval;
-> +	ssize_t copied = 0;
-> +
-> +	if (count <= image[minor].size_buf) {
-> +		/* We copy to kernel buffer */
-> +		copied = vme_master_read(image[minor].resource,
-> +			image[minor].kern_buf, count, *ppos);
-> +		if (copied < 0) {
-> +			return (int)copied;
-> +		}
-> +
-> +		retval = __copy_to_user(buf, image[minor].kern_buf,
-> +			(unsigned long)copied);
-> +		if (retval != 0) {
-> +			copied = (copied - retval);
-> +			printk("User copy failed\n");
-> +			return -EINVAL;
-> +		}
-> +
-> +	} else {
-> +		/* XXX Need to write this */
-> +		printk("Currently don't support large transfers\n");
-> +		/* Map in pages from userspace */
-> +
-> +		/* Call vme_master_read to do the transfer */
-> +		return -EINVAL;
-> +	}
-> +
-> +	return copied;
-> +}
-> +
-> +/*
-> + * We are going ot alloc a page during init per window for small transfers.
-> + * Small transfers will go user space -> buffer -> VME. Larger (more than a
-> + * page) transfers will lock the user space buffer into memory and then
-> + * transfer the data directly from the user space buffers out to VME.
-> + */
-> +static ssize_t resource_from_user(unsigned int minor, const char *buf,
-> +	size_t count, loff_t *ppos)
-> +{
-> +	ssize_t retval;
-> +	ssize_t copied = 0;
-> +
-> +	if (count <= image[minor].size_buf) {
-> +		retval = __copy_from_user(image[minor].kern_buf, buf,
-> +			(unsigned long)count);
-> +		if (retval != 0)
-> +			copied = (copied - retval);
-> +		else
-> +			copied = count;
-> +
-> +		copied = vme_master_write(image[minor].resource,
-> +			image[minor].kern_buf, copied, *ppos);
-> +	} else {
-> +		/* XXX Need to write this */
-> +		printk("Currently don't support large transfers\n");
-> +		/* Map in pages from userspace */
-> +
-> +		/* Call vme_master_write to do the transfer */
-> +		return -EINVAL;
-> +	}
-> +
-> +	return copied;
-> +}
-> +
-> +static ssize_t buffer_to_user(unsigned int minor, char __user *buf,
-> +	size_t count, loff_t *ppos)
-> +{
-> +	void __iomem *image_ptr;
-> +	ssize_t retval;
-> +
-> +	image_ptr = image[minor].kern_buf + *ppos;
-> +
-> +	retval = __copy_to_user(buf, image_ptr, (unsigned long)count);
-> +	if (retval != 0) {
-> +		retval = (count - retval);
-> +		printk(KERN_WARNING "Partial copy to userspace\n");
-> +	} else
-> +		retval = count;
-> +
-> +	/* Return number of bytes successfully read */
-> +	return retval;
-> +}
-> +
-> +static ssize_t buffer_from_user(unsigned int minor, const char *buf,
-> +	size_t count, loff_t *ppos)
-> +{
-> +	void __iomem *image_ptr;
-> +	size_t retval;
-> +
-> +	image_ptr = image[minor].kern_buf + *ppos;
-> +
-> +	retval = __copy_from_user(image_ptr, buf, (unsigned long)count);
-> +	if (retval != 0) {
-> +		retval = (count - retval);
-> +		printk(KERN_WARNING "Partial copy to userspace\n");
-> +	} else
-> +		retval = count;
-> +
-> +	/* Return number of bytes successfully read */
-> +	return retval;
-> +}
-> +
-> +static ssize_t vme_user_read(struct file *file, char *buf, size_t count,
-> +			loff_t * ppos)
-> +{
-> +	unsigned int minor = MINOR(file->f_dentry->d_inode->i_rdev);
-> +	ssize_t retval;
-> +	size_t image_size;
-> +	size_t okcount;
-> +
-> +	down(&image[minor].sem);
-> +
-> +	/* XXX Do we *really* want this helper - we can use vme_*_get ? */
-> +	image_size = vme_get_size(image[minor].resource);
-> +
-> +	/* Ensure we are starting at a valid location */
-> +	if ((*ppos < 0) || (*ppos > (image_size - 1))) {
-> +		up(&image[minor].sem);
-> +		return 0;
-> +	}
-> +
-> +	/* Ensure not reading past end of the image */
-> +	if (*ppos + count > image_size)
-> +		okcount = image_size - *ppos;
-> +	else
-> +		okcount = count;
-> +
-> +	switch (type[minor]){
-> +	case MASTER_MINOR:
-> +		retval = resource_to_user(minor, buf, okcount, ppos);
-> +		break;
-> +	case SLAVE_MINOR:
-> +		retval = buffer_to_user(minor, buf, okcount, ppos);
-> +		break;
-> +	default:
-> +		retval = -EINVAL;
-> +	}
-> +
-> +	up(&image[minor].sem);
-> +
-> +	if (retval > 0)
-> +		*ppos += retval;
-> +
-> +	return retval;
-> +}
-> +
-> +static ssize_t vme_user_write(struct file *file, const char *buf, size_t count,
-> +			 loff_t *ppos)
-> +{
-> +	unsigned int minor = MINOR(file->f_dentry->d_inode->i_rdev);
-> +	ssize_t retval;
-> +	size_t image_size;
-> +	size_t okcount;
-> +
-> +	down(&image[minor].sem);
-> +
-> +	image_size = vme_get_size(image[minor].resource);
-> +
-> +	/* Ensure we are starting at a valid location */
-> +	if ((*ppos < 0) || (*ppos > (image_size - 1))) {
-> +		up(&image[minor].sem);
-> +		return 0;
-> +	}
-> +
-> +	/* Ensure not reading past end of the image */
-> +	if (*ppos + count > image_size)
-> +		okcount = image_size - *ppos;
-> +	else
-> +		okcount = count;
-> +
-> +	switch (type[minor]){
-> +	case MASTER_MINOR:
-> +		retval = resource_from_user(minor, buf, okcount, ppos);
-> +		break;
-> +	case SLAVE_MINOR:
-> +		retval = buffer_from_user(minor, buf, okcount, ppos);
-> +		break;
-> +	default:
-> +		retval = -EINVAL;
-> +	}
-> +
-> +	up(&image[minor].sem);
-> +
-> +	if (retval > 0)
-> +		*ppos += retval;
-> +
-> +	return retval;
-> +}
-> +
-> +static loff_t vme_user_llseek(struct file *file, loff_t off, int whence)
-> +{
-> +	printk(KERN_ERR "Llseek currently incomplete\n");
-> +	return -EINVAL;
-> +}
-> +
-> +static int vme_user_ioctl(struct inode *inode, struct file *file,
-> +	unsigned int cmd, unsigned long arg)
-> +{
-> +	unsigned int minor = MINOR(inode->i_rdev);
-> +#if 0
-> +	int ret_val;
-> +#endif
-> +	unsigned long copyRet;
-> +	vme_slave_t slave;
-> +
-> +	statistics.ioctls++;
-> +	switch (type[minor]) {
-> +	case CONTROL_MINOR:
-> +		break;
-> +	case MASTER_MINOR:
-> +		break;
-> +	case SLAVE_MINOR:
-> +		switch (cmd) {
-> +		case VME_SET_SLAVE:
-> +
-> +			copyRet = copy_from_user(&slave, (char *)arg,
-> +				sizeof(slave));
-> +			if (copyRet != 0) {
-> +				printk(KERN_WARNING "Partial copy from "
-> +					"userspace\n");
-> +				return -EFAULT;
-> +			}
-> +
-> +			return vme_slave_set(image[minor].resource,
-> +				slave.enable, slave.vme_addr, slave.size,
-> +				image[minor].pci_buf, slave.aspace,
-> +				slave.cycle);
-> +
-> +			break;
-> +#if 0
-> +		case VME_GET_SLAVE:
-> +			vme_slave_t slave;
-> +
-> +			ret_val = vme_slave_get(minor, &iRegs);
-> +
-> +			copyRet = copy_to_user((char *)arg, &slave,
-> +				sizeof(slave));
-> +			if (copyRet != 0) {
-> +				printk(KERN_WARNING "Partial copy to "
-> +					"userspace\n");
-> +				return -EFAULT;
-> +			}
-> +
-> +			return ret_val;
-> +			break;
-> +#endif
-> +		}
-> +		break;
-> +	}
-> +
-> +	return -EINVAL;
-> +}
-> +
-> +
-> +/*
-> + * Unallocate a previously allocated buffer
-> + */
-> +static void buf_unalloc (int num)
-> +{
-> +	if (image[num].kern_buf) {
-> +#ifdef VME_DEBUG
-> +		printk(KERN_DEBUG "UniverseII:Releasing buffer at %p\n",
-> +			image[num].pci_buf);
-> +#endif
-> +
-> +		vme_free_consistent(image[num].resource, image[num].size_buf,
-> +			image[num].kern_buf, image[num].pci_buf);
-> +
-> +		image[num].kern_buf = NULL;
-> +		image[num].pci_buf = 0;
-> +		image[num].size_buf = 0;
-> +
-> +#ifdef VME_DEBUG
-> +	} else {
-> +		printk(KERN_DEBUG "UniverseII: Buffer not allocated\n");
-> +#endif
-> +	}
-> +}
-> +
-> +static struct vme_driver vme_user_driver = {
-> +        .name = driver_name,
-> +        .probe = vme_user_probe,
-> +};
-> +
-> +
-> +/*
-> + * In this simple access driver, the old behaviour is being preserved as much
-> + * as practical. We will therefore reserve the buffers and request the images
-> + * here so that we don't have to do it later.
-> + */
-> +static int __init vme_bridge_init(void)
-> +{
-> +	int retval;
-> +	printk(KERN_INFO "VME User Space Access Driver\n");
-> +	printk("vme_user_driver:%p\n", &vme_user_driver);
-> +	retval = vme_register_driver(&vme_user_driver);
-> +	printk("vme_register_driver returned %d\n", retval);
-> +	return retval;
-> +}
-> +
-> +/*
-> + * This structure gets passed a device, this should be the device created at
-> + * registration.
-> + */
-> +static int __init vme_user_probe(struct device *dev)
-> +{
-> +	int i, err;
-> +	char name[8];
-> +
-> +	printk("Running vme_user_probe()\n");
-> +
-> +	/* Pointer to the bridge device */
-> +	vme_user_bridge = dev;
-> +
-> +	/* Initialise descriptors */
-> +	for (i = 0; i < VME_DEVS; i++) {
-> +		image[i].kern_buf = NULL;
-> +		image[i].pci_buf = 0;
-> +		init_MUTEX(&(image[i].sem));
-> +		image[i].device = NULL;
-> +		image[i].resource = NULL;
-> +		image[i].users = 0;
-> +	}
-> +
-> +	/* Initialise statistics counters */
-> +	reset_counters();
-> +
-> +	/* Assign major and minor numbers for the driver */
-> +	err = register_chrdev_region(MKDEV(VME_MAJOR, 0), VME_DEVS,
-> +		driver_name);
-> +	if (err) {
-> +		printk(KERN_WARNING "%s: Error getting Major Number %d for "
-> +		"driver.\n", driver_name, VME_MAJOR);
-> +		goto err_region;
-> +	}
-> +
-> +	/* Register the driver as a char device */
-> +	vme_user_cdev = cdev_alloc();
-> +	vme_user_cdev->ops = &vme_user_fops;
-> +	vme_user_cdev->owner = THIS_MODULE;
-> +	err = cdev_add(vme_user_cdev, MKDEV(VME_MAJOR, 0), VME_DEVS);
-> +	if (err) {
-> +		printk(KERN_WARNING "%s: cdev_all failed\n", driver_name);
-> +		goto err_char;
-> +	}
-> +
-> +	/* Request slave resources and allocate buffers (128kB wide) */
-> +	for (i = SLAVE_MINOR; i < (SLAVE_MAX + 1); i++) {
-> +		/* XXX Need to properly request attributes */
-> +		image[i].resource = vme_slave_request(vme_user_bridge,
-> +			VME_A16, VME_SCT);
-> +		if (image[i].resource == NULL) {
-> +			printk(KERN_WARNING "Unable to allocate slave "
-> +				"resource\n");
-> +			goto err_buf;
-> +		}
-> +		image[i].size_buf = PCI_BUF_SIZE;
-> +		image[i].kern_buf = vme_alloc_consistent(image[i].resource,
-> +			image[i].size_buf, &(image[i].pci_buf));
-> +		if (image[i].kern_buf == NULL) {
-> +			printk(KERN_WARNING "Unable to allocate memory for "
-> +				"buffer\n");
-> +			image[i].pci_buf = 0;
-> +			vme_slave_free(image[i].resource);
-> +			err = -ENOMEM;
-> +			goto err_buf;
-> +		}
-> +	}
-> +
-> +	/*
-> +	 * Request master resources allocate page sized buffers for small
-> +	 * reads and writes
-> +	 */
-> +	for (i = MASTER_MINOR; i < (MASTER_MAX + 1); i++) {
-> +		/* XXX Need to properly request attributes */
-> +		image[i].resource = vme_master_request(vme_user_bridge,
-> +			VME_A32, VME_SCT, VME_D32);
-> +		if (image[i].resource == NULL) {
-> +			printk(KERN_WARNING "Unable to allocate master "
-> +				"resource\n");
-> +			goto err_buf;
-> +		}
-> +		image[i].size_buf = PAGE_SIZE;
-> +		image[i].kern_buf = vme_alloc_consistent(image[i].resource,
-> +			image[i].size_buf, &(image[i].pci_buf));
-> +		if (image[i].kern_buf == NULL) {
-> +			printk(KERN_WARNING "Unable to allocate memory for "
-> +				"buffer\n");
-> +			image[i].pci_buf = 0;
-> +			vme_master_free(image[i].resource);
-> +			err = -ENOMEM;
-> +			goto err_buf;
-> +		}
-> +	}
-> +
-> +	/* Setup some debug windows */
-> +	for (i = SLAVE_MINOR; i < (SLAVE_MAX + 1); i++) {
-> +		err = vme_slave_set(image[i].resource, 1, 0x4000*(i-4),
-> +			0x4000, image[i].pci_buf, VME_A16,
-> +			VME_SCT | VME_SUPER | VME_USER | VME_PROG | VME_DATA);
-> +		if (err != 0) {
-> +			printk(KERN_WARNING "Failed to configure window\n");
-> +			goto err_buf;
-> +		}
-> +	}
-> +	for (i = MASTER_MINOR; i < (MASTER_MAX + 1); i++) {
-> +		err = vme_master_set(image[i].resource, 1,
-> +			(0x10000 + (0x10000*i)), 0x10000,
-> +			VME_A32, VME_SCT | VME_USER | VME_DATA, VME_D32);
-> +		if (err != 0) {
-> +			printk(KERN_WARNING "Failed to configure window\n");
-> +			goto err_buf;
-> +		}
-> +	}
-> +
-> +	/* Create sysfs entries - on udev systems this creates the dev files */
-> +	vme_user_sysfs_class = class_create(THIS_MODULE, driver_name);
-> +	if (IS_ERR(vme_user_sysfs_class)) {
-> +		printk(KERN_ERR "Error creating vme_user class.\n");
-> +		err = PTR_ERR(vme_user_sysfs_class);
-> +		goto err_class;
-> +	}
-> +
-> +	/* Add sysfs Entries */
-> +	for (i=0; i<VME_DEVS; i++) {
-> +		switch (type[i]) {
-> +		case MASTER_MINOR:
-> +			sprintf(name,"bus/vme/m%%d");
-> +			break;
-> +		case CONTROL_MINOR:
-> +			sprintf(name,"bus/vme/ctl");
-> +			break;
-> +		case SLAVE_MINOR:
-> +			sprintf(name,"bus/vme/s%%d");
-> +			break;
-> +		default:
-> +			err = -EINVAL;
-> +			goto err_sysfs;
-> +			break;
-> +		}
-> +
-> +		image[i].device =
-> +			device_create(vme_user_sysfs_class, NULL,
-> +				MKDEV(VME_MAJOR, i), NULL, name,
-> +				(type[i] == SLAVE_MINOR)? i - (MASTER_MAX + 1) : i);
-> +		if (IS_ERR(image[i].device)) {
-> +			printk("%s: Error creating sysfs device\n",
-> +				driver_name);
-> +			err = PTR_ERR(image[i].device);
-> +			goto err_sysfs;
-> +		}
-> +	}
-> +
-> +	/* XXX Run tests */
-> +	/*
-> +	tests();
-> +	*/
-> +
-> +	return 0;
-> +
-> +	/* Ensure counter set correcty to destroy all sysfs devices */
-> +	i = VME_DEVS;
-> +err_sysfs:
-> +	while (i > 0){
-> +		i--;
-> +		device_destroy(vme_user_sysfs_class, MKDEV(VME_MAJOR, i));
-> +	}
-> +	class_destroy(vme_user_sysfs_class);
-> +
-> +	/* Ensure counter set correcty to unalloc all slave buffers */
-> +	i = SLAVE_MAX + 1;
-> +err_buf:
-> +	while (i > SLAVE_MINOR){
-> +		i--;
-> +		vme_slave_set(image[i].resource, 0, 0, 0, 0, VME_A32, 0);
-> +		vme_slave_free(image[i].resource);
-> +		buf_unalloc(i);
-> +	}
-> +err_class:
-> +	cdev_del(vme_user_cdev);
-> +err_char:
-> +	unregister_chrdev_region(MKDEV(VME_MAJOR, 0), VME_DEVS);
-> +err_region:
-> +	return err;
-> +}
-> +
-> +static void __exit vme_bridge_exit(void)
-> +{
-> +	int i;
-> +
-> +	/* Remove sysfs Entries */
-> +	for(i=0; i<VME_DEVS; i++) {
-> +		device_destroy(vme_user_sysfs_class, MKDEV(VME_MAJOR, i));
-> +	}
-> +	class_destroy(vme_user_sysfs_class);
-> +
-> +	for (i = SLAVE_MINOR; i < (SLAVE_MAX + 1); i++) {
-> +		buf_unalloc(i);
-> +	}
-> +
-> +	/* Unregister device driver */
-> +	cdev_del(vme_user_cdev);
-> +
-> +	/* Unregiser the major and minor device numbers */
-> +	unregister_chrdev_region(MKDEV(VME_MAJOR, 0), VME_DEVS);
-> +}
-> +
-> +MODULE_DESCRIPTION("VME User Space Access Driver");
-> +MODULE_AUTHOR("Martyn Welch <martyn.welch@gefanuc.com");
-> +MODULE_LICENSE("GPL");
-> +
-> +module_init(vme_bridge_init);
-> +module_exit(vme_bridge_exit);
-> --- /dev/null
-> +++ b/drivers/staging/vme/devices/vme_user.h
-> @@ -0,0 +1,43 @@
-> +
-> +/*
-> + * VMEbus Master Window Configuration Structure
-> + */
-> +typedef struct {
-> +	char enable;			/* State of Window */
-> +	unsigned long long vme_addr;	/* Starting Address on the VMEbus */
-> +	unsigned long long size;	/* Window Size */
-> +	vme_address_t aspace;		/* Address Space */
-> +	vme_cycle_t cycle;		/* Cycle properties */
-> +	vme_width_t dwidth;		/* Maximum Data Width */
-> +#if 0
-> +	char prefetchEnable;		/* Prefetch Read Enable State */
-> +	int prefetchSize;		/* Prefetch Read Size (Cache Lines) */
-> +	char wrPostEnable;		/* Write Post State */
-> +#endif
-> +} vme_master_t;
-> +
-> +
-> +/*
-> + * IOCTL Commands and structures
-> + */
-> +
-> +/* Magic number for use in ioctls */
-> +#define VME_IOC_MAGIC 0xAE
-> +
-> +
-> +/* VMEbus Slave Window Configuration Structure */
-> +typedef struct {
-> +	char enable;			/* State of Window */
-> +	unsigned long long vme_addr;	/* Starting Address on the VMEbus */
-> +	unsigned long long size;	/* Window Size */
-> +	vme_address_t aspace;		/* Address Space */
-> +	vme_cycle_t cycle;		/* Cycle properties */
-> +#if 0
-> +	char wrPostEnable;		/* Write Post State */
-> +	char rmwLock;			/* Lock PCI during RMW Cycles */
-> +	char data64BitCapable;		/* non-VMEbus capable of 64-bit Data */
-> +#endif
-> +} vme_slave_t;
-> +
-> +#define VME_SET_SLAVE _IOW(VME_IOC_MAGIC, 10, vme_slave_t)
-> +
-> --- a/drivers/staging/vme/Kconfig
-> +++ b/drivers/staging/vme/Kconfig
-> @@ -11,7 +11,7 @@ menuconfig VME
->  if VME
->  
->  #source "drivers/staging/vme/bridges/Kconfig"
-> -#
-> -#source "drivers/staging/vme/devices/Kconfig"
-> +
-> +source "drivers/staging/vme/devices/Kconfig"
->  
->  endif # VME
-> --- a/drivers/staging/vme/Makefile
-> +++ b/drivers/staging/vme/Makefile
-> @@ -4,4 +4,4 @@
->  obj-$(CONFIG_VME)		+= vme.o
->  
->  #obj-y				+= bridges/
-> -#obj-y				+= devices/
-> +obj-y				+= devices/
+> This is done so because merging patches is a fundamentally 
+> hierarchical process, and the people merging _your_ patches are the 
+> real maintenance bottleneck, not you.
 > 
+> So it is not Linus and other maintainers who are searching the web 
+> for projects to merge and sending out 'invites' but the other way 
+> around: projects try to get upstream by submitting patches (which 
+> get reviewed and accepted or rejected).
+
+With 20-20 hindsight, we should have gone for a merge immediately after
+the SCALE 7X demo, at which time Tux3 was reliably but without
+atomic commit.  Instead, we decided to heed those asking for atomic
+commit before merge.  This turned out to be a bad idea, because my
+available time soon became severely constrained.  Work on atomic commit
+has progressed over the last few months, but slowly.  If we had merged
+back in February this work would have progressed faster and been done
+by now.  As it is, we will probably forge on with the atomic commit work
+rather than changing course and looking for a merge right away, because
+there has been considerable progress in that direction.  Also, my time
+is not quite as constrained as it was - still constrained, but not quite
+as severely as recently.
+
+Meanwhile Hirofumi has dauntlessly forged on, extracting design details
+from me, adding some of his own, generally subjecting everything to
+minute scrutiny, and in the process turning out a significant volume of
+high quality code.  If I had to state what the best thing that could
+happen to Tux3 is, it would be: somebody steps up to sponsor Hirofumi.
+He has done all that work strictly as a volunteer without support of any
+kind, and he could use some.  Not to mention the fact that as FAT
+maintainer we would be well served to have Hirofumi in a comfort zone,
+given recent developments on that front.
+
+> So if you'd like your code to be merged upstream you better start 
+> this process now - this alone can take a lot of time: months (or 
+> years in certain cases). But it is still a much shorter time-span 
+> than an 'invite to merge' ;-)
 > 
+> 	Ingo
+
+My "invite to merge" comment was made in the context of various comments
+about insufficiently rapid progress, and should not be taken out of
+context.  We are well aware of the traditional merging procedure.  We
+certainly are not waiting for any maintainer action, but rather for more
+progress from ourselves.  There are various possibilities to speed that
+up.  See "sponsor Hirofumi" above.  I myself do not need sponsorship at
+this point, what I need is more time on my hands, and only I can do
+anything about that.  (As of today, I do have a little more time
+available, hence this post.)
+
+In fact, our merge process has been in progress since February.  As we
+see it, it goes like this:
+
+  1) Implement and verify atomic commit correctness at least for a
+     large subset of filesystem operations.
+
+  2) Clean the kernel part of the code base to a respectable state.
+
+  3) Commence our post-address-repost cycle with intent to merge.
+
+We are at step 1 and I can't say how long it will take to get to step 2.
+It is on the way.  Any help we get will hurry it along.
+
+I will very briefly address Ted's question, which amounts to: "why
+do we want Tux3?"  I think Tux3 fills an empty niche in our filesystem
+ecology where a simple, clean and modern general purpose filesystem
+should exist and there is none.  In concrete terms, Tux3 implements a
+single-pointer-per-extent model that Btrfs and ZFS do not.  This allows
+a very simple *physical* design, with much complexity pushed to the
+*logical* level where things generally behave better.  A simple physical
+design offers many benefits, including making it easier to take a run at
+that holiest of holy grails, online check and repair.
+
+In even more concrete terms, Tux3 already demonstrates a tiny memory
+footprint, unlike Btrfs or ZFS.  Its CPU footprint is also tiny.  As
+such, Tux3 could easily run on a cellphone or smaller device, while
+offering a full range of "big filesystem" capabilities.  (Note that
+Zumastor already proves we know how to do replication properly:
+http://zumastor.org/.)
+
+Regards,
+
+Daniel
