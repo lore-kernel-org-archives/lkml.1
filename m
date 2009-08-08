@@ -1,89 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbZHHAlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbZHHAmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757433AbZHHAlt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 20:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757335AbZHHAls
+	id S1757445AbZHHAmp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 20:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757356AbZHHAmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 20:41:48 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52132 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756041AbZHHAlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 20:41:47 -0400
-Date: Sat, 8 Aug 2009 02:41:47 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@vger.kernel.org
-Subject: Re: [Bug #13837] Input : regression - touchpad not detected
-In-Reply-To: <a8e1da0907270145t1b7e4b7ey30793b97bcd87916@mail.gmail.com>
-Message-ID: <alpine.LNX.2.00.0908080240470.25797@wotan.suse.de>
-References: <Jya1GruKQpD.A.16.2GObKB@chimera>  <3zAHs5O6maO.A.u-B.KHObKB@chimera> <a8e1da0907270145t1b7e4b7ey30793b97bcd87916@mail.gmail.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 7 Aug 2009 20:42:44 -0400
+Received: from web50105.mail.re2.yahoo.com ([206.190.38.33]:46877 "HELO
+	web50105.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757335AbZHHAmo convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 20:42:44 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=splbeEhS8ZI2sUN48nPAoqLcnZOpZCUcWDBxgEaxcschSKtLl2vm+oTmvcLtBiw0v+Sh5E8pktsO9ELkdccJeWD0PB+kg5AEVbHHc7aTKQybC8fAaSKi8tbQYHb4+n59z8h8GC46MAO3AcFT7yJYOaOa2U99Ssenoe/9tg8JO7A=;
+Message-ID: <678970.61399.qm@web50105.mail.re2.yahoo.com>
+X-YMail-OSG: Nk8zh3IVM1nphwF58bU7drsz8fxENlOd5D3bYk_28qiruo.dmPXZbTLXZ50hmZOiDKy4pzEHqGRkVBvEKqsSnXAlmJQ4Q4lvT0mwfisM5YqvNl0pfMekUl37vJ0D_85Jf6NygMLOC0nwfveSunr1c6L2uYU2BW1ULHtFZmxJm0iFOs9PsbpyskgIqdV6DQDMfBhUZNAnLr_HZLLax4buuGwUJT7FKNA7az3vQ4RefPCW5FWmlPO1TiBtYC78tPh8PyZ6YfaPbiBnZUfdg.0jIz4YUcKeTArmu5fcpk4qLVdPK_bVtPVSnAmtAlxlZNPVKIXRTteZBbhErGEJ2UxUoIu.8d9OZllzhHYuclM-
+X-Mailer: YahooMailClassic/6.1.2 YahooMailWebService/0.7.338.1
+Date: Fri, 7 Aug 2009 17:42:44 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Subject: Re: Bugs in intel 5400 EDAC driver
+To: linux-kernel@vger.kernel.org, Jeff Roberson <jroberson@jroberson.net>
+Cc: bluesmoke-devel@lists.sourceforge.net
+In-Reply-To: <alpine.BSF.2.00.0908071312030.19226@desktop>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-270288313-1249692107=:25797"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---168427776-270288313-1249692107=:25797
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
 
 
-[ adding Dmitry and linux-input to CC ]
+--- On Fri, 8/7/09, Jeff Roberson <jroberson@jroberson.net> wrote:
 
-On Mon, 27 Jul 2009, Dave Young wrote:
+> From: Jeff Roberson <jroberson@jroberson.net>
+> Subject: Bugs in intel 5400 EDAC driver
+> To: linux-kernel@vger.kernel.org
+> Date: Friday, August 7, 2009, 5:23 PM
+> Hello,
+> 
+> The i5400 EDAC driver has several bugs with chip-select row
+> computation which most likely lead to bugs in detailed error
+> reporting.� Attempts to contact the authors have gone
+> mostly unanswered so I am presenting my diff here.� I
+> do not subscribe to lkml and would appreciate being kept in
+> the cc.
 
-> On Mon, Jul 27, 2009 at 4:28 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.30.  Please verify if it still should be listed and let me know
-> > (either way).
-> 
-> Now I'm not sure if it's a regression, because it happens not every
-> boot. Maybe I just noticed it after 2.6.30
-> 
-> jiri, I found the place via extra printk messages added to the i8042.c
-> 
-> in function i8042_check_aux(), when touchpad detecting fail, it fall
-> into following error path:
-> 
->  if (wait_for_completion_timeout(&i8042_aux_irq_delivered,
->                                         msecs_to_jiffies(250)) == 0) { [snip] }
-> 
-> so maybe the timeout value need to be increased? I try redo the
-> i8042_setup_aux after it fails, it fixes the problem indeed, which one
-> is the proper fix do you think? If it's the right fix I can post the
-> patch.
-> 
-> >
-> >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13837
-> > Subject         : Input : regression - touchpad not detected
-> > Submitter       : Dave Young <hidave.darkstar@gmail.com>
-> > Date            : 2009-07-17 07:13 (10 days old)
-> > References      : http://marc.info/?l=linux-kernel&m=124780763701571&w=4
-> >
-> >
-> >
-> 
-> 
-> 
-> -- 
-> Regards
-> dave
-> 
+Will do
 
--- 
-Jiri Kosina
-SUSE Labs
---168427776-270288313-1249692107=:25797--
+Can you generate a patch, which will provide better closure than just text?
+
+doug t
+
+CC to the bluesmoke mailing list where most edac developers read
+
+> 
+> The most egregious problem was miscalculating the addresses
+> of MTR registers after register 0 by assuming they are 32bit
+> rather than 16. This caused the driver to miss half of the
+> memories.� Most motherboards tend to have only 8 dimm
+> slots and not 16, so this may not have been noticed before.
+> 
+> Further, the row calculations multiplied the number of
+> dimms several times, ultimately ending up with a maximum row
+> of 32.� The chipset only supports 4 dimms in each of 4
+> channels, so csrow could not be higher than 4 unless you use
+> a row per-rank with dual-rank dimms.� I opted to
+> eliminate this behavior as it is confusing to the user and
+> the error reporting works by slot and not rank.� This
+> gives a much clearer view of memory by slot and channel in
+> /sys.
+> 
+> Thanks,
+> Jeff
