@@ -1,65 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933965AbZHHJw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933959AbZHHKK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933965AbZHHJw4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 05:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933920AbZHHJw4
+	id S933959AbZHHKK7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 06:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755306AbZHHKK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 05:52:56 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37184 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933776AbZHHJwz (ORCPT
+	Sat, 8 Aug 2009 06:10:58 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:52707 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755302AbZHHKK5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 05:52:55 -0400
-Date: Sat, 8 Aug 2009 11:52:50 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, swetland@google.com, ibm@android.com,
-       san@android.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Staging: dream, fix buf overflow
-Message-ID: <20090808095249.GA9978@elf.ucw.cz>
-References: <1249724038-1011-1-git-send-email-jirislaby@gmail.com>
+	Sat, 8 Aug 2009 06:10:57 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Roel Kluin <roel.kluin@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fat: Read buffer overflow
+References: <4A7CAF28.8020908@gmail.com> <87y6pvi5qp.fsf@devron.myhome.or.jp>
+	<84144f020908072356r5cc3100dp79a6a508bafec7c7@mail.gmail.com>
+Date: Sat, 08 Aug 2009 19:10:53 +0900
+In-Reply-To: <84144f020908072356r5cc3100dp79a6a508bafec7c7@mail.gmail.com>
+	(Pekka Enberg's message of "Sat, 8 Aug 2009 09:56:21 +0300")
+Message-ID: <87prb6pqdu.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249724038-1011-1-git-send-email-jirislaby@gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2009-08-08 11:33:58, Jiri Slaby wrote:
-> Not even compile-tested. I don't have an arm toolchain.
-> --
-> 
-> In vfe_send_msg_no_payload there is a wrong struct vfe_message allocation.
-> It allocates only sizeof(pointer to vfe_message) for a whole structure.
-> Add a dereference to the sizeof to allocate sizeof(vfe_message).
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Pekka Enberg <penberg@cs.helsinki.fi> writes:
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+> Yes, but we pass "ulen" to vfat_is_used_badchars(). The value of
+> "ulen" is a returned in the "longlen" argument of xlate_to_uni() which
+> in turn is calculated as follows for the UTF-8 case:
+>
+>   int name_len = strlen(name);
+>   *outlen = utf8s_to_utf16s(name, PATH_MAX, (wchar_t *) outname);
+>   *outlen -= (name_len - len);
+>   *longlen = *outlen;
+>
+> Maybe "*outlen" can never be negative because of some invariants that
+> I don't see but it's so non-obvious to me that I'd like to see the
+> explicit check in vfat_is_used_badchars().
 
-(Google, you may want to fix this in your code, too.)
+Ah, good point. Sorry, I was looking my tree. I'm going to submit the
+attached patch on next merge window.
 
-> ---
->  drivers/staging/dream/camera/msm_vfe8x_proc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/staging/dream/camera/msm_vfe8x_proc.c b/drivers/staging/dream/camera/msm_vfe8x_proc.c
-> index bb65013..5436f71 100644
-> --- a/drivers/staging/dream/camera/msm_vfe8x_proc.c
-> +++ b/drivers/staging/dream/camera/msm_vfe8x_proc.c
-> @@ -818,7 +818,7 @@ static void vfe_send_msg_no_payload(enum VFE_MESSAGE_ID id)
->  {
->  	struct vfe_message *msg;
->  
-> -	msg = kzalloc(sizeof(msg), GFP_ATOMIC);
-> +	msg = kzalloc(sizeof(*msg), GFP_ATOMIC);
->  	if (!msg)
->  		return;
->  
+Is this enough for it?
 
+Thanks.
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+
+
+With utf8 option, vfat allowed the duplicated filenames.
+
+Normal nls returns -EINVAL for invalid char. But utf8s_to_utf16s()
+skipped the invalid char historically.
+
+So, this changes the utf8s_to_utf16s() directly to return -EINVAL for
+invalid char, because vfat is only user of it.
+
+
+mkdir /mnt/fatfs
+FILENAME=`echo -ne "invalidutf8char_\\0341_endofchar"`
+echo "Using filename: $FILENAME"
+dd if=/dev/zero of=fatfs bs=512 count=128
+mkdosfs -F 32 fatfs
+mount -o loop,utf8 fatfs /mnt/fatfs
+touch "/mnt/fatfs/$FILENAME"
+umount /mnt/fatfs
+mount -o loop,utf8 fatfs /mnt/fatfs
+touch "/mnt/fatfs/$FILENAME"
+ls -l /mnt/fatfs
+umount /mnt/fatfs
+
+----  And the output is:
+
+Using filename: invalidutf8char_\0341_endofchar
+128+0 records in
+128+0 records out
+65536 bytes (66 kB) copied, 0.000388118 s, 169 MB/s
+mkdosfs 2.11 (12 Mar 2005)
+total 0
+-rwxr-xr-x 1 root root 0 Jun 28 19:46 invalidutf8char__endofchar
+-rwxr-xr-x 1 root root 0 Jun 28 19:46 invalidutf8char__endofchar
+
+Tested-by: Marton Balint <cus@fazekas.hu>
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
+
+ fs/fat/namei_vfat.c |   15 ++++-----------
+ fs/nls/nls_base.c   |    8 ++++----
+ 2 files changed, 8 insertions(+), 15 deletions(-)
+
+diff -puN fs/fat/namei_vfat.c~vfat-utf8-invalid-char fs/fat/namei_vfat.c
+--- linux-2.6/fs/fat/namei_vfat.c~vfat-utf8-invalid-char	2009-08-01 15:25:36.000000000 +0900
++++ linux-2.6-hirofumi/fs/fat/namei_vfat.c	2009-08-01 21:26:42.000000000 +0900
+@@ -499,17 +499,10 @@ xlate_to_uni(const unsigned char *name, 
+ 	int charlen;
+ 
+ 	if (utf8) {
+-		int name_len = strlen(name);
+-
+-		*outlen = utf8s_to_utf16s(name, PATH_MAX, (wchar_t *) outname);
+-
+-		/*
+-		 * We stripped '.'s before and set len appropriately,
+-		 * but utf8s_to_utf16s doesn't care about len
+-		 */
+-		*outlen -= (name_len - len);
+-
+-		if (*outlen > 255)
++		*outlen = utf8s_to_utf16s(name, len, (wchar_t *)outname);
++		if (*outlen < 0)
++			return *outlen;
++		else if (*outlen > 255)
+ 			return -ENAMETOOLONG;
+ 
+ 		op = &outname[*outlen * sizeof(wchar_t)];
+diff -puN fs/nls/nls_base.c~vfat-utf8-invalid-char fs/nls/nls_base.c
+--- linux-2.6/fs/nls/nls_base.c~vfat-utf8-invalid-char	2009-08-01 15:25:36.000000000 +0900
++++ linux-2.6-hirofumi/fs/nls/nls_base.c	2009-08-01 15:25:36.000000000 +0900
+@@ -124,10 +124,10 @@ int utf8s_to_utf16s(const u8 *s, int len
+ 	while (*s && len > 0) {
+ 		if (*s & 0x80) {
+ 			size = utf8_to_utf32(s, len, &u);
+-			if (size < 0) {
+-				/* Ignore character and move on */
+-				size = 1;
+-			} else if (u >= PLANE_SIZE) {
++			if (size < 0)
++				return -EINVAL;
++
++			if (u >= PLANE_SIZE) {
+ 				u -= PLANE_SIZE;
+ 				*op++ = (wchar_t) (SURROGATE_PAIR |
+ 						((u >> 10) & SURROGATE_BITS));
+_
