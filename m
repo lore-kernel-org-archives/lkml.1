@@ -1,67 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752066AbZHHVpC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752196AbZHHVsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752066AbZHHVpC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 17:45:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbZHHVpC
+	id S1752196AbZHHVsi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 17:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbZHHVsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 17:45:02 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58043 "EHLO
+	Sat, 8 Aug 2009 17:48:37 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58757 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751407AbZHHVpA (ORCPT
+	with ESMTP id S1751482AbZHHVsg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 17:45:00 -0400
-Date: Sat, 8 Aug 2009 23:44:54 +0200
+	Sat, 8 Aug 2009 17:48:36 -0400
+Date: Sat, 8 Aug 2009 23:48:30 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Trilok Soni <soni.trilok@gmail.com>
-Cc: Greg KH <greg@kroah.com>, kernel list <linux-kernel@vger.kernel.org>,
-       swetland@google.com, linux-input@vger.kernel.org
-Subject: Re: HTC Dream for staging: add support for input on GPIO pins
-Message-ID: <20090808214454.GB24153@elf.ucw.cz>
-References: <20090808130315.GA12930@elf.ucw.cz> <5d5443650908080942l50d91d31qb23c494affdf6850@mail.gmail.com>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 1/2] hwmon: Enhance the sysfs API for power meters.
+Message-ID: <20090808214830.GC24153@elf.ucw.cz>
+References: <20090725004322.20709.96804.stgit@elm3a70.beaverton.ibm.com> <20090725004328.20709.57712.stgit@elm3a70.beaverton.ibm.com> <20090807180906.GD1728@ucw.cz> <20090808174020.GA29600@tux1.beaverton.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <5d5443650908080942l50d91d31qb23c494affdf6850@mail.gmail.com>
+In-Reply-To: <20090808174020.GA29600@tux1.beaverton.ibm.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2009-08-08 22:12:46, Trilok Soni wrote:
-> Hi Pavel,
+On Sat 2009-08-08 10:40:20, Darrick J. Wong wrote:
+> On Fri, Aug 07, 2009 at 08:09:06PM +0200, Pavel Machek wrote:
+> > 
+> > > @@ -365,6 +373,16 @@ power[1-*]_average_lowest	Historical average minimum power use
+> > >  				Unit: microWatt
+> > >  				RO
+> > >  
+> > > +power[1-*]_average_max		A notification is sent when power use
+> > > +				rises above this value.
+> > > +				Unit: microWatt
+> > > +				RW
+> > > +
+> > 
+> > How is the notification sent?
 > 
-> On Sat, Aug 8, 2009 at 6:33 PM, Pavel Machek<pavel@ucw.cz> wrote:
-> > From: Arve Hj?nnev?g <arve@android.com>
-> >
-> > Support for input devices connected to GPIO pins. This adds support
-> > for HTC Dream's keyboard and its trackball. Generic support already
-> > exists for keyboard on GPIO, but this one is more advanced because it
-> > can detect shadow key presses (and actually works with Dream :-).
-> >
-> > (It also contains Kconfig/Makefile changes, including some that were
-> > missing from previous commit. Sorry.)
+> ACPI Notify is sent to the kernel, which passes it to the ACPI
+> netlink socket.
+
+Uhuh. This is hwmon documentation AFAICT; so a) it should be
+documented here, and b) interface should be generic so that it works
+without ACPI, too.
+
+> > > +power[1-*]_average_min		A notification is sent when power use
+> > > +				sinks below this value.
+> > > +				Unit: microWatt
+> > > +				RW
+> > 
+> > And what is this good for? Will it wake from sleep? Will it wake from
+> > C3?
 > 
-> I don't see any importance of gpio_matrix.c when we already have
-> generic gpio matrix driver mainlined. I would suggest to remove those
-> bits from this patch. I have added linux-input ML.
+> All it really does is generates an ACPI Notify event, which is a hint to the OS
+> that it could re-read the power meter use.
 
-Well, I'm trying for staging merge at this point. Reasons why
-gpio_matrix is there are:
+So it is one-shot? Document that.
 
-1) it is non-trivial to remove
+> > ...seems like good way to prevent deep sleep states.
+> > 
+> > > +power[1-*]_cap			If power use rises above this limit, the
+> > > +				system should take action to reduce
+> > > power use.
+> > 
+> > System as in 'hw'? Or who? And how?
+> 
+> The ACPI spec is silent on this matter.  It's not clear if the OS is supposed
+> to monitor and take action on its own when power > cap, or if the hardware/BIOS
+> will take action, or possibly both...?
 
-2) it has some features mainline lacks
-
-3) HTC Dream actually works with it
-
-(and 4) I'd like to submit code as Arve wrote it, then transform/clean
-it up in staging).
-
-Of course, relevant features will need to be extracted from
-gpio_matrix and merged at the right places, and that needs to happen
-before move from staging/, but I'd like to have working keyboard in
-the meantime.
+Having user<->kernel interface that is well... uh... undocumented
+makes little sense.
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
