@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751737AbZHHPNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751761AbZHHPRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751737AbZHHPNM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 11:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbZHHPNL
+	id S1751761AbZHHPRi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 11:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbZHHPRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 11:13:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44756 "EHLO mx3.mail.elte.hu"
+	Sat, 8 Aug 2009 11:17:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54688 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751595AbZHHPNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 11:13:11 -0400
-Date: Sat, 8 Aug 2009 17:12:54 +0200
+	id S1751543AbZHHPRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 11:17:36 -0400
+Date: Sat, 8 Aug 2009 17:17:31 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jay Fenlason <fenlason@redhat.com>
-Subject: Re: [patch 2/2] x86: arch specific support for remapping HPET MSIs
-Message-ID: <20090808151254.GC28892@elte.hu>
-References: <20090804190729.477649000@intel.com> <20090804190729.630510000@intel.com>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, Borislav Petkov <borislav.petkov@amd.com>,
+       Brice Goglin <Brice.Goglin@inria.fr>
+Subject: Re: [PATCH 0/5 v4] x86: Adapt CPU topology detection for AMD
+	Magny-Cours
+Message-ID: <20090808151731.GD28892@elte.hu>
+References: <20090805154402.GA6520@alberich.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090804190729.630510000@intel.com>
+In-Reply-To: <20090805154402.GA6520@alberich.amd.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,17 +36,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
 
-> x86 arch support for remapping HPET MSI's by associating the HPET 
-> timer block with the interrupt-remapping HW unit and setting up 
-> appropriate irq_chip
+> Note that scheduler adaptions are still under construction/test. 
+> Hope to send first version as RFC by end of this week.
 
-interesting. This means we'd materially utilize the irq-remapper not 
-just on relatively obscure, virtualization related setups, but also 
-in the native x86 bootup mode, on all (hpet+remap capable) Linux 
-systems?
+Ok - i'll wait for those, and they really put all this info into 
+real use so bugs/inefficiencies can be noticed.
 
-I like it - but i'll defer to Thomas to queue it up.
+You also indicated that you'll address the feedback from Brice 
+Goglin to make the semantics (and naming) more consistent across the 
+kernel.
 
 	Ingo
