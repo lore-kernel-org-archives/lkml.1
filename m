@@ -1,107 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757732AbZHHC1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbZHHC0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757732AbZHHC1K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 22:27:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZHHC1H
+	id S1756816AbZHHC0p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 22:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZHHC0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 22:27:07 -0400
-Received: from mail-fx0-f228.google.com ([209.85.220.228]:34906 "EHLO
-	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754547AbZHHC0r (ORCPT
+	Fri, 7 Aug 2009 22:26:44 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:34627 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751841AbZHHC0n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 22:26:47 -0400
+	Fri, 7 Aug 2009 22:26:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=PegXio7lyi7BINTBmvuU9cfhb/UUuGIwTpFIcmFKVoxq2XnS1SlkirWv+tqJMKcOdF
-         vR+0O+0DuA84T4e0w5c+IQbXbiQJmBWSUOHjcCNlenLz46ITbGxW4S+9uJZEQ6gkIrXA
-         JGvlcEDiTHKWueFEMkMGQtUTJXgwX3RuzZvJQ=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
+         :mime-version:content-type:content-transfer-encoding;
+        b=CVZa0wnispIhZIgHsCOVBzCebnsqje+PM16g5ZhEMfDDg+VBIpWPjpGinUrpczuHju
+         i64PYsqvQnqANUHyxlhJ1yoGMDNtbp88kxHbz2vhqVjHqhBIkNxU9GHFHhABseuV4+6y
+         KamM8xbOsknKsgD4YPS3cCZgzuJwPOXi5fjE4=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>
-Subject: [PATCH 3/4] perf tools: callchain: Default display callchain from report if recorded with -g
-Date: Sat,  8 Aug 2009 04:26:38 +0200
-Message-Id: <1249698400-5441-5-git-send-email-fweisbec@gmail.com>
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/3] perfcounter: Initialize tracepoint record before any use
+Date: Sat,  8 Aug 2009 04:26:35 +0200
+Message-Id: <1249698400-5441-2-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1249698400-5441-1-git-send-email-fweisbec@gmail.com>
 References: <1249698400-5441-1-git-send-email-fweisbec@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If we recorded with -g option to record the callchain, let's display
-the callchain by default from perf report.
+Despite that the tracepoint record is always present when the
+PERF_SAMPLE_TP_RECORD flag is set, gcc whines, thinking it might not
+be initialized:
 
-The user can override this default using "-g none" option from
-perf report.
+kernel/perf_counter.c: In function ‘perf_counter_output’:
+kernel/perf_counter.c:2650: warning: ‘tp’ may be used uninitialized in this function
+
+Then, initialize it to NULL and always check if it's not NULL before
+dereference it.
 
 Reported-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
 ---
- tools/perf/builtin-report.c |   16 +++++++++++++++-
- tools/perf/util/callchain.h |    1 +
- 2 files changed, 16 insertions(+), 1 deletions(-)
+ kernel/perf_counter.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index a5e2f8d..c4a8e10 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -68,7 +68,7 @@ static int		callchain;
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 142ae5a..a6963e2 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -2647,7 +2647,7 @@ void perf_counter_output(struct perf_counter *counter, int nmi,
+ 		u64 counter;
+ 	} group_entry;
+ 	struct perf_callchain_entry *callchain = NULL;
+-	struct perf_tracepoint_record *tp;
++	struct perf_tracepoint_record *tp = NULL;
+ 	int callchain_size = 0;
+ 	u64 time;
+ 	struct {
+@@ -2718,7 +2718,8 @@ void perf_counter_output(struct perf_counter *counter, int nmi,
  
- static
- struct callchain_param	callchain_param = {
--	.mode	= CHAIN_GRAPH_ABS,
-+	.mode	= CHAIN_GRAPH_REL,
- 	.min_percent = 0.5
- };
- 
-@@ -1836,6 +1836,13 @@ static int __cmd_report(void)
- 					" -g?\n");
- 			exit(-1);
- 		}
-+	} else if (callchain_param.mode != CHAIN_NONE && !callchain) {
-+			callchain = 1;
-+			if (register_callchain_param(&callchain_param) < 0) {
-+				fprintf(stderr, "Can't register callchain"
-+						" params\n");
-+				exit(-1);
-+			}
+ 	if (sample_type & PERF_SAMPLE_TP_RECORD) {
+ 		tp = data->private;
+-		header.size += tp->size;
++		if (tp)
++			header.size += tp->size;
  	}
  
- 	if (load_kernel() < 0) {
-@@ -1974,6 +1981,13 @@ parse_callchain_opt(const struct option *opt __used, const char *arg,
- 	else if (!strncmp(tok, "fractal", strlen(arg)))
- 		callchain_param.mode = CHAIN_GRAPH_REL;
+ 	ret = perf_output_begin(&handle, counter, header.size, nmi, 1);
+@@ -2784,7 +2785,7 @@ void perf_counter_output(struct perf_counter *counter, int nmi,
+ 		}
+ 	}
  
-+	else if (!strncmp(tok, "none", strlen(arg))) {
-+		callchain_param.mode = CHAIN_NONE;
-+		callchain = 0;
-+
-+		return 0;
-+	}
-+
- 	else
- 		return -1;
+-	if (sample_type & PERF_SAMPLE_TP_RECORD)
++	if ((sample_type & PERF_SAMPLE_TP_RECORD) && tp)
+ 		perf_output_copy(&handle, tp->record, tp->size);
  
-diff --git a/tools/perf/util/callchain.h b/tools/perf/util/callchain.h
-index b2d128e..a926ae4 100644
---- a/tools/perf/util/callchain.h
-+++ b/tools/perf/util/callchain.h
-@@ -7,6 +7,7 @@
- #include "symbol.h"
- 
- enum chain_mode {
-+	CHAIN_NONE,
- 	CHAIN_FLAT,
- 	CHAIN_GRAPH_ABS,
- 	CHAIN_GRAPH_REL
+ 	perf_output_end(&handle);
 -- 
 1.6.2.3
 
