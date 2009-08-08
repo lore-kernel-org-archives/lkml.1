@@ -1,211 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555AbZHHPmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbZHHPnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752555AbZHHPmz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 11:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZHHPmy
+	id S1752641AbZHHPnN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 11:43:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbZHHPnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 11:42:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51962 "EHLO mx2.redhat.com"
+	Sat, 8 Aug 2009 11:43:12 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50740 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752302AbZHHPmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 11:42:54 -0400
-Date: Sat, 8 Aug 2009 11:42:40 -0400
-From: Mike Snitzer <snitzer@redhat.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
-       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Allow delaying initialization of queue after
-	allocation
-Message-ID: <20090808154240.GA7036@redhat.com>
-References: <200908081025.58865.knikanth@suse.de>
+	id S1752578AbZHHPnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 11:43:00 -0400
+Date: Sat, 8 Aug 2009 17:42:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Borislav Petkov <petkovbb@googlemail.com>,
+       Kevin Winchester <kjwinchester@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       LKML <linux-kernel@vger.kernel.org>, borislav.petkov@amd.com
+Subject: Re: [PATCH] x86: clear incorrectly forced X86_FEATURE_LAHF_LM flag
+Message-ID: <20090808154246.GK28892@elte.hu>
+References: <4A7D673A.1090401@gmail.com> <20090808152016.GB25374@liondog.tnic>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="DocE+STaALJfprDB"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200908081025.58865.knikanth@suse.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090808152016.GB25374@liondog.tnic>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---DocE+STaALJfprDB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+* Borislav Petkov <petkovbb@googlemail.com> wrote:
 
-On Sat, Aug 08 2009 at 12:55am -0400,
-Nikanth Karthikesan <knikanth@suse.de> wrote:
-
-> Export a way to delay initializing a request_queue after allocating it. This
-> is needed by device-mapper devices, as they create the queue on device
-> creation time, but they decide whether it would use the elevator and requests
-> only after first successful table load. Only request-based dm-devices use the
-> elevator and requests. Without this either one needs to initialize and free
-> the mempool and elevator, if it was a bio-based dm-device or leave it
-> allocated, as it is currently done.
+> > +
+> > +		/*
+> > +		 * Some BIOSes incorrectly set this feature, but only
+> > +		 * Revision E (with Extended Model = 2) actually supports
+> > +		 * it.
+> > +		 */
+> > +		if (!(level & 0x00020000))
+> > +			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
 > 
-> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> let me check this internally next week because it seems that 
+> according to the Fam 0xf RevGuide 
+> (http://support.amd.com/us/Processor_TechDocs/25759.pdf) erratum 
+> 110 applies to atleast 3 CPU revisions with extended model 0x1 
+> too.
 
-This patch needed to be refreshed to account for the changes from this
-recent commit: a4e7d46407d73f35d217013b363b79a8f8eafcaa
+Ok, mind resending the patch (or dropping it) if you figured that 
+out? We need to be careful about restoring CPU erratum workarounds 
+that BIOSen install ... these things are very hard to test and easy 
+to get wrong.
 
-I've attached a refreshed patch.
-
-Though I still have questions/feedback below.
-
-
-> diff --git a/block/blk-core.c b/block/blk-core.c
-> index 4b45435..5db0772 100644
-> --- a/block/blk-core.c
-> +++ b/block/blk-core.c
-> @@ -569,12 +571,25 @@ blk_init_queue_node(request_fn_proc *rfn, spinlock_t *lock, int node_id)
->  	if (!q)
->  		return NULL;
->  
-> -	q->node = node_id;
-> -	if (blk_init_free_list(q)) {
-> +	if (blk_init_allocated_queue(q, rfn, lock)) {
-> +		blk_put_queue(q);
->  		kmem_cache_free(blk_requestq_cachep, q);
->  		return NULL;
->  	}
->  
-> +	return q;
-> +}
-> +EXPORT_SYMBOL(blk_init_queue_node);
-> +
-> +int blk_init_allocated_queue(struct request_queue *q, request_fn_proc *rfn,
-> +							 spinlock_t *lock)
-> +{
-> +	int err = 0;
-> +
-> +	err = blk_init_free_list(q);
-> +	if (err)
-> +		goto out;
-> +
->  	/*
->  	 * if caller didn't supply a lock, they get per-queue locking with
->  	 * our embedded lock
-> @@ -598,15 +613,20 @@ blk_init_queue_node(request_fn_proc *rfn, spinlock_t *lock, int node_id)
->  	/*
->  	 * all done
->  	 */
-> -	if (!elevator_init(q, NULL)) {
-> -		blk_queue_congestion_threshold(q);
-> -		return q;
-> -	}
-> +	err = elevator_init(q, NULL);
-> +	if (err)
-> +		goto free_and_out;
->  
-> -	blk_put_queue(q);
-> -	return NULL;
-> +	blk_queue_congestion_threshold(q);
-> +
-> +	return 0;
-> +
-> +free_and_out:
-> +	mempool_destroy(q->rq.rq_pool);
-> +out:
-> +	return err;
->  }
-> -EXPORT_SYMBOL(blk_init_queue_node);
-> +EXPORT_SYMBOL(blk_init_allocated_queue);
->  
->  int blk_get_queue(struct request_queue *q)
->  {
-
-In the previous code blk_init_queue_node() only called blk_put_queue()
-iff elevator_init() failed.
-
-Why is blk_init_queue_node() now always calling blk_put_queue() on an
-error from blk_init_allocated_queue()?  It could be that
-blk_init_free_list() was what failed and not elevator_init().
-
-I'd imagine it is because some callers of blk_init_allocated_queue(),
-e.g. DM, must not have the queue's refcount dropped on failure?  A
-comment on _why_ would really help set the caller's expectations.  Maybe
-at the top of blk_init_allocated_queue()? E.g.:
-
-"It is up to the caller to manage the allocated queue's lifecycle
-relative to blk_init_allocated_queue() failure".  I guess that is
-obvious after having reviewed this but...
-
-Also, a comment that blk_init_allocated_queue()'s mempool_destroy() is
-to "cleanup the mempool allocated via blk_init_free_list()" would help.
-
-Thanks,
-Mike
-
---DocE+STaALJfprDB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="dm1.patch"
-
-Export a way to delay initializing a request_queue after allocating it. This
-is needed by device-mapper devices, as they create the queue on device
-creation time, but they decide whether it would use the elevator and requests
-only after first successful table load. Only request-based dm-devices use the
-elevator and requests. Without this either one needs to initialize and free
-the mempool and elevator, if it was a bio-based dm-device or leave it
-allocated, as it is currently done.
-
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-
----
-
-Index: linux-2.6/block/blk-core.c
-===================================================================
---- linux-2.6.orig/block/blk-core.c
-+++ linux-2.6/block/blk-core.c
-@@ -495,6 +495,8 @@ struct request_queue *blk_alloc_queue_no
- 	if (!q)
- 		return NULL;
- 
-+	q->node = node_id;
-+
- 	q->backing_dev_info.unplug_io_fn = blk_backing_dev_unplug;
- 	q->backing_dev_info.unplug_io_data = q;
- 	q->backing_dev_info.ra_pages =
-@@ -604,15 +606,20 @@ int blk_init_allocated_queue(struct requ
- 	/*
- 	 * all done
- 	 */
--	if (!elevator_init(q, NULL)) {
--		blk_queue_congestion_threshold(q);
--		return q;
--	}
-+	err = elevator_init(q, NULL);
-+	if (err)
-+		goto free_and_out;
- 
--	blk_put_queue(q);
--	return NULL;
-+	blk_queue_congestion_threshold(q);
-+
-+	return 0;
-+
-+free_and_out:
-+	mempool_destroy(q->rq.rq_pool);
-+out:
-+	return err;
- }
--EXPORT_SYMBOL(blk_init_queue_node);
-+EXPORT_SYMBOL(blk_init_allocated_queue);
- 
- int blk_get_queue(struct request_queue *q)
- {
-Index: linux-2.6/include/linux/blkdev.h
-===================================================================
---- linux-2.6.orig/include/linux/blkdev.h
-+++ linux-2.6/include/linux/blkdev.h
-@@ -901,6 +901,8 @@ extern void blk_abort_queue(struct reque
- extern struct request_queue *blk_init_queue_node(request_fn_proc *rfn,
- 					spinlock_t *lock, int node_id);
- extern struct request_queue *blk_init_queue(request_fn_proc *, spinlock_t *);
-+extern int blk_init_allocated_queue(struct request_queue *q,
-+				request_fn_proc *rfn, spinlock_t *lock);
- extern void blk_cleanup_queue(struct request_queue *);
- extern void blk_queue_make_request(struct request_queue *, make_request_fn *);
- extern void blk_queue_bounce_limit(struct request_queue *, u64);
-
---DocE+STaALJfprDB--
+	Ingo
