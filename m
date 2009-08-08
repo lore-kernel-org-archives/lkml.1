@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbZHHAQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbZHHAQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757273AbZHHAQd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 20:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757053AbZHHAQd
+	id S1757423AbZHHAQm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 20:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757388AbZHHAQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 20:16:33 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:53240 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756886AbZHHAQc (ORCPT
+	Fri, 7 Aug 2009 20:16:41 -0400
+Received: from mail-yw0-f177.google.com ([209.85.211.177]:41432 "EHLO
+	mail-yw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757048AbZHHAQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 20:16:32 -0400
+	Fri, 7 Aug 2009 20:16:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=INCXl+T/LO85AdZccEXhQQ1EScjwwaM9OYD/fCmvtwQDbU8B39KNCRMJL0MKDjnDzC
-         JfY46IlpXxDcUrvIgA4WnpgJVfy4bRzriE26NCZrA/TwLf6gvT2HDxVtpowOkYVbxuRA
-         22bqFBORv4kPJFvcdwLRF8Waz6sEEFIYoGLfQ=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=SDE274r2KaeGmo1LSlVYSBggcUXIujXpPAlAsZ6mOKqM6Ynq1BlaaJX5c8pyzfssSI
+         qsxP6MHKCfJgLiND1Ker8d+FVYn6v3KfUyY0MONA7CW0a970yz11of1oSrkqm4kqYRlr
+         +JXEJ+vNVgjxlNz3kQy6WlMgm6viJmBOjmQ/s=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -23,19 +23,21 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Mike Galbraith <efault@gmx.de>
-Subject: [PATCH 1/4] perf tools: callchain: Warn only once in empty node detection
-Date: Sat,  8 Aug 2009 02:16:22 +0200
-Message-Id: <1249690585-9145-1-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 3/4] perf tools: callchain: Default display callchain from report if recorded with -g
+Date: Sat,  8 Aug 2009 02:16:24 +0200
+Message-Id: <1249690585-9145-3-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1249690585-9145-1-git-send-email-fweisbec@gmail.com>
+References: <1249690585-9145-1-git-send-email-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we fill a new node that is found to be empty (sign of a bug),
-we print a message each time that happens. Sometimes we reach thousands
-of lines printed.
+If we recorded with -g option to record the callchain, let's display
+the callchain by default from perf report.
 
-Just warn only once in that case (and use stderr instead of stdout).
+The user can override this default using "-g none" option from
+perf report.
 
 Reported-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
@@ -43,70 +45,63 @@ Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Mike Galbraith <efault@gmx.de>
 ---
- tools/perf/util/callchain.c |    3 ++-
- tools/perf/util/util.h      |    3 +++
- tools/perf/util/wrapper.c   |   16 ++++++++++++++++
- 3 files changed, 21 insertions(+), 1 deletions(-)
+ tools/perf/builtin-report.c |   16 +++++++++++++++-
+ tools/perf/util/callchain.h |    1 +
+ 2 files changed, 16 insertions(+), 1 deletions(-)
 
-diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
-index 98c5627..ce0c6d4 100644
---- a/tools/perf/util/callchain.c
-+++ b/tools/perf/util/callchain.c
-@@ -13,6 +13,7 @@
- #include <stdio.h>
- #include <stdbool.h>
- #include <errno.h>
-+#include "util.h"
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index a5e2f8d..c4a8e10 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -68,7 +68,7 @@ static int		callchain;
  
- #include "callchain.h"
+ static
+ struct callchain_param	callchain_param = {
+-	.mode	= CHAIN_GRAPH_ABS,
++	.mode	= CHAIN_GRAPH_REL,
+ 	.min_percent = 0.5
+ };
  
-@@ -203,7 +204,7 @@ fill_node(struct callchain_node *node, struct ip_callchain *chain,
+@@ -1836,6 +1836,13 @@ static int __cmd_report(void)
+ 					" -g?\n");
+ 			exit(-1);
+ 		}
++	} else if (callchain_param.mode != CHAIN_NONE && !callchain) {
++			callchain = 1;
++			if (register_callchain_param(&callchain_param) < 0) {
++				fprintf(stderr, "Can't register callchain"
++						" params\n");
++				exit(-1);
++			}
  	}
- 	node->val_nr = chain->nr - start;
- 	if (!node->val_nr)
--		printf("Warning: empty node in callchain tree\n");
-+		fprintf_once(stderr, "Warning: empty node in callchain tree\n");
- }
  
- static void
-diff --git a/tools/perf/util/util.h b/tools/perf/util/util.h
-index 68fe157..386ea40 100644
---- a/tools/perf/util/util.h
-+++ b/tools/perf/util/util.h
-@@ -148,6 +148,9 @@ static inline const char *skip_prefix(const char *str, const char *prefix)
- 	return strncmp(str, prefix, len) ? NULL : str + len;
- }
+ 	if (load_kernel() < 0) {
+@@ -1974,6 +1981,13 @@ parse_callchain_opt(const struct option *opt __used, const char *arg,
+ 	else if (!strncmp(tok, "fractal", strlen(arg)))
+ 		callchain_param.mode = CHAIN_GRAPH_REL;
  
-+extern int fprintf_once(FILE *fp, const char *fmt, ...)
-+	__attribute__((format (printf, 2, 3)));
++	else if (!strncmp(tok, "none", strlen(arg))) {
++		callchain_param.mode = CHAIN_NONE;
++		callchain = 0;
 +
- #if defined(NO_MMAP) || defined(USE_WIN32_MMAP)
++		return 0;
++	}
++
+ 	else
+ 		return -1;
  
- #ifndef PROT_READ
-diff --git a/tools/perf/util/wrapper.c b/tools/perf/util/wrapper.c
-index 4574ac2..026c87c 100644
---- a/tools/perf/util/wrapper.c
-+++ b/tools/perf/util/wrapper.c
-@@ -205,3 +205,19 @@ int xmkstemp(char *template)
- 		die("Unable to create temporary file: %s", strerror(errno));
- 	return fd;
- }
-+
-+int fprintf_once(FILE *fp, const char *fmt, ...)
-+{
-+	va_list args;
-+	int ret;
-+	static int once;
-+
-+	if (once++)
-+		return 1;
-+
-+	va_start(args, fmt);
-+	ret = vfprintf(fp, fmt, args);
-+	va_end(args);
-+
-+	return ret;
-+}
+diff --git a/tools/perf/util/callchain.h b/tools/perf/util/callchain.h
+index b2d128e..a926ae4 100644
+--- a/tools/perf/util/callchain.h
++++ b/tools/perf/util/callchain.h
+@@ -7,6 +7,7 @@
+ #include "symbol.h"
+ 
+ enum chain_mode {
++	CHAIN_NONE,
+ 	CHAIN_FLAT,
+ 	CHAIN_GRAPH_ABS,
+ 	CHAIN_GRAPH_REL
 -- 
 1.6.2.3
 
