@@ -1,162 +1,408 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754462AbZHHLy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934036AbZHHL42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754462AbZHHLy4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 07:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbZHHLyz
+	id S934036AbZHHL42 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 07:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbZHHL41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 07:54:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55110 "EHLO hera.kernel.org"
+	Sat, 8 Aug 2009 07:56:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55186 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754013AbZHHLyx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 07:54:53 -0400
-Date: Sat, 8 Aug 2009 11:52:55 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+	id S1751890AbZHHL40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 07:56:26 -0400
+Date: Sat, 8 Aug 2009 11:54:36 GMT
+From: tip-bot for Brice Goglin <Brice.Goglin@inria.fr>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, markus.t.metzger@intel.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+Cc: linux-kernel@vger.kernel.org, Brice.Goglin@inria.fr, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, Brice.Goglin@inria.fr,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       markus.t.metzger@intel.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1249667341.17467.5.camel@twins>
-References: <1249667341.17467.5.camel@twins>
-Subject: [tip:perfcounters/core] perf_counter: Fix a race on perf_counter_ctx
-Message-ID: <tip-c3eeded22c6aa759e51d04469b9c42c4b9d2ac01@git.kernel.org>
-Git-Commit-ID: c3eeded22c6aa759e51d04469b9c42c4b9d2ac01
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4A7C162C.1030707@inria.fr>
+References: <4A7C162C.1030707@inria.fr>
+Subject: [tip:perfcounters/core] perf report: Fix and improve the displaying of per-thread event counters
+Message-ID: <tip-1c0cbc4e4a707afea1fd88f5f297f094c8adff82@git.kernel.org>
+Git-Commit-ID: 1c0cbc4e4a707afea1fd88f5f297f094c8adff82
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 08 Aug 2009 11:52:56 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 08 Aug 2009 11:54:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c3eeded22c6aa759e51d04469b9c42c4b9d2ac01
-Gitweb:     http://git.kernel.org/tip/c3eeded22c6aa759e51d04469b9c42c4b9d2ac01
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Fri, 7 Aug 2009 19:49:01 +0200
+Commit-ID:  1c0cbc4e4a707afea1fd88f5f297f094c8adff82
+Gitweb:     http://git.kernel.org/tip/1c0cbc4e4a707afea1fd88f5f297f094c8adff82
+Author:     Brice Goglin <Brice.Goglin@inria.fr>
+AuthorDate: Fri, 7 Aug 2009 13:55:24 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 8 Aug 2009 13:49:54 +0200
+CommitDate: Sat, 8 Aug 2009 13:53:13 +0200
 
-perf_counter: Fix a race on perf_counter_ctx
+perf report: Fix and improve the displaying of per-thread event counters
 
-While extending perfcounters with BTS hw-tracing, Markus
-Metzger managed to trigger this warning:
+Improve and fix the handling of per-thread counter stats
+recorded via perf record -s. Previously we only displayed
+it in debug printouts (-D) and even that output was hard
+to disambiguate.
 
-   [  995.557128] WARNING: at kernel/perf_counter.c:1191 __perf_counter_task_sched_out+0x48/0x6b()
+I moved everything to utils/values.[ch] so that we may reuse
+it in perf stat.
 
-triggers because commit
-9f498cc5be7e013d8d6e4c616980ed0ffc8680d2 (perf_counter: Full
-task tracing) removed clearing of tsk->perf_counter_ctxp out
-from under ctx->lock which introduced a race (against
-perf_lock_task_context).
+We get something like this now:
 
-Move it back and deal with the exit notification by explicitly
-passing along the former task context.
+ #  PID   TID  cache-misses  cache-references
+   4658  4659        495581           3238779
+   4658  4662        498246           3236823
+   4658  4663        499531           3243162
 
-Reported-by: Markus T Metzger <markus.t.metzger@intel.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1249667341.17467.5.camel@twins>
+Then it'll be easy to add --pretty=raw to display a single line per thread/event.
+
+By the way, -S was also used for --symbol... So I used -T/--thread here.
+
+perf report: Add -T/--threads to display per-thread counter values
+
+ We get something like this now:
+ #  PID   TID  cache-misses  cache-references
+   4658  4659        495581           3238779
+   4658  4662        498246           3236823
+   4658  4663        499531           3243162
+
+Per-thread arrays of counter values are managed in utils/values.[ch]
+
+Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: paulus@samba.org
+LKML-Reference: <4A7C162C.1030707@inria.fr>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/perf_counter.c |   30 +++++++++++++++---------------
- 1 files changed, 15 insertions(+), 15 deletions(-)
+ tools/perf/Documentation/perf-report.txt |    3 +
+ tools/perf/Makefile                      |    2 +
+ tools/perf/builtin-report.c              |   25 +++++
+ tools/perf/util/values.c                 |  171 ++++++++++++++++++++++++++++++
+ tools/perf/util/values.h                 |   26 +++++
+ 5 files changed, 227 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 0023105..546e62d 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -2850,7 +2850,8 @@ perf_counter_read_event(struct perf_counter *counter,
-  */
+diff --git a/tools/perf/Documentation/perf-report.txt b/tools/perf/Documentation/perf-report.txt
+index e72e931..370344a 100644
+--- a/tools/perf/Documentation/perf-report.txt
++++ b/tools/perf/Documentation/perf-report.txt
+@@ -27,6 +27,9 @@ OPTIONS
+ -n
+ --show-nr-samples
+ 	Show the number of samples for each symbol
++-T
++--threads
++	Show per-thread event counters
+ -C::
+ --comms=::
+ 	Only consider symbols in these comms. CSV that understands
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 1916e44..9fc133f 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -310,6 +310,7 @@ LIB_H += util/sigchain.h
+ LIB_H += util/symbol.h
+ LIB_H += util/module.h
+ LIB_H += util/color.h
++LIB_H += util/values.h
  
- struct perf_task_event {
--	struct task_struct	*task;
-+	struct task_struct		*task;
-+	struct perf_counter_context	*task_ctx;
+ LIB_OBJS += util/abspath.o
+ LIB_OBJS += util/alias.o
+@@ -337,6 +338,7 @@ LIB_OBJS += util/color.o
+ LIB_OBJS += util/pager.o
+ LIB_OBJS += util/header.o
+ LIB_OBJS += util/callchain.o
++LIB_OBJS += util/values.o
  
- 	struct {
- 		struct perf_event_header	header;
-@@ -2910,24 +2911,23 @@ static void perf_counter_task_ctx(struct perf_counter_context *ctx,
- static void perf_counter_task_event(struct perf_task_event *task_event)
- {
- 	struct perf_cpu_context *cpuctx;
--	struct perf_counter_context *ctx;
-+	struct perf_counter_context *ctx = task_event->task_ctx;
+ BUILTIN_OBJS += builtin-annotate.o
+ BUILTIN_OBJS += builtin-help.o
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index 99274ce..4163918 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -17,6 +17,7 @@
+ #include "util/string.h"
+ #include "util/callchain.h"
+ #include "util/strlist.h"
++#include "util/values.h"
  
- 	cpuctx = &get_cpu_var(perf_cpu_context);
- 	perf_counter_task_ctx(&cpuctx->ctx, task_event);
- 	put_cpu_var(perf_cpu_context);
+ #include "perf.h"
+ #include "util/header.h"
+@@ -53,6 +54,9 @@ static int		modules;
+ static int		full_paths;
+ static int		show_nr_samples;
  
- 	rcu_read_lock();
--	/*
--	 * doesn't really matter which of the child contexts the
--	 * events ends up in.
--	 */
--	ctx = rcu_dereference(current->perf_counter_ctxp);
-+	if (!ctx)
-+		ctx = rcu_dereference(task_event->task->perf_counter_ctxp);
- 	if (ctx)
- 		perf_counter_task_ctx(ctx, task_event);
- 	rcu_read_unlock();
++static int		show_threads;
++static struct perf_read_values	show_threads_values;
++
+ static unsigned long	page_size;
+ static unsigned long	mmap_window = 32;
+ 
+@@ -1473,6 +1477,9 @@ print_entries:
+ 
+ 	free(rem_sq_bracket);
+ 
++	if (show_threads)
++		perf_read_values_display(fp, &show_threads_values);
++
+ 	return ret;
  }
  
--static void perf_counter_task(struct task_struct *task, int new)
-+static void perf_counter_task(struct task_struct *task,
-+			      struct perf_counter_context *task_ctx,
-+			      int new)
+@@ -1758,6 +1765,16 @@ process_read_event(event_t *event, unsigned long offset, unsigned long head)
  {
- 	struct perf_task_event task_event;
+ 	struct perf_counter_attr *attr = perf_header__find_attr(event->read.id);
  
-@@ -2937,8 +2937,9 @@ static void perf_counter_task(struct task_struct *task, int new)
- 		return;
++	if (show_threads) {
++		char *name = attr ? __event_name(attr->type, attr->config)
++				   : "unknown";
++		perf_read_values_add_value(&show_threads_values,
++					   event->read.pid, event->read.tid,
++					   event->read.id,
++					   name,
++					   event->read.value);
++	}
++
+ 	dprintf("%p [%p]: PERF_EVENT_READ: %d %d %s %Lu\n",
+ 			(void *)(offset + head),
+ 			(void *)(long)(event->header.size),
+@@ -1839,6 +1856,9 @@ static int __cmd_report(void)
  
- 	task_event = (struct perf_task_event){
--		.task	= task,
--		.event  = {
-+		.task	  = task,
-+		.task_ctx = task_ctx,
-+		.event    = {
- 			.header = {
- 				.type = new ? PERF_EVENT_FORK : PERF_EVENT_EXIT,
- 				.misc = 0,
-@@ -2956,7 +2957,7 @@ static void perf_counter_task(struct task_struct *task, int new)
+ 	register_idle_thread();
  
- void perf_counter_fork(struct task_struct *task)
- {
--	perf_counter_task(task, 1);
-+	perf_counter_task(task, NULL, 1);
++	if (show_threads)
++		perf_read_values_init(&show_threads_values);
++
+ 	input = open(input_name, O_RDONLY);
+ 	if (input < 0) {
+ 		fprintf(stderr, " failed to open file: %s", input_name);
+@@ -1993,6 +2013,9 @@ done:
+ 	output__resort(total);
+ 	output__fprintf(stdout, total);
+ 
++	if (show_threads)
++		perf_read_values_destroy(&show_threads_values);
++
+ 	return rc;
  }
  
- /*
-@@ -4310,7 +4311,7 @@ void perf_counter_exit_task(struct task_struct *child)
- 	unsigned long flags;
- 
- 	if (likely(!child->perf_counter_ctxp)) {
--		perf_counter_task(child, 0);
-+		perf_counter_task(child, NULL, 0);
- 		return;
- 	}
- 
-@@ -4330,6 +4331,7 @@ void perf_counter_exit_task(struct task_struct *child)
- 	 * incremented the context's refcount before we do put_ctx below.
- 	 */
- 	spin_lock(&child_ctx->lock);
-+	child->perf_counter_ctxp = NULL;
- 	/*
- 	 * If this context is a clone; unclone it so it can't get
- 	 * swapped to another process while we're removing all
-@@ -4343,9 +4345,7 @@ void perf_counter_exit_task(struct task_struct *child)
- 	 * won't get any samples after PERF_EVENT_EXIT. We can however still
- 	 * get a few PERF_EVENT_READ events.
- 	 */
--	perf_counter_task(child, 0);
--
--	child->perf_counter_ctxp = NULL;
-+	perf_counter_task(child, child_ctx, 0);
- 
- 	/*
- 	 * We can recurse on the same lock type through:
+@@ -2066,6 +2089,8 @@ static const struct option options[] = {
+ 		    "load module symbols - WARNING: use only with -k and LIVE kernel"),
+ 	OPT_BOOLEAN('n', "show-nr-samples", &show_nr_samples,
+ 		    "Show a column with the number of samples"),
++	OPT_BOOLEAN('T', "threads", &show_threads,
++		    "Show per-thread event counters"),
+ 	OPT_STRING('s', "sort", &sort_order, "key[,key2...]",
+ 		   "sort by key(s): pid, comm, dso, symbol, parent"),
+ 	OPT_BOOLEAN('P', "full-paths", &full_paths,
+diff --git a/tools/perf/util/values.c b/tools/perf/util/values.c
+new file mode 100644
+index 0000000..8551c0b
+--- /dev/null
++++ b/tools/perf/util/values.c
+@@ -0,0 +1,171 @@
++#include <stdlib.h>
++
++#include "util.h"
++#include "values.h"
++
++void perf_read_values_init(struct perf_read_values *values)
++{
++	values->threads_max = 16;
++	values->pid = malloc(values->threads_max * sizeof(*values->pid));
++	values->tid = malloc(values->threads_max * sizeof(*values->tid));
++	values->value = malloc(values->threads_max * sizeof(*values->value));
++	if (!values->pid || !values->tid || !values->value)
++		die("failed to allocate read_values threads arrays");
++	values->threads = 0;
++
++	values->counters_max = 16;
++	values->counterrawid = malloc(values->counters_max
++				      * sizeof(*values->counterrawid));
++	values->countername = malloc(values->counters_max
++				     * sizeof(*values->countername));
++	if (!values->counterrawid || !values->countername)
++		die("failed to allocate read_values counters arrays");
++	values->counters = 0;
++}
++
++void perf_read_values_destroy(struct perf_read_values *values)
++{
++	int i;
++
++	if (!values->threads_max || !values->counters_max)
++		return;
++
++	for (i = 0; i < values->threads; i++)
++		free(values->value[i]);
++	free(values->pid);
++	free(values->tid);
++	free(values->counterrawid);
++	for (i = 0; i < values->counters; i++)
++		free(values->countername[i]);
++	free(values->countername);
++}
++
++static void perf_read_values__enlarge_threads(struct perf_read_values *values)
++{
++	values->threads_max *= 2;
++	values->pid = realloc(values->pid,
++			      values->threads_max * sizeof(*values->pid));
++	values->tid = realloc(values->tid,
++			      values->threads_max * sizeof(*values->tid));
++	values->value = realloc(values->value,
++				values->threads_max * sizeof(*values->value));
++	if (!values->pid || !values->tid || !values->value)
++		die("failed to enlarge read_values threads arrays");
++}
++
++static int perf_read_values__findnew_thread(struct perf_read_values *values,
++					    u32 pid, u32 tid)
++{
++	int i;
++
++	for (i = 0; i < values->threads; i++)
++		if (values->pid[i] == pid && values->tid[i] == tid)
++			return i;
++
++	if (values->threads == values->threads_max)
++		perf_read_values__enlarge_threads(values);
++
++	i = values->threads++;
++	values->pid[i] = pid;
++	values->tid[i] = tid;
++	values->value[i] = malloc(values->counters_max * sizeof(**values->value));
++	if (!values->value[i])
++		die("failed to allocate read_values counters array");
++
++	return i;
++}
++
++static void perf_read_values__enlarge_counters(struct perf_read_values *values)
++{
++	int i;
++
++	values->counters_max *= 2;
++	values->counterrawid = realloc(values->counterrawid,
++				       values->counters_max * sizeof(*values->counterrawid));
++	values->countername = realloc(values->countername,
++				      values->counters_max * sizeof(*values->countername));
++	if (!values->counterrawid || !values->countername)
++		die("failed to enlarge read_values counters arrays");
++
++	for (i = 0; i < values->threads; i++) {
++		values->value[i] = realloc(values->value[i],
++					   values->counters_max * sizeof(**values->value));
++		if (!values->value[i])
++			die("failed to enlarge read_values counters arrays");
++	}
++}
++
++static int perf_read_values__findnew_counter(struct perf_read_values *values,
++					     u64 rawid, char *name)
++{
++	int i;
++
++	for (i = 0; i < values->counters; i++)
++		if (values->counterrawid[i] == rawid)
++			return i;
++
++	if (values->counters == values->counters_max)
++		perf_read_values__enlarge_counters(values);
++
++	i = values->counters++;
++	values->counterrawid[i] = rawid;
++	values->countername[i] = strdup(name);
++
++	return i;
++}
++
++void perf_read_values_add_value(struct perf_read_values *values,
++				u32 pid, u32 tid,
++				u64 rawid, char *name, u64 value)
++{
++	int tindex, cindex;
++
++	tindex = perf_read_values__findnew_thread(values, pid, tid);
++	cindex = perf_read_values__findnew_counter(values, rawid, name);
++
++	values->value[tindex][cindex] = value;
++}
++
++void perf_read_values_display(FILE *fp, struct perf_read_values *values)
++{
++	int i, j;
++	int pidwidth, tidwidth;
++	int *counterwidth;
++
++	counterwidth = malloc(values->counters * sizeof(*counterwidth));
++	if (!counterwidth)
++		die("failed to allocate counterwidth array");
++	tidwidth = 3;
++	pidwidth = 3;
++	for (j = 0; j < values->counters; j++)
++		counterwidth[j] = strlen(values->countername[j]);
++	for (i = 0; i < values->threads; i++) {
++		int width;
++
++		width = snprintf(NULL, 0, "%d", values->pid[i]);
++		if (width > pidwidth)
++			pidwidth = width;
++		width = snprintf(NULL, 0, "%d", values->tid[i]);
++		if (width > tidwidth)
++			tidwidth = width;
++		for (j = 0; j < values->counters; j++) {
++			width = snprintf(NULL, 0, "%Lu", values->value[i][j]);
++			if (width > counterwidth[j])
++				counterwidth[j] = width;
++		}
++	}
++
++	fprintf(fp, "# %*s  %*s", pidwidth, "PID", tidwidth, "TID");
++	for (j = 0; j < values->counters; j++)
++		fprintf(fp, "  %*s", counterwidth[j], values->countername[j]);
++	fprintf(fp, "\n");
++
++	for (i = 0; i < values->threads; i++) {
++		fprintf(fp, "  %*d  %*d", pidwidth, values->pid[i],
++			tidwidth, values->tid[i]);
++		for (j = 0; j < values->counters; j++)
++			fprintf(fp, "  %*Lu",
++				counterwidth[j], values->value[i][j]);
++		fprintf(fp, "\n");
++	}
++}
+diff --git a/tools/perf/util/values.h b/tools/perf/util/values.h
+new file mode 100644
+index 0000000..e41be5e
+--- /dev/null
++++ b/tools/perf/util/values.h
+@@ -0,0 +1,26 @@
++#ifndef _PERF_VALUES_H
++#define _PERF_VALUES_H
++
++#include "types.h"
++
++struct perf_read_values {
++	int threads;
++	int threads_max;
++	u32 *pid, *tid;
++	int counters;
++	int counters_max;
++	u64 *counterrawid;
++	char **countername;
++	u64 **value;
++};
++
++void perf_read_values_init(struct perf_read_values *values);
++void perf_read_values_destroy(struct perf_read_values *values);
++
++void perf_read_values_add_value(struct perf_read_values *values,
++				u32 pid, u32 tid,
++				u64 rawid, char *name, u64 value);
++
++void perf_read_values_display(FILE *fp, struct perf_read_values *values);
++
++#endif /* _PERF_VALUES_H */
