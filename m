@@ -1,78 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751019AbZHHQEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751472AbZHHQEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751019AbZHHQEL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 12:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbZHHQEK
+	id S1751472AbZHHQEP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 12:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbZHHQEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 12:04:10 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:63075 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750777AbZHHQEI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 12:04:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40457 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750780AbZHHQEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 8 Aug 2009 12:04:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=UP8jeRpK+KpemPX4Mji6fopSU1re6ONqF5JxRWpMtvyCzk6Fm/lK9v2IYfp0hGAmFz
-         i61fv3CIi7Vopj8xXOF0PM1NdxDflMI62OdMUgWISWuXpD+O7eJMGkv6Nc5L2ORY3AfE
-         n0t+HoUPa5cvylGpm29sCUbFKs0dJ1wWbcz6E=
-Subject: Re: [2.6.31 PATCH] tracing/filters: always free pred on
- filter_add_subsystem_pred() failure
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090808160211.GM28892@elte.hu>
-References: <1249746593.6453.32.camel@tropicana>
-	 <20090808160211.GM28892@elte.hu>
-Content-Type: text/plain
-Date: Sat, 08 Aug 2009 11:04:07 -0500
-Message-Id: <1249747447.6453.34.camel@tropicana>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+Date: Sat, 8 Aug 2009 16:03:36 GMT
+From: tip-bot for Tom Zanussi <tzanussi@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tzanussi@gmail.com, lizf@cn.fujitsu.com, fweisbec@gmail.com,
+       error27@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tzanussi@gmail.com, lizf@cn.fujitsu.com, fweisbec@gmail.com,
+       error27@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1249746549.6453.29.camel@tropicana>
+References: <1249746549.6453.29.camel@tropicana>
+Subject: [tip:tracing/core] tracing/filters: Don't use pred on alloc failure
+Message-ID: <tip-96b2de313b1e0e02aea80ee47df6a2b5cbdf8e13@git.kernel.org>
+Git-Commit-ID: 96b2de313b1e0e02aea80ee47df6a2b5cbdf8e13
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 08 Aug 2009 16:03:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-08-08 at 18:02 +0200, Ingo Molnar wrote:
-> * Tom Zanussi <tzanussi@gmail.com> wrote:
-> 
-> > If filter_add_subsystem_pred() fails due to ENOSPC or ENOMEM, the 
-> > pred doesn't get freed, while as a side effect it does for other 
-> > errors. Make it so the caller always frees the pred for any error.
-> 
-> thanks, i've queued this up for .31.
-> 
-> Just to make sure: tracing/core has the filter code changed 
-> substantially, and this issue seems to be moot there - correct?
-> 
+Commit-ID:  96b2de313b1e0e02aea80ee47df6a2b5cbdf8e13
+Gitweb:     http://git.kernel.org/tip/96b2de313b1e0e02aea80ee47df6a2b5cbdf8e13
+Author:     Tom Zanussi <tzanussi@gmail.com>
+AuthorDate: Sat, 8 Aug 2009 10:49:09 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 8 Aug 2009 17:55:34 +0200
 
-Right, the subsystem preds are gone in tip, so nothing to fix there.
+tracing/filters: Don't use pred on alloc failure
 
-> So the total impact from both patches on -tip is the patch below - 
-> right?
-> 
+Dan Carpenter sent me a fix to prevent pred from being used if
+it couldn't be allocated.  I noticed the same problem also
+existed for the create_pred() case and added a fix for that.
 
-Right.
+Reported-by: Dan Carpenter <error27@gmail.com>
+Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+LKML-Reference: <1249746549.6453.29.camel@tropicana>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Tom
 
-> 	Ingo
-> 
-> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-> index 27c2dbe..490337a 100644
-> --- a/kernel/trace/trace_events_filter.c
-> +++ b/kernel/trace/trace_events_filter.c
-> @@ -1050,6 +1050,8 @@ static int replace_preds(struct event_subsystem *system,
->  
->  		pred = create_pred(elt->op, operand1, operand2);
->  add_pred:
-> +		if (!pred)
-> +			return -ENOMEM;
->  		if (call)
->  			err = filter_add_pred(ps, call, pred, false);
->  		else
+---
+ kernel/trace/trace_events_filter.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
+diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+index 936c621..1557148 100644
+--- a/kernel/trace/trace_events_filter.c
++++ b/kernel/trace/trace_events_filter.c
+@@ -1029,6 +1029,8 @@ static int replace_preds(struct event_subsystem *system,
+ 
+ 		if (elt->op == OP_AND || elt->op == OP_OR) {
+ 			pred = create_logical_pred(elt->op);
++			if (!pred)
++				return -ENOMEM;
+ 			if (call) {
+ 				err = filter_add_pred(ps, call, pred);
+ 				filter_free_pred(pred);
+@@ -1048,6 +1050,8 @@ static int replace_preds(struct event_subsystem *system,
+ 		}
+ 
+ 		pred = create_pred(elt->op, operand1, operand2);
++		if (!pred)
++			return -ENOMEM;
+ 		if (call) {
+ 			err = filter_add_pred(ps, call, pred);
+ 			filter_free_pred(pred);
