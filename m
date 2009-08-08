@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751982AbZHHVCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751184AbZHHVHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751982AbZHHVCc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 17:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbZHHVCc
+	id S1751184AbZHHVHS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 17:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbZHHVHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 17:02:32 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:50462 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751407AbZHHVCb (ORCPT
+	Sat, 8 Aug 2009 17:07:17 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38554 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750771AbZHHVHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 17:02:31 -0400
-From: Martin Rogge <marogge@onlinehome.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.30.1-4 kernels freezes dual pentium-3 system
-Date: Sat, 8 Aug 2009 23:03:52 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.30.4; KDE/4.2.1; i686; ; )
-Cc: devzero@web.de
-References: <859414371@web.de>
-In-Reply-To: <859414371@web.de>
+	Sat, 8 Aug 2009 17:07:16 -0400
+Message-ID: <4A7DE8B6.80801@zytor.com>
+Date: Sat, 08 Aug 2009 14:05:58 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Akinobu Mita <akinobu.mita@gmail.com>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, x86@kernel.org
+Subject: Re: [PATCH tip:x86/asm] x86: Introduce GDT_ENTRY_INIT()
+References: <20090808094905.GA2954@localhost.localdomain>
+In-Reply-To: <20090808094905.GA2954@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908082303.52471.marogge@onlinehome.de>
-X-Provags-ID: V01U2FsdGVkX19BTJpc13M2FrsqU/EK+5aQ5jkNUbramhdcAwd
- e55SrLIgdI91vjLeaLwsICns3KHsWseNNH6S/msKaFMFmui8oQ
- 42coKuOzeKezv93TnfARw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 08 August 2009 11:49:50 devzero@web.de wrote:
+On 08/08/2009 02:49 AM, Akinobu Mita wrote:
+> diff --git a/drivers/char/vr41xx_giu.c b/drivers/char/vr41xx_giu.c
+> deleted file mode 100644
+> index e69de29..0000000
+> diff --git a/drivers/pnp/pnpbios/bioscalls.c b/drivers/pnp/pnpbios/bioscalls.c
+> index 45ad3e9..bd035e3 100644
+> --- a/drivers/pnp/pnpbios/bioscalls.c
+> +++ b/drivers/pnp/pnpbios/bioscalls.c
+> @@ -60,7 +60,7 @@ do { \
+>  	set_desc_limit(&gdt[(selname) >> 3], (size) - 1); \
+>  } while(0)
+>  
+> -static struct desc_struct bad_bios_desc;
+> +static struct desc_struct bad_bios_desc = GDT_ENTRY_INIT(0x4092, 0, 0);
+>  
+>  /*
+>   * At some point we want to use this stack frame pointer to unwind
+> @@ -476,9 +476,6 @@ void pnpbios_calls_init(union pnp_bios_install_struct *header)
+>  	pnp_bios_callpoint.offset = header->fields.pm16offset;
+>  	pnp_bios_callpoint.segment = PNP_CS16;
+>  
+> -	bad_bios_desc.a = 0;
+> -	bad_bios_desc.b = 0x00409200;
+> -
+>  	set_desc_base(&bad_bios_desc, (unsigned long)__va(0x40UL << 4));
+>  	set_desc_limit(&bad_bios_desc, 4095 - (0x40 << 4));
+>  	for_each_possible_cpu(i) {
 
-> > Btw, since then there have been two more
-> > reports on lkml of dual P2 systems locking up with 2.6.30++.
->
-> could you send pointers?
+Please also fix this hunk to do the full initialization statically
+instead of doing some fields statically and some dynamically.
 
-Since I am not subscribed to the LKML (I only read it via a NNTP relay) I have 
-some difficulties providing IDs. Anyway, the subject of the reports I have in 
-mind is "PROBLEM: crash / hang with linux-2.6.30.x on PII-350 SMP system".
+	-hpa
 
-> any existing bugzilla bugentry for these or for your`s ?
-
-Earlier today I filed bug 13933 on kernel.bugzilla. Unfortunately I had some 
-problems attaching all the files, so my earlier LKML post is still the best 
-source of information.
-
-> > Network, sysrq and numlock are all unresponsive.
->
-> ok, that`s why we need to have the last informations from before the dying
-> breath...
-
-agreed.
-
->
-> btw, i one of your dmesg i found these:
->
-> Aug  1 19:42:57 frya kernel: [...]
-
-Again, that's someone else's report. Regarding clocksource, while I was trying 
-to hunt down this bug I once booted with "clocksource=acpi_pm" but it made no 
-difference. Truth be told, at that time I was still troubleshooting the 
-nvidia.ko driver.
-
-Martin
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
