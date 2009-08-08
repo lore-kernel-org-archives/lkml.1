@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbZHHIdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbZHHIje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbZHHIdU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 04:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbZHHIdT
+	id S1754710AbZHHIje (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 04:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbZHHIjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 04:33:19 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:41940 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751504AbZHHIdS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 04:33:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Qd0Fs+IYhPQ2ESVJllO8iQyDlDqAl1QHRq97oLjLjsPNpOW5VyGCbadOkYCyAmFObY
-         qdTku2dFEuNGWYNPUxupwzD2Hd7qZcdBEyZqAbimPygJ9F9iP1wKKVZazCZNBSMvyUNd
-         MQyip47klqs+40FxF//nW4ywiNviIIODIgURk=
+	Sat, 8 Aug 2009 04:39:33 -0400
+Received: from lucidpixels.com ([75.144.35.66]:53597 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754214AbZHHIjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 04:39:32 -0400
+Date: Sat, 8 Aug 2009 04:39:32 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Kernel 2.6.30.4 XFS(..?) regression
+Message-ID: <alpine.DEB.2.00.0908080422440.12329@p34.internal.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <1249657743.32113.733.camel@twins>
-References: <20090807094608.4b0efea1@torg> <1249657743.32113.733.camel@twins>
-Date: Sat, 8 Aug 2009 16:33:18 +0800
-Message-ID: <d82e647a0908080133g7aa3e62fqcc52054ba57a32f1@mail.gmail.com>
-Subject: Re: [RT] Lockdep warning on boot with 2.6.31-rc5-rt1.1
-From: Ming Lei <tom.leiming@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Clark Williams <williams@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       "greg@kroah.com" <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/7 Peter Zijlstra <peterz@infradead.org>:
-> On Fri, 2009-08-07 at 09:46 -0500, Clark Williams wrote:
->> Peter,
->>
->> I'm getting this warning from lockdep when booting on my T60.
->>
->> The two addresses reported (0xffffffff812664a2 and 0xffffffff812664ae)
->> actually bracket one call to mutex_lock() in driver_attach() so I'm not
->> sure what the complaint is.
->>
->> Clark
->>
->> =============================================
->> [ INFO: possible recursive locking detected ]
->> 2.6.31-rc5-rt1.1 #37
->> ---------------------------------------------
->> swapper/1 is trying to acquire lock:
->>  (&dev->mutex){+.+...}, at: [<ffffffff812664ae>]
->> __driver_attach+0x48/0x81
->>
->> but task is already holding lock:
->>  (&dev->mutex){+.+...}, at: [<ffffffff812664a2>]
->> __driver_attach+0x3c/0x81
->>
->> other info that might help us debug this:
->> 1 lock held by swapper/1:
->>  #0:  (&dev->mutex){+.+...}, at: [<ffffffff812664a2>]
->> __driver_attach+0x3c/0x81
->
-> Oh, that's tglx who's gone wild with sem->mutex conversions.
+Hello,
 
-Maybe we can introduce some mutex interfaces which bypass lockdep validation
-temporarily to allow driver core to convert to mutex from sema if lockdep
-can't validate tree-structured lock orderings.
+After a period of read/writes to several drives, all processes that 
+try to write to the drives (all XFS) enter D-state and the system becomes 
+unresponsive, the load shoots up to > 100, etc.
 
-Thanks.
+This problem did not occur with 2.6.29.1.
 
---
-Lei Ming
+Here is a part of the sysrq-w:
+
+[72037.131620] sh            D 00000006     0 13772  13771
+[72037.131620]  00000000 00000086 c811f4c0 00000006 c94c9011 c3606da0 c1433e88 cf596ab4
+[72037.131620]  ca6a9524 ca6a9524 c1433e70 c02750f0 c03e72e5 c03e85fd ca6a9528 c811f4c0
+[72037.131620]  c94c9018 ca6a9524 00000000 c4d70a20 c02750f0 c03e873a ca6a9528 ccccbe70
+[72037.131620] Call Trace:
+[72037.131620]  [<c02750f0>] ? xfs_dir_open+0x0/0x70
+[72037.131620]  [<c03e72e5>] ? schedule+0x5/0x20
+[72037.131620]  [<c03e85fd>] ? rwsem_down_failed_common+0x7d/0x170
+[72037.131620]  [<c02750f0>] ? xfs_dir_open+0x0/0x70
+[72037.131620]  [<c03e873a>] ? rwsem_down_read_failed+0x1a/0x24
+[72037.131620]  [<c03e874b>] ? call_rwsem_down_read_failed+0x7/0xc
+[72037.131620]  [<c03e7d29>] ? down_read+0x9/0x10
+[72037.131620]  [<c0250e36>] ? xfs_ilock_map_shared+0x16/0x40
+[72037.131620]  [<c027512d>] ? xfs_dir_open+0x3d/0x70
+[72037.131620]  [<c0162289>] ? __dentry_open+0x89/0x240
+[72037.131620]  [<c0162533>] ? nameidata_to_filp+0x53/0x70
+[72037.131620]  [<c016e605>] ? do_filp_open+0x245/0x830
+[72037.131620]  [<c0151ed1>] ? __do_fault+0x2b1/0x3d0
+[72037.131620]  [<c016208b>] ? do_sys_open+0x5b/0x110
+[72037.131620]  [<c01621bc>] ? sys_open+0x2c/0x40
+[72037.131620]  [<c0102c48>] ? sysenter_do_call+0x12/0x26
+
+Here is a part of the sysrq-t: (after dmesg > dmesg.txt)
+
+[72119.690410] dmesg         D c769c720     0 13832  13824
+[72119.690410]  00000000 00000086 c4d0e7c0 c769c720 c3237260 cc6ad2a0 cfa47200 c017cb26
+[72119.690410]  00000286 044805f1 c5d6bd18 0448058d c03e72e5 c03e74a0 00004000 c053f2e0
+[72119.690410]  c14c3d18 c6457d18 044805f1 c0124de0 c4d0e7c0 c053c7c0 c049f170 00000064
+[72119.690410] Call Trace:
+[72119.690410]  [<c017cb26>] ? __writeback_single_inode+0x126/0x380
+[72119.690410]  [<c03e72e5>] ? schedule+0x5/0x20
+[72119.690410]  [<c03e74a0>] ? schedule_timeout+0xb0/0x110
+[72119.690410]  [<c0124de0>] ? process_timeout+0x0/0x10
+[72119.690410]  [<c03e6d71>] ? io_schedule_timeout+0x11/0x20
+[72119.690410]  [<c0150b83>] ? congestion_wait+0x53/0x70
+[72119.690410]  [<c012dbe0>] ? autoremove_wake_function+0x0/0x50
+[72119.690410]  [<c0147c10>] ? balance_dirty_pages_ratelimited_nr+0xb0/0x1e0
+[72119.690410]  [<c0142021>] ? generic_file_buffered_write+0x1a1/0x300
+[72119.690410]  [<c02791ea>] ? xfs_write+0x77a/0x860
+[72119.690410]  [<c0134e54>] ? getnstimeofday+0x54/0x110
+[72119.690410]  [<c0275361>] ? xfs_file_aio_write+0x61/0x70
+[72119.690410]  [<c0163c15>] ? do_sync_write+0xd5/0x120
+[72119.690410]  [<c0117958>] ? task_tick_fair+0x18/0x90
+[72119.690410]  [<c013815f>] ? tick_handle_periodic+0xf/0x80
+[72119.690410]  [<c012dbe0>] ? autoremove_wake_function+0x0/0x50
+[72119.690410]  [<c0163b40>] ? do_sync_write+0x0/0x120
+[72119.690410]  [<c0164750>] ? vfs_write+0xa0/0x140
+[72119.690410]  [<c01648c1>] ? sys_write+0x41/0x80
+[72119.690410]  [<c0102c48>] ? sysenter_do_call+0x12/0x26
+
+Kernel .config:
+http://home.comcast.net/~jpiszcz/20090808/config-2.6.30.4.txt
+
+The only way to bring the host back is to reboot the system b to 
+sysrq-trigger or hard reboot.
+
+Justin.
