@@ -1,48 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933634AbZHHI50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933712AbZHHJGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933634AbZHHI50 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 04:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933147AbZHHI5Z
+	id S933712AbZHHJGG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 05:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933603AbZHHJGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 04:57:25 -0400
-Received: from sh.osrg.net ([192.16.179.4]:49965 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932963AbZHHI5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 04:57:24 -0400
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH] documentation: register ioctl entry of nilfs2
-Date: Sat,  8 Aug 2009 17:52:50 +0900
-Message-Id: <1249721570-5692-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.5.6.5
-X-Dispatcher: imput version 20050308(IM148)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Sat, 08 Aug 2009 17:56:53 +0900 (JST)
+	Sat, 8 Aug 2009 05:06:05 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:17669 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933645AbZHHJGE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 05:06:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=aV4F3IN8aIYN3qnbIXID1gZ7iJb/m/mxSCGan6Cguz9MhZPgwMvkwoxLeH9kh7xovy
+         cm294Erq4lGhk8LzYsiocMbZmQ1dVHS+RC6fZ71YDMikGdNsxDUfyMukMC5Bxyg+CPy6
+         cJa1D5pjqFlftL46h6x+tNiPTY1xX9CrmV9rA=
+MIME-Version: 1.0
+In-Reply-To: <Pine.LNX.4.44L0.0908071154530.3063-100000@iolanthe.rowland.org>
+References: <1249657743.32113.733.camel@twins>
+	 <Pine.LNX.4.44L0.0908071154530.3063-100000@iolanthe.rowland.org>
+Date: Sat, 8 Aug 2009 17:06:04 +0800
+Message-ID: <d82e647a0908080206j78a49674i99ba80801398055d@mail.gmail.com>
+Subject: Re: [RT] Lockdep warning on boot with 2.6.31-rc5-rt1.1
+From: Ming Lei <tom.leiming@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Clark Williams <williams@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "greg@kroah.com" <greg@kroah.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Kay Sievers <kay.sievers@vrfy.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This will register the ioctl range used by nilfs2 file system to the
-table listed in Documentation/ioctl/ioctl-number.txt.
+2009/8/8 Alan Stern <stern@rowland.harvard.edu>:
+> On Fri, 7 Aug 2009, Peter Zijlstra wrote:
 
-Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
----
- Documentation/ioctl/ioctl-number.txt |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+>> It used to be that _all_ dev->sem instances were taken on suspend or
+>> something like that, I think that got fixed a long while back.
+>>
+>> I'd have to look at what the current locking requirements for dev->sem
+>> are.
+>
+> It is supposed to be locked whenever the driver core invokes a probe,
+> remove, or PM-related callback.  Under some circumstances, the parent's
+> semaphore is supposed to be locked as well.  Individual subsystems may
+> have their own requirements in addition to these.
+>
+> The ordering requirement is: Don't try to acquire a device's lock if
+> you already hold the lock for a non-ancestor device.  More generally
+> (if more obscurely): If you already hold device A's lock, then don't
+> try to acquire the lock for device B unless you already hold the lock
+> for A & B's most recent common ancestor.
+>
 
-diff --git a/Documentation/ioctl/ioctl-number.txt b/Documentation/ioctl/ioctl-number.txt
-index 7bb0d93..dbea4f9 100644
---- a/Documentation/ioctl/ioctl-number.txt
-+++ b/Documentation/ioctl/ioctl-number.txt
-@@ -139,6 +139,7 @@ Code	Seq#	Include File		Comments
- 'm'	all	linux/synclink.h	conflict!
- 'm'	00-1F	net/irda/irmod.h	conflict!
- 'n'	00-7F	linux/ncp_fs.h
-+'n'	80-8F	linux/nilfs2_fs.h	NILFS2
- 'n'	E0-FF	video/matrox.h          matroxfb
- 'o'	00-1F	fs/ocfs2/ocfs2_fs.h	OCFS2
- 'o'     00-03   include/mtd/ubi-user.h  conflict! (OCFS2 and UBI overlaps)
+It seems that the following case is very common, and A and B have no
+common ancestor, but we can hold device A and B's lock at the same
+time, can't we?
+
+Thanks.
+
+device A  comes in one bus:
+	device_add()
+         ->bus_attach_device()
+            ->device_attach():drivers/base/dd.c /*holding device A's lock*/
+               ->...drv->probe()		/*sleep here some time*/
+
+then device B comes in another bus:
+	device_add()
+         ->bus_attach_device()
+            ->device_attach():drivers/base/dd.c /*holding device B's lock*/
+               ->...drv->probe()		/*sleep here some time*/
+
 -- 
-1.6.3.4
-
+Lei Ming
