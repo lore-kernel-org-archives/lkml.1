@@ -1,115 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752340AbZHHP2I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752456AbZHHP2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752340AbZHHP2I (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 11:28:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbZHHP2H
+	id S1752456AbZHHP2t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 11:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZHHP2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 11:28:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39921 "EHLO hera.kernel.org"
+	Sat, 8 Aug 2009 11:28:48 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52926 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752143AbZHHP2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 11:28:06 -0400
-Date: Sat, 8 Aug 2009 15:27:36 GMT
-From: tip-bot for Cyrill Gorcunov <gorcunov@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, gorcunov@openvz.org, tglx@linutronix.de,
-       gorcunov@gmail.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gorcunov@openvz.org, yinghai@kernel.org, tglx@linutronix.de,
-       gorcunov@gmail.com, mingo@elte.hu
-In-Reply-To: <20090805200931.GB5319@lenovo>
-References: <20090805200931.GB5319@lenovo>
-Subject: [tip:x86/apic] x86, ioapic: Panic on irq-pin binding only if needed
-Message-ID: <tip-f3d1915a8623b9248572d3ee44e19a80b7a3520b@git.kernel.org>
-Git-Commit-ID: f3d1915a8623b9248572d3ee44e19a80b7a3520b
-X-Mailer: tip-git-log-daemon
+	id S1752143AbZHHP2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 11:28:47 -0400
+Date: Sat, 8 Aug 2009 17:27:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Darren Hart <dvhltc@us.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       "lkml," <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, John Kacur <jkacur@redhat.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       John Stultz <johnstul@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH] fixup pi_state in futex_requeue on lock steal
+Message-ID: <20090808152756.GH28892@elte.hu>
+References: <4A7A1D48.7040309@us.ibm.com> <1249576660.32113.585.camel@twins> <4A7B5D46.7080109@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 08 Aug 2009 15:27:38 +0000 (UTC)
+In-Reply-To: <4A7B5D46.7080109@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f3d1915a8623b9248572d3ee44e19a80b7a3520b
-Gitweb:     http://git.kernel.org/tip/f3d1915a8623b9248572d3ee44e19a80b7a3520b
-Author:     Cyrill Gorcunov <gorcunov@gmail.com>
-AuthorDate: Thu, 6 Aug 2009 00:09:31 +0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 8 Aug 2009 17:20:03 +0200
 
-x86, ioapic: Panic on irq-pin binding only if needed
+* Darren Hart <dvhltc@us.ibm.com> wrote:
 
-Though the most time we are to panic on irq-pin allocation
-fails, for PCI interrupts it's not the case and we could
-continue operate even if irq-pin allocation failed.
+> So, I think we're fine with respect to the pi_state ownership!  In 
+> fact I finally managed to catch the lock steal in the requeue loop 
+> in my tracing, and everything worked fine.  Going to go rerun a 
+> bunch more tests and see if I hit any other issues, if I do, I 
+> suspect they are unrelated to this.
+>
+> Thanks for the help in thinking this through.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-Cc: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <20090805200931.GB5319@lenovo>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+i've got these queued up:
 
+ 00235fe: futex: Update woken requeued futex_q lock_ptr
+ 1bbf208: rtmutex: Avoid deadlock in rt_mutex_start_proxy_lock()
 
----
- arch/x86/kernel/apic/io_apic.c |   23 ++++++++++++++++++-----
- 1 files changed, 18 insertions(+), 5 deletions(-)
+should i drop them?
 
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 2a145d3..2999f3d 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -490,7 +490,8 @@ static void ioapic_mask_entry(int apic, int pin)
-  * shared ISA-space IRQs, so we have to support them. We are super
-  * fast in the common case, and fast for shared ISA-space IRQs.
-  */
--static void add_pin_to_irq_node(struct irq_cfg *cfg, int node, int apic, int pin)
-+static int
-+add_pin_to_irq_node_nopanic(struct irq_cfg *cfg, int node, int apic, int pin)
- {
- 	struct irq_pin_list **last, *entry;
- 
-@@ -498,19 +499,27 @@ static void add_pin_to_irq_node(struct irq_cfg *cfg, int node, int apic, int pin
- 	last = &cfg->irq_2_pin;
- 	for_each_irq_pin(entry, cfg->irq_2_pin) {
- 		if (entry->apic == apic && entry->pin == pin)
--			return;
-+			return 0;
- 		last = &entry->next;
- 	}
- 
- 	entry = get_one_free_irq_2_pin(node);
- 	if (!entry) {
--		printk(KERN_ERR "can not alloc irq_pin_list\n");
--		BUG_ON(1);
-+		printk(KERN_ERR "can not alloc irq_pin_list (%d,%d,%d)\n",
-+				node, apic, pin);
-+		return -ENOMEM;
- 	}
- 	entry->apic = apic;
- 	entry->pin = pin;
- 
- 	*last = entry;
-+	return 0;
-+}
-+
-+static void add_pin_to_irq_node(struct irq_cfg *cfg, int node, int apic, int pin)
-+{
-+	if (add_pin_to_irq_node_nopanic(cfg, node, apic, pin))
-+		panic("IO-APIC: failed to add irq-pin. Can not proceed\n");
- }
- 
- /*
-@@ -3843,7 +3852,11 @@ static int __io_apic_set_pci_routing(struct device *dev, int irq,
- 	 */
- 	if (irq >= NR_IRQS_LEGACY) {
- 		cfg = desc->chip_data;
--		add_pin_to_irq_node(cfg, node, ioapic, pin);
-+		if (add_pin_to_irq_node_nopanic(cfg, node, ioapic, pin)) {
-+			printk(KERN_INFO "can not add pin %d for irq %d\n",
-+				pin, irq);
-+			return 0;
-+		}
- 	}
- 
- 	setup_IO_APIC_irq(ioapic, pin, irq, desc, trigger, polarity);
+	Ingo
