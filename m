@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbZHHPnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752628AbZHHPtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752641AbZHHPnN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 11:43:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbZHHPnM
+	id S1752628AbZHHPtM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 11:49:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbZHHPtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 11:43:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50740 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752578AbZHHPnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 11:43:00 -0400
-Date: Sat, 8 Aug 2009 17:42:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Borislav Petkov <petkovbb@googlemail.com>,
-       Kevin Winchester <kjwinchester@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       LKML <linux-kernel@vger.kernel.org>, borislav.petkov@amd.com
-Subject: Re: [PATCH] x86: clear incorrectly forced X86_FEATURE_LAHF_LM flag
-Message-ID: <20090808154246.GK28892@elte.hu>
-References: <4A7D673A.1090401@gmail.com> <20090808152016.GB25374@liondog.tnic>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090808152016.GB25374@liondog.tnic>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 8 Aug 2009 11:49:11 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:56365 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752417AbZHHPtK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 11:49:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=pM5DPcTOExOQ1nqMn1P0wHR8j/6ZOmxGJvHF8dui3NQoEYIMvO4h8vNAJLPvN0mZmr
+         FtDqVwV6R7apzhACtqoroL4uUNDx2SIo92Txg/7FSGeS24GToRc3BcMxNHhn4BJOBynI
+         cF8G1FHKLdHi7HJ7BFDw69LxQzwAl51FVcjHs=
+Subject: [2.6.31 PATCH] tracing/filters: don't use pred on alloc failure
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dan Carpenter <error27@gmail.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 08 Aug 2009 10:49:09 -0500
+Message-Id: <1249746549.6453.29.camel@tropicana>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dan Carpenter sent me a fix to prevent pred from being used if it
+couldn't be allocated.  I noticed the same problem also existed for
+the create_pred() case and added a fix for that.
 
-* Borislav Petkov <petkovbb@googlemail.com> wrote:
+Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 
-> > +
-> > +		/*
-> > +		 * Some BIOSes incorrectly set this feature, but only
-> > +		 * Revision E (with Extended Model = 2) actually supports
-> > +		 * it.
-> > +		 */
-> > +		if (!(level & 0x00020000))
-> > +			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
-> 
-> let me check this internally next week because it seems that 
-> according to the Fam 0xf RevGuide 
-> (http://support.amd.com/us/Processor_TechDocs/25759.pdf) erratum 
-> 110 applies to atleast 3 CPU revisions with extended model 0x1 
-> too.
+The original report:
 
-Ok, mind resending the patch (or dropping it) if you figured that 
-out? We need to be careful about restoring CPU erratum workarounds 
-that BIOSen install ... these things are very hard to test and easy 
-to get wrong.
+create_logical_pred() could sometimes return NULL.
 
-	Ingo
+It's a static checker complaining rather than problems at runtime...
+
+Signed-off-by: Dan Carpenter <error27@gmail.com>
+---
+ kernel/trace/trace_events_filter.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+index 936c621..1557148 100644
+--- a/kernel/trace/trace_events_filter.c
++++ b/kernel/trace/trace_events_filter.c
+@@ -1029,6 +1029,8 @@ static int replace_preds(struct event_subsystem *system,
+ 
+ 		if (elt->op == OP_AND || elt->op == OP_OR) {
+ 			pred = create_logical_pred(elt->op);
++			if (!pred)
++				return -ENOMEM;
+ 			if (call) {
+ 				err = filter_add_pred(ps, call, pred);
+ 				filter_free_pred(pred);
+@@ -1048,6 +1050,8 @@ static int replace_preds(struct event_subsystem *system,
+ 		}
+ 
+ 		pred = create_pred(elt->op, operand1, operand2);
++		if (!pred)
++			return -ENOMEM;
+ 		if (call) {
+ 			err = filter_add_pred(ps, call, pred);
+ 			filter_free_pred(pred);
+-- 
+1.5.6.3
+
+
+
