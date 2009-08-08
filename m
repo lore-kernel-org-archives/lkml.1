@@ -1,94 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbZHHRY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752670AbZHHRnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752663AbZHHRY7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 13:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbZHHRY7
+	id S1752670AbZHHRnl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 13:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbZHHRnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 13:24:59 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:35553 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751506AbZHHRY6 (ORCPT
+	Sat, 8 Aug 2009 13:43:41 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:47792 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750827AbZHHRnk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 13:24:58 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-To: Roel Kluin <roel.kluin@gmail.com>
-Subject: Re: Strange wireless card?
-Date: Sat, 08 Aug 2009 13:24:08 -0400
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc5; KDE/4.2.4; i686; ; )
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <200908042306.36043.gene.heskett@verizon.net>
- <4A7D9CB0.8050003@gmail.com>
-In-reply-to: <4A7D9CB0.8050003@gmail.com>
-MIME-version: 1.0
-Content-type: Text/Plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-Message-id: <200908081324.08513.gene.heskett@verizon.net>
+	Sat, 8 Aug 2009 13:43:40 -0400
+Date: Sat, 8 Aug 2009 10:40:20 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 1/2] hwmon: Enhance the sysfs API for power meters.
+Message-ID: <20090808174020.GA29600@tux1.beaverton.ibm.com>
+Reply-To: djwong@us.ibm.com
+References: <20090725004322.20709.96804.stgit@elm3a70.beaverton.ibm.com> <20090725004328.20709.57712.stgit@elm3a70.beaverton.ibm.com> <20090807180906.GD1728@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090807180906.GD1728@ucw.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 08 August 2009, Roel Kluin wrote:
->Op 05-08-09 05:06, Gene Heskett schreef:
->> Greetings;
->>
->> Can anyone tell me if this pci wireless card is supported, or what its
->> status is?
->>
->>>From lspci -v:
->> 01:06.0 Ethernet controller: Marvell Technology Group Ltd. 88w8335
->> [Libertas] 802.11b/g Wireless (rev 03) Subsystem: Netgear WG311v3 802.11g
->> Wireless PCI Adapter
->>
->> I have built a 2.6.31-rc5 kernel with the Marvel stuffs all enabled, but
->> even a modprobe mwl8k, while apparently loading the driver, doesn't create
->> any wireless devices in /dev.
->>
->> Thanks for any pointers.
->
->It could be due to a regression I caused, see this thread,
->
->http://lkml.org/lkml/2009/8/8/77
->
->Could you test it with this?
->
->diff --git a/drivers/net/wireless/libertas/assoc.c
-> b/drivers/net/wireless/libertas/assoc.c index d699737..49fceb9 100644
->--- a/drivers/net/wireless/libertas/assoc.c
->+++ b/drivers/net/wireless/libertas/assoc.c
->@@ -45,7 +45,7 @@ static int get_common_rates(struct lbs_private *priv,
-> {
-> 	u8 *card_rates = lbs_bg_rates;
-> 	int ret = 0, i, j;
->-	u8 tmp[(ARRAY_SIZE(lbs_bg_rates) - 1) * (*rates_size - 1)];
->+	u8 tmp[*rates_size * ARRAY_SIZE(lbs_bg_rates) - 1];
-> 	size_t tmp_size = 0;
->
-> 	/* For each rate in card_rates that exists in rate1, copy to tmp */
+On Fri, Aug 07, 2009 at 08:09:06PM +0200, Pavel Machek wrote:
+> 
+> > @@ -365,6 +373,16 @@ power[1-*]_average_lowest	Historical average minimum power use
+> >  				Unit: microWatt
+> >  				RO
+> >  
+> > +power[1-*]_average_max		A notification is sent when power use
+> > +				rises above this value.
+> > +				Unit: microWatt
+> > +				RW
+> > +
+> 
+> How is the notification sent?
 
-This is a total failure when I attempt to patch my 2.6.31-rc5 tree.  The patch 
-trigger phrase lines are even so different that I am not comfortable trying to 
-apply it by hand.
+ACPI Notify is sent to the kernel, which passes it to the ACPI netlink socket.
 
-So obviously there have been other, intervening patches also.
-If this makes it into rc6, maybe it will work?
+> > +power[1-*]_average_min		A notification is sent when power use
+> > +				sinks below this value.
+> > +				Unit: microWatt
+> > +				RW
+> 
+> And what is this good for? Will it wake from sleep? Will it wake from
+> C3?
 
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+All it really does is generates an ACPI Notify event, which is a hint to the OS
+that it could re-read the power meter use.
+> 
+> ...seems like good way to prevent deep sleep states.
+> 
+> > +power[1-*]_cap			If power use rises above this limit, the
+> > +				system should take action to reduce
+> > power use.
+> 
+> System as in 'hw'? Or who? And how?
 
+The ACPI spec is silent on this matter.  It's not clear if the OS is supposed
+to monitor and take action on its own when power > cap, or if the hardware/BIOS
+will take action, or possibly both...?
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-The NRA is offering FREE Associate memberships to anyone who wants them.
-<https://www.nrahq.org/nrabonus/accept-membership.asp>
-
-If he should ever change his faith, it'll be because he no longer thinks
-he's God.
-
+--D
