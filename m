@@ -1,110 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750806AbZHHOHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750932AbZHHOVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750806AbZHHOHn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 10:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbZHHOHm
+	id S1750932AbZHHOVR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 10:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbZHHOVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 10:07:42 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:65127 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750706AbZHHOHl convert rfc822-to-8bit (ORCPT
+	Sat, 8 Aug 2009 10:21:16 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:59841 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1749667AbZHHOVP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 10:07:41 -0400
+	Sat, 8 Aug 2009 10:21:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=AoTNI40wSt5rOtKyCNUTu5CpfTTKDsLPcYZK+dRSUyWg1taEmaD5DuNovkyTwcAroD
-         djRTBl+whZkabQRJtEsXr4UxZzCCVbm6b+2FsqhcLnKNo4cziS3LeXXtWzr5Wna1BjBb
-         jgbm6G+lbuBOCNcvYuBcjSOtoIrvd1I5dmtnQ=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=vWoNMEkdF8dWNgRho1o+IYRL3hvdZUR53qnA0f3CY7FwEGHS7ydbS7rPhgAKwvuzmU
+         Zqw3Rds8r30yOxQjC2xexIJYPbeF1rR7wrIf4ZRJjbBcpiS8nGd/DpCQ7n2T8AA3djuA
+         qOV1bqtSJjpgxptVeS22loNVriJ2daEsNjGO0=
+Message-ID: <4A7D8AB6.9030707@gmail.com>
+Date: Sat, 08 Aug 2009 16:24:54 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <20090808120026.GA13183@mit.edu>
-References: <20090807094608.4b0efea1@torg> <20090808120026.GA13183@mit.edu>
-Date: Sat, 8 Aug 2009 22:07:40 +0800
-Message-ID: <a8e1da0908080707y6a2ce4bfud20b496aad297ad8@mail.gmail.com>
-Subject: Re: [RT] Lockdep warning on boot with 2.6.31-rc5-rt1.1
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Theodore Tso <tytso@mit.edu>, Clark Williams <williams@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Daniel Mack <daniel@caiaq.de>
+CC: "John W. Linville" <linville@tuxdriver.com>,
+       libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Libertas: Association request to the driver failed
+References: <20090807191156.GS19257@buzzloop.caiaq.de> <20090807193610.GK7545@tuxdriver.com> <20090808123512.GZ19257@buzzloop.caiaq.de>
+In-Reply-To: <20090808123512.GZ19257@buzzloop.caiaq.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 8, 2009 at 8:00 PM, Theodore Tso<tytso@mit.edu> wrote:
-> On Fri, Aug 07, 2009 at 09:46:08AM -0500, Clark Williams wrote:
->> Peter,
->>
->> I'm getting this warning from lockdep when booting on my T60.
->>
->> The two addresses reported (0xffffffff812664a2 and 0xffffffff812664ae)
->> actually bracket one call to mutex_lock() in driver_attach() so I'm not
->> sure what the complaint is.
->
-> I'm getting a different lockdep warning when booting on my T400 using
-> 2.6.31-rc5; not sure if it's related or not....
->
-> In any case, it's screwing up the ability for lockdep to find any
-> other problems.
->
-> [    0.297775] INFO: trying to register non-static key.
-> [    0.297775] the code is fine but needs lockdep annotation.
-> [    0.297775] turning off the locking correctness validator.
-> [    0.297775] Pid: 1, comm: swapper Not tainted 2.6.31-rc5-00256-gf124845 #4
-> [    0.297775] Call Trace:
-> [    0.297775]  [<c0511a2f>] ? printk+0x14/0x1d
-> [    0.297775]  [<c016de1f>] register_lock_class+0x5a/0x2a1
-> [    0.297775]  [<c016e932>] ? mark_lock+0x1e/0x1e4
-> [    0.297775]  [<c016f673>] __lock_acquire+0x9c/0xb1e
-> [    0.297775]  [<c01be910>] ? mod_zone_page_state+0x9f/0xaf
-> [    0.297775]  [<c016ed98>] ? trace_hardirqs_on_caller+0x103/0x124
-> [    0.297775]  [<c016e932>] ? mark_lock+0x1e/0x1e4
-> [    0.297775]  [<c016eb3b>] ? mark_held_locks+0x43/0x5b
-> [    0.297775]  [<c01d490f>] ? kmem_cache_alloc+0xaf/0x127
-> [    0.297775]  [<c016ed98>] ? trace_hardirqs_on_caller+0x103/0x124
-> [    0.297775]  [<c0170189>] lock_acquire+0x94/0xb7
-> [    0.297775]  [<c045d6bd>] ? alloc_netdev_mq+0x105/0x1cc
-> [    0.297775]  [<c0513f8d>] _spin_lock_bh+0x28/0x58
-> [    0.297775]  [<c045d6bd>] ? alloc_netdev_mq+0x105/0x1cc
-> [    0.297775]  [<c045d6bd>] alloc_netdev_mq+0x105/0x1cc
-> [    0.297775]  [<c03f7bbf>] ? loopback_setup+0x0/0x79
-> [    0.297775]  [<c03f7c6f>] loopback_net_init+0x25/0x68
-> [    0.297782]  [<c0457317>] register_pernet_operations+0x2f/0xa1
-> [    0.297832]  [<c0512fcd>] ? mutex_lock_nested+0x33/0x3b
-> [    0.297891]  [<c0457435>] register_pernet_device+0x24/0x4c
-> [    0.297951]  [<c0796a09>] net_dev_init+0x101/0x150
-> [    0.298010]  [<c0796908>] ? net_dev_init+0x0/0x150
-> [    0.298069]  [<c010115c>] do_one_initcall+0x6a/0x177
-> [    0.298127]  [<c016e932>] ? mark_lock+0x1e/0x1e4
-> [    0.298185]  [<c016e932>] ? mark_lock+0x1e/0x1e4
-> [    0.298244]  [<c01b371a>] ? get_page_from_freelist+0x28f/0x3be
-> [    0.298304]  [<c016ed98>] ? trace_hardirqs_on_caller+0x103/0x124
-> [    0.298364]  [<c016edc4>] ? trace_hardirqs_on+0xb/0xd
-> [    0.298423]  [<c016e932>] ? mark_lock+0x1e/0x1e4
-> [    0.298482]  [<c016e932>] ? mark_lock+0x1e/0x1e4
-> [    0.298540]  [<c016edc4>] ? trace_hardirqs_on+0xb/0xd
-> [    0.298600]  [<c03104ad>] ? ida_get_new_above+0x157/0x171
-> [    0.298660]  [<c0213468>] ? proc_register+0x14b/0x15c
-> [    0.298719]  [<c011e5f6>] ? sched_clock+0x8/0xb
-> [    0.298777]  [<c016d9b1>] ? lock_release_holdtime+0x30/0x131
-> [    0.298837]  [<c0213468>] ? proc_register+0x14b/0x15c
-> [    0.298896]  [<c0513dfb>] ? _spin_unlock+0x22/0x25
-> [    0.298954]  [<c0213468>] ? proc_register+0x14b/0x15c
-> [    0.299013]  [<c021359b>] ? create_proc_entry+0x80/0x96
-> [    0.299073]  [<c0191064>] ? register_irq_proc+0x91/0xad
-> [    0.299132]  [<c01910d8>] ? init_irq_proc+0x58/0x65
-> [    0.299191]  [<c0768301>] kernel_init+0x131/0x182
-> [    0.299249]  [<c07681d0>] ? kernel_init+0x0/0x182
->
 
-It's a different problem, for this issue please see:
+>>> Since a recent merge of the wireless tree to Linus' master, my SDIO
+>>> connected libertas module fails to connect to our WLAN.
+>>>
+>>> 'iwlist scanning' works fine, but wpa_supplicant keeps on spitting out
+>>> the following message:
+>>>
+>>>   CTRL-EVENT-SCAN-RESULTS 
+>>>   Trying to associate with 00:04:0e:4b:c7:b3 (SSID='caiaq' freq=2437 MHz)
+>>>   Association request to the driver failed
 
-http://lkml.org/lkml/2009/8/5/49
-http://lkml.org/lkml/2009/8/5/51
+>> In this case, there
+>> is only this on libertas patch in the range you mention:
+> 
+> I was wrong with the range I provided. The change came in after -rc5,
+> and I found 57921c31 ("libertas: Read buffer overflow") to be the
+> culprit. Reverting it brings my libertas device back to life. I copied
+> the author.
+> 
+> Thanks,
+> Daniel
 
--- 
-Regards
-dave
+Ah, I think I made an error, I think tmp is too small and should be
+
+u8 tmp[*rates_size * ARRAY_SIZE(lbs_bg_rates) - 1];
+
+Can we revert and does the patch below work? 
+
+Sorry and thanks for testing,
+
+Roel
+
+commit 57921c312e8cef72ba35a4cfe870b376da0b1b87
+Author: Roel Kluin <roel.kluin@gmail.com>
+Date:   Tue Jul 28 12:05:00 2009 +0200
+
+    libertas: Read buffer overflow
+    
+    Several arrays were read before checking whether the index was within
+    bounds. ARRAY_SIZE() should be used to determine the size of arrays.
+    
+    rates->rates has an arraysize of 1, so calling get_common_rates()
+    with a rates_size of MAX_RATES (14) was causing reads out of bounds.
+    
+    tmp_size can increment at most to (ARRAY_SIZE(lbs_bg_rates) - 1) *
+    (*rates_size - 1), so that should be the number of elements of tmp[].
+    
+    A goto can be eliminated: ret was already set upon its declaration.
+    
+    Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+    Signed-off-by: John W. Linville <linville@tuxdriver.com>
+
+diff --git a/drivers/net/wireless/libertas/assoc.c b/drivers/net/wireless/libertas/assoc.c
+index b9b3741..d699737 100644
+--- a/drivers/net/wireless/libertas/assoc.c
++++ b/drivers/net/wireless/libertas/assoc.c
+@@ -1,6 +1,7 @@
+ /* Copyright (C) 2006, Red Hat, Inc. */
+ 
+ #include <linux/types.h>
++#include <linux/kernel.h>
+ #include <linux/etherdevice.h>
+ #include <linux/ieee80211.h>
+ #include <linux/if_arp.h>
+@@ -43,21 +44,21 @@ static int get_common_rates(struct lbs_private *priv,
+ 	u16 *rates_size)
+ {
+ 	u8 *card_rates = lbs_bg_rates;
+-	size_t num_card_rates = sizeof(lbs_bg_rates);
+ 	int ret = 0, i, j;
+-	u8 tmp[30];
++	u8 tmp[*rates_size * ARRAY_SIZE(lbs_bg_rates) - 1];
+ 	size_t tmp_size = 0;
+ 
+ 	/* For each rate in card_rates that exists in rate1, copy to tmp */
+-	for (i = 0; card_rates[i] && (i < num_card_rates); i++) {
+-		for (j = 0; rates[j] && (j < *rates_size); j++) {
++	for (i = 0; i < ARRAY_SIZE(lbs_bg_rates) && card_rates[i]; i++) {
++		for (j = 0; j < *rates_size && rates[j]; j++) {
+ 			if (rates[j] == card_rates[i])
+ 				tmp[tmp_size++] = card_rates[i];
+ 		}
+ 	}
+ 
+ 	lbs_deb_hex(LBS_DEB_JOIN, "AP rates    ", rates, *rates_size);
+-	lbs_deb_hex(LBS_DEB_JOIN, "card rates  ", card_rates, num_card_rates);
++	lbs_deb_hex(LBS_DEB_JOIN, "card rates  ", card_rates,
++			ARRAY_SIZE(lbs_bg_rates));
+ 	lbs_deb_hex(LBS_DEB_JOIN, "common rates", tmp, tmp_size);
+ 	lbs_deb_join("TX data rate 0x%02x\n", priv->cur_rate);
+ 
+@@ -69,10 +70,7 @@ static int get_common_rates(struct lbs_private *priv,
+ 		lbs_pr_alert("Previously set fixed data rate %#x isn't "
+ 		       "compatible with the network.\n", priv->cur_rate);
+ 		ret = -1;
+-		goto done;
+ 	}
+-	ret = 0;
+-
+ done:
+ 	memset(rates, 0, *rates_size);
+ 	*rates_size = min_t(int, tmp_size, *rates_size);
+@@ -322,7 +320,7 @@ static int lbs_associate(struct lbs_private *priv,
+ 	rates = (struct mrvl_ie_rates_param_set *) pos;
+ 	rates->header.type = cpu_to_le16(TLV_TYPE_RATES);
+ 	memcpy(&rates->rates, &bss->rates, MAX_RATES);
+-	tmplen = MAX_RATES;
++	tmplen = min_t(u16, ARRAY_SIZE(rates->rates), MAX_RATES);
+ 	if (get_common_rates(priv, rates->rates, &tmplen)) {
+ 		ret = -1;
+ 		goto done;
+@@ -598,7 +596,7 @@ static int lbs_adhoc_join(struct lbs_private *priv,
+ 
+ 	/* Copy Data rates from the rates recorded in scan response */
+ 	memset(cmd.bss.rates, 0, sizeof(cmd.bss.rates));
+-	ratesize = min_t(u16, sizeof(cmd.bss.rates), MAX_RATES);
++	ratesize = min_t(u16, ARRAY_SIZE(cmd.bss.rates), MAX_RATES);
+ 	memcpy(cmd.bss.rates, bss->rates, ratesize);
+ 	if (get_common_rates(priv, cmd.bss.rates, &ratesize)) {
+ 		lbs_deb_join("ADHOC_JOIN: get_common_rates returned error.\n");
