@@ -1,45 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbZHHH6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753587AbZHHIDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754798AbZHHH6P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 03:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbZHHH6O
+	id S1753587AbZHHIDS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 04:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbZHHIDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 03:58:14 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:42334 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754451AbZHHH6N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 03:58:13 -0400
-Date: Sat, 8 Aug 2009 08:57:55 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
-       Jaroslav Kysela <perex@perex.cz>, Liam Girdwood <lrg@slimlogic.co.uk>,
-       Ben Dooks <ben-linux@fluff.org>, Timur Tabi <timur@freescale.com>,
-       Eric Miao <eric.miao@marvell.com>, alsa-devel@alsa-project.org
-Message-ID: <20090808075754.GB4519@sirena.org.uk>
-References: <20090807203939.GA19374@pengutronix.de>
- <1249677761-19470-2-git-send-email-u.kleine-koenig@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1249677761-19470-2-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Cookie: You will be awarded some great honor.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [PATCH 2/6] s3c2443-ac97: convert semaphore to mutex
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+	Sat, 8 Aug 2009 04:03:17 -0400
+Received: from sh.osrg.net ([192.16.179.4]:46317 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751664AbZHHIDN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 04:03:13 -0400
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+To: linux-fsdevel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       users@nilfs.org, Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Subject: [PATCH] fs/Kconfig: move nilfs2 outside misc filesystems
+Date: Sat,  8 Aug 2009 17:00:14 +0900
+Message-Id: <1249718414-5282-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.6.5
+X-Dispatcher: imput version 20050308(IM148)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Sat, 08 Aug 2009 17:03:06 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 10:42:37PM +0200, Uwe Kleine-König wrote:
+Some people asked me questions like the following:
 
-> This fixes a build failure for 2.6.31-rc4-rt1 (ARCH=arm, s3c2410_defconfig):
+On Wed, 15 Jul 2009 13:11:21 +0200, Leon Woestenberg wrote:
+> just wondering, any reasons why NILFS2 is one of the miscellaneous
+> filesystems and, for example, btrfs, is not in Kconfig?
 
-Applied, thanks.
+Actually, nilfs is NOT a filesystem came from other operating systems,
+but a filesystem created purely for Linux.  Nor is it a flash
+filesystem but that for generic block devices.
+
+So, this moves nilfs outside the misc category as I responded in LKML
+"Re: Why does NILFS2 hide under Miscellaneous filesystems?"
+(Message-Id: <20090716.002526.93465395.ryusuke@osrg.net>).
+
+Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+---
+ fs/Kconfig        |    2 +-
+ fs/nilfs2/Kconfig |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 0e7da7b..455aa20 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -43,6 +43,7 @@ source "fs/xfs/Kconfig"
+ source "fs/gfs2/Kconfig"
+ source "fs/ocfs2/Kconfig"
+ source "fs/btrfs/Kconfig"
++source "fs/nilfs2/Kconfig"
+ 
+ endif # BLOCK
+ 
+@@ -186,7 +187,6 @@ source "fs/romfs/Kconfig"
+ source "fs/sysv/Kconfig"
+ source "fs/ufs/Kconfig"
+ source "fs/exofs/Kconfig"
+-source "fs/nilfs2/Kconfig"
+ 
+ endif # MISC_FILESYSTEMS
+ 
+diff --git a/fs/nilfs2/Kconfig b/fs/nilfs2/Kconfig
+index 72da095..251da07 100644
+--- a/fs/nilfs2/Kconfig
++++ b/fs/nilfs2/Kconfig
+@@ -1,6 +1,6 @@
+ config NILFS2_FS
+ 	tristate "NILFS2 file system support (EXPERIMENTAL)"
+-	depends on BLOCK && EXPERIMENTAL
++	depends on EXPERIMENTAL
+ 	select CRC32
+ 	help
+ 	  NILFS2 is a log-structured file system (LFS) supporting continuous
+-- 
+1.6.3.4
+
