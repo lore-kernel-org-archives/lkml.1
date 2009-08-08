@@ -1,52 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752855AbZHHGZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbZHHGri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752855AbZHHGZV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 02:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbZHHGZV
+	id S1753219AbZHHGri (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 02:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbZHHGrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 02:25:21 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:37355 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751973AbZHHGZT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 02:25:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=W9cWsQu0ixQsJslEeLMZNoRMfHt/115NGo5WcSj8ozKH8/lboQ19KPQl7360W6CK7S
-         0xqFOasRxfIc7bU6/bRwjNbdzoM2uKomuYHXdtzmyrhHUL7oq9uRwQ0sWOOJYskXRRY0
-         ON+0uXo3YTQfaLzGm051qGPJIqW8jgOJFDCWo=
-Date: Fri, 7 Aug 2009 23:25:15 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Daniel Ribeiro <drwyrm@gmail.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, eric.y.miao@gmail.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, openezx-devel@lists.openezx.org,
-       Ilya Petrov <ilya.muromec@gmail.com>,
-       Antonio Ospite <ospite@studenti.unina.it>
-Subject: Re: [PATCH v3] input: PCAP2 misc input driver
-References: <1249678456-15381-1-git-send-email-drwyrm@gmail.com>
+	Sat, 8 Aug 2009 02:47:37 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:52704 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752553AbZHHGrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 02:47:36 -0400
+Date: Sat, 8 Aug 2009 08:47:33 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/net/tokenring: Use status field rather than state
+ field
+Message-ID: <Pine.LNX.4.64.0908080846000.25176@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249678456-15381-1-git-send-email-drwyrm@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090808065526.F28A0526EC9@mailhub.coreip.homeip.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 10:54:16PM +0200, Daniel Ribeiro wrote:
-> This is a driver for misc input events for the PCAP2 PMIC, it handles
-> the Power key and the Headphone button.
-> 
-> Signed-off-by: Daniel Ribeiro <drwyrm@gmail.com>
-> Signed-off-by: Ilya Petrov <ilya.muromec@gmail.com>
-> Signed-off-by: Antonio Ospite <ospite@studenti.unina.it>
-> 
+From: Julia Lawall <julia@diku.dk>
 
-Acked-by: Dmitry Torokhov <dtor@mail.ru>
+In general in this file, it is the status field, not the state field, that
+contains values like OPEN and CLOSED.  Indeed, in the first error case, it
+is the field status that is initialized.  I have thus assumed that all of
+the error handling code should be the same, and moved it to the end of the
+function to emphasize its commonality.
 
--- 
-Dmitry
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/net/tokenring/smctr.c       |   36 +++++--------------
+ 1 files changed, 10 insertions(+), 26 deletions(-)
+
+diff --git a/drivers/net/tokenring/smctr.c b/drivers/net/tokenring/smctr.c
+index 6515894..f789f51 100644
+--- a/drivers/net/tokenring/smctr.c
++++ b/drivers/net/tokenring/smctr.c
+@@ -3091,11 +3091,7 @@ static int smctr_lobe_media_test(struct net_device *dev)
+         /* Setup the lobe media test. */
+         smctr_lobe_media_test_cmd(dev);
+         if(smctr_wait_cmd(dev))
+-        {
+-                smctr_reset_adapter(dev);
+-                tp->status = CLOSED;
+-                return (LOBE_MEDIA_TEST_FAILED);
+-        }
++		goto err;
+ 
+         /* Tx lobe media test frames. */
+         for(i = 0; i < 1500; ++i)
+@@ -3103,20 +3099,12 @@ static int smctr_lobe_media_test(struct net_device *dev)
+                 if(smctr_send_lobe_media_test(dev))
+                 {
+                         if(perror)
+-                        {
+-                                smctr_reset_adapter(dev);
+-                                tp->state = CLOSED;
+-                                return (LOBE_MEDIA_TEST_FAILED);
+-                        }
++				goto err;
+                         else
+                         {
+                                 perror = 1;
+                                 if(smctr_lobe_media_test_cmd(dev))
+-                                {
+-                                        smctr_reset_adapter(dev);
+-                                        tp->state = CLOSED;
+-                                        return (LOBE_MEDIA_TEST_FAILED);
+-                                }
++					goto err;
+                         }
+                 }
+         }
+@@ -3124,28 +3112,24 @@ static int smctr_lobe_media_test(struct net_device *dev)
+         if(smctr_send_dat(dev))
+         {
+                 if(smctr_send_dat(dev))
+-                {
+-                        smctr_reset_adapter(dev);
+-                        tp->state = CLOSED;
+-                        return (LOBE_MEDIA_TEST_FAILED);
+-                }
++			goto err;
+         }
+ 
+         /* Check if any frames received during test. */
+         if((tp->rx_fcb_curr[MAC_QUEUE]->frame_status)
+                 || (tp->rx_fcb_curr[NON_MAC_QUEUE]->frame_status))
+-        {
+-                smctr_reset_adapter(dev);
+-                tp->state = CLOSED;
+-                return (LOBE_MEDIA_TEST_FAILED);
+-        }
++			goto err;
+ 
+         /* Set receive mask to "Promisc" mode. */
+         tp->receive_mask = saved_rcv_mask;
+ 
+         smctr_chg_rx_mask(dev);
+ 
+-        return (0);
++	 return 0;
++err:
++	smctr_reset_adapter(dev);
++	tp->status = CLOSED;
++	return LOBE_MEDIA_TEST_FAILED;
+ }
+ 
+ static int smctr_lobe_media_test_cmd(struct net_device *dev)
