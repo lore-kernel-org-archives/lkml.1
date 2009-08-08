@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933998AbZHHKNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934007AbZHHKSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933998AbZHHKNy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 06:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933940AbZHHKNy
+	id S934007AbZHHKSE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 06:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933977AbZHHKSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 06:13:54 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:33021 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933934AbZHHKNx convert rfc822-to-8bit (ORCPT
+	Sat, 8 Aug 2009 06:18:03 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:40043 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933950AbZHHKSD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 06:13:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=b5JqBofPp6CXGSDFuUOGpnh5Od3Pk7lkdi8Tq/Fh7+4GMh3Y0PwjeIQRlsTcN/pgKp
-         NR7xqb1dM8XVoqZZtaSI+LP3g38/3Z+xSUJcCZsCRcpTOKxud0lztMJafkcBmIMlKmgF
-         F6pXvP+ilpTD7rlv+TGHzhJdi4VVsLYljfbBQ=
+	Sat, 8 Aug 2009 06:18:03 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Roel Kluin <roel.kluin@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fat: Read buffer overflow
+References: <4A7CAF28.8020908@gmail.com> <87y6pvi5qp.fsf@devron.myhome.or.jp>
+	<84144f020908072356r5cc3100dp79a6a508bafec7c7@mail.gmail.com>
+	<87prb6pqdu.fsf@devron.myhome.or.jp>
+Date: Sat, 08 Aug 2009 19:18:01 +0900
+In-Reply-To: <87prb6pqdu.fsf@devron.myhome.or.jp> (OGAWA Hirofumi's message of
+	"Sat, 08 Aug 2009 19:10:53 +0900")
+Message-ID: <877hxeobhi.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <20090807094944.eed4bfb8.akpm@linux-foundation.org>
-References: <200908060733.n767X6mN023120@imap1.linux-foundation.org>
-	 <20090807134659.GA2093@darkstar>
-	 <20090807094944.eed4bfb8.akpm@linux-foundation.org>
-Date: Sat, 8 Aug 2009 18:13:53 +0800
-Message-ID: <a8e1da0908080313k65f51185u7329e293a95861a7@mail.gmail.com>
-Subject: Re: mmotm 2009-08-06-00-30 uploaded
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 8, 2009 at 12:49 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
-> On Fri, 7 Aug 2009 21:47:00 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
+
+> Pekka Enberg <penberg@cs.helsinki.fi> writes:
 >
->> Hi, andrew
+>> Yes, but we pass "ulen" to vfat_is_used_badchars(). The value of
+>> "ulen" is a returned in the "longlen" argument of xlate_to_uni() which
+>> in turn is calculated as follows for the UTF-8 case:
 >>
->> Booting with this release, init (maybe getty?) reports something like:
+>>   int name_len = strlen(name);
+>>   *outlen = utf8s_to_utf16s(name, PATH_MAX, (wchar_t *) outname);
+>>   *outlen -= (name_len - len);
+>>   *longlen = *outlen;
 >>
->> INIT: open /dev/console failed with input/output error
->>
->> 2.6.31-rc5 is fine.
->>
->> Any hints to find the root problem?
+>> Maybe "*outlen" can never be negative because of some invariants that
+>> I don't see but it's so non-obvious to me that I'd like to see the
+>> explicit check in vfat_is_used_badchars().
 >
-> Not really, sorry.  Might be tty changes in linux-next?
-
-I bisected linux-next, find following patch as a result
-
-commit 65b8c7d9be5862ff8ac839607b444b6f6b11d2fb
-Author: Alan Cox <alan@linux.intel.com>
-Date:   Thu Aug 6 09:58:02 2009 +1000
-
-    cyclades: use the full port_close function
-
-But, I did not select cyclades in my .config, nor do i have the hardware. Weird.
-
+> Ah, good point. Sorry, I was looking my tree. I'm going to submit the
+> attached patch on next merge window.
 >
->> Another problem:
->>
->> When I moving mouse or pressing key the screen will become black, then restore the normal screen.
->
-> There have been quite a lot of X problems lately.
->
-> Could you test the bare linux-next please?
->
+> Is this enough for it?
 
+BTW, if we want the sanity check of "longlen", I'd like to put it in the
+end of xlate_to_uni(), not vfat_is_used_badchars(). Because I think it's
+job of xlate_to_uni().
 
-
+Thanks.
 -- 
-Regards
-dave
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
