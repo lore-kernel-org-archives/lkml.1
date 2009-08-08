@@ -1,78 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZHHUVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751918AbZHHUcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752525AbZHHUVU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 16:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbZHHUVT
+	id S1751918AbZHHUcf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 16:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbZHHUce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 16:21:19 -0400
-Received: from relay2-d.mail.gandi.net ([217.70.183.194]:33146 "EHLO
-	relay2-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751646AbZHHUVT (ORCPT
+	Sat, 8 Aug 2009 16:32:34 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:40440 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751436AbZHHUce (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 16:21:19 -0400
-Date: Sat, 8 Aug 2009 13:21:13 -0700
-From: Josh Triplett <josh@joshtriplett.org>
-To: linux-kernel@vger.kernel.org, x86@kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] x86: Simplify calls to cpuid by using + for in/out
- constraints
-Message-ID: <20090808202113.GA21962@feather>
+	Sat, 8 Aug 2009 16:32:34 -0400
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: moving "tools" into the tools/ directory?
+From: Andi Kleen <andi@firstfloor.org>
+References: <alpine.LFD.2.00.0908081156210.9362@localhost>
+Date: Sat, 08 Aug 2009 22:32:33 +0200
+In-Reply-To: <alpine.LFD.2.00.0908081156210.9362@localhost> (Robert P. J. Day's message of "Sat, 8 Aug 2009 11:57:37 -0400 (EDT)")
+Message-ID: <87bpmqt5b2.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-TUID: 6cba7f655b58ce4b
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Josh Triplett <josh@joshtriplett.org>
----
+"Robert P. J. Day" <rpjday@crashcourse.ca> writes:
 
-Build-tested only.
+>   is there a standard for moving command-line tools into the top-level
+> tools/ directory?  as in, Documentation/fs/slabinfo.c?  stuff like
+> that?
 
- arch/x86/include/asm/processor.h |    7 +++----
- arch/x86/xen/enlighten.c         |    7 +++----
- 2 files changed, 6 insertions(+), 8 deletions(-)
+I did some moving of such files from Documentation to tool in a git
+tree some time ago, but to make it actually all build sanely --
+especially with separate objdirs and/or cross compilation -- would
+require major Makefile surgery first.
 
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index c776826..dfa947e 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -180,11 +180,10 @@ static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
- {
- 	/* ecx is often an input as well as an output. */
- 	asm("cpuid"
--	    : "=a" (*eax),
-+	    : "+a" (*eax),
- 	      "=b" (*ebx),
--	      "=c" (*ecx),
--	      "=d" (*edx)
--	    : "0" (*eax), "2" (*ecx));
-+	      "+c" (*ecx),
-+	      "=d" (*edx));
- }
- 
- static inline void load_cr3(pgd_t *pgdir)
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 6ee2ef8..6eab164 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -190,11 +190,10 @@ static void xen_cpuid(unsigned int *ax, unsigned int *bx,
- 	}
- 
- 	asm(XEN_EMULATE_PREFIX "cpuid"
--		: "=a" (*ax),
-+		: "+a" (*ax),
- 		  "=b" (*bx),
--		  "=c" (*cx),
--		  "=d" (*dx)
--		: "0" (*ax), "2" (*cx));
-+		  "+c" (*cx),
-+		  "=d" (*dx));
- 
- 	*cx &= maskecx;
- 	*dx &= maskedx;
+Current perf is a big pita for separate objdirs and cross compilation
+already and it would be probably not a good idea to make it worse for
+now.
+
+-Andi
+
 -- 
-1.5.6.5
-
+ak@linux.intel.com -- Speaking for myself only.
