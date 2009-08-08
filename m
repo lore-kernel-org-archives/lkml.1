@@ -1,206 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933971AbZHHJtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933986AbZHHJt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933971AbZHHJtv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 05:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933954AbZHHJtu
+	id S933986AbZHHJt6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 05:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933973AbZHHJt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 05:49:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:44879 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933952AbZHHJts (ORCPT
+	Sat, 8 Aug 2009 05:49:56 -0400
+Received: from fmmailgate05.web.de ([217.72.192.243]:34831 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933953AbZHHJtu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 05:49:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=hUgV/voxXkKZa/c//E90EGRRheqrMjbG9zHKK/lBh4HBEMqHdQOEUK0ffJ4clMR322
-         xpNUDS2YFbWkJ/dx3BiFJYhqZR9nU/K3wDU2EaXXFjfseD9dIVYBmEcO6F9MuZk9uv3m
-         mbSmNvl5QGTphnJGL+1yyzptLGlyIdXTlo9Is=
-Date: Sat, 8 Aug 2009 18:49:07 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
-Subject: [PATCH tip:x86/asm] x86: Introduce GDT_ENTRY_INIT()
-Message-ID: <20090808094905.GA2954@localhost.localdomain>
+	Sat, 8 Aug 2009 05:49:50 -0400
+Date: Sat, 08 Aug 2009 11:49:50 +0200
+Message-Id: <859414371@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org, Martin Rogge <marogge@onlinehome.de>
+Subject: Re: 2.6.30.1-4 kernels freezes dual pentium-3 system
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1871PfUrJ2OW2k2UtZ4xcQrJfsdpCPrs0rn0aRVYxBKgB80V
+ AzB/TN+/u/I8R+KplRZEvdHz97bX1/hOAVog28OqfLEFp7loX0=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GDT_ENTRY_INIT is static initializer of desc_struct.
+> Roland, you seem to reply to a mix of different mails.
 
-We already have similar macro GDT_ENTRY() but it's static
-initializer for u64 and it cannot be used for desc_struct.
+i replied to this thread:
+http://marc.info/?t=124928942600006&r=1&w=2
 
-[hpa@zytor.com: spotted convertion error for GDT_ENTRY_APMBIOS_BASE+2]
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
----
- arch/x86/include/asm/desc_defs.h      |    6 +++++
- arch/x86/include/asm/lguest.h         |    5 ++-
- arch/x86/include/asm/stackprotector.h |    2 +-
- arch/x86/kernel/apm_32.c              |    2 +-
- arch/x86/kernel/cpu/common.c          |   40 ++++++++++++++++----------------
- drivers/pnp/pnpbios/bioscalls.c       |    5 +---
- 6 files changed, 32 insertions(+), 28 deletions(-)
+> I skip the comments 
+> unrelated to my error report. Btw, since then there have been two more reports 
+> on lkml of dual P2 systems locking up with 2.6.30++.
 
-diff --git a/arch/x86/include/asm/desc_defs.h b/arch/x86/include/asm/desc_defs.h
-index a6adefa..9d66848 100644
---- a/arch/x86/include/asm/desc_defs.h
-+++ b/arch/x86/include/asm/desc_defs.h
-@@ -34,6 +34,12 @@ struct desc_struct {
- 	};
- } __attribute__((packed));
+could you send pointers? 
+any existing bugzilla bugentry for these or for your`s ? 
+
+> > afaik, you can also bisect on a different (i.e. faster) box.
+> 
+> Since we are talking about dual-P3, no you can't.
+
+ok, i missed your comment regarding duration of bisect iteration. 
+but despite that, compiling on another/faster box and copy the kernel over is possible, 
+afaik (and won`t help here) 
+
+> > i think it would be more interesting if there is anything in dmesg on such
+> 
+> I posted dmesg etc. yesterday
+
+yes, but that mostly contain bootup messages and there`s absolutely no trace from 
+the freeze. it`s quite common, that after a lockup/crash some messages are lost, 
+that`s why i asked if there is a chance to have serial console or netconsole attached. 
+
+> Network, sysrq and numlock are all unresponsive. 
+ok, that`s why we need to have the last informations from before the dying breath... 
+
+btw, i one of your dmesg i found these:
+
+Aug  1 19:42:57 frya kernel: [    0.000000] Linux version 2.6.30-gentoo-r4 \
+
+Aug  1 19:42:57 frya kernel: [    4.394755] ------------[ cut here ]------------
+Aug  1 19:42:57 frya kernel: [    4.399247] WARNING: at arch/x86/mm/ioremap.c:603 \
+                check_early_ioremap_leak+0x53/0x73()
+Aug  1 19:42:57 frya kernel: [    4.408763] Hardware name: System Name
+Aug  1 19:42:57 frya kernel: [    4.413574] Debug warning: early ioremap leak of 1 \
+                areas detected.
+Aug  1 19:42:57 frya kernel: [    4.418561] Pid: 1, comm: swapper Not tainted \
+                2.6.30-gentoo-r4 #1
+Aug  1 19:42:57 frya kernel: [    4.423552] Call Trace:
+Aug  1 19:42:57 frya kernel: [    4.428379]  [<c07c90b2>] ? \
+                check_early_ioremap_leak+0x53/0x73
+Aug  1 19:42:57 frya kernel: [    4.433238]  [<c07c90b2>] ? \
+                check_early_ioremap_leak+0x53/0x73
+Aug  1 19:42:57 frya kernel: [    4.437821]  [<c01316ac>] \
+                warn_slowpath_common+0x6c/0xc0
+Aug  1 19:42:57 frya kernel: [    4.442266]  [<c07c90b2>] ? \
+                check_early_ioremap_leak+0x53/0x73
+Aug  1 19:42:57 frya kernel: [    4.446658]  [<c07c905f>] ? \
+                check_early_ioremap_leak+0x0/0x73
+Aug  1 19:42:57 frya kernel: [    4.450880]  [<c013174b>] warn_slowpath_fmt+0x2b/0x30
+Aug  1 19:42:57 frya kernel: [    4.455062]  [<c07c90b2>] \
+                check_early_ioremap_leak+0x53/0x73
+Aug  1 19:42:57 frya kernel: [    4.459288]  [<c010103f>] do_one_initcall+0x2f/0x160
+Aug  1 19:42:57 frya kernel: [    4.463528]  [<c01e3d3a>] ? \
+                create_proc_entry+0x5a/0xb0
+Aug  1 19:42:57 frya kernel: [    4.467751]  [<c015cfe5>] ? \
+                register_irq_proc+0xa5/0xc0
+Aug  1 19:42:57 frya kernel: [    4.471924]  [<c015a1a8>] ? irq_to_desc+0x8/0x40
+Aug  1 19:42:57 frya kernel: [    4.476110]  [<c015d075>] ? init_irq_proc+0x75/0x90
+Aug  1 19:42:57 frya kernel: [    4.480343]  [<c07b95b5>] kernel_init+0x122/0x179
+Aug  1 19:42:57 frya kernel: [    4.484616]  [<c07b9493>] ? kernel_init+0x0/0x179
+Aug  1 19:42:57 frya kernel: [    4.488860]  [<c010397f>] \
+                kernel_thread_helper+0x7/0x10
+Aug  1 19:42:57 frya kernel: [    4.493137] ---[ end trace d2a1e0f2aa8609d9 ]---
+Aug  1 19:42:57 frya kernel: [    4.497524] please boot with early_ioremap_debug and \
+                report the dmesg.
+
+
+and:
+
+Aug  1 19:42:57 frya kernel: [    0.121015] * The chipset may have PM-Timer Bug. Due \
+                to workarounds for a bug,
+Aug  1 19:42:57 frya kernel: [    0.121020] * this clock source is slow. If you are \
+                sure your timer does not have
+Aug  1 19:42:57 frya kernel: [    0.121024] * this bug, please use "acpi_pm_good" to \
+                disable the workaround
+Aug  1 19:42:57 frya kernel: [    0.121563] * The chipset may have PM-Timer Bug. Due \
+                to workarounds for a bug,
+Aug  1 19:42:57 frya kernel: [    0.121568] * this clock source is slow. If you are \
+                sure your timer does not have
+Aug  1 19:42:57 frya kernel: [    0.121572] * this bug, please use "acpi_pm_good" to \
+                disable the workaround
+
+
+maybe it`s worth having a look at (on 2.6.29 and 2.6.30 system)
  
-+#define GDT_ENTRY_INIT(flags, base, limit) { { { \
-+		.a = ((limit) & 0xffff) | (((base) & 0xffff) << 16), \
-+		.b = (((base) & 0xff0000) >> 16) | (((flags) & 0xf0ff) << 8) | \
-+			((limit) & 0xf0000) | ((base) & 0xff000000), \
-+	} } }
-+
- enum {
- 	GATE_INTERRUPT = 0xE,
- 	GATE_TRAP = 0xF,
-diff --git a/arch/x86/include/asm/lguest.h b/arch/x86/include/asm/lguest.h
-index 313389c..94cd698 100644
---- a/arch/x86/include/asm/lguest.h
-+++ b/arch/x86/include/asm/lguest.h
-@@ -91,8 +91,9 @@ static inline void lguest_set_ts(void)
- }
- 
- /* Full 4G segment descriptors, suitable for CS and DS. */
--#define FULL_EXEC_SEGMENT ((struct desc_struct){ { {0x0000ffff, 0x00cf9b00} } })
--#define FULL_SEGMENT ((struct desc_struct){ { {0x0000ffff, 0x00cf9300} } })
-+#define FULL_EXEC_SEGMENT \
-+	((struct desc_struct)GDT_ENTRY_INIT(0xc09b, 0, 0xfffff))
-+#define FULL_SEGMENT ((struct desc_struct)GDT_ENTRY_INIT(0xc093, 0, 0xfffff))
- 
- #endif /* __ASSEMBLY__ */
- 
-diff --git a/arch/x86/include/asm/stackprotector.h b/arch/x86/include/asm/stackprotector.h
-index cdc5e0b..44efdff 100644
---- a/arch/x86/include/asm/stackprotector.h
-+++ b/arch/x86/include/asm/stackprotector.h
-@@ -48,7 +48,7 @@
-  * head_32 for boot CPU and setup_per_cpu_areas() for others.
-  */
- #define GDT_STACK_CANARY_INIT						\
--	[GDT_ENTRY_STACK_CANARY] = { { { 0x00000018, 0x00409000 } } },
-+	[GDT_ENTRY_STACK_CANARY] = GDT_ENTRY_INIT(0x4090, 0, 0x18),
- 
- /*
-  * Initialize the stackprotector canary value.
-diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
-index b5e841b..febb2da 100644
---- a/arch/x86/kernel/apm_32.c
-+++ b/arch/x86/kernel/apm_32.c
-@@ -403,7 +403,7 @@ static DECLARE_WAIT_QUEUE_HEAD(apm_waitqueue);
- static DECLARE_WAIT_QUEUE_HEAD(apm_suspend_waitqueue);
- static struct apm_user *user_list;
- static DEFINE_SPINLOCK(user_list_lock);
--static struct desc_struct bad_bios_desc = { { { 0, 0x00409200 } } };
-+static struct desc_struct bad_bios_desc = GDT_ENTRY_INIT(0x4092, 0, 0);
- 
- static const char driver_version[] = "1.16ac";	/* no spaces */
- 
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index f1961c0..b5764a2 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -71,45 +71,45 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
- 	 * TLS descriptors are currently at a different place compared to i386.
- 	 * Hopefully nobody expects them at a fixed place (Wine?)
- 	 */
--	[GDT_ENTRY_KERNEL32_CS]		= { { { 0x0000ffff, 0x00cf9b00 } } },
--	[GDT_ENTRY_KERNEL_CS]		= { { { 0x0000ffff, 0x00af9b00 } } },
--	[GDT_ENTRY_KERNEL_DS]		= { { { 0x0000ffff, 0x00cf9300 } } },
--	[GDT_ENTRY_DEFAULT_USER32_CS]	= { { { 0x0000ffff, 0x00cffb00 } } },
--	[GDT_ENTRY_DEFAULT_USER_DS]	= { { { 0x0000ffff, 0x00cff300 } } },
--	[GDT_ENTRY_DEFAULT_USER_CS]	= { { { 0x0000ffff, 0x00affb00 } } },
-+	[GDT_ENTRY_KERNEL32_CS]		= GDT_ENTRY_INIT(0xc09b, 0, 0xfffff),
-+	[GDT_ENTRY_KERNEL_CS]		= GDT_ENTRY_INIT(0xa09b, 0, 0xfffff),
-+	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc093, 0, 0xfffff),
-+	[GDT_ENTRY_DEFAULT_USER32_CS]	= GDT_ENTRY_INIT(0xc0fb, 0, 0xfffff),
-+	[GDT_ENTRY_DEFAULT_USER_DS]	= GDT_ENTRY_INIT(0xc0f3, 0, 0xfffff),
-+	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xa0fb, 0, 0xfffff),
- #else
--	[GDT_ENTRY_KERNEL_CS]		= { { { 0x0000ffff, 0x00cf9a00 } } },
--	[GDT_ENTRY_KERNEL_DS]		= { { { 0x0000ffff, 0x00cf9200 } } },
--	[GDT_ENTRY_DEFAULT_USER_CS]	= { { { 0x0000ffff, 0x00cffa00 } } },
--	[GDT_ENTRY_DEFAULT_USER_DS]	= { { { 0x0000ffff, 0x00cff200 } } },
-+	[GDT_ENTRY_KERNEL_CS]		= GDT_ENTRY_INIT(0xc09a, 0, 0xfffff),
-+	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
-+	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xc0fa, 0, 0xfffff),
-+	[GDT_ENTRY_DEFAULT_USER_DS]	= GDT_ENTRY_INIT(0xc0f2, 0, 0xfffff),
- 	/*
- 	 * Segments used for calling PnP BIOS have byte granularity.
- 	 * They code segments and data segments have fixed 64k limits,
- 	 * the transfer segment sizes are set at run time.
- 	 */
- 	/* 32-bit code */
--	[GDT_ENTRY_PNPBIOS_CS32]	= { { { 0x0000ffff, 0x00409a00 } } },
-+	[GDT_ENTRY_PNPBIOS_CS32]	= GDT_ENTRY_INIT(0x409a, 0, 0xffff),
- 	/* 16-bit code */
--	[GDT_ENTRY_PNPBIOS_CS16]	= { { { 0x0000ffff, 0x00009a00 } } },
-+	[GDT_ENTRY_PNPBIOS_CS16]	= GDT_ENTRY_INIT(0x009a, 0, 0xffff),
- 	/* 16-bit data */
--	[GDT_ENTRY_PNPBIOS_DS]		= { { { 0x0000ffff, 0x00009200 } } },
-+	[GDT_ENTRY_PNPBIOS_DS]		= GDT_ENTRY_INIT(0x0092, 0, 0xffff),
- 	/* 16-bit data */
--	[GDT_ENTRY_PNPBIOS_TS1]		= { { { 0x00000000, 0x00009200 } } },
-+	[GDT_ENTRY_PNPBIOS_TS1]		= GDT_ENTRY_INIT(0x0092, 0, 0),
- 	/* 16-bit data */
--	[GDT_ENTRY_PNPBIOS_TS2]		= { { { 0x00000000, 0x00009200 } } },
-+	[GDT_ENTRY_PNPBIOS_TS2]		= GDT_ENTRY_INIT(0x0092, 0, 0),
- 	/*
- 	 * The APM segments have byte granularity and their bases
- 	 * are set at run time.  All have 64k limits.
- 	 */
- 	/* 32-bit code */
--	[GDT_ENTRY_APMBIOS_BASE]	= { { { 0x0000ffff, 0x00409a00 } } },
-+	[GDT_ENTRY_APMBIOS_BASE]	= GDT_ENTRY_INIT(0x409a, 0, 0xffff),
- 	/* 16-bit code */
--	[GDT_ENTRY_APMBIOS_BASE+1]	= { { { 0x0000ffff, 0x00009a00 } } },
-+	[GDT_ENTRY_APMBIOS_BASE+1]	= GDT_ENTRY_INIT(0x009a, 0, 0xffff),
- 	/* data */
--	[GDT_ENTRY_APMBIOS_BASE+2]	= { { { 0x0000ffff, 0x00409200 } } },
-+	[GDT_ENTRY_APMBIOS_BASE+2]	= GDT_ENTRY_INIT(0x4092, 0, 0xffff),
- 
--	[GDT_ENTRY_ESPFIX_SS]		= { { { 0x0000ffff, 0x00cf9200 } } },
--	[GDT_ENTRY_PERCPU]		= { { { 0x0000ffff, 0x00cf9200 } } },
-+	[GDT_ENTRY_ESPFIX_SS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
-+	[GDT_ENTRY_PERCPU]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
- 	GDT_STACK_CANARY_INIT
- #endif
- } };
-diff --git a/drivers/char/vr41xx_giu.c b/drivers/char/vr41xx_giu.c
-deleted file mode 100644
-index e69de29..0000000
-diff --git a/drivers/pnp/pnpbios/bioscalls.c b/drivers/pnp/pnpbios/bioscalls.c
-index 45ad3e9..bd035e3 100644
---- a/drivers/pnp/pnpbios/bioscalls.c
-+++ b/drivers/pnp/pnpbios/bioscalls.c
-@@ -60,7 +60,7 @@ do { \
- 	set_desc_limit(&gdt[(selname) >> 3], (size) - 1); \
- } while(0)
- 
--static struct desc_struct bad_bios_desc;
-+static struct desc_struct bad_bios_desc = GDT_ENTRY_INIT(0x4092, 0, 0);
- 
- /*
-  * At some point we want to use this stack frame pointer to unwind
-@@ -476,9 +476,6 @@ void pnpbios_calls_init(union pnp_bios_install_struct *header)
- 	pnp_bios_callpoint.offset = header->fields.pm16offset;
- 	pnp_bios_callpoint.segment = PNP_CS16;
- 
--	bad_bios_desc.a = 0;
--	bad_bios_desc.b = 0x00409200;
--
- 	set_desc_base(&bad_bios_desc, (unsigned long)__va(0x40UL << 4));
- 	set_desc_limit(&bad_bios_desc, 4095 - (0x40 << 4));
- 	for_each_possible_cpu(i) {
+/sys/devices/system/clocksource/clocksource0/current_clocksource
+/sys/devices/system/clocksource/clocksource0/available_clocksource
+
+and/or try specific clocksources with "clocksource=...." on boot (to see if it makes a
+difference). I have seen system freeze when the kernel detected an unstable 
+clocksource and dynamically switched to another (more stable) one.
+
+roland
+________________________________________________________________
+Neu: WEB.DE Doppel-FLAT mit Internet-Flatrate + Telefon-Flatrate
+für nur 19,99 Euro/mtl.!* http://produkte.web.de/go/02/
+
