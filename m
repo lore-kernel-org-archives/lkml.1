@@ -1,105 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750774AbZHHOCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750866AbZHHODE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750774AbZHHOCo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 10:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750706AbZHHOCn
+	id S1750866AbZHHODE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 10:03:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbZHHODD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 10:02:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40212 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750701AbZHHOCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 10:02:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH update x2] PM: Introduce core framework for run-time PM of I/O devices (rev. 13)
-Date: Sat, 8 Aug 2009 16:03:02 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       Magnus Damm <magnus.damm@gmail.com>, Greg KH <gregkh@suse.de>,
-       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0908071130440.3063-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908071130440.3063-100000@iolanthe.rowland.org>
+	Sat, 8 Aug 2009 10:03:03 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48749 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750780AbZHHODA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 10:03:00 -0400
+Date: Sat, 8 Aug 2009 16:02:51 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, Greg KH <greg@kroah.com>
+Subject: HTC Dream for staging: small cleanups [was Re: Support for
+	synaptic touchscreen in HTC dream]
+Message-ID: <20090808140250.GC13226@elf.ucw.cz>
+References: <20090714100634.GA4054@elf.ucw.cz> <20090714175201.GB14661@dtor-d630.eng.vmware.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908081603.02713.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090714175201.GB14661@dtor-d630.eng.vmware.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 07 August 2009, Alan Stern wrote:
-> On Thu, 6 Aug 2009, Rafael J. Wysocki wrote:
-> 
-> > Hi,
+Hi!
+
+> > This adds support for synaptic touchscreen, used in HTC dream
+> > cellphone.
 > > 
-> > The patch below should address all of your most recent comments.
+> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
 > 
-> Only two comments.
+> This is pretty large body of code, could we get a sign-off from Arve as
+> well since he seems to be the author?
+
+Yes; it is now in staging with his sign-offs.
+
+> > +config TOUCHSCREEN_SYNAPTICS_I2C_RMI
+> > +	tristate "Synaptics i2c touchscreen"
+> > +	depends on I2C
+> > +	help
+> > +	  This enables support for Synaptics RMI over I2C based touchscreens.
+> > +	  Such touchscreen is used in HTC Dream.
+> > +
 > 
+> To compile this driver as a module...
+
+Ok.
+
+> > +static struct workqueue_struct *synaptics_wq;
 > 
-> > +static int __pm_request_idle(struct device *dev)
+> Do we need a separate workqueue? Is reading the device that slow that we
+> can use keventd?
+
+Added to the TODO.
+
+> > +	int snap_up[2];
+> > +	u32 flags;
+> > +	int (*power)(int on);
+> 
+> 'bool on'?
+
+Added to the TODO.
+
+> > +static int i2c_read(struct synaptics_ts_data *ts, u8 reg, char *msg)
 > > +{
-> ...
-> > +	if (dev->power.request_pending) {
-> > +		/* Any requests other then RPM_REQ_IDLE take precedence. */
-> > +		if (dev->power.request != RPM_REQ_NONE)
+> > +	int ret = i2c_smbus_read_byte_data(ts->client, 0xf0);
 > 
-> Replace != with ==.
+> We are not using 'reg'?
 
-Good catch, thanks!
+Fixed, thanks.
 
-> > +			dev->power.request = RPM_REQ_IDLE;
-> > +		else if (dev->power.request != RPM_REQ_IDLE)
-> > +			retval = -EAGAIN;
-> > +		return retval;
+> Some more info as to what you are trying to do here would be nice.
+
+Done, Arve provided a comment.
+
+> > +	input_report_abs(ts->input_dev, ABS_PRESSURE, z);
+> > +	input_report_abs(ts->input_dev, ABS_TOOL_WIDTH, w);
+> > +	input_report_key(ts->input_dev, BTN_TOUCH, finger);
+> > +	finger2_pressed = finger > 1 && finger != 7;
+> > +	input_report_key(ts->input_dev, BTN_2, finger2_pressed);
+> > +	if (finger2_pressed) {
+> > +		input_report_abs(ts->input_dev, ABS_HAT0X, pos[1][0]);
+> > +		input_report_abs(ts->input_dev, ABS_HAT0Y, pos[1][1]);
 > 
+> ABS_HAT is pretty unusual for a touchscreen...
+
+Added to the TODO list. It should be cleaned up before merge.
+
+> > +		if ((buf[14] & 0xc0) != 0x40) {
+> > +			printk(KERN_WARNING "synaptics_ts_work_func:"
+> > +			       " bad read %x %x %x %x %x %x %x %x %x"
+> > +			       " %x %x %x %x %x %x, ret %d\n",
+> > +			       buf[0], buf[1], buf[2], buf[3],
+> > +			       buf[4], buf[5], buf[6], buf[7],
+> > +			       buf[8], buf[9], buf[10], buf[11],
+> > +			       buf[12], buf[13], buf[14], ret);
 > 
-> > --- linux-2.6.orig/drivers/base/dd.c
-> > +++ linux-2.6/drivers/base/dd.c
-> ...
-> > @@ -306,6 +317,8 @@ static void __device_release_driver(stru
-> >  
-> >  	drv = dev->driver;
-> >  	if (drv) {
-> > +		pm_runtime_disable(dev);
-> > +
-> >  		driver_sysfs_remove(dev);
-> >  
-> >  		if (dev->bus)
-> > @@ -324,6 +337,8 @@ static void __device_release_driver(stru
-> >  			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-> >  						     BUS_NOTIFY_UNBOUND_DRIVER,
-> >  						     dev);
-> > +
-> > +		pm_runtime_enable(dev);
-> >  	}
-> >  }
+> Umm... for ()?
+
+I removed debugging instead.
+
+> > +static int synaptics_ts_probe(
 > 
-> We may need to be more careful here.  The driver's remove method may
-> want to do some runtime PM stuff to the device before giving up
-> control.  On the other hand I'm not sure what _should_ be done here, so
-> I can't suggest anything better.
+> __devinit()
 
-Hmm.  Perhaps we can do something along the lines of our .probe() handling.
-Namely, call
+Done.
 
-pm_runtime_disable(dev);
-pm_runtime_get_noresume(dev);
-pm_runtime_enable(dev);
+> > +	ts->input_dev = input_allocate_device();
+> > +	if (ts->input_dev == NULL) {
+> > +		ret = -ENOMEM;
+> > +		pr_err("synaptics: Failed to allocate input device\n");
+> > +		goto err_input_dev_alloc_failed;
+> > +	}
+> > +	ts->input_dev->name = "synaptics-rmi-touchscreen";
+> 
+> BUS_I2C, etc.
 
-before and
+I'm doing this:
 
-pm_runtime_put_noidle()
+	ts->input_dev->name = "synaptics-rmi-touchscreen";
+	ts->input_dev->phys = "msm/input0";
+	ts->input_dev->id.bustype = BUS_I2C;
 
-after?  Then, if the driver's or bus type's .remove() needs to resume, it will
-be able to do that right away and if it wants to suspend, it can always call
-pm_runtime_put*(), because our pm_runtime_put_noidle() won't decrease the
-usage counter below zero.
+I don't know if it is right; if you can suggest better strings...
 
-At the same time we can avoid "leftover" suspends that could interfere with
-.remove() in case it needs to access the hardware.
+> > +	set_bit(EV_SYN, ts->input_dev->evbit);
+> 
+> __set_bit(), no need to lock the bus.
 
-Best,
-Rafael
+Done.
+
+> > +	if (client->irq) {
+> > +		ret = request_irq(client->irq, synaptics_ts_irq_handler,
+> > +				  0, client->name, ts);
+> 
+> I think threaded IRQ will fit the bill and will take care of
+> IRQ/workqueue shutdown races. Of course you still need to use workqueue
+> if polling.
+
+Yep, but that's TODO for now.
+
+> > +	pr_info("synaptics: Start touchscreen %s in %s mode\n", 
+> 
+> Probably "synaptics_ts" throughout so nobody is confused?
+
+Yep.
+
+> > +static int synaptics_ts_remove(struct i2c_client *client)
+> 
+> __devexit()
+
+Ok.
+
+> > +MODULE_DESCRIPTION("Synaptics Touchscreen Driver");
+> > +MODULE_LICENSE("GPL");
+> 
+> MODULE_AUTHOR()?
+
+Fixed; this, and some others were fixed before. Here is just the new
+stuff.
+
+---
+
+Small fixes to synaptics touchscreen driver, and add a TODO list of
+stuff that should be fixed between merge into kernel proper.
+
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
+
+diff --git a/drivers/staging/dream/Kconfig b/drivers/staging/dream/Kconfig
+index 1fdbd48..e19d403 100644
+--- a/drivers/staging/dream/Kconfig
++++ b/drivers/staging/dream/Kconfig
+@@ -8,4 +8,8 @@ config TOUCHSCREEN_SYNAPTICS_I2C_RMI
+ 	help
+ 	  This enables support for Synaptics RMI over I2C based touchscreens.
+ 
++	  To compile this driver as a module, choose M here: the
++	  module will be called synaptics_i2c_rmi.
++
++
+ 
+diff --git a/drivers/staging/dream/synaptics_i2c_rmi.c b/drivers/staging/dream/synaptics_i2c_rmi.c
+index 6e23276..d786a55 100644
+--- a/drivers/staging/dream/synaptics_i2c_rmi.c
++++ b/drivers/staging/dream/synaptics_i2c_rmi.c
+@@ -189,13 +189,7 @@ static void synaptics_ts_work_func(struct work_struct *work)
+ 			continue;
+ 		}
+ 		if ((buf[14] & 0xc0) != 0x40) {
+-			pr_warning("synaptics_ts_work_func:"
+-			       " bad read %x %x %x %x %x %x %x %x %x"
+-			       " %x %x %x %x %x %x, ret %d\n",
+-			       buf[0], buf[1], buf[2], buf[3],
+-			       buf[4], buf[5], buf[6], buf[7],
+-			       buf[8], buf[9], buf[10], buf[11],
+-			       buf[12], buf[13], buf[14], ret);
++			pr_warning("synaptics_ts_work_func: bad data\n");
+ 			if (bad_data)
+ 				synaptics_init_panel(ts);
+ 			bad_data = 1;
+@@ -517,7 +511,7 @@ static int __devinit synaptics_ts_probe(
+ 	register_early_suspend(&ts->early_suspend);
+ #endif
+ 
+-	pr_info("synaptics: Start touchscreen %s in %s mode\n", 
++	pr_info("synaptics_ts: Start touchscreen %s in %s mode\n", 
+ 		ts->input_dev->name, ts->use_irq ? "interrupt" : "polling");
+ 
+ 	return 0;
+@@ -534,7 +528,7 @@ err_check_functionality_failed:
+ 	return ret;
+ }
+ 
+-static int synaptics_ts_remove(struct i2c_client *client)
++static int __devexit synaptics_ts_remove(struct i2c_client *client)
+ {
+ 	struct synaptics_ts_data *ts = i2c_get_clientdata(client);
+ #ifdef CONFIG_HAS_EARLYSUSPEND
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
