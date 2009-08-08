@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933686AbZHHHpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933678AbZHHHxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933686AbZHHHpa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 03:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933628AbZHHHpa
+	id S933678AbZHHHxo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 03:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbZHHHxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 03:45:30 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:45910 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933459AbZHHHp3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 03:45:29 -0400
-Date: Sat, 8 Aug 2009 08:45:24 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Anuj Aggarwal <anuj.aggarwal@ti.com>
-Cc: lrg@slimlogic.co.uk, linux-omap@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Message-ID: <20090808074523.GA5005@sirena.org.uk>
-References: <1249658970-11100-1-git-send-email-anuj.aggarwal@ti.com>
+	Sat, 8 Aug 2009 03:53:43 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:42549 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754451AbZHHHxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 03:53:42 -0400
+Date: Sat, 8 Aug 2009 09:53:41 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivres/net: Change constant name
+Message-ID: <Pine.LNX.4.64.0908080953090.25176@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249658970-11100-1-git-send-email-anuj.aggarwal@ti.com>
-X-Cookie: You will never know hunger.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [PATCH 7/8] Regulator: Added board-dependent code for TPS65023
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 08:59:30PM +0530, Anuj Aggarwal wrote:
+From: Julia Lawall <julia@diku.dk>
 
-> +		},
-> +		.num_consumer_supplies = 1,
-> +		.consumer_supplies = &tps65023_core_consumers,
-> +	},
+In this series of tests the constants have the form XRXMAC_STATUS, except
+in this one case.  The values of XRXMAC_STAT_MSK_RXOCTET_CNT_EXP and
+XRXMAC_STATUS_RXOCTET_CNT_EXP are furthermore the same.
 
-This is all OK but as a style thing it's better to use ARRAY_SIZE() for
-the number of consumers even if there's just one since that way if
-someone adds another consumer they don't need to remember to adjust the
-array length.
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/net/niu.c                   |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/niu.c b/drivers/net/niu.c
+index d2146d4..3ada7ea 100644
+--- a/drivers/net/niu.c
++++ b/drivers/net/niu.c
+@@ -4015,7 +4015,7 @@ static void niu_xmac_interrupt(struct niu *np)
+ 		mp->rx_hist_cnt6 += RXMAC_HIST_CNT6_COUNT;
+ 	if (val & XRXMAC_STATUS_RXHIST7_CNT_EXP)
+ 		mp->rx_hist_cnt7 += RXMAC_HIST_CNT7_COUNT;
+-	if (val & XRXMAC_STAT_MSK_RXOCTET_CNT_EXP)
++	if (val & XRXMAC_STATUS_RXOCTET_CNT_EXP)
+ 		mp->rx_octets += RXMAC_BT_CNT_COUNT;
+ 	if (val & XRXMAC_STATUS_CVIOLERR_CNT_EXP)
+ 		mp->rx_code_violations += RXMAC_CD_VIO_CNT_COUNT;
