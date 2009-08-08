@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbZHHXRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbZHHXVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753278AbZHHXRr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 19:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbZHHXRq
+	id S1753256AbZHHXVz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 19:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbZHHXVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 19:17:46 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:39564 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753232AbZHHXRq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 19:17:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=p0bN8tM4HGF1NkqJ/ej7F7akxN4pPO51mPzMvuaxjSbG43WbP6yqvJNDgbIrWQ+4TA
-         Veet8QJtKr6R/tCCIb8ns19Ns/meZ9kwQeJw/AC+vbAtTrERXjYbcRR0x5NwAOdZgnL2
-         Kqt7nt2xEdYh4DVRbpNMra4JfqqX13gQzjG9M=
-Message-ID: <4A7E0797.7060504@gmail.com>
-Date: Sat, 08 Aug 2009 20:17:43 -0300
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090725)
+	Sat, 8 Aug 2009 19:21:55 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:48967 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753131AbZHHXVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 19:21:54 -0400
+Date: Sat, 8 Aug 2009 16:21:53 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de
+Subject: Re: [tip:core/rcu] rcu: Add second diagnostic check for a possible
+	CPU-hotplug race
+Message-ID: <20090808232153.GA6866@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090806012645.GA24800@linux.vnet.ibm.com> <tip-0d84abdae6740ee5290a7a523ee35916f65e16ec@git.kernel.org> <20090808150103.GA27573@elte.hu>
 MIME-Version: 1.0
-To: Borislav Petkov <petkovbb@googlemail.com>,
-       Kevin Winchester <kjwinchester@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       LKML <linux-kernel@vger.kernel.org>, borislav.petkov@amd.com
-Subject: [PATCH v2] x86: clear incorrectly forced X86_FEATURE_LAHF_LM flag
-References: <4A7D673A.1090401@gmail.com> <20090808152016.GB25374@liondog.tnic>
-In-Reply-To: <20090808152016.GB25374@liondog.tnic>
-X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090808150103.GA27573@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Due to an erratum with certain AMD Athlon 64 processors, the BIOS may
-need to force enable the LAHF_LM capability.  Unfortunately, in at
-least one case, the BIOS does this even for processors that do not
-support the functionality.
+On Sat, Aug 08, 2009 at 05:01:03PM +0200, Ingo Molnar wrote:
+> 
+> * tip-bot for Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > Commit-ID:  0d84abdae6740ee5290a7a523ee35916f65e16ec
+> > Gitweb:     http://git.kernel.org/tip/0d84abdae6740ee5290a7a523ee35916f65e16ec
+> > Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > AuthorDate: Wed, 5 Aug 2009 18:26:45 -0700
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Sat, 8 Aug 2009 16:51:08 +0200
+> > 
+> > rcu: Add second diagnostic check for a possible CPU-hotplug race
+> 
+> hm, got this build failure in -tip testing:
+> 
+> kernel/rcupdate.c: In function ‘rcu_cpu_notified’:
+> kernel/rcupdate.c:251: error: implicit declaration of function ‘cpu_notified’
+> 
+> with the config below.
 
-Add a specific check that will clear the feature bit for processors
-known not to support the LAHF/SAHF instructions.
+Gah...  I didn't take !CONFIG_HOTPLUG_CPU into account.  Fix below.
 
-Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
+							Thanx, Paul
+
+------------------------------------------------------------------------
+
+Fix build breakage in diagnostic patch.
+
+Move cpu_notified() declaration out from under #ifdef.
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- arch/x86/kernel/cpu/amd.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index e2485b0..7b52787 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -400,6 +400,14 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- 		level = cpuid_eax(1);
- 		if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
- 			set_cpu_cap(c, X86_FEATURE_REP_GOOD);
-+
-+		/*
-+		 * Some BIOSes incorrectly set this feature, but only Revisions
-+		 * D (Extended Model = 1) and E (Extended Model = 2) actually
-+		 * support it.
-+		 */
-+		if (!(level & 0x00030000))
-+			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
- 	}
- 	if (c->x86 == 0x10 || c->x86 == 0x11)
- 		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
--- 
-1.6.4
+ cpu.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index d9b3c18..1b1c30c 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -45,13 +45,13 @@ extern int sched_create_sysfs_power_savings_entries(struct sysdev_class *cls);
+ extern void unregister_cpu(struct cpu *cpu);
+ #endif
+ struct notifier_block;
++extern int cpu_notified(int (*fn)(struct notifier_block *, unsigned long, void *));
+ 
+ #ifdef CONFIG_SMP
+ /* Need to know about CPUs going up/down? */
+ #ifdef CONFIG_HOTPLUG_CPU
+ extern int register_cpu_notifier(struct notifier_block *nb);
+ extern void unregister_cpu_notifier(struct notifier_block *nb);
+-extern int cpu_notified(int (*fn)(struct notifier_block *, unsigned long, void *));
+ extern int raw_notifier_chain_is_registered(struct raw_notifier_head *nh,
+ 		int (*fn)(struct notifier_block *, unsigned long, void *));
+ #else
