@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbZHHANl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757381AbZHHAQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757141AbZHHANl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Aug 2009 20:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756865AbZHHANk
+	id S1757381AbZHHAQh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Aug 2009 20:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbZHHAQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Aug 2009 20:13:40 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51561 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756790AbZHHANk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Aug 2009 20:13:40 -0400
-Date: Sat, 8 Aug 2009 02:13:36 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Joe Perches <joe@perches.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Markus Heidelberg <markus.heidelberg@web.de>
-Subject: Re: linux-next: manual merge of the trivial tree with the  tree
-In-Reply-To: <20090731143912.7a6afdbb.sfr@canb.auug.org.au>
-Message-ID: <alpine.LNX.2.00.0908080212320.25797@wotan.suse.de>
-References: <20090731143912.7a6afdbb.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 7 Aug 2009 20:16:36 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:53240 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757321AbZHHAQf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Aug 2009 20:16:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=qC94KL2UpQTApxdJn9rTCHATt4hU15ajuBkqAqRcBOfX4o16uB2rE0sO0fJ2uDOUPZ
+         t49Rba3vJujLzjKP9tUrWQmj1Xg2TWZ6yDmA9rzmuGD2poRPcUoyfFwf+0nblDsXzopd
+         0awmWWmi/Uzl1Qf4UoKBiPJPN9rv/TEou4IS4=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>
+Subject: [PATCH 2/4] perf tools: callchain: Ignore empty callchains
+Date: Sat,  8 Aug 2009 02:16:23 +0200
+Message-Id: <1249690585-9145-2-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1249690585-9145-1-git-send-email-fweisbec@gmail.com>
+References: <1249690585-9145-1-git-send-email-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Jul 2009, Stephen Rothwell wrote:
+When the callchain tree comes to insert an empty backtrace, it raises
+a spurious warning about the fact we are inserting an empty.
+This is spurious because the radix tree assumes it did something
+wrong to reach this state. But it didn't, we just met an empty
+callchain that has to be ignored.
 
-> Today's linux-next merge of the trivial tree got a conflict in
-> MAINTAINERS between commit 24725d1ecf26ba05d74c1cc3ae7467b61a900421
-> ("MAINTAINERS: Update KERNEL JANITORS") from Linus' tree and commit
-> 70301b8cc8a23d57d3e6120c012c86569285efcb ("trivial: update the Kernel
-> Janitors' web-page URL") from the trivial tree.
-> 
-> Just context differences.  I fixed it up (see below) and can carry the
-> fix as necessary.
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> 
-> diff --cc MAINTAINERS
-> index fa86fd5,354cc16..0000000
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@@ -2912,13 -3374,16 +2912,13 @@@ F:	Makefil
->   F:	scripts/Makefile.*
->   
->   KERNEL JANITORS
->  -P:	Several
->   L:	kernel-janitors@vger.kernel.org
-> - W:	http://www.kerneljanitors.org/
-> + W:	http://janitor.kernelnewbies.org/
->  -S:	Maintained
->  +S:	Odd fixes
->   
->   KERNEL NFSD, SUNRPC, AND LOCKD SERVERS
->  -P:	J. Bruce Fields
->  -M:	bfields@fieldses.org
->  -P:	Neil Brown
->  -M:	neilb@suse.de
->  +M:	"J. Bruce Fields" <bfields@fieldses.org>
->  +M:	Neil Brown <neilb@suse.de>
->   L:	linux-nfs@vger.kernel.org
->   W:	http://nfs.sourceforge.net/
->   S:	Supported
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+---
+ tools/perf/util/callchain.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-[ sorry for late reply, have been on vacation, totally offline, for two 
-  weeks ]
-
-I have fast-forwarded the 'for-next' branch of trivial tree and fixed the 
-conflict, so it should be OK the next time you pull.
-
-Thanks,
-
+diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
+index ce0c6d4..4c09b25 100644
+--- a/tools/perf/util/callchain.c
++++ b/tools/perf/util/callchain.c
+@@ -337,5 +337,7 @@ __append_chain(struct callchain_node *root, struct ip_callchain *chain,
+ void append_chain(struct callchain_node *root, struct ip_callchain *chain,
+ 		  struct symbol **syms)
+ {
++	if (!chain->nr)
++		return;
+ 	__append_chain_children(root, chain, syms, 0);
+ }
 -- 
-Jiri Kosina
-SUSE Labs
+1.6.2.3
+
