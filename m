@@ -1,126 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752491AbZHHPb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752544AbZHHPh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752491AbZHHPb0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 11:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZHHPbZ
+	id S1752544AbZHHPh5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 11:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbZHHPh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 11:31:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40021 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751235AbZHHPbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 11:31:24 -0400
-Date: Sat, 8 Aug 2009 15:27:49 GMT
-From: tip-bot for Darren Hart <dvhltc@us.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, dvhltc@us.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, jkacur@redhat.com, johnstul@us.ibm.com,
-       peterz@infradead.org, dino@in.ibm.com, rostedt@goodmis.org,
-       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, dvhltc@us.ibm.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, johnstul@us.ibm.com,
-       peterz@infradead.org, dino@in.ibm.com, rostedt@goodmis.org,
-       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4A7A016C.1090002@us.ibm.com>
-References: <4A7A016C.1090002@us.ibm.com>
-Subject: [tip:core/urgent] futex: Update woken requeued futex_q lock_ptr
-Message-ID: <tip-00235fe25eba6d3a13f3349b2e3a2d94b699a414@git.kernel.org>
-Git-Commit-ID: 00235fe25eba6d3a13f3349b2e3a2d94b699a414
-X-Mailer: tip-git-log-daemon
+	Sat, 8 Aug 2009 11:37:57 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:61093 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752141AbZHHPh4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 11:37:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ZHPnPaCcu6skOUzU8JAA924ETpf/sSdNYmXUTpDk5yU6xoP2H07SJGVibS6vlF8xuB
+         H3jRvGlV+iQdTvJS/mETr8PhDk83dB6WOvMopbU811J5O7gTMBfk2RWxdCyiy5Y2J3Ex
+         iVsOtuy1Lz0w5gJJs2uEF+HfEGqkYZM1O05lM=
+Message-ID: <4A7D9CB0.8050003@gmail.com>
+Date: Sat, 08 Aug 2009 17:41:36 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 08 Aug 2009 15:27:51 +0000 (UTC)
+To: Gene Heskett <gene.heskett@verizon.net>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Strange wireless card?
+References: <200908042306.36043.gene.heskett@verizon.net>
+In-Reply-To: <200908042306.36043.gene.heskett@verizon.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  00235fe25eba6d3a13f3349b2e3a2d94b699a414
-Gitweb:     http://git.kernel.org/tip/00235fe25eba6d3a13f3349b2e3a2d94b699a414
-Author:     Darren Hart <dvhltc@us.ibm.com>
-AuthorDate: Wed, 5 Aug 2009 15:02:20 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 8 Aug 2009 17:21:49 +0200
+Op 05-08-09 05:06, Gene Heskett schreef:
+> Greetings;
+> 
+> Can anyone tell me if this pci wireless card is supported, or what its 
+> status is?
+> 
+>>From lspci -v:
+> 01:06.0 Ethernet controller: Marvell Technology Group Ltd. 88w8335 [Libertas] 802.11b/g Wireless (rev 03)
+>         Subsystem: Netgear WG311v3 802.11g Wireless PCI Adapter
+> 
+> I have built a 2.6.31-rc5 kernel with the Marvel stuffs all enabled, but
+> even a modprobe mwl8k, while apparently loading the driver, doesn't create
+> any wireless devices in /dev.
+> 
+> Thanks for any pointers.
+> 
 
-futex: Update woken requeued futex_q lock_ptr
+It could be due to a regression I caused, see this thread,
 
-futex_requeue() can acquire the lock on behalf of a waiter
-during the requeue loop in the event of a lock steal or owner
-died. futex_wait_requeue_pi() cleans up the pi_state owner,
-using the lock_ptr to protect against concurrent access to the
-pi_state.  The pi_state is found on the requeue target futex
-hash bucket so the lock_ptr needs to be updated accordingly.
+http://lkml.org/lkml/2009/8/8/77
 
-The problem manifested by triggering the WARN_ON in
-lookup_pi_state() about the pid != pi_state->owner pid.
+Could you test it with this?
 
-The astute reviewer will note that still exists a race between
-the time futex_requeue() releases hb2->lock() and the time when
-futex_wait_requeue_pi() acquires it.  During this time the
-pi_state and the futex uaddr are not in sync with the rt_mutex
-ownership.  This patch closes the window to the point where my
-tests now pass, but we still need to address it.
-
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Dinakar Guniguntala <dino@in.ibm.com>
-Cc: John Stultz <johnstul@us.ibm.com>
-Cc: John Kacur <jkacur@redhat.com>
-Cc: <stable@kernel.org>
-LKML-Reference: <4A7A016C.1090002@us.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/futex.c |   13 +++++++++----
- 1 files changed, 9 insertions(+), 4 deletions(-)
-
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 0672ff8..57f5a80 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1010,19 +1010,24 @@ void requeue_futex(struct futex_q *q, struct futex_hash_bucket *hb1,
-  * requeue_pi_wake_futex() - Wake a task that acquired the lock during requeue
-  * q:	the futex_q
-  * key:	the key of the requeue target futex
-+ * hb:  the hash_bucket of the requeue target futex
-  *
-  * During futex_requeue, with requeue_pi=1, it is possible to acquire the
-  * target futex if it is uncontended or via a lock steal.  Set the futex_q key
-  * to the requeue target futex so the waiter can detect the wakeup on the right
-  * futex, but remove it from the hb and NULL the rt_waiter so it can detect
-- * atomic lock acquisition.  Must be called with the q->lock_ptr held.
-+ * atomic lock acquisition.  Set the q->lock_ptr to the requeue target hb->lock
-+ * to protect access to the pi_state to fixup the owner later.  Must be called
-+ * with the q->lock_ptr held.
-  */
- static inline
--void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key)
-+void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key,
-+			   struct futex_hash_bucket *hb)
+diff --git a/drivers/net/wireless/libertas/assoc.c b/drivers/net/wireless/libertas/assoc.c
+index d699737..49fceb9 100644
+--- a/drivers/net/wireless/libertas/assoc.c
++++ b/drivers/net/wireless/libertas/assoc.c
+@@ -45,7 +45,7 @@ static int get_common_rates(struct lbs_private *priv,
  {
- 	drop_futex_key_refs(&q->key);
- 	get_futex_key_refs(key);
- 	q->key = *key;
-+	q->lock_ptr = &hb->lock;
+ 	u8 *card_rates = lbs_bg_rates;
+ 	int ret = 0, i, j;
+-	u8 tmp[(ARRAY_SIZE(lbs_bg_rates) - 1) * (*rates_size - 1)];
++	u8 tmp[*rates_size * ARRAY_SIZE(lbs_bg_rates) - 1];
+ 	size_t tmp_size = 0;
  
- 	WARN_ON(plist_node_empty(&q->list));
- 	plist_del(&q->list, &q->list.plist);
-@@ -1088,7 +1093,7 @@ static int futex_proxy_trylock_atomic(u32 __user *pifutex,
- 	ret = futex_lock_pi_atomic(pifutex, hb2, key2, ps, top_waiter->task,
- 				   set_waiters);
- 	if (ret == 1)
--		requeue_pi_wake_futex(top_waiter, key2);
-+		requeue_pi_wake_futex(top_waiter, key2, hb2);
- 
- 	return ret;
- }
-@@ -1273,7 +1278,7 @@ retry_private:
- 							this->task, 1);
- 			if (ret == 1) {
- 				/* We got the lock. */
--				requeue_pi_wake_futex(this, &key2);
-+				requeue_pi_wake_futex(this, &key2, hb2);
- 				continue;
- 			} else if (ret) {
- 				/* -EDEADLK */
+ 	/* For each rate in card_rates that exists in rate1, copy to tmp */
