@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751918AbZHHUcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751982AbZHHVCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751918AbZHHUcf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 16:32:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbZHHUce
+	id S1751982AbZHHVCc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 17:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbZHHVCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 16:32:34 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40440 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751436AbZHHUce (ORCPT
+	Sat, 8 Aug 2009 17:02:32 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:50462 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751407AbZHHVCb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 16:32:34 -0400
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: moving "tools" into the tools/ directory?
-From: Andi Kleen <andi@firstfloor.org>
-References: <alpine.LFD.2.00.0908081156210.9362@localhost>
-Date: Sat, 08 Aug 2009 22:32:33 +0200
-In-Reply-To: <alpine.LFD.2.00.0908081156210.9362@localhost> (Robert P. J. Day's message of "Sat, 8 Aug 2009 11:57:37 -0400 (EDT)")
-Message-ID: <87bpmqt5b2.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Sat, 8 Aug 2009 17:02:31 -0400
+From: Martin Rogge <marogge@onlinehome.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.30.1-4 kernels freezes dual pentium-3 system
+Date: Sat, 8 Aug 2009 23:03:52 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.30.4; KDE/4.2.1; i686; ; )
+Cc: devzero@web.de
+References: <859414371@web.de>
+In-Reply-To: <859414371@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908082303.52471.marogge@onlinehome.de>
+X-Provags-ID: V01U2FsdGVkX19BTJpc13M2FrsqU/EK+5aQ5jkNUbramhdcAwd
+ e55SrLIgdI91vjLeaLwsICns3KHsWseNNH6S/msKaFMFmui8oQ
+ 42coKuOzeKezv93TnfARw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Robert P. J. Day" <rpjday@crashcourse.ca> writes:
+On Saturday 08 August 2009 11:49:50 devzero@web.de wrote:
 
->   is there a standard for moving command-line tools into the top-level
-> tools/ directory?  as in, Documentation/fs/slabinfo.c?  stuff like
-> that?
+> > Btw, since then there have been two more
+> > reports on lkml of dual P2 systems locking up with 2.6.30++.
+>
+> could you send pointers?
 
-I did some moving of such files from Documentation to tool in a git
-tree some time ago, but to make it actually all build sanely --
-especially with separate objdirs and/or cross compilation -- would
-require major Makefile surgery first.
+Since I am not subscribed to the LKML (I only read it via a NNTP relay) I have 
+some difficulties providing IDs. Anyway, the subject of the reports I have in 
+mind is "PROBLEM: crash / hang with linux-2.6.30.x on PII-350 SMP system".
 
-Current perf is a big pita for separate objdirs and cross compilation
-already and it would be probably not a good idea to make it worse for
-now.
+> any existing bugzilla bugentry for these or for your`s ?
 
--Andi
+Earlier today I filed bug 13933 on kernel.bugzilla. Unfortunately I had some 
+problems attaching all the files, so my earlier LKML post is still the best 
+source of information.
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+> > Network, sysrq and numlock are all unresponsive.
+>
+> ok, that`s why we need to have the last informations from before the dying
+> breath...
+
+agreed.
+
+>
+> btw, i one of your dmesg i found these:
+>
+> Aug  1 19:42:57 frya kernel: [...]
+
+Again, that's someone else's report. Regarding clocksource, while I was trying 
+to hunt down this bug I once booted with "clocksource=acpi_pm" but it made no 
+difference. Truth be told, at that time I was still troubleshooting the 
+nvidia.ko driver.
+
+Martin
+
