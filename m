@@ -1,121 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933992AbZHHLxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934035AbZHHLxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933992AbZHHLxb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 07:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZHHLxa
+	id S934035AbZHHLxi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 07:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbZHHLxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 07:53:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55041 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753380AbZHHLx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 07:53:29 -0400
-Date: Sat, 8 Aug 2009 11:51:49 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
-       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1249690585-9145-3-git-send-email-fweisbec@gmail.com>
-References: <1249690585-9145-3-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/core] perf tools: callchain: Fix 'perf report' display to be callchain by default
-Message-ID: <tip-0b51a97cec68a953629cc388d762c61b2c05886e@git.kernel.org>
-Git-Commit-ID: 0b51a97cec68a953629cc388d762c61b2c05886e
-X-Mailer: tip-git-log-daemon
+	Sat, 8 Aug 2009 07:53:37 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:37608 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753842AbZHHLxd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 07:53:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :x-enigmail-version:content-type:content-transfer-encoding;
+        b=cfzxbaH5UFBDED2VCBvKduFyFZkL8fKCcGrZNFiAmkqBmC8ZFa3P/OdKZMbWN6vQht
+         MCcuf6jQID2LqK/6ZCa/Rz+397HVslTSDPcMSbKYbb/x11cN9PVNwd2YAlUXdgMZf+g4
+         bk1o1EdIKr3aatbGwxnyEfKBERUhpIXi5GAz8=
+Message-ID: <4A7D673A.1090401@gmail.com>
+Date: Sat, 08 Aug 2009 08:53:30 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090725)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 08 Aug 2009 11:51:50 +0000 (UTC)
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+CC: Yinghai Lu <yinghai@kernel.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: clear incorrectly forced X86_FEATURE_LAHF_LM flag
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0b51a97cec68a953629cc388d762c61b2c05886e
-Gitweb:     http://git.kernel.org/tip/0b51a97cec68a953629cc388d762c61b2c05886e
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Sat, 8 Aug 2009 02:16:24 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 8 Aug 2009 13:49:21 +0200
+Due to an erratum with certain AMD Athlon 64 processors, the BIOS may
+need to force enable the LAHF_LM capability.  Unfortunately, in at
+least one case, the BIOS does this even for processors that do not
+support the functionality.
 
-perf tools: callchain: Fix 'perf report' display to be callchain by default
+Add a specific check that will clear the feature bit for processors
+known not to support the LAHF/SAHF instructions.
 
-If we recorded with -g option to record the callchain, right now
-we require a -g option to perf report as well - and people reported
-this as unnecessary complication: the user already specified -g
-once, no need to require it a second time.
-
-So if the recording includes call-chains, display the callchain by
-default from perf report.
-
-( The user can override this default using "-g none" option from
-  perf report. )
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
-LKML-Reference: <1249690585-9145-3-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
 ---
- tools/perf/builtin-report.c |   16 +++++++++++++++-
- tools/perf/util/callchain.h |    1 +
- 2 files changed, 16 insertions(+), 1 deletions(-)
 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index a5e2f8d..c4a8e10 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -68,7 +68,7 @@ static int		callchain;
- 
- static
- struct callchain_param	callchain_param = {
--	.mode	= CHAIN_GRAPH_ABS,
-+	.mode	= CHAIN_GRAPH_REL,
- 	.min_percent = 0.5
- };
- 
-@@ -1836,6 +1836,13 @@ static int __cmd_report(void)
- 					" -g?\n");
- 			exit(-1);
- 		}
-+	} else if (callchain_param.mode != CHAIN_NONE && !callchain) {
-+			callchain = 1;
-+			if (register_callchain_param(&callchain_param) < 0) {
-+				fprintf(stderr, "Can't register callchain"
-+						" params\n");
-+				exit(-1);
-+			}
+While making this change, I noticed the clause above my code:
+
+    if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
+
+It does not seem concerned with the possibility that some of the
+upper 16 bits of level will be non-zero.  Is this intentional, or
+should the upper 16 bits be masked off before the comparisons?
+
+ arch/x86/kernel/cpu/amd.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+index e2485b0..a2f0fe4 100644
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -400,6 +400,14 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+ 		level = cpuid_eax(1);
+ 		if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
+ 			set_cpu_cap(c, X86_FEATURE_REP_GOOD);
++
++		/*
++		 * Some BIOSes incorrectly set this feature, but only
++		 * Revision E (with Extended Model = 2) actually supports
++		 * it.
++		 */
++		if (!(level & 0x00020000))
++			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
  	}
- 
- 	if (load_kernel() < 0) {
-@@ -1974,6 +1981,13 @@ parse_callchain_opt(const struct option *opt __used, const char *arg,
- 	else if (!strncmp(tok, "fractal", strlen(arg)))
- 		callchain_param.mode = CHAIN_GRAPH_REL;
- 
-+	else if (!strncmp(tok, "none", strlen(arg))) {
-+		callchain_param.mode = CHAIN_NONE;
-+		callchain = 0;
-+
-+		return 0;
-+	}
-+
- 	else
- 		return -1;
- 
-diff --git a/tools/perf/util/callchain.h b/tools/perf/util/callchain.h
-index b2d128e..a926ae4 100644
---- a/tools/perf/util/callchain.h
-+++ b/tools/perf/util/callchain.h
-@@ -7,6 +7,7 @@
- #include "symbol.h"
- 
- enum chain_mode {
-+	CHAIN_NONE,
- 	CHAIN_FLAT,
- 	CHAIN_GRAPH_ABS,
- 	CHAIN_GRAPH_REL
+ 	if (c->x86 == 0x10 || c->x86 == 0x11)
+ 		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
+-- 
+1.6.4
+
+
