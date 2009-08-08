@@ -1,66 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756285AbZHHMOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756377AbZHHMPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756285AbZHHMOW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 08:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbZHHMOV
+	id S1756377AbZHHMPu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 08:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbZHHMPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 08:14:21 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48468 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754507AbZHHMOV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 08:14:21 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/COvh/qyfCNoPF9PAU79hKOBYuOrmxUOlJEjnnmn
-	fFpvCGQKFpDq7l
-Subject: [patch] perf_counter tools: fix libbfd detection for systems with
- libz dependency
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 08 Aug 2009 14:14:15 +0200
-Message-Id: <1249733655.6929.5.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46
+	Sat, 8 Aug 2009 08:15:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43892 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754608AbZHHMPt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 08:15:49 -0400
+Date: Sat, 8 Aug 2009 14:14:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Brice Goglin <Brice.Goglin@inria.fr>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf report: Display per-thread event counters
+Message-ID: <20090808121456.GA14671@elte.hu>
+References: <20090629192913.GA29295@elte.hu> <4A7B0C02.7060704@inria.fr> <1249580428.4975.14.camel@laptop> <4A7B175B.8030000@inria.fr> <1249585061.4975.17.camel@laptop> <4A7B28EA.20903@inria.fr> <20090806195924.GA22411@elte.hu> <4A7B68C3.7040706@inria.fr> <20090807063226.GA29532@elte.hu> <4A7C162C.1030707@inria.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A7C162C.1030707@inria.fr>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-perf_counter tools: fix libbfd detection for systems with libz dependency
 
-Due to a libz dependency in some distro's binutils package, demangle
-support isn't compiled in despite the necessary libraries being available.
-Fix this by adding a -lz link test to the dependency detection rules.
+* Brice Goglin <Brice.Goglin@inria.fr> wrote:
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
+> Here's a better patch. I moved everything to utils/values.[ch] so 
+> that we may reuse it in perf stat. [...]
 
- tools/perf/Makefile |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Nice patch! I've applied it, you can find it in the latest -tip 
+tree:
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 1916e44..60411e9 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -387,10 +387,14 @@ else
- 
- 	has_bfd_iberty := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -lbfd -liberty > /dev/null 2>&1 && echo y")
- 
-+	has_bfd_iberty_z := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -lbfd -liberty -lz > /dev/null 2>&1 && echo y")
-+
- 	ifeq ($(has_bfd),y)
- 		EXTLIBS += -lbfd
- 	else ifeq ($(has_bfd_iberty),y)
- 		EXTLIBS += -lbfd -liberty
-+	else ifeq ($(has_bfd_iberty_z),y)
-+		EXTLIBS += -lbfd -liberty -lz
- 	else
- 		msg := $(warning No bfd.h/libbfd found, install binutils-dev[el] to gain symbol demangling)
- 		BASIC_CFLAGS += -DNO_DEMANGLE
+  http://people.redhat.com/mingo/tip.git/README
 
+please send enhancements/fixes on top of this.
 
+> [...] But I don't see yet where I am suppose to get something like 
+> PERF_READ_EVENT in builtin-stat.c so I haven't touched it yet.
+
+Yeah. 'perf stat' is not really getting events but is doing a 
+read-out of the counter value(s) and constructs its 'read event' 
+that way. So you wont find PERF_READ_EVENT in builtin-stat.c, you'll 
+find:
+
+                res = read(fd[cpu][counter], single_count, nv * sizeof(u64));
+
+in read_counter(). The printout is then done in print_counter().
+
+> We get something like this now:
+> #  PID   TID  cache-misses  cache-references
+>   4658  4659        495581           3238779
+>   4658  4662        498246           3236823
+>   4658  4663        499531           3243162
+> 
+> Then it'll be easy to add --pretty=raw to display a single line 
+> per thread/event.
+
+ok.
+
+> By the way, -S was also used for --symbol... So I used -T/--thread 
+> here.
+
+Hm, indeed - and -s was taken for --sort. Maybe we could rename 
+-S/--symbols to -y/--symbols - this too is an i think rarely used 
+feature.
+
+I think pure 'statistics' runs like you do will be a pretty popular 
+workflow, so intuitive naming/placement of options is important.
+
+> perf report: Add -T/--threads to display per-thread counter values
+>     
+> We get something like this now:
+> #  PID   TID  cache-misses  cache-references
+>   4658  4659        495581           3238779
+>   4658  4662        498246           3236823
+>   4658  4663        499531           3243162
+
+Btw., another thing to do would be to allow the 'dual' recording of 
+both the stat values (collected when threads exit) and regular 
+samples that perf report deals with.
+
+I.e. dont handle 'perf record -s' as an exclusive thing to regular 
+'perf record', but instead have -s/--sample-type option that can 
+have such combinations:
+
+  -s stats
+  -s samples
+  -s call-graph
+
+And any combination thereof, such as:
+
+  -s stats,samples
+
+The default would be '-s samples'. Right now call-graph recording is 
+triggered via a separate option (-g/--call-graph) - but maybe it 
+could be merged into a more generic -s/--sample option mechanism?
+
+	Ingo
