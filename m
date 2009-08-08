@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752057AbZHHQEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751512AbZHHQKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752057AbZHHQEb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 12:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZHHQEa
+	id S1751512AbZHHQKY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 12:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbZHHQKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 12:04:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40469 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751778AbZHHQE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 12:04:28 -0400
-Date: Sat, 8 Aug 2009 16:04:01 GMT
-From: tip-bot for Tom Zanussi <tzanussi@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tzanussi@gmail.com, lizf@cn.fujitsu.com, fweisbec@gmail.com,
-       error27@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tzanussi@gmail.com, lizf@cn.fujitsu.com, fweisbec@gmail.com,
-       error27@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1249746576.6453.30.camel@tropicana>
-References: <1249746576.6453.30.camel@tropicana>
-Subject: [tip:tracing/core] tracing/filters: Don't use pred on alloc failure
-Message-ID: <tip-fb82ad719831db58e9baa4c67015aae3fe27e7e3@git.kernel.org>
-Git-Commit-ID: fb82ad719831db58e9baa4c67015aae3fe27e7e3
-X-Mailer: tip-git-log-daemon
+	Sat, 8 Aug 2009 12:10:23 -0400
+Received: from mail4-relais-sop.national.inria.fr ([192.134.164.105]:22884
+	"EHLO mail4-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750833AbZHHQKX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 12:10:23 -0400
+X-IronPort-AV: E=Sophos;i="4.43,346,1246831200"; 
+   d="scan'208";a="44473557"
+Message-ID: <4A7DA37A.9010202@inria.fr>
+Date: Sat, 08 Aug 2009 18:10:34 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 08 Aug 2009 16:04:02 +0000 (UTC)
+To: Ingo Molnar <mingo@elte.hu>
+CC: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf report: Display per-thread event counters
+References: <20090629192913.GA29295@elte.hu> <4A7B0C02.7060704@inria.fr> <1249580428.4975.14.camel@laptop> <4A7B175B.8030000@inria.fr> <1249585061.4975.17.camel@laptop> <4A7B28EA.20903@inria.fr> <20090806195924.GA22411@elte.hu> <4A7B68C3.7040706@inria.fr> <20090807063226.GA29532@elte.hu> <4A7C162C.1030707@inria.fr> <20090808121456.GA14671@elte.hu>
+In-Reply-To: <20090808121456.GA14671@elte.hu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  fb82ad719831db58e9baa4c67015aae3fe27e7e3
-Gitweb:     http://git.kernel.org/tip/fb82ad719831db58e9baa4c67015aae3fe27e7e3
-Author:     Tom Zanussi <tzanussi@gmail.com>
-AuthorDate: Sat, 8 Aug 2009 10:49:36 -0500
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 8 Aug 2009 17:58:07 +0200
+Ingo Molnar wrote:
+>> [...] But I don't see yet where I am suppose to get something like 
+>> PERF_READ_EVENT in builtin-stat.c so I haven't touched it yet.
+>>     
+>
+> Yeah. 'perf stat' is not really getting events but is doing a 
+> read-out of the counter value(s) and constructs its 'read event' 
+> that way. So you wont find PERF_READ_EVENT in builtin-stat.c, you'll 
+> find:
+>
+>                 res = read(fd[cpu][counter], single_count, nv * sizeof(u64));
+>
+> in read_counter(). The printout is then done in print_counter().
+>   
 
-tracing/filters: Don't use pred on alloc failure
+Is there a way to get per-thread counters there? I wrote the code to
+gather per-cpu counters there, but I don't see any way to get the
+corresponding thread-id.
 
-Dan Carpenter sent me a fix to prevent pred from being used if
-it couldn't be allocated.  This updates his patch for the same
-problem in the tracing tree (which has changed this code quite
-substantially).
+I looked at perf record to get some help. But I don't see where the
+PERF_EVENT_READ are generated. I guess they are directly generated by
+the kernel, read by perf record, and written as is to the output file?
 
-Reported-by: Dan Carpenter <error27@gmail.com>
-Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <1249746576.6453.30.camel@tropicana>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-The original report:
+thanks,
+Brice
 
-create_logical_pred() could sometimes return NULL.
-
-It's a static checker complaining rather than problems at runtime...
-
-
----
- kernel/trace/trace_events_filter.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 27c2dbe..490337a 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -1050,6 +1050,8 @@ static int replace_preds(struct event_subsystem *system,
- 
- 		pred = create_pred(elt->op, operand1, operand2);
- add_pred:
-+		if (!pred)
-+			return -ENOMEM;
- 		if (call)
- 			err = filter_add_pred(ps, call, pred, false);
- 		else
