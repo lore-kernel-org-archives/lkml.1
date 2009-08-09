@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbZHITyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbZHITzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753522AbZHITyq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 15:54:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbZHITyp
+	id S1754097AbZHITzy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 15:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbZHITzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 15:54:45 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:45798 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753247AbZHITyn (ORCPT
+	Sun, 9 Aug 2009 15:55:52 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:23922 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753477AbZHITzF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 15:54:43 -0400
+	Sun, 9 Aug 2009 15:55:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=gX281GioA1klJ1rA/lMv3V41DUlha8+lsYdrwh7wCeMnbkMBrv3IXWdIhvNe2+MaEe
-         MOvEBItFqWoX4pwvN82EagEyXU+9i32w3v3ScUdRS2tCwe4FI+nCtxc1TlDCLXBE+mPj
-         ZXYKHVKpkqwB2ZOhmmcAYO4AyEeNuVVk1mb5k=
+        b=PILS+EkxbuZ7Yq5C/EkoXbXpGsL8MERw1W55StP8jZM+f0q78LSV/9DSfpGic2ob/B
+         +CUI2RPvU19zL/6/2VBAhRBj/DWxTb4UPudyf9+TYRG7E4i4+5GiRX9lfSK/59I+ZKth
+         LKf1V03nRWc/2QSWpOHmywn0shRR8ZOxdege8=
 From: Marcin Slusarz <marcin.slusarz@gmail.com>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Jens Axboe <axboe@kernel.dk>, Tim Waugh <tim@cyberelk.net>
-Subject: [PATCH 07/14] block: use printk_once
-Date: Sun,  9 Aug 2009 21:54:02 +0200
-Message-Id: <1249847649-11631-8-git-send-email-marcin.slusarz@gmail.com>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org
+Subject: [PATCH 12/14] scsi: use printk_once
+Date: Sun,  9 Aug 2009 21:54:07 +0200
+Message-Id: <1249847649-11631-13-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
 References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
@@ -30,88 +31,55 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Jens Axboe <axboe@kernel.dk>
-Cc: Tim Waugh <tim@cyberelk.net>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: linux-scsi@vger.kernel.org
 ---
- drivers/block/paride/pcd.c |   12 ++++--------
- drivers/block/sx8.c        |    4 +---
- drivers/block/viodasd.c    |   12 +++---------
- 3 files changed, 8 insertions(+), 20 deletions(-)
+ drivers/scsi/53c700.c             |    6 +-----
+ drivers/scsi/cxgb3i/cxgb3i_init.c |    7 +------
+ 2 files changed, 2 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/block/paride/pcd.c b/drivers/block/paride/pcd.c
-index 911dfd9..9f3518c 100644
---- a/drivers/block/paride/pcd.c
-+++ b/drivers/block/paride/pcd.c
-@@ -219,8 +219,6 @@ static int pcd_sector;		/* address of next requested sector */
- static int pcd_count;		/* number of blocks still to do */
- static char *pcd_buf;		/* buffer for request in progress */
+diff --git a/drivers/scsi/53c700.c b/drivers/scsi/53c700.c
+index f5a9add..c5f4fa7 100644
+--- a/drivers/scsi/53c700.c
++++ b/drivers/scsi/53c700.c
+@@ -291,7 +291,6 @@ NCR_700_detect(struct scsi_host_template *tpnt,
+ 	__u8 *memory;
+ 	__u32 *script;
+ 	struct Scsi_Host *host;
+-	static int banner = 0;
+ 	int j;
  
--static int pcd_warned;		/* Have we logged a phase warning ? */
--
- /* kernel glue structures */
- 
- static int pcd_block_open(struct block_device *bdev, fmode_t mode)
-@@ -417,12 +415,10 @@ static int pcd_completion(struct pcd_unit *cd, char *buf, char *fun)
- 					printk
- 					    ("%s: %s: Unexpected phase %d, d=%d, k=%d\n",
- 					     cd->name, fun, p, d, k);
--				if ((verbose < 2) && !pcd_warned) {
--					pcd_warned = 1;
--					printk
--					    ("%s: WARNING: ATAPI phase errors\n",
--					     cd->name);
--				}
-+				if (verbose < 2)
-+					printk_once(
-+					    "%s: WARNING: ATAPI phase errors\n",
-+					    cd->name);
- 				mdelay(1);
- 			}
- 			if (k++ > PCD_TMO) {
-diff --git a/drivers/block/sx8.c b/drivers/block/sx8.c
-index da403b6..f5cd2e8 100644
---- a/drivers/block/sx8.c
-+++ b/drivers/block/sx8.c
-@@ -1564,15 +1564,13 @@ static int carm_init_shm(struct carm_host *host)
- 
- static int carm_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if(tpnt->sdev_attrs == NULL)
+@@ -385,10 +384,7 @@ NCR_700_detect(struct scsi_host_template *tpnt,
+ 	else
+ 		hostdata->rev = (NCR_700_readb(host, CTEST7_REG)>>4) & 0x0f;
+ 	hostdata->fast = (NCR_700_readb(host, CTEST9_REG) == 0);
+-	if (banner == 0) {
+-		printk(KERN_NOTICE "53c700: Version " NCR_700_VERSION " By James.Bottomley@HansenPartnership.com\n");
+-		banner = 1;
+-	}
++	printk_once(KERN_NOTICE "53c700: Version " NCR_700_VERSION " By James.Bottomley@HansenPartnership.com\n");
+ 	printk(KERN_NOTICE "scsi%d: %s rev %d %s\n", host->host_no,
+ 	       hostdata->chip710 ? "53c710" :
+ 	       (hostdata->fast ? "53c700-66" : "53c700"),
+diff --git a/drivers/scsi/cxgb3i/cxgb3i_init.c b/drivers/scsi/cxgb3i/cxgb3i_init.c
+index 042d9bc..8c9285f 100644
+--- a/drivers/scsi/cxgb3i/cxgb3i_init.c
++++ b/drivers/scsi/cxgb3i/cxgb3i_init.c
+@@ -43,12 +43,7 @@ static struct cxgb3_client t3c_client = {
+  */
+ static void open_s3_dev(struct t3cdev *t3dev)
  {
--	static unsigned int printed_version;
- 	struct carm_host *host;
- 	unsigned int pci_dac;
- 	int rc;
- 	struct request_queue *q;
- 	unsigned int i;
- 
--	if (!printed_version++)
--		printk(KERN_DEBUG DRV_NAME " version " DRV_VERSION "\n");
-+	printk_once(KERN_DEBUG DRV_NAME " version " DRV_VERSION "\n");
- 
- 	rc = pci_enable_device(pdev);
- 	if (rc)
-diff --git a/drivers/block/viodasd.c b/drivers/block/viodasd.c
-index 390d69b..b441ce3 100644
---- a/drivers/block/viodasd.c
-+++ b/drivers/block/viodasd.c
-@@ -416,15 +416,9 @@ retry:
- 		goto retry;
- 	}
- 	if (we.max_disk > (MAX_DISKNO - 1)) {
--		static int warned;
+-	static int vers_printed;
 -
--		if (warned == 0) {
--			warned++;
--			printk(VIOD_KERN_INFO
--				"Only examining the first %d "
--				"of %d disks connected\n",
--				MAX_DISKNO, we.max_disk + 1);
--		}
-+		printk_once(VIOD_KERN_INFO
-+			"Only examining the first %d of %d disks connected\n",
-+			MAX_DISKNO, we.max_disk + 1);
- 	}
+-	if (!vers_printed) {
+-		printk(KERN_INFO "%s", version);
+-		vers_printed = 1;
+-	}
++	printk_once(KERN_INFO "%s", version);
  
- 	/* Send the close event to OS/400.  We DON'T expect a response */
+ 	cxgb3i_ddp_init(t3dev);
+ 	cxgb3i_sdev_add(t3dev, &t3c_client);
 -- 
 1.6.3.3
 
