@@ -1,107 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751884AbZHIUtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752238AbZHIUyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751884AbZHIUtR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 16:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbZHIUtR
+	id S1752238AbZHIUyS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 16:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbZHIUyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 16:49:17 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43389 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751112AbZHIUtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 16:49:16 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH update x2] PM: Introduce core framework for run-time PM of I/O devices (rev. 13)
-Date: Sun, 9 Aug 2009 22:49:53 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       Magnus Damm <magnus.damm@gmail.com>, Greg KH <gregkh@suse.de>,
-       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0908091100470.10326-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908091100470.10326-100000@netrider.rowland.org>
+	Sun, 9 Aug 2009 16:54:18 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:6133 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751613AbZHIUyR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 16:54:17 -0400
+X-Trace: 240009575/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.54.164/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.54.164
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgoFAL/UfkpPRTak/2dsb2JhbACBUso5hBgF
+X-IronPort-AV: E=Sophos;i="4.43,349,1246834800"; 
+   d="scan'208";a="240009575"
+Date: Sun, 9 Aug 2009 21:53:53 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Ingo Molnar <mingo@elte.hu>, Ben Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_PREEMPT_RCU in next/mmotm
+In-Reply-To: <20090809185753.GG6866@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0908092139090.3194@sister.anvils>
+References: <Pine.LNX.4.64.0908081956580.12300@sister.anvils>
+ <20090808235634.GB6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908090414320.18096@sister.anvils>
+ <20090809053308.GD6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908091209150.23855@sister.anvils>
+ <Pine.LNX.4.64.0908091346450.27358@sister.anvils> <20090809185753.GG6866@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908092249.53401.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 09 August 2009, Alan Stern wrote:
-> On Sun, 9 Aug 2009, Rafael J. Wysocki wrote:
+On Sun, 9 Aug 2009, Paul E. McKenney wrote:
 > 
-> > > >  How exactly would you like to implement it
-> > > > instead?
-> > > 
-> > > As described above.  The barrier would be equivalent to
-> > > pm_runtime_get_noresume followed by pm_runtime_disable except that it
-> > > wouldn't actually disable anything.
-> > 
-> > OK, I can do that, but the only difference between that and the above sequence
-> > of three calls will be the possibility to call resume helpers while the
-> > "barrier" is in progress.
+> I introduced the problem in commit 7fe616c5dd50a50f334edec1ea0580b90b7af0d9
+> by changing from register_cpu_notifier() to hotcpu_notifier().  The former
+> lets you know when CPUs come on line unconditionally, the latter only
+> when CONFIG_HOTPLUG_CPU is in effect.
 > 
-> Exactly.  In other words, if the driver tries to carry out a resume
-> while the barrier is running, the resume won't get lost.  Whereas with 
-> the temporarily-disable approach, it _would_ get lost.
+> But hotcpu_notifier() is much nicer to use, so I propose introducing
+> a cpu_notifier() that is invoked like hotcpu_notifier() is, but is
+> unconditional in the same way that register_cpu_notifier().
 > 
-> > Allowing runtime PM helpers to be run during system sleep transitions would be
-> > problematic IMHO, because the run-time PM 'states' are not well defined at that
-> > time.  Consequently, the rules that the PM helpers follow do not really hold
-> > during system sleep transitions.
+> Something like the following (untested, probably does not compile):
 > 
-> The workqueue will be frozen, so runtime PM helpers will run only if
-> they are invoked more or less directly by the driver (i.e., through
-> pm_runtime_resume, ...).  I think we should allow drivers to do what
-> they want, especially between the "prepare" and "suspend" stages.
+> diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+> index 4d668e0..d5dfc1f 100644
+> --- a/include/linux/cpu.h
+> +++ b/include/linux/cpu.h
+> @@ -48,6 +48,15 @@ struct notifier_block;
+>  
+>  #ifdef CONFIG_SMP
+>  /* Need to know about CPUs going up/down? */
+> +#if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE)
+> +#define cpu_notifier(fn, pri) {					\
+> +	static struct notifier_block fn##_nb __cpuinitdata =	\
+> +		{ .notifier_call = fn, .priority = pri };	\
+> +	register_cpu_notifier(&fn##_nb);			\
+> +}
+> +#else /* #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
+> +#define cpu_notifier(fn, pri)	do { (void)(fn); } while (0)
+> +#endif /* #else #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  extern int register_cpu_notifier(struct notifier_block *nb);
+>  extern void unregister_cpu_notifier(struct notifier_block *nb);
+> @@ -99,11 +108,7 @@ extern struct sysdev_class cpu_sysdev_class;
+>  
+>  extern void get_online_cpus(void);
+>  extern void put_online_cpus(void);
+> -#define hotcpu_notifier(fn, pri) {				\
+> -	static struct notifier_block fn##_nb __cpuinitdata =	\
+> -		{ .notifier_call = fn, .priority = pri };	\
+> -	register_cpu_notifier(&fn##_nb);			\
+> -}
+> +#define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
+>  #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
+>  #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)
+>  int cpu_down(unsigned int cpu);
+> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+> index 9f0584e..c1bbfd5 100644
+> --- a/kernel/rcupdate.c
+> +++ b/kernel/rcupdate.c
+> @@ -251,7 +251,7 @@ void __init rcu_init(void)
+>  	int i;
+>  
+>  	__rcu_init();
+> -	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
+> +	cpu_notifier(rcu_barrier_cpu_hotplug, 0);
+>  
+>  	/*
+>  	 * We don't need protection against CPU-hotplug here because
+> 
+[ removed repeat of rcupdate.c patch ]
+> 
+> Thoughts?
 
-Well, I'm not sure if that's a good idea, but also I have no good techincal
-arguments against it at the moment.  And I'm too tired to argue. ;-)
+That builds and works for me, with or without CONFIG_HOTPLUG_CPU.
 
-> > Also, in principle the device driver's ->suspend() routine  (the non-runtime
-> > one), or even the ->prepare() callback, may notice that the remote wake-up has
-> > happened and put the device back into the full power state and return -EBUSY.
-> 
-> It may.  But then again, it may not -- it may depend on the runtime PM  
-> core to make sure that resume requests get forwarded appropriately.
-> 
-> Furthermore, if you disable runtime PM _before_ calling the prepare 
-> method, that leaves a window during which the driver has no reason to 
-> realize that anything unusual is going on.
-> 
-> > Still, we can allow runtime PM requests to be put into the workqueue during
-> > system sleep transitions, to be executed after the resume (or in case the
-> > suspend fails, that will make the action described in the previous paragraph
-> > somewhat easier).  It seems we'd need a separate flag for it, though.
-> 
-> If every device gets resumed at the end of a system sleep, even the
-> ones that were runtime-suspended before the sleep began, then there's
-> no reason to preserve requests in the workqueue.  But if
-> previously-suspended devices don't get resumed at the end of a system
-> sleep, then we should allow requests to remain in the workqueue.
+But I didn't get what you're achieving with the MODULE part of it;
+and (I'm not a notifier buff at all) it does seems rather baroque to
+me - a single callsite, why not stick with register_cpu_notifier()?
 
-We also should preserve the requests in case the system sleep transition
-fails.
+Ah, perhaps it's your ambition to move others over to this
+(or perhaps it's your ambition to leave that to someone else ;-)
 
-> In the end, it's probably safer and easier just to leave the workqueue 
-> alone -- freeze and unfreeze it, but don't meddle with its contents.
-> 
-> The whole question of remote wakeup vs. runtime suspend vs. system 
-> sleep is complicated, and people haven't dealt with all the issues yet.
-
-Agreed.
- 
-> For instance, it seems quite likely that with some devices you would 
-> want to enable remote wakeup during runtime suspend but not during 
-> system sleep.  We don't have any good way to do this.
-
-Yes, for now we have to assume that any device with wakeup enabled is a
-wakeup device.
-
-OK, I'll post the new version of the patch shortly.  Please check if the
-barrier mechanism is implemeted and used correctly.
-
-Best,
-Rafael
+Hugh
