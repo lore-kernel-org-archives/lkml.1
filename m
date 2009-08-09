@@ -1,127 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbZHILNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752487AbZHILU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752627AbZHILNQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 07:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbZHILNP
+	id S1752487AbZHILU6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 07:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbZHILU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 07:13:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40982 "EHLO hera.kernel.org"
+	Sun, 9 Aug 2009 07:20:58 -0400
+Received: from slimlogic.co.uk ([89.16.172.20]:58390 "EHLO slimlogic.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751899AbZHILNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 07:13:14 -0400
-Date: Sun, 9 Aug 2009 11:12:40 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090809024235.GA10146@nowhere>
-References: <20090809024235.GA10146@nowhere>
-Subject: [tip:perfcounters/urgent] perf tools: callchain: Fix bad rounding of minimum rate
-Message-ID: <tip-c0a8865e32c8d1a562db38e06ef31ef23282f646@git.kernel.org>
-Git-Commit-ID: c0a8865e32c8d1a562db38e06ef31ef23282f646
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 09 Aug 2009 11:12:41 +0000 (UTC)
+	id S1751591AbZHILU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 07:20:57 -0400
+Subject: Re: [PATCH 1/8] Regulator: Add TPS65023 regulator driver
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Anuj Aggarwal <anuj.aggarwal@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <20090807155358.GI639@sirena.org.uk>
+References: <1249658726-10769-1-git-send-email-anuj.aggarwal@ti.com>
+	 <20090807155358.GI639@sirena.org.uk>
+Content-Type: text/plain
+Date: Sun, 09 Aug 2009 12:20:55 +0100
+Message-Id: <1249816855.11250.33.camel@vega>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c0a8865e32c8d1a562db38e06ef31ef23282f646
-Gitweb:     http://git.kernel.org/tip/c0a8865e32c8d1a562db38e06ef31ef23282f646
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Sun, 9 Aug 2009 04:19:15 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 9 Aug 2009 13:07:46 +0200
+On Fri, 2009-08-07 at 16:53 +0100, Mark Brown wrote:
+> On Fri, Aug 07, 2009 at 08:55:26PM +0530, Anuj Aggarwal wrote:
+> 
 
-perf tools: callchain: Fix bad rounding of minimum rate
+> > +static const struct tps_info tps65023_regs[] = {
+> > +	{
+> > +	.name = "VDCDC1",
+> > +	.min_uV =  800000,
+> > +	.max_uV = 1600000,
+> > +	.fixed = 0,
 
-Sometimes we get callchain branches that have a rate under the
-limit given by the user.
+No need to add fixed = 0 in this array as compiler will do this for you.
 
-Say you launched:
+> > +	.table_len = ARRAY_SIZE(VDCDC1_VSEL_table),
+> > +	.table = VDCDC1_VSEL_table,
+> > +	},
+> 
+> Indentation here is a bit non-standard - I'd expect either the {} around
+> the elements to be in column 0 or another level of indentation for the
+> fields.
+> 
+> > +	{
+> > +	.name = "VDCDC2",
+> > +	.min_uV =  3300000,
+> > +	.max_uV = 3300000,
+> > +	.fixed = 1,
+> > +	.table_len = 0,
+> > +	},
+> 
+> You could drop the fixed flag and just have fixed be inferred from
+> min_uV == max_uV?
+> 
 
- perf record -f -g -a ./hackbench 10
- perf report -g fractal,10.0
+To be honest I prefer having the fixed = 1 here. It stands out more and
+imho keeps things simple. Also table_len could be omitted.
 
-And you got:
+Thanks
 
-2.33%       hackbench  [kernel]                  [k] _spin_lock_irqsave
-                |
-                |--78.57%-- remove_wait_queue
-                |          poll_freewait
-                |          do_sys_poll
-                |          sys_poll
-                |          sysenter_dispatch
-                |          0xf7ffa430
-                |          0x1ffadea3c
-                |
-                |--7.14%-- __up_read
-                |          up_read
-                |          do_page_fault
-                |          page_fault
-                |          0xf7ffa430
-                |          0xa0df710000000a
-                ...
+Liam
 
-It is abnormal to get a 7.14% branch whereas we passed a 10%
-filter.
-
-The problem is that we round down the minimum threshold. This
-happens mostly when we have very low number of events. If the
-total amount of your branch is 4 and you have a subranch of 3
-events, filtering to 90% will be computed like follows:
-
-  limit = 4 * 0.9;
-
-The result is about 3.6, but the cast to integer will round
-down to 3. It means that our filter is actually of 75%
-
-We must then explicitly round up the minimum threshold.
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: acme@redhat.com
-Cc: peterz@infradead.org
-Cc: efault@gmx.de
-LKML-Reference: <20090809024235.GA10146@nowhere>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- tools/perf/util/callchain.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
-index a8e67aa..0114734 100644
---- a/tools/perf/util/callchain.c
-+++ b/tools/perf/util/callchain.c
-@@ -13,6 +13,7 @@
- #include <stdio.h>
- #include <stdbool.h>
- #include <errno.h>
-+#include <math.h>
- 
- #include "callchain.h"
- 
-@@ -112,7 +113,7 @@ static void __sort_chain_graph_rel(struct callchain_node *node,
- 	u64 min_hit;
- 
- 	node->rb_root = RB_ROOT;
--	min_hit = node->children_hit * min_percent / 100.0;
-+	min_hit = ceil(node->children_hit * min_percent);
- 
- 	chain_for_each_child(child, node) {
- 		__sort_chain_graph_rel(child, min_percent);
-@@ -126,7 +127,7 @@ static void
- sort_chain_graph_rel(struct rb_root *rb_root, struct callchain_node *chain_root,
- 		     u64 min_hit __used, struct callchain_param *param)
- {
--	__sort_chain_graph_rel(chain_root, param->min_percent);
-+	__sort_chain_graph_rel(chain_root, param->min_percent / 100.0);
- 	rb_root->rb_node = chain_root->rb_root.rb_node;
- }
- 
