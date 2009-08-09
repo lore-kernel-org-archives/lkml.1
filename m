@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752945AbZHIWer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbZHIWjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752945AbZHIWer (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 18:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZHIWeq
+	id S1752551AbZHIWjM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 18:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbZHIWjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 18:34:46 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:54652 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751183AbZHIWep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 18:34:45 -0400
-Message-ID: <4A7F4EFF.6090903@us.ibm.com>
-Date: Sun, 09 Aug 2009 15:34:39 -0700
+	Sun, 9 Aug 2009 18:39:12 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:60824 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751183AbZHIWjL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 18:39:11 -0400
+Message-ID: <4A7F4FFE.4000603@us.ibm.com>
+Date: Sun, 09 Aug 2009 15:38:54 -0700
 From: Darren Hart <dvhltc@us.ibm.com>
 User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
 To: linux-rt-users <linux-rt-users@vger.kernel.org>,
-       "lkml, " <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
+       "lkml, " <linux-kernel@vger.kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>,
        Steven Rostedt <rostedt@goodmis.org>,
        Eric Dumazet <eric.dumazet@gmail.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-Subject: [PATCH v3] futex: update futex_q lock_ptr on requeue proxy lock
+       Dinakar Guniguntala <dino@in.ibm.com>, John Stultz <jstultz@us.ibm.com>
+Subject: [PATCH RT v3] futex: update futex_q lock_ptr on requeue proxy lock
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -53,8 +53,9 @@ the ownership is fixed up, it will find the pi_state hung off a waiter's
 futex_wait_requeue_pi() fixes up the owner, it will also move the pi_state from
 the old owner's task->pi_state_list to its own.
 
-V3: Fix plist lock name for application to mainline (rather than -rt)
-    Compile tested against tip/v2.6.31-rc5.
+V3: Resend of V2 with updated patch header indicating it is for RT
+V2: Add DEBUG_PI_LIST support and correct locking requirements commentary
+V1: Initial Patch
 
 Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
@@ -71,10 +72,10 @@ CC: John Stultz <johnstul@us.ibm.com>
 
 
 diff --git a/kernel/futex.c b/kernel/futex.c
-index 0672ff8..8cc3ee1 100644
+index abce822..df30983 100644
 --- a/kernel/futex.c
 +++ b/kernel/futex.c
-@@ -1010,15 +1010,19 @@ void requeue_futex(struct futex_q *q, struct futex_hash_bucket *hb1,
+@@ -1059,15 +1059,19 @@ void requeue_futex(struct futex_q *q, struct futex_hash_bucket *hb1,
   * requeue_pi_wake_futex() - Wake a task that acquired the lock during requeue
   * q:	the futex_q
   * key:	the key of the requeue target futex
@@ -96,19 +97,19 @@ index 0672ff8..8cc3ee1 100644
  {
  	drop_futex_key_refs(&q->key);
  	get_futex_key_refs(key);
-@@ -1030,6 +1034,11 @@ void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key)
+@@ -1079,6 +1083,11 @@ void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key)
  	WARN_ON(!q->rt_waiter);
  	q->rt_waiter = NULL;
  
 +	q->lock_ptr = &hb->lock;
 +#ifdef CONFIG_DEBUG_PI_LIST
-+	q->list.plist.lock = &hb->lock;
++	q->list.plist.slock = &hb->lock;
 +#endif
 +
  	wake_up_state(q->task, TASK_NORMAL);
  }
  
-@@ -1088,7 +1097,7 @@ static int futex_proxy_trylock_atomic(u32 __user *pifutex,
+@@ -1137,7 +1146,7 @@ static int futex_proxy_trylock_atomic(u32 __user *pifutex,
  	ret = futex_lock_pi_atomic(pifutex, hb2, key2, ps, top_waiter->task,
  				   set_waiters);
  	if (ret == 1)
@@ -117,7 +118,7 @@ index 0672ff8..8cc3ee1 100644
  
  	return ret;
  }
-@@ -1273,7 +1282,7 @@ retry_private:
+@@ -1323,7 +1332,7 @@ retry_private:
  							this->task, 1);
  			if (ret == 1) {
  				/* We got the lock. */
