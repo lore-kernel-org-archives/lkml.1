@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752045AbZHILwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752654AbZHIMIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752045AbZHILwp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 07:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbZHILwo
+	id S1752654AbZHIMIr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 08:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZHIMIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 07:52:44 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33006 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750899AbZHILwo convert rfc822-to-8bit (ORCPT
+	Sun, 9 Aug 2009 08:08:46 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53220 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752287AbZHIMIp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 07:52:44 -0400
-Message-ID: <20090809144920.1ore45pyckgs0cko@webmail.chem.elte.hu>
-Date: Sun, 09 Aug 2009 14:49:20 +0200
-From: System Administrator <info@IT.edu>
-Reply-to: accountupdate@tmail.tv
-To: undisclosed-recipients:;
-Subject: Your E-mail Account Expire in Two (2) Days.
+	Sun, 9 Aug 2009 08:08:45 -0400
+Date: Sun, 9 Aug 2009 14:08:36 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Shaohua Li <shaohua.li@intel.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Joel Schopp <jschopp@austin.ibm.com>,
+       "Brown, Len" <len.brown@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Balbir Singh <balbir@in.ibm.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>,
+       "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+Message-ID: <20090809120836.GB1338@ucw.cz>
+References: <20090805142311.553.78286.stgit@sofia.in.ibm.com> <20090806015855.GA20596@sli10-desk.sh.intel.com> <20090806043351.GC14333@dirshya.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	DelSp=Yes	format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.1)
-X-ELTE-SpamScore: 5.5
-X-ELTE-SpamLevel: sssss
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=5.5 required=5.9 tests=BAYES_40,RCVD_IN_BL_SPAMCOP_NET,RCVD_IN_SBL autolearn=no SpamAssassin version=3.2.5
-	2.5 RCVD_IN_BL_SPAMCOP_NET RBL: Received via a relay in bl.spamcop.net
-	[Blocked - see <http://www.spamcop.net/bl.shtml?41.220.75.3>]
-	2.5 RCVD_IN_SBL            RBL: Received via a relay in Spamhaus SBL
-	[41.220.75.3 listed in zen.spamhaus.org]
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3797]
+In-Reply-To: <20090806043351.GC14333@dirshya.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Webmail User,
+Hi!
 
-This message was sent automatically by a program on Webmail admin center
-which periodically checks the size of inbox, where new messages are
-received. The program is run weekly to ensure no one's inbox grows too
-large. If your inbox becomes too large, you will be unable to receive new
-emails.
+> > > Also, approaches such as [1] can make use of this
+> > > extended infrastructure instead of putting the CPU to an arbitrary C-state
+> > > when it is offlined, thereby providing the system administrator a rope to hang
+> > > himself with should he feel the need to do so.
+> > I didn't see the reason why administrator needs to know which state offline cpu
+> > should stay. Don't know about powerpc side, but in x86 side, it appears deepest
+> > C-state is already preferred.
+> 
+> Yes that is what we would expect, but the deepest sleep state may be
+> restricted by BIOS or other system level parameters.  This was the
+> main objection to Venki's deepest sleep state for offline cpus
+> patch.
 
-Just before this message was sent, you had 18 Megabytes (MB) or more of
-messages stored in your inbox. To help us re-set your SPACE on our
-database prior to maintain your INBOX, you must reply to this e-mail and
-enter your Current User name ( ... ... ... ... ) and Password ( ... ......
-... ) e-mail ( ... ... ... ... ).
+'May be restricted'? Kernel already needs to know about that
+restriction, just do the right thing...
 
-You will continue to receive this warning message periodically if your
-inbox size continues to be between 18 and 50 MB. If your inbox size grows
-to 50 MB, then a program on Webmail admin center will move your oldest
-email to a folder in your home directory to ensure that you will continue
-to be able to receive incoming email. You will be notified by email that
-this has taken place. If your inbox grows to 50 MB, you will be unable to
-receive new email as it will be returned to the sender.
-
-Note: Your Account Expire in 2(Days). After you read this message, it is
-best to REPLY with the required information to upgrade MailBox. Reply to
-this message immediately Reactivate your Account.
-
-Thank you for your cooperation.
-Webmail Help Desk.
-System Administrator.
--------------------------------------------
-
-
-
-
-----------------------------------------------------------------
-This message was sent using IMP, the Internet Messaging Program.
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
