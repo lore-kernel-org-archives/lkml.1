@@ -1,966 +1,546 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZHIMRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752835AbZHIMTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbZHIMRj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 08:17:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbZHIMRi
+	id S1752835AbZHIMTo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 08:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbZHIMTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 08:17:38 -0400
-Received: from waldorf.bytemark.co.uk ([212.110.162.22]:57122 "EHLO
-	waldorf.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751227AbZHIMRg (ORCPT
+	Sun, 9 Aug 2009 08:19:44 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:50090 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751538AbZHIMTm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 08:17:36 -0400
-Date: Sun, 9 Aug 2009 14:17:16 +0200
-From: "Emilio G. Cota" <cota@braap.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-Cc: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [patch 2/5] Staging: vme: add VME userspace driver
-Message-ID: <20090809121715.GA3884@braap.org>
-References: <20090803205657.964064732@mini.kroah.org> <20090803210116.GC28430@kroah.com> <20090808232259.GA29303@braap.org>
+	Sun, 9 Aug 2009 08:19:42 -0400
+Date: Sun, 9 Aug 2009 17:45:30 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, andi.kleen@intel.com,
+       Prarit Bhargava <prarit@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Help Resource Counters Scale Better (v3)
+Message-ID: <20090809121530.GA5833@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090807221238.GJ9686@balbir.in.ibm.com> <39eafe409b85053081e9c6826005bb06.squirrel@webmail-b.css.fujitsu.com> <20090808060531.GL9686@balbir.in.ibm.com> <99f2a13990d68c34c76c33581949aefd.squirrel@webmail-b.css.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090808232259.GA29303@braap.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <99f2a13990d68c34c76c33581949aefd.squirrel@webmail-b.css.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(oops, just correcting Sebastien's e-mail address)
+Hi, 
 
-Emilio G. Cota wrote:
-> I remember we had a look at the vmelinux interface, but it really
-> was so limited that we decided to get rid of it altogether. Do you
-> really think it's worth bringing it back to life? Since it's never
-> been merged into the kernel, why don't we just get it right this time
-> and forget about it?
-> 
-> Instead of using that we implemented a heretic IOCTL-based
-> interface for user-space; at least with it you could create a
-> driver (with no interrupt support) for a device in user-space.
-> We actually don't use it, but well, just to get inspiration, here it
-> goes:
-> 
-> /**
->  * \name Window management ioctl numbers
->  */
-> /** Get a physical window attributes */
-> #define VME_IOCTL_GET_WINDOW_ATTR       _IOWR('V', 0, struct
-> vme_mapping)
-> /** Create a physical window */
-> #define VME_IOCTL_CREATE_WINDOW         _IOW( 'V', 1, struct
-> vme_mapping)
-> /** Destroy a physical window */
-> #define VME_IOCTL_DESTROY_WINDOW        _IOW( 'V', 2, int)
-> /** Create a mapping over a physical window */
-> #define VME_IOCTL_FIND_MAPPING          _IOWR('V', 3, struct
-> vme_mapping)
-> /** Remove a mapping */
-> #define VME_IOCTL_RELEASE_MAPPING       _IOW( 'V', 4, struct
-> vme_mapping)
-> /** Get the create on find failed flag */
-> #define VME_IOCTL_GET_CREATE_ON_FIND_FAIL       _IOR( 'V', 5, unsigned
-> int)
-> /** Set the create on find failed flag */
-> #define VME_IOCTL_SET_CREATE_ON_FIND_FAIL       _IOW( 'V', 6, unsigned
-> int)
-> /** Get the destroy on remove flag */
-> #define VME_IOCTL_GET_DESTROY_ON_REMOVE _IOR( 'V', 7, unsigned int)
-> /** Set the destroy on remove flag */
-> #define VME_IOCTL_SET_DESTROY_ON_REMOVE _IOW( 'V', 8, unsigned int)
-> /** Get bus error status */
-> #define VME_IOCTL_GET_BUS_ERROR         _IOR( 'V', 9, unsigned int)
-> /** Start a DMA transfer */
-> #define VME_IOCTL_START_DMA             _IOWR('V', 10, struct vme_dma)
-> 
-> [ grab the code from here: http://repo.or.cz/w/tsi148vmebridge.git .
->   Please note there's some backwards-compatible crap for old user-space
->   LynxOS code, called CES. Ignore it. ]
-> 
-> By the way, please try to be consistent with naming, e.g. I see window,
-> then see "image", and I have to think hard to see whether they mean
-> the same or not.. err, do they?
-> 
-> E.
-> 
-> (I'll leave this here because of added Cc)
-> Greg K-H wrote:
-> > From: Martyn Welch <martyn.welch@gefanuc.com>
-> > 
-> > Adds a VME userspace access driver
-> > 
-> > Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > ---
-> >  drivers/staging/vme/Kconfig            |    4 
-> >  drivers/staging/vme/Makefile           |    2 
-> >  drivers/staging/vme/devices/Kconfig    |    8 
-> >  drivers/staging/vme/devices/Makefile   |    5 
-> >  drivers/staging/vme/devices/vme_user.c |  771 +++++++++++++++++++++++++++++++++
-> >  drivers/staging/vme/devices/vme_user.h |   43 +
-> >  6 files changed, 830 insertions(+), 3 deletions(-)
-> > 
-> > --- /dev/null
-> > +++ b/drivers/staging/vme/devices/Kconfig
-> > @@ -0,0 +1,8 @@
-> > +comment "VME Device Drivers"
-> > +
-> > +config VME_USER
-> > +	tristate "VME user space access driver"
-> > +	help
-> > +	  If you say Y here you want to be able to access a limited number of
-> > +	  VME windows in a manner at least semi-compatible with the interface
-> > +	  provided with the original driver at http://vmelinux.org/.
-> > --- /dev/null
-> > +++ b/drivers/staging/vme/devices/Makefile
-> > @@ -0,0 +1,5 @@
-> > +#
-> > +# Makefile for the VME device drivers.
-> > +#
-> > +
-> > +obj-$(CONFIG_VME_USER)		+= vme_user.o
-> > --- /dev/null
-> > +++ b/drivers/staging/vme/devices/vme_user.c
-> > @@ -0,0 +1,771 @@
-> > +/*
-> > + * VMEbus User access driver
-> > + *
-> > + * Author: Martyn Welch <martyn.welch@gefanuc.com>
-> > + * Copyright 2008 GE Fanuc Intelligent Platforms Embedded Systems, Inc.
-> > + *
-> > + * Based on work by:
-> > + *   Tom Armistead and Ajit Prem
-> > + *     Copyright 2004 Motorola Inc.
-> > + *
-> > + *
-> > + * This program is free software; you can redistribute  it and/or modify it
-> > + * under  the terms of  the GNU General  Public License as published by the
-> > + * Free Software Foundation;  either version 2 of the  License, or (at your
-> > + * option) any later version.
-> > + */
-> > +
-> > +#include <linux/cdev.h>
-> > +#include <linux/delay.h>
-> > +#include <linux/device.h>
-> > +#include <linux/dma-mapping.h>
-> > +#include <linux/errno.h>
-> > +#include <linux/init.h>
-> > +#include <linux/ioctl.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/mm.h>
-> > +#include <linux/module.h>
-> > +#include <linux/pagemap.h>
-> > +#include <linux/pci.h>
-> > +#include <linux/semaphore.h>
-> > +#include <linux/spinlock.h>
-> > +#include <linux/syscalls.h>
-> > +#include <linux/types.h>
-> > +#include <linux/version.h>
-> > +
-> > +#include <asm/io.h>
-> > +#include <asm/uaccess.h>
-> > +
-> > +#include "../vme.h"
-> > +#include "vme_user.h"
-> > +
-> > +/* Currently Documentation/devices.txt defines the following for VME:
-> > + *
-> > + * 221 char	VME bus
-> > + * 		  0 = /dev/bus/vme/m0		First master image
-> > + * 		  1 = /dev/bus/vme/m1		Second master image
-> > + * 		  2 = /dev/bus/vme/m2		Third master image
-> > + * 		  3 = /dev/bus/vme/m3		Fourth master image
-> > + * 		  4 = /dev/bus/vme/s0		First slave image
-> > + * 		  5 = /dev/bus/vme/s1		Second slave image
-> > + * 		  6 = /dev/bus/vme/s2		Third slave image
-> > + * 		  7 = /dev/bus/vme/s3		Fourth slave image
-> > + * 		  8 = /dev/bus/vme/ctl		Control
-> > + *
-> > + * 		It is expected that all VME bus drivers will use the
-> > + * 		same interface.  For interface documentation see
-> > + * 		http://www.vmelinux.org/.
-> > + *
-> > + * However the VME driver at http://www.vmelinux.org/ is rather old and doesn't
-> > + * even support the tsi148 chipset (which has 8 master and 8 slave windows).
-> > + * We'll run with this or now as far as possible, however it probably makes
-> > + * sense to get rid of the old mappings and just do everything dynamically.
-> > + *
-> > + * So for now, we'll restrict the driver to providing 4 masters and 4 slaves as
-> > + * defined above and try to support at least some of the interface from
-> > + * http://www.vmelinux.org/ as an alternative drive can be written providing a
-> > + * saner interface later.
-> > + */
-> > +#define VME_MAJOR	221	/* VME Major Device Number */
-> > +#define VME_DEVS	9	/* Number of dev entries */
-> > +
-> > +#define MASTER_MINOR	0
-> > +#define MASTER_MAX	3
-> > +#define SLAVE_MINOR	4
-> > +#define SLAVE_MAX	7
-> > +#define CONTROL_MINOR	8
-> > +
-> > +#define PCI_BUF_SIZE  0x20000	/* Size of one slave image buffer */
-> > +
-> > +/*
-> > + * Structure to handle image related parameters.
-> > + */
-> > +typedef struct {
-> > +	void __iomem *kern_buf;	/* Buffer address in kernel space */
-> > +	dma_addr_t pci_buf;	/* Buffer address in PCI address space */
-> > +	unsigned long long size_buf;	/* Buffer size */
-> > +	struct semaphore sem;	/* Semaphore for locking image */
-> > +	struct device *device;	/* Sysfs device */
-> > +	struct vme_resource *resource;	/* VME resource */
-> > +	int users;		/* Number of current users */
-> > +} image_desc_t;
-> > +static image_desc_t image[VME_DEVS];
-> > +
-> > +typedef struct {
-> > +	unsigned long reads;
-> > +	unsigned long writes;
-> > +	unsigned long ioctls;
-> > +	unsigned long irqs;
-> > +	unsigned long berrs;
-> > +	unsigned long dmaErrors;
-> > +	unsigned long timeouts;
-> > +	unsigned long external;
-> > +} driver_stats_t;
-> > +static driver_stats_t statistics;
-> > +
-> > +struct cdev *vme_user_cdev;		/* Character device */
-> > +struct class *vme_user_sysfs_class;	/* Sysfs class */
-> > +struct device *vme_user_bridge;		/* Pointer to the bridge device */
-> > +
-> > +static char driver_name[] = "vme_user";
-> > +
-> > +static const int type[VME_DEVS] = {	MASTER_MINOR,	MASTER_MINOR,
-> > +					MASTER_MINOR,	MASTER_MINOR,
-> > +					SLAVE_MINOR,	SLAVE_MINOR,
-> > +					SLAVE_MINOR,	SLAVE_MINOR,
-> > +					CONTROL_MINOR
-> > +				};
-> > +
-> > +
-> > +static int vme_user_open(struct inode *, struct file *);
-> > +static int vme_user_release(struct inode *, struct file *);
-> > +static ssize_t vme_user_read(struct file *, char *, size_t, loff_t *);
-> > +static ssize_t vme_user_write(struct file *, const char *, size_t, loff_t *);
-> > +static loff_t vme_user_llseek(struct file *, loff_t, int);
-> > +static int vme_user_ioctl(struct inode *, struct file *, unsigned int,
-> > +	unsigned long);
-> > +
-> > +static int __init vme_user_probe(struct device *dev);
-> > +
-> > +static struct file_operations vme_user_fops = {
-> > +        .open = vme_user_open,
-> > +        .release = vme_user_release,
-> > +        .read = vme_user_read,
-> > +        .write = vme_user_write,
-> > +        .llseek = vme_user_llseek,
-> > +        .ioctl = vme_user_ioctl,
-> > +};
-> > +
-> > +
-> > +/*
-> > + * Reset all the statistic counters
-> > + */
-> > +static void reset_counters(void)
-> > +{
-> > +        statistics.reads = 0;
-> > +        statistics.writes = 0;
-> > +        statistics.ioctls = 0;
-> > +        statistics.irqs = 0;
-> > +        statistics.berrs = 0;
-> > +        statistics.dmaErrors = 0;
-> > +        statistics.timeouts = 0;
-> > +}
-> > +
-> > +void lmcall(int monitor)
-> > +{
-> > +	printk("Caught Location Monitor %d access\n", monitor);
-> > +}
-> > +
-> > +static void tests(void)
-> > +{
-> > +	struct vme_resource *dma_res;
-> > +	struct vme_dma_list *dma_list;
-> > +	struct vme_dma_attr *pattern_attr, *vme_attr;
-> > +
-> > +	int retval;
-> > +	unsigned int data;
-> > +
-> > +	printk("Running VME DMA test\n");
-> > +	dma_res = vme_request_dma(vme_user_bridge);
-> > +	dma_list = vme_new_dma_list(dma_res);
-> > +	pattern_attr = vme_dma_pattern_attribute(0x0,
-> > +		VME_DMA_PATTERN_WORD |
-> > +			VME_DMA_PATTERN_INCREMENT);
-> > +	vme_attr = vme_dma_vme_attribute(0x10000, VME_A32,
-> > +		VME_SCT, VME_D32);
-> > +	retval = vme_dma_list_add(dma_list, pattern_attr,
-> > +		vme_attr, 0x10000);
-> > +#if 0
-> > +	vme_dma_free_attribute(vme_attr);
-> > +	vme_attr = vme_dma_vme_attribute(0x20000, VME_A32,
-> > +		VME_SCT, VME_D32);
-> > +	retval = vme_dma_list_add(dma_list, pattern_attr,
-> > +		vme_attr, 0x10000);
-> > +#endif
-> > +	retval = vme_dma_list_exec(dma_list);
-> > +	vme_dma_free_attribute(pattern_attr);
-> > +	vme_dma_free_attribute(vme_attr);
-> > +	vme_dma_list_free(dma_list);
-> > +#if 0
-> > +	printk("Generating a VME interrupt\n");
-> > +	vme_generate_irq(dma_res, 0x3, 0xaa);
-> > +	printk("Interrupt returned\n");
-> > +#endif
-> > +	vme_dma_free(dma_res);
-> > +
-> > +	/* Attempt RMW */
-> > +	data = vme_master_rmw(image[0].resource, 0x80000000, 0x00000000,
-> > +		0x80000000, 0);
-> > +	printk("RMW returned 0x%8.8x\n", data);
-> > +
-> > +
-> > +	/* Location Monitor */
-> > +	printk("vme_lm_set:%d\n", vme_lm_set(vme_user_bridge, 0x60000, VME_A32, VME_SCT | VME_USER | VME_DATA));
-> > +	printk("vme_lm_attach:%d\n", vme_lm_attach(vme_user_bridge, 0, lmcall));
-> > +
-> > +	printk("Board in VME slot:%d\n", vme_slot_get(vme_user_bridge));
-> > +}
-> > +
-> > +static int vme_user_open(struct inode *inode, struct file *file)
-> > +{
-> > +	int err;
-> > +	unsigned int minor = MINOR(inode->i_rdev);
-> > +
-> > +	down(&image[minor].sem);
-> > +	/* Only allow device to be opened if a resource is allocated */
-> > +	if (image[minor].resource == NULL) {
-> > +		printk(KERN_ERR "No resources allocated for device\n");
-> > +		err = -EINVAL;
-> > +		goto err_res;
-> > +	}
-> > +
-> > +	/* Increment user count */
-> > +	image[minor].users++;
-> > +
-> > +	up(&image[minor].sem);
-> > +
-> > +	return 0;
-> > +
-> > +err_res:
-> > +	up(&image[minor].sem);
-> > +
-> > +	return err;
-> > +}
-> > +
-> > +static int vme_user_release(struct inode *inode, struct file *file)
-> > +{
-> > +	unsigned int minor = MINOR(inode->i_rdev);
-> > +
-> > +	down(&image[minor].sem);
-> > +
-> > +	/* Decrement user count */
-> > +	image[minor].users--;
-> > +
-> > +	up(&image[minor].sem);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +/*
-> > + * We are going ot alloc a page during init per window for small transfers.
-> > + * Small transfers will go VME -> buffer -> user space. Larger (more than a
-> > + * page) transfers will lock the user space buffer into memory and then
-> > + * transfer the data directly into the user space buffers.
-> > + */
-> > +static ssize_t resource_to_user(int minor, char __user *buf, size_t count,
-> > +	loff_t *ppos)
-> > +{
-> > +	ssize_t retval;
-> > +	ssize_t copied = 0;
-> > +
-> > +	if (count <= image[minor].size_buf) {
-> > +		/* We copy to kernel buffer */
-> > +		copied = vme_master_read(image[minor].resource,
-> > +			image[minor].kern_buf, count, *ppos);
-> > +		if (copied < 0) {
-> > +			return (int)copied;
-> > +		}
-> > +
-> > +		retval = __copy_to_user(buf, image[minor].kern_buf,
-> > +			(unsigned long)copied);
-> > +		if (retval != 0) {
-> > +			copied = (copied - retval);
-> > +			printk("User copy failed\n");
-> > +			return -EINVAL;
-> > +		}
-> > +
-> > +	} else {
-> > +		/* XXX Need to write this */
-> > +		printk("Currently don't support large transfers\n");
-> > +		/* Map in pages from userspace */
-> > +
-> > +		/* Call vme_master_read to do the transfer */
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	return copied;
-> > +}
-> > +
-> > +/*
-> > + * We are going ot alloc a page during init per window for small transfers.
-> > + * Small transfers will go user space -> buffer -> VME. Larger (more than a
-> > + * page) transfers will lock the user space buffer into memory and then
-> > + * transfer the data directly from the user space buffers out to VME.
-> > + */
-> > +static ssize_t resource_from_user(unsigned int minor, const char *buf,
-> > +	size_t count, loff_t *ppos)
-> > +{
-> > +	ssize_t retval;
-> > +	ssize_t copied = 0;
-> > +
-> > +	if (count <= image[minor].size_buf) {
-> > +		retval = __copy_from_user(image[minor].kern_buf, buf,
-> > +			(unsigned long)count);
-> > +		if (retval != 0)
-> > +			copied = (copied - retval);
-> > +		else
-> > +			copied = count;
-> > +
-> > +		copied = vme_master_write(image[minor].resource,
-> > +			image[minor].kern_buf, copied, *ppos);
-> > +	} else {
-> > +		/* XXX Need to write this */
-> > +		printk("Currently don't support large transfers\n");
-> > +		/* Map in pages from userspace */
-> > +
-> > +		/* Call vme_master_write to do the transfer */
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	return copied;
-> > +}
-> > +
-> > +static ssize_t buffer_to_user(unsigned int minor, char __user *buf,
-> > +	size_t count, loff_t *ppos)
-> > +{
-> > +	void __iomem *image_ptr;
-> > +	ssize_t retval;
-> > +
-> > +	image_ptr = image[minor].kern_buf + *ppos;
-> > +
-> > +	retval = __copy_to_user(buf, image_ptr, (unsigned long)count);
-> > +	if (retval != 0) {
-> > +		retval = (count - retval);
-> > +		printk(KERN_WARNING "Partial copy to userspace\n");
-> > +	} else
-> > +		retval = count;
-> > +
-> > +	/* Return number of bytes successfully read */
-> > +	return retval;
-> > +}
-> > +
-> > +static ssize_t buffer_from_user(unsigned int minor, const char *buf,
-> > +	size_t count, loff_t *ppos)
-> > +{
-> > +	void __iomem *image_ptr;
-> > +	size_t retval;
-> > +
-> > +	image_ptr = image[minor].kern_buf + *ppos;
-> > +
-> > +	retval = __copy_from_user(image_ptr, buf, (unsigned long)count);
-> > +	if (retval != 0) {
-> > +		retval = (count - retval);
-> > +		printk(KERN_WARNING "Partial copy to userspace\n");
-> > +	} else
-> > +		retval = count;
-> > +
-> > +	/* Return number of bytes successfully read */
-> > +	return retval;
-> > +}
-> > +
-> > +static ssize_t vme_user_read(struct file *file, char *buf, size_t count,
-> > +			loff_t * ppos)
-> > +{
-> > +	unsigned int minor = MINOR(file->f_dentry->d_inode->i_rdev);
-> > +	ssize_t retval;
-> > +	size_t image_size;
-> > +	size_t okcount;
-> > +
-> > +	down(&image[minor].sem);
-> > +
-> > +	/* XXX Do we *really* want this helper - we can use vme_*_get ? */
-> > +	image_size = vme_get_size(image[minor].resource);
-> > +
-> > +	/* Ensure we are starting at a valid location */
-> > +	if ((*ppos < 0) || (*ppos > (image_size - 1))) {
-> > +		up(&image[minor].sem);
-> > +		return 0;
-> > +	}
-> > +
-> > +	/* Ensure not reading past end of the image */
-> > +	if (*ppos + count > image_size)
-> > +		okcount = image_size - *ppos;
-> > +	else
-> > +		okcount = count;
-> > +
-> > +	switch (type[minor]){
-> > +	case MASTER_MINOR:
-> > +		retval = resource_to_user(minor, buf, okcount, ppos);
-> > +		break;
-> > +	case SLAVE_MINOR:
-> > +		retval = buffer_to_user(minor, buf, okcount, ppos);
-> > +		break;
-> > +	default:
-> > +		retval = -EINVAL;
-> > +	}
-> > +
-> > +	up(&image[minor].sem);
-> > +
-> > +	if (retval > 0)
-> > +		*ppos += retval;
-> > +
-> > +	return retval;
-> > +}
-> > +
-> > +static ssize_t vme_user_write(struct file *file, const char *buf, size_t count,
-> > +			 loff_t *ppos)
-> > +{
-> > +	unsigned int minor = MINOR(file->f_dentry->d_inode->i_rdev);
-> > +	ssize_t retval;
-> > +	size_t image_size;
-> > +	size_t okcount;
-> > +
-> > +	down(&image[minor].sem);
-> > +
-> > +	image_size = vme_get_size(image[minor].resource);
-> > +
-> > +	/* Ensure we are starting at a valid location */
-> > +	if ((*ppos < 0) || (*ppos > (image_size - 1))) {
-> > +		up(&image[minor].sem);
-> > +		return 0;
-> > +	}
-> > +
-> > +	/* Ensure not reading past end of the image */
-> > +	if (*ppos + count > image_size)
-> > +		okcount = image_size - *ppos;
-> > +	else
-> > +		okcount = count;
-> > +
-> > +	switch (type[minor]){
-> > +	case MASTER_MINOR:
-> > +		retval = resource_from_user(minor, buf, okcount, ppos);
-> > +		break;
-> > +	case SLAVE_MINOR:
-> > +		retval = buffer_from_user(minor, buf, okcount, ppos);
-> > +		break;
-> > +	default:
-> > +		retval = -EINVAL;
-> > +	}
-> > +
-> > +	up(&image[minor].sem);
-> > +
-> > +	if (retval > 0)
-> > +		*ppos += retval;
-> > +
-> > +	return retval;
-> > +}
-> > +
-> > +static loff_t vme_user_llseek(struct file *file, loff_t off, int whence)
-> > +{
-> > +	printk(KERN_ERR "Llseek currently incomplete\n");
-> > +	return -EINVAL;
-> > +}
-> > +
-> > +static int vme_user_ioctl(struct inode *inode, struct file *file,
-> > +	unsigned int cmd, unsigned long arg)
-> > +{
-> > +	unsigned int minor = MINOR(inode->i_rdev);
-> > +#if 0
-> > +	int ret_val;
-> > +#endif
-> > +	unsigned long copyRet;
-> > +	vme_slave_t slave;
-> > +
-> > +	statistics.ioctls++;
-> > +	switch (type[minor]) {
-> > +	case CONTROL_MINOR:
-> > +		break;
-> > +	case MASTER_MINOR:
-> > +		break;
-> > +	case SLAVE_MINOR:
-> > +		switch (cmd) {
-> > +		case VME_SET_SLAVE:
-> > +
-> > +			copyRet = copy_from_user(&slave, (char *)arg,
-> > +				sizeof(slave));
-> > +			if (copyRet != 0) {
-> > +				printk(KERN_WARNING "Partial copy from "
-> > +					"userspace\n");
-> > +				return -EFAULT;
-> > +			}
-> > +
-> > +			return vme_slave_set(image[minor].resource,
-> > +				slave.enable, slave.vme_addr, slave.size,
-> > +				image[minor].pci_buf, slave.aspace,
-> > +				slave.cycle);
-> > +
-> > +			break;
-> > +#if 0
-> > +		case VME_GET_SLAVE:
-> > +			vme_slave_t slave;
-> > +
-> > +			ret_val = vme_slave_get(minor, &iRegs);
-> > +
-> > +			copyRet = copy_to_user((char *)arg, &slave,
-> > +				sizeof(slave));
-> > +			if (copyRet != 0) {
-> > +				printk(KERN_WARNING "Partial copy to "
-> > +					"userspace\n");
-> > +				return -EFAULT;
-> > +			}
-> > +
-> > +			return ret_val;
-> > +			break;
-> > +#endif
-> > +		}
-> > +		break;
-> > +	}
-> > +
-> > +	return -EINVAL;
-> > +}
-> > +
-> > +
-> > +/*
-> > + * Unallocate a previously allocated buffer
-> > + */
-> > +static void buf_unalloc (int num)
-> > +{
-> > +	if (image[num].kern_buf) {
-> > +#ifdef VME_DEBUG
-> > +		printk(KERN_DEBUG "UniverseII:Releasing buffer at %p\n",
-> > +			image[num].pci_buf);
-> > +#endif
-> > +
-> > +		vme_free_consistent(image[num].resource, image[num].size_buf,
-> > +			image[num].kern_buf, image[num].pci_buf);
-> > +
-> > +		image[num].kern_buf = NULL;
-> > +		image[num].pci_buf = 0;
-> > +		image[num].size_buf = 0;
-> > +
-> > +#ifdef VME_DEBUG
-> > +	} else {
-> > +		printk(KERN_DEBUG "UniverseII: Buffer not allocated\n");
-> > +#endif
-> > +	}
-> > +}
-> > +
-> > +static struct vme_driver vme_user_driver = {
-> > +        .name = driver_name,
-> > +        .probe = vme_user_probe,
-> > +};
-> > +
-> > +
-> > +/*
-> > + * In this simple access driver, the old behaviour is being preserved as much
-> > + * as practical. We will therefore reserve the buffers and request the images
-> > + * here so that we don't have to do it later.
-> > + */
-> > +static int __init vme_bridge_init(void)
-> > +{
-> > +	int retval;
-> > +	printk(KERN_INFO "VME User Space Access Driver\n");
-> > +	printk("vme_user_driver:%p\n", &vme_user_driver);
-> > +	retval = vme_register_driver(&vme_user_driver);
-> > +	printk("vme_register_driver returned %d\n", retval);
-> > +	return retval;
-> > +}
-> > +
-> > +/*
-> > + * This structure gets passed a device, this should be the device created at
-> > + * registration.
-> > + */
-> > +static int __init vme_user_probe(struct device *dev)
-> > +{
-> > +	int i, err;
-> > +	char name[8];
-> > +
-> > +	printk("Running vme_user_probe()\n");
-> > +
-> > +	/* Pointer to the bridge device */
-> > +	vme_user_bridge = dev;
-> > +
-> > +	/* Initialise descriptors */
-> > +	for (i = 0; i < VME_DEVS; i++) {
-> > +		image[i].kern_buf = NULL;
-> > +		image[i].pci_buf = 0;
-> > +		init_MUTEX(&(image[i].sem));
-> > +		image[i].device = NULL;
-> > +		image[i].resource = NULL;
-> > +		image[i].users = 0;
-> > +	}
-> > +
-> > +	/* Initialise statistics counters */
-> > +	reset_counters();
-> > +
-> > +	/* Assign major and minor numbers for the driver */
-> > +	err = register_chrdev_region(MKDEV(VME_MAJOR, 0), VME_DEVS,
-> > +		driver_name);
-> > +	if (err) {
-> > +		printk(KERN_WARNING "%s: Error getting Major Number %d for "
-> > +		"driver.\n", driver_name, VME_MAJOR);
-> > +		goto err_region;
-> > +	}
-> > +
-> > +	/* Register the driver as a char device */
-> > +	vme_user_cdev = cdev_alloc();
-> > +	vme_user_cdev->ops = &vme_user_fops;
-> > +	vme_user_cdev->owner = THIS_MODULE;
-> > +	err = cdev_add(vme_user_cdev, MKDEV(VME_MAJOR, 0), VME_DEVS);
-> > +	if (err) {
-> > +		printk(KERN_WARNING "%s: cdev_all failed\n", driver_name);
-> > +		goto err_char;
-> > +	}
-> > +
-> > +	/* Request slave resources and allocate buffers (128kB wide) */
-> > +	for (i = SLAVE_MINOR; i < (SLAVE_MAX + 1); i++) {
-> > +		/* XXX Need to properly request attributes */
-> > +		image[i].resource = vme_slave_request(vme_user_bridge,
-> > +			VME_A16, VME_SCT);
-> > +		if (image[i].resource == NULL) {
-> > +			printk(KERN_WARNING "Unable to allocate slave "
-> > +				"resource\n");
-> > +			goto err_buf;
-> > +		}
-> > +		image[i].size_buf = PCI_BUF_SIZE;
-> > +		image[i].kern_buf = vme_alloc_consistent(image[i].resource,
-> > +			image[i].size_buf, &(image[i].pci_buf));
-> > +		if (image[i].kern_buf == NULL) {
-> > +			printk(KERN_WARNING "Unable to allocate memory for "
-> > +				"buffer\n");
-> > +			image[i].pci_buf = 0;
-> > +			vme_slave_free(image[i].resource);
-> > +			err = -ENOMEM;
-> > +			goto err_buf;
-> > +		}
-> > +	}
-> > +
-> > +	/*
-> > +	 * Request master resources allocate page sized buffers for small
-> > +	 * reads and writes
-> > +	 */
-> > +	for (i = MASTER_MINOR; i < (MASTER_MAX + 1); i++) {
-> > +		/* XXX Need to properly request attributes */
-> > +		image[i].resource = vme_master_request(vme_user_bridge,
-> > +			VME_A32, VME_SCT, VME_D32);
-> > +		if (image[i].resource == NULL) {
-> > +			printk(KERN_WARNING "Unable to allocate master "
-> > +				"resource\n");
-> > +			goto err_buf;
-> > +		}
-> > +		image[i].size_buf = PAGE_SIZE;
-> > +		image[i].kern_buf = vme_alloc_consistent(image[i].resource,
-> > +			image[i].size_buf, &(image[i].pci_buf));
-> > +		if (image[i].kern_buf == NULL) {
-> > +			printk(KERN_WARNING "Unable to allocate memory for "
-> > +				"buffer\n");
-> > +			image[i].pci_buf = 0;
-> > +			vme_master_free(image[i].resource);
-> > +			err = -ENOMEM;
-> > +			goto err_buf;
-> > +		}
-> > +	}
-> > +
-> > +	/* Setup some debug windows */
-> > +	for (i = SLAVE_MINOR; i < (SLAVE_MAX + 1); i++) {
-> > +		err = vme_slave_set(image[i].resource, 1, 0x4000*(i-4),
-> > +			0x4000, image[i].pci_buf, VME_A16,
-> > +			VME_SCT | VME_SUPER | VME_USER | VME_PROG | VME_DATA);
-> > +		if (err != 0) {
-> > +			printk(KERN_WARNING "Failed to configure window\n");
-> > +			goto err_buf;
-> > +		}
-> > +	}
-> > +	for (i = MASTER_MINOR; i < (MASTER_MAX + 1); i++) {
-> > +		err = vme_master_set(image[i].resource, 1,
-> > +			(0x10000 + (0x10000*i)), 0x10000,
-> > +			VME_A32, VME_SCT | VME_USER | VME_DATA, VME_D32);
-> > +		if (err != 0) {
-> > +			printk(KERN_WARNING "Failed to configure window\n");
-> > +			goto err_buf;
-> > +		}
-> > +	}
-> > +
-> > +	/* Create sysfs entries - on udev systems this creates the dev files */
-> > +	vme_user_sysfs_class = class_create(THIS_MODULE, driver_name);
-> > +	if (IS_ERR(vme_user_sysfs_class)) {
-> > +		printk(KERN_ERR "Error creating vme_user class.\n");
-> > +		err = PTR_ERR(vme_user_sysfs_class);
-> > +		goto err_class;
-> > +	}
-> > +
-> > +	/* Add sysfs Entries */
-> > +	for (i=0; i<VME_DEVS; i++) {
-> > +		switch (type[i]) {
-> > +		case MASTER_MINOR:
-> > +			sprintf(name,"bus/vme/m%%d");
-> > +			break;
-> > +		case CONTROL_MINOR:
-> > +			sprintf(name,"bus/vme/ctl");
-> > +			break;
-> > +		case SLAVE_MINOR:
-> > +			sprintf(name,"bus/vme/s%%d");
-> > +			break;
-> > +		default:
-> > +			err = -EINVAL;
-> > +			goto err_sysfs;
-> > +			break;
-> > +		}
-> > +
-> > +		image[i].device =
-> > +			device_create(vme_user_sysfs_class, NULL,
-> > +				MKDEV(VME_MAJOR, i), NULL, name,
-> > +				(type[i] == SLAVE_MINOR)? i - (MASTER_MAX + 1) : i);
-> > +		if (IS_ERR(image[i].device)) {
-> > +			printk("%s: Error creating sysfs device\n",
-> > +				driver_name);
-> > +			err = PTR_ERR(image[i].device);
-> > +			goto err_sysfs;
-> > +		}
-> > +	}
-> > +
-> > +	/* XXX Run tests */
-> > +	/*
-> > +	tests();
-> > +	*/
-> > +
-> > +	return 0;
-> > +
-> > +	/* Ensure counter set correcty to destroy all sysfs devices */
-> > +	i = VME_DEVS;
-> > +err_sysfs:
-> > +	while (i > 0){
-> > +		i--;
-> > +		device_destroy(vme_user_sysfs_class, MKDEV(VME_MAJOR, i));
-> > +	}
-> > +	class_destroy(vme_user_sysfs_class);
-> > +
-> > +	/* Ensure counter set correcty to unalloc all slave buffers */
-> > +	i = SLAVE_MAX + 1;
-> > +err_buf:
-> > +	while (i > SLAVE_MINOR){
-> > +		i--;
-> > +		vme_slave_set(image[i].resource, 0, 0, 0, 0, VME_A32, 0);
-> > +		vme_slave_free(image[i].resource);
-> > +		buf_unalloc(i);
-> > +	}
-> > +err_class:
-> > +	cdev_del(vme_user_cdev);
-> > +err_char:
-> > +	unregister_chrdev_region(MKDEV(VME_MAJOR, 0), VME_DEVS);
-> > +err_region:
-> > +	return err;
-> > +}
-> > +
-> > +static void __exit vme_bridge_exit(void)
-> > +{
-> > +	int i;
-> > +
-> > +	/* Remove sysfs Entries */
-> > +	for(i=0; i<VME_DEVS; i++) {
-> > +		device_destroy(vme_user_sysfs_class, MKDEV(VME_MAJOR, i));
-> > +	}
-> > +	class_destroy(vme_user_sysfs_class);
-> > +
-> > +	for (i = SLAVE_MINOR; i < (SLAVE_MAX + 1); i++) {
-> > +		buf_unalloc(i);
-> > +	}
-> > +
-> > +	/* Unregister device driver */
-> > +	cdev_del(vme_user_cdev);
-> > +
-> > +	/* Unregiser the major and minor device numbers */
-> > +	unregister_chrdev_region(MKDEV(VME_MAJOR, 0), VME_DEVS);
-> > +}
-> > +
-> > +MODULE_DESCRIPTION("VME User Space Access Driver");
-> > +MODULE_AUTHOR("Martyn Welch <martyn.welch@gefanuc.com");
-> > +MODULE_LICENSE("GPL");
-> > +
-> > +module_init(vme_bridge_init);
-> > +module_exit(vme_bridge_exit);
-> > --- /dev/null
-> > +++ b/drivers/staging/vme/devices/vme_user.h
-> > @@ -0,0 +1,43 @@
-> > +
-> > +/*
-> > + * VMEbus Master Window Configuration Structure
-> > + */
-> > +typedef struct {
-> > +	char enable;			/* State of Window */
-> > +	unsigned long long vme_addr;	/* Starting Address on the VMEbus */
-> > +	unsigned long long size;	/* Window Size */
-> > +	vme_address_t aspace;		/* Address Space */
-> > +	vme_cycle_t cycle;		/* Cycle properties */
-> > +	vme_width_t dwidth;		/* Maximum Data Width */
-> > +#if 0
-> > +	char prefetchEnable;		/* Prefetch Read Enable State */
-> > +	int prefetchSize;		/* Prefetch Read Size (Cache Lines) */
-> > +	char wrPostEnable;		/* Write Post State */
-> > +#endif
-> > +} vme_master_t;
-> > +
-> > +
-> > +/*
-> > + * IOCTL Commands and structures
-> > + */
-> > +
-> > +/* Magic number for use in ioctls */
-> > +#define VME_IOC_MAGIC 0xAE
-> > +
-> > +
-> > +/* VMEbus Slave Window Configuration Structure */
-> > +typedef struct {
-> > +	char enable;			/* State of Window */
-> > +	unsigned long long vme_addr;	/* Starting Address on the VMEbus */
-> > +	unsigned long long size;	/* Window Size */
-> > +	vme_address_t aspace;		/* Address Space */
-> > +	vme_cycle_t cycle;		/* Cycle properties */
-> > +#if 0
-> > +	char wrPostEnable;		/* Write Post State */
-> > +	char rmwLock;			/* Lock PCI during RMW Cycles */
-> > +	char data64BitCapable;		/* non-VMEbus capable of 64-bit Data */
-> > +#endif
-> > +} vme_slave_t;
-> > +
-> > +#define VME_SET_SLAVE _IOW(VME_IOC_MAGIC, 10, vme_slave_t)
-> > +
-> > --- a/drivers/staging/vme/Kconfig
-> > +++ b/drivers/staging/vme/Kconfig
-> > @@ -11,7 +11,7 @@ menuconfig VME
-> >  if VME
-> >  
-> >  #source "drivers/staging/vme/bridges/Kconfig"
-> > -#
-> > -#source "drivers/staging/vme/devices/Kconfig"
-> > +
-> > +source "drivers/staging/vme/devices/Kconfig"
-> >  
-> >  endif # VME
-> > --- a/drivers/staging/vme/Makefile
-> > +++ b/drivers/staging/vme/Makefile
-> > @@ -4,4 +4,4 @@
-> >  obj-$(CONFIG_VME)		+= vme.o
-> >  
-> >  #obj-y				+= bridges/
-> > -#obj-y				+= devices/
-> > +obj-y				+= devices/
-> > 
-> > 
-> 
+Thanks for the detailed review, here is v3 of the patches against
+mmotm 6th August. I've documented the TODOs as well. If there are
+no major objections, I would like this to be included in mmotm
+for more testing. Any test reports on a large machine would be highly
+appreciated.
+
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+
+Changelog v3->v2
+
+1. Added more documentation and comments
+2. Made the check in mem_cgroup_set_limit strict
+3. Increased tolerance per cpu to 64KB.
+4. Still have the WARN_ON(), I've kept it for debugging
+   purposes, may be we should make it a conditional with
+   DEBUG_VM
+
+Changelog v2->v1
+
+1. Updated Documentation (cgroups.txt and resource_counters.txt)
+2. Added the notion of tolerance to resource counter initialization
+
+Enhancement: For scalability move the resource counter to a percpu counter
+
+This patch changes the usage field of a resource counter to a percpu
+counter. The counter is incremented with local irq disabled. The other
+fields are still protected by the spin lock for write.
+
+This patch adds a fuzziness factor to hard limit, since the value we read
+could be off the original value (by batch value), this can be fixed
+by adding a strict/non-strict functionality check. The intention is
+to turn of strict checking for root (since we can't set limits on
+it anyway).
+
+I tested this patch on my x86_64 box with a regular test for hard
+limits and a page fault program.
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ Documentation/cgroups/memory.txt           |   22 ++++++++++++
+ Documentation/cgroups/resource_counter.txt |   20 +++++++++--
+ include/linux/res_counter.h                |   52 ++++++++++++++++++----------
+ kernel/res_counter.c                       |   50 +++++++++++++++++----------
+ mm/memcontrol.c                            |   32 +++++++++++++----
+ 5 files changed, 128 insertions(+), 48 deletions(-)
+
+
+diff --git a/Documentation/cgroups/memory.txt b/Documentation/cgroups/memory.txt
+index b871f25..a24dab7 100644
+--- a/Documentation/cgroups/memory.txt
++++ b/Documentation/cgroups/memory.txt
+@@ -13,6 +13,9 @@ c. Provides *zero overhead* for non memory controller users
+ d. Provides a double LRU: global memory pressure causes reclaim from the
+    global LRU; a cgroup on hitting a limit, reclaims from the per
+    cgroup LRU
++   NOTE: One can no longer rely on the exact limit. Since we've moved
++   to using percpu_counters for resource counters, there is always going
++   to be a fuzziness factor depending on the batch value.
+ 
+ Benefits and Purpose of the memory controller
+ 
+@@ -422,6 +425,25 @@ NOTE2: It is recommended to set the soft limit always below the hard limit,
+ 4. Start reclamation in the background when the limit is
+    not yet hit but the usage is getting closer
+ 
++9. Scalability Tradeoff
++
++As documented in Documentation/cgroups/resource_counter.txt, we've
++moved over to percpu counters for accounting usage. What does this
++mean for the end user?
++
++1. It means better performance
++2. It means that the usage reported does not necessarily reflect
++   realty. Because percpu counters do a sync only so often (see
++   batch value in the code), the value reported might be off the
++   real value by an amount proportional to the specified tolerenace.
++   The tolerance value is currently stored internally.
++
++TODOs
++
++1. Move tolerance to a config option
++2. Add support for strict/non-strict accounting
++
++
+ Summary
+ 
+ Overall, the memory controller has been a stable controller and has been
+diff --git a/Documentation/cgroups/resource_counter.txt b/Documentation/cgroups/resource_counter.txt
+index 95b24d7..a43ea60 100644
+--- a/Documentation/cgroups/resource_counter.txt
++++ b/Documentation/cgroups/resource_counter.txt
+@@ -12,12 +12,15 @@ to work with it.
+ 
+ 1. Crucial parts of the res_counter structure
+ 
+- a. unsigned long long usage
++ a. percpu_counter usage
+ 
+  	The usage value shows the amount of a resource that is consumed
+ 	by a group at a given time. The units of measurement should be
+ 	determined by the controller that uses this counter. E.g. it can
+ 	be bytes, items or any other unit the controller operates on.
++	NOTE: being a percpu_counter, the way to read the correct value
++	at all times makes it unscalable and reading it scalably makes
++	the value a little unreliable :)
+ 
+  b. unsigned long long max_usage
+ 
+@@ -39,16 +42,24 @@ to work with it.
+  	The failcnt stands for "failures counter". This is the number of
+ 	resource allocation attempts that failed.
+ 
+- c. spinlock_t lock
++ e. spinlock_t lock
+ 
+  	Protects changes of the above values.
+ 
++ f. unsigned long tolerance
++
++	This value is used to keep track of the amount of error that might
++	be tolerated by the resource counter. See the NOTE in (a) above.
++	The tolerance value is per cpu, hence the total error at any time
++	can be nr_cpu_ids * tolerance.
++
+ 
+ 
+ 2. Basic accounting routines
+ 
+  a. void res_counter_init(struct res_counter *rc,
+-				struct res_counter *rc_parent)
++				struct res_counter *rc_parent,
++				unsigned long tolerance)
+ 
+  	Initializes the resource counter. As usual, should be the first
+ 	routine called for a new counter.
+@@ -57,6 +68,9 @@ to work with it.
+ 	child -> parent relationship directly in the res_counter structure,
+ 	NULL can be used to define no relationship.
+ 
++	The tolerance is used to control the batching behaviour of percpu
++	counters. Please see details in Section 1, item f above.
++
+  c. int res_counter_charge(struct res_counter *rc, unsigned long val,
+ 				struct res_counter **limit_fail_at)
+ 
+diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
+index 731af71..3728c0d 100644
+--- a/include/linux/res_counter.h
++++ b/include/linux/res_counter.h
+@@ -14,6 +14,7 @@
+  */
+ 
+ #include <linux/cgroup.h>
++#include <linux/percpu_counter.h>
+ 
+ /*
+  * The core object. the cgroup that wishes to account for some
+@@ -23,10 +24,6 @@
+ 
+ struct res_counter {
+ 	/*
+-	 * the current resource consumption level
+-	 */
+-	unsigned long long usage;
+-	/*
+ 	 * the maximal value of the usage from the counter creation
+ 	 */
+ 	unsigned long long max_usage;
+@@ -48,6 +45,14 @@ struct res_counter {
+ 	 */
+ 	spinlock_t lock;
+ 	/*
++	 * the current resource consumption level
++	 */
++	struct percpu_counter usage;
++	/*
++	 * Tolerance for the percpu_counter (usage) above
++	 */
++	unsigned long usage_tolerance;
++	/*
+ 	 * Parent counter, used for hierarchial resource accounting
+ 	 */
+ 	struct res_counter *parent;
+@@ -98,7 +103,8 @@ enum {
+  * helpers for accounting
+  */
+ 
+-void res_counter_init(struct res_counter *counter, struct res_counter *parent);
++void res_counter_init(struct res_counter *counter, struct res_counter *parent,
++			unsigned long usage_tolerance);
+ 
+ /*
+  * charge - try to consume more resource.
+@@ -133,7 +139,8 @@ void res_counter_uncharge(struct res_counter *counter, unsigned long val,
+ 
+ static inline bool res_counter_limit_check_locked(struct res_counter *cnt)
+ {
+-	if (cnt->usage < cnt->limit)
++	unsigned long long usage = percpu_counter_read_positive(&cnt->usage);
++	if (usage < cnt->limit)
+ 		return true;
+ 
+ 	return false;
+@@ -141,7 +148,8 @@ static inline bool res_counter_limit_check_locked(struct res_counter *cnt)
+ 
+ static inline bool res_counter_soft_limit_check_locked(struct res_counter *cnt)
+ {
+-	if (cnt->usage < cnt->soft_limit)
++	unsigned long long usage = percpu_counter_read_positive(&cnt->usage);
++	if (usage < cnt->soft_limit)
+ 		return true;
+ 
+ 	return false;
+@@ -157,15 +165,19 @@ static inline bool res_counter_soft_limit_check_locked(struct res_counter *cnt)
+ static inline unsigned long long
+ res_counter_soft_limit_excess(struct res_counter *cnt)
+ {
+-	unsigned long long excess;
+-	unsigned long flags;
++	unsigned long long excess, usage;
+ 
+-	spin_lock_irqsave(&cnt->lock, flags);
+-	if (cnt->usage <= cnt->soft_limit)
++	usage = percpu_counter_read_positive(&cnt->usage);
++	/*
++	 * Not all callers call with irq's disabled, make
++	 * sure we read out something sensible.
++	 */
++	preempt_disable();
++	if (usage <= cnt->soft_limit)
+ 		excess = 0;
+ 	else
+-		excess = cnt->usage - cnt->soft_limit;
+-	spin_unlock_irqrestore(&cnt->lock, flags);
++		excess = usage - cnt->soft_limit;
++	preempt_enable();
+ 	return excess;
+ }
+ 
+@@ -178,9 +190,9 @@ static inline bool res_counter_check_under_limit(struct res_counter *cnt)
+ 	bool ret;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&cnt->lock, flags);
++	local_irq_save(flags);
+ 	ret = res_counter_limit_check_locked(cnt);
+-	spin_unlock_irqrestore(&cnt->lock, flags);
++	local_irq_restore(flags);
+ 	return ret;
+ }
+ 
+@@ -189,18 +201,19 @@ static inline bool res_counter_check_under_soft_limit(struct res_counter *cnt)
+ 	bool ret;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&cnt->lock, flags);
++	local_irq_save(flags);
+ 	ret = res_counter_soft_limit_check_locked(cnt);
+-	spin_unlock_irqrestore(&cnt->lock, flags);
++	local_irq_restore(flags);
+ 	return ret;
+ }
+ 
+ static inline void res_counter_reset_max(struct res_counter *cnt)
+ {
+ 	unsigned long flags;
++	unsigned long long usage = percpu_counter_read_positive(&cnt->usage);
+ 
+ 	spin_lock_irqsave(&cnt->lock, flags);
+-	cnt->max_usage = cnt->usage;
++	cnt->max_usage = usage;
+ 	spin_unlock_irqrestore(&cnt->lock, flags);
+ }
+ 
+@@ -217,10 +230,11 @@ static inline int res_counter_set_limit(struct res_counter *cnt,
+ 		unsigned long long limit)
+ {
+ 	unsigned long flags;
++	unsigned long long usage = percpu_counter_sum_positive(&cnt->usage);
+ 	int ret = -EBUSY;
+ 
+ 	spin_lock_irqsave(&cnt->lock, flags);
+-	if (cnt->usage <= limit) {
++	if (usage <= limit) {
+ 		cnt->limit = limit;
+ 		ret = 0;
+ 	}
+diff --git a/kernel/res_counter.c b/kernel/res_counter.c
+index 88faec2..ae83168 100644
+--- a/kernel/res_counter.c
++++ b/kernel/res_counter.c
+@@ -15,24 +15,34 @@
+ #include <linux/uaccess.h>
+ #include <linux/mm.h>
+ 
+-void res_counter_init(struct res_counter *counter, struct res_counter *parent)
++void res_counter_init(struct res_counter *counter, struct res_counter *parent,
++			unsigned long usage_tolerance)
+ {
+ 	spin_lock_init(&counter->lock);
++	percpu_counter_init(&counter->usage, 0);
+ 	counter->limit = RESOURCE_MAX;
+ 	counter->soft_limit = RESOURCE_MAX;
+ 	counter->parent = parent;
++	counter->usage_tolerance = usage_tolerance;
+ }
+ 
+ int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
+ {
+-	if (counter->usage + val > counter->limit) {
++	unsigned long long usage;
++
++	usage = percpu_counter_read_positive(&counter->usage);
++	if (usage + val > counter->limit) {
+ 		counter->failcnt++;
+ 		return -ENOMEM;
+ 	}
+ 
+-	counter->usage += val;
+-	if (counter->usage > counter->max_usage)
+-		counter->max_usage = counter->usage;
++	__percpu_counter_add(&counter->usage, val, nr_cpu_ids *
++				counter->usage_tolerance);
++	if (usage + val > counter->max_usage) {
++		spin_lock(&counter->lock);
++		counter->max_usage = (usage + val);
++		spin_unlock(&counter->lock);
++	}
+ 	return 0;
+ }
+ 
+@@ -49,7 +59,6 @@ int res_counter_charge(struct res_counter *counter, unsigned long val,
+ 		*soft_limit_fail_at = NULL;
+ 	local_irq_save(flags);
+ 	for (c = counter; c != NULL; c = c->parent) {
+-		spin_lock(&c->lock);
+ 		ret = res_counter_charge_locked(c, val);
+ 		/*
+ 		 * With soft limits, we return the highest ancestor
+@@ -58,7 +67,6 @@ int res_counter_charge(struct res_counter *counter, unsigned long val,
+ 		if (soft_limit_fail_at &&
+ 			!res_counter_soft_limit_check_locked(c))
+ 			*soft_limit_fail_at = c;
+-		spin_unlock(&c->lock);
+ 		if (ret < 0) {
+ 			*limit_fail_at = c;
+ 			goto undo;
+@@ -68,9 +76,7 @@ int res_counter_charge(struct res_counter *counter, unsigned long val,
+ 	goto done;
+ undo:
+ 	for (u = counter; u != c; u = u->parent) {
+-		spin_lock(&u->lock);
+ 		res_counter_uncharge_locked(u, val);
+-		spin_unlock(&u->lock);
+ 	}
+ done:
+ 	local_irq_restore(flags);
+@@ -79,10 +85,13 @@ done:
+ 
+ void res_counter_uncharge_locked(struct res_counter *counter, unsigned long val)
+ {
+-	if (WARN_ON(counter->usage < val))
+-		val = counter->usage;
++	unsigned long long usage;
++
++	usage = percpu_counter_read_positive(&counter->usage);
++	if (WARN_ON((usage + counter->usage_tolerance * nr_cpu_ids) < val))
++		val = usage;
+ 
+-	counter->usage -= val;
++	percpu_counter_sub(&counter->usage, val);
+ }
+ 
+ void res_counter_uncharge(struct res_counter *counter, unsigned long val,
+@@ -93,12 +102,10 @@ void res_counter_uncharge(struct res_counter *counter, unsigned long val,
+ 
+ 	local_irq_save(flags);
+ 	for (c = counter; c != NULL; c = c->parent) {
+-		spin_lock(&c->lock);
+ 		if (was_soft_limit_excess)
+ 			*was_soft_limit_excess =
+ 				!res_counter_soft_limit_check_locked(c);
+ 		res_counter_uncharge_locked(c, val);
+-		spin_unlock(&c->lock);
+ 	}
+ 	local_irq_restore(flags);
+ }
+@@ -108,8 +115,6 @@ static inline unsigned long long *
+ res_counter_member(struct res_counter *counter, int member)
+ {
+ 	switch (member) {
+-	case RES_USAGE:
+-		return &counter->usage;
+ 	case RES_MAX_USAGE:
+ 		return &counter->max_usage;
+ 	case RES_LIMIT:
+@@ -128,11 +133,15 @@ ssize_t res_counter_read(struct res_counter *counter, int member,
+ 		const char __user *userbuf, size_t nbytes, loff_t *pos,
+ 		int (*read_strategy)(unsigned long long val, char *st_buf))
+ {
+-	unsigned long long *val;
++	unsigned long long *val, usage_val;
+ 	char buf[64], *s;
+ 
+ 	s = buf;
+-	val = res_counter_member(counter, member);
++	if (member == RES_USAGE) {
++		usage_val = percpu_counter_read_positive(&counter->usage);
++		val = &usage_val;
++	} else
++		val = res_counter_member(counter, member);
+ 	if (read_strategy)
+ 		s += read_strategy(*val, s);
+ 	else
+@@ -143,7 +152,10 @@ ssize_t res_counter_read(struct res_counter *counter, int member,
+ 
+ u64 res_counter_read_u64(struct res_counter *counter, int member)
+ {
+-	return *res_counter_member(counter, member);
++	if (member == RES_USAGE)
++		return percpu_counter_read_positive(&counter->usage);
++	else
++		return *res_counter_member(counter, member);
+ }
+ 
+ int res_counter_memparse_write_strategy(const char *buf,
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 48a38e1..36d46aa 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -58,6 +58,20 @@ static DEFINE_MUTEX(memcg_tasklist);	/* can be hold under cgroup_mutex */
+ #define SOFTLIMIT_EVENTS_THRESH (1000)
+ 
+ /*
++ * To help resource counters scale, we take a step back
++ * and allow the counters to be scalable and set a
++ * batch value such that every addition does not cause
++ * global synchronization. The side-effect will be visible
++ * on limit enforcement, where due to this fuzziness,
++ * we will lose out on inforcing a limit when the usage
++ * exceeds the limit. The plan however in the long run
++ * is to allow this value to be controlled. We will
++ * probably add a new control file for it. This will be
++ * moved to a config option later.
++ */
++#define MEM_CGROUP_RES_ERR_TOLERANCE (64 * 1024)
++
++/*
+  * Statistics for memory cgroup.
+  */
+ enum mem_cgroup_stat_index {
+@@ -2340,7 +2354,7 @@ static int mem_cgroup_force_empty(struct mem_cgroup *mem, bool free_all)
+ 	if (free_all)
+ 		goto try_to_free;
+ move_account:
+-	while (mem->res.usage > 0) {
++	while (res_counter_read_u64(&mem->res, RES_USAGE) > 0) {
+ 		ret = -EBUSY;
+ 		if (cgroup_task_count(cgrp) || !list_empty(&cgrp->children))
+ 			goto out;
+@@ -2383,7 +2397,7 @@ try_to_free:
+ 	lru_add_drain_all();
+ 	/* try to free all pages in this cgroup */
+ 	shrink = 1;
+-	while (nr_retries && mem->res.usage > 0) {
++	while (nr_retries && res_counter_read_u64(&mem->res, RES_USAGE) > 0) {
+ 		int progress;
+ 
+ 		if (signal_pending(current)) {
+@@ -2401,7 +2415,7 @@ try_to_free:
+ 	}
+ 	lru_add_drain();
+ 	/* try move_account...there may be some *locked* pages. */
+-	if (mem->res.usage)
++	if (res_counter_read_u64(&mem->res, RES_USAGE))
+ 		goto move_account;
+ 	ret = 0;
+ 	goto out;
+@@ -3019,8 +3033,10 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+ 	}
+ 
+ 	if (parent && parent->use_hierarchy) {
+-		res_counter_init(&mem->res, &parent->res);
+-		res_counter_init(&mem->memsw, &parent->memsw);
++		res_counter_init(&mem->res, &parent->res,
++			MEM_CGROUP_RES_ERR_TOLERANCE);
++		res_counter_init(&mem->memsw, &parent->memsw,
++			MEM_CGROUP_RES_ERR_TOLERANCE);
+ 		/*
+ 		 * We increment refcnt of the parent to ensure that we can
+ 		 * safely access it on res_counter_charge/uncharge.
+@@ -3029,8 +3045,10 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+ 		 */
+ 		mem_cgroup_get(parent);
+ 	} else {
+-		res_counter_init(&mem->res, NULL);
+-		res_counter_init(&mem->memsw, NULL);
++		res_counter_init(&mem->res, NULL,
++			MEM_CGROUP_RES_ERR_TOLERANCE);
++		res_counter_init(&mem->memsw, NULL,
++			MEM_CGROUP_RES_ERR_TOLERANCE);
+ 	}
+ 	mem->last_scanned_child = 0;
+ 	spin_lock_init(&mem->reclaim_param_lock);
+
+-- 
+	Balbir
