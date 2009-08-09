@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbZHJAQJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbZHJAPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754781AbZHJAQJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 20:16:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbZHJAQG
+	id S1754736AbZHJAPt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 20:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbZHJAPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 20:16:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44341 "EHLO ogre.sisk.pl"
+	Sun, 9 Aug 2009 20:15:45 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44056 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754381AbZHJAQC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 20:16:02 -0400
+	id S1754579AbZHJAEe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 20:04:34 -0400
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "" <unggnu@googlemail.com>,
+       "Yinghai Lu" <yinghai@kernel.org>
+References: <YCu3FOC0QrC.A.MaE.RD2fKB@chimera>
+In-Reply-To: <YCu3FOC0QrC.A.MaE.RD2fKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Duncan <1i5t5.duncan@cox.net>
-Subject: Re: [Bug #13869] Radeon framebuffer (w/o KMS) corruption at boot.
-Date: Mon, 10 Aug 2009 02:16:13 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>
-References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera> <u1L1PAbl8zG.A.nZD.xj1fKB@chimera> <200908091710.28486.1i5t5.duncan@cox.net>
-In-Reply-To: <200908091710.28486.1i5t5.duncan@cox.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908100216.13497.rjw@sisk.pl>
+Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <pRuaDVjxFBG.A.UNG.6F2fKB@chimera>
+Subject: [Bug #13351] 2.6.30 corrupts my system after suspend resume with readonly mounted hard disk
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sun,  9 Aug 2009 23:10:20 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 August 2009, Duncan wrote:
-> On Sunday 09 August 2009 13:44:24 Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.30.  Please verify if it still should be listed and let me know
-> > (either way).
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13869
-> > Subject		: Radeon framebuffer (w/o KMS) corruption at boot.
-> > Submitter	: Duncan <1i5t5.duncan@cox.net>
-> > Date		: 2009-07-29 16:44 (12 days old)
-> 
-> Yes, as of today's pull, it's still there.
+This message has been generated automatically as a part of a report
+of regressions introduced between 2.6.29 and 2.6.30.
 
-Thanks for the update.
+The following bug entry is on the current list of known regressions
+introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+be listed and let me know (either way).
 
-Rafael
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13351
+Subject		: 2.6.30 corrupts my system after suspend resume with readonly mounted hard disk
+Submitter	:  <unggnu@googlemail.com>
+Date		: 2009-05-20 14:09 (82 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
+Handled-By	: Yinghai Lu <yinghai@kernel.org>
+
+
