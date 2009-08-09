@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbZHJAFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbZHJANv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860AbZHJAFy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 20:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbZHJAFw
+	id S1754792AbZHJANv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 20:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbZHJAFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 20:05:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44120 "EHLO ogre.sisk.pl"
+	Sun, 9 Aug 2009 20:05:17 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44096 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754799AbZHJAFs convert rfc822-to-8bit (ORCPT
+	id S1754693AbZHJAFN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 20:05:48 -0400
+	Sun, 9 Aug 2009 20:05:13 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Nathanael Schaeffer" <nathanael.schaeffer@gmail.com>
+       "Pauli" <suokkos@gmail.com>
 References: <YCu3FOC0QrC.A.MaE.RD2fKB@chimera>
 In-Reply-To: <YCu3FOC0QrC.A.MaE.RD2fKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <pRuaDVjxFBG.A.59E.1D2fKB@chimera>
-Subject: [Bug #13682] The webcam stopped working when upgrading from 2.6.29 to 2.6.30
+Message-ID: <pRuaDVjxFBG.A.WWF.hE2fKB@chimera>
+Subject: [Bug #13564] random general protection fault at boot time caused by khubd.
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  9 Aug 2009 23:10:26 +0200 (CEST)
+Date: Sun,  9 Aug 2009 23:10:23 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,9 +35,9 @@ introduced between 2.6.29 and 2.6.30.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13682
-Subject		: The webcam stopped working when upgrading from 2.6.29 to 2.6.30
-Submitter	: Nathanael Schaeffer <nathanael.schaeffer@gmail.com>
-Date		: 2009-06-30 13:34 (41 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13564
+Subject		: random general protection fault at boot time caused by khubd.
+Submitter	: Pauli <suokkos@gmail.com>
+Date		: 2009-06-18 12:44 (53 days old)
 
 
