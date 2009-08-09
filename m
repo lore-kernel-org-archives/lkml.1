@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbZHIV7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbZHIWAD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754054AbZHIV7t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 17:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbZHIV7s
+	id S1754140AbZHIWAD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 18:00:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbZHIWAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 17:59:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43959 "EHLO mx2.redhat.com"
+	Sun, 9 Aug 2009 18:00:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43969 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753996AbZHIV7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 17:59:41 -0400
+	id S1753862AbZHIV76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 17:59:58 -0400
 From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH 2/5] inotify: use ZERO_PAGE instead of private static
-	declaration
+Subject: [PATCH 5/5] fsnotify: use kmem_cache_zalloc to simplify event
+	initialization
 To: linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
-Date: Sun, 09 Aug 2009 17:59:42 -0400
-Message-ID: <20090809215941.26204.52486.stgit@paris.rdu.redhat.com>
+Date: Sun, 09 Aug 2009 17:59:59 -0400
+Message-ID: <20090809215958.26204.11952.stgit@paris.rdu.redhat.com>
 In-Reply-To: <20090809215935.26204.46787.stgit@paris.rdu.redhat.com>
 References: <20090809215935.26204.46787.stgit@paris.rdu.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -25,49 +25,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-inotify needs to pad filenames to an inotify event length.  Currently this
-is done by copying 0s from an event declared globally.  This patch doesn't
-waste global address space just to have some 0s and instead uses
-clear_user()
+fsnotify event initialization is done entry by entry with almost everything
+set to either 0 or NULL.  Use kmem_cache_zalloc and only initialize things
+that need non-zero initialization.  Also means we don't have to change
+initialization entries based on the config options.
 
 Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
 
- fs/notify/inotify/inotify_user.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+ fs/notify/notification.c |   13 +------------
+ 1 files changed, 1 insertions(+), 12 deletions(-)
 
-diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
-index c17d5a3..c3086b0 100644
---- a/fs/notify/inotify/inotify_user.c
-+++ b/fs/notify/inotify/inotify_user.c
-@@ -47,9 +47,6 @@
+diff --git a/fs/notify/notification.c b/fs/notify/notification.c
+index 4ab9243..96ffbd0 100644
+--- a/fs/notify/notification.c
++++ b/fs/notify/notification.c
+@@ -311,25 +311,14 @@ void fsnotify_flush_notify(struct fsnotify_group *group)
  
- static struct vfsmount *inotify_mnt __read_mostly;
+ static void initialize_event(struct fsnotify_event *event)
+ {
+-	event->holder.event = NULL;
+ 	INIT_LIST_HEAD(&event->holder.event_list);
+ 	atomic_set(&event->refcnt, 1);
  
--/* this just sits here and wastes global memory.  used to just pad userspace messages with zeros */
--static struct inotify_event nul_inotify_event;
+ 	spin_lock_init(&event->lock);
+ 
+-	event->path.dentry = NULL;
+-	event->path.mnt = NULL;
+-	event->inode = NULL;
+ 	event->data_type = FSNOTIFY_EVENT_NONE;
+ 
+ 	INIT_LIST_HEAD(&event->private_data_list);
 -
- /* these are configurable via /proc/sys/fs/inotify/ */
- static int inotify_max_user_instances __read_mostly;
- static int inotify_max_queued_events __read_mostly;
-@@ -215,7 +212,7 @@ static ssize_t copy_event_to_user(struct fsnotify_group *group,
- 	/*
- 	 * fsnotify only stores the pathname, so here we have to send the pathname
- 	 * and then pad that pathname out to a multiple of sizeof(inotify_event)
--	 * with zeros.  I get my zeros from the nul_inotify_event.
-+	 * with zeros.
- 	 */
- 	if (name_len) {
- 		unsigned int len_to_zero = name_len - event->name_len;
-@@ -224,8 +221,8 @@ static ssize_t copy_event_to_user(struct fsnotify_group *group,
- 			return -EFAULT;
- 		buf += event->name_len;
+-	event->to_tell = NULL;
+-
+-	event->file_name = NULL;
+-	event->name_len = 0;
+-
+-	event->sync_cookie = 0;
+ }
  
--		/* fill userspace with 0's from nul_inotify_event */
--		if (copy_to_user(buf, &nul_inotify_event, len_to_zero))
-+		/* fill userspace with 0's */
-+		if (clear_user(buf, len_to_zero))
- 			return -EFAULT;
- 		buf += len_to_zero;
- 		event_size += name_len;
+ /*
+@@ -350,7 +339,7 @@ struct fsnotify_event *fsnotify_create_event(struct inode *to_tell, __u32 mask,
+ {
+ 	struct fsnotify_event *event;
+ 
+-	event = kmem_cache_alloc(fsnotify_event_cachep, gfp);
++	event = kmem_cache_zalloc(fsnotify_event_cachep, gfp);
+ 	if (!event)
+ 		return NULL;
+ 
 
