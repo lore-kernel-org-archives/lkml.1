@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754331AbZHIXjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbZHIXjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754331AbZHIXjf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 19:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbZHIXjc
+	id S1754215AbZHIXjV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 19:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbZHIXjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 19:39:32 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43891 "EHLO ogre.sisk.pl"
+	Sun, 9 Aug 2009 19:39:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43868 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754254AbZHIXjZ convert rfc822-to-8bit (ORCPT
+	id S1753560AbZHIXjE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 19:39:25 -0400
+	Sun, 9 Aug 2009 19:39:04 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Ricardo Jorge da Fonseca Marques Ferreira" <storm@sys49152.net>
+       "Dave Young" <hidave.darkstar@gmail.com>,
+       "Jiri Kosina" <jkosina@suse.cz>
 References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera>
 In-Reply-To: <AuPdDySr74O.A.5LC.Pj1fKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <u1L1PAbl8zG.A.8FD.fj1fKB@chimera>
-Subject: [Bug #13940] iwlagn and sky2 stopped working, ACPI-related
+Message-ID: <u1L1PAbl8zG.A.bpD.Ak1fKB@chimera>
+Subject: [Bug #13837] Input : regression - touchpad not detected
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  9 Aug 2009 22:44:26 +0200 (CEST)
+Date: Sun,  9 Aug 2009 22:44:23 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,10 +36,10 @@ from 2.6.30.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13940
-Subject		: iwlagn and sky2 stopped working, ACPI-related
-Submitter	: Ricardo Jorge da Fonseca Marques Ferreira <storm@sys49152.net>
-Date		: 2009-08-07 22:33 (3 days old)
-References	: http://marc.info/?l=linux-kernel&m=124968457731107&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13837
+Subject		: Input : regression - touchpad not detected
+Submitter	: Dave Young <hidave.darkstar@gmail.com>
+Date		: 2009-07-17 07:13 (24 days old)
+References	: http://marc.info/?l=linux-kernel&m=124780763701571&w=4
 
 
