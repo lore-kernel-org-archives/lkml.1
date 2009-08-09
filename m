@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbZHILqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752045AbZHILwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751979AbZHILqQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 07:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZHILqQ
+	id S1752045AbZHILwp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 07:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbZHILwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 07:46:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36299 "EHLO mx2.redhat.com"
+	Sun, 9 Aug 2009 07:52:44 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33006 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750833AbZHILqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 07:46:15 -0400
-From: Avi Kivity <avi@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] KVM updates for 2.6.31-rc5
-Date: Sun,  9 Aug 2009 14:46:12 +0300
-Message-Id: <1249818372-11379-1-git-send-email-avi@redhat.com>
+	id S1750899AbZHILwo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 07:52:44 -0400
+Message-ID: <20090809144920.1ore45pyckgs0cko@webmail.chem.elte.hu>
+Date: Sun, 09 Aug 2009 14:49:20 +0200
+From: System Administrator <info@IT.edu>
+Reply-to: accountupdate@tmail.tv
+To: undisclosed-recipients:;
+Subject: Your E-mail Account Expire in Two (2) Days.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+	DelSp=Yes	format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.1)
+X-ELTE-SpamScore: 5.5
+X-ELTE-SpamLevel: sssss
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=5.5 required=5.9 tests=BAYES_40,RCVD_IN_BL_SPAMCOP_NET,RCVD_IN_SBL autolearn=no SpamAssassin version=3.2.5
+	2.5 RCVD_IN_BL_SPAMCOP_NET RBL: Received via a relay in bl.spamcop.net
+	[Blocked - see <http://www.spamcop.net/bl.shtml?41.220.75.3>]
+	2.5 RCVD_IN_SBL            RBL: Received via a relay in Spamhaus SBL
+	[41.220.75.3 listed in zen.spamhaus.org]
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.3797]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+Dear Webmail User,
 
-  git://git.kernel.org/pub/scm/virt/kvm/kvm.git kvm-updates/2.6.31
+This message was sent automatically by a program on Webmail admin center
+which periodically checks the size of inbox, where new messages are
+received. The program is run weekly to ensure no one's inbox grows too
+large. If your inbox becomes too large, you will be unable to receive new
+emails.
 
-Several critical patches, including a guest-initiated DoS fix, guest
-memory corruption on AMD, and edge-triggered interrupt mishandling which
-confuses some Windows variants on SMP.
+Just before this message was sent, you had 18 Megabytes (MB) or more of
+messages stored in your inbox. To help us re-set your SPACE on our
+database prior to maintain your INBOX, you must reply to this e-mail and
+enter your Current User name ( ... ... ... ... ) and Password ( ... ......
+... ) e-mail ( ... ... ... ... ).
 
-Avi Kivity (1):
-      KVM: ia64: fix build failures due to ia64/unsigned long mismatches
+You will continue to receive this warning message periodically if your
+inbox size continues to be between 18 and 50 MB. If your inbox size grows
+to 50 MB, then a program on Webmail admin center will move your oldest
+email to a folder in your home directory to ensure that you will continue
+to be able to receive incoming email. You will be notified by email that
+this has taken place. If your inbox grows to 50 MB, you will be unable to
+receive new email as it will be returned to the sender.
 
-Christian Borntraeger (1):
-      KVM: s390: fix wait_queue handling
+Note: Your Account Expire in 2(Days). After you read this message, it is
+best to REPLY with the required information to upgrade MailBox. Reply to
+this message immediately Reactivate your Account.
 
-Gleb Natapov (1):
-      KVM: Avoid redelivery of edge interrupt before next edge
+Thank you for your cooperation.
+Webmail Help Desk.
+System Administrator.
+-------------------------------------------
 
-Jan Kiszka (3):
-      KVM: Fix KVM_GET_MSR_INDEX_LIST
-      KVM: VMX: Fix locking order in handle_invalid_guest_state
-      KVM: VMX: Fix locking imbalance on emulation failure
 
-Marcelo Tosatti (5):
-      KVM: PIT: fix kpit_elapsed division by zero
-      KVM: x86: verify MTRR/PAT validity
-      KVM: SVM: force new asid on vcpu migration
-      KVM: MMU: handle n_free_mmu_pages > n_alloc_mmu_pages in kvm_mmu_change_mmu_pages
-      KVM: MMU: limit rmap chain length
 
-Michael S. Tsirkin (1):
-      KVM: fix ack not being delivered when msi present
 
-Stephen Rothwell (1):
-      KVM: Make KVM_HPAGES_PER_HPAGE unsigned long to avoid build error on powerpc
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
 
- arch/ia64/kvm/mmio.c                |    6 +++-
- arch/ia64/kvm/vcpu.c                |    6 ++--
- arch/ia64/kvm/vcpu.h                |   13 +++++----
- arch/powerpc/include/asm/kvm_host.h |    2 +-
- arch/s390/kvm/interrupt.c           |    2 +-
- arch/x86/kvm/i8254.c                |    3 ++
- arch/x86/kvm/mmu.c                  |   48 ++++++++++++++++++++++++++--------
- arch/x86/kvm/svm.c                  |    6 ++--
- arch/x86/kvm/vmx.c                  |    6 ++--
- arch/x86/kvm/x86.c                  |   44 +++++++++++++++++++++++++++++---
- include/linux/kvm_host.h            |    1 +
- virt/kvm/ioapic.c                   |   10 +++---
- virt/kvm/irq_comm.c                 |    4 ++-
- 13 files changed, 110 insertions(+), 41 deletions(-)
