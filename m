@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751639AbZHIFdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751791AbZHIFhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751639AbZHIFdM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 01:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZHIFdM
+	id S1751791AbZHIFhX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 01:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbZHIFhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 01:33:12 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:37140 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751298AbZHIFdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 01:33:11 -0400
-Date: Sat, 8 Aug 2009 22:33:08 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Ingo Molnar <mingo@elte.hu>, Ben Herrenschmidt <benh@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: CONFIG_PREEMPT_RCU in next/mmotm
-Message-ID: <20090809053308.GD6866@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <Pine.LNX.4.64.0908081956580.12300@sister.anvils> <20090808235634.GB6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908090414320.18096@sister.anvils>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0908090414320.18096@sister.anvils>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Sun, 9 Aug 2009 01:37:23 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:47544 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751499AbZHIFhW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 01:37:22 -0400
+Subject: Re: [UBI UBIFS] replace vmalloc with kmalloc
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: JiSheng Zhang <jszhang3@gmail.com>
+Cc: Adrian Hunter <adrian.hunter@nokia.com>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "dwmw2@infradead.org" <dwmw2@infradead.org>,
+       "rmk@arm.linux.org.uk" <rmk@arm.linux.org.uk>,
+       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>
+In-Reply-To: <20090807232846.34bffdeb@ustc>
+References: <2df346410908070202i6c16008ckc145559a474129c6@mail.gmail.com>
+	 <4A7BF1C3.4050602@nokia.com>  <20090807232846.34bffdeb@ustc>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 09 Aug 2009 08:35:32 +0300
+Message-Id: <1249796132.9157.52.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 09 Aug 2009 05:37:04.0864 (UTC) FILETIME=[6D7D9600:01CA18B3]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 09, 2009 at 04:32:28AM +0100, Hugh Dickins wrote:
-> On Sat, 8 Aug 2009, Paul E. McKenney wrote:
-> > On Sat, Aug 08, 2009 at 08:34:03PM +0100, Hugh Dickins wrote:
+On Fri, 2009-08-07 at 23:28 +0800, JiSheng Zhang wrote:
+> Adrian Hunter <adrian.hunter@nokia.com> wrote:
 > > 
-> > > CONFIG_PREEMPT_TREE=y seems okay on PowerPC; and when I briefly tried
-> > 
-> > CONFIG_TREE_RCU=y, you mean, right?
+> > vmalloc allows large (> 128KiB) buffers, but kmalloc doesn't.
+> > So we presently have no choice but to use vmalloc.
 > 
-> Whoops, yes indeed.
-> 
-> > > My guess is that there's some other issue which is triggering
-> > > the RCU disgrace, but that is just a guess.
-> > 
-> > The one other issue I know of is one that apparently happens only on
-> > one of Ingo's machines, which suddenly decides that it need not inform
-> > RCU when onlining a CPU (at boot time).
-> > 
-> > But you seem to be making it past boot, and I would guess that you are
-> > not doing any hotplug CPU operations, right?
-> 
-> That's right, I'm well past boot, and don't explicitly get into CPU
-> hotplug, nor using suspend/hibernate on that machine; and looking at
-> the config, see I don't even have CONFIG_HOTPLUG_CPU set.
-> 
-> In the morning I'll check that /proc/cpuinfo really shows all four
-> cpus before I start, and is still showing four cpus when it goes bad,
-> in case there's nevertheless an issue with that.
-> 
-> Is there some particular attribute of a cpu, most relevant to its RCU
-> grace status, that I can check on with a printk?
+> But vmalloced buffer can't be easily passed to DMA, is there better choice?
 
-The debugfs files enabled by CONFIG_RCU_TRACE, except rcu/rcugp, which,
-since it will attempt to wait for a grace period, will probably wait
-forever.
+We use vmalloc-ed buffers is when we need to do something with whole
+eraseblocks, which may be 128KiB, or even 256KiB. So in general, we
+cannot just s/kmalloc/vmalloc/. We should invent something trickier.
 
-> > > Config attached.  Any suggestions?
-> 
-> [ Of course I forgot the config, but sent it just to Paul later. ]
-> 
-> > 
-> > /me scratches head...  Will try some more CONFIG_PREEMPT_RCU testing
-> > locally.
-> 
-> Thanks: I'm kind of glad that it's interesting,
-> though it may sink some of our time.
+You should probably think about some generic way to solve problems like
+this. May be some MTD-specific library could be created. You could
+implement something like the flexible arrays, but with DMA stuff in mind
+(e.g., adding a parameter which specifies allocation order, because for
+DMA you may want to allocate more than one physically contiguous page).
+Or you may even improve the existing flexible arrays to suit your needs.
+Take a look here:
+http://lwn.net/Articles/345273/
 
-Well, it certainly does have me a bit confused at the moment!
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
 
-							Thanx, Paul
