@@ -1,151 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752400AbZHIRph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbZHISBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752400AbZHIRph (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 13:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbZHIRpg
+	id S1752516AbZHISBx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 14:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbZHISBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 13:45:36 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:54558 "EHLO mail.atlantis.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751227AbZHIRpg convert rfc822-to-8bit (ORCPT
+	Sun, 9 Aug 2009 14:01:52 -0400
+Received: from ns1.siteground211.com ([209.62.36.12]:40286 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbZHISBw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 13:45:36 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH v2] OOPS in identify_cpu() on CPUs without CPUID
-Date: Sun, 9 Aug 2009 19:45:25 +0200
-User-Agent: KMail/1.9.10
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200908081908.12240.linux@rainbow-software.org> <20090808175344.GA8099@elte.hu>
-In-Reply-To: <20090808175344.GA8099@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200908091945.29233.linux@rainbow-software.org>
+	Sun, 9 Aug 2009 14:01:52 -0400
+From: Felipe Balbi <me@felipebalbi.com>
+To: linux-kernel@vger.kernel.org
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mike Rapoport <mike@compulab.co.il>, Felipe Balbi <me@felipebalbi.com>
+Subject: [PATCH] regulator: userspace: use sysfs_create_group
+Date: Sun,  9 Aug 2009 21:01:25 +0300
+Message-Id: <1249840885-13498-1-git-send-email-me@felipebalbi.com>
+X-Mailer: git-send-email 1.6.4.rc1
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 08 August 2009 19:53:44 Ingo Molnar wrote:
-> * Ondrej Zary <linux@rainbow-software.org> wrote:
-> > Kernel is broken for x86 CPUs without CPUID since 2.6.28. It
-> > crashes with NULL pointer dereference in identify_cpu():
-> >
-> > 766        generic_identify(c);
-> > 767
-> > 768-->     if (this_cpu->c_identify)
-> > 769                this_cpu->c_identify(c);
-> >
-> > this_cpu is NULL. This is because it's only initialized in
-> > get_cpu_vendor() function, which is not called if the CPU has no
-> > CPUID instruction.
->
-> indeed ...
->
-> > Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-> >
-> > --- linux-2.6.30.4-orig/arch/x86/kernel/cpu/common.c	2009-06-10
-> > 05:05:27.000000000 +0200 +++
-> > linux-2.6.30.4-router/arch/x86/kernel/cpu/common.c	2009-08-08
-> > 18:00:21.000000000 +0200 @@ -699,6 +699,7 @@
-> >
-> >  static void __cpuinit generic_identify(struct cpuinfo_x86 *c)
-> >  {
-> > +	this_cpu = &default_cpu;
-> >  	c->extended_cpuid_level = 0;
-> >
-> >  	if (!have_cpuid_p())
->
-> How about initializing this_cpu instead, via:
->
-> static const struct cpu_dev *this_cpu __cpuinitdata = &default_cpu;
->
-> ?
-> 	Ingo
+Signed-off-by: Felipe Balbi <me@felipebalbi.com>
+---
+ drivers/regulator/userspace-consumer.c |   44 ++++++++++++++++----------------
+ 1 files changed, 22 insertions(+), 22 deletions(-)
 
-The new patch is not very nice as default_cpu has to be moved. Works fine.
-
-
-Kernel is broken for x86 CPUs without CPUID since 2.6.28. It crashes with NULL
-pointer dereference in identify_cpu():
-
-766        generic_identify(c);
-767
-768-->     if (this_cpu->c_identify)
-769                this_cpu->c_identify(c);
-
-this_cpu is NULL. This is because it's only initialized in get_cpu_vendor()
-function, which is not called if the CPU has no CPUID instruction.
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
---- linux-2.6.30.4-orig/arch/x86/kernel/cpu/common.c	2009-06-10 05:05:27.000000000 +0200
-+++ linux-2.6.30.4-router/arch/x86/kernel/cpu/common.c	2009-08-09 13:33:04.000000000 +0200
-@@ -58,7 +58,30 @@
- 	alloc_bootmem_cpumask_var(&cpu_sibling_setup_mask);
- }
+diff --git a/drivers/regulator/userspace-consumer.c b/drivers/regulator/userspace-consumer.c
+index 06d2fa9..a7e8e0b 100644
+--- a/drivers/regulator/userspace-consumer.c
++++ b/drivers/regulator/userspace-consumer.c
+@@ -93,16 +93,20 @@ static ssize_t reg_set_state(struct device *dev, struct device_attribute *attr,
+ static DEVICE_ATTR(name, 0444, reg_show_name, NULL);
+ static DEVICE_ATTR(state, 0644, reg_show_state, reg_set_state);
  
--static const struct cpu_dev *this_cpu __cpuinitdata;
-+static void __cpuinit default_init(struct cpuinfo_x86 *c)
-+{
-+#ifdef CONFIG_X86_64
-+	display_cacheinfo(c);
-+#else
-+	/* Not much we can do here... */
-+	/* Check if at least it has cpuid */
-+	if (c->cpuid_level == -1) {
-+		/* No cpuid. It must be an ancient CPU */
-+		if (c->x86 == 4)
-+			strcpy(c->x86_model_id, "486");
-+		else if (c->x86 == 3)
-+			strcpy(c->x86_model_id, "386");
-+	}
-+#endif
-+}
-+
-+static const struct cpu_dev __cpuinitconst default_cpu = {
-+	.c_init	= default_init,
-+	.c_vendor = "Unknown",
-+	.c_x86_vendor = X86_VENDOR_UNKNOWN,
+-static struct device_attribute *attributes[] = {
+-	&dev_attr_name,
+-	&dev_attr_state,
++static struct attribute *attributes[] = {
++	&dev_attr_name.attr,
++	&dev_attr_state.attr,
 +};
 +
-+static const struct cpu_dev *this_cpu __cpuinitdata = &default_cpu;
++static const struct attribute_group attr_group = {
++	.attrs	= attributes,
+ };
  
- DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
- #ifdef CONFIG_X86_64
-@@ -330,29 +353,6 @@
- 
- static const struct cpu_dev *__cpuinitdata cpu_devs[X86_VENDOR_NUM] = {};
- 
--static void __cpuinit default_init(struct cpuinfo_x86 *c)
--{
--#ifdef CONFIG_X86_64
--	display_cacheinfo(c);
--#else
--	/* Not much we can do here... */
--	/* Check if at least it has cpuid */
--	if (c->cpuid_level == -1) {
--		/* No cpuid. It must be an ancient CPU */
--		if (c->x86 == 4)
--			strcpy(c->x86_model_id, "486");
--		else if (c->x86 == 3)
--			strcpy(c->x86_model_id, "386");
--	}
--#endif
--}
--
--static const struct cpu_dev __cpuinitconst default_cpu = {
--	.c_init	= default_init,
--	.c_vendor = "Unknown",
--	.c_x86_vendor = X86_VENDOR_UNKNOWN,
--};
--
- static void __cpuinit get_model_name(struct cpuinfo_x86 *c)
+ static int regulator_userspace_consumer_probe(struct platform_device *pdev)
  {
- 	unsigned int *v;
-
-
+ 	struct regulator_userspace_consumer_data *pdata;
+ 	struct userspace_consumer_data *drvdata;
+-	int ret, i;
++	int ret;
+ 
+ 	pdata = pdev->dev.platform_data;
+ 	if (!pdata)
+@@ -125,31 +129,29 @@ static int regulator_userspace_consumer_probe(struct platform_device *pdev)
+ 		goto err_alloc_supplies;
+ 	}
+ 
+-	for (i = 0; i < ARRAY_SIZE(attributes); i++) {
+-		ret = device_create_file(&pdev->dev, attributes[i]);
+-		if (ret != 0)
+-			goto err_create_attrs;
+-	}
++	ret = sysfs_create_group(&pdev->dev.kobj, &attr_group);
++	if (ret != 0)
++		goto err_create_attrs;
+ 
+-	if (pdata->init_on)
++	if (pdata->init_on) {
+ 		ret = regulator_bulk_enable(drvdata->num_supplies,
+ 					    drvdata->supplies);
+-
+-	drvdata->enabled = pdata->init_on;
+-
+-	if (ret) {
+-		dev_err(&pdev->dev, "Failed to set initial state: %d\n", ret);
+-		goto err_create_attrs;
++		if (ret) {
++			dev_err(&pdev->dev,
++				"Failed to set initial state: %d\n", ret);
++			goto err_enable;
++		}
+ 	}
+ 
++	drvdata->enabled = pdata->init_on;
+ 	platform_set_drvdata(pdev, drvdata);
+ 
+ 	return 0;
+ 
+-err_create_attrs:
+-	for (i = 0; i < ARRAY_SIZE(attributes); i++)
+-		device_remove_file(&pdev->dev, attributes[i]);
++err_enable:
++	sysfs_remove_group(&pdev->dev.kobj, &attr_group);
+ 
++err_create_attrs:
+ 	regulator_bulk_free(drvdata->num_supplies, drvdata->supplies);
+ 
+ err_alloc_supplies:
+@@ -160,10 +162,8 @@ err_alloc_supplies:
+ static int regulator_userspace_consumer_remove(struct platform_device *pdev)
+ {
+ 	struct userspace_consumer_data *data = platform_get_drvdata(pdev);
+-	int i;
+ 
+-	for (i = 0; i < ARRAY_SIZE(attributes); i++)
+-		device_remove_file(&pdev->dev, attributes[i]);
++	sysfs_remove_group(&pdev->dev.kobj, &attr_group);
+ 
+ 	if (data->enabled)
+ 		regulator_bulk_disable(data->num_supplies, data->supplies);
 -- 
-Ondrej Zary
+1.6.4.rc1
+
