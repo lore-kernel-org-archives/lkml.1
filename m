@@ -1,93 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751780AbZHIQGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751820AbZHIQHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751780AbZHIQGF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 12:06:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbZHIQGE
+	id S1751820AbZHIQHq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 12:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZHIQHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 12:06:04 -0400
-Received: from mail-vw0-f172.google.com ([209.85.212.172]:41171 "EHLO
-	mail-vw0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750906AbZHIQGD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 12:06:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=sUs+dylKDP3GtT7O405++InNvMPdlk9KCUOePZRyN1+kt1OWA2K/UdozCPpP/L86Gt
-         XhseRorLngI0p0Yps1BJ83l1L9uoPpBdiP7ybfbziBb60VQyn1hBrdYk/FFLAoI49VB2
-         KroACJcG1WfTsFdN8qpm3pxix1xY0KZr1wmQY=
+	Sun, 9 Aug 2009 12:07:45 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59250 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751183AbZHIQHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 12:07:45 -0400
+Date: Sun, 9 Aug 2009 18:07:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: [GIT PULL] core kernel fixes
+Message-ID: <20090809160730.GA26383@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <20090807215155.GA17043@sig21.net>
-References: <20090807215155.GA17043@sig21.net>
-Date: Sun, 9 Aug 2009 12:06:03 -0400
-X-Google-Sender-Auth: fd02bb4dfcd797ba
-Message-ID: <b6c5339f0908090906p3d29fdd2x8473dcc6df178167@mail.gmail.com>
-Subject: Re: 2.6.31-rc5 regression: ath5k broken after suspend-to-ram
-From: Bob Copeland <me@bobcopeland.com>
-To: Johannes Stezenbach <js@sig21.net>
-Cc: ath5k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 7, 2009 at 5:51 PM, Johannes Stezenbach<js@sig21.net> wrote:
-> Hi,
+Linus,
 
-Hi!
+Please pull the latest core-fixes-for-linus git tree from:
 
-> If I use nl80211 the second ifup fails with
-> "SIOCSIFFLAGS: Input/output error" messages and the follwing
-> is in dmesg:
->
->   ath5k phy0: failed to wakeup the MAC Chip
->   ath5k phy0: can't reset hardware (-5)
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
 
-Ok, does this patch help the above?
+ Thanks,
 
-http://patchwork.kernel.org/patch/38550/
+	Ingo
 
->   Aug  7 20:13:28 void wpa_supplicant[9932]: Trying to associate with 00:00:00:00:00:00 (SSID='...' freq=2412 MHz)
+------------------>
+Darren Hart (2):
+      rtmutex: Avoid deadlock in rt_mutex_start_proxy_lock()
+      futex: Update woken requeued futex_q lock_ptr
 
-I assume in all cases you have elided the mac addresses and they
-are the same in all of the examples?  (You can keep the first three
-octets in the future, they are just vendor information.)
+Li Zefan (2):
+      lockdep: Fix file mode of lock_stat
+      lockdep: Fix typos in documentation
 
->   Aug  7 23:10:08 void kernel: wlan0: RX AssocResp from 00:00:00:00:00:00 (capab=0x411 status=0 aid=1)
->   Aug  7 23:10:08 void kernel: wlan0: associated
->   Aug  7 23:10:08 void wpa_supplicant[16215]: Associated with 00:00:00:00:00:00
->   Aug  7 23:10:08 void wpa_supplicant[16215]: WPA: Key negotiation completed with 00:00:00:00:00:00 [PTK=CCMP GTK=TKIP]
->   Aug  7 23:10:08 void wpa_supplicant[16215]: CTRL-EVENT-CONNECTED - Connection to 00:00:00:00:00:00 completed (auth) [id=0 id_str=]
->   Aug  7 23:10:12 void wpa_supplicant[16215]: CTRL-EVENT-SCAN-RESULTS
->   Aug  7 23:10:12 void wpa_supplicant[16215]: Trying to associate with 00:00:00:00:00:00 (SSID='...' freq=2412 MHz)
 
-Hmm so it completed association... then 4 seconds later, got some
-scan results and tried again.  Odd.
+ Documentation/lockdep-design.txt |    6 +++---
+ kernel/futex.c                   |   13 +++++++++----
+ kernel/lockdep_proc.c            |    3 ++-
+ kernel/rtmutex.c                 |    4 +---
+ 4 files changed, 15 insertions(+), 11 deletions(-)
 
-> During resume the following is logged:
->
->   ath5k 0000:02:02.0: restoring config space at offset 0x3 (was 0x5008, writing 0xa808)
->   pm_op(): pci_pm_resume+0x0/0x79 returns -16
->   PM: Device 0000:00:00.0 failed to resume: error -16
->
-> Not sure if this is causing the problem?
-
--EBUSY... not sure.
-
-> In case it matters:
->  CONFIG_MAC80211_DEFAULT_PS=y
->  CONFIG_MAC80211_DEFAULT_PS_VALUE=1
-
-That's for 802.11 power saving which ath5k doesn't do yet, so it
-doesn't matter here.
-
-Ok thanks for the very detailed report, I'll take a look.  My
-hardware suspends/resumes under 2.6.31, but I do have a few
-differences in my setup compared to yours.
-
--- 
-Bob Copeland %% www.bobcopeland.com
+diff --git a/Documentation/lockdep-design.txt b/Documentation/lockdep-design.txt
+index e20d913..abf768c 100644
+--- a/Documentation/lockdep-design.txt
++++ b/Documentation/lockdep-design.txt
+@@ -30,9 +30,9 @@ State
+ The validator tracks lock-class usage history into 4n + 1 separate state bits:
+ 
+ - 'ever held in STATE context'
+-- 'ever head as readlock in STATE context'
+-- 'ever head with STATE enabled'
+-- 'ever head as readlock with STATE enabled'
++- 'ever held as readlock in STATE context'
++- 'ever held with STATE enabled'
++- 'ever held as readlock with STATE enabled'
+ 
+ Where STATE can be either one of (kernel/lockdep_states.h)
+  - hardirq
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 0672ff8..57f5a80 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -1010,19 +1010,24 @@ void requeue_futex(struct futex_q *q, struct futex_hash_bucket *hb1,
+  * requeue_pi_wake_futex() - Wake a task that acquired the lock during requeue
+  * q:	the futex_q
+  * key:	the key of the requeue target futex
++ * hb:  the hash_bucket of the requeue target futex
+  *
+  * During futex_requeue, with requeue_pi=1, it is possible to acquire the
+  * target futex if it is uncontended or via a lock steal.  Set the futex_q key
+  * to the requeue target futex so the waiter can detect the wakeup on the right
+  * futex, but remove it from the hb and NULL the rt_waiter so it can detect
+- * atomic lock acquisition.  Must be called with the q->lock_ptr held.
++ * atomic lock acquisition.  Set the q->lock_ptr to the requeue target hb->lock
++ * to protect access to the pi_state to fixup the owner later.  Must be called
++ * with the q->lock_ptr held.
+  */
+ static inline
+-void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key)
++void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key,
++			   struct futex_hash_bucket *hb)
+ {
+ 	drop_futex_key_refs(&q->key);
+ 	get_futex_key_refs(key);
+ 	q->key = *key;
++	q->lock_ptr = &hb->lock;
+ 
+ 	WARN_ON(plist_node_empty(&q->list));
+ 	plist_del(&q->list, &q->list.plist);
+@@ -1088,7 +1093,7 @@ static int futex_proxy_trylock_atomic(u32 __user *pifutex,
+ 	ret = futex_lock_pi_atomic(pifutex, hb2, key2, ps, top_waiter->task,
+ 				   set_waiters);
+ 	if (ret == 1)
+-		requeue_pi_wake_futex(top_waiter, key2);
++		requeue_pi_wake_futex(top_waiter, key2, hb2);
+ 
+ 	return ret;
+ }
+@@ -1273,7 +1278,7 @@ retry_private:
+ 							this->task, 1);
+ 			if (ret == 1) {
+ 				/* We got the lock. */
+-				requeue_pi_wake_futex(this, &key2);
++				requeue_pi_wake_futex(this, &key2, hb2);
+ 				continue;
+ 			} else if (ret) {
+ 				/* -EDEADLK */
+diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
+index d7135aa..e94caa6 100644
+--- a/kernel/lockdep_proc.c
++++ b/kernel/lockdep_proc.c
+@@ -758,7 +758,8 @@ static int __init lockdep_proc_init(void)
+ 		    &proc_lockdep_stats_operations);
+ 
+ #ifdef CONFIG_LOCK_STAT
+-	proc_create("lock_stat", S_IRUSR, NULL, &proc_lock_stat_operations);
++	proc_create("lock_stat", S_IRUSR | S_IWUSR, NULL,
++		    &proc_lock_stat_operations);
+ #endif
+ 
+ 	return 0;
+diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
+index fcd107a..29bd4ba 100644
+--- a/kernel/rtmutex.c
++++ b/kernel/rtmutex.c
+@@ -1039,16 +1039,14 @@ int rt_mutex_start_proxy_lock(struct rt_mutex *lock,
+ 	if (!rt_mutex_owner(lock) || try_to_steal_lock(lock, task)) {
+ 		/* We got the lock for task. */
+ 		debug_rt_mutex_lock(lock);
+-
+ 		rt_mutex_set_owner(lock, task, 0);
+-
++		spin_unlock(&lock->wait_lock);
+ 		rt_mutex_deadlock_account_lock(lock, task);
+ 		return 1;
+ 	}
+ 
+ 	ret = task_blocks_on_rt_mutex(lock, waiter, task, detect_deadlock);
+ 
+-
+ 	if (ret && !waiter->task) {
+ 		/*
+ 		 * Reset the return value. We might have
