@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbZHITyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbZHITyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753370AbZHITyg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 15:54:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbZHITyg
+	id S1753434AbZHITyl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 15:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbZHITyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 15:54:36 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:45798 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753319AbZHITye (ORCPT
+	Sun, 9 Aug 2009 15:54:40 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:23922 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753146AbZHITyi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 15:54:34 -0400
+	Sun, 9 Aug 2009 15:54:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=N9/xQADYrptxR67u88FhXLz/hU4JPLSgEwArcTpkpLG7pIBdjOXEdkHr/65eWF4HFu
-         i5Tgr7LcHihsi5YPypHH50PpdgZeXeehGp3zFZjmm6pQyeragkt5ff/R7LF86nUKrQ10
-         J309x7cfb+cq5GzOzCuafp7Pmq8ZeJroI80to=
+        b=JvC+whNlF0CvnITGM8ud8i6f6//zH+A3rE1y9fTh3tUDqdIm87pelTBMFm6hEMygDL
+         a6eVJ9obiRJOmPYNKkLaKzbHIosI3he2YuD8Rbx6Xn+vqR2edgGDH6aemS7/Cnee27GM
+         Cif05TtZhwYTiVMm/Ya8CY/v7+xfqYcu+kvtM=
 From: Marcin Slusarz <marcin.slusarz@gmail.com>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
-Subject: [PATCH 05/14] x86: use printk_once
-Date: Sun,  9 Aug 2009 21:54:00 +0200
-Message-Id: <1249847649-11631-6-git-send-email-marcin.slusarz@gmail.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org
+Subject: [PATCH 06/14] ata: use printk_once
+Date: Sun,  9 Aug 2009 21:54:01 +0200
+Message-Id: <1249847649-11631-7-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
 References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
@@ -31,56 +30,34 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: x86@kernel.org
+Cc: Jeff Garzik <jgarzik@pobox.com>
+Cc: linux-ide@vger.kernel.org
 ---
- arch/x86/kernel/irq_32.c |    5 ++---
- arch/x86/kvm/x86.c       |    7 +------
- 2 files changed, 3 insertions(+), 9 deletions(-)
+ drivers/ata/pata_rz1000.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/irq_32.c b/arch/x86/kernel/irq_32.c
-index 3b09634..7d35d0f 100644
---- a/arch/x86/kernel/irq_32.c
-+++ b/arch/x86/kernel/irq_32.c
-@@ -218,7 +218,6 @@ bool handle_irq(unsigned irq, struct pt_regs *regs)
- void fixup_irqs(void)
- {
- 	unsigned int irq;
--	static int warned;
- 	struct irq_desc *desc;
+diff --git a/drivers/ata/pata_rz1000.c b/drivers/ata/pata_rz1000.c
+index 0c574c0..a5e4dfe 100644
+--- a/drivers/ata/pata_rz1000.c
++++ b/drivers/ata/pata_rz1000.c
+@@ -85,7 +85,6 @@ static int rz1000_fifo_disable(struct pci_dev *pdev)
  
- 	for_each_irq_desc(irq, desc) {
-@@ -236,8 +235,8 @@ void fixup_irqs(void)
- 		}
- 		if (desc->chip->set_affinity)
- 			desc->chip->set_affinity(irq, affinity);
--		else if (desc->action && !(warned++))
--			printk("Cannot set affinity for irq %i\n", irq);
-+		else if (desc->action)
-+			printk_once("Cannot set affinity for irq %i\n", irq);
- 	}
- 
- #if 0
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index fe5474a..0572c90 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2261,12 +2261,7 @@ static int emulator_cmpxchg_emulated(unsigned long addr,
- 				     unsigned int bytes,
- 				     struct kvm_vcpu *vcpu)
+ static int rz1000_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
  {
--	static int reported;
--
--	if (!reported) {
--		reported = 1;
--		printk(KERN_WARNING "kvm: emulating exchange as write\n");
--	}
-+	printk_once(KERN_WARNING "kvm: emulating exchange as write\n");
- #ifndef CONFIG_X86_64
- 	/* guests cmpxchg8b have to be emulated atomically */
- 	if (bytes == 8) {
+-	static int printed_version;
+ 	static const struct ata_port_info info = {
+ 		.flags = ATA_FLAG_SLAVE_POSS,
+ 		.pio_mask = ATA_PIO4,
+@@ -93,8 +92,7 @@ static int rz1000_init_one (struct pci_dev *pdev, const struct pci_device_id *en
+ 	};
+ 	const struct ata_port_info *ppi[] = { &info, NULL };
+ 
+-	if (!printed_version++)
+-		printk(KERN_DEBUG DRV_NAME " version " DRV_VERSION "\n");
++	printk_once(KERN_DEBUG DRV_NAME " version " DRV_VERSION "\n");
+ 
+ 	if (rz1000_fifo_disable(pdev) == 0)
+ 		return ata_pci_sff_init_one(pdev, ppi, &rz1000_sht, NULL);
 -- 
 1.6.3.3
 
