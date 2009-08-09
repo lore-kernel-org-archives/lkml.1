@@ -1,154 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752550AbZHISlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752499AbZHIS5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752550AbZHISlm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 14:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbZHISll
+	id S1752499AbZHIS5x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 14:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbZHIS5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 14:41:41 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:38207 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751575AbZHISll (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 14:41:41 -0400
-Message-ID: <4A7F185E.5070104@us.ibm.com>
-Date: Sun, 09 Aug 2009 11:41:34 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Sun, 9 Aug 2009 14:57:52 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:38988 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751972AbZHIS5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 14:57:52 -0400
+Date: Sun, 9 Aug 2009 11:57:54 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Ben Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_PREEMPT_RCU in next/mmotm
+Message-ID: <20090809185753.GG6866@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <Pine.LNX.4.64.0908081956580.12300@sister.anvils> <20090808235634.GB6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908090414320.18096@sister.anvils> <20090809053308.GD6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908091209150.23855@sister.anvils> <Pine.LNX.4.64.0908091346450.27358@sister.anvils>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "lkml, " <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] core kernel fixes
-References: <20090809160730.GA26383@elte.hu>
-In-Reply-To: <20090809160730.GA26383@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0908091346450.27358@sister.anvils>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> Linus,
+On Sun, Aug 09, 2009 at 02:06:05PM +0100, Hugh Dickins wrote:
+> On Sun, 9 Aug 2009, Hugh Dickins wrote:
+> > 
+> > filp 13343 objects:
+> > 
+> > CPU last cur F M
+> >   0    1   0 0 0
+> >   1    0   0 0 0
+> >   2   -1   0 0 0
+> >   3    0   0 0 0
+> > ggp = 35124, state = waitzero
 > 
-> Please pull the latest core-fixes-for-linus git tree from:
+> Interesting that rcu_try_flip_waitzero() doesn't see 1 + 0 + -1 + 0 == 0.
+
+Indeed!!!  You nailed it!!!
+
+> That's because rcu_cpu_online_map is 0x1 instead of the 0xf it should be.
 > 
->    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
-> 
->  Thanks,
-> 
-> 	Ingo
-> 
-> ------------------>
-> Darren Hart (2):
->       rtmutex: Avoid deadlock in rt_mutex_start_proxy_lock()
->       futex: Update woken requeued futex_q lock_ptr
+> Which is because I don't have CONFIG_HOTPLUG_CPU=y on that PPC machine
+> (unlike the x86s), and I think you've made some recent mods which
+> accidentally made the rcu cpu initialization dependent on hotplug
+> cpu notifiers?  CONFIG_HOTPLUG_CPU=y and it works properly again.
 
-Ingo, this still has the older version of:
+Back to the drawing board at this end...
 
-"futex: Update woken requeued futex_q lock_ptr"
+> And TREE_RCU doesn't use an rcu_cpu_online_map (though it does expect
+> some per-cpu initialization, but seems to get away without it).
 
-Please update to the resend on Aug 7:
+Only by pure luck.  The kind of luck that gets you into serious trouble
+later on.
 
+> So I think that's the mystery solved - I'll let you decide the right fix!
 
-Update futex_q lock_ptr on requeue proxy lock (resend)
+Thank you -very- much for tracking this down, Hugh!!!
 
-From: Darren Hart <dvhltc@us.ibm.com>
+I introduced the problem in commit 7fe616c5dd50a50f334edec1ea0580b90b7af0d9
+by changing from register_cpu_notifier() to hotcpu_notifier().  The former
+lets you know when CPUs come on line unconditionally, the latter only
+when CONFIG_HOTPLUG_CPU is in effect.
 
-futex_requeue() can acquire the lock on behalf of a waiter early on or during
-the requeue loop if it is uncontended or in the event of a lock steal or owner
-died. On wakeup, the waiter (in futex_wait_requeue_pi()) cleans up the pi_state
-owner using the lock_ptr to protect against concurrent access to the pi_state.
-The pi_state is hung off futex_q's on the requeue target futex hash bucket so
-the lock_ptr needs to be updated accordingly.
+But hotcpu_notifier() is much nicer to use, so I propose introducing
+a cpu_notifier() that is invoked like hotcpu_notifier() is, but is
+unconditional in the same way that register_cpu_notifier().
 
-The problem manifested by triggering the WARN_ON in lookup_pi_state() about the
-pid != pi_state->owner->pid.  With this patch, the pi_state is properly guarded
-against concurrent access via the requeue target hb lock.
+Something like the following (untested, probably does not compile):
 
-The astute reviewer may notice that there is a window of time between when
-futex_requeue() unlocks the hb locks and when futex_wait_requeue_pi() will
-acquire hb2->lock.  During this time the pi_state and uval are not in sync with
-the underlying rtmutex owner (but the uval does indicate there are waiters, so
-no atomic changes will occur in userspace).  However, this is not a problem.
-Should a contending thread enter lookup_pi_state() and acquire hb2->lock before
-the ownership is fixed up, it will find the pi_state hung off a waiter's
-(possibly the pending owner's) futex_q and block on the rtmutex.  Once
-futex_wait_requeue_pi() fixes up the owner, it will also move the pi_state from
-the old owner's task->pi_state_list to its own.
-
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-CC: Eric Dumazet <eric.dumazet@gmail.com>
-CC: Dinakar Guniguntala <dino@in.ibm.com>
-CC: John Stultz <johnstul@us.ibm.com>
----
-
- kernel/futex.c |   17 +++++++++++++----
- 1 files changed, 13 insertions(+), 4 deletions(-)
-
-
-diff --git a/kernel/futex.c b/kernel/futex.c
-index abce822..df30983 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1059,15 +1059,19 @@ void requeue_futex(struct futex_q *q, struct futex_hash_bucket *hb1,
-  * requeue_pi_wake_futex() - Wake a task that acquired the lock during requeue
-  * q:	the futex_q
-  * key:	the key of the requeue target futex
-+ * hb:  the hash_bucket of the requeue target futex
-  *
-  * During futex_requeue, with requeue_pi=1, it is possible to acquire the
-  * target futex if it is uncontended or via a lock steal.  Set the futex_q key
-  * to the requeue target futex so the waiter can detect the wakeup on the right
-  * futex, but remove it from the hb and NULL the rt_waiter so it can detect
-- * atomic lock acquisition.  Must be called with the q->lock_ptr held.
-+ * atomic lock acquisition.  Set the q->lock_ptr to the requeue target hb->lock
-+ * to protect access to the pi_state to fixup the owner later.  Must be called
-+ * with both q->lock_ptr and hb->lock held.
-  */
- static inline
--void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key)
-+void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key,
-+			   struct futex_hash_bucket *hb)
- {
- 	drop_futex_key_refs(&q->key);
- 	get_futex_key_refs(key);
-@@ -1079,6 +1083,11 @@ void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key)
- 	WARN_ON(!q->rt_waiter);
- 	q->rt_waiter = NULL;
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index 4d668e0..d5dfc1f 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -48,6 +48,15 @@ struct notifier_block;
  
-+	q->lock_ptr = &hb->lock;
-+#ifdef CONFIG_DEBUG_PI_LIST
-+	q->list.plist.slock = &hb->lock;
-+#endif
-+
- 	wake_up_state(q->task, TASK_NORMAL);
- }
+ #ifdef CONFIG_SMP
+ /* Need to know about CPUs going up/down? */
++#if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE)
++#define cpu_notifier(fn, pri) {					\
++	static struct notifier_block fn##_nb __cpuinitdata =	\
++		{ .notifier_call = fn, .priority = pri };	\
++	register_cpu_notifier(&fn##_nb);			\
++}
++#else /* #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
++#define cpu_notifier(fn, pri)	do { (void)(fn); } while (0)
++#endif /* #else #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
+ #ifdef CONFIG_HOTPLUG_CPU
+ extern int register_cpu_notifier(struct notifier_block *nb);
+ extern void unregister_cpu_notifier(struct notifier_block *nb);
+@@ -99,11 +108,7 @@ extern struct sysdev_class cpu_sysdev_class;
  
-@@ -1137,7 +1146,7 @@ static int futex_proxy_trylock_atomic(u32 __user *pifutex,
- 	ret = futex_lock_pi_atomic(pifutex, hb2, key2, ps, top_waiter->task,
- 				   set_waiters);
- 	if (ret == 1)
--		requeue_pi_wake_futex(top_waiter, key2);
-+		requeue_pi_wake_futex(top_waiter, key2, hb2);
+ extern void get_online_cpus(void);
+ extern void put_online_cpus(void);
+-#define hotcpu_notifier(fn, pri) {				\
+-	static struct notifier_block fn##_nb __cpuinitdata =	\
+-		{ .notifier_call = fn, .priority = pri };	\
+-	register_cpu_notifier(&fn##_nb);			\
+-}
++#define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
+ #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
+ #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)
+ int cpu_down(unsigned int cpu);
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index 9f0584e..c1bbfd5 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -251,7 +251,7 @@ void __init rcu_init(void)
+ 	int i;
  
- 	return ret;
- }
-@@ -1323,7 +1332,7 @@ retry_private:
- 							this->task, 1);
- 			if (ret == 1) {
- 				/* We got the lock. */
--				requeue_pi_wake_futex(this, &key2);
-+				requeue_pi_wake_futex(this, &key2, hb2);
- 				continue;
- 			} else if (ret) {
- 				/* -EDEADLK */
+ 	__rcu_init();
+-	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
++	cpu_notifier(rcu_barrier_cpu_hotplug, 0);
+ 
+ 	/*
+ 	 * We don't need protection against CPU-hotplug here because
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+With this in place:
+
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index 9f0584e..c1bbfd5 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -251,7 +251,7 @@ void __init rcu_init(void)
+ 	int i;
+ 
+ 	__rcu_init();
+-	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
++	cpu_notifier(rcu_barrier_cpu_hotplug, 0);
+ 
+ 	/*
+ 	 * We don't need protection against CPU-hotplug here because
+
+Thoughts?
+
+							Thanx, Paul
