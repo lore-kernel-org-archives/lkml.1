@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751791AbZHIFhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751853AbZHIFqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751791AbZHIFhX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 01:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbZHIFhX
+	id S1751853AbZHIFqL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 01:46:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZHIFqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 01:37:23 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:47544 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499AbZHIFhW (ORCPT
+	Sun, 9 Aug 2009 01:46:10 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:43035 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751298AbZHIFqK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 01:37:22 -0400
-Subject: Re: [UBI UBIFS] replace vmalloc with kmalloc
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: JiSheng Zhang <jszhang3@gmail.com>
-Cc: Adrian Hunter <adrian.hunter@nokia.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dwmw2@infradead.org" <dwmw2@infradead.org>,
-       "rmk@arm.linux.org.uk" <rmk@arm.linux.org.uk>,
-       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>
-In-Reply-To: <20090807232846.34bffdeb@ustc>
-References: <2df346410908070202i6c16008ckc145559a474129c6@mail.gmail.com>
-	 <4A7BF1C3.4050602@nokia.com>  <20090807232846.34bffdeb@ustc>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 09 Aug 2009 08:35:32 +0300
-Message-Id: <1249796132.9157.52.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 09 Aug 2009 05:37:04.0864 (UTC) FILETIME=[6D7D9600:01CA18B3]
-X-Nokia-AV: Clean
+	Sun, 9 Aug 2009 01:46:10 -0400
+Date: Sun, 9 Aug 2009 06:46:01 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: eranian@gmail.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, oleg@redhat.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
+       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
+       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
+       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
+       roland@redhat.com
+Subject: F_SETOWN_TID: F_SETOWN was thread-specific for a while
+Message-ID: <20090809054601.GA26152@shareable.org>
+References: <7c86c4470907270951i48886d56g90bc198f26bb0716@mail.gmail.com> <1248869948.6987.3083.camel@twins> <20090729221703.GA25368@redhat.com> <1248953485.6391.41.camel@twins> <20090730192040.GA9503@redhat.com> <1248984003.4164.0.camel@laptop> <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins> <20090731141122.a1939712.akpm@linux-foundation.org> <7c86c4470908030553v5a0a4448p94ab612700d68066@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7c86c4470908030553v5a0a4448p94ab612700d68066@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-07 at 23:28 +0800, JiSheng Zhang wrote:
-> Adrian Hunter <adrian.hunter@nokia.com> wrote:
-> > 
-> > vmalloc allows large (> 128KiB) buffers, but kmalloc doesn't.
-> > So we presently have no choice but to use vmalloc.
-> 
-> But vmalloced buffer can't be easily passed to DMA, is there better choice?
+stephane eranian wrote:
+> As Peter found out, the man page seems to indicate that if you specify a TID
+> instead a PID with F_SETOWN, then the kernel should interpret this as meaning
+> this particular thread, but this is not what is implemented right now.
 
-We use vmalloc-ed buffers is when we need to do something with whole
-eraseblocks, which may be 128KiB, or even 256KiB. So in general, we
-cannot just s/kmalloc/vmalloc/. We should invent something trickier.
+The behaviour was changed quietly in kernel 2.6.12.
 
-You should probably think about some generic way to solve problems like
-this. May be some MTD-specific library could be created. You could
-implement something like the flexible arrays, but with DMA stuff in mind
-(e.g., adding a parameter which specifies allocation order, because for
-DMA you may want to allocate more than one physically contiguous page).
-Or you may even improve the existing flexible arrays to suit your needs.
-Take a look here:
-http://lwn.net/Articles/345273/
+I wrote that part of the man page, and it was true at the time.  SIGIO
+signals _were_ thread-specific.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Starting in kernel 2.5.60, SIGIO signals were thread-specific when
+F_SETSIG was used to enable queued siginfo.
 
+Prompted by this F_SETOWN_TID patch, I checked through old kernel
+patches, and found that signals set by F_SIGSIG were changed to
+process-wide in 2.6.12:
+
+    @@ -437,7 +438,7 @@ static void send_sigio_to_task(struct ta
+			    else
+				    si.si_band = band_table[reason - POLL_IN];
+			    si.si_fd    = fd;
+    -                       if (!send_sig_info(fown->signum, &si, p))
+    +                       if (!send_group_sig_info(fown->signum, &si, p))
+				    break;
+		    /* fall-through: fall back on the old plain SIGIO signal */
+		    case 0:
+
+That's a bit annoying, because it breaks a library which uses queued
+I/O signals as an I/O event mechanism when used with multiple threads.
+(Fortunatelly epoll is available nowadays; it does I/O events much
+better, but sometimes you want SIGIO from epoll's descriptor...)
+
+So the man page is now incorrect, but if F_SETOWN_TID is added and has
+the behaviour which F_SETOWN used to have, then the text can be
+shuffled around.
+
+If anyone is interested, I have a fairly detailed test program which
+checks queued "SIGIO" (F_SETSIG) signals due to I/O on a socket,
+including SIGURG and SIGIO on overflow, and checks whether each one is
+delivered properly and is thread-specific.  I found quite a few Glibc
+and kernel bugs with it in the past.
+
+-- Jamie
