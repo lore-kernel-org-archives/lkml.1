@@ -1,47 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZHIJn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596AbZHIJsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbZHIJn2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 05:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbZHIJn1
+	id S1753596AbZHIJsn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 05:48:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbZHIJsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 05:43:27 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:49125 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753394AbZHIJn0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 05:43:26 -0400
-Date: Sun, 9 Aug 2009 10:43:06 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       Wim Van Sebroeck <wim@iguana.be>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH RT 8/6] [ARM, WATCHDOG] davinci: include mach/timex.h
-	in davinci_wdt.c
-Message-ID: <20090809094306.GA26591@n2100.arm.linux.org.uk>
-References: <20090807203939.GA19374@pengutronix.de> <1249810600-21946-1-git-send-email-u.kleine-koenig@pengutronix.de> <1249810600-21946-2-git-send-email-u.kleine-koenig@pengutronix.de>
+	Sun, 9 Aug 2009 05:48:42 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:56697 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753457AbZHIJsl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 05:48:41 -0400
+Date: Sun, 9 Aug 2009 11:42:32 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-mips@linux-mips.org
+Subject: Re: [Linux-fbdev-devel] [PATCH 3/3] drivers/video: Correct use of 
+ request_region/request_mem_region
+In-Reply-To: <10f740e80908090224p13d2119do9e4f4d7730ed001e@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0908091141150.13271@ask.diku.dk>
+References: <Pine.LNX.4.64.0908090943560.13271@ask.diku.dk>
+ <10f740e80908090224p13d2119do9e4f4d7730ed001e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1249810600-21946-2-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 09, 2009 at 11:36:39AM +0200, Uwe Kleine-König wrote:
-> This fixes a a build failure for 2.6.31-rc4-rt1 (ARCH=arm,
-> davinci_all_defconfig):
-> 
-> 	drivers/watchdog/davinci_wdt.c: In function 'wdt_enable':
-> 	drivers/watchdog/davinci_wdt.c:102: error: 'CLOCK_TICK_RATE' undeclared (first use in this function)
-> 	drivers/watchdog/davinci_wdt.c:102: error: (Each undeclared identifier is reported only once
-> 	drivers/watchdog/davinci_wdt.c:102: error: for each function it appears in.)
+From: Julia Lawall <julia@diku.dk>
 
-It should not be using CLOCK_TICK_RATE - there was a move to clean
-up the use of that symbol and restrict it just to the i8253 PIT.
-Please create something else like DAVINCI_TICK_RATE instead.
+request_region should be used with release_region, not request_mem_region.
+
+Geert Uytterhoeven pointed out that in the case of drivers/video/gbefb.c,
+the problem is actually the other way around; request_mem_region should be
+used instead of request_region.
+
+The semantic patch that finds/fixes this problem is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@r1@
+expression start;
+@@
+
+request_region(start,...)
+
+@b1@
+expression r1.start;
+@@
+
+request_mem_region(start,...)
+
+@depends on !b1@
+expression r1.start;
+expression E;
+@@
+
+- release_mem_region
++ release_region
+  (start,E)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/video/gbefb.c  |    2 +-
+ drivers/video/tdfxfb.c |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff -u -p a/drivers/video/gbefb.c b/drivers/video/gbefb.c
+--- a/drivers/video/gbefb.c
++++ b/drivers/video/gbefb.c
+@@ -1147,7 +1147,7 @@ static int __init gbefb_probe(struct pla
+ 	gbefb_setup(options);
+ #endif
+ 
+-	if (!request_region(GBE_BASE, sizeof(struct sgi_gbe), "GBE")) {
++	if (!request_mem_region(GBE_BASE, sizeof(struct sgi_gbe), "GBE")) {
+ 		printk(KERN_ERR "gbefb: couldn't reserve mmio region\n");
+ 		ret = -EBUSY;
+ 		goto out_release_framebuffer;
+diff -u -p a/drivers/video/tdfxfb.c b/drivers/video/tdfxfb.c
+--- a/drivers/video/tdfxfb.c
++++ b/drivers/video/tdfxfb.c
+@@ -1571,8 +1571,8 @@ out_err_iobase:
+ 	if (default_par->mtrr_handle >= 0)
+ 		mtrr_del(default_par->mtrr_handle, info->fix.smem_start,
+ 			 info->fix.smem_len);
+-	release_mem_region(pci_resource_start(pdev, 2),
+-			   pci_resource_len(pdev, 2));
++	release_region(pci_resource_start(pdev, 2),
++		       pci_resource_len(pdev, 2));
+ out_err_screenbase:
+ 	if (info->screen_base)
+ 		iounmap(info->screen_base);
