@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbZHITzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbZHITyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754028AbZHITzU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 15:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbZHITzG
+	id S1753466AbZHITyw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 15:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZHITyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 15:55:06 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:23922 "EHLO
+	Sun, 9 Aug 2009 15:54:50 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:39181 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753294AbZHITy4 (ORCPT
+	with ESMTP id S1753466AbZHITyr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 15:54:56 -0400
+	Sun, 9 Aug 2009 15:54:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=NFkGyBEiVRzDynxXQPIqdoRdQ1zdXb6eZ/KZI4e3tTvQSGmGH21tq3zY3xBb55/X1d
-         lywWOtML4KFsfBrNZEgq/iRO8qU0BEVdha4PYdYynDmQAZFT+88Eh+avgeF+rv/P/p2q
-         FMLpJa45Fg+NDfw2Z+5J2kHvzDY1/3mRi4j5Q=
+        b=jxzWPXU4r4z24rqRO/XWqRkiybB4K4XPsBnWEntxf9DVHfC2voCkThyAEVG3IJ3KxP
+         EjvLFcwfbjP45zPVYR8ZwMVzRM+ad2+NUwALx83viJ3lnqBPtBLiohg39hvZHOb0s37I
+         FLQy7A5ILPJu359fD+8PVrs7p717miiOisXhg=
 From: Marcin Slusarz <marcin.slusarz@gmail.com>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Roland Dreier <rolandd@cisco.com>, Sean Hefty <sean.hefty@intel.com>,
-       Hal Rosenstock <hal.rosenstock@gmail.com>,
-       general@lists.openfabrics.org
-Subject: [PATCH 10/14] infiniband: use printk_once
-Date: Sun,  9 Aug 2009 21:54:05 +0200
-Message-Id: <1249847649-11631-11-git-send-email-marcin.slusarz@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 08/14] tty/vt: use printk_once
+Date: Sun,  9 Aug 2009 21:54:03 +0200
+Message-Id: <1249847649-11631-9-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
 References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
@@ -32,53 +30,44 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Roland Dreier <rolandd@cisco.com>
-Cc: Sean Hefty <sean.hefty@intel.com>
-Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
-Cc: general@lists.openfabrics.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/infiniband/hw/cxgb3/iwch.c |    4 +---
- drivers/infiniband/hw/mlx4/main.c  |    6 +-----
+ drivers/char/tty_ioctl.c |    4 +---
+ drivers/char/vt.c        |    6 +-----
  2 files changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/infiniband/hw/cxgb3/iwch.c b/drivers/infiniband/hw/cxgb3/iwch.c
-index 26fc0a4..9cc99df 100644
---- a/drivers/infiniband/hw/cxgb3/iwch.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch.c
-@@ -105,11 +105,9 @@ static void rnic_init(struct iwch_dev *rnicp)
- static void open_rnic_dev(struct t3cdev *tdev)
- {
- 	struct iwch_dev *rnicp;
--	static int vers_printed;
- 
- 	PDBG("%s t3cdev %p\n", __func__,  tdev);
--	if (!vers_printed++)
--		printk(KERN_INFO MOD "Chelsio T3 RDMA Driver - version %s\n",
-+	printk_once(KERN_INFO MOD "Chelsio T3 RDMA Driver - version %s\n",
- 		       DRV_VERSION);
- 	rnicp = (struct iwch_dev *)ib_alloc_device(sizeof(*rnicp));
- 	if (!rnicp) {
-diff --git a/drivers/infiniband/hw/mlx4/main.c b/drivers/infiniband/hw/mlx4/main.c
-index ae3d759..0b2f77a 100644
---- a/drivers/infiniband/hw/mlx4/main.c
-+++ b/drivers/infiniband/hw/mlx4/main.c
-@@ -540,15 +540,11 @@ static struct device_attribute *mlx4_class_attributes[] = {
- 
- static void *mlx4_ib_add(struct mlx4_dev *dev)
- {
--	static int mlx4_ib_version_printed;
- 	struct mlx4_ib_dev *ibdev;
- 	int num_ports = 0;
- 	int i;
- 
--	if (!mlx4_ib_version_printed) {
--		printk(KERN_INFO "%s", mlx4_ib_version);
--		++mlx4_ib_version_printed;
--	}
-+	printk_once(KERN_INFO "%s", mlx4_ib_version);
- 
- 	mlx4_foreach_port(i, dev, MLX4_PORT_TYPE_IB)
- 		num_ports++;
+diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
+index ad6ba4e..8e67d5c 100644
+--- a/drivers/char/tty_ioctl.c
++++ b/drivers/char/tty_ioctl.c
+@@ -393,9 +393,7 @@ void tty_termios_encode_baud_rate(struct ktermios *termios,
+ 		termios->c_cflag |= (BOTHER << IBSHIFT);
+ #else
+ 	if (ifound == -1 || ofound == -1) {
+-		static int warned;
+-		if (!warned++)
+-			printk(KERN_WARNING "tty: Unable to return correct "
++		printk_once(KERN_WARNING "tty: Unable to return correct "
+ 			  "speed data as your architecture needs updating.\n");
+ 	}
+ #endif
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index 404f4c1..5d77fb3 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -2129,11 +2129,7 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
+ 	currcons = vc->vc_num;
+ 	if (!vc_cons_allocated(currcons)) {
+ 	    /* could this happen? */
+-	    static int error = 0;
+-	    if (!error) {
+-		error = 1;
+-		printk("con_write: tty %d not allocated\n", currcons+1);
+-	    }
++		printk_once("con_write: tty %d not allocated\n", currcons+1);
+ 	    release_console_sem();
+ 	    return 0;
+ 	}
 -- 
 1.6.3.3
 
