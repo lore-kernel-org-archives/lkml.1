@@ -1,166 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753471AbZHIUmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751884AbZHIUtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753471AbZHIUmh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 16:42:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbZHIUmg
+	id S1751884AbZHIUtR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 16:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbZHIUtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 16:42:36 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:59626 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752802AbZHIUmg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 16:42:36 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH] macvlan: add tap device backend
-Date: Sun, 9 Aug 2009 20:42:24 +0000
-User-Agent: KMail/1.11.2 (Linux/2.6.29; KDE/4.2.2; x86_64; ; )
-Cc: netdev@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Or Gerlitz <ogerlitz@voltaire.com>,
-       "Fischer, Anna" <anna.fischer@hp.com>,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Edge Virtual Bridging <evb@yahoogroups.com>
-References: <1249595428-21594-1-git-send-email-arnd@arndb.de> <20090809080215.GA17200@redhat.com>
-In-Reply-To: <20090809080215.GA17200@redhat.com>
+	Sun, 9 Aug 2009 16:49:17 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43389 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751112AbZHIUtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 16:49:16 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH update x2] PM: Introduce core framework for run-time PM of I/O devices (rev. 13)
+Date: Sun, 9 Aug 2009 22:49:53 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       Magnus Damm <magnus.damm@gmail.com>, Greg KH <gregkh@suse.de>,
+       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0908091100470.10326-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908091100470.10326-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908092042.24686.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18rwo/8uGeSYn0tnCEWHaBxiUeJ3sjgkw84/MM
- gDtbrv0By4QTBayCatDdNVRxtzud09aZ4y8b+qXSnurd/f19jt
- Hemu4+WxSfFnYvBNjH5iQ==
+Message-Id: <200908092249.53401.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 09 August 2009 08:02:16 Michael S. Tsirkin wrote:
-> On Thu, Aug 06, 2009 at 09:50:28PM +0000, Arnd Bergmann wrote:
-> > * The same framework in macvlan can be used to add a third backend
-> > into a future kernel based virtio-net implementation.
+On Sunday 09 August 2009, Alan Stern wrote:
+> On Sun, 9 Aug 2009, Rafael J. Wysocki wrote:
 > 
-> Could you split the patches up, to make this last easier?
-> patch 1 - export framework
-> patch 2 - code using it
-
-Sure, will do.
-
-> > +/* Get packet from user space buffer */
-> > +static ssize_t macvtap_get_user(struct macvtap_dev *vtap,
-> > +			       const struct iovec *iv, size_t count,
-> > +			       int noblock)
-> > +{
-> > +	struct sk_buff *skb;
-> > +	size_t len = count;
-> > +
-> > +	if (unlikely(len < ETH_HLEN))
-> > +		return -EINVAL;
-> > +
-> > +	skb = alloc_skb(NET_IP_ALIGN + len, GFP_KERNEL);
-> > +
-> > +	if (!skb) {
-> > +		vtap->m.dev->stats.rx_dropped++;
-> > +		return -ENOMEM;
-> > +	}
-> > +
-> > +	skb_reserve(skb, NET_IP_ALIGN);
-> > +	skb_put(skb, count);
-> > +
-> > +	if (skb_copy_datagram_from_iovec(skb, 0, iv, 0, len)) {
-> > +		vtap->m.dev->stats.rx_dropped++;
-> > +		kfree_skb(skb);
-> > +		return -EFAULT;
-> > +	}
-> > +
-> > +	skb_set_network_header(skb, ETH_HLEN);
-> > +	skb->dev = vtap->m.lowerdev;
-> > +
-> > +	macvlan_start_xmit(skb, vtap->m.dev);
-> > +
-> > +	return count;
-> > +}
+> > > >  How exactly would you like to implement it
+> > > > instead?
+> > > 
+> > > As described above.  The barrier would be equivalent to
+> > > pm_runtime_get_noresume followed by pm_runtime_disable except that it
+> > > wouldn't actually disable anything.
+> > 
+> > OK, I can do that, but the only difference between that and the above sequence
+> > of three calls will be the possibility to call resume helpers while the
+> > "barrier" is in progress.
 > 
-> With tap, we discovered that not limiting the number of outstanding
-> skbs hurts UDP performance. And the solution was to limit
-> the number of outstanding packets - with hacks to work around
-> the fact that userspace .
-
-Something seems to be missing in your last sentence here.
-
-My driver OTOH is also missing any sort of flow control in both
-RX and TX direction ;) For RX, there should probably just be
-a limit of frames that get buffered in the ring.
-
-For TX, I guess there should be a way to let the packet
-scheduler handle this and give us a chance to block and
-unblock at the right time. I haven't found out yet how to
-do that.
-
-Would it be enough to check the dev_queue_xmit() return
-code for NETDEV_TX_BUSY?
-
-How would I get notified when it gets free again?
-
-> > +	ret = skb_copy_datagram_iovec(skb, 0, iv, len);
-> > +
-> > +	vtap->m.dev->stats.rx_packets++;
-> > +	vtap->m.dev->stats.rx_bytes += len;
+> Exactly.  In other words, if the driver tries to carry out a resume
+> while the barrier is running, the resume won't get lost.  Whereas with 
+> the temporarily-disable approach, it _would_ get lost.
 > 
-> where does atomicity guarantee for these counters come from?
-
-AFAIK, we never do for any driver. They are statistics only and
-need not be 100% correct, so the networking stack goes for
-lower overhead and 99.9% correct.
-
-> > +static ssize_t macvtap_aio_read(struct kiocb *iocb, const struct iovec *iv,
-> > +			    unsigned long count, loff_t pos)
-> > +{
-> > +	struct file *file = iocb->ki_filp;
-> > +	struct macvtap_dev *vtap = file->private_data;
-> > +	DECLARE_WAITQUEUE(wait, current);
-> > +	struct sk_buff *skb;
-> > +	ssize_t len, ret = 0;
-> > +
-> > +	if (!vtap)
-> > +		return -EBADFD;
-> > +
-> > +	len = iov_length(iv, count);
-> > +	if (len < 0) {
-> > +		ret = -EINVAL;
-> > +		goto out;
-> > +	}
-> > +
-> > +	add_wait_queue(&vtap->wait, &wait);
-> > +	while (len) {
-> > +		current->state = TASK_INTERRUPTIBLE;
-> > +
-> > +		/* Read frames from the queue */
-> > +		if (!(skb=skb_dequeue(&vtap->readq))) {
-> > +			if (file->f_flags & O_NONBLOCK) {
-> > +				ret = -EAGAIN;
-> > +				break;
-> > +			}
-> > +			if (signal_pending(current)) {
-> > +				ret = -ERESTARTSYS;
-> > +				break;
-> > +			}
-> > +			/* Nothing to read, let's sleep */
-> > +			schedule();
-> > +			continue;
-> > +		}
-> > +		ret = macvtap_put_user(vtap, skb, (struct iovec *) iv, len);
+> > Allowing runtime PM helpers to be run during system sleep transitions would be
+> > problematic IMHO, because the run-time PM 'states' are not well defined at that
+> > time.  Consequently, the rules that the PM helpers follow do not really hold
+> > during system sleep transitions.
 > 
-> Don't cast away the constness. Instead, fix macvtap_put_user
-> to used skb_copy_datagram_const_iovec which does not modify the iovec.
+> The workqueue will be frozen, so runtime PM helpers will run only if
+> they are invoked more or less directly by the driver (i.e., through
+> pm_runtime_resume, ...).  I think we should allow drivers to do what
+> they want, especially between the "prepare" and "suspend" stages.
 
-Ah, good catch. I had copied that from the tun driver before you
-fixed it there and failed to fix it the right way when I adapted
-it for the new interface.
+Well, I'm not sure if that's a good idea, but also I have no good techincal
+arguments against it at the moment.  And I'm too tired to argue. ;-)
 
-Thanks for the review,
+> > Also, in principle the device driver's ->suspend() routine  (the non-runtime
+> > one), or even the ->prepare() callback, may notice that the remote wake-up has
+> > happened and put the device back into the full power state and return -EBUSY.
+> 
+> It may.  But then again, it may not -- it may depend on the runtime PM  
+> core to make sure that resume requests get forwarded appropriately.
+> 
+> Furthermore, if you disable runtime PM _before_ calling the prepare 
+> method, that leaves a window during which the driver has no reason to 
+> realize that anything unusual is going on.
+> 
+> > Still, we can allow runtime PM requests to be put into the workqueue during
+> > system sleep transitions, to be executed after the resume (or in case the
+> > suspend fails, that will make the action described in the previous paragraph
+> > somewhat easier).  It seems we'd need a separate flag for it, though.
+> 
+> If every device gets resumed at the end of a system sleep, even the
+> ones that were runtime-suspended before the sleep began, then there's
+> no reason to preserve requests in the workqueue.  But if
+> previously-suspended devices don't get resumed at the end of a system
+> sleep, then we should allow requests to remain in the workqueue.
 
-	Arnd <><
+We also should preserve the requests in case the system sleep transition
+fails.
+
+> In the end, it's probably safer and easier just to leave the workqueue 
+> alone -- freeze and unfreeze it, but don't meddle with its contents.
+> 
+> The whole question of remote wakeup vs. runtime suspend vs. system 
+> sleep is complicated, and people haven't dealt with all the issues yet.
+
+Agreed.
+ 
+> For instance, it seems quite likely that with some devices you would 
+> want to enable remote wakeup during runtime suspend but not during 
+> system sleep.  We don't have any good way to do this.
+
+Yes, for now we have to assume that any device with wakeup enabled is a
+wakeup device.
+
+OK, I'll post the new version of the patch shortly.  Please check if the
+barrier mechanism is implemeted and used correctly.
+
+Best,
+Rafael
