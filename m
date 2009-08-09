@@ -1,16 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZHIWDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752235AbZHIWSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbZHIWDQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 18:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbZHIWDQ
+	id S1752235AbZHIWSo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 18:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZHIWSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 18:03:16 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:33191 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751745AbZHIWDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 18:03:15 -0400
-Message-ID: <4A7F479D.3070306@us.ibm.com>
-Date: Sun, 09 Aug 2009 15:03:09 -0700
+	Sun, 9 Aug 2009 18:18:44 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:55460 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751575AbZHIWSl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 18:18:41 -0400
+Message-ID: <4A7F4B38.1060100@us.ibm.com>
+Date: Sun, 09 Aug 2009 15:18:32 -0700
 From: Darren Hart <dvhltc@us.ibm.com>
 User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
@@ -18,7 +19,7 @@ To: Ingo Molnar <mingo@elte.hu>
 CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        jkacur@redhat.com, johnstul@us.ibm.com, peterz@infradead.org,
        dino@in.ibm.com, rostedt@goodmis.org, stable@kernel.org,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+       tglx@linutronix.de
 Subject: Re: [tip:core/urgent] futex: Update woken requeued futex_q lock_ptr
 References: <4A7A016C.1090002@us.ibm.com> <tip-4047446de8fa83d8d5922e9448eb0cbb7ac3f475@git.kernel.org> <20090809205611.GA23276@elte.hu>
 In-Reply-To: <20090809205611.GA23276@elte.hu>
@@ -49,15 +50,16 @@ Ingo Molnar wrote:
 > kernel/futex.c: In function ‘requeue_pi_wake_futex’:
 > kernel/futex.c:1039: error: ‘struct plist_head’ has no member named ‘slock’
 
-I've been developing on -rt, and the plist implementation changed with:
+Ingo,
 
-34ca9f9b  spinlocks: Create atomic_spinlock and convert rq->lock
+I'm finding myself confused by the tip branches.  I was going to prepare 
+you a "mainline" version of this patch, but tip/core-for-linus-2 doesn't 
+have the original requeue_pi support in futex.c, while tag v2.6.31-rc5 
+does have that support.
 
-Apologies for not catching that.  I'll send out V3 of this patch, one 
-for mainline, and one for -rt.  Is prefacing the patch with [RT] the 
-preferred way to distinguish mainline and -rt patches?
-
-Thanks,
+I'll prepare a patch against v2.6.31-rc5, but can you explain how you 
+would prefer for people to send patches that are needed in both mainline 
+and rt, but have slightly different implementations?
 
 -- 
 Darren Hart
