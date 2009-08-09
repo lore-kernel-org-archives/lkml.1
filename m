@@ -1,161 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751674AbZHIQCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751780AbZHIQGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751674AbZHIQCF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 12:02:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbZHIQCE
+	id S1751780AbZHIQGF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 12:06:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbZHIQGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 12:02:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34900 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751158AbZHIQCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 12:02:03 -0400
-Date: Sun, 9 Aug 2009 18:01:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [GIT PULL] x86 fixes
-Message-ID: <20090809160146.GA25826@elte.hu>
+	Sun, 9 Aug 2009 12:06:04 -0400
+Received: from mail-vw0-f172.google.com ([209.85.212.172]:41171 "EHLO
+	mail-vw0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750906AbZHIQGD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 12:06:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=sUs+dylKDP3GtT7O405++InNvMPdlk9KCUOePZRyN1+kt1OWA2K/UdozCPpP/L86Gt
+         XhseRorLngI0p0Yps1BJ83l1L9uoPpBdiP7ybfbziBb60VQyn1hBrdYk/FFLAoI49VB2
+         KroACJcG1WfTsFdN8qpm3pxix1xY0KZr1wmQY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090807215155.GA17043@sig21.net>
+References: <20090807215155.GA17043@sig21.net>
+Date: Sun, 9 Aug 2009 12:06:03 -0400
+X-Google-Sender-Auth: fd02bb4dfcd797ba
+Message-ID: <b6c5339f0908090906p3d29fdd2x8473dcc6df178167@mail.gmail.com>
+Subject: Re: 2.6.31-rc5 regression: ath5k broken after suspend-to-ram
+From: Bob Copeland <me@bobcopeland.com>
+To: Johannes Stezenbach <js@sig21.net>
+Cc: ath5k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Fri, Aug 7, 2009 at 5:51 PM, Johannes Stezenbach<js@sig21.net> wrote:
+> Hi,
 
-Please pull the latest x86-fixes-for-linus git tree from:
+Hi!
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+> If I use nl80211 the second ifup fails with
+> "SIOCSIFFLAGS: Input/output error" messages and the follwing
+> is in dmesg:
+>
+>   ath5k phy0: failed to wakeup the MAC Chip
+>   ath5k phy0: can't reset hardware (-5)
 
- Thanks,
+Ok, does this patch help the above?
 
-	Ingo
+http://patchwork.kernel.org/patch/38550/
 
------------------->
-Alok Kataria (1):
-      x86: Fix VMI && stack protector
+>   Aug  7 20:13:28 void wpa_supplicant[9932]: Trying to associate with 00:00:00:00:00:00 (SSID='...' freq=2412 MHz)
 
-Ozan Ã‡aÄŸlayan (1):
-      x86: Add quirk to make Apple MacBookPro5,1 use reboot=pci
+I assume in all cases you have elided the mac addresses and they
+are the same in all of the examples?  (You can keep the first three
+octets in the future, they are just vendor information.)
 
-Roel Kluin (1):
-      x86: fix buffer overflow in efi_init()
+>   Aug  7 23:10:08 void kernel: wlan0: RX AssocResp from 00:00:00:00:00:00 (capab=0x411 status=0 aid=1)
+>   Aug  7 23:10:08 void kernel: wlan0: associated
+>   Aug  7 23:10:08 void wpa_supplicant[16215]: Associated with 00:00:00:00:00:00
+>   Aug  7 23:10:08 void wpa_supplicant[16215]: WPA: Key negotiation completed with 00:00:00:00:00:00 [PTK=CCMP GTK=TKIP]
+>   Aug  7 23:10:08 void wpa_supplicant[16215]: CTRL-EVENT-CONNECTED - Connection to 00:00:00:00:00:00 completed (auth) [id=0 id_str=]
+>   Aug  7 23:10:12 void wpa_supplicant[16215]: CTRL-EVENT-SCAN-RESULTS
+>   Aug  7 23:10:12 void wpa_supplicant[16215]: Trying to associate with 00:00:00:00:00:00 (SSID='...' freq=2412 MHz)
 
-Yinghai Lu (1):
-      x86: Fix MSI-X initialization by using online_mask for x2apic target_cpus
+Hmm so it completed association... then 4 seconds later, got some
+scan results and tried again.  Odd.
 
+> During resume the following is logged:
+>
+>   ath5k 0000:02:02.0: restoring config space at offset 0x3 (was 0x5008, writing 0xa808)
+>   pm_op(): pci_pm_resume+0x0/0x79 returns -16
+>   PM: Device 0000:00:00.0 failed to resume: error -16
+>
+> Not sure if this is causing the problem?
 
- arch/x86/kernel/apic/x2apic_cluster.c |    8 +++++---
- arch/x86/kernel/apic/x2apic_phys.c    |    8 +++++---
- arch/x86/kernel/efi.c                 |    2 +-
- arch/x86/kernel/reboot.c              |   10 +++++++++-
- arch/x86/kernel/vmi_32.c              |    2 +-
- 5 files changed, 21 insertions(+), 9 deletions(-)
+-EBUSY... not sure.
 
-diff --git a/arch/x86/kernel/apic/x2apic_cluster.c b/arch/x86/kernel/apic/x2apic_cluster.c
-index 2ed4e2b..a5371ec 100644
---- a/arch/x86/kernel/apic/x2apic_cluster.c
-+++ b/arch/x86/kernel/apic/x2apic_cluster.c
-@@ -17,11 +17,13 @@ static int x2apic_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- 	return x2apic_enabled();
- }
- 
--/* Start with all IRQs pointing to boot CPU.  IRQ balancing will shift them. */
--
-+/*
-+ * need to use more than cpu 0, because we need more vectors when
-+ * MSI-X are used.
-+ */
- static const struct cpumask *x2apic_target_cpus(void)
- {
--	return cpumask_of(0);
-+	return cpu_online_mask;
- }
- 
- /*
-diff --git a/arch/x86/kernel/apic/x2apic_phys.c b/arch/x86/kernel/apic/x2apic_phys.c
-index 0b631c6..a8989aa 100644
---- a/arch/x86/kernel/apic/x2apic_phys.c
-+++ b/arch/x86/kernel/apic/x2apic_phys.c
-@@ -27,11 +27,13 @@ static int x2apic_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- 		return 0;
- }
- 
--/* Start with all IRQs pointing to boot CPU.  IRQ balancing will shift them. */
--
-+/*
-+ * need to use more than cpu 0, because we need more vectors when
-+ * MSI-X are used.
-+ */
- static const struct cpumask *x2apic_target_cpus(void)
- {
--	return cpumask_of(0);
-+	return cpu_online_mask;
- }
- 
- static void x2apic_vector_allocation_domain(int cpu, struct cpumask *retmask)
-diff --git a/arch/x86/kernel/efi.c b/arch/x86/kernel/efi.c
-index 19ccf6d..fe26ba3 100644
---- a/arch/x86/kernel/efi.c
-+++ b/arch/x86/kernel/efi.c
-@@ -354,7 +354,7 @@ void __init efi_init(void)
- 	 */
- 	c16 = tmp = early_ioremap(efi.systab->fw_vendor, 2);
- 	if (c16) {
--		for (i = 0; i < sizeof(vendor) && *c16; ++i)
-+		for (i = 0; i < sizeof(vendor) - 1 && *c16; ++i)
- 			vendor[i] = *c16++;
- 		vendor[i] = '\0';
- 	} else
-diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-index 834c9da..9eb8976 100644
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -405,7 +405,7 @@ EXPORT_SYMBOL(machine_real_restart);
- #endif /* CONFIG_X86_32 */
- 
- /*
-- * Apple MacBook5,2 (2009 MacBook) needs reboot=p
-+ * Some Apple MacBook and MacBookPro's needs reboot=p to be able to reboot
-  */
- static int __init set_pci_reboot(const struct dmi_system_id *d)
- {
-@@ -426,6 +426,14 @@ static struct dmi_system_id __initdata pci_reboot_dmi_table[] = {
- 			DMI_MATCH(DMI_PRODUCT_NAME, "MacBook5,2"),
- 		},
- 	},
-+	{	/* Handle problems with rebooting on Apple MacBookPro5,1 */
-+		.callback = set_pci_reboot,
-+		.ident = "Apple MacBookPro5,1",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro5,1"),
-+		},
-+	},
- 	{ }
- };
- 
-diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
-index b263423..95a7289 100644
---- a/arch/x86/kernel/vmi_32.c
-+++ b/arch/x86/kernel/vmi_32.c
-@@ -441,7 +441,7 @@ vmi_startup_ipi_hook(int phys_apicid, unsigned long start_eip,
- 	ap.ds = __USER_DS;
- 	ap.es = __USER_DS;
- 	ap.fs = __KERNEL_PERCPU;
--	ap.gs = 0;
-+	ap.gs = __KERNEL_STACK_CANARY;
- 
- 	ap.eflags = 0;
- 
+> In case it matters:
+>  CONFIG_MAC80211_DEFAULT_PS=y
+>  CONFIG_MAC80211_DEFAULT_PS_VALUE=1
+
+That's for 802.11 power saving which ath5k doesn't do yet, so it
+doesn't matter here.
+
+Ok thanks for the very detailed report, I'll take a look.  My
+hardware suspends/resumes under 2.6.31, but I do have a few
+differences in my setup compared to yours.
+
+-- 
+Bob Copeland %% www.bobcopeland.com
