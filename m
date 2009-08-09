@@ -1,131 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753098AbZHIUgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753471AbZHIUmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753098AbZHIUgm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 16:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbZHIUgl
+	id S1753471AbZHIUmh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 16:42:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbZHIUmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 16:36:41 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1085 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752622AbZHIUgl (ORCPT
+	Sun, 9 Aug 2009 16:42:36 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:59626 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752802AbZHIUmg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 16:36:41 -0400
-Subject: Re: [PATCH 00/14] use printk_once
-From: Joe Perches <joe@perches.com>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
-References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
-Content-Type: text/plain
-Date: Sun, 09 Aug 2009 13:36:37 -0700
-Message-Id: <1249850197.8895.7.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Sun, 9 Aug 2009 16:42:36 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH] macvlan: add tap device backend
+Date: Sun, 9 Aug 2009 20:42:24 +0000
+User-Agent: KMail/1.11.2 (Linux/2.6.29; KDE/4.2.2; x86_64; ; )
+Cc: netdev@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Or Gerlitz <ogerlitz@voltaire.com>,
+       "Fischer, Anna" <anna.fischer@hp.com>,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Edge Virtual Bridging <evb@yahoogroups.com>
+References: <1249595428-21594-1-git-send-email-arnd@arndb.de> <20090809080215.GA17200@redhat.com>
+In-Reply-To: <20090809080215.GA17200@redhat.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908092042.24686.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18rwo/8uGeSYn0tnCEWHaBxiUeJ3sjgkw84/MM
+ gDtbrv0By4QTBayCatDdNVRxtzud09aZ4y8b+qXSnurd/f19jt
+ Hemu4+WxSfFnYvBNjH5iQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Perhaps this could be combined with
+On Sunday 09 August 2009 08:02:16 Michael S. Tsirkin wrote:
+> On Thu, Aug 06, 2009 at 09:50:28PM +0000, Arnd Bergmann wrote:
+> > * The same framework in macvlan can be used to add a third backend
+> > into a future kernel based virtio-net implementation.
+> 
+> Could you split the patches up, to make this last easier?
+> patch 1 - export framework
+> patch 2 - code using it
 
-pr_<level> once?
+Sure, will do.
 
-Changed printk_once to use bool instead of int, with default set to false not 1.
-This reduces data and produces slightly smaller object code.
+> > +/* Get packet from user space buffer */
+> > +static ssize_t macvtap_get_user(struct macvtap_dev *vtap,
+> > +			       const struct iovec *iv, size_t count,
+> > +			       int noblock)
+> > +{
+> > +	struct sk_buff *skb;
+> > +	size_t len = count;
+> > +
+> > +	if (unlikely(len < ETH_HLEN))
+> > +		return -EINVAL;
+> > +
+> > +	skb = alloc_skb(NET_IP_ALIGN + len, GFP_KERNEL);
+> > +
+> > +	if (!skb) {
+> > +		vtap->m.dev->stats.rx_dropped++;
+> > +		return -ENOMEM;
+> > +	}
+> > +
+> > +	skb_reserve(skb, NET_IP_ALIGN);
+> > +	skb_put(skb, count);
+> > +
+> > +	if (skb_copy_datagram_from_iovec(skb, 0, iv, 0, len)) {
+> > +		vtap->m.dev->stats.rx_dropped++;
+> > +		kfree_skb(skb);
+> > +		return -EFAULT;
+> > +	}
+> > +
+> > +	skb_set_network_header(skb, ETH_HLEN);
+> > +	skb->dev = vtap->m.lowerdev;
+> > +
+> > +	macvlan_start_xmit(skb, vtap->m.dev);
+> > +
+> > +	return count;
+> > +}
+> 
+> With tap, we discovered that not limiting the number of outstanding
+> skbs hurts UDP performance. And the solution was to limit
+> the number of outstanding packets - with hacks to work around
+> the fact that userspace .
 
-Changed printk_once macro definitions to (fmt, ...) to match
-other printk/pr_<level> definitions.
+Something seems to be missing in your last sentence here.
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- include/linux/kernel.h |   57 ++++++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 51 insertions(+), 6 deletions(-)
+My driver OTOH is also missing any sort of flow control in both
+RX and TX direction ;) For RX, there should probably just be
+a limit of frames that get buffered in the ring.
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 883cd44..343e505 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -246,12 +246,12 @@ extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
- /*
-  * Print a one-time message (analogous to WARN_ONCE() et al):
-  */
--#define printk_once(x...) ({			\
--	static int __print_once = 1;		\
-+#define printk_once(fmt, ...) ({		\
-+	static bool __print_once;		\
- 						\
--	if (__print_once) {			\
--		__print_once = 0;		\
--		printk(x);			\
-+	if (!__print_once) {			\
-+		__print_once = true;		\
-+		printk(fmt, ##__VA_ARGS__);	\
- 	}					\
- })
- 
-@@ -269,7 +269,7 @@ static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies, \
- 		{ return false; }
- 
- /* No effect, but we still get type checking even in the !PRINTK case: */
--#define printk_once(x...) printk(x)
-+#define printk_once(fmt, ...) printk(fmt, ##__VA_ARGS__)
- 
- static inline void log_buf_kexec_setup(void)
- {
-@@ -400,6 +400,51 @@ static inline char *pack_hex_byte(char *buf, u8 byte)
- 	({ if (0) printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); 0; })
- #endif
- 
-+/* pr_<level>_once variants */
-+
-+#define pr_emerg_once(fmt, ...) \
-+	printk_once(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_alert_once(fmt, ...) \
-+	printk_once(KERN_ALERT pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_crit_once(fmt, ...) \
-+	printk_once(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_err_once(fmt, ...) \
-+	printk_once(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_warning_once(fmt, ...) \
-+	printk_once(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_notice_once(fmt, ...) \
-+	printk_once(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_info_once(fmt, ...) \
-+	printk_once(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
-+/* No pr_cont_once, use a local guard instead */
-+
-+/* pr_devel_once() should produce zero code unless DEBUG is defined */
-+#ifdef DEBUG
-+#define pr_devel_once(fmt, ...) \
-+	printk_once(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-+#else
-+#define pr_devel_once(fmt, ...) \
-+	({ if (0) printk_once(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); 0; })
-+#endif
-+
-+/* If you are writing a driver, please use dev_dbg instead */
-+#if defined(DEBUG)
-+#define pr_debug_once(fmt, ...) \
-+	printk_once(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-+#elif defined(CONFIG_DYNAMIC_DEBUG)
-+/* dynamic_pr_debug() uses pr_fmt() internally so we don't need it here */
-+#define pr_debug_once(fmt, ...) ({			\
-+	static bool __print_once;			\
-+	if (!__print_once) {				\
-+		__print_once = true;			\
-+		dynamic_pr_debug(fmt, ##__VA_ARGS__);	\
-+	}						\
-+})
-+#else
-+#define pr_debug_once(fmt, ...) \
-+	({ if (0) printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); 0; })
-+#endif
-+
- /*
-  * General tracing related utility functions - trace_printk(),
-  * tracing_on/tracing_off and tracing_start()/tracing_stop
--- 
-1.6.3.1.10.g659a0.dirty
+For TX, I guess there should be a way to let the packet
+scheduler handle this and give us a chance to block and
+unblock at the right time. I haven't found out yet how to
+do that.
 
+Would it be enough to check the dev_queue_xmit() return
+code for NETDEV_TX_BUSY?
 
+How would I get notified when it gets free again?
 
+> > +	ret = skb_copy_datagram_iovec(skb, 0, iv, len);
+> > +
+> > +	vtap->m.dev->stats.rx_packets++;
+> > +	vtap->m.dev->stats.rx_bytes += len;
+> 
+> where does atomicity guarantee for these counters come from?
+
+AFAIK, we never do for any driver. They are statistics only and
+need not be 100% correct, so the networking stack goes for
+lower overhead and 99.9% correct.
+
+> > +static ssize_t macvtap_aio_read(struct kiocb *iocb, const struct iovec *iv,
+> > +			    unsigned long count, loff_t pos)
+> > +{
+> > +	struct file *file = iocb->ki_filp;
+> > +	struct macvtap_dev *vtap = file->private_data;
+> > +	DECLARE_WAITQUEUE(wait, current);
+> > +	struct sk_buff *skb;
+> > +	ssize_t len, ret = 0;
+> > +
+> > +	if (!vtap)
+> > +		return -EBADFD;
+> > +
+> > +	len = iov_length(iv, count);
+> > +	if (len < 0) {
+> > +		ret = -EINVAL;
+> > +		goto out;
+> > +	}
+> > +
+> > +	add_wait_queue(&vtap->wait, &wait);
+> > +	while (len) {
+> > +		current->state = TASK_INTERRUPTIBLE;
+> > +
+> > +		/* Read frames from the queue */
+> > +		if (!(skb=skb_dequeue(&vtap->readq))) {
+> > +			if (file->f_flags & O_NONBLOCK) {
+> > +				ret = -EAGAIN;
+> > +				break;
+> > +			}
+> > +			if (signal_pending(current)) {
+> > +				ret = -ERESTARTSYS;
+> > +				break;
+> > +			}
+> > +			/* Nothing to read, let's sleep */
+> > +			schedule();
+> > +			continue;
+> > +		}
+> > +		ret = macvtap_put_user(vtap, skb, (struct iovec *) iv, len);
+> 
+> Don't cast away the constness. Instead, fix macvtap_put_user
+> to used skb_copy_datagram_const_iovec which does not modify the iovec.
+
+Ah, good catch. I had copied that from the tun driver before you
+fixed it there and failed to fix it the right way when I adapted
+it for the new interface.
+
+Thanks for the review,
+
+	Arnd <><
