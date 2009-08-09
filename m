@@ -1,79 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751646AbZHIC2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186AbZHICbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751646AbZHIC2i (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Aug 2009 22:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbZHIC2i
+	id S1753186AbZHICbP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Aug 2009 22:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbZHICbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Aug 2009 22:28:38 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:47770 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750867AbZHIC2h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Aug 2009 22:28:37 -0400
-Date: Sat, 8 Aug 2009 22:28:37 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Magnus Damm <magnus.damm@GMAIL.COM>, Greg KH <gregkh@suse.de>,
-       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH update x2] PM: Introduce core framework for run-time PM
- of I/O devices (rev. 13)
-In-Reply-To: <200908082355.32749.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0908082219380.27004-100000@netrider.rowland.org>
+	Sat, 8 Aug 2009 22:31:14 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:39012 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751332AbZHICbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Aug 2009 22:31:14 -0400
+Date: Sun, 9 Aug 2009 03:31:12 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: [git pull] more drm-fixes for rc6
+Message-ID: <alpine.DEB.2.00.0908090330040.18904@skynet.skynet.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 8 Aug 2009, Rafael J. Wysocki wrote:
+Hi Linus,
 
-> > The problem with this is that it calls pm_runtime_disable() at a time 
-> > when the driver is still supposed to be in control of the device.  
-> > Interfering with the driver's legitimate activity in this way is a bad 
-> > thing to do.
-> > 
-> > The difficulty here is that our requirements are a little
-> > contradictory.  We want to prevent all runtime PM callbacks while the
-> > remove method is running, but we also want the remove method to be able
-> > to carry out its own runtime PM activities.
-> > 
-> > So maybe what we really need is more like a barrier.  That is,
-> > something that will do a "get", wait for outstanding callbacks to
-> > finish, carry out a resume if one is pending, and cancel other pending
-> > requests.  This could easily share code with pm_runtime_disable.  We 
-> > should be able to use this for both probe and remove.
-> 
-> Isn't it what's done in rev. 14?
-> 
-> pm_runtime_disable(dev);
-> pm_runtime_get_noresume(dev);
-> pm_runtime_enable(dev);
-> 
-> is exactly a barrier like this.
+Please pull the 'drm-fixes' branch from
+ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-fixes
 
-It's not exactly the same because it disables runtime PM for a short 
-time.  A barrier never disables runtime PM.
+One real bug fix, and two quite stupid errors that people think are bugs, 
+because we report them.
 
->  How exactly would you like to implement it
-> instead?
+Dave.
 
-As described above.  The barrier would be equivalent to
-pm_runtime_get_noresume followed by pm_runtime_disable except that it
-wouldn't actually disable anything.
+ drivers/gpu/drm/drm_irq.c       |    2 +-
+ drivers/gpu/drm/drm_modes.c     |    2 ++
+ drivers/gpu/drm/i915/i915_irq.c |    4 ++--
+ 3 files changed, 5 insertions(+), 3 deletions(-)
 
-> > Perhaps this means we don't want to disable runtime PM during system
-> > sleep callbacks, but instead use the "barrier" scheme.
-> 
-> I'm not really sure about that.  I'd rather do what's right now in the patch
-> (well, that's why it's in there) until drivers and bus types start using the
-> runtime PM framework.  If it turns out to be problematic, we'll change it
-> later.
+commit 6cb504c29b1338925c83e4430e42a51eaa43781e
+Author: Frans Pop <elendil@planet.nl>
+Date:   Sun Aug 9 12:25:29 2009 +1000
 
-All right.  Since it involves a race, the problem may not show up for a
-while.
+    drm/i915: silence vblank warnings
+    
+    these errors are pretty pointless
+    
+    Reviewed-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-Alan Stern
+commit 8d3457ec3198a569dd14dc9e3ae8b6163bcaa0b5
+Author: Paul Rolland <rol@as2917.net>
+Date:   Sun Aug 9 12:24:01 2009 +1000
 
+    drm: silence pointless vblank warning.
+    
+    Some applications/hardware combinations are triggering the message "failed to
+    acquire vblank counter" to be issued up to 20 times a second, which makes it
+    both useless and dangerous, as this may hide other important messages.
+    This changes makes it only appear when people are debugging.
+    
+    Signed-off-by: Paul Rolland <rol@as2917.net>
+    Reviewed-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+    Lost-twice-by: Dave Airlie <airlied@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 38d5487db7f289be1d56ac7df704ee49ed3213b9
+Author: Keith Packard <keithp@keithp.com>
+Date:   Mon Jul 20 14:49:17 2009 -0700
+
+    drm: When adding probed modes, preserve duplicate mode types
+    
+    The code which takes probed modes and adds them to a connector eliminates
+    duplicate modes by comparing them using drm_mode_equal. That function
+    doesn't consider the type bits, which means that any modes which differ only
+    in the type field will be lost.
+    
+    One of the bits in the mode->type field is the DRM_MODE_TYPE_PREFERRED bit.
+    If the mode with that bit is lost, then higher level code will not know
+    which mode to select, causing a random mode to be used instead.
+    
+    This patch simply merges the two mode type bits together; that seems
+    reasonable to me, but perhaps only a subset of the bits should be used? None
+    of these can be user defined as they all come from looking at just the
+    hardware.
+    
+    Signed-off-by: Keith Packard <keithp@keithp.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
