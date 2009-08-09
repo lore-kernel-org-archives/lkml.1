@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbZHIXlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbZHIXm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754442AbZHIXlu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 19:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbZHIXls
+	id S1754212AbZHIXm0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 19:42:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbZHIXmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 19:41:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43870 "EHLO ogre.sisk.pl"
+	Sun, 9 Aug 2009 19:42:24 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43852 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753624AbZHIXjG convert rfc822-to-8bit (ORCPT
+	id S1754132AbZHIXir convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 19:39:06 -0400
+	Sun, 9 Aug 2009 19:38:47 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Clemens Eisserer" <linuxhippy@gmail.com>
+       "Gene Heskett" <gene.heskett@verizon.net>
 References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera>
 In-Reply-To: <AuPdDySr74O.A.5LC.Pj1fKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <u1L1PAbl8zG.A.FOD.lj1fKB@chimera>
-Subject: [Bug #13906] Huawei E169 GPRS connection causes Ooops
+Message-ID: <u1L1PAbl8zG.A.1SD.pj1fKB@chimera>
+Subject: [Bug #13899] Oops from tar, 2.6.31-rc5, 32 bit on quad core phenom.
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun,  9 Aug 2009 22:44:25 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,9 +35,10 @@ from 2.6.30.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13906
-Subject		: Huawei E169 GPRS connection causes Ooops
-Submitter	: Clemens Eisserer <linuxhippy@gmail.com>
-Date		: 2009-08-04 09:02 (6 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13899
+Subject		: Oops from tar, 2.6.31-rc5, 32 bit on quad core phenom.
+Submitter	: Gene Heskett <gene.heskett@verizon.net>
+Date		: 2009-08-01 13:04 (9 days old)
+References	: http://marc.info/?l=linux-kernel&m=124913190304149&w=4
 
 
