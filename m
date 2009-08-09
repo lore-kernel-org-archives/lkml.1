@@ -1,77 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752924AbZHIVMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753113AbZHIVQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752924AbZHIVMr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 17:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZHIVMq
+	id S1753113AbZHIVQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 17:16:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbZHIVQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 17:12:46 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:39035 "EHLO mail.atlantis.sk"
+	Sun, 9 Aug 2009 17:16:27 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:37513 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752822AbZHIVMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 17:12:46 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] OOPS in identify_cpu() on CPUs without CPUID
-Date: Sun, 9 Aug 2009 23:12:33 +0200
-User-Agent: KMail/1.9.10
-Cc: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de, mingo@redhat.com,
-       x86@kernel.org, linux-kernel@vger.kernel.org
-References: <200908081908.12240.linux@rainbow-software.org> <20090808175344.GA8099@elte.hu> <4A7E262A.9020606@zytor.com>
-In-Reply-To: <4A7E262A.9020606@zytor.com>
+	id S1752885AbZHIVQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 17:16:26 -0400
+Date: Sun, 9 Aug 2009 14:16:29 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Ben Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_PREEMPT_RCU in next/mmotm
+Message-ID: <20090809211629.GJ6866@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <Pine.LNX.4.64.0908081956580.12300@sister.anvils> <20090808235634.GB6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908090414320.18096@sister.anvils> <20090809053308.GD6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908091209150.23855@sister.anvils> <Pine.LNX.4.64.0908091346450.27358@sister.anvils> <20090809185753.GG6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908092139090.3194@sister.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200908092312.36578.linux@rainbow-software.org>
+In-Reply-To: <Pine.LNX.4.64.0908092139090.3194@sister.anvils>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 09 August 2009 03:28:10 H. Peter Anvin wrote:
-> On 08/08/2009 10:53 AM, Ingo Molnar wrote:
-> > indeed ...
-> >
-> >> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-> >>
-> >> --- linux-2.6.30.4-orig/arch/x86/kernel/cpu/common.c	2009-06-10
-> >> 05:05:27.000000000 +0200 +++
-> >> linux-2.6.30.4-router/arch/x86/kernel/cpu/common.c	2009-08-08
-> >> 18:00:21.000000000 +0200 @@ -699,6 +699,7 @@
-> >>
-> >>  static void __cpuinit generic_identify(struct cpuinfo_x86 *c)
-> >>  {
-> >> +	this_cpu = &default_cpu;
-> >>  	c->extended_cpuid_level = 0;
-> >>
-> >>  	if (!have_cpuid_p())
-> >
-> > How about initializing this_cpu instead, via:
-> >
-> > static const struct cpu_dev *this_cpu __cpuinitdata = &default_cpu;
->
-> The whole this_cpu hack is scary as all hell... although it's probably
-> OK on a technicality, it takes what is properly a per-cpu attribute and
-> turns it into a static global.
->
-> We *should* be able to initialize the APs (at least) in parallel, and
-> although there probably aren't any systems in the field which don't have
-> duplicate vendors, it is at least theoretically possible to have
-> combinations of CPUID and non-CPUID processors in the same systems.
->
-> As such, it really would be better if this_cpu was changed to be passed
-> as return values and on the stack (as appropriate).  However, that is
-> not 2.6.31 material, and as such doing the static initialization would
-> be okay.
->
-> Ondrej, would you be interested in doing a "fullblown" patch for this?
+On Sun, Aug 09, 2009 at 09:53:53PM +0100, Hugh Dickins wrote:
+> On Sun, 9 Aug 2009, Paul E. McKenney wrote:
+> > 
+> > I introduced the problem in commit 7fe616c5dd50a50f334edec1ea0580b90b7af0d9
+> > by changing from register_cpu_notifier() to hotcpu_notifier().  The former
+> > lets you know when CPUs come on line unconditionally, the latter only
+> > when CONFIG_HOTPLUG_CPU is in effect.
+> > 
+> > But hotcpu_notifier() is much nicer to use, so I propose introducing
+> > a cpu_notifier() that is invoked like hotcpu_notifier() is, but is
+> > unconditional in the same way that register_cpu_notifier().
+> > 
+> > Something like the following (untested, probably does not compile):
+> > 
+> > diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+> > index 4d668e0..d5dfc1f 100644
+> > --- a/include/linux/cpu.h
+> > +++ b/include/linux/cpu.h
+> > @@ -48,6 +48,15 @@ struct notifier_block;
+> >  
+> >  #ifdef CONFIG_SMP
+> >  /* Need to know about CPUs going up/down? */
+> > +#if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE)
+> > +#define cpu_notifier(fn, pri) {					\
+> > +	static struct notifier_block fn##_nb __cpuinitdata =	\
+> > +		{ .notifier_call = fn, .priority = pri };	\
+> > +	register_cpu_notifier(&fn##_nb);			\
+> > +}
+> > +#else /* #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
+> > +#define cpu_notifier(fn, pri)	do { (void)(fn); } while (0)
+> > +#endif /* #else #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
+> >  #ifdef CONFIG_HOTPLUG_CPU
+> >  extern int register_cpu_notifier(struct notifier_block *nb);
+> >  extern void unregister_cpu_notifier(struct notifier_block *nb);
+> > @@ -99,11 +108,7 @@ extern struct sysdev_class cpu_sysdev_class;
+> >  
+> >  extern void get_online_cpus(void);
+> >  extern void put_online_cpus(void);
+> > -#define hotcpu_notifier(fn, pri) {				\
+> > -	static struct notifier_block fn##_nb __cpuinitdata =	\
+> > -		{ .notifier_call = fn, .priority = pri };	\
+> > -	register_cpu_notifier(&fn##_nb);			\
+> > -}
+> > +#define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
+> >  #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
+> >  #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)
+> >  int cpu_down(unsigned int cpu);
+> > diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+> > index 9f0584e..c1bbfd5 100644
+> > --- a/kernel/rcupdate.c
+> > +++ b/kernel/rcupdate.c
+> > @@ -251,7 +251,7 @@ void __init rcu_init(void)
+> >  	int i;
+> >  
+> >  	__rcu_init();
+> > -	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
+> > +	cpu_notifier(rcu_barrier_cpu_hotplug, 0);
+> >  
+> >  	/*
+> >  	 * We don't need protection against CPU-hotplug here because
+> > 
+> [ removed repeat of rcupdate.c patch ]
+> > 
+> > Thoughts?
+> 
+> That builds and works for me, with or without CONFIG_HOTPLUG_CPU.
+> 
+> But I didn't get what you're achieving with the MODULE part of it;
+> and (I'm not a notifier buff at all) it does seems rather baroque to
+> me - a single callsite, why not stick with register_cpu_notifier()?
+> 
+> Ah, perhaps it's your ambition to move others over to this
+> (or perhaps it's your ambition to leave that to someone else ;-)
 
-That would be too much for me. I know basically nothing about this 
-initialization code.
+Actually, nothing quite that clearly thought out.  I was just following
+the pattern set for register_cpu_notifier().  My guess at the reasoning
+is that when !HOTPLUG_CPU, modules cannot be loaded until all the CPUs
+are online, so there is no point in letting a module set itself up for
+notification.
 
-> 	-hpa
+But whatever their reasoning, mine was that there is no point in
+creating a struct notifier_block that wasn't going to be used.  ;-)
 
-
-
--- 
-Ondrej Zary
+							Thanx, Paul
