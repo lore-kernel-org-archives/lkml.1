@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbZHIWAD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZHIWDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140AbZHIWAD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 18:00:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbZHIWAA
+	id S1754018AbZHIWDQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 18:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbZHIWDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 18:00:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43969 "EHLO mx2.redhat.com"
+	Sun, 9 Aug 2009 18:03:16 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:33191 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753862AbZHIV76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 17:59:58 -0400
-From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH 5/5] fsnotify: use kmem_cache_zalloc to simplify event
-	initialization
-To: linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
-Date: Sun, 09 Aug 2009 17:59:59 -0400
-Message-ID: <20090809215958.26204.11952.stgit@paris.rdu.redhat.com>
-In-Reply-To: <20090809215935.26204.46787.stgit@paris.rdu.redhat.com>
-References: <20090809215935.26204.46787.stgit@paris.rdu.redhat.com>
-User-Agent: StGIT/0.14.3
+	id S1751745AbZHIWDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 18:03:15 -0400
+Message-ID: <4A7F479D.3070306@us.ibm.com>
+Date: Sun, 09 Aug 2009 15:03:09 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+To: Ingo Molnar <mingo@elte.hu>
+CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jkacur@redhat.com, johnstul@us.ibm.com, peterz@infradead.org,
+       dino@in.ibm.com, rostedt@goodmis.org, stable@kernel.org,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/urgent] futex: Update woken requeued futex_q lock_ptr
+References: <4A7A016C.1090002@us.ibm.com> <tip-4047446de8fa83d8d5922e9448eb0cbb7ac3f475@git.kernel.org> <20090809205611.GA23276@elte.hu>
+In-Reply-To: <20090809205611.GA23276@elte.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fsnotify event initialization is done entry by entry with almost everything
-set to either 0 or NULL.  Use kmem_cache_zalloc and only initialize things
-that need non-zero initialization.  Also means we don't have to change
-initialization entries based on the config options.
+Ingo Molnar wrote:
+> * tip-bot for Darren Hart <dvhltc@us.ibm.com> wrote:
+> 
+>> @@ -1030,6 +1034,11 @@ void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key)
+>>  	WARN_ON(!q->rt_waiter);
+>>  	q->rt_waiter = NULL;
+>>  
+>> +	q->lock_ptr = &hb->lock;
+>> +#ifdef CONFIG_DEBUG_PI_LIST
+>> +	q->list.plist.slock = &hb->lock;
+>> +#endif
+>> +
+>>  	wake_up_state(q->task, TASK_NORMAL);
+>>  }
+>>  
+> 
+> -tip testing found a build error with v2 of the patch:
+> 
+> kernel/futex.c: In function ‘requeue_pi_wake_futex’:
+> kernel/futex.c:1039: error: ‘struct plist_head’ has no member named ‘slock’
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
----
+I've been developing on -rt, and the plist implementation changed with:
 
- fs/notify/notification.c |   13 +------------
- 1 files changed, 1 insertions(+), 12 deletions(-)
+34ca9f9b  spinlocks: Create atomic_spinlock and convert rq->lock
 
-diff --git a/fs/notify/notification.c b/fs/notify/notification.c
-index 4ab9243..96ffbd0 100644
---- a/fs/notify/notification.c
-+++ b/fs/notify/notification.c
-@@ -311,25 +311,14 @@ void fsnotify_flush_notify(struct fsnotify_group *group)
- 
- static void initialize_event(struct fsnotify_event *event)
- {
--	event->holder.event = NULL;
- 	INIT_LIST_HEAD(&event->holder.event_list);
- 	atomic_set(&event->refcnt, 1);
- 
- 	spin_lock_init(&event->lock);
- 
--	event->path.dentry = NULL;
--	event->path.mnt = NULL;
--	event->inode = NULL;
- 	event->data_type = FSNOTIFY_EVENT_NONE;
- 
- 	INIT_LIST_HEAD(&event->private_data_list);
--
--	event->to_tell = NULL;
--
--	event->file_name = NULL;
--	event->name_len = 0;
--
--	event->sync_cookie = 0;
- }
- 
- /*
-@@ -350,7 +339,7 @@ struct fsnotify_event *fsnotify_create_event(struct inode *to_tell, __u32 mask,
- {
- 	struct fsnotify_event *event;
- 
--	event = kmem_cache_alloc(fsnotify_event_cachep, gfp);
-+	event = kmem_cache_zalloc(fsnotify_event_cachep, gfp);
- 	if (!event)
- 		return NULL;
- 
+Apologies for not catching that.  I'll send out V3 of this patch, one 
+for mainline, and one for -rt.  Is prefacing the patch with [RT] the 
+preferred way to distinguish mainline and -rt patches?
 
+Thanks,
+
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
