@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752205AbZHIPAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752475AbZHIPQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752205AbZHIPAb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 11:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbZHIPAa
+	id S1752475AbZHIPQq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 11:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbZHIPQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 11:00:30 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:45472 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751617AbZHIPAa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 11:00:30 -0400
-Date: Sun, 9 Aug 2009 11:00:29 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-cc: =?UTF-8?B?QnJ1bm8gUHLDqW1vbnQ=?= <bonbons@linux-vserver.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
- in use
-In-Reply-To: <4A7ED700.9080407@pardus.org.tr>
-Message-ID: <Pine.LNX.4.44L0.0908091058001.10326-100000@netrider.rowland.org>
+	Sun, 9 Aug 2009 11:16:45 -0400
+Received: from relay7.uol.com.br ([187.17.116.5]:52307 "EHLO relay7.uol.com.br"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750827AbZHIPQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 11:16:45 -0400
+Date: Sun, 9 Aug 2009 12:14:58 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: linux-kernel@vger.kernel.org
+Subject: Confusing help regarding single-depth WCHAN output
+Message-ID: <20090809151458.GA32444@ime.usp.br>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SIG5: 5ba9331d6c67fa58d75a351bcde8bdea
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Aug 2009, [UTF-8] Ozan Çağlayan wrote:
+Hi.
 
-> Bruno Prémont wrote:
-> > I tried bisecting this but bisect did end up on a fully unrelated commit
-> > (which is not even being compiled into my kernel).
-> > Possibly the failed bisect could be related to mis-classified kernel
-> > panic/hang while pulling the USB cable (there were two such panics for the
-> > whole iteration)?
-> >
-> > There are quite a few patches touching tty, ttyUSB and friends between
-> > rc4 and now so pretty hard to guess on the correct one.
-> >
-> > The oops always happens when I disconnect the USB serial console (here
-> > the one built into Marvell SheevaPlug) while having minicom connected
-> > to it.
-> > During the bisection for the last few bad iterations minicom got killed
-> > (segfault), the bad ones on the iteration left a minicom zombie in 'D'
-> > state.
-> >
-> > Regards,
-> > Bruno
-> >
-> >   
-> 
-> That may be a related/possible fix for that,
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b68f2fb9e73f46037fbeca5fbd4ae8a7ddd8ef6b
+I noticed this some releases ago, but only now I was perusing the kernel
+with a little more attention and got very curious. When doing a "make
+menuconfig" on an amd64 system, I get the following message:
 
-That patch is already present in 2.6.31-rc5.
+,----
+| Single-depth WCHAN output
+| CONFIG_SCHED_OMIT_FRAME_POINTER:
+| 
+|  Calculate simpler /proc/<PID>/wchan values. If this option
+|  is disabled then wchan values will recurse back to the
+|  caller function. This provides more accurate wchan values,
+|  at the expense of slightly more scheduling overhead.
+| 
+|  If in doubt, say "Y".
+| 
+|  Symbol: SCHED_OMIT_FRAME_POINTER [=y]
+|  Prompt: Single-depth WCHAN output
+|    Defined at arch/x86/Kconfig:441
+|    Depends on: X86
+|    Location:
+|      -> Processor type and features
+`----
 
-The problem here may be related to the fact that the serial port is
-being used as a console.  For non-console ports this doesn't happen.
+Is the WCHAN option related to omitting a frame pointer? If yes, how
+could this be written in a more detailed way?
 
-Alan Stern
 
+Thanks for any comments, Rogério Brito.
+
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
