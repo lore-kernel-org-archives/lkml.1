@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbZHITyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZHITzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753466AbZHITyw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 15:54:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZHITyu
+	id S1754013AbZHITzT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 15:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbZHITzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 15:54:50 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:39181 "EHLO
+	Sun, 9 Aug 2009 15:55:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:23922 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753466AbZHITyr (ORCPT
+	with ESMTP id S1753485AbZHITzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 15:54:47 -0400
+	Sun, 9 Aug 2009 15:55:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=jxzWPXU4r4z24rqRO/XWqRkiybB4K4XPsBnWEntxf9DVHfC2voCkThyAEVG3IJ3KxP
-         EjvLFcwfbjP45zPVYR8ZwMVzRM+ad2+NUwALx83viJ3lnqBPtBLiohg39hvZHOb0s37I
-         FLQy7A5ILPJu359fD+8PVrs7p717miiOisXhg=
+        b=Jdv8z975m8xhkCmNK2gwKVOGTFCCTew+2lsHJmal2F/OiWHyI7vxLWtpe6leySLvKE
+         DIzP25u9EFlkRTJu+HzpXC6oCLakRS/+oEYSR5ynqW54JFzyoWsfK/T1byeol8GE5dD5
+         UJGO94fow/XZKgmZrCRuZuAGKtHHjdruCUEsc=
 From: Marcin Slusarz <marcin.slusarz@gmail.com>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 08/14] tty/vt: use printk_once
-Date: Sun,  9 Aug 2009 21:54:03 +0200
-Message-Id: <1249847649-11631-9-git-send-email-marcin.slusarz@gmail.com>
+Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: [PATCH 14/14] net: use printk_once
+Date: Sun,  9 Aug 2009 21:54:09 +0200
+Message-Id: <1249847649-11631-15-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
 References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
@@ -30,44 +30,111 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: netdev@vger.kernel.org
 ---
- drivers/char/tty_ioctl.c |    4 +---
- drivers/char/vt.c        |    6 +-----
- 2 files changed, 2 insertions(+), 8 deletions(-)
+ net/ax25/af_ax25.c        |    6 +-----
+ net/dsa/dsa.c             |    4 +---
+ net/ipv4/raw.c            |    6 ++----
+ net/netfilter/xt_recent.c |   10 +++-------
+ net/socket.c              |    8 ++------
+ 5 files changed, 9 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
-index ad6ba4e..8e67d5c 100644
---- a/drivers/char/tty_ioctl.c
-+++ b/drivers/char/tty_ioctl.c
-@@ -393,9 +393,7 @@ void tty_termios_encode_baud_rate(struct ktermios *termios,
- 		termios->c_cflag |= (BOTHER << IBSHIFT);
- #else
- 	if (ifound == -1 || ofound == -1) {
+diff --git a/net/ax25/af_ax25.c b/net/ax25/af_ax25.c
+index da0f64f..39c895b 100644
+--- a/net/ax25/af_ax25.c
++++ b/net/ax25/af_ax25.c
+@@ -1792,12 +1792,8 @@ static int ax25_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
+ 
+ 		/* old structure? */
+ 		if (cmd == SIOCAX25GETINFOOLD) {
+-			static int warned = 0;
+-			if (!warned) {
+-				printk(KERN_INFO "%s uses old SIOCAX25GETINFO\n",
++			printk_once(KERN_INFO "%s uses old SIOCAX25GETINFO\n",
+ 					current->comm);
+-				warned=1;
+-			}
+ 
+ 			if (copy_to_user(argp, &ax25_info, sizeof(struct ax25_info_struct_deprecated))) {
+ 				res = -EFAULT;
+diff --git a/net/dsa/dsa.c b/net/dsa/dsa.c
+index 71489f6..ecd2dfb 100644
+--- a/net/dsa/dsa.c
++++ b/net/dsa/dsa.c
+@@ -302,14 +302,12 @@ static struct net_device *dev_to_net_device(struct device *dev)
+ 
+ static int dsa_probe(struct platform_device *pdev)
+ {
+-	static int dsa_version_printed;
+ 	struct dsa_platform_data *pd = pdev->dev.platform_data;
+ 	struct net_device *dev;
+ 	struct dsa_switch_tree *dst;
+ 	int i;
+ 
+-	if (!dsa_version_printed++)
+-		printk(KERN_NOTICE "Distributed Switch Architecture "
++	printk_once(KERN_NOTICE "Distributed Switch Architecture "
+ 			"driver version %s\n", dsa_driver_version);
+ 
+ 	if (pd == NULL || pd->netdev == NULL)
+diff --git a/net/ipv4/raw.c b/net/ipv4/raw.c
+index 2979f14..f919925 100644
+--- a/net/ipv4/raw.c
++++ b/net/ipv4/raw.c
+@@ -470,10 +470,8 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
+ 		if (msg->msg_namelen < sizeof(*usin))
+ 			goto out;
+ 		if (usin->sin_family != AF_INET) {
+-			static int complained;
+-			if (!complained++)
+-				printk(KERN_INFO "%s forgot to set AF_INET in "
+-						 "raw sendmsg. Fix it!\n",
++			printk_once(KERN_INFO "%s forgot to set AF_INET in "
++						"raw sendmsg. Fix it!\n",
+ 						 current->comm);
+ 			err = -EAFNOSUPPORT;
+ 			if (usin->sin_family)
+diff --git a/net/netfilter/xt_recent.c b/net/netfilter/xt_recent.c
+index eb0ceb8..d60d317 100644
+--- a/net/netfilter/xt_recent.c
++++ b/net/netfilter/xt_recent.c
+@@ -456,13 +456,9 @@ static int recent_seq_open(struct inode *inode, struct file *file)
+ #ifdef CONFIG_NETFILTER_XT_MATCH_RECENT_PROC_COMPAT
+ static int recent_old_seq_open(struct inode *inode, struct file *filp)
+ {
+-	static bool warned_of_old;
+-
+-	if (unlikely(!warned_of_old)) {
+-		printk(KERN_INFO KBUILD_MODNAME ": Use of /proc/net/ipt_recent"
+-		       " is deprecated; use /proc/net/xt_recent.\n");
+-		warned_of_old = true;
+-	}
++	printk_once(KERN_INFO KBUILD_MODNAME ": "
++		"Use of /proc/net/ipt_recent is deprecated; "
++		"use /proc/net/xt_recent.\n");
+ 	return recent_seq_open(inode, filp);
+ }
+ 
+diff --git a/net/socket.c b/net/socket.c
+index 791d71a..1d07f69 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -1161,12 +1161,8 @@ static int __sock_create(struct net *net, int family, int type, int protocol,
+ 	   deadlock in module load.
+ 	 */
+ 	if (family == PF_INET && type == SOCK_PACKET) {
 -		static int warned;
--		if (!warned++)
--			printk(KERN_WARNING "tty: Unable to return correct "
-+		printk_once(KERN_WARNING "tty: Unable to return correct "
- 			  "speed data as your architecture needs updating.\n");
+-		if (!warned) {
+-			warned = 1;
+-			printk(KERN_INFO "%s uses obsolete (PF_INET,SOCK_PACKET)\n",
+-			       current->comm);
+-		}
++		printk_once(KERN_INFO "%s uses obsolete (PF_INET,SOCK_PACKET)\n",
++			    current->comm);
+ 		family = PF_PACKET;
  	}
- #endif
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index 404f4c1..5d77fb3 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -2129,11 +2129,7 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
- 	currcons = vc->vc_num;
- 	if (!vc_cons_allocated(currcons)) {
- 	    /* could this happen? */
--	    static int error = 0;
--	    if (!error) {
--		error = 1;
--		printk("con_write: tty %d not allocated\n", currcons+1);
--	    }
-+		printk_once("con_write: tty %d not allocated\n", currcons+1);
- 	    release_console_sem();
- 	    return 0;
- 	}
+ 
 -- 
 1.6.3.3
 
