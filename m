@@ -1,113 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753113AbZHIVQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755AbZHIVqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753113AbZHIVQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 17:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbZHIVQ1
+	id S1753755AbZHIVqt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 17:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZHIVqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 17:16:27 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:37513 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752885AbZHIVQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 17:16:26 -0400
-Date: Sun, 9 Aug 2009 14:16:29 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Ingo Molnar <mingo@elte.hu>, Ben Herrenschmidt <benh@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: CONFIG_PREEMPT_RCU in next/mmotm
-Message-ID: <20090809211629.GJ6866@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <Pine.LNX.4.64.0908081956580.12300@sister.anvils> <20090808235634.GB6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908090414320.18096@sister.anvils> <20090809053308.GD6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908091209150.23855@sister.anvils> <Pine.LNX.4.64.0908091346450.27358@sister.anvils> <20090809185753.GG6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908092139090.3194@sister.anvils>
+	Sun, 9 Aug 2009 17:46:48 -0400
+Received: from mga06.intel.com ([134.134.136.21]:10596 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753606AbZHIVqs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 17:46:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,349,1246863600"; 
+   d="scan'208";a="437506366"
+Message-ID: <4A7F43C9.8070207@linux.intel.com>
+Date: Sun, 09 Aug 2009 14:46:49 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0908092139090.3194@sister.anvils>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: perf: add a timestamp to exit and fork events
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 09, 2009 at 09:53:53PM +0100, Hugh Dickins wrote:
-> On Sun, 9 Aug 2009, Paul E. McKenney wrote:
-> > 
-> > I introduced the problem in commit 7fe616c5dd50a50f334edec1ea0580b90b7af0d9
-> > by changing from register_cpu_notifier() to hotcpu_notifier().  The former
-> > lets you know when CPUs come on line unconditionally, the latter only
-> > when CONFIG_HOTPLUG_CPU is in effect.
-> > 
-> > But hotcpu_notifier() is much nicer to use, so I propose introducing
-> > a cpu_notifier() that is invoked like hotcpu_notifier() is, but is
-> > unconditional in the same way that register_cpu_notifier().
-> > 
-> > Something like the following (untested, probably does not compile):
-> > 
-> > diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-> > index 4d668e0..d5dfc1f 100644
-> > --- a/include/linux/cpu.h
-> > +++ b/include/linux/cpu.h
-> > @@ -48,6 +48,15 @@ struct notifier_block;
-> >  
-> >  #ifdef CONFIG_SMP
-> >  /* Need to know about CPUs going up/down? */
-> > +#if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE)
-> > +#define cpu_notifier(fn, pri) {					\
-> > +	static struct notifier_block fn##_nb __cpuinitdata =	\
-> > +		{ .notifier_call = fn, .priority = pri };	\
-> > +	register_cpu_notifier(&fn##_nb);			\
-> > +}
-> > +#else /* #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
-> > +#define cpu_notifier(fn, pri)	do { (void)(fn); } while (0)
-> > +#endif /* #else #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
-> >  #ifdef CONFIG_HOTPLUG_CPU
-> >  extern int register_cpu_notifier(struct notifier_block *nb);
-> >  extern void unregister_cpu_notifier(struct notifier_block *nb);
-> > @@ -99,11 +108,7 @@ extern struct sysdev_class cpu_sysdev_class;
-> >  
-> >  extern void get_online_cpus(void);
-> >  extern void put_online_cpus(void);
-> > -#define hotcpu_notifier(fn, pri) {				\
-> > -	static struct notifier_block fn##_nb __cpuinitdata =	\
-> > -		{ .notifier_call = fn, .priority = pri };	\
-> > -	register_cpu_notifier(&fn##_nb);			\
-> > -}
-> > +#define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
-> >  #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
-> >  #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)
-> >  int cpu_down(unsigned int cpu);
-> > diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-> > index 9f0584e..c1bbfd5 100644
-> > --- a/kernel/rcupdate.c
-> > +++ b/kernel/rcupdate.c
-> > @@ -251,7 +251,7 @@ void __init rcu_init(void)
-> >  	int i;
-> >  
-> >  	__rcu_init();
-> > -	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
-> > +	cpu_notifier(rcu_barrier_cpu_hotplug, 0);
-> >  
-> >  	/*
-> >  	 * We don't need protection against CPU-hotplug here because
-> > 
-> [ removed repeat of rcupdate.c patch ]
-> > 
-> > Thoughts?
-> 
-> That builds and works for me, with or without CONFIG_HOTPLUG_CPU.
-> 
-> But I didn't get what you're achieving with the MODULE part of it;
-> and (I'm not a notifier buff at all) it does seems rather baroque to
-> me - a single callsite, why not stick with register_cpu_notifier()?
-> 
-> Ah, perhaps it's your ambition to move others over to this
-> (or perhaps it's your ambition to leave that to someone else ;-)
+In order to make use of the fork and exit perf events, it's essential that they tell the
+user about when these event happened. This patch adds a time field to the end of the structure
+(and thus is abi compatible).
 
-Actually, nothing quite that clearly thought out.  I was just following
-the pattern set for register_cpu_notifier().  My guess at the reasoning
-is that when !HOTPLUG_CPU, modules cannot be loaded until all the CPUs
-are online, so there is no point in letting a module set itself up for
-notification.
+I did not make this field conditional on any flag since that both is unpleasant to use,
+and I cannot imagine a scenario where you want the event but not the time.
 
-But whatever their reasoning, mine was that there is no point in
-creating a struct notifier_block that wasn't going to be used.  ;-)
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-							Thanx, Paul
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index 0a6f320..5e0769a 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -315,6 +315,7 @@ enum perf_event_type {
+  	 *	struct perf_event_header	header;
+  	 *	u32				pid, ppid;
+  	 *	u32				tid, ptid;
++	 *	u64				time;
+  	 * };
+  	 */
+  	PERF_EVENT_EXIT			= 4,
+@@ -335,6 +336,7 @@ enum perf_event_type {
+  	 *	struct perf_event_header	header;
+  	 *	u32				pid, ppid;
+  	 *	u32				tid, ptid;
++	 *	u64				time;
+  	 * };
+  	 */
+  	PERF_EVENT_FORK			= 7,
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index bf8110b..9382cd0 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -2861,6 +2861,7 @@ struct perf_task_event {
+  		u32				ppid;
+  		u32				tid;
+  		u32				ptid;
++		u64				time;
+  	} event;
+  };
+
+@@ -2881,6 +2885,7 @@ static void perf_counter_task_output(struct perf_counter *counter,
+  	task_event->event.tid = perf_counter_tid(counter, task);
+  	task_event->event.ptid = perf_counter_tid(counter, task->real_parent);
+
++	task_event->event.time = sched_clock();
+  	perf_output_put(&handle, task_event->event);
+  	perf_output_end(&handle);
+  }
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 1dba568..c28e2b3 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -72,6 +72,8 @@ struct comm_event {
+  struct fork_event {
+  	struct perf_event_header header;
+  	u32 pid, ppid;
++	u32 tid, ptid;
++	u64 time;
+  };
+
+  typedef union event_union {
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index 4163918..1cb2183 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -104,6 +104,7 @@ struct fork_event {
+  	struct perf_event_header header;
+  	u32 pid, ppid;
+  	u32 tid, ptid;
++	u64 time;
+  };
+
+  struct lost_event {
