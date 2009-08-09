@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751344AbZHIFCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751639AbZHIFdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751344AbZHIFCo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 01:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbZHIFCn
+	id S1751639AbZHIFdM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 01:33:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZHIFdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 01:02:43 -0400
-Received: from smtp110.sbc.mail.gq1.yahoo.com ([67.195.14.95]:46152 "HELO
-	smtp110.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750757AbZHIFCn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 01:02:43 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 09 Aug 2009 01:02:42 EDT
-X-Yahoo-SMTP: RrAacJSswBBjW0Obe5dhTHj7mfiuboERhd4hX4HvWHq2RmBoxiTUVqFaT6p3
-X-YMail-OSG: KHGByO0VM1mqOMH_RUcz_frMsMXAZUaWGCQRdkxWgHHLP7TnTfJmD4FuKQ.lqBM_9fZHrtzA6TzeMnst2MnWZQgjeQ8SboFAIFv3AGI1Nb3bYwooPK6PcNMD0_BI9zi7HukToxIuvvCFwu36ucswlz90vEKdsSKOxdM.OImkzXyaLLVL1ee.FgLIzBhJEhfyGS4js2zecL15nW6uEs3CleGmhdnKf_yqYTHQq7FhtV.B6o1wKSVEbGEnwH7LecfV8NQF0AOiuY6O3R373IyeSPFD8RD6TCumB1W5hznQoUObM54oFs0-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 0/2] [Target_Core_Mod/Persistent_Reservations]: Add
-	SPEC_I_PT=1 support
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Cc: Douglas Gilbert <dgilbert@interlog.com>, Hannes Reinecke <hare@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Smart <James.Smart@Emulex.Com>,
-       Philipp Reisner <philipp.reisner@linbit.com>
-Content-Type: text/plain
-Date: Sat, 08 Aug 2009 21:56:02 -0700
-Message-Id: <1249793762.11105.233.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 9 Aug 2009 01:33:12 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:37140 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751298AbZHIFdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 01:33:11 -0400
+Date: Sat, 8 Aug 2009 22:33:08 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Ben Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_PREEMPT_RCU in next/mmotm
+Message-ID: <20090809053308.GD6866@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <Pine.LNX.4.64.0908081956580.12300@sister.anvils> <20090808235634.GB6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908090414320.18096@sister.anvils>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0908090414320.18096@sister.anvils>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello again SCSI folks,
+On Sun, Aug 09, 2009 at 04:32:28AM +0100, Hugh Dickins wrote:
+> On Sat, 8 Aug 2009, Paul E. McKenney wrote:
+> > On Sat, Aug 08, 2009 at 08:34:03PM +0100, Hugh Dickins wrote:
+> > 
+> > > CONFIG_PREEMPT_TREE=y seems okay on PowerPC; and when I briefly tried
+> > 
+> > CONFIG_TREE_RCU=y, you mean, right?
+> 
+> Whoops, yes indeed.
+> 
+> > > My guess is that there's some other issue which is triggering
+> > > the RCU disgrace, but that is just a guess.
+> > 
+> > The one other issue I know of is one that apparently happens only on
+> > one of Ingo's machines, which suddenly decides that it need not inform
+> > RCU when onlining a CPU (at boot time).
+> > 
+> > But you seem to be making it past boot, and I would guess that you are
+> > not doing any hotplug CPU operations, right?
+> 
+> That's right, I'm well past boot, and don't explicitly get into CPU
+> hotplug, nor using suspend/hibernate on that machine; and looking at
+> the config, see I don't even have CONFIG_HOTPLUG_CPU set.
+> 
+> In the morning I'll check that /proc/cpuinfo really shows all four
+> cpus before I start, and is still showing four cpus when it goes bad,
+> in case there's nevertheless an issue with that.
+> 
+> Is there some particular attribute of a cpu, most relevant to its RCU
+> grace status, that I can check on with a printk?
 
-Attached are two patches for implementing the Specify Initiator Port Capable (SPEC_I_PT=1)
-feature bit for handling of fabric dependent TransportIDs with PROUT service action REGISTER.
-This is done by walking the PROUT parameter list, and calling fabric module dependent code for
-extracting the TransportIDs and lengths, and then doing a second loop performing atomic adding
-of pre-registered registrations for the fabric Initiator Ports referenced by TransportIDs.
+The debugfs files enabled by CONFIG_RCU_TRACE, except rcu/rcugp, which,
+since it will attempt to wait for a grace period, will probably wait
+forever.
 
-This has been been tested with TCM/IBLOCK with fabric LIO-Target ports on v2.6.31-rc5 x86
-32-bit KVM, please have a look at Patch 1 for an example using sg_persist + SPEC_I_PT=1 with
-this code.
+> > > Config attached.  Any suggestions?
+> 
+> [ Of course I forgot the config, but sent it just to Paul later. ]
+> 
+> > 
+> > /me scratches head...  Will try some more CONFIG_PREEMPT_RCU testing
+> > locally.
+> 
+> Thanks: I'm kind of glad that it's interesting,
+> though it may sink some of our time.
 
---nab
+Well, it certainly does have me a bit confused at the moment!
 
-[PATCH 1/2] [Target_Core_Mod/Persistent_Reservations]: Add Specify Initiator Port Capable (SPEC_I_PT=1) support
-[PATCH 2/2] [LIO-Target]: Update iSCSI TransportID parser to return length
-
- drivers/lio-core/iscsi_target_tpg.c     |   26 ++-
- drivers/lio-core/iscsi_target_tpg.h     |    2 +-
- drivers/target/target_core_pr.c         |  445 +++++++++++++++++++++++++++++--
- include/target/target_core_fabric_ops.h |    2 +-
- 4 files changed, 448 insertions(+), 27 deletions(-)
-
-
+							Thanx, Paul
