@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZHITzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbZHITyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbZHITzT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 15:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbZHITzR
+	id S1753522AbZHITyq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 15:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbZHITyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 15:55:17 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:23922 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753485AbZHITzN (ORCPT
+	Sun, 9 Aug 2009 15:54:45 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:45798 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753247AbZHITyn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 15:55:13 -0400
+	Sun, 9 Aug 2009 15:54:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Jdv8z975m8xhkCmNK2gwKVOGTFCCTew+2lsHJmal2F/OiWHyI7vxLWtpe6leySLvKE
-         DIzP25u9EFlkRTJu+HzpXC6oCLakRS/+oEYSR5ynqW54JFzyoWsfK/T1byeol8GE5dD5
-         UJGO94fow/XZKgmZrCRuZuAGKtHHjdruCUEsc=
+        b=gX281GioA1klJ1rA/lMv3V41DUlha8+lsYdrwh7wCeMnbkMBrv3IXWdIhvNe2+MaEe
+         MOvEBItFqWoX4pwvN82EagEyXU+9i32w3v3ScUdRS2tCwe4FI+nCtxc1TlDCLXBE+mPj
+         ZXYKHVKpkqwB2ZOhmmcAYO4AyEeNuVVk1mb5k=
 From: Marcin Slusarz <marcin.slusarz@gmail.com>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
-Subject: [PATCH 14/14] net: use printk_once
-Date: Sun,  9 Aug 2009 21:54:09 +0200
-Message-Id: <1249847649-11631-15-git-send-email-marcin.slusarz@gmail.com>
+Cc: Jens Axboe <axboe@kernel.dk>, Tim Waugh <tim@cyberelk.net>
+Subject: [PATCH 07/14] block: use printk_once
+Date: Sun,  9 Aug 2009 21:54:02 +0200
+Message-Id: <1249847649-11631-8-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
 References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
@@ -30,111 +30,88 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: netdev@vger.kernel.org
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: Tim Waugh <tim@cyberelk.net>
 ---
- net/ax25/af_ax25.c        |    6 +-----
- net/dsa/dsa.c             |    4 +---
- net/ipv4/raw.c            |    6 ++----
- net/netfilter/xt_recent.c |   10 +++-------
- net/socket.c              |    8 ++------
- 5 files changed, 9 insertions(+), 25 deletions(-)
+ drivers/block/paride/pcd.c |   12 ++++--------
+ drivers/block/sx8.c        |    4 +---
+ drivers/block/viodasd.c    |   12 +++---------
+ 3 files changed, 8 insertions(+), 20 deletions(-)
 
-diff --git a/net/ax25/af_ax25.c b/net/ax25/af_ax25.c
-index da0f64f..39c895b 100644
---- a/net/ax25/af_ax25.c
-+++ b/net/ax25/af_ax25.c
-@@ -1792,12 +1792,8 @@ static int ax25_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
+diff --git a/drivers/block/paride/pcd.c b/drivers/block/paride/pcd.c
+index 911dfd9..9f3518c 100644
+--- a/drivers/block/paride/pcd.c
++++ b/drivers/block/paride/pcd.c
+@@ -219,8 +219,6 @@ static int pcd_sector;		/* address of next requested sector */
+ static int pcd_count;		/* number of blocks still to do */
+ static char *pcd_buf;		/* buffer for request in progress */
  
- 		/* old structure? */
- 		if (cmd == SIOCAX25GETINFOOLD) {
--			static int warned = 0;
--			if (!warned) {
--				printk(KERN_INFO "%s uses old SIOCAX25GETINFO\n",
-+			printk_once(KERN_INFO "%s uses old SIOCAX25GETINFO\n",
- 					current->comm);
--				warned=1;
--			}
- 
- 			if (copy_to_user(argp, &ax25_info, sizeof(struct ax25_info_struct_deprecated))) {
- 				res = -EFAULT;
-diff --git a/net/dsa/dsa.c b/net/dsa/dsa.c
-index 71489f6..ecd2dfb 100644
---- a/net/dsa/dsa.c
-+++ b/net/dsa/dsa.c
-@@ -302,14 +302,12 @@ static struct net_device *dev_to_net_device(struct device *dev)
- 
- static int dsa_probe(struct platform_device *pdev)
- {
--	static int dsa_version_printed;
- 	struct dsa_platform_data *pd = pdev->dev.platform_data;
- 	struct net_device *dev;
- 	struct dsa_switch_tree *dst;
- 	int i;
- 
--	if (!dsa_version_printed++)
--		printk(KERN_NOTICE "Distributed Switch Architecture "
-+	printk_once(KERN_NOTICE "Distributed Switch Architecture "
- 			"driver version %s\n", dsa_driver_version);
- 
- 	if (pd == NULL || pd->netdev == NULL)
-diff --git a/net/ipv4/raw.c b/net/ipv4/raw.c
-index 2979f14..f919925 100644
---- a/net/ipv4/raw.c
-+++ b/net/ipv4/raw.c
-@@ -470,10 +470,8 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
- 		if (msg->msg_namelen < sizeof(*usin))
- 			goto out;
- 		if (usin->sin_family != AF_INET) {
--			static int complained;
--			if (!complained++)
--				printk(KERN_INFO "%s forgot to set AF_INET in "
--						 "raw sendmsg. Fix it!\n",
-+			printk_once(KERN_INFO "%s forgot to set AF_INET in "
-+						"raw sendmsg. Fix it!\n",
- 						 current->comm);
- 			err = -EAFNOSUPPORT;
- 			if (usin->sin_family)
-diff --git a/net/netfilter/xt_recent.c b/net/netfilter/xt_recent.c
-index eb0ceb8..d60d317 100644
---- a/net/netfilter/xt_recent.c
-+++ b/net/netfilter/xt_recent.c
-@@ -456,13 +456,9 @@ static int recent_seq_open(struct inode *inode, struct file *file)
- #ifdef CONFIG_NETFILTER_XT_MATCH_RECENT_PROC_COMPAT
- static int recent_old_seq_open(struct inode *inode, struct file *filp)
- {
--	static bool warned_of_old;
+-static int pcd_warned;		/* Have we logged a phase warning ? */
 -
--	if (unlikely(!warned_of_old)) {
--		printk(KERN_INFO KBUILD_MODNAME ": Use of /proc/net/ipt_recent"
--		       " is deprecated; use /proc/net/xt_recent.\n");
--		warned_of_old = true;
--	}
-+	printk_once(KERN_INFO KBUILD_MODNAME ": "
-+		"Use of /proc/net/ipt_recent is deprecated; "
-+		"use /proc/net/xt_recent.\n");
- 	return recent_seq_open(inode, filp);
- }
+ /* kernel glue structures */
  
-diff --git a/net/socket.c b/net/socket.c
-index 791d71a..1d07f69 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -1161,12 +1161,8 @@ static int __sock_create(struct net *net, int family, int type, int protocol,
- 	   deadlock in module load.
- 	 */
- 	if (family == PF_INET && type == SOCK_PACKET) {
+ static int pcd_block_open(struct block_device *bdev, fmode_t mode)
+@@ -417,12 +415,10 @@ static int pcd_completion(struct pcd_unit *cd, char *buf, char *fun)
+ 					printk
+ 					    ("%s: %s: Unexpected phase %d, d=%d, k=%d\n",
+ 					     cd->name, fun, p, d, k);
+-				if ((verbose < 2) && !pcd_warned) {
+-					pcd_warned = 1;
+-					printk
+-					    ("%s: WARNING: ATAPI phase errors\n",
+-					     cd->name);
+-				}
++				if (verbose < 2)
++					printk_once(
++					    "%s: WARNING: ATAPI phase errors\n",
++					    cd->name);
+ 				mdelay(1);
+ 			}
+ 			if (k++ > PCD_TMO) {
+diff --git a/drivers/block/sx8.c b/drivers/block/sx8.c
+index da403b6..f5cd2e8 100644
+--- a/drivers/block/sx8.c
++++ b/drivers/block/sx8.c
+@@ -1564,15 +1564,13 @@ static int carm_init_shm(struct carm_host *host)
+ 
+ static int carm_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
+ {
+-	static unsigned int printed_version;
+ 	struct carm_host *host;
+ 	unsigned int pci_dac;
+ 	int rc;
+ 	struct request_queue *q;
+ 	unsigned int i;
+ 
+-	if (!printed_version++)
+-		printk(KERN_DEBUG DRV_NAME " version " DRV_VERSION "\n");
++	printk_once(KERN_DEBUG DRV_NAME " version " DRV_VERSION "\n");
+ 
+ 	rc = pci_enable_device(pdev);
+ 	if (rc)
+diff --git a/drivers/block/viodasd.c b/drivers/block/viodasd.c
+index 390d69b..b441ce3 100644
+--- a/drivers/block/viodasd.c
++++ b/drivers/block/viodasd.c
+@@ -416,15 +416,9 @@ retry:
+ 		goto retry;
+ 	}
+ 	if (we.max_disk > (MAX_DISKNO - 1)) {
 -		static int warned;
--		if (!warned) {
--			warned = 1;
--			printk(KERN_INFO "%s uses obsolete (PF_INET,SOCK_PACKET)\n",
--			       current->comm);
+-
+-		if (warned == 0) {
+-			warned++;
+-			printk(VIOD_KERN_INFO
+-				"Only examining the first %d "
+-				"of %d disks connected\n",
+-				MAX_DISKNO, we.max_disk + 1);
 -		}
-+		printk_once(KERN_INFO "%s uses obsolete (PF_INET,SOCK_PACKET)\n",
-+			    current->comm);
- 		family = PF_PACKET;
++		printk_once(VIOD_KERN_INFO
++			"Only examining the first %d of %d disks connected\n",
++			MAX_DISKNO, we.max_disk + 1);
  	}
  
+ 	/* Send the close event to OS/400.  We DON'T expect a response */
 -- 
 1.6.3.3
 
