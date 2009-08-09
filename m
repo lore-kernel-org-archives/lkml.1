@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbZHITOC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZHITQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752754AbZHITOC (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 15:14:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbZHITOA
+	id S1752809AbZHITQL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 15:16:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbZHITQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 15:14:00 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:44588 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752235AbZHITOA (ORCPT
+	Sun, 9 Aug 2009 15:16:10 -0400
+Received: from slow3-v.mail.gandi.net ([217.70.178.89]:58047 "EHLO
+	slow3-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752732AbZHITQK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 15:14:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=swutx8eWcy6l5eraxN3Etk24iQ2mnOALJsKiydgBKBPZpa9H2yUHVqEyAa5FnSkwpE
-         R/Zdixjli6eMBWseVXiqxtBvmknTzOhFIjSz1IJ3RkWF6uHQNByekiouEMvIwKlvFoZE
-         +j+SffXqm1omZtZtKcO08rWHApO/gGTDf2KEY=
-Date: Sun, 9 Aug 2009 23:13:59 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Roel Kluin <roel.kluin@gmail.com>, Daniel Mack <daniel@caiaq.de>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Libertas: Association request to the driver failed
-Message-ID: <20090809191359.GG4805@lenovo>
-References: <20090807191156.GS19257@buzzloop.caiaq.de> <20090809102417.GH13639@buzzloop.caiaq.de> <4A7EAED8.9090900@gmail.com> <200908091310.56919.mb@bu3sch.de>
+	Sun, 9 Aug 2009 15:16:10 -0400
+Date: Sun, 9 Aug 2009 11:34:43 -0700
+From: Josh Triplett <josh@joshtriplett.org>
+To: "H. Peter Anvin" <hpa@kernel.org>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: Simplify calls to cpuid by using + for in/out
+ constraints
+Message-ID: <20090809183443.GA24130@feather>
+References: <20090808202113.GA21962@feather>
+ <4A7F0511.6060408@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200908091310.56919.mb@bu3sch.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A7F0511.6060408@kernel.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Michael Buesch - Sun, Aug 09, 2009 at 01:10:56PM +0200]
-| On Sunday 09 August 2009 13:11:20 Roel Kluin wrote:
-| > @@ -43,21 +44,21 @@ static int get_common_rates(struct lbs_private *priv,
-| >  	u16 *rates_size)
-| >  {
-| >  	u8 *card_rates = lbs_bg_rates;
-| > -	size_t num_card_rates = sizeof(lbs_bg_rates);
-| >  	int ret = 0, i, j;
-| > -	u8 tmp[30];
-| > +	u8 tmp[*rates_size * ARRAY_SIZE(lbs_bg_rates)];
-| 
-| Is it a good idea to use dynamic stack arrays in the kernel?
-| What about kmalloc for dynamic allocations?
-| 
-| -- 
-| Greetings, Michael.
+On Sun, Aug 09, 2009 at 10:19:13AM -0700, H. Peter Anvin wrote:
+> I would prefer to not apply this patch unless there is a good reason.
+> The existing code isn't broken, and any time we change an asm()
+> statement we risk triggering bugs in some obscure gcc version.
 
-I saw one pattern in trace code (not sure if it's
-still there) but personally don't like dynamic
-stack arrays (though at moment the max value
-being passed into routine is known maybe just
-use MAX_RATES instead of (*rates_size)?). Hmm?
+Fair enough.
 
-	-- Cyrill
+> It isn't, of course, that the proposed change is wrong, but simply that
+> it is an unnecessary change, and since it involves asm() statements I
+> would like to reject it for churn reduction reasons.  Especially so
+> since it is "build-tested only".
+
+Given the risk of "bugs in some obscure gcc version", it doesn't seem
+like running it or even comparing for identical code would validate
+anything more than the correctness of the gcc version currently in use.
+
+- Josh triplett
