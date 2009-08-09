@@ -1,19 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751467AbZHIE5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751344AbZHIFCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751467AbZHIE5d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 00:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbZHIE5d
+	id S1751344AbZHIFCo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 01:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbZHIFCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 00:57:33 -0400
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:32783 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751265AbZHIE5c (ORCPT
+	Sun, 9 Aug 2009 01:02:43 -0400
+Received: from smtp110.sbc.mail.gq1.yahoo.com ([67.195.14.95]:46152 "HELO
+	smtp110.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750757AbZHIFCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 00:57:32 -0400
-X-YMail-OSG: 3Wkth24VM1lyrRmuaD3X6xdsy_6CttnIEnzR9HoIUDvORn93a33x4CreWhh.PILwwduettjC0_K6I5WStjGJGCrcEQMt9DoTMdfEEbI6paMudv7zyhRmZf7kL_D88GxLGKApuiyW49iEkE_Xz10FONqMs.NIwDGKymp3CpVPnu2lH1XboGRDM_xLIxj0lzkHdU5PLeSs20u6ByYoONtNbmGCF8zcCKVOS_NdksvzMiY0Gc.ygpVNSXnocOpq2sdmf_cC5ITsJgxulsR6_fYPGIrUHPmzGT0itppu60gS7dr1rw9J6jYe7HUKvc.f_DoO6ejOnjH_1Du23gAvlQ8SlWqW310-
+	Sun, 9 Aug 2009 01:02:43 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 09 Aug 2009 01:02:42 EDT
+X-Yahoo-SMTP: RrAacJSswBBjW0Obe5dhTHj7mfiuboERhd4hX4HvWHq2RmBoxiTUVqFaT6p3
+X-YMail-OSG: KHGByO0VM1mqOMH_RUcz_frMsMXAZUaWGCQRdkxWgHHLP7TnTfJmD4FuKQ.lqBM_9fZHrtzA6TzeMnst2MnWZQgjeQ8SboFAIFv3AGI1Nb3bYwooPK6PcNMD0_BI9zi7HukToxIuvvCFwu36ucswlz90vEKdsSKOxdM.OImkzXyaLLVL1ee.FgLIzBhJEhfyGS4js2zecL15nW6uEs3CleGmhdnKf_yqYTHQq7FhtV.B6o1wKSVEbGEnwH7LecfV8NQF0AOiuY6O3R373IyeSPFD8RD6TCumB1W5hznQoUObM54oFs0-
 X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 2/2] [LIO-Target]: Update iSCSI TransportID parser to
-	return length
+Subject: [PATCH 0/2] [Target_Core_Mod/Persistent_Reservations]: Add
+	SPEC_I_PT=1 support
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        linux-scsi <linux-scsi@vger.kernel.org>
@@ -25,8 +27,8 @@ Cc: Douglas Gilbert <dgilbert@interlog.com>, Hannes Reinecke <hare@suse.de>,
        James Smart <James.Smart@Emulex.Com>,
        Philipp Reisner <philipp.reisner@linbit.com>
 Content-Type: text/plain
-Date: Sat, 08 Aug 2009 21:57:31 -0700
-Message-Id: <1249793851.11105.237.camel@haakon2.linux-iscsi.org>
+Date: Sat, 08 Aug 2009 21:56:02 -0700
+Message-Id: <1249793762.11105.233.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -34,85 +36,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hello again SCSI folks,
 
-This patch updates the iSCSI Transport parser in lio_tpg_parse_pr_out_transport_id()
-to return the total length of the received TransportID as a function parameter u32 *tid_len,
-for SPC-3 PR SA REGISTER w/ SPEC_I_PT=1 operations with the LIO-Target fabric module.
+Attached are two patches for implementing the Specify Initiator Port Capable (SPEC_I_PT=1)
+feature bit for handling of fabric dependent TransportIDs with PROUT service action REGISTER.
+This is done by walking the PROUT parameter list, and calling fabric module dependent code for
+extracting the TransportIDs and lengths, and then doing a second loop performing atomic adding
+of pre-registered registrations for the fabric Initiator Ports referenced by TransportIDs.
 
-When a u32 *tid_len pointer exists, this patch will attempt to rebuild tid_len based on the
-received additional length parameter field in the iSCSI TransportID header, but also checks
-the total NULL terminated and NULL padded string sizes of the received iSCSI Initiator Port/Device
-to double check, and will return the latter if the former does not match.
+This has been been tested with TCM/IBLOCK with fabric LIO-Target ports on v2.6.31-rc5 x86
+32-bit KVM, please have a look at Patch 1 for an example using sg_persist + SPEC_I_PT=1 with
+this code.
 
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/iscsi_target_tpg.c |   26 +++++++++++++++++++++++++-
- drivers/lio-core/iscsi_target_tpg.h |    2 +-
- 2 files changed, 26 insertions(+), 2 deletions(-)
+--nab
 
-diff --git a/drivers/lio-core/iscsi_target_tpg.c b/drivers/lio-core/iscsi_target_tpg.c
-index fcb5006..15648a5 100644
---- a/drivers/lio-core/iscsi_target_tpg.c
-+++ b/drivers/lio-core/iscsi_target_tpg.c
-@@ -243,10 +243,12 @@ extern u32 lio_tpg_get_pr_transport_id_len (
- 
- extern char *lio_tpg_parse_pr_out_transport_id(
- 	const char *buf,
--	u32 tid_len,
-+	u32 *out_tid_len,
- 	char **port_nexus_ptr)
- {
- 	char *p;
-+	u32 tid_len, padding;
-+	u16 add_len;
- 	u8 format_code = (buf[0] & 0xc0);
- 	/*
- 	 * Check for FORMAT CODE 00b or 01b from spc4r17, section 7.5.4.6:
-@@ -266,6 +268,28 @@ extern char *lio_tpg_parse_pr_out_transport_id(
- 		return NULL;
- 	}
- 	/*
-+	 * If the caller wants the TransportID Length, we set that value for the
-+	 * entire iSCSI Tarnsport ID now.
-+	 */
-+	if (out_tid_len != NULL) {
-+		add_len = ((buf[2] >> 8) & 0xff);
-+		add_len |= (buf[3] & 0xff);
-+
-+		tid_len = strlen((char *)&buf[4]);
-+		tid_len += 4; /* Add four bytes for iSCSI Transport ID header */
-+		tid_len += 1; /* Add one byte for NULL terminator */
-+		if ((padding = ((-tid_len) & 3)) != 0)
-+			tid_len += padding;
-+
-+		if ((add_len + 4) != tid_len) {
-+			printk(KERN_INFO "LIO-Target Extracted add_len: %hu "
-+				"does not match calculated tid_len: %u,"
-+				" using tid_len instead\n", add_len+4, tid_len);
-+			*out_tid_len = tid_len;
-+		} else 
-+			*out_tid_len = (add_len + 4);
-+	}
-+	/*
- 	 * Check for the ',i,0x' seperator between iSCSI Name and iSCSI Initiator
- 	 * Session ID as defined in Table 390 -- iSCSI initiator port TransportID
- 	 * format.
-diff --git a/drivers/lio-core/iscsi_target_tpg.h b/drivers/lio-core/iscsi_target_tpg.h
-index 83bb822..7971226 100644
---- a/drivers/lio-core/iscsi_target_tpg.h
-+++ b/drivers/lio-core/iscsi_target_tpg.h
-@@ -34,7 +34,7 @@ extern u16 lio_tpg_get_tag (struct se_portal_group_s *);
- extern u32 lio_tpg_get_default_depth (struct se_portal_group_s *);
- extern u32 lio_tpg_get_pr_transport_id (struct se_portal_group_s *, struct se_node_acl_s *, int *, unsigned char *);
- extern u32 lio_tpg_get_pr_transport_id_len (struct se_portal_group_s *, struct se_node_acl_s *, int *);
--extern char *lio_tpg_parse_pr_out_transport_id(const char *, u32, char **);
-+extern char *lio_tpg_parse_pr_out_transport_id(const char *, u32 *, char **);
- extern int lio_tpg_check_demo_mode (struct se_portal_group_s *);
- extern int lio_tpg_check_demo_mode_cache (struct se_portal_group_s *);
- extern int lio_tpg_check_demo_mode_write_protect (struct se_portal_group_s *);
--- 
-1.5.4.1
+[PATCH 1/2] [Target_Core_Mod/Persistent_Reservations]: Add Specify Initiator Port Capable (SPEC_I_PT=1) support
+[PATCH 2/2] [LIO-Target]: Update iSCSI TransportID parser to return length
 
+ drivers/lio-core/iscsi_target_tpg.c     |   26 ++-
+ drivers/lio-core/iscsi_target_tpg.h     |    2 +-
+ drivers/target/target_core_pr.c         |  445 +++++++++++++++++++++++++++++--
+ include/target/target_core_fabric_ops.h |    2 +-
+ 4 files changed, 448 insertions(+), 27 deletions(-)
 
 
