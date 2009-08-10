@@ -1,115 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbZHJSvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750875AbZHJSwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752704AbZHJSvi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 14:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbZHJSvh
+	id S1750875AbZHJSwT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 14:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbZHJSwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 14:51:37 -0400
-Received: from ppp-152-125.adsl.restena.lu ([158.64.152.125]:39223 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751857AbZHJSvg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 14:51:36 -0400
-Date: Mon, 10 Aug 2009 20:51:15 +0200
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Cc: Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
- in use
-Message-ID: <20090810205115.6871239d@neptune.home>
-In-Reply-To: <20090810203501.4d57aa5b@neptune.home>
-References: <20090808194733.38406075@neptune.home>
-	<Pine.LNX.4.44L0.0908101114320.3208-100000@iolanthe.rowland.org>
-	<20090810154402.GA7701@kroah.com>
-	<20090810191822.26370810@neptune.home>
-	<20090810181306.GA24989@kroah.com>
-	<20090810203501.4d57aa5b@neptune.home>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-To: unlisted-recipients:; (no To-header on input)
+	Mon, 10 Aug 2009 14:52:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39440 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750711AbZHJSwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 14:52:17 -0400
+Date: Mon, 10 Aug 2009 20:51:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jay Fenlason <fenlason@redhat.com>
+Subject: Re: [patch 2/2] x86: arch specific support for remapping HPET MSIs
+Message-ID: <20090810185156.GC9601@elte.hu>
+References: <20090804190729.477649000@intel.com> <20090804190729.630510000@intel.com> <20090808151254.GC28892@elte.hu> <1249923516.27006.10839.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249923516.27006.10839.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 August 2009 Bruno Prémont <bonbons@linux-vserver.org> wrote:
-> On Mon, 10 August 2009 Greg KH <greg@kroah.com> wrote:
-> > On Mon, Aug 10, 2009 at 07:18:22PM +0200, Bruno Prémont wrote:
-> > > On Mon, 10 August 2009 Greg KH <greg@kroah.com> wrote:
-> > > > On Mon, Aug 10, 2009 at 11:18:29AM -0400, Alan Stern wrote:
-> > > > > On Sat, 8 Aug 2009, Bruno Prémont wrote:
-> > > > > 
-> > > > > > I tried bisecting this but bisect did end up on a fully
-> > > > > > unrelated commit (which is not even being compiled into my
-> > > > > > kernel). Possibly the failed bisect could be related to
-> > > > > > mis-classified kernel panic/hang while pulling the USB cable
-> > > > > > (there were two such panics for the whole iteration)?
-> > > > > > 
-> > > > > > There are quite a few patches touching tty, ttyUSB and
-> > > > > > friends between rc4 and now so pretty hard to guess on the
-> > > > > > correct one.
-> > > > > > 
-> > > > > > The oops always happens when I disconnect the USB serial
-> > > > > > console (here the one built into Marvell SheevaPlug) while
-> > > > > > having minicom connected to it.
-> > > > > > During the bisection for the last few bad iterations minicom
-> > > > > > got killed (segfault), the bad ones on the iteration left a
-> > > > > > minicom zombie in 'D' state.
-> > 
-> > Ok, a few questions.
-> > 
-> > Are you pulling the device out when you have a console attached to
-> > the device, or just a "normal" minicom connection with it?  I can't
-> > seem to duplicate this here at the moment for some reason :(
-> > 
-> > thanks,
-> > 
-> > greg k-h
-> > 
-> 
-> The SheevaPlug has a getty running on ttyS0 (agetty 115200 ttyS0
-> vt100). That ttyS0 is exported via the FTDI USB to Serial+JTag
-> converter.
-> 
-> On the laptop side (where the kernel Oopses) I see /dev/ttyUSB0 (which
-> I instruct minicom to use via symlink to
-> /dev/serial/by-id/usb-_SheevaPlug_JTAGKey_FT2232D_B_FTS55QK6-if01-port0 -- minicom is
-> limited to 63byte length for path to tty device)
-> 
-> I run minicom with the following parameters:
->   minicom -o -c on sheeva
-> 
-> /etc/minicom/minirc.sheeva
->   pu port             /etc/minicom/tty-sheeva
->   pu rtscts           No
-> 
-> That is 115200 8N1, with neither hardware nor software flow control.
-> 
-> I'm pulling the USB cable while minicom is running and agetty on the
-> other side is waiting for password input. (pulling the USB cable is
-> too easy - and same effect is obtained when pulling power from the
-> SheevaPlug)
-> 
-> 
-> I have not tried yet with a different USB serial device but will do so
-> soon to see if I can reproduce it there. (the other USBSerial device I
-> have is: 067b:2303 Prolific Technology, Inc. PL2303 Serial Port)
 
-I can't reproduce with this one.
+* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
 
-Similar setup, but instead of SheevaPlug (with it's kernel started with
-console=ttyS0,115200 + agetty run by init) I just started agetty (same
-parameters) on a x86 box with uart serial port (e.g. that x86 kernel
-does not have console kernel parameter) and connected that one via
-NullModem cable to the Prolific USBSerial converter.
+> On Sat, 2009-08-08 at 08:12 -0700, Ingo Molnar wrote:
+> > * Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> > 
+> > > x86 arch support for remapping HPET MSI's by associating the HPET 
+> > > timer block with the interrupt-remapping HW unit and setting up 
+> > > appropriate irq_chip
+> > 
+> > interesting. This means we'd materially utilize the irq-remapper 
+> > not just on relatively obscure, virtualization related setups, 
+> > but also in the native x86 bootup mode, on all (hpet+remap 
+> > capable) Linux systems?
+> 
+> Ingo, For native linux kernel, interrupt-remapping allows simple 
+> and reliable irq migration from the process context (in addition 
+> to its need for supporting cpu's capable of x2apic). And as such 
+> solves the issues we had in the past with cpu hotplug and irq 
+> migration.
 
-In this case, no matter how often I pull the USBSerial converter there
-is no Oops.
+It's something much more directly useful than a fix for race 
+conditions, and it would be used in a broader range of hardware
+than x2apic. (Not to denounce its other uses - i was just upbeat 
+about it getting even more mainstream use.)
 
-So it must be something that FTDI driver does differently from e.g.
-Prolific one.
-
-thanks,
-Bruno
+	Ingo
