@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbZHJOHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbZHJOID@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755009AbZHJOHB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbZHJOHA
+	id S1755088AbZHJOID (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:08:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbZHJOIC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:07:00 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48082 "EHLO ogre.sisk.pl"
+	Mon, 10 Aug 2009 10:08:02 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40497 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754629AbZHJOG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:06:59 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Gene Heskett <gene.heskett@verizon.net>
-Subject: Re: [Bug #13899] Oops from tar, 2.6.31-rc5, 32 bit on quad core phenom.
-Date: Mon, 10 Aug 2009 16:07:55 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera> <u1L1PAbl8zG.A.1SD.pj1fKB@chimera> <200908092342.43656.gene.heskett@verizon.net>
-In-Reply-To: <200908092342.43656.gene.heskett@verizon.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	id S1754930AbZHJOIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 10:08:01 -0400
+Subject: Re: linux-next: security-testing tree build failure
+From: Eric Paris <eparis@redhat.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: James Morris <jmorris@namei.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090807145932.77bc2c98.sfr@canb.auug.org.au>
+References: <20090807145932.77bc2c98.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Mon, 10 Aug 2009 10:07:49 -0400
+Message-Id: <1249913269.2081.1.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908101607.55673.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 August 2009, Gene Heskett wrote:
-> On Sunday 09 August 2009, Rafael J. Wysocki wrote:
-> >This message has been generated automatically as a part of a report
-> >of recent regressions.
-> >
-> >The following bug entry is on the current list of known regressions
-> >from 2.6.30.  Please verify if it still should be listed and let me know
-> >(either way).
-> >
-> >
-> >Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13899
-> >Subject		: Oops from tar, 2.6.31-rc5, 32 bit on quad core phenom.
-> >Submitter	: Gene Heskett <gene.heskett@verizon.net>
-> >Date		: 2009-08-01 13:04 (9 days old)
-> >References	: http://marc.info/?l=linux-kernel&m=124913190304149&w=4
+On Fri, 2009-08-07 at 14:59 +1000, Stephen Rothwell wrote:
+> Hi James,
 > 
-> Yes, it is still doing it to rc5 but only on the first invocation after the 
-> bootup.  Strangely, it apparently has no other effect, either on the machine, 
-> or how amanda itself works.
+> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+> 
+> kernel/sysctl.c:1321: error: 'mmap_min_addr_handler' undeclared here (not in a function)
+> mm/mmap.c: In function 'do_mmap_pgoff':
+> mm/mmap.c:935: error: implicit declaration of function 'round_hint_to_min'
+> 
+> Caused by commit a2551df7ec568d87793d2eea4ca744e86318f205
+> ("Security/SELinux: seperate lsm specific mmap_min_addr") -
+> CONFIG_SECURITY is not set in this build.
+> 
+> I have used the version of the security-testing tree from next-20090806
+> for today.
 
-Thanks for the update.
+Sorry, I thought I put the definitions outside of the ifdef in
+security.h but clearly they aren't.  Looks like James's tree has the fix
+as of a couple of hours ago, so you should be fix on your next pull from
+him.
 
-Rafael
+-Eric
+
