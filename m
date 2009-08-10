@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbZHJFWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752364AbZHJF13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752083AbZHJFWx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 01:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbZHJFWw
+	id S1752364AbZHJF13 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 01:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbZHJF12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 01:22:52 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:57997 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751523AbZHJFWv (ORCPT
+	Mon, 10 Aug 2009 01:27:28 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43295 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750798AbZHJF11 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 01:22:51 -0400
-Date: Mon, 10 Aug 2009 10:52:43 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, andi.kleen@intel.com,
-       Prarit Bhargava <prarit@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: Help Resource Counters Scale Better (v3)
-Message-ID: <20090810052243.GB5257@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090807221238.GJ9686@balbir.in.ibm.com> <39eafe409b85053081e9c6826005bb06.squirrel@webmail-b.css.fujitsu.com> <20090808060531.GL9686@balbir.in.ibm.com> <99f2a13990d68c34c76c33581949aefd.squirrel@webmail-b.css.fujitsu.com> <20090809121530.GA5833@balbir.in.ibm.com> <20090810093229.10db7185.kamezawa.hiroyu@jp.fujitsu.com> <20090810094344.77a8ef55.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 10 Aug 2009 01:27:27 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4A7FAF8E.3060007@jp.fujitsu.com>
+Date: Mon, 10 Aug 2009 14:26:38 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090810094344.77a8ef55.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86, mce: therm_throt - change when we print messages
+References: <20090810051513.0558F526EC9@mailhub.coreip.homeip.net>
+In-Reply-To: <20090810051513.0558F526EC9@mailhub.coreip.homeip.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-10 09:43:44]:
-
-> On Mon, 10 Aug 2009 09:32:29 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Dmitry Torokhov wrote:
+> My Latitude d630 seems to be handling thermal events in SMI by lowering
+> the max frequency of the CPU till it cools down but still leaks the
+> "everything is normal" events. Adjust therm_throt driver to only print
+> messages about the fact that temperatire returned back to normal when
+> leaving the throttling state.
 > 
-> > 1. you use res_counter_read_positive() in force_empty. It seems force_empty can
-> >    go into infinite loop. plz check. (especially when some pages are freed or swapped-in
-> >    in other cpu while force_empry runs.)
-> > 
-> > 2. In near future, we'll see 256 or 1024 cpus on a system, anyway.
-> >    Assume 1024cpu system, 64k*1024=64M is a tolerance.
-> >    Can't we calculate max-tolerane as following ?
-> >   
-> >    tolerance = min(64k * num_online_cpus(), limit_in_bytes/100);
-> >    tolerance /= num_online_cpus();
-> >    per_cpu_tolerance = min(16k, tolelance);
-> > 
-> >    I think automatic runtine adjusting of tolerance will be finally necessary,
-> >    but above will not be very bad because we can guarantee 1% tolerance.
-> > 
+> Also lower the severity of "back to normal" message from KERN_CRIT to
+> KERN_INFO.
 > 
-> Sorry, one more.
-> 
-> 3. As I requested when you pushed softlimit changes to mmotom, plz consider
->    to implement a way to check-and-notify gadget to res_counter.
->    See: http://marc.info/?l=linux-mm&m=124753058921677&w=2
->
+> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+> ---
 
-Yes, I will do that, but only after the scaling, since this is more
-important at the moment. 
+Looks good.  Thank you for providing nicer logic!
 
--- 
-	Balbir
+Reviewed-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+
