@@ -1,49 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbZHJP0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbZHJP2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755379AbZHJP0V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 11:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbZHJP0U
+	id S1755394AbZHJP2V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 11:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbZHJP2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 11:26:20 -0400
-Received: from statler.bytemark.co.uk ([212.110.162.18]:47945 "EHLO
-	statler.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755214AbZHJP0U (ORCPT
+	Mon, 10 Aug 2009 11:28:20 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46766 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752374AbZHJP2T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 11:26:20 -0400
-Date: Mon, 10 Aug 2009 17:26:06 +0200
-From: "Emilio G. Cota" <cota@braap.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-Cc: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [patch 2/5] Staging: vme: add VME userspace driver
-Message-ID: <20090810152606.GA23319@braap.org>
-References: <20090803205657.964064732@mini.kroah.org> <20090803210116.GC28430@kroah.com> <20090808232259.GA29303@braap.org> <20090809121715.GA3884@braap.org> <4A801D04.6050102@gefanuc.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A801D04.6050102@gefanuc.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 10 Aug 2009 11:28:19 -0400
+Subject: Re: [PATCH V2] futex: Fix handling of bad requeue syscall pairing
+From: Peter Zijlstra <peterz@infradead.org>
+To: Darren Hart <dvhltc@us.ibm.com>
+Cc: "lkml," <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       John Kacur <jkacur@redhat.com>, Eric Dumazet <eric.dumazet@gmail.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       John Stultz <johnstul@linux.vnet.ibm.com>
+In-Reply-To: <4A7CA8C0.7010809@us.ibm.com>
+References: <4A7CA06E.1090904@us.ibm.com>  <4A7CA8C0.7010809@us.ibm.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 10 Aug 2009 17:27:44 +0200
+Message-Id: <1249918064.17467.143.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martyn Welch wrote:
->>> Instead of using that we implemented a heretic IOCTL-based
->>> interface for user-space; at least with it you could create a
-[ snip ]
->>> #define VME_IOCTL_START_DMA             _IOWR('V', 10, struct vme_dma)
->>>
-> I am moving the interface in that direction, I remain unconvinced about  
-> the contents of your vme_mapping structure, it's too tsi-148 specific.
+On Fri, 2009-08-07 at 15:20 -0700, Darren Hart wrote:
+> From: Darren Hart <dvhltc@us.ibm.com>
+> 
+> If futex_requeue(requeue_pi=1) finds a futex_q that was created by a call
+> other the futex_wait_requeue_pi(), the q.rt_waiter may be null.  If so,
+> this will result in an oops from the following call graph:
+> 
+> futex_requeue()
+>   rt_mutex_start_proxy_lock()
+>     task_blocks_on_rt_mutex()
+>       waiter->task dereference
+>         OOPS
+> 
+> We currently WARN_ON() if this is detected, clearly this is inadequate.
+> If we detect a mispairing in futex_requeue(), bail out, seding -EINVAL to
+> user-space.
+> 
+> V2: Fix parenthesis warnings.
+> 
+> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
 
-Could you please point out why is too tsi148-specific?
+Acked-by: Peter Zijlstra <peterz@infradead.org>
 
-The point here is that the driver should know *nothing* about
-windows, etc. What it should just know is:
-- I want a mapping of a certain size to VME address X
-The struct provides exactly this.
-
-Also, could you please send me (off-list) documentation of the
-Universe bridge? It'd be useful for the work on the generic layer.
-
-E.
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> CC: Eric Dumazet <eric.dumazet@gmail.com>
+> CC: Dinakar Guniguntala <dino@in.ibm.com>
+> CC: John Stultz <johnstul@us.ibm.com>
+> ---
+> 
+>  kernel/futex.c |   11 +++++++++--
+>  1 files changed, 9 insertions(+), 2 deletions(-)
+> 
+> 
+> diff --git a/kernel/futex.c b/kernel/futex.c
+> index df30983..4705d89 100644
+> --- a/kernel/futex.c
+> +++ b/kernel/futex.c
+> @@ -1306,8 +1306,15 @@ retry_private:
+>  		if (!match_futex(&this->key, &key1))
+>  			continue;
+>  
+> -		WARN_ON(!requeue_pi && this->rt_waiter);
+> -		WARN_ON(requeue_pi && !this->rt_waiter);
+> +		/*
+> +		 * FUTEX_WAIT_REQEUE_PI and FUTEX_CMP_REQUEUE_PI should always
+> +		 * be paired with each other and no other futex ops.
+> +		 */
+> +		if ((requeue_pi && !this->rt_waiter) ||
+> +		    (!requeue_pi && this->rt_waiter)) {
+> +			ret = -EINVAL;
+> +			break;
+> +		}
+>  
+>  		/*
+>  		 * Wake nr_wake waiters.  For requeue_pi, if we acquired the
