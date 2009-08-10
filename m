@@ -1,92 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752533AbZHJE7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752659AbZHJFAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752533AbZHJE7L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 00:59:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbZHJE7K
+	id S1752659AbZHJFAd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 01:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbZHJFAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 00:59:10 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:47094 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750969AbZHJE7I (ORCPT
+	Mon, 10 Aug 2009 01:00:32 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:22770 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750969AbZHJFAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 00:59:08 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       esandeen@redhat.com, eteo@redhat.com, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk, sds@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Subject: Re: [Patch v3] vfs: allow file truncations when both suid and write permissions set
-References: <20090807100743.5822.90612.sendpatchset@localhost.localdomain>
-	<1249675025.2694.15.camel@dhcp231-106.rdu.redhat.com>
-	<87prb7v0dr.fsf@devron.myhome.or.jp>
-	<1249677481.2694.22.camel@dhcp231-106.rdu.redhat.com>
-	<87eirnqrbj.fsf@devron.myhome.or.jp> <4A7F862E.9020501@redhat.com>
-Date: Mon, 10 Aug 2009 13:59:04 +0900
-In-Reply-To: <4A7F862E.9020501@redhat.com> (Amerigo Wang's message of "Mon, 10
-	Aug 2009 10:30:06 +0800")
-Message-ID: <877hxc6z8n.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Mon, 10 Aug 2009 01:00:31 -0400
+X-IronPort-AV: E=Sophos;i="4.43,351,1246838400"; 
+   d="scan'208";a="193892169"
+From: Roland Dreier <rdreier@cisco.com>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Roland Dreier <rolandd@cisco.com>,
+       Sean Hefty <sean.hefty@intel.com>,
+       Hal Rosenstock <hal.rosenstock@gmail.com>,
+       general@lists.openfabrics.org
+Subject: Re: [PATCH 10/14] infiniband: use printk_once
+References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
+	<1249847649-11631-11-git-send-email-marcin.slusarz@gmail.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Sun, 09 Aug 2009 22:00:31 -0700
+In-Reply-To: <1249847649-11631-11-git-send-email-marcin.slusarz@gmail.com>
+	(Marcin Slusarz's message of "Sun, 9 Aug 2009 21:54:05 +0200")
+Message-ID: <adaocqo9sb4.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+X-OriginalArrivalTime: 10 Aug 2009 05:00:32.0496 (UTC) FILETIME=[7D268700:01CA1977]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amerigo Wang <amwang@redhat.com> writes:
 
-> OGAWA Hirofumi wrote:
->> Eric Paris <eparis@redhat.com> writes:
->>
->>   
->>>>> I was thinking about this and kept telling myself I was going to test v2
->>>>> before I ack/nak.  Clearly we shouldn't for the dropping of SUID if the
->>>>> process didn't have permission to change the ATTR_SIZE.
->>>>>
->>>>> Acked-by: Eric Paris <eparis@redhat.com>
->>>>>         
->>>> BTW, Do you know why doesn't security modules fix the handling of
->>>> do_truncate() (i.e. ATTR_MODE | ATTR_SIZE). And why doesn't it allow to
->>>> pass ATTR_FORCE for it?
->>>>       
->>> I'm not sure what you mean.  I understood ATTR_FORCE to mean 'I am magic
->>> and get to override all security checks."  Which is why nothing should
->>> ever be using ATTR_FORCE with things other than SUID.
->>>
->>> I guess we could somehow force logic into the LSM to make it only apply
->>> to SUID and friends but I'm not sure it buys us anything.
->>>     
->>
->> Yes, I think it's good way. Don't we want to do the following?
->>
->> 	if (permission check of job)
->> 		return error;
->> 	if (do job at once)
->>         	return error;
->>
->> But currently way is,
->>
->> 	if (permission check of first part)
->>         	return error
->> 	if (do first part of job)
->>         	return error
->> 	if (permission check of second part)
->>         	return error
->> 	if (do second part of job)
->>         	return error
->>
->> So, if second part was error, we may want to undo the job of first part
->> in theory. But, to undo is just hard and strange.
->>   
->
-> Yeah, the problem is currently we don't have such wrappers, only 
-> notify_change(). :-/
+ >  drivers/infiniband/hw/cxgb3/iwch.c |    4 +---
+ >  drivers/infiniband/hw/mlx4/main.c  |    6 +-----
 
-I'm not sure you are meaning what wrappers though, I'm still thinking
-changing LSM (or something) like Eric said is the way to do it easily
-(and define ATTR_FORCE is not for ATTR_SIZE at least).
+ > --- a/drivers/infiniband/hw/mlx4/main.c
+ > +++ b/drivers/infiniband/hw/mlx4/main.c
+ > @@ -540,15 +540,11 @@ static struct device_attribute *mlx4_class_attributes[] = {
+ >  
+ >  static void *mlx4_ib_add(struct mlx4_dev *dev)
+ >  {
+ > -	static int mlx4_ib_version_printed;
+ >  	struct mlx4_ib_dev *ibdev;
+ >  	int num_ports = 0;
+ >  	int i;
+ >  
+ > -	if (!mlx4_ib_version_printed) {
+ > -		printk(KERN_INFO "%s", mlx4_ib_version);
+ > -		++mlx4_ib_version_printed;
+ > -	}
+ > +	printk_once(KERN_INFO "%s", mlx4_ib_version);
+ >  
+ >  	mlx4_foreach_port(i, dev, MLX4_PORT_TYPE_IB)
+ >  		num_ports++;
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Looks fine but there is near-identical code in
+drivers/infiniband/hw/mthca/mthca_main.c that you might as well convert
+too.
+
+Thanks,
+  Roland
