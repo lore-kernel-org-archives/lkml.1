@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754758AbZHJNiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbZHJNoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754758AbZHJNiT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 09:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbZHJNiT
+	id S1754814AbZHJNoz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 09:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbZHJNoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 09:38:19 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:57673 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754277AbZHJNiS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 09:38:18 -0400
-Date: Mon, 10 Aug 2009 14:38:15 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: James.Bottomley@HansenPartnership.com
-Cc: linux-acpi@vger.kernel.org, linux-scsi@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, shaohua.li@intel.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] SCSI: Allow platform-specific code to be run
-	against the SCSI tree
-Message-ID: <20090810133815.GB22763@srcf.ucam.org>
-References: <1247518987-10818-1-git-send-email-mjg@redhat.com>
+	Mon, 10 Aug 2009 09:44:54 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37647 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754451AbZHJNox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 09:44:53 -0400
+Date: Mon, 10 Aug 2009 16:42:29 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: netdev@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Or Gerlitz <ogerlitz@voltaire.com>,
+       "Fischer, Anna" <anna.fischer@hp.com>,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Edge Virtual Bridging <evb@yahoogroups.com>
+Subject: Re: [PATCH] macvlan: add tap device backend
+Message-ID: <20090810134229.GA10036@redhat.com>
+References: <1249595428-21594-1-git-send-email-arnd@arndb.de> <200908092042.24686.arnd@arndb.de> <20090810085003.GA3654@redhat.com> <200908101529.46285.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1247518987-10818-1-git-send-email-mjg@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <200908101529.46285.arnd@arndb.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 13, 2009 at 10:03:05PM +0100, Matthew Garrett wrote:
-> In certain cases (such as ACPI) we want to be able to associate
-> platform-specific data against the SCSI device tree. Handling this
-> properly requires the ability to run platform code at SCSI init time.
-> This patch adds stub functions that can be overridden if the platform
-> defines CONFIG_SCSI_PLATFORM.
+On Mon, Aug 10, 2009 at 03:29:46PM +0200, Arnd Bergmann wrote:
+> On Monday 10 August 2009, Michael S. Tsirkin wrote:
+> > 
+> > > Would it be enough to check the dev_queue_xmit() return
+> > > code for NETDEV_TX_BUSY?
+> > > 
+> > > How would I get notified when it gets free again?
+> > 
+> > You can do this by creating a socket. Look at how tun does
+> > this now.
+> 
+> Hmm, I was hoping to be able to avoid this, because I can
+> interact more directly with the outbound physical interface
+> using dev_queue_xmit() instead of netif_rx_ni().
 
-James, any thoughts on this?
+Yea, that's what tun does. socket just notifies you when
+packets are freed.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> I'll have a look. Thanks,
+> 
+> 	Arnd <><
