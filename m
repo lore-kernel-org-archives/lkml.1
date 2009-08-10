@@ -1,77 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754280AbZHJM2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbZHJMcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754280AbZHJM2Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 08:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbZHJM2Q
+	id S1754321AbZHJMcb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 08:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbZHJMca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 08:28:16 -0400
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:48209 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753951AbZHJM2P (ORCPT
+	Mon, 10 Aug 2009 08:32:30 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45867 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754181AbZHJMc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 08:28:15 -0400
-Date: Mon, 10 Aug 2009 14:28:13 +0200
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Marcel Holtmann <marcel@holtmann.org>, linux-kernel@vger.kernel.org
-Subject: Re: rfkill rework in 2.6.31-rc, hal/dbus access changes?
-Message-ID: <20090810122813.GM844@gamma.logic.tuwien.ac.at>
-References: <20090711091427.GB14367@gamma.logic.tuwien.ac.at> <1247338473.9709.107.camel@localhost.localdomain> <20090711195911.GA31549@gamma.logic.tuwien.ac.at> <1247346745.9709.129.camel@localhost.localdomain> <20090810104302.GD844@gamma.logic.tuwien.ac.at> <1249906970.12361.11.camel@johannes.local>
+	Mon, 10 Aug 2009 08:32:29 -0400
+Date: Mon, 10 Aug 2009 14:32:28 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Johannes Stezenbach <js@sig21.net>
+Cc: Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc5 regression: x86 MCE malfunction on Thinkpad T42p
+Message-ID: <20090810123228.GD6838@basil.fritz.box>
+References: <20090807170942.GB9177@sig21.net> <87k51cgdt8.fsf@basil.nowhere.org> <20090810122731.GA5863@sig21.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249906970.12361.11.camel@johannes.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Norbert Preining <preining@logic.at>
+In-Reply-To: <20090810122731.GA5863@sig21.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Johannes,
+> > The appended patch should remove the warning. Can you please test it?
+> 
+> It works (no more warning), but I feel I'm better off using "lapic"
 
-thanks a lot for your remarks, and sorry, in fact I am a complete
-ignorant wrt all these things, just programming what I need ;-)
-Some questions:
+Thanks for testing.
 
-On Mo, 10 Aug 2009, Johannes Berg wrote:
-> Umm. That's wrong in multiple ways. You don't need threads, and you
-> don't need to poll. Just open /dev/rfkill, add the fd to the event loop
-> and read events.
+> because it enables thermal monitoring and performance counters.
 
-Aehm, I am doing exactely what the user space 
-	rfkill event
-is doing. Isn't that supposed to be?
+When the BIOS doesn't enable it then force enabling lapic might not work.
 
-And threads I need (AFAIU) because the read from the fd will blcok
-until there is an event, and in the mean time the user might
-do something with the applet (like disabling manually the rfkill,
-or configuration). So one thread is listening to user events (the 
-normal pygtk loop) and one is reading from /dev/rfkill and 
-in case something comes in it takes the respective actions.
+This could cause either boot failures (obvious) or more subtle
+problems like SMM doing something unexpected. Just saying that if you have 
+strange problems later first try disabling this option again.
 
-In python-speak I do:
+-Andi
 
-	fd = os.open("/dev/rfkill", os.O_RDONLY)
-	p = select.poll()
-	p.register(fd, select.POLLIN | select.POLLHUP)
-	n = p.poll()
-	if (t == select.POLLIN)
-	  buf = os.read(fd, 8)
-	....
-
-Isn't that supposed to work like that?
-
-At least that is what rfkill.c does in the event loop.
-
-Best wishes
-
-Norbert
-
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-TODBER (n.)
-One whose idea of a good time is to stand behind his front hedge and
-give surly nods to people he doesn't know.
-			--- Douglas Adams, The Meaning of Liff
+-- 
+ak@linux.intel.com -- Speaking for myself only.
