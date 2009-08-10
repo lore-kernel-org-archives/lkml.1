@@ -1,69 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbZHJOiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbZHJOil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755361AbZHJOiG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZHJOiF
+	id S1755370AbZHJOil (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbZHJOil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:38:05 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:51692 "EHLO
-	mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752050AbZHJOiE (ORCPT
+	Mon, 10 Aug 2009 10:38:41 -0400
+Received: from mail-fx0-f228.google.com ([209.85.220.228]:53104 "EHLO
+	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754885AbZHJOik (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:38:04 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19072.12488.784321.411653@stoffel.org>
-Date: Mon, 10 Aug 2009 10:38:00 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Martin Rogge <marogge@onlinehome.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.30.1-4 kernels freezes dual pentium-3 system
-In-Reply-To: <200908072229.37485.marogge@onlinehome.de>
-References: <200908031825.28045.marogge@onlinehome.de>
-	<200908072229.37485.marogge@onlinehome.de>
-X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
+	Mon, 10 Aug 2009 10:38:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=BJ2q7/9cGX2lIPE9Wd8e5MWxrezXCNTrC6Sv86bPlKPGdAs4y+xZXhhNimIEXkwrTQ
+         eaQdlLbOHmYzKfnD8ocCVLPyAbpd106QFhvlgbiH5lpIRJArObdsiWd9TFgau+4EeCTK
+         tBdpC+Wp7hZPCXhDsvwFwqlisa3YZM7HN1unY=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>
+Subject: [PATCH 7/3] perfcounter: Zeroe dead bytes from ftrace raw samples size alignment
+Date: Mon, 10 Aug 2009 16:38:36 +0200
+Message-Id: <1249915116-5210-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1249888437.17467.42.camel@twins>
+References: <1249888437.17467.42.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Martin" == Martin Rogge <marogge@onlinehome.de> writes:
+After aligning the ftrace raw samples, there are dead bytes storing
+random data from the stack. We don't want to leak these to userspace,
+then zeroe these out.
 
-Martin> On Monday 03 August 2009 18:25:27 Martin Rogge wrote:
->> Osipov Stanislav wrote:
->> > I  have  a  dual  Pentium-3 system. It based on Asus CUR-DLS mainboard
->> > with  2  Pentium-3EB  1000MHz (133 MHz FSB) installed.
->> >
->> > [...]
->> >
->> > But  under 2.6.30.x kernels box freezes without any alerts. TTL before
->> > freezing  is  about 5-30 mins.
->> >
->> > [...]
->> >
->> > Thanks in advance,
->> >
->> > Osipov Stanislav
->> > Linux System Administrator.
->> 
->> I also observe system lockups after upgrading to 2.6.30.[34]. The mainboard
->> is an MSI-9105 with dual P-3 1400Mhz. TTL is a number of hours (which is
->> going to make bisecting hard). Since all lockups have occured with a
->> tainted kernel (nvidia) I am currently running a test with an untainted
->> kernel. Should a lockup re-occur I will post details.
->> 
->> Martin
+Before:
 
-Martin> OK, I have observed the lockup now on a vanilla 2.6.30.4
-Martin> kernel, unpatched & untainted. So it is now official: 2.6.30
-Martin> can lock up on dual-P3s.:-(
+	0x2de88 [0x50]: event: 9
+	.
+	. ... raw event: size 80 bytes
+	.  0000:  09 00 00 00 01 00 50 00 d0 c7 00 81 ff ff ff ff  ......P........
+	.  0010:  68 01 00 00 68 01 00 00 2c 00 00 00 00 00 00 00  h...h...,......
+	.  0020:  2c 00 00 00 2b 00 01 02 68 01 00 00 68 01 00 00  ,...+...h...h..
+	.  0030:  6b 6f 6e 64 65 6d 61 6e 64 2f 30 00 00 00 00 00  kondemand/0....
+	.  0040:  68 01 00 00 40 7f 46 81 ff ff ff ff 00 10 1b 7f  h...@.F........
+                                                      ^  ^  ^  ^
+                                                         Leak
 
-I'm not surprised.  I've been running 2.6.31-rc5 on my Dual PIII and
-it's locked up three times now.  I expect it to lockup before I get
-home today too.  
+After:
 
-I guess I really need to start the long term bisection parade and see
-where the changes between 2.6.29 and 2.6.30 really are which causes
-this problem.
+	0x2d318 [0x50]: event: 9
+	.
+	. ... raw event: size 80 bytes
+	.  0000:  09 00 00 00 01 00 50 00 d0 c7 00 81 ff ff ff ff  ......P........
+	.  0010:  68 01 00 00 68 01 00 00 68 14 00 00 00 00 00 00  h...h...h......
+	.  0020:  2c 00 00 00 2b 00 01 02 68 01 00 00 68 01 00 00  ,...+...h...h..
+	.  0030:  6b 6f 6e 64 65 6d 61 6e 64 2f 30 00 00 00 00 00  kondemand/0....
+	.  0040:  68 01 00 00 a0 80 46 81 ff ff ff ff 00 00 00 00  h.....F........
+                                                      ^  ^  ^  ^
+							 Fixed
 
-John
+Reported-by: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+---
+ include/trace/ftrace.h |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index f98ff56..f2646e0 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -650,6 +650,8 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+  *		char raw_data[__entry_size]; <- allocate our sample in the stack
+  *		struct trace_entry *ent;
+  *
++ *		// zeroe dead bytes from alignment to avoid stack leak to userspace
++ *		*(u64 *)(&raw_data[__entry_size - sizeof(u64)]) = 0ULL;
+  *		entry = (struct ftrace_raw_<call> *)raw_data;
+  *		ent = &entry->ent;
+  *		tracing_generic_entry_update(ent, irq_flags, pc);
+@@ -700,6 +702,7 @@ static void ftrace_profile_##call(proto)				\
+ 		char raw_data[__entry_size];				\
+ 		struct trace_entry *ent;				\
+ 									\
++		*(u64 *)(&raw_data[__entry_size - sizeof(u64)]) = 0ULL;	\
+ 		entry = (struct ftrace_raw_##call *)raw_data;		\
+ 		ent = &entry->ent;					\
+ 		tracing_generic_entry_update(ent, irq_flags, pc);	\
+-- 
+1.6.2.3
+
