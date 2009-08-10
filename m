@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750934AbZHJGX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751389AbZHJG2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750934AbZHJGX7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 02:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbZHJGX6
+	id S1751389AbZHJG2W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 02:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbZHJG2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 02:23:58 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58155 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750823AbZHJGX5 (ORCPT
+	Mon, 10 Aug 2009 02:28:22 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:25171 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750823AbZHJG2V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 02:23:57 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 10 Aug 2009 15:22:05 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       andi.kleen@intel.com, Prarit Bhargava <prarit@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: Help Resource Counters Scale Better (v3)
-Message-Id: <20090810152205.d37d8e2f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090810144559.ac5a3499.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090807221238.GJ9686@balbir.in.ibm.com>
-	<39eafe409b85053081e9c6826005bb06.squirrel@webmail-b.css.fujitsu.com>
-	<20090808060531.GL9686@balbir.in.ibm.com>
-	<99f2a13990d68c34c76c33581949aefd.squirrel@webmail-b.css.fujitsu.com>
-	<20090809121530.GA5833@balbir.in.ibm.com>
-	<20090810093229.10db7185.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090810053025.GC5257@balbir.in.ibm.com>
-	<20090810144559.ac5a3499.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 10 Aug 2009 02:28:21 -0400
+MIME-Version: 1.0
+Date: Mon, 10 Aug 2009 16:28:22 +1000
+Message-ID: <1d3f23370908092328l6e980f3ft2d5a8f8f37c26fcf@mail.gmail.com>
+Subject: Rethinking MicroBlaze commandline precedence
+From: John Williams <john.williams@petalogix.com>
+To: Michal Simek <michal.simek@petalogix.com>,
+       John Linn <John.Linn@xilinx.com>,
+       David DeBonis <david.debonis@xilinx.com>
+Cc: microblaze-uclinux@itee.uq.edu.au,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Aug 2009 14:45:59 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Hi,
 
-> > Do you agree?
-> 
-> Ok. Config is enough at this stage.
-> 
-> The last advice for merge is, it's better to show the numbers or
-> ask someone who have many cpus to measure benefits. Then, Andrew can
-> know how this is benefical.
-> (My box has 8 cpus. But maybe your IBM collaegue has some bigger one)
-> 
-> In my experience (in my own old trial),
->  - lock contention itself is low. not high.
->  - but cacheline-miss, pingpong is very very frequent.
-> 
-> Then, this patch has some benefit logically but, in general,
-> File-I/O, swapin-swapout, page-allocation/initalize etc..dominates
-> the performance of usual apps. You'll have to be careful to select apps
-> to measure the benfits of this patch by application performance.
-> (And this is why I don't feel so much emergency as you do)
-> 
+Currently, MicroBlaze commandline handling in order of lowest to
+highest priority, looks like this:
 
-Why I say "I want to see the numbers" again and again is that
-this is performance improvement with _bad side effect_.
-If this is an emergent trouble, and need fast-track, which requires us
-"fix small problems later", plz say so. 
+1. pointer in r5 from bootloader
+2. CONFIG_CMDLINE=...
+3. "chosen" section in DTS/DT
+4. CONFIG_CMDLINE=... && CONFIG_CMDLINE_FORCE
 
-I have no objection to this approach itself because I can't think of
-something better, now. percpu-counter's error tolerance is a generic
-problem and we'll have to visit this anyway.
+I'm wondering if a cmdline in r5 should override the DTS.  My thinking
+is based on two observations:
 
-Thanks,
--Kame
+(a) not everyone will use a bootloader like u-boot that can manipulate
+DTBs easily before kernel boot
+(b) a custom cmdline string in r5 allows the latest possible binding
+(runtime), where as the DTB is typically created at compile time.
 
+So, how about this order instead:
+
+1. CONFIG_CMDLINE=...
+2. "chosen" section in DTS/DT
+3. pointer in r5 from bootloader
+4. CONFIG_CMDLINE=... and CONFIG_CMDLINE_FORCE
+
+Then, apart from CMDLINE_FORCE, the precedence goes from earliest
+binding (kernel build) to latest (runtime via bootloader/r5).
+
+Thoughts?
+
+John
+-- 
+John Williams, PhD, B.Eng, B.IT
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
