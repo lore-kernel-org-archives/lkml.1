@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbZHJJlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbZHJJoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753412AbZHJJlR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 05:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbZHJJlQ
+	id S1753423AbZHJJoB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 05:44:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbZHJJoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 05:41:16 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:39569 "EHLO smtps.tip.net.au"
+	Mon, 10 Aug 2009 05:44:00 -0400
+Received: from d1.icnet.pl ([212.160.220.21]:40066 "EHLO d1.icnet.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753300AbZHJJlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 05:41:16 -0400
-Date: Mon, 10 Aug 2009 19:41:10 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Luciano Coelho <luciano.coelho@nokia.com>
-Subject: linux-next: wireless tree build warnings
-Message-Id: <20090810194110.fa3eef11.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__10_Aug_2009_19_41_10_+1000_/3ZZ0dso.HfeA1P."
+	id S1753138AbZHJJoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 05:44:00 -0400
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Organization: Tele-Info-System, Poznan, PL
+To: Jarkko Nikula <jhnikula@gmail.com>
+Subject: Re: [RFC] [PATCH 3/3] ASoC: OMAP: Enhance OMAP1510 DMA progress software counter
+Date: Mon, 10 Aug 2009 11:43:25 +0200
+User-Agent: KMail/1.9.10
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       Tony Lindgren <tony@atomide.com>,
+       "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200908101050.08074.jkrzyszt@tis.icnet.pl>
+In-Reply-To: <200908101050.08074.jkrzyszt@tis.icnet.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908101143.26542.jkrzyszt@tis.icnet.pl>
+X-SA-Exim-Scanned: No (on d1.icnet); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__10_Aug_2009_19_41_10_+1000_/3ZZ0dso.HfeA1P.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Monday 10 August 2009 10:50:06 Janusz Krzysztofik wrote:
+> Enhance period index accuracy, particularly just before buffer rewind, by
+> making use of DMA interrupt status flags in addition to simply counting
+> interrupts
 
-Hi John,
+Sorry, this one is still buggy an can break other OMAP models. Please, do not 
+apply, but wait for next version. However, comments are welcome.
 
-Today's linux-next build (x86_64 allmodconfig) produced these warnings:
+The bug hits when multiple interrupt flags are set in parallel.
 
-drivers/net/wireless/wl12xx/wl1271_main.c: In function 'wl1271_irq_work':
-drivers/net/wireless/wl12xx/wl1271_main.c:184: warning: large integer impli=
-citly truncated to unsigned type
-drivers/net/wireless/wl12xx/wl1271_boot.c: In function 'wl1271_boot_upload_=
-firmware_chunk':
-drivers/net/wireless/wl12xx/wl1271_boot.c:103: warning: format '%d' expects=
- type 'int', but argument 2 has type 'size_t'
-drivers/net/wireless/wl12xx/wl1271_boot.c:150: warning: format '%d' expects=
- type 'int', but argument 2 has type 'size_t'
-drivers/net/wireless/wl12xx/wl1271_boot.c: In function 'wl1271_boot_enable_=
-interrupts':
-drivers/net/wireless/wl12xx/wl1271_boot.c:278: warning: large integer impli=
-citly truncated to unsigned type
-
-Introduced by commit 4749c814b34dfe02cf08da34a2a2a32f55fbd9bc ("wl1271:
-add wl1271 driver files").
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__10_Aug_2009_19_41_10_+1000_/3ZZ0dso.HfeA1P.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkp/6zYACgkQjjKRsyhoI8w4xwCfes0pVhZn2dgPFrgkWCv98uKr
-ioYAoJRBhisUmhem1RkY+oGYcAbzxu22
-=EZEM
------END PGP SIGNATURE-----
-
---Signature=_Mon__10_Aug_2009_19_41_10_+1000_/3ZZ0dso.HfeA1P.--
+Thanks,
+Janusz
