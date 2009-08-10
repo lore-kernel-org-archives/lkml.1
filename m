@@ -1,129 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbZHJVI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753871AbZHJVMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753879AbZHJVI0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 17:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbZHJVI0
+	id S1753871AbZHJVMR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 17:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbZHJVMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 17:08:26 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:46716 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753197AbZHJVIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 17:08:25 -0400
-Date: Mon, 10 Aug 2009 23:08:24 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: broonie@opensource.wolfsonmicro.com, Samuel Ortiz <sameo@linux.intel.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [rtc-linux] Re: [PATCH 4/5] RTC: Add support for RTCs on
- Wolfson WM831x devices
-Message-ID: <20090810230824.6d90d176@i1501.lan.towertech.it>
-In-Reply-To: <20090810205712.GA4528@sirena.org.uk>
-References: <1249922635-31864-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<1249922635-31864-4-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<20090810205535.4fb160af@i1501.lan.towertech.it>
-	<20090810205712.GA4528@sirena.org.uk>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Aug 2009 17:12:17 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:56737 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753299AbZHJVMQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 17:12:16 -0400
+Date: Mon, 10 Aug 2009 14:12:11 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 1/2] hwmon: Enhance the sysfs API for power meters.
+Message-ID: <20090810211211.GB30815@tux1.beaverton.ibm.com>
+Reply-To: djwong@us.ibm.com
+References: <20090725004322.20709.96804.stgit@elm3a70.beaverton.ibm.com> <20090725004328.20709.57712.stgit@elm3a70.beaverton.ibm.com> <20090807180906.GD1728@ucw.cz> <20090808174020.GA29600@tux1.beaverton.ibm.com> <20090808214830.GC24153@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090808214830.GC24153@elf.ucw.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Aug 2009 21:57:13 +0100
-Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
-
+On Sat, Aug 08, 2009 at 11:48:30PM +0200, Pavel Machek wrote:
 > 
-> >  given you have your own include directory undef mfd/
-> >  you might want to move those #defines there
+> Uhuh. This is hwmon documentation AFAICT; so a) it should be
+> documented here, and b) interface should be generic so that it works
+> without ACPI, too.
+
+Perhaps it is time to set up a netlink interface for all the hwmon drivers?
+>From what I can tell, some of the chips can send interrupts when alarms go off,
+though I don't see much of an effort by the drivers to catch those interrupts.
+For sure there's no netlink socket that one can read for that sort of thing; a
+far as I can tell, client programs are expected to bang on sysfs periodicially
+to figure out when things have gone bad.
+
+<shrug> If there's sufficient interest in building a netlink-like notification
+system to replace (or augment) polling, I'll put something together.
+
+> > All it really does is generates an ACPI Notify event, which is a hint to the OS
+> > that it could re-read the power meter use.
 > 
-> Unlike the others these registers can't really be used outside of this
-> driver - for the other drivers there's potential for at least platform
-> specific code if not multiple drivers to use some or all of the register
-> definitions.
+> So it is one-shot? Document that.
 
- ack.
- 
-> > > +struct wm831x_rtc {
-> > > +	struct wm831x *wm831x;
-> > > +	struct rtc_device *rtc;
-> > > +	int alarm_enabled;
-> > > +	int per_irq;
+<nod>
+
+> > The ACPI spec is silent on this matter.  It's not clear if the OS is supposed
+> > to monitor and take action on its own when power > cap, or if the hardware/BIOS
+> > will take action, or possibly both...?
 > 
-> >  are those tows int or unsigned int? 
-> 
-> I've just dropped per_irq, it's not needed anyway.
-> 
-> >  or maybe alarm_enabled could be :1 ?
-> 
-> Done, but it doesn't really buy us much given that there's nothing
-> else to pack it with.
+> Having user<->kernel interface that is well... uh... undocumented
+> makes little sense.
 
- ack.
+So it goes with ACPI.  Given that things like Node Manager and Active Energy
+Manager claim to be able to control power use, I would guess that it is
+generally likely that a power monitoring system would take action on its own to
+cut power use, and not necessarily bothering to tell the OS exactly what it's
+doing.
 
-> > > +/*
-> > > + * Set current time and date in RTC
-> > > + */
-> > > +static int wm831x_rtc_settime(struct device *dev, struct rtc_time *tm)
-> 
-> >  isn't rtc_set_mmss more appropriate?
-> 
-> Hrm, I think so so I've made the change.  It's not a particularly
-> discoverable API - the fact that there's no readback equivalent hides
-> the fact that it's supposed to be an equivalent for settime.  Some
-> documentation would really help here.
-
- you're right. there's one but it's still in my tree. will push it
- one day.
-
-> 
-> > > +	ret = wm831x_set_bits(wm831x_rtc->wm831x, WM831X_RTC_CONTROL,
-> > > +			      WM831X_RTC_ALM_ENA, enable);
-> > > +	if (ret != 0)
-> > > +		dev_err(&pdev->dev, "Failed to update RTC alarm: %d\n", ret);
-> > > +
-> > > +	return 0;
-> 
-> >  always 0 ? (also below..)
-> 
-> Failing suspend and resume due to failure to disable the RTC alarm
-> would be excessive - indeed, I'd expect the overwhelming majority of
-> systems to function perfectly well with no suspend/resume support in the
-> driver at all.  RTC alarms are infrequent relative to other
-> suspend/resume events in typical systems but suspend is normally used
-> fairly heavily to preserve battery (typical applications include things
-> like MP3 players or phones).  Typically the error handling would at best
-> cause more serious consequences than the original error and there's
-> little chance the user will be able to even report the error.
-
- ack.
-
-> > > +static int __init wm831x_rtc_init(void)
-> > > +{
-> > > +	return platform_driver_register(&wm831x_rtc_driver);
-> 
-> >  can you use platform_driver_probe() ?
-> 
-> No, this is a MFD accessed over slow buses and we can't guarantee that
-> the device will be registered.
-> 
-> Fixed everything else, will repost tomorrow.
-
- here's my acked-by in advance, feel free to push the patch
- with the series.
-
- Acked-by: Alessandro Zummo <a.zummo@towertech.it>
-
- 
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+--D
