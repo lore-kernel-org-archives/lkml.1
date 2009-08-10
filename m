@@ -1,101 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbZHJIvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752828AbZHJIwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875AbZHJIvi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 04:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbZHJIvh
+	id S1752828AbZHJIwg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 04:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbZHJIwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 04:51:37 -0400
-Received: from d1.icnet.pl ([212.160.220.21]:52714 "EHLO d1.icnet.pl"
+	Mon, 10 Aug 2009 04:52:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47870 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752834AbZHJIvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 04:51:35 -0400
-From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Organization: Tele-Info-System, Poznan, PL
-To: Jarkko Nikula <jhnikula@gmail.com>
-Subject: [RFC][PATCH 2/3] ASoC: OMAP: Make use of DMA channel self linking on OMAP1510
-Date: Mon, 10 Aug 2009 10:50:04 +0200
-User-Agent: KMail/1.9.10
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
-       Tony Lindgren <tony@atomide.com>,
-       "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+	id S1752362AbZHJIwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 04:52:34 -0400
+Date: Mon, 10 Aug 2009 11:50:03 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: netdev@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Or Gerlitz <ogerlitz@voltaire.com>,
+       "Fischer, Anna" <anna.fischer@hp.com>,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Edge Virtual Bridging <evb@yahoogroups.com>
+Subject: Re: [PATCH] macvlan: add tap device backend
+Message-ID: <20090810085003.GA3654@redhat.com>
+References: <1249595428-21594-1-git-send-email-arnd@arndb.de> <20090809080215.GA17200@redhat.com> <200908092042.24686.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200908101050.05314.jkrzyszt@tis.icnet.pl>
-X-SA-Exim-Scanned: No (on d1.icnet); SAEximRunCond expanded to false
+In-Reply-To: <200908092042.24686.arnd@arndb.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use newly implemented DMA channel self linking on OMAP1510 like on other OMAP
-models. Remove unnecessary DMA transfer restart from interrupt handler
-routine.
+On Sun, Aug 09, 2009 at 08:42:24PM +0000, Arnd Bergmann wrote:
+> On Sunday 09 August 2009 08:02:16 Michael S. Tsirkin wrote:
+> > On Thu, Aug 06, 2009 at 09:50:28PM +0000, Arnd Bergmann wrote:
+> > > * The same framework in macvlan can be used to add a third backend
+> > > into a future kernel based virtio-net implementation.
+> > 
+> > Could you split the patches up, to make this last easier?
+> > patch 1 - export framework
+> > patch 2 - code using it
+> 
+> Sure, will do.
+> 
+> > > +/* Get packet from user space buffer */
+> > > +static ssize_t macvtap_get_user(struct macvtap_dev *vtap,
+> > > +			       const struct iovec *iv, size_t count,
+> > > +			       int noblock)
+> > > +{
+> > > +	struct sk_buff *skb;
+> > > +	size_t len = count;
+> > > +
+> > > +	if (unlikely(len < ETH_HLEN))
+> > > +		return -EINVAL;
+> > > +
+> > > +	skb = alloc_skb(NET_IP_ALIGN + len, GFP_KERNEL);
+> > > +
+> > > +	if (!skb) {
+> > > +		vtap->m.dev->stats.rx_dropped++;
+> > > +		return -ENOMEM;
+> > > +	}
+> > > +
+> > > +	skb_reserve(skb, NET_IP_ALIGN);
+> > > +	skb_put(skb, count);
+> > > +
+> > > +	if (skb_copy_datagram_from_iovec(skb, 0, iv, 0, len)) {
+> > > +		vtap->m.dev->stats.rx_dropped++;
+> > > +		kfree_skb(skb);
+> > > +		return -EFAULT;
+> > > +	}
+> > > +
+> > > +	skb_set_network_header(skb, ETH_HLEN);
+> > > +	skb->dev = vtap->m.lowerdev;
+> > > +
+> > > +	macvlan_start_xmit(skb, vtap->m.dev);
+> > > +
+> > > +	return count;
+> > > +}
+> > 
+> > With tap, we discovered that not limiting the number of outstanding
+> > skbs hurts UDP performance. And the solution was to limit
+> > the number of outstanding packets - with hacks to work around
+> > the fact that userspace .
+> 
+> Something seems to be missing in your last sentence here.
 
-The interrupt routine used to maintain a period index, originally needed for
-counting up periods up to a full buffer in order to restart the DMA transfer.
-For some time, this counter is also used as a replacement for hardware DMA
-progress counter that has been found unusable on OMAP1510 in case of playback.
-Thus, the period index calculation cannot be omitted completely. However, the
-accuracy of this counter can still suffer from missing DMA interrupts.
+Most userspace does not seem to implement software flow control for UDP,
+even though it probably should.
 
-In order to work correctly, it requires patch 1 from this series also applied:
-[RFC][PATCH 1/3] ARM: OMAP: DMA: Add support for DMA channel self linking on OMAP1510
+> My driver OTOH is also missing any sort of flow control in both
+> RX and TX direction ;) For RX, there should probably just be
+> a limit of frames that get buffered in the ring.
+> 
+> For TX, I guess there should be a way to let the packet
+> scheduler handle this and give us a chance to block and
+> unblock at the right time. I haven't found out yet how to
+> do that.
+> 
+> Would it be enough to check the dev_queue_xmit() return
+> code for NETDEV_TX_BUSY?
+> 
+> How would I get notified when it gets free again?
 
-Created against linux-2.6.31-rc5.
+You can do this by creating a socket. Look at how tun does
+this now.
 
-Tested on Amstrad Delta.
-
-Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-
----
---- linux-2.6.31-rc5/sound/soc/omap/omap-pcm.c.orig	2009-08-07 13:38:23.000000000 +0200
-+++ linux-2.6.31-rc5/sound/soc/omap/omap-pcm.c	2009-08-10 08:31:08.000000000 +0200
-@@ -59,16 +59,18 @@ static void omap_pcm_dma_irq(int ch, u16
- 	struct omap_runtime_data *prtd = runtime->private_data;
- 	unsigned long flags;
- 
--	if (cpu_is_omap1510()) {
-+	if ((cpu_is_omap1510()) &&
-+			(substream->stream == SNDRV_PCM_STREAM_PLAYBACK)) {
- 		/*
--		 * OMAP1510 doesn't support DMA chaining so have to restart
--		 * the transfer after all periods are transferred
-+		 * OMAP1510 doesn't fully support DMA progress counter
-+		 * and there is no software emulation implemented yet,
-+		 * so have to maintain our own playback progress counter
-+		 * that can be used by omap_pcm_pointer() instead.
- 		 */
- 		spin_lock_irqsave(&prtd->lock, flags);
- 		if (prtd->period_index >= 0) {
- 			if (++prtd->period_index == runtime->periods) {
- 				prtd->period_index = 0;
--				omap_start_dma(prtd->dma_ch);
- 			}
- 		}
- 		spin_unlock_irqrestore(&prtd->lock, flags);
-@@ -100,7 +102,7 @@ static int omap_pcm_hw_params(struct snd
- 	prtd->dma_data = dma_data;
- 	err = omap_request_dma(dma_data->dma_req, dma_data->name,
- 			       omap_pcm_dma_irq, substream, &prtd->dma_ch);
--	if (!err && !cpu_is_omap1510()) {
-+	if (!err) {
- 		/*
- 		 * Link channel with itself so DMA doesn't need any
- 		 * reprogramming while looping the buffer
-@@ -119,8 +121,7 @@ static int omap_pcm_hw_free(struct snd_p
- 	if (prtd->dma_data == NULL)
- 		return 0;
- 
--	if (!cpu_is_omap1510())
--		omap_dma_unlink_lch(prtd->dma_ch, prtd->dma_ch);
-+	omap_dma_unlink_lch(prtd->dma_ch, prtd->dma_ch);
- 	omap_free_dma(prtd->dma_ch);
- 	prtd->dma_data = NULL;
- 
+> > > +	ret = skb_copy_datagram_iovec(skb, 0, iv, len);
+> > > +
+> > > +	vtap->m.dev->stats.rx_packets++;
+> > > +	vtap->m.dev->stats.rx_bytes += len;
+> > 
+> > where does atomicity guarantee for these counters come from?
+> 
+> AFAIK, we never do for any driver. They are statistics only and
+> need not be 100% correct, so the networking stack goes for
+> lower overhead and 99.9% correct.
+> 
+> > > +static ssize_t macvtap_aio_read(struct kiocb *iocb, const struct iovec *iv,
+> > > +			    unsigned long count, loff_t pos)
+> > > +{
+> > > +	struct file *file = iocb->ki_filp;
+> > > +	struct macvtap_dev *vtap = file->private_data;
+> > > +	DECLARE_WAITQUEUE(wait, current);
+> > > +	struct sk_buff *skb;
+> > > +	ssize_t len, ret = 0;
+> > > +
+> > > +	if (!vtap)
+> > > +		return -EBADFD;
+> > > +
+> > > +	len = iov_length(iv, count);
+> > > +	if (len < 0) {
+> > > +		ret = -EINVAL;
+> > > +		goto out;
+> > > +	}
+> > > +
+> > > +	add_wait_queue(&vtap->wait, &wait);
+> > > +	while (len) {
+> > > +		current->state = TASK_INTERRUPTIBLE;
+> > > +
+> > > +		/* Read frames from the queue */
+> > > +		if (!(skb=skb_dequeue(&vtap->readq))) {
+> > > +			if (file->f_flags & O_NONBLOCK) {
+> > > +				ret = -EAGAIN;
+> > > +				break;
+> > > +			}
+> > > +			if (signal_pending(current)) {
+> > > +				ret = -ERESTARTSYS;
+> > > +				break;
+> > > +			}
+> > > +			/* Nothing to read, let's sleep */
+> > > +			schedule();
+> > > +			continue;
+> > > +		}
+> > > +		ret = macvtap_put_user(vtap, skb, (struct iovec *) iv, len);
+> > 
+> > Don't cast away the constness. Instead, fix macvtap_put_user
+> > to used skb_copy_datagram_const_iovec which does not modify the iovec.
+> 
+> Ah, good catch. I had copied that from the tun driver before you
+> fixed it there and failed to fix it the right way when I adapted
+> it for the new interface.
+> 
+> Thanks for the review,
+> 
+> 	Arnd <><
