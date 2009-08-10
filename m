@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbZHJPey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbZHJPk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754914AbZHJPey (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 11:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbZHJPey
+	id S1755421AbZHJPk1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 11:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZHJPk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 11:34:54 -0400
-Received: from kroah.org ([198.145.64.141]:36170 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751311AbZHJPex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 11:34:53 -0400
-Date: Mon, 10 Aug 2009 08:04:24 -0700
-From: Greg KH <greg@kroah.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: subrata@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       Ingo Molnar <mingo@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       sachinp <sachinp@linux.vnet.ibm.com>,
-       balbir <balbir@linux.vnet.ibm.com>
-Subject: Re: [BUILD FAIL] Linus git Tree on x86_32 for randconfig dated
- 10/08/2009
-Message-ID: <20090810150424.GA7099@kroah.com>
-References: <1249905728.5187.21.camel@subratamodak.linux.ibm.com>
- <1249907812.17467.126.camel@twins>
+	Mon, 10 Aug 2009 11:40:26 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:4582 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755042AbZHJPkZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 11:40:25 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: david@hardeman.nu
+Subject: Re: [patch 2/2] Add a driver for the Winbond WPCD376I Consumer IR hardware
+Date: Mon, 10 Aug 2009 09:39:53 -0600
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       jbarnes@virtuousgeek.org, akpm@linux-foundation.org,
+       randy.dunlap@oracle.com
+References: <20090809095645.198777507@hardeman.nu> <20090809095744.090206173@hardeman.nu>
+In-Reply-To: <20090809095744.090206173@hardeman.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1249907812.17467.126.camel@twins>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200908100939.54718.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 02:36:52PM +0200, Peter Zijlstra wrote:
-> On Mon, 2009-08-10 at 17:32 +0530, Subrata Modak wrote:
-> > Hi Greg/Ingo,
-> > 
-> > Todayś Linus git tree produced the following build failure on
-> > randconfig:
-> > 
-> > ......
-> > ......
-> > (.text+0xf280): multiple definition of `CmmRxnonRalinkFrameIndicate'
-> > drivers/staging/rt2860/built-in.o:(.text+0x12d3f): first defined here
-> > drivers/staging/rt2870/built-in.o: In function `RTMPEnableRxTx':
-> 
-> Its staging, what do you expect ;-)
+On Sunday 09 August 2009 03:56:47 am david@hardeman.nu wrote:
+> --- linux-2.6.orig/drivers/input/misc/Kconfig	2009-07-25 21:18:57.000000000 +0200
+> +++ linux-2.6/drivers/input/misc/Kconfig	2009-08-07 21:45:41.000000000 +0200
+> @@ -222,6 +222,22 @@
+>  	  To compile this driver as a module, choose M here: the
+>  	  module will be called sgi_btns.
+>  
+> +config INPUT_WINBOND_CIR
+> +	tristate "Winbond IR remote control"
+> +	depends on X86 && ACPI
 
-Heh, yes, both of these drivers can not be built into the kernel at the
-same time.  That's a configuration that "normal" people will not hit.
+This should depend on PNP, not ACPI.
 
-If you wish to send a Kconfig patch to resolve this, I'll gladly accept
-it.
+> +#define WBCIR_ACPI_NAME	"Winbond CIR"
 
-thanks,
+You might remove "ACPI" from "WBCIR_ACPI_NAME," since it has nothing
+to do with ACPI.
 
-greg k-h
+Otherwise, looks good to me.
+
+Bjorn
+
+
