@@ -1,65 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932082AbZHJPIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZHJPI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932082AbZHJPIK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 11:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755180AbZHJPIJ
+	id S1755356AbZHJPI2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 11:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755287AbZHJPI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 11:08:09 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:46476 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755123AbZHJPII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 11:08:08 -0400
-Date: Mon, 10 Aug 2009 08:08:07 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>, manfred@colorfullife.com
-Subject: Re: [BUG] race of RCU vs NOHU
-Message-ID: <20090810150807.GA6791@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090807151529.2806b8b4@skybase> <20090807142957.GB6700@linux.vnet.ibm.com> <20090810142535.3e685109@skybase>
+	Mon, 10 Aug 2009 11:08:27 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:62134 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbZHJPIZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 11:08:25 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Fischer, Anna" <anna.fischer@hp.com>
+Subject: Re: [PATCH][RFC] net/bridge: add basic VEPA support
+Date: Mon, 10 Aug 2009 17:07:32 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
+Cc: "'Stephen Hemminger'" <shemminger@linux-foundation.org>,
+       "bridge@lists.linux-foundation.org" 
+	<bridge@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "evb@yahoogroups.com" <evb@yahoogroups.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "kaber@trash.net" <kaber@trash.net>,
+       "adobriyan@gmail.com" <adobriyan@gmail.com>,
+       "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>,
+       Eric Biederman <ebiederm@xmission.com>
+References: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net> <200908081149.27409.arnd@arndb.de> <0199E0D51A61344794750DC57738F58E6D6AE99743@GVW1118EXC.americas.hpqcorp.net>
+In-Reply-To: <0199E0D51A61344794750DC57738F58E6D6AE99743@GVW1118EXC.americas.hpqcorp.net>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
+ =?iso-8859-1?q?Y=2Ea=5E3zb?=)
+ =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
+ =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090810142535.3e685109@skybase>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200908101707.32751.arnd@arndb.de>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/ITobpg927jyrG3CtNS0n6nM6gQBh0vPHT/TG
+ LJtvU5BsUf4PK6l1z1GYME/CYOHJjqDFUCyCCr+1LK2N4+yNFW
+ c89wBGMIqS3LfWb4M2VPQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 02:25:35PM +0200, Martin Schwidefsky wrote:
-> On Fri, 7 Aug 2009 07:29:57 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > On Fri, Aug 07, 2009 at 03:15:29PM +0200, Martin Schwidefsky wrote:
-> > > Hi Paul,
-> > > I analysed a dump of a hanging 2.6.30 system and found what I think is
-> > > a bug of RCU vs NOHZ. There are a number of patches ontop of that
-> > > kernel but they should be independent of the bug.
-> > > 
-> > > The systems has 4 cpus and uses classic RCU. cpus #0, #2 and #3 woke up
-> > > recently, cpu #1 has been sleeping for 5 minutes, but there is a pending
-> > > rcu batch. The timer wheel for cpu #1 is empty, it will continue to
-> > > sleep for NEXT_TIMER_MAX_DELTA ticks.
+On Monday 10 August 2009, Fischer, Anna wrote:
+> > Subject: Re: [PATCH][RFC] net/bridge: add basic VEPA support
 > > 
-> > Congratulations, Martin!  You have exercised what to date has been a
-> > theoretical bug identified last year by Manfred Spraul.  The fix is to
-> > switch from CONFIG_RCU_CLASSIC to CONFIG_RCU_TREE, which was added in
-> > 2.6.29.
+> > On Friday 07 August 2009, Paul Congdon (UC Davis) wrote:
+> > > As I understand the macvlan code, it currently doesn't allow two VMs
+> > on the
+> > > same machine to communicate with one another.
 > > 
-> > Of course, if you need to work with an old kernel version, you might
-> > still need a patch, perhaps for the various -stable versions.  If so,
-> > please let me know -- otherwise, I will focus forward on CONFIG_RCU_TREE
-> > rather than backwards on CONFIG_RCU_CLASSIC.
+> > There are patches to do that. I think if we add that, there should be
+> > a way to choose the behavior between either bridging between the
+> > guests or VEPA.
 > 
-> SLES11 is 2.6.27 and uses classic RCU. The not-so theoretical bug is
-> present there and I think it needs to be fixed :-/
+> If you implement this direct bridging capability between local VMs for 
+> macvlan, then would this not break existing applications that currently
+> use it? It would be quite a significant change to how macvlan works 
+> today. I guess, ideally, you would want to have macvlan work in 
+> separate modes, e.g. traditional macvlan, bridging, and VEPA.
 
-I was afraid of that.  ;-)
+Right, that's what I meant with my sentence above. I'm not sure
+if we need to differentiate traditional macvlan and VEPA though.
+AFAICT, the only difference should be the handling of broadcast
+and multicast frames returning from the hairpin turn. Since this
+does not happen with a traditional macvlan, we can always send them
+to all macvlan ports except the source port.
 
-Given that there are some other theoretical bugs in Classic RCU involving
-interrupts and CONFIG_NO_HZ, would backporting CONFIG_TREE_RCU make more
-sense than playing whack-a-mole on Classic RCU bugs?
+> > > I could imagine a hairpin mode on the adjacent bridge making this
+> > > possible, but the macvlan code would need to be updated to filter
+> > > reflected frames so a source did not receive his own packet.
+> > 
+> > Right, I missed this point so far. I'll follow up with a patch
+> > to do that.
+> 
+> Can you maybe point me to the missing patches for macvlan that you
+> have mentioned in other emails, and the one you mention above? 
+> E.g. enabling multicast distribution and allowing local bridging etc.
+> I could not find any of those in the archives. Thanks.
 
-							Thanx, Paul
+The patch from Eric Biederman to allow macvlan to bridge between
+its slave ports is at
+
+http://kerneltrap.org/mailarchive/linux-netdev/2009/3/9/5125774
+
+I could not find any patches for the other features (or bugs).
+
+> > This is the interesting part of the discussion. The bridge and macvlan
+> > drivers certainly have an overlap in functionality and you can argue
+> > that you only need one. Then again, the bridge code is a little crufty
+> > and we might not want to add much more to it for functionality that can
+> > be implemented in a much simpler way elsewhere. My preferred way would
+> > be to use bridge when you really need 802.1d MAC learning, netfilter-
+> > bridge
+> > and STP, while we put the optimizations for stuff like VMDq, zero-copy
+> > and multiqueue guest adapters only into the macvlan code.
+> 
+> I can see this being a possible solution. 
+> 
+> My concern with putting VEPA into macvlan instead of the bridging code
+> is that there will be more work required to make it usable for other
+> virtualization solution as macvtap will only work for KVM type setups.
+
+Right, I understand.
+
+> Basically, VEPA capabilities would rely on someone developing further
+> drivers to connect macvlan to different backend interfaces, e.g. one for
+> KVM (macvtap), one for Xen PV drivers, one for virtio, and whatever else
+> is out there, or will be there in the future. The bridging code is
+> already very generic in that respect, and all virtualization layers
+> can deal with connecting interfaces to a bridge. 
+> 
+> Our extensions to the bridging code to enable VEPA for the Linux kernel
+> are only very minimal code changes and would allow to make VEPA available
+> to most virtualization solutions today.
+
+I don't object to having VEPA supported in the bridge code at all.
+I think your patch is simple enough so it won't hurt in the bridge
+code. If Stephen prefers to do VEPA only in one component, we should
+probably make it possible for that component to act as a bridge between
+1+n existing interfaces as well. You can almost do that with the regular
+macvlan and the bridge driver, like
+
+      / macvlan0 - br0 - tap0
+eth0 -- macvlan1 - br1 - tap1
+      \ macvlan2 - br2 - tap2
+
+Here, you can have two guests attached to tap devices (or xen net ...)
+and the macvlan driver doing the VEPA. Of course this is not how bridge
+works -- you would have the same mac addresses on two sides of
+the bridge.
+
+So we could have another macvlan backend (let's call it macvbridge)
+so you can do this:
+
+      / macvlan0 - 'qemu -net raw'
+eth0 -- macvtap0 - 'qemu -net tap,fd=3 3<>/dev/net/macvtap0'
+      \ macvbr0 -- tap0 - 'qemu -net tap'
+
+The macvbr driver could this way be used to associate an existing
+network device to a slave of a macvlan port. Not sure if this
+has any significant advantage over your bridge patches, it does
+have the obvious disadvantage that someone needs to implement
+it first, while your patch is there ;-)
+
+	Arnd <><
