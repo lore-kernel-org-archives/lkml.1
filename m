@@ -1,83 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752265AbZHJIes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbZHJIgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752265AbZHJIes (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 04:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbZHJIes
+	id S1752344AbZHJIgK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 04:36:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZHJIgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 04:34:48 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:6028 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751800AbZHJIer (ORCPT
+	Mon, 10 Aug 2009 04:36:10 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:58011 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752152AbZHJIgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 04:34:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=YApwJiLfrqBfR06w1HQOtRT7ZaPdc/oFxqNo8I/6ZC+u6s8pmQ5KnvlmN943kYlnMd
-         9cSBxV0QqVbYVq53A7fqBh07G6QVoSWgtVn39h3dmdKfKyLVw5ct4DIxJeRgB8nsagVX
-         h0asquGqY4jciaYVhv9UjIIjbE7XcYT/Mj7zM=
-Date: Mon, 10 Aug 2009 01:34:43 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Matt Causey <matt.causey@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: serio / atkbd / PS/2 Strangeness with Serial port adapter
-References: <ac71f2bb0908061315o1449e91dge1d5a63a2a4b986a@mail.gmail.com>
+	Mon, 10 Aug 2009 04:36:08 -0400
+Date: Mon, 10 Aug 2009 14:06:02 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, andi.kleen@intel.com,
+       Prarit Bhargava <prarit@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: Help Resource Counters Scale Better (v3)
+Message-ID: <20090810083602.GA7176@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090807221238.GJ9686@balbir.in.ibm.com> <39eafe409b85053081e9c6826005bb06.squirrel@webmail-b.css.fujitsu.com> <20090808060531.GL9686@balbir.in.ibm.com> <99f2a13990d68c34c76c33581949aefd.squirrel@webmail-b.css.fujitsu.com> <20090809121530.GA5833@balbir.in.ibm.com> <20090810093229.10db7185.kamezawa.hiroyu@jp.fujitsu.com> <20090810053025.GC5257@balbir.in.ibm.com> <20090810144559.ac5a3499.kamezawa.hiroyu@jp.fujitsu.com> <20090810152205.d37d8e2f.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <ac71f2bb0908061315o1449e91dge1d5a63a2a4b986a@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090810090508.69E02526EC9@mailhub.coreip.homeip.net>
+In-Reply-To: <20090810152205.d37d8e2f.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matt,
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-10 15:22:05]:
 
-On Thu, Aug 06, 2009 at 09:15:01PM +0100, Matt Causey wrote:
+> On Mon, 10 Aug 2009 14:45:59 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> So, I enabled debugging on the contoller driver(serio.c), and I see
-> that the device generates noise when connected:
+> > > Do you agree?
+> > 
+> > Ok. Config is enough at this stage.
+> > 
+> > The last advice for merge is, it's better to show the numbers or
+> > ask someone who have many cpus to measure benefits. Then, Andrew can
+> > know how this is benefical.
+> > (My box has 8 cpus. But maybe your IBM collaegue has some bigger one)
+> > 
+> > In my experience (in my own old trial),
+> >  - lock contention itself is low. not high.
+> >  - but cacheline-miss, pingpong is very very frequent.
+> > 
+> > Then, this patch has some benefit logically but, in general,
+> > File-I/O, swapin-swapout, page-allocation/initalize etc..dominates
+> > the performance of usual apps. You'll have to be careful to select apps
+> > to measure the benfits of this patch by application performance.
+> > (And this is why I don't feel so much emergency as you do)
+> > 
 > 
-> [  458.875614] drivers/input/serio/i8042.c: f2 -> i8042 (kbd-data) [444989]
-> [  458.908119] drivers/input/serio/i8042.c: fe <- i8042 (interrupt, 0,
-> 1, timeout) [445022]
-> [  458.908144] drivers/input/serio/i8042.c: ed -> i8042 (kbd-data) [445022]
-> [  458.940151] drivers/input/serio/i8042.c: fe <- i8042 (interrupt, 0,
-> 1, timeout) [445054]
-> [  458.940225] drivers/input/serio/i8042.c: d4 -> i8042 (command) [445054]
-> [  458.940234] drivers/input/serio/i8042.c: f2 -> i8042 (parameter) [445054]
-> [  458.972190] drivers/input/serio/i8042.c: fe <- i8042 (interrupt, 1,
-> 12, timeout) [445086]
-> [  458.972204] drivers/input/serio/i8042.c: d4 -> i8042 (command) [445086]
-> [  458.972212] drivers/input/serio/i8042.c: ed -> i8042 (parameter) [445086]
-> [  459.004227] drivers/input/serio/i8042.c: fe <- i8042 (interrupt, 1,
-> 12, timeout) [445118]
-> [20171.684870] drivers/input/serio/i8042.c: 0b <- i8042 (interrupt, 0,
-> 1) [20162195]
-> 
-> However - the atkbd driver does not pick the device up at all.
-> 
+> Why I say "I want to see the numbers" again and again is that
+> this is performance improvement with _bad side effect_.
+> If this is an emergent trouble, and need fast-track, which requires us
+> "fix small problems later", plz say so. 
+>
 
-Your device is steadely refusing to say that it is a keyboard - and so
-atkbd driver does not bind to it.
+OK... I finally got a bigger machine (24 CPUs). I ran a simple
+program called parallel_pagefault, which does pagefault's in parallel
+(runs on every other CPU) and allocates 10K pages and touches the
+data allocated, unmaps and repeats the process. I ran the program
+for 300 seconds. With the patch, I was able to fault in twice
+the number of pages as I was able to without the patch. I used
+perf tool from tools/perf in the kernel
 
-> So, I did find a workaround (which is NOT acceptable for this
-> deployment).  Remember the PS/2 'wedge' I mentioned?  Well, it has an
-> extra PS/2 port for your keyboard.  If I connect a PS/2 keyboard to
-> that thing, suddenly my scanner starts working.
-> 
-> We see some chatter from the controller driver, then one of these:
-> 
-> [23811.805578] input: AT Translated Set 2 keyboard as
-> /devices/platform/i8042/serio0/input/input6
-> 
+With patch
 
-That happened because apparently the 'wedge' passes the inquirys to
-the real keyboard and it answers propery.
+ Performance counter stats for '/home/balbir/parallel_pagefault':
 
-I think the "i8042.dumbkbd" kernel parameter will solve your issue.
+ 7188177.405648  task-clock-msecs         #     23.926 CPUs 
+         423130  context-switches         #      0.000 M/sec
+            210  CPU-migrations           #      0.000 M/sec
+       49851597  page-faults              #      0.007 M/sec
+  5900210219604  cycles                   #    820.821 M/sec
+   424658049425  instructions             #      0.072 IPC  
+     7867744369  cache-references         #      1.095 M/sec
+     2882370051  cache-misses             #      0.401 M/sec
+
+  300.431591843  seconds time elapsed
+
+Without Patch
+
+ Performance counter stats for '/home/balbir/parallel_pagefault':
+
+ 7192804.124144  task-clock-msecs         #     23.937 CPUs 
+         424691  context-switches         #      0.000 M/sec
+            267  CPU-migrations           #      0.000 M/sec
+       28498113  page-faults              #      0.004 M/sec
+  5826093739340  cycles                   #    809.989 M/sec
+   408883496292  instructions             #      0.070 IPC  
+     7057079452  cache-references         #      0.981 M/sec
+     3036086243  cache-misses             #      0.422 M/sec
+
+  300.485365680  seconds time elapsed
+
 
 -- 
-Dmitry
+	Balbir
