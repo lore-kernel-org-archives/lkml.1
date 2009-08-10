@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751826AbZHJGyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751880AbZHJGzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751826AbZHJGyN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 02:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbZHJGyN
+	id S1751880AbZHJGzo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 02:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZHJGzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 02:54:13 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:2019 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750942AbZHJGyM (ORCPT
+	Mon, 10 Aug 2009 02:55:44 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:59093 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbZHJGzn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 02:54:12 -0400
+	Mon, 10 Aug 2009 02:55:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=tncPWjge2o5MQBwflVejlR31LvP4F7ROJz9Ott0KMgcPqLtn/uVSG0W6D228YmwbQQ
-         5WuTz65dIlyKCAgr0YgXt05CeEkf6RdlzmYiN+8yToBzI3gbTeGGfKEPd1rJ/MJkL69b
-         /97oNoSrRV46YRFNMxA5k5kC066/s8wM/cZl0=
-Date: Sun, 9 Aug 2009 23:54:07 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Daniel Ribeiro <drwyrm@gmail.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, eric.y.miao@gmail.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, openezx-devel@lists.openezx.org,
-       Ilya Petrov <ilya.muromec@gmail.com>,
-       Antonio Ospite <ospite@studenti.unina.it>
-Subject: Re: [PATCH v3] input: PCAP2 misc input driver
-References: <1249678456-15381-1-git-send-email-drwyrm@gmail.com>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vglZT4a7WPk1lS2KBpiB+0IqF1ckUP8BdGurE/bGpLFup7oc/utC/gckFk/RYpvTLR
+         eMlxeQNjf3IwKzDon9VGbusByJG5dait8emRiVVZPJn+3vBS80lx9usCP+Z4iSkb/0yo
+         cgmBSExOy7UWe0lWmLUKEJShbtj6/Hp0XwHfY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249678456-15381-1-git-send-email-drwyrm@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090810072431.D2068526EC9@mailhub.coreip.homeip.net>
+In-Reply-To: <u1L1PAbl8zG.A.-3C.bj1fKB@chimera>
+References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera>
+	 <u1L1PAbl8zG.A.-3C.bj1fKB@chimera>
+Date: Mon, 10 Aug 2009 08:55:42 +0200
+Message-ID: <b637ec0b0908092355w12547d8kf0207c24c833f93e@mail.gmail.com>
+Subject: Re: [Bug #13943] WARNING: at net/mac80211/mlme.c:2292 with ath5k
+From: Fabio Comolli <fabio.comolli@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 10:54:16PM +0200, Daniel Ribeiro wrote:
-> diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
-> index 0d979fd..679bae3 100644
-> --- a/drivers/input/misc/Makefile
-> +++ b/drivers/input/misc/Makefile
-> @@ -26,3 +26,4 @@ obj-$(CONFIG_INPUT_TWL4030_PWRBUTTON)	+= twl4030-pwrbutton.o
->  obj-$(CONFIG_INPUT_UINPUT)		+= uinput.o
->  obj-$(CONFIG_INPUT_WISTRON_BTNS)	+= wistron_btns.o
->  obj-$(CONFIG_INPUT_YEALINK)		+= yealink.o
-> +obj-$(CONFIG_INPUT_PCAP)		+= pcap_keys.o
+It happened only once so it's hard to tell. I'm going to test -rc6
+when it comes out and report back.
 
-Btw, could we please keep Makefile sorted alphabetically? This should
-help with merge conflicts a bit (I know Kconfig is still not sorted).
+Regards,
+Fabio
 
--- 
-Dmitry
+
+
+On Sun, Aug 9, 2009 at 11:10 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13943
+> Subject         : WARNING: at net/mac80211/mlme.c:2292 with ath5k
+> Submitter       : Fabio Comolli <fabio.comolli@gmail.com>
+> Date            : 2009-08-06 20:15 (4 days old)
+> References      : http://marc.info/?l=linux-kernel&m=124958978600600&w=4
+>
+>
+>
