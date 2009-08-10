@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752387AbZHJUFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752786AbZHJUFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752387AbZHJUFS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 16:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbZHJUFM
+	id S1752786AbZHJUFj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 16:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZHJUFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 16:05:12 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:40440 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751151AbZHJUFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 16:05:10 -0400
-Subject: [PATCH] fix memory leak in virtio_net
-From: Shirley Ma <mashirle@us.ibm.com>
-To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Content-Type: multipart/mixed; boundary="=-Why0umBOxGz2UWiN5Nja"
-Date: Mon, 10 Aug 2009 13:05:08 -0700
-Message-Id: <1249934708.7400.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+	Mon, 10 Aug 2009 16:05:38 -0400
+Received: from waldorf.bytemark.co.uk ([212.110.162.22]:51944 "EHLO
+	waldorf.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751873AbZHJUFh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 16:05:37 -0400
+Date: Mon, 10 Aug 2009 22:05:26 +0200
+From: "Emilio G. Cota" <cota@braap.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Martyn Welch <martyn.welch@gefanuc.com>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
+Subject: Re: [patch 2/5] Staging: vme: add VME userspace driver
+Message-ID: <20090810200526.GC3055@braap.org>
+References: <20090803205657.964064732@mini.kroah.org> <20090803210116.GC28430@kroah.com> <20090808232259.GA29303@braap.org> <20090809121715.GA3884@braap.org> <20090810162826.GA27912@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090810162826.GA27912@suse.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greg KH wrote:
+> On Sun, Aug 09, 2009 at 02:17:16PM +0200, Emilio G. Cota wrote:
+> > > Instead of using that we implemented a heretic IOCTL-based
+> > > interface for user-space; at least with it you could create a
+> > > driver (with no interrupt support) for a device in user-space.
+> 
+> Why not just use the UIO interface instead of creating
+> yet-another-kernel/user-api?
+> 
+> Will that interface not work for what you want to use here?
 
---=-Why0umBOxGz2UWiN5Nja
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Certainly. I didn't mean we'd like to see that merged. Currently
+we make extensive use of IOCTLs because we are maintaining
+kernel and user-space code for two platforms/OSes (ppc-lynx and
+x86-linux), and not having access to lynx' source code doesn't
+help. So IOCTLs are pretty much everywhere, much to my regret.
 
-Whild reading virtio code, I found some memory leak in removing
-virtio_net.
-
-In virtnet_remove, only skb has been freed not the pages in skb
-frags. Here is the patch to fix this, please review it.
-
-Signed-off-by: Shirley Ma <xma@us.ibm.com>
-
-diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index 2a6e81d..7e629d9 100644
---- a/drivers/net/virtio_net.c
-+++ b/drivers/net/virtio_net.c
-@@ -978,6 +978,7 @@ static void virtnet_remove(struct virtio_device *vdev)
- 
- 	/* Free our skbs in send and recv queues, if any. */
- 	while ((skb = __skb_dequeue(&vi->recv)) != NULL) {
-+		trim_pages(vi, skb);
- 		kfree_skb(skb);
- 		vi->num--;
- 	}
-
-
-
-
-
---=-Why0umBOxGz2UWiN5Nja
-Content-Disposition: attachment; filename="memleak.patch"
-Content-Type: text/x-patch; name="memleak.patch"; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-
-Signed-off-by: Shirley Ma <xma@us.ibm.com>
-
-diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index 2a6e81d..7e629d9 100644
---- a/drivers/net/virtio_net.c
-+++ b/drivers/net/virtio_net.c
-@@ -978,6 +978,7 @@ static void virtnet_remove(struct virtio_device *vdev)
- 
- 	/* Free our skbs in send and recv queues, if any. */
- 	while ((skb = __skb_dequeue(&vi->recv)) != NULL) {
-+		trim_pages(vi, skb);
- 		kfree_skb(skb);
- 		vi->num--;
- 	}
-
---=-Why0umBOxGz2UWiN5Nja--
-
+E.
