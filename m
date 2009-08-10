@@ -1,72 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753213AbZHJJXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbZHJJZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753213AbZHJJXX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 05:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbZHJJXX
+	id S1753271AbZHJJZm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 05:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZHJJZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 05:23:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50258 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752883AbZHJJXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 05:23:22 -0400
-Message-ID: <4A7FE6F1.7030106@redhat.com>
-Date: Mon, 10 Aug 2009 11:22:57 +0200
-From: Harald Hoyer <harald@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Mon, 10 Aug 2009 05:25:41 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:44051 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753216AbZHJJZl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 05:25:41 -0400
+Message-ID: <4A7FE78F.4040504@petalogix.com>
+Date: Mon, 10 Aug 2009 11:25:35 +0200
+From: Michal Simek <michal.simek@petalogix.com>
+Reply-To: michal.simek@petalogix.com
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: Greg KH <greg@kroah.com>, Andi Kleen <andi@firstfloor.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
-       gregkh@suse.de, Scott James Remnant <scott@ubuntu.com>
-Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
- /dev
-References: <20090805171513.GA10443@kroah.com> <200908062006.16263.a1426z@gawab.com> <20090806183653.GC28433@kroah.com> <200908062318.05478.a1426z@gawab.com>
-In-Reply-To: <200908062318.05478.a1426z@gawab.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: microblaze-uclinux@itee.uq.edu.au
+CC: John Linn <John.Linn@xilinx.com>, David DeBonis <david.debonis@xilinx.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [microblaze-uclinux] Rethinking MicroBlaze commandline precedence
+References: <1d3f23370908092328l6e980f3ft2d5a8f8f37c26fcf@mail.gmail.com>	 <4A7FCC42.40809@petalogix.com> <1d3f23370908100156q46b9869av5ecdcc8879617be9@mail.gmail.com>
+In-Reply-To: <1d3f23370908100156q46b9869av5ecdcc8879617be9@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/06/2009 10:18 PM, Al Boldi wrote:
-> Greg KH wrote:
->> On Thu, Aug 06, 2009 at 08:06:16PM +0300, Al Boldi wrote:
->>> Andi Kleen wrote:
->>>> Greg KH<greg@kroah.com>  writes:
->>>>> It makes the userspace boot process much simpler and easier to
->>>>> maintain, as well as providing a way to handle rescue disks and
->>>>> images trivially, and it makes the kernel _less_ dependant on the
->>>>> early userspace bootup scripts.
->>>> As a initrd less kernel user I can really only agree: getting rid
->>>> of the udev-in-initrd requirement would be a big step forward
->>>> in usability. Typically I always have to pre populate
->>>> a on disk /dev manually first to get my kernels to boot.
->>> Oh good, I thought I was the only one doing that.
+Hi John,
+
+John Williams wrote:
+> Hi Michal,
+> 
+> On Mon, Aug 10, 2009 at 5:29 PM, Michal Simek<michal.simek@petalogix.com> wrote:
+> 
+>> John Williams wrote:
+> 
+>>> Currently, MicroBlaze commandline handling in order of lowest to
+>>> highest priority, looks like this:
 >>>
->>> The reason I don't like udev is that it's just to slow; something like a
->>> 5-10s delay on each boot.  No idea why it should be so slow, but it's
->>> probably probing the kernel for all available devices at boot, when it
->>> could be much quicker by probing for the device on access.
->> Like Kay stated, this sounds like a misconfiguration of your distro's
->> udev setup, as the ones I use (openSUSE and Gentoo) do not have this
->> problem at all.
->
-> Maybe they are using the same trick as Ubuntu and Debian, as they run udev in
-> the background to hide the slowness.  Both Fedora and Mandriva run udev in
-> the foreground where the slowness is visible.
+>>> 1. pointer in r5 from bootloader
+>>> 2. CONFIG_CMDLINE=...
+>>> 3. "chosen" section in DTS/DT
+>>> 4. CONFIG_CMDLINE=... && CONFIG_CMDLINE_FORCE
+>>>
+>>> I'm wondering if a cmdline in r5 should override the DTS.  My thinking
+>>> is based on two observations:
+>>>
+>>> (a) not everyone will use a bootloader like u-boot that can manipulate
+>>> DTBs easily before kernel boot
+>>> (b) a custom cmdline string in r5 allows the latest possible binding
+>>> (runtime), where as the DTB is typically created at compile time.
+>>>
+>>> So, how about this order instead:
+>>>
+>>> 1. CONFIG_CMDLINE=...
+>>> 2. "chosen" section in DTS/DT
+>>> 3. pointer in r5 from bootloader
+>>> 4. CONFIG_CMDLINE=... and CONFIG_CMDLINE_FORCE
+>>>
+>>> Then, apart from CMDLINE_FORCE, the precedence goes from earliest
+>>> binding (kernel build) to latest (runtime via bootloader/r5).
+>>>
+>>> Thoughts?
+>> I see there one big problem which can easily arise. Kernel expect that r5 points to
+>> NULL string and DTS/DTB and CMDLINE will contain correct string. Kernel just copy it and use
+>> it. There will be undefined behavior for more cases than for current handling. It will be
+>> less error prune.
+> 
+> This expectation currently exists anyway,  giving precendence to DTS
+> cmdline is only less error-prone on the assumption that it's more
+> common.
+> 
+> What about a move to an ARM-style ATAGs arrangement, where r5 points
+> not to an ASCIIZ string but instead to some sort of loosely structured
+> object, with tag codes to signify the commandline etc.
+> 
+> That way, we can error check r5 - if it doesn't have the right tags
+> then we don't use the (probably bogus) cmdline string?
 
-On Fedora parallel to udev, readahead is running, which makes you think udev is 
-slow, but in the end readahead speeds up the boot process by 10%.
+Not sure if is help - but seems to me more complicated than we need.
 
->
-> So really, if devtmpfs compares to udev speeds then this just looks like a
-> devfs comeback.  Remember, devfs was really slow.
->
->
-> Thanks!
->
-> --
-> Al
->
+> 
+>> Ad observation a)
+>>
+>> My expectation is that users will use s.....I.... format (I don't like that name - What about
+>> renaming it?) with dtb - they setup commandline at once and they don't change it.
+> 
+> 
+> Ah what's wrong with simpleImage?  It's simple to boot, and make-fu
+> makes it simple to build! :)
 
+It is more complicated than origin file. Your suggestion for simple build/boot is fine. :-)
+
+> 
+>> Ad observation b) - for final product they will use only one command line. For testing you can setup
+>> kernel to use only r5.
+> 
+> How?  Do we add CONFIG_CMDLINE_IGNORE_DTB?
+
+> 
+> Or just remove the commandline section from DTS "chosen" part?
+
+yes.
+
+> 
+>> I understand that you are trying to pass to kernel for example MTD map which could be possible but
+>> IMHO better to do this in script which one with sed erase/comment/setup command line in DTS before
+>> compilation.
+> 
+> It's still a very early binding, and I think there are plenty of
+> reasons to want to override it at boot time.  If there weren't, why do
+> u-boot and PPC simpleBoot add the capability to tweak at boot time,
+> the cmdline passed via the DTB?
+
+I understand that make sense to change it - especially for development.
+It should be possible to do it in u-boot. Not sure if is work to extend command line but maybe yes.
+Worth to ask on u-boot mailing list.
+
+> 
+> Setting MAC addresses for example - you don't want to compile a new
+> DTS for every board you ship, just to provide unique values. You just
+> want to be able to tweak the cmdline in the config flash or whatever.
+
+You should be able to change it in u-boot. The size of mac addr is the same. Shorten is possible too.
+
+
+Cheers,
+Michal
+
+> 
+> Cheers,
+> 
+> John
+
+-- 
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
