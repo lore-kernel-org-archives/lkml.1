@@ -1,145 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbZHJLeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbZHJLqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753346AbZHJLeW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 07:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbZHJLeV
+	id S1753577AbZHJLqw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 07:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbZHJLqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 07:34:21 -0400
-Received: from us.einfochips.com ([74.54.47.34]:46288 "EHLO us.einfochips.com"
+	Mon, 10 Aug 2009 07:46:51 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:42600 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753022AbZHJLeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 07:34:20 -0400
-Message-ID: <4A800610.4060106@einfochips.com>
-Date: Mon, 10 Aug 2009 17:05:44 +0530
-From: Dhaval Vasa <dhaval.vasa@einfochips.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Nicolas Pitre <nico@cam.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Rabeeh Khoury <rabeeh@marvell.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] [ARM] Kirkwood: Marvell OpenRD-Base board support added
- to v2.6.31-rc5
-References: <1249567753-724-1-git-send-email-dhaval.vasa@einfochips.com> <alpine.LFD.2.00.0908071149460.16073@xanadu.home>
-In-Reply-To: <alpine.LFD.2.00.0908071149460.16073@xanadu.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753232AbZHJLqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 07:46:51 -0400
+Subject: Re: [PATCH 03/14] powerpc: use printk_once
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090810080049.GA3132@pengutronix.de>
+References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
+	 <1249847649-11631-4-git-send-email-marcin.slusarz@gmail.com>
+	 <20090810080049.GA3132@pengutronix.de>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-b4R4lwTYP9ivuci12oa3"
+Date: Mon, 10 Aug 2009 21:46:49 +1000
+Message-Id: <1249904809.4958.4.camel@concordia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicolas Pitre wrote:
-> [ arm-linux mailing list added to CC ]
-> 
-> On Thu, 6 Aug 2009, Dhaval Vasa wrote:
-> 
->> reference:
->> http://open-rd.org
->> http://code.google.com/p/openrd
->>
->> This patch is tested for:
->> 1. Boot from DRAM/NAND flash
->> 2. NAND read/write/erase
->> 3. GbE0
->> 4. USB read/write
->>
->> FIXME:
->> 1. SD/UART1 selection
->> 2. MPP configuration (currently, default)
->> 3. PEX
->>
->> Signed-off-by: Dhaval Vasa <dhaval.vasa@einfochips.com>
-> 
-> Comments below.
-> 
->> diff --git a/arch/arm/mach-kirkwood/openrd_base-setup.c b/arch/arm/mach-kirkwood/openrd_base-setup.c
->> new file mode 100644
->> index 0000000..26b6e58
->> --- /dev/null
->> +++ b/arch/arm/mach-kirkwood/openrd_base-setup.c
->> @@ -0,0 +1,79 @@
->> +/*
->> + * arch/arm/mach-kirkwood/openrd_base-setup.c
->> + *
->> + * Marvell OpenRD Base Board Setup
->> + *
->> + * This file is licensed under the terms of the GNU General Public
->> + * License version 2.  This program is licensed "as is" without any
->> + * warranty of any kind, whether express or implied.
->> + */
->> +
->> +#include <linux/kernel.h>
->> +#include <linux/init.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/mtd/partitions.h>
->> +#include <linux/mv643xx_eth.h>
->> +#include <linux/gpio.h>
->> +#include <linux/leds.h>
->> +#include <asm/mach-types.h>
->> +#include <asm/mach/arch.h>
->> +#include <mach/kirkwood.h>
->> +#include <plat/mvsdio.h>
->> +#include "common.h"
->> +#include "mpp.h"
-> 
-> The leds.h include appears to be unneeded.
-> 
->> +
->> +static struct mtd_partition openrd_base_nand_parts[] = {
->> +	{
->> +		.name = "u-boot",
->> +		.offset = 0,
->> +		.size = SZ_1M
->> +	}, {
->> +		.name = "uImage",
->> +		.offset = MTDPART_OFS_NXTBLK,
->> +		.size = SZ_4M
->> +	}, {
->> +		.name = "root",
->> +		.offset = MTDPART_OFS_NXTBLK,
->> +		.size = MTDPART_SIZ_FULL
->> +	},
->> +};
->> +
->> +static struct mv643xx_eth_platform_data openrd_base_ge00_data = {
->> +	.phy_addr	= MV643XX_ETH_PHY_ADDR(8),
->> +};
->> +
->> +static struct mvsdio_platform_data openrd_base_mvsdio_data = {
->> +	.gpio_card_detect = MPP29_GPIO,	/* MPP29 used as SD card detect */
->> +};
-> 
-> You should use a literal number here, like .gpio_card_detect = 29.
 
-patch v2 will close this review comment.
+--=-b4R4lwTYP9ivuci12oa3
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> 
->> +static unsigned int openrd_base_mpp_config[] __initdata = {
->> +	0
->> +};
-> 
-> Here belongs the MPP29_GPIO.
+On Mon, 2009-08-10 at 10:00 +0200, Wolfram Sang wrote:
+> On Sun, Aug 09, 2009 at 09:53:58PM +0200, Marcin Slusarz wrote:
+> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > Cc: linuxppc-dev@ozlabs.org
+> > ---
+> >  arch/powerpc/kernel/iommu.c      |    6 +-----
+> >  arch/powerpc/kernel/irq.c        |    5 ++---
+> >  arch/powerpc/sysdev/ppc4xx_pci.c |    9 ++-------
+> >  3 files changed, 5 insertions(+), 15 deletions(-)
+> >=20
+> > diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> > index fd51578..c7fa258 100644
+> > --- a/arch/powerpc/kernel/iommu.c
+> > +++ b/arch/powerpc/kernel/iommu.c
+> > @@ -502,7 +502,6 @@ static void iommu_table_clear(struct iommu_table *t=
+bl)
+> >  struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
+> >  {
+> >  	unsigned long sz;
+> > -	static int welcomed =3D 0;
+> >  	struct page *page;
+> > =20
+> >  	/* Set aside 1/4 of the table for large allocations. */
+> > @@ -523,11 +522,8 @@ struct iommu_table *iommu_init_table(struct iommu_=
+table *tbl, int nid)
+> > =20
+> >  	iommu_table_clear(tbl);
+> > =20
+> > -	if (!welcomed) {
+> > -		printk(KERN_INFO "IOMMU table initialized, virtual merging %s\n",
+> > +	printk_once(KERN_INFO "IOMMU table initialized, virtual merging %s\n"=
+,
+> >  		       novmerge ? "disabled" : "enabled");
+> > -		welcomed =3D 1;
+> > -	}
+> > =20
+> >  	return tbl;
+> >  }
+> > diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> > index f7f376e..05ebd21 100644
+> > --- a/arch/powerpc/kernel/irq.c
+> > +++ b/arch/powerpc/kernel/irq.c
+> > @@ -231,7 +231,6 @@ skip:
+> >  void fixup_irqs(cpumask_t map)
+> >  {
+> >  	unsigned int irq;
+> > -	static int warned;
+> > =20
+> >  	for_each_irq(irq) {
+> >  		cpumask_t mask;
+> > @@ -246,8 +245,8 @@ void fixup_irqs(cpumask_t map)
+> >  		}
+> >  		if (irq_desc[irq].chip->set_affinity)
+> >  			irq_desc[irq].chip->set_affinity(irq, &mask);
+> > -		else if (irq_desc[irq].action && !(warned++))
+> > -			printk("Cannot set affinity for irq %i\n", irq);
+> > +		else if (irq_desc[irq].action)
+> > +			printk_once("Cannot set affinity for irq %i\n", irq);
+>=20
+> Maybe we should add a loglevel to this printk (and the other one in fix_i=
+rqs)
+> while we are here?
 
-patch v2 will close this review comment.
+I think you should drop it, it's stupid. If we actually care about irqs
+that don't have a set affinity we should keep a count and report that at
+the end of the loop.
 
+cheers
 
-Thanks for review.
+--=-b4R4lwTYP9ivuci12oa3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-- Dhaval
--- 
-_____________________________________________________________________
-Disclaimer: This e-mail message and all attachments transmitted with it
-are intended solely for the use of the addressee and may contain legally
-privileged and confidential information. If the reader of this message
-is not the intended recipient, or an employee or agent responsible for
-delivering this message to the intended recipient, you are hereby
-notified that any dissemination, distribution, copying, or other use of
-this message or its attachments is strictly prohibited. If you have
-received this message in error, please notify the sender immediately by
-replying to this message and please delete it from your computer. Any
-views expressed in this message are those of the individual sender
-unless otherwise stated.Company has taken enough precautions to prevent
-the spread of viruses. However the company accepts no liability for any
-damage caused by any virus transmitted by this email.
-_____________________________________________________________________
- 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkqACKUACgkQdSjSd0sB4dJc9QCgxfYeLYd+d9Gj6snPN2g5a16M
+SBEAoMXV6MsfT7MTtqZKhK1oNoEMngFB
+=Ah65
+-----END PGP SIGNATURE-----
+
+--=-b4R4lwTYP9ivuci12oa3--
+
