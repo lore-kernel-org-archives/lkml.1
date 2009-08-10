@@ -1,102 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080AbZHJOLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbZHJOM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755080AbZHJOLi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbZHJOLh
+	id S1755083AbZHJOM4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbZHJOMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:11:37 -0400
-Received: from mail-yx0-f175.google.com ([209.85.210.175]:61384 "EHLO
-	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754485AbZHJOLg (ORCPT
+	Mon, 10 Aug 2009 10:12:55 -0400
+Received: from mail-vw0-f172.google.com ([209.85.212.172]:42749 "EHLO
+	mail-vw0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754867AbZHJOMy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:11:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=W0nWaKBaQzXYgB4EWMEU1rKWsmkDlDcgw26IQxtSF4sjSicJgmLwaLYQDAQNtvHHCU
-         tpdAnXECJxHSGxVAQFhmQViEri/+uDoaRCF6YCRmeXmCjwrbj/dS/qelm1KS6R6eAcXb
-         fgZF4OK3+ioHcJ62NXQoGPIgYNk2tfi5qR7y4=
-Date: Mon, 10 Aug 2009 16:11:32 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 6/3] perfcounter: Substract the buffer size field from the
-	event record size
-Message-ID: <20090810141129.GA5124@nowhere>
-References: <1249698400-5441-1-git-send-email-fweisbec@gmail.com> <1249698400-5441-2-git-send-email-fweisbec@gmail.com> <1249896447.17467.74.camel@twins> <20090810125731.GA5124@nowhere> <1249909585.17467.135.camel@twins>
+	Mon, 10 Aug 2009 10:12:54 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249909585.17467.135.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090809215941.26204.52486.stgit@paris.rdu.redhat.com>
+References: <20090809215935.26204.46787.stgit@paris.rdu.redhat.com>
+	 <20090809215941.26204.52486.stgit@paris.rdu.redhat.com>
+Date: Mon, 10 Aug 2009 10:12:55 -0400
+Message-ID: <7e0fb38c0908100712h4dbd6c98y3807af36824ade41@mail.gmail.com>
+Subject: Re: [PATCH 2/5] inotify: use ZERO_PAGE instead of private static 
+	declaration
+From: Eric Paris <eparis@parisplace.org>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 03:06:25PM +0200, Peter Zijlstra wrote:
-> > I'll do the alignment right in the end, just before inserting the entry
-> > in the output. That will be more easy. I'll zeroe the rest in the same time.
-> 
-> OK.
+On Sun, Aug 9, 2009 at 5:59 PM, Eric Paris<eparis@redhat.com> wrote:
+> inotify needs to pad filenames to an inotify event length.  Currently this
+> is done by copying 0s from an event declared globally.  This patch doesn't
+> waste global address space just to have some 0s and instead uses
+> clear_user()
+>
+> Signed-off-by: Eric Paris <eparis@redhat.com>
 
+Crap, the subject of this message is wrong.  I'll fix the subject when
+I commit, the summary and patch are correct.
 
-Actually I shouldn't, the alignment should be computed early, taking the
-field size into account.
+-Eric
 
-That's not a problem though, I've just substracted the u32 field once
-I found the final aligned size.
-
-See below:
-
----
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Date: Mon, 10 Aug 2009 15:56:46 +0200
-Subject: [PATCH 6/3] perfcounter: Substract the buffer size field from the event record size
-
-We compute the perf raw sample size by aligning the raw ftrace event
-size plus the buffer size field itself. We do that instead of aligning
-only the perf raw sample size, so that we might economize some in some
-cases.
-
-But this buffer size field is not stored in the perf raw sample, we
-must then substract its size from the buffer once we computed the
-alignment unless we may get a useless u32 field in the buffer.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- include/trace/ftrace.h      |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletions(-)
-
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 4dc1a60..f98ff56 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -639,7 +639,12 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
-  *	pc = preempt_count();
-  *
-  *	__data_size = ftrace_get_offsets_<call>(&__data_offsets, args);
-- *	__entry_size = __data_size + sizeof(*entry);
-+ *
-+ *	// Below we want to get the aligned size by taking into account
-+ *	// the u32 field that will later store the buffer size
-+ *	__entry_size = ALIGN(__data_size + sizeof(*entry) + sizeof(u32),
-+ *			     sizeof(u64));
-+ *	__entry_size -= sizeof(u32);
-  *
-  *	do {
-  *		char raw_data[__entry_size]; <- allocate our sample in the stack
-@@ -689,6 +694,7 @@ static void ftrace_profile_##call(proto)				\
- 	__data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
- 	__entry_size = ALIGN(__data_size + sizeof(*entry) + sizeof(u32),\
- 			     sizeof(u64));				\
-+	__entry_size -= sizeof(u32);					\
- 									\
- 	do {								\
- 		char raw_data[__entry_size];				\
--- 
-1.6.2.3
-
-
+> ---
+>
+>  fs/notify/inotify/inotify_user.c |    9 +++------
+>  1 files changed, 3 insertions(+), 6 deletions(-)
+>
+> diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+> index c17d5a3..c3086b0 100644
+> --- a/fs/notify/inotify/inotify_user.c
+> +++ b/fs/notify/inotify/inotify_user.c
+> @@ -47,9 +47,6 @@
+>
+>  static struct vfsmount *inotify_mnt __read_mostly;
+>
+> -/* this just sits here and wastes global memory.  used to just pad userspace messages with zeros */
+> -static struct inotify_event nul_inotify_event;
+> -
+>  /* these are configurable via /proc/sys/fs/inotify/ */
+>  static int inotify_max_user_instances __read_mostly;
+>  static int inotify_max_queued_events __read_mostly;
+> @@ -215,7 +212,7 @@ static ssize_t copy_event_to_user(struct fsnotify_group *group,
+>        /*
+>         * fsnotify only stores the pathname, so here we have to send the pathname
+>         * and then pad that pathname out to a multiple of sizeof(inotify_event)
+> -        * with zeros.  I get my zeros from the nul_inotify_event.
+> +        * with zeros.
+>         */
+>        if (name_len) {
+>                unsigned int len_to_zero = name_len - event->name_len;
+> @@ -224,8 +221,8 @@ static ssize_t copy_event_to_user(struct fsnotify_group *group,
+>                        return -EFAULT;
+>                buf += event->name_len;
+>
+> -               /* fill userspace with 0's from nul_inotify_event */
+> -               if (copy_to_user(buf, &nul_inotify_event, len_to_zero))
+> +               /* fill userspace with 0's */
+> +               if (clear_user(buf, len_to_zero))
+>                        return -EFAULT;
+>                buf += len_to_zero;
+>                event_size += name_len;
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
