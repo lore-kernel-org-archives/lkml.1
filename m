@@ -1,92 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbZHJMuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbZHJMvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528AbZHJMuu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 08:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbZHJMut
+	id S1754570AbZHJMvP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 08:51:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbZHJMvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 08:50:49 -0400
-Received: from us.einfochips.com ([74.54.47.34]:47504 "EHLO us.einfochips.com"
+	Mon, 10 Aug 2009 08:51:14 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:54583 "EHLO mail-out1.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753784AbZHJMut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 08:50:49 -0400
-Message-ID: <4A8017FD.40405@einfochips.com>
-Date: Mon, 10 Aug 2009 18:22:13 +0530
-From: Dhaval Vasa <dhaval.vasa@einfochips.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Nicolas Pitre <nico@cam.org>
-CC: Ron <ron@debian.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Rabeeh Khoury <rabeeh@marvell.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] [ARM] Kirkwood: Initialise SATA for OpenRD-Base
-References: <1249567753-724-1-git-send-email-dhaval.vasa@einfochips.com> <alpine.LFD.2.00.0908071149460.16073@xanadu.home> <20090807223851.GR11898@audi.shelbyville.oz>
-In-Reply-To: <20090807223851.GR11898@audi.shelbyville.oz>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	id S1754187AbZHJMvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 08:51:13 -0400
+Subject: Re: linux-next: nfs tree build warning
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090810105806.266011df.sfr@canb.auug.org.au>
+References: <20090810105806.266011df.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Mon, 10 Aug 2009 08:51:09 -0400
+Message-Id: <1249908669.8060.3.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 3 msgs/h 1 sum rcpts/h 4 sum msgs/h 2 total rcpts 1015 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 67BE02532533FCA8D0D236B4F1C65861591E1052
+X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 114 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am sending v2 patch for this; based on my updated base v2 patch.
+On Mon, 2009-08-10 at 10:58 +1000, Stephen Rothwell wrote:
+> Hi Trond,
+> 
+> Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
+> 
+> fs/nfs/write.c: In function 'nfs_migrate_page':
+> fs/nfs/write.c:1601: warning: unused variable 'inode'
+> 
+> Introduced by commit 1ec000f4f76ea914aa4ac57f8cec53fa958bd477 ("NFS: Add
+> a ->migratepage() aop for NFS").
 
-- Dhaval
+Oops, you're right. I'll fix that...
 
-Ron wrote:
-> Signed-off-by: Ron Lee <ron@debian.org>
-> ---
-> 
-> Please include this patch in with that set also.  I can confirm this
-> enables me to boot an OpenRD-Base board from SATA with 2.6.31-rc5.
-> 
->  arch/arm/mach-kirkwood/openrd_base-setup.c |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/arm/mach-kirkwood/openrd_base-setup.c b/arch/arm/mach-kirkwood/openrd_base-setup.c
-> index 6e290fd..d8c846d 100644
-> --- a/arch/arm/mach-kirkwood/openrd_base-setup.c
-> +++ b/arch/arm/mach-kirkwood/openrd_base-setup.c
-> @@ -12,6 +12,7 @@
->  #include <linux/init.h>
->  #include <linux/platform_device.h>
->  #include <linux/mtd/partitions.h>
-> +#include <linux/ata_platform.h>
->  #include <linux/mv643xx_eth.h>
->  #include <linux/gpio.h>
->  #include <linux/leds.h>
-> @@ -42,6 +43,10 @@ static struct mv643xx_eth_platform_data openrd_base_ge00_data = {
->  	.phy_addr	= MV643XX_ETH_PHY_ADDR(8),
->  };
->  
-> +static struct mv_sata_platform_data openrd_base_sata_data = {
-> +	.n_ports	= 2,
-> +};
-> +
->  static struct mvsdio_platform_data openrd_base_mvsdio_data = {
->  	.gpio_card_detect = MPP29_GPIO,	/* MPP29 used as SD card detect */
->  };
-> @@ -64,6 +69,7 @@ static void __init openrd_base_init(void)
->  	kirkwood_ehci_init();
->  
->  	kirkwood_ge00_init(&openrd_base_ge00_data);
-> +	kirkwood_sata_init(&openrd_base_sata_data);
->  	kirkwood_sdio_init(&openrd_base_mvsdio_data);
->  }
->  
--- 
-_____________________________________________________________________
-Disclaimer: This e-mail message and all attachments transmitted with it
-are intended solely for the use of the addressee and may contain legally
-privileged and confidential information. If the reader of this message
-is not the intended recipient, or an employee or agent responsible for
-delivering this message to the intended recipient, you are hereby
-notified that any dissemination, distribution, copying, or other use of
-this message or its attachments is strictly prohibited. If you have
-received this message in error, please notify the sender immediately by
-replying to this message and please delete it from your computer. Any
-views expressed in this message are those of the individual sender
-unless otherwise stated.Company has taken enough precautions to prevent
-the spread of viruses. However the company accepts no liability for any
-damage caused by any virus transmitted by this email.
-_____________________________________________________________________
- 
+Trond
+
