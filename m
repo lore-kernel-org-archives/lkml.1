@@ -1,167 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752828AbZHJIwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbZHJI4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752828AbZHJIwg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 04:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbZHJIwf
+	id S1753030AbZHJI4J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 04:56:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZHJI4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 04:52:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47870 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752362AbZHJIwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 04:52:34 -0400
-Date: Mon, 10 Aug 2009 11:50:03 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: netdev@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Or Gerlitz <ogerlitz@voltaire.com>,
-       "Fischer, Anna" <anna.fischer@hp.com>,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Edge Virtual Bridging <evb@yahoogroups.com>
-Subject: Re: [PATCH] macvlan: add tap device backend
-Message-ID: <20090810085003.GA3654@redhat.com>
-References: <1249595428-21594-1-git-send-email-arnd@arndb.de> <20090809080215.GA17200@redhat.com> <200908092042.24686.arnd@arndb.de>
+	Mon, 10 Aug 2009 04:56:08 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:42257 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752251AbZHJI4H convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 04:56:07 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908092042.24686.arnd@arndb.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4A7FCC42.40809@petalogix.com>
+References: <1d3f23370908092328l6e980f3ft2d5a8f8f37c26fcf@mail.gmail.com>
+	 <4A7FCC42.40809@petalogix.com>
+Date: Mon, 10 Aug 2009 18:56:06 +1000
+Message-ID: <1d3f23370908100156q46b9869av5ecdcc8879617be9@mail.gmail.com>
+Subject: Re: [microblaze-uclinux] Rethinking MicroBlaze commandline precedence
+From: John Williams <john.williams@petalogix.com>
+To: microblaze-uclinux@itee.uq.edu.au
+Cc: John Linn <John.Linn@xilinx.com>, David DeBonis <david.debonis@xilinx.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 09, 2009 at 08:42:24PM +0000, Arnd Bergmann wrote:
-> On Sunday 09 August 2009 08:02:16 Michael S. Tsirkin wrote:
-> > On Thu, Aug 06, 2009 at 09:50:28PM +0000, Arnd Bergmann wrote:
-> > > * The same framework in macvlan can be used to add a third backend
-> > > into a future kernel based virtio-net implementation.
-> > 
-> > Could you split the patches up, to make this last easier?
-> > patch 1 - export framework
-> > patch 2 - code using it
-> 
-> Sure, will do.
-> 
-> > > +/* Get packet from user space buffer */
-> > > +static ssize_t macvtap_get_user(struct macvtap_dev *vtap,
-> > > +			       const struct iovec *iv, size_t count,
-> > > +			       int noblock)
-> > > +{
-> > > +	struct sk_buff *skb;
-> > > +	size_t len = count;
-> > > +
-> > > +	if (unlikely(len < ETH_HLEN))
-> > > +		return -EINVAL;
-> > > +
-> > > +	skb = alloc_skb(NET_IP_ALIGN + len, GFP_KERNEL);
-> > > +
-> > > +	if (!skb) {
-> > > +		vtap->m.dev->stats.rx_dropped++;
-> > > +		return -ENOMEM;
-> > > +	}
-> > > +
-> > > +	skb_reserve(skb, NET_IP_ALIGN);
-> > > +	skb_put(skb, count);
-> > > +
-> > > +	if (skb_copy_datagram_from_iovec(skb, 0, iv, 0, len)) {
-> > > +		vtap->m.dev->stats.rx_dropped++;
-> > > +		kfree_skb(skb);
-> > > +		return -EFAULT;
-> > > +	}
-> > > +
-> > > +	skb_set_network_header(skb, ETH_HLEN);
-> > > +	skb->dev = vtap->m.lowerdev;
-> > > +
-> > > +	macvlan_start_xmit(skb, vtap->m.dev);
-> > > +
-> > > +	return count;
-> > > +}
-> > 
-> > With tap, we discovered that not limiting the number of outstanding
-> > skbs hurts UDP performance. And the solution was to limit
-> > the number of outstanding packets - with hacks to work around
-> > the fact that userspace .
-> 
-> Something seems to be missing in your last sentence here.
+Hi Michal,
 
-Most userspace does not seem to implement software flow control for UDP,
-even though it probably should.
+On Mon, Aug 10, 2009 at 5:29 PM, Michal Simek<michal.simek@petalogix.com> wrote:
 
-> My driver OTOH is also missing any sort of flow control in both
-> RX and TX direction ;) For RX, there should probably just be
-> a limit of frames that get buffered in the ring.
-> 
-> For TX, I guess there should be a way to let the packet
-> scheduler handle this and give us a chance to block and
-> unblock at the right time. I haven't found out yet how to
-> do that.
-> 
-> Would it be enough to check the dev_queue_xmit() return
-> code for NETDEV_TX_BUSY?
-> 
-> How would I get notified when it gets free again?
+> John Williams wrote:
 
-You can do this by creating a socket. Look at how tun does
-this now.
+>> Currently, MicroBlaze commandline handling in order of lowest to
+>> highest priority, looks like this:
+>>
+>> 1. pointer in r5 from bootloader
+>> 2. CONFIG_CMDLINE=...
+>> 3. "chosen" section in DTS/DT
+>> 4. CONFIG_CMDLINE=... && CONFIG_CMDLINE_FORCE
+>>
+>> I'm wondering if a cmdline in r5 should override the DTS.  My thinking
+>> is based on two observations:
+>>
+>> (a) not everyone will use a bootloader like u-boot that can manipulate
+>> DTBs easily before kernel boot
+>> (b) a custom cmdline string in r5 allows the latest possible binding
+>> (runtime), where as the DTB is typically created at compile time.
+>>
+>> So, how about this order instead:
+>>
+>> 1. CONFIG_CMDLINE=...
+>> 2. "chosen" section in DTS/DT
+>> 3. pointer in r5 from bootloader
+>> 4. CONFIG_CMDLINE=... and CONFIG_CMDLINE_FORCE
+>>
+>> Then, apart from CMDLINE_FORCE, the precedence goes from earliest
+>> binding (kernel build) to latest (runtime via bootloader/r5).
+>>
+>> Thoughts?
+>
+> I see there one big problem which can easily arise. Kernel expect that r5 points to
+> NULL string and DTS/DTB and CMDLINE will contain correct string. Kernel just copy it and use
+> it. There will be undefined behavior for more cases than for current handling. It will be
+> less error prune.
 
-> > > +	ret = skb_copy_datagram_iovec(skb, 0, iv, len);
-> > > +
-> > > +	vtap->m.dev->stats.rx_packets++;
-> > > +	vtap->m.dev->stats.rx_bytes += len;
-> > 
-> > where does atomicity guarantee for these counters come from?
-> 
-> AFAIK, we never do for any driver. They are statistics only and
-> need not be 100% correct, so the networking stack goes for
-> lower overhead and 99.9% correct.
-> 
-> > > +static ssize_t macvtap_aio_read(struct kiocb *iocb, const struct iovec *iv,
-> > > +			    unsigned long count, loff_t pos)
-> > > +{
-> > > +	struct file *file = iocb->ki_filp;
-> > > +	struct macvtap_dev *vtap = file->private_data;
-> > > +	DECLARE_WAITQUEUE(wait, current);
-> > > +	struct sk_buff *skb;
-> > > +	ssize_t len, ret = 0;
-> > > +
-> > > +	if (!vtap)
-> > > +		return -EBADFD;
-> > > +
-> > > +	len = iov_length(iv, count);
-> > > +	if (len < 0) {
-> > > +		ret = -EINVAL;
-> > > +		goto out;
-> > > +	}
-> > > +
-> > > +	add_wait_queue(&vtap->wait, &wait);
-> > > +	while (len) {
-> > > +		current->state = TASK_INTERRUPTIBLE;
-> > > +
-> > > +		/* Read frames from the queue */
-> > > +		if (!(skb=skb_dequeue(&vtap->readq))) {
-> > > +			if (file->f_flags & O_NONBLOCK) {
-> > > +				ret = -EAGAIN;
-> > > +				break;
-> > > +			}
-> > > +			if (signal_pending(current)) {
-> > > +				ret = -ERESTARTSYS;
-> > > +				break;
-> > > +			}
-> > > +			/* Nothing to read, let's sleep */
-> > > +			schedule();
-> > > +			continue;
-> > > +		}
-> > > +		ret = macvtap_put_user(vtap, skb, (struct iovec *) iv, len);
-> > 
-> > Don't cast away the constness. Instead, fix macvtap_put_user
-> > to used skb_copy_datagram_const_iovec which does not modify the iovec.
-> 
-> Ah, good catch. I had copied that from the tun driver before you
-> fixed it there and failed to fix it the right way when I adapted
-> it for the new interface.
-> 
-> Thanks for the review,
-> 
-> 	Arnd <><
+This expectation currently exists anyway,  giving precendence to DTS
+cmdline is only less error-prone on the assumption that it's more
+common.
+
+What about a move to an ARM-style ATAGs arrangement, where r5 points
+not to an ASCIIZ string but instead to some sort of loosely structured
+object, with tag codes to signify the commandline etc.
+
+That way, we can error check r5 - if it doesn't have the right tags
+then we don't use the (probably bogus) cmdline string?
+
+> Ad observation a)
+>
+> My expectation is that users will use s.....I.... format (I don't like that name - What about
+> renaming it?) with dtb - they setup commandline at once and they don't change it.
+
+
+Ah what's wrong with simpleImage?  It's simple to boot, and make-fu
+makes it simple to build! :)
+
+> Ad observation b) - for final product they will use only one command line. For testing you can setup
+> kernel to use only r5.
+
+How?  Do we add CONFIG_CMDLINE_IGNORE_DTB?
+
+Or just remove the commandline section from DTS "chosen" part?
+
+> I understand that you are trying to pass to kernel for example MTD map which could be possible but
+> IMHO better to do this in script which one with sed erase/comment/setup command line in DTS before
+> compilation.
+
+It's still a very early binding, and I think there are plenty of
+reasons to want to override it at boot time.  If there weren't, why do
+u-boot and PPC simpleBoot add the capability to tweak at boot time,
+the cmdline passed via the DTB?
+
+Setting MAC addresses for example - you don't want to compile a new
+DTS for every board you ship, just to provide unique values. You just
+want to be able to tweak the cmdline in the config flash or whatever.
+
+Cheers,
+
+John
+-- 
+John Williams, PhD, B.Eng, B.IT
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
