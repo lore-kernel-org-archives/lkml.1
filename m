@@ -1,115 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751039AbZHJGVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750934AbZHJGX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751039AbZHJGVs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 02:21:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbZHJGVs
+	id S1750934AbZHJGX7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 02:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbZHJGX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 02:21:48 -0400
-Received: from mail-pz0-f196.google.com ([209.85.222.196]:47964 "EHLO
-	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbZHJGVr convert rfc822-to-8bit (ORCPT
+	Mon, 10 Aug 2009 02:23:58 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58155 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750823AbZHJGX5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 02:21:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fZCBr76C+yAXHQDk0arlUD7ygvSWxde5w2Gil6Yd3x9dy1WASLtg0Mbj6za18zM+e5
-         jhyoSsnYjI5WMWR60AMOqu1S6NbsDL5YxLMJjGCP+qM2uaLh1YQILsWgBud4KhrT119w
-         d1uzHSwXslggrc6AbCBaR/evhug37Drw1wR08=
-MIME-Version: 1.0
-In-Reply-To: <1249369794.9324.18.camel@macbook.infradead.org>
-References: <3877989d0907310129p29dd5039p18563946b9be8099@mail.gmail.com>
-	 <1249369794.9324.18.camel@macbook.infradead.org>
-Date: Mon, 10 Aug 2009 14:21:48 +0800
-Message-ID: <3877989d0908092321h56afcc7ve9fe39fa68f42a48@mail.gmail.com>
-Subject: Re: [RFC patch] return early if all dmar HW unit ignored
-From: Luming Yu <luming.yu@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 10 Aug 2009 02:23:57 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 10 Aug 2009 15:22:05 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       andi.kleen@intel.com, Prarit Bhargava <prarit@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: Help Resource Counters Scale Better (v3)
+Message-Id: <20090810152205.d37d8e2f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090810144559.ac5a3499.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090807221238.GJ9686@balbir.in.ibm.com>
+	<39eafe409b85053081e9c6826005bb06.squirrel@webmail-b.css.fujitsu.com>
+	<20090808060531.GL9686@balbir.in.ibm.com>
+	<99f2a13990d68c34c76c33581949aefd.squirrel@webmail-b.css.fujitsu.com>
+	<20090809121530.GA5833@balbir.in.ibm.com>
+	<20090810093229.10db7185.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090810053025.GC5257@balbir.in.ibm.com>
+	<20090810144559.ac5a3499.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
+On Mon, 10 Aug 2009 14:45:59 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Sorry for late response.. I tried your patch that terminates dmar
-table init if "one
-DMAR reported at address xxxxx returns all = ones"
-I know BIOS is very likely to do bad things, so I think your patch makes sense.
-But I think the following info should look better..
+> > Do you agree?
+> 
+> Ok. Config is enough at this stage.
+> 
+> The last advice for merge is, it's better to show the numbers or
+> ask someone who have many cpus to measure benefits. Then, Andrew can
+> know how this is benefical.
+> (My box has 8 cpus. But maybe your IBM collaegue has some bigger one)
+> 
+> In my experience (in my own old trial),
+>  - lock contention itself is low. not high.
+>  - but cacheline-miss, pingpong is very very frequent.
+> 
+> Then, this patch has some benefit logically but, in general,
+> File-I/O, swapin-swapout, page-allocation/initalize etc..dominates
+> the performance of usual apps. You'll have to be careful to select apps
+> to measure the benfits of this patch by application performance.
+> (And this is why I don't feel so much emergency as you do)
+> 
 
-Instead of ending up in parse DMAR table failure right after just one
-drhd record,
-all 4 are parsed. ( I applied your patch and the patch of this thread,
-and changed your patch to set ignored flag)
+Why I say "I want to see the numbers" again and again is that
+this is performance improvement with _bad side effect_.
+If this is an emergent trouble, and need fast-track, which requires us
+"fix small problems later", plz say so. 
 
-$ dmesg | grep -i dmar
-[    0.000000] ACPI: DMAR 000000007d2c225f 001A8 (v01 COMPAQ BEARLAKE
-00000001      00000000)
-[    0.161030] DMAR:Host address width 36
-[    0.161032] DMAR:DRHD base: 0x000000fed90000 flags: 0x0
-[    0.161045] WARNING: at drivers/pci/dmar.c:640 alloc_iommu+0xfc/0x230()
-[    0.161049] Your BIOS is broken; DMAR reported at address fed90000
-returns all = ones!
-[    0.161070]  [<ffffffff81819ce9>] dmar_table_init+0x1b1/0x35a
-[    0.161119] DMAR:DRHD base: 0x000000fed91000 flags: 0x0
-[    0.161127] WARNING: at drivers/pci/dmar.c:640 alloc_iommu+0xfc/0x230()
-[    0.161130] Your BIOS is broken; DMAR reported at address fed91000
-returns all = ones!
-[    0.161146]  [<ffffffff81819ce9>] dmar_table_init+0x1b1/0x35a
-[    0.161183] DMAR:DRHD base: 0x000000fed92000 flags: 0x0
-[    0.161191] WARNING: at drivers/pci/dmar.c:640 alloc_iommu+0xfc/0x230()
-[    0.161194] Your BIOS is broken; DMAR reported at address fed92000
-returns all = ones!
-[    0.161210]  [<ffffffff81819ce9>] dmar_table_init+0x1b1/0x35a
-[    0.161247] DMAR:DRHD base: 0x000000fed93000 flags: 0x1
-[    0.161255] WARNING: at drivers/pci/dmar.c:640 alloc_iommu+0xfc/0x230()
-[    0.161258] Your BIOS is broken; DMAR reported at address fed93000
-returns all = ones!
-[    0.161274]  [<ffffffff81819ce9>] dmar_table_init+0x1b1/0x35a
-[    0.161310] DMAR:RMRR base: 0x0000007d600000 end: 0x0000007dffffff
-[    0.161313] DMAR:RMRR base: 0x0000007d2d0000 end: 0x0000007d2d0fff
-[    0.161315] DMAR:RMRR base: 0x0000007d2d1000 end: 0x0000007d2d1fff
-[    0.161318] DMAR:RMRR base: 0x0000007d2d2000 end: 0x0000007d2d2fff
-[    0.161320] DMAR:RMRR base: 0x0000007d2d3000 end: 0x0000007d2d3fff
-[    0.161322] DMAR:RMRR base: 0x0000007d2d5000 end: 0x0000007d2d5fff
-[    0.161325] DMAR:RMRR base: 0x0000007d2d6000 end: 0x0000007d2d6fff
-[    0.161327] DMAR:RMRR base: 0x0000007d2d7000 end: 0x0000007d2d7fff
-[    0.161329] DMAR:No ATSR found
-[    0.161370] IOMMU: all dmar HW unit ignored
-
-
-But I don't know why I were seeing faults if all dmar units were
-ignored? Surely that
-shouldn't happen? Will double check and investigate.
+I have no objection to this approach itself because I can't think of
+something better, now. percpu-counter's error tolerance is a generic
+problem and we'll have to visit this anyway.
 
 Thanks,
-Luming
+-Kame
 
-
-On Tue, Aug 4, 2009 at 3:09 PM, David Woodhouse<dwmw2@infradead.org> wrote:
-> On Fri, 2009-07-31 at 16:29 +0800, Luming Yu wrote:
->> Hello list,
->>
->> When debugging an IOMMU problem, I noticed it should be much more safe
->> to return early than late if all remapping HW unit are ignored.
->> To figure out what device causes the iommu problem on my linux box:
->> hp-compaq dc7800, I tried to mark all dmar HW
->> unit ignored,but still got a lot of unxepcted dmar_fault. So I think
->> the proposed patch make sense. The next step is to
->> add a boot option to make dmar HW units selectable enable/disable individually.
->
-> Why were you seeing faults if all dmar units were ignored? Surely that
-> shouldn't happen?
->
-> This patch doesn't make a lot of sense on its own -- can you show what
-> you were intending to do as the 'next step'?
->
-> --
-> David Woodhouse                            Open Source Technology Centre
-> David.Woodhouse@intel.com                              Intel Corporation
->
->
