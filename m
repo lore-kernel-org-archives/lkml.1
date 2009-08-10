@@ -1,191 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbZHJDV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbZHJDjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755311AbZHJDV6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 23:21:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbZHJDV6
+	id S1754233AbZHJDjM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 23:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbZHJDjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 23:21:58 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51668 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753583AbZHJDV5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 23:21:57 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 10 Aug 2009 12:19:59 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [cleanup][2/2] mm: add_to_swap_cache() does not return -EEXIST
-Message-Id: <20090810121959.5ed44d07.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090810112716.fb110c5a.nishimura@mxp.nes.nec.co.jp>
-References: <20090810112326.3526b11d.nishimura@mxp.nes.nec.co.jp>
-	<20090810112716.fb110c5a.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 9 Aug 2009 23:39:11 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:44993 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754143AbZHJDjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 23:39:10 -0400
+Date: Sun, 9 Aug 2009 20:39:07 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Ben Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_PREEMPT_RCU in next/mmotm
+Message-ID: <20090810033907.GA1530@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <Pine.LNX.4.64.0908081956580.12300@sister.anvils> <20090808235634.GB6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908090414320.18096@sister.anvils> <20090809053308.GD6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908091209150.23855@sister.anvils> <Pine.LNX.4.64.0908091346450.27358@sister.anvils> <20090809185753.GG6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908092139090.3194@sister.anvils> <20090809211629.GJ6866@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090809211629.GJ6866@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Aug 2009 11:27:16 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+On Sun, Aug 09, 2009 at 02:16:29PM -0700, Paul E. McKenney wrote:
+> On Sun, Aug 09, 2009 at 09:53:53PM +0100, Hugh Dickins wrote:
+> > On Sun, 9 Aug 2009, Paul E. McKenney wrote:
+> > > 
+> > > I introduced the problem in commit 7fe616c5dd50a50f334edec1ea0580b90b7af0d9
+> > > by changing from register_cpu_notifier() to hotcpu_notifier().  The former
+> > > lets you know when CPUs come on line unconditionally, the latter only
+> > > when CONFIG_HOTPLUG_CPU is in effect.
+> > > 
+> > > But hotcpu_notifier() is much nicer to use, so I propose introducing
+> > > a cpu_notifier() that is invoked like hotcpu_notifier() is, but is
+> > > unconditional in the same way that register_cpu_notifier().
+> > > 
+> > > Something like the following (untested, probably does not compile):
+> > > 
+> > > diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+> > > index 4d668e0..d5dfc1f 100644
+> > > --- a/include/linux/cpu.h
+> > > +++ b/include/linux/cpu.h
+> > > @@ -48,6 +48,15 @@ struct notifier_block;
+> > >  
+> > >  #ifdef CONFIG_SMP
+> > >  /* Need to know about CPUs going up/down? */
+> > > +#if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE)
+> > > +#define cpu_notifier(fn, pri) {					\
+> > > +	static struct notifier_block fn##_nb __cpuinitdata =	\
+> > > +		{ .notifier_call = fn, .priority = pri };	\
+> > > +	register_cpu_notifier(&fn##_nb);			\
+> > > +}
+> > > +#else /* #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
+> > > +#define cpu_notifier(fn, pri)	do { (void)(fn); } while (0)
+> > > +#endif /* #else #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
+> > >  #ifdef CONFIG_HOTPLUG_CPU
+> > >  extern int register_cpu_notifier(struct notifier_block *nb);
+> > >  extern void unregister_cpu_notifier(struct notifier_block *nb);
+> > > @@ -99,11 +108,7 @@ extern struct sysdev_class cpu_sysdev_class;
+> > >  
+> > >  extern void get_online_cpus(void);
+> > >  extern void put_online_cpus(void);
+> > > -#define hotcpu_notifier(fn, pri) {				\
+> > > -	static struct notifier_block fn##_nb __cpuinitdata =	\
+> > > -		{ .notifier_call = fn, .priority = pri };	\
+> > > -	register_cpu_notifier(&fn##_nb);			\
+> > > -}
+> > > +#define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
+> > >  #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
+> > >  #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)
+> > >  int cpu_down(unsigned int cpu);
+> > > diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+> > > index 9f0584e..c1bbfd5 100644
+> > > --- a/kernel/rcupdate.c
+> > > +++ b/kernel/rcupdate.c
+> > > @@ -251,7 +251,7 @@ void __init rcu_init(void)
+> > >  	int i;
+> > >  
+> > >  	__rcu_init();
+> > > -	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
+> > > +	cpu_notifier(rcu_barrier_cpu_hotplug, 0);
+> > >  
+> > >  	/*
+> > >  	 * We don't need protection against CPU-hotplug here because
+> > > 
+> > [ removed repeat of rcupdate.c patch ]
+> > > 
+> > > Thoughts?
+> > 
+> > That builds and works for me, with or without CONFIG_HOTPLUG_CPU.
+> > 
+> > But I didn't get what you're achieving with the MODULE part of it;
+> > and (I'm not a notifier buff at all) it does seems rather baroque to
+> > me - a single callsite, why not stick with register_cpu_notifier()?
+> > 
+> > Ah, perhaps it's your ambition to move others over to this
+> > (or perhaps it's your ambition to leave that to someone else ;-)
+> 
+> Actually, nothing quite that clearly thought out.  I was just following
+> the pattern set for register_cpu_notifier().  My guess at the reasoning
+> is that when !HOTPLUG_CPU, modules cannot be loaded until all the CPUs
+> are online, so there is no point in letting a module set itself up for
+> notification.
+> 
+> But whatever their reasoning, mine was that there is no point in
+> creating a struct notifier_block that wasn't going to be used.  ;-)
 
-> After commit 355cfa73(mm: modify swap_map and add SWAP_HAS_CACHE flag),
-> only the context which have set SWAP_HAS_CACHE flag by swapcache_prepare()
-> or get_swap_page() would call add_to_swap_cache().
-> So add_to_swap_cache() doesn't return -EEXIST any more.
-> 
-> Even though it doesn't return -EEXIST, it's not a good behavior conceptually
-> to call swapcache_prepare() in -EEXIST case, because it means clearing
-> SWAP_HAS_CACHE flag while the entry is on swap cache.
-> 
-> This patch removes redundant codes and comments from callers of it, and
-> adds VM_BUG_ON() in error path of add_to_swap_cache() and some comments.
-> 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+And the above patch fails for !CONFIG_SMP.  Here is an update, testing
+in progress.  Still not fully tested, but results are encouraging.
+In particular, this one is more likely to compile.
 
-Nice! I've postponed this ;(
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+							Thanx, Paul
 
-> ---
->  mm/shmem.c      |    4 +++
->  mm/swap_state.c |   75 +++++++++++++++++++++++++++----------------------------
->  2 files changed, 41 insertions(+), 38 deletions(-)
-> 
-> diff --git a/mm/shmem.c b/mm/shmem.c
-> index d713239..c71ac6c 100644
-> --- a/mm/shmem.c
-> +++ b/mm/shmem.c
-> @@ -1097,6 +1097,10 @@ static int shmem_writepage(struct page *page, struct writeback_control *wbc)
->  	shmem_swp_unmap(entry);
->  unlock:
->  	spin_unlock(&info->lock);
-> +	/*
-> +	 * add_to_swap_cache() doesn't return -EEXIST, so we can safely
-> +	 * clear SWAP_HAS_CACHE flag.
-> +	 */
->  	swapcache_free(swap, NULL);
->  redirty:
->  	set_page_dirty(page);
-> diff --git a/mm/swap_state.c b/mm/swap_state.c
-> index 3e6dd72..e891208 100644
-> --- a/mm/swap_state.c
-> +++ b/mm/swap_state.c
-> @@ -96,6 +96,12 @@ int add_to_swap_cache(struct page *page, swp_entry_t entry, gfp_t gfp_mask)
->  		radix_tree_preload_end();
->  
->  		if (unlikely(error)) {
-> +			/*
-> +			 * Only the context which have set SWAP_HAS_CACHE flag
-> +			 * would call add_to_swap_cache().
-> +			 * So add_to_swap_cache() doesn't returns -EEXIST.
-> +			 */
-> +			VM_BUG_ON(error == -EEXIST);
->  			set_page_private(page, 0UL);
->  			ClearPageSwapCache(page);
->  			page_cache_release(page);
-> @@ -137,38 +143,34 @@ int add_to_swap(struct page *page)
->  	VM_BUG_ON(!PageLocked(page));
->  	VM_BUG_ON(!PageUptodate(page));
->  
-> -	for (;;) {
-> -		entry = get_swap_page();
-> -		if (!entry.val)
-> -			return 0;
-> +	entry = get_swap_page();
-> +	if (!entry.val)
-> +		return 0;
->  
-> +	/*
-> +	 * Radix-tree node allocations from PF_MEMALLOC contexts could
-> +	 * completely exhaust the page allocator. __GFP_NOMEMALLOC
-> +	 * stops emergency reserves from being allocated.
-> +	 *
-> +	 * TODO: this could cause a theoretical memory reclaim
-> +	 * deadlock in the swap out path.
-> +	 */
-> +	/*
-> +	 * Add it to the swap cache and mark it dirty
-> +	 */
-> +	err = add_to_swap_cache(page, entry,
-> +			__GFP_HIGH|__GFP_NOMEMALLOC|__GFP_NOWARN);
-> +
-> +	if (!err) {	/* Success */
-> +		SetPageDirty(page);
-> +		return 1;
-> +	} else {	/* -ENOMEM radix-tree allocation failure */
->  		/*
-> -		 * Radix-tree node allocations from PF_MEMALLOC contexts could
-> -		 * completely exhaust the page allocator. __GFP_NOMEMALLOC
-> -		 * stops emergency reserves from being allocated.
-> -		 *
-> -		 * TODO: this could cause a theoretical memory reclaim
-> -		 * deadlock in the swap out path.
-> -		 */
-> -		/*
-> -		 * Add it to the swap cache and mark it dirty
-> +		 * add_to_swap_cache() doesn't return -EEXIST, so we can safely
-> +		 * clear SWAP_HAS_CACHE flag.
->  		 */
-> -		err = add_to_swap_cache(page, entry,
-> -				__GFP_HIGH|__GFP_NOMEMALLOC|__GFP_NOWARN);
-> -
-> -		switch (err) {
-> -		case 0:				/* Success */
-> -			SetPageDirty(page);
-> -			return 1;
-> -		case -EEXIST:
-> -			/* Raced with "speculative" read_swap_cache_async */
-> -			swapcache_free(entry, NULL);
-> -			continue;
-> -		default:
-> -			/* -ENOMEM radix-tree allocation failure */
-> -			swapcache_free(entry, NULL);
-> -			return 0;
-> -		}
-> +		swapcache_free(entry, NULL);
-> +		return 0;
->  	}
->  }
->  
-> @@ -298,14 +300,7 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
->  		if (err)           /* swp entry is obsolete ? */
->  			break;
->  
-> -		/*
-> -		 * Associate the page with swap entry in the swap cache.
-> -		 * May fail (-EEXIST) if there is already a page associated
-> -		 * with this entry in the swap cache: added by a racing
-> -		 * read_swap_cache_async, or add_to_swap or shmem_writepage
-> -		 * re-using the just freed swap entry for an existing page.
-> -		 * May fail (-ENOMEM) if radix-tree node allocation failed.
-> -		 */
-> +		/* May fail (-ENOMEM) if radix-tree node allocation failed. */
->  		__set_page_locked(new_page);
->  		SetPageSwapBacked(new_page);
->  		err = add_to_swap_cache(new_page, entry, GFP_ATOMIC);
-> @@ -319,6 +314,10 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
->  		}
->  		ClearPageSwapBacked(new_page);
->  		__clear_page_locked(new_page);
-> +		/*
-> +		 * add_to_swap_cache() doesn't return -EEXIST, so we can safely
-> +		 * clear SWAP_HAS_CACHE flag.
-> +		 */
->  		swapcache_free(entry, NULL);
->  	} while (err != -ENOMEM);
->  
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+------------------------------------------------------------------------
 
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index 4d668e0..4753619 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -48,6 +48,15 @@ struct notifier_block;
+ 
+ #ifdef CONFIG_SMP
+ /* Need to know about CPUs going up/down? */
++#if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE)
++#define cpu_notifier(fn, pri) {					\
++	static struct notifier_block fn##_nb __cpuinitdata =	\
++		{ .notifier_call = fn, .priority = pri };	\
++	register_cpu_notifier(&fn##_nb);			\
++}
++#else /* #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
++#define cpu_notifier(fn, pri)	do { (void)(fn); } while (0)
++#endif /* #else #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
+ #ifdef CONFIG_HOTPLUG_CPU
+ extern int register_cpu_notifier(struct notifier_block *nb);
+ extern void unregister_cpu_notifier(struct notifier_block *nb);
+@@ -74,6 +83,8 @@ extern void cpu_maps_update_done(void);
+ 
+ #else	/* CONFIG_SMP */
+ 
++#define cpu_notifier(fn, pri)	do { (void)(fn); } while (0)
++
+ static inline int register_cpu_notifier(struct notifier_block *nb)
+ {
+ 	return 0;
+@@ -99,11 +110,7 @@ extern struct sysdev_class cpu_sysdev_class;
+ 
+ extern void get_online_cpus(void);
+ extern void put_online_cpus(void);
+-#define hotcpu_notifier(fn, pri) {				\
+-	static struct notifier_block fn##_nb __cpuinitdata =	\
+-		{ .notifier_call = fn, .priority = pri };	\
+-	register_cpu_notifier(&fn##_nb);			\
+-}
++#define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
+ #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
+ #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)
+ int cpu_down(unsigned int cpu);
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index 9f0584e..c1bbfd5 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -251,7 +251,7 @@ void __init rcu_init(void)
+ 	int i;
+ 
+ 	__rcu_init();
+-	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
++	cpu_notifier(rcu_barrier_cpu_hotplug, 0);
+ 
+ 	/*
+ 	 * We don't need protection against CPU-hotplug here because
