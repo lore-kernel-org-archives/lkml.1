@@ -1,141 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbZHJJZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277AbZHJJ2B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753271AbZHJJZm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 05:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZHJJZl
+	id S1753277AbZHJJ2B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 05:28:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbZHJJ2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 05:25:41 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:44051 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753216AbZHJJZl (ORCPT
+	Mon, 10 Aug 2009 05:28:00 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59850 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753023AbZHJJ17 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 05:25:41 -0400
-Message-ID: <4A7FE78F.4040504@petalogix.com>
-Date: Mon, 10 Aug 2009 11:25:35 +0200
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
-MIME-Version: 1.0
-To: microblaze-uclinux@itee.uq.edu.au
-CC: John Linn <John.Linn@xilinx.com>, David DeBonis <david.debonis@xilinx.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [microblaze-uclinux] Rethinking MicroBlaze commandline precedence
-References: <1d3f23370908092328l6e980f3ft2d5a8f8f37c26fcf@mail.gmail.com>	 <4A7FCC42.40809@petalogix.com> <1d3f23370908100156q46b9869av5ecdcc8879617be9@mail.gmail.com>
-In-Reply-To: <1d3f23370908100156q46b9869av5ecdcc8879617be9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 10 Aug 2009 05:27:59 -0400
+Subject: [PATCH 4/3] perf_counter: Correct PERF_SAMPLE_RAW output
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1249698400-5441-2-git-send-email-fweisbec@gmail.com>
+References: <1249698400-5441-1-git-send-email-fweisbec@gmail.com>
+	 <1249698400-5441-2-git-send-email-fweisbec@gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Mon, 10 Aug 2009 11:27:27 +0200
+Message-Id: <1249896447.17467.74.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi John,
+Subject: perf_counter: Correct PERF_SAMPLE_RAW output
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Mon Aug 10 11:16:52 CEST 2009
 
-John Williams wrote:
-> Hi Michal,
-> 
-> On Mon, Aug 10, 2009 at 5:29 PM, Michal Simek<michal.simek@petalogix.com> wrote:
-> 
->> John Williams wrote:
-> 
->>> Currently, MicroBlaze commandline handling in order of lowest to
->>> highest priority, looks like this:
->>>
->>> 1. pointer in r5 from bootloader
->>> 2. CONFIG_CMDLINE=...
->>> 3. "chosen" section in DTS/DT
->>> 4. CONFIG_CMDLINE=... && CONFIG_CMDLINE_FORCE
->>>
->>> I'm wondering if a cmdline in r5 should override the DTS.  My thinking
->>> is based on two observations:
->>>
->>> (a) not everyone will use a bootloader like u-boot that can manipulate
->>> DTBs easily before kernel boot
->>> (b) a custom cmdline string in r5 allows the latest possible binding
->>> (runtime), where as the DTB is typically created at compile time.
->>>
->>> So, how about this order instead:
->>>
->>> 1. CONFIG_CMDLINE=...
->>> 2. "chosen" section in DTS/DT
->>> 3. pointer in r5 from bootloader
->>> 4. CONFIG_CMDLINE=... and CONFIG_CMDLINE_FORCE
->>>
->>> Then, apart from CMDLINE_FORCE, the precedence goes from earliest
->>> binding (kernel build) to latest (runtime via bootloader/r5).
->>>
->>> Thoughts?
->> I see there one big problem which can easily arise. Kernel expect that r5 points to
->> NULL string and DTS/DTB and CMDLINE will contain correct string. Kernel just copy it and use
->> it. There will be undefined behavior for more cases than for current handling. It will be
->> less error prune.
-> 
-> This expectation currently exists anyway,  giving precendence to DTS
-> cmdline is only less error-prone on the assumption that it's more
-> common.
-> 
-> What about a move to an ARM-style ATAGs arrangement, where r5 points
-> not to an ASCIIZ string but instead to some sort of loosely structured
-> object, with tag codes to signify the commandline etc.
-> 
-> That way, we can error check r5 - if it doesn't have the right tags
-> then we don't use the (probably bogus) cmdline string?
+PERF_SAMPLE_* output switches should unconditionally output the
+correct format, as they are the only way to unambiguously parse the
+PERF_EVENT_SAMPLE data.
 
-Not sure if is help - but seems to me more complicated than we need.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/perf_counter.h |    2 ++
+ include/trace/ftrace.h       |    3 ++-
+ kernel/perf_counter.c        |   30 ++++++++++++++++++++++++------
+ 3 files changed, 28 insertions(+), 7 deletions(-)
 
-> 
->> Ad observation a)
->>
->> My expectation is that users will use s.....I.... format (I don't like that name - What about
->> renaming it?) with dtb - they setup commandline at once and they don't change it.
-> 
-> 
-> Ah what's wrong with simpleImage?  It's simple to boot, and make-fu
-> makes it simple to build! :)
+Index: linux-2.6/include/linux/perf_counter.h
+===================================================================
+--- linux-2.6.orig/include/linux/perf_counter.h
++++ linux-2.6/include/linux/perf_counter.h
+@@ -369,6 +369,8 @@ enum perf_event_type {
+ 	 *
+ 	 *	{ u64			nr,
+ 	 *	  u64			ips[nr];  } && PERF_SAMPLE_CALLCHAIN
++	 *	{ u32			size;
++	 *	  char                  data[size];}&& PERF_SAMPLE_RAW
+ 	 * };
+ 	 */
+ 	PERF_EVENT_SAMPLE		= 9,
+Index: linux-2.6/include/trace/ftrace.h
+===================================================================
+--- linux-2.6.orig/include/trace/ftrace.h
++++ linux-2.6/include/trace/ftrace.h
+@@ -687,7 +687,8 @@ static void ftrace_profile_##call(proto)
+ 	pc = preempt_count();						\
+ 									\
+ 	__data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
+-	__entry_size = ALIGN(__data_size + sizeof(*entry), sizeof(u64));\
++	__entry_size = ALIGN(__data_size + sizeof(*entry) + sizeof(u32),\
++			     sizeof(u64));				\
+ 									\
+ 	do {								\
+ 		char raw_data[__entry_size];				\
+Index: linux-2.6/kernel/perf_counter.c
+===================================================================
+--- linux-2.6.orig/kernel/perf_counter.c
++++ linux-2.6/kernel/perf_counter.c
+@@ -2647,7 +2647,6 @@ void perf_counter_output(struct perf_cou
+ 		u64 counter;
+ 	} group_entry;
+ 	struct perf_callchain_entry *callchain = NULL;
+-	struct perf_raw_record *raw = NULL;
+ 	int callchain_size = 0;
+ 	u64 time;
+ 	struct {
+@@ -2717,9 +2716,15 @@ void perf_counter_output(struct perf_cou
+ 	}
+ 
+ 	if (sample_type & PERF_SAMPLE_RAW) {
+-		raw = data->raw;
+-		if (raw)
+-			header.size += raw->size;
++		int size = sizeof(u32);
++
++		if (data->raw)
++			size += data->raw->size;
++		else
++			size += sizeof(u32);
++
++		WARN_ON_ONCE(size & (sizeof(u64)-1));
++		header.size += size;
+ 	}
+ 
+ 	ret = perf_output_begin(&handle, counter, header.size, nmi, 1);
+@@ -2785,8 +2790,21 @@ void perf_counter_output(struct perf_cou
+ 		}
+ 	}
+ 
+-	if ((sample_type & PERF_SAMPLE_RAW) && raw)
+-		perf_output_copy(&handle, raw->data, raw->size);
++	if (sample_type & PERF_SAMPLE_RAW) {
++		if (data->raw) {
++			perf_output_put(&handle, data->raw->size);
++			perf_output_copy(&handle, data->raw->data, data->raw->size);
++		} else {
++			struct {
++				u32	size;
++				u32	data;
++			} raw = {
++				.size = sizeof(u32),
++				.data = 0,
++			};
++			perf_output_put(&handle, raw);
++		}
++	}
+ 
+ 	perf_output_end(&handle);
+ }
 
-It is more complicated than origin file. Your suggestion for simple build/boot is fine. :-)
-
-> 
->> Ad observation b) - for final product they will use only one command line. For testing you can setup
->> kernel to use only r5.
-> 
-> How?  Do we add CONFIG_CMDLINE_IGNORE_DTB?
-
-> 
-> Or just remove the commandline section from DTS "chosen" part?
-
-yes.
-
-> 
->> I understand that you are trying to pass to kernel for example MTD map which could be possible but
->> IMHO better to do this in script which one with sed erase/comment/setup command line in DTS before
->> compilation.
-> 
-> It's still a very early binding, and I think there are plenty of
-> reasons to want to override it at boot time.  If there weren't, why do
-> u-boot and PPC simpleBoot add the capability to tweak at boot time,
-> the cmdline passed via the DTB?
-
-I understand that make sense to change it - especially for development.
-It should be possible to do it in u-boot. Not sure if is work to extend command line but maybe yes.
-Worth to ask on u-boot mailing list.
-
-> 
-> Setting MAC addresses for example - you don't want to compile a new
-> DTS for every board you ship, just to provide unique values. You just
-> want to be able to tweak the cmdline in the config flash or whatever.
-
-You should be able to change it in u-boot. The size of mac addr is the same. Shorten is possible too.
-
-
-Cheers,
-Michal
-
-> 
-> Cheers,
-> 
-> John
-
--- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
