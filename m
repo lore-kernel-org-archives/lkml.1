@@ -1,91 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbZHJP2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbZHJP23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755394AbZHJP2V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 11:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbZHJP2U
+	id S1755413AbZHJP23 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 11:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbZHJP21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 11:28:20 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46766 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752374AbZHJP2T (ORCPT
+	Mon, 10 Aug 2009 11:28:27 -0400
+Received: from ru.mvista.com ([213.79.90.228]:11245 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755398AbZHJP2Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 11:28:19 -0400
-Subject: Re: [PATCH V2] futex: Fix handling of bad requeue syscall pairing
-From: Peter Zijlstra <peterz@infradead.org>
-To: Darren Hart <dvhltc@us.ibm.com>
-Cc: "lkml," <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       John Kacur <jkacur@redhat.com>, Eric Dumazet <eric.dumazet@gmail.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-In-Reply-To: <4A7CA8C0.7010809@us.ibm.com>
-References: <4A7CA06E.1090904@us.ibm.com>  <4A7CA8C0.7010809@us.ibm.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 10 Aug 2009 17:27:44 +0200
-Message-Id: <1249918064.17467.143.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 10 Aug 2009 11:28:25 -0400
+Date: Mon, 10 Aug 2009 19:28:25 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Brian Swetland <swetland@google.com>, Anton Vorontsov <cbou@mail.ru>,
+       David Woodhouse <dwmw2@infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: power_supply class/framework question
+Message-ID: <20090810152825.GA4624@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <a55d774e0908071919s7b365f84o3baa19c8d6fbe899@mail.gmail.com>
+ <20090810150011.GA1471@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090810150011.GA1471@ucw.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-07 at 15:20 -0700, Darren Hart wrote:
-> From: Darren Hart <dvhltc@us.ibm.com>
+On Mon, Aug 10, 2009 at 05:00:11PM +0200, Pavel Machek wrote:
+> Hi!
 > 
-> If futex_requeue(requeue_pi=1) finds a futex_q that was created by a call
-> other the futex_wait_requeue_pi(), the q.rt_waiter may be null.  If so,
-> this will result in an oops from the following call graph:
+> > (feel free to redirect me to a different mailing list if there's a
+> > more appropriate place to ask this question)
+> > 
+> > I'm working on cleaning up some code to more correctly use the power
+> > supply framework (have the battery driver receive notification from
+> > the wall/usb power supplies, etc), and ran into a slight snag.  For
+> > mobile usb powered devices, we need to know how much current can
+> > safely be consumed by the charge circuit -- generally this is one of:
+> > none, <500mA or 1000mA, which correspond to "no power supply", "usb
+> > power supply", or "wall power supply".
 > 
-> futex_requeue()
->   rt_mutex_start_proxy_lock()
->     task_blocks_on_rt_mutex()
->       waiter->task dereference
->         OOPS
+> Actuallly, it is one of 'none', 100mA (min power USB has to supplly),
+> 500mA (max powe USB can supply by spec), 1A (wall).
 > 
-> We currently WARN_ON() if this is detected, clearly this is inadequate.
-> If we detect a mispairing in futex_requeue(), bail out, seding -EINVAL to
-> user-space.
+> For example sharp zaurus can only supply cca 300mA out of its port.
 > 
-> V2: Fix parenthesis warnings.
+> > I can use power_supply_am_i_supplied() to determine if I'm receiving
+> > power, but there's no way to determine either how much (if I have one
+> > power supply that indicates max current available) or which supply (if
+> > I define a separate "ac" and "usb" power supply).
 > 
-> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Should am_i_supplied() just return miliamps?
 
-Acked-by: Peter Zijlstra <peterz@infradead.org>
+Or enum power_supply_type, with the following priority:
+mains (wall), usb, battery?
 
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> CC: Eric Dumazet <eric.dumazet@gmail.com>
-> CC: Dinakar Guniguntala <dino@in.ibm.com>
-> CC: John Stultz <johnstul@us.ibm.com>
-> ---
-> 
->  kernel/futex.c |   11 +++++++++--
->  1 files changed, 9 insertions(+), 2 deletions(-)
-> 
-> 
-> diff --git a/kernel/futex.c b/kernel/futex.c
-> index df30983..4705d89 100644
-> --- a/kernel/futex.c
-> +++ b/kernel/futex.c
-> @@ -1306,8 +1306,15 @@ retry_private:
->  		if (!match_futex(&this->key, &key1))
->  			continue;
->  
-> -		WARN_ON(!requeue_pi && this->rt_waiter);
-> -		WARN_ON(requeue_pi && !this->rt_waiter);
-> +		/*
-> +		 * FUTEX_WAIT_REQEUE_PI and FUTEX_CMP_REQUEUE_PI should always
-> +		 * be paired with each other and no other futex ops.
-> +		 */
-> +		if ((requeue_pi && !this->rt_waiter) ||
-> +		    (!requeue_pi && this->rt_waiter)) {
-> +			ret = -EINVAL;
-> +			break;
-> +		}
->  
->  		/*
->  		 * Wake nr_wake waiters.  For requeue_pi, if we acquired the
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
