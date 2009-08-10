@@ -1,220 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbZHJPlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbZHJPmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755443AbZHJPlO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 11:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbZHJPlO
+	id S1755465AbZHJPmE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 11:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755452AbZHJPmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 11:41:14 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:44522 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754806AbZHJPlM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 11:41:12 -0400
-Message-ID: <4A803F89.1090608@novell.com>
-Date: Mon, 10 Aug 2009 11:40:57 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, avi@redhat.com, bhutchings@solarflare.com,
-       andi@firstfloor.org, gregkh@suse.de, herber@gondor.apana.org.au,
-       chrisw@sous-sol.org, shemminger@vyatta.com,
-       "Michael S. Tsirkin" <mst@redhat.com>,
-       alacrityvm-devel@lists.sourceforge.net, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RFC PATCH v2 19/19] virtio: add a vbus transport
-References: <20090409155200.32740.19358.stgit@dev.haskins.net> <20090409163221.32740.38373.stgit@dev.haskins.net> <4A7EFBE8.7050409@codemonkey.ws>
-In-Reply-To: <4A7EFBE8.7050409@codemonkey.ws>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigC41CE0EEA1A611AA760AD3E1"
+	Mon, 10 Aug 2009 11:42:01 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:51368 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753516AbZHJPl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 11:41:57 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Larry Woodman <lwoodman@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: riel@redhat.com, Peter Zijlstra <peterz@infradead.org>,
+       Li Ming Chun <macli@brc.ubc.ca>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>
+Subject: [PATCH 1/6] tracing, page-allocator: Add trace events for page allocation and page freeing
+Date: Mon, 10 Aug 2009 16:41:50 +0100
+Message-Id: <1249918915-16061-2-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1249918915-16061-1-git-send-email-mel@csn.ul.ie>
+References: <1249918915-16061-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigC41CE0EEA1A611AA760AD3E1
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+This patch adds trace events for the allocation and freeing of pages,
+including the freeing of pagevecs.  Using the events, it will be known what
+struct page and pfns are being allocated and freed and what the call site
+was in many cases.
 
-Anthony Liguori wrote:
-> Gregory Haskins wrote:
->> We add a new virtio transport for accessing backends located on vbus. =
+The page alloc tracepoints be used as an indicator as to whether the workload
+was heavily dependant on the page allocator or not. You can make a guess based
+on vmstat but you can't get a per-process breakdown. Depending on the call
+path, the call_site for page allocation may be __get_free_pages() instead
+of a useful callsite. Instead of passing down a return address similar to
+slab debugging, the user should enable the stacktrace and seg-addr options
+to get a proper stack trace.
 
->> This
->> complements the existing transports for virtio-pci, virtio-s390, and
->> virtio-lguest that already exist.
->>
->> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->=20
-> Very interesting...
->=20
-> I'm somewhat confused by what you're advocating vbus as.  I'm trying to=
+The pagevec free tracepoint has a different usecase. It can be used to get
+a idea of how many pages are being dumped off the LRU and whether it is
+kswapd doing the work or a process doing direct reclaim.
 
-> figure out how we converge vbus and virtio and become one big happy
-> family :-)
->=20
-> What parts of it do you think are better than virtio?
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Acked-by: Rik van Riel <riel@redhat.com>
+---
+ include/trace/events/kmem.h |   74 +++++++++++++++++++++++++++++++++++++++++++
+ mm/page_alloc.c             |    7 +++-
+ 2 files changed, 80 insertions(+), 1 deletions(-)
 
-I see them as distinctly different, and complimentary: virtio is
-primarily a device-interface.  vbus is primarily a bus-model.
+diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
+index 1493c54..0d358a0 100644
+--- a/include/trace/events/kmem.h
++++ b/include/trace/events/kmem.h
+@@ -225,6 +225,80 @@ TRACE_EVENT(kmem_cache_free,
+ 
+ 	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
+ );
++
++TRACE_EVENT(mm_page_free_direct,
++
++	TP_PROTO(struct page *page, unsigned int order),
++
++	TP_ARGS(page, order),
++
++	TP_STRUCT__entry(
++		__field(	struct page *,	page		)
++		__field(	unsigned int,	order		)
++	),
++
++	TP_fast_assign(
++		__entry->page		= page;
++		__entry->order		= order;
++	),
++
++	TP_printk("page=%p pfn=%lu order=%d",
++			__entry->page,
++			page_to_pfn(__entry->page),
++			__entry->order)
++);
++
++TRACE_EVENT(mm_pagevec_free,
++
++	TP_PROTO(struct page *page, int cold),
++
++	TP_ARGS(page, cold),
++
++	TP_STRUCT__entry(
++		__field(	struct page *,	page		)
++		__field(	int,		cold		)
++	),
++
++	TP_fast_assign(
++		__entry->page		= page;
++		__entry->cold		= cold;
++	),
++
++	TP_printk("page=%p pfn=%lu order=0 cold=%d",
++			__entry->page,
++			page_to_pfn(__entry->page),
++			__entry->cold)
++);
++
++TRACE_EVENT(mm_page_alloc,
++
++	TP_PROTO(struct page *page, unsigned int order,
++			gfp_t gfp_flags, int migratetype),
++
++	TP_ARGS(page, order, gfp_flags, migratetype),
++
++	TP_STRUCT__entry(
++		__field(	struct page *,	page		)
++		__field(	unsigned int,	order		)
++		__field(	gfp_t,		gfp_flags	)
++		__field(	int,		migratetype	)
++	),
++
++	TP_fast_assign(
++		__entry->page		= page;
++		__entry->order		= order;
++		__entry->gfp_flags	= gfp_flags;
++		__entry->migratetype	= migratetype;
++	),
++
++	TP_printk("page=%p pfn=%lu order=%d migratetype=%d gfp_flags=%s",
++		__entry->page,
++		page_to_pfn(__entry->page),
++		__entry->order,
++		__entry->migratetype,
++		show_gfp_flags(__entry->gfp_flags))
++);
++
+ #endif /* _TRACE_KMEM_H */
+ 
+ /* This part must be outside protection */
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index d052abb..440c439 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1062,6 +1062,7 @@ static void free_hot_cold_page(struct page *page, int cold)
+ 
+ void free_hot_page(struct page *page)
+ {
++	trace_mm_page_free_direct(page, 0);
+ 	free_hot_cold_page(page, 0);
+ }
+ 	
+@@ -1905,6 +1906,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+ 				zonelist, high_zoneidx, nodemask,
+ 				preferred_zone, migratetype);
+ 
++	trace_mm_page_alloc(page, order, gfp_mask, migratetype);
+ 	return page;
+ }
+ EXPORT_SYMBOL(__alloc_pages_nodemask);
+@@ -1945,13 +1947,16 @@ void __pagevec_free(struct pagevec *pvec)
+ {
+ 	int i = pagevec_count(pvec);
+ 
+-	while (--i >= 0)
++	while (--i >= 0) {
++		trace_mm_pagevec_free(pvec->pages[i], pvec->cold);
+ 		free_hot_cold_page(pvec->pages[i], pvec->cold);
++	}
+ }
+ 
+ void __free_pages(struct page *page, unsigned int order)
+ {
+ 	if (put_page_testzero(page)) {
++		trace_mm_page_free_direct(page, order);
+ 		if (order == 0)
+ 			free_hot_page(page);
+ 		else
+-- 
+1.6.3.3
 
-While its true that vbus has a rudimentary "device interface" (ala
-dev->call(), dev->shm(), etc), it will typically be layered with a more
-robust device model (such as virtqueue based virtio-net, or IOQ based
-venet).
-
-This is akin to raw PCI.  PCI has the basic mechanics (MMIO, PIO,
-interrupts, DMA), but generally devices overlay higher layer constructs
-(such as tx/rx rings for ethernet).  vbus is similar in that regard.
-
-virtio, on the other hand, is a fully fleshed device model, but it needs
-to be paired up with some other bus-model (such as qemu+pci via
-virtio-pci, or linux+vbus via virtio-vbus) to be complete.
-
-
-> Should we forget
-> about venet and just focus on virtio-net on top of virtio-vbus assuming=
-
-> that we can prove venet-tap/virtio-vbus/virtio-net is just as good as
-> venet-tap/vbus/venet?
-
-I think going forward, I would love to see some community weight behind
-virtio-vbus and the standardization of the virtio-X drivers (net, blk,
-console, etc) as the default core IO device model for vbus.  If that
-were to happen, I would not be inclined to create any new native vbus
-drivers for where there is overlap with virtio (net, disk, etc).
-
-I *will*, however, likely use the native vbus interfaces for some of the
-device models in the pipeline (such as the real-time controller, and
-OFED) because there isn't a virtio equivalent for that, and the vbus
-device model was written with them in mind.
-
-And regardless of the final outcome of virtio-vbus as a viable virtio
-transport model, I will probably continue to support the native vbus
-"venet" protocol for AlacrityVM indefinitely only because I have people
-that are using it today (AlacrityVM being one example, but others are in
-the works), it is simple, and it works extremely well.
-
->=20
-> If we can prove that an in-kernel virtio-net
-> backend/virtio-pci/virtio-net does just as well as
-> venet-tap/virtio-vbus/virtio-net does that mean that vbus is no longer
-> needed?
-
-vbus is primarily about the bus model and resource-containers.  It is
-therefore so much more than just 802.x networking and/or KVM.  So no,
-obtaining equal network performance with virtio-net sans vbus does not
-invalidate vbus as a concept.  It would perhaps purely be disincentive
-for anyone to chose venet over virtio-net within a KVM guest who doesn't
-have a vested interest in the venet ABI.
-
-
->=20
-> If you concede that the transport mechanisms can be identical, are you
-> really advocating the discovering and configuration mechanisms in vbus?=
-
-
-The problem is that they are not truly identical, and they cannot easily
-be made identical.
-
-One of the design goals is to create a re-useable, in-kernel device
-model with a thin-shim transport between the guest and the bus.  The
-transport (called a "vbus-connector") in question must convey a very
-small verb namespace (devadd/drop, devopen/close, shmsignal, etc) to use
-this bus.  So you have a driver for this transport (e.g. vbus-pcibridge)
-but the bus-model itself, device-models, and guest drivers are all reusab=
-le.
-
-Another design goal is to create a high-performance, low-latency,
-software-to-software optimized IO subsystem.  PCI was designed for
-software-to-hardware, so it has assumptions about that environment that
-simply do not apply in software-to-software.  Most of these limitations
-can be worked-around with KVM surgery and/or creative guest development,
-but they are (at best) awkward to express in PCI.
-
-For example, creating a high-performance, synchronous, in-kernel "call"
-in PCI is fairly complicated, awkward, and requires a bit of per-device
-heap to pull off.  Yet, I need this functionality for things like RT
-support (scheduler state changes, etc).
-
-As another example, the PCI model is somewhat resource rigid and
-therefore awkward for creating dynamic software objects in response to
-guest actions on demand, such as IPC sockets, due to the way MSI works.
-
-As a third example, the PCI device model makes assumptions about
-signal-path delivery (MSI to APIC) which may or may not be the optimal
-path (e.g. see my priority+aggregation thread with Arnd).
-
-I am open to suggestions on ways to write the "connector" code
-differently.  I am sure that some things could be addressed at a
-different layer (such as the conversation with Arnd regarding the PV
-interrupt controller).
-
-I think, however, that the motivations to PCI'ize the x86-KVM world are
-driven more by inertia (its already in qemu and many guests know it)
-than by intentional selection (its model is the best to express the
-needs of virt).  Therefore, I am trying to put a stake in the ground to
-redirect that inertia towards a path that I believe is more amenable to
-virt in the long term.  Consider it a long-term investment in the platfor=
-m.
-
-My approach to date is more akin to how something like USB was
-introduced.  The USB designers were not trying to artificially constrain
-their design so that it looked like PCI just to avoid needing an OS
-driver.  They (presumably) designed a bus that best achieved their
-goals, and then people wrote adaption layers (ala PCI-to-USB bridges) to
-support them on the OS's/arches that cared.  Eventually most did.
-
-I admit that, as with any new bus (e.g. USB), there will undoubtedly be
-some lumps during the initial roll-out phase since it is not yet
-universally supported.  But the long term vision is that (assuming it
-succeeds as a project) that eventually vbus would be ubiquitous (ala
-USB) and it makes for a better bus-model choice for things like
-linux-based hypervisors (pci-based kvm (x86/ppc), s390-kvm, lguest, UML,
-openvz, and even something like Xen-Dom0, etc), as well as applications
-and even some specialized physical systems (Blade systems, clusters, etc)=
-=2E
-
-
-> Is that what we should be focusing on? Do you care only about the host
-> mechanisms or do you also require the guest infrastructure to be presen=
-t?
-
-I see it as a tightly integrated portion of the stack that sits right
-below the virtio layer.
-
->=20
-> I think two paravirtual I/O frameworks for KVM is a bad thing.
-
-So hopefully after reading my reply above you can see that I don't think
-this is indeed what is being proposed.
-
-> It duplicates a ton of code and will very likely lead to user unhappine=
-ss.
-
-I totally agree and I hope we can work together to find a solution that
-makes the most sense and eliminates as much duplicate effort as possible.=
-
-
-Kind Regards,
--Greg
-
-
---------------enigC41CE0EEA1A611AA760AD3E1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqAP4kACgkQP5K2CMvXmqGLIgCdF9lheOvDIRkKLs2q29OR6TMH
-mDEAoISYdvr7msTtWsz7brh127IsDi2Y
-=rrgb
------END PGP SIGNATURE-----
-
---------------enigC41CE0EEA1A611AA760AD3E1--
