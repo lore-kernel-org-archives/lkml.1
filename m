@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbZHKVB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932084AbZHKVCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbZHKVB6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 17:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbZHKVB5
+	id S932084AbZHKVCS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 17:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZHKVCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 17:01:57 -0400
-Received: from statler.bytemark.co.uk ([212.110.162.18]:57380 "EHLO
-	statler.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753983AbZHKVB5 (ORCPT
+	Tue, 11 Aug 2009 17:02:17 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41643 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754450AbZHKVCQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 17:01:57 -0400
-Date: Tue, 11 Aug 2009 23:01:46 +0200
-From: "Emilio G. Cota" <cota@braap.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-Cc: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [patch 2/5] Staging: vme: add VME userspace driver
-Message-ID: <20090811210146.GB9910@braap.org>
-References: <20090803210116.GC28430@kroah.com> <20090808232259.GA29303@braap.org> <20090809121715.GA3884@braap.org> <4A801D04.6050102@gefanuc.com> <20090810152606.GA23319@braap.org> <4A804B0B.5020809@gefanuc.com> <20090810203637.GD3055@braap.org> <4A8133ED.6070304@gefanuc.com> <20090811094025.GC3251@braap.org> <4A81683D.2030408@gefanuc.com>
+	Tue, 11 Aug 2009 17:02:16 -0400
+Date: Mon, 10 Aug 2009 18:42:05 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
+       Frans Pop <elendil@planet.nl>, Chris Mason <chris.mason@oracle.com>,
+       jack@suse.cz, linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: What happened to data=guarded?
+Message-ID: <20090810164205.GC1505@ucw.cz>
+References: <1249934623-15939-1-git-send-email-tytso@mit.edu> <200908111535.37927.elendil@planet.nl> <20090811133721.GD29224@think> <200908111654.38217.elendil@planet.nl> <878whqgyid.fsf@basil.nowhere.org> <20090811185703.GQ1756@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A81683D.2030408@gefanuc.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090811185703.GQ1756@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martyn Welch wrote:
-> I disagree. The bridge drivers should register their resources with the  
-> core. The core, or a layer above it, can control how those resources are  
-> used. This moves the complexity you want for managing the windows to a  
-> level that will work on all underlying drivers rather than having to be  
-> written explicitly for each one. The mechanism I have provided does this  
-> discovery.
+On Tue 2009-08-11 14:57:03, Theodore Tso wrote:
+> On Tue, Aug 11, 2009 at 05:29:14PM +0200, Andi Kleen wrote:
+> > > Good to hear. I've so far stayed with data=ordered as I think I'd prefer 
+> > > data=guarded over data=writeback. I'll certainly give it a try when it's 
+> > > available.
+> > 
+> > Same here. data=writeback already cost me a few files after crashes here :/
+> 
+> What sort of files were you losing?  I don't know if we can improve
+> the implied flush hueristics, but we should at least try to see if we
+> do something about it.
 
-nah, it would be foolish to think we can write an upper layer
-that covers every corner case for every bridge we're gonna
-encounter. For instance, imagine a bridge that has 10 windows,
-with the annoying feature that window#10 *only* accepts CS/CSR
-mappings. How stupid is that? Very stupid. But what would be
-more stupid is to write allegedly 'generic' interfaces that
-break every time a bridge comes up with a stupid feature.
+IIRC... the flush heuristics invoke async flush, so you can still lose
+data if you are unlucky, no?
+								Pavel
 
-So that doesn't belong to a generic interface. Now, to avoid
-code duplication between two (or more) _very_ similar bridges,
-we just share the 'resource management' code among those,
-privately. And that's pretty much it.
-
-Regards,
-E.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
