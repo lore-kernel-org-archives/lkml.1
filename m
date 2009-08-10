@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZHJMSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbZHJMSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbZHJMSY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 08:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbZHJMSX
+	id S1754116AbZHJMSb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 08:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbZHJMS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 08:18:23 -0400
-Received: from tundra.namei.org ([65.99.196.166]:60806 "EHLO tundra.namei.org"
+	Mon, 10 Aug 2009 08:18:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39428 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753881AbZHJMSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 08:18:23 -0400
-Date: Mon, 10 Aug 2009 22:17:47 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: iceberg <strakh@ispras.ru>
-cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       Eric Paris <eparis@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>
-Subject: [PATCH] SELinux: re. BUG memory leakage at
- ./security/selinux/hooks.c
-In-Reply-To: <alpine.LRH.2.00.0908102152270.10706@tundra.namei.org>
-Message-ID: <alpine.LRH.2.00.0908102216430.10792@tundra.namei.org>
-References: <200908101257.43672.strakh@ispras.ru> <alpine.LRH.2.00.0908102152270.10706@tundra.namei.org>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1754049AbZHJMS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 08:18:28 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
+       msb@google.com, viro@zeniv.linux.org.uk, hannes@cmpxchg.org
+Subject: [PATCH 0/3] vfs: change sb->s_maxbytes to loff_t (try #2)
+Date: Mon, 10 Aug 2009 08:17:40 -0400
+Message-Id: <1249906663-7572-1-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please review.
+This is the second attempt at a set to convert s_maxbytes to loff_t. The
+first set had a patch for fiemap that doesn't seem to actually be needed
+and removed a check from do_sendfile that does seem to be needed. This
+set should fix those problems and also cleans up the warning in
+vfs_kern_mount a bit.
 
-Author: James Morris <jmorris@namei.org>
-Date:   Mon Aug 10 22:00:13 2009 +1000
+Recently, I spent a day or so tracking down a long-standing problem with
+CIFS and sendfile(). The problem turned out to be that CIFS was setting
+s_maxbytes to a value that, when cast to a signed value, became
+negative. This broke the offset checks in do_sendfile().
 
-    SELinux: fix memory leakage in /security/selinux/hooks.c
-    
-    Fix memory leakage in /security/selinux/hooks.c
-    
-    The buffer always needs to be freed here; we either error
-    out or allocate more memory.
-    
-    Reported-by: iceberg <strakh@ispras.ru>
-    Signed-off-by: James Morris <jmorris@namei.org>
+While I fixed this in CIFS, it turns out that this problem is actually a
+little more widespread. Since setting s_maxbytes to a value larger than
+MAX_LFS_FILESIZE breaks things, I believe it makes sense to turn
+s_maxbytes into an loff_t. Most of the places that compare values to
+s_maxbytes are comparing it against signed loff_t values, so this change
+should help reduce the amount of implicit conversion that needs to be
+done.
 
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 15c2a08..1e8cfc4 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -1285,6 +1285,8 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
- 		rc = inode->i_op->getxattr(dentry, XATTR_NAME_SELINUX,
- 					   context, len);
- 		if (rc == -ERANGE) {
-+			kfree(context);
-+
- 			/* Need a larger buffer.  Query for the right size. */
- 			rc = inode->i_op->getxattr(dentry, XATTR_NAME_SELINUX,
- 						   NULL, 0);
-@@ -1292,7 +1294,6 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
- 				dput(dentry);
- 				goto out_unlock;
- 			}
--			kfree(context);
- 			len = rc;
- 			context = kmalloc(len+1, GFP_NOFS);
- 			if (!context) {
+I've looked at the places that use s_maxbytes and didn't see any that
+would immediately break with this change. That said, some of the
+calculations that filesystems use to set s_maxbytes are convoluted, so
+it's possible that I missed some. A critical eye toward that when
+reviewing would be good.
 
--- 
-James Morris
-<jmorris@namei.org>
+This set is only lightly tested, but it's fairly straightforward. Many
+thanks to those that have reviewed this so far.
+
+Jeff Layton (3):
+  vfs: make get_sb_pseudo set s_maxbytes to value that can be cast to
+    signed
+  vfs: remove redundant position check in do_sendfile
+  vfs: change sb->s_maxbytes to a loff_t
+
+ fs/libfs.c         |    2 +-
+ fs/read_write.c    |    3 ---
+ fs/super.c         |   10 ++++++++++
+ include/linux/fs.h |    2 +-
+ 4 files changed, 12 insertions(+), 5 deletions(-)
+
