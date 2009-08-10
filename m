@@ -1,123 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbZHJWNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbZHJWQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754058AbZHJWNJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 18:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbZHJWNG
+	id S1754073AbZHJWQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 18:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbZHJWQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 18:13:06 -0400
-Received: from bar.sig21.net ([80.81.252.164]:51685 "EHLO bar.sig21.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753675AbZHJWNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 18:13:05 -0400
-Date: Tue, 11 Aug 2009 00:13:07 +0200
-From: Johannes Stezenbach <js@sig21.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Robert Richter <robert.richter@amd.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <andi@firstfloor.org>,
-       x86@kernel.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.31-rc5 regression: x86 MCE malfunction on Thinkpad T42p
-Message-ID: <20090810221307.GA19236@sig21.net>
-References: <20090807170942.GB9177@sig21.net>
- <87k51cgdt8.fsf@basil.nowhere.org>
- <20090810122731.GA5863@sig21.net>
- <20090810123228.GD6838@basil.fritz.box>
- <20090810125651.GB6082@sig21.net>
- <20090810132923.GA4418@elte.hu>
- <20090810192658.GA15513@sig21.net>
- <20090810201406.GA6961@elte.hu>
- <20090810203706.GA17338@sig21.net>
- <20090810213133.GB16944@elte.hu>
+	Mon, 10 Aug 2009 18:16:26 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:50143 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753934AbZHJWQZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 18:16:25 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
+Date: Mon, 10 Aug 2009 22:16:22 +0000
+User-Agent: KMail/1.11.2 (Linux/2.6.29; KDE/4.2.2; x86_64; ; )
+Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <cover.1249930169.git.mst@redhat.com> <200908102151.18529.arnd@arndb.de> <20090810201044.GA16899@redhat.com>
+In-Reply-To: <20090810201044.GA16899@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090810213133.GB16944@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Spam-21-Score: -4.1 (----)
-X-Spam-21-Report: No, score=-4.1 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.303,BAYES_00=-2.599 autolearn=no
+Message-Id: <200908102216.22410.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+/ST2JTFufgynSX0LsSSe56xHdNwbOTvZibPf
+ XFTkk5n10ixS2VLlJqswPG4e3bA73tiBWEdcX74N+nOW7zKrx0
+ /PMblAcMfDHojrHVoP4dw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 11:31:33PM +0200, Ingo Molnar wrote:
-> * Johannes Stezenbach <js@sig21.net> wrote:
-> > 
-> > # cat /proc/cpuinfo 
-> > processor	: 0
-> > vendor_id	: GenuineIntel
-> > cpu family	: 6
-> > model		: 13
-> > model name	: Intel(R) Pentium(R) M processor 1.80GHz
+On Monday 10 August 2009 20:10:44 Michael S. Tsirkin wrote:
+> On Mon, Aug 10, 2009 at 09:51:18PM +0200, Arnd Bergmann wrote:
+> > what is the difference between vhost_net_reset_owner(n)
+> > and vhost_net_set_socket(n, -1)?
 > 
-> ah, yes. There's no cache-references/misses, because in 
-> arch/x86/kernel/cpu/perf_counter.c we have two zero entries:
+> set socket to -1 will only stop the device.
 > 
-> static const u64 p6_perfmon_event_map[] =
-> {
->   [PERF_COUNT_HW_CPU_CYCLES]            = 0x0079,
->   [PERF_COUNT_HW_INSTRUCTIONS]          = 0x00c0,
->   [PERF_COUNT_HW_CACHE_REFERENCES]      = 0x0000, <----------
->   [PERF_COUNT_HW_CACHE_MISSES]          = 0x0000, <----------
->   [PERF_COUNT_HW_BRANCH_INSTRUCTIONS]   = 0x00c4,
->   [PERF_COUNT_HW_BRANCH_MISSES]         = 0x00c5,
->   [PERF_COUNT_HW_BUS_CYCLES]            = 0x0062,
-> };
+> reset owner will let another process take over the device.
+> It also needs to reset all parameters to make it safe for that
+> other process, so in particular the device is stopped.
+
+ok
+ 
+> I tried explaining this in the header vhost.h - does the comment
+> there help, or do I need to clarify it?
+
+No, I just didn't get there yet.
+
+> I had the impression that if there's no compat_ioctl,
+> unlocked_ioctl will get called automatically. No?
+
+It will issue a kernel warning but not call unlocked_ioctl,
+so you need either a compat_ioctl method or list the numbers
+in fs/compat_ioctl.c, which I try to avoid.
+
+> > Why do you need a kernel thread here? If the data transfer functions
+> > all get called from a guest intercept, shouldn't you already be
+> > in the right mm?
 > 
-> i.e. PERF_COUNT_HW_CACHE_REFERENCES and PERF_COUNT_HW_CACHE_MISSES 
-> is not filled in yet.
+> several reasons :)
+> - I get called under lock, so can't block
+> - eventfd can be passed to another process, and I won't be in guest context at all
+> - this also gets called outside guest context from socket poll
+> - vcpu is blocked while it's doing i/o. it is better to free it up
+>   as all the packet copying might take a while
+
+Ok.
+
+> > I guess that this is where one could plug into macvlan directly, using
+> > sock_alloc_send_skb/memcpy_fromiovec/dev_queue_xmit directly,
+> > instead of filling a msghdr for each, if we want to combine this
+> > with the work I did on that.
 > 
-> Could you try something like:
-> 
->     perf stat -e r0f2e true
-> 
-> (0x2e: L2 requests, 0x0f: all units)
-> 
-> if i checked the docs right that counter would give us L2 cache 
-> stats - does it display non-zero values?
+> quite possibly. Or one can just bind a raw socket to macvlan :)
 
-# ./perf stat -e r0f2e true
+Right, that works as well, but may get more complicated once we
+try to add zero-copy or other optimizations.
 
- Performance counter stats for 'true':
-
-          10584  raw 0xf2e               
-
-    0.001159924  seconds time elapsed
-
-The number also increases for larger programs than "true".
-
-According to /usr/share/oprofile/i386/p6_mobile/events and
-http://oprofile.sourceforge.net/docs/intel-p6-mobile-events.php
-0x2e + 0x0f is "L2 requests, all units", but I couldn't say how
-to count cache references vs. misses.  Or does it work
-with unit mask 0x0e vs. 0x01?
-
-# ./perf stat -e r0e2e true
-
- Performance counter stats for 'true':
-
-          10147  raw 0xe2e               
-
-    0.001121651  seconds time elapsed
-
-# ./perf stat -e r012e true
-
- Performance counter stats for 'true':
-
-            468  raw 0x12e               
-
-    0.001130870  seconds time elapsed
-
-
-> > Could the warning be caused by the cpufreq ondemand governor? ISTR 
-> > that one should switch to the performance governor before doing 
-> > any profiling, but I forgot for this test.
-> 
-> there might be a connection - it could in theory cause sched_clock() 
-> transients and confuse the ring-buffer time-stamping.
-
-I'll try tomorrow after a fresh boot if the warning also appears
-with the performance governor.
-
-
-Thanks
-Johannes
+	Arnd <><
