@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751389AbZHJG2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751439AbZHJGaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751389AbZHJG2W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 02:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbZHJG2W
+	id S1751439AbZHJGaR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 02:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750901AbZHJGaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 02:28:22 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:25171 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750823AbZHJG2V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 02:28:21 -0400
+	Mon, 10 Aug 2009 02:30:16 -0400
+Received: from compulab.co.il ([67.18.134.219]:55672 "EHLO compulab.co.il"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750715AbZHJGaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 02:30:15 -0400
+Message-ID: <4A7FBE68.6070704@compulab.co.il>
+Date: Mon, 10 Aug 2009 09:30:00 +0300
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090712)
 MIME-Version: 1.0
-Date: Mon, 10 Aug 2009 16:28:22 +1000
-Message-ID: <1d3f23370908092328l6e980f3ft2d5a8f8f37c26fcf@mail.gmail.com>
-Subject: Rethinking MicroBlaze commandline precedence
-From: John Williams <john.williams@petalogix.com>
-To: Michal Simek <michal.simek@petalogix.com>,
-       John Linn <John.Linn@xilinx.com>,
-       David DeBonis <david.debonis@xilinx.com>
-Cc: microblaze-uclinux@itee.uq.edu.au,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
+To: felipe.balbi@nokia.com
+CC: Felipe Balbi <me@felipebalbi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: [PATCH] regulator: userspace: use sysfs_create_group
+References: <1249840885-13498-1-git-send-email-me@felipebalbi.com> <4A7FAE22.80809@compulab.co.il> <20090810060610.GN14802@nokia.com>
+In-Reply-To: <20090810060610.GN14802@nokia.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-ACL-Warn: {
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - compulab.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Currently, MicroBlaze commandline handling in order of lowest to
-highest priority, looks like this:
 
-1. pointer in r5 from bootloader
-2. CONFIG_CMDLINE=...
-3. "chosen" section in DTS/DT
-4. CONFIG_CMDLINE=... && CONFIG_CMDLINE_FORCE
+Felipe Balbi wrote:
+> 
+> ================================ CUT HERE =====================================
+> 
+>>From 5e3502b30b2cbd30946e1240d62905db33716dbd Mon Sep 17 00:00:00 2001
+> From: Felipe Balbi <felipe.balbi@nokia.com>
+> Date: Mon, 10 Aug 2009 09:05:13 +0300
+> Subject: [PATCH] regulator: userspace: use sysfs_create_group
+> 
+> and avoid introducing our own loops for creating
+> several sysfs entries.
+> 
+> Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+> ---
 
-I'm wondering if a cmdline in r5 should override the DTS.  My thinking
-is based on two observations:
+Acked-by: Mike Rapoport <mike@compulab.co.il>
 
-(a) not everyone will use a bootloader like u-boot that can manipulate
-DTBs easily before kernel boot
-(b) a custom cmdline string in r5 allows the latest possible binding
-(runtime), where as the DTB is typically created at compile time.
-
-So, how about this order instead:
-
-1. CONFIG_CMDLINE=...
-2. "chosen" section in DTS/DT
-3. pointer in r5 from bootloader
-4. CONFIG_CMDLINE=... and CONFIG_CMDLINE_FORCE
-
-Then, apart from CMDLINE_FORCE, the precedence goes from earliest
-binding (kernel build) to latest (runtime via bootloader/r5).
-
-Thoughts?
-
-John
 -- 
-John Williams, PhD, B.Eng, B.IT
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
+Sincerely yours,
+Mike.
+
