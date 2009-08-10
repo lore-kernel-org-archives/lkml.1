@@ -1,77 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbZHJQFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755587AbZHJQHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755598AbZHJQFj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 12:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZHJQFi
+	id S1755587AbZHJQHf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 12:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZHJQHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 12:05:38 -0400
-Received: from fieldses.org ([174.143.236.118]:59056 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755439AbZHJQFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 12:05:38 -0400
-Date: Mon, 10 Aug 2009 12:05:37 -0400
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       NeilBrown <neilb@suse.de>, Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: Re: linux-next: manual merge of the nfsd tree with the nfs tree
-Message-ID: <20090810160537.GD3401@fieldses.org>
-References: <20090810105851.80333493.sfr@canb.auug.org.au>
+	Mon, 10 Aug 2009 12:07:34 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:7764 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755483AbZHJQHd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 12:07:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=PZBPcFV4z2SQbMZYT/1HIFjBVuyyKCmC2q/56g552S9/UqiAp0MoPBczJIJaCvjvSW
+         epVkkjZdhPs41y9HL0x2UGwXpnqBF3n0L0fglIsmMmfpcjBHth7SBtEJBLtb9PIPszGv
+         0hqjI/+1RDZjTjI7z5mollTIioQ0hlUMwOX+M=
+Message-ID: <4A8045BD.8010803@gmail.com>
+Date: Mon, 10 Aug 2009 18:07:25 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090810105851.80333493.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: Roland Dreier <rdreier@cisco.com>
+CC: LKML <linux-kernel@vger.kernel.org>, Roland Dreier <rolandd@cisco.com>,
+       Sean Hefty <sean.hefty@intel.com>,
+       Hal Rosenstock <hal.rosenstock@gmail.com>,
+       general@lists.openfabrics.org
+Subject: Re: [PATCH 10/14] infiniband: use printk_once
+References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>	<1249847649-11631-11-git-send-email-marcin.slusarz@gmail.com> <adaocqo9sb4.fsf@cisco.com>
+In-Reply-To: <adaocqo9sb4.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 10:58:51AM +1000, Stephen Rothwell wrote:
-> Hi Bruce,
+Roland Dreier wrote:
+>  >  drivers/infiniband/hw/cxgb3/iwch.c |    4 +---
+>  >  drivers/infiniband/hw/mlx4/main.c  |    6 +-----
 > 
-> Today's linux-next merge of the nfsd tree got a conflict in
-> net/sunrpc/cache.c between commit
-> 173912a6add00f4715774dcecf9ee53274c5924c ("SUNRPC: Move procfs-specific
-> stuff out of the generic sunrpc cache code") from the nfs tree and commit
-> f866a8194f7cbabb9135b98b9ac7d26237b88367 ("sunrpc/cache: rename
-> queue_loose to cache_dequeue") from the nfsd tree.
-
-OK, thanks.
-
-Looks like there may be some less trivial conflicts now, though.  Trond,
-maybe you could rebase the cache stuff against my latest for-2.6.32?
-
---b.
-
+>  > --- a/drivers/infiniband/hw/mlx4/main.c
+>  > +++ b/drivers/infiniband/hw/mlx4/main.c
+>  > @@ -540,15 +540,11 @@ static struct device_attribute *mlx4_class_attributes[] = {
+>  >  
+>  >  static void *mlx4_ib_add(struct mlx4_dev *dev)
+>  >  {
+>  > -	static int mlx4_ib_version_printed;
+>  >  	struct mlx4_ib_dev *ibdev;
+>  >  	int num_ports = 0;
+>  >  	int i;
+>  >  
+>  > -	if (!mlx4_ib_version_printed) {
+>  > -		printk(KERN_INFO "%s", mlx4_ib_version);
+>  > -		++mlx4_ib_version_printed;
+>  > -	}
+>  > +	printk_once(KERN_INFO "%s", mlx4_ib_version);
+>  >  
+>  >  	mlx4_foreach_port(i, dev, MLX4_PORT_TYPE_IB)
+>  >  		num_ports++;
 > 
-> Just context changes. I fixed it up (see below) and can carry the fix as
-> necessary.
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> 
-> diff --cc net/sunrpc/cache.c
-> index db7720e,d19c075..0000000
-> --- a/net/sunrpc/cache.c
-> +++ b/net/sunrpc/cache.c
-> @@@ -884,7 -908,19 +884,7 @@@ static int cache_release(struct inode *
->   
->   
->   
-> - static void queue_loose(struct cache_detail *detail, struct cache_head *ch)
->  -static const struct file_operations cache_file_operations = {
->  -	.owner		= THIS_MODULE,
->  -	.llseek		= no_llseek,
->  -	.read		= cache_read,
->  -	.write		= cache_write,
->  -	.poll		= cache_poll,
->  -	.ioctl		= cache_ioctl, /* for FIONREAD */
->  -	.open		= cache_open,
->  -	.release	= cache_release,
->  -};
->  -
->  -
-> + static void cache_dequeue(struct cache_detail *detail, struct cache_head *ch)
->   {
->   	struct cache_queue *cq;
->   	spin_lock(&queue_lock);
+> Looks fine but there is near-identical code in
+> drivers/infiniband/hw/mthca/mthca_main.c that you might as well convert
+> too.
+
+Thanks for a hint. Updated patch below.
+
+---
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+Date: Mon, 10 Aug 2009 18:01:49 +0200
+Subject: [PATCH 10/14 v2] infiniband: use printk_once
+
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Roland Dreier <rolandd@cisco.com>
+Cc: Sean Hefty <sean.hefty@intel.com>
+Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
+Cc: general@lists.openfabrics.org
+---
+ drivers/infiniband/hw/cxgb3/iwch.c       |    4 +---
+ drivers/infiniband/hw/mlx4/main.c        |    6 +-----
+ drivers/infiniband/hw/mthca/mthca_main.c |    6 +-----
+ 3 files changed, 3 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/infiniband/hw/cxgb3/iwch.c b/drivers/infiniband/hw/cxgb3/iwch.c
+index 26fc0a4..9cc99df 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch.c
++++ b/drivers/infiniband/hw/cxgb3/iwch.c
+@@ -105,11 +105,9 @@ static void rnic_init(struct iwch_dev *rnicp)
+ static void open_rnic_dev(struct t3cdev *tdev)
+ {
+ 	struct iwch_dev *rnicp;
+-	static int vers_printed;
+ 
+ 	PDBG("%s t3cdev %p\n", __func__,  tdev);
+-	if (!vers_printed++)
+-		printk(KERN_INFO MOD "Chelsio T3 RDMA Driver - version %s\n",
++	printk_once(KERN_INFO MOD "Chelsio T3 RDMA Driver - version %s\n",
+ 		       DRV_VERSION);
+ 	rnicp = (struct iwch_dev *)ib_alloc_device(sizeof(*rnicp));
+ 	if (!rnicp) {
+diff --git a/drivers/infiniband/hw/mlx4/main.c b/drivers/infiniband/hw/mlx4/main.c
+index ae3d759..0b2f77a 100644
+--- a/drivers/infiniband/hw/mlx4/main.c
++++ b/drivers/infiniband/hw/mlx4/main.c
+@@ -540,15 +540,11 @@ static struct device_attribute *mlx4_class_attributes[] = {
+ 
+ static void *mlx4_ib_add(struct mlx4_dev *dev)
+ {
+-	static int mlx4_ib_version_printed;
+ 	struct mlx4_ib_dev *ibdev;
+ 	int num_ports = 0;
+ 	int i;
+ 
+-	if (!mlx4_ib_version_printed) {
+-		printk(KERN_INFO "%s", mlx4_ib_version);
+-		++mlx4_ib_version_printed;
+-	}
++	printk_once(KERN_INFO "%s", mlx4_ib_version);
+ 
+ 	mlx4_foreach_port(i, dev, MLX4_PORT_TYPE_IB)
+ 		num_ports++;
+diff --git a/drivers/infiniband/hw/mthca/mthca_main.c b/drivers/infiniband/hw/mthca/mthca_main.c
+index 13da9f1..2e4e043 100644
+--- a/drivers/infiniband/hw/mthca/mthca_main.c
++++ b/drivers/infiniband/hw/mthca/mthca_main.c
+@@ -1215,15 +1215,11 @@ int __mthca_restart_one(struct pci_dev *pdev)
+ static int __devinit mthca_init_one(struct pci_dev *pdev,
+ 				    const struct pci_device_id *id)
+ {
+-	static int mthca_version_printed = 0;
+ 	int ret;
+ 
+ 	mutex_lock(&mthca_device_mutex);
+ 
+-	if (!mthca_version_printed) {
+-		printk(KERN_INFO "%s", mthca_version);
+-		++mthca_version_printed;
+-	}
++	printk_once(KERN_INFO "%s", mthca_version);
+ 
+ 	if (id->driver_data >= ARRAY_SIZE(mthca_hca_table)) {
+ 		printk(KERN_ERR PFX "%s has invalid driver data %lx\n",
+-- 
+1.6.3.3
+
