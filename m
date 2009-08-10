@@ -1,119 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbZHJPmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755466AbZHJPpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbZHJPmz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 11:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbZHJPl7
+	id S1755466AbZHJPpQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 11:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755428AbZHJPpO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 11:41:59 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:51362 "EHLO gir.skynet.ie"
+	Mon, 10 Aug 2009 11:45:14 -0400
+Received: from kroah.org ([198.145.64.141]:55437 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752327AbZHJPl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 11:41:57 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: Larry Woodman <lwoodman@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: riel@redhat.com, Peter Zijlstra <peterz@infradead.org>,
-       Li Ming Chun <macli@brc.ubc.ca>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>
-Subject: [PATCH 0/6] Add some trace events for the page allocator v6
-Date: Mon, 10 Aug 2009 16:41:49 +0100
-Message-Id: <1249918915-16061-1-git-send-email-mel@csn.ul.ie>
-X-Mailer: git-send-email 1.6.3.3
+	id S1752327AbZHJPpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 11:45:13 -0400
+Date: Mon, 10 Aug 2009 08:39:43 -0700
+From: Greg KH <greg@kroah.com>
+To: David Dillow <dave@thedillows.org>
+Cc: Greg KH <gregkh@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
+       Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+ /dev
+Message-ID: <20090810153943.GB7652@kroah.com>
+References: <20090805171513.GA10443@kroah.com>
+ <20090805192037.19c54c4d@lxorguk.ukuu.org.uk>
+ <20090805182805.GA7534@kroah.com>
+ <20090805185136.GA21442@kroah.com>
+ <87ljlxhrnr.fsf@basil.nowhere.org>
+ <1249575658.19886.8.camel@lap75545.ornl.gov>
+ <20090806183147.GA28409@suse.de>
+ <1249772876.22248.34.camel@obelisk.thedillows.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249772876.22248.34.camel@obelisk.thedillows.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is V6 of a patchset to add some tracepoints of interest when analysing
-the page allocator. The only changes since the last revision were to fix a
-minor error in the post-processing script and to add a reviewed-by to one
-of the patches.
+On Sat, Aug 08, 2009 at 07:07:56PM -0400, David Dillow wrote:
+> On Thu, 2009-08-06 at 11:31 -0700, Greg KH wrote:
+> > On Thu, Aug 06, 2009 at 12:20:58PM -0400, David Dillow wrote:
+> > > If you use mount by label or UUID, you still need udev (or other tools)
+> > > in the initrd to find the right disk, correct?
+> > 
+> > Yes, you would.
+> > 
+> > > And for distros that want to support that, does this really reduce the
+> > > amount of code in the initrd?
+> > 
+> > Yes it does, see the code in the Novell Moblin images for an example of
+> > how to use devtmpfs with udev for how to do this.
+> 
+> I followed up with Greg offline to make sure I was looking at the right
+> thing, but the upshot is that Moblin does not use an initrd and devtmpfs
+> does not in any way reduce the amount of code for those distros that
+> want to support more than the root=/dev/blah syntax.
 
-Can we get a yey/nay on whether these should be merged or not?
+Like Scott points out, this option now allows distros to use blkid
+directly instead of udev if they want to implement things like this
+without udev.
 
-Changelog since V4
-  o Drop the order parameter from mm_pagevec_free() as it's implicitly 0
-  o Drop the cpu= information from PCPU events as the CPU printed is
-    incorrect and the information is already available
-  o Pass down the minimum amount of information during fallback and the
-    zone_locked event as the additional information in TP_printk
-  o Pass down the minimum amount of information during fallback and figure
-    out the additional information in the post-processing TP_printk
-  o Make the post-processing script more robust against format changes.
-    This could be significantly more robust and construct a regex on
-    the fly but it makes more sense to leave this as a POC with the
-    view to integrating properly with perf once the important information
-    has been identified
-  o Exit the script after multiple signals without waiting for further input
+> Given Eric and Arjan's numbers about the time it takes to populate /dev
+> from /sys -- pointing the speed problem squarely at udev or the ruleset
+> -- I don't see much of a win for devtmpfs other than avoiding a
+> static /dev to make init=/bin/sh work.
 
-Changelog since V3
-  o Drop call_site information from trace events
-  o Use struct page * instead of void * in trace events
-  o Add CPU information to the per-cpu tracepoints information
-  o Improved performance of offline-process script so it can run online
-  o Add support for interrupting processing script to dump what it has
-  o Add support for stripping pids, getting additional information from
-    proc and adding information on the parent process
-  o Improve layout of output of post processing script for use with sort
-  o Add documentation on performance analysis using tracepoints
-  o Add documentation on the kmem tracepoints in particular
+That's a very big win right there, don't you think?  Also, embedded and
+rescue disks also would like it for this very reason.
 
-Changelog since V2
-  o Added Ack-ed By's from Rik
-  o Only call trace_mm_page_free_direct when page count reaches zero
-  o Rebase to 2.6.31-rc5
+> You cannot rely on it for a hotplug disk such as USB, as it doesn't do
+> the root=LABEL=usbroot that you'd want to do since the location is not
+> stable.
 
-Changelog since V1
-  o Fix minor formatting error for the __rmqueue event
-  o Add event for __pagevec_free
-  o Bring naming more in line with Larry Woodman's tracing patch
-  o Add an example post-processing script for the trace events
+Again, not all the world requires such labels.
 
-The following four patches add some trace events for the page allocator
-under the heading of kmem.
+thanks,
 
-	Patch 1 adds events for plain old allocate and freeing of pages
-	Patch 2 gives information useful for analysing fragmentation avoidance
-	Patch 3 tracks pages going to and from the buddy lists as an indirect
-		indication of zone lock hotness
-	Patch 4 adds a post-processing script that aggegates the events to
-		give a higher-level view
-	Patch 5 adds documentation on analysis using tracepoints
-	Patch 6 adds documentation on the kmem tracepoints in particular
-
-The first set of events can be used as an indicator as to whether the workload
-was heavily dependant on the page allocator or not. You can make a guess based
-on vmstat but you can't get a per-process breakdown. Depending on the call
-path, the call_site for page allocation may be __get_free_pages() instead
-of a useful callsite. Instead of passing down a return address similar to
-slab debugging, the user should enable the stacktrace and seg-addr options
-to get a proper stack trace.
-
-The second patch is mainly of use to users of hugepages and particularly
-dynamic hugepage pool resizing as it could be used to tune min_free_kbytes
-to a level that fragmentation was rarely a problem. My main concern is
-that maybe I'm trying to jam too much into the TP_printk that could be
-extrapolated after the fact if you were familiar with the implementation. I
-couldn't determine if it was best to hold the hand of the administrator
-even if it cost more to figure it out.
-
-The third patch is trickier to draw conclusions from but high activity on
-those events could explain why there were a large number of cache misses
-on a page-allocator-intensive workload. The coalescing and splitting of
-buddies involves a lot of writing of page metadata and cache line bounces
-not to mention the acquisition of an interrupt-safe lock necessary to enter
-this path.
-
-The fourth patch parses the trace buffer to draw a higher-level picture of
-what is going on broken down on a per-process basis.
-
-The last two patches add documentation.
-
- Documentation/trace/events-kmem.txt                |  107 +++++
- .../postprocess/trace-pagealloc-postprocess.pl     |  418 ++++++++++++++++++++
- Documentation/trace/tracepoint-analysis.txt        |  327 +++++++++++++++
- include/trace/events/kmem.h                        |  163 ++++++++
- mm/page_alloc.c                                    |   13 +-
- 5 files changed, 1027 insertions(+), 1 deletions(-)
- create mode 100644 Documentation/trace/events-kmem.txt
- create mode 100755 Documentation/trace/postprocess/trace-pagealloc-postprocess.pl
- create mode 100644 Documentation/trace/tracepoint-analysis.txt
+greg k-h
