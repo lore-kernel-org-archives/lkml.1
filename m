@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbZHJXGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbZHJXHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754189AbZHJXGt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 19:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbZHJXGr
+	id S1754213AbZHJXHT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 19:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbZHJXHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 19:06:47 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:64059 "EHLO
+	Mon, 10 Aug 2009 19:07:18 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:64714 "EHLO
 	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754021AbZHJXGq (ORCPT
+	with ESMTP id S1751797AbZHJXHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 19:06:46 -0400
-Date: Mon, 10 Aug 2009 16:04:39 -0700
+	Mon, 10 Aug 2009 19:07:16 -0400
+Date: Mon, 10 Aug 2009 16:04:55 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Timur Tabi <timur@freescale.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+To: Stephen Rothwell <sfr@canb.auug.org.au>, linux-media@vger.kernel.org,
        akpm <akpm@linux-foundation.org>
-Subject: [PATCH -next] soc: fix I2C build errors
-Message-Id: <20090810160439.72e417de.randy.dunlap@oracle.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Uri Shkolnik <uris@siano-ms.com>
+Subject: [PATCH -next] dvb: siano uses/depends on INPUT
+Message-Id: <20090810160455.4f93ad60.randy.dunlap@oracle.com>
 In-Reply-To: <20090810203508.f3258129.sfr@canb.auug.org.au>
 References: <20090810203508.f3258129.sfr@canb.auug.org.au>
 Organization: Oracle Linux Eng.
@@ -24,46 +25,42 @@ X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt007.oracle.com [141.146.116.16]
+X-Source-IP: abhmt004.oracle.com [141.146.116.13]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010203.4A80A7B9.0055:SCFSTAT5015188,ss=1,fgs=0
+X-CT-RefId: str=0001.0A010209.4A80A7C9.00C5:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix soc build errors when I2C is built as a loadable module:
+siano uses input_*() functions so it should depend on INPUT
+to prevent build errors:
 
-(.text+0x5d26b): undefined reference to `i2c_master_send'
-soc-cache.c:(.text+0x5d32d): undefined reference to `i2c_transfer'
+ERROR: "input_event" [drivers/media/dvb/siano/sms1xxx.ko] undefined!
+ERROR: "input_register_device" [drivers/media/dvb/siano/sms1xxx.ko] undefined!
+ERROR: "input_free_device" [drivers/media/dvb/siano/sms1xxx.ko] undefined!
+ERROR: "input_unregister_device" [drivers/media/dvb/siano/sms1xxx.ko] undefined!
+ERROR: "input_allocate_device" [drivers/media/dvb/siano/sms1xxx.ko] undefined!
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Timur Tabi <timur@freescale.com>
+Cc: Michael Krufky <mkrufky@linuxtv.org>
+Cc: Uri Shkolnik <uris@siano-ms.com>
 ---
- sound/soc/soc-cache.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/media/dvb/siano/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-next-20090810.orig/sound/soc/soc-cache.c
-+++ linux-next-20090810/sound/soc/soc-cache.c
-@@ -108,7 +108,7 @@ static unsigned int snd_soc_8_16_read(st
- 		return cache[reg];
- }
+--- linux-next-20090810.orig/drivers/media/dvb/siano/Kconfig
++++ linux-next-20090810/drivers/media/dvb/siano/Kconfig
+@@ -4,7 +4,7 @@
  
--#if defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE)
-+#if defined(CONFIG_I2C) || (defined(CONFIG_I2C_MODULE) && defined(MODULE))
- static unsigned int snd_soc_8_16_read_i2c(struct snd_soc_codec *codec,
- 					  unsigned int r)
- {
-@@ -200,7 +200,7 @@ int snd_soc_codec_set_cache_io(struct sn
- 		break;
+ config DVB_SIANO_SMS1XXX
+ 	tristate "Siano SMS1XXX USB dongle support"
+-	depends on DVB_CORE && USB
++	depends on DVB_CORE && USB && INPUT
+ 	---help---
+ 	  Choose Y here if you have a USB dongle with a SMS1XXX chipset.
  
- 	case SND_SOC_I2C:
--#if defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE)
-+#if defined(CONFIG_I2C) || (defined(CONFIG_I2C_MODULE) && defined(MODULE))
- 		codec->hw_write = (hw_write_t)i2c_master_send;
- #endif
- 		if (io_types[i].i2c_read)
 
 
 
