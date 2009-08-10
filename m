@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751961AbZHJG7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752023AbZHJHEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751961AbZHJG7G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 02:59:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbZHJG7F
+	id S1752023AbZHJHEG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 03:04:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbZHJHEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 02:59:05 -0400
-Received: from gate.crashing.org ([63.228.1.57]:55048 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751708AbZHJG7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 02:59:04 -0400
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
+	Mon, 10 Aug 2009 03:04:06 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:59958 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751757AbZHJHEE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 03:04:04 -0400
+Subject: Re: mmotm 2009-08-06-00-30 uploaded (mtd)
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Magnus Damm <damm@igel.co.jp>, David Woodhouse <dwmw2@infradead.org>,
+       linux-mtd@lists.infradead.org
+In-Reply-To: <20090807033448.GA32592@linux-sh.org>
+References: <200908060733.n767X6mN023120@imap1.linux-foundation.org>
+	 <20090806190233.6d4b4e28.randy.dunlap@oracle.com>
+	 <20090806192513.53f6488b.akpm@linux-foundation.org>
+	 <20090807033448.GA32592@linux-sh.org>
 Content-Type: text/plain
-Date: Mon, 10 Aug 2009 16:58:29 +1000
-Message-Id: <1249887509.9841.23.camel@pasglop>
+Date: Mon, 10 Aug 2009 10:01:35 +0300
+Message-Id: <1249887695.19638.2.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Aug 2009 07:03:08.0481 (UTC) FILETIME=[9DA8C310:01CA1988]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus !
+On Fri, 2009-08-07 at 12:34 +0900, Paul Mundt wrote:
+> [PATCH] mtd: onenand: select MTD_PARTITIONS.
+> 
+> All of the onenand drivers depend on mtd partition support being compiled
+> in, so just select it. Fixes up build breakage:
+> 
+> drivers/built-in.o: In function `generic_onenand_remove':
+> generic.c:(.devexit.text+0x80): undefined reference to `del_mtd_partitions'
+> 
+> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-This is a simple enough fix that I decided was worth having now, it
-basically allow "direct" DMA (non-iommu) to work for devices that have a
-< 32-bit DMA mask (such as some infamous broadcom wireless chips) when
-the machine simply has not enough memory to go over the chip addressing
-limit. This fixes various smallish G5 (like old iMac G5) wireless.
+Hopefully someday we are going to remove this config options, remove
+the mtdpart module, and make partitions mandatory. Currently it is
+a mess, IMO.
 
-The following changes since commit f4b9a988685da6386d7f9a72df3098bcc3270526:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.infradead.org/ubi-2.6
+I've just put this patch to my l2-mtd-2.6.git tree.
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Benjamin Herrenschmidt (1):
-      powerpc/dma: pci_set_dma_mask() shouldn't fail if mask fits in RAM
-
- arch/powerpc/kernel/dma.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
+Artem.
 
