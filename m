@@ -1,80 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752443AbZHJSel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbZHJSfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752443AbZHJSel (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 14:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbZHJSek
+	id S1752623AbZHJSfX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 14:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbZHJSfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 14:34:40 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:25048 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752347AbZHJSek (ORCPT
+	Mon, 10 Aug 2009 14:35:22 -0400
+Received: from ppp-152-125.adsl.restena.lu ([158.64.152.125]:42331 "EHLO
+	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752210AbZHJSfW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 14:34:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=bF6q1wlADx2SWoNeovbZycphbpmkM1VIH7hPZxrnbRdfgQ5rq7cgUGmnIxb60fVtjY
-         fztyYtVLbElQsybYPkOg4J837nle+H0gF3q4o0ISdUUOnIDD8NTW/d7fGz9NZEIndZi9
-         YTSiM3PAp+Bh/y2BKX90Izd9HqelQ87f0j4lw=
-MIME-Version: 1.0
-Date: Tue, 11 Aug 2009 03:34:40 +0900
-Message-ID: <30046e3b0908101134p6487ddbftd8776e4ddef204be@mail.gmail.com>
-Subject: [PATCH] x86: quirk on every 5 series of MacBook/Pro
-From: Shunichi Fuji <palglowr@gmail.com>
-To: linux-kernel@vger.kernel.org
+	Mon, 10 Aug 2009 14:35:22 -0400
+Date: Mon, 10 Aug 2009 20:35:01 +0200
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: Greg KH <greg@kroah.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
+ in use
+Message-ID: <20090810203501.4d57aa5b@neptune.home>
+In-Reply-To: <20090810181306.GA24989@kroah.com>
+References: <20090808194733.38406075@neptune.home>
+	<Pine.LNX.4.44L0.0908101114320.3208-100000@iolanthe.rowland.org>
+	<20090810154402.GA7701@kroah.com>
+	<20090810191822.26370810@neptune.home>
+	<20090810181306.GA24989@kroah.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i686-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reboot does not work on my MacBook Pro 13 inch (MacBookPro5,5) too.
-Does It seem all unibody MacBook and MacBookPro require handling with
-reboot, i guess.
+On Mon, 10 August 2009 Greg KH <greg@kroah.com> wrote:
+> On Mon, Aug 10, 2009 at 07:18:22PM +0200, Bruno Prémont wrote:
+> > On Mon, 10 August 2009 Greg KH <greg@kroah.com> wrote:
+> > > On Mon, Aug 10, 2009 at 11:18:29AM -0400, Alan Stern wrote:
+> > > > On Sat, 8 Aug 2009, Bruno Prémont wrote:
+> > > > 
+> > > > > I tried bisecting this but bisect did end up on a fully
+> > > > > unrelated commit (which is not even being compiled into my
+> > > > > kernel). Possibly the failed bisect could be related to
+> > > > > mis-classified kernel panic/hang while pulling the USB cable
+> > > > > (there were two such panics for the whole iteration)?
+> > > > > 
+> > > > > There are quite a few patches touching tty, ttyUSB and friends
+> > > > > between rc4 and now so pretty hard to guess on the correct
+> > > > > one.
+> > > > > 
+> > > > > The oops always happens when I disconnect the USB serial
+> > > > > console (here the one built into Marvell SheevaPlug) while
+> > > > > having minicom connected to it.
+> > > > > During the bisection for the last few bad iterations minicom
+> > > > > got killed (segfault), the bad ones on the iteration left a
+> > > > > minicom zombie in 'D' state.
+> 
+> Ok, a few questions.
+> 
+> Are you pulling the device out when you have a console attached to the
+> device, or just a "normal" minicom connection with it?  I can't seem
+> to duplicate this here at the moment for some reason :(
+> 
+> thanks,
+> 
+> greg k-h
+> 
 
-Following model/machine ID list shows unibody MacBook/Pro have the 5
-series of model number.
+The SheevaPlug has a getty running on ttyS0 (agetty 115200 ttyS0 vt100).
+That ttyS0 is exported via the FTDI USB to Serial+JTag converter.
 
-[1] http://www.everymac.com/systems/by_capability/macs-by-machine-model-machine-id.html
+On the laptop side (where the kernel Oopses) I see /dev/ttyUSB0 (which
+I instruct minicom to use via symlink to
+/dev/serial/by-id/usb-FTDI_SheevaPlug_JTAGKey_FT2232D_B_FTS55QK6-if01-port0
+ -- minicom is limited to 63byte length for path to tty device)
+
+I run minicom with the following parameters:
+  minicom -o -c on sheeva
+
+/etc/minicom/minirc.sheeva
+  pu port             /etc/minicom/tty-sheeva
+  pu rtscts           No
+
+That is 115200 8N1, with neither hardware nor software flow control.
+
+I'm pulling the USB cable while minicom is running and agetty on the
+other side is waiting for password input. (pulling the USB cable is
+too easy - and same effect is obtained when pulling power from the
+SheevaPlug)
 
 
-Signed-off-by: Shunichi Fuji <palglowr@gmail.com>
----
- arch/x86/kernel/reboot.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+I have not tried yet with a different USB serial device but will do so
+soon to see if I can reproduce it there. (the other USBSerial device I
+have is: 067b:2303 Prolific Technology, Inc. PL2303 Serial Port)
 
-diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-index 9eb8976..a06e8d1 100644
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -418,20 +418,20 @@ static int __init set_pci_reboot(const struct
-dmi_system_id *d)
- }
-
- static struct dmi_system_id __initdata pci_reboot_dmi_table[] = {
--	{	/* Handle problems with rebooting on Apple MacBook5,2 */
-+	{	/* Handle problems with rebooting on Apple MacBook5 */
- 		.callback = set_pci_reboot,
--		.ident = "Apple MacBook",
-+		.ident = "Apple MacBook5",
- 		.matches = {
- 			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
--			DMI_MATCH(DMI_PRODUCT_NAME, "MacBook5,2"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "MacBook5"),
- 		},
- 	},
--	{	/* Handle problems with rebooting on Apple MacBookPro5,1 */
-+	{	/* Handle problems with rebooting on Apple MacBookPro5 */
- 		.callback = set_pci_reboot,
--		.ident = "Apple MacBookPro5,1",
-+		.ident = "Apple MacBookPro5",
- 		.matches = {
- 			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
--			DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro5,1"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro5"),
- 		},
- 	},
- 	{ }
--- 
-1.6.4
+thanks,
+Bruno
