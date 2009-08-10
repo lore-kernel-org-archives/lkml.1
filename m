@@ -1,50 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbZHJOID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbZHJOIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755088AbZHJOID (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:08:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbZHJOIC
+	id S1755163AbZHJOIS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755137AbZHJOIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:08:02 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40497 "EHLO mx2.redhat.com"
+	Mon, 10 Aug 2009 10:08:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48100 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754930AbZHJOIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:08:01 -0400
-Subject: Re: linux-next: security-testing tree build failure
-From: Eric Paris <eparis@redhat.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: James Morris <jmorris@namei.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090807145932.77bc2c98.sfr@canb.auug.org.au>
-References: <20090807145932.77bc2c98.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Mon, 10 Aug 2009 10:07:49 -0400
-Message-Id: <1249913269.2081.1.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
+	id S1755130AbZHJOIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 10:08:15 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Subject: Re: [Bug #13943] WARNING: at net/mac80211/mlme.c:2292 with ath5k
+Date: Mon, 10 Aug 2009 16:09:04 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>
+References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera> <u1L1PAbl8zG.A.-3C.bj1fKB@chimera> <b637ec0b0908092355w12547d8kf0207c24c833f93e@mail.gmail.com>
+In-Reply-To: <b637ec0b0908092355w12547d8kf0207c24c833f93e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908101609.04548.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-07 at 14:59 +1000, Stephen Rothwell wrote:
-> Hi James,
-> 
-> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
-> 
-> kernel/sysctl.c:1321: error: 'mmap_min_addr_handler' undeclared here (not in a function)
-> mm/mmap.c: In function 'do_mmap_pgoff':
-> mm/mmap.c:935: error: implicit declaration of function 'round_hint_to_min'
-> 
-> Caused by commit a2551df7ec568d87793d2eea4ca744e86318f205
-> ("Security/SELinux: seperate lsm specific mmap_min_addr") -
-> CONFIG_SECURITY is not set in this build.
-> 
-> I have used the version of the security-testing tree from next-20090806
-> for today.
+On Monday 10 August 2009, Fabio Comolli wrote:
+> It happened only once so it's hard to tell. I'm going to test -rc6
+> when it comes out and report back.
 
-Sorry, I thought I put the definitions outside of the ifdef in
-security.h but clearly they aren't.  Looks like James's tree has the fix
-as of a couple of hours ago, so you should be fix on your next pull from
-him.
+OK, thanks for the update.
 
--Eric
-
+Rafael
