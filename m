@@ -1,49 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbZHJUIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752922AbZHJUMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752818AbZHJUIh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 16:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZHJUIg
+	id S1752922AbZHJUMF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 16:12:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbZHJUME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 16:08:36 -0400
-Received: from smtp6-g21.free.fr ([212.27.42.6]:43500 "EHLO smtp6-g21.free.fr"
+	Mon, 10 Aug 2009 16:12:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49389 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751883AbZHJUIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 16:08:36 -0400
-Message-ID: <4A807E3A.8050703@free.fr>
-Date: Mon, 10 Aug 2009 22:08:26 +0200
-From: Laurent Riffard <laurent.riffard@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr; rv:1.9.1.1pre) Gecko/20090717 SeaMonkey/2.0b1
+	id S1751194AbZHJUMC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 16:12:02 -0400
+Date: Mon, 10 Aug 2009 23:10:44 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
+Message-ID: <20090810201044.GA16899@redhat.com>
+References: <cover.1249930169.git.mst@redhat.com> <20090810185340.GC13924@redhat.com> <200908102151.18529.arnd@arndb.de>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Kernel development list <linux-kernel@vger.kernel.org>,
-       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>
-Subject: Re: linux-next: reiserfs lockout with xattr ?
-References: <4A79CA90.8080101@free.fr> <20090808002726.GI4999@nowhere> <4A7E9C63.4090400@free.fr> <20090809233302.GD6089@nowhere>
-In-Reply-To: <20090809233302.GD6089@nowhere>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908102151.18529.arnd@arndb.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 10/08/2009 01:33, Frederic Weisbecker a écrit :
+On Mon, Aug 10, 2009 at 09:51:18PM +0200, Arnd Bergmann wrote:
+> On Monday 10 August 2009, Michael S. Tsirkin wrote:
+> > What it is: vhost net is a character device that can be used to reduce
+> > the number of system calls involved in virtio networking.
+> > Existing virtio net code is used in the guest without modification.
 > 
-> Thanks a lot for this report. Reiserfs xattrs are definetly paths I
-> haven't tested deeply.
+> Very nice, I loved reading it. It's getting rather late in my time
+> zone, so this comments only on the network driver. I'll go through
+> the rest tomorrow.
 > 
-> I'm trying to reproduce these issues and will let you know once I get
-> a fix.
+> > @@ -293,6 +293,7 @@ static int __devinit virtblk_probe(struct virtio_device *vdev)
+> >  		err = PTR_ERR(vblk->vq);
+> >  		goto out_free_vblk;
+> >  	}
+> > +	printk(KERN_ERR "vblk->vq = %p\n", vblk->vq);
+> >  
+> >  	vblk->pool = mempool_create_kmalloc_pool(1,sizeof(struct virtblk_req));
+> >  	if (!vblk->pool) {
+> > @@ -383,6 +384,8 @@ static int __devinit virtblk_probe(struct virtio_device *vdev)
+> >  	if (!err)
+> >  		blk_queue_logical_block_size(vblk->disk->queue, blk_size);
+> >  
+> > +	printk(KERN_ERR "virtio_config_val returned %d\n", err);
+> > +
+> >  	add_disk(vblk->disk);
+> >  	return 0;
 > 
-> (Btw, if you're still running this tree, you should update with the
-> latest patch I just pushed, it's a very important fix).
-> 
-> Thanks,
-> 
-> Frederic.
+> I guess you meant to remove these before submitting.
 
-I tried with your lastest patch (git head is at "kill-the-bkl/reiserfs: 
-fix early readdir offset increment"), and the lockout still happens.
+Good catch, thanks!
 
-~~
-laurent
+> > +static void handle_tx_kick(struct work_struct *work);
+> > +static void handle_rx_kick(struct work_struct *work);
+> > +static void handle_tx_net(struct work_struct *work);
+> > +static void handle_rx_net(struct work_struct *work);
+> 
+> [style] I think the code gets more readable if you reorder it
+> so that you don't need forward declarations for static functions.
+
+Right.
+
+> > +static long vhost_net_reset_owner(struct vhost_net *n)
+> > +{
+> > +	struct socket *sock = NULL;
+> > +	long r;
+> > +	mutex_lock(&n->dev.mutex);
+> > +	r = vhost_dev_check_owner(&n->dev);
+> > +	if (r)
+> > +		goto done;
+> > +	sock = vhost_net_stop(n);
+> > +	r = vhost_dev_reset_owner(&n->dev);
+> > +done:
+> > +	mutex_unlock(&n->dev.mutex);
+> > +	if (sock)
+> > +		fput(sock->file);
+> > +	return r;
+> > +}
+> 
+> what is the difference between vhost_net_reset_owner(n)
+> and vhost_net_set_socket(n, -1)?
+
+set socket to -1 will only stop the device.
+
+reset owner will let another process take over the device.
+It also needs to reset all parameters to make it safe for that
+other process, so in particular the device is stopped.
+
+I tried explaining this in the header vhost.h - does the comment
+there help, or do I need to clarify it?
+
+> > +
+> > +static struct file_operations vhost_net_fops = {
+> > +	.owner          = THIS_MODULE,
+> > +	.release        = vhost_net_release,
+> > +	.unlocked_ioctl = vhost_net_ioctl,
+> > +	.open           = vhost_net_open,
+> > +};
+> 
+> This is missing a compat_ioctl pointer. It should simply be
+> 
+> static long vhost_net_compat_ioctl(struct file *f,
+> 			unsigned int ioctl, unsigned long arg)
+> {
+> 	return f, ioctl, (unsigned long)compat_ptr(arg);
+> }
+
+I had the impression that if there's no compat_ioctl,
+unlocked_ioctl will get called automatically. No?
+
+> > +/* Bits from fs/aio.c. TODO: export and use from there? */
+> > +/*
+> > + * use_mm
+> > + *	Makes the calling kernel thread take on the specified
+> > + *	mm context.
+> > + *	Called by the retry thread execute retries within the
+> > + *	iocb issuer's mm context, so that copy_from/to_user
+> > + *	operations work seamlessly for aio.
+> > + *	(Note: this routine is intended to be called only
+> > + *	from a kernel thread context)
+> > + */
+> > +static void use_mm(struct mm_struct *mm)
+> > +{
+> > +	struct mm_struct *active_mm;
+> > +	struct task_struct *tsk = current;
+> > +
+> > +	task_lock(tsk);
+> > +	active_mm = tsk->active_mm;
+> > +	atomic_inc(&mm->mm_count);
+> > +	tsk->mm = mm;
+> > +	tsk->active_mm = mm;
+> > +	switch_mm(active_mm, mm, tsk);
+> > +	task_unlock(tsk);
+> > +
+> > +	mmdrop(active_mm);
+> > +}
+> 
+> Why do you need a kernel thread here? If the data transfer functions
+> all get called from a guest intercept, shouldn't you already be
+> in the right mm?
+
+several reasons :)
+- I get called under lock, so can't block
+- eventfd can be passed to another process, and I won't be in guest context at all
+- this also gets called outside guest context from socket poll
+- vcpu is blocked while it's doing i/o. it is better to free it up
+  as all the packet copying might take a while
+
+> > +static void handle_tx(struct vhost_net *net)
+> > +{
+> > +	struct vhost_virtqueue *vq = &net->dev.vqs[VHOST_NET_VQ_TX];
+> > +	unsigned head, out, in;
+> > +	struct msghdr msg = {
+> > +		.msg_name = NULL,
+> > +		.msg_namelen = 0,
+> > +		.msg_control = NULL,
+> > +		.msg_controllen = 0,
+> > +		.msg_iov = (struct iovec *)vq->iov + 1,
+> > +		.msg_flags = MSG_DONTWAIT,
+> > +	};
+> > +	size_t len;
+> > +	int err;
+> > +	struct socket *sock = rcu_dereference(net->sock);
+> > +	if (!sock || !sock_writeable(sock->sk))
+> > +		return;
+> > +
+> > +	use_mm(net->dev.mm);
+> > +	mutex_lock(&vq->mutex);
+> > +	for (;;) {
+> > +		head = vhost_get_vq_desc(&net->dev, vq, vq->iov, &out, &in);
+> > +		if (head == vq->num)
+> > +			break;
+> > +		if (out <= 1 || in) {
+> > +			vq_err(vq, "Unexpected descriptor format for TX: "
+> > +			       "out %d, int %d\n", out, in);
+> > +			break;
+> > +		}
+> > +		/* Sanity check */
+> > +		if (vq->iov->iov_len != sizeof(struct virtio_net_hdr)) {
+> > +			vq_err(vq, "Unexpected header len for TX: "
+> > +			       "%ld expected %zd\n", vq->iov->iov_len,
+> > +			       sizeof(struct virtio_net_hdr));
+> > +			break;
+> > +		}
+> > +		/* Skip header. TODO: support TSO. */
+> > +		msg.msg_iovlen = out - 1;
+> > +		len = iov_length(vq->iov + 1, out - 1);
+> > +		/* TODO: Check specific error and bomb out unless ENOBUFS? */
+> > +		err = sock->ops->sendmsg(NULL, sock, &msg, len);
+> > +		if (err < 0) {
+> > +			vhost_discard_vq_desc(vq);
+> > +			break;
+> > +		}
+> > +		if (err != len)
+> > +			pr_err("Truncated TX packet: "
+> > +			       " len %d != %zd\n", err, len);
+> > +		vhost_add_used_and_trigger(vq, head,
+> > +				     len + sizeof(struct virtio_net_hdr));
+> > +	}
+> > +
+> > +	mutex_unlock(&vq->mutex);
+> > +	unuse_mm(net->dev.mm);
+> > +}
+> 
+> I guess that this is where one could plug into macvlan directly, using
+> sock_alloc_send_skb/memcpy_fromiovec/dev_queue_xmit directly,
+> instead of filling a msghdr for each, if we want to combine this
+> with the work I did on that.
+
+quite possibly. Or one can just bind a raw socket to macvlan :)
+
+> 	Arnd <><
