@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZHJQOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbZHJQRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbZHJQOI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 12:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755417AbZHJQOH
+	id S1755592AbZHJQRA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 12:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbZHJQQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 12:14:07 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:46490 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755352AbZHJQOG convert rfc822-to-8bit (ORCPT
+	Mon, 10 Aug 2009 12:16:59 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:63971 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755473AbZHJQQ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 12:14:06 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=NvBnqaEZQ4GLp03l2wd1p7XvwL7iqJ2uJLsRdjImMS1pqdmMb/M2XLvBFpXB7+xnq
-	PMrdF4Vy473DC7hxELOUg==
+	Mon, 10 Aug 2009 12:16:58 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Fischer, Anna" <anna.fischer@hp.com>
+Subject: Re: [evb] Re: [PATCH][RFC] net/bridge: add basic VEPA support
+Date: Mon, 10 Aug 2009 18:16:08 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
+Cc: "evb@yahoogroups.com" <evb@yahoogroups.com>,
+       "'Stephen Hemminger'" <shemminger@linux-foundation.org>,
+       "bridge@lists.linux-foundation.org" 
+	<bridge@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "kaber@trash.net" <kaber@trash.net>,
+       "adobriyan@gmail.com" <adobriyan@gmail.com>,
+       "'Or Gerlitz'" <ogerlitz@voltaire.com>,
+       "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>
+References: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net> <200908101723.10832.arnd@arndb.de> <0199E0D51A61344794750DC57738F58E6D6AE99867@GVW1118EXC.americas.hpqcorp.net>
+In-Reply-To: <0199E0D51A61344794750DC57738F58E6D6AE99867@GVW1118EXC.americas.hpqcorp.net>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-In-Reply-To: <20090810152825.GA4624@oksana.dev.rtsoft.ru>
-References: <a55d774e0908071919s7b365f84o3baa19c8d6fbe899@mail.gmail.com>
-	 <20090810150011.GA1471@ucw.cz>
-	 <20090810152825.GA4624@oksana.dev.rtsoft.ru>
-Date: Mon, 10 Aug 2009 09:14:01 -0700
-Message-ID: <a55d774e0908100914h6a42546fk47cdb207628ebe5e@mail.gmail.com>
-Subject: Re: power_supply class/framework question
-From: Brian Swetland <swetland@google.com>
-To: avorontsov@ru.mvista.com
-Cc: Pavel Machek <pavel@ucw.cz>, Anton Vorontsov <cbou@mail.ru>,
-       David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908101816.08287.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/J10SPL5K7nIypQnnXje+OUTCvQxdVO7VIW17
+ pRjGjXbrhhV4DPWqki+ZWR8mdobukPQd2MeoDhaJkHWtc67/Wm
+ gsiCsblN/UxajCFdHr33A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 8:28 AM, Anton
-Vorontsov<avorontsov@ru.mvista.com> wrote:
-> On Mon, Aug 10, 2009 at 05:00:11PM +0200, Pavel Machek wrote:
->> > I'm working on cleaning up some code to more correctly use the power
->> > supply framework (have the battery driver receive notification from
->> > the wall/usb power supplies, etc), and ran into a slight snag.  For
->> > mobile usb powered devices, we need to know how much current can
->> > safely be consumed by the charge circuit -- generally this is one of:
->> > none, <500mA or 1000mA, which correspond to "no power supply", "usb
->> > power supply", or "wall power supply".
->>
->> Actuallly, it is one of 'none', 100mA (min power USB has to supplly),
->> 500mA (max powe USB can supply by spec), 1A (wall).
->>
->> > I can use power_supply_am_i_supplied() to determine if I'm receiving
->> > power, but there's no way to determine either how much (if I have one
->> > power supply that indicates max current available) or which supply (if
->> > I define a separate "ac" and "usb" power supply).
->>
->> Should am_i_supplied() just return miliamps?
->
-> Or enum power_supply_type, with the following priority:
-> mains (wall), usb, battery?
+On Monday 10 August 2009, Fischer, Anna wrote:
+> On the VEPA filtering service side, the only change we have implemented
+> in the bridging code is that in VEPA mode all frames are passed to the
+> uplink on TX. However, frames are still passed through the netfilter 
+> hooks before they go out on the wire. On the inbound path, there are
+> no changes to the way frames are processed (except the filtering for
+> the original source port), so netfilter hooks work in the same way
+> as for a normal bridge.
 
-Either of those would work, though in the case of USB, as Pavel
-correctly points out, we'd need to differentiate between
-non-enumerated and enumerated, so perhaps max available milliamps
-would be best.  Or USB could just not indicate that it's supplied
-until after enumeration is successful.
+Ah, interesting. I did not realize that the hooks were still active,
+although that obviously makes sense. So that would be another
+important difference between our implementations.
 
-Brian
+> If a frame is reflected back because of a hairpin turn, then of course
+> the incoming port is the VEPA uplink port and not the port that
+> originally sent the frame. So if you are trying to enforce some
+> packet filtering on that inbound path, then you would have to do that
+> based on MAC addresses and not on bridge ports. But I would assume that
+> you would enforce the filtering already before you send out the frame
+> to the adjacent bridge. Apart from that, if you enable your bridge to
+> behave in VEPA mode, then you would typically do packet filtering etc
+> on the adjacent bridge and not use the netfilter hook. You can still use
+> both though, if you like.
+
+Right, that was my point. They bridge in VEPA mode would likely be
+configured to be completely ignorant of the data going through it
+and not do any filter, and you do all filterring on the adjacent
+bridge.
+
+I just wasn't sure that this is possible with ebtables if the
+adjacent bridge is a Linux system with the bridge in hairpin turn
+mode.
+
+	Arnd <><
