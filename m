@@ -1,212 +1,329 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbZHJQmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbZHJQoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755741AbZHJQmr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 12:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbZHJQmq
+	id S1755773AbZHJQoA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 12:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755732AbZHJQoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 12:42:46 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:20641 "EHLO
-	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755678AbZHJQmp convert rfc822-to-8bit (ORCPT
+	Mon, 10 Aug 2009 12:44:00 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:50619 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755725AbZHJQn5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 12:42:45 -0400
-X-SpamScore: -38
-X-BigFish: VPS-38(zz146fK542N1432R98dN1521M9371Pzz1202hzzz2dh6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [microblaze-uclinux] Rethinking MicroBlaze commandline precedence
-Date: Mon, 10 Aug 2009 09:42:20 -0700
-In-Reply-To: <4A7FE78F.4040504@petalogix.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [microblaze-uclinux] Rethinking MicroBlaze commandline precedence
-Thread-Index: AcoZng9xe6VjQDWFRMyycLQ3i6WabwAOPUfw
-References: <1d3f23370908092328l6e980f3ft2d5a8f8f37c26fcf@mail.gmail.com>	 <4A7FCC42.40809@petalogix.com> <1d3f23370908100156q46b9869av5ecdcc8879617be9@mail.gmail.com> <4A7FE78F.4040504@petalogix.com>
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: <microblaze-uclinux@itee.uq.edu.au>
-CC: "John Linn" <linnj@xilinx.com>, "David DeBonis" <ddeboni@xilinx.com>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 10 Aug 2009 16:42:42.0137 (UTC) FILETIME=[945F9490:01CA19D9]
-Message-ID: <20090810164242.05DE8CC8055@mail83-dub.bigfish.com>
+	Mon, 10 Aug 2009 12:43:57 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Richard Purdie <rpurdie@rpsys.net>
+Subject: [PATCH 1/5] backlight: Add WM831x backlight driver
+Date: Mon, 10 Aug 2009 17:43:51 +0100
+Message-Id: <1249922635-31864-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The WM831x series of PMICs provide DC-DC boost convertors and current
+sinks which can be used together to drive LEDs for use as backlights.
+Expose this functionality via the backlight API.
 
+Since when used in this configuration the current sink and boost
+convertor are very tightly coupled with a multi-stage startup for
+the current sink which overlaps with the boost convertor startup
+this driver bypasses the regulator API. Machine inititialisation
+is responsible for ensuring that the regulators are not accessed
+via both APIs.
 
-> -----Original Message-----
-> From: owner-microblaze-uclinux@lists.itee.uq.edu.au
-[mailto:owner-microblaze-
-> uclinux@lists.itee.uq.edu.au] On Behalf Of Michal Simek
-> Sent: Monday, August 10, 2009 2:26 AM
-> To: microblaze-uclinux@itee.uq.edu.au
-> Cc: John Linn; David DeBonis; Linux Kernel list
-> Subject: Re: [microblaze-uclinux] Rethinking MicroBlaze commandline
-precedence
-> 
-> Hi John,
-> 
-> John Williams wrote:
-> > Hi Michal,
-> >
-> > On Mon, Aug 10, 2009 at 5:29 PM, Michal
-Simek<michal.simek@petalogix.com> wrote:
-> >
-> >> John Williams wrote:
-> >
-> >>> Currently, MicroBlaze commandline handling in order of lowest to
-> >>> highest priority, looks like this:
-> >>>
-> >>> 1. pointer in r5 from bootloader
-> >>> 2. CONFIG_CMDLINE=...
-> >>> 3. "chosen" section in DTS/DT
-> >>> 4. CONFIG_CMDLINE=... && CONFIG_CMDLINE_FORCE
-> >>>
-> >>> I'm wondering if a cmdline in r5 should override the DTS.  My
-thinking
-> >>> is based on two observations:
-> >>>
-> >>> (a) not everyone will use a bootloader like u-boot that can
-manipulate
-> >>> DTBs easily before kernel boot
-> >>> (b) a custom cmdline string in r5 allows the latest possible
-binding
-> >>> (runtime), where as the DTB is typically created at compile time.
-> >>>
-> >>> So, how about this order instead:
-> >>>
-> >>> 1. CONFIG_CMDLINE=...
-> >>> 2. "chosen" section in DTS/DT
-> >>> 3. pointer in r5 from bootloader
-> >>> 4. CONFIG_CMDLINE=... and CONFIG_CMDLINE_FORCE
-> >>>
-> >>> Then, apart from CMDLINE_FORCE, the precedence goes from earliest
-> >>> binding (kernel build) to latest (runtime via bootloader/r5).
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+---
+ drivers/video/backlight/Kconfig     |    7 +
+ drivers/video/backlight/Makefile    |    1 +
+ drivers/video/backlight/wm831x_bl.c |  250 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 258 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/backlight/wm831x_bl.c
 
-This makes reasonable sense to me, although I wonder if the order is
-correct?  For instance, in many cases a flow may be to fix the hardware
-DTS and then iteratively compile the kernel?  Are all of these
-points/fallback priorities necessary?  Personally, it seems like I want
-one 'compiled-in' source, and then the option to override at boot time.
-Could it be simplified by getting rid CONFIG_CMDLINE alltogether and
-just using the DTS, now that this we always have a device tree?
-
-> >>> Thoughts?
-> >> I see there one big problem which can easily arise. Kernel expect
-that r5 points to
-> >> NULL string and DTS/DTB and CMDLINE will contain correct string.
-Kernel just copy it and use
-> >> it. There will be undefined behavior for more cases than for
-current handling. It will be
-> >> less error prune.
-> >
-> > This expectation currently exists anyway,  giving precendence to DTS
-> > cmdline is only less error-prone on the assumption that it's more
-> > common.
-> >
-> > What about a move to an ARM-style ATAGs arrangement, where r5 points
-> > not to an ASCIIZ string but instead to some sort of loosely
-structured
-> > object, with tag codes to signify the commandline etc.
-> >
-> > That way, we can error check r5 - if it doesn't have the right tags
-> > then we don't use the (probably bogus) cmdline string?
-> 
-> Not sure if is help - but seems to me more complicated than we need.
-
-I would strongly discourage this, if only because the device tree also
-fulfills those requirements.
-
-> >> Ad observation a)
-> >>
-> >> My expectation is that users will use s.....I.... format (I don't
-like that name - What about
-> >> renaming it?) with dtb - they setup commandline at once and they
-don't change it.
-> >
-> >
-> > Ah what's wrong with simpleImage?  It's simple to boot, and make-fu
-> > makes it simple to build! :)
-> 
-> It is more complicated than origin file. Your suggestion for simple
-build/boot is fine. :-)
-> 
-> >
-> >> Ad observation b) - for final product they will use only one
-command line. For testing you can
-> setup
-> >> kernel to use only r5.
-> >
-> > How?  Do we add CONFIG_CMDLINE_IGNORE_DTB?
-> 
-> >
-> > Or just remove the commandline section from DTS "chosen" part?
-> 
-> yes.
-> 
-> >
-> >> I understand that you are trying to pass to kernel for example MTD
-map which could be possible but
-> >> IMHO better to do this in script which one with sed
-erase/comment/setup command line in DTS before
-> >> compilation.
-> >
-> > It's still a very early binding, and I think there are plenty of
-> > reasons to want to override it at boot time.  If there weren't, why
-do
-> > u-boot and PPC simpleBoot add the capability to tweak at boot time,
-> > the cmdline passed via the DTB?
-> 
-> I understand that make sense to change it - especially for
-development.
-> It should be possible to do it in u-boot. Not sure if is work to
-extend command line but maybe yes.
-> Worth to ask on u-boot mailing list.
-
-One way around this is to do what powerpc has: a simple bootloader with
-the capability to edit the cmdline on the terminal before boot.  Then
-the question of 'does someone have a bootloader' is moot... they can
-always fall back on that one.  This would also make microblaze arch more
-in the spirit of EPapr, which exactly tries to standardize all of these
-mechanisms.
-
-> > Setting MAC addresses for example - you don't want to compile a new
-> > DTS for every board you ship, just to provide unique values. You
-just
-> > want to be able to tweak the cmdline in the config flash or
-whatever.
-> 
-> You should be able to change it in u-boot. The size of mac addr is the
-same. Shorten is possible too.
-> 
-> 
-> Cheers,
-> Michal
-> 
-> >
-> > Cheers,
-> >
-> > John
-> 
-> --
-> Michal Simek, Ing. (M.Eng)
-> PetaLogix - Linux Solutions for a Reconfigurable World
-> w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f:
-+61-7-30090663
-> ___________________________
-> microblaze-uclinux mailing list
-> microblaze-uclinux@itee.uq.edu.au
-> Project Home Page :
-http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux
-> Mailing List Archive :
-http://www.itee.uq.edu.au/~listarch/microblaze-uclinux/
-> 
-
-
-This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
-
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 90861cd..205de1a 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -229,3 +229,10 @@ config BACKLIGHT_SAHARA
+ 	help
+ 	  If you have a Tabletkiosk Sahara Touch-iT, say y to enable the
+ 	  backlight driver.
++
++config BACKLIGHT_WM831X
++	tristate "WM831x PMIC Backlight Driver"
++	depends on BACKLIGHT_CLASS_DEVICE && MFD_WM831X
++	help
++	  If you have a backlight driven by the ISINK and DCDC of a
++	  WM831x PMIC say y to enable the backlight driver for it.
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index 4eb178c..df0b67c 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -24,4 +24,5 @@ obj-$(CONFIG_BACKLIGHT_DA903X)	+= da903x_bl.o
+ obj-$(CONFIG_BACKLIGHT_MBP_NVIDIA) += mbp_nvidia_bl.o
+ obj-$(CONFIG_BACKLIGHT_TOSA)	+= tosa_bl.o
+ obj-$(CONFIG_BACKLIGHT_SAHARA)	+= kb3886_bl.o
++obj-$(CONFIG_BACKLIGHT_WM831X)	+= wm831x_bl.o
+ 
+diff --git a/drivers/video/backlight/wm831x_bl.c b/drivers/video/backlight/wm831x_bl.c
+new file mode 100644
+index 0000000..467bdb7
+--- /dev/null
++++ b/drivers/video/backlight/wm831x_bl.c
+@@ -0,0 +1,250 @@
++/*
++ * Backlight driver for Wolfson Microelectronics WM831x PMICs
++ *
++ * Copyright 2009 Wolfson Microelectonics plc
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/fb.h>
++#include <linux/backlight.h>
++
++#include <linux/mfd/wm831x/core.h>
++#include <linux/mfd/wm831x/pdata.h>
++#include <linux/mfd/wm831x/regulator.h>
++
++struct wm831x_backlight_data {
++	struct wm831x *wm831x;
++	int isink_reg;
++	int current_brightness;
++};
++
++static int wm831x_backlight_set(struct backlight_device *bl, int brightness)
++{
++	struct wm831x_backlight_data *data = bl_get_data(bl);
++	struct wm831x *wm831x = data->wm831x;
++	int power_up = !data->current_brightness && brightness;
++	int power_down = data->current_brightness && !brightness;
++	int ret;
++
++	if (power_up) {
++		/* Enable the ISINK */
++		ret = wm831x_set_bits(wm831x, data->isink_reg,
++				      WM831X_CS1_ENA, WM831X_CS1_ENA);
++		if (ret < 0)
++			goto err;
++
++		/* Enable the DC-DC */
++		ret = wm831x_set_bits(wm831x, WM831X_DCDC_ENABLE,
++				      WM831X_DC4_ENA, WM831X_DC4_ENA);
++		if (ret < 0)
++			goto err;
++	}
++
++	if (power_down) {
++		/* DCDC first */
++		ret = wm831x_set_bits(wm831x, WM831X_DCDC_ENABLE,
++				      WM831X_DC4_ENA, 0);
++		if (ret < 0)
++			goto err;
++
++		/* ISINK */
++		ret = wm831x_set_bits(wm831x, data->isink_reg,
++				      WM831X_CS1_DRIVE | WM831X_CS1_ENA, 0);
++		if (ret < 0)
++			goto err;
++	}
++
++	/* Set the new brightness */
++	ret = wm831x_set_bits(wm831x, data->isink_reg,
++			      WM831X_CS1_ISEL_MASK, brightness);
++	if (ret < 0)
++		goto err;
++
++	if (power_up) {
++		/* Drive current through the ISINK */
++		ret = wm831x_set_bits(wm831x, data->isink_reg,
++				      WM831X_CS1_DRIVE, WM831X_CS1_DRIVE);
++		if (ret < 0)
++			return ret;
++	}
++
++	data->current_brightness = brightness;
++
++	return 0;
++
++err:
++	/* If we were in the middle of a power transition always shut down
++	 * for safety.
++	 */
++	if (power_up || power_down) {
++		wm831x_set_bits(wm831x, WM831X_DCDC_ENABLE, WM831X_DC4_ENA, 0);
++		wm831x_set_bits(wm831x, data->isink_reg, WM831X_CS1_ENA, 0);
++	}
++
++	return ret;
++}
++
++static int wm831x_backlight_update_status(struct backlight_device *bl)
++{
++	int brightness = bl->props.brightness;
++
++	if (bl->props.power != FB_BLANK_UNBLANK)
++		brightness = 0;
++
++	if (bl->props.fb_blank != FB_BLANK_UNBLANK)
++		brightness = 0;
++
++	if (bl->props.state & BL_CORE_SUSPENDED)
++		brightness = 0;
++
++	return wm831x_backlight_set(bl, brightness);
++}
++
++static int wm831x_backlight_get_brightness(struct backlight_device *bl)
++{
++	struct wm831x_backlight_data *data = bl_get_data(bl);
++	return data->current_brightness;
++}
++
++static struct backlight_ops wm831x_backlight_ops = {
++	.options = BL_CORE_SUSPENDRESUME,
++	.update_status	= wm831x_backlight_update_status,
++	.get_brightness	= wm831x_backlight_get_brightness,
++};
++
++static int wm831x_backlight_probe(struct platform_device *pdev)
++{
++	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
++	struct wm831x_pdata *wm831x_pdata;
++	struct wm831x_backlight_pdata *pdata;
++	struct wm831x_backlight_data *data;
++	struct backlight_device *bl;
++	int ret, i, max_isel, isink_reg, dcdc_cfg;
++
++	/* We need platform data */
++	if (pdev->dev.parent->platform_data) {
++		wm831x_pdata = pdev->dev.parent->platform_data;
++		pdata = wm831x_pdata->backlight;
++	} else {
++		pdata = NULL;
++	}
++
++	if (!pdata) {
++		dev_err(&pdev->dev, "No platform data supplied\n");
++		return -EINVAL;
++	}
++
++	/* Figure out the maximum current we can use */
++	for (i = 0; i < WM831X_ISINK_MAX_ISEL; i++) {
++		if (wm831x_isinkv_values[i] > pdata->max_uA)
++			break;
++	}
++
++	if (i == 0) {
++		dev_err(&pdev->dev, "Invalid max_uA: %duA\n", pdata->max_uA);
++		return -EINVAL;
++	}
++	max_isel = i - 1;
++
++	if (pdata->max_uA != wm831x_isinkv_values[max_isel])
++		dev_warn(&pdev->dev,
++			 "Maximum current is %duA not %duA as requested\n",
++			 wm831x_isinkv_values[max_isel], pdata->max_uA);
++
++	switch (pdata->isink) {
++	case 1:
++		isink_reg = WM831X_CURRENT_SINK_1;
++		dcdc_cfg = 0;
++		break;
++	case 2:
++		isink_reg = WM831X_CURRENT_SINK_2;
++		dcdc_cfg = WM831X_DC4_FBSRC;
++		break;
++	default:
++		dev_err(&pdev->dev, "Invalid ISINK %d\n", pdata->isink);
++		return -EINVAL;
++	}
++
++	/* Configure the ISINK to use for feedback */
++	ret = wm831x_reg_unlock(wm831x);
++	if (ret < 0)
++		return ret;
++
++	ret = wm831x_set_bits(wm831x, WM831X_DC4_CONTROL, WM831X_DC4_FBSRC,
++			      dcdc_cfg);
++
++	wm831x_reg_lock(wm831x);
++	if (ret < 0)
++		return ret;
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (data == NULL)
++		return -ENOMEM;
++
++	data->wm831x = wm831x;
++	data->current_brightness = 0;
++	data->isink_reg = isink_reg;
++
++	bl = backlight_device_register("wm831x", &pdev->dev,
++			data, &wm831x_backlight_ops);
++	if (IS_ERR(bl)) {
++		dev_err(&pdev->dev, "failed to register backlight\n");
++		kfree(data);
++		return PTR_ERR(bl);
++	}
++
++	bl->props.max_brightness = max_isel;
++	bl->props.brightness = max_isel;
++
++	platform_set_drvdata(pdev, bl);
++
++	/* Disable the DCDC if it was started so we can bootstrap */
++	wm831x_set_bits(wm831x, WM831X_DCDC_ENABLE, WM831X_DC4_ENA, 0);
++
++
++	backlight_update_status(bl);
++
++	return 0;
++}
++
++static int wm831x_backlight_remove(struct platform_device *pdev)
++{
++	struct backlight_device *bl = platform_get_drvdata(pdev);
++	struct wm831x_backlight_data *data = bl_get_data(bl);
++
++	backlight_device_unregister(bl);
++	kfree(data);
++	return 0;
++}
++
++static struct platform_driver wm831x_backlight_driver = {
++	.driver		= {
++		.name	= "wm831x-backlight",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= wm831x_backlight_probe,
++	.remove		= wm831x_backlight_remove,
++};
++
++static int __init wm831x_backlight_init(void)
++{
++	return platform_driver_register(&wm831x_backlight_driver);
++}
++module_init(wm831x_backlight_init);
++
++static void __exit wm831x_backlight_exit(void)
++{
++	platform_driver_unregister(&wm831x_backlight_driver);
++}
++module_exit(wm831x_backlight_exit);
++
++MODULE_DESCRIPTION("Backlight Driver for WM831x PMICs");
++MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:wm831x-backlight");
+-- 
+1.6.3.3
 
