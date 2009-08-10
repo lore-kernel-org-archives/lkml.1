@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbZHJMX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbZHJM0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754137AbZHJMX3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 08:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbZHJMX2
+	id S1754197AbZHJM0M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 08:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbZHJM0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 08:23:28 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:51469 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753989AbZHJMX2 (ORCPT
+	Mon, 10 Aug 2009 08:26:11 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:48484 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754073AbZHJM0K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 08:23:28 -0400
-Subject: Re: rfkill rework in 2.6.31-rc, hal/dbus access changes?
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Norbert Preining <preining@logic.at>
-Cc: Marcel Holtmann <marcel@holtmann.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090810104302.GD844@gamma.logic.tuwien.ac.at>
-References: <20090711091427.GB14367@gamma.logic.tuwien.ac.at>
-	 <1247338473.9709.107.camel@localhost.localdomain>
-	 <20090711195911.GA31549@gamma.logic.tuwien.ac.at>
-	 <1247346745.9709.129.camel@localhost.localdomain>
-	 <20090810104302.GD844@gamma.logic.tuwien.ac.at>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-vaZMjzIljJrOo61Fc4gc"
-Date: Mon, 10 Aug 2009 14:22:50 +0200
-Message-Id: <1249906970.12361.11.camel@johannes.local>
+	Mon, 10 Aug 2009 08:26:10 -0400
+Date: Mon, 10 Aug 2009 14:25:35 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Gerald Schaefer <gerald.schaefer@de.ibm.com>, manfred@colorfullife.com
+Subject: Re: [BUG] race of RCU vs NOHU
+Message-ID: <20090810142535.3e685109@skybase>
+In-Reply-To: <20090807142957.GB6700@linux.vnet.ibm.com>
+References: <20090807151529.2806b8b4@skybase>
+	<20090807142957.GB6700@linux.vnet.ibm.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.27.5 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 7 Aug 2009 07:29:57 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
---=-vaZMjzIljJrOo61Fc4gc
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> On Fri, Aug 07, 2009 at 03:15:29PM +0200, Martin Schwidefsky wrote:
+> > Hi Paul,
+> > I analysed a dump of a hanging 2.6.30 system and found what I think is
+> > a bug of RCU vs NOHZ. There are a number of patches ontop of that
+> > kernel but they should be independent of the bug.
+> > 
+> > The systems has 4 cpus and uses classic RCU. cpus #0, #2 and #3 woke up
+> > recently, cpu #1 has been sleeping for 5 minutes, but there is a pending
+> > rcu batch. The timer wheel for cpu #1 is empty, it will continue to
+> > sleep for NEXT_TIMER_MAX_DELTA ticks.
+> 
+> Congratulations, Martin!  You have exercised what to date has been a
+> theoretical bug identified last year by Manfred Spraul.  The fix is to
+> switch from CONFIG_RCU_CLASSIC to CONFIG_RCU_TREE, which was added in
+> 2.6.29.
+> 
+> Of course, if you need to work with an old kernel version, you might
+> still need a patch, perhaps for the various -stable versions.  If so,
+> please let me know -- otherwise, I will focus forward on CONFIG_RCU_TREE
+> rather than backwards on CONFIG_RCU_CLASSIC.
 
-On Mon, 2009-08-10 at 12:43 +0200, Norbert Preining wrote:
+SLES11 is 2.6.27 and uses classic RCU. The not-so theoretical bug is
+present there and I think it needs to be fixed :-/
 
-> Ok, I have rewritten my rfkill gnome applet with threads and polling
-> /dev/rfkill. Did work out fine.
+-- 
+blue skies,
+   Martin.
 
-Umm. That's wrong in multiple ways. You don't need threads, and you
-don't need to poll. Just open /dev/rfkill, add the fd to the event loop
-and read events.
-
-> I hope the format will not change too often ;-)
-
-It won't.
-
-johannes
-
---=-vaZMjzIljJrOo61Fc4gc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKgBEWAAoJEODzc/N7+QmazSsP/2KCloruk7RXShCLmhmBhady
-3kofL1dp3ekQ6JHJ2XeBZP8m0OG0XUUoUNfSCYvoCbqxrKGlVNocZhZQXGerrGGj
-Hpq4TONbNFDo6kqVrYblXVeR7hmSWg3z4upW8PGBAbc6q6sb8G8Se+E8BhGks8o9
-6ffxEF8FoQHOwp2Bx5lsKpoGgU2Y8sD8u1p0Jqzg2do5R2Z9/JCJnkKMyk+EH+Po
-HLNlhLrN+fGUspcFZ5JqQEAFd9auX5KDjUxH8h+KMpOYGNM0JpX/JhmqilJ8gF/J
-JRGMGEKWluU9GXajDcExKSlRdpNHGz8Vml359C4lsFF5DO9LzUxcSQcPk1X2lSk+
-SyoM3fvLThybsVHT1+DLxzy4zhSiWZS4/2sk7TdI92XwdMC8/ylnA51ulUcuThtl
-LetVXR73N2W/KckX2zcWMLNSXhDFuITZnurxYTnf240uIKm5k+VsFgss/OpwFm/5
-yQOJ6Zm/ELjXOBn1c2Y/CpUp1rHFwdRllA5nA1QF9IlJx1Z0rqVQDUzzu7oUbSUl
-pjo3krPRzBmic0K+d24W0E/6DJ527ZzwJdqS6ZrKS5NFm4NAl2V9NNzcvubenYFx
-wUPmoIUdvx4dcoO+qf9nj9HlksULbkHAg+UOJDTeusI+qw0JT6WEz0NIGFqvsmJH
-d0TKA79mf9kjNk0NcZ+e
-=nQYP
------END PGP SIGNATURE-----
-
---=-vaZMjzIljJrOo61Fc4gc--
+"Reality continues to ruin my life." - Calvin.
 
