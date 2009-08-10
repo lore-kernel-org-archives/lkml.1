@@ -1,81 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076AbZHJOe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053AbZHJOhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755076AbZHJOe3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754885AbZHJOe3
+	id S1755053AbZHJOhq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbZHJOhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:34:29 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:20163 "EHLO
+	Mon, 10 Aug 2009 10:37:45 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:20671 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753847AbZHJOe2 (ORCPT
+	with ESMTP id S1752495AbZHJOho (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:34:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=PFSWEsVkig4cc1LTjqm+I0exWc3+lCs/jAQYO4XLlUCaXRlWH3BoSV5dQXmhYtw79m
-         kKeLzrylPBZjLHF1V7KAUNs/XF1S9BBtIzUvzNhLDenI+DZ3Lgki0k8JX7eVT6/y3icg
-         qcEGxF7qBa/ykJRFrfkeC54bHgAYWMb16CMq8=
-Date: Mon, 10 Aug 2009 22:37:25 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>
-Cc: linux-kernel@vger.kernel.org, arjan@infradead.org
-Subject: Re: [PATCH v2] markup_oops: Use modinfo to avoid confusion with
-	underscored module names
-Message-ID: <20090810143725.GA7173@hack>
-References: <1249561315-2227-1-git-send-email-ozan@pardus.org.tr> <1249895593-23567-1-git-send-email-ozan@pardus.org.tr>
+	Mon, 10 Aug 2009 10:37:44 -0400
+Message-ID: <4A8030AE.2050600@vflare.org>
+Date: Mon, 10 Aug 2009 20:07:34 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1249895593-23567-1-git-send-email-ozan@pardus.org.tr>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: linux-kernel@vger.kernel.org
+Subject: [RFC][PATCH] swap: send callback when swap slot is freed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 12:13:13PM +0300, Ozan Çağlayan wrote:
->When EIP is at a module having an underscore in its name, the current
->code fails to find it because the module filenames has '-' instead of
->'_'. Use modinfo for a better path finding.
->
->Signed-off-by: Ozan Çağlayan <ozan@pardus.org.tr>
+Currently, we have "swap discard" mechanism which sends a discard bio 
+request
+when we find a free cluster during scan_swap_map(). This callback can come a
+long time after swap slots are actually freed.
 
-Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
+This delay in callback is a great problem when (compressed) RAM [1] is used
+as a swap device. So, this change adds a callback which is called as
+soon as a swap slot becomes free. For above mentioned case of swapping
+over compressed RAM device, this is very useful since we can immediately
+free memory allocated for this swap page.
 
-Thanks!
+This callback does not replace swap discard support. It is called with
+swap_lock held, so it is meant to trigger action that finishes quickly.
+However, swap discard is an I/O request and can be used for taking longer
+actions.
 
->---
-> scripts/markup_oops.pl |    5 +----
-> 1 files changed, 1 insertions(+), 4 deletions(-)
->
->diff --git a/scripts/markup_oops.pl b/scripts/markup_oops.pl
->index 8977401..5f0fcb7 100644
->--- a/scripts/markup_oops.pl
->+++ b/scripts/markup_oops.pl
->@@ -184,10 +184,7 @@ if ($target eq "0") {
-> 
-> # if it's a module, we need to find the .ko file and calculate a load offset
-> if ($module ne "") {
->-	my $dir = dirname($filename);
->-	$dir = $dir . "/";
->-	my $mod = $module . ".ko";
->-	my $modulefile = `find $dir -name $mod | head -1`;
->+	my $modulefile = `modinfo $module | grep '^filename:' | awk '{ print \$2 }'`;
-> 	chomp($modulefile);
-> 	$filename = $modulefile;
-> 	if ($filename eq "") {
->-- 
->1.6.3.4
->
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+This patch is simply a quick hack but it works (tested on x86 and x64).
+Can anyone please suggest a cleaner and proper way to do this? This is
+really essential for compcache[1] project. Any feedback would be really
+helpful. Thanks.
 
--- 
-Live like a child, think like the god.
- 
+
+Links:
+[1] http://code.google.com/p/compcache/
+
+Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+---
+
+  include/linux/swap.h |   14 ++++++++++++++
+  init/Kconfig         |    9 +++++++++
+  mm/swapfile.c        |   20 ++++++++++++++++++++
+  3 files changed, 43 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 7c15334..483d0b9 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -8,6 +8,7 @@
+  #include <linux/memcontrol.h>
+  #include <linux/sched.h>
+  #include <linux/node.h>
++#include <linux/blkdev.h>
+
+  #include <asm/atomic.h>
+  #include <asm/page.h>
+@@ -20,6 +21,8 @@ struct bio;
+  #define SWAP_FLAG_PRIO_MASK    0x7fff
+  #define SWAP_FLAG_PRIO_SHIFT    0
+
++typedef void (swap_free_notify_fn) (struct block_device *, unsigned long);
++
+  static inline int current_is_kswapd(void)
+  {
+      return current->flags & PF_KSWAPD;
+@@ -155,6 +158,9 @@ struct swap_info_struct {
+      unsigned int max;
+      unsigned int inuse_pages;
+      unsigned int old_block_size;
++#ifdef CONFIG_SWAP_FREE_NOTIFY
++    swap_free_notify_fn *swap_free_notify_fn;
++#endif
+  };
+
+  struct swap_list_t {
+@@ -297,6 +303,14 @@ extern int reuse_swap_page(struct page *);
+  extern int try_to_free_swap(struct page *);
+  struct backing_dev_info;
+
++#ifdef CONFIG_SWAP_FREE_NOTIFY
++extern void set_swap_free_notify(unsigned, swap_free_notify_fn *);
++#else
++void set_swap_free_notify(unsigned, swap_free_notify_fn *)
++{
++}
++#endif
++
+  /* linux/mm/thrash.c */
+  extern struct mm_struct *swap_token_mm;
+  extern void grab_swap_token(struct mm_struct *);
+diff --git a/init/Kconfig b/init/Kconfig
+index 3f7e609..b0112c6 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -176,6 +176,15 @@ config SWAP
+        used to provide more virtual memory than the actual RAM present
+        in your computer.  If unsure say Y.
+
++config SWAP_FREE_NOTIFY
++    bool "Enable swap free notification"
++    depends on SWAP
++    default y
++    help
++      This causes swap subsystem to send a callback to swap device when
++      a swap block becomes free. This is useful in cases such as when
++      compressed RAM device is used as swap disk.
++
+  config SYSVIPC
+      bool "System V IPC"
+      ---help---
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index 8ffdc0d..25bacfd 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -552,6 +552,22 @@ out:
+      return NULL;
+  }
+
++#ifdef CONFIG_SWAP_FREE_NOTIFY
++/*
++ * Sets callback for event when swap_map[offset] == 0
++ * i.e. page at this swap offset is not longer used.
++ */
++void set_swap_free_notify(unsigned type, swap_free_notify_fn *notify_fn)
++{
++    struct swap_info_struct *sis;
++    sis = get_swap_info_struct(type);
++    BUG_ON(!sis);
++    sis->swap_free_notify_fn = notify_fn;
++    return;
++}
++EXPORT_SYMBOL(set_swap_free_notify);
++#endif
++
+  static int swap_entry_free(struct swap_info_struct *p,
+                 swp_entry_t ent, int cache)
+  {
+@@ -583,6 +599,10 @@ static int swap_entry_free(struct swap_info_struct *p,
+              swap_list.next = p - swap_info;
+          nr_swap_pages++;
+          p->inuse_pages--;
++#ifdef CONFIG_SWAP_FREE_NOTIFY
++        if (p->swap_free_notify_fn)
++            p->swap_free_notify_fn(p->bdev, offset);
++#endif
+      }
+      if (!swap_count(count))
+          mem_cgroup_uncharge_swap(ent);
+
