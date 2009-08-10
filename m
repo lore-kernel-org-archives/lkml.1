@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbZHJNoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbZHJNqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754814AbZHJNoz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 09:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbZHJNoy
+	id S1754829AbZHJNqS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 09:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbZHJNqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 09:44:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37647 "EHLO mx2.redhat.com"
+	Mon, 10 Aug 2009 09:46:17 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60019 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754451AbZHJNox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 09:44:53 -0400
-Date: Mon, 10 Aug 2009 16:42:29 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: netdev@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Or Gerlitz <ogerlitz@voltaire.com>,
-       "Fischer, Anna" <anna.fischer@hp.com>,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Edge Virtual Bridging <evb@yahoogroups.com>
-Subject: Re: [PATCH] macvlan: add tap device backend
-Message-ID: <20090810134229.GA10036@redhat.com>
-References: <1249595428-21594-1-git-send-email-arnd@arndb.de> <200908092042.24686.arnd@arndb.de> <20090810085003.GA3654@redhat.com> <200908101529.46285.arnd@arndb.de>
+	id S1754000AbZHJNqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 09:46:17 -0400
+Date: Mon, 10 Aug 2009 15:46:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] perf_counter: Fix a race on perf_counter_ctx
+Message-ID: <20090810134608.GA8295@elte.hu>
+References: <928CFBE8E7CB0040959E56B4EA41A77EC1BFEFEB@irsmsx504.ger.corp.intel.com> <20090807103127.GA23139@elte.hu> <20090807103610.GA23728@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77EC1BFF02D@irsmsx504.ger.corp.intel.com> <928CFBE8E7CB0040959E56B4EA41A77EC1BFF048@irsmsx504.ger.corp.intel.com> <20090807112421.GB30014@elte.hu> <20090807113349.GA31673@elte.hu> <1249667341.17467.5.camel@twins> <20090808120315.GA14086@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77EC1BFF464@irsmsx504.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200908101529.46285.arnd@arndb.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF464@irsmsx504.ger.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 03:29:46PM +0200, Arnd Bergmann wrote:
-> On Monday 10 August 2009, Michael S. Tsirkin wrote:
-> > 
-> > > Would it be enough to check the dev_queue_xmit() return
-> > > code for NETDEV_TX_BUSY?
-> > > 
-> > > How would I get notified when it gets free again?
-> > 
-> > You can do this by creating a socket. Look at how tun does
-> > this now.
-> 
-> Hmm, I was hoping to be able to avoid this, because I can
-> interact more directly with the outbound physical interface
-> using dev_queue_xmit() instead of netif_rx_ni().
 
-Yea, that's what tun does. socket just notifies you when
-packets are freed.
+* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
 
-> I'll have a look. Thanks,
+> I've been using some old version of perf. When I try to build the 
+> version for the latest -tip, I get the following build error:
 > 
-> 	Arnd <><
+> builtin-annotate.o: In function `print_summary':
+> /home/markus/linux/git-tip/tools/perf/builtin-annotate.c:1211: undefined reference to `rb_first'
+> /home/markus/linux/git-tip/tools/perf/builtin-annotate.c:1223: undefined reference to `rb_next'
+> builtin-annotate.o: In function `insert_source_line':
+
+Weird. How do you build perf? Do you do:
+
+  cd tools/perf/
+  make
+
+? does your build directory have the ../../lib/rbtree.c file?
+
+	Ingo
+
