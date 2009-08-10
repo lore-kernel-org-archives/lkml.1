@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755137AbZHJOJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbZHJOKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755137AbZHJOJE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbZHJOJD
+	id S1755168AbZHJOKZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbZHJOKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:09:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55742 "EHLO mx2.redhat.com"
+	Mon, 10 Aug 2009 10:10:24 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48114 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754806AbZHJOJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:09:02 -0400
-Date: Mon, 10 Aug 2009 10:08:18 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
-       msb@google.com, viro@zeniv.linux.org.uk, hannes@cmpxchg.org
-Subject: Re: [PATCH 1/3] vfs: make get_sb_pseudo set s_maxbytes to value
- that can be cast to signed
-Message-ID: <20090810100818.3c17def9@tlielax.poochiereds.net>
-In-Reply-To: <20090810134950.GA16276@infradead.org>
-References: <1249906663-7572-1-git-send-email-jlayton@redhat.com>
-	<1249906663-7572-2-git-send-email-jlayton@redhat.com>
-	<20090810134950.GA16276@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754793AbZHJOKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 10:10:23 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Neil Brown <neilb@suse.de>
+Subject: Re: [Bug #13944] MD raid regression
+Date: Mon, 10 Aug 2009 16:11:07 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Mike Snitzer" <snitzer@redhat.com>
+References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera> <u1L1PAbl8zG.A.RyC.aj1fKB@chimera> <19071.30809.398179.900584@notabene.brown>
+In-Reply-To: <19071.30809.398179.900584@notabene.brown>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908101611.07170.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Aug 2009 09:49:50 -0400
-Christoph Hellwig <hch@infradead.org> wrote:
-
-> On Mon, Aug 10, 2009 at 08:17:41AM -0400, Jeff Layton wrote:
-> > get_sb_pseudo sets s_maxbytes to ~0ULL which becomes negative when cast
-> > to a signed value. Fix it to use MAX_LFS_FILESIZE which casts properly
-> > to a positive signed value.
+On Monday 10 August 2009, Neil Brown wrote:
+> On Sunday August 9, rjw@sisk.pl wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
 > > 
-> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> > Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
-> > Acked-by: Steve French <smfrench@gmail.com>
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.30.  Please verify if it still should be listed and let me know
+> > (either way).
 > 
-> Looks good, and I think it would be very good to still gets this into
-> 2.6.31.
-> 
-> Reviewed-by: Christoph Hellwig <hch@lst.de>
-> 
+> Yes, it still should be listed.  The first patch didn't quite fix it.
+> A second one probably does.
 
-Agreed. The other two should probably go in early 2.6.32 (assuming
-they're ok).
+Thanks for the update.
 
--- 
-Jeff Layton <jlayton@redhat.com>
+Is the patch listed below the right one?
+
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13944
+> > Subject		: MD raid regression
+> > Submitter	: Mike Snitzer <snitzer@redhat.com>
+> > Date		: 2009-08-05 15:06 (5 days old)
+> > Handled-By	: NeilBrown <neilb@suse.de>
+> > Patch		: http://patchwork.kernel.org/patch/39521/
+
+Rafael
