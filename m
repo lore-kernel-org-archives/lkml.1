@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932380AbZHJRK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932326AbZHJRRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932380AbZHJRK0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 13:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932324AbZHJRK0
+	id S932326AbZHJRRA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 13:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932207AbZHJRRA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 13:10:26 -0400
-Received: from smtp108.sbc.mail.gq1.yahoo.com ([67.195.14.111]:43494 "HELO
-	smtp108.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932308AbZHJRKX (ORCPT
+	Mon, 10 Aug 2009 13:17:00 -0400
+Received: from n17.bullet.mail.mud.yahoo.com ([68.142.206.144]:36317 "HELO
+	n17.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932197AbZHJRQ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 13:10:23 -0400
-X-YMail-OSG: VNbzj5oVM1n_05e6Ns7NtGvUzo_19K9eqXyk.dz77oIsJqgFNH16IrSzad145dISf_ifMnMvSqPC65qn.nhQAjj7gXbUhZnFfz6w4NebAgKMohE.ItCNfbnfS1b7FLqtwKYdDIBMvR5nlm.7K8T67xvBnydSkvVF_97UTUB3eF7TC1hCknEcwanyJHshGIJujjYgsRgDpRhgev_jyPps3FKisGn9SDUgozJs1vWL6P944P9iAhEmK.kQgMqtF0PgZbkNXgnW4.Cbvp7vcrhJYqYSLEDdKbbgojJ35VTNsxYCPlI.AK3X
+	Mon, 10 Aug 2009 13:16:59 -0400
+X-Greylist: delayed 411 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Aug 2009 13:16:59 EDT
+X-Yahoo-Newman-Id: 36017.72155.bm@omp412.mail.mud.yahoo.com
+X-YMail-OSG: pyBrh8sVM1nyp.p7YEI83CrsDqbA9Sp.ird14az7kKD1aeJcACb4BGvpxpFCZ5EeVmx3xJhEPH9ANL7YiHLUww5DENuL_mpgzxTwLYd3n8YzsFkNDRdvAUROEof_qNqoqrSexV78MdecPM6AXMOju5oGQO4sLHtXDxz7xCB1aeaYuCrMfpdY41Ue6vJoU7GS7AX5yprbpJP_YUnfu.HzSOU0UYoJwvluILXTxr7g502Dkaz6qm_ttA8j3x_i1YCXxm9nxNvzFVbWE70ALKhf5sjYz5N8QEQF
 X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 2/2] [Target_Core_Mod/ConfigFS]: Add PR APTPL device
-	attributes
+Subject: [PATCH 0/2] [Target_Core_Mod]: Add hyrid PR APTPL/ConfigFS support.
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        linux-scsi <linux-scsi@vger.kernel.org>
@@ -27,8 +28,8 @@ Cc: Douglas Gilbert <dgilbert@interlog.com>, Hannes Reinecke <hare@suse.de>,
        Philipp Reisner <philipp.reisner@linbit.com>,
        Florian Haas <florian.haas@linbit.com>
 Content-Type: text/plain
-Date: Mon, 10 Aug 2009 10:10:11 -0700
-Message-Id: <1249924211.31984.1.camel@haakon2.linux-iscsi.org>
+Date: Mon, 10 Aug 2009 10:06:41 -0700
+Message-Id: <1249924001.11105.282.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -36,341 +37,114 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Greetings folks,
 
-This patch adds two configfs attributes in /sys/kernel/config/target/core/$HBA/$DEV/pr.
-First a read only attr called res_aptpl_active that shows read-only APTPL_A status,
-and then res_aptpl_metadata which accepts key=value pairs for core_scsi3_alloc_aptpl_registration()
-to perform PR registrations from APTPL provided metadata through the target_core_mod
-configfs interface.  The key=value pairs currently defined in target_core_dev_pr_store_attr_res_aptpl_metadata()
-and which are written to /sys/kernel/config/target/core/$HBA/$DEV/res_aptpl_metadata
-in key0=value0,key1=value1,etc format are:
+This patch adds complete running support for persistent reservations feature:
+Activate Persist across Target Power Loss (APTPL) against all of spc4r17
+defined PROUT service actions in lio-core-2.6.git.  This patch has been tested with
+PROUT service actions REGISTER, RESERVE, RELEASE, CLEAR, PREEMPT_AND_ABORT and
+REGISTER_AND_MOVE (restarting the entire target configfs fabric each step and rebuilding)
+from a IBLOCK exported LVM dm block device on v2.6.31-rc5 x86 HVM.
 
-*) initiator_fabric
-*) initiator_node
-*) sa_res_key
-*) res_holder
-*) res_type
-*) res_scope
-*) res_all_tg_pt
-*) mapped_lun
-*) target_fabric
-*) target_node
-*) tpgt
-*) port_rtpi
-*) target_lun
+These patches uses a approach that writes out PR metadata in key-value pairs via a pre-allocated
+buffer using fabric module dependent code during the various APTPL commit points while running
+PROUT service action logic to struct file in /var/target/pr/aptpl_$T10_UNIT_SERIAL.  It then parses
+the key=value pairs and makes them comma seperated values in userspace and then into configfs via
+/sys/kernel/config/target/core/$HBA/$DEV/pr/res_aptpl_metadata.  From there the PR registrations+reservation
+are checked and processed as fabric module LUN ACLs are created with matching PR APTPL metadata as the
+configfs fabric is rebuilt upon normal target setup, and put into effect using existing
+drivers/target/target_core_pr.c code.
 
-Note that initiator_fabric, target_fabric, and port_rtpi keys are saved in struct file
-PR APTPL metadta and are currently being extracted, but not being passed in
-core_scsi3_alloc_aptpl_registration() which saves the incoming metadata into a PR registration.
-This will probably change in the near future as this code moves to use SCSI Transport IDs
-parsing provide by struct target_core_fabric_ops
+Here is what it looks like with a initial set of REGISTER -> RESERVE ->
+PREEMPT_AND_ABORT -> REGISTER_AND_MOVE calls with then /etc/init.d/target restart
+using a dm LVM block device exported via TCM+LIO-Target iSCSI ports on v2.6.31-rc5 x86 HVM.
+Here is what it looks like after successfully completing the REGISTER_AND_MOVE with APTPL=1
 
-Also note that /sys/kernel/config/target/core/$HBA/$DEV/pr/res_aptpl_metadata can also
-used to create PR registration from APTPL metadata when no active fabric module
-(eg: iSCSI ports) exist, which prevents things from changing while SCSI Initiator ports
-are actively using PR logic for the TCM storage object.
+*) Metadata gets parsed with tcm_node.py --praptpl and written to configfs on restart:
 
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/target/target_core_configfs.c |  266 ++++++++++++++++++++++++++++++++-
- 1 files changed, 265 insertions(+), 1 deletions(-)
+<SNIP>
 
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index 4561ee2..847995a 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -1125,6 +1125,266 @@ static ssize_t target_core_dev_pr_show_attr_res_type(
- 
- SE_DEV_PR_ATTR_RO(res_type);
- 
-+/*
-+ * res_aptpl_active
-+ */
-+
-+static ssize_t target_core_dev_pr_show_attr_res_aptpl_active(
-+	struct se_subsystem_dev_s *su_dev,
-+	char *page)
-+{
-+	if (!(su_dev->se_dev_ptr))
-+		return -ENODEV;
-+
-+	if (T10_RES(su_dev)->res_type != SPC3_PERSISTENT_RESERVATIONS)
-+		return 0;
-+
-+	return sprintf(page, "APTPL Bit Status: %s\n",
-+		(T10_RES(su_dev)->pr_aptpl_active) ? "Activated" : "Disabled");
-+}
-+
-+SE_DEV_PR_ATTR_RO(res_aptpl_active);
-+
-+/*
-+ * res_aptpl_metadata
-+ */
-+static ssize_t target_core_dev_pr_show_attr_res_aptpl_metadata(
-+	struct se_subsystem_dev_s *su_dev,
-+	char *page)
-+{
-+	if (!(su_dev->se_dev_ptr))
-+		return -ENODEV;
-+
-+	if (T10_RES(su_dev)->res_type != SPC3_PERSISTENT_RESERVATIONS)
-+		return 0;
-+
-+	return sprintf(page, "Ready to process PR APTPL metadata..\n");
-+}
-+
-+static ssize_t target_core_dev_pr_store_attr_res_aptpl_metadata(
-+	struct se_subsystem_dev_s *su_dev,
-+	const char *page,
-+	size_t count)
-+{
-+	se_device_t *dev;
-+	unsigned char *i_fabric, *t_fabric, *i_port = NULL, *t_port = NULL;
-+	char *ptr, *ptr2, *cur, *buf;
-+	unsigned long long tmp_ll;
-+	unsigned long tmp_l;
-+	u64 sa_res_key = 0;
-+	u32 mapped_lun = 0, target_lun = 0;
-+	int ret = -1, res_holder = 0, all_tg_pt = 0;
-+	u16 port_rpti = 0, tpgt = 0;
-+	u8 type = 0, scope;
-+
-+	dev = su_dev->se_dev_ptr;
-+	if (!(dev))
-+		return -ENODEV;
-+
-+	if (T10_RES(su_dev)->res_type != SPC3_PERSISTENT_RESERVATIONS)
-+		return 0;
-+
-+	if (DEV_OBJ_API(dev)->check_count(&dev->dev_export_obj)) {
-+		printk(KERN_INFO "Unable to process APTPL metadata while"
-+			" active fabric exports exist\n");
-+		return -EINVAL;
-+	}
-+	/*
-+	 * Allocate and copy input to our own buffer so that we can setup
-+	 * NULL terminators later for incoming PR APTPL metadata..
-+	 */
-+	buf = kzalloc(count, GFP_KERNEL);
-+	memcpy(buf, page, count);
-+	cur = &buf[0];
-+
-+	while (cur) {
-+		ptr = strstr(cur, "=");
-+		if (!(ptr))
-+			goto out;
-+
-+		*ptr = '\0';
-+		ptr++;
-+		/*
-+		 * PR APTPL Metadata for Initiator Port
-+		 */
-+		ptr2 = strstr(cur, "initiator_fabric");
-+		if (ptr2) {
-+			transport_check_dev_params_delim(ptr, &cur);
-+			i_fabric = ptr;
-+			continue;
-+		}
-+		ptr2 = strstr(cur, "initiator_node");
-+		if (ptr2) {
-+			transport_check_dev_params_delim(ptr, &cur);
-+			if (strlen(ptr) > PR_APTPL_MAX_IPORT_LEN) {
-+				printk(KERN_ERR "APTPL metadata initiator_node="
-+					" exceeds PR_APTPL_MAX_IPORT_LEN: %d\n",
-+					PR_APTPL_MAX_IPORT_LEN);	
-+				ret = -1;
-+				break;
-+			}
-+			i_port = ptr;
-+			continue;
-+		}
-+		ptr2 = strstr(cur, "sa_res_key");	
-+		if (ptr2) {
-+			transport_check_dev_params_delim(ptr, &cur);
-+			ret = strict_strtoull(ptr, 0, &tmp_ll);
-+			if (ret < 0) {
-+				printk(KERN_ERR "strict_strtoull() failed for"
-+					" sa_res_key=\n");
-+				break;
-+			}
-+			sa_res_key = (u64)tmp_ll;
-+			continue;
-+		}
-+		/*
-+		 * PR APTPL Metadata for Reservation
-+		 */
-+		ptr2 = strstr(cur, "res_holder");
-+		if (ptr2) {
-+			transport_check_dev_params_delim(ptr, &cur);
-+			ret = strict_strtoul(ptr, 0, &tmp_l);
-+			if (ret < 0) {
-+				printk(KERN_ERR "strict_strtoul() failed for"
-+					" res_holder=\n");
-+				break;
-+			}
-+			res_holder = (int)tmp_l;
-+			continue;
-+		}
-+		ptr2 = strstr(cur, "res_type");
-+		if (ptr2) {
-+			transport_check_dev_params_delim(ptr, &cur);
-+			ret = strict_strtoul(ptr, 0, &tmp_l);
-+			if (ret < 0) {
-+				printk(KERN_ERR "strict_strtoul() failed for"
-+					" res_type=\n");
-+				break;
-+			}
-+			type = (u8)tmp_l;
-+			continue;
-+		}
-+		ptr2 = strstr(cur, "res_scope");
-+		if (ptr2) {
-+			transport_check_dev_params_delim(ptr, &cur);
-+			ret = strict_strtoul(ptr, 0, &tmp_l);
-+			if (ret < 0) {
-+				printk(KERN_ERR "strict_strtoul() failed for"
-+					" res_scope=\n");
-+				break;
-+			}
-+			scope = (u8)tmp_l;
-+			continue;
-+		}
-+		ptr2 = strstr(cur, "res_all_tg_pt");
-+		if (ptr2) {
-+			transport_check_dev_params_delim(ptr, &cur);
-+			ret = strict_strtoul(ptr, 0, &tmp_l);
-+			if (ret < 0) {
-+				printk(KERN_ERR "strict_strtoul() failed for"
-+					" res_all_tg_pt=\n");
-+				break;
-+			}
-+			all_tg_pt = (int)tmp_l;	
-+			continue;
-+		}
-+		ptr2 = strstr(cur, "mapped_lun");
-+		if (ptr2) {
-+			transport_check_dev_params_delim(ptr, &cur);
-+			ret = strict_strtoul(ptr, 0, &tmp_l);
-+			if (ret < 0) {
-+				printk(KERN_ERR "strict_strtoul() failed for"
-+					" mapped_lun=\n");	
-+				break;
-+			}
-+			mapped_lun = (u32)tmp_l;
-+			continue;
-+		}
-+		/*
-+		 * PR APTPL Metadata for Target Port
-+		 */	
-+		ptr2 = strstr(cur, "target_fabric");	
-+		if (ptr2) {
-+			transport_check_dev_params_delim(ptr, &cur);
-+			t_fabric = ptr;
-+			continue;
-+		}
-+		ptr2 = strstr(cur, "target_node");
-+		if (ptr2) {
-+			transport_check_dev_params_delim(ptr, &cur);
-+			if (strlen(ptr) > PR_APTPL_MAX_TPORT_LEN) {
-+				printk(KERN_ERR "APTPL metadata target_node="
-+					" exceeds PR_APTPL_MAX_TPORT_LEN: %d\n",
-+					PR_APTPL_MAX_TPORT_LEN);        
-+				ret = -1;
-+				break;
-+			}
-+			t_port = ptr;
-+			continue;
-+		}
-+		ptr2 = strstr(cur, "tpgt");
-+		if (ptr2) {
-+			transport_check_dev_params_delim(ptr, &cur);
-+			ret = strict_strtoul(ptr, 0, &tmp_l);
-+			if (ret < 0) {
-+				printk(KERN_ERR "strict_strtoul() failed for"
-+					" tpgt=\n");
-+				break;
-+			}
-+			tpgt = (u16)tmp_l;
-+			continue;
-+		}
-+		ptr2 = strstr(cur, "port_rtpi");
-+		if (ptr2) {
-+			transport_check_dev_params_delim(ptr, &cur);
-+			ret = strict_strtoul(ptr, 0, &tmp_l);
-+			if (ret < 0) {
-+				printk(KERN_ERR "strict_strtoul() failed for"
-+					" port_rtpi=\n");	
-+				break;
-+			}
-+			port_rpti = (u16)tmp_l;
-+			continue;
-+		}
-+		ptr2 = strstr(cur, "target_lun");
-+		if (ptr2) {
-+			transport_check_dev_params_delim(ptr, &cur);
-+			ret = strict_strtoul(ptr, 0, &tmp_l);
-+			if (ret < 0) {
-+				printk(KERN_ERR "strict_strtoul() failed for"
-+					" target_lun=\n");
-+				break;
-+			}
-+			target_lun = (u32)tmp_l;
-+			continue;
-+		} else
-+			cur = NULL;
-+	}
-+
-+	if (!(i_port) || !(t_port) || !(sa_res_key)) {
-+		printk(KERN_ERR "Illegal parameters for APTPL registration\n");
-+		ret = -1;
-+		goto out;	
-+	}
-+
-+	if (res_holder && !(type)) {
-+		printk(KERN_ERR "Illegal PR type: 0x%02x for reservation"
-+				" holder\n", type);
-+		ret = -1;
-+		goto out;
-+	}
-+
-+	ret = core_scsi3_alloc_aptpl_registration(T10_RES(su_dev), sa_res_key,
-+			i_port, mapped_lun, t_port, tpgt, target_lun, res_holder,
-+			all_tg_pt, type);
-+out:
-+	kfree(buf);
-+	return (ret == 0) ? count : -EINVAL;
-+}
-+
-+SE_DEV_PR_ATTR(res_aptpl_metadata, S_IRUGO | S_IWUSR);
-+
- CONFIGFS_EATTR_OPS(target_core_dev_pr, se_subsystem_dev_s, se_dev_pr_group);
- 
- static struct configfs_attribute *target_core_dev_pr_attrs[] = {
-@@ -1135,6 +1395,8 @@ static struct configfs_attribute *target_core_dev_pr_attrs[] = {
- 	&target_core_dev_pr_res_pr_registered_i_pts.attr,
- 	&target_core_dev_pr_res_pr_type.attr,
- 	&target_core_dev_pr_res_type.attr,
-+	&target_core_dev_pr_res_aptpl_active.attr,
-+	&target_core_dev_pr_res_aptpl_metadata.attr,
- 	NULL,
- };
- 
-@@ -2158,9 +2420,11 @@ static struct config_group *target_core_call_createdev(
- 	INIT_LIST_HEAD(&se_dev->t10_wwn.t10_vpd_list);
- 	spin_lock_init(&se_dev->t10_wwn.t10_vpd_lock);
- 	INIT_LIST_HEAD(&se_dev->t10_reservation.registration_list);
-+	INIT_LIST_HEAD(&se_dev->t10_reservation.aptpl_reg_list);
- 	spin_lock_init(&se_dev->t10_reservation.registration_lock);
-+	spin_lock_init(&se_dev->t10_reservation.aptpl_reg_lock);
- 	spin_lock_init(&se_dev->se_dev_lock);
--
-+	se_dev->t10_reservation.pr_aptpl_buf_len = PR_APTPL_BUF_LEN;
- 	se_dev->t10_wwn.t10_sub_dev = se_dev;
- 	se_dev->se_dev_attrib.da_sub_dev = se_dev;
- 
--- 
-1.5.4.1
+    Target_Core_ConfigFS: Set emulated VPD Unit Serial: a97e4ce21c0711de829b000c2943d57b
+    T10 VPD Page Length: 72
+    T10 VPD Identifer Length: 16
+    T10 VPD Identifier Association: addressed logical unit
+    T10 VPD Identifier Type: NAA
+    T10 VPD Binary Device Identifier: 36001405a97e4ce21c0711de829b000c2
+    T10 VPD Identifer Length: 48
+    T10 VPD Identifier Association: addressed logical unit
+    T10 VPD Identifier Type: T10 Vendor ID based
+    T10 VPD ASCII Device Identifier: LIO-ORG
+    SPC-3 PR APTPL Successfully added registration from metadata
+    SPC-3 PR APTPL Successfully added registration+reservation from metadata
+
+*) As fabric module initiator LUN ACLs get added (iSCSI Initiator LUN access in LIO-Target's case),
+   the PR operations take effect:
+
+<SNIP>
+
+   LIO_Target_ConfigFS: Initialized Initiator LUN ACL: iqn.1993-08.org.debian:01:2dadf92d0ef Mapped LUN: lun_0
+   iSCSI_TPG[1]_LUN[0->0] - Added RW ACL for  InitiatorNode: iqn.1993-08.org.debian:01:2dadf92d0ef
+   SPC-3 PR [iSCSI] Service Action: REGISTER Initiator Node: iqn.1993-08.org.debian:01:2dadf92d0ef
+   SPC-3 PR [iSCSI] for SINGLE TCM Subsystem iblock Object Target Port(s)
+   SPC-3 PR [iSCSI] SA Res Key: 0x000000005678ffff PRgeneration: 0x00000000  APTPL: 1
+   LIO_Target_ConfigFS: Created Initiator LUN ACL Symlink: iqn.1993-08.org.debian:01:2dadf92d0ef TPG LUN: lun_0 Mapped LUN: lun_0 Write Protect: OFF
+
+<SNIP>
+
+   LIO_Target_ConfigFS: Initialized Initiator LUN ACL: iqn.1996-04.de.suse:01:1661f9ee7b5 Mapped LUN: lun_0
+   iSCSI_TPG[1]_LUN[0->0] - Added RW ACL for  InitiatorNode: iqn.1996-04.de.suse:01:1661f9ee7b5
+   SPC-3 PR [iSCSI] Service Action: REGISTER Initiator Node: iqn.1996-04.de.suse:01:1661f9ee7b5
+   SPC-3 PR [iSCSI] for SINGLE TCM Subsystem iblock Object Target Port(s)
+   SPC-3 PR [iSCSI] SA Res Key: 0x000000005678ffff PRgeneration: 0x00000001  APTPL: 1
+   SPC-3 PR [iSCSI] Service Action: APTPL RESERVE created new reservation holder TYPE: Write Exclusive Access, Registants Only ALL_TG_PT: 0
+   SPC-3 PR [iSCSI] RESERVE Node: iqn.1996-04.de.suse:01:1661f9ee7b5
+   LIO_Target_ConfigFS: Created Initiator LUN ACL Symlink: iqn.1996-04.de.suse:01:1661f9ee7b5 TPG LUN: lun_0 Mapped LUN: lun_0 Write Protect: OFF
+
+*) Now check the running 'live' PR metadata, the saved APTPL metadata has been successfully reloaded:
+
+   target# tcm_node --pr iblock_0/lvm_test0
+   APTPL Bit Status: Activated
+   Ready to process PR APTPL metadata..
+   SPC-3 Reservation: iSCSI Initiator: iqn.1996-04.de.suse:01:1661f9ee7b5
+   SPC-3 Reservation: Single Target Port registration
+   0x00000002
+   SPC-3 Reservation: iSCSI Target Node Endpoint: iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0
+   SPC-3 Reservation: Relative Port Identifer Tag: 2 iSCSI Portal Group Tag: 1 iSCSI Logical Unit: 0
+   SPC-3 PR Registrations:
+   iSCSI Node: iqn.1993-08.org.debian:01:2dadf92d0ef Key: 0x000000005678ffff PRgen: 0x00000000
+   iSCSI Node: iqn.1996-04.de.suse:01:1661f9ee7b5 Key: 0x000000005678ffff PRgen: 0x00000001
+   SPC-3 Reservation Type: Write Exclusive Access, Registrants Only
+   SPC3_PERSISTENT_RESERVATIONS
+
+*) And finally from the initiator, check PROUT REPORT_CAPABILITIES for APTPL_C and APTPL_A:
+
+   initiator# sg_persist --in --device /dev/sde --report-capabilities
+      LIO-ORG  IBLOCK  3.0
+      Peripheral device type: disk
+    Report capabilities response:
+     Compatible Reservation Handling(CRH): 0
+     Specify Initiator Ports Capable(SIP_C): 1
+     All Target Ports Capable(ATP_C): 1
+     Persist Through Power Loss Capable(PTPL_C): 1
+     Type Mask Valid(TMV): 1
+     Allow commands: 1
+         Persist Through Power Loss Active(PTPL_A): 1
+           Support indicated in Type mask:
+         Write Exclusive, all registrants: 1
+         Exclusive Access, registrants only: 1
+         Write Exclusive, registrants only: 1
+         Exclusive Access: 1
+         Write Exclusive: 1
+         Exclusive Access, all registrants: 1
+
+
+Also, the userspace commits to make it all go can be found at:
+
+http://git.kernel.org/?p=linux/storage/lio/lio-utils.git;a=commitdiff;h=59269840555e04725f2a7b2f4998ba237fb49ccc
+
+Comments..?
+
+--nab
 
 
 
