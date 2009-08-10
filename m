@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753114AbZHJO6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228AbZHJPAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753114AbZHJO6O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbZHJO6M
+	id S1753228AbZHJPAW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 11:00:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbZHJPAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:58:12 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:59160 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751528AbZHJO6L (ORCPT
+	Mon, 10 Aug 2009 11:00:21 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52824 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753061AbZHJPAU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:58:11 -0400
-Date: Mon, 10 Aug 2009 15:58:09 +0100
-From: Matthew Garrett <mjg@redhat.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-acpi@vger.kernel.org, linux-scsi@vger.kernel.org,
-       shaohua.li@intel.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] SCSI: Allow platform-specific code to be run
-	against the SCSI tree
-Message-ID: <20090810145809.GD24956@srcf.ucam.org>
-References: <1247518987-10818-1-git-send-email-mjg@redhat.com> <20090810133815.GB22763@srcf.ucam.org> <1249916125.4089.4.camel@mulgrave.site>
+	Mon, 10 Aug 2009 11:00:20 -0400
+Date: Mon, 10 Aug 2009 17:00:11 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Brian Swetland <swetland@google.com>
+Cc: Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: power_supply class/framework question
+Message-ID: <20090810150011.GA1471@ucw.cz>
+References: <a55d774e0908071919s7b365f84o3baa19c8d6fbe899@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249916125.4089.4.camel@mulgrave.site>
+In-Reply-To: <a55d774e0908071919s7b365f84o3baa19c8d6fbe899@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 02:55:25PM +0000, James Bottomley wrote:
-> On Mon, 2009-08-10 at 14:38 +0100, Matthew Garrett wrote:
-> > On Mon, Jul 13, 2009 at 10:03:05PM +0100, Matthew Garrett wrote:
-> > > In certain cases (such as ACPI) we want to be able to associate
-> > > platform-specific data against the SCSI device tree. Handling this
-> > > properly requires the ability to run platform code at SCSI init time.
-> > > This patch adds stub functions that can be overridden if the platform
-> > > defines CONFIG_SCSI_PLATFORM.
-> > 
-> > James, any thoughts on this?
+Hi!
+
+> (feel free to redirect me to a different mailing list if there's a
+> more appropriate place to ask this question)
 > 
-> Sorry, I'd thought this had all moved to libata so I'd stopped paying
-> attention ... why are extra bits in SCSI necessary?
+> I'm working on cleaning up some code to more correctly use the power
+> supply framework (have the battery driver receive notification from
+> the wall/usb power supplies, etc), and ran into a slight snag.  For
+> mobile usb powered devices, we need to know how much current can
+> safely be consumed by the charge circuit -- generally this is one of:
+> none, <500mA or 1000mA, which correspond to "no power supply", "usb
+> power supply", or "wall power supply".
 
-They're SCSI as far as the device tree is concerned, so the glue 
-callbacks have to be registered from the SCSI layer. The only 
-implementation so far is for ACPI and only covers libata, but it could 
-potentially also be used to tie bay devices to the ofw tree on 
-openfirmware systems.
+Actuallly, it is one of 'none', 100mA (min power USB has to supplly),
+500mA (max powe USB can supply by spec), 1A (wall).
 
+For example sharp zaurus can only supply cca 300mA out of its port.
+
+> I can use power_supply_am_i_supplied() to determine if I'm receiving
+> power, but there's no way to determine either how much (if I have one
+> power supply that indicates max current available) or which supply (if
+> I define a separate "ac" and "usb" power supply).
+
+Should am_i_supplied() just return miliamps?
+								Pavel
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
