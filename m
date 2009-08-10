@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbZHJQbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932251AbZHJQcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932255AbZHJQbp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 12:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932232AbZHJQbn
+	id S932251AbZHJQcc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 12:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932150AbZHJQcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 12:31:43 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:42621 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932226AbZHJQbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 12:31:40 -0400
-Date: Mon, 10 Aug 2009 09:29:10 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Emilio G. Cota" <cota@braap.org>
-Cc: Martyn Welch <martyn.welch@gefanuc.com>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [patch 2/5] Staging: vme: add VME userspace driver
-Message-ID: <20090810162910.GB27912@suse.de>
-References: <20090803205657.964064732@mini.kroah.org>
- <20090803210116.GC28430@kroah.com>
- <20090808232259.GA29303@braap.org>
- <20090809121715.GA3884@braap.org>
- <4A801D04.6050102@gefanuc.com>
- <20090810152606.GA23319@braap.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090810152606.GA23319@braap.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 10 Aug 2009 12:32:31 -0400
+Received: from outbound-mail-319.bluehost.com ([67.222.54.251]:43558 "HELO
+	outbound-mail-319.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932108AbZHJQca (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 12:32:30 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=FPeNlNU4jrvZo7JGFXvpJ+2Aoi4sEvV0So5yCtgj1A6Wzj+DsYlyFcKVA/28XhE/s573LjPPwv9F40z4xOQnOnClVfTa2FtVjJPB88cjIo9R3RTET5+UYucIo6GYo2KO;
+Date: Mon, 10 Aug 2009 09:32:28 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Stefan Assmann <sassmann@redhat.com>
+Subject: Re: drivers/pci/quirks.c: irq_reroute_variant is dead code?
+Message-ID: <20090810093228.54406cab@jbarnes-g45>
+In-Reply-To: <20090808144520.GB25931@elte.hu>
+References: <4A6F5670.4010405@goop.org>
+	<20090807103318.06ed3ecd@jbarnes-g45>
+	<20090808144520.GB25931@elte.hu>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 05:26:06PM +0200, Emilio G. Cota wrote:
-> Martyn Welch wrote:
-> >>> Instead of using that we implemented a heretic IOCTL-based
-> >>> interface for user-space; at least with it you could create a
-> [ snip ]
-> >>> #define VME_IOCTL_START_DMA             _IOWR('V', 10, struct vme_dma)
-> >>>
-> > I am moving the interface in that direction, I remain unconvinced about  
-> > the contents of your vme_mapping structure, it's too tsi-148 specific.
+[Corrected Stefan's address.]
+
+On Sat, 8 Aug 2009 16:45:20 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> Could you please point out why is too tsi148-specific?
+> * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 > 
-> The point here is that the driver should know *nothing* about
-> windows, etc. What it should just know is:
-> - I want a mapping of a certain size to VME address X
-> The struct provides exactly this.
+> > On Tue, 28 Jul 2009 12:50:08 -0700
+> > Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> > 
+> > > quirk_reroute_to_boot_interrupts_intel() goes to some effort to 
+> > > scan for a bunch of Intel devices and set 
+> > > dev->irq_reroute_variant = INTEL_IRQ_REROUTE_VARIANT.  However, 
+> > > as far as I can see that's the only reference to 
+> > > dev->irq_reroute_variant and INTEL_IRQ_REROUTE_VARIANT, so the 
+> > > whole thing appears to have no effect.
+> > > 
+> > > Is it all dead code?  Is there something else which should be 
+> > > there missing?
+> > 
+> > Hm my quick look couldn't find a user either.  The initial patch 
+> > to add that stuff (e1d3a90846b40ad3160bf4b648d36c6badad39ac) had 
+> > an ACPI component, but it looks like that may have vanished 
+> > somehow (maybe some of the IOAPIC code got shuffled around and 
+> > this bit was missed?).
+> > 
+> > Stefan or Ingo?
+> 
+> I dont remember ioapic interactions. Stefan?
+> 
+> 	Ingo
+> 
 
-So does the existing UIO interface, right?  Please don't reinvent the
-wheel here :)
 
-thanks,
-
-greg k-h
+-- 
+Jesse Barnes, Intel Open Source Technology Center
