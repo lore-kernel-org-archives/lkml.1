@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbZHJQuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932294AbZHJQxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755687AbZHJQuJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 12:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbZHJQuJ
+	id S932294AbZHJQxr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 12:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932270AbZHJQxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 12:50:09 -0400
-Received: from exprod5og110.obsmtp.com ([64.18.0.20]:57125 "EHLO
-	exprod5og110.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753155AbZHJQuI (ORCPT
+	Mon, 10 Aug 2009 12:53:46 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:52900 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932269AbZHJQxq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 12:50:08 -0400
-Message-ID: <4A804FEE.8040601@gefanuc.com>
-Date: Mon, 10 Aug 2009 17:50:54 +0100
-From: Martyn Welch <martyn.welch@gefanuc.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Mon, 10 Aug 2009 12:53:46 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=tentcDX+hboWIzsSqz9m4oA5hFr+IvKznjErOJok5ZUGUlxEJFvIdSf4cisleKPmA
+	BDSYk14CHOBNA6082AeEw==
 MIME-Version: 1.0
-To: "Emilio G. Cota" <cota@braap.org>
-CC: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org
-Subject: Re: [PATCH] Staging: vme: fix {master,slave}_get check bug
-References: <20090803205657.964064732@mini.kroah.org> <20090803210111.GB28430@kroah.com> <20090810145242.GA22320@braap.org>
-In-Reply-To: <20090810145242.GA22320@braap.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20090810163542.GC24947@sirena.org.uk>
+References: <a55d774e0908071919s7b365f84o3baa19c8d6fbe899@mail.gmail.com>
+	 <20090810150011.GA1471@ucw.cz>
+	 <20090810152825.GA4624@oksana.dev.rtsoft.ru>
+	 <a55d774e0908100914h6a42546fk47cdb207628ebe5e@mail.gmail.com>
+	 <20090810163542.GC24947@sirena.org.uk>
+Date: Mon, 10 Aug 2009 09:53:40 -0700
+Message-ID: <a55d774e0908100953p561e8370r11e0b733b2097391@mail.gmail.com>
+Subject: Re: power_supply class/framework question
+From: Brian Swetland <swetland@google.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: avorontsov@ru.mvista.com, Pavel Machek <pavel@ucw.cz>,
+       Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Emilio G. Cota wrote:
-> It's checking the wrong functions; fix it.
+On Mon, Aug 10, 2009 at 9:35 AM, Mark
+Brown<broonie@opensource.wolfsonmicro.com> wrote:
+>> > Or enum power_supply_type, with the following priority:
+>> > mains (wall), usb, battery?
 >
-> Signed-off-by: Emilio G. Cota <cota@braap.org>
->   
-Acked-by: Martyn Welch <martyn.welch@gefanuc.com>
-> ---
->  drivers/staging/vme/vme.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+>> Either of those would work, though in the case of USB, as Pavel
+>> correctly points out, we'd need to differentiate between
 >
-> diff --git a/drivers/staging/vme/vme.c b/drivers/staging/vme/vme.c
-> index 8ee1192..ed2eeb0 100644
-> --- a/drivers/staging/vme/vme.c
-> +++ b/drivers/staging/vme/vme.c
-> @@ -338,7 +338,7 @@ int vme_slave_get (struct vme_resource *resource, int *enabled,
->  
->  	image = list_entry(resource->entry, struct vme_slave_resource, list);
->  
-> -	if (bridge->slave_set == NULL) {
-> +	if (bridge->slave_get == NULL) {
->  		printk("vme_slave_get not supported\n");
->  		return -EINVAL;
->  	}
-> @@ -499,7 +499,7 @@ int vme_master_get (struct vme_resource *resource, int *enabled,
->  
->  	image = list_entry(resource->entry, struct vme_master_resource, list);
->  
-> -	if (bridge->master_set == NULL) {
-> +	if (bridge->master_get == NULL) {
->  		printk("vme_master_set not supported\n");
->  		return -EINVAL;
->  	}
->   
+> I think we'll need to be able to report a list of supplies rather than
+> just one - for example, a lot of battery operated devices will use a
+> combination of USB and battery if the current draw exceeds what the USB
+> supply is able to deliver.
 
+Certainly -- though the case I'm dealing with the battery driver
+wanting to know how much power is available upstream (via calling
+am_i_supplied()) so it can decide if it can turn on the charger (and
+if it should use low or highspeed charging).  The way I'm currently
+handling this is that I have an "ac" supply (power brick) and a "usb"
+supply, only one of which will be supplying power to the "battery"
+supply (battery & charger).  In my case I'd never have multiple
+upstream supplies active simultaneously, but I'm not sure if that'd
+hold true for everyone.
 
--- 
-Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
-GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
-Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
-Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 927559189
+Brian
