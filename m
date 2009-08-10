@@ -1,84 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbZHJMSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZHJMS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754156AbZHJMSg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 08:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZHJMSe
+	id S1754203AbZHJMS4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 08:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZHJMSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 08:18:34 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39432 "EHLO mx2.redhat.com"
+	Mon, 10 Aug 2009 08:18:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39429 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754040AbZHJMSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 08:18:32 -0400
+	id S1754042AbZHJMS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 08:18:28 -0400
 From: Jeff Layton <jlayton@redhat.com>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
        msb@google.com, viro@zeniv.linux.org.uk, hannes@cmpxchg.org
-Subject: [PATCH 3/3] vfs: change sb->s_maxbytes to a loff_t
-Date: Mon, 10 Aug 2009 08:17:43 -0400
-Message-Id: <1249906663-7572-4-git-send-email-jlayton@redhat.com>
+Subject: [PATCH 1/3] vfs: make get_sb_pseudo set s_maxbytes to value that can be cast to signed
+Date: Mon, 10 Aug 2009 08:17:41 -0400
+Message-Id: <1249906663-7572-2-git-send-email-jlayton@redhat.com>
 In-Reply-To: <1249906663-7572-1-git-send-email-jlayton@redhat.com>
 References: <1249906663-7572-1-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sb->s_maxbytes is supposed to indicate the maximum size of a file that
-can exist on the filesystem. It's declared as an unsigned long long.
-
-Even if a filesystem has no inherent limit that prevents it from using
-every bit in that unsigned long long, it's still problematic to set it
-to anything larger than MAX_LFS_FILESIZE. There are places in the kernel
-that cast s_maxbytes to a signed value. If it's set too large then this
-cast makes it a negative number and generally breaks the comparison.
-
-Change s_maxbytes to be loff_t instead. That should help eliminate the
-temptation to set it too large by making it a signed value.
-
-Also, add a warning for couple of releases to help catch filesystems
-that set s_maxbytes too large. Eventually we can either convert this to
-a BUG() or just remove it and in the hope that no one will get it wrong
-now that it's a signed value.
+get_sb_pseudo sets s_maxbytes to ~0ULL which becomes negative when cast
+to a signed value. Fix it to use MAX_LFS_FILESIZE which casts properly
+to a positive signed value.
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
+Acked-by: Steve French <smfrench@gmail.com>
 ---
- fs/super.c         |   10 ++++++++++
- include/linux/fs.h |    2 +-
- 2 files changed, 11 insertions(+), 1 deletions(-)
+ fs/libfs.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/super.c b/fs/super.c
-index 2761d3e..660d437 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -889,6 +889,16 @@ vfs_kern_mount(struct file_system_type *type, int flags, const char *name, void
-  	if (error)
-  		goto out_sb;
+diff --git a/fs/libfs.c b/fs/libfs.c
+index ddfa899..dcec3d3 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -217,7 +217,7 @@ int get_sb_pseudo(struct file_system_type *fs_type, char *name,
+ 		return PTR_ERR(s);
  
-+	/*
-+	 * filesystems should never set s_maxbytes larger than MAX_LFS_FILESIZE
-+	 * but s_maxbytes was an unsigned long long for many releases. Throw
-+	 * this warning for a little while to try and catch filesystems that
-+	 * violate this rule. This warning should be either removed or
-+	 * converted to a BUG() in 2.6.34. 
-+	 */
-+	WARN((mnt->mnt_sb->s_maxbytes < 0), "WARNING: %s set sb->s_maxbytes to "
-+		"negative value (%lld)\n", type->name, mnt->mnt_sb->s_maxbytes);
-+
- 	mnt->mnt_mountpoint = mnt->mnt_root;
- 	mnt->mnt_parent = mnt;
- 	up_write(&mnt->mnt_sb->s_umount);
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 67888a9..bfe3c08 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1316,7 +1316,7 @@ struct super_block {
- 	unsigned long		s_blocksize;
- 	unsigned char		s_blocksize_bits;
- 	unsigned char		s_dirt;
--	unsigned long long	s_maxbytes;	/* Max file size */
-+	loff_t			s_maxbytes;	/* Max file size */
- 	struct file_system_type	*s_type;
- 	const struct super_operations	*s_op;
- 	struct dquot_operations	*dq_op;
+ 	s->s_flags = MS_NOUSER;
+-	s->s_maxbytes = ~0ULL;
++	s->s_maxbytes = MAX_LFS_FILESIZE;
+ 	s->s_blocksize = PAGE_SIZE;
+ 	s->s_blocksize_bits = PAGE_SHIFT;
+ 	s->s_magic = magic;
 -- 
 1.6.0.6
 
