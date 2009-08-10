@@ -1,78 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755001AbZHJC2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbZHJCtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755001AbZHJC2E (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 22:28:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754843AbZHJC2D
+	id S1754851AbZHJCtz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 22:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbZHJCtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 22:28:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45661 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754274AbZHJC2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 22:28:01 -0400
-Message-ID: <4A7F862E.9020501@redhat.com>
-Date: Mon, 10 Aug 2009 10:30:06 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+	Sun, 9 Aug 2009 22:49:55 -0400
+Received: from [222.73.24.84] ([222.73.24.84]:52696 "EHLO song.cn.fujitsu.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754694AbZHJCty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 22:49:54 -0400
+Message-ID: <4A7F8A9B.3040201@cn.fujitsu.com>
+Date: Mon, 10 Aug 2009 10:48:59 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-CC: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       esandeen@redhat.com, eteo@redhat.com, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk, sds@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Subject: Re: [Patch v3] vfs: allow file truncations when both suid and write
- permissions set
-References: <20090807100743.5822.90612.sendpatchset@localhost.localdomain>	<1249675025.2694.15.camel@dhcp231-106.rdu.redhat.com>	<87prb7v0dr.fsf@devron.myhome.or.jp>	<1249677481.2694.22.camel@dhcp231-106.rdu.redhat.com> <87eirnqrbj.fsf@devron.myhome.or.jp>
-In-Reply-To: <87eirnqrbj.fsf@devron.myhome.or.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Anton Blanchard <anton@samba.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH v6 1/3] ftrace: add tracepoint for timer
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OGAWA Hirofumi wrote:
-> Eric Paris <eparis@redhat.com> writes:
->
->   
->>>> I was thinking about this and kept telling myself I was going to test v2
->>>> before I ack/nak.  Clearly we shouldn't for the dropping of SUID if the
->>>> process didn't have permission to change the ATTR_SIZE.
->>>>
->>>> Acked-by: Eric Paris <eparis@redhat.com>
->>>>         
->>> BTW, Do you know why doesn't security modules fix the handling of
->>> do_truncate() (i.e. ATTR_MODE | ATTR_SIZE). And why doesn't it allow to
->>> pass ATTR_FORCE for it?
->>>       
->> I'm not sure what you mean.  I understood ATTR_FORCE to mean 'I am magic
->> and get to override all security checks."  Which is why nothing should
->> ever be using ATTR_FORCE with things other than SUID.
->>
->> I guess we could somehow force logic into the LSM to make it only apply
->> to SUID and friends but I'm not sure it buys us anything.
->>     
->
-> Yes, I think it's good way. Don't we want to do the following?
->
-> 	if (permission check of job)
-> 		return error;
-> 	if (do job at once)
->         	return error;
->
-> But currently way is,
->
-> 	if (permission check of first part)
->         	return error
-> 	if (do first part of job)
->         	return error
-> 	if (permission check of second part)
->         	return error
-> 	if (do second part of job)
->         	return error
->
-> So, if second part was error, we may want to undo the job of first part
-> in theory. But, to undo is just hard and strange.
->   
+This patch is modify from Mathieu's patch base on Ingo's suggestion, the
+original patch can be found here:
+	http://marc.info/?l=linux-kernel&m=123791201816247&w=2
 
-Yeah, the problem is currently we don't have such wrappers, only 
-notify_change(). :-/
+Great thanks to Thomas for giving me so many valuable advices.
+
+Those tracepoints are wanted and useful:
+1: We can detect a timer's delay
+2: We can monitor the lifecycle and behaviors of a timer
+
+Thus they help in analysing and debuging.
+
+Example ftrace output:
+  insmod-1712  [000]   145.901459: timer_init: timer=d0ace4b4
+  insmod-1712  [000]   145.901469: timer_start: timer=d0ace4b4 func=timer_fun expires=4294813629 timeout=199
+  <idle>-0     [000]   146.100230: timer_cancel: timer=d0ace4b4
+  <idle>-0     [000]   146.100233: timer_expire: timer=d0ace4b4 jiffies=4294813629
+  <idle>-0     [000]   146.100627: timer_callback_done: func=d0ace4b4
+
+We expect the timer expires at 4294813629, after 199 jiffies, actually the
+timer expires at 4294813629, so it is delayed by 0 jiffies.
+We also realize the timer's callback started at 146.100233, and it finished
+at 146.100627, so it's taking 146.100627-146.100233=0.4ms.
+ 
+Changelog:
+v1->v2:
+1: Add jiffies info into timer
+2: Combine debugobjects and trace as Thomas's suggestion
+v2->v3:
+1: Remove function address from timer_expire and timer_cancel
+   as Thomas's suggestion
+2: Remove debug_and_trace_timer_expire() as Thomas's suggestion
+3: Rename trace_timer_entry() and trace_timer_exit() to match this patch
+v3->v4:
+1: Rename debug_and_trace_*() to debug_*() as Peter Zijlstra's suggestion
+2: Integrate Anton Blanchard's patch, which can been found at:
+	http://marc.info/?l=linux-kernel&m=124331396919301&w=2
+v4->v5:
+Rebase the patch against latest tip tree
+v5->v6:
+Rename timer_expire(), timer_callback_done() to timer_expire_entry(),
+timer_expire_exit() as Ingo's suggestion
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ include/trace/events/timer.h |  134 ++++++++++++++++++++++++++++++++++++++++++
+ kernel/timer.c               |   32 +++++++++-
+ 2 files changed, 162 insertions(+), 4 deletions(-)
+ create mode 100644 include/trace/events/timer.h
+
+diff --git a/include/trace/events/timer.h b/include/trace/events/timer.h
+new file mode 100644
+index 0000000..fcf65c7
+--- /dev/null
++++ b/include/trace/events/timer.h
+@@ -0,0 +1,134 @@
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM timer
++
++#if !defined(_TRACE_TIMER_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_TIMER_H
++
++#include <linux/tracepoint.h>
++#include <linux/timer.h>
++
++/**
++ * timer_init - called when the timer is initialized
++ * @timer: pointer to struct timer_list
++ **/
++TRACE_EVENT(timer_init,
++
++	TP_PROTO(struct timer_list *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field( void *,	timer	)
++	),
++
++	TP_fast_assign(
++		__entry->timer	= timer;
++	),
++
++	TP_printk("timer=%p", __entry->timer)
++);
++
++/**
++ * timer_start - called when the timer is started
++ * @timer: pointer to struct timer_list
++ * @expires: the timer's expire time
++ **/
++TRACE_EVENT(timer_start,
++
++	TP_PROTO(struct timer_list *timer, unsigned long expires),
++
++	TP_ARGS(timer, expires),
++
++	TP_STRUCT__entry(
++		__field( void *,	timer		)
++		__field( void *,	function	)
++		__field( unsigned long,	expires		)
++		__field( int,		timeout		)
++	),
++
++	TP_fast_assign(
++		__entry->timer		= timer;
++		__entry->function	= timer->function;
++		__entry->expires	= expires;
++		__entry->timeout	= timer->expires - jiffies;
++	),
++
++	TP_printk("timer=%p func=%pf expires=%lu timeout=%d", __entry->timer,
++		  __entry->function, __entry->expires, __entry->timeout)
++);
++
++/**
++ * timer_expire_entry - called immediately before the timer callback
++ * @timer: pointer to struct timer_list
++ *
++ * When used in combination with the timer_expire_exit tracepoint we can
++ * determine the timer latency.
++ **/
++TRACE_EVENT(timer_expire_entry,
++
++	TP_PROTO(struct timer_list *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field( void *,	timer	)
++		__field( unsigned long,	jiffies	)
++	),
++
++	TP_fast_assign(
++		__entry->timer		= timer;
++		__entry->jiffies	= jiffies;
++	),
++
++	TP_printk("timer=%p jiffies=%lu", __entry->timer, __entry->jiffies)
++);
++
++/**
++ * timer_expire_exit - called immediately after the timer callback returns
++ * @timer: pointer to struct timer_list
++ *
++ * When used in combination with the timer_expire_entry tracepoint we can
++ * determine the timer latency.
++ **/
++TRACE_EVENT(timer_expire_exit,
++
++	TP_PROTO(struct timer_list *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field(void *,	timer	)
++	),
++
++	TP_fast_assign(
++		__entry->timer	= timer;
++	),
++
++	TP_printk("func=%p", __entry->timer)
++);
++
++/**
++ * timer_cancel - called when the timer is canceled
++ * @timer: pointer to struct timer_list
++ **/
++TRACE_EVENT(timer_cancel,
++
++	TP_PROTO(struct timer_list *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field( void *,	timer	)
++	),
++
++	TP_fast_assign(
++		__entry->timer	= timer;
++	),
++
++	TP_printk("timer=%p", __entry->timer)
++);
++
++#endif /*  _TRACE_TIMER_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+diff --git a/kernel/timer.c b/kernel/timer.c
+index 33fc9d1..22e2ada 100644
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -46,6 +46,9 @@
+ #include <asm/timex.h>
+ #include <asm/io.h>
+ 
++#define CREATE_TRACE_POINTS
++#include <trace/events/timer.h>
++
+ u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
+ 
+ EXPORT_SYMBOL(jiffies_64);
+@@ -521,6 +524,25 @@ static inline void debug_timer_activate(struct timer_list *timer) { }
+ static inline void debug_timer_deactivate(struct timer_list *timer) { }
+ #endif
+ 
++static inline void debug_init(struct timer_list *timer)
++{
++	debug_timer_init(timer);
++	trace_timer_init(timer);
++}
++
++static inline void
++debug_activate(struct timer_list *timer, unsigned long expires)
++{
++	debug_timer_activate(timer);
++	trace_timer_start(timer, expires);
++}
++
++static inline void debug_deactivate(struct timer_list *timer)
++{
++	debug_timer_deactivate(timer);
++	trace_timer_cancel(timer);
++}
++
+ static void __init_timer(struct timer_list *timer,
+ 			 const char *name,
+ 			 struct lock_class_key *key)
+@@ -549,7 +571,7 @@ void init_timer_key(struct timer_list *timer,
+ 		    const char *name,
+ 		    struct lock_class_key *key)
+ {
+-	debug_timer_init(timer);
++	debug_init(timer);
+ 	__init_timer(timer, name, key);
+ }
+ EXPORT_SYMBOL(init_timer_key);
+@@ -568,7 +590,7 @@ static inline void detach_timer(struct timer_list *timer,
+ {
+ 	struct list_head *entry = &timer->entry;
+ 
+-	debug_timer_deactivate(timer);
++	debug_deactivate(timer);
+ 
+ 	__list_del(entry->prev, entry->next);
+ 	if (clear_pending)
+@@ -632,7 +654,7 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
+ 			goto out_unlock;
+ 	}
+ 
+-	debug_timer_activate(timer);
++	debug_activate(timer, expires);
+ 
+ 	new_base = __get_cpu_var(tvec_bases);
+ 
+@@ -787,7 +809,7 @@ void add_timer_on(struct timer_list *timer, int cpu)
+ 	BUG_ON(timer_pending(timer) || !timer->function);
+ 	spin_lock_irqsave(&base->lock, flags);
+ 	timer_set_base(timer, base);
+-	debug_timer_activate(timer);
++	debug_activate(timer, timer->expires);
+ 	if (time_before(timer->expires, base->next_timer) &&
+ 	    !tbase_get_deferrable(timer->base))
+ 		base->next_timer = timer->expires;
+@@ -1000,7 +1022,9 @@ static inline void __run_timers(struct tvec_base *base)
+ 				 */
+ 				lock_map_acquire(&lockdep_map);
+ 
++				trace_timer_expire_entry(timer);
+ 				fn(data);
++				trace_timer_expire_exit(timer);
+ 
+ 				lock_map_release(&lockdep_map);
+ 
+-- 
+1.6.1.2
 
