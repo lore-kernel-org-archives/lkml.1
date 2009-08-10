@@ -1,82 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbZHJOym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752759AbZHJOza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751964AbZHJOym (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:54:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbZHJOyl
+	id S1752759AbZHJOza (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZHJOz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:54:41 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52653 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbZHJOyl (ORCPT
+	Mon, 10 Aug 2009 10:55:29 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:57580 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751930AbZHJOz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:54:41 -0400
-Date: Mon, 10 Aug 2009 16:54:25 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, serue@us.ibm.com,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
-       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
-       hpa@zytor.com, Containers <containers@lists.linux-foundation.org>,
-       sukadev@us.ibm.com
-Subject: Re: [RFC][v4][PATCH 7/7]: Define clone_with_pids syscall
-Message-ID: <20090810145425.GA1378@ucw.cz>
-References: <20090807061103.GA19343@us.ibm.com> <20090807061517.GG20672@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090807061517.GG20672@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 10 Aug 2009 10:55:28 -0400
+Subject: Re: [PATCH 1/3] SCSI: Allow platform-specific code to be run
+ against the SCSI tree
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-acpi@vger.kernel.org, linux-scsi@vger.kernel.org,
+       shaohua.li@intel.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090810133815.GB22763@srcf.ucam.org>
+References: <1247518987-10818-1-git-send-email-mjg@redhat.com>
+	 <20090810133815.GB22763@srcf.ucam.org>
+Content-Type: text/plain
+Date: Mon, 10 Aug 2009 14:55:25 +0000
+Message-Id: <1249916125.4089.4.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, 2009-08-10 at 14:38 +0100, Matthew Garrett wrote:
+> On Mon, Jul 13, 2009 at 10:03:05PM +0100, Matthew Garrett wrote:
+> > In certain cases (such as ACPI) we want to be able to associate
+> > platform-specific data against the SCSI device tree. Handling this
+> > properly requires the ability to run platform code at SCSI init time.
+> > This patch adds stub functions that can be overridden if the platform
+> > defines CONFIG_SCSI_PLATFORM.
+> 
+> James, any thoughts on this?
 
-> 
-> Subject: [RFC][v4][PATCH 7/7]: Define clone_with_pids syscall
-> 
-> Container restart requires that a task have the same pid it had when it was
-> checkpointed. When containers are nested the tasks within the containers
-> exist in multiple pid namespaces and hence have multiple pids to specify
-> during restart.
-> 
-> clone_with_pids(), intended for use during restart, is the same as clone(),
-> except that it takes a 'target_pid_set' paramter. This parameter lets caller
-> choose specific pid numbers for the child process, in the process's active
-> and ancestor pid namespaces. (Descendant pid namespaces in general don't
-> matter since processes don't have pids in them anyway, but see comments
-> in copy_target_pids() regarding CLONE_NEWPID).
+Sorry, I'd thought this had all moved to libata so I'd stopped paying
+attention ... why are extra bits in SCSI necessary?
 
-This should go to documentation/manpage somewhere.
+James
 
 
-> Unlike clone(), clone_with_pids() needs CAP_SYS_ADMIN, at least for now, to
-> prevent unprivileged processes from misusing this interface.
-> 
-> Call clone_with_pids as follows:
-> 
-> 	pid_t pids[] = { 0, 77, 99 };
-> 	struct pid_set pid_set;
-> 
-> 	pid_set.num_pids = sizeof(pids) / sizeof(int);
-> 	pid_set.pids = &pids;
-> 
-> 	syscall(__NR_clone_with_pids, flags, stack, NULL, NULL, NULL, &pid_set);
-> 
-> If a target-pid is 0, the kernel continues to assign a pid for the process in
-> that namespace. In the above example, pids[0] is 0, meaning the kernel will
-> assign next available pid to the process in init_pid_ns. But kernel will assign
-> pid 77 in the child pid namespace 1 and pid 99 in pid namespace 2. If either
-> 77 or 99 are taken, the system call fails with -EBUSY.
-> 
-> If 'pid_set.num_pids' exceeds the current nesting level of pid namespaces,
-> the system call fails with -EINVAL.
-
-Does it make sense to set the pid in anything but innermost container?
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
