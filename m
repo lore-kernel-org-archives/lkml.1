@@ -1,118 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbZHJNQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbZHJN0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754725AbZHJNQf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 09:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbZHJNQe
+	id S1754475AbZHJN0W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 09:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZHJN0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 09:16:34 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:40231 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754190AbZHJNQe convert rfc822-to-8bit (ORCPT
+	Mon, 10 Aug 2009 09:26:21 -0400
+Received: from mail4-relais-sop.national.inria.fr ([192.134.164.105]:25000
+	"EHLO mail4-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753843AbZHJN0U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 09:16:34 -0400
-From: "Fischer, Anna" <anna.fischer@hp.com>
-To: Arnd Bergmann <arnd@arndb.de>
-CC: "'Stephen Hemminger'" <shemminger@linux-foundation.org>,
-       "Fischer, Anna" <anna.fischer@hp.com>,
-       "bridge@lists.linux-foundation.org" 
-	<bridge@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "evb@yahoogroups.com" <evb@yahoogroups.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "kaber@trash.net" <kaber@trash.net>,
-       "adobriyan@gmail.com" <adobriyan@gmail.com>,
-       "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>
-Date: Mon, 10 Aug 2009 13:16:00 +0000
-Subject: RE: [PATCH][RFC] net/bridge: add basic VEPA support
-Thread-Topic: [PATCH][RFC] net/bridge: add basic VEPA support
-Thread-Index: AcoYDYnGxtlWOIc2SYu1zaGA5pZFcABqkijg
-Message-ID: <0199E0D51A61344794750DC57738F58E6D6AE99743@GVW1118EXC.americas.hpqcorp.net>
-References: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net>
- <20090806210002.75beb7c6@nehalam> <004e01ca1790$fec36c30$fc4a4490$@edu>
- <200908081149.27409.arnd@arndb.de>
-In-Reply-To: <200908081149.27409.arnd@arndb.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 10 Aug 2009 09:26:20 -0400
+X-IronPort-AV: E=Sophos;i="4.43,353,1246831200"; 
+   d="scan'208";a="44523689"
+Message-ID: <4A802008.5050409@inria.fr>
+Date: Mon, 10 Aug 2009 15:26:32 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] perf report: Add raw displaying of per-thread counters
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Subject: Re: [PATCH][RFC] net/bridge: add basic VEPA support
-> 
-> On Friday 07 August 2009, Paul Congdon (UC Davis) wrote:
-> > As I understand the macvlan code, it currently doesn't allow two VMs
-> on the
-> > same machine to communicate with one another.
-> 
-> There are patches to do that. I think if we add that, there should be
-> a way to choose the behavior between either bridging between the
-> guests or VEPA.
+If --pretty=raw is given to perf report -T, it now displays
+one line per-thread per-counter with the raw event id added.
+    
+We get:
+#   PID    TID              Name  Raw    Count
+  18608  18609      cache-misses  28e   416744
+  18608  18609  cache-references  28f  6456792
+  18608  18608      cache-misses  28e   448219
+  18608  18608  cache-references  28f  7270244
+instead of:
+#   PID    TID  cache-misses  cache-references
+  18608  18609        416744           6456792
+  18608  18608        448219           7270244
+    
+Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
 
-If you implement this direct bridging capability between local VMs for 
-macvlan, then would this not break existing applications that currently
-use it? It would be quite a significant change to how macvlan works 
-today. I guess, ideally, you would want to have macvlan work in 
-separate modes, e.g. traditional macvlan, bridging, and VEPA.
-
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index 4163918..2357c66 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -57,6 +57,9 @@ static int		show_nr_samples;
+ static int		show_threads;
+ static struct perf_read_values	show_threads_values;
  
-> > I could imagine a hairpin mode on the adjacent bridge making this
-> > possible, but the macvlan code would need to be updated to filter
-> > reflected frames so a source did not receive his own packet.
-> 
-> Right, I missed this point so far. I'll follow up with a patch
-> to do that.
-
-Can you maybe point me to the missing patches for macvlan that you
-have mentioned in other emails, and the one you mention above? 
-E.g. enabling multicast distribution and allowing local bridging etc.
-I could not find any of those in the archives. Thanks.
-
++static char		default_pretty_printing_style[] = "normal";
++static char		*pretty_printing_style = default_pretty_printing_style;
++
+ static unsigned long	page_size;
+ static unsigned long	mmap_window = 32;
  
-> > I could imagine this being done as well, but to also
-> > support selective multicast usage, something similar to the bridge
-> > forwarding table would be needed.  I think putting VEPA into a new
-> driver
-> > would cause you to implement many things the bridge code already
-> supports.
-> > Given that we expect the bridge standard to ultimately include VEPA,
-> and the
-> > new functions are basic forwarding operations, it seems to make most
-> sense
-> > to keep this consistent with the bridge module.
-> 
-> This is the interesting part of the discussion. The bridge and macvlan
-> drivers certainly have an overlap in functionality and you can argue
-> that you only need one. Then again, the bridge code is a little crufty
-> and we might not want to add much more to it for functionality that can
-> be implemented in a much simpler way elsewhere. My preferred way would
-> be to use bridge when you really need 802.1d MAC learning, netfilter-
-> bridge
-> and STP, while we put the optimizations for stuff like VMDq, zero-copy
-> and multiqueue guest adapters only into the macvlan code.
+@@ -1401,6 +1404,9 @@ static size_t output__fprintf(FILE *fp, u64 total_samples)
+ 	size_t ret = 0;
+ 	unsigned int width;
+ 	char *col_width = col_width_list_str;
++	int raw_printing_style;
++
++	raw_printing_style = !strcmp(pretty_printing_style, "raw");
+ 
+ 	init_rem_hits();
+ 
+@@ -1478,7 +1484,8 @@ print_entries:
+ 	free(rem_sq_bracket);
+ 
+ 	if (show_threads)
+-		perf_read_values_display(fp, &show_threads_values);
++		perf_read_values_display(fp, &show_threads_values,
++					 raw_printing_style);
+ 
+ 	return ret;
+ }
+@@ -2091,6 +2098,8 @@ static const struct option options[] = {
+ 		    "Show a column with the number of samples"),
+ 	OPT_BOOLEAN('T', "threads", &show_threads,
+ 		    "Show per-thread event counters"),
++	OPT_STRING(0, "pretty", &pretty_printing_style, "key",
++		   "pretty printing style key: normal raw"),
+ 	OPT_STRING('s', "sort", &sort_order, "key[,key2...]",
+ 		   "sort by key(s): pid, comm, dso, symbol, parent"),
+ 	OPT_BOOLEAN('P', "full-paths", &full_paths,
+diff --git a/tools/perf/util/values.c b/tools/perf/util/values.c
+index 8551c0b..614cfaf 100644
+--- a/tools/perf/util/values.c
++++ b/tools/perf/util/values.c
+@@ -126,7 +126,8 @@ void perf_read_values_add_value(struct perf_read_values *values,
+ 	values->value[tindex][cindex] = value;
+ }
+ 
+-void perf_read_values_display(FILE *fp, struct perf_read_values *values)
++static void perf_read_values__display_pretty(FILE *fp,
++					     struct perf_read_values *values)
+ {
+ 	int i, j;
+ 	int pidwidth, tidwidth;
+@@ -169,3 +170,62 @@ void perf_read_values_display(FILE *fp, struct perf_read_values *values)
+ 		fprintf(fp, "\n");
+ 	}
+ }
++
++static void perf_read_values__display_raw(FILE *fp,
++					  struct perf_read_values *values)
++{
++	int width, pidwidth, tidwidth, namewidth, rawwidth, countwidth;
++	int i, j;
++
++	tidwidth = 3; /* TID */
++	pidwidth = 3; /* PID */
++	namewidth = 4; /* "Name" */
++	rawwidth = 3; /* "Raw" */
++	countwidth = 5; /* "Count" */
++
++	for (i = 0; i < values->threads; i++) {
++		width = snprintf(NULL, 0, "%d", values->pid[i]);
++		if (width > pidwidth)
++			pidwidth = width;
++		width = snprintf(NULL, 0, "%d", values->tid[i]);
++		if (width > tidwidth)
++			tidwidth = width;
++	}
++	for (j = 0; j < values->counters; j++) {
++		width = strlen(values->countername[j]);
++		if (width > namewidth)
++			namewidth = width;
++		width = snprintf(NULL, 0, "%llx", values->counterrawid[j]);
++		if (width > rawwidth)
++			rawwidth = width;
++	}
++	for (i = 0; i < values->threads; i++) {
++		for (j = 0; j < values->counters; j++) {
++			width = snprintf(NULL, 0, "%Lu", values->value[i][j]);
++			if (width > countwidth)
++				countwidth = width;
++		}
++	}
++
++	fprintf(fp, "# %*s  %*s  %*s  %*s  %*s\n",
++		pidwidth, "PID", tidwidth, "TID",
++		namewidth, "Name", rawwidth, "Raw",
++		countwidth, "Count");
++	for (i = 0; i < values->threads; i++)
++		for (j = 0; j < values->counters; j++)
++			fprintf(fp, "  %*d  %*d  %*s  %*llx  %*Lu\n",
++				pidwidth, values->pid[i],
++				tidwidth, values->tid[i],
++				namewidth, values->countername[j],
++				rawwidth, values->counterrawid[j],
++				countwidth, values->value[i][j]);
++}
++
++void perf_read_values_display(FILE *fp, struct perf_read_values *values,
++			      int raw)
++{
++	if (raw)
++		perf_read_values__display_raw(fp, values);
++	else
++		perf_read_values__display_pretty(fp, values);
++}
+diff --git a/tools/perf/util/values.h b/tools/perf/util/values.h
+index e41be5e..f8960fd 100644
+--- a/tools/perf/util/values.h
++++ b/tools/perf/util/values.h
+@@ -21,6 +21,7 @@ void perf_read_values_add_value(struct perf_read_values *values,
+ 				u32 pid, u32 tid,
+ 				u64 rawid, char *name, u64 value);
+ 
+-void perf_read_values_display(FILE *fp, struct perf_read_values *values);
++void perf_read_values_display(FILE *fp, struct perf_read_values *values,
++			      int raw);
+ 
+ #endif /* _PERF_VALUES_H */
 
-I can see this being a possible solution. 
 
-My concern with putting VEPA into macvlan instead of the bridging code
-is that there will be more work required to make it usable for other
-virtualization solution as macvtap will only work for KVM type setups. 
-Basically, VEPA capabilities would rely on someone developing further
-drivers to connect macvlan to different backend interfaces, e.g. one for
-KVM (macvtap), one for Xen PV drivers, one for virtio, and whatever else
-is out there, or will be there in the future. The bridging code is
-already very generic in that respect, and all virtualization layers
-can deal with connecting interfaces to a bridge. 
-
-Our extensions to the bridging code to enable VEPA for the Linux kernel
-are only very minimal code changes and would allow to make VEPA available
-to most virtualization solutions today.
-
-Anna
