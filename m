@@ -1,89 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751968AbZHJTVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752092AbZHJT0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751968AbZHJTVx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 15:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbZHJTVx
+	id S1752092AbZHJT0z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 15:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbZHJT0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 15:21:53 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:60348 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751822AbZHJTVw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 15:21:52 -0400
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-References: <b0943d9e0907081433y599e6d51j285c390f18d7b32c@mail.gmail.com>
-	<20090729170315.f62066c0.akpm@linux-foundation.org>
-	<20090730212956.GA26863@redhat.com>
-	<1249035398.29967.8.camel@pc1117.cambridge.arm.com>
-	<20090802213528.GA18795@redhat.com> <m1ws5lekmy.fsf@fess.ebiederm.org>
-	<1249923358.10848.75.camel@pc1117.cambridge.arm.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 10 Aug 2009 12:21:44 -0700
-In-Reply-To: <1249923358.10848.75.camel@pc1117.cambridge.arm.com> (Catalin Marinas's message of "Mon\, 10 Aug 2009 17\:55\:58 +0100")
-Message-ID: <m1bpmncw53.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 10 Aug 2009 15:26:54 -0400
+Received: from bar.sig21.net ([80.81.252.164]:54916 "EHLO bar.sig21.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750923AbZHJT0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 15:26:53 -0400
+Date: Mon, 10 Aug 2009 21:26:58 +0200
+From: Johannes Stezenbach <js@sig21.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc5 regression: x86 MCE malfunction on Thinkpad T42p
+Message-ID: <20090810192658.GA15513@sig21.net>
+References: <20090807170942.GB9177@sig21.net>
+ <87k51cgdt8.fsf@basil.nowhere.org>
+ <20090810122731.GA5863@sig21.net>
+ <20090810123228.GD6838@basil.fritz.box>
+ <20090810125651.GB6082@sig21.net>
+ <20090810132923.GA4418@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: catalin.marinas@arm.com, serue@us.ibm.com, sukadev@us.ibm.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, oleg@redhat.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Catalin Marinas <catalin.marinas@arm.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: Possible memory leak via alloc_pid()
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20090810132923.GA4418@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Spam-21-Score: -4.0 (----)
+X-Spam-21-Report: No, score=-4.0 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.349,BAYES_00=-2.599 autolearn=no
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Catalin Marinas <catalin.marinas@arm.com> writes:
+On Mon, Aug 10, 2009 at 03:29:23PM +0200, Ingo Molnar wrote:
+> * Johannes Stezenbach <js@sig21.net> wrote:
+> > On Mon, Aug 10, 2009 at 02:32:28PM +0200, Andi Kleen wrote:
+> > > 
+> > > When the BIOS doesn't enable it then force enabling lapic might not work.
+> > > 
+> > > This could cause either boot failures (obvious) or more subtle 
+> > > problems like SMM doing something unexpected. Just saying that 
+> > > if you have strange problems later first try disabling this 
+> > > option again.
+> > 
+> > Thanks for the heads-up.  I remember I tried to use oprofile in 
+> > the past on this machine and was disappointed that it only got the 
+> > timer event.  I'll keep lapic for now unless I see signs of 
+> > instability.
+> 
+> What's the output of something like 'perf stat true', and does 'perf 
+> top' output something - i.e. do perfcounters work in general? Once 
+> you get to that stage and it works then it should be fine.
 
-> On Sun, 2009-08-02 at 18:44 -0700, Eric W. Biederman wrote:
->> Hmm.  I'm starting to wonder if kmemleak is right.  I don't know how
->> it works but something about the way pids are used might be confusing it.
->
-> It could as well be a false positive but I can't find its source.
->
-> Basically, the pid structure for the dead Xorg is still allocated
-> minutes after Xorg died with a pid->count of 2. Kmemleak scans the data
-> and bss sections, task stacks and most of the allocated objects (which
-> are not reported as leaks) but cannot find a pointer to this pid
-> structure (or anywhere inside it like pid->number.pid_chain).
->
-> The supposedly leaked pid structure also have pid_chain.pprev ==
-> LIST_POISON2 which means that it was already removed from the pid_hash
-> (this block of memory is scanned by kmemleak anyway).
->
-> The free_pid() function was also called on this object according to the
-> pid->rcu values but put_pid() couldn't free it because of pid->count.
->
-> If this structure in not on pid_hash, is there any other place where its
-> pointer may be stored for a long time? Otherwise it looks like a real
-> leak (though not a big one).
+# ./perf stat true
 
-It depends on how it is used. Pids not on the pid_hash are perfectly
-fine.  We use these kinds of long standing pid references to prevent
-any chance that pid rollover would be a problem.   There are corner
-cases in the SIGIO path and a few other places where we have
-these kind of long standing pid references.
+ Performance counter stats for 'true':
 
-Perhaps it comes from the tty switching code?
+       0.985808  task-clock-msecs         #      0.779 CPUs 
+              0  context-switches         #      0.000 M/sec
+              0  CPU-migrations           #      0.000 M/sec
+            110  page-faults              #      0.112 M/sec
+         583873  cycles                   #    592.279 M/sec
+         500937  instructions             #      0.858 IPC  
+  <not counted>  cache-references        
+  <not counted>  cache-misses            
 
-> I'll do more tests in the next few days as suggested by Oleg.
+    0.001265524  seconds time elapsed
 
-Thanks, and thanks for spotting into and looking into this.
 
-Eric
+# ./perf top
+------------------------------------------------------------------------------
+   PerfTop:     172 irqs/sec  kernel:43.6% [100000 cycles],  (all, 1 CPUs)
+------------------------------------------------------------------------------
+
+             samples    pcnt         RIP          kernel function
+  ______     _______   _____   ________________   _______________
+
+               96.00 - 16.4% - 00000000c129be10 : acpi_pm_read
+               66.00 - 11.3% - 00000000c116fbb1 : delay_tsc
+               59.00 - 10.1% - 00000000c1172a83 : ioread32
+               26.00 -  4.4% - 00000000c116f567 : vsnprintf
+               21.00 -  3.6% - 00000000c11a4721 : acpi_os_read_port
+               20.00 -  3.4% - 00000000c136612c : schedule
+               19.00 -  3.2% - 00000000c10054b9 : mask_and_ack_8259A
+               18.00 -  3.1% - 00000000c11ce8bc : acpi_idle_enter_bm
+               17.00 -  2.9% - 00000000c1090dd1 : do_select
+               16.00 -  2.7% - 00000000c133f380 : unix_poll
+               14.00 -  2.4% - 00000000c116e2b4 : number
+               13.00 -  2.2% - 00000000c1002847 : sysenter_past_esp
+               10.00 -  1.7% - 00000000c1085b84 : fget_light
+                9.00 -  1.5% - 00000000c13666a7 : preempt_schedule
+                9.00 -  1.5% - 00000000c102cf1b : get_next_timer_interrupt
+^C
+
+
+First I tried oprofile while running an endless while loop in bash:
+
+# opreport 
+CPU: Pentium M (P6 core), speed 1800 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (clocks processor is not halted, and not in a thermal trip) with a unit mask of 0x00 (No unit mask) count 100000
+CPU_CLK_UNHALT...|
+  samples|      %|
+------------------
+   282940 76.5545 bash
+    78266 21.1763 libc-2.9.so
+     1730  0.4681 Xorg
+     1069  0.2892 oprofiled
+
+Looks plausible.
+
+
+But in demsg I got this:
+
+Delta way too big! 18446744022868427516 ts=18446744022868427516 write stamp = 0
+------------[ cut here ]------------
+WARNING: at kernel/trace/ring_buffer.c:1392 rb_reserve_next_event+0x150/0x309()
+Hardware name: 2373Y4M
+Modules linked in: ath5k mac80211 ath cfg80211 oprofile bnep sco rfcomm l2cap bluetooth ehci_hcd uhci_hc
+Pid: 13478, comm: opcontrol Not tainted 2.6.31-rc5 #5
+Call Trace:
+ [<c10248dd>] warn_slowpath_common+0x60/0x90
+ [<c102491a>] warn_slowpath_null+0xd/0x10
+ [<c1054129>] rb_reserve_next_event+0x150/0x309
+ [<c1068c06>] ? get_page_from_freelist+0x86/0x35a
+ [<c10544f7>] ring_buffer_lock_reserve+0xe7/0x135
+ [<f88622c0>] op_cpu_buffer_write_reserve+0x1a/0x4b [oprofile]
+ [<f886239d>] op_add_code+0x57/0x98 [oprofile]
+ [<c1068c06>] ? get_page_from_freelist+0x86/0x35a
+ [<c1367c08>] ? page_fault+0x0/0x8
+ [<f8862409>] log_sample+0x2b/0x6c [oprofile]
+ [<c1064c76>] ? filemap_fault+0x74/0x32b
+ [<f886249c>] oprofile_add_sample+0x3b/0x6b [oprofile]
+ [<f88641d8>] ppro_check_ctrs+0x66/0xdb [oprofile]
+ [<c1074bde>] ? __do_fault+0x303/0x32f
+ [<f8863907>] profile_exceptions_notify+0x1f/0x26 [oprofile]
+ [<c103953b>] notifier_call_chain+0x2b/0x55
+ [<c10398e3>] __atomic_notifier_call_chain+0x1a/0x3a
+ [<c103990f>] atomic_notifier_call_chain+0xc/0xe
+ [<c103993e>] notify_die+0x2d/0x2f
+ [<c1003c54>] do_nmi+0x63/0x222
+ [<c1367d1d>] nmi_stack_correct+0x28/0x2d
+ [<c1367c08>] ? page_fault+0x0/0x8
+---[ end trace d174f39c63495e01 ]---
+
+
+Thanks
+Johannes
