@@ -1,92 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbZHJOWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZHJOay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755354AbZHJOWR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338AbZHJOWR
+	id S1755345AbZHJOay (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbZHJOax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:22:17 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43660 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755300AbZHJOWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:22:16 -0400
-Date: Mon, 10 Aug 2009 14:21:33 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
-       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090810141129.GA5124@nowhere>
-References: <20090810141129.GA5124@nowhere>
-Subject: [tip:perfcounters/urgent] perf_counter: Subtract the buffer size field from the event record size
-Message-ID: <tip-304703aba31a87903b8c0db8f5e6890cac2d596d@git.kernel.org>
-Git-Commit-ID: 304703aba31a87903b8c0db8f5e6890cac2d596d
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 10 Aug 2009 14:21:34 +0000 (UTC)
+	Mon, 10 Aug 2009 10:30:53 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:50226 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755000AbZHJOaw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 10:30:52 -0400
+Subject: Re: 2.6.31-rc5-git5: Reported regressions from 2.6.30
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+In-Reply-To: <AuPdDySr74O.A.5LC.Pj1fKB@chimera>
+References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera>
+Content-Type: text/plain
+Date: Mon, 10 Aug 2009 09:30:43 -0500
+Message-Id: <1249914643.4089.3.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  304703aba31a87903b8c0db8f5e6890cac2d596d
-Gitweb:     http://git.kernel.org/tip/304703aba31a87903b8c0db8f5e6890cac2d596d
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Mon, 10 Aug 2009 16:11:32 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 10 Aug 2009 16:18:50 +0200
+On Sun, 2009-08-09 at 22:36 +0200, Rafael J. Wysocki wrote:
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13716
+> Subject         : The AIC-7892P controller does not work any more
+> Submitter       : Andrej Podzimek <andrej@podzimek.org>
+> Date            : 2009-07-05 19:23 (36 days old)
 
-perf_counter: Subtract the buffer size field from the event record size
+This one sounds like an IRQ routing error, so probably ACPI, but we've
+been totally unsuccessful at getting any further information out of the
+submitter.  Use your own time judgement on this, but if he hasn't been
+responding to you either for 36 days, I'd suggest closing this as
+unresponsive.
 
-We compute the perf raw sample size by aligning the raw ftrace
-event size plus the buffer size field itself. We do that
-instead of aligning only the perf raw sample size, so that we
-might economize some in some cases.
-
-But this buffer size field is not stored in the perf raw
-sample, we must then substract its size from the buffer once we
-computed the alignment unless we may get a useless u32 field in
-the buffer.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <20090810141129.GA5124@nowhere>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+James
 
 
----
- include/trace/ftrace.h |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
-
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 7167b9b..a05524f 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -637,7 +637,12 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
-  *	pc = preempt_count();
-  *
-  *	__data_size = ftrace_get_offsets_<call>(&__data_offsets, args);
-- *	__entry_size = __data_size + sizeof(*entry);
-+ *
-+ *	// Below we want to get the aligned size by taking into account
-+ *	// the u32 field that will later store the buffer size
-+ *	__entry_size = ALIGN(__data_size + sizeof(*entry) + sizeof(u32),
-+ *			     sizeof(u64));
-+ *	__entry_size -= sizeof(u32);
-  *
-  *	do {
-  *		char raw_data[__entry_size]; <- allocate our sample in the stack
-@@ -687,6 +692,7 @@ static void ftrace_profile_##call(proto)				\
- 	__data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
- 	__entry_size = ALIGN(__data_size + sizeof(*entry) + sizeof(u32),\
- 			     sizeof(u64));				\
-+	__entry_size -= sizeof(u32);					\
- 									\
- 	do {								\
- 		char raw_data[__entry_size];				\
