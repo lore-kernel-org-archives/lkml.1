@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754241AbZHJM0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754225AbZHJM1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754241AbZHJM0X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 08:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbZHJM0X
+	id S1754225AbZHJM1Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 08:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZHJM1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 08:26:23 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:33460 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754209AbZHJM0W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 08:26:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Cfw+mDJpqvXQzXNRbsIq+8IhbTURbGfdOVjfnfc/Rhs5vQrKdVrph2naN4pc9V6AwY
-         FtHwcCbd21xzQzv6EvWmgZ5c7ZwTwKx/PvNG37ocgP6JNnEi1Y3uF3IFNUNSrJtqdOpF
-         XO9riNzP2pM8OMX+gZqoFVKwKkutnaQrY9QZg=
+	Mon, 10 Aug 2009 08:27:24 -0400
+Received: from bar.sig21.net ([80.81.252.164]:34868 "EHLO bar.sig21.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754102AbZHJM1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 08:27:23 -0400
+Date: Mon, 10 Aug 2009 14:27:31 +0200
+From: Johannes Stezenbach <js@sig21.net>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc5 regression: x86 MCE malfunction on Thinkpad T42p
+Message-ID: <20090810122731.GA5863@sig21.net>
+References: <20090807170942.GB9177@sig21.net>
+ <87k51cgdt8.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-In-Reply-To: <200908081647.21279.phillips@phunq.net>
-References: <6dcc37b30904291901m7abdd6d7q6f44b2c248ec48c4@mail.gmail.com>
-	 <200908010942.52623.phillips@phunq.net>
-	 <20090806075246.GA6860@elte.hu>
-	 <200908081647.21279.phillips@phunq.net>
-Date: Mon, 10 Aug 2009 17:56:22 +0530
-Message-ID: <f24d23310908100526u30ea475dg2afe81ab987204ab@mail.gmail.com>
-Subject: Re: [Tux3] Current Activities?
-From: debian developer <debiandev@gmail.com>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jgarzik@pobox.com>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, tux3@tux3.org,
-       LKML <linux-kernel@vger.kernel.org>, corbet@lwn.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87k51cgdt8.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Spam-21-Score: -4.0 (----)
+X-Spam-21-Report: No, score=-4.0 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.422,BAYES_00=-2.599 autolearn=no
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Daniel,
+On Mon, Aug 10, 2009 at 12:31:47PM +0200, Andi Kleen wrote:
+> Johannes Stezenbach <js@sig21.net> writes:
+> 
+> >    Call Trace:
+> >     [<c10248c1>] warn_slowpath_common+0x60/0x90
+> >     [<c10248fe>] warn_slowpath_null+0xd/0x10
+> >     [<c1013139>] native_apic_write_dummy+0x2d/0x39
+> >     [<c100dcd2>] intel_init_thermal+0xb6/0x144
+> >     [<c100d517>] ? mce_init+0x33/0xb0
+> >     [<c100db4b>] mce_intel_feature_init+0xb/0x4c
+> >     [<c14fc31e>] mcheck_init+0x1e2/0x253
+> >     [<c14faef4>] identify_cpu+0x30b/0x31b
+> >     [<c14d9af0>] identify_boot_cpu+0xd/0x23
+> >     [<c14d9b3c>] check_bugs+0xb/0xd4
+> >     [<c104f929>] ? delayacct_init+0x42/0x49
+> >     [<c14d493c>] start_kernel+0x25e/0x26d
+> >     [<c14d430b>] i386_start_kernel+0x65/0x6a
+> >    ---[ end trace 4eaa2a86a8e2da22 ]---
+> 
+> 
+> The appended patch should remove the warning. Can you please test it?
 
-On Sun, Aug 9, 2009 at 5:17 AM, Daniel Phillips<phillips@phunq.net> wrote:
+It works (no more warning), but I feel I'm better off using "lapic"
+because it enables thermal monitoring and performance counters.
 
->
-> Meanwhile Hirofumi has dauntlessly forged on, extracting design details
-> from me, adding some of his own, generally subjecting everything to
-> minute scrutiny, and in the process turning out a significant volume of
-> high quality code.  If I had to state what the best thing that could
-> happen to Tux3 is, it would be: somebody steps up to sponsor Hirofumi.
-> He has done all that work strictly as a volunteer without support of any
-> kind, and he could use some.  Not to mention the fact that as FAT
-> maintainer we would be well served to have Hirofumi in a comfort zone,
-> given recent developments on that front.
->
-
-The best thing to do until Hirofumi gets sponsorship is to sponsor him by
-donations. I think it is easy enough for you to set up a PayPal donation
-link on the tux3 homepage. I hope these small contributions will help you
-to sponsor him until you get the corporate sponsorship. I, for one would be
-willing to donate my small part if it helps in the development of Tux3.
 
 Thanks,
-DD
+Johannes
