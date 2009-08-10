@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755515AbZHJPqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755545AbZHJPqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755515AbZHJPqO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 11:46:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbZHJPqO
+	id S1755545AbZHJPqf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 11:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755386AbZHJPqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 11:46:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47108 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755122AbZHJPqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 11:46:12 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] MN10300: includecheck fix: mn10300, pci.h
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-am33-list@redhat.com, linux-kernel@vger.kernel.org,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       David Howells <dhowells@redhat.com>
-Date: Mon, 10 Aug 2009 16:45:42 +0100
-Message-ID: <20090810154541.18045.60871.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Mon, 10 Aug 2009 11:46:33 -0400
+Received: from bitwagon.com ([74.82.39.175]:58877 "HELO bitwagon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755458AbZHJPqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 11:46:32 -0400
+Message-ID: <4A8040D8.8020504@bitwagon.com>
+Date: Mon, 10 Aug 2009 08:46:32 -0700
+From: John Reiser <jreiser@bitwagon.com>
+Organization: -
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Steven Rostedt <srostedt@redhat.com>, Steven Rostedt <rostedt@goodmis.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: recordmcount commutes with "ld -r"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Executing recordmcount.pl for each *.o is adding minutes to the duration
+of my full kernel builds.  Here is a way to recoup most of those minutes.
 
-Fix the following 'make includecheck' warning:
+recordmcount commutes with "ld -r".  Run "ld -r" on the outputs from
+running recordmcount on each *.o, or run recordmcount on the output from
+aggregating the original *.o using "ld -r".  Either way, the final
+__mcount_loc section contains a list of locations of calls to mcount.
+The ELF32_R_SYM (ELF64_R_SYM) of the relocations may be different, but
+they will be equivalent.  Subsequent static binding (ld without -r)
+will produce identical results.  Instead of running recordmcount on each
+*.o input file that is part of built-in.o or <module>.ko,  then
+just run recordmcount on built-in.o or <module>.ko that is constructed
+from the original compiler-generated *.o.
 
-  arch/mn10300/include/asm/pci.h: linux/mm.h is included more than once.
+There is a special case for building vmlinux, namely the archive
+libraries lib/lib.a and arch/$ARCH/lib/lib.a.  recordmcount must be run
+on each member individually.  Alternately, recordmcount could be run
+on vmlinux.o (exactly once per build; not on any built-in.o)
+if vmlinux.o is then used to build vmlinux.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+I noticed another property.  Logically, recordmcount could modify a
+.o file in place.  Both /bin/ld and the kernel module loader ignore
+bytes that are not designated by the ElfXX_Shdr[].  The __mcount_loc
+section and its relocations can be appended to the original file, then
+"activated" by rewriting the ElfXX_Ehdr fields .e_shnum and .e_shoff.
+This avoids some file operations as well as several fork+exec that are
+performed by recordmcount.pl.  recordmcount becomes very fast.
+The bytes for the old ElfXX_Shdr[] remain as uncollected "garbage",
+typically a few kilobytes in each built-in.o or <module>.ko.
+If desired then the garbage may be excised quickly by running "ld -r".
 
- arch/mn10300/include/asm/pci.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+I have written recordmcount.c which does such modify-in-place for all
+architectures supported by recordcmount, and tested it successfully on
+i686, x86_64, and 32-bit PowerPC, including cross-platform processing
+of *.o from any architecture.  The differing data structures between
+Elf32 and Elf64 require parallel code in many places, so the C file is
+900 lines.  That might be too long for a mailing list, so I will defer
+posting the file.
 
-
-diff --git a/arch/mn10300/include/asm/pci.h b/arch/mn10300/include/asm/pci.h
-index 35d2ed6..19aecc9 100644
---- a/arch/mn10300/include/asm/pci.h
-+++ b/arch/mn10300/include/asm/pci.h
-@@ -59,7 +59,6 @@ void pcibios_penalize_isa_irq(int irq);
- #include <linux/slab.h>
- #include <asm/scatterlist.h>
- #include <linux/string.h>
--#include <linux/mm.h>
- #include <asm/io.h>
- 
- struct pci_dev;
-
+-- 
