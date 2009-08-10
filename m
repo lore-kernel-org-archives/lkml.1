@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752759AbZHJOza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbZHJO40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752759AbZHJOza (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZHJOz3
+	id S1752729AbZHJO40 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZHJO4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:55:29 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:57580 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751930AbZHJOz2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:55:28 -0400
-Subject: Re: [PATCH 1/3] SCSI: Allow platform-specific code to be run
- against the SCSI tree
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-acpi@vger.kernel.org, linux-scsi@vger.kernel.org,
-       shaohua.li@intel.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090810133815.GB22763@srcf.ucam.org>
-References: <1247518987-10818-1-git-send-email-mjg@redhat.com>
-	 <20090810133815.GB22763@srcf.ucam.org>
-Content-Type: text/plain
-Date: Mon, 10 Aug 2009 14:55:25 +0000
-Message-Id: <1249916125.4089.4.camel@mulgrave.site>
+	Mon, 10 Aug 2009 10:56:25 -0400
+Received: from cmpxchg.org ([85.214.51.133]:35799 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750993AbZHJO4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 10:56:24 -0400
+Date: Mon, 10 Aug 2009 16:56:41 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
+       msb@google.com, viro@zeniv.linux.org.uk
+Subject: Re: [PATCH 2/3] vfs: remove redundant position check in do_sendfile
+Message-ID: <20090810145641.GB4925@cmpxchg.org>
+References: <1249906663-7572-1-git-send-email-jlayton@redhat.com> <1249906663-7572-3-git-send-email-jlayton@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249906663-7572-3-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-10 at 14:38 +0100, Matthew Garrett wrote:
-> On Mon, Jul 13, 2009 at 10:03:05PM +0100, Matthew Garrett wrote:
-> > In certain cases (such as ACPI) we want to be able to associate
-> > platform-specific data against the SCSI device tree. Handling this
-> > properly requires the ability to run platform code at SCSI init time.
-> > This patch adds stub functions that can be overridden if the platform
-> > defines CONFIG_SCSI_PLATFORM.
+On Mon, Aug 10, 2009 at 08:17:42AM -0400, Jeff Layton wrote:
+> As Johannes Weiner pointed out, one of the range checks in do_sendfile
+> is redundant and is already checked in rw_verify_area.
 > 
-> James, any thoughts on this?
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
 
-Sorry, I'd thought this had all moved to libata so I'd stopped paying
-attention ... why are extra bits in SCSI necessary?
+Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
 
-James
+Thanks!
 
-
+> ---
+>  fs/read_write.c |    3 ---
+>  1 files changed, 0 insertions(+), 3 deletions(-)
+> 
+> diff --git a/fs/read_write.c b/fs/read_write.c
+> index 6c8c55d..3ac2898 100644
+> --- a/fs/read_write.c
+> +++ b/fs/read_write.c
+> @@ -839,9 +839,6 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+>  		max = min(in_inode->i_sb->s_maxbytes, out_inode->i_sb->s_maxbytes);
+>  
+>  	pos = *ppos;
+> -	retval = -EINVAL;
+> -	if (unlikely(pos < 0))
+> -		goto fput_out;
+>  	if (unlikely(pos + count > max)) {
+>  		retval = -EOVERFLOW;
+>  		if (pos >= max)
+> -- 
+> 1.6.0.6
