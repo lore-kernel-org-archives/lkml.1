@@ -1,147 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbZHJMk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbZHJMnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754453AbZHJMk6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 08:40:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbZHJMk5
+	id S1754477AbZHJMnl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 08:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbZHJMnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 08:40:57 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:28087 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754312AbZHJMk4 (ORCPT
+	Mon, 10 Aug 2009 08:43:40 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:36343 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754030AbZHJMnj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 08:40:56 -0400
-From: "Fischer, Anna" <anna.fischer@hp.com>
-To: Arnd Bergmann <arnd@arndb.de>
-CC: "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>,
-       "drobbins@funtoo.org" <drobbins@funtoo.org>,
-       "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
-       "mst@redhat.com" <mst@redhat.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "bridge@lists.linux-foundation.org" 
-	<bridge@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ogerlitz@voltaire.com" <ogerlitz@voltaire.com>,
-       "evb@yahoogroups.com" <evb@yahoogroups.com>,
-       "davem@davemloft.net" <davem@davemloft.net>
-Date: Mon, 10 Aug 2009 12:40:27 +0000
-Subject: RE: [Bridge] [PATCH] macvlan: add tap device backend
-Thread-Topic: [Bridge] [PATCH] macvlan: add tap device backend
-Thread-Index: AcoXqzSHEpepV3VSR2Socpoq75bT9QCAYAPQ
-Message-ID: <0199E0D51A61344794750DC57738F58E6D6AE99700@GVW1118EXC.americas.hpqcorp.net>
-References: <0199E0D51A61344794750DC57738F58E6D6A6CD7F6@GVW1118EXC.americas.hpqcorp.net>
- <004f01ca1792$b24a7a90$16df6fb0$@edu> <200908080005.32443.arnd@arndb.de>
-In-Reply-To: <200908080005.32443.arnd@arndb.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
+	Mon, 10 Aug 2009 08:43:39 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Eric Paris <eparis@redhat.com>, Amerigo Wang <amwang@redhat.com>,
+       linux-kernel@vger.kernel.org, esandeen@redhat.com, eteo@redhat.com,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk, linux-security-module@vger.kernel.org
+Subject: Re: [Patch v3] vfs: allow file truncations when both suid and write permissions set
+References: <20090807100743.5822.90612.sendpatchset@localhost.localdomain>
+	<1249675025.2694.15.camel@dhcp231-106.rdu.redhat.com>
+	<87prb7v0dr.fsf@devron.myhome.or.jp>
+	<1249677481.2694.22.camel@dhcp231-106.rdu.redhat.com>
+	<1249904964.2422.21.camel@moss-pluto.epoch.ncsc.mil>
+Date: Mon, 10 Aug 2009 21:43:32 +0900
+In-Reply-To: <1249904964.2422.21.camel@moss-pluto.epoch.ncsc.mil> (Stephen
+	Smalley's message of "Mon, 10 Aug 2009 07:49:24 -0400")
+Message-ID: <87r5vj2617.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n7ACfF7T000554
 
-> Subject: Re: [Bridge] [PATCH] macvlan: add tap device backend
-> 
-> On Friday 07 August 2009, Paul Congdon (UC Davis) wrote:
-> > Responding to Daniel's questions...
-> 
-> Thanks for the detailed responses. I'll add some more about the
-> specifics of the macvlan implementation that differs from the
-> bridge based VEPA implementation.
-> 
-> > > Is this new interface to be used within a virtual machine or
-> > > container, on the master node, or both?
-> >
-> > It is really an interface to a new type of virtual switch.  When
-> > you create virtual network, I would imagine it being a new mode
-> > of operation (bridge, NAT, VEPA, etc).
-> 
-> I think the question was whether the patch needs to applied in the
-> host or the guest. Both the implementation that you and Anna did
-> and the one that I posted only apply to the *host* (master node),
-> the virtual machine does not need to know about it.
-> 
-> > > What interface(s) would need to be configured for a single virtual
-> > > machine to use VEPA to access the network?
-> >
-> > It would be the same as if that machine were configure to use a
-> > bridge to access the network, but the bridge mode would be different.
-> 
-> Right, with the bridge based VEPA, you would set up a kvm guest
-> or a container with the regular tools, then use the sysfs interface
-> to put the bridge device into VEPA mode.
-> 
-> With the macvlan based mode, you use 'ip link' to add a new tap
-> device to an external network interface and not use a bridge at
-> all. Then you configure KVM to use that tap device instead of the
-> regular bridge/tap setup.
-> 
-> > > What are the current flexibility, security or performance
-> limitations
-> > > of tun/tap and bridge that make this new interface necessary or
-> > > beneficial?
-> >
-> > If you have VMs that will be communicating with one another on
-> > the same physical machine, and you want their traffic to be
-> > exposed to an in-line network device such as a application
-> > firewall/IPS/content-filter (without this feature) you will have
-> > to have this device co-located within the same physical server.
-> > This will use up CPU cycles that you presumable purchased to run
-> > applications, it will require a lot of consistent configuration
-> > on all physical machines, it could invoke potentially a lot of
-> > software licensing, additional cost, etc..  Everything would
-> > need to be replicated on each physical machine.  With the VEPA
-> > capability, you can leverage all this functionality in an
-> > external network device and have it managed and configured in
-> > one place.  The external implementation is likely a higher
-> > performance, silicon based implementation.  It should make it
-> > easier to migrate machines from one physical server to another
-> > and maintain the same network policy enforcement.
-> 
-> It's worth noting that depending on your network connectivity,
-> performance is likely to go down significantly with VEPA over the
-> existing bridge/tap setup, because all frames have to be sent
-> twice through an external wire that has a limited capacity, so you may
-> lose inter-guest bandwidth and get more latency in many cases, while
-> you free up CPU cycles. With the bridge based VEPA, you might not
-> even gain many cycles because much of the overhead is still there.
-> On the cost side, external switches can also get quite expensive
-> compared to x86 servers.
-> 
-> IMHO the real win of VEPA is on the management side, where you can
-> use a single set of tool for managing the network, rather than
-> having your network admins deal with both the external switches
-> and the setup of linux netfilter rules etc.
-> 
-> The macvlan based VEPA has the same features as the bridge based
-> VEPA, but much simpler code, which allows a number of shortcuts
-> to save CPU cycles.
+Stephen Smalley <sds@tycho.nsa.gov> writes:
 
-I am not yet convinced that the macvlan based VEPA would be significantly
-better from a performance point-of-view. Really, once you have 
-implemented all the missing bits and pieces to make the macvlan
-driver a VEPA-compatible device, the code path for packet processing
-will be very similar. Also, I think you have to keep in mind that,
-ultimately, if a user is seriously concerned about high performance, 
-then they would go for a hardware-based solution, e.g. a SRIOV NIC
-with VEPA capabilities. Once you have made the decision for a software-
-based approach, tiny performance differences should not have such a
-big impact, and so I don't think that this should influence too much
-the design decision on where VEPA capabilities should be placed in
-the kernel.
+>> > > I was thinking about this and kept telling myself I was going to test v2
+>> > > before I ack/nak.  Clearly we shouldn't for the dropping of SUID if the
+>> > > process didn't have permission to change the ATTR_SIZE.
+>> > >
+>> > > Acked-by: Eric Paris <eparis@redhat.com>
+>> > 
+>> > BTW, Do you know why doesn't security modules fix the handling of
+>> > do_truncate() (i.e. ATTR_MODE | ATTR_SIZE). And why doesn't it allow to
+>> > pass ATTR_FORCE for it?
+>> 
+>> I'm not sure what you mean.  I understood ATTR_FORCE to mean 'I am magic
+>> and get to override all security checks."  Which is why nothing should
+>> ever be using ATTR_FORCE with things other than SUID.
+>> 
+>> I guess we could somehow force logic into the LSM to make it only apply
+>> to SUID and friends but I'm not sure it buys us anything.
+>
+> SELinux shouldn't apply a permission check for the clearing of the suid
+> bit on write or truncate.  It should only apply a permission check for
+> the actual truncate or write operation, and then the clearing of the
+> suid bit should always be forced if that check passed.
 
-If you compare macvtap with traditional QEMU networking interfaces that
-are typically used in current bridged setups, then yes, performance will be
-different. However, I think that this is not necessarily a fair 
-comparison, and the performance difference does not come from the 
-bridge being slow, but simply because you have implemented a better
-solution to connect a virtual interface to a backend device that
-can be assigned to a VM. There is no reason why you could not do this
-for a bridge port as well.
+Ok. Yes. So, to do it efficiently without problem, I'm suggesting the
+following or something (I don't know whether LSM should do this or not).
 
-Anna
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+selinux_inode_setattr(),
+
+	ia_valid = iattr->ia_valid;
+	if (!(ia_valid & ATTR_FORCE) && (ia_valid & ATTR_FORCE_MASK)) {
+		err = dentry_has_perm(cred, NULL, dentry, FILE__SETATTR);
+		if (err)
+                	return err;
+		ia_valid &= ~ATTR_FORCE_MASK;
+	}
+	if (ia_valid & ATTR_NOT_FORCE_MASK)
+	 	err = dentry_has_perm(cred, NULL, dentry, FILE__WRITE);
+	return err;
+
+I guess ATTR_FORCE_MASK would be (ATTR_MODE | ATTR_UID | ATTR_GID |
+			ATTR_ATIME_SET | ATTR_MTIME_SET) or something,
+and ATTR_NOT_FORCE_MASK would be ATTR_SIZE or something.
+
+I'm not sure this is the right code what selinux want to do though, but,
+I hope it is clear what I want to say. (I'm assuming FILE__WRITE is for
+check of ATTR_SIZE)
+
+With this change, the caller can pass "(ATTR_SIZE | ATTR_MODE)" or
+"(ATTR_SIZE | ATTR_MODE | ATTR_FORCE)" etc. for truncate().
+
+[btw, "(ATTR_SIZE | ATTR_MODE)" is what do_truncate() does currently].
+
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
