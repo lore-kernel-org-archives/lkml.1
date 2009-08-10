@@ -1,80 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbZHJNwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbZHJODH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754891AbZHJNwf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 09:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754857AbZHJNwd
+	id S1754801AbZHJODH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:03:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZHJODG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 09:52:33 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41832 "EHLO hera.kernel.org"
+	Mon, 10 Aug 2009 10:03:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48041 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754786AbZHJNwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 09:52:32 -0400
-Date: Mon, 10 Aug 2009 13:51:35 GMT
-From: tip-bot for Dinakar Guniguntala <dino@in.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, dvhltc@us.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, dino@in.ibm.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, dvhltc@us.ibm.com,
-       linux-kernel@vger.kernel.org, dino@in.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090810130142.GA23619@in.ibm.com>
-References: <20090810130142.GA23619@in.ibm.com>
-Subject: [tip:core/urgent] futex: Fix compat_futex to be same as futex for REQUEUE_PI
-Message-ID: <tip-4dc88029fd916b860ef063c40180aa604ce93494@git.kernel.org>
-Git-Commit-ID: 4dc88029fd916b860ef063c40180aa604ce93494
-X-Mailer: tip-git-log-daemon
+	id S1754560AbZHJODF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 10:03:05 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dave Young <hidave.darkstar@gmail.com>
+Subject: Re: [Bug #13837] Input : regression - touchpad not detected
+Date: Mon, 10 Aug 2009 16:03:30 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jiri Kosina <jkosina@suse.cz>
+References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera> <u1L1PAbl8zG.A.bpD.Ak1fKB@chimera> <a8e1da0908091914s151469e8w826a726254276fce@mail.gmail.com>
+In-Reply-To: <a8e1da0908091914s151469e8w826a726254276fce@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 10 Aug 2009 13:51:36 +0000 (UTC)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908101603.30433.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4dc88029fd916b860ef063c40180aa604ce93494
-Gitweb:     http://git.kernel.org/tip/4dc88029fd916b860ef063c40180aa604ce93494
-Author:     Dinakar Guniguntala <dino@in.ibm.com>
-AuthorDate: Mon, 10 Aug 2009 18:31:42 +0530
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 10 Aug 2009 15:41:12 +0200
+On Monday 10 August 2009, Dave Young wrote:
+> On Mon, Aug 10, 2009 at 5:10 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> >
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.30.  Please verify if it still should be listed and let me know
+> > (either way).
+> 
+> Rafael, I can not produce the bug recent days. I upgraded dell bios to
+> A12, don't know if it is related.
 
-futex: Fix compat_futex to be same as futex for REQUEUE_PI
+OK, I closed the bug as not reproducible.
 
-Need to add the REQUEUE_PI checks to the compat_sys_futex API
-as well to ensure 32 bit requeue's work fine on a 64 bit
-system. Patch is against latest tip
-
-Signed-off-by: Dinakar Guniguntala <dino@in.ibm.com>
-Cc: Darren Hart <dvhltc@us.ibm.com>
-LKML-Reference: <20090810130142.GA23619@in.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/futex_compat.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/futex_compat.c b/kernel/futex_compat.c
-index d607a5b..2357165 100644
---- a/kernel/futex_compat.c
-+++ b/kernel/futex_compat.c
-@@ -180,7 +180,8 @@ asmlinkage long compat_sys_futex(u32 __user *uaddr, int op, u32 val,
- 	int cmd = op & FUTEX_CMD_MASK;
- 
- 	if (utime && (cmd == FUTEX_WAIT || cmd == FUTEX_LOCK_PI ||
--		      cmd == FUTEX_WAIT_BITSET)) {
-+		      cmd == FUTEX_WAIT_BITSET ||
-+		      cmd == FUTEX_WAIT_REQUEUE_PI)) {
- 		if (get_compat_timespec(&ts, utime))
- 			return -EFAULT;
- 		if (!timespec_valid(&ts))
-@@ -191,7 +192,8 @@ asmlinkage long compat_sys_futex(u32 __user *uaddr, int op, u32 val,
- 			t = ktime_add_safe(ktime_get(), t);
- 		tp = &t;
- 	}
--	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE)
-+	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE ||
-+	    cmd == FUTEX_CMP_REQUEUE_PI || cmd == FUTEX_WAKE_OP)
- 		val2 = (int) (unsigned long) utime;
- 
- 	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
+Thanks,
+Rafael
