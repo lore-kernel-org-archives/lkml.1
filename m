@@ -1,251 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753749AbZHJU4I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbZHJU5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753749AbZHJU4I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 16:56:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbZHJUzW
+	id S1753401AbZHJU5U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 16:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbZHJU5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 16:55:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60982 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753503AbZHJUzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 16:55:13 -0400
-Date: Mon, 10 Aug 2009 16:52:53 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: fweisbec@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com
-Message-Id: <996d6713d889ddf697d3d4fdbb08645fa8343dd5.1249932670.git.jbaron@redhat.com>
-In-Reply-To: <cover.1249932670.git.jbaron@redhat.com>
-References: <cover.1249932670.git.jbaron@redhat.com>
-Subject: [PATCH 09/12] add support traceopint ids
+	Mon, 10 Aug 2009 16:57:20 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:41127 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752904AbZHJU5T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 16:57:19 -0400
+Date: Mon, 10 Aug 2009 21:57:13 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com, Samuel Ortiz <sameo@linux.intel.com>,
+       linux-kernel@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>
+Message-ID: <20090810205712.GA4528@sirena.org.uk>
+References: <1249922635-31864-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1249922635-31864-4-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <20090810205535.4fb160af@i1501.lan.towertech.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090810205535.4fb160af@i1501.lan.towertech.it>
+X-Cookie: Are you a turtle?
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [rtc-linux] [PATCH 4/5] RTC: Add support for RTCs on Wolfson
+ WM831x devices
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch associates an id with each syscall trace event, so that we can
-identify each syscall trace event using the 'perf' tool.
+On Mon, Aug 10, 2009 at 08:55:35PM +0200, Alessandro Zummo wrote:
+> Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
-Signed-off-by: Jason Baron <jbaron@redhat.com>
+>  given you have your own include directory undef mfd/
+>  you might want to move those #defines there
 
----
- arch/x86/kernel/ftrace.c      |   10 ++++++++++
- include/linux/syscalls.h      |   22 ++++++++++++++++++----
- include/trace/syscall.h       |    8 ++++++++
- kernel/trace/trace.h          |    6 ------
- kernel/trace/trace_syscalls.c |   26 ++++++++++++++++----------
- 5 files changed, 52 insertions(+), 20 deletions(-)
+Unlike the others these registers can't really be used outside of this
+driver - for the other drivers there's potential for at least platform
+specific code if not multiple drivers to use some or all of the register
+definitions.
 
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index 0d93d40..3cff121 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -516,6 +516,16 @@ int syscall_name_to_nr(char *name)
- 	return -1;
- }
- 
-+void set_syscall_enter_id(int num, int id)
-+{
-+	syscalls_metadata[num]->enter_id = id;
-+}
-+
-+void set_syscall_exit_id(int num, int id)
-+{
-+	syscalls_metadata[num]->exit_id = id;
-+}
-+
- static int __init arch_init_ftrace_syscalls(void)
- {
- 	int i;
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 5e5b4d3..ce4b01c 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -116,13 +116,20 @@ struct perf_counter_attr;
- 
- #define SYSCALL_TRACE_ENTER_EVENT(sname)				\
- 	static struct ftrace_event_call event_enter_##sname;		\
-+	struct trace_event enter_syscall_print_##sname = {		\
-+		.trace                  = print_syscall_enter,		\
-+	};								\
- 	static int init_enter_##sname(void)				\
- 	{								\
--		int num;						\
-+		int num, id;						\
- 		num = syscall_name_to_nr("sys"#sname);			\
- 		if (num < 0)						\
- 			return -ENOSYS;					\
--		register_ftrace_event(&event_syscall_enter);		\
-+		id = register_ftrace_event(&enter_syscall_print_##sname);\
-+		if (!id)						\
-+			return -ENODEV;					\
-+		event_enter_##sname.id = id;				\
-+		set_syscall_enter_id(num, id);				\
- 		INIT_LIST_HEAD(&event_enter_##sname.fields);		\
- 		init_preds(&event_enter_##sname);			\
- 		return 0;						\
-@@ -142,13 +149,20 @@ struct perf_counter_attr;
- 
- #define SYSCALL_TRACE_EXIT_EVENT(sname)					\
- 	static struct ftrace_event_call event_exit_##sname;		\
-+	struct trace_event exit_syscall_print_##sname = {		\
-+		.trace                  = print_syscall_exit,		\
-+	};								\
- 	static int init_exit_##sname(void)				\
- 	{								\
--		int num;						\
-+		int num, id;						\
- 		num = syscall_name_to_nr("sys"#sname);			\
- 		if (num < 0)						\
- 			return -ENOSYS;					\
--		register_ftrace_event(&event_syscall_exit);		\
-+		id = register_ftrace_event(&exit_syscall_print_##sname);\
-+		if (!id)						\
-+			return -ENODEV;					\
-+		event_exit_##sname.id = id;				\
-+		set_syscall_exit_id(num, id);				\
- 		INIT_LIST_HEAD(&event_exit_##sname.fields);		\
- 		init_preds(&event_exit_##sname);			\
- 		return 0;						\
-diff --git a/include/trace/syscall.h b/include/trace/syscall.h
-index 73fb8b4..df62840 100644
---- a/include/trace/syscall.h
-+++ b/include/trace/syscall.h
-@@ -32,23 +32,31 @@ DECLARE_TRACE_WITH_CALLBACK(syscall_exit,
-  * @nb_args: number of parameters it takes
-  * @types: list of types as strings
-  * @args: list of args as strings (args[i] matches types[i])
-+ * @enter_id: associated ftrace enter event id
-+ * @exit_id: associated ftrace exit event id
-  */
- struct syscall_metadata {
- 	const char	*name;
- 	int		nb_args;
- 	const char	**types;
- 	const char	**args;
-+	int		enter_id;
-+	int		exit_id;
- };
- 
- #ifdef CONFIG_FTRACE_SYSCALLS
- extern struct syscall_metadata *syscall_nr_to_meta(int nr);
- extern int syscall_name_to_nr(char *name);
-+void set_syscall_enter_id(int num, int id);
-+void set_syscall_exit_id(int num, int id);
- extern struct trace_event event_syscall_enter;
- extern struct trace_event event_syscall_exit;
- extern int reg_event_syscall_enter(void *ptr);
- extern void unreg_event_syscall_enter(void *ptr);
- extern int reg_event_syscall_exit(void *ptr);
- extern void unreg_event_syscall_exit(void *ptr);
-+enum print_line_t print_syscall_enter(struct trace_iterator *iter, int flags);
-+enum print_line_t print_syscall_exit(struct trace_iterator *iter, int flags);
- #endif
- 
- #endif /* _TRACE_SYSCALL_H */
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 44308f3..606073c 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -38,8 +38,6 @@ enum trace_type {
- 	TRACE_GRAPH_ENT,
- 	TRACE_USER_STACK,
- 	TRACE_HW_BRANCHES,
--	TRACE_SYSCALL_ENTER,
--	TRACE_SYSCALL_EXIT,
- 	TRACE_KMEM_ALLOC,
- 	TRACE_KMEM_FREE,
- 	TRACE_POWER,
-@@ -334,10 +332,6 @@ extern void __ftrace_bad_type(void);
- 			  TRACE_KMEM_ALLOC);	\
- 		IF_ASSIGN(var, ent, struct kmemtrace_free_entry,	\
- 			  TRACE_KMEM_FREE);	\
--		IF_ASSIGN(var, ent, struct syscall_trace_enter,		\
--			  TRACE_SYSCALL_ENTER);				\
--		IF_ASSIGN(var, ent, struct syscall_trace_exit,		\
--			  TRACE_SYSCALL_EXIT);				\
- 		IF_ASSIGN(var, ent, struct ksym_trace_entry, TRACE_KSYM);\
- 		__ftrace_bad_type();					\
- 	} while (0)
-diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index c7ae25e..e58a9c1 100644
---- a/kernel/trace/trace_syscalls.c
-+++ b/kernel/trace/trace_syscalls.c
-@@ -36,14 +36,18 @@ print_syscall_enter(struct trace_iterator *iter, int flags)
- 	struct syscall_metadata *entry;
- 	int i, ret, syscall;
- 
--	trace_assign_type(trace, ent);
--
-+	trace = (typeof(trace))ent;
- 	syscall = trace->nr;
--
- 	entry = syscall_nr_to_meta(syscall);
-+
- 	if (!entry)
- 		goto end;
- 
-+	if (entry->enter_id != ent->type) {
-+		WARN_ON_ONCE(1);
-+		goto end;
-+	}
-+
- 	ret = trace_seq_printf(s, "%s(", entry->name);
- 	if (!ret)
- 		return TRACE_TYPE_PARTIAL_LINE;
-@@ -78,16 +82,20 @@ print_syscall_exit(struct trace_iterator *iter, int flags)
- 	struct syscall_metadata *entry;
- 	int ret;
- 
--	trace_assign_type(trace, ent);
--
-+	trace = (typeof(trace))ent;
- 	syscall = trace->nr;
--
- 	entry = syscall_nr_to_meta(syscall);
-+
- 	if (!entry) {
- 		trace_seq_printf(s, "\n");
- 		return TRACE_TYPE_HANDLED;
- 	}
- 
-+	if (entry->exit_id != ent->type) {
-+		WARN_ON_ONCE(1);
-+		return TRACE_TYPE_UNHANDLED;
-+	}
-+
- 	ret = trace_seq_printf(s, "%s -> 0x%lx\n", entry->name,
- 				trace->ret);
- 	if (!ret)
-@@ -114,7 +122,7 @@ void ftrace_syscall_enter(struct pt_regs *regs, long id)
- 
- 	size = sizeof(*entry) + sizeof(unsigned long) * sys_data->nb_args;
- 
--	event = trace_current_buffer_lock_reserve(TRACE_SYSCALL_ENTER, size,
-+	event = trace_current_buffer_lock_reserve(sys_data->enter_id, size,
- 							0, 0);
- 	if (!event)
- 		return;
-@@ -142,7 +150,7 @@ void ftrace_syscall_exit(struct pt_regs *regs, long ret)
- 	if (!sys_data)
- 		return;
- 
--	event = trace_current_buffer_lock_reserve(TRACE_SYSCALL_EXIT,
-+	event = trace_current_buffer_lock_reserve(sys_data->exit_id,
- 				sizeof(*entry), 0, 0);
- 	if (!event)
- 		return;
-@@ -239,10 +247,8 @@ void unreg_event_syscall_exit(void *ptr)
- 
- struct trace_event event_syscall_enter = {
- 	.trace			= print_syscall_enter,
--	.type			= TRACE_SYSCALL_ENTER
- };
- 
- struct trace_event event_syscall_exit = {
- 	.trace			= print_syscall_exit,
--	.type			= TRACE_SYSCALL_EXIT
- };
--- 
-1.6.2.5
+> > +struct wm831x_rtc {
+> > +	struct wm831x *wm831x;
+> > +	struct rtc_device *rtc;
+> > +	int alarm_enabled;
+> > +	int per_irq;
 
+>  are those tows int or unsigned int? 
+
+I've just dropped per_irq, it's not needed anyway.
+
+>  or maybe alarm_enabled could be :1 ?
+
+Done, but it doesn't really buy us much given that there's nothing
+else to pack it with.
+
+> > +/*
+> > + * Set current time and date in RTC
+> > + */
+> > +static int wm831x_rtc_settime(struct device *dev, struct rtc_time *tm)
+
+>  isn't rtc_set_mmss more appropriate?
+
+Hrm, I think so so I've made the change.  It's not a particularly
+discoverable API - the fact that there's no readback equivalent hides
+the fact that it's supposed to be an equivalent for settime.  Some
+documentation would really help here.
+
+> > +	ret = wm831x_set_bits(wm831x_rtc->wm831x, WM831X_RTC_CONTROL,
+> > +			      WM831X_RTC_ALM_ENA, enable);
+> > +	if (ret != 0)
+> > +		dev_err(&pdev->dev, "Failed to update RTC alarm: %d\n", ret);
+> > +
+> > +	return 0;
+
+>  always 0 ? (also below..)
+
+Failing suspend and resume due to failure to disable the RTC alarm
+would be excessive - indeed, I'd expect the overwhelming majority of
+systems to function perfectly well with no suspend/resume support in the
+driver at all.  RTC alarms are infrequent relative to other
+suspend/resume events in typical systems but suspend is normally used
+fairly heavily to preserve battery (typical applications include things
+like MP3 players or phones).  Typically the error handling would at best
+cause more serious consequences than the original error and there's
+little chance the user will be able to even report the error.
+
+> > +static int __init wm831x_rtc_init(void)
+> > +{
+> > +	return platform_driver_register(&wm831x_rtc_driver);
+
+>  can you use platform_driver_probe() ?
+
+No, this is a MFD accessed over slow buses and we can't guarantee that
+the device will be registered.
+
+Fixed everything else, will repost tomorrow.
