@@ -1,46 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbZHJMvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbZHJMwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570AbZHJMvP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 08:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbZHJMvO
+	id S1754573AbZHJMwV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 08:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbZHJMwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 08:51:14 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:54583 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754187AbZHJMvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 08:51:13 -0400
-Subject: Re: linux-next: nfs tree build warning
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090810105806.266011df.sfr@canb.auug.org.au>
-References: <20090810105806.266011df.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Mon, 10 Aug 2009 08:51:09 -0400
-Message-Id: <1249908669.8060.3.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 3 msgs/h 1 sum rcpts/h 4 sum msgs/h 2 total rcpts 1015 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 67BE02532533FCA8D0D236B4F1C65861591E1052
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 114 max/h 5 blacklist 0 greylist 0 ratelimit 0
+	Mon, 10 Aug 2009 08:52:20 -0400
+Received: from india.einfochips.com ([203.88.139.151]:2474 "EHLO
+	ahmedabad.einfochips.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754187AbZHJMwU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 08:52:20 -0400
+From: Dhaval Vasa <dhaval.vasa@einfochips.com>
+To: nico@cam.org
+Cc: linux-kernel@vger.kernel.org, rabeeh@marvell.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, ron@debian.org,
+       dhaval.vasa@einfochips.com
+Subject: [PATCH v2] Kirkwood: Initialise SATA for OpenRD-Base
+Date: Mon, 10 Aug 2009 18:23:48 +0530
+Message-Id: <1249908828-665-1-git-send-email-dhaval.vasa@einfochips.com>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-10 at 10:58 +1000, Stephen Rothwell wrote:
-> Hi Trond,
-> 
-> Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
-> 
-> fs/nfs/write.c: In function 'nfs_migrate_page':
-> fs/nfs/write.c:1601: warning: unused variable 'inode'
-> 
-> Introduced by commit 1ec000f4f76ea914aa4ac57f8cec53fa958bd477 ("NFS: Add
-> a ->migratepage() aop for NFS").
+From: Ron <ron@debian.org>
 
-Oops, you're right. I'll fix that...
+Signed-off-by: Ron Lee <ron@debian.org>
+Signed-off-by: Dhaval Vasa <dhaval.vasa@einfochips.com>
+---
+ arch/arm/mach-kirkwood/openrd_base-setup.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-Trond
+diff --git a/arch/arm/mach-kirkwood/openrd_base-setup.c b/arch/arm/mach-kirkwood/openrd_base-setup.c
+index b713644..f9a2166 100644
+--- a/arch/arm/mach-kirkwood/openrd_base-setup.c
++++ b/arch/arm/mach-kirkwood/openrd_base-setup.c
+@@ -12,6 +12,7 @@
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
+ #include <linux/mtd/partitions.h>
++#include <linux/ata_platform.h>
+ #include <linux/mv643xx_eth.h>
+ #include <linux/gpio.h>
+ #include <asm/mach-types.h>
+@@ -41,6 +42,10 @@ static struct mv643xx_eth_platform_data openrd_base_ge00_data = {
+ 	.phy_addr	= MV643XX_ETH_PHY_ADDR(8),
+ };
+ 
++static struct mv_sata_platform_data openrd_base_sata_data = {
++	.n_ports	= 2,
++};
++
+ static struct mvsdio_platform_data openrd_base_mvsdio_data = {
+ 	.gpio_card_detect = 29,	/* MPP29 used as SD card detect */
+ };
+@@ -64,6 +69,7 @@ static void __init openrd_base_init(void)
+ 	kirkwood_ehci_init();
+ 
+ 	kirkwood_ge00_init(&openrd_base_ge00_data);
++	kirkwood_sata_init(&openrd_base_sata_data);
+ 	kirkwood_sdio_init(&openrd_base_mvsdio_data);
+ }
+ 
+-- 
+1.6.3.3
 
+-- 
+_____________________________________________________________________
+Disclaimer: This e-mail message and all attachments transmitted with it
+are intended solely for the use of the addressee and may contain legally
+privileged and confidential information. If the reader of this message
+is not the intended recipient, or an employee or agent responsible for
+delivering this message to the intended recipient, you are hereby
+notified that any dissemination, distribution, copying, or other use of
+this message or its attachments is strictly prohibited. If you have
+received this message in error, please notify the sender immediately by
+replying to this message and please delete it from your computer. Any
+views expressed in this message are those of the individual sender
+unless otherwise stated.Company has taken enough precautions to prevent
+the spread of viruses. However the company accepts no liability for any
+damage caused by any virus transmitted by this email.
+_____________________________________________________________________
+ 
