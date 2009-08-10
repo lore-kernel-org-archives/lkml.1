@@ -1,61 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbZHJOxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbZHJOym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752524AbZHJOxA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbZHJOxA
+	id S1751964AbZHJOym (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbZHJOyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:53:00 -0400
-Received: from waldorf.bytemark.co.uk ([212.110.162.22]:33363 "EHLO
-	waldorf.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750914AbZHJOw7 (ORCPT
+	Mon, 10 Aug 2009 10:54:41 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52653 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750803AbZHJOyl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:52:59 -0400
-Date: Mon, 10 Aug 2009 16:52:42 +0200
-From: "Emilio G. Cota" <cota@braap.org>
-To: Greg K-H <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
-       Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [PATCH] Staging: vme: fix {master,slave}_get check bug
-Message-ID: <20090810145242.GA22320@braap.org>
-References: <20090803205657.964064732@mini.kroah.org> <20090803210111.GB28430@kroah.com>
+	Mon, 10 Aug 2009 10:54:41 -0400
+Date: Mon, 10 Aug 2009 16:54:25 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, serue@us.ibm.com,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Containers <containers@lists.linux-foundation.org>,
+       sukadev@us.ibm.com
+Subject: Re: [RFC][v4][PATCH 7/7]: Define clone_with_pids syscall
+Message-ID: <20090810145425.GA1378@ucw.cz>
+References: <20090807061103.GA19343@us.ibm.com> <20090807061517.GG20672@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090803210111.GB28430@kroah.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090807061517.GG20672@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's checking the wrong functions; fix it.
+Hi!
 
-Signed-off-by: Emilio G. Cota <cota@braap.org>
----
- drivers/staging/vme/vme.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> Subject: [RFC][v4][PATCH 7/7]: Define clone_with_pids syscall
+> 
+> Container restart requires that a task have the same pid it had when it was
+> checkpointed. When containers are nested the tasks within the containers
+> exist in multiple pid namespaces and hence have multiple pids to specify
+> during restart.
+> 
+> clone_with_pids(), intended for use during restart, is the same as clone(),
+> except that it takes a 'target_pid_set' paramter. This parameter lets caller
+> choose specific pid numbers for the child process, in the process's active
+> and ancestor pid namespaces. (Descendant pid namespaces in general don't
+> matter since processes don't have pids in them anyway, but see comments
+> in copy_target_pids() regarding CLONE_NEWPID).
 
-diff --git a/drivers/staging/vme/vme.c b/drivers/staging/vme/vme.c
-index 8ee1192..ed2eeb0 100644
---- a/drivers/staging/vme/vme.c
-+++ b/drivers/staging/vme/vme.c
-@@ -338,7 +338,7 @@ int vme_slave_get (struct vme_resource *resource, int *enabled,
- 
- 	image = list_entry(resource->entry, struct vme_slave_resource, list);
- 
--	if (bridge->slave_set == NULL) {
-+	if (bridge->slave_get == NULL) {
- 		printk("vme_slave_get not supported\n");
- 		return -EINVAL;
- 	}
-@@ -499,7 +499,7 @@ int vme_master_get (struct vme_resource *resource, int *enabled,
- 
- 	image = list_entry(resource->entry, struct vme_master_resource, list);
- 
--	if (bridge->master_set == NULL) {
-+	if (bridge->master_get == NULL) {
- 		printk("vme_master_set not supported\n");
- 		return -EINVAL;
- 	}
+This should go to documentation/manpage somewhere.
+
+
+> Unlike clone(), clone_with_pids() needs CAP_SYS_ADMIN, at least for now, to
+> prevent unprivileged processes from misusing this interface.
+> 
+> Call clone_with_pids as follows:
+> 
+> 	pid_t pids[] = { 0, 77, 99 };
+> 	struct pid_set pid_set;
+> 
+> 	pid_set.num_pids = sizeof(pids) / sizeof(int);
+> 	pid_set.pids = &pids;
+> 
+> 	syscall(__NR_clone_with_pids, flags, stack, NULL, NULL, NULL, &pid_set);
+> 
+> If a target-pid is 0, the kernel continues to assign a pid for the process in
+> that namespace. In the above example, pids[0] is 0, meaning the kernel will
+> assign next available pid to the process in init_pid_ns. But kernel will assign
+> pid 77 in the child pid namespace 1 and pid 99 in pid namespace 2. If either
+> 77 or 99 are taken, the system call fails with -EBUSY.
+> 
+> If 'pid_set.num_pids' exceeds the current nesting level of pid namespaces,
+> the system call fails with -EINVAL.
+
+Does it make sense to set the pid in anything but innermost container?
+
+
 -- 
-1.6.3.3
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
