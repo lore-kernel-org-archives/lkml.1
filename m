@@ -1,102 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbZHJUzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753749AbZHJU4I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753679AbZHJUzr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 16:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbZHJUzp
+	id S1753749AbZHJU4I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 16:56:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbZHJUzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 16:55:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60995 "EHLO mx2.redhat.com"
+	Mon, 10 Aug 2009 16:55:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60982 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753646AbZHJUzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 16:55:44 -0400
-Message-ID: <4A80894A.7050506@redhat.com>
-Date: Mon, 10 Aug 2009 16:55:38 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
-MIME-Version: 1.0
-To: "Theodore Ts'o" <tytso@mit.edu>
-CC: Jan Kara <jack@suse.cz>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH, RFC] ext3: Update Kconfig description of EXT3_DEFAULTS_TO_ORDERED
-References: <1249934623-15939-1-git-send-email-tytso@mit.edu>
-In-Reply-To: <1249934623-15939-1-git-send-email-tytso@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753503AbZHJUzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 16:55:13 -0400
+Date: Mon, 10 Aug 2009 16:52:53 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: fweisbec@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
+       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com
+Message-Id: <996d6713d889ddf697d3d4fdbb08645fa8343dd5.1249932670.git.jbaron@redhat.com>
+In-Reply-To: <cover.1249932670.git.jbaron@redhat.com>
+References: <cover.1249932670.git.jbaron@redhat.com>
+Subject: [PATCH 09/12] add support traceopint ids
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/10/2009 04:03 PM, Theodore Ts'o wrote:
-> The old description for this configuration option was perhaps not
-> completely balanced in terms of describing the tradeoffs of using a
-> default of data=writeback vs. data=ordered.  Despite the fact that old
-> description very strongly recomended disabling this feature, all of
-> the major distributions have elected to preserve the existing 'legacy'
-> default, which is a strong hint that it perhaps wasn't telling the
-> whole story.
->
-> This revised description has been vetted by a number of ext3
-> developers as being better at informing the user about the tradeoffs
-> of enabling or disabling this configuration feature.
->
-> Signed-off-by: "Theodore Ts'o"<tytso@mit.edu>
-> Cc: linux-ext4@vger.kernel.org
->    
+This patch associates an id with each syscall trace event, so that we can
+identify each syscall trace event using the 'perf' tool.
 
-Thanks Ted - this is much more informative and will allow for a more 
-informed trade off to be made,
+Signed-off-by: Jason Baron <jbaron@redhat.com>
 
-Ric
+---
+ arch/x86/kernel/ftrace.c      |   10 ++++++++++
+ include/linux/syscalls.h      |   22 ++++++++++++++++++----
+ include/trace/syscall.h       |    8 ++++++++
+ kernel/trace/trace.h          |    6 ------
+ kernel/trace/trace_syscalls.c |   26 ++++++++++++++++----------
+ 5 files changed, 52 insertions(+), 20 deletions(-)
 
-> ---
->   fs/ext3/Kconfig |   32 +++++++++++++++++---------------
->   1 files changed, 17 insertions(+), 15 deletions(-)
->
-> diff --git a/fs/ext3/Kconfig b/fs/ext3/Kconfig
-> index fb3c1a2..522b154 100644
-> --- a/fs/ext3/Kconfig
-> +++ b/fs/ext3/Kconfig
-> @@ -29,23 +29,25 @@ config EXT3_FS
->   	  module will be called ext3.
->
->   config EXT3_DEFAULTS_TO_ORDERED
-> -	bool "Default to 'data=ordered' in ext3 (legacy option)"
-> +	bool "Default to 'data=ordered' in ext3"
->   	depends on EXT3_FS
->   	help
-> -	  If a filesystem does not explicitly specify a data ordering
-> -	  mode, and the journal capability allowed it, ext3 used to
-> -	  historically default to 'data=ordered'.
-> -
-> -	  That was a rather unfortunate choice, because it leads to all
-> -	  kinds of latency problems, and the 'data=writeback' mode is more
-> -	  appropriate these days.
-> -
-> -	  You should probably always answer 'n' here, and if you really
-> -	  want to use 'data=ordered' mode, set it in the filesystem itself
-> -	  with 'tune2fs -o journal_data_ordered'.
-> -
-> -	  But if you really want to enable the legacy default, you can do
-> -	  so by answering 'y' to this question.
-> +	  The journal mode options for ext3 have different tradeoffs
-> +	  between when data is guaranteed to be on disk and
-> +	  performance.	The use of "data=writeback" can cause
-> +	  unwritten data to appear in files after an system crash or
-> +	  power failure, which can be a security issue.	 However,
-> +	  "data=ordered" mode can also result in major performance
-> +	  problems, including seconds-long delays before an fsync()
-> +	  call returns.	 For details, see:
-> +
-> +	  http://ext4.wiki.kernel.org/index.php/Ext3_data_mode_tradeoffs
-> +
-> +	  If you have been historically happy with ext3's performance,
-> +	  data=ordered mode will be a safe choice and you should
-> +	  answer 'y' here.  If you understand the reliability and data
-> +	  privacy issues of data=writeback and are willing to make
-> +	  that trade off, answer 'n'.
->
->   config EXT3_FS_XATTR
->   	bool "Ext3 extended attributes"
->    
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index 0d93d40..3cff121 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -516,6 +516,16 @@ int syscall_name_to_nr(char *name)
+ 	return -1;
+ }
+ 
++void set_syscall_enter_id(int num, int id)
++{
++	syscalls_metadata[num]->enter_id = id;
++}
++
++void set_syscall_exit_id(int num, int id)
++{
++	syscalls_metadata[num]->exit_id = id;
++}
++
+ static int __init arch_init_ftrace_syscalls(void)
+ {
+ 	int i;
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 5e5b4d3..ce4b01c 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -116,13 +116,20 @@ struct perf_counter_attr;
+ 
+ #define SYSCALL_TRACE_ENTER_EVENT(sname)				\
+ 	static struct ftrace_event_call event_enter_##sname;		\
++	struct trace_event enter_syscall_print_##sname = {		\
++		.trace                  = print_syscall_enter,		\
++	};								\
+ 	static int init_enter_##sname(void)				\
+ 	{								\
+-		int num;						\
++		int num, id;						\
+ 		num = syscall_name_to_nr("sys"#sname);			\
+ 		if (num < 0)						\
+ 			return -ENOSYS;					\
+-		register_ftrace_event(&event_syscall_enter);		\
++		id = register_ftrace_event(&enter_syscall_print_##sname);\
++		if (!id)						\
++			return -ENODEV;					\
++		event_enter_##sname.id = id;				\
++		set_syscall_enter_id(num, id);				\
+ 		INIT_LIST_HEAD(&event_enter_##sname.fields);		\
+ 		init_preds(&event_enter_##sname);			\
+ 		return 0;						\
+@@ -142,13 +149,20 @@ struct perf_counter_attr;
+ 
+ #define SYSCALL_TRACE_EXIT_EVENT(sname)					\
+ 	static struct ftrace_event_call event_exit_##sname;		\
++	struct trace_event exit_syscall_print_##sname = {		\
++		.trace                  = print_syscall_exit,		\
++	};								\
+ 	static int init_exit_##sname(void)				\
+ 	{								\
+-		int num;						\
++		int num, id;						\
+ 		num = syscall_name_to_nr("sys"#sname);			\
+ 		if (num < 0)						\
+ 			return -ENOSYS;					\
+-		register_ftrace_event(&event_syscall_exit);		\
++		id = register_ftrace_event(&exit_syscall_print_##sname);\
++		if (!id)						\
++			return -ENODEV;					\
++		event_exit_##sname.id = id;				\
++		set_syscall_exit_id(num, id);				\
+ 		INIT_LIST_HEAD(&event_exit_##sname.fields);		\
+ 		init_preds(&event_exit_##sname);			\
+ 		return 0;						\
+diff --git a/include/trace/syscall.h b/include/trace/syscall.h
+index 73fb8b4..df62840 100644
+--- a/include/trace/syscall.h
++++ b/include/trace/syscall.h
+@@ -32,23 +32,31 @@ DECLARE_TRACE_WITH_CALLBACK(syscall_exit,
+  * @nb_args: number of parameters it takes
+  * @types: list of types as strings
+  * @args: list of args as strings (args[i] matches types[i])
++ * @enter_id: associated ftrace enter event id
++ * @exit_id: associated ftrace exit event id
+  */
+ struct syscall_metadata {
+ 	const char	*name;
+ 	int		nb_args;
+ 	const char	**types;
+ 	const char	**args;
++	int		enter_id;
++	int		exit_id;
+ };
+ 
+ #ifdef CONFIG_FTRACE_SYSCALLS
+ extern struct syscall_metadata *syscall_nr_to_meta(int nr);
+ extern int syscall_name_to_nr(char *name);
++void set_syscall_enter_id(int num, int id);
++void set_syscall_exit_id(int num, int id);
+ extern struct trace_event event_syscall_enter;
+ extern struct trace_event event_syscall_exit;
+ extern int reg_event_syscall_enter(void *ptr);
+ extern void unreg_event_syscall_enter(void *ptr);
+ extern int reg_event_syscall_exit(void *ptr);
+ extern void unreg_event_syscall_exit(void *ptr);
++enum print_line_t print_syscall_enter(struct trace_iterator *iter, int flags);
++enum print_line_t print_syscall_exit(struct trace_iterator *iter, int flags);
+ #endif
+ 
+ #endif /* _TRACE_SYSCALL_H */
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 44308f3..606073c 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -38,8 +38,6 @@ enum trace_type {
+ 	TRACE_GRAPH_ENT,
+ 	TRACE_USER_STACK,
+ 	TRACE_HW_BRANCHES,
+-	TRACE_SYSCALL_ENTER,
+-	TRACE_SYSCALL_EXIT,
+ 	TRACE_KMEM_ALLOC,
+ 	TRACE_KMEM_FREE,
+ 	TRACE_POWER,
+@@ -334,10 +332,6 @@ extern void __ftrace_bad_type(void);
+ 			  TRACE_KMEM_ALLOC);	\
+ 		IF_ASSIGN(var, ent, struct kmemtrace_free_entry,	\
+ 			  TRACE_KMEM_FREE);	\
+-		IF_ASSIGN(var, ent, struct syscall_trace_enter,		\
+-			  TRACE_SYSCALL_ENTER);				\
+-		IF_ASSIGN(var, ent, struct syscall_trace_exit,		\
+-			  TRACE_SYSCALL_EXIT);				\
+ 		IF_ASSIGN(var, ent, struct ksym_trace_entry, TRACE_KSYM);\
+ 		__ftrace_bad_type();					\
+ 	} while (0)
+diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+index c7ae25e..e58a9c1 100644
+--- a/kernel/trace/trace_syscalls.c
++++ b/kernel/trace/trace_syscalls.c
+@@ -36,14 +36,18 @@ print_syscall_enter(struct trace_iterator *iter, int flags)
+ 	struct syscall_metadata *entry;
+ 	int i, ret, syscall;
+ 
+-	trace_assign_type(trace, ent);
+-
++	trace = (typeof(trace))ent;
+ 	syscall = trace->nr;
+-
+ 	entry = syscall_nr_to_meta(syscall);
++
+ 	if (!entry)
+ 		goto end;
+ 
++	if (entry->enter_id != ent->type) {
++		WARN_ON_ONCE(1);
++		goto end;
++	}
++
+ 	ret = trace_seq_printf(s, "%s(", entry->name);
+ 	if (!ret)
+ 		return TRACE_TYPE_PARTIAL_LINE;
+@@ -78,16 +82,20 @@ print_syscall_exit(struct trace_iterator *iter, int flags)
+ 	struct syscall_metadata *entry;
+ 	int ret;
+ 
+-	trace_assign_type(trace, ent);
+-
++	trace = (typeof(trace))ent;
+ 	syscall = trace->nr;
+-
+ 	entry = syscall_nr_to_meta(syscall);
++
+ 	if (!entry) {
+ 		trace_seq_printf(s, "\n");
+ 		return TRACE_TYPE_HANDLED;
+ 	}
+ 
++	if (entry->exit_id != ent->type) {
++		WARN_ON_ONCE(1);
++		return TRACE_TYPE_UNHANDLED;
++	}
++
+ 	ret = trace_seq_printf(s, "%s -> 0x%lx\n", entry->name,
+ 				trace->ret);
+ 	if (!ret)
+@@ -114,7 +122,7 @@ void ftrace_syscall_enter(struct pt_regs *regs, long id)
+ 
+ 	size = sizeof(*entry) + sizeof(unsigned long) * sys_data->nb_args;
+ 
+-	event = trace_current_buffer_lock_reserve(TRACE_SYSCALL_ENTER, size,
++	event = trace_current_buffer_lock_reserve(sys_data->enter_id, size,
+ 							0, 0);
+ 	if (!event)
+ 		return;
+@@ -142,7 +150,7 @@ void ftrace_syscall_exit(struct pt_regs *regs, long ret)
+ 	if (!sys_data)
+ 		return;
+ 
+-	event = trace_current_buffer_lock_reserve(TRACE_SYSCALL_EXIT,
++	event = trace_current_buffer_lock_reserve(sys_data->exit_id,
+ 				sizeof(*entry), 0, 0);
+ 	if (!event)
+ 		return;
+@@ -239,10 +247,8 @@ void unreg_event_syscall_exit(void *ptr)
+ 
+ struct trace_event event_syscall_enter = {
+ 	.trace			= print_syscall_enter,
+-	.type			= TRACE_SYSCALL_ENTER
+ };
+ 
+ struct trace_event event_syscall_exit = {
+ 	.trace			= print_syscall_exit,
+-	.type			= TRACE_SYSCALL_EXIT
+ };
+-- 
+1.6.2.5
 
