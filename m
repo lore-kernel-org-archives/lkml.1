@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbZHJQYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbZHJQ1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755655AbZHJQYo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 12:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755645AbZHJQYn
+	id S1755664AbZHJQ1d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 12:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755565AbZHJQ1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 12:24:43 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:58873 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753746AbZHJQYn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 12:24:43 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 3/5] tty: handle VT specific compat ioctls in vt driver
-Date: Mon, 10 Aug 2009 18:24:29 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Andi Kleen <andi@firstfloor.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Martin Schwidefsky <schwidefsky@googlemail.com>,
-       Jeff Dike <jdike@addtoit.com>
-References: <1249564170-18627-1-git-send-email-arnd@arndb.de> <20090808010336.GN4999@nowhere> <20090808032058.GA30378@suse.de>
-In-Reply-To: <20090808032058.GA30378@suse.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Mon, 10 Aug 2009 12:27:32 -0400
+Received: from mga01.intel.com ([192.55.52.88]:63837 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755554AbZHJQ1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 12:27:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,354,1246863600"; 
+   d="scan'208";a="715464060"
+Date: Mon, 10 Aug 2009 09:27:31 -0700
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH] pci: print out pref if mmio is prefetchable
+Message-ID: <20090810092731.7a44c24e@jbarnes-g45>
+In-Reply-To: <4A7C07AE.4040200@kernel.org>
+References: <4A7C07AE.4040200@kernel.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908101824.29459.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18krro8pamSEUVVj4pUxJFPbDWhKsP7F6WkT1r
- 32lCkw96KWnjFNj0qQ9Jb7QpaqRo6FVmFclDc5/e4luEWMbQMD
- rJeL/lpb+LqPsYYG7dK9w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 08 August 2009, Greg KH wrote:
-> sure, someone want to send them all to me after getting the other
-> subsystem's acks?
+On Fri, 07 Aug 2009 03:53:34 -0700
+Yinghai Lu <yinghai@kernel.org> wrote:
 
-Yes, sounds good. 
+> 
+> already print it out for pci bridge, also print it out for pci device
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  drivers/pci/probe.c |    9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/drivers/pci/probe.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/probe.c
+> +++ linux-2.6/drivers/pci/probe.c
+> @@ -235,7 +235,10 @@ int __pci_read_base(struct pci_dev *dev,
+>  			res->start = l64;
+>  			res->end = l64 + sz64;
+>  			dev_printk(KERN_DEBUG, &dev->dev,
+> -				"reg %x 64bit mmio: %pR\n", pos,
+> res);
+> +				"reg %x %s: %pR\n", pos,
+> +				 (res->flags & IORESOURCE_PREFETCH) ?
+> +					"64bit mmio pref" : "64bit
+> mmio",
+> +				 res);
+>  		}
+>  
+>  		res->flags |= IORESOURCE_MEM_64;
+> @@ -249,7 +252,9 @@ int __pci_read_base(struct pci_dev *dev,
+>  		res->end = l + sz;
+>  
+>  		dev_printk(KERN_DEBUG, &dev->dev, "reg %x %s:
+> %pR\n", pos,
+> -			(res->flags & IORESOURCE_IO) ? "io port" :
+> "32bit mmio",
+> +			(res->flags & IORESOURCE_IO) ? "io port" :
+> +			 ((res->flags & IORESOURCE_PREFETCH) ?
+> +				 "32bit mmio pref" : "32bit mmio"),
+>  			res);
+>  	}
+>  
+> 
 
-Martin and Jeff, could you have a look at the first two patches?
+Applied to linux-next, thanks.
 
-The final patch is not tty specific, but it still depends on
-the others, so I guess you can take that one as well. It could
-use an extra pair of eyeballs though, just to see if my logic
-was correct, the impact should be rather significant.
-
-	Arnd <><
+-- 
+Jesse Barnes, Intel Open Source Technology Center
