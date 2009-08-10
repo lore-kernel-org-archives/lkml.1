@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbZHJW46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbZHJXGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754222AbZHJW46 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 18:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbZHJW45
+	id S1754189AbZHJXGt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 19:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbZHJXGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 18:56:57 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:43166 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754205AbZHJW44 (ORCPT
+	Mon, 10 Aug 2009 19:06:47 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:64059 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754021AbZHJXGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 18:56:56 -0400
-Subject: Re: kmemleak: Protect the seq start/next/stop sequence by
-	rcu_read_lock()
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090810184527.GA9601@elte.hu>
-References: <20090729152101.1878.71159.stgit@pc1117.cambridge.arm.com>
-	 <20090802111453.GA24927@elte.hu>
-	 <1249919718.10848.55.camel@pc1117.cambridge.arm.com>
-	 <20090810184527.GA9601@elte.hu>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Mon, 10 Aug 2009 23:56:43 +0100
-Message-Id: <1249945003.26205.23.camel@pc1117.cambridge.arm.com>
+	Mon, 10 Aug 2009 19:06:46 -0400
+Date: Mon, 10 Aug 2009 16:04:39 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Timur Tabi <timur@freescale.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: [PATCH -next] soc: fix I2C build errors
+Message-Id: <20090810160439.72e417de.randy.dunlap@oracle.com>
+In-Reply-To: <20090810203508.f3258129.sfr@canb.auug.org.au>
+References: <20090810203508.f3258129.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Aug 2009 22:56:44.0530 (UTC) FILETIME=[D514FD20:01CA1A0D]
+X-Source-IP: abhmt007.oracle.com [141.146.116.16]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010203.4A80A7B9.0055:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-10 at 20:45 +0200, Ingo Molnar wrote:
-> * Catalin Marinas <catalin.marinas@arm.com> wrote:
-> 
-> > On Sun, 2009-08-02 at 13:14 +0200, Ingo Molnar wrote:
-> > > hm, some recent kmemleak patch is causing frequent hard and 
-> > > soft lockups in -tip testing (-rc5 based).
-> > 
-> > Thanks for reporting this. It shouldn't be caused by the patch 
-> > mentioned in the subject as this only deals with reading the seq 
-> > file which doesn't seem to be the case here.
-> 
-> Since i turned off kmemleak in -tip completely via the patch below i 
-> havent had a single such lockup.
-> 
-> Have you tried the config i sent - does it work fine for you? For me 
-> it locks up on various boxes within a couple of minutes - without 
-> doing anything particular beyond building a kernel or so.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-I couldn't tried your config as I don't have an x86_64 machine (I only
-rely on an x86_32 laptop at home and several ARM machines at work for
-testing).
+Fix soc build errors when I2C is built as a loadable module:
 
-I tried similar config and with the mainline kernel I get some lockups
-(several seconds) with CONFIG_PREEMPT disabled on ARM machines or x86
-during a scanning episode but it eventually completes the scanning. With
-the kmemleak patches for the next merging window, I don't get any
-lockups as it has more cond_resched() calls.
+(.text+0x5d26b): undefined reference to `i2c_master_send'
+soc-cache.c:(.text+0x5d32d): undefined reference to `i2c_transfer'
 
-Maybe on your x86_64 box you get some bigger objects allocated
-(alloc_bootmem, per-cpu, data/bss, NODE_DATA, task stacks) which are
-scanned without cond_resched() calls and CONFIG_PREEMPT disabled.
-Scanning the memory can even take several minutes especially with
-CONFIG_PROVE_LOCKING enabled and maybe that's why you see the lockups.
-Enabling CONFIG_PREEMPT reduces the lockup period.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Timur Tabi <timur@freescale.com>
+---
+ sound/soc/soc-cache.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-I'll try tomorrow with x86_32 allyesconfig on my laptop and see how it
-goes.
+--- linux-next-20090810.orig/sound/soc/soc-cache.c
++++ linux-next-20090810/sound/soc/soc-cache.c
+@@ -108,7 +108,7 @@ static unsigned int snd_soc_8_16_read(st
+ 		return cache[reg];
+ }
+ 
+-#if defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE)
++#if defined(CONFIG_I2C) || (defined(CONFIG_I2C_MODULE) && defined(MODULE))
+ static unsigned int snd_soc_8_16_read_i2c(struct snd_soc_codec *codec,
+ 					  unsigned int r)
+ {
+@@ -200,7 +200,7 @@ int snd_soc_codec_set_cache_io(struct sn
+ 		break;
+ 
+ 	case SND_SOC_I2C:
+-#if defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE)
++#if defined(CONFIG_I2C) || (defined(CONFIG_I2C_MODULE) && defined(MODULE))
+ 		codec->hw_write = (hw_write_t)i2c_master_send;
+ #endif
+ 		if (io_types[i].i2c_read)
 
-Thanks.
 
--- 
-Catalin
 
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
