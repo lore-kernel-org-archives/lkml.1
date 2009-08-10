@@ -1,98 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751285AbZHJEoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751542AbZHJEr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751285AbZHJEoy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 00:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750923AbZHJEox
+	id S1751542AbZHJEr3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 00:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZHJEr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 00:44:53 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:61606 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbZHJEow (ORCPT
+	Mon, 10 Aug 2009 00:47:29 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59218
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750969AbZHJEr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 00:44:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:mime-version:content-type
-         :content-disposition:user-agent:message-id;
-        b=e6rbBLz8N73ohLcxHKofhwkOCd24cmJpTscI0HPlho9eXjLVizT6lmgOVnMlS8wRIt
-         Bbwwjf2SGtxprHQP9WNS7KYuGse6Uhg7vqXRv0WvECsexl9u/V6S4QRj6I5CmBZsu465
-         1nGQ5Xh9PtQvWkkI9pRBo/FJ0jb/fsodpChIQ=
-Date: Sun, 9 Aug 2009 21:44:49 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86, mce: therm_throt - change when we print messages
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090810051513.0558F526EC9@mailhub.coreip.homeip.net>
+	Mon, 10 Aug 2009 00:47:28 -0400
+Date: Sun, 09 Aug 2009 21:47:38 -0700 (PDT)
+Message-Id: <20090809.214738.92330420.davem@davemloft.net>
+To: joe@perches.com
+Cc: sposelenov@emcraft.com, linux-kernel@vger.kernel.org, wd@denx.de,
+       netdev@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] MAINTAINERS: additional NETWORKING [GENERAL] and
+ NETWORKING DRIVERS patterns
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1249663381.3467.80.camel@Joe-Laptop.home>
+References: <20090807153106.335b1b8f@emcraft.com>
+	<20090807.090353.191304972.davem@davemloft.net>
+	<1249663381.3467.80.camel@Joe-Laptop.home>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My Latitude d630 seems to be handling thermal events in SMI by lowering
-the max frequency of the CPU till it cools down but still leaks the
-"everything is normal" events. Adjust therm_throt driver to only print
-messages about the fact that temperatire returned back to normal when
-leaving the throttling state.
+From: Joe Perches <joe@perches.com>
+Date: Fri, 07 Aug 2009 09:43:01 -0700
 
-Also lower the severity of "back to normal" message from KERN_CRIT to
-KERN_INFO.
+> On Fri, 2009-08-07 at 09:03 -0700, David Miller wrote:
+>> From: Sergei Poselenov <sposelenov@emcraft.com>
+>> > Unfortunately, received no replies, but the problem still persists.
+>> I guarantee you'll get more responses if you send networking bug
+>> reports at least CC:'d to netdev@vger.kernel.org
+> 
+> Perhaps this will help get cc's to the right places.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
-
- arch/x86/kernel/cpu/mcheck/therm_throt.c |   18 +++++++++++-------
- 1 files changed, 11 insertions(+), 7 deletions(-)
-
-
-diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-index bff8dd1..8bc64cf 100644
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -36,6 +36,7 @@
- 
- static DEFINE_PER_CPU(__u64, next_check) = INITIAL_JIFFIES;
- static DEFINE_PER_CPU(unsigned long, thermal_throttle_count);
-+static DEFINE_PER_CPU(bool, thermal_throttle_active);
- 
- static atomic_t therm_throt_en		= ATOMIC_INIT(0);
- 
-@@ -96,24 +97,27 @@ static int therm_throt_process(int curr)
- {
- 	unsigned int cpu = smp_processor_id();
- 	__u64 tmp_jiffs = get_jiffies_64();
-+	bool was_throttled = __get_cpu_var(thermal_throttle_active);
-+	bool is_throttled = __get_cpu_var(thermal_throttle_active) = curr;
- 
--	if (curr)
-+	if (is_throttled)
- 		__get_cpu_var(thermal_throttle_count)++;
- 
--	if (time_before64(tmp_jiffs, __get_cpu_var(next_check)))
-+	if (!(was_throttled ^ is_throttled) &&
-+	    time_before64(tmp_jiffs, __get_cpu_var(next_check)))
- 		return 0;
- 
- 	__get_cpu_var(next_check) = tmp_jiffs + CHECK_INTERVAL;
- 
- 	/* if we just entered the thermal event */
--	if (curr) {
-+	if (is_throttled) {
- 		printk(KERN_CRIT "CPU%d: Temperature above threshold, "
--		       "cpu clock throttled (total events = %lu)\n", cpu,
--		       __get_cpu_var(thermal_throttle_count));
-+		       "cpu clock throttled (total events = %lu)\n",
-+		       cpu, __get_cpu_var(thermal_throttle_count));
- 
- 		add_taint(TAINT_MACHINE_CHECK);
--	} else {
--		printk(KERN_CRIT "CPU%d: Temperature/speed normal\n", cpu);
-+	} else if (was_throttled) {
-+		printk(KERN_INFO "CPU%d: Temperature/speed normal\n", cpu);
- 	}
- 
- 	return 1;
--- 
-Dmitry
+Applied.
