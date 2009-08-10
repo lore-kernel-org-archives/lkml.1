@@ -1,70 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbZHJXHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZHJXIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754213AbZHJXHT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 19:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbZHJXHS
+	id S1754254AbZHJXIt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 19:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbZHJXIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 19:07:18 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:64714 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751797AbZHJXHQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 19:07:16 -0400
-Date: Mon, 10 Aug 2009 16:04:55 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, linux-media@vger.kernel.org,
-       akpm <akpm@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Uri Shkolnik <uris@siano-ms.com>
-Subject: [PATCH -next] dvb: siano uses/depends on INPUT
-Message-Id: <20090810160455.4f93ad60.randy.dunlap@oracle.com>
-In-Reply-To: <20090810203508.f3258129.sfr@canb.auug.org.au>
-References: <20090810203508.f3258129.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 10 Aug 2009 19:08:48 -0400
+Received: from d1.icnet.pl ([212.160.220.21]:38589 "EHLO d1.icnet.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754135AbZHJXIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 19:08:47 -0400
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Organization: Tele-Info-System, Poznan, PL
+To: Jarkko Nikula <jhnikula@gmail.com>
+Subject: [RFC][PATCH 3/3 v2] ASoC: OMAP: Enhance OMAP1510 DMA progress software counter
+Date: Tue, 11 Aug 2009 01:07:10 +0200
+User-Agent: KMail/1.9.10
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       Tony Lindgren <tony@atomide.com>,
+       "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200908101050.08074.jkrzyszt@tis.icnet.pl>
+In-Reply-To: <200908101050.08074.jkrzyszt@tis.icnet.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt004.oracle.com [141.146.116.13]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010209.4A80A7C9.00C5:SCFSTAT5015188,ss=1,fgs=0
+Content-Disposition: inline
+Message-Id: <200908110107.11485.jkrzyszt@tis.icnet.pl>
+X-SA-Exim-Scanned: No (on d1.icnet); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Enhance period index accuracy, particularly just before buffer rewind, by
+making use of DMA interrupt status flags in addition to simply counting up
+interrupts.
 
-siano uses input_*() functions so it should depend on INPUT
-to prevent build errors:
+Corrections since v1:
+1. Fix buggy DMA interrupt handling in case of multiple status flags set in
+   parallel.
+2. Enable OMAP_DMA_LAST_IRQ only for playback on OMAP1510.
 
-ERROR: "input_event" [drivers/media/dvb/siano/sms1xxx.ko] undefined!
-ERROR: "input_register_device" [drivers/media/dvb/siano/sms1xxx.ko] undefined!
-ERROR: "input_free_device" [drivers/media/dvb/siano/sms1xxx.ko] undefined!
-ERROR: "input_unregister_device" [drivers/media/dvb/siano/sms1xxx.ko] undefined!
-ERROR: "input_allocate_device" [drivers/media/dvb/siano/sms1xxx.ko] undefined!
+This patch applies on top of patch 2 from this series:
+[RFC][PATCH 2/3] ASoC: OMAP: Make use of DMA channel self linking on OMAP1510
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Michael Krufky <mkrufky@linuxtv.org>
-Cc: Uri Shkolnik <uris@siano-ms.com>
----
- drivers/media/dvb/siano/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Created against linux-2.6.31-rc5.
 
---- linux-next-20090810.orig/drivers/media/dvb/siano/Kconfig
-+++ linux-next-20090810/drivers/media/dvb/siano/Kconfig
-@@ -4,7 +4,7 @@
- 
- config DVB_SIANO_SMS1XXX
- 	tristate "Siano SMS1XXX USB dongle support"
--	depends on DVB_CORE && USB
-+	depends on DVB_CORE && USB && INPUT
- 	---help---
- 	  Choose Y here if you have a USB dongle with a SMS1XXX chipset.
- 
+Tested on Amstrad Delta.
 
-
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
 
 ---
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+--- linux-2.6.31-rc5/sound/soc/omap/omap-pcm.c.orig	2009-08-10 22:41:25.000000000 +0200
++++ linux-2.6.31-rc5/sound/soc/omap/omap-pcm.c	2009-08-10 23:15:46.000000000 +0200
+@@ -68,13 +68,27 @@ static void omap_pcm_dma_irq(int ch, u16
+ 		 * that can be used by omap_pcm_pointer() instead.
+ 		 */
+ 		spin_lock_irqsave(&prtd->lock, flags);
++		if ((stat == OMAP_DMA_LAST_IRQ) &&
++				(prtd->period_index == runtime->periods - 1)) {
++			/* we are in sync, do nothing */
++			spin_unlock_irqrestore(&prtd->lock, flags);
++			return;
++		}
+ 		if (prtd->period_index >= 0) {
+-			if (++prtd->period_index == runtime->periods) {
++			if (stat & OMAP_DMA_BLOCK_IRQ) {
++				/* end of buffer reached, loop back */
++				prtd->period_index = 0;
++			} else if (stat & OMAP_DMA_LAST_IRQ) {
++				/* update the counter for the last period */
++				prtd->period_index = runtime->periods - 1;
++			} else if (++prtd->period_index >= runtime->periods) {
++				/* end of buffer missed? loop back */
+ 				prtd->period_index = 0;
+ 			}
+ 		}
+ 		spin_unlock_irqrestore(&prtd->lock, flags);
+-	}
++	} else if (stat == OMAP_DMA_LAST_IRQ)
++		return;
+ 
+ 	snd_pcm_period_elapsed(substream);
+ }
+@@ -175,7 +189,12 @@ static int omap_pcm_prepare(struct snd_p
+ 	dma_params.frame_count	= runtime->periods;
+ 	omap_set_dma_params(prtd->dma_ch, &dma_params);
+ 
+-	omap_enable_dma_irq(prtd->dma_ch, OMAP_DMA_FRAME_IRQ);
++	if ((cpu_is_omap1510()) &&
++			(substream->stream == SNDRV_PCM_STREAM_PLAYBACK))
++		omap_enable_dma_irq(prtd->dma_ch, OMAP_DMA_FRAME_IRQ |
++							OMAP_DMA_LAST_IRQ);
++	else
++		omap_enable_dma_irq(prtd->dma_ch, OMAP_DMA_FRAME_IRQ);
+ 
+ 	return 0;
+ }
