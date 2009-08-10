@@ -1,81 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752324AbZHJTjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752028AbZHJToT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752324AbZHJTjO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 15:39:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZHJTjO
+	id S1752028AbZHJToT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 15:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbZHJToS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 15:39:14 -0400
-Received: from waldorf.bytemark.co.uk ([212.110.162.22]:44268 "EHLO
-	waldorf.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751103AbZHJTjN (ORCPT
+	Mon, 10 Aug 2009 15:44:18 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60474 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750987AbZHJToR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 15:39:13 -0400
-Date: Mon, 10 Aug 2009 21:38:49 +0200
-From: "Emilio G. Cota" <cota@braap.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-Cc: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [patch 1/5] Staging: VME Framework for the Linux Kernel
-Message-ID: <20090810193849.GA3055@braap.org>
-References: <20090803205657.964064732@mini.kroah.org> <20090803210111.GB28430@kroah.com> <20090808230145.GB27151@braap.org> <4A801644.2070009@gefanuc.com> <20090810141442.GA18456@braap.org> <4A804283.5090009@gefanuc.com>
+	Mon, 10 Aug 2009 15:44:17 -0400
+Date: Mon, 10 Aug 2009 21:44:13 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Johannes Stezenbach <js@sig21.net>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       x86@kernel.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, robert.richter@amd.com
+Subject: Re: 2.6.31-rc5 regression: x86 MCE malfunction on Thinkpad T42p
+Message-ID: <20090810194413.GE6838@basil.fritz.box>
+References: <20090807170942.GB9177@sig21.net> <87k51cgdt8.fsf@basil.nowhere.org> <20090810122731.GA5863@sig21.net> <20090810123228.GD6838@basil.fritz.box> <20090810125651.GB6082@sig21.net> <20090810132923.GA4418@elte.hu> <20090810192658.GA15513@sig21.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A804283.5090009@gefanuc.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090810192658.GA15513@sig21.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martyn Welch wrote:
-> That's one reason for the helper function. If VME bridges are added  
-> which sit of on other buses then vme_alloc_consistent can be extended to  
-> support this without requiring VME device drivers to be altered to  
-> reflect the fact that pci_alloc_consistent might not work for all VME  
-> bridges.
+> But in demsg I got this:
 
-But it corresponds to the bridge's code (not to the generic layer) to
-know whether the bridge sits on top of PCI or not; hence my comment.
+AFAIK that's already fixed. cc Robert to confirm. Not sure if the fix  made it into 2.6.31 though?
 
-> The DMA controller in the tsi-148 can do PCI to PCI; PCI to VME; VME to  
-> PCI; VME to VME; Patterns to  VME and Patterns to PCI transfers. How do  
-> you specify all those options without providing a structure where over  
-> 50% of the fields aren't used for any given transfer?
+-Andi
 
-I think a struct where not _every_ field is *always* used is fine.
-However requiring your drivers to know about what your bridge
-looks like is a mistake; just give them something thin that doesn't
-assume anything about what's behind it, and if it's not supported,
-return an appropriate error message.
+> 
+> Delta way too big! 18446744022868427516 ts=18446744022868427516 write stamp = 0
+> ------------[ cut here ]------------
+> WARNING: at kernel/trace/ring_buffer.c:1392 rb_reserve_next_event+0x150/0x309()
+> Hardware name: 2373Y4M
+> Modules linked in: ath5k mac80211 ath cfg80211 oprofile bnep sco rfcomm l2cap bluetooth ehci_hcd uhci_hc
+> Pid: 13478, comm: opcontrol Not tainted 2.6.31-rc5 #5
+> Call Trace:
+>  [<c10248dd>] warn_slowpath_common+0x60/0x90
+>  [<c102491a>] warn_slowpath_null+0xd/0x10
+>  [<c1054129>] rb_reserve_next_event+0x150/0x309
+>  [<c1068c06>] ? get_page_from_freelist+0x86/0x35a
+>  [<c10544f7>] ring_buffer_lock_reserve+0xe7/0x135
+>  [<f88622c0>] op_cpu_buffer_write_reserve+0x1a/0x4b [oprofile]
+>  [<f886239d>] op_add_code+0x57/0x98 [oprofile]
+>  [<c1068c06>] ? get_page_from_freelist+0x86/0x35a
+>  [<c1367c08>] ? page_fault+0x0/0x8
+>  [<f8862409>] log_sample+0x2b/0x6c [oprofile]
+>  [<c1064c76>] ? filemap_fault+0x74/0x32b
+>  [<f886249c>] oprofile_add_sample+0x3b/0x6b [oprofile]
+>  [<f88641d8>] ppro_check_ctrs+0x66/0xdb [oprofile]
+>  [<c1074bde>] ? __do_fault+0x303/0x32f
+>  [<f8863907>] profile_exceptions_notify+0x1f/0x26 [oprofile]
+>  [<c103953b>] notifier_call_chain+0x2b/0x55
+>  [<c10398e3>] __atomic_notifier_call_chain+0x1a/0x3a
+>  [<c103990f>] atomic_notifier_call_chain+0xc/0xe
+>  [<c103993e>] notify_die+0x2d/0x2f
+>  [<c1003c54>] do_nmi+0x63/0x222
+>  [<c1367d1d>] nmi_stack_correct+0x28/0x2d
+>  [<c1367c08>] ? page_fault+0x0/0x8
+> ---[ end trace d174f39c63495e01 ]---
+> 
+> 
+> Thanks
+> Johannes
+> 
 
-> Every bridge I have seen is capable of link-list execution. The API  
-> provides the ability to do scatter-gather style DMA transfers, this  
-> could be used as part of a "zero-copy" type driver for high speed VME  
-> capture devices. How would you support the link-list execution with a  
-> single call?
-
-Let me say it again: "Drivers should know *nothing* about the
-underlying bridge".
-They should work with *any* bridge; or do we care about the PCI
-bridge we're plug our PCI device on when writing a driver for it?
-
-> I was also looking at the ability to queue DMA transfers if the  
-> controller was currently busy - if the consensus is that this is  
-> overkill I will happily remove this.
-
-AFAICT the tsi148 has several DMA channels; in our driver we just
-try to find a free channel to proceed with the transfer; if there
-aren't any then we return EBUSY.
-Drawing an analogy with current 'streaming DMA' transfers, we're
-told we should check whether they failed or not, so I think
-trying to be too clever here it's not worth it.
-
-> I implemented it using param array, I agree that the arguments might get
-> quite long with 10 devices, especially if multiple parameters are
-> required, but I don't see why it shouldn't work.
-
-The fact that 'it works' doesn't make it less ugly or messy.
-When referring to code, these two words usually mean "there's
-a better way"; so let's just find it.
-
-E.
+-- 
+ak@linux.intel.com -- Speaking for myself only.
