@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751607AbZHJS4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751708AbZHJS4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751607AbZHJS4V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 14:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZHJS4T
+	id S1751708AbZHJS4W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 14:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbZHJS4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 14:56:19 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:64786 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751094AbZHJS4T (ORCPT
+	Mon, 10 Aug 2009 14:56:20 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:45016 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750993AbZHJS4T convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 10 Aug 2009 14:56:19 -0400
-From: Martin Rogge <marogge@onlinehome.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #13945] Kernel freezes dual pentium-3 system
-Date: Mon, 10 Aug 2009 20:57:55 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.30.4; KDE/4.2.1; i686; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "devzero" <devzero@web.de>
-References: <YCu3FOC0QrC.A.MaE.RD2fKB@chimera> <pRuaDVjxFBG.A.plE.YD2fKB@chimera>
-In-Reply-To: <pRuaDVjxFBG.A.plE.YD2fKB@chimera>
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RLijvAfiTcs52qViJQdr2lvFBPNyzC+wVOSpQqpVx0oFJdaXyDorsa9CxuEBP1avy4
+         JqpbxudtI8IzlcmfvTVjbXTabWC/cVGQNGFVDWzr0Xm43S6hBgW5+Zbl3me59bE36rJ+
+         md67rXIMm6BS1cL5myFGSNmxBMCDrABf4fSn4=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908102057.55825.marogge@onlinehome.de>
-X-Provags-ID: V01U2FsdGVkX1924Im0MUkl76Ai3veQS+bBIvqc+BoLTAnYdAe
- M/4XgEr/+N2EFMaH2J0pMvEj99EkfvcARRlOh8ovn6xf99p+9j
- 7ehBq4Ifyvez2UTqtJbAg==
+In-Reply-To: <1249925740.2501.9.camel@dhcp231-106.rdu.redhat.com>
+References: <1249925740.2501.9.camel@dhcp231-106.rdu.redhat.com>
+Date: Mon, 10 Aug 2009 20:56:18 +0200
+Message-ID: <19f34abd0908101156x2bc92b22ud1748abb153800fb@mail.gmail.com>
+Subject: Re: kmemcheck in linux-next causes NULL pointer dereference at 
+	task_rq_lock
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi, mingo@elte.hu
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 09 August 2009 23:10:35 Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.29 and 2.6.30.
+2009/8/10 Eric Paris <eparis@redhat.com>:
+> I'm using 2.6.31-rc5-next-20090810 on a vmware server.  Originally I saw
+> messages about setting to one cpu, so I booted with maxcpu=1.  I get
+> this same panic with and without maxpu.  Booting with kmemcheck=0 boots
+> just fine.
 >
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-> be listed and let me know (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13945
-> Subject		: Kernel freezes dual pentium-3 system
-> Submitter	: Martin Rogge <marogge@onlinehome.de>
-> Date		: 2009-08-03 16:25 (7 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124931667320530&w=4
+> I have not tested kmemcheck in linus' tree but will start looking for a
+> working version now.  Any suggestions or things I should try?
 
-Hi Rafael,
+Hi, thanks for the report, and for trying it out.
 
-yes the regression should still be listed. You may want to merge the bugzilla 
-IDs 13945 and 13933 as they both refer to the same issue.
+Does it crash with "kmemcheck=0 maxcpus=1" (it should be maxcpus, not
+maxcpu). This should be a simple way of determining whether it was
+kmemcheck or the existing maxcpus code, which we use, that broke.
 
-Martin
+If you can send config (off-list, probably), I will try to reproduce
+and investigate more tomorrow.
 
+Thanks,
+
+
+Vegard
