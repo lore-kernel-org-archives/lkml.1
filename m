@@ -1,129 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbZHJKBF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753578AbZHJKEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753550AbZHJKBF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 06:01:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbZHJKBE
+	id S1753578AbZHJKEB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 06:04:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbZHJKEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 06:01:04 -0400
-Received: from the.earth.li ([217.147.81.2]:55594 "EHLO the.earth.li"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753369AbZHJKBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 06:01:03 -0400
-X-Greylist: delayed 1295 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Aug 2009 06:01:02 EDT
-Date: Mon, 10 Aug 2009 10:39:24 +0100
-From: Jonathan McDowell <noodles@earth.li>
-To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Cc: Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org,
-       linux-serial@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] OMAP1: AMS_DELTA: add modem support
-Message-ID: <20090810093924.GF5729@earth.li>
-References: <200907061224.29292.jkrzyszt@tis.icnet.pl> <200908101112.49447.jkrzyszt@tis.icnet.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908101112.49447.jkrzyszt@tis.icnet.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 10 Aug 2009 06:04:00 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:37932 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753490AbZHJKD7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 06:03:59 -0400
+To: eparis@redhat.com
+CC: miklos@szeredi.hu, a.p.zijlstra@chello.nl, tvrtko.ursulin@sophos.com,
+       douglas.leeder@sophos.com, pavel@ucw.cz, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, malware-list@dmesg.printk.net,
+       Valdis.Kletnieks@vt.edu, greg@kroah.com, jcm@redhat.com, tytso@mit.edu,
+       arjan@infradead.org, david@lang.hm, jengelh@medozas.de,
+       aviro@redhat.com, mrkafk@gmail.com, alexl@redhat.com, hch@infradead.org,
+       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in
+In-reply-to: <1249666990.2694.6.camel@dhcp231-106.rdu.redhat.com> (message
+	from Eric Paris on Fri, 07 Aug 2009 13:43:10 -0400)
+Subject: Re: fanotify - overall design before I start sending patches
+References: <1248466429.3567.82.camel@localhost> <4A7AAE89.20205@sophos.com>
+	 <1249554548.32113.137.camel@twins>
+	 <200908061159.45550.tvrtko.ursulin@sophos.com>
+	 <1249557831.32113.234.camel@twins>
+	 <1249582695.20644.35.camel@dhcp231-106.rdu.redhat.com>
+	 <E1MZSQZ-0002as-FA@pomaz-ex.szeredi.hu> <1249666990.2694.6.camel@dhcp231-106.rdu.redhat.com>
+Message-Id: <E1MaRj3-0006En-QS@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 10 Aug 2009 12:03:33 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 11:12:48AM +0200, Janusz Krzysztofik wrote:
-> Jonathan, Tony,
+On Fri, 07 Aug 2009, Eric Paris wrote:
+> On Fri, 2009-08-07 at 18:36 +0200, Miklos Szeredi wrote:
+> > On Thu, 06 Aug 2009, Eric Paris wrote:
+> > > just work.  The whole reason for the timeout is because I don't trust
+> > > userspace not to get it wrong and I'd rather not lose my box because of
+> > > it.
+> > 
+> > IMO this has nothing to do with userspace(*) and everything to do with
+> > complexity.  Virus scanning is complex and any such code, whether
+> > runing in userspace or not, can easily screw up and freeze the system.
 > 
-> Any chance for this patch ready for 2.6.32 inclusion? Or maybe v2,
-> that has no external dependencies and can be updated later to v3 when
-> Vikram's changes get accepted upstream?
-
-Vikram's patch is in linux-next, so there shouldn't be a problem with
-this version of your patch for 2.6.32. I haven't been able to test it
-myself (though I hope to next week), but it looks ok from a brief
-inspection, so:
-
-Acked-By: Jonathan McDowell <noodles@earth.li>
- 
-> Monday 06 July 2009 12:24:27 Janusz Krzysztofik wrote:
-> > This patch adds support for modem device found on Amstrad E3 (Delta) board.
-> >
-> > Based on earlier patch by Jonathan McDowell, available at
-> > http://the.earth.li/pub/e3/2.6.19/ams-delta-modem.patch.
-> > Modified after Ladislav Michl's arch/arm/mach-omap1/board-voiceblue.c.
-> >
-> > This version, unlike v2, is dependent on 8250 driver changes getting
-> > accepted upstream:
-> > Refer: http://patchwork.kernel.org/patch/31884/
-> >
-> > Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-> > ---
-> > Registering the modem platform device from a separate arch_initcall (and
-> > not from init_machine() callback) preserves serial console port at ttyS0.
-> >
-> > OMAP mux pin set up just for case if Amstrad bootloader is ever replaced.
-> >
-> > Warning:
-> > could cause compilation break if 8250 patch is not integrated first
-> >
-> > --- linux-2.6.31-rc1/arch/arm/mach-omap1/board-ams-delta.c.orig	2009-07-04
-> > 16:39:37.000000000 +0200 +++
-> > linux-2.6.31-rc1/arch/arm/mach-omap1/board-ams-delta.c	2009-07-05
-> > 13:41:08.000000000 +0200 @@ -15,8 +15,11 @@
-> >  #include <linux/kernel.h>
-> >  #include <linux/init.h>
-> >  #include <linux/input.h>
-> > +#include <linux/interrupt.h>
-> >  #include <linux/platform_device.h>
-> > +#include <linux/serial_8250.h>
-> >
-> > +#include <asm/serial.h>
-> >  #include <mach/hardware.h>
-> >  #include <asm/mach-types.h>
-> >  #include <asm/mach/arch.h>
-> > @@ -235,6 +238,41 @@ static void __init ams_delta_init(void)
-> >  	platform_add_devices(ams_delta_devices, ARRAY_SIZE(ams_delta_devices));
-> >  }
-> >
-> > +static struct plat_serial8250_port ams_delta_modem_ports[] = {
-> > +	{
-> > +		.membase	= (void *) AMS_DELTA_MODEM_VIRT,
-> > +		.mapbase	= AMS_DELTA_MODEM_PHYS,
-> > +		.irq		= -EINVAL, /* changed later */
-> > +		.flags		= UPF_BOOT_AUTOCONF,
-> > +		.irqflags	= IRQF_TRIGGER_RISING,
-> > +		.iotype		= UPIO_MEM,
-> > +		.regshift	= 1,
-> > +		.uartclk	= BASE_BAUD * 16,
-> > +	},
-> > +	{ },
-> > +};
-> > +
-> > +static struct platform_device ams_delta_modem_device = {
-> > +	.name	= "serial8250",
-> > +	.id	= PLAT8250_DEV_PLATFORM1,
-> > +	.dev		= {
-> > +		.platform_data = ams_delta_modem_ports,
-> > +	},
-> > +};
-> > +
-> > +static int __init ams_delta_modem_init(void)
-> > +{
-> > +	omap_cfg_reg(M14_1510_GPIO2);
-> > +	ams_delta_modem_ports[0].irq = gpio_to_irq(2);
-> > +
-> > +	ams_delta_latch2_write(
-> > +		AMS_DELTA_LATCH2_MODEM_NRESET | AMS_DELTA_LATCH2_MODEM_CODEC,
-> > +		AMS_DELTA_LATCH2_MODEM_NRESET | AMS_DELTA_LATCH2_MODEM_CODEC);
-> > +
-> > +	return platform_device_register(&ams_delta_modem_device);
-> > +}
-> > +arch_initcall(ams_delta_modem_init);
-> > +
-> >  static void __init ams_delta_map_io(void)
-> >  {
-> >  	omap1_map_common_io();
+> I agree, 'userspace' was not the best term.  Let me rephrase:
 > 
+> "The whole reason for the timeout is because I don't trust anything not
+> to get it wrong and I'd rather not lose my box because of it."
+
+That's clearly not true.  We don't have timers watching filesystems or
+security modules to make sure they complete an operation within a
+given amount of time.
+
+So there's something else why you think the fanotify interface is
+special, and the only reason it's special is that it's a userspace
+API.
+
+> > The way to solve that is not to implement hacks on the kernel
+> > interface, but rather by separating the complex parts and implementing
+> > a simple watchdog layer on top of that, that makes sure things don't
+> > go wrong.
 > 
+> So you would argue that every fanotify listener implement their own
+> watchdog layer that may or may not be correct rather than do a single
+> watchdog layer for everyone?  And that's better?
 
-J.
+As Pavel said, hopefully most fanotify listeners will _not_ need a
+watchdog layer.  Maybe virus scanners will need one, but that will be
+the least of their worries, probably.
 
--- 
-Revd. Jonathan McDowell, ULC | I am a passenger.
+Thanks,
+Miklos
