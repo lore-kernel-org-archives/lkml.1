@@ -1,61 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888AbZHJJFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753057AbZHJJHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752888AbZHJJFa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 05:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbZHJJF3
+	id S1753057AbZHJJHW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 05:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbZHJJHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 05:05:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55453 "EHLO mx3.mail.elte.hu"
+	Mon, 10 Aug 2009 05:07:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50094 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752351AbZHJJF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 05:05:29 -0400
-Date: Mon, 10 Aug 2009 11:05:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Tan, Wei Chong" <wei.chong.tan@intel.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       John Stultz <johnstul@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [GIT PULL] Additional x86 fixes for 2.6.31-rc5
-Message-ID: <20090810090506.GA9746@elte.hu>
-References: <200907311813.n6VIDe9S023442@voreg.hos.anvin.org> <alpine.LFD.2.01.0907311218080.3161@localhost.localdomain> <20090731195705.GA12270@elte.hu> <B28277FD4E0F9247A3D55704C440A140D5ADEC74@pgsmsx504.gar.corp.intel.com> <20090805080647.GC30307@elte.hu> <B28277FD4E0F9247A3D55704C440A140D5D683F3@pgsmsx504.gar.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+	id S1752501AbZHJJHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 05:07:20 -0400
+Date: Mon, 10 Aug 2009 09:06:40 GMT
+From: tip-bot for Linus Torvalds <torvalds@linux-foundation.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, wei.chong.tan@intel.com, hpa@zytor.com,
+       mingo@redhat.com, torvalds@linux-foundation.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, wei.chong.tan@intel.com,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu
 In-Reply-To: <B28277FD4E0F9247A3D55704C440A140D5D683F3@pgsmsx504.gar.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <B28277FD4E0F9247A3D55704C440A140D5D683F3@pgsmsx504.gar.corp.intel.com>
+Subject: [tip:x86/urgent] x86: Fix serialization in pit_expect_msb()
+Message-ID: <tip-672f3c902d13ba6d4a8bc4bb92fb187ccd906908@git.kernel.org>
+Git-Commit-ID: 672f3c902d13ba6d4a8bc4bb92fb187ccd906908
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 10 Aug 2009 09:06:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  672f3c902d13ba6d4a8bc4bb92fb187ccd906908
+Gitweb:     http://git.kernel.org/tip/672f3c902d13ba6d4a8bc4bb92fb187ccd906908
+Author:     Linus Torvalds <torvalds@linux-foundation.org>
+AuthorDate: Fri, 31 Jul 2009 12:45:41 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 10 Aug 2009 11:03:51 +0200
 
-* Tan, Wei Chong <wei.chong.tan@intel.com> wrote:
+x86: Fix serialization in pit_expect_msb()
 
-> > Thanks. I've zapped the original patch from x86/urgent. Linus's 
-> > patch certainly looks feasible for .31 if it solves the problem 
-> > and if we can merge it in the next few days.
-> 
-> Hi,
-> 
-> Linus's patch looks good to go.  I've tested it with 2 separate 
-> versions of BIOS, each 1000 cycles, without any wrong CPU 
-> frequency being reported.  In contrast, the same CPU/platform 
-> without the patch will almost consistently report a wrong CPU 
-> frequency once every 20 cycles and once every 50 cycles 
-> respectively, for the 2 above mentioned BIOS.
+Wei Chong Tan reported a fast-PIT-calibration corner-case:
 
-Ok, i've created a changelog out of your and Linus's mail and have 
-committed the fix to x86/urgent - the -tip commit notification bot 
-will send it in a few minutes.
+| pit_expect_msb() is vulnerable to SMI disturbance corner case
+| in some platforms which causes /proc/cpuinfo to show wrong
+| CPU MHz value when quick_pit_calibrate() jumps to success
+| section.
 
-Linus, can i have your SOB line please?
+I think that the real issue isn't even an SMI - but the fact
+that in the very last iteration of the loop, there's no
+serializing instruction _after_ the last 'rdtsc'. So even in
+the absense of SMI's, we do have a situation where the cycle
+counter was read without proper serialization.
 
-	Ingo
+The last check should be done outside the outer loop, since
+_inside_ the outer loop, we'll be testing that the PIT has
+the right MSB value has the right value in the next iteration.
+
+So only the _last_ iteration is special, because that's the one
+that will not check the PIT MSB value any more, and because the
+final 'get_cycles()' isn't serialized.
+
+In other words:
+
+ - I'd like to move the PIT MSB check to after the last
+   iteration, rather than in every iteration
+
+ - I think we should comment on the fact that it's also a
+   serializing instruction and so 'fences in' the TSC read.
+
+Here's a suggested replacement.
+
+Reported-by: "Tan, Wei Chong" <wei.chong.tan@intel.com>
+Tested-by: "Tan, Wei Chong" <wei.chong.tan@intel.com>
+LKML-Reference: <B28277FD4E0F9247A3D55704C440A140D5D683F3@pgsmsx504.gar.corp.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/tsc.c |   29 ++++++++++++++++++++++-------
+ 1 files changed, 22 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 6e1a368..71f4368 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -275,15 +275,20 @@ static unsigned long pit_calibrate_tsc(u32 latch, unsigned long ms, int loopmin)
+  * use the TSC value at the transitions to calculate a pretty
+  * good value for the TSC frequencty.
+  */
++static inline int pit_verify_msb(unsigned char val)
++{
++	/* Ignore LSB */
++	inb(0x42);
++	return inb(0x42) == val;
++}
++
+ static inline int pit_expect_msb(unsigned char val, u64 *tscp, unsigned long *deltap)
+ {
+ 	int count;
+ 	u64 tsc = 0;
+ 
+ 	for (count = 0; count < 50000; count++) {
+-		/* Ignore LSB */
+-		inb(0x42);
+-		if (inb(0x42) != val)
++		if (!pit_verify_msb(val))
+ 			break;
+ 		tsc = get_cycles();
+ 	}
+@@ -336,8 +341,7 @@ static unsigned long quick_pit_calibrate(void)
+ 	 * to do that is to just read back the 16-bit counter
+ 	 * once from the PIT.
+ 	 */
+-	inb(0x42);
+-	inb(0x42);
++	pit_verify_msb(0);
+ 
+ 	if (pit_expect_msb(0xff, &tsc, &d1)) {
+ 		for (i = 1; i <= MAX_QUICK_PIT_ITERATIONS; i++) {
+@@ -348,8 +352,19 @@ static unsigned long quick_pit_calibrate(void)
+ 			 * Iterate until the error is less than 500 ppm
+ 			 */
+ 			delta -= tsc;
+-			if (d1+d2 < delta >> 11)
+-				goto success;
++			if (d1+d2 >= delta >> 11)
++				continue;
++
++			/*
++			 * Check the PIT one more time to verify that
++			 * all TSC reads were stable wrt the PIT.
++			 *
++			 * This also guarantees serialization of the
++			 * last cycle read ('d2') in pit_expect_msb.
++			 */
++			if (!pit_verify_msb(0xfe - i))
++				break;
++			goto success;
+ 		}
+ 	}
+ 	printk("Fast TSC calibration failed\n");
