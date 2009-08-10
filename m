@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbZHJAQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbZHJAYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754538AbZHJAQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 20:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755066AbZHJAQy
+	id S1754100AbZHJAYy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 20:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbZHJAYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 20:16:54 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44028 "EHLO ogre.sisk.pl"
+	Sun, 9 Aug 2009 20:24:53 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:45979 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754190AbZHJADx convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 20:03:53 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Dave Airlie" <airlied@redhat.com>,
-       "Jerome Glisse" <glisse@freedesktop.org>,
-       "Karsten Mehrhoff" <kawime@gmx.de>,
-       "=?utf-8?q?Michel=20D=C3=A4nzer?=" <michel@daenzer.net>,
-       "Shaohua Li" <shaohua.li@intel.com>
-References: <YCu3FOC0QrC.A.MaE.RD2fKB@chimera>
-In-Reply-To: <YCu3FOC0QrC.A.MaE.RD2fKB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <pRuaDVjxFBG.A.UuG.YG2fKB@chimera>
-Subject: [Bug #13318] AGP doesn't work anymore on nforce2
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  9 Aug 2009 23:10:19 +0200 (CEST)
+	id S1753321AbZHJAYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 20:24:52 -0400
+Date: Mon, 10 Aug 2009 10:24:43 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Anthony Wong <awong1@novell.com>
+Subject: linux-next: staging series import warning
+Message-Id: <20090810102443.3bc514b9.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__10_Aug_2009_10_24_43_+1000_F1AnKS83SljE6iHJ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of regressions introduced between 2.6.29 and 2.6.30.
+--Signature=_Mon__10_Aug_2009_10_24_43_+1000_F1AnKS83SljE6iHJ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The following bug entry is on the current list of known regressions
-introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-be listed and let me know (either way).
+Hi Greg,
 
+The import of the staging series produces these warnings (among others):
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13318
-Subject		: AGP doesn't work anymore on nforce2
-Submitter	: Karsten Mehrhoff <kawime@gmx.de>
-Date		: 2009-04-30 8:51 (102 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=59de2bebabc5027f93df999d59cc65df591c3e6e
-References	: http://marc.info/?l=linux-kernel&m=124108156417560&w=4
-Handled-By	: Shaohua Li <shaohua.li@intel.com>
+staging-add-realtek-8192-pci-wireless-driver.patch
+quilt-tmp/.git/rebase-apply/patch:94: trailing whitespace.
+#ifndef __INC_DOT11D_H
+quilt-tmp/.git/rebase-apply/patch:95: trailing whitespace.
+#define __INC_DOT11D_H
+quilt-tmp/.git/rebase-apply/patch:96: trailing whitespace.
 
+quilt-tmp/.git/rebase-apply/patch:97: trailing whitespace.
+#ifdef ENABLE_DOT11D
+quilt-tmp/.git/rebase-apply/patch:98: trailing whitespace.
+#include "ieee80211.h"
+warning: squelched 21645 whitespace errors
+warning: 21650 lines add whitespace errors.
 
+This might be a good place for someone to consider starting cleaning
+up ...  :-)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__10_Aug_2009_10_24_43_+1000_F1AnKS83SljE6iHJ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkp/aMsACgkQjjKRsyhoI8yniACdGPLtMgli4aJaiHmzqvuoWA4b
+kskAnjspYmQrSxbKCzgjSSjjScqP781y
+=1NMn
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__10_Aug_2009_10_24_43_+1000_F1AnKS83SljE6iHJ--
