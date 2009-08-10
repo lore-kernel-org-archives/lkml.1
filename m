@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932294AbZHJQxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932304AbZHJQ4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932294AbZHJQxr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 12:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932270AbZHJQxq
+	id S932304AbZHJQ4X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 12:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932284AbZHJQ4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 12:53:46 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:52900 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932269AbZHJQxq (ORCPT
+	Mon, 10 Aug 2009 12:56:22 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:54358 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932237AbZHJQ4V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 12:53:46 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=tentcDX+hboWIzsSqz9m4oA5hFr+IvKznjErOJok5ZUGUlxEJFvIdSf4cisleKPmA
-	BDSYk14CHOBNA6082AeEw==
-MIME-Version: 1.0
-In-Reply-To: <20090810163542.GC24947@sirena.org.uk>
-References: <a55d774e0908071919s7b365f84o3baa19c8d6fbe899@mail.gmail.com>
-	 <20090810150011.GA1471@ucw.cz>
-	 <20090810152825.GA4624@oksana.dev.rtsoft.ru>
-	 <a55d774e0908100914h6a42546fk47cdb207628ebe5e@mail.gmail.com>
-	 <20090810163542.GC24947@sirena.org.uk>
-Date: Mon, 10 Aug 2009 09:53:40 -0700
-Message-ID: <a55d774e0908100953p561e8370r11e0b733b2097391@mail.gmail.com>
-Subject: Re: power_supply class/framework question
-From: Brian Swetland <swetland@google.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: avorontsov@ru.mvista.com, Pavel Machek <pavel@ucw.cz>,
-       Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 10 Aug 2009 12:56:21 -0400
+Subject: Re: Possible memory leak via alloc_pid()
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+In-Reply-To: <m1ws5lekmy.fsf@fess.ebiederm.org>
+References: <b0943d9e0907081433y599e6d51j285c390f18d7b32c@mail.gmail.com>
+	 <20090729170315.f62066c0.akpm@linux-foundation.org>
+	 <20090730212956.GA26863@redhat.com>
+	 <1249035398.29967.8.camel@pc1117.cambridge.arm.com>
+	 <20090802213528.GA18795@redhat.com>  <m1ws5lekmy.fsf@fess.ebiederm.org>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 10 Aug 2009 17:55:58 +0100
+Message-Id: <1249923358.10848.75.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+X-OriginalArrivalTime: 10 Aug 2009 16:55:59.0932 (UTC) FILETIME=[6FE56FC0:01CA19DB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 9:35 AM, Mark
-Brown<broonie@opensource.wolfsonmicro.com> wrote:
->> > Or enum power_supply_type, with the following priority:
->> > mains (wall), usb, battery?
->
->> Either of those would work, though in the case of USB, as Pavel
->> correctly points out, we'd need to differentiate between
->
-> I think we'll need to be able to report a list of supplies rather than
-> just one - for example, a lot of battery operated devices will use a
-> combination of USB and battery if the current draw exceeds what the USB
-> supply is able to deliver.
+On Sun, 2009-08-02 at 18:44 -0700, Eric W. Biederman wrote:
+> Hmm.  I'm starting to wonder if kmemleak is right.  I don't know how
+> it works but something about the way pids are used might be confusing it.
 
-Certainly -- though the case I'm dealing with the battery driver
-wanting to know how much power is available upstream (via calling
-am_i_supplied()) so it can decide if it can turn on the charger (and
-if it should use low or highspeed charging).  The way I'm currently
-handling this is that I have an "ac" supply (power brick) and a "usb"
-supply, only one of which will be supplying power to the "battery"
-supply (battery & charger).  In my case I'd never have multiple
-upstream supplies active simultaneously, but I'm not sure if that'd
-hold true for everyone.
+It could as well be a false positive but I can't find its source.
 
-Brian
+Basically, the pid structure for the dead Xorg is still allocated
+minutes after Xorg died with a pid->count of 2. Kmemleak scans the data
+and bss sections, task stacks and most of the allocated objects (which
+are not reported as leaks) but cannot find a pointer to this pid
+structure (or anywhere inside it like pid->number.pid_chain).
+
+The supposedly leaked pid structure also have pid_chain.pprev ==
+LIST_POISON2 which means that it was already removed from the pid_hash
+(this block of memory is scanned by kmemleak anyway).
+
+The free_pid() function was also called on this object according to the
+pid->rcu values but put_pid() couldn't free it because of pid->count.
+
+If this structure in not on pid_hash, is there any other place where its
+pointer may be stored for a long time? Otherwise it looks like a real
+leak (though not a big one).
+
+I'll do more tests in the next few days as suggested by Oleg.
+
+-- 
+Catalin
+
