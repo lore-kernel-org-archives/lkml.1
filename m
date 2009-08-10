@@ -1,106 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbZHJVZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753695AbZHJVcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753913AbZHJVZD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 17:25:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbZHJVZA
+	id S1753695AbZHJVcB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 17:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbZHJVcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 17:25:00 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:57989 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbZHJVY7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 17:24:59 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:references:
-	mime-version:content-type:content-disposition:in-reply-to:
-	x-operating-system:user-agent:x-system-of-record;
-	b=wOOTm6TD6F486JFNRrPrAbYD/w8lNjGYFsYWKic2sQ7mzHvBZW2Sxwgian2vt98gu
-	mAgMM4eObr7FdvbcSfczQ==
-Date: Mon, 10 Aug 2009 14:24:48 -0700
-From: Mandeep Singh Baines <msb@google.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
-       viro@zeniv.linux.org.uk, hannes@cmpxchg.org
-Subject: Re: [PATCH 3/3] vfs: change sb->s_maxbytes to a loff_t
-Message-ID: <20090810212447.GC10147@google.com>
-References: <1249906663-7572-1-git-send-email-jlayton@redhat.com> <1249906663-7572-4-git-send-email-jlayton@redhat.com>
+	Mon, 10 Aug 2009 17:32:00 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43261 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753369AbZHJVcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 17:32:00 -0400
+Date: Mon, 10 Aug 2009 23:31:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Johannes Stezenbach <js@sig21.net>
+Cc: Robert Richter <robert.richter@amd.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <andi@firstfloor.org>,
+       x86@kernel.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc5 regression: x86 MCE malfunction on Thinkpad T42p
+Message-ID: <20090810213133.GB16944@elte.hu>
+References: <20090807170942.GB9177@sig21.net> <87k51cgdt8.fsf@basil.nowhere.org> <20090810122731.GA5863@sig21.net> <20090810123228.GD6838@basil.fritz.box> <20090810125651.GB6082@sig21.net> <20090810132923.GA4418@elte.hu> <20090810192658.GA15513@sig21.net> <20090810201406.GA6961@elte.hu> <20090810203706.GA17338@sig21.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249906663-7572-4-git-send-email-jlayton@redhat.com>
-X-Operating-System: Linux/2.6.24-gg24-generic (x86_64)
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-System-Of-Record: true
+In-Reply-To: <20090810203706.GA17338@sig21.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Layton (jlayton@redhat.com) wrote:
-> sb->s_maxbytes is supposed to indicate the maximum size of a file that
-> can exist on the filesystem. It's declared as an unsigned long long.
-> 
-> Even if a filesystem has no inherent limit that prevents it from using
-> every bit in that unsigned long long, it's still problematic to set it
-> to anything larger than MAX_LFS_FILESIZE. There are places in the kernel
-> that cast s_maxbytes to a signed value. If it's set too large then this
-> cast makes it a negative number and generally breaks the comparison.
-> 
-> Change s_maxbytes to be loff_t instead. That should help eliminate the
-> temptation to set it too large by making it a signed value.
-> 
-> Also, add a warning for couple of releases to help catch filesystems
-> that set s_maxbytes too large. Eventually we can either convert this to
-> a BUG() or just remove it and in the hope that no one will get it wrong
-> now that it's a signed value.
-> 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> ---
->  fs/super.c         |   10 ++++++++++
->  include/linux/fs.h |    2 +-
->  2 files changed, 11 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/super.c b/fs/super.c
-> index 2761d3e..660d437 100644
-> --- a/fs/super.c
-> +++ b/fs/super.c
-> @@ -889,6 +889,16 @@ vfs_kern_mount(struct file_system_type *type, int flags, const char *name, void
->   	if (error)
->   		goto out_sb;
->  
-> +	/*
-> +	 * filesystems should never set s_maxbytes larger than MAX_LFS_FILESIZE
-> +	 * but s_maxbytes was an unsigned long long for many releases. Throw
-> +	 * this warning for a little while to try and catch filesystems that
-> +	 * violate this rule. This warning should be either removed or
-> +	 * converted to a BUG() in 2.6.34. 
-> +	 */
-> +	WARN((mnt->mnt_sb->s_maxbytes < 0), "WARNING: %s set sb->s_maxbytes to "
-> +		"negative value (%lld)\n", type->name, mnt->mnt_sb->s_maxbytes);
-> +
 
-Minor nit. "WARNING:" is redundant. I believe WARN() will already print
-"WARNING: at <file>:<line>".
+* Johannes Stezenbach <js@sig21.net> wrote:
 
->  	mnt->mnt_mountpoint = mnt->mnt_root;
->  	mnt->mnt_parent = mnt;
->  	up_write(&mnt->mnt_sb->s_umount);
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 67888a9..bfe3c08 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -1316,7 +1316,7 @@ struct super_block {
->  	unsigned long		s_blocksize;
->  	unsigned char		s_blocksize_bits;
->  	unsigned char		s_dirt;
-> -	unsigned long long	s_maxbytes;	/* Max file size */
-> +	loff_t			s_maxbytes;	/* Max file size */
-
-Looks good to me. Thanks!
-
->  	struct file_system_type	*s_type;
->  	const struct super_operations	*s_op;
->  	struct dquot_operations	*dq_op;
-> -- 
-> 1.6.0.6
+> On Mon, Aug 10, 2009 at 10:14:06PM +0200, Ingo Molnar wrote:
+> > * Johannes Stezenbach <js@sig21.net> wrote:
+> > > 
+> > > # ./perf stat true
+> > > 
+> > >  Performance counter stats for 'true':
+> > > 
+> > >        0.985808  task-clock-msecs         #      0.779 CPUs 
+> > >               0  context-switches         #      0.000 M/sec
+> > >               0  CPU-migrations           #      0.000 M/sec
+> > >             110  page-faults              #      0.112 M/sec
+> > >          583873  cycles                   #    592.279 M/sec
+> > >          500937  instructions             #      0.858 IPC  
+> > >   <not counted>  cache-references        
+> > >   <not counted>  cache-misses            
+> > > 
+> > >     0.001265524  seconds time elapsed
+> > 
+> > That looks almost normal - except for cache-references and 
+> > cache-misses that is not counted. Could you send the /proc/cpuinfo 
+> > info please?
 > 
+> # cat /proc/cpuinfo 
+> processor	: 0
+> vendor_id	: GenuineIntel
+> cpu family	: 6
+> model		: 13
+> model name	: Intel(R) Pentium(R) M processor 1.80GHz
+
+ah, yes. There's no cache-references/misses, because in 
+arch/x86/kernel/cpu/perf_counter.c we have two zero entries:
+
+static const u64 p6_perfmon_event_map[] =
+{
+  [PERF_COUNT_HW_CPU_CYCLES]            = 0x0079,
+  [PERF_COUNT_HW_INSTRUCTIONS]          = 0x00c0,
+  [PERF_COUNT_HW_CACHE_REFERENCES]      = 0x0000, <----------
+  [PERF_COUNT_HW_CACHE_MISSES]          = 0x0000, <----------
+  [PERF_COUNT_HW_BRANCH_INSTRUCTIONS]   = 0x00c4,
+  [PERF_COUNT_HW_BRANCH_MISSES]         = 0x00c5,
+  [PERF_COUNT_HW_BUS_CYCLES]            = 0x0062,
+};
+
+i.e. PERF_COUNT_HW_CACHE_REFERENCES and PERF_COUNT_HW_CACHE_MISSES 
+is not filled in yet.
+
+Could you try something like:
+
+    perf stat -e r0f2e true
+
+(0x2e: L2 requests, 0x0f: all units)
+
+if i checked the docs right that counter would give us L2 cache 
+stats - does it display non-zero values?
+
+> stepping	: 6
+> cpu MHz		: 600.000
+> cache size	: 2048 KB
+> fdiv_bug	: no
+> hlt_bug		: no
+> f00f_bug	: no
+> coma_bug	: no
+> fpu		: yes
+> fpu_exception	: yes
+> cpuid level	: 2
+> wp		: yes
+> flags		: fpu vme de pse tsc msr mce cx8 apic sep mtrr pge mca cmov clflush dts acpi mmx fxsr sse sse2 ss tm pbe bts est tm2
+> bogomips	: 1196.15
+> clflush size	: 64
+> power management:
+> 
+> 
+> > The warning is probably harmless - oprofile sampling still works 
+> > fine, right?
+> 
+> I haven't done much testing so far, but so far it looks promising.
+> 
+> Could the warning be caused by the cpufreq ondemand governor? ISTR 
+> that one should switch to the performance governor before doing 
+> any profiling, but I forgot for this test.
+
+there might be a connection - it could in theory cause sched_clock() 
+transients and confuse the ring-buffer time-stamping.
+
+	Ingo
