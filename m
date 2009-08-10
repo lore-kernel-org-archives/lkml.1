@@ -1,212 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbZHJWg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754160AbZHJWnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754105AbZHJWg6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 18:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbZHJWg4
+	id S1754160AbZHJWnq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 18:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbZHJWnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 18:36:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51625 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753778AbZHJWg4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 18:36:56 -0400
-Date: Mon, 10 Aug 2009 15:35:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: ralf@linux-mips.org, torvalds@linux-foundation.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       ddaney@caviumnetworks.com, Herbert Xu <herbert@gondor.apana.org.au>,
-       Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH 2/2] hw_random: Add hardware RNG for Octeon SOCs.
-Message-Id: <20090810153535.a1257613.akpm@linux-foundation.org>
-In-Reply-To: <1249929025-29625-2-git-send-email-ddaney@caviumnetworks.com>
-References: <4A806529.3060609@caviumnetworks.com>
-	<1249929025-29625-2-git-send-email-ddaney@caviumnetworks.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Aug 2009 18:43:45 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:36256 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754056AbZHJWno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 18:43:44 -0400
+Date: Mon, 10 Aug 2009 15:43:45 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Ben Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_PREEMPT_RCU in next/mmotm
+Message-ID: <20090810224345.GA17730@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <Pine.LNX.4.64.0908081956580.12300@sister.anvils> <20090808235634.GB6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908090414320.18096@sister.anvils> <20090809053308.GD6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908091209150.23855@sister.anvils> <Pine.LNX.4.64.0908091346450.27358@sister.anvils> <20090809185753.GG6866@linux.vnet.ibm.com> <Pine.LNX.4.64.0908092139090.3194@sister.anvils> <20090809211629.GJ6866@linux.vnet.ibm.com> <20090810033907.GA1530@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090810033907.GA1530@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Aug 2009 11:30:25 -0700
-David Daney <ddaney@caviumnetworks.com> wrote:
->
+On Sun, Aug 09, 2009 at 08:39:07PM -0700, Paul E. McKenney wrote:
+> On Sun, Aug 09, 2009 at 02:16:29PM -0700, Paul E. McKenney wrote:
+> > On Sun, Aug 09, 2009 at 09:53:53PM +0100, Hugh Dickins wrote:
+> > > On Sun, 9 Aug 2009, Paul E. McKenney wrote:
+> > > > 
+> > > > I introduced the problem in commit 7fe616c5dd50a50f334edec1ea0580b90b7af0d9
+> > > > by changing from register_cpu_notifier() to hotcpu_notifier().  The former
+> > > > lets you know when CPUs come on line unconditionally, the latter only
+> > > > when CONFIG_HOTPLUG_CPU is in effect.
+> > > > 
+> > > > But hotcpu_notifier() is much nicer to use, so I propose introducing
+> > > > a cpu_notifier() that is invoked like hotcpu_notifier() is, but is
+> > > > unconditional in the same way that register_cpu_notifier().
+> > > > 
+> > > > Something like the following (untested, probably does not compile):
+> > > > 
+> > > > diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+> > > > index 4d668e0..d5dfc1f 100644
+> > > > --- a/include/linux/cpu.h
+> > > > +++ b/include/linux/cpu.h
+> > > > @@ -48,6 +48,15 @@ struct notifier_block;
+> > > >  
+> > > >  #ifdef CONFIG_SMP
+> > > >  /* Need to know about CPUs going up/down? */
+> > > > +#if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE)
+> > > > +#define cpu_notifier(fn, pri) {					\
+> > > > +	static struct notifier_block fn##_nb __cpuinitdata =	\
+> > > > +		{ .notifier_call = fn, .priority = pri };	\
+> > > > +	register_cpu_notifier(&fn##_nb);			\
+> > > > +}
+> > > > +#else /* #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
+> > > > +#define cpu_notifier(fn, pri)	do { (void)(fn); } while (0)
+> > > > +#endif /* #else #if defined(CONFIG_HOTPLUG_CPU) || !defined(MODULE) */
+> > > >  #ifdef CONFIG_HOTPLUG_CPU
+> > > >  extern int register_cpu_notifier(struct notifier_block *nb);
+> > > >  extern void unregister_cpu_notifier(struct notifier_block *nb);
+> > > > @@ -99,11 +108,7 @@ extern struct sysdev_class cpu_sysdev_class;
+> > > >  
+> > > >  extern void get_online_cpus(void);
+> > > >  extern void put_online_cpus(void);
+> > > > -#define hotcpu_notifier(fn, pri) {				\
+> > > > -	static struct notifier_block fn##_nb __cpuinitdata =	\
+> > > > -		{ .notifier_call = fn, .priority = pri };	\
+> > > > -	register_cpu_notifier(&fn##_nb);			\
+> > > > -}
+> > > > +#define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
+> > > >  #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
+> > > >  #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)
+> > > >  int cpu_down(unsigned int cpu);
+> > > > diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+> > > > index 9f0584e..c1bbfd5 100644
+> > > > --- a/kernel/rcupdate.c
+> > > > +++ b/kernel/rcupdate.c
+> > > > @@ -251,7 +251,7 @@ void __init rcu_init(void)
+> > > >  	int i;
+> > > >  
+> > > >  	__rcu_init();
+> > > > -	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
+> > > > +	cpu_notifier(rcu_barrier_cpu_hotplug, 0);
+> > > >  
+> > > >  	/*
+> > > >  	 * We don't need protection against CPU-hotplug here because
+> > > > 
+> > > [ removed repeat of rcupdate.c patch ]
+> > > > 
+> > > > Thoughts?
+> > > 
+> > > That builds and works for me, with or without CONFIG_HOTPLUG_CPU.
+> > > 
+> > > But I didn't get what you're achieving with the MODULE part of it;
+> > > and (I'm not a notifier buff at all) it does seems rather baroque to
+> > > me - a single callsite, why not stick with register_cpu_notifier()?
+> > > 
+> > > Ah, perhaps it's your ambition to move others over to this
+> > > (or perhaps it's your ambition to leave that to someone else ;-)
+> > 
+> > Actually, nothing quite that clearly thought out.  I was just following
+> > the pattern set for register_cpu_notifier().  My guess at the reasoning
+> > is that when !HOTPLUG_CPU, modules cannot be loaded until all the CPUs
+> > are online, so there is no point in letting a module set itself up for
+> > notification.
+> > 
+> > But whatever their reasoning, mine was that there is no point in
+> > creating a struct notifier_block that wasn't going to be used.  ;-)
+> 
+> And the above patch fails for !CONFIG_SMP.  Here is an update, testing
+> in progress.  Still not fully tested, but results are encouraging.
+> In particular, this one is more likely to compile.
 
-Now what's going on with all this typecasting?
+And this handled !CONFIG_SMP, but fails two of fifteen test cases.
+So better, but still far from perfect.
 
-> diff --git a/drivers/char/hw_random/octeon-rng.c b/drivers/char/hw_random/octeon-rng.c
-> new file mode 100644
-> index 0000000..84d33a7
-> --- /dev/null
-> +++ b/drivers/char/hw_random/octeon-rng.c
-> @@ -0,0 +1,146 @@
-> +/*
-> + * Hardware Random Number Generator support for Cavium Networks
-> + * Octeon processor family.
-> + *
-> + * This file is subject to the terms and conditions of the GNU General Public
-> + * License.  See the file "COPYING" in the main directory of this archive
-> + * for more details.
-> + *
-> + * Copyright (C) 2009 Cavium Networks
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/init.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/device.h>
-> +#include <linux/hw_random.h>
-> +#include <linux/io.h>
-> +
-> +#include <asm/octeon/octeon.h>
-> +#include <asm/octeon/cvmx-rnm-defs.h>
-> +
-> +struct octeon_rng {
-> +	u64 control_status;
-> +	u64 result;
-> +};
-> +
-> +static int octeon_rng_init(struct hwrng *rng)
-> +{
-> +	struct octeon_rng *p = (struct octeon_rng *)rng->priv;
+Chasing the failures down.
 
-Here it's unavoidable because some bad person went and made hwrng.priv
-an `unsigned long'.  I haven't checked, but I bet it should have been a
-void*.
-
-> +	union cvmx_rnm_ctl_status ctl;
-> +
-> +	ctl.u64 = 0;
-> +	ctl.s.ent_en = 1; /* Enable the entropy source.  */
-> +	ctl.s.rng_en = 1; /* Enable the RNG hardware.  */
-> +	cvmx_write_csr(p->control_status, ctl.u64);
-> +	return 0;
-> +}
-> +
-> +static void octeon_rng_cleanup(struct hwrng *rng)
-> +{
-> +	struct octeon_rng *p = (struct octeon_rng *)rng->priv;
-> +	union cvmx_rnm_ctl_status ctl;
-> +
-> +	ctl.u64 = 0;
-> +	/* Disable everything.  */
-> +	cvmx_write_csr(p->control_status, ctl.u64);
-> +}
-> +
-> +static int octeon_rng_data_read(struct hwrng *rng, u32 *data)
-> +{
-> +	struct octeon_rng *p = (struct octeon_rng *)rng->priv;
-> +
-> +	*data = cvmx_read64_uint32(p->result);
-> +	return sizeof(u32);
-> +}
-> +
-> +static struct hwrng octeon_rng_ops = {
-> +	.name		= "octeon",
-> +	.init		= octeon_rng_init,
-> +	.cleanup	= octeon_rng_cleanup,
-> +	.data_read	= octeon_rng_data_read
-> +};
-> +
-> +static int __devinit octeon_rng_probe(struct platform_device *pdev)
-> +{
-> +	struct resource *res_ports;
-> +	struct resource *res_result;
-> +	struct octeon_rng *p;
-> +	int ret;
-> +
-> +	p = devm_kzalloc(&pdev->dev, sizeof(*p), GFP_KERNEL);
-> +	if (!p)
-> +		return -ENOMEM;
-> +
-> +	res_ports = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	if (!res_ports)
-> +		goto err_ports;
-> +
-> +	res_result = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-> +	if (!res_result)
-> +		goto err_ports;
-> +
-> +
-> +	p->control_status = (u64)devm_ioremap_nocache(&pdev->dev,
-> +						      res_ports->start,
-> +						      sizeof(u64));
-
-devm_ioremap_nocache() returns a `void __iomem *'.  Hence we should be
-recording that value in a field of type `void __iomem *'.  Instead,
-we're wedging it into a u64.
-
-Something went wrong!
-
-> +	if (!p->control_status)
-> +		goto err_ports;
-> +
-> +	p->result = (u64)devm_ioremap_nocache(&pdev->dev,
-> +					      res_result->start,
-> +					      sizeof(u64));
-
-Ditto.
-
-> +	if (!p->result)
-> +		goto err_r;
-> +	octeon_rng_ops.priv = (unsigned long)p;
-
-The hwrng.priv problem again.
-
-> +	dev_set_drvdata(&pdev->dev, &octeon_rng_ops);
-> +	ret = hwrng_register(&octeon_rng_ops);
-> +	if (ret)
-> +		goto err;
-> +
-> +	dev_info(&pdev->dev, "Octeon Random Number Generator\n");
-> +
-> +	return 0;
-> +err:
-> +	devm_iounmap(&pdev->dev, (void *)p->control_status);
-> +err_r:
-> +	devm_iounmap(&pdev->dev, (void *)p->result);
-> +err_ports:
-> +	devm_kfree(&pdev->dev, p);
-> +	return -ENOENT;
-> +}
-> +
-> +static int __exit octeon_rng_remove(struct platform_device *pdev)
-> +{
-> +	struct hwrng *rng = dev_get_drvdata(&pdev->dev);
-> +
-> +	hwrng_unregister(rng);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver octeon_rng_driver = {
-> +	.driver = {
-> +		.name		= "octeon_rng",
-> +		.owner		= THIS_MODULE,
-> +	},
-> +	.probe		= octeon_rng_probe,
-> +	.remove		= __exit_p(octeon_rng_remove),
-> +};
-> +
-> +static int __init octeon_rng_mod_init(void)
-> +{
-> +	return platform_driver_register(&octeon_rng_driver);
-> +}
-> +
-> +static void __exit octeon_rng_mod_exit(void)
-> +{
-> +	platform_driver_unregister(&octeon_rng_driver);
-> +}
-> +
-> +module_init(octeon_rng_mod_init);
-> +module_exit(octeon_rng_mod_exit);
-> +
-> +MODULE_AUTHOR("David Daney");
-> +MODULE_LICENSE("GPL");
-
-Please take another look and check that the selection of types was as
-good as it could possibly be?
-
-Also, let's all send rude emails to Herbert over the type of hwrng.priv ;)
+							Thanx, Paul
