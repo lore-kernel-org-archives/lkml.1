@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbZHJPHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932082AbZHJPIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753685AbZHJPHc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 11:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZHJPHc
+	id S932082AbZHJPIK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 11:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755180AbZHJPIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 11:07:32 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:35132 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751423AbZHJPHb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 11:07:31 -0400
-Date: Mon, 10 Aug 2009 10:07:12 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
-       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
-       hpa@zytor.com, Containers <containers@lists.linux-foundation.org>,
-       sukadev@us.ibm.com
-Subject: Re: [RFC][v4][PATCH 7/7]: Define clone_with_pids syscall
-Message-ID: <20090810150712.GA20358@us.ibm.com>
-References: <20090807061103.GA19343@us.ibm.com> <20090807061517.GG20672@us.ibm.com> <20090810145425.GA1378@ucw.cz>
+	Mon, 10 Aug 2009 11:08:09 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:46476 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755123AbZHJPII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 11:08:08 -0400
+Date: Mon, 10 Aug 2009 08:08:07 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Gerald Schaefer <gerald.schaefer@de.ibm.com>, manfred@colorfullife.com
+Subject: Re: [BUG] race of RCU vs NOHU
+Message-ID: <20090810150807.GA6791@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090807151529.2806b8b4@skybase> <20090807142957.GB6700@linux.vnet.ibm.com> <20090810142535.3e685109@skybase>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090810145425.GA1378@ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090810142535.3e685109@skybase>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Pavel Machek (pavel@ucw.cz):
-> > Unlike clone(), clone_with_pids() needs CAP_SYS_ADMIN, at least for now, to
-> > prevent unprivileged processes from misusing this interface.
-> > 
-> > Call clone_with_pids as follows:
-> > 
-> > 	pid_t pids[] = { 0, 77, 99 };
-> > 	struct pid_set pid_set;
-> > 
-> > 	pid_set.num_pids = sizeof(pids) / sizeof(int);
-> > 	pid_set.pids = &pids;
-> > 
-> > 	syscall(__NR_clone_with_pids, flags, stack, NULL, NULL, NULL, &pid_set);
-> > 
-> > If a target-pid is 0, the kernel continues to assign a pid for the process in
-> > that namespace. In the above example, pids[0] is 0, meaning the kernel will
-> > assign next available pid to the process in init_pid_ns. But kernel will assign
-> > pid 77 in the child pid namespace 1 and pid 99 in pid namespace 2. If either
-> > 77 or 99 are taken, the system call fails with -EBUSY.
-> > 
-> > If 'pid_set.num_pids' exceeds the current nesting level of pid namespaces,
-> > the system call fails with -EINVAL.
+On Mon, Aug 10, 2009 at 02:25:35PM +0200, Martin Schwidefsky wrote:
+> On Fri, 7 Aug 2009 07:29:57 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 > 
-> Does it make sense to set the pid in anything but innermost container?
+> > On Fri, Aug 07, 2009 at 03:15:29PM +0200, Martin Schwidefsky wrote:
+> > > Hi Paul,
+> > > I analysed a dump of a hanging 2.6.30 system and found what I think is
+> > > a bug of RCU vs NOHZ. There are a number of patches ontop of that
+> > > kernel but they should be independent of the bug.
+> > > 
+> > > The systems has 4 cpus and uses classic RCU. cpus #0, #2 and #3 woke up
+> > > recently, cpu #1 has been sleeping for 5 minutes, but there is a pending
+> > > rcu batch. The timer wheel for cpu #1 is empty, it will continue to
+> > > sleep for NEXT_TIMER_MAX_DELTA ticks.
+> > 
+> > Congratulations, Martin!  You have exercised what to date has been a
+> > theoretical bug identified last year by Manfred Spraul.  The fix is to
+> > switch from CONFIG_RCU_CLASSIC to CONFIG_RCU_TREE, which was added in
+> > 2.6.29.
+> > 
+> > Of course, if you need to work with an old kernel version, you might
+> > still need a patch, perhaps for the various -stable versions.  If so,
+> > please let me know -- otherwise, I will focus forward on CONFIG_RCU_TREE
+> > rather than backwards on CONFIG_RCU_CLASSIC.
+> 
+> SLES11 is 2.6.27 and uses classic RCU. The not-so theoretical bug is
+> present there and I think it needs to be fixed :-/
 
-Yup, we might be restarting an app using a nested pid namespace, in which
-case restart would specify pids for 2 (or more) of the innermost containers.
+I was afraid of that.  ;-)
 
-thanks,
--serge
+Given that there are some other theoretical bugs in Classic RCU involving
+interrupts and CONFIG_NO_HZ, would backporting CONFIG_TREE_RCU make more
+sense than playing whack-a-mole on Classic RCU bugs?
+
+							Thanx, Paul
