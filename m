@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751569AbZHJTG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751717AbZHJTIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751569AbZHJTG6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 15:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbZHJTG5
+	id S1751717AbZHJTIc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 15:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbZHJTIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 15:06:57 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:62984 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751093AbZHJTG4 (ORCPT
+	Mon, 10 Aug 2009 15:08:31 -0400
+Received: from mail-fx0-f228.google.com ([209.85.220.228]:56109 "EHLO
+	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750969AbZHJTIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 15:06:56 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Fischer, Anna" <anna.fischer@hp.com>
-Subject: Re: [Bridge] [PATCH] macvlan: add tap device backend
-Date: Mon, 10 Aug 2009 21:04:54 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
-Cc: "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>,
-       "drobbins@funtoo.org" <drobbins@funtoo.org>,
-       "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
-       "mst@redhat.com" <mst@redhat.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "bridge@lists.linux-foundation.org" 
-	<bridge@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ogerlitz@voltaire.com" <ogerlitz@voltaire.com>,
-       "evb@yahoogroups.com" <evb@yahoogroups.com>,
-       "davem@davemloft.net" <davem@davemloft.net>
-References: <0199E0D51A61344794750DC57738F58E6D6A6CD7F6@GVW1118EXC.americas.hpqcorp.net> <200908080005.32443.arnd@arndb.de> <0199E0D51A61344794750DC57738F58E6D6AE99700@GVW1118EXC.americas.hpqcorp.net>
-In-Reply-To: <0199E0D51A61344794750DC57738F58E6D6AE99700@GVW1118EXC.americas.hpqcorp.net>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 10 Aug 2009 15:08:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=PiEVUQX95/WCO5oSyHNxLMw4vS60n3b73ugmaApU44RrgWY/htlcAkr5e2HXR9InkM
+         QcITY3LT2L5WqrqgOSdFM0lvejNbSK1JoTppjjHF0oGiDX97nflzVvFNMkJAOVzlLEFQ
+         rfM9TA+/WiJ36huVwubVA/V27iMEVdXzSRkVI=
+Message-ID: <4A80702D.20701@gmail.com>
+Date: Mon, 10 Aug 2009 21:08:29 +0200
+From: Artur Skawina <art.08.09@gmail.com>
+User-Agent: Thunderbird 2.0.0.22pre (X11/20090422)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ray Lee <ray-lk@madrabbit.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: xterm loses data (pty regression)
+References: <4A803CE7.20201@gmail.com> <2c0942db0908101007t54c39b64k2800b2c320969318@mail.gmail.com> <alpine.LFD.2.01.0908101016100.3288@localhost.localdomain> <alpine.LFD.2.01.0908101105040.3602@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0908101105040.3602@localhost.localdomain>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908102104.54527.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/M9eKrv0zP8dyOfImRRhhqS+jarPHjJHPF7FO
- l+Psr6xFszCWgAq03g+AMTwT61/f0hsS0XOmvwue8+kdmZMKPJ
- 0ZSU5eb1k/sar7a3w12TQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 August 2009, Fischer, Anna wrote:
-> If you compare macvtap with traditional QEMU networking interfaces that
-> are typically used in current bridged setups, then yes, performance will be
-> different. However, I think that this is not necessarily a fair 
-> comparison, and the performance difference does not come from the 
-> bridge being slow, but simply because you have implemented a better
-> solution to connect a virtual interface to a backend device that
-> can be assigned to a VM. There is no reason why you could not do this
-> for a bridge port as well.
+Linus Torvalds wrote:
+> 
+>> (Do ^S/^Q, see data loss)
 
-It's not necessarily the bridge itself being slow (though some people
-claim it is) but more the bridge preventing optimizations or making
-them hard.
+> I think it's really this trivial.
+> 
+> That pty commit removed the checking for tty->stopped in 
+> pty_write_buffer() for no clear reason. And when it did that, it broke all 
+> the pausing logic in drivers/char/n_tty.c.
+> 
+> Can you confirm?
 
-You already mentioned hardware filtering by unicast and multicast
-mac addresses, which macvlan already does (for unicast) but which would be
-relatively complex with a bridge due to the way it does MAC address
-learning.
+>  static int pty_write_room(struct tty_struct *tty)
+>  {
+> +	if (tty->stopped)
+> +		return 0;
+>  	return pty_space(tty->link);
+>  }
 
-If we want to do zero copy receives, the hardware will on top of
-this have to choose the receive buffer based on the mac address,
-with the buffer provided by the guest. I think this is not easy
-with macvlan but doable, while I have no idea where you would start
-using the bridge code.
+w/ this, the pty writes now block again after ^Q, and the data loss is gone.
 
-	Arnd <><
+Thanks,
+
+artur
