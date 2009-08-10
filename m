@@ -1,54 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752331AbZHJTu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbZHJTv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752331AbZHJTu6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 15:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbZHJTu6
+	id S1752638AbZHJTv0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 15:51:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZHJTvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 15:50:58 -0400
-Received: from waldorf.bytemark.co.uk ([212.110.162.22]:35516 "EHLO
-	waldorf.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbZHJTu5 (ORCPT
+	Mon, 10 Aug 2009 15:51:25 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:63511 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752159AbZHJTvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 15:50:57 -0400
-Date: Mon, 10 Aug 2009 21:50:48 +0200
-From: "Emilio G. Cota" <cota@braap.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-Cc: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [patch 1/5] Staging: VME Framework for the Linux Kernel
-Message-ID: <20090810195048.GB3055@braap.org>
-References: <20090803205657.964064732@mini.kroah.org> <20090803210111.GB28430@kroah.com> <20090808230145.GB27151@braap.org> <4A801644.2070009@gefanuc.com> <20090810141442.GA18456@braap.org> <20090810153127.GB23319@braap.org> <4A804D67.4080308@gefanuc.com>
+	Mon, 10 Aug 2009 15:51:23 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
+Date: Mon, 10 Aug 2009 21:51:18 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <cover.1249930169.git.mst@redhat.com> <20090810185340.GC13924@redhat.com>
+In-Reply-To: <20090810185340.GC13924@redhat.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
+ =?iso-8859-1?q?Y=2Ea=5E3zb?=)
+ =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
+ =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A804D67.4080308@gefanuc.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908102151.18529.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/yDR7Txq5I8aAvpN9j7k4cfKpuB3NLaSJBpwB
+ OBFyK4HHXisyqWM+hCgpVC32HE151A9jh/LJ/LxaSRFQVYGPkQ
+ UyzfqsCng9d43+QKhcbUg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martyn Welch wrote:
-> If the driver writer wants a "single shot" effect, there's little  
-> overhead in creating a one item link-list and executing it. However,  
-> without support for this mode the author is stuck with single shot  
-> transfers.  If the author wants to perform scatter gather type  
-> transfers, without this functionality in the API - which is supported by  
-> all the bridges I have seen - he won't be able to easily avail himself  
-> of this functionality and get "work done".
+On Monday 10 August 2009, Michael S. Tsirkin wrote:
+> What it is: vhost net is a character device that can be used to reduce
+> the number of system calls involved in virtio networking.
+> Existing virtio net code is used in the guest without modification.
 
-Again, he (the driver writer) should know *nothing* about that.
+Very nice, I loved reading it. It's getting rather late in my time
+zone, so this comments only on the network driver. I'll go through
+the rest tomorrow.
 
-As for the scatter-gather case, what should happen is:
+> @@ -293,6 +293,7 @@ static int __devinit virtblk_probe(struct virtio_device *vdev)
+>  		err = PTR_ERR(vblk->vq);
+>  		goto out_free_vblk;
+>  	}
+> +	printk(KERN_ERR "vblk->vq = %p\n", vblk->vq);
+>  
+>  	vblk->pool = mempool_create_kmalloc_pool(1,sizeof(struct virtblk_req));
+>  	if (!vblk->pool) {
+> @@ -383,6 +384,8 @@ static int __devinit virtblk_probe(struct virtio_device *vdev)
+>  	if (!err)
+>  		blk_queue_logical_block_size(vblk->disk->queue, blk_size);
+>  
+> +	printk(KERN_ERR "virtio_config_val returned %d\n", err);
+> +
+>  	add_disk(vblk->disk);
+>  	return 0;
 
-User:		hey, there's a buffer I want to transfer. here's
-		a pointer and size
-VME layer:	ok, passing it to the bridge
-VME bridge:	I know I'm over PCI, so I'll get the pages
-		from memory and map the sg list over PCI, and
-		then will tell the bridge to perform from there.
+I guess you meant to remove these before submitting.
 
-That's just a particular example, but for the user (read driver
-writer) it's much simpler this way. Doesn't need to know about
-lists or whatever.
+> +static void handle_tx_kick(struct work_struct *work);
+> +static void handle_rx_kick(struct work_struct *work);
+> +static void handle_tx_net(struct work_struct *work);
+> +static void handle_rx_net(struct work_struct *work);
 
-E.
+[style] I think the code gets more readable if you reorder it
+so that you don't need forward declarations for static functions.
+
+> +static long vhost_net_reset_owner(struct vhost_net *n)
+> +{
+> +	struct socket *sock = NULL;
+> +	long r;
+> +	mutex_lock(&n->dev.mutex);
+> +	r = vhost_dev_check_owner(&n->dev);
+> +	if (r)
+> +		goto done;
+> +	sock = vhost_net_stop(n);
+> +	r = vhost_dev_reset_owner(&n->dev);
+> +done:
+> +	mutex_unlock(&n->dev.mutex);
+> +	if (sock)
+> +		fput(sock->file);
+> +	return r;
+> +}
+
+what is the difference between vhost_net_reset_owner(n)
+and vhost_net_set_socket(n, -1)?
+
+> +
+> +static struct file_operations vhost_net_fops = {
+> +	.owner          = THIS_MODULE,
+> +	.release        = vhost_net_release,
+> +	.unlocked_ioctl = vhost_net_ioctl,
+> +	.open           = vhost_net_open,
+> +};
+
+This is missing a compat_ioctl pointer. It should simply be
+
+static long vhost_net_compat_ioctl(struct file *f,
+			unsigned int ioctl, unsigned long arg)
+{
+	return f, ioctl, (unsigned long)compat_ptr(arg);
+}
+
+> +/* Bits from fs/aio.c. TODO: export and use from there? */
+> +/*
+> + * use_mm
+> + *	Makes the calling kernel thread take on the specified
+> + *	mm context.
+> + *	Called by the retry thread execute retries within the
+> + *	iocb issuer's mm context, so that copy_from/to_user
+> + *	operations work seamlessly for aio.
+> + *	(Note: this routine is intended to be called only
+> + *	from a kernel thread context)
+> + */
+> +static void use_mm(struct mm_struct *mm)
+> +{
+> +	struct mm_struct *active_mm;
+> +	struct task_struct *tsk = current;
+> +
+> +	task_lock(tsk);
+> +	active_mm = tsk->active_mm;
+> +	atomic_inc(&mm->mm_count);
+> +	tsk->mm = mm;
+> +	tsk->active_mm = mm;
+> +	switch_mm(active_mm, mm, tsk);
+> +	task_unlock(tsk);
+> +
+> +	mmdrop(active_mm);
+> +}
+
+Why do you need a kernel thread here? If the data transfer functions
+all get called from a guest intercept, shouldn't you already be
+in the right mm?
+
+> +static void handle_tx(struct vhost_net *net)
+> +{
+> +	struct vhost_virtqueue *vq = &net->dev.vqs[VHOST_NET_VQ_TX];
+> +	unsigned head, out, in;
+> +	struct msghdr msg = {
+> +		.msg_name = NULL,
+> +		.msg_namelen = 0,
+> +		.msg_control = NULL,
+> +		.msg_controllen = 0,
+> +		.msg_iov = (struct iovec *)vq->iov + 1,
+> +		.msg_flags = MSG_DONTWAIT,
+> +	};
+> +	size_t len;
+> +	int err;
+> +	struct socket *sock = rcu_dereference(net->sock);
+> +	if (!sock || !sock_writeable(sock->sk))
+> +		return;
+> +
+> +	use_mm(net->dev.mm);
+> +	mutex_lock(&vq->mutex);
+> +	for (;;) {
+> +		head = vhost_get_vq_desc(&net->dev, vq, vq->iov, &out, &in);
+> +		if (head == vq->num)
+> +			break;
+> +		if (out <= 1 || in) {
+> +			vq_err(vq, "Unexpected descriptor format for TX: "
+> +			       "out %d, int %d\n", out, in);
+> +			break;
+> +		}
+> +		/* Sanity check */
+> +		if (vq->iov->iov_len != sizeof(struct virtio_net_hdr)) {
+> +			vq_err(vq, "Unexpected header len for TX: "
+> +			       "%ld expected %zd\n", vq->iov->iov_len,
+> +			       sizeof(struct virtio_net_hdr));
+> +			break;
+> +		}
+> +		/* Skip header. TODO: support TSO. */
+> +		msg.msg_iovlen = out - 1;
+> +		len = iov_length(vq->iov + 1, out - 1);
+> +		/* TODO: Check specific error and bomb out unless ENOBUFS? */
+> +		err = sock->ops->sendmsg(NULL, sock, &msg, len);
+> +		if (err < 0) {
+> +			vhost_discard_vq_desc(vq);
+> +			break;
+> +		}
+> +		if (err != len)
+> +			pr_err("Truncated TX packet: "
+> +			       " len %d != %zd\n", err, len);
+> +		vhost_add_used_and_trigger(vq, head,
+> +				     len + sizeof(struct virtio_net_hdr));
+> +	}
+> +
+> +	mutex_unlock(&vq->mutex);
+> +	unuse_mm(net->dev.mm);
+> +}
+
+I guess that this is where one could plug into macvlan directly, using
+sock_alloc_send_skb/memcpy_fromiovec/dev_queue_xmit directly,
+instead of filling a msghdr for each, if we want to combine this
+with the work I did on that.
+
+	Arnd <><
