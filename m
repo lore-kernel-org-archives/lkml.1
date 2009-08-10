@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbZHJUsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753220AbZHJUuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753188AbZHJUsn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 16:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZHJUsm
+	id S1753220AbZHJUuR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 16:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZHJUuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 16:48:42 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49485 "EHLO ogre.sisk.pl"
+	Mon, 10 Aug 2009 16:50:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45280 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752710AbZHJUsl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 16:48:41 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] PM: kill dev_pm_ops platform warning for now
-Date: Mon, 10 Aug 2009 22:49:12 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Magnus Damm <magnus.damm@gmail.com>, linux-pm@lists.linux-foundation.org,
-       lethal@linux-sh.org, stern@rowland.harvard.edu, pavel@ucw.cz,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20090807083430.31389.98825.sendpatchset@rx1.opensource.se> <200908081516.24018.rjw@sisk.pl> <20090810164542.GA28405@suse.de>
-In-Reply-To: <20090810164542.GA28405@suse.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S1752209AbZHJUuP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 16:50:15 -0400
+Subject: Re: module loading permissions and request_module permission
+ inconsistencies
+From: Eric Paris <eparis@redhat.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, sds@tycho.nsa.gov,
+       davem@davemloft.net, shemminger@linux-foundation.org, kees@ubuntu.com,
+       morgan@kernel.org, serue@us.ibm.com, casey@schaufler-ca.com,
+       dwlash@redhat.com
+In-Reply-To: <20090810202308.GA15390@hmsreliant.think-freely.org>
+References: <1249933513.2501.58.camel@dhcp231-106.rdu.redhat.com>
+	 <20090810202308.GA15390@hmsreliant.think-freely.org>
+Content-Type: text/plain
+Date: Mon, 10 Aug 2009 16:48:59 -0400
+Message-Id: <1249937339.2501.80.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908102249.12638.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 August 2009, Greg KH wrote:
-> On Sat, Aug 08, 2009 at 03:16:23PM +0200, Rafael J. Wysocki wrote:
-> > On Friday 07 August 2009, Magnus Damm wrote:
-> > > From: Magnus Damm <damm@igel.co.jp>
-> > > 
-> > > Remove the platform device runtime dev_pm_ops warning
-> > > for now. No point in upsetting users of non-rc kernels.
-> > > 
-> > > Signed-off-by: Magnus Damm <damm@igel.co.jp>
-> > 
-> > Thanks for the patch, I modified the changelog a bit.
-> > 
-> > Greg, do you agree with the patch below?
-> 
-> Yes, feel free to add:
-> 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> to the patch and forward it on.
-> 
-> Or do you need me to forward it?
+On Mon, 2009-08-10 at 16:23 -0400, Neil Horman wrote:
+> On Mon, Aug 10, 2009 at 03:45:13PM -0400, Eric Paris wrote:
 
-If you have anything more to push to Linus, please push this patch along with
-it with my ACK.  Otherwise, please let me know and I'll push it.
+> > 1) remove CAP_SYS_MODULE from the networking code and instead check
+> > CAP_NET_ADMIN.  Maybe CAP_NET_ADMIN is already being checked and I'll
+> > just remove the capable call altogether but at least I can more
+> > intelligently limit the powers of these processes and they will still be
+> > root limited according to DAC permissions like they are today.
+> > 
+> Would this have any adverse effect on how user space sees this working.
+> Intuitively I would think that if you wanted to load a module (directly or
+> indirectly, via an iptables command or whatnot), you would need CAP_SYS_MODULE
+> capabilities on the calling process, not just CAP_NET_ADMIN.  I honestly don't
+> know the answer here, I'm just raising the question.
 
-Thanks,
-Rafael
+While that might make intuitive sense, it's actually proving to be a bad
+idea to use the same capability for direct and indirect module loading
+(especially considering we have 125 other places in the kernel where you
+can do indirect module loading without any security check)  And believe
+me, if someone suggests I move a CAP_SYS_MODULE check down into
+__request_module I'll scream about what a horrible idea that is (and
+then laugh at them behind their back).
+
+While I think there should be some check in __request_module I don't
+think it should be CAP_SYS_MODULE.
+
+CAP_NET_ADMIN at least limits us to root and in all reality to the same
+situation everyone is in today.  I just checked every single selinux
+domain that grants CAP_SYS_MODULE already grants CAP_NET_ADMIN, so we
+can somewhat safely say that nothing (on a fedora system at least) would
+break with this change.
+
+-Eric
+
