@@ -1,58 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730AbZHJTvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbZHJTyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752730AbZHJTvj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 15:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbZHJTvi
+	id S1752595AbZHJTyg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 15:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbZHJTyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 15:51:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37171 "EHLO mx2.redhat.com"
+	Mon, 10 Aug 2009 15:54:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39886 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751665AbZHJTvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 15:51:37 -0400
-Subject: Re: kmemcheck in linux-next causes NULL pointer dereference at 
- task_rq_lock
+	id S1751857AbZHJTye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 15:54:34 -0400
+Subject: module loading permissions and request_module permission
+ inconsistencies
 From: Eric Paris <eparis@redhat.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi, mingo@elte.hu
-In-Reply-To: <19f34abd0908101156x2bc92b22ud1748abb153800fb@mail.gmail.com>
-References: <1249925740.2501.9.camel@dhcp231-106.rdu.redhat.com>
-	 <19f34abd0908101156x2bc92b22ud1748abb153800fb@mail.gmail.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Cc: sds@tycho.nsa.gov, davem@davemloft.net, shemminger@linux-foundation.org,
+       kees@ubuntu.com, morgan@kernel.org, serue@us.ibm.com,
+       casey@schaufler-ca.com, dwlash@redhat.com
 Content-Type: text/plain
-Date: Mon, 10 Aug 2009 15:51:27 -0400
-Message-Id: <1249933887.2501.62.camel@dhcp231-106.rdu.redhat.com>
+Date: Mon, 10 Aug 2009 15:45:13 -0400
+Message-Id: <1249933513.2501.58.camel@dhcp231-106.rdu.redhat.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-10 at 20:56 +0200, Vegard Nossum wrote:
-> 2009/8/10 Eric Paris <eparis@redhat.com>:
-> > I'm using 2.6.31-rc5-next-20090810 on a vmware server.  Originally I saw
-> > messages about setting to one cpu, so I booted with maxcpu=1.  I get
-> > this same panic with and without maxpu.  Booting with kmemcheck=0 boots
-> > just fine.
-> >
-> > I have not tested kmemcheck in linus' tree but will start looking for a
-> > working version now.  Any suggestions or things I should try?
-> 
-> Hi, thanks for the report, and for trying it out.
-> 
-> Does it crash with "kmemcheck=0 maxcpus=1" (it should be maxcpus, not
-> maxcpu). This should be a simple way of determining whether it was
-> kmemcheck or the existing maxcpus code, which we use, that broke.
+I'd like to hear thoughts on how we currently do permissions handling on
+request_module() and if it really makes sense?  request_module() is the
+function which will do an upcall to try to get modprobe to load a
+specified module into the kernel.  It is called in a lot of places
+around the kernel (~128).  Of those places only three check to see if
+the REQUESTING process has some sort of module loading permissions
+(CAP_SYS_RAWIO.)  Those three are in net/core/dev.c::dev_load() and in
+the IPv4 tcp congestion code in tcp_set_default_congestion_control() and
+tcp_set_congestion_control().  All 125 other calls to request_module()
+appear to be done without any permissions check against the triggering
+process.  The actual loading of a module is done in another thread which
+always has permissions, so that side of things appears to not be an
+issue.
 
-I boots fine with kmemcheck=0
+First question, why does networking do it's own CAP_SYS_MODULE checks?
+(this is VERY old code, pre-git days)  And, does it make sense?  In the
+past this has come up in [1] when /sbin/ip triggered the loading of a
+module to get IPv6 tunnel support.  It's perfectly reasonable
+for /sbin/ip to do this.  But is it reasonable for /sbin/ip to need
+CAP_SYS_MODULE?  CAP_SYS_MODULE says that /sbin/ip has permissions to
+load any arbitrary binary it feels like as a kernel module directly.  Is
+this really what we want?  Should SELinux have to give a hacked /sbin/ip
+permissions to load any arbitrary module?  Recently in [2] we find that
+now bluetoothd needs to be granted permissions to directly load any
+kernel module it pleases, just so it can request the upcall loads bnep.
+The same holds basically true for congestion control hooks.  Note that
+I'm saying we are giving permission for these to load kernel modules
+directly, not just through the upcall.
 
-I did get the command line right.  maxcpus=1 kmemcheck=1 was the panic I
-showed in the last message.
+Nowhere else in the kernel do we do CAP_SYS_MODULE checks on the
+triggering side of request_module() and, as I assume at least one of
+those allows the user to control the module name, it seems to me that
+the current checks are actually lowering the security bar.  We are
+granting wide dangerous permissions to binaries when a more directed
+permission would be much more sensible.  And we are doing it for no
+security gain since I assume we have 10's if not more than 100 other
+ways around it.
 
-> If you can send config (off-list, probably), I will try to reproduce
-> and investigate more tomorrow.
+The second problem is this lack of control over the rest of the users of
+request_module().  If we looks at [3] we see that this oversight created
+an interesting and useful situation for a xen framebuffer exploit.  They
+created an invalid binary and tried to execute it.  This caused the
+kernel to enter search_binary_handler() which in turn called
+request_module() which triggered the modprobe upcall and the were able
+to load a module which they controlled.  As soon as they got their
+module into the kernel it was game over for everything.  So we really
+should be trying to prevent modules from getting into the kernel.  There
+is no security hook on the triggering side and the security hook on the
+other side always passes (and needs to always pass)
 
-Will send it now.
+I recommend we make 2 changes to better our situation:
 
-Thanks.
+1) remove CAP_SYS_MODULE from the networking code and instead check
+CAP_NET_ADMIN.  Maybe CAP_NET_ADMIN is already being checked and I'll
+just remove the capable call altogether but at least I can more
+intelligently limit the powers of these processes and they will still be
+root limited according to DAC permissions like they are today.
+
+2) Add a new security hook inside request_module().  On a non-selinux
+system this would be a noop hook and all 128 callers of request_module()
+would perform exactly as they do today.  On SELinux systems I would add
+a new permission to see if a process was allowed to trigger a module
+load.  This permission would need to be added for things like /sbin/ip
+which are supposed to be allowed to trigger module loading, but would
+allow us to prevent [3] from taking place.
+
+Please, comments?  Thoughts?  What did I miss?
 
 -Eric
+
+[1] SELinux blocks IPv6 Tunnel
+https://bugzilla.redhat.com/show_bug.cgi?id=241401
+
+[2] SELinux blocks bluetooth
+https://bugzilla.redhat.com/show_bug.cgi?id=481618
+
+[3] xenfb exploit
+http://invisiblethingslab.com/pub/xenfb-adventures-10.pdf
+  page 6 section 3.4
+
 
