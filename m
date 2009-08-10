@@ -1,170 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbZHJKdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbZHJKfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753769AbZHJKdO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 06:33:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbZHJKdO
+	id S1753801AbZHJKfV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 06:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbZHJKfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 06:33:14 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:23121 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753526AbZHJKdN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 06:33:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=ixJnxcFlRMOFKxM70/OGkm1FqEPeK65q2qvIPo7FvLrTpzsiKr4W7KWxOUAW2EBe4r
-         /hd4zFPxrPDQrOUdTsTyUUhPOziope3kkMm5Ph/u1fGEdpICucVPSh0gruprLXOEK3zw
-         pnQbhlTk3hFuHlVjDFLeWpk2/oNRAYLBxHmXo=
-Message-ID: <4A7FF84C.7070708@gmail.com>
-Date: Mon, 10 Aug 2009 12:37:00 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Michael Buesch <mb@bu3sch.de>, Daniel Mack <daniel@caiaq.de>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Libertas: Association request to the driver failed
-References: <20090807191156.GS19257@buzzloop.caiaq.de> <20090809102417.GH13639@buzzloop.caiaq.de> <4A7EAED8.9090900@gmail.com> <200908091310.56919.mb@bu3sch.de> <20090809191359.GG4805@lenovo>
-In-Reply-To: <20090809191359.GG4805@lenovo>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Aug 2009 06:35:21 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:35882 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752976AbZHJKfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 06:35:19 -0400
+Date: Mon, 10 Aug 2009 20:35:08 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for August 10
+Message-Id: <20090810203508.f3258129.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__10_Aug_2009_20_35_08_+1000_vkgQnacd+dUsUVoD"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Several arrays were read before checking whether the index was within
-bounds. ARRAY_SIZE() should be used to determine the size of arrays.
+--Signature=_Mon__10_Aug_2009_20_35_08_+1000_vkgQnacd+dUsUVoD
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-rates->rates has an arraysize of 1, so calling get_common_rates()
-with a rates_size of MAX_RATES (14) was causing reads out of bounds.
+Hi all,
 
-tmp_size can increment at most to MAX_RATES * ARRAY_SIZE(lbs_bg_rates),
-so that should be the number of elements of tmp[].
+Changes since 20090807:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
+New trees:
+	ide (the old ide tree became the ide-current tree)
+	hwpoison
 
-> | Is it a good idea to use dynamic stack arrays in the kernel?
-> | What about kmalloc for dynamic allocations?
-> | 
-> | -- 
-> | Greetings, Michael.
-> 
-> I saw one pattern in trace code (not sure if it's
-> still there) but personally don't like dynamic
-> stack arrays (though at moment the max value
-> being passed into routine is known maybe just
-> use MAX_RATES instead of (*rates_size)?). Hmm?
+This tree fails to build for powerpc allyesconfig (due to a TOC overflow
+problem in the final link).
 
-Good point.
+The nfsd tree gained a conflict against the nfs tree.
 
-> 	-- Cyrill
+The drm tree gained a conflict against Linus' tree.
 
-Thanks,
+The trivial tree lost its conflict.
 
-I think there was another problem in lbs_associate(),
-the memcpy already affected rates->rates.
+----------------------------------------------------------------------------
 
-Also in get_common_rates() I think we can safely move the
-memset/memcpy, originally after label done, upwards.
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
-The patch below, if correct, is to be applied after the revert
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
 
-Roel
+Below is a summary of the state of the merge.
 
-diff --git a/drivers/net/wireless/libertas/assoc.c b/drivers/net/wireless/libertas/assoc.c
-index b9b3741..ba0164a 100644
---- a/drivers/net/wireless/libertas/assoc.c
-+++ b/drivers/net/wireless/libertas/assoc.c
-@@ -1,6 +1,7 @@
- /* Copyright (C) 2006, Red Hat, Inc. */
- 
- #include <linux/types.h>
-+#include <linux/kernel.h>
- #include <linux/etherdevice.h>
- #include <linux/ieee80211.h>
- #include <linux/if_arp.h>
-@@ -43,41 +44,41 @@ static int get_common_rates(struct lbs_private *priv,
- 	u16 *rates_size)
- {
- 	u8 *card_rates = lbs_bg_rates;
--	size_t num_card_rates = sizeof(lbs_bg_rates);
--	int ret = 0, i, j;
--	u8 tmp[30];
-+	int i, j;
-+	u8 tmp[MAX_RATES * ARRAY_SIZE(lbs_bg_rates)];
- 	size_t tmp_size = 0;
- 
- 	/* For each rate in card_rates that exists in rate1, copy to tmp */
--	for (i = 0; card_rates[i] && (i < num_card_rates); i++) {
--		for (j = 0; rates[j] && (j < *rates_size); j++) {
-+	for (i = 0; i < ARRAY_SIZE(lbs_bg_rates) && card_rates[i]; i++) {
-+		for (j = 0; j < *rates_size && rates[j]; j++) {
- 			if (rates[j] == card_rates[i])
- 				tmp[tmp_size++] = card_rates[i];
- 		}
- 	}
- 
- 	lbs_deb_hex(LBS_DEB_JOIN, "AP rates    ", rates, *rates_size);
--	lbs_deb_hex(LBS_DEB_JOIN, "card rates  ", card_rates, num_card_rates);
-+	lbs_deb_hex(LBS_DEB_JOIN, "card rates  ", card_rates,
-+			ARRAY_SIZE(lbs_bg_rates));
- 	lbs_deb_hex(LBS_DEB_JOIN, "common rates", tmp, tmp_size);
- 	lbs_deb_join("TX data rate 0x%02x\n", priv->cur_rate);
- 
-+	memset(rates, 0, *rates_size);
-+	*rates_size = min_t(u16, tmp_size, *rates_size);
-+	memcpy(rates, tmp, *rates_size);
-+
- 	if (!priv->enablehwauto) {
- 		for (i = 0; i < tmp_size; i++) {
- 			if (tmp[i] == priv->cur_rate)
--				goto done;
-+				break;
-+		}
-+		if (i == tmp_size) {
-+			lbs_pr_alert("Previously set fixed data rate %#x isn't "
-+					"compatible with the network.\n",
-+					priv->cur_rate);
-+			return -1;
- 		}
--		lbs_pr_alert("Previously set fixed data rate %#x isn't "
--		       "compatible with the network.\n", priv->cur_rate);
--		ret = -1;
--		goto done;
- 	}
--	ret = 0;
--
--done:
--	memset(rates, 0, *rates_size);
--	*rates_size = min_t(int, tmp_size, *rates_size);
--	memcpy(rates, tmp, *rates_size);
--	return ret;
-+	return 0;
- }
- 
- 
-@@ -321,8 +322,8 @@ static int lbs_associate(struct lbs_private *priv,
- 
- 	rates = (struct mrvl_ie_rates_param_set *) pos;
- 	rates->header.type = cpu_to_le16(TLV_TYPE_RATES);
--	memcpy(&rates->rates, &bss->rates, MAX_RATES);
--	tmplen = MAX_RATES;
-+	tmplen = min_t(u16, ARRAY_SIZE(rates->rates), MAX_RATES);
-+	memcpy(&rates->rates, &bss->rates, tmplen);
- 	if (get_common_rates(priv, rates->rates, &tmplen)) {
- 		ret = -1;
- 		goto done;
-@@ -598,7 +599,7 @@ static int lbs_adhoc_join(struct lbs_private *priv,
- 
- 	/* Copy Data rates from the rates recorded in scan response */
- 	memset(cmd.bss.rates, 0, sizeof(cmd.bss.rates));
--	ratesize = min_t(u16, sizeof(cmd.bss.rates), MAX_RATES);
-+	ratesize = min_t(u16, ARRAY_SIZE(cmd.bss.rates), MAX_RATES);
- 	memcpy(cmd.bss.rates, bss->rates, ratesize);
- 	if (get_common_rates(priv, cmd.bss.rates, &ratesize)) {
- 		lbs_deb_join("ADHOC_JOIN: get_common_rates returned error.\n");
+We are up to 140 trees (counting Linus' and 21 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging davinci/for-next
+Merging pxa/for-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging thumb-2/thumb-2
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+CONFLICT (content): Merge conflict in arch/mips/cavium-octeon/dma-octeon.c
+CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
+x-helper-errata.c
+CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
+CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
+CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+CONFLICT (content): Merge conflict in fs/configfs/dir.c
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+CONFLICT (content): Merge conflict in net/sunrpc/cache.c
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/board-dm646x-ev=
+m.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm355.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm644x.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm646x.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
+355.h
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
+644x.h
+Merging quota/for_next
+Merging kbuild/master
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+CONFLICT (content): Merge conflict in arch/powerpc/include/asm/kvm_host.h
+CONFLICT (content): Merge conflict in arch/x86/kvm/mmu.c
+CONFLICT (content): Merge conflict in virt/kvm/ioapic.c
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in arch/microblaze/include/asm/socket.h
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+[master d836974] Revert "cpumask:remove-set_cpus_allowed"
+Merging mmc/next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+CONFLICT (content): Merge conflict in drivers/input/misc/Kconfig
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_crtc.c
+CONFLICT (content): Merge conflict in drivers/gpu/drm/i915/intel_sdvo.c
+Merging voltage/for-next
+Merging security-testing/next
+$ git reset --hard HEAD^
+Merging refs/next/20090806/security-testing
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging drbd/drbd
+Applying: drbd: fix for removal of blk_queue_stack_limits
+Merging kmemleak/kmemleak
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in arch/x86/include/asm/socket.h
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+CONFLICT (content): Merge conflict in kernel/fork.c
+Merging oprofile/for-next
+CONFLICT (content): Merge conflict in kernel/trace/ring_buffer.c
+Merging edac-amd/for-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
+CONFLICT (content): Merge conflict in include/linux/topology.h
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/perf_counter.c
+CONFLICT (content): Merge conflict in drivers/cpufreq/cpufreq_ondemand.c
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/base/class.c
+CONFLICT (content): Merge conflict in init/main.c
+Merging quilt/tty
+CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
+Merging quilt/usb
+CONFLICT (content): Merge conflict in drivers/usb/gadget/m66592-udc.c
+CONFLICT (content): Merge conflict in drivers/usb/host/r8a66597-hcd.c
+Merging quilt/staging
+CONFLICT (delete/modify): drivers/staging/epl/VirtualEthernetLinux.c delete=
+d in quilt/staging and modified in HEAD. Version HEAD of drivers/staging/ep=
+l/VirtualEthernetLinux.c left in tree.
+CONFLICT (content): Merge conflict in drivers/staging/rtl8192su/ieee80211/i=
+eee80211_tx.c
+$ git rm -f drivers/staging/epl/VirtualEthernetLinux.c
+Merging scsi-post-merge/master
+Merging hwpoison/hwpoison
+
+--Signature=_Mon__10_Aug_2009_20_35_08_+1000_vkgQnacd+dUsUVoD
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkp/99wACgkQjjKRsyhoI8xaagCfS7rbMqPbl4EucG6m66WXbEZQ
+IY0AnjsB5tl+aYQyUJJ2AEOs5Oo8skwy
+=+cze
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__10_Aug_2009_20_35_08_+1000_vkgQnacd+dUsUVoD--
