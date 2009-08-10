@@ -1,72 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbZHJTe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752581AbZHJTfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752280AbZHJTe1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 15:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZHJTe1
+	id S1752581AbZHJTfc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 15:35:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbZHJTfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 15:34:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46997 "EHLO mx2.redhat.com"
+	Mon, 10 Aug 2009 15:35:31 -0400
+Received: from kroah.org ([198.145.64.141]:51383 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751441AbZHJTe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 15:34:26 -0400
-Date: Mon, 10 Aug 2009 22:32:27 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Fischer, Anna" <anna.fischer@hp.com>,
-       "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>,
-       "drobbins@funtoo.org" <drobbins@funtoo.org>,
-       "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "bridge@lists.linux-foundation.org" 
-	<bridge@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ogerlitz@voltaire.com" <ogerlitz@voltaire.com>,
-       "evb@yahoogroups.com" <evb@yahoogroups.com>,
-       "davem@davemloft.net" <davem@davemloft.net>
-Subject: Re: [Bridge] [PATCH] macvlan: add tap device backend
-Message-ID: <20090810193227.GA16820@redhat.com>
-References: <0199E0D51A61344794750DC57738F58E6D6A6CD7F6@GVW1118EXC.americas.hpqcorp.net> <200908080005.32443.arnd@arndb.de> <0199E0D51A61344794750DC57738F58E6D6AE99700@GVW1118EXC.americas.hpqcorp.net> <200908102104.54527.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908102104.54527.arnd@arndb.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1751392AbZHJTfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 15:35:31 -0400
+Subject: patch staging-android-lowmemorykiller-fix-module-param-errors.patch added to gregkh-2.6 tree
+To: rdunlap@xenotime.net, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com
+From: <gregkh@suse.de>
+Date: Mon, 10 Aug 2009 12:34:13 -0700
+In-Reply-To: <20090731111045.8dfd1ea5.rdunlap@xenotime.net>
+Message-ID: <12499328531180@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 09:04:54PM +0200, Arnd Bergmann wrote:
-> On Monday 10 August 2009, Fischer, Anna wrote:
-> > If you compare macvtap with traditional QEMU networking interfaces that
-> > are typically used in current bridged setups, then yes, performance will be
-> > different. However, I think that this is not necessarily a fair 
-> > comparison, and the performance difference does not come from the 
-> > bridge being slow, but simply because you have implemented a better
-> > solution to connect a virtual interface to a backend device that
-> > can be assigned to a VM. There is no reason why you could not do this
-> > for a bridge port as well.
-> 
-> It's not necessarily the bridge itself being slow (though some people
-> claim it is) but more the bridge preventing optimizations or making
-> them hard.
-> 
-> You already mentioned hardware filtering by unicast and multicast
-> mac addresses, which macvlan already does (for unicast) but which would be
-> relatively complex with a bridge due to the way it does MAC address
-> learning.
-> 
-> If we want to do zero copy receives, the hardware will on top of
-> this have to choose the receive buffer based on the mac address,
-> with the buffer provided by the guest. I think this is not easy
-> with macvlan but doable, while I have no idea where you would start
-> using the bridge code.
-> 
-> 	Arnd <><
 
-Similar thing for zero copy sends. You need to know when
-the buffers have been consumed to notify userspace,
-and this is very hard with a generic bridge in the middle.
+This is a note to let you know that I've just added the patch titled
+
+    Subject: Staging: android: lowmemorykiller: fix module param errors
+
+to my gregkh-2.6 tree.  Its filename is
+
+    staging-android-lowmemorykiller-fix-module-param-errors.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
--- 
-MST
+>From rdunlap@xenotime.net  Mon Aug 10 11:43:15 2009
+From: Randy Dunlap <rdunlap@xenotime.net>
+Date: Fri, 31 Jul 2009 11:10:45 -0700
+Subject: Staging: android: lowmemorykiller: fix module param errors
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: devel@driverdev.osuosl.org, gregkh@suse.de
+Message-ID: <20090731111045.8dfd1ea5.rdunlap@xenotime.net>
+
+
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+Move module_params to near the end of the source file so that
+their references are already known/defined.  Fixes build errors:
+
+drivers/staging/android/lowmemorykiller.c: In function '__check_cost':
+drivers/staging/android/lowmemorykiller.c:60: error: 'lowmem_shrinker' undeclared (first use in this function)
+drivers/staging/android/lowmemorykiller.c: At top level:
+drivers/staging/android/lowmemorykiller.c:60: error: 'lowmem_shrinker' undeclared here (not in a function)
+drivers/staging/android/lowmemorykiller.c:60: warning: type defaults to 'int' in declaration of 'type name'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/staging/android/lowmemorykiller.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+--- a/drivers/staging/android/lowmemorykiller.c
++++ b/drivers/staging/android/lowmemorykiller.c
+@@ -57,13 +57,6 @@ static int lowmem_minfree_size = 4;
+ 			printk(x);			\
+ 	} while (0)
+ 
+-module_param_named(cost, lowmem_shrinker.seeks, int, S_IRUGO | S_IWUSR);
+-module_param_array_named(adj, lowmem_adj, int, &lowmem_adj_size,
+-			 S_IRUGO | S_IWUSR);
+-module_param_array_named(minfree, lowmem_minfree, uint, &lowmem_minfree_size,
+-			 S_IRUGO | S_IWUSR);
+-module_param_named(debug_level, lowmem_debug_level, uint, S_IRUGO | S_IWUSR);
+-
+ static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
+ {
+ 	struct task_struct *p;
+@@ -166,6 +159,13 @@ static void __exit lowmem_exit(void)
+ 	unregister_shrinker(&lowmem_shrinker);
+ }
+ 
++module_param_named(cost, lowmem_shrinker.seeks, int, S_IRUGO | S_IWUSR);
++module_param_array_named(adj, lowmem_adj, int, &lowmem_adj_size,
++			 S_IRUGO | S_IWUSR);
++module_param_array_named(minfree, lowmem_minfree, uint, &lowmem_minfree_size,
++			 S_IRUGO | S_IWUSR);
++module_param_named(debug_level, lowmem_debug_level, uint, S_IRUGO | S_IWUSR);
++
+ module_init(lowmem_init);
+ module_exit(lowmem_exit);
+ 
+
