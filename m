@@ -1,67 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbZHJKAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbZHJKBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753517AbZHJKAi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 06:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZHJKAh
+	id S1753550AbZHJKBF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 06:01:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbZHJKBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 06:00:37 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38238 "EHLO smtps.tip.net.au"
+	Mon, 10 Aug 2009 06:01:04 -0400
+Received: from the.earth.li ([217.147.81.2]:55594 "EHLO the.earth.li"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753369AbZHJKAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 06:00:36 -0400
-Date: Mon, 10 Aug 2009 20:00:25 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: akpm@linux-foundation.org, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: hwpoison merge for linux-next / 2.6.32
-Message-Id: <20090810200025.a32000be.sfr@canb.auug.org.au>
-In-Reply-To: <20090810095535.GB6838@basil.fritz.box>
-References: <20090807084902.GA14309@basil.fritz.box>
-	<20090810194528.a3bc0cbc.sfr@canb.auug.org.au>
-	<20090810095535.GB6838@basil.fritz.box>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__10_Aug_2009_20_00_25_+1000_8jR2dgp8iI3+l__Y"
+	id S1753369AbZHJKBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 06:01:03 -0400
+X-Greylist: delayed 1295 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Aug 2009 06:01:02 EDT
+Date: Mon, 10 Aug 2009 10:39:24 +0100
+From: Jonathan McDowell <noodles@earth.li>
+To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Cc: Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org,
+       linux-serial@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] OMAP1: AMS_DELTA: add modem support
+Message-ID: <20090810093924.GF5729@earth.li>
+References: <200907061224.29292.jkrzyszt@tis.icnet.pl> <200908101112.49447.jkrzyszt@tis.icnet.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908101112.49447.jkrzyszt@tis.icnet.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__10_Aug_2009_20_00_25_+1000_8jR2dgp8iI3+l__Y
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Aug 10, 2009 at 11:12:48AM +0200, Janusz Krzysztofik wrote:
+> Jonathan, Tony,
+> 
+> Any chance for this patch ready for 2.6.32 inclusion? Or maybe v2,
+> that has no external dependencies and can be updated later to v3 when
+> Vikram's changes get accepted upstream?
 
-Hi Andi,
+Vikram's patch is in linux-next, so there shouldn't be a problem with
+this version of your patch for 2.6.32. I haven't been able to test it
+myself (though I hope to next week), but it looks ok from a brief
+inspection, so:
 
-On Mon, 10 Aug 2009 11:55:35 +0200 Andi Kleen <andi@firstfloor.org> wrote:
->
-> > Basically, this should be just what you would send to Linus or in this
-> > case, Ingo, (or ask him to fetch).  It is allowed to be rebased if you
->=20
-> This is practially all generic MM or VFS code, nothing for Ingo.
+Acked-By: Jonathan McDowell <noodles@earth.li>
+ 
+> Monday 06 July 2009 12:24:27 Janusz Krzysztofik wrote:
+> > This patch adds support for modem device found on Amstrad E3 (Delta) board.
+> >
+> > Based on earlier patch by Jonathan McDowell, available at
+> > http://the.earth.li/pub/e3/2.6.19/ams-delta-modem.patch.
+> > Modified after Ladislav Michl's arch/arm/mach-omap1/board-voiceblue.c.
+> >
+> > This version, unlike v2, is dependent on 8250 driver changes getting
+> > accepted upstream:
+> > Refer: http://patchwork.kernel.org/patch/31884/
+> >
+> > Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+> > ---
+> > Registering the modem platform device from a separate arch_initcall (and
+> > not from init_machine() callback) preserves serial console port at ttyS0.
+> >
+> > OMAP mux pin set up just for case if Amstrad bootloader is ever replaced.
+> >
+> > Warning:
+> > could cause compilation break if 8250 patch is not integrated first
+> >
+> > --- linux-2.6.31-rc1/arch/arm/mach-omap1/board-ams-delta.c.orig	2009-07-04
+> > 16:39:37.000000000 +0200 +++
+> > linux-2.6.31-rc1/arch/arm/mach-omap1/board-ams-delta.c	2009-07-05
+> > 13:41:08.000000000 +0200 @@ -15,8 +15,11 @@
+> >  #include <linux/kernel.h>
+> >  #include <linux/init.h>
+> >  #include <linux/input.h>
+> > +#include <linux/interrupt.h>
+> >  #include <linux/platform_device.h>
+> > +#include <linux/serial_8250.h>
+> >
+> > +#include <asm/serial.h>
+> >  #include <mach/hardware.h>
+> >  #include <asm/mach-types.h>
+> >  #include <asm/mach/arch.h>
+> > @@ -235,6 +238,41 @@ static void __init ams_delta_init(void)
+> >  	platform_add_devices(ams_delta_devices, ARRAY_SIZE(ams_delta_devices));
+> >  }
+> >
+> > +static struct plat_serial8250_port ams_delta_modem_ports[] = {
+> > +	{
+> > +		.membase	= (void *) AMS_DELTA_MODEM_VIRT,
+> > +		.mapbase	= AMS_DELTA_MODEM_PHYS,
+> > +		.irq		= -EINVAL, /* changed later */
+> > +		.flags		= UPF_BOOT_AUTOCONF,
+> > +		.irqflags	= IRQF_TRIGGER_RISING,
+> > +		.iotype		= UPIO_MEM,
+> > +		.regshift	= 1,
+> > +		.uartclk	= BASE_BAUD * 16,
+> > +	},
+> > +	{ },
+> > +};
+> > +
+> > +static struct platform_device ams_delta_modem_device = {
+> > +	.name	= "serial8250",
+> > +	.id	= PLAT8250_DEV_PLATFORM1,
+> > +	.dev		= {
+> > +		.platform_data = ams_delta_modem_ports,
+> > +	},
+> > +};
+> > +
+> > +static int __init ams_delta_modem_init(void)
+> > +{
+> > +	omap_cfg_reg(M14_1510_GPIO2);
+> > +	ams_delta_modem_ports[0].irq = gpio_to_irq(2);
+> > +
+> > +	ams_delta_latch2_write(
+> > +		AMS_DELTA_LATCH2_MODEM_NRESET | AMS_DELTA_LATCH2_MODEM_CODEC,
+> > +		AMS_DELTA_LATCH2_MODEM_NRESET | AMS_DELTA_LATCH2_MODEM_CODEC);
+> > +
+> > +	return platform_device_register(&ams_delta_modem_device);
+> > +}
+> > +arch_initcall(ams_delta_modem_init);
+> > +
+> >  static void __init ams_delta_map_io(void)
+> >  {
+> >  	omap1_map_common_io();
+> 
+> 
 
-Sorry, cut and paste error, it should have read:
+J.
 
-Basically, this should be just what you would send to Linus (or ask him
-to fetch).
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__10_Aug_2009_20_00_25_+1000_8jR2dgp8iI3+l__Y
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkp/77kACgkQjjKRsyhoI8zhAgCgtyKGsJakRrjNWxST8YVp9wJO
-FMEAoJguoADADWFpak6nqDuWSt0Zdl4e
-=Vypb
------END PGP SIGNATURE-----
-
---Signature=_Mon__10_Aug_2009_20_00_25_+1000_8jR2dgp8iI3+l__Y--
+-- 
+Revd. Jonathan McDowell, ULC | I am a passenger.
