@@ -1,54 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752013AbZHJSSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103AbZHJSVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752013AbZHJSSA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 14:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbZHJSR7
+	id S1752103AbZHJSVT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 14:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbZHJSVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 14:17:59 -0400
-Received: from fieldses.org ([174.143.236.118]:60823 "EHLO fieldses.org"
+	Mon, 10 Aug 2009 14:21:19 -0400
+Received: from mga09.intel.com ([134.134.136.24]:52590 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751414AbZHJSR6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 14:17:58 -0400
-Date: Mon, 10 Aug 2009 14:17:56 -0400
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, NeilBrown <neilb@suse.de>
-Subject: Re: linux-next: manual merge of the nfsd tree with the nfs tree
-Message-ID: <20090810181756.GB6723@fieldses.org>
-References: <20090810105851.80333493.sfr@canb.auug.org.au> <20090810160537.GD3401@fieldses.org> <1249927732.21816.5.camel@heimdal.trondhjem.org>
+	id S1751269AbZHJSVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 14:21:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,354,1246863600"; 
+   d="scan'208";a="540112431"
+Date: Mon, 10 Aug 2009 20:23:15 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Antonio Ospite <ospite@studenti.unina.it>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Daniel Ribeiro <drwyrm@gmail.com>, eric.y.miao@gmail.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, openezx-devel@lists.openezx.org,
+       Ilya Petrov <ilya.muromec@gmail.com>
+Subject: Re: [PATCH v3] input: PCAP2 misc input driver
+Message-ID: <20090810182314.GB9547@sortiz.org>
+References: <1249678456-15381-1-git-send-email-drwyrm@gmail.com> <20090810072431.D2068526EC9@mailhub.coreip.homeip.net> <20090810111300.6c9abe57.ospite@studenti.unina.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249927732.21816.5.camel@heimdal.trondhjem.org>
+In-Reply-To: <20090810111300.6c9abe57.ospite@studenti.unina.it>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 02:08:52PM -0400, Trond Myklebust wrote:
-> On Mon, 2009-08-10 at 12:05 -0400, J. Bruce Fields wrote:
-> > On Mon, Aug 10, 2009 at 10:58:51AM +1000, Stephen Rothwell wrote:
-> > > Hi Bruce,
-> > > 
-> > > Today's linux-next merge of the nfsd tree got a conflict in
-> > > net/sunrpc/cache.c between commit
-> > > 173912a6add00f4715774dcecf9ee53274c5924c ("SUNRPC: Move procfs-specific
-> > > stuff out of the generic sunrpc cache code") from the nfs tree and commit
-> > > f866a8194f7cbabb9135b98b9ac7d26237b88367 ("sunrpc/cache: rename
-> > > queue_loose to cache_dequeue") from the nfsd tree.
-> > 
-> > OK, thanks.
-> > 
-> > Looks like there may be some less trivial conflicts now, though.  Trond,
-> > maybe you could rebase the cache stuff against my latest for-2.6.32?
+Hi Antonio,
+
+On Mon, Aug 10, 2009 at 11:13:00AM +0200, Antonio Ospite wrote:
+> On Sun, 9 Aug 2009 23:54:07 -0700
+> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 > 
-> I've merged your for-2.6.32 into a dedicated sunrpc_cache-for_next topic
-> branch and pushed that out as part of the NFS client linux-next.
+> > On Fri, Aug 07, 2009 at 10:54:16PM +0200, Daniel Ribeiro wrote:
+> > > diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
+> > > index 0d979fd..679bae3 100644
+> > > --- a/drivers/input/misc/Makefile
+> > > +++ b/drivers/input/misc/Makefile
+> > > @@ -26,3 +26,4 @@ obj-$(CONFIG_INPUT_TWL4030_PWRBUTTON)	+= twl4030-pwrbutton.o
+> > >  obj-$(CONFIG_INPUT_UINPUT)		+= uinput.o
+> > >  obj-$(CONFIG_INPUT_WISTRON_BTNS)	+= wistron_btns.o
+> > >  obj-$(CONFIG_INPUT_YEALINK)		+= yealink.o
+> > > +obj-$(CONFIG_INPUT_PCAP)		+= pcap_keys.o
+> > 
+> > Btw, could we please keep Makefile sorted alphabetically? This should
+> > help with merge conflicts a bit (I know Kconfig is still not sorted).
+> >
+> 
+> Ok, do I need to send another version?
+> 
+> And, is Samuel taking this one and the pcap_ts one?
+> They depends on changes already in his for-next branch.
+I'm taking this one, and I'll sort the Makefile alphabetically.
 
-Yup, that works for me.  Thanks.
+Cheers,
+Samuel.
 
-Note I'm no longer messing with the for-2.6.x branches (like
-for-2.6.32)--so those will only ever fast-forward.
 
---b.
+> Thanks,
+>    Antonio
+> 
+> -- 
+> Antonio Ospite
+> http://ao2.it
+> 
+> PGP public key ID: 0x4553B001
+> 
+> A: Because it messes up the order in which people normally read text.
+>    See http://en.wikipedia.org/wiki/Posting_style
+> Q: Why is top-posting such a bad thing?
+> A: Top-posting.
+> Q: What is the most annoying thing in e-mail?
+
+
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
