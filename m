@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbZHJAYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbZHJAe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbZHJAYy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 20:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbZHJAYx
+	id S1754398AbZHJAe0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 20:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbZHJAeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 20:24:53 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:45979 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753321AbZHJAYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 20:24:52 -0400
-Date: Mon, 10 Aug 2009 10:24:43 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Anthony Wong <awong1@novell.com>
-Subject: linux-next: staging series import warning
-Message-Id: <20090810102443.3bc514b9.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__10_Aug_2009_10_24_43_+1000_F1AnKS83SljE6iHJ"
+	Sun, 9 Aug 2009 20:34:25 -0400
+Received: from fed1rmmtao106.cox.net ([68.230.241.40]:49091 "EHLO
+	fed1rmmtao106.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753416AbZHJAeX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 20:34:23 -0400
+X-VR-Score: -180.00
+X-Authority-Analysis: v=1.0 c=1 a=eWuteZks3SYA:10 a=VwQbUJbxAAAA:8
+ a=kviXuzpPAAAA:8 a=4szxcD0kUfCJCbDn5BQA:9 a=npz7Yl7QyozWqSkSTQlGW9z5g4AA:4
+ a=4vB-4DCPJfMA:10
+X-CM-Score: 0.00
+From: Duncan <1i5t5.duncan@cox.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #13869] Radeon framebuffer (w/o KMS) corruption at boot.
+Date: Sun, 9 Aug 2009 17:10:28 -0700
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-382-gb687937; KDE/4.3.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera> <u1L1PAbl8zG.A.nZD.xj1fKB@chimera>
+In-Reply-To: <u1L1PAbl8zG.A.nZD.xj1fKB@chimera>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908091710.28486.1i5t5.duncan@cox.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__10_Aug_2009_10_24_43_+1000_F1AnKS83SljE6iHJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sunday 09 August 2009 13:44:24 Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13869
+> Subject		: Radeon framebuffer (w/o KMS) corruption at boot.
+> Submitter	: Duncan <1i5t5.duncan@cox.net>
+> Date		: 2009-07-29 16:44 (12 days old)
 
-Hi Greg,
+Yes, as of today's pull, it's still there.
 
-The import of the staging series produces these warnings (among others):
-
-staging-add-realtek-8192-pci-wireless-driver.patch
-quilt-tmp/.git/rebase-apply/patch:94: trailing whitespace.
-#ifndef __INC_DOT11D_H
-quilt-tmp/.git/rebase-apply/patch:95: trailing whitespace.
-#define __INC_DOT11D_H
-quilt-tmp/.git/rebase-apply/patch:96: trailing whitespace.
-
-quilt-tmp/.git/rebase-apply/patch:97: trailing whitespace.
-#ifdef ENABLE_DOT11D
-quilt-tmp/.git/rebase-apply/patch:98: trailing whitespace.
-#include "ieee80211.h"
-warning: squelched 21645 whitespace errors
-warning: 21650 lines add whitespace errors.
-
-This might be a good place for someone to consider starting cleaning
-up ...  :-)
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__10_Aug_2009_10_24_43_+1000_F1AnKS83SljE6iHJ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkp/aMsACgkQjjKRsyhoI8yniACdGPLtMgli4aJaiHmzqvuoWA4b
-kskAnjspYmQrSxbKCzgjSSjjScqP781y
-=1NMn
------END PGP SIGNATURE-----
-
---Signature=_Mon__10_Aug_2009_10_24_43_+1000_F1AnKS83SljE6iHJ--
+-- 
+Duncan - List replies preferred.   No HTML msgs.
+"Every nonfree program has a lord, a master --
+and if you use the program, he is your master."  Richard Stallman
