@@ -1,58 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbZHJLLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752870AbZHJLYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753889AbZHJLLj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 07:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbZHJLLj
+	id S1752870AbZHJLYo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 07:24:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbZHJLYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 07:11:39 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:52165 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753687AbZHJLLi (ORCPT
+	Mon, 10 Aug 2009 07:24:43 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:41592 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752069AbZHJLYm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 07:11:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :x-enigmail-version:content-type:content-transfer-encoding;
-        b=a6gZ28TzXgSnAZfogCVd6fZv1KXO2UBcAJxzTG7V1bpTbkYwDxvfPEr+AHEyNYxCiY
-         lDWKKI4XMZ9fc/aMDDdZueWraan2iRRel2QuRoZyzMLJ9jevvruHDdotjP0+ZmyrmSmX
-         G6/ZUe0kuyIGJvRn+tn/OHkBXYr8A+xIIH/TI=
-Message-ID: <4A800068.7030401@gmail.com>
-Date: Mon, 10 Aug 2009 13:11:36 +0200
-From: Artur Skawina <art.08.09@gmail.com>
-User-Agent: Thunderbird 2.0.0.22pre (X11/20090422)
+	Mon, 10 Aug 2009 07:24:42 -0400
+X-Trace: 240315503/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.88.134/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.88.134
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAKegf0pQKViG/2dsb2JhbACBUswbhBgF
+X-IronPort-AV: E=Sophos;i="4.43,353,1246834800"; 
+   d="scan'208";a="240315503"
+Date: Mon, 10 Aug 2009 12:24:22 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] ZERO_PAGE again v5.
+In-Reply-To: <20090810091458.1e889cdc.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0908101152150.8339@sister.anvils>
+References: <20090805191643.2b11ae78.kamezawa.hiroyu@jp.fujitsu.com>
+ <Pine.LNX.4.64.0908091753250.30153@sister.anvils>
+ <20090810091458.1e889cdc.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: xterm loses data (pts regression?)
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First noticed it after upgrading to v2.6.31-rc5-246-g90bc1a6, still happens
-in rc5-381-g7b2aa03.
-If i press ^S in an xterm the output stops as expected, but after a ^Q i see
-only the newly written data, everything in between is lost. Like:
+On Mon, 10 Aug 2009, KAMEZAWA Hiroyuki wrote:
+> On Sun, 9 Aug 2009 18:28:48 +0100 (BST)
+> Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+> > 
+> > Actually, I don't understand ignore_zero at all: it's used solely by
+> > the mlock case, yet its effect seems to be precisely not to fault in
+> > pages if they're missing - I wonder if you've got in a muddle between
+> > the two very different awkward cases, mlocking and coredumps of
+> > sparsely populated areas.
+> > 
+> Ah, then, you say mlock() should allocate 'real' page if zero page
+> is mapped. Right ?
 
-> for i in `seq 1 111`; do echo $i; sleep 1; done
-1
-2
-3
-4
-9
-10
-11
-12
-13
-^C
+No.
 
-[typed ^S after '4', then ^Q after a few seconds]
+(That would be a possibility if it gets us out of some difficulty
+with the newer mlocking code, but it's not something we ever did or
+wanted to do in the past.)
 
-If the command doing the printing exits before the ^Q is sent, i don't get
-any reaction to the ^Q at all, which is why i initially thought it to be an
-xserver bug.
-Text consoles are unaffected, output resumes as it should.
+What I was saying in that paragraph was that (it appears to me that)
+in your patch only __mlock_vma_pages_range sets GUP_FLAGS_IGNORE_ZERO,
+that __get_user_pages sets ignore_zero according to that flag, some
+conditions may clear it, but then it goes on to say
+			while (!(page = follow_page(vma, start, foll_flags))) {
+				/*
+				 * When we ignore zero pages, no more ops to do.
+				 */
+				if (ignore_zero)
+					break;
+which means that when ignore_zero is set and follow_page returns NULL,
+we emerge from the loop with NULL page, don't we?  Whereas when mlocking,
+we want to fault in any pages which were not already there.
 
-artur
+Or am I just reading this all wrong?
+
+> > And I don't at all like the way you flush_dcache_page(page) on a
+> > page which may now be NULL: okay, you're only encouraging x86 to
+> > say Yes to the Kconfig option, but that's a landmine for the first
+> > arch with a real flush_dcache_page(page) which says Yes to it.
+> > 
+> do_wp_page()
+> 	-> cow_user_page()
+> 		-> (src is NULL)
+> Ah....ok, it's bug. I added ....Sorry, I didn't see this in older version
+> and missed this.
+
+That's an entirely different issue, and I don't see that it's a bug,
+just the inefficiency I mentioned elsewhere that we'd be better off
+doing a memset than trying to memcpy the ZERO_PAGE.
+
+What I was saying in that paragraph is that when you break from the
+loop in __get_user_pages with ignore_zero and NULL page, you reach
+			if (IS_ERR(page))
+				return i ? i : PTR_ERR(page);
+			if (pages) {
+				pages[i] = page;
+
+				flush_anon_page(vma, page, start);
+				flush_dcache_page(page);
+			}
+which inserts a NULL into pages[i] (which may be okay if the other
+end is prepared for it, as I think __mlock_vma_pages_range is),
+then passes a NULL page to flush_anon_page and flush_dcache_page.
+
+I looked up one of the non-empty implementations of flush_dcache_page
+and saw it testing a bit in page->flags, assuming (very reasonably!)
+that the page pointer is not NULL.  Oops.
+
+> > Because I hate reviewing things and trying to direct other people
+> > by remote control: what usually happens is I send them off in some
+> > direction which, once I try to do it myself, turns out to have been
+> > the wrong direction.  I do need to try to do this myself, instead of
+> > standing on the sidelines criticizing.
+> > 
+> > In fairness, I think Linus himself was a little confused when he
+> > separated off use_zero_page(): I think we've all got confused around
+> > there (as we noticed a month or so ago when discussing its hugetlb
+> > equivalent), and I need to think it through again at last.
+> > 
+> > I'll get on to it now.
+> > 
+> 
+> Thank you for comments. I'll go to a trip until Aug/17, programming-camp,
+
+Sorry for not getting to all this sooner, yes I'd seen your warning in
+another mail that you'd be away, but I just didn't get here fast enough.
+
+> I'll be able to consider this patch and the whole things aroung paging in calm
+> enviroment. I'll try to restart from scratch.
+
+What I'm saying above is that I'd much prefer to try doing the patch
+myself and have you review that, than us to keep on going back and
+forth with different versions like this.
+
+I am not confident that you've grasped all the issues, and I am sure
+that there's a least one issue which I have not grasped: maybe it'll
+end up irrelevant, but I do need to understand Linus's Fix ZERO_PAGE
+breakage with vmware, 672ca28e300c17bf8d792a2a7a8631193e580c74
+
+But I'll discuss that separately, probably offlist; or, if I'm lucky,
+just composing the mail will bring me to answer my own question!
+
+Hugh
