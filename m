@@ -1,175 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbZHJDAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932147AbZHJDBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755251AbZHJDAg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 23:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbZHJDAf
+	id S932147AbZHJDBL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 23:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755068AbZHJDBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 23:00:35 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:37258 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752845AbZHJDAf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 23:00:35 -0400
-Date: Mon, 10 Aug 2009 11:27:16 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: [cleanup][2/2] mm: add_to_swap_cache() does not return -EEXIST
-Message-Id: <20090810112716.fb110c5a.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090810112326.3526b11d.nishimura@mxp.nes.nec.co.jp>
-References: <20090810112326.3526b11d.nishimura@mxp.nes.nec.co.jp>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 9 Aug 2009 23:01:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42731 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753035AbZHJDBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 23:01:08 -0400
+Message-ID: <4A7F8DB2.5040501@redhat.com>
+Date: Mon, 10 Aug 2009 11:02:10 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+MIME-Version: 1.0
+To: Bernhard Walle <bernhard.walle@gmx.de>
+CC: linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
+       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 4/7] ia64: implement crashkernel=auto
+References: <20090806062125.5578.72123.sendpatchset@localhost.localdomain> <20090806062211.5578.59301.sendpatchset@localhost.localdomain> <4A7C7AEA.7080800@gmx.de>
+In-Reply-To: <4A7C7AEA.7080800@gmx.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After commit 355cfa73(mm: modify swap_map and add SWAP_HAS_CACHE flag),
-only the context which have set SWAP_HAS_CACHE flag by swapcache_prepare()
-or get_swap_page() would call add_to_swap_cache().
-So add_to_swap_cache() doesn't return -EEXIST any more.
+Bernhard Walle wrote:
+> Amerigo Wang schrieb:
+>   
+>>  
+>> +#ifdef CONFIG_KEXEC_AUTO_RESERVE
+>> +#ifdef KEXEC_AUTO_RESERVED_SIZE
+>> +#undef KEXEC_AUTO_RESERVED_SIZE
+>> +#endif
+>> +#define KEXEC_AUTO_RESERVED_SIZE (1ULL<<28) /* 256M */
+>> +#include <asm-generic/kexec.h>
+>> +#endif
+>> +
+>>  extern struct kimage *ia64_kimage;
+>>     
+>
+> IMO that's way too small for practial use on IA64 systems.
+>
+> For SLES11, which is based on Linux 2.6.28 IIRC, we use following memory
+> size values in the YaST2 kdump module which configures the crashkernel
+> parameter (this is YCP syntax, but I think everybody understands it):
+>
+>   
+>> // bnc #446480 - Fine-tune kdump memory proposal
+>> if ((Arch::ia64()) && (total_memory >= 1024))
+>> {
+>>     integer total_memory_gigabyte = total_memory/1024;
+>>     if ((total_memory_gigabyte >= 1) && (total_memory_gigabyte <12))
+>>         alocated_memory = "256";
+>>     else if ((total_memory_gigabyte >= 12) && (total_memory_gigabyte <128))
+>>         alocated_memory = "512";
+>>     else if ((total_memory_gigabyte >= 128) && (total_memory_gigabyte <256))
+>>         alocated_memory = "768";
+>>     else if ((total_memory_gigabyte >= 256) && (total_memory_gigabyte <378))
+>>         alocated_memory = "1024";
+>>     else if ((total_memory_gigabyte >= 378) && (total_memory_gigabyte <512))
+>>         alocated_memory = "1536";
+>>     else if ((total_memory_gigabyte >= 512) && (total_memory_gigabyte <768))
+>>         alocated_memory = "2048";
+>>     else if (total_memory_gigabyte >= 768)
+>>         alocated_memory = "3072";
+>> }
+>>     
+>
+> I got that assumtions from SGI (and they are known to have large IA64
+> systems) and I think the values were tested.
+>   
 
-Even though it doesn't return -EEXIST, it's not a good behavior conceptually
-to call swapcache_prepare() in -EEXIST case, because it means clearing
-SWAP_HAS_CACHE flag while the entry is on swap cache.
+Hmm, thanks for this.
 
-This patch removes redundant codes and comments from callers of it, and
-adds VM_BUG_ON() in error path of add_to_swap_cache() and some comments.
+> But IMO it doesn't make sense to put such policy decisions in the
+> kernel. I see no advantage for that. The average user doesn't have to
+> write crashkernel parameters, they use the values that the distribution
+> ships. Or do you think that an average user knows what a UUID of a file
+> system is just to specify the correct root partition?
+>   
+The advantage is that we can provide a clever policy which can't be 
+implemented with current mechanism, e.g. 32nd of phy mem, as proposed by 
+Eric.
 
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
----
- mm/shmem.c      |    4 +++
- mm/swap_state.c |   75 +++++++++++++++++++++++++++----------------------------
- 2 files changed, 41 insertions(+), 38 deletions(-)
 
-diff --git a/mm/shmem.c b/mm/shmem.c
-index d713239..c71ac6c 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -1097,6 +1097,10 @@ static int shmem_writepage(struct page *page, struct writeback_control *wbc)
- 	shmem_swp_unmap(entry);
- unlock:
- 	spin_unlock(&info->lock);
-+	/*
-+	 * add_to_swap_cache() doesn't return -EEXIST, so we can safely
-+	 * clear SWAP_HAS_CACHE flag.
-+	 */
- 	swapcache_free(swap, NULL);
- redirty:
- 	set_page_dirty(page);
-diff --git a/mm/swap_state.c b/mm/swap_state.c
-index 3e6dd72..e891208 100644
---- a/mm/swap_state.c
-+++ b/mm/swap_state.c
-@@ -96,6 +96,12 @@ int add_to_swap_cache(struct page *page, swp_entry_t entry, gfp_t gfp_mask)
- 		radix_tree_preload_end();
- 
- 		if (unlikely(error)) {
-+			/*
-+			 * Only the context which have set SWAP_HAS_CACHE flag
-+			 * would call add_to_swap_cache().
-+			 * So add_to_swap_cache() doesn't returns -EEXIST.
-+			 */
-+			VM_BUG_ON(error == -EEXIST);
- 			set_page_private(page, 0UL);
- 			ClearPageSwapCache(page);
- 			page_cache_release(page);
-@@ -137,38 +143,34 @@ int add_to_swap(struct page *page)
- 	VM_BUG_ON(!PageLocked(page));
- 	VM_BUG_ON(!PageUptodate(page));
- 
--	for (;;) {
--		entry = get_swap_page();
--		if (!entry.val)
--			return 0;
-+	entry = get_swap_page();
-+	if (!entry.val)
-+		return 0;
- 
-+	/*
-+	 * Radix-tree node allocations from PF_MEMALLOC contexts could
-+	 * completely exhaust the page allocator. __GFP_NOMEMALLOC
-+	 * stops emergency reserves from being allocated.
-+	 *
-+	 * TODO: this could cause a theoretical memory reclaim
-+	 * deadlock in the swap out path.
-+	 */
-+	/*
-+	 * Add it to the swap cache and mark it dirty
-+	 */
-+	err = add_to_swap_cache(page, entry,
-+			__GFP_HIGH|__GFP_NOMEMALLOC|__GFP_NOWARN);
-+
-+	if (!err) {	/* Success */
-+		SetPageDirty(page);
-+		return 1;
-+	} else {	/* -ENOMEM radix-tree allocation failure */
- 		/*
--		 * Radix-tree node allocations from PF_MEMALLOC contexts could
--		 * completely exhaust the page allocator. __GFP_NOMEMALLOC
--		 * stops emergency reserves from being allocated.
--		 *
--		 * TODO: this could cause a theoretical memory reclaim
--		 * deadlock in the swap out path.
--		 */
--		/*
--		 * Add it to the swap cache and mark it dirty
-+		 * add_to_swap_cache() doesn't return -EEXIST, so we can safely
-+		 * clear SWAP_HAS_CACHE flag.
- 		 */
--		err = add_to_swap_cache(page, entry,
--				__GFP_HIGH|__GFP_NOMEMALLOC|__GFP_NOWARN);
--
--		switch (err) {
--		case 0:				/* Success */
--			SetPageDirty(page);
--			return 1;
--		case -EEXIST:
--			/* Raced with "speculative" read_swap_cache_async */
--			swapcache_free(entry, NULL);
--			continue;
--		default:
--			/* -ENOMEM radix-tree allocation failure */
--			swapcache_free(entry, NULL);
--			return 0;
--		}
-+		swapcache_free(entry, NULL);
-+		return 0;
- 	}
- }
- 
-@@ -298,14 +300,7 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
- 		if (err)           /* swp entry is obsolete ? */
- 			break;
- 
--		/*
--		 * Associate the page with swap entry in the swap cache.
--		 * May fail (-EEXIST) if there is already a page associated
--		 * with this entry in the swap cache: added by a racing
--		 * read_swap_cache_async, or add_to_swap or shmem_writepage
--		 * re-using the just freed swap entry for an existing page.
--		 * May fail (-ENOMEM) if radix-tree node allocation failed.
--		 */
-+		/* May fail (-ENOMEM) if radix-tree node allocation failed. */
- 		__set_page_locked(new_page);
- 		SetPageSwapBacked(new_page);
- 		err = add_to_swap_cache(new_page, entry, GFP_ATOMIC);
-@@ -319,6 +314,10 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
- 		}
- 		ClearPageSwapBacked(new_page);
- 		__clear_page_locked(new_page);
-+		/*
-+		 * add_to_swap_cache() doesn't return -EEXIST, so we can safely
-+		 * clear SWAP_HAS_CACHE flag.
-+		 */
- 		swapcache_free(entry, NULL);
- 	} while (err != -ENOMEM);
- 
