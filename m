@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751693AbZHJOwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbZHJOxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751693AbZHJOwg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbZHJOwf
+	id S1752524AbZHJOxA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbZHJOxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:52:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48269 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750993AbZHJOwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:52:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: 2.6.31-rc5-git5: Reported regressions from 2.6.30
-Date: Mon, 10 Aug 2009 16:52:53 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>
-References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera> <1249914643.4089.3.camel@mulgrave.site>
-In-Reply-To: <1249914643.4089.3.camel@mulgrave.site>
+	Mon, 10 Aug 2009 10:53:00 -0400
+Received: from waldorf.bytemark.co.uk ([212.110.162.22]:33363 "EHLO
+	waldorf.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750914AbZHJOw7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 10:52:59 -0400
+Date: Mon, 10 Aug 2009 16:52:42 +0200
+From: "Emilio G. Cota" <cota@braap.org>
+To: Greg K-H <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
+       Martyn Welch <martyn.welch@gefanuc.com>
+Subject: [PATCH] Staging: vme: fix {master,slave}_get check bug
+Message-ID: <20090810145242.GA22320@braap.org>
+References: <20090803205657.964064732@mini.kroah.org> <20090803210111.GB28430@kroah.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908101652.53558.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090803210111.GB28430@kroah.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 August 2009, James Bottomley wrote:
-> On Sun, 2009-08-09 at 22:36 +0200, Rafael J. Wysocki wrote:
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13716
-> > Subject         : The AIC-7892P controller does not work any more
-> > Submitter       : Andrej Podzimek <andrej@podzimek.org>
-> > Date            : 2009-07-05 19:23 (36 days old)
-> 
-> This one sounds like an IRQ routing error, so probably ACPI, but we've
-> been totally unsuccessful at getting any further information out of the
-> submitter.  Use your own time judgement on this, but if he hasn't been
-> responding to you either for 36 days, I'd suggest closing this as
-> unresponsive.
+It's checking the wrong functions; fix it.
 
-Thanks, I've closed it.
+Signed-off-by: Emilio G. Cota <cota@braap.org>
+---
+ drivers/staging/vme/vme.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Best,
-Rafael
+diff --git a/drivers/staging/vme/vme.c b/drivers/staging/vme/vme.c
+index 8ee1192..ed2eeb0 100644
+--- a/drivers/staging/vme/vme.c
++++ b/drivers/staging/vme/vme.c
+@@ -338,7 +338,7 @@ int vme_slave_get (struct vme_resource *resource, int *enabled,
+ 
+ 	image = list_entry(resource->entry, struct vme_slave_resource, list);
+ 
+-	if (bridge->slave_set == NULL) {
++	if (bridge->slave_get == NULL) {
+ 		printk("vme_slave_get not supported\n");
+ 		return -EINVAL;
+ 	}
+@@ -499,7 +499,7 @@ int vme_master_get (struct vme_resource *resource, int *enabled,
+ 
+ 	image = list_entry(resource->entry, struct vme_master_resource, list);
+ 
+-	if (bridge->master_set == NULL) {
++	if (bridge->master_get == NULL) {
+ 		printk("vme_master_set not supported\n");
+ 		return -EINVAL;
+ 	}
+-- 
+1.6.3.3
+
