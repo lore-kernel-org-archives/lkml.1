@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751206AbZHJSww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751177AbZHJSyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751206AbZHJSww (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 14:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbZHJSww
+	id S1751177AbZHJSyz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 14:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbZHJSyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 14:52:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43673 "EHLO mx2.redhat.com"
+	Mon, 10 Aug 2009 14:54:54 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39226 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750718AbZHJSwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 14:52:51 -0400
-Date: Mon, 10 Aug 2009 21:51:35 +0300
+	id S1750799AbZHJSyx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 14:54:53 -0400
+Date: Mon, 10 Aug 2009 21:53:02 +0300
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2] vhost: a kernel-level virtio server
-Message-ID: <20090810185135.GA13924@redhat.com>
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: [PATCH 1/2] export cpu_tlbstate to modules
+Message-ID: <20090810185302.GB13924@redhat.com>
+References: <cover.1249930169.git.mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <cover.1249930169.git.mst@redhat.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This implements vhost: a kernel-level backend for virtio,
-The main motivation for this work is to reduce virtualization
-overhead for virtio by removing system calls on data path,
-without guest changes. For virtio-net, this removes up to
-4 system calls per packet: vm exit for kick, reentry for kick,
-iothread wakeup for packet, interrupt injection for packet.
+vhost net module wants to do copy to/from user from a kernel thread,
+which needs switch_mm (like what fs/aio has).
+export cpu_tlbstate to make this possible
 
-Some more detailed description attached to the patch itself.
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+---
+ arch/x86/mm/tlb.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-The patches are against 2.6.31-rc4.  I'd like them to go into linux-next
-and down the road 2.6.32 if possible.  Please comment.
+diff --git a/arch/x86/mm/tlb.c b/arch/x86/mm/tlb.c
+index 821e970..e33a5f0 100644
+--- a/arch/x86/mm/tlb.c
++++ b/arch/x86/mm/tlb.c
+@@ -13,6 +13,7 @@
+ 
+ DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state, cpu_tlbstate)
+ 			= { &init_mm, 0, };
++EXPORT_PER_CPU_SYMBOL_GPL(cpu_tlbstate);
+ 
+ /*
+  *	Smarter SMP flushing macros.
+-- 
+1.6.2.5
 
-Userspace bits using this driver will be posted to kvm@vger shortly.
-
-Michael S. Tsirkin (2):
-  export cpu_tlbstate to modules
-  vhost_net: a kernel-level virtio server
-
- MAINTAINERS                |   10 +
- arch/x86/kvm/Kconfig       |    1 +
- arch/x86/mm/tlb.c          |    1 +
- drivers/Makefile           |    1 +
- drivers/block/virtio_blk.c |    3 +
- drivers/vhost/Kconfig      |   11 +
- drivers/vhost/Makefile     |    2 +
- drivers/vhost/net.c        |  462 ++++++++++++++++++++++++++++++
- drivers/vhost/vhost.c      |  663 ++++++++++++++++++++++++++++++++++++++++++++
- drivers/vhost/vhost.h      |  108 +++++++
- include/linux/Kbuild       |    1 +
- include/linux/miscdevice.h |    1 +
- include/linux/vhost.h      |  100 +++++++
- 13 files changed, 1364 insertions(+), 0 deletions(-)
- create mode 100644 drivers/vhost/Kconfig
- create mode 100644 drivers/vhost/Makefile
- create mode 100644 drivers/vhost/net.c
- create mode 100644 drivers/vhost/vhost.c
- create mode 100644 drivers/vhost/vhost.h
- create mode 100644 include/linux/vhost.h
