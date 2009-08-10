@@ -1,203 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbZHJTv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730AbZHJTvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752638AbZHJTv0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 15:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZHJTvZ
+	id S1752730AbZHJTvj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 15:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbZHJTvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 15:51:25 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:63511 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752159AbZHJTvX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 15:51:23 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
-Date: Mon, 10 Aug 2009 21:51:18 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <cover.1249930169.git.mst@redhat.com> <20090810185340.GC13924@redhat.com>
-In-Reply-To: <20090810185340.GC13924@redhat.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
- =?iso-8859-1?q?Y=2Ea=5E3zb?=)
- =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
- =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Mon, 10 Aug 2009 15:51:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37171 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751665AbZHJTvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 15:51:37 -0400
+Subject: Re: kmemcheck in linux-next causes NULL pointer dereference at 
+ task_rq_lock
+From: Eric Paris <eparis@redhat.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi, mingo@elte.hu
+In-Reply-To: <19f34abd0908101156x2bc92b22ud1748abb153800fb@mail.gmail.com>
+References: <1249925740.2501.9.camel@dhcp231-106.rdu.redhat.com>
+	 <19f34abd0908101156x2bc92b22ud1748abb153800fb@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 10 Aug 2009 15:51:27 -0400
+Message-Id: <1249933887.2501.62.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908102151.18529.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/yDR7Txq5I8aAvpN9j7k4cfKpuB3NLaSJBpwB
- OBFyK4HHXisyqWM+hCgpVC32HE151A9jh/LJ/LxaSRFQVYGPkQ
- UyzfqsCng9d43+QKhcbUg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 August 2009, Michael S. Tsirkin wrote:
-> What it is: vhost net is a character device that can be used to reduce
-> the number of system calls involved in virtio networking.
-> Existing virtio net code is used in the guest without modification.
+On Mon, 2009-08-10 at 20:56 +0200, Vegard Nossum wrote:
+> 2009/8/10 Eric Paris <eparis@redhat.com>:
+> > I'm using 2.6.31-rc5-next-20090810 on a vmware server.  Originally I saw
+> > messages about setting to one cpu, so I booted with maxcpu=1.  I get
+> > this same panic with and without maxpu.  Booting with kmemcheck=0 boots
+> > just fine.
+> >
+> > I have not tested kmemcheck in linus' tree but will start looking for a
+> > working version now.  Any suggestions or things I should try?
+> 
+> Hi, thanks for the report, and for trying it out.
+> 
+> Does it crash with "kmemcheck=0 maxcpus=1" (it should be maxcpus, not
+> maxcpu). This should be a simple way of determining whether it was
+> kmemcheck or the existing maxcpus code, which we use, that broke.
 
-Very nice, I loved reading it. It's getting rather late in my time
-zone, so this comments only on the network driver. I'll go through
-the rest tomorrow.
+I boots fine with kmemcheck=0
 
-> @@ -293,6 +293,7 @@ static int __devinit virtblk_probe(struct virtio_device *vdev)
->  		err = PTR_ERR(vblk->vq);
->  		goto out_free_vblk;
->  	}
-> +	printk(KERN_ERR "vblk->vq = %p\n", vblk->vq);
->  
->  	vblk->pool = mempool_create_kmalloc_pool(1,sizeof(struct virtblk_req));
->  	if (!vblk->pool) {
-> @@ -383,6 +384,8 @@ static int __devinit virtblk_probe(struct virtio_device *vdev)
->  	if (!err)
->  		blk_queue_logical_block_size(vblk->disk->queue, blk_size);
->  
-> +	printk(KERN_ERR "virtio_config_val returned %d\n", err);
-> +
->  	add_disk(vblk->disk);
->  	return 0;
+I did get the command line right.  maxcpus=1 kmemcheck=1 was the panic I
+showed in the last message.
 
-I guess you meant to remove these before submitting.
+> If you can send config (off-list, probably), I will try to reproduce
+> and investigate more tomorrow.
 
-> +static void handle_tx_kick(struct work_struct *work);
-> +static void handle_rx_kick(struct work_struct *work);
-> +static void handle_tx_net(struct work_struct *work);
-> +static void handle_rx_net(struct work_struct *work);
+Will send it now.
 
-[style] I think the code gets more readable if you reorder it
-so that you don't need forward declarations for static functions.
+Thanks.
 
-> +static long vhost_net_reset_owner(struct vhost_net *n)
-> +{
-> +	struct socket *sock = NULL;
-> +	long r;
-> +	mutex_lock(&n->dev.mutex);
-> +	r = vhost_dev_check_owner(&n->dev);
-> +	if (r)
-> +		goto done;
-> +	sock = vhost_net_stop(n);
-> +	r = vhost_dev_reset_owner(&n->dev);
-> +done:
-> +	mutex_unlock(&n->dev.mutex);
-> +	if (sock)
-> +		fput(sock->file);
-> +	return r;
-> +}
+-Eric
 
-what is the difference between vhost_net_reset_owner(n)
-and vhost_net_set_socket(n, -1)?
-
-> +
-> +static struct file_operations vhost_net_fops = {
-> +	.owner          = THIS_MODULE,
-> +	.release        = vhost_net_release,
-> +	.unlocked_ioctl = vhost_net_ioctl,
-> +	.open           = vhost_net_open,
-> +};
-
-This is missing a compat_ioctl pointer. It should simply be
-
-static long vhost_net_compat_ioctl(struct file *f,
-			unsigned int ioctl, unsigned long arg)
-{
-	return f, ioctl, (unsigned long)compat_ptr(arg);
-}
-
-> +/* Bits from fs/aio.c. TODO: export and use from there? */
-> +/*
-> + * use_mm
-> + *	Makes the calling kernel thread take on the specified
-> + *	mm context.
-> + *	Called by the retry thread execute retries within the
-> + *	iocb issuer's mm context, so that copy_from/to_user
-> + *	operations work seamlessly for aio.
-> + *	(Note: this routine is intended to be called only
-> + *	from a kernel thread context)
-> + */
-> +static void use_mm(struct mm_struct *mm)
-> +{
-> +	struct mm_struct *active_mm;
-> +	struct task_struct *tsk = current;
-> +
-> +	task_lock(tsk);
-> +	active_mm = tsk->active_mm;
-> +	atomic_inc(&mm->mm_count);
-> +	tsk->mm = mm;
-> +	tsk->active_mm = mm;
-> +	switch_mm(active_mm, mm, tsk);
-> +	task_unlock(tsk);
-> +
-> +	mmdrop(active_mm);
-> +}
-
-Why do you need a kernel thread here? If the data transfer functions
-all get called from a guest intercept, shouldn't you already be
-in the right mm?
-
-> +static void handle_tx(struct vhost_net *net)
-> +{
-> +	struct vhost_virtqueue *vq = &net->dev.vqs[VHOST_NET_VQ_TX];
-> +	unsigned head, out, in;
-> +	struct msghdr msg = {
-> +		.msg_name = NULL,
-> +		.msg_namelen = 0,
-> +		.msg_control = NULL,
-> +		.msg_controllen = 0,
-> +		.msg_iov = (struct iovec *)vq->iov + 1,
-> +		.msg_flags = MSG_DONTWAIT,
-> +	};
-> +	size_t len;
-> +	int err;
-> +	struct socket *sock = rcu_dereference(net->sock);
-> +	if (!sock || !sock_writeable(sock->sk))
-> +		return;
-> +
-> +	use_mm(net->dev.mm);
-> +	mutex_lock(&vq->mutex);
-> +	for (;;) {
-> +		head = vhost_get_vq_desc(&net->dev, vq, vq->iov, &out, &in);
-> +		if (head == vq->num)
-> +			break;
-> +		if (out <= 1 || in) {
-> +			vq_err(vq, "Unexpected descriptor format for TX: "
-> +			       "out %d, int %d\n", out, in);
-> +			break;
-> +		}
-> +		/* Sanity check */
-> +		if (vq->iov->iov_len != sizeof(struct virtio_net_hdr)) {
-> +			vq_err(vq, "Unexpected header len for TX: "
-> +			       "%ld expected %zd\n", vq->iov->iov_len,
-> +			       sizeof(struct virtio_net_hdr));
-> +			break;
-> +		}
-> +		/* Skip header. TODO: support TSO. */
-> +		msg.msg_iovlen = out - 1;
-> +		len = iov_length(vq->iov + 1, out - 1);
-> +		/* TODO: Check specific error and bomb out unless ENOBUFS? */
-> +		err = sock->ops->sendmsg(NULL, sock, &msg, len);
-> +		if (err < 0) {
-> +			vhost_discard_vq_desc(vq);
-> +			break;
-> +		}
-> +		if (err != len)
-> +			pr_err("Truncated TX packet: "
-> +			       " len %d != %zd\n", err, len);
-> +		vhost_add_used_and_trigger(vq, head,
-> +				     len + sizeof(struct virtio_net_hdr));
-> +	}
-> +
-> +	mutex_unlock(&vq->mutex);
-> +	unuse_mm(net->dev.mm);
-> +}
-
-I guess that this is where one could plug into macvlan directly, using
-sock_alloc_send_skb/memcpy_fromiovec/dev_queue_xmit directly,
-instead of filling a msghdr for each, if we want to combine this
-with the work I did on that.
-
-	Arnd <><
