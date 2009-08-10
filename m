@@ -1,68 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751903AbZHJHXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752110AbZHJH3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751903AbZHJHXO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 03:23:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbZHJHXN
+	id S1752110AbZHJH3M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 03:29:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZHJH3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 03:23:13 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58287 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751211AbZHJHXN (ORCPT
+	Mon, 10 Aug 2009 03:29:11 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:53066 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751319AbZHJH3L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 03:23:13 -0400
-Subject: Re: [PATCH 3/3] perfcounter: Align ftrace events raw samples to 8
- bytes
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1249698400-5441-6-git-send-email-fweisbec@gmail.com>
-References: <1249698400-5441-1-git-send-email-fweisbec@gmail.com>
-	 <1249698400-5441-6-git-send-email-fweisbec@gmail.com>
-Content-Type: text/plain
+	Mon, 10 Aug 2009 03:29:11 -0400
+Message-ID: <4A7FCC42.40809@petalogix.com>
+Date: Mon, 10 Aug 2009 09:29:06 +0200
+From: Michal Simek <michal.simek@petalogix.com>
+Reply-To: michal.simek@petalogix.com
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+MIME-Version: 1.0
+To: microblaze-uclinux@itee.uq.edu.au
+CC: John Linn <John.Linn@xilinx.com>, David DeBonis <david.debonis@xilinx.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [microblaze-uclinux] Rethinking MicroBlaze commandline precedence
+References: <1d3f23370908092328l6e980f3ft2d5a8f8f37c26fcf@mail.gmail.com>
+In-Reply-To: <1d3f23370908092328l6e980f3ft2d5a8f8f37c26fcf@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Mon, 10 Aug 2009 09:13:57 +0200
-Message-Id: <1249888437.17467.42.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-08-08 at 04:26 +0200, Frederic Weisbecker wrote:
-> Align the ftrace events raw samples to 8 bytes so that they meet the
-> perf output event alignements requirements.
+Hi John,
+
+John Williams wrote:
+> Hi,
 > 
-> Reported-by: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> Cc: Mike Galbraith <efault@gmx.de>
-> Cc: Paul Mackerras <paulus@samba.org>
-> ---
->  include/trace/ftrace.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> Currently, MicroBlaze commandline handling in order of lowest to
+> highest priority, looks like this:
 > 
-> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-> index 80e5f6c..7b0834c 100644
-> --- a/include/trace/ftrace.h
-> +++ b/include/trace/ftrace.h
-> @@ -687,7 +687,7 @@ static void ftrace_profile_##call(proto)				\
->  	pc = preempt_count();						\
->  									\
->  	__data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
-> -	__entry_size = __data_size + sizeof(*entry);			\
-> +	__entry_size = ALIGN(__data_size + sizeof(*entry), sizeof(u64));\
->  									\
->  	do {								\
->  		char raw_data[__entry_size];				\
+> 1. pointer in r5 from bootloader
+> 2. CONFIG_CMDLINE=...
+> 3. "chosen" section in DTS/DT
+> 4. CONFIG_CMDLINE=... && CONFIG_CMDLINE_FORCE
+> 
+> I'm wondering if a cmdline in r5 should override the DTS.  My thinking
+> is based on two observations:
+> 
+> (a) not everyone will use a bootloader like u-boot that can manipulate
+> DTBs easily before kernel boot
+> (b) a custom cmdline string in r5 allows the latest possible binding
+> (runtime), where as the DTB is typically created at compile time.
+> 
+> So, how about this order instead:
+> 
+> 1. CONFIG_CMDLINE=...
+> 2. "chosen" section in DTS/DT
+> 3. pointer in r5 from bootloader
+> 4. CONFIG_CMDLINE=... and CONFIG_CMDLINE_FORCE
+> 
+> Then, apart from CMDLINE_FORCE, the precedence goes from earliest
+> binding (kernel build) to latest (runtime via bootloader/r5).
+> 
+> Thoughts?
 
-Make sure to clear the trailing few bytes, otherwise we've got a stack
-data leak here.
+I see there one big problem which can easily arise. Kernel expect that r5 points to
+NULL string and DTS/DTB and CMDLINE will contain correct string. Kernel just copy it and use
+it. There will be undefined behavior for more cases than for current handling. It will be
+less error prune.
 
-Also, tracepoints using __string() could still easily overflow the stack
-here and cause great havoc, esp since the tracepoint could already be
-deep into a call-chain.
+Ad observation a)
+
+My expectation is that users will use s.....I.... format (I don't like that name - What about
+renaming it?) with dtb - they setup commandline at once and they don't change it.
+
+Ad observation b) - for final product they will use only one command line. For testing you can setup
+kernel to use only r5.
+
+I understand that you are trying to pass to kernel for example MTD map which could be possible but
+IMHO better to do this in script which one with sed erase/comment/setup command line in DTS before
+compilation.
+
+Regards,
+Michal
 
 
+> 
+> John
+
+-- 
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
