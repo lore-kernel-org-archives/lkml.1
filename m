@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbZHJXNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbZHJXSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754274AbZHJXNB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 19:13:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZHJXM6
+	id S1754299AbZHJXSg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 19:18:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbZHJXSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 19:12:58 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:2587 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbZHJXM5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 19:12:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=luOHiw3TyRUmJV8DhTPu0y4Wt8krTc5pgPVqoPc3TSXf6rYP9jAajYjpzzhaq1VTvp
-         FI4v3HT1R96Zt3zhAAK6HJFjs8SH2+tosHNzk3YBRmKqwQvDLqAIG96pX6NfXcEsyNTC
-         k5v47Exdoz9ZcTgup+aIL/rQj3+EM3Gfh4fFQ=
-Message-ID: <4A80A978.8090801@gmail.com>
-Date: Tue, 11 Aug 2009 01:12:56 +0200
-From: Artur Skawina <art.08.09@gmail.com>
-User-Agent: Thunderbird 2.0.0.22pre (X11/20090422)
+	Mon, 10 Aug 2009 19:18:35 -0400
+Received: from kroah.org ([198.145.64.141]:36092 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754174AbZHJXSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 19:18:34 -0400
+Date: Mon, 10 Aug 2009 15:08:56 -0700
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Anthony Wong <awong1@novell.com>
+Subject: Re: linux-next: staging series import warning
+Message-ID: <20090810220856.GA27402@kroah.com>
+References: <20090810102443.3bc514b9.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ray Lee <ray-lk@madrabbit.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: xterm loses data (pty regression)
-References: <4A803CE7.20201@gmail.com> <2c0942db0908101007t54c39b64k2800b2c320969318@mail.gmail.com> <alpine.LFD.2.01.0908101016100.3288@localhost.localdomain> <alpine.LFD.2.01.0908101105040.3602@localhost.localdomain> <4A80702D.20701@gmail.com>
-In-Reply-To: <4A80702D.20701@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090810102443.3bc514b9.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Artur Skawina wrote:
->Linus Torvalds wrote:
->> 
->>  static int pty_write_room(struct tty_struct *tty)
->>  {
->> +	if (tty->stopped)
->> +		return 0;
->>  	return pty_space(tty->link);
->>  }
+On Mon, Aug 10, 2009 at 10:24:43AM +1000, Stephen Rothwell wrote:
+> Hi Greg,
 > 
-> w/ this, the pty writes now block again after ^Q, and the data loss is gone.
+> The import of the staging series produces these warnings (among others):
+> 
+> staging-add-realtek-8192-pci-wireless-driver.patch
+> quilt-tmp/.git/rebase-apply/patch:94: trailing whitespace.
+> #ifndef __INC_DOT11D_H
+> quilt-tmp/.git/rebase-apply/patch:95: trailing whitespace.
+> #define __INC_DOT11D_H
+> quilt-tmp/.git/rebase-apply/patch:96: trailing whitespace.
+> 
+> quilt-tmp/.git/rebase-apply/patch:97: trailing whitespace.
+> #ifdef ENABLE_DOT11D
+> quilt-tmp/.git/rebase-apply/patch:98: trailing whitespace.
+> #include "ieee80211.h"
+> warning: squelched 21645 whitespace errors
+> warning: 21650 lines add whitespace errors.
+> 
+> This might be a good place for someone to consider starting cleaning
+> up ...  :-)
 
-What i meant was "...pty writes now block again after ^S...", sorry.
+Ah crap, I got the wrong line-ends for some of those files, sorry about
+that, I'll go clean it up...
 
-artur
+greg k-h
