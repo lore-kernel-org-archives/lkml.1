@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752947AbZHJSnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752921AbZHJSo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752947AbZHJSnk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 14:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbZHJSnj
+	id S1752921AbZHJSo3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 14:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZHJSo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 14:43:39 -0400
-Received: from smtp-out112.alice.it ([85.37.17.112]:2261 "EHLO
-	smtp-out112.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752763AbZHJSnh (ORCPT
+	Mon, 10 Aug 2009 14:44:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:53179 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752092AbZHJSo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 14:43:37 -0400
-Date: Mon, 10 Aug 2009 20:43:13 +0200
-From: Antonio Ospite <ospite@studenti.unina.it>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Daniel Ribeiro <drwyrm@gmail.com>, eric.y.miao@gmail.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, openezx-devel@lists.openezx.org,
-       Ilya Petrov <ilya.muromec@gmail.com>
-Subject: Re: [PATCH v3] input: PCAP2 misc input driver
-Message-Id: <20090810204313.4d7a265a.ospite@studenti.unina.it>
-In-Reply-To: <20090810182314.GB9547@sortiz.org>
-References: <1249678456-15381-1-git-send-email-drwyrm@gmail.com>
-	<20090810072431.D2068526EC9@mailhub.coreip.homeip.net>
-	<20090810111300.6c9abe57.ospite@studenti.unina.it>
-	<20090810182314.GB9547@sortiz.org>
-X-Mailer: Sylpheed 2.7.0 (GTK+ 2.16.5; i686-pc-linux-gnu)
-X-Face: z*RaLf`X<@C75u6Ig9}{oW$H;1_\2t5)({*|jhM<pyWR#k60!#=#>/Vb;]yA5<GWI5`6u&+
- ;6b'@y|8w"wB;4/e!7wYYrcqdJFY,~%Gk_4]cq$Ei/7<j&N3ah(m`ku?pX.&+~:_/wC~dwn^)MizBG !pE^+iDQQ1yC6^,)YDKkxDd!T>\I~93>J<_`<4)A{':UrE
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__10_Aug_2009_20_43_13_+0200_0WhvUft0biP4llw6"
-X-OriginalArrivalTime: 10 Aug 2009 18:43:32.0726 (UTC) FILETIME=[760FA960:01CA19EA]
+	Mon, 10 Aug 2009 14:44:27 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Patrick McHardy <kaber@trash.net>
+Subject: Re: [PATCH] macvlan: add tap device backend
+Date: Mon, 10 Aug 2009 20:43:32 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
+Cc: netdev@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "" <davem@davemloft.net>, "Michael S. Tsirkin" <mst@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Or Gerlitz <ogerlitz@voltaire.com>,
+       "Fischer, Anna" <anna.fischer@hp.com>,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Edge Virtual Bridging <evb@yahoogroups.com>
+References: <1249595428-21594-1-git-send-email-arnd@arndb.de> <4A7FC27F.1090904@trash.net>
+In-Reply-To: <4A7FC27F.1090904@trash.net>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908102043.32937.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19qATjtvk2hQk23HBd7emEYpkzXlZKrib1D9t5
+ 6nNAaFstlYU92uIKIqk5WimDDctaRjLF7fbnmCYptTAZsHJM9K
+ dFrFUXDdHTXbJ0aJZ/GAQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__10_Aug_2009_20_43_13_+0200_0WhvUft0biP4llw6
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Monday 10 August 2009, Patrick McHardy wrote:
 
-On Mon, 10 Aug 2009 20:23:15 +0200
-Samuel Ortiz <sameo@linux.intel.com> wrote:
+> macvlan will remove all macvlan/vtap devices when the underlying
+> device in unregistered, at which time you need to release the
+> device references you're holding. I'd suggest to change the
+> macvlan_device_event() handler to use
+> 
+> vlan->dev->rtnl_link_ops->dellink(vlan->dev)
+> 
+> instead of macvlan_dellink() so the macvtap_dellink callback
+> is invoked.
 
-> Hi Antonio,
->=20
-> On Mon, Aug 10, 2009 at 11:13:00AM +0200, Antonio Ospite wrote:
-> >=20
-> > And, is Samuel taking this one and the pcap_ts one?
-> > They depends on changes already in his for-next branch.
->
-> I'm taking this one, and I'll sort the Makefile alphabetically.
->=20
-> Cheers,
-> Samuel.
->=20
+Ok, will do that. Thanks,
 
-Thanks again,
-   Antonio
+	Arnd <><
 
---=20
-Antonio Ospite
-http://ao2.it
-
-PGP public key ID: 0x4553B001
-
-A: Because it messes up the order in which people normally read text.
-   See http://en.wikipedia.org/wiki/Posting_style
-Q: Why is top-posting such a bad thing?
-A: Top-posting.
-Q: What is the most annoying thing in e-mail?
-
---Signature=_Mon__10_Aug_2009_20_43_13_+0200_0WhvUft0biP4llw6
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqAakEACgkQ5xr2akVTsAH1xACZAZZgqal6+tc3YP0yCzZj/rW8
-QdEAoIIV5u8Z1TEGOPmPVmTeIfeZ43S7
-=wuRl
------END PGP SIGNATURE-----
-
---Signature=_Mon__10_Aug_2009_20_43_13_+0200_0WhvUft0biP4llw6--
