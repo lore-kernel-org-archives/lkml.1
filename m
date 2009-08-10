@@ -1,82 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752496AbZHJHmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752375AbZHJHoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752496AbZHJHmu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 03:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZHJHmt
+	id S1752375AbZHJHoY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 03:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbZHJHoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 03:42:49 -0400
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:53217 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751653AbZHJHmt (ORCPT
+	Mon, 10 Aug 2009 03:44:23 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:47116 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751032AbZHJHoX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 03:42:49 -0400
-Date: Mon, 10 Aug 2009 13:11:34 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, andi.kleen@intel.com,
-       Prarit Bhargava <prarit@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: Help Resource Counters Scale Better (v3)
-Message-ID: <20090810074134.GA4648@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090807221238.GJ9686@balbir.in.ibm.com> <39eafe409b85053081e9c6826005bb06.squirrel@webmail-b.css.fujitsu.com> <20090808060531.GL9686@balbir.in.ibm.com> <99f2a13990d68c34c76c33581949aefd.squirrel@webmail-b.css.fujitsu.com> <20090809121530.GA5833@balbir.in.ibm.com> <20090810093229.10db7185.kamezawa.hiroyu@jp.fujitsu.com> <20090810053025.GC5257@balbir.in.ibm.com> <20090810144559.ac5a3499.kamezawa.hiroyu@jp.fujitsu.com> <20090810152205.d37d8e2f.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 10 Aug 2009 03:44:23 -0400
+Date: Mon, 10 Aug 2009 09:44:21 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, tytso@mit.edu, hch@infradead.org,
+       mfasheh@suse.com, aia21@cantab.net, hugh.dickins@tiscali.co.uk,
+       swhiteho@redhat.com, akpm@linux-foundation.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com
+Subject: Re: [PATCH] [16/19] HWPOISON: Enable .remove_error_page for
+	migration aware file systems
+Message-ID: <20090810074421.GA6838@basil.fritz.box>
+References: <200908051136.682859934@firstfloor.org> <20090805093643.E0C00B15D8@basil.firstfloor.org> <4A7FBFD1.2010208@hitachi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090810152205.d37d8e2f.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A7FBFD1.2010208@hitachi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-10 15:22:05]:
+Hi,
 
-> On Mon, 10 Aug 2009 14:45:59 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> If my understanding is correct, the following scenario can happen:
+
+Yes it can happen.
+
 > 
-> > > Do you agree?
-> > 
-> > Ok. Config is enough at this stage.
-> > 
-> > The last advice for merge is, it's better to show the numbers or
-> > ask someone who have many cpus to measure benefits. Then, Andrew can
-> > know how this is benefical.
-> > (My box has 8 cpus. But maybe your IBM collaegue has some bigger one)
-> > 
-> > In my experience (in my own old trial),
-> >  - lock contention itself is low. not high.
-> >  - but cacheline-miss, pingpong is very very frequent.
-> > 
-> > Then, this patch has some benefit logically but, in general,
-> > File-I/O, swapin-swapout, page-allocation/initalize etc..dominates
-> > the performance of usual apps. You'll have to be careful to select apps
-> > to measure the benfits of this patch by application performance.
-> > (And this is why I don't feel so much emergency as you do)
-> > 
+> 1. An uncorrected error on a dirty page cache page is detected by
+>    memory scrubbing
+> 2. Kernel unmaps and truncates the page to recover from the error
+> 3. An application reads data from the file location corresponding
+>    to the truncated page
+>    ==> Old or garbage data will be read into a new page cache page
+
+The problem currently is that the error is not sticky enough and
+doesn't stay around long enough. It gets reported once,
+but not in later IO operations.
+
+However it's a generic problem not unique to hwpoison. Me 
+and Fengguang went through the error propagation as our test program
+triggered the problem and we looked like it was really a generic problem,
+not unique to hardware poison (e.g. the IO error handling 
+on metadata has exactly the same problem)
+
+And redesigning VFS IO error reporting was a bit of of scope for hwpoison.
+So we decided to not be better than a normal IO error here for now.
+
+An application that handles current IO errors correctly will
+also also handle hwpoison IO errors correctly. And application
+that doesn't handle current IO errors correctly will also
+not necessarily handle hwpoison correctly (it's not better and not worse)
+So the hwpoison errors are pretty much the same as the normal IO
+errors.
+
+The normal error path probably needs some improvements, in particular
+the address space EIO error error likely needs to be more sticky
+than it is today.
+
+An application has to handle the error on the first strike.
+
+That is something that could be improved in the VFS -- although I fear
+any improvements here could also break compatibility. I don't think
+it's a blocker on hwpoison for now. It needs more design
+effort and thinking (e.g. likely the address space IO error
+bit should be separated into multiple bits)
+
+Perhaps you're interested in working on this?
+
+> 4. The application modifies the data and write back it to the disk
+> 5. The file will corrurpt!
 > 
-> Why I say "I want to see the numbers" again and again is that
-> this is performance improvement with _bad side effect_.
-> If this is an emergent trouble, and need fast-track, which requires us
-> "fix small problems later", plz say so. 
+> (Yes, the application is wrong to not do the right thing, i.e. fsync,
+>  but it's not user's fault!)
 > 
+> A similar data corruption can be caused by a write I/O error,
+> because dirty flag is cleared even if the page couldn't be written
+> to the disk.
+> 
+> However, we have a way to avoid this kind of data corruption at
+> least for ext3.  If we mount an ext3 filesystem with data=ordered
+> and data_err=abort, all I/O errors on file data block belonging to
+> the committing transaction are checked.  When I/O error is found,
+> abort journaling and remount the filesystem with read-only to
+> prevent further updates.  This kind of feature is very important
+> for mission critical systems.
+
+Well it sounds like a potentially useful enhancement to ext3 (or ext4).
+
+One issue is that the default is not ordered anymore since
+Linus changed the default.
+
+I'm sure other enhancements for IO errors could be done too.
+Some of the file systems also handle them still quite poorly (e.g. btrfs)
+
+But again I don't think it's a blocker for hwpoison.
+
+> I think there are three options,
+> 
+> (1) drop this patch
+> (2) merge this patch with new panic_on_dirty_page_cache_corruption
+>     sysctl
+> (3) implement a more sophisticated error_remove_page function
+
+(4) accept that hwpoison error handling is not better and not worse than normal
+IO error handling.
+
+We opted for (4).
 
 
-Yes, this is an emergent trouble, I've gotten reports of the lock
-showing up on 16 to 64 ways.
-
-> I have no objection to this approach itself because I can't think of
-> something better, now. percpu-counter's error tolerance is a generic
-> problem and we'll have to visit this anyway.
->
-
-Yes, my plan is to then later add a strict/no-strict accounting layer
-and allow users to choose. Keep root as non-script as we don't
-support limit setting on root now. 
-
+-Andi
 -- 
-	Balbir
+ak@linux.intel.com -- Speaking for myself only.
