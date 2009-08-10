@@ -1,131 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbZHJKbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbZHJKdO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753724AbZHJKbv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 06:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbZHJKbu
+	id S1753769AbZHJKdO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 06:33:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbZHJKdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 06:31:50 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39474 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753326AbZHJKbt (ORCPT
+	Mon, 10 Aug 2009 06:33:14 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:23121 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753526AbZHJKdN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 06:31:49 -0400
-To: Johannes Stezenbach <js@sig21.net>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.31-rc5 regression: x86 MCE malfunction on Thinkpad T42p
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090807170942.GB9177@sig21.net>
-Date: Mon, 10 Aug 2009 12:31:47 +0200
-In-Reply-To: <20090807170942.GB9177@sig21.net> (Johannes Stezenbach's message of "Fri, 7 Aug 2009 19:09:42 +0200")
-Message-ID: <87k51cgdt8.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Mon, 10 Aug 2009 06:33:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ixJnxcFlRMOFKxM70/OGkm1FqEPeK65q2qvIPo7FvLrTpzsiKr4W7KWxOUAW2EBe4r
+         /hd4zFPxrPDQrOUdTsTyUUhPOziope3kkMm5Ph/u1fGEdpICucVPSh0gruprLXOEK3zw
+         pnQbhlTk3hFuHlVjDFLeWpk2/oNRAYLBxHmXo=
+Message-ID: <4A7FF84C.7070708@gmail.com>
+Date: Mon, 10 Aug 2009 12:37:00 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Michael Buesch <mb@bu3sch.de>, Daniel Mack <daniel@caiaq.de>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Libertas: Association request to the driver failed
+References: <20090807191156.GS19257@buzzloop.caiaq.de> <20090809102417.GH13639@buzzloop.caiaq.de> <4A7EAED8.9090900@gmail.com> <200908091310.56919.mb@bu3sch.de> <20090809191359.GG4805@lenovo>
+In-Reply-To: <20090809191359.GG4805@lenovo>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Stezenbach <js@sig21.net> writes:
+Several arrays were read before checking whether the index was within
+bounds. ARRAY_SIZE() should be used to determine the size of arrays.
 
-> Hi,
->
-> I'm currently running linux-2.6.31-rc5-246-g90bc1a6 on
-> an old Thinkpad T42p.  During boot I get the following:
+rates->rates has an arraysize of 1, so calling get_common_rates()
+with a rates_size of MAX_RATES (14) was causing reads out of bounds.
 
-Thanks for the report.
+tmp_size can increment at most to MAX_RATES * ARRAY_SIZE(lbs_bg_rates),
+so that should be the number of elements of tmp[].
 
->
->    Local APIC disabled by BIOS -- you can enable it with "lapic"
->    APIC: disable apic facility
->    ...
->    mce: CPU supports 5 MCE banks
->    Disabling lock debugging due to kernel taint
->    ------------[ cut here ]------------
->    WARNING: at arch/x86/kernel/apic/apic.c:247 native_apic_write_dummy+0x2d/0x39()
->    Hardware name: 2373Y4M
->    Modules linked in:
->    Pid: 0, comm: swapper Tainted: G   M       2.6.31-rc5 #1
-
-The mcelog below is already worked around with Bart's patch he posted
-the link to (it's really a BIOS bug in your case that the BIOS leaves
-junks in the machine check registers on boot)
-
-[for the x86 maintainers:]
-One thing that would be good to make sure that Bart's patch is queued
-for .31 too, not only for .32, since this BIOS problem seems
-to be common (already two reports)
-
-But still need to fix that warning too, which is independent
-[another .31 candidate]
-
->    Call Trace:
->     [<c10248c1>] warn_slowpath_common+0x60/0x90
->     [<c10248fe>] warn_slowpath_null+0xd/0x10
->     [<c1013139>] native_apic_write_dummy+0x2d/0x39
->     [<c100dcd2>] intel_init_thermal+0xb6/0x144
->     [<c100d517>] ? mce_init+0x33/0xb0
->     [<c100db4b>] mce_intel_feature_init+0xb/0x4c
->     [<c14fc31e>] mcheck_init+0x1e2/0x253
->     [<c14faef4>] identify_cpu+0x30b/0x31b
->     [<c14d9af0>] identify_boot_cpu+0xd/0x23
->     [<c14d9b3c>] check_bugs+0xb/0xd4
->     [<c104f929>] ? delayacct_init+0x42/0x49
->     [<c14d493c>] start_kernel+0x25e/0x26d
->     [<c14d430b>] i386_start_kernel+0x65/0x6a
->    ---[ end trace 4eaa2a86a8e2da22 ]---
-
-
-The appended patch should remove the warning. Can you please test it?
-
-> 2.6.29.1 doesn't log any MCE events, so I doubt this is a HW problem.
-
-It actually is a BIOS bug, but not really broken hardware.
-
--Andi
-
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
 
-Don't try to enable thermal throttling on 32bit systems without apic
+> | Is it a good idea to use dynamic stack arrays in the kernel?
+> | What about kmalloc for dynamic allocations?
+> | 
+> | -- 
+> | Greetings, Michael.
+> 
+> I saw one pattern in trace code (not sure if it's
+> still there) but personally don't like dynamic
+> stack arrays (though at moment the max value
+> being passed into routine is known maybe just
+> use MAX_RATES instead of (*rates_size)?). Hmm?
 
-When the local APIC isn't enabled don't try to enable thermal throttling.
-The APIC writes would WARN_ON.
+Good point.
 
-Fixes 
+> 	-- Cyrill
 
->    Disabling lock debugging due to kernel taint
->    ------------[ cut here ]------------
->    WARNING: at arch/x86/kernel/apic/apic.c:247 native_apic_write_dummy+0x2d/0x39()
->    Hardware name: 2373Y4M
->    Modules linked in:
->    Pid: 0, comm: swapper Tainted: G   M       2.6.31-rc5 #1
+Thanks,
 
-Originally reported by Johannes Stezenbach 
+I think there was another problem in lbs_associate(),
+the memcpy already affected rates->rates.
 
-This is a 2.6.31 candidate because it fixes a regression.
+Also in get_common_rates() I think we can safely move the
+memset/memcpy, originally after label done, upwards.
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+The patch below, if correct, is to be applied after the revert
 
----
- arch/x86/kernel/cpu/mcheck/therm_throt.c |    3 +++
- 1 file changed, 3 insertions(+)
+Roel
 
-Index: linux/arch/x86/kernel/cpu/mcheck/therm_throt.c
-===================================================================
---- linux.orig/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ linux/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -236,6 +236,9 @@ void intel_init_thermal(struct cpuinfo_x
- 	int tm2 = 0;
- 	u32 l, h;
+diff --git a/drivers/net/wireless/libertas/assoc.c b/drivers/net/wireless/libertas/assoc.c
+index b9b3741..ba0164a 100644
+--- a/drivers/net/wireless/libertas/assoc.c
++++ b/drivers/net/wireless/libertas/assoc.c
+@@ -1,6 +1,7 @@
+ /* Copyright (C) 2006, Red Hat, Inc. */
  
-+	if (!cpu_has_apic || disable_apic)
-+		return;
+ #include <linux/types.h>
++#include <linux/kernel.h>
+ #include <linux/etherdevice.h>
+ #include <linux/ieee80211.h>
+ #include <linux/if_arp.h>
+@@ -43,41 +44,41 @@ static int get_common_rates(struct lbs_private *priv,
+ 	u16 *rates_size)
+ {
+ 	u8 *card_rates = lbs_bg_rates;
+-	size_t num_card_rates = sizeof(lbs_bg_rates);
+-	int ret = 0, i, j;
+-	u8 tmp[30];
++	int i, j;
++	u8 tmp[MAX_RATES * ARRAY_SIZE(lbs_bg_rates)];
+ 	size_t tmp_size = 0;
+ 
+ 	/* For each rate in card_rates that exists in rate1, copy to tmp */
+-	for (i = 0; card_rates[i] && (i < num_card_rates); i++) {
+-		for (j = 0; rates[j] && (j < *rates_size); j++) {
++	for (i = 0; i < ARRAY_SIZE(lbs_bg_rates) && card_rates[i]; i++) {
++		for (j = 0; j < *rates_size && rates[j]; j++) {
+ 			if (rates[j] == card_rates[i])
+ 				tmp[tmp_size++] = card_rates[i];
+ 		}
+ 	}
+ 
+ 	lbs_deb_hex(LBS_DEB_JOIN, "AP rates    ", rates, *rates_size);
+-	lbs_deb_hex(LBS_DEB_JOIN, "card rates  ", card_rates, num_card_rates);
++	lbs_deb_hex(LBS_DEB_JOIN, "card rates  ", card_rates,
++			ARRAY_SIZE(lbs_bg_rates));
+ 	lbs_deb_hex(LBS_DEB_JOIN, "common rates", tmp, tmp_size);
+ 	lbs_deb_join("TX data rate 0x%02x\n", priv->cur_rate);
+ 
++	memset(rates, 0, *rates_size);
++	*rates_size = min_t(u16, tmp_size, *rates_size);
++	memcpy(rates, tmp, *rates_size);
 +
- 	/* Thermal monitoring depends on ACPI and clock modulation*/
- 	if (!cpu_has(c, X86_FEATURE_ACPI) || !cpu_has(c, X86_FEATURE_ACC))
- 		return;
-
-
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+ 	if (!priv->enablehwauto) {
+ 		for (i = 0; i < tmp_size; i++) {
+ 			if (tmp[i] == priv->cur_rate)
+-				goto done;
++				break;
++		}
++		if (i == tmp_size) {
++			lbs_pr_alert("Previously set fixed data rate %#x isn't "
++					"compatible with the network.\n",
++					priv->cur_rate);
++			return -1;
+ 		}
+-		lbs_pr_alert("Previously set fixed data rate %#x isn't "
+-		       "compatible with the network.\n", priv->cur_rate);
+-		ret = -1;
+-		goto done;
+ 	}
+-	ret = 0;
+-
+-done:
+-	memset(rates, 0, *rates_size);
+-	*rates_size = min_t(int, tmp_size, *rates_size);
+-	memcpy(rates, tmp, *rates_size);
+-	return ret;
++	return 0;
+ }
+ 
+ 
+@@ -321,8 +322,8 @@ static int lbs_associate(struct lbs_private *priv,
+ 
+ 	rates = (struct mrvl_ie_rates_param_set *) pos;
+ 	rates->header.type = cpu_to_le16(TLV_TYPE_RATES);
+-	memcpy(&rates->rates, &bss->rates, MAX_RATES);
+-	tmplen = MAX_RATES;
++	tmplen = min_t(u16, ARRAY_SIZE(rates->rates), MAX_RATES);
++	memcpy(&rates->rates, &bss->rates, tmplen);
+ 	if (get_common_rates(priv, rates->rates, &tmplen)) {
+ 		ret = -1;
+ 		goto done;
+@@ -598,7 +599,7 @@ static int lbs_adhoc_join(struct lbs_private *priv,
+ 
+ 	/* Copy Data rates from the rates recorded in scan response */
+ 	memset(cmd.bss.rates, 0, sizeof(cmd.bss.rates));
+-	ratesize = min_t(u16, sizeof(cmd.bss.rates), MAX_RATES);
++	ratesize = min_t(u16, ARRAY_SIZE(cmd.bss.rates), MAX_RATES);
+ 	memcpy(cmd.bss.rates, bss->rates, ratesize);
+ 	if (get_common_rates(priv, cmd.bss.rates, &ratesize)) {
+ 		lbs_deb_join("ADHOC_JOIN: get_common_rates returned error.\n");
