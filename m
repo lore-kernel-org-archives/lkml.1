@@ -1,73 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbZHJW4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbZHJW46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754199AbZHJW4u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 18:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbZHJW4s
+	id S1754222AbZHJW46 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 18:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbZHJW45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 18:56:48 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:45505 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752127AbZHJW4s (ORCPT
+	Mon, 10 Aug 2009 18:56:57 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:43166 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754205AbZHJW44 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 18:56:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=iXzH+2v1/ePfynSsK95lBelI+IR9xydGZkD1ms7cYAPa7XAaa5CXr+Iokdb4KwFtJ6
-         dPBG1ZVUOyCfBt2JIDVBIeiWks+stAUomUoLGk41t6E/gPcyeyKQFMLdVTlU4p15cepp
-         7eWvu3Sa0ZR7gHKewXPbN3ov8BBKIhB0HnVU8=
-Message-ID: <4A80A5AD.2000209@gmail.com>
-Date: Mon, 10 Aug 2009 19:56:45 -0300
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090725)
-MIME-Version: 1.0
-To: Borislav Petkov <borislav.petkov@amd.com>
-CC: Borislav Petkov <petkovbb@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3] x86: clear incorrectly forced X86_FEATURE_LAHF_LM flag
-References: <4A7D673A.1090401@gmail.com> <20090808152016.GB25374@liondog.tnic> <4A7E0797.7060504@gmail.com> <20090810131219.GD21879@aftab>
-In-Reply-To: <20090810131219.GD21879@aftab>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 10 Aug 2009 18:56:56 -0400
+Subject: Re: kmemleak: Protect the seq start/next/stop sequence by
+	rcu_read_lock()
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090810184527.GA9601@elte.hu>
+References: <20090729152101.1878.71159.stgit@pc1117.cambridge.arm.com>
+	 <20090802111453.GA24927@elte.hu>
+	 <1249919718.10848.55.camel@pc1117.cambridge.arm.com>
+	 <20090810184527.GA9601@elte.hu>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 10 Aug 2009 23:56:43 +0100
+Message-Id: <1249945003.26205.23.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Aug 2009 22:56:44.0530 (UTC) FILETIME=[D514FD20:01CA1A0D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Due to an erratum with certain AMD Athlon 64 processors, the BIOS may
-need to force enable the LAHF_LM capability.  Unfortunately, in at
-least one case, the BIOS does this even for processors that do not
-support the functionality.
+On Mon, 2009-08-10 at 20:45 +0200, Ingo Molnar wrote:
+> * Catalin Marinas <catalin.marinas@arm.com> wrote:
+> 
+> > On Sun, 2009-08-02 at 13:14 +0200, Ingo Molnar wrote:
+> > > hm, some recent kmemleak patch is causing frequent hard and 
+> > > soft lockups in -tip testing (-rc5 based).
+> > 
+> > Thanks for reporting this. It shouldn't be caused by the patch 
+> > mentioned in the subject as this only deals with reading the seq 
+> > file which doesn't seem to be the case here.
+> 
+> Since i turned off kmemleak in -tip completely via the patch below i 
+> havent had a single such lockup.
+> 
+> Have you tried the config i sent - does it work fine for you? For me 
+> it locks up on various boxes within a couple of minutes - without 
+> doing anything particular beyond building a kernel or so.
 
-Add a specific check that will clear the feature bit for processors
-known not to support the LAHF/SAHF instructions.
+I couldn't tried your config as I don't have an x86_64 machine (I only
+rely on an x86_32 laptop at home and several ARM machines at work for
+testing).
 
-Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
----
- arch/x86/kernel/cpu/amd.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+I tried similar config and with the mainline kernel I get some lockups
+(several seconds) with CONFIG_PREEMPT disabled on ARM machines or x86
+during a scanning episode but it eventually completes the scanning. With
+the kmemleak patches for the next merging window, I don't get any
+lockups as it has more cond_resched() calls.
 
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index e2485b0..63fddcd 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -400,6 +400,13 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- 		level = cpuid_eax(1);
- 		if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
- 			set_cpu_cap(c, X86_FEATURE_REP_GOOD);
-+
-+		/*
-+		 * Some BIOSes incorrectly force this feature, but only K8
-+		 * revision D (model = 0x14) and later actually support it.
-+		 */
-+		if (c->x86_model < 0x14)
-+			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
- 	}
- 	if (c->x86 == 0x10 || c->x86 == 0x11)
- 		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
+Maybe on your x86_64 box you get some bigger objects allocated
+(alloc_bootmem, per-cpu, data/bss, NODE_DATA, task stacks) which are
+scanned without cond_resched() calls and CONFIG_PREEMPT disabled.
+Scanning the memory can even take several minutes especially with
+CONFIG_PROVE_LOCKING enabled and maybe that's why you see the lockups.
+Enabling CONFIG_PREEMPT reduces the lockup period.
+
+I'll try tomorrow with x86_32 allyesconfig on my laptop and see how it
+goes.
+
+Thanks.
+
 -- 
-1.6.4
-
+Catalin
 
