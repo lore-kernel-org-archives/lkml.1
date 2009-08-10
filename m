@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZHJPI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932112AbZHJPKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755356AbZHJPI2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 11:08:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755287AbZHJPI1
+	id S932112AbZHJPKU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 11:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbZHJPKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 11:08:27 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:62134 "EHLO
+	Mon, 10 Aug 2009 11:10:19 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:51316 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbZHJPIZ (ORCPT
+	with ESMTP id S1753164AbZHJPKR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 11:08:25 -0400
+	Mon, 10 Aug 2009 11:10:17 -0400
 From: Arnd Bergmann <arnd@arndb.de>
 To: "Fischer, Anna" <anna.fischer@hp.com>
 Subject: Re: [PATCH][RFC] net/bridge: add basic VEPA support
-Date: Mon, 10 Aug 2009 17:07:32 +0200
+Date: Mon, 10 Aug 2009 17:06:58 +0200
 User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
 Cc: "'Stephen Hemminger'" <shemminger@linux-foundation.org>,
        "bridge@lists.linux-foundation.org" 
@@ -31,18 +31,18 @@ Cc: "'Stephen Hemminger'" <shemminger@linux-foundation.org>,
 References: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net> <200908081149.27409.arnd@arndb.de> <0199E0D51A61344794750DC57738F58E6D6AE99743@GVW1118EXC.americas.hpqcorp.net>
 In-Reply-To: <0199E0D51A61344794750DC57738F58E6D6AE99743@GVW1118EXC.americas.hpqcorp.net>
 X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
- =?iso-8859-1?q?Y=2Ea=5E3zb?=)
- =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
- =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Message-Id: <200908101707.32751.arnd@arndb.de>
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/ITobpg927jyrG3CtNS0n6nM6gQBh0vPHT/TG
- LJtvU5BsUf4PK6l1z1GYME/CYOHJjqDFUCyCCr+1LK2N4+yNFW
- c89wBGMIqS3LfWb4M2VPQ==
+Message-Id: <200908101706.58261.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18a6VIbUhvEbQgOLmI1gqwuWTLkR4mHPZgoVOp
+ zfll1oa6yqVoDZDqHs9YcUxJeQUzA6GiwqNP3dmqwvYxZ/OtLZ
+ BCDCcgM5s1r+PI/tRm0dQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
