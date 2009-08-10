@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbZHJO40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753114AbZHJO6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752729AbZHJO40 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZHJO4Z
+	id S1753114AbZHJO6O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:58:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbZHJO6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:56:25 -0400
-Received: from cmpxchg.org ([85.214.51.133]:35799 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750993AbZHJO4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:56:24 -0400
-Date: Mon, 10 Aug 2009 16:56:41 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, hch@infradead.org, rlove@google.com,
-       msb@google.com, viro@zeniv.linux.org.uk
-Subject: Re: [PATCH 2/3] vfs: remove redundant position check in do_sendfile
-Message-ID: <20090810145641.GB4925@cmpxchg.org>
-References: <1249906663-7572-1-git-send-email-jlayton@redhat.com> <1249906663-7572-3-git-send-email-jlayton@redhat.com>
-Mime-Version: 1.0
+	Mon, 10 Aug 2009 10:58:12 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:59160 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751528AbZHJO6L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 10:58:11 -0400
+Date: Mon, 10 Aug 2009 15:58:09 +0100
+From: Matthew Garrett <mjg@redhat.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-acpi@vger.kernel.org, linux-scsi@vger.kernel.org,
+       shaohua.li@intel.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] SCSI: Allow platform-specific code to be run
+	against the SCSI tree
+Message-ID: <20090810145809.GD24956@srcf.ucam.org>
+References: <1247518987-10818-1-git-send-email-mjg@redhat.com> <20090810133815.GB22763@srcf.ucam.org> <1249916125.4089.4.camel@mulgrave.site>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249906663-7572-3-git-send-email-jlayton@redhat.com>
+In-Reply-To: <1249916125.4089.4.camel@mulgrave.site>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 08:17:42AM -0400, Jeff Layton wrote:
-> As Johannes Weiner pointed out, one of the range checks in do_sendfile
-> is redundant and is already checked in rw_verify_area.
+On Mon, Aug 10, 2009 at 02:55:25PM +0000, James Bottomley wrote:
+> On Mon, 2009-08-10 at 14:38 +0100, Matthew Garrett wrote:
+> > On Mon, Jul 13, 2009 at 10:03:05PM +0100, Matthew Garrett wrote:
+> > > In certain cases (such as ACPI) we want to be able to associate
+> > > platform-specific data against the SCSI device tree. Handling this
+> > > properly requires the ability to run platform code at SCSI init time.
+> > > This patch adds stub functions that can be overridden if the platform
+> > > defines CONFIG_SCSI_PLATFORM.
+> > 
+> > James, any thoughts on this?
 > 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> Sorry, I'd thought this had all moved to libata so I'd stopped paying
+> attention ... why are extra bits in SCSI necessary?
 
-Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
+They're SCSI as far as the device tree is concerned, so the glue 
+callbacks have to be registered from the SCSI layer. The only 
+implementation so far is for ACPI and only covers libata, but it could 
+potentially also be used to tie bay devices to the ofw tree on 
+openfirmware systems.
 
-Thanks!
-
-> ---
->  fs/read_write.c |    3 ---
->  1 files changed, 0 insertions(+), 3 deletions(-)
-> 
-> diff --git a/fs/read_write.c b/fs/read_write.c
-> index 6c8c55d..3ac2898 100644
-> --- a/fs/read_write.c
-> +++ b/fs/read_write.c
-> @@ -839,9 +839,6 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
->  		max = min(in_inode->i_sb->s_maxbytes, out_inode->i_sb->s_maxbytes);
->  
->  	pos = *ppos;
-> -	retval = -EINVAL;
-> -	if (unlikely(pos < 0))
-> -		goto fput_out;
->  	if (unlikely(pos + count > max)) {
->  		retval = -EOVERFLOW;
->  		if (pos >= max)
-> -- 
-> 1.6.0.6
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
