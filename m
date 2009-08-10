@@ -1,145 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932279AbZHJQsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbZHJQuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932279AbZHJQsM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 12:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932211AbZHJQsM
+	id S1755687AbZHJQuJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 12:50:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbZHJQuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 12:48:12 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:2602 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932205AbZHJQsK convert rfc822-to-8bit (ORCPT
+	Mon, 10 Aug 2009 12:50:09 -0400
+Received: from exprod5og110.obsmtp.com ([64.18.0.20]:57125 "EHLO
+	exprod5og110.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753155AbZHJQuI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 12:48:10 -0400
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       Wim Van Sebroeck <wim@iguana.be>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH RT 8/6] [ARM, WATCHDOG] davinci: include mach/timex.h in davinci_wdt.c
-References: <20090807203939.GA19374@pengutronix.de>
-	<1249810600-21946-1-git-send-email-u.kleine-koenig@pengutronix.de>
-	<1249810600-21946-2-git-send-email-u.kleine-koenig@pengutronix.de>
-	<20090809094306.GA26591@n2100.arm.linux.org.uk>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Mon, 10 Aug 2009 09:48:07 -0700
-In-Reply-To: <20090809094306.GA26591@n2100.arm.linux.org.uk> (Russell King's message of "Sun\, 9 Aug 2009 10\:43\:06 +0100")
-Message-ID: <87iqgvk43c.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 10 Aug 2009 12:50:08 -0400
+Message-ID: <4A804FEE.8040601@gefanuc.com>
+Date: Mon, 10 Aug 2009 17:50:54 +0100
+From: Martyn Welch <martyn.welch@gefanuc.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+To: "Emilio G. Cota" <cota@braap.org>
+CC: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org
+Subject: Re: [PATCH] Staging: vme: fix {master,slave}_get check bug
+References: <20090803205657.964064732@mini.kroah.org> <20090803210111.GB28430@kroah.com> <20090810145242.GA22320@braap.org>
+In-Reply-To: <20090810145242.GA22320@braap.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King - ARM Linux <linux@arm.linux.org.uk> writes:
-
-> On Sun, Aug 09, 2009 at 11:36:39AM +0200, Uwe Kleine-König wrote:
->> This fixes a a build failure for 2.6.31-rc4-rt1 (ARCH=arm,
->> davinci_all_defconfig):
->> 
->> 	drivers/watchdog/davinci_wdt.c: In function 'wdt_enable':
->> 	drivers/watchdog/davinci_wdt.c:102: error: 'CLOCK_TICK_RATE' undeclared (first use in this function)
->> 	drivers/watchdog/davinci_wdt.c:102: error: (Each undeclared identifier is reported only once
->> 	drivers/watchdog/davinci_wdt.c:102: error: for each function it appears in.)
+Emilio G. Cota wrote:
+> It's checking the wrong functions; fix it.
 >
-> It should not be using CLOCK_TICK_RATE - there was a move to clean
-> up the use of that symbol and restrict it just to the i8253 PIT.
-> Please create something else like DAVINCI_TICK_RATE instead.
+> Signed-off-by: Emilio G. Cota <cota@braap.org>
+>   
+Acked-by: Martyn Welch <martyn.welch@gefanuc.com>
+> ---
+>  drivers/staging/vme/vme.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/staging/vme/vme.c b/drivers/staging/vme/vme.c
+> index 8ee1192..ed2eeb0 100644
+> --- a/drivers/staging/vme/vme.c
+> +++ b/drivers/staging/vme/vme.c
+> @@ -338,7 +338,7 @@ int vme_slave_get (struct vme_resource *resource, int *enabled,
+>  
+>  	image = list_entry(resource->entry, struct vme_slave_resource, list);
+>  
+> -	if (bridge->slave_set == NULL) {
+> +	if (bridge->slave_get == NULL) {
+>  		printk("vme_slave_get not supported\n");
+>  		return -EINVAL;
+>  	}
+> @@ -499,7 +499,7 @@ int vme_master_get (struct vme_resource *resource, int *enabled,
+>  
+>  	image = list_entry(resource->entry, struct vme_master_resource, list);
+>  
+> -	if (bridge->master_set == NULL) {
+> +	if (bridge->master_get == NULL) {
+>  		printk("vme_master_set not supported\n");
+>  		return -EINVAL;
+>  	}
+>   
 
-Actually, I have an alternate fix for this which I was planning to
-submit for 2.6.32.  This one drops CLOCK_TICK_RATE and uses the clock
-framework to get the right tick frequency.
 
-Here it is.
-
-Kevin
-
->From 6eea62609126739ce03e447c5fca49269ad5d12a Mon Sep 17 00:00:00 2001
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Date: Tue, 10 Feb 2009 20:30:37 -0800
-Subject: [PATCH] watchdog: davinci: use clock framework for timer frequency
-
-Remove use of CLOCK_TICK_RATE in favor of using clock framework
-for getting timer frequency.
-
-Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
----
- drivers/watchdog/davinci_wdt.c |   21 +++++++++++++++++++--
- 1 files changed, 19 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/watchdog/davinci_wdt.c b/drivers/watchdog/davinci_wdt.c
-index 83e22e7..5ed89e4 100644
---- a/drivers/watchdog/davinci_wdt.c
-+++ b/drivers/watchdog/davinci_wdt.c
-@@ -25,6 +25,7 @@
- #include <linux/uaccess.h>
- #include <linux/io.h>
- #include <linux/device.h>
-+#include <linux/clk.h>
- 
- #define MODULE_NAME "DAVINCI-WDT: "
- 
-@@ -69,6 +70,7 @@ static unsigned long wdt_status;
- 
- static struct resource	*wdt_mem;
- static void __iomem	*wdt_base;
-+struct clk              *wdt_clk;
- 
- static void wdt_service(void)
- {
-@@ -86,6 +88,10 @@ static void wdt_enable(void)
- {
- 	u32 tgcr;
- 	u32 timer_margin;
-+	u32 wdt_freq;
-+
-+	BUG_ON(!wdt_clk);
-+	wdt_freq = clk_get_rate(wdt_clk);
- 
- 	spin_lock(&io_lock);
- 
-@@ -99,9 +105,9 @@ static void wdt_enable(void)
- 	iowrite32(0, wdt_base + TIM12);
- 	iowrite32(0, wdt_base + TIM34);
- 	/* set timeout period */
--	timer_margin = (((u64)heartbeat * CLOCK_TICK_RATE) & 0xffffffff);
-+	timer_margin = (((u64)heartbeat * wdt_freq) & 0xffffffff);
- 	iowrite32(timer_margin, wdt_base + PRD12);
--	timer_margin = (((u64)heartbeat * CLOCK_TICK_RATE) >> 32);
-+	timer_margin = (((u64)heartbeat * wdt_freq) >> 32);
- 	iowrite32(timer_margin, wdt_base + PRD34);
- 	/* enable run continuously */
- 	iowrite32(ENAMODE12_PERIODIC, wdt_base + TCR);
-@@ -199,6 +205,11 @@ static int __devinit davinci_wdt_probe(struct platform_device *pdev)
- 	struct resource *res;
- 	struct device *dev = &pdev->dev;
- 
-+	wdt_clk = clk_get(dev, NULL);
-+	if (WARN_ON(!wdt_clk))
-+		return -ENODEV;
-+	clk_enable(wdt_clk);
-+
- 	if (heartbeat < 1 || heartbeat > MAX_HEARTBEAT)
- 		heartbeat = DEFAULT_HEARTBEAT;
- 
-@@ -245,6 +256,12 @@ static int __devexit davinci_wdt_remove(struct platform_device *pdev)
- 		kfree(wdt_mem);
- 		wdt_mem = NULL;
- 	}
-+
-+	if (wdt_clk) {
-+		clk_disable(wdt_clk);
-+		clk_put(wdt_clk);
-+	}
-+
- 	return 0;
- }
- 
 -- 
-1.6.3.3
-
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 927559189
