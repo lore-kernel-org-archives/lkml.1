@@ -1,75 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752398AbZHJHjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752409AbZHJHlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752398AbZHJHjp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 03:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbZHJHjo
+	id S1752409AbZHJHlq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 03:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZHJHlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 03:39:44 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:35197 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751710AbZHJHjo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 03:39:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=weJE8uOw/Wh9TJfLfnJ0BQS0UKMY+NKg4C2iclJzHicZpFL9QlWdXRSnMSJK9jX0nn
-         GAxCYxIscd1hjqClZnrDwByneSqEWgBvm7Co0534+4iWgd+XSQmvXNgOkk+1MLNOUchX
-         QkZvlmHQ8YKs1pqYFuJjElbYfREmkYedmcTDk=
-From: Florian Fainelli <florian@openwrt.org>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Subject: Re: [PATCH] MIPS: AR7: fix wrong including path of rt7.h in ar7_wdt.c
-Date: Mon, 10 Aug 2009 09:39:39 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-mips@linux-mips.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Nicolas Thill <nico@openwrt.org>, Ralf Baechle <ralf@linux-mips.org>,
-       Enrik Berkhan <Enrik.Berkhan@akk.org>
-References: <1249888074-20784-1-git-send-email-wuzhangjin@gmail.com>
-In-Reply-To: <1249888074-20784-1-git-send-email-wuzhangjin@gmail.com>
+	Mon, 10 Aug 2009 03:41:45 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:56722 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751572AbZHJHlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 03:41:44 -0400
+Date: Mon, 10 Aug 2009 08:41:46 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: "Li, Ming Chun" <macli@brc.ubc.ca>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [PATCH 4/6] tracing, page-allocator: Add a postprocessing
+	script for page-allocator-related ftrace events
+Message-ID: <20090810074145.GA1933@csn.ul.ie>
+References: <1249666815-28784-1-git-send-email-mel@csn.ul.ie> <1249666815-28784-5-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.00.0908071154120.14649@mail.selltech.ca> <alpine.DEB.1.00.0908071228310.14726@mail.selltech.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200908100939.40963.florian@openwrt.org>
+In-Reply-To: <alpine.DEB.1.00.0908071228310.14726@mail.selltech.ca>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Wu,
+On Fri, Aug 07, 2009 at 12:32:34PM -0700, Li, Ming Chun wrote:
+> On Fri, 7 Aug 2009, Li, Ming Chun wrote:
+> 
+> > On Fri, 7 Aug 2009, Mel Gorman wrote:
+> > 
+> > > +sub generate_traceevent_regex {
+> > > +	my $event = shift;
+> > > +	my $default = shift;
+> > > +	my @fields = @_;
+> > > +	my $regex;
+> > 
+> > You are using shift to retrieve parameters below, @fields is not used 
+> > anywhere.
+> > 
 
-Le Monday 10 August 2009 09:07:54 Wu Zhangjin, vous avez écrit :
-> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
+Correct, this can be removed. Initially, I was going to use an array but
+shift was far neater. Forgot to cleanup afterwards.
 
-Thanks, but that was sent a while ago to Wim Van Sebroeck who is the watchdog 
-subsystem maintainer.
+> > > +
+> > > +	# Read the event format or use the default
+> > > +	if (!open (FORMAT, "/sys/kernel/debug/tracing/events/$event/format")) {
+> > > +		$regex = $default;
+> > > +	} else {
+> > > +		my $line;
+> > > +		while (!eof(FORMAT)) {
+> > > +			$line = <FORMAT>;
+> > > +			if ($line =~ /^print fmt:\s"(.*)",.*/) {
+> > > +				$regex = $1;
+> > > +				$regex =~ s/%p/\([0-9a-f]*\)/g;
+> > > +				$regex =~ s/%d/\([-0-9]*\)/g;
+> > > +				$regex =~ s/%lu/\([0-9]*\)/g;
+> > > +			}
+> > > +		}
+> > > +	}
+> > > +
+> > > +	# Verify fields are in the right order
+> > > +	my $tuple;
+> > > +	foreach $tuple (split /\s/, $regex) {
+> > > +		my ($key, $value) = split(/=/, $tuple);
+> > > +		my $expected = shift;
+> > > +		if ($key ne $expected) {
+> > > +			print("WARNING: Format not as expected '$key' != '$expected'");
+> > > +			$regex =~ s/$key=\((.*)\)/$key=$1/;
+> > > +		}
+> > > +	}
+> > > +	if (defined $_) {
+> > > +		die("Fewer fields than expected in format");
+> > > +	}
+> > > +
+> > 
+> > How about:
+> > 	if (defined shift) {
+> > 		die("Fewer fields than expected in format");
+> > 	}
+> > ? 
+> > 
+> > I don't know, just ask if it is clear.
+> 
+> Ah, I think it should be:
+> 	if (@_) {
+> 		die("Fewer fields than expected in format");
+> 	}
+> 
+> ? Sorry for the noise :)
+> 
 
-> ---
->  drivers/watchdog/ar7_wdt.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/watchdog/ar7_wdt.c b/drivers/watchdog/ar7_wdt.c
-> index 3fe9742..ec48e12 100644
-> --- a/drivers/watchdog/ar7_wdt.c
-> +++ b/drivers/watchdog/ar7_wdt.c
-> @@ -37,7 +37,7 @@
->  #include <linux/uaccess.h>
->
->  #include <asm/addrspace.h>
-> -#include <asm/ar7/ar7.h>
-> +#include <ar7.h>
->
->  #define DRVNAME "ar7_wdt"
->  #define LONGNAME "TI AR7 Watchdog Timer"
+It's not noise at all, you're right to point out something was wrong
+here. It needed to be either
 
+if (defined shift)
+if (defined $_[0])
 
+I went with your first suggestion of "if (defined shift)"
 
--- 
-Best regards, Florian Fainelli
-Email: florian@openwrt.org
-Web: http://openwrt.org
-IRC: [florian] on irc.freenode.net
--------------------------------
+Thanks
+
+==== CUT HERE ====
+tracing, page-allocator: Fix sanity check of TP_printk format for mm_page_alloc_extfrag
+
+The trace-pagealloc-postprocess.pl script sanity checks the TP_printk
+format for mm_page_alloc_extfrag to ensure all expected fields are in
+the output format. Ming Chun Li pointed out that the check for all
+expected fields is checking the wrong scalar and that there was a
+unused @fields declared. This patch deletes the unused variable and
+fixes the check.
+
+Reported-by: Ming Chun Li <macli@brc.ubc.ca>
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ Documentation/trace/postprocess/trace-pagealloc-postprocess.pl |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/trace/postprocess/trace-pagealloc-postprocess.pl b/Documentation/trace/postprocess/trace-pagealloc-postprocess.pl
+index 1a8a408..7df50e8 100755
+--- a/Documentation/trace/postprocess/trace-pagealloc-postprocess.pl
++++ b/Documentation/trace/postprocess/trace-pagealloc-postprocess.pl
+@@ -91,7 +91,6 @@ my $regex_statppid = '[-0-9]*\s\(.*\)\s[A-Za-z]\s([0-9]*).*';
+ sub generate_traceevent_regex {
+ 	my $event = shift;
+ 	my $default = shift;
+-	my @fields = @_;
+ 	my $regex;
+ 
+ 	# Read the event format or use the default
+@@ -120,7 +119,8 @@ sub generate_traceevent_regex {
+ 			$regex =~ s/$key=\((.*)\)/$key=$1/;
+ 		}
+ 	}
+-	if (defined $_) {
++
++	if (defined shift) {
+ 		die("Fewer fields than expected in format");
+ 	}
+ 
