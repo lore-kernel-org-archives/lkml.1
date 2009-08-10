@@ -1,77 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601AbZHJKMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbZHJKT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753601AbZHJKMt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 06:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZHJKMs
+	id S1753704AbZHJKT2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 06:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbZHJKT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 06:12:48 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:65310 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753366AbZHJKMr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 06:12:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=S/0ZtWkgOEFcHU/Pyg9+ZqAAu6yFr0sPN2/2pabTpp4CSHcvtPOTvja14i+RI5WGCi
-         B6i6QSk/MhY7uyaySFxoxdU/LPr6wq7tvmmRgfytQmogCEdtyKCA1SK8pK1BnFa6Zw6V
-         1QIRcQHh3ISQrJG74u77fhKZ4PV1Xkvcx0Qwc=
-From: Chris Clayton <chris2553@googlemail.com>
-Reply-To: chris2553@googlemail.com
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #13846] LEDs switched off permanently by power saving with rt61pci driver
-Date: Mon, 10 Aug 2009 11:11:16 +0100
-User-Agent: KMail/1.9.10
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       linux-wireless@vger.kernel.org
-References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera> <u1L1PAbl8zG.A.EjD.3j1fKB@chimera>
-In-Reply-To: <u1L1PAbl8zG.A.EjD.3j1fKB@chimera>
+	Mon, 10 Aug 2009 06:19:28 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51593 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753512AbZHJKT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 06:19:26 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Mike Snitzer <snitzer@redhat.com>
+Subject: Re: [PATCH 1/2] Allow delaying initialization of queue after allocation
+Date: Mon, 10 Aug 2009 15:51:07 +0530
+User-Agent: KMail/1.11.1 (Linux/2.6.27.23-0.1-default; KDE/4.2.1; x86_64; ; )
+Cc: Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
+       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+References: <200908081025.58865.knikanth@suse.de> <20090808154240.GA7036@redhat.com>
+In-Reply-To: <20090808154240.GA7036@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200908101111.16762.chris2553@googlemail.com>
+Message-Id: <200908101551.08605.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael,
-
-On Sunday 09 August 2009, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Saturday 08 August 2009 21:12:40 Mike Snitzer wrote:
+> On Sat, Aug 08 2009 at 12:55am -0400,
 >
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
+> Nikanth Karthikesan <knikanth@suse.de> wrote:
+> > Export a way to delay initializing a request_queue after allocating it.
+> > This is needed by device-mapper devices, as they create the queue on
+> > device creation time, but they decide whether it would use the elevator
+> > and requests only after first successful table load. Only request-based
+> > dm-devices use the elevator and requests. Without this either one needs
+> > to initialize and free the mempool and elevator, if it was a bio-based
+> > dm-device or leave it allocated, as it is currently done.
+> >
+> > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+>
+> This patch needed to be refreshed to account for the changes from this
+> recent commit: a4e7d46407d73f35d217013b363b79a8f8eafcaa
+>
+> I've attached a refreshed patch.
 >
 
-Ivo sent a test patch for this and I tested it., but without success. I reported my findings but 
-didn't get a reply. See http://marc.info/?l=linux-wireless&m=124940189007154&w=4.
+Thanks.
 
-I suspect the failure is due to the same PS hardware probelms that were at the route of my original 
-report.. Unless one of the wireless folks say otherwise, I think we should close this on the basis 
-of busted hardware. I'm happy to simply eject the card and re-insert it now that I have some udev 
-scripts to tear down the wireless configuration on the ejection and set it uop again when the card 
-is re-inserted.
+> Though I still have questions/feedback below.
+>
+> > diff --git a/block/blk-core.c b/block/blk-core.c
+> > index 4b45435..5db0772 100644
+> > --- a/block/blk-core.c
+> > +++ b/block/blk-core.c
+> > @@ -569,12 +571,25 @@ blk_init_queue_node(request_fn_proc *rfn,
+> > spinlock_t *lock, int node_id) if (!q)
+> >  		return NULL;
+> >
+> > -	q->node = node_id;
+> > -	if (blk_init_free_list(q)) {
+> > +	if (blk_init_allocated_queue(q, rfn, lock)) {
+> > +		blk_put_queue(q);
+> >  		kmem_cache_free(blk_requestq_cachep, q);
+> >  		return NULL;
+> >  	}
+> >
+> > +	return q;
+> > +}
+> > +EXPORT_SYMBOL(blk_init_queue_node);
+> > +
+> > +int blk_init_allocated_queue(struct request_queue *q, request_fn_proc
+> > *rfn, +							 spinlock_t *lock)
+> > +{
+> > +	int err = 0;
+> > +
+> > +	err = blk_init_free_list(q);
+> > +	if (err)
+> > +		goto out;
+> > +
+> >  	/*
+> >  	 * if caller didn't supply a lock, they get per-queue locking with
+> >  	 * our embedded lock
+> > @@ -598,15 +613,20 @@ blk_init_queue_node(request_fn_proc *rfn,
+> > spinlock_t *lock, int node_id) /*
+> >  	 * all done
+> >  	 */
+> > -	if (!elevator_init(q, NULL)) {
+> > -		blk_queue_congestion_threshold(q);
+> > -		return q;
+> > -	}
+> > +	err = elevator_init(q, NULL);
+> > +	if (err)
+> > +		goto free_and_out;
+> >
+> > -	blk_put_queue(q);
+> > -	return NULL;
+> > +	blk_queue_congestion_threshold(q);
+> > +
+> > +	return 0;
+> > +
+> > +free_and_out:
+> > +	mempool_destroy(q->rq.rq_pool);
+> > +out:
+> > +	return err;
+> >  }
+> > -EXPORT_SYMBOL(blk_init_queue_node);
+> > +EXPORT_SYMBOL(blk_init_allocated_queue);
+> >
+> >  int blk_get_queue(struct request_queue *q)
+> >  {
+>
+> In the previous code blk_init_queue_node() only called blk_put_queue()
+> iff elevator_init() failed.
+>
+> Why is blk_init_queue_node() now always calling blk_put_queue() on an
+> error from blk_init_allocated_queue()?  It could be that
+> blk_init_free_list() was what failed and not elevator_init().
+>
+
+I think, it was a bug on not calling blk_put_queue() even when 
+blk_init_free_list() failed which would be fixed now.
+
+
+> I'd imagine it is because some callers of blk_init_allocated_queue(),
+> e.g. DM, must not have the queue's refcount dropped on failure?  A
+> comment on _why_ would really help set the caller's expectations.  Maybe
+> at the top of blk_init_allocated_queue()? E.g.:
+>
+> "It is up to the caller to manage the allocated queue's lifecycle
+> relative to blk_init_allocated_queue() failure".  I guess that is
+> obvious after having reviewed this but...
+>
+> Also, a comment that blk_init_allocated_queue()'s mempool_destroy() is
+> to "cleanup the mempool allocated via blk_init_free_list()" would help.
+>
+
+Will add the comment when I resend the patch.
+
+Thanks for reviewing.
 
 Thanks
-
-Chris
-
-
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13846
-> Subject		: LEDs switched off permanently by power saving with rt61pci
-> driver Submitter	: Chris Clayton <chris2553@googlemail.com>
-> Date		: 2009-07-13 8:27 (28 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124747418828398&w=4
-
-
--- 
-No, Sir; there is nothing which has yet been contrived by man, by which so much happiness is 
-produced as by a good tavern or inn - Doctor Samuel Johnson
+Nikanth
