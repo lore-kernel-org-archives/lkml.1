@@ -1,87 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752130AbZHJHba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177AbZHJHcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752130AbZHJHba (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 03:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZHJHb3
+	id S1752177AbZHJHcw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 03:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbZHJHcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 03:31:29 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:28629 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbZHJHb2 (ORCPT
+	Mon, 10 Aug 2009 03:32:52 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:44986 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbZHJHcv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 03:31:28 -0400
+	Mon, 10 Aug 2009 03:32:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=JzAgins5nMcN/wv1aM2JAOPakzJiu2M89WKZCCFG5h8cePzliXao2zTHQZz6W6PHnx
-         MlLkpNsqIj/P/41bHd6V8vR6PUXVaN9IViUAbdkgnRzr6vMn38BcZpbcl6HFIC/HofoW
-         O1aDo6qSR+n+Dns+vBUykgXCCHlTlLIpLpMZM=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uX/J3/15aafxm1shcZlssInJt5v8SNw2dcGC8+r7+pjBf4Dsxe5scEGG1s2uNmA/mq
+         RYvxilSfxUQTvaQ94wCu+PSdz54WA06iBeU78a1NpLSXrJx9xZ9t8UkvDRQJwn8Hz1TC
+         O0xmQx78amqxSdzBdLnOcVsLQ7Dx2ClpeLpvo=
+Date: Mon, 10 Aug 2009 09:32:49 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 3/3] perfcounter: Align ftrace events raw samples to 8
+	bytes
+Message-ID: <20090810073247.GA5508@nowhere>
+References: <1249698400-5441-1-git-send-email-fweisbec@gmail.com> <1249698400-5441-6-git-send-email-fweisbec@gmail.com> <1249888437.17467.42.camel@twins>
 MIME-Version: 1.0
-In-Reply-To: <20090808214454.GB24153@elf.ucw.cz>
-References: <20090808130315.GA12930@elf.ucw.cz>
-	 <5d5443650908080942l50d91d31qb23c494affdf6850@mail.gmail.com>
-	 <20090808214454.GB24153@elf.ucw.cz>
-Date: Mon, 10 Aug 2009 13:01:28 +0530
-Message-ID: <5d5443650908100031t5240daa4h76ef2a7863cc4403@mail.gmail.com>
-Subject: Re: HTC Dream for staging: add support for input on GPIO pins
-From: Trilok Soni <soni.trilok@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Greg KH <greg@kroah.com>, kernel list <linux-kernel@vger.kernel.org>,
-       swetland@google.com, linux-input@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249888437.17467.42.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
+On Mon, Aug 10, 2009 at 09:13:57AM +0200, Peter Zijlstra wrote:
+> On Sat, 2009-08-08 at 04:26 +0200, Frederic Weisbecker wrote:
+> > Align the ftrace events raw samples to 8 bytes so that they meet the
+> > perf output event alignements requirements.
+> > 
+> > Reported-by: Peter Zijlstra <peterz@infradead.org>
+> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > Cc: Peter Zijlstra <peterz@infradead.org>
+> > Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> > Cc: Mike Galbraith <efault@gmx.de>
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > ---
+> >  include/trace/ftrace.h |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> > index 80e5f6c..7b0834c 100644
+> > --- a/include/trace/ftrace.h
+> > +++ b/include/trace/ftrace.h
+> > @@ -687,7 +687,7 @@ static void ftrace_profile_##call(proto)				\
+> >  	pc = preempt_count();						\
+> >  									\
+> >  	__data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
+> > -	__entry_size = __data_size + sizeof(*entry);			\
+> > +	__entry_size = ALIGN(__data_size + sizeof(*entry), sizeof(u64));\
+> >  									\
+> >  	do {								\
+> >  		char raw_data[__entry_size];				\
+> 
+> Make sure to clear the trailing few bytes, otherwise we've got a stack
+> data leak here.
 
-On Sun, Aug 9, 2009 at 3:14 AM, Pavel Machek<pavel@ucw.cz> wrote:
-> On Sat 2009-08-08 22:12:46, Trilok Soni wrote:
->> Hi Pavel,
->>
->> On Sat, Aug 8, 2009 at 6:33 PM, Pavel Machek<pavel@ucw.cz> wrote:
->> > From: Arve Hj?nnev?g <arve@android.com>
->> >
->> > Support for input devices connected to GPIO pins. This adds support
->> > for HTC Dream's keyboard and its trackball. Generic support already
->> > exists for keyboard on GPIO, but this one is more advanced because it
->> > can detect shadow key presses (and actually works with Dream :-).
->> >
->> > (It also contains Kconfig/Makefile changes, including some that were
->> > missing from previous commit. Sorry.)
->>
->> I don't see any importance of gpio_matrix.c when we already have
->> generic gpio matrix driver mainlined. I would suggest to remove those
->> bits from this patch. I have added linux-input ML.
->
-> Well, I'm trying for staging merge at this point. Reasons why
-> gpio_matrix is there are:
->
-> 1) it is non-trivial to remove
->
-> 2) it has some features mainline lacks
->
-> 3) HTC Dream actually works with it
->
-> (and 4) I'd like to submit code as Arve wrote it, then transform/clean
-> it up in staging).
->
-> Of course, relevant features will need to be extracted from
-> gpio_matrix and merged at the right places, and that needs to happen
-> before move from staging/, but I'd like to have working keyboard in
-> the meantime.
 
-gpio_matrix in mainline should work with HTC G1 with few proper
-platform data and input name eventhough ghost key clearance code is
-not yet in mainline driver.
+Oh, right.
 
-I know you want HTC dream to work through staging but I would prefer
-that such drivers should be discussed and reviewed on
-linux-input/linux-kernel ML and not just dumped in staging.
 
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+ 
+> Also, tracepoints using __string() could still easily overflow the stack
+> here and cause great havoc, esp since the tracepoint could already be
+> deep into a call-chain.
+
+
+I know yeah, I'll think about a way to store the string parts as pointers
+and copy their content on perf_output only.
+
