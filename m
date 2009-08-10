@@ -1,54 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZHJOay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076AbZHJOe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbZHJOay (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbZHJOax
+	id S1755076AbZHJOe3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754885AbZHJOe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:30:53 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:50226 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755000AbZHJOaw (ORCPT
+	Mon, 10 Aug 2009 10:34:29 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:20163 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753847AbZHJOe2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:30:52 -0400
-Subject: Re: 2.6.31-rc5-git5: Reported regressions from 2.6.30
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>
-In-Reply-To: <AuPdDySr74O.A.5LC.Pj1fKB@chimera>
-References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera>
-Content-Type: text/plain
-Date: Mon, 10 Aug 2009 09:30:43 -0500
-Message-Id: <1249914643.4089.3.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Aug 2009 10:34:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=PFSWEsVkig4cc1LTjqm+I0exWc3+lCs/jAQYO4XLlUCaXRlWH3BoSV5dQXmhYtw79m
+         kKeLzrylPBZjLHF1V7KAUNs/XF1S9BBtIzUvzNhLDenI+DZ3Lgki0k8JX7eVT6/y3icg
+         qcEGxF7qBa/ykJRFrfkeC54bHgAYWMb16CMq8=
+Date: Mon, 10 Aug 2009 22:37:25 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>
+Cc: linux-kernel@vger.kernel.org, arjan@infradead.org
+Subject: Re: [PATCH v2] markup_oops: Use modinfo to avoid confusion with
+	underscored module names
+Message-ID: <20090810143725.GA7173@hack>
+References: <1249561315-2227-1-git-send-email-ozan@pardus.org.tr> <1249895593-23567-1-git-send-email-ozan@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1249895593-23567-1-git-send-email-ozan@pardus.org.tr>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-08-09 at 22:36 +0200, Rafael J. Wysocki wrote:
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13716
-> Subject         : The AIC-7892P controller does not work any more
-> Submitter       : Andrej Podzimek <andrej@podzimek.org>
-> Date            : 2009-07-05 19:23 (36 days old)
+On Mon, Aug 10, 2009 at 12:13:13PM +0300, Ozan Çağlayan wrote:
+>When EIP is at a module having an underscore in its name, the current
+>code fails to find it because the module filenames has '-' instead of
+>'_'. Use modinfo for a better path finding.
+>
+>Signed-off-by: Ozan Çağlayan <ozan@pardus.org.tr>
 
-This one sounds like an IRQ routing error, so probably ACPI, but we've
-been totally unsuccessful at getting any further information out of the
-submitter.  Use your own time judgement on this, but if he hasn't been
-responding to you either for 36 days, I'd suggest closing this as
-unresponsive.
+Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-James
+Thanks!
 
+>---
+> scripts/markup_oops.pl |    5 +----
+> 1 files changed, 1 insertions(+), 4 deletions(-)
+>
+>diff --git a/scripts/markup_oops.pl b/scripts/markup_oops.pl
+>index 8977401..5f0fcb7 100644
+>--- a/scripts/markup_oops.pl
+>+++ b/scripts/markup_oops.pl
+>@@ -184,10 +184,7 @@ if ($target eq "0") {
+> 
+> # if it's a module, we need to find the .ko file and calculate a load offset
+> if ($module ne "") {
+>-	my $dir = dirname($filename);
+>-	$dir = $dir . "/";
+>-	my $mod = $module . ".ko";
+>-	my $modulefile = `find $dir -name $mod | head -1`;
+>+	my $modulefile = `modinfo $module | grep '^filename:' | awk '{ print \$2 }'`;
+> 	chomp($modulefile);
+> 	$filename = $modulefile;
+> 	if ($filename eq "") {
+>-- 
+>1.6.3.4
+>
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
 
+-- 
+Live like a child, think like the god.
+ 
