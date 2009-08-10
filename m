@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbZHJJu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbZHJJzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753452AbZHJJu1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 05:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbZHJJu0
+	id S1753496AbZHJJzl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 05:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbZHJJzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 05:50:26 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58510 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753187AbZHJJu0 (ORCPT
+	Mon, 10 Aug 2009 05:55:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53411 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753341AbZHJJzj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 05:50:26 -0400
-Subject: Re: perf: store and retrieve trace event names in the perf.data
- file
-From: Peter Zijlstra <peterz@infradead.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A7F4463.3050508@linux.intel.com>
-References: <4A7F4463.3050508@linux.intel.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 10 Aug 2009 11:50:05 +0200
-Message-Id: <1249897805.17467.77.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 10 Aug 2009 05:55:39 -0400
+Date: Mon, 10 Aug 2009 11:55:35 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: hwpoison merge for linux-next / 2.6.32
+Message-ID: <20090810095535.GB6838@basil.fritz.box>
+References: <20090807084902.GA14309@basil.fritz.box> <20090810194528.a3bc0cbc.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090810194528.a3bc0cbc.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the CC :-)
+> OK, I have added this today.
 
-On Sun, 2009-08-09 at 14:49 -0700, Arjan van de Ven wrote:
-> +static void store_event_type(const char *orgname)
-> +{
-> +       char filename[PATH_MAX], *c;
-> +       FILE *file;
-> +       int id;
-> +
-> +       sprintf(filename, "/sys/kernel/debug/tracing/events/%s/id", orgname);
+Thanks.
 
-That should be using debugfs_path, as it stands this thing won't work on
-any of my machines.
+> What I tell everyone: all patches/commits in the tree/series must
+> have been:
+> 
+> 	posted to a relevant mailing list
+> 	reviewed
+> 	unit tested
+> 	destined for the next merge window (or the current release)
 
-> +       c = strchr(filename, ':');
-> +       if (c) *c = '/';
-> +
-> +       file = fopen(filename, "r");
-> +       if (!file)
-> +               return;
-> +       fscanf(file, "%i", &id);
-> +       fclose(file);
-> +       perf_header__push_event(id, orgname);
-> +}
+all true for hwpoison.
+
+> 
+> *before* they are included.  The linux-next tree is for integration
+> testing and to lower the impact of conflicts between subsystems in the
+> next merge window.
+> 
+> Basically, this should be just what you would send to Linus or in this
+> case, Ingo, (or ask him to fetch).  It is allowed to be rebased if you
+
+This is practially all generic MM or VFS code, nothing for Ingo.
+
+The only part that should concern anything Ingo maintains
+is a one tiny patch for x86 in the patch series. While that could
+be in theory separated out I don't think it makes too much sense
+(the patch wouldn't build without the rest of hwpoison)
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
