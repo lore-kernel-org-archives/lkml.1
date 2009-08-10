@@ -1,103 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbZHJU2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753162AbZHJUdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753152AbZHJU2Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 16:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbZHJU2Y
+	id S1753162AbZHJUdl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 16:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZHJUdl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 16:28:24 -0400
-Received: from cantor.suse.de ([195.135.220.2]:43485 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752482AbZHJU2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 16:28:23 -0400
-Date: Mon, 10 Aug 2009 22:28:22 +0200
-From: Jan Kara <jack@suse.cz>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Jan Kara <jack@suse.cz>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH, RFC] ext3: Update Kconfig description of
-	EXT3_DEFAULTS_TO_ORDERED
-Message-ID: <20090810202822.GA11979@duck.suse.cz>
-References: <1249934623-15939-1-git-send-email-tytso@mit.edu>
+	Mon, 10 Aug 2009 16:33:41 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:21670 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752498AbZHJUdk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 16:33:40 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAOcggEqrR7MV/2dsb2JhbAC6HIgrjwkFhBg
+X-IronPort-AV: E=Sophos;i="4.43,355,1246838400"; 
+   d="scan'208";a="89315730"
+From: Roland Dreier <rdreier@cisco.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Bart Van Assche <bart.vanassche@gmail.com>,
+       OpenIB <general@lists.openfabrics.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ofa-general] IB kernel modules and the kobject release() method
+References: <e2e108260908060943u344bbe03k2baab01b204c9cca@mail.gmail.com>
+	<adad478hmi8.fsf@cisco.com>
+	<e2e108260908061146y47ae45f5j6b8085d44cd1c45b@mail.gmail.com>
+	<adaocqsg339.fsf@cisco.com>
+	<e2e108260908061229v2c605aabp7cf66cbe568d6755@mail.gmail.com>
+	<adafxc4g1e7.fsf@cisco.com>
+	<e2e108260908070026s10658adl2c4a9a5b3eba1a08@mail.gmail.com>
+	<20090808034817.GA30697@suse.de>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 10 Aug 2009 13:33:40 -0700
+In-Reply-To: <20090808034817.GA30697@suse.de> (Greg KH's message of "Fri, 7
+	Aug 2009 20:48:17 -0700")
+Message-ID: <adad4738l3v.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249934623-15939-1-git-send-email-tytso@mit.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 10 Aug 2009 20:33:41.0041 (UTC) FILETIME=[D8EC8210:01CA19F9]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 10-08-09 16:03:43, Theodore Ts'o wrote:
-> The old description for this configuration option was perhaps not
-> completely balanced in terms of describing the tradeoffs of using a
-> default of data=writeback vs. data=ordered.  Despite the fact that old
-> description very strongly recomended disabling this feature, all of
-> the major distributions have elected to preserve the existing 'legacy'
-> default, which is a strong hint that it perhaps wasn't telling the
-> whole story.
-> 
-> This revised description has been vetted by a number of ext3
-> developers as being better at informing the user about the tradeoffs
-> of enabling or disabling this configuration feature.
-  Thanks. Merged to my tree. I plan to push it to Linus in the next merge
-window.
 
-								Honza
-> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-> Cc: linux-ext4@vger.kernel.org
-> ---
->  fs/ext3/Kconfig |   32 +++++++++++++++++---------------
->  1 files changed, 17 insertions(+), 15 deletions(-)
-> 
-> diff --git a/fs/ext3/Kconfig b/fs/ext3/Kconfig
-> index fb3c1a2..522b154 100644
-> --- a/fs/ext3/Kconfig
-> +++ b/fs/ext3/Kconfig
-> @@ -29,23 +29,25 @@ config EXT3_FS
->  	  module will be called ext3.
->  
->  config EXT3_DEFAULTS_TO_ORDERED
-> -	bool "Default to 'data=ordered' in ext3 (legacy option)"
-> +	bool "Default to 'data=ordered' in ext3"
->  	depends on EXT3_FS
->  	help
-> -	  If a filesystem does not explicitly specify a data ordering
-> -	  mode, and the journal capability allowed it, ext3 used to
-> -	  historically default to 'data=ordered'.
-> -
-> -	  That was a rather unfortunate choice, because it leads to all
-> -	  kinds of latency problems, and the 'data=writeback' mode is more
-> -	  appropriate these days.
-> -
-> -	  You should probably always answer 'n' here, and if you really
-> -	  want to use 'data=ordered' mode, set it in the filesystem itself
-> -	  with 'tune2fs -o journal_data_ordered'.
-> -
-> -	  But if you really want to enable the legacy default, you can do
-> -	  so by answering 'y' to this question.
-> +	  The journal mode options for ext3 have different tradeoffs
-> +	  between when data is guaranteed to be on disk and
-> +	  performance.	The use of "data=writeback" can cause
-> +	  unwritten data to appear in files after an system crash or
-> +	  power failure, which can be a security issue.	 However,
-> +	  "data=ordered" mode can also result in major performance
-> +	  problems, including seconds-long delays before an fsync()
-> +	  call returns.	 For details, see:
-> +
-> +	  http://ext4.wiki.kernel.org/index.php/Ext3_data_mode_tradeoffs
-> +
-> +	  If you have been historically happy with ext3's performance,
-> +	  data=ordered mode will be a safe choice and you should
-> +	  answer 'y' here.  If you understand the reliability and data
-> +	  privacy issues of data=writeback and are willing to make
-> +	  that trade off, answer 'n'.
->  
->  config EXT3_FS_XATTR
->  	bool "Ext3 extended attributes"
-> -- 
-> 1.6.3.2.1.gb9f7d.dirty
-> 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+ > No, it still makes sense :)
+
+So what's the fix for this?  If even you have trouble understanding
+kobject lifetimes and the requirement for a release function, is there
+hope for anyone else?
+
+ - R.
