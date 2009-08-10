@@ -1,59 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbZHJCzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbZHJC4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755234AbZHJCzr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 22:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbZHJCzn
+	id S1755313AbZHJC4F (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 22:56:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755068AbZHJCzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 22:55:43 -0400
-Received: from sh.osrg.net ([192.16.179.4]:37972 "EHLO sh.osrg.net"
+	Sun, 9 Aug 2009 22:55:42 -0400
+Received: from sh.osrg.net ([192.16.179.4]:37973 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932174AbZHJCzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 22:55:39 -0400
+	id S932175AbZHJCzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 22:55:40 -0400
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: mingo@elte.hu
 Cc: davem@davemloft.net, sparclinux@vger.kernel.org,
        linux-kernel@vger.kernel.org, tony.luck@intel.com, fenghua.yu@intel.com,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: [PATCH resend 0/8] sparc: use asm-generic/dma-mapping-common.h and pci-dma-compat.h
-Date: Mon, 10 Aug 2009 11:53:09 +0900
-Message-Id: <1249872797-1314-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+       Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 1/8] remove flush_write_buffers() in dma-mapping-common.h
+Date: Mon, 10 Aug 2009 11:53:10 +0900
+Message-Id: <1249872797-1314-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.6.0.6
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 10 Aug 2009 11:54:48 +0900 (JST)
+In-Reply-To: <1249872797-1314-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1249872797-1314-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 10 Aug 2009 11:54:49 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the repost of the patchset (as Ingo asked me offline) :
+From: Arnd Bergmann <arnd@arndb.de>
 
-http://lkml.org/lkml/2009/7/13/20
+This moves flush_write_buffers() in asm-generic/dma-mapping-common.h to
+arch/x86/kernel/pci-nommu.c.
 
-There is no functional change. I just added David's ack to #3-8
-patches and Robert's Tested-by to #8 patch.
+The purpose of this patch is that, we can avoid defining NULL
+flush_write_buffers() on IA64 and SPARC.
 
-I confirmed that it can be applied cleanly to mainline, -next, and
--tip trees.
+dma-mapping-common.h is used by X86 and IA64 (and SPARC soon) but only
+X86 with CONFIG_X86_OOSTORE or CONFIG_X86_PPRO_FENCE actually uses
+flush_write_buffers(). CONFIG_X86_OOSTORE or CONFIG_X86_PPRO_FENCE is
+usable with only kernel/pci-nommu.c (that is, not usable with other
+X86 IOMMU implementations such as SWIOTLB, VT-d, etc) so we can safely
+move flush_write_buffers() in asm-generic/dma-mapping-common.h to
+arch/x86/kernel/pci-nommu.c.
 
-The git tree is also available:
+The further discussion is:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git sparc
+http://lkml.org/lkml/2009/6/28/104
 
-=
- arch/ia64/include/asm/dma-mapping.h      |    1 -
- arch/sparc/Kconfig                       |    2 +
- arch/sparc/include/asm/dma-mapping.h     |  145 ++++-------------------
- arch/sparc/include/asm/pci.h             |    3 +
- arch/sparc/include/asm/pci_32.h          |  105 ----------------
- arch/sparc/include/asm/pci_64.h          |   88 --------------
- arch/sparc/kernel/Makefile               |    2 +-
- arch/sparc/kernel/dma.c                  |  175 +--------------------------
- arch/sparc/kernel/dma.h                  |   14 --
- arch/sparc/kernel/iommu.c                |   20 ++-
- arch/sparc/kernel/ioport.c               |  190 ++++++++++++++++-------------
- arch/sparc/kernel/pci.c                  |    2 +-
- arch/sparc/kernel/pci_sun4v.c            |   30 ++----
- arch/x86/kernel/pci-nommu.c              |   27 ++++-
- include/asm-generic/dma-mapping-common.h |    6 -
- 15 files changed, 183 insertions(+), 627 deletions(-)
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/x86/kernel/pci-nommu.c              |   27 ++++++++++++++++++++++-----
+ include/asm-generic/dma-mapping-common.h |    6 ------
+ 2 files changed, 22 insertions(+), 11 deletions(-)
 
-
+diff --git a/arch/x86/kernel/pci-nommu.c b/arch/x86/kernel/pci-nommu.c
+index 71d412a..f7eb967 100644
+--- a/arch/x86/kernel/pci-nommu.c
++++ b/arch/x86/kernel/pci-nommu.c
+@@ -79,12 +79,29 @@ static void nommu_free_coherent(struct device *dev, size_t size, void *vaddr,
+ 	free_pages((unsigned long)vaddr, get_order(size));
+ }
+ 
++static void nommu_sync_single_for_device(struct device *dev,
++			dma_addr_t addr, size_t size,
++			enum dma_data_direction dir)
++{
++	flush_write_buffers();
++}
++
++
++static void nommu_sync_sg_for_device(struct device *dev,
++			struct scatterlist *sg, int nelems,
++			enum dma_data_direction dir)
++{
++	flush_write_buffers();
++}
++
+ struct dma_map_ops nommu_dma_ops = {
+-	.alloc_coherent	= dma_generic_alloc_coherent,
+-	.free_coherent	= nommu_free_coherent,
+-	.map_sg		= nommu_map_sg,
+-	.map_page	= nommu_map_page,
+-	.is_phys	= 1,
++	.alloc_coherent		= dma_generic_alloc_coherent,
++	.free_coherent		= nommu_free_coherent,
++	.map_sg			= nommu_map_sg,
++	.map_page		= nommu_map_page,
++	.sync_single_for_device = nommu_sync_single_for_device,
++	.sync_sg_for_device	= nommu_sync_sg_for_device,
++	.is_phys		= 1,
+ };
+ 
+ void __init no_iommu_init(void)
+diff --git a/include/asm-generic/dma-mapping-common.h b/include/asm-generic/dma-mapping-common.h
+index 5406a60..e694263 100644
+--- a/include/asm-generic/dma-mapping-common.h
++++ b/include/asm-generic/dma-mapping-common.h
+@@ -103,7 +103,6 @@ static inline void dma_sync_single_for_cpu(struct device *dev, dma_addr_t addr,
+ 	if (ops->sync_single_for_cpu)
+ 		ops->sync_single_for_cpu(dev, addr, size, dir);
+ 	debug_dma_sync_single_for_cpu(dev, addr, size, dir);
+-	flush_write_buffers();
+ }
+ 
+ static inline void dma_sync_single_for_device(struct device *dev,
+@@ -116,7 +115,6 @@ static inline void dma_sync_single_for_device(struct device *dev,
+ 	if (ops->sync_single_for_device)
+ 		ops->sync_single_for_device(dev, addr, size, dir);
+ 	debug_dma_sync_single_for_device(dev, addr, size, dir);
+-	flush_write_buffers();
+ }
+ 
+ static inline void dma_sync_single_range_for_cpu(struct device *dev,
+@@ -132,7 +130,6 @@ static inline void dma_sync_single_range_for_cpu(struct device *dev,
+ 		ops->sync_single_range_for_cpu(dev, addr, offset, size, dir);
+ 		debug_dma_sync_single_range_for_cpu(dev, addr, offset, size, dir);
+ 
+-		flush_write_buffers();
+ 	} else
+ 		dma_sync_single_for_cpu(dev, addr, size, dir);
+ }
+@@ -150,7 +147,6 @@ static inline void dma_sync_single_range_for_device(struct device *dev,
+ 		ops->sync_single_range_for_device(dev, addr, offset, size, dir);
+ 		debug_dma_sync_single_range_for_device(dev, addr, offset, size, dir);
+ 
+-		flush_write_buffers();
+ 	} else
+ 		dma_sync_single_for_device(dev, addr, size, dir);
+ }
+@@ -165,7 +161,6 @@ dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
+ 	if (ops->sync_sg_for_cpu)
+ 		ops->sync_sg_for_cpu(dev, sg, nelems, dir);
+ 	debug_dma_sync_sg_for_cpu(dev, sg, nelems, dir);
+-	flush_write_buffers();
+ }
+ 
+ static inline void
+@@ -179,7 +174,6 @@ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
+ 		ops->sync_sg_for_device(dev, sg, nelems, dir);
+ 	debug_dma_sync_sg_for_device(dev, sg, nelems, dir);
+ 
+-	flush_write_buffers();
+ }
+ 
+ #define dma_map_single(d, a, s, r) dma_map_single_attrs(d, a, s, r, NULL)
+-- 
+1.6.0.6
 
