@@ -1,57 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752023AbZHJHEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752074AbZHJHHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752023AbZHJHEG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 03:04:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbZHJHEG
+	id S1752074AbZHJHHt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 03:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbZHJHHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 03:04:06 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:59958 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751757AbZHJHEE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 03:04:04 -0400
-Subject: Re: mmotm 2009-08-06-00-30 uploaded (mtd)
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       Magnus Damm <damm@igel.co.jp>, David Woodhouse <dwmw2@infradead.org>,
-       linux-mtd@lists.infradead.org
-In-Reply-To: <20090807033448.GA32592@linux-sh.org>
-References: <200908060733.n767X6mN023120@imap1.linux-foundation.org>
-	 <20090806190233.6d4b4e28.randy.dunlap@oracle.com>
-	 <20090806192513.53f6488b.akpm@linux-foundation.org>
-	 <20090807033448.GA32592@linux-sh.org>
-Content-Type: text/plain
-Date: Mon, 10 Aug 2009 10:01:35 +0300
-Message-Id: <1249887695.19638.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Aug 2009 07:03:08.0481 (UTC) FILETIME=[9DA8C310:01CA1988]
-X-Nokia-AV: Clean
+	Mon, 10 Aug 2009 03:07:48 -0400
+Received: from mga14.intel.com ([143.182.124.37]:44252 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751871AbZHJHHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 03:07:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,352,1246863600"; 
+   d="scan'208";a="174024835"
+Date: Mon, 10 Aug 2009 15:07:45 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, "tytso@mit.edu" <tytso@mit.edu>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "mfasheh@suse.com" <mfasheh@suse.com>,
+       "aia21@cantab.net" <aia21@cantab.net>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "swhiteho@redhat.com" <swhiteho@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [16/19] HWPOISON: Enable .remove_error_page for
+	migration    aware file systems
+Message-ID: <20090810070745.GA26533@localhost>
+References: <200908051136.682859934@firstfloor.org> <20090805093643.E0C00B15D8@basil.firstfloor.org> <4A7FBFD1.2010208@hitachi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A7FBFD1.2010208@hitachi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-07 at 12:34 +0900, Paul Mundt wrote:
-> [PATCH] mtd: onenand: select MTD_PARTITIONS.
+Hi Hidehiro,
+
+On Mon, Aug 10, 2009 at 02:36:01PM +0800, Hidehiro Kawai wrote:
+> Hi,
 > 
-> All of the onenand drivers depend on mtd partition support being compiled
-> in, so just select it. Fixes up build breakage:
+> Andi Kleen wrote:
 > 
-> drivers/built-in.o: In function `generic_onenand_remove':
-> generic.c:(.devexit.text+0x80): undefined reference to `del_mtd_partitions'
+> > Index: linux/fs/ext3/inode.c
+> > ===================================================================
+> > --- linux.orig/fs/ext3/inode.c
+> > +++ linux/fs/ext3/inode.c
+> > @@ -1819,6 +1819,7 @@ static const struct address_space_operat
+> >  	.direct_IO		= ext3_direct_IO,
+> >  	.migratepage		= buffer_migrate_page,
+> >  	.is_partially_uptodate  = block_is_partially_uptodate,
+> > +	.error_remove_page	= generic_error_remove_page,
+> >  };
 > 
-> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> (I'm sorry if I'm missing the point.)
+> 
+> If my understanding is correct, the following scenario can happen:
+> 
+> 1. An uncorrected error on a dirty page cache page is detected by
+>    memory scrubbing
+> 2. Kernel unmaps and truncates the page to recover from the error
+> 3. An application reads data from the file location corresponding
+>    to the truncated page
+>    ==> Old or garbage data will be read into a new page cache page
+> 4. The application modifies the data and write back it to the disk
+> 5. The file will corrurpt!
+> 
+> (Yes, the application is wrong to not do the right thing, i.e. fsync,
+>  but it's not user's fault!)
 
-Hopefully someday we are going to remove this config options, remove
-the mtdpart module, and make partitions mandatory. Currently it is
-a mess, IMO.
+Right. Note that the data has already been corrupted and the above
+scenario can be called as re-corruption. We set AS_EIO to trigger some
+IO reporting mechanism so that it won't corrupt *silently*.
 
-I've just put this patch to my l2-mtd-2.6.git tree.
+> A similar data corruption can be caused by a write I/O error,
+> because dirty flag is cleared even if the page couldn't be written
+> to the disk.
 
-Artem.
+Yes.
 
+> However, we have a way to avoid this kind of data corruption at
+> least for ext3.  If we mount an ext3 filesystem with data=ordered
+> and data_err=abort, all I/O errors on file data block belonging to
+> the committing transaction are checked.  When I/O error is found,
+> abort journaling and remount the filesystem with read-only to
+> prevent further updates.  This kind of feature is very important
+> for mission critical systems.
+
+Agreed. We also set PG_error, which should be enough to trigger such
+remount?
+
+> If we merge this patch, we would face the data corruption problem
+> again.
+> 
+> I think there are three options,
+> 
+> (1) drop this patch
+> (2) merge this patch with new panic_on_dirty_page_cache_corruption
+>     sysctl
+> (3) implement a more sophisticated error_remove_page function
+
+In fact we proposed a patch for preventing the re-corruption case, see
+
+        http://lkml.org/lkml/2009/6/11/294
+
+However it is hard to answer the (policy) question "How sticky should
+the EIO bit remain?".
+
+> >  static const struct address_space_operations ext3_writeback_aops = {
+> > @@ -1834,6 +1835,7 @@ static const struct address_space_operat
+> >  	.direct_IO		= ext3_direct_IO,
+> >  	.migratepage		= buffer_migrate_page,
+> >  	.is_partially_uptodate  = block_is_partially_uptodate,
+> > +	.error_remove_page	= generic_error_remove_page,
+> >  };
+> 
+> The writeback case would be OK. It's not much different from the I/O
+> error case.
+> 
+> >  static const struct address_space_operations ext3_journalled_aops = {
+> > @@ -1848,6 +1850,7 @@ static const struct address_space_operat
+> >  	.invalidatepage		= ext3_invalidatepage,
+> >  	.releasepage		= ext3_releasepage,
+> >  	.is_partially_uptodate  = block_is_partially_uptodate,
+> > +	.error_remove_page	= generic_error_remove_page,
+> >  };
+> >  
+> >  void ext3_set_aops(struct inode *inode)
+> 
+> I'm not sure about the journalled case.  I'm going to take a look at
+> it later.
+
+Thanks,
+Fengguang
