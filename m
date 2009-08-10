@@ -1,145 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752156AbZHJSC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751350AbZHJSIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752156AbZHJSC0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 14:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZHJSCZ
+	id S1751350AbZHJSIA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 14:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbZHJSH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 14:02:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46201 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752035AbZHJSCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 14:02:23 -0400
-Date: Mon, 10 Aug 2009 18:01:38 GMT
-From: tip-bot for Linus Torvalds <torvalds@linux-foundation.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, wei.chong.tan@intel.com, hpa@zytor.com,
-       mingo@redhat.com, torvalds@linux-foundation.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, wei.chong.tan@intel.com,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <B28277FD4E0F9247A3D55704C440A140D5D683F3@pgsmsx504.gar.corp.intel.com>
-References: <B28277FD4E0F9247A3D55704C440A140D5D683F3@pgsmsx504.gar.corp.intel.com>
-Subject: [tip:x86/urgent] x86: Fix serialization in pit_expect_msb()
-Message-ID: <tip-b6e61eef4f9f94714ac3ee4a5c96862d9bcd1836@git.kernel.org>
-Git-Commit-ID: b6e61eef4f9f94714ac3ee4a5c96862d9bcd1836
-X-Mailer: tip-git-log-daemon
+	Mon, 10 Aug 2009 14:07:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36804 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751009AbZHJSH7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 14:07:59 -0400
+Date: Mon, 10 Aug 2009 11:07:20 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ray Lee <ray-lk@madrabbit.org>
+cc: Artur Skawina <art.08.09@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: xterm loses data (pty regression)
+In-Reply-To: <alpine.LFD.2.01.0908101016100.3288@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0908101105040.3602@localhost.localdomain>
+References: <4A803CE7.20201@gmail.com> <2c0942db0908101007t54c39b64k2800b2c320969318@mail.gmail.com> <alpine.LFD.2.01.0908101016100.3288@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 10 Aug 2009 18:01:50 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b6e61eef4f9f94714ac3ee4a5c96862d9bcd1836
-Gitweb:     http://git.kernel.org/tip/b6e61eef4f9f94714ac3ee4a5c96862d9bcd1836
-Author:     Linus Torvalds <torvalds@linux-foundation.org>
-AuthorDate: Fri, 31 Jul 2009 12:45:41 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 10 Aug 2009 19:56:57 +0200
 
-x86: Fix serialization in pit_expect_msb()
 
-Wei Chong Tan reported a fast-PIT-calibration corner-case:
+On Mon, 10 Aug 2009, Linus Torvalds wrote:
+> 
+> On Mon, 10 Aug 2009, Ray Lee wrote:
+> > On Mon, Aug 10, 2009 at 8:29 AM, Artur Skawina <art.08.09@gmail.com> wrote:
+> > >
+> > > First noticed it after upgrading to v2.6.31-rc5-246-g90bc1a6, still happens
+> > > in rc5-381-g7b2aa03.
+> > > If i press ^S in an xterm the output stops as expected, but after a ^Q i see
+> > > only the newly written data, everything in between is lost. 
+> 
+> Yup, I can confirm that. 
+> 
+> > > > for i in `seq 1 111`; do echo $i; sleep 1; done
+> 
+> (Do ^S/^Q, see data loss)
+> 
+> Will take a look asap, thanks. Although I bet it's the same old commit 
+> (d945cb9cc: "pty: Rework the pty layer to use the normal buffering logic") 
+> again.
 
-| pit_expect_msb() is vulnerable to SMI disturbance corner case
-| in some platforms which causes /proc/cpuinfo to show wrong
-| CPU MHz value when quick_pit_calibrate() jumps to success
-| section.
+I think it's really this trivial.
 
-I think that the real issue isn't even an SMI - but the fact
-that in the very last iteration of the loop, there's no
-serializing instruction _after_ the last 'rdtsc'. So even in
-the absense of SMI's, we do have a situation where the cycle
-counter was read without proper serialization.
+That pty commit removed the checking for tty->stopped in 
+pty_write_buffer() for no clear reason. And when it did that, it broke all 
+the pausing logic in drivers/char/n_tty.c.
 
-The last check should be done outside the outer loop, since
-_inside_ the outer loop, we'll be testing that the PIT has
-the right MSB value has the right value in the next iteration.
+Can you confirm?
 
-So only the _last_ iteration is special, because that's the one
-that will not check the PIT MSB value any more, and because the
-final 'get_cycles()' isn't serialized.
-
-In other words:
-
- - I'd like to move the PIT MSB check to after the last
-   iteration, rather than in every iteration
-
- - I think we should comment on the fact that it's also a
-   serializing instruction and so 'fences in' the TSC read.
-
-Here's a suggested replacement.
-
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Reported-by: "Tan, Wei Chong" <wei.chong.tan@intel.com>
-Tested-by: "Tan, Wei Chong" <wei.chong.tan@intel.com>
-LKML-Reference: <B28277FD4E0F9247A3D55704C440A140D5D683F3@pgsmsx504.gar.corp.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
+		Linus
 
 ---
- arch/x86/kernel/tsc.c |   29 ++++++++++++++++++++++-------
- 1 files changed, 22 insertions(+), 7 deletions(-)
+ drivers/char/pty.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 6e1a368..71f4368 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -275,15 +275,20 @@ static unsigned long pit_calibrate_tsc(u32 latch, unsigned long ms, int loopmin)
-  * use the TSC value at the transitions to calculate a pretty
-  * good value for the TSC frequencty.
-  */
-+static inline int pit_verify_msb(unsigned char val)
-+{
-+	/* Ignore LSB */
-+	inb(0x42);
-+	return inb(0x42) == val;
-+}
-+
- static inline int pit_expect_msb(unsigned char val, u64 *tscp, unsigned long *deltap)
+diff --git a/drivers/char/pty.c b/drivers/char/pty.c
+index 6e6942c..d083c73 100644
+--- a/drivers/char/pty.c
++++ b/drivers/char/pty.c
+@@ -144,6 +144,8 @@ static int pty_write(struct tty_struct *tty, const unsigned char *buf,
+ 
+ static int pty_write_room(struct tty_struct *tty)
  {
- 	int count;
- 	u64 tsc = 0;
++	if (tty->stopped)
++		return 0;
+ 	return pty_space(tty->link);
+ }
  
- 	for (count = 0; count < 50000; count++) {
--		/* Ignore LSB */
--		inb(0x42);
--		if (inb(0x42) != val)
-+		if (!pit_verify_msb(val))
- 			break;
- 		tsc = get_cycles();
- 	}
-@@ -336,8 +341,7 @@ static unsigned long quick_pit_calibrate(void)
- 	 * to do that is to just read back the 16-bit counter
- 	 * once from the PIT.
- 	 */
--	inb(0x42);
--	inb(0x42);
-+	pit_verify_msb(0);
- 
- 	if (pit_expect_msb(0xff, &tsc, &d1)) {
- 		for (i = 1; i <= MAX_QUICK_PIT_ITERATIONS; i++) {
-@@ -348,8 +352,19 @@ static unsigned long quick_pit_calibrate(void)
- 			 * Iterate until the error is less than 500 ppm
- 			 */
- 			delta -= tsc;
--			if (d1+d2 < delta >> 11)
--				goto success;
-+			if (d1+d2 >= delta >> 11)
-+				continue;
-+
-+			/*
-+			 * Check the PIT one more time to verify that
-+			 * all TSC reads were stable wrt the PIT.
-+			 *
-+			 * This also guarantees serialization of the
-+			 * last cycle read ('d2') in pit_expect_msb.
-+			 */
-+			if (!pit_verify_msb(0xfe - i))
-+				break;
-+			goto success;
- 		}
- 	}
- 	printk("Fast TSC calibration failed\n");
