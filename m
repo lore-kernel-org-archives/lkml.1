@@ -1,144 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751823AbZHJFUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbZHJFWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751823AbZHJFUj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 01:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbZHJFUi
+	id S1752083AbZHJFWx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 01:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbZHJFWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 01:20:38 -0400
-Received: from compulab.co.il ([67.18.134.219]:55233 "EHLO compulab.co.il"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751399AbZHJFUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 01:20:37 -0400
-Message-ID: <4A7FAE22.80809@compulab.co.il>
-Date: Mon, 10 Aug 2009 08:20:34 +0300
-From: Mike Rapoport <mike@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090712)
+	Mon, 10 Aug 2009 01:22:52 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:57997 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751523AbZHJFWv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 01:22:51 -0400
+Date: Mon, 10 Aug 2009 10:52:43 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, andi.kleen@intel.com,
+       Prarit Bhargava <prarit@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: Help Resource Counters Scale Better (v3)
+Message-ID: <20090810052243.GB5257@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090807221238.GJ9686@balbir.in.ibm.com> <39eafe409b85053081e9c6826005bb06.squirrel@webmail-b.css.fujitsu.com> <20090808060531.GL9686@balbir.in.ibm.com> <99f2a13990d68c34c76c33581949aefd.squirrel@webmail-b.css.fujitsu.com> <20090809121530.GA5833@balbir.in.ibm.com> <20090810093229.10db7185.kamezawa.hiroyu@jp.fujitsu.com> <20090810094344.77a8ef55.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Felipe Balbi <me@felipebalbi.com>
-CC: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: Re: [PATCH] regulator: userspace: use sysfs_create_group
-References: <1249840885-13498-1-git-send-email-me@felipebalbi.com>
-In-Reply-To: <1249840885-13498-1-git-send-email-me@felipebalbi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-ACL-Warn: {
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - compulab.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090810094344.77a8ef55.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-10 09:43:44]:
 
-
-Felipe Balbi wrote:
-> Signed-off-by: Felipe Balbi <me@felipebalbi.com>
-> ---
-
-NAK
-
->  drivers/regulator/userspace-consumer.c |   44 ++++++++++++++++----------------
->  1 files changed, 22 insertions(+), 22 deletions(-)
+> On Mon, 10 Aug 2009 09:32:29 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> diff --git a/drivers/regulator/userspace-consumer.c b/drivers/regulator/userspace-consumer.c
-> index 06d2fa9..a7e8e0b 100644
-> --- a/drivers/regulator/userspace-consumer.c
-> +++ b/drivers/regulator/userspace-consumer.c
-> @@ -93,16 +93,20 @@ static ssize_t reg_set_state(struct device *dev, struct device_attribute *attr,
->  static DEVICE_ATTR(name, 0444, reg_show_name, NULL);
->  static DEVICE_ATTR(state, 0644, reg_show_state, reg_set_state);
->  
-> -static struct device_attribute *attributes[] = {
-> -	&dev_attr_name,
-> -	&dev_attr_state,
-> +static struct attribute *attributes[] = {
-> +	&dev_attr_name.attr,
-> +	&dev_attr_state.attr,
+> > 1. you use res_counter_read_positive() in force_empty. It seems force_empty can
+> >    go into infinite loop. plz check. (especially when some pages are freed or swapped-in
+> >    in other cpu while force_empry runs.)
+> > 
+> > 2. In near future, we'll see 256 or 1024 cpus on a system, anyway.
+> >    Assume 1024cpu system, 64k*1024=64M is a tolerance.
+> >    Can't we calculate max-tolerane as following ?
+> >   
+> >    tolerance = min(64k * num_online_cpus(), limit_in_bytes/100);
+> >    tolerance /= num_online_cpus();
+> >    per_cpu_tolerance = min(16k, tolelance);
+> > 
+> >    I think automatic runtine adjusting of tolerance will be finally necessary,
+> >    but above will not be very bad because we can guarantee 1% tolerance.
+> > 
+> 
+> Sorry, one more.
+> 
+> 3. As I requested when you pushed softlimit changes to mmotom, plz consider
+>    to implement a way to check-and-notify gadget to res_counter.
+>    See: http://marc.info/?l=linux-mm&m=124753058921677&w=2
+>
 
-NULL?
-Except that patch is Ok.
-
-> +};
-> +
-> +static const struct attribute_group attr_group = {
-> +	.attrs	= attributes,
->  };
->  
->  static int regulator_userspace_consumer_probe(struct platform_device *pdev)
->  {
->  	struct regulator_userspace_consumer_data *pdata;
->  	struct userspace_consumer_data *drvdata;
-> -	int ret, i;
-> +	int ret;
->  
->  	pdata = pdev->dev.platform_data;
->  	if (!pdata)
-> @@ -125,31 +129,29 @@ static int regulator_userspace_consumer_probe(struct platform_device *pdev)
->  		goto err_alloc_supplies;
->  	}
->  
-> -	for (i = 0; i < ARRAY_SIZE(attributes); i++) {
-> -		ret = device_create_file(&pdev->dev, attributes[i]);
-> -		if (ret != 0)
-> -			goto err_create_attrs;
-> -	}
-> +	ret = sysfs_create_group(&pdev->dev.kobj, &attr_group);
-> +	if (ret != 0)
-> +		goto err_create_attrs;
->  
-> -	if (pdata->init_on)
-> +	if (pdata->init_on) {
->  		ret = regulator_bulk_enable(drvdata->num_supplies,
->  					    drvdata->supplies);
-> -
-> -	drvdata->enabled = pdata->init_on;
-> -
-> -	if (ret) {
-> -		dev_err(&pdev->dev, "Failed to set initial state: %d\n", ret);
-> -		goto err_create_attrs;
-> +		if (ret) {
-> +			dev_err(&pdev->dev,
-> +				"Failed to set initial state: %d\n", ret);
-> +			goto err_enable;
-> +		}
->  	}
->  
-> +	drvdata->enabled = pdata->init_on;
->  	platform_set_drvdata(pdev, drvdata);
->  
->  	return 0;
->  
-> -err_create_attrs:
-> -	for (i = 0; i < ARRAY_SIZE(attributes); i++)
-> -		device_remove_file(&pdev->dev, attributes[i]);
-> +err_enable:
-> +	sysfs_remove_group(&pdev->dev.kobj, &attr_group);
->  
-> +err_create_attrs:
->  	regulator_bulk_free(drvdata->num_supplies, drvdata->supplies);
->  
->  err_alloc_supplies:
-> @@ -160,10 +162,8 @@ err_alloc_supplies:
->  static int regulator_userspace_consumer_remove(struct platform_device *pdev)
->  {
->  	struct userspace_consumer_data *data = platform_get_drvdata(pdev);
-> -	int i;
->  
-> -	for (i = 0; i < ARRAY_SIZE(attributes); i++)
-> -		device_remove_file(&pdev->dev, attributes[i]);
-> +	sysfs_remove_group(&pdev->dev.kobj, &attr_group);
->  
->  	if (data->enabled)
->  		regulator_bulk_disable(data->num_supplies, data->supplies);
+Yes, I will do that, but only after the scaling, since this is more
+important at the moment. 
 
 -- 
-Sincerely yours,
-Mike.
-
+	Balbir
