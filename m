@@ -1,77 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753606AbZHJUzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbZHJUzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753606AbZHJUzc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 16:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbZHJUz3
+	id S1753679AbZHJUzr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 16:55:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbZHJUzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 16:55:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60987 "EHLO mx2.redhat.com"
+	Mon, 10 Aug 2009 16:55:45 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60995 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753574AbZHJUzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 16:55:23 -0400
-Date: Mon, 10 Aug 2009 16:53:06 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: fweisbec@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com
-Message-Id: <d1a228daf853b6a044e03b5bac1b06d0996bf745.1249932670.git.jbaron@redhat.com>
-In-Reply-To: <cover.1249932670.git.jbaron@redhat.com>
-References: <cover.1249932670.git.jbaron@redhat.com>
-Subject: [PATCH 11/12] add more namespace area to 'perf list' output
+	id S1753646AbZHJUzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 16:55:44 -0400
+Message-ID: <4A80894A.7050506@redhat.com>
+Date: Mon, 10 Aug 2009 16:55:38 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+MIME-Version: 1.0
+To: "Theodore Ts'o" <tytso@mit.edu>
+CC: Jan Kara <jack@suse.cz>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH, RFC] ext3: Update Kconfig description of EXT3_DEFAULTS_TO_ORDERED
+References: <1249934623-15939-1-git-send-email-tytso@mit.edu>
+In-Reply-To: <1249934623-15939-1-git-send-email-tytso@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The new syscall tracepoints can be too long for the 'perf list' output. Add
-a few more characters.
+On 08/10/2009 04:03 PM, Theodore Ts'o wrote:
+> The old description for this configuration option was perhaps not
+> completely balanced in terms of describing the tradeoffs of using a
+> default of data=writeback vs. data=ordered.  Despite the fact that old
+> description very strongly recomended disabling this feature, all of
+> the major distributions have elected to preserve the existing 'legacy'
+> default, which is a strong hint that it perhaps wasn't telling the
+> whole story.
+>
+> This revised description has been vetted by a number of ext3
+> developers as being better at informing the user about the tradeoffs
+> of enabling or disabling this configuration feature.
+>
+> Signed-off-by: "Theodore Ts'o"<tytso@mit.edu>
+> Cc: linux-ext4@vger.kernel.org
+>    
 
-Signed-off-by: Jason Baron <jbaron@redhat.com>
+Thanks Ted - this is much more informative and will allow for a more 
+informed trade off to be made,
 
----
- tools/perf/util/parse-events.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+Ric
 
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 4858d83..a5d661b 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -606,7 +606,7 @@ static void print_tracepoint_events(void)
- 								evt_path, st) {
- 			snprintf(evt_path, MAXPATHLEN, "%s:%s",
- 				 sys_dirent.d_name, evt_dirent.d_name);
--			fprintf(stderr, "  %-40s [%s]\n", evt_path,
-+			fprintf(stderr, "  %-42s [%s]\n", evt_path,
- 				event_type_descriptors[PERF_TYPE_TRACEPOINT+1]);
- 		}
- 		closedir(evt_dir);
-@@ -640,7 +640,7 @@ void print_events(void)
- 			sprintf(name, "%s OR %s", syms->symbol, syms->alias);
- 		else
- 			strcpy(name, syms->symbol);
--		fprintf(stderr, "  %-40s [%s]\n", name,
-+		fprintf(stderr, "  %-42s [%s]\n", name,
- 			event_type_descriptors[type]);
- 
- 		prev_type = type;
-@@ -654,7 +654,7 @@ void print_events(void)
- 				continue;
- 
- 			for (i = 0; i < PERF_COUNT_HW_CACHE_RESULT_MAX; i++) {
--				fprintf(stderr, "  %-40s [%s]\n",
-+				fprintf(stderr, "  %-42s [%s]\n",
- 					event_cache_name(type, op, i),
- 					event_type_descriptors[4]);
- 			}
-@@ -662,7 +662,7 @@ void print_events(void)
- 	}
- 
- 	fprintf(stderr, "\n");
--	fprintf(stderr, "  %-40s [raw hardware event descriptor]\n",
-+	fprintf(stderr, "  %-42s [raw hardware event descriptor]\n",
- 		"rNNN");
- 	fprintf(stderr, "\n");
- 
--- 
-1.6.2.5
+> ---
+>   fs/ext3/Kconfig |   32 +++++++++++++++++---------------
+>   1 files changed, 17 insertions(+), 15 deletions(-)
+>
+> diff --git a/fs/ext3/Kconfig b/fs/ext3/Kconfig
+> index fb3c1a2..522b154 100644
+> --- a/fs/ext3/Kconfig
+> +++ b/fs/ext3/Kconfig
+> @@ -29,23 +29,25 @@ config EXT3_FS
+>   	  module will be called ext3.
+>
+>   config EXT3_DEFAULTS_TO_ORDERED
+> -	bool "Default to 'data=ordered' in ext3 (legacy option)"
+> +	bool "Default to 'data=ordered' in ext3"
+>   	depends on EXT3_FS
+>   	help
+> -	  If a filesystem does not explicitly specify a data ordering
+> -	  mode, and the journal capability allowed it, ext3 used to
+> -	  historically default to 'data=ordered'.
+> -
+> -	  That was a rather unfortunate choice, because it leads to all
+> -	  kinds of latency problems, and the 'data=writeback' mode is more
+> -	  appropriate these days.
+> -
+> -	  You should probably always answer 'n' here, and if you really
+> -	  want to use 'data=ordered' mode, set it in the filesystem itself
+> -	  with 'tune2fs -o journal_data_ordered'.
+> -
+> -	  But if you really want to enable the legacy default, you can do
+> -	  so by answering 'y' to this question.
+> +	  The journal mode options for ext3 have different tradeoffs
+> +	  between when data is guaranteed to be on disk and
+> +	  performance.	The use of "data=writeback" can cause
+> +	  unwritten data to appear in files after an system crash or
+> +	  power failure, which can be a security issue.	 However,
+> +	  "data=ordered" mode can also result in major performance
+> +	  problems, including seconds-long delays before an fsync()
+> +	  call returns.	 For details, see:
+> +
+> +	  http://ext4.wiki.kernel.org/index.php/Ext3_data_mode_tradeoffs
+> +
+> +	  If you have been historically happy with ext3's performance,
+> +	  data=ordered mode will be a safe choice and you should
+> +	  answer 'y' here.  If you understand the reliability and data
+> +	  privacy issues of data=writeback and are willing to make
+> +	  that trade off, answer 'n'.
+>
+>   config EXT3_FS_XATTR
+>   	bool "Ext3 extended attributes"
+>    
 
