@@ -1,225 +1,304 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbZHJCxF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932072AbZHJCzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754932AbZHJCxF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Aug 2009 22:53:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZHJCxE
+	id S932072AbZHJCzI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Aug 2009 22:55:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbZHJCzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Aug 2009 22:53:04 -0400
-Received: from [222.73.24.84] ([222.73.24.84]:63437 "EHLO song.cn.fujitsu.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752801AbZHJCxC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Aug 2009 22:53:02 -0400
-Message-ID: <4A7F8B6E.2010109@cn.fujitsu.com>
-Date: Mon, 10 Aug 2009 10:52:30 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Anton Blanchard <anton@samba.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v6 3/3] ftrace: add tracepoint for itimer
-References: <4A7F8A9B.3040201@cn.fujitsu.com>
-In-Reply-To: <4A7F8A9B.3040201@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sun, 9 Aug 2009 22:55:06 -0400
+Received: from sh.osrg.net ([192.16.179.4]:37950 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752581AbZHJCzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Aug 2009 22:55:04 -0400
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: mingo@elte.hu
+Cc: davem@davemloft.net, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, tony.luck@intel.com, fenghua.yu@intel.com,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 3/8] sparc: use dma_map_ops struct
+Date: Mon, 10 Aug 2009 11:53:12 +0900
+Message-Id: <1249872797-1314-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1249872797-1314-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1249872797-1314-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 10 Aug 2009 11:54:50 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Those tracepoints are wanted and useful:
-1: We can detect a itimer's delay
-2: We can monitor the lifecycle and behaviors of a itimer
-
-Thus they help in analysing and debuging.
-
-Great thanks to Thomas for giving me so many valuable advices.
-
-There have two case: 
-case 1, if we use ITIMER_REAL itimer:
-Example ftrace output:
-  main-1517  [000]   288.826521: hrtimer_start: timer=ce807544 func=it_real_fn expires=289327664443 ns softexpires=289327664443 ns
-  main-1517  [000]   288.826524: itimer_state: which=0 expires=0 it_value=0.500 it_interval=0.0
-  main-1517  [000]   288.827313: hrtimer_expire: timer=ce807544 now=289327958161 ns
-  main-1517  [000]   288.827314: hrtimer_cancel: timer=ce807544
-  main-1517  [000]   288.827315: itimer_expire: pid=1517 which=0 now=0
-  main-1517  [000]   288.827319: hrtimer_callback_done: timer=ce807544
-  main-1517  [000]   288.827463: itimer_state: which=0 expires=0 it_value=0.0 it_interval=0.0
-
-ITIMER_REAL itime use hrtimer to calculate time, so we can cooperate with
-hrtimer's tracepoint to get it's delay.
-
-from this output information, the process set up a ITIMER_REAL
-iteimr(which=0), use a hrtime which address is ce807544, we can get the
-delay is 289327958161-289327664443=293718 ns
-
-case 2, if we use ITIMER_VIRTUAL/ITIMER_PROF itimer:
-Example ftrace output:
-  main-5409  [001] 12763.874835: itimer_state: which=1 expires=2 it_value=0.500 it_interval=0.500
-  main-5409  [001] 12763.883495: itimer_expire: pid=5409 which=1 now=2
-  main-5409  [001] 12763.883712: itimer_state: which=1 expires=0 it_value=0.0 it_interval=0.0
-  
-from this, we can know the itimer delay is 2-2=0 jiffies.
-
-Changelog:
-v1->v2:
-Remove ktime_to_ns() in TP_fast_assign()
-v2->v3:
-Below changes are all base on Thomas's suggestion:
-1: Remove ITIMER_REAL's timer address and 'state' from trace_itimer_state()
-2: Don't save task's name in trace_itimer_state()
-3: Save task's pid instead of task's name in trace_itimer_expire()
-v3->v4:
-Modify other two patches in this patchset
-v4->v5:
-Rebase the patch against latest tip tree
-
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Tested-by: Robert Reif <reif@earthlink.net>
+Acked-by: David S. Miller <davem@davemloft.net>
 ---
- include/trace/events/timer.h |   65 ++++++++++++++++++++++++++++++++++++++++++
- kernel/itimer.c              |    5 +++
- kernel/posix-cpu-timers.c    |    3 ++
- 3 files changed, 73 insertions(+), 0 deletions(-)
+ arch/sparc/include/asm/dma-mapping.h |   43 +++++----------------------------
+ arch/sparc/kernel/dma.c              |   16 ++++++++----
+ arch/sparc/kernel/iommu.c            |   16 ++++++++----
+ arch/sparc/kernel/pci_sun4v.c        |   14 +++++++----
+ 4 files changed, 36 insertions(+), 53 deletions(-)
 
-diff --git a/include/trace/events/timer.h b/include/trace/events/timer.h
-index 6140f29..fbbead9 100644
---- a/include/trace/events/timer.h
-+++ b/include/trace/events/timer.h
-@@ -261,6 +261,71 @@ TRACE_EVENT(hrtimer_cancel,
- 	TP_printk("timer=%p", __entry->timer)
- );
+diff --git a/arch/sparc/include/asm/dma-mapping.h b/arch/sparc/include/asm/dma-mapping.h
+index 204e4bf..893f3ec 100644
+--- a/arch/sparc/include/asm/dma-mapping.h
++++ b/arch/sparc/include/asm/dma-mapping.h
+@@ -13,36 +13,7 @@ extern int dma_set_mask(struct device *dev, u64 dma_mask);
+ #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
+ #define dma_is_consistent(d, h)	(1)
  
-+/**
-+ * itimer_state - called when itimer is started or canceled
-+ * @which: name of the interval timer
-+ * @value: the itimer's value, itimer is canceled if value->it_value is zero,
-+ * 	   otherwise is started
-+ * @expires: the itimer's expire time
-+ **/
-+TRACE_EVENT(itimer_state,
-+
-+	TP_PROTO(int which, const struct itimerval *const value, cputime_t expires),
-+
-+	TP_ARGS(which, value, expires),
-+
-+	TP_STRUCT__entry(
-+		__field(	int,		which		)
-+		__field(	cputime_t,	expires		)
-+		__field(	long,		value_sec	)
-+		__field(	long,		value_usec	)
-+		__field(	long,		interval_sec	)
-+		__field(	long,		interval_usec	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->which		= which;
-+		__entry->expires	= expires;
-+		__entry->value_sec	= value->it_value.tv_sec;
-+		__entry->value_usec	= value->it_value.tv_usec;
-+		__entry->interval_sec	= value->it_interval.tv_sec;
-+		__entry->interval_usec	= value->it_interval.tv_usec;
-+	),
-+
-+	TP_printk("which=%d expires=%lu it_value=%lu.%lu it_interval=%lu.%lu",
-+		  __entry->which, __entry->expires,
-+		  __entry->value_sec, __entry->value_usec,
-+		  __entry->interval_sec, __entry->interval_usec)
-+);
-+
-+/**
-+ * itimer_expire: called when itimer expires
-+ * @which: name of the interval timer
-+ * @pid: pid of process which owns the itimer
-+ * @now: current time, used to calculate the latency of itimer
-+ **/
-+TRACE_EVENT(itimer_expire,
-+
-+	TP_PROTO(int which, struct pid *pid, cputime_t now),
-+
-+	TP_ARGS(which, pid, now),
-+
-+	TP_STRUCT__entry(
-+		__field( int ,		which	)
-+		__field( int,		pid	)
-+		__field( cputime_t,	now	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->which	= which;
-+		__entry->now	= now;
-+		__entry->pid	= pid_vnr(pid);
-+	),
-+
-+	TP_printk("pid=%d which=%d now=%lu", __entry->pid, __entry->which,
-+		  __entry->now)
-+);
-+
- #endif /*  _TRACE_TIMER_H */
+-struct dma_ops {
+-	void *(*alloc_coherent)(struct device *dev, size_t size,
+-				dma_addr_t *dma_handle, gfp_t flag);
+-	void (*free_coherent)(struct device *dev, size_t size,
+-			      void *cpu_addr, dma_addr_t dma_handle);
+-	dma_addr_t (*map_page)(struct device *dev, struct page *page,
+-			       unsigned long offset, size_t size,
+-			       enum dma_data_direction direction);
+-	void (*unmap_page)(struct device *dev, dma_addr_t dma_addr,
+-			   size_t size,
+-			   enum dma_data_direction direction);
+-	int (*map_sg)(struct device *dev, struct scatterlist *sg, int nents,
+-		      enum dma_data_direction direction);
+-	void (*unmap_sg)(struct device *dev, struct scatterlist *sg,
+-			 int nhwentries,
+-			 enum dma_data_direction direction);
+-	void (*sync_single_for_cpu)(struct device *dev,
+-				    dma_addr_t dma_handle, size_t size,
+-				    enum dma_data_direction direction);
+-	void (*sync_single_for_device)(struct device *dev,
+-				       dma_addr_t dma_handle, size_t size,
+-				       enum dma_data_direction direction);
+-	void (*sync_sg_for_cpu)(struct device *dev, struct scatterlist *sg,
+-				int nelems,
+-				enum dma_data_direction direction);
+-	void (*sync_sg_for_device)(struct device *dev,
+-				   struct scatterlist *sg, int nents,
+-				   enum dma_data_direction dir);
+-};
+-extern const struct dma_ops *dma_ops;
++extern const struct dma_map_ops *dma_ops;
  
- /* This part must be outside protection */
-diff --git a/kernel/itimer.c b/kernel/itimer.c
-index 8078a32..a3ceb34 100644
---- a/kernel/itimer.c
-+++ b/kernel/itimer.c
-@@ -12,6 +12,7 @@
- #include <linux/time.h>
- #include <linux/posix-timers.h>
- #include <linux/hrtimer.h>
-+#include <trace/events/timer.h>
+ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
+ 				       dma_addr_t *dma_handle, gfp_t flag)
+@@ -62,40 +33,40 @@ static inline dma_addr_t dma_map_single(struct device *dev, void *cpu_addr,
+ {
+ 	return dma_ops->map_page(dev, virt_to_page(cpu_addr),
+ 				 (unsigned long)cpu_addr & ~PAGE_MASK, size,
+-				 direction);
++				 direction, NULL);
+ }
  
- #include <asm/uaccess.h>
+ static inline void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
+ 				    size_t size,
+ 				    enum dma_data_direction direction)
+ {
+-	dma_ops->unmap_page(dev, dma_addr, size, direction);
++	dma_ops->unmap_page(dev, dma_addr, size, direction, NULL);
+ }
  
-@@ -122,6 +123,7 @@ enum hrtimer_restart it_real_fn(struct hrtimer *timer)
- 	struct signal_struct *sig =
- 		container_of(timer, struct signal_struct, real_timer);
+ static inline dma_addr_t dma_map_page(struct device *dev, struct page *page,
+ 				      unsigned long offset, size_t size,
+ 				      enum dma_data_direction direction)
+ {
+-	return dma_ops->map_page(dev, page, offset, size, direction);
++	return dma_ops->map_page(dev, page, offset, size, direction, NULL);
+ }
  
-+	trace_itimer_expire(ITIMER_REAL, sig->leader_pid, 0);
- 	kill_pid_info(SIGALRM, SEND_SIG_PRIV, sig->leader_pid);
+ static inline void dma_unmap_page(struct device *dev, dma_addr_t dma_address,
+ 				  size_t size,
+ 				  enum dma_data_direction direction)
+ {
+-	dma_ops->unmap_page(dev, dma_address, size, direction);
++	dma_ops->unmap_page(dev, dma_address, size, direction, NULL);
+ }
  
- 	return HRTIMER_NORESTART;
-@@ -166,6 +168,8 @@ static void set_cpu_itimer(struct task_struct *tsk, unsigned int clock_id,
- 	}
- 	it->expires = nval;
- 	it->incr = ninterval;
-+	trace_itimer_state(clock_id == CPUCLOCK_VIRT ? ITIMER_VIRTUAL : ITIMER_PROF,
-+			   value, nval);
+ static inline int dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 			     int nents, enum dma_data_direction direction)
+ {
+-	return dma_ops->map_sg(dev, sg, nents, direction);
++	return dma_ops->map_sg(dev, sg, nents, direction, NULL);
+ }
  
- 	spin_unlock_irq(&tsk->sighand->siglock);
+ static inline void dma_unmap_sg(struct device *dev, struct scatterlist *sg,
+ 				int nents, enum dma_data_direction direction)
+ {
+-	dma_ops->unmap_sg(dev, sg, nents, direction);
++	dma_ops->unmap_sg(dev, sg, nents, direction, NULL);
+ }
  
-@@ -217,6 +221,7 @@ again:
- 		} else
- 			tsk->signal->it_real_incr.tv64 = 0;
+ static inline void dma_sync_single_for_cpu(struct device *dev,
+diff --git a/arch/sparc/kernel/dma.c b/arch/sparc/kernel/dma.c
+index 524c32f..473a3fc 100644
+--- a/arch/sparc/kernel/dma.c
++++ b/arch/sparc/kernel/dma.c
+@@ -60,7 +60,8 @@ static void dma32_free_coherent(struct device *dev, size_t size,
  
-+		trace_itimer_state(ITIMER_REAL, value, 0);
- 		spin_unlock_irq(&tsk->sighand->siglock);
- 		break;
- 	case ITIMER_VIRTUAL:
-diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-index 12161f7..14798a7 100644
---- a/kernel/posix-cpu-timers.c
-+++ b/kernel/posix-cpu-timers.c
-@@ -8,6 +8,7 @@
- #include <linux/math64.h>
- #include <asm/uaccess.h>
- #include <linux/kernel_stat.h>
-+#include <trace/events/timer.h>
+ static dma_addr_t dma32_map_page(struct device *dev, struct page *page,
+ 				 unsigned long offset, size_t size,
+-				 enum dma_data_direction direction)
++				 enum dma_data_direction direction,
++				 struct dma_attrs *attrs)
+ {
+ #ifdef CONFIG_PCI
+ 	if (dev->bus == &pci_bus_type)
+@@ -72,7 +73,8 @@ static dma_addr_t dma32_map_page(struct device *dev, struct page *page,
+ }
  
- /*
-  * Called after updating RLIMIT_CPU to set timer expiration if necessary.
-@@ -1093,6 +1094,8 @@ static void check_cpu_itimer(struct task_struct *tsk, struct cpu_itimer *it,
- 		} else
- 			it->expires = cputime_zero;
+ static void dma32_unmap_page(struct device *dev, dma_addr_t dma_address,
+-			     size_t size, enum dma_data_direction direction)
++			     size_t size, enum dma_data_direction direction,
++			     struct dma_attrs *attrs)
+ {
+ #ifdef CONFIG_PCI
+ 	if (dev->bus == &pci_bus_type) {
+@@ -85,7 +87,8 @@ static void dma32_unmap_page(struct device *dev, dma_addr_t dma_address,
+ }
  
-+		trace_itimer_expire(signo == SIGPROF ? ITIMER_PROF : ITIMER_VIRTUAL,
-+				    tsk->signal->leader_pid, cur_time);
- 		__group_send_sig_info(signo, SEND_SIG_PRIV, tsk);
- 	}
+ static int dma32_map_sg(struct device *dev, struct scatterlist *sg,
+-			int nents, enum dma_data_direction direction)
++			int nents, enum dma_data_direction direction,
++			struct dma_attrs *attrs)
+ {
+ #ifdef CONFIG_PCI
+ 	if (dev->bus == &pci_bus_type)
+@@ -95,7 +98,8 @@ static int dma32_map_sg(struct device *dev, struct scatterlist *sg,
+ }
  
+ void dma32_unmap_sg(struct device *dev, struct scatterlist *sg,
+-		    int nents, enum dma_data_direction direction)
++		    int nents, enum dma_data_direction direction,
++		    struct dma_attrs *attrs)
+ {
+ #ifdef CONFIG_PCI
+ 	if (dev->bus == &pci_bus_type) {
+@@ -161,7 +165,7 @@ static void dma32_sync_sg_for_device(struct device *dev,
+ 	BUG();
+ }
+ 
+-static const struct dma_ops dma32_dma_ops = {
++static const struct dma_map_ops dma32_dma_ops = {
+ 	.alloc_coherent		= dma32_alloc_coherent,
+ 	.free_coherent		= dma32_free_coherent,
+ 	.map_page		= dma32_map_page,
+@@ -174,5 +178,5 @@ static const struct dma_ops dma32_dma_ops = {
+ 	.sync_sg_for_device	= dma32_sync_sg_for_device,
+ };
+ 
+-const struct dma_ops *dma_ops = &dma32_dma_ops;
++const struct dma_map_ops *dma_ops = &dma32_dma_ops;
+ EXPORT_SYMBOL(dma_ops);
+diff --git a/arch/sparc/kernel/iommu.c b/arch/sparc/kernel/iommu.c
+index 0aeaefe..a9f0ad9 100644
+--- a/arch/sparc/kernel/iommu.c
++++ b/arch/sparc/kernel/iommu.c
+@@ -353,7 +353,8 @@ static void dma_4u_free_coherent(struct device *dev, size_t size,
+ 
+ static dma_addr_t dma_4u_map_page(struct device *dev, struct page *page,
+ 				  unsigned long offset, size_t sz,
+-				  enum dma_data_direction direction)
++				  enum dma_data_direction direction,
++				  struct dma_attrs *attrs)
+ {
+ 	struct iommu *iommu;
+ 	struct strbuf *strbuf;
+@@ -474,7 +475,8 @@ do_flush_sync:
+ }
+ 
+ static void dma_4u_unmap_page(struct device *dev, dma_addr_t bus_addr,
+-			      size_t sz, enum dma_data_direction direction)
++			      size_t sz, enum dma_data_direction direction,
++			      struct dma_attrs *attrs)
+ {
+ 	struct iommu *iommu;
+ 	struct strbuf *strbuf;
+@@ -520,7 +522,8 @@ static void dma_4u_unmap_page(struct device *dev, dma_addr_t bus_addr,
+ }
+ 
+ static int dma_4u_map_sg(struct device *dev, struct scatterlist *sglist,
+-			 int nelems, enum dma_data_direction direction)
++			 int nelems, enum dma_data_direction direction,
++			 struct dma_attrs *attrs)
+ {
+ 	struct scatterlist *s, *outs, *segstart;
+ 	unsigned long flags, handle, prot, ctx;
+@@ -691,7 +694,8 @@ static unsigned long fetch_sg_ctx(struct iommu *iommu, struct scatterlist *sg)
+ }
+ 
+ static void dma_4u_unmap_sg(struct device *dev, struct scatterlist *sglist,
+-			    int nelems, enum dma_data_direction direction)
++			    int nelems, enum dma_data_direction direction,
++			    struct dma_attrs *attrs)
+ {
+ 	unsigned long flags, ctx;
+ 	struct scatterlist *sg;
+@@ -822,7 +826,7 @@ static void dma_4u_sync_sg_for_cpu(struct device *dev,
+ 	spin_unlock_irqrestore(&iommu->lock, flags);
+ }
+ 
+-static const struct dma_ops sun4u_dma_ops = {
++static const struct dma_map_ops sun4u_dma_ops = {
+ 	.alloc_coherent		= dma_4u_alloc_coherent,
+ 	.free_coherent		= dma_4u_free_coherent,
+ 	.map_page		= dma_4u_map_page,
+@@ -833,7 +837,7 @@ static const struct dma_ops sun4u_dma_ops = {
+ 	.sync_sg_for_cpu	= dma_4u_sync_sg_for_cpu,
+ };
+ 
+-const struct dma_ops *dma_ops = &sun4u_dma_ops;
++const struct dma_map_ops *dma_ops = &sun4u_dma_ops;
+ EXPORT_SYMBOL(dma_ops);
+ 
+ int dma_supported(struct device *dev, u64 device_mask)
+diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
+index 2485eaa..c4f7dce 100644
+--- a/arch/sparc/kernel/pci_sun4v.c
++++ b/arch/sparc/kernel/pci_sun4v.c
+@@ -232,7 +232,8 @@ static void dma_4v_free_coherent(struct device *dev, size_t size, void *cpu,
+ 
+ static dma_addr_t dma_4v_map_page(struct device *dev, struct page *page,
+ 				  unsigned long offset, size_t sz,
+-				  enum dma_data_direction direction)
++				  enum dma_data_direction direction,
++				  struct dma_attrs *attrs)
+ {
+ 	struct iommu *iommu;
+ 	unsigned long flags, npages, oaddr;
+@@ -296,7 +297,8 @@ iommu_map_fail:
+ }
+ 
+ static void dma_4v_unmap_page(struct device *dev, dma_addr_t bus_addr,
+-			      size_t sz, enum dma_data_direction direction)
++			      size_t sz, enum dma_data_direction direction,
++			      struct dma_attrs *attrs)
+ {
+ 	struct pci_pbm_info *pbm;
+ 	struct iommu *iommu;
+@@ -336,7 +338,8 @@ static void dma_4v_unmap_page(struct device *dev, dma_addr_t bus_addr,
+ }
+ 
+ static int dma_4v_map_sg(struct device *dev, struct scatterlist *sglist,
+-			 int nelems, enum dma_data_direction direction)
++			 int nelems, enum dma_data_direction direction,
++			 struct dma_attrs *attrs)
+ {
+ 	struct scatterlist *s, *outs, *segstart;
+ 	unsigned long flags, handle, prot;
+@@ -478,7 +481,8 @@ iommu_map_failed:
+ }
+ 
+ static void dma_4v_unmap_sg(struct device *dev, struct scatterlist *sglist,
+-			    int nelems, enum dma_data_direction direction)
++			    int nelems, enum dma_data_direction direction,
++			    struct dma_attrs *attrs)
+ {
+ 	struct pci_pbm_info *pbm;
+ 	struct scatterlist *sg;
+@@ -535,7 +539,7 @@ static void dma_4v_sync_sg_for_cpu(struct device *dev,
+ 	/* Nothing to do... */
+ }
+ 
+-static const struct dma_ops sun4v_dma_ops = {
++static const struct dma_map_ops sun4v_dma_ops = {
+ 	.alloc_coherent			= dma_4v_alloc_coherent,
+ 	.free_coherent			= dma_4v_free_coherent,
+ 	.map_page			= dma_4v_map_page,
 -- 
-1.6.1.2
-
+1.6.0.6
 
