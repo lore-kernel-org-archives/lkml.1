@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbZHJV5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbZHJV6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753988AbZHJV5L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 17:57:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbZHJV5J
+	id S1754012AbZHJV6P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 17:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbZHJV6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 17:57:09 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36764 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753853AbZHJV5I (ORCPT
+	Mon, 10 Aug 2009 17:58:13 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:42878 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753974AbZHJV6M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 17:57:08 -0400
-Message-ID: <4A80979E.3080204@zytor.com>
-Date: Mon, 10 Aug 2009 14:56:46 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 10 Aug 2009 17:58:12 -0400
+Date: Mon, 10 Aug 2009 22:58:01 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Felipe Balbi <me@felipebalbi.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Mike Rapoport <mike@compulab.co.il>,
+       linux-kernel@vger.kernel.org
+Message-ID: <20090810215800.GB4528@sirena.org.uk>
+References: <20090810200553.GB4652@gandalf>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH 1/2] export cpu_tlbstate to modules
-References: <cover.1249930169.git.mst@redhat.com> <20090810185302.GB13924@redhat.com>
-In-Reply-To: <20090810185302.GB13924@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090810200553.GB4652@gandalf>
+X-Cookie: Are you a turtle?
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: Question about userspace-consumer
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/10/2009 11:53 AM, Michael S. Tsirkin wrote:
-> vhost net module wants to do copy to/from user from a kernel thread,
-> which needs switch_mm (like what fs/aio has).
-> export cpu_tlbstate to make this possible
-> 
-> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> ---
->  arch/x86/mm/tlb.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/mm/tlb.c b/arch/x86/mm/tlb.c
-> index 821e970..e33a5f0 100644
-> --- a/arch/x86/mm/tlb.c
-> +++ b/arch/x86/mm/tlb.c
-> @@ -13,6 +13,7 @@
->  
->  DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state, cpu_tlbstate)
->  			= { &init_mm, 0, };
-> +EXPORT_PER_CPU_SYMBOL_GPL(cpu_tlbstate);
->  
->  /*
->   *	Smarter SMP flushing macros.
+On Mon, Aug 10, 2009 at 11:05:54PM +0300, Felipe Balbi wrote:
 
-Wouldn't it be a *lot* better to move use_mm() from fs/aio.c into common
-code, and export that instead?
+> I was reading userspace-consumer file ad was wondering whether would be
+> possible to use that in order to implement what SBS-IF [1] proposes
+> using sbs-enabled devices.
 
-	-hpa
+Looking at that I'm not sure why you wish to push this into user space?
 
+The existing drivers for this sort of functionality are all regular
+kernel drivers (in drivers/power and to a lesser extent drivers/hwmon)
+and it looks like it'd be at least as much work to rearrange the power
+supply stuff to support userspace drivers.  My initial expectation would
+be for a generic driver with some policy exposed to user space and some
+configuration exposed for architecture code (especially for setting up
+multi-battery board layouts and things).  That's not a terribly informed
+opinion, though.
+
+> For doing that, probably userspace-consumer would have to be able to
+> set_voltage/get_voltage, set/get_current_limit and so on. So I was
+> thinking on changing userspace-consumer to use regulator_get() instead
+> of regulator_bulk_get() and make each instance of userspace-consumer to
+> talk to only and only one regulator.
+
+I'd like to preserve the bulk switch if possible - part of the thinking
+was that things with more complex needs may well find it easier and/or
+more robust to have custom kernel stubs which mapped one or more
+regulators into the interfaces they needed.  That was more for things
+like working out which of multiple supplies is which, though.
+
+The existing virtual consumer, while intended as a test harness
+originally and rather clunky as-is, is much closer to your needs.  It is
+the way it is partly as a sign that you really shouldn't be using it in
+production (which seems to be working!).
+
+> Anyways, how do you guys feel about it ?
+
+Like I say, from a quick read through of the specs I'm not sure that I'd
+push this into user space but I've not thought about this deeply and may
+be missing something.
