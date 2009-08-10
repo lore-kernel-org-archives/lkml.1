@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbZHJODH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbZHJOEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbZHJODH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 10:03:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZHJODG
+	id S1754898AbZHJOEU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 10:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZHJOEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 10:03:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48041 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754560AbZHJODF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 10:03:05 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dave Young <hidave.darkstar@gmail.com>
-Subject: Re: [Bug #13837] Input : regression - touchpad not detected
-Date: Mon, 10 Aug 2009 16:03:30 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jiri Kosina <jkosina@suse.cz>
-References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera> <u1L1PAbl8zG.A.bpD.Ak1fKB@chimera> <a8e1da0908091914s151469e8w826a726254276fce@mail.gmail.com>
-In-Reply-To: <a8e1da0908091914s151469e8w826a726254276fce@mail.gmail.com>
+	Mon, 10 Aug 2009 10:04:20 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:63643 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754560AbZHJOET (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 10:04:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iIrcXYEbi7Iq0IDsdXFNemZTB/5WXzOSt7+zrQr70inFPoXF+ZvlGxAnDZpNR+kuVN
+         C2JLakA4KmT+iuWRwwuO5n/Ko49BWH9TlEWC7Jcm9K6sa6iWl/O3cPPwv/IoLqWadM01
+         gz4BAh+Kf2McLSojEGBeMDidbedSVPk6xPQjk=
+Date: Mon, 10 Aug 2009 18:04:14 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Michael Buesch <mb@bu3sch.de>, Daniel Mack <daniel@caiaq.de>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Libertas: Association request to the driver failed
+Message-ID: <20090810140414.GA5207@lenovo>
+References: <20090807191156.GS19257@buzzloop.caiaq.de> <20090809102417.GH13639@buzzloop.caiaq.de> <4A7EAED8.9090900@gmail.com> <200908091310.56919.mb@bu3sch.de> <20090809191359.GG4805@lenovo> <4A7FF84C.7070708@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908101603.30433.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A7FF84C.7070708@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 August 2009, Dave Young wrote:
-> On Mon, Aug 10, 2009 at 5:10 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.30.  Please verify if it still should be listed and let me know
-> > (either way).
-> 
-> Rafael, I can not produce the bug recent days. I upgraded dell bios to
-> A12, don't know if it is related.
+[Roel Kluin - Mon, Aug 10, 2009 at 12:37:00PM +0200]
+...
+| > I saw one pattern in trace code (not sure if it's
+| > still there) but personally don't like dynamic
+| > stack arrays (though at moment the max value
+| > being passed into routine is known maybe just
+| > use MAX_RATES instead of (*rates_size)?). Hmm?
+| 
+| Good point.
+| 
+| > 	-- Cyrill
+| 
+| Thanks,
+| 
+| I think there was another problem in lbs_associate(),
+| the memcpy already affected rates->rates.
+| 
 
-OK, I closed the bug as not reproducible.
+Yeah, something like that. Note that I was only cared about
+stack so I didn't dive into details of this code :)
 
-Thanks,
-Rafael
+I suppose wireless mainteiners will review it more
+precisely. Thanks Roel!
+
+	-- Cyrill
