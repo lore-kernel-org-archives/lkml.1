@@ -1,49 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752318AbZHJHgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752398AbZHJHjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752318AbZHJHgg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 03:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZHJHgf
+	id S1752398AbZHJHjp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 03:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbZHJHjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 03:36:35 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:52879 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751620AbZHJHgf (ORCPT
+	Mon, 10 Aug 2009 03:39:44 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:35197 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751710AbZHJHjo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 03:36:35 -0400
+	Mon, 10 Aug 2009 03:39:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=VtmgG3XYaazBTdJtAd75/RzKYxTWUx3EZ7+9WtA06iPsNKWicMmaYrKraCSoBZaADk
-         noL3dPVfeK6xZ6YpIjI5G3kIC2+3JDXUebUvUs4keCv6/+pVXdt8VuVOKqz9rJacmPbb
-         ScDU3ZYvFhhW1WigA6qivOwvx8QwcodwAA6N0=
-Message-ID: <4A7FCE01.8080206@gmail.com>
-Date: Mon, 10 Aug 2009 09:36:33 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-7.3 Thunderbird/3.0b3
+        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=weJE8uOw/Wh9TJfLfnJ0BQS0UKMY+NKg4C2iclJzHicZpFL9QlWdXRSnMSJK9jX0nn
+         GAxCYxIscd1hjqClZnrDwByneSqEWgBvm7Co0534+4iWgd+XSQmvXNgOkk+1MLNOUchX
+         QkZvlmHQ8YKs1pqYFuJjElbYfREmkYedmcTDk=
+From: Florian Fainelli <florian@openwrt.org>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Subject: Re: [PATCH] MIPS: AR7: fix wrong including path of rt7.h in ar7_wdt.c
+Date: Mon, 10 Aug 2009 09:39:39 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-mips@linux-mips.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Nicolas Thill <nico@openwrt.org>, Ralf Baechle <ralf@linux-mips.org>,
+       Enrik Berkhan <Enrik.Berkhan@akk.org>
+References: <1249888074-20784-1-git-send-email-wuzhangjin@gmail.com>
+In-Reply-To: <1249888074-20784-1-git-send-email-wuzhangjin@gmail.com>
 MIME-Version: 1.0
-To: Jack Morgenstein <jackm@dev.mellanox.co.il>
-CC: general@lists.openfabrics.org, Roland Dreier <rdreier@cisco.com>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [ofa-general] Re: [PATCH 10/14] infiniband: use printk_once
-References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com> <1249847649-11631-11-git-send-email-marcin.slusarz@gmail.com> <adaocqo9sb4.fsf@cisco.com> <200908100936.26963.jackm@dev.mellanox.co.il>
-In-Reply-To: <200908100936.26963.jackm@dev.mellanox.co.il>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200908100939.40963.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/10/2009 08:36 AM, Jack Morgenstein wrote:
-> printk_once will print once ONLY if CONFIG_PRINTK is set in include/linux/autoconf.h
-> (i.e., when the kernel is configured).  Otherwise, it gets defined to printk --
-> and it will always print in this case.
+Hi Wu,
 
-Not true, in that case printk is defined as inlined 'return 0;'
+Le Monday 10 August 2009 09:07:54 Wu Zhangjin, vous avez écrit :
+> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
 
-> (see 2.6.30.xx kernel include file "include/linux/kernel.h", lines 235, 249, and 272).
+Thanks, but that was sent a while ago to Wim Van Sebroeck who is the watchdog 
+subsystem maintainer.
 
-See line 265 there.
+> ---
+>  drivers/watchdog/ar7_wdt.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/watchdog/ar7_wdt.c b/drivers/watchdog/ar7_wdt.c
+> index 3fe9742..ec48e12 100644
+> --- a/drivers/watchdog/ar7_wdt.c
+> +++ b/drivers/watchdog/ar7_wdt.c
+> @@ -37,7 +37,7 @@
+>  #include <linux/uaccess.h>
+>
+>  #include <asm/addrspace.h>
+> -#include <asm/ar7/ar7.h>
+> +#include <ar7.h>
+>
+>  #define DRVNAME "ar7_wdt"
+>  #define LONGNAME "TI AR7 Watchdog Timer"
+
+
+
+-- 
+Best regards, Florian Fainelli
+Email: florian@openwrt.org
+Web: http://openwrt.org
+IRC: [florian] on irc.freenode.net
+-------------------------------
