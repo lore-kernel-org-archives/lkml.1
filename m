@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbZHJPmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbZHJPmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755465AbZHJPmE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 11:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755452AbZHJPmB
+	id S1755449AbZHJPmA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 11:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbZHJPl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 11:42:01 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:51368 "EHLO gir.skynet.ie"
+	Mon, 10 Aug 2009 11:41:59 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:51380 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753516AbZHJPl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751046AbZHJPl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 10 Aug 2009 11:41:57 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Larry Woodman <lwoodman@redhat.com>, Ingo Molnar <mingo@elte.hu>,
@@ -15,9 +15,9 @@ To: Larry Woodman <lwoodman@redhat.com>, Ingo Molnar <mingo@elte.hu>,
 Cc: riel@redhat.com, Peter Zijlstra <peterz@infradead.org>,
        Li Ming Chun <macli@brc.ubc.ca>, LKML <linux-kernel@vger.kernel.org>,
        linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>
-Subject: [PATCH 1/6] tracing, page-allocator: Add trace events for page allocation and page freeing
-Date: Mon, 10 Aug 2009 16:41:50 +0100
-Message-Id: <1249918915-16061-2-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 2/6] tracing, page-allocator: Add trace events for anti-fragmentation falling back to other migratetypes
+Date: Mon, 10 Aug 2009 16:41:51 +0100
+Message-Id: <1249918915-16061-3-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1249918915-16061-1-git-send-email-mel@csn.ul.ie>
 References: <1249918915-16061-1-git-send-email-mel@csn.ul.ie>
@@ -25,153 +25,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds trace events for the allocation and freeing of pages,
-including the freeing of pagevecs.  Using the events, it will be known what
-struct page and pfns are being allocated and freed and what the call site
-was in many cases.
+Fragmentation avoidance depends on being able to use free pages from
+lists of the appropriate migrate type. In the event this is not
+possible, __rmqueue_fallback() selects a different list and in some
+circumstances change the migratetype of the pageblock. Simplistically,
+the more times this event occurs, the more likely that fragmentation
+will be a problem later for hugepage allocation at least but there are
+other considerations such as the order of page being split to satisfy
+the allocation.
 
-The page alloc tracepoints be used as an indicator as to whether the workload
-was heavily dependant on the page allocator or not. You can make a guess based
-on vmstat but you can't get a per-process breakdown. Depending on the call
-path, the call_site for page allocation may be __get_free_pages() instead
-of a useful callsite. Instead of passing down a return address similar to
-slab debugging, the user should enable the stacktrace and seg-addr options
-to get a proper stack trace.
-
-The pagevec free tracepoint has a different usecase. It can be used to get
-a idea of how many pages are being dumped off the LRU and whether it is
-kswapd doing the work or a process doing direct reclaim.
+This patch adds a trace event for __rmqueue_fallback() that reports what
+page is being used for the fallback, the orders of relevant pages, the
+desired migratetype and the migratetype of the lists being used, whether
+the pageblock changed type and whether this event is important with
+respect to fragmentation avoidance or not. This information can be used
+to help analyse fragmentation avoidance and help decide whether
+min_free_kbytes should be increased or not.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 Acked-by: Rik van Riel <riel@redhat.com>
 ---
- include/trace/events/kmem.h |   74 +++++++++++++++++++++++++++++++++++++++++++
- mm/page_alloc.c             |    7 +++-
- 2 files changed, 80 insertions(+), 1 deletions(-)
+ include/trace/events/kmem.h |   38 ++++++++++++++++++++++++++++++++++++++
+ mm/page_alloc.c             |    4 ++++
+ 2 files changed, 42 insertions(+), 0 deletions(-)
 
 diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
-index 1493c54..0d358a0 100644
+index 0d358a0..aae16ee 100644
 --- a/include/trace/events/kmem.h
 +++ b/include/trace/events/kmem.h
-@@ -225,6 +225,80 @@ TRACE_EVENT(kmem_cache_free,
- 
- 	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
+@@ -299,6 +299,44 @@ TRACE_EVENT(mm_page_alloc,
+ 		show_gfp_flags(__entry->gfp_flags))
  );
+ 
++TRACE_EVENT(mm_page_alloc_extfrag,
 +
-+TRACE_EVENT(mm_page_free_direct,
++	TP_PROTO(struct page *page,
++			int alloc_order, int fallback_order,
++			int alloc_migratetype, int fallback_migratetype),
 +
-+	TP_PROTO(struct page *page, unsigned int order),
-+
-+	TP_ARGS(page, order),
++	TP_ARGS(page,
++		alloc_order, fallback_order,
++		alloc_migratetype, fallback_migratetype),
 +
 +	TP_STRUCT__entry(
-+		__field(	struct page *,	page		)
-+		__field(	unsigned int,	order		)
++		__field(	struct page *,	page			)
++		__field(	int,		alloc_order		)
++		__field(	int,		fallback_order		)
++		__field(	int,		alloc_migratetype	)
++		__field(	int,		fallback_migratetype	)
 +	),
 +
 +	TP_fast_assign(
-+		__entry->page		= page;
-+		__entry->order		= order;
++		__entry->page			= page;
++		__entry->alloc_order		= alloc_order;
++		__entry->fallback_order		= fallback_order;
++		__entry->alloc_migratetype	= alloc_migratetype;
++		__entry->fallback_migratetype	= fallback_migratetype;
 +	),
 +
-+	TP_printk("page=%p pfn=%lu order=%d",
-+			__entry->page,
-+			page_to_pfn(__entry->page),
-+			__entry->order)
-+);
-+
-+TRACE_EVENT(mm_pagevec_free,
-+
-+	TP_PROTO(struct page *page, int cold),
-+
-+	TP_ARGS(page, cold),
-+
-+	TP_STRUCT__entry(
-+		__field(	struct page *,	page		)
-+		__field(	int,		cold		)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->page		= page;
-+		__entry->cold		= cold;
-+	),
-+
-+	TP_printk("page=%p pfn=%lu order=0 cold=%d",
-+			__entry->page,
-+			page_to_pfn(__entry->page),
-+			__entry->cold)
-+);
-+
-+TRACE_EVENT(mm_page_alloc,
-+
-+	TP_PROTO(struct page *page, unsigned int order,
-+			gfp_t gfp_flags, int migratetype),
-+
-+	TP_ARGS(page, order, gfp_flags, migratetype),
-+
-+	TP_STRUCT__entry(
-+		__field(	struct page *,	page		)
-+		__field(	unsigned int,	order		)
-+		__field(	gfp_t,		gfp_flags	)
-+		__field(	int,		migratetype	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->page		= page;
-+		__entry->order		= order;
-+		__entry->gfp_flags	= gfp_flags;
-+		__entry->migratetype	= migratetype;
-+	),
-+
-+	TP_printk("page=%p pfn=%lu order=%d migratetype=%d gfp_flags=%s",
++	TP_printk("page=%p pfn=%lu alloc_order=%d fallback_order=%d pageblock_order=%d alloc_migratetype=%d fallback_migratetype=%d fragmenting=%d change_ownership=%d",
 +		__entry->page,
 +		page_to_pfn(__entry->page),
-+		__entry->order,
-+		__entry->migratetype,
-+		show_gfp_flags(__entry->gfp_flags))
++		__entry->alloc_order,
++		__entry->fallback_order,
++		pageblock_order,
++		__entry->alloc_migratetype,
++		__entry->fallback_migratetype,
++		__entry->fallback_order < pageblock_order,
++		__entry->alloc_migratetype == __entry->fallback_migratetype)
 +);
 +
  #endif /* _TRACE_KMEM_H */
  
  /* This part must be outside protection */
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index d052abb..440c439 100644
+index 440c439..4c20bfa 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -1062,6 +1062,7 @@ static void free_hot_cold_page(struct page *page, int cold)
+@@ -839,6 +839,10 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
+ 							start_migratetype);
  
- void free_hot_page(struct page *page)
- {
-+	trace_mm_page_free_direct(page, 0);
- 	free_hot_cold_page(page, 0);
- }
- 	
-@@ -1905,6 +1906,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
- 				zonelist, high_zoneidx, nodemask,
- 				preferred_zone, migratetype);
- 
-+	trace_mm_page_alloc(page, order, gfp_mask, migratetype);
- 	return page;
- }
- EXPORT_SYMBOL(__alloc_pages_nodemask);
-@@ -1945,13 +1947,16 @@ void __pagevec_free(struct pagevec *pvec)
- {
- 	int i = pagevec_count(pvec);
- 
--	while (--i >= 0)
-+	while (--i >= 0) {
-+		trace_mm_pagevec_free(pvec->pages[i], pvec->cold);
- 		free_hot_cold_page(pvec->pages[i], pvec->cold);
-+	}
- }
- 
- void __free_pages(struct page *page, unsigned int order)
- {
- 	if (put_page_testzero(page)) {
-+		trace_mm_page_free_direct(page, order);
- 		if (order == 0)
- 			free_hot_page(page);
- 		else
+ 			expand(zone, page, order, current_order, area, migratetype);
++
++			trace_mm_page_alloc_extfrag(page, order, current_order,
++				start_migratetype, migratetype);
++
+ 			return page;
+ 		}
+ 	}
 -- 
 1.6.3.3
 
