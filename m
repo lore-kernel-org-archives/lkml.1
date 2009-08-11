@@ -1,109 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395AbZHKMnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754378AbZHKMmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754395AbZHKMnS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbZHKMnQ
+	id S1754378AbZHKMmu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbZHKMlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:43:16 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:46936 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754243AbZHKMnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:43:13 -0400
-Date: Tue, 11 Aug 2009 08:32:33 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: avi@redhat.com, kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Wu Fengguang <fengguang.wu@intel.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: Page allocation failures in guest
-Message-ID: <20090811083233.3b2be444@mjolnir.ossman.eu>
-In-Reply-To: <28c262360907130759w29c84117w635b21408090a06c@mail.gmail.com>
-References: <20090713115158.0a4892b0@mjolnir.ossman.eu>
-	<28c262360907130759w29c84117w635b21408090a06c@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-24350-1249972359-0001-2"
+	Tue, 11 Aug 2009 08:41:49 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:37485 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752700AbZHKMlo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 08:41:44 -0400
+Date: Tue, 11 Aug 2009 13:38:07 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: [PATCH 1/5] drivers/mfd: Add Freescale MC13783 driver
+Message-ID: <20090811113807.GQ6108@pengutronix.de>
+References: <1249981667-4366-1-git-send-email-s.hauer@pengutronix.de> <1249981667-4366-2-git-send-email-s.hauer@pengutronix.de> <20090811101240.GA7572@rakim.wolfsonmicro.main>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090811101240.GA7572@rakim.wolfsonmicro.main>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 13:35:52 up 5 days, 22:54, 41 users,  load average: 0.24, 0.32,
+	0.77
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Hi Mark,
 
---=_freyr.ossman.eu-24350-1249972359-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Tue, Aug 11, 2009 at 11:12:40AM +0100, Mark Brown wrote:
+> On Tue, Aug 11, 2009 at 11:07:43AM +0200, Sascha Hauer wrote:
+> 
+> > +/*
+> > + * Register a client device.  This is non-fatal since there is no need to
+> > + * fail the entire device init due to a single platform device failing.
+> > + */
+> > +static void mc13783_client_dev_register(struct mc13783 *mc13783,
+> > +				       const char *name,
+> > +				       struct platform_device **pdev)
+> 
+> Some of this code is looking distinctly familiar :)
 
-On Mon, 13 Jul 2009 23:59:52 +0900
-Minchan Kim <minchan.kim@gmail.com> wrote:
+Indeed, I added a 'based on' to the header.
 
-> On Mon, Jul 13, 2009 at 6:51 PM, Pierre Ossman<drzeus-list@drzeus.cx> wro=
-te:
-> > Jul 12 23:04:54 loki kernel: Active_anon:14065 active_file:87384 inacti=
-ve_anon:37480
-> > Jul 12 23:04:54 loki kernel: inactive_file:95821 unevictable:4 dirty:8 =
-writeback:0 unstable:0
-> > Jul 12 23:04:54 loki kernel: free:1344 slab:7113 mapped:4283 pagetables=
-:5656 bounce:0
-> > Jul 12 23:04:54 loki kernel: Node 0 DMA free:3988kB min:24kB low:28kB h=
-igh:36kB active_anon:0kB inactive_anon:0kB active_file:3532kB inactive_file=
-:1032kB unevictable:0kB present:6840kB pages_scanned:0 all_un
->=20
-> I don't know why present is bigger than free + [in]active anon ?
-> Who know this ?
->=20
-> There are 258 pages in inactive file.
-> Unfortunately, it seems we don't have any discardable pages.
-> The reclaimer can't sync dirty pages to reclaim them, too.
-> That's because we are going on GFP_ATOMIC as I mentioned.
->=20
+> 
+> > +#define	SW_SW1A		0
+> > +#define	SW_SW1B		1
+> 
+> This and the other defines following look like they should probably be
+> namespaced.
 
-Any ideas here? Is the virtio net driver very GFP_ATOMIC happy so it
-drains all those pages? And why is this triggered by a kernel upgrade
-in the host?
+Ok.
 
-Avi?
+Thanks for reviewing. I addressed these comments and the comments you made
+to the other patches. I'll delay reposting a bit in case others have
+comments aswell.
 
-> > reclaimable? no
-> > Jul 12 23:04:54 loki kernel: lowmem_reserve[]: 0 994 994 994
-> > Jul 12 23:04:54 loki kernel: Node 0 DMA32 free:1388kB min:4020kB low:50=
-24kB high:6028kB active_anon:56260kB inactive_anon:149920kB active_file:346=
-004kB inactive_file:382252kB unevictable:16kB present:1018016
->=20
->=20
-> free : 1388KB min : 4020KB. In addtion, now GFP_HIGH. so calculation
-> is as follow for zone_watermark_ok.
->=20
-> 1388 < (4020 / 2)
->=20
-> So failed it in zone_watermark_ok.
-> AFAIU, it's fairy OOM problem.
->=20
+Sascha
 
-I doesn't get out of it though, or at least the virtio net driver
-wedges itself.
 
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-24350-1249972359-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkqBEIUACgkQ7b8eESbyJLinNgCgo7iG6a+4J1vk6kps2DmsMsxH
-TP8AoLotLqQx1TftH5Zmw5qAfQ979qvt
-=g2tv
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-24350-1249972359-0001-2--
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
