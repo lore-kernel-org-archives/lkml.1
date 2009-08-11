@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbZHKSSo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403AbZHKSXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755364AbZHKSSo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 14:18:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753688AbZHKSSn
+	id S1754403AbZHKSXU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 14:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753593AbZHKSXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 14:18:43 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:63118 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753515AbZHKSSn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 14:18:43 -0400
-Message-ID: <4A81B646.5060301@colorfullife.com>
-Date: Tue, 11 Aug 2009 20:19:50 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 11 Aug 2009 14:23:19 -0400
+Received: from mms1.broadcom.com ([216.31.210.17]:1603 "EHLO mms1.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753476AbZHKSXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 14:23:18 -0400
+X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was
+ "Is get_user_pages() enough to prevent pages from being swapped out ?")
+From: "David Xiao" <dxiao@broadcom.com>
+To: "Catalin Marinas" <catalin.marinas@arm.com>
+cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       "Laurent Pinchart" <laurent.pinchart@ideasonboard.com>,
+       "Ben Dooks" <ben-linux@fluff.org>,
+       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
+       "Robin Holt" <holt@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       v4l2_linux <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+In-Reply-To: <1249983062.27150.20.camel@pc1117.cambridge.arm.com>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com>
+ <20090806114619.GW2080@trinity.fluff.org>
+ <200908061506.23874.laurent.pinchart@ideasonboard.com>
+ <1249584374.29182.20.camel@david-laptop>
+ <20090806222543.GG31579@n2100.arm.linux.org.uk>
+ <1249624766.32621.61.camel@david-laptop>
+ <1249983062.27150.20.camel@pc1117.cambridge.arm.com>
+Date: Tue, 11 Aug 2009 11:23:10 -0700
+Message-ID: <1250014990.14439.4.camel@david-laptop>
 MIME-Version: 1.0
-To: npiggin@suse.de
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Nadia Derbey <Nadia.Derbey@bull.net>,
-       Pierre Peiffer <peifferp@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/4] ipc: sem optimise simple operations
-References: <20090811110902.255877673@suse.de> <20090811111607.310739140@suse.de>
-In-Reply-To: <20090811111607.310739140@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+X-Mailer: Evolution 2.26.1
+X-WSS-ID: 669F688537011254634-01-01
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/11/2009 01:09 PM, npiggin@suse.de wrote:
-> Index: linux-2.6/include/linux/sem.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/sem.h
-> +++ linux-2.6/include/linux/sem.h
-> @@ -86,6 +86,8 @@ struct task_struct;
->   struct sem {
->   	int	semval;		/* current value */
->   	int	sempid;		/* pid of last operation */
-> +	struct list_head	negv_pending;
-> +	struct list_head	zero_pending;
->   };
->    
-struct sem is increased from 8 to 24 bytes.
-Is that still ok? Are there any apps that use really lots of semaphores 
-(i.e.: far more than processes in the system?)
+On Tue, 2009-08-11 at 02:31 -0700, Catalin Marinas wrote:
+> On Thu, 2009-08-06 at 22:59 -0700, David Xiao wrote:
+> > The V7 speculative prefetching will then probably apply to DMA coherency
+> > issue in general, both kernel and user space DMAs. Could this be
+> > addressed by inside the dma_unmap_sg/single() calling dma_cache_maint()
+> > when the direction is DMA_FROM_DEVICE/DMA_BIDIRECTIONAL, to basically
+> > invalidate the related cache lines in case any filled by prefetching?
+> > Assuming dma_unmap_sg/single() is called after each DMA operation is
+> > completed. 
+> 
+> Theoretically, with speculative prefetching on ARMv7 and the FROM_DEVICE
+> case we need to invalidate the corresponding D-cache lines both before
+> and after the DMA transfer, i.e. in both dma_map_sg and dma_unmap_sg,
+> otherwise there is a risk of stale data in the cache.
+> 
+The dma_map_sg() code is already calling dma_cache_maint() to invalidate
+the cache lines in the DMA_FROM_DEVICE/DMA_BIDIRECTIONAL direction
+cases. And the suggestion was to do something similar in dma_unmap_sg()
+case to deal with the speculative prefetching on ARMv7, and Russel has
+other postings talking about the details of this in terms of
+feasibility/etc.
 
-Postgres uses lots of small semaphore sets (each with 17 entries), I 
-never had access to other apps.
+Furthermore, duplicate MMU mappings in the kernel bring more twists to
+this problem as explained in this email chain as well, especially in the
+case of DMA-coherent memory (dma_alloc_coherent()).
+
+David   
+
+
