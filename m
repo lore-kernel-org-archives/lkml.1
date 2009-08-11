@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbZHKSvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932287AbZHKSvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932247AbZHKSvq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 14:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932129AbZHKStU
+	id S932287AbZHKSvL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 14:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932228AbZHKSvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 14:49:20 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:48086 "EHLO
+	Tue, 11 Aug 2009 14:51:09 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:42538 "EHLO
 	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755456AbZHKStP (ORCPT
+	with ESMTP id S932140AbZHKStV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 14:49:15 -0400
+	Tue, 11 Aug 2009 14:49:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Boc1/1Qo+Jy3B0trEVOFRJivS8ZCs0zUwNI6fWsej+UI9fUrZ2kpTAnFRBQgO23Lrn
-         Qxe7Eq248b3tdj4bHqKglCZhElPpGF/fAPX0S683d1+TlwcGwJBXp3TWmgGJgIM/iFrs
-         PY7TWo8WS2cnridnXjipLuzrdr/8MNebBHvJo=
+        b=kps/328e/yVV9Kv6j1iYPBesPv1UsZ5rmdfsaJGtG0BWgoHAMrTbqkI8DYJvblwdfT
+         h5RtmNzghueAwOGfIxyD4LJLK9kMFSQri6hR9Nq4iKRaR+/5GKPWbSW0rCqAc7i1VoK1
+         Rcr9AsxS7HtUztgKjn4ukLQX8uHut0sonOQwk=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Jason Baron <jbaron@redhat.com>,
@@ -26,9 +26,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Jason Baron <jbaron@redhat.com>,
        Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
        Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 05/16] tracing: Add syscall tracepoints
-Date: Tue, 11 Aug 2009 20:48:54 +0200
-Message-Id: <1250016545-6601-6-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 08/16] tracing: Add ftrace_event_call void * 'data' field
+Date: Tue, 11 Aug 2009 20:48:57 +0200
+Message-Id: <1250016545-6601-9-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1250016545-6601-1-git-send-email-fweisbec@gmail.com>
 References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com>
@@ -38,8 +38,12 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jason Baron <jbaron@redhat.com>
 
-add two tracepoints in syscall exit and entry path, conditioned on
-TIF_SYSCALL_FTRACE. Supports the syscall trace event code.
+add an optional void * pointer to 'ftrace_event_call' that is
+passed in for regfunc and unregfunc.
+
+This prepares for syscall tracepoints creation by passing the name of
+the syscall we want to trace and then retrieve its number through our
+arch syscall table.
 
 Signed-off-by: Jason Baron <jbaron@redhat.com>
 Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
@@ -52,129 +56,77 @@ Cc: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Masami Hiramatsu <mhiramat@redhat.com>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- arch/x86/kernel/ptrace.c |    7 +++++--
- include/trace/syscall.h  |   20 ++++++++++++++++++++
- kernel/tracepoint.c      |   38 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 63 insertions(+), 2 deletions(-)
+ include/linux/ftrace_event.h |    5 +++--
+ include/trace/ftrace.h       |    4 ++--
+ kernel/trace/trace_events.c  |    4 ++--
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index 09ecbde..34dd6f1 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -37,6 +37,9 @@
+diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+index ac8c6f8..8544f12 100644
+--- a/include/linux/ftrace_event.h
++++ b/include/linux/ftrace_event.h
+@@ -112,8 +112,8 @@ struct ftrace_event_call {
+ 	struct dentry		*dir;
+ 	struct trace_event	*event;
+ 	int			enabled;
+-	int			(*regfunc)(void);
+-	void			(*unregfunc)(void);
++	int			(*regfunc)(void *);
++	void			(*unregfunc)(void *);
+ 	int			id;
+ 	int			(*raw_init)(void);
+ 	int			(*show_format)(struct trace_seq *s);
+@@ -122,6 +122,7 @@ struct ftrace_event_call {
+ 	int			filter_active;
+ 	struct event_filter	*filter;
+ 	void			*mod;
++	void			*data;
  
- #include <trace/syscall.h>
- 
-+DEFINE_TRACE(syscall_enter);
-+DEFINE_TRACE(syscall_exit);
-+
- #include "tls.h"
- 
- enum x86_regset {
-@@ -1498,7 +1501,7 @@ asmregparm long syscall_trace_enter(struct pt_regs *regs)
- 		ret = -1L;
- 
- 	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
--		ftrace_syscall_enter(regs);
-+		trace_syscall_enter(regs, regs->orig_ax);
- 
- 	if (unlikely(current->audit_context)) {
- 		if (IS_IA32)
-@@ -1524,7 +1527,7 @@ asmregparm void syscall_trace_leave(struct pt_regs *regs)
- 		audit_syscall_exit(AUDITSC_RESULT(regs->ax), regs->ax);
- 
- 	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
--		ftrace_syscall_exit(regs);
-+		trace_syscall_exit(regs, regs->ax);
- 
- 	if (test_thread_flag(TIF_SYSCALL_TRACE))
- 		tracehook_report_syscall_exit(regs, 0);
-diff --git a/include/trace/syscall.h b/include/trace/syscall.h
-index c55fcce..3951d77 100644
---- a/include/trace/syscall.h
-+++ b/include/trace/syscall.h
-@@ -1,8 +1,28 @@
- #ifndef _TRACE_SYSCALL_H
- #define _TRACE_SYSCALL_H
- 
-+#include <linux/tracepoint.h>
-+
- #include <asm/ptrace.h>
- 
-+
-+extern void syscall_regfunc(void);
-+extern void syscall_unregfunc(void);
-+
-+DECLARE_TRACE_WITH_CALLBACK(syscall_enter,
-+	TP_PROTO(struct pt_regs *regs, long id),
-+	TP_ARGS(regs, id),
-+	syscall_regfunc,
-+	syscall_unregfunc
-+);
-+
-+DECLARE_TRACE_WITH_CALLBACK(syscall_exit,
-+	TP_PROTO(struct pt_regs *regs, long ret),
-+	TP_ARGS(regs, ret),
-+	syscall_regfunc,
-+	syscall_unregfunc
-+);
-+
- /*
-  * A syscall entry in the ftrace syscalls array.
-  *
-diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-index 1ef5d3a..070a42b 100644
---- a/kernel/tracepoint.c
-+++ b/kernel/tracepoint.c
-@@ -24,6 +24,7 @@
- #include <linux/tracepoint.h>
- #include <linux/err.h>
- #include <linux/slab.h>
-+#include <linux/sched.h>
- 
- extern struct tracepoint __start___tracepoints[];
- extern struct tracepoint __stop___tracepoints[];
-@@ -577,3 +578,40 @@ static int init_tracepoints(void)
- __initcall(init_tracepoints);
- 
- #endif /* CONFIG_MODULES */
-+
-+static DEFINE_MUTEX(regfunc_mutex);
-+static int sys_tracepoint_refcount;
-+
-+void syscall_regfunc(void)
-+{
-+	unsigned long flags;
-+	struct task_struct *g, *t;
-+
-+	mutex_lock(&regfunc_mutex);
-+	if (!sys_tracepoint_refcount) {
-+		read_lock_irqsave(&tasklist_lock, flags);
-+		do_each_thread(g, t) {
-+			set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-+		} while_each_thread(g, t);
-+		read_unlock_irqrestore(&tasklist_lock, flags);
-+	}
-+	sys_tracepoint_refcount++;
-+	mutex_unlock(&regfunc_mutex);
-+}
-+
-+void syscall_unregfunc(void)
-+{
-+	unsigned long flags;
-+	struct task_struct *g, *t;
-+
-+	mutex_lock(&regfunc_mutex);
-+	sys_tracepoint_refcount--;
-+	if (!sys_tracepoint_refcount) {
-+		read_lock_irqsave(&tasklist_lock, flags);
-+		do_each_thread(g, t) {
-+			clear_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-+		} while_each_thread(g, t);
-+		read_unlock_irqrestore(&tasklist_lock, flags);
-+	}
-+	mutex_unlock(&regfunc_mutex);
-+}
+ 	atomic_t		profile_count;
+ 	int			(*profile_enable)(struct ftrace_event_call *);
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index 25d3b02..46d81b5 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -568,7 +568,7 @@ static void ftrace_raw_event_##call(proto)				\
+ 		trace_nowake_buffer_unlock_commit(event, irq_flags, pc); \
+ }									\
+ 									\
+-static int ftrace_raw_reg_event_##call(void)				\
++static int ftrace_raw_reg_event_##call(void *ptr)			\
+ {									\
+ 	int ret;							\
+ 									\
+@@ -579,7 +579,7 @@ static int ftrace_raw_reg_event_##call(void)				\
+ 	return ret;							\
+ }									\
+ 									\
+-static void ftrace_raw_unreg_event_##call(void)				\
++static void ftrace_raw_unreg_event_##call(void *ptr)			\
+ {									\
+ 	unregister_trace_##call(ftrace_raw_event_##call);		\
+ }									\
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index f95f847..1d289e2 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -86,14 +86,14 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+ 		if (call->enabled) {
+ 			call->enabled = 0;
+ 			tracing_stop_cmdline_record();
+-			call->unregfunc();
++			call->unregfunc(call->data);
+ 		}
+ 		break;
+ 	case 1:
+ 		if (!call->enabled) {
+ 			call->enabled = 1;
+ 			tracing_start_cmdline_record();
+-			call->regfunc();
++			call->regfunc(call->data);
+ 		}
+ 		break;
+ 	}
 -- 
 1.6.2.3
 
