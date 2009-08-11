@@ -1,117 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbZHKMD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbZHKMDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752860AbZHKMD6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbZHKMD5
+	id S1752829AbZHKMDl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbZHKMDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:03:57 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54988 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751289AbZHKMD4 (ORCPT
+	Tue, 11 Aug 2009 08:03:40 -0400
+Received: from mga01.intel.com ([192.55.52.88]:39953 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751103AbZHKMDj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:03:56 -0400
-Date: Tue, 11 Aug 2009 09:17:56 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, tytso@mit.edu, hch@infradead.org,
-       mfasheh@suse.com, aia21@cantab.net, hugh.dickins@tiscali.co.uk,
-       swhiteho@redhat.com, akpm@linux-foundation.org, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com, Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       Taketoshi Sakuraba <taketoshi.sakuraba.hc@hitachi.com>
-Subject: Re: [PATCH] [16/19] HWPOISON: Enable .remove_error_page for
-	migration aware file systems
-Message-ID: <20090811071756.GC14368@basil.fritz.box>
-References: <200908051136.682859934@firstfloor.org> <20090805093643.E0C00B15D8@basil.firstfloor.org> <4A7FBFD1.2010208@hitachi.com> <20090810074421.GA6838@basil.fritz.box> <4A80EAA3.7040107@hitachi.com>
+	Tue, 11 Aug 2009 08:03:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,359,1246863600"; 
+   d="scan'208";a="482492278"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>
+Date: Tue, 11 Aug 2009 07:33:57 +0100
+Subject: RE: [PATCH] perf_counter: Fix a race on perf_counter_ctx
+Thread-Topic: [PATCH] perf_counter: Fix a race on perf_counter_ctx
+Thread-Index: AcoZwPH32O+eE+8/TDeninUWmRiuXwAjFfgg
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF680@irsmsx504.ger.corp.intel.com>
+References: <928CFBE8E7CB0040959E56B4EA41A77EC1BFEFEB@irsmsx504.ger.corp.intel.com>
+ <20090807103127.GA23139@elte.hu> <20090807103610.GA23728@elte.hu>
+ <928CFBE8E7CB0040959E56B4EA41A77EC1BFF02D@irsmsx504.ger.corp.intel.com>
+ <928CFBE8E7CB0040959E56B4EA41A77EC1BFF048@irsmsx504.ger.corp.intel.com>
+ <20090807112421.GB30014@elte.hu> <20090807113349.GA31673@elte.hu>
+ <1249667341.17467.5.camel@twins> <20090808120315.GA14086@elte.hu>
+ <928CFBE8E7CB0040959E56B4EA41A77EC1BFF464@irsmsx504.ger.corp.intel.com>
+ <20090810134608.GA8295@elte.hu>
+In-Reply-To: <20090810134608.GA8295@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A80EAA3.7040107@hitachi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 12:50:59PM +0900, Hidehiro Kawai wrote:
-> > And application
-> > that doesn't handle current IO errors correctly will also
-> > not necessarily handle hwpoison correctly (it's not better and not worse)
-> 
-> This is my main concern.  I'd like to prevent re-corruption even if
-> applications don't have good manners.
+>-----Original Message-----
+>From: Ingo Molnar [mailto:mingo@elte.hu]
+>Sent: Monday, August 10, 2009 3:46 PM
+>To: Metzger, Markus T
+>Cc: Peter Zijlstra; tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; linux-
+>kernel@vger.kernel.org; Paul Mackerras
+>Subject: Re: [PATCH] perf_counter: Fix a race on perf_counter_ctx
+>
+>
+>* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
+>
+>> I've been using some old version of perf. When I try to build the
+>> version for the latest -tip, I get the following build error:
+>>
+>> builtin-annotate.o: In function `print_summary':
+>> /home/markus/linux/git-tip/tools/perf/builtin-annotate.c:1211: undefined reference to `rb_first'
+>> /home/markus/linux/git-tip/tools/perf/builtin-annotate.c:1223: undefined reference to `rb_next'
+>> builtin-annotate.o: In function `insert_source_line':
+>
+>Weird. How do you build perf? Do you do:
+>
+>  cd tools/perf/
+>  make
+>
+>? does your build directory have the ../../lib/rbtree.c file?
 
-I don't think there's much we can do if the application doesn't
-check for IO errors properly. What would you do if it doesn't
-check for IO errors at all? If it checks for IO errors it simply
-has to check for them on all IO operations -- if they do 
-they will detect hwpoison errors correctly too.
+Yes and yes.
 
-> As for usual I/O error, ext3/4 can now do it by using data=ordered and
-> data_err=abort mount options.  Moreover, if you mount the ext3/4
-> filesystem with the additional errors=panic option, kernel gets
-> panic on write error instead of read-only remount.  Customers
-> who regard data integrity is very important require these features.
+regards,
+markus.
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-Well they can also set vm.memory_failure_recovery = 0 then if they don't
-care about their uptime. 
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
-> That is why I suggested this:
-> >>(2) merge this patch with new panic_on_dirty_page_cache_corruption
-
-You probably mean panic_on_non_anonymous_dirty_page_cache
-Normally anonymous memory is dirty.
-
-> >>    sysctl
-
-It's unclear to me this special mode is really desirable.
-Does it bring enough value to the user to justify the complexity
-of another exotic option?  The case is relatively exotic,
-as in dirty write cache that is mapped to a file.
-
-Try to explain it in documentation and you see how ridiculous it sounds; u
-it simply doesn't have clean semantics
-
-("In case you have applications with broken error IO handling on
-your mission critical system ...") 
-
-> > I'm sure other enhancements for IO errors could be done too.
-> > Some of the file systems also handle them still quite poorly (e.g. btrfs)
-> > 
-> > But again I don't think it's a blocker for hwpoison.
-> 
-> Unfortunately, it can be a blocker.  As I stated, we can block the
-> possible re-corruption caused by transient IO errors on ext3/4
-> filesystems.  But applying this patch (PATCH 16/19), re-corruption
-> can happen even if we use data=ordered, data_err=abort and
-> errors=panic mount options.
-
-We don't corrupt data on disk. Applications
-that don't check for IO errors correctly may see stale data
-from the same file on disk though.
-
-This can happen in all the cases you listed above except for panic-on-error.
-
-If you want panic-on-error behaviour simply set vm.memory_failure_recovery = 0
-
-
-> > (4) accept that hwpoison error handling is not better and not worse than normal
-> > IO error handling.
-> > 
-> > We opted for (4).
-> 
-> Could you consider adopting (2) or (3)?  Fengguang's sticky EIO
-> approach (http://lkml.org/lkml/2009/6/11/294) is also OK.
-
-I believe redesigned IO error handling does not belong in the 
-core hwpoison patchkit. It's big enough as it is and I consider it frozen
-unless fatal bugs are found -- and frankly this is not a fatal 
-error in my estimation.
-
-If you want to have improved IO error handling feel free to
-submit it separately. I agree this area could use some work.
-But it probably needs more design work first.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
