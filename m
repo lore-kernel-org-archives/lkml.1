@@ -1,77 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbZHKT5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755145AbZHKUFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755261AbZHKT5G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 15:57:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbZHKT5F
+	id S1755145AbZHKUFF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 16:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbZHKUFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 15:57:05 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:44367 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988AbZHKT5E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 15:57:04 -0400
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
-References: <20090811104144.5154.77871.sendpatchset@localhost.localdomain>
-	<20090811104154.5154.78710.sendpatchset@localhost.localdomain>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 11 Aug 2009 12:57:00 -0700
-In-Reply-To: <20090811104154.5154.78710.sendpatchset@localhost.localdomain> (Amerigo Wang's message of "Tue\, 11 Aug 2009 06\:39\:32 -0400")
-Message-ID: <m1r5vi9l9v.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 11 Aug 2009 16:05:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35508 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754436AbZHKUFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 16:05:03 -0400
+Date: Tue, 11 Aug 2009 17:04:36 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+       Mike Galbraith <efault@gmx.de>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Luis Claudio =?iso-8859-1?Q?R=2E_Gon=E7alves?= 
+	<lclaudio@redhat.com>,
+       Clark Williams <williams@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH tip 1/1] perf tools: Make dso__new handle deleted DSOs
+Message-ID: <20090811200436.GA3478@ghostprotocols.net>
+References: <20090811192211.GG18061@ghostprotocols.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: amwang@redhat.com, mingo@elte.hu, akpm@linux-foundation.org, andi@firstfloor.org, nhorman@redhat.com, linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Amerigo Wang <amwang@redhat.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.4 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.1 XMSolicitRefs_0 Weightloss drug
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [RFC Patch 2/2] kexec: allow to shrink reserved memory
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090811192211.GG18061@ghostprotocols.net>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amerigo Wang <amwang@redhat.com> writes:
+It is better than showing the map addr, this way at least we know that we can't
+get the symtabs because the DSO was deleted (system update) while an app still
+used such DSO.
 
-> This patch implements shrinking the reserved memory for crash kernel,
-> if it is more than enough.
->
-> For example, if you have already reserved 128M, now you just want 100M,
-> you can do:
->
-> # echo $((100*1024*1024)) > /sys/kernel/kexec_crash_size
+Yeah, don't do that, but if you do, you'll figure it out quicker this
+way.
 
-This patch looks like a reasonable start.
+[acme@doppio linux-2.6-tip]$ perf report | head -15
+# Samples: 3796
+#
+# Overhead  Command                                                        Shared Object  Symbol
+# ........  .......  ...................................................................  ......
+#
+    23.55%   pidgin  /lib64/libglib-2.0.so.0.2000.4.#prelink#.Pd98lu (deleted)            [.] 0x00000000038844
+    21.55%   pidgin  /lib64/libpthread-2.10.1.so.#prelink#.AFwK8Q (deleted)               [.] 0x0000000000a42d
+    10.85%   pidgin  [kernel]                                                             [.] vread_hpet
+     7.85%   pidgin  /lib64/libgobject-2.0.so.0.2000.4.#prelink#.o1vpU7 (deleted)         [.] 0x00000000014de8
+     3.35%   pidgin  /lib64/libc-2.10.1.so (deleted)                                      [.] 0x0000000007a875
+     3.19%   pidgin  /lib64/libdbus-1.so.3.4.0.#prelink#.6mwgZP (deleted)                 [.] 0x0000000001d254
+     3.06%   pidgin  /usr/lib64/libgtk-x11-2.0.so.0.1600.5.#prelink#.511hAl (deleted)     [.] 0x000000002334e7
+     2.90%   pidgin  /usr/lib64/libgdk-x11-2.0.so.0.1600.5.#prelink#.5qlMo1 (deleted)     [.] 0x00000000037b2d
+     1.84%   pidgin  [kernel]                                                             [k] do_sys_poll
+     1.45%   pidgin  /usr/lib64/libX11.so.6.2.0.#prelink#.iR59Rx (deleted)                [.] 0x0000000004c751
+[acme@doppio linux-2.6-tip]$
 
-However once a crash kernel image is loaded we have already told that
-image about the memory that is available and what you are doing here
-will go and stop on the memory that is reserved but not yet used,
-totally breaking the DMA protections.  AKA we know the memory is safe
-from ongoing DMAs because it has lain fallow since boot up.
+Cc: Luis Claudio R. Gonçalves <lclaudio@redhat.com>
+Cc: Clark Williams <williams@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/util/symbol.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-The only safe thing to do is to reduce the memory size before (possibly
-just before) we load the crash kernel.  Which means we should only
-be allowed to shrink the size when nothing is loaded, exactly the
-opposite of what you have implemented.
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index 2473fd4..5c0f42e 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -801,6 +801,8 @@ more:
+ 	}
+ out:
+ 	free(name);
++	if (ret < 0 && strstr(self->name, " (deleted)") != NULL)
++		return 0;
+ 	return ret;
+ }
+ 
+-- 
+1.6.2.5
 
-You patch also plays with global kexec variables outside of the mutex
-before calling into shrink_crash_memory.   If my memory serves just
-doing mutx_lock(&kexec_mutex) on this code path should be fine.  The
-mutex_trylock on the other code paths is about having non-blocking
-behavior that you don't need here.
-
-Eric
