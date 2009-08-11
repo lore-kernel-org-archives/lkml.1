@@ -1,76 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbZHKSxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbZHKS5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755095AbZHKSxa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 14:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbZHKSx3
+	id S1754811AbZHKS5P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 14:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbZHKS5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 14:53:29 -0400
-Received: from kroah.org ([198.145.64.141]:37674 "EHLO coco.kroah.org"
+	Tue, 11 Aug 2009 14:57:14 -0400
+Received: from thunk.org ([69.25.196.29]:44596 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754668AbZHKSx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 14:53:27 -0400
-Date: Tue, 11 Aug 2009 11:30:03 -0700
-From: Greg KH <greg@kroah.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: mmotm 2009-08-06-00-30 uploaded
-Message-ID: <20090811183003.GA4333@kroah.com>
-References: <200908060733.n767X6mN023120@imap1.linux-foundation.org>
- <20090807134659.GA2093@darkstar>
- <20090807094944.eed4bfb8.akpm@linux-foundation.org>
- <a8e1da0908080313k65f51185u7329e293a95861a7@mail.gmail.com>
- <20090811140824.GA2067@darkstar>
+	id S1751227AbZHKS5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 14:57:13 -0400
+Date: Tue, 11 Aug 2009 14:57:03 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Frans Pop <elendil@planet.nl>, Chris Mason <chris.mason@oracle.com>,
+       jack@suse.cz, linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: What happened to data=guarded?
+Message-ID: <20090811185703.GQ1756@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andi Kleen <andi@firstfloor.org>, Frans Pop <elendil@planet.nl>,
+	Chris Mason <chris.mason@oracle.com>, jack@suse.cz,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+References: <1249934623-15939-1-git-send-email-tytso@mit.edu> <200908111535.37927.elendil@planet.nl> <20090811133721.GD29224@think> <200908111654.38217.elendil@planet.nl> <878whqgyid.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090811140824.GA2067@darkstar>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <878whqgyid.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 10:08:24PM +0800, Dave Young wrote:
-> On Sat, Aug 08, 2009 at 06:13:53PM +0800, Dave Young wrote:
-> > On Sat, Aug 8, 2009 at 12:49 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
-> > > On Fri, 7 Aug 2009 21:47:00 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
-> > >
-> > >> Hi, andrew
-> > >>
-> > >> Booting with this release, init (maybe getty?) reports something like:
-> > >>
-> > >> INIT: open /dev/console failed with input/output error
-> > >>
-> > >> 2.6.31-rc5 is fine.
-> > >>
-> > >> Any hints to find the root problem?
-> > >
-> > > Not really, sorry.  Might be tty changes in linux-next?
-> > 
-> > I bisected linux-next, find following patch as a result
-> > 
-> > commit 65b8c7d9be5862ff8ac839607b444b6f6b11d2fb
-> > Author: Alan Cox <alan@linux.intel.com>
-> > Date:   Thu Aug 6 09:58:02 2009 +1000
-> > 
-> >     cyclades: use the full port_close function
-> > 
-> > But, I did not select cyclades in my .config, nor do i have the hardware. Weird.
+On Tue, Aug 11, 2009 at 05:29:14PM +0200, Andi Kleen wrote:
+> > Good to hear. I've so far stayed with data=ordered as I think I'd prefer 
+> > data=guarded over data=writeback. I'll certainly give it a try when it's 
+> > available.
 > 
-> The above result is wrong, it's a mistake.
-> 
-> After a whole day's testing and debugging with linux-2.6 git tree and tty patch series, I found the patch causing this issue. 
-> --
-> From: Alan Cox <alan@linux.intel.com>
-> Subject: tty: make the kref destructor occur asynchronously
-> --
+> Same here. data=writeback already cost me a few files after crashes here :/
 
-So if you revert this one patch, everything goes back to working
-properly?
+What sort of files were you losing?  I don't know if we can improve
+the implied flush hueristics, but we should at least try to see if we
+do something about it.
 
-Alan, any ideas?
-
-thanks,
-
-greg k-h
+						- Ted
