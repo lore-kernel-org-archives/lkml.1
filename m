@@ -1,95 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbZHKMJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbZHKMI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753490AbZHKMJS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbZHKMJQ
+	id S1753461AbZHKMI7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZHKMI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:09:16 -0400
-Received: from compulab.co.il ([67.18.134.219]:38554 "EHLO compulab.co.il"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753467AbZHKMJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:09:15 -0400
-Message-ID: <4A815F64.8000105@compulab.co.il>
-Date: Tue, 11 Aug 2009 15:09:08 +0300
-From: Mike Rapoport <mike@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090712)
+	Tue, 11 Aug 2009 08:08:57 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:23783 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753217AbZHKMIz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 08:08:55 -0400
+Message-ID: <4A810DE4.7030202@gmail.com>
+Date: Tue, 11 Aug 2009 09:21:24 +0300
+From: Artem Bityutskiy <dedekind1@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: me@felipebalbi.com
-CC: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Question about userspace-consumer
-References: <20090810200553.GB4652@gandalf> <20090810215800.GB4528@sirena.org.uk> <20090811054438.GA7176@gandalf>
-In-Reply-To: <20090811054438.GA7176@gandalf>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-ACL-Warn: {
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - compulab.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: vimal singh <vimal.newwork@gmail.com>
+CC: Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org,
+       dedekind@infradead.org, linux-kernel@vger.kernel.org,
+       david-b@pacbell.net, linux-mtd@lists.infradead.org,
+       vimal singh <vimalsingh@ti.com>, dwmw2@infradead.org
+Subject: Re: [PATCH-v3 1:2] [MTD][NAND]omap: Adding support for nand prefetch-read
+ and post-write, in MPU mode.
+References: <61339.192.168.10.89.1247226725.squirrel@dbdmail.itg.ti.com> 	<48097.192.168.10.89.1247232736.squirrel@dbdmail.itg.ti.com> 	<60361.192.168.10.89.1247482584.squirrel@dbdmail.itg.ti.com> 	<20090810162734.GH1938@atomide.com> <ce9ab5790908102245r28224bf5nfa2a1b22267767fe@mail.gmail.com>
+In-Reply-To: <ce9ab5790908102245r28224bf5nfa2a1b22267767fe@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 11 Aug 2009 06:23:05.0677 (UTC) FILETIME=[2FE3B7D0:01CA1A4C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Felipe Balbi wrote:
-> On Mon, Aug 10, 2009 at 10:58:01PM +0100, Mark Brown wrote:
->> On Mon, Aug 10, 2009 at 11:05:54PM +0300, Felipe Balbi wrote:
+On 08/11/2009 08:45 AM, vimal singh wrote:
+> On Mon, Aug 10, 2009 at 9:57 PM, Tony Lindgren<tony@atomide.com>  wrote:
+>> * vimal singh<vimalsingh@ti.com>  [090713 13:56]:
+>>> Patch updated for ' ioreadX / iowriteX and ioreadX_rep / iowriteX_rep' as per
+>>> David Brownell's comment. I updated 'omap_(read/write)_buf16' fucntions also
+>>> for this.
+>>>
+>>> -vimal
+>>>
+>>> This patch adds prefetch support to access nand flash in mpu mode.
+>>> This patch also adds 8-bit nand support (omap_read/write_buf8).
+>>> Prefetch can be used for both 8- and 16-bit devices.
+>>>
+>>> Signed-off-by: Vimal Singh<vimalsingh@ti.com>
+>> Sorry for the delay. I've looked at the GPMC part, and that now looks OK
+>> to me. So I'm OK for this to get integrated via the MTD list.
 >>
->> The existing drivers for this sort of functionality are all regular
->> kernel drivers (in drivers/power and to a lesser extent drivers/hwmon)
->> and it looks like it'd be at least as much work to rearrange the power
->> supply stuff to support userspace drivers.  My initial expectation would
-> 
-> power supply already does what it needs, no ? It exports battery
-> figures (state-of-charge, time-to-charge, temperature, etc etc) via
-> sysfs to userland, where our "charging daemon" could read those values
-> from.
-> 
->> be for a generic driver with some policy exposed to user space and some
->> configuration exposed for architecture code (especially for setting up
->> multi-battery board layouts and things).  That's not a terribly informed
->> opinion, though.
+>> Acked-by: Tony Lindgren<tony@atomide.com>
+>>
+>
+> Can you give your ack to below patch too?
+>
+> http://lists.infradead.org/pipermail/linux-mtd/2009-July/026373.html
 
-+1
-
->>> For doing that, probably userspace-consumer would have to be able to
->>> set_voltage/get_voltage, set/get_current_limit and so on. So I was
->>> thinking on changing userspace-consumer to use regulator_get() instead
->>> of regulator_bulk_get() and make each instance of userspace-consumer to
->>> talk to only and only one regulator.
-
-I don't think that a battery charger should identify itself like a regulator
-device. It seems to me that charger driver belongs completely to the power
-supply subsystem and if there's a need to add policy enforcement functionality,
-it should be added to the power supply subsystem.
-Moreover, extending userspace-consumer driver for battery charger needs is too
-dangerous. You have to ensure that *all* critical conditions are handled
-in-kernel, no matter what userspace policy is.
-
-> I think kernel should, as long as possible, only provide functionalities
-> for userland to take decisions and actions, no ?
-> 
-> Handling policy in kernel space I find it a little odd, specially
-> because different manufacturers might have different charging algorithms
-> they want to implement.
-
-It depends on how do you define policy. If the policy includes e.g. over-charge
-and over-temperature than it should be handled in-kernel.
-
-> that said, power supply framework and regulator framework seem to be
-> well enough for implementing the basic support for SBS-enabled charging
-> scheme.
-
-As far as I understood SBS scheme, the host has very little impact on the
-charging process. Most of the charging is handled by Smart Battery and Smart
-Battery Charger without any host intervention.
-
+I've picked up both of your patches, please, check:
+http://git.infradead.org/users/dedekind/l2-mtd-2.6.git/commit/33f48f597315842f39427ee4261cbf82a9afeaf3
+http://git.infradead.org/users/dedekind/l2-mtd-2.6.git/commit/b67d52c91b26e97f981f2c292619d31667d5b272
 
 -- 
-Sincerely yours,
-Mike.
-
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
