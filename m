@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbZHKMha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbZHKMip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057AbZHKMha (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZHKMh3
+	id S1754090AbZHKMip (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbZHKMio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:37:29 -0400
-Received: from mail.free-electrons.com ([88.191.76.200]:42647 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752619AbZHKMh2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:37:28 -0400
-Date: Tue, 11 Aug 2009 11:44:18 +0200
-From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Matthieu CASTET <matthieu.castet@parrot.com>,
-       Alain Knaff <alain@knaff.lu>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/6] Add support for LZO-compressed kernels for ARM
-Message-ID: <20090811094418.GI9704@pc-ras4041.res.insa>
-References: <20090806224055.GH31579@n2100.arm.linux.org.uk> <20090807092423.GA4455@laptop> <4A7BF5B8.4030907@knaff.lu> <20090807102117.GB4455@laptop> <4A7C14EB.1060701@parrot.com> <20090807130130.GE4455@laptop> <4A7C2BA4.7030408@parrot.com> <20090807135524.GF4455@laptop> <20090807200001.GE31543@n2100.arm.linux.org.uk> <20090807210816.GA29797@merkur.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090807210816.GA29797@merkur.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 11 Aug 2009 08:38:44 -0400
+Received: from main.gmane.org ([80.91.229.2]:45985 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753771AbZHKMin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 08:38:43 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+Subject: Re: case-duplicated filenames
+Date: Tue, 11 Aug 2009 13:38:29 +0100
+Message-ID: <yw1xy6pq7cfu.fsf@unicorn.mansr.com>
+References: <a9c5028086c7f5f0e245853b9065e187.squirrel@ubb.ca> <4A80D5DF.3090402@davidnewall.com> <4A80D6D4.3080005@ubb.ca> <9b2b86520908110243r3d527b3n518fe4d3714a7bde@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: unicorn.mansr.com
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.22 (Instant Classic, linux)
+Cancel-Lock: sha1:JUA7kWszBff/KWdZVa5vcPuXdhU=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+Alan Jenkins <sourcejedi.lkml@googlemail.com> writes:
 
-On Fri, Aug 07, 2009 at 11:08:16PM +0200, Sam Ravnborg wrote :
-> We could add libgcc as a prerequisite.
-> Untested patch below.
+> On 8/11/09, Tony Mantler <nicoya@ubb.ca> wrote:
+>> David Newall wrote:
+>>> Tony Mantler wrote:
+>>>> A co-worker reminded me this afternoon that the linux source tree does
+>>>> not
+>>>> get along well with case-insensitive filesystems. Ever the curious and
+>>>> bored sort, and in the middle of an sqlite bender, I decided to cook up a
+>>>> quick script to find exactly what files those are.
+>>>>
+>>>
+>>> Such an extravagant process: you're just being silly.
+>>
+>> Well I did say I was bored. ;)
+>
+> Performance aside, it's a one-liner in shell* ;).
+>
+> find | sort | uniq -ic | grep -v " 1 "
+>
+> [*]  Posix compliance not guaranteed.  I don't know how standard uniq -i is.
 
-When compiling with this patch applied, I get the following error:
+It's not standard.  You're also assuming case-insensitive sort.  Using
+sort -f increases the chances of this doing what you want, but it
+still depends on the locale settings.
 
-  Kernel: arch/arm/boot/Image is ready
-    LD      arch/arm/boot/compressed/vmlinux
-/home/albin/x-tools/arm-unknown-linux-uclibcgnueabi/lib/gcc/arm-unknown-linux-uclibcgnueabi/4.3.2/libgcc.a(_dvmd_lnx.o):
-In function `__div0':
-/home/albin/devel/free-electrons/toolchain/targets/src/gcc-4.3.2/libgcc/../gcc/config/arm/lib1funcs.asm:1079:
-undefined reference to `raise'
-make[2]: *** [arch/arm/boot/compressed/vmlinux] Error 1
-make[1]: *** [arch/arm/boot/compressed/vmlinux] Error 2
-
-I've got no idea where this symbol is defined, though. Has anyone an idea on
-this ?
-
-Regards,
 -- 
-Albin Tonnerre, Free Electrons
-Kernel, drivers and embedded Linux development,
-consulting, training and support.
-http://free-electrons.com
+Måns Rullgård
+mans@mansr.com
+
