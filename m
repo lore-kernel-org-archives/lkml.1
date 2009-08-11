@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbZHKRmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbZHKRnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755338AbZHKRmw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 13:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755156AbZHKRmv
+	id S1755263AbZHKRnG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 13:43:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbZHKRnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 13:42:51 -0400
-Received: from mail.tasr.sk ([195.46.72.7]:33011 "HELO mail.tasr.sk"
+	Tue, 11 Aug 2009 13:43:01 -0400
+Received: from mail.tasr.sk ([195.46.72.7]:33081 "HELO mail.tasr.sk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752788AbZHKRmu convert rfc822-to-8bit (ORCPT
+	id S1754790AbZHKRm6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 13:42:50 -0400
-Message-ID: <ad4c383b8f1b9cf6bc7e1d72c79be31e.squirrel@webmail.tasr.sk>
-Date: Tue, 11 Aug 2009 19:31:50 +0200 (CEST)
+	Tue, 11 Aug 2009 13:42:58 -0400
+Message-ID: <bd6f71711426d5b9f19d4da0d8a64347.squirrel@webmail.tasr.sk>
+Date: Tue, 11 Aug 2009 19:31:49 +0200 (CEST)
 Subject: 
 From: "Camelot Group News." <info@winners.com>
 Reply-To: prof.shaw09@9.cn
