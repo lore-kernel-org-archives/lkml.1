@@ -1,89 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbZHKShe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbZHKSlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755389AbZHKShe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 14:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbZHKShd
+	id S1754554AbZHKSlT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 14:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZHKSlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 14:37:33 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:46701 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754063AbZHKShc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 14:37:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Q08QgqO2nbQ57jcbLW2oHgTCYiNSc0YurMi+rhB7oPsbU3T9sr6KTuNd1JpVTDW10g
-         S2Qnttc9sp9Ttq2L2e67PtQIOvSMHu3hDGN2R0gSduAIhG2Qu6rABB+tQgDt3IiFLP1Q
-         3djaMzcEtI+JzaZ11/FjumAmySh1flaTqf1as=
-MIME-Version: 1.0
-In-Reply-To: <20090811171427.GV12579@kernel.dk>
-References: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com>
-	 <e2e108260908110335tc500412mc6354359d85ae9b6@mail.gmail.com>
-	 <20090811143919.GU12579@kernel.dk>
-	 <e2e108260908110759w4fbbb5dejf852ba272fa29d75@mail.gmail.com>
-	 <20090811171427.GV12579@kernel.dk>
-Date: Tue, 11 Aug 2009 20:37:31 +0200
-Message-ID: <e2e108260908111137k1e0d3418qeaa4cd9775bd0f38@mail.gmail.com>
-Subject: Re: [PATCH 0/3]: blk-iopoll, a polled completion API for block 
-	devices
-From: Bart Van Assche <bart.vanassche@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
+	Tue, 11 Aug 2009 14:41:19 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:48533 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751705AbZHKSlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 14:41:18 -0400
+Date: Tue, 11 Aug 2009 20:41:19 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Bart Van Assche <bart.vanassche@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        Eric.Moore@lsi.com, jeff@garzik.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 0/3]: blk-iopoll, a polled completion API for block
+	devices
+Message-ID: <20090811184118.GW12579@kernel.dk>
+References: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com> <e2e108260908110335tc500412mc6354359d85ae9b6@mail.gmail.com> <20090811143919.GU12579@kernel.dk> <e2e108260908110759w4fbbb5dejf852ba272fa29d75@mail.gmail.com> <20090811171427.GV12579@kernel.dk> <e2e108260908111137k1e0d3418qeaa4cd9775bd0f38@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e2e108260908111137k1e0d3418qeaa4cd9775bd0f38@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 7:14 PM, Jens Axboe<jens.axboe@oracle.com> wrote:
-> On Tue, Aug 11 2009, Bart Van Assche wrote:
->> On Tue, Aug 11, 2009 at 4:39 PM, Jens Axboe<jens.axboe@oracle.com> wrote:
->> > On Tue, Aug 11 2009, Bart Van Assche wrote:
->> >> On Thu, Aug 6, 2009 at 9:58 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
->> >> > Anyway, YMMV, I would appreciate some test results (and as usual, that
->> >> > even includes just saying that it boots and functions for you). If
->> >> > people feel adventurous, patches for other controllers will be happily
->> >> > queued up for testing. I may even be convinced to implement support
->> >> > for your controller of choice, if you have some fast storage hooked up
->> >> > and would like to experiment. Generally, adding support to a driver is
->> >> > not very hard and the two conversions included were also meant to serve
->> >> > as an inspiration.
->> >>
->> >> Sounds very interesting. Have you already considered patching the SRP
->> >> initiator ? During the SRP performance tests I ran CPU usage on the
->> >> initiator was more than 95% and on the target less than 10%.
->> >
->> > No I haven't, if you point me at which srp files, I can take a look.
->>
->> The relevant source files are:
->> include/scsi/srp.h
->> include/scsi/scsi_transport_srp.h
->> drivers/infiniband/ulp/srp/ib_srp.h
->> drivers/infiniband/ulp/srp/ib_srp.c
->> drivers/scsi/scsi_transport_srp.c
->> drivers/scsi/libsrp.c
->> drivers/scsi/scsi_transport_srp_internal.h
->
-> I can find | grep too :-)
+On Tue, Aug 11 2009, Bart Van Assche wrote:
+> On Tue, Aug 11, 2009 at 7:14 PM, Jens Axboe<jens.axboe@oracle.com> wrote:
+> > On Tue, Aug 11 2009, Bart Van Assche wrote:
+> >> On Tue, Aug 11, 2009 at 4:39 PM, Jens Axboe<jens.axboe@oracle.com> wrote:
+> >> > On Tue, Aug 11 2009, Bart Van Assche wrote:
+> >> >> On Thu, Aug 6, 2009 at 9:58 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> >> >> > Anyway, YMMV, I would appreciate some test results (and as usual, that
+> >> >> > even includes just saying that it boots and functions for you). If
+> >> >> > people feel adventurous, patches for other controllers will be happily
+> >> >> > queued up for testing. I may even be convinced to implement support
+> >> >> > for your controller of choice, if you have some fast storage hooked up
+> >> >> > and would like to experiment. Generally, adding support to a driver is
+> >> >> > not very hard and the two conversions included were also meant to serve
+> >> >> > as an inspiration.
+> >> >>
+> >> >> Sounds very interesting. Have you already considered patching the SRP
+> >> >> initiator ? During the SRP performance tests I ran CPU usage on the
+> >> >> initiator was more than 95% and on the target less than 10%.
+> >> >
+> >> > No I haven't, if you point me at which srp files, I can take a look.
+> >>
+> >> The relevant source files are:
+> >> include/scsi/srp.h
+> >> include/scsi/scsi_transport_srp.h
+> >> drivers/infiniband/ulp/srp/ib_srp.h
+> >> drivers/infiniband/ulp/srp/ib_srp.c
+> >> drivers/scsi/scsi_transport_srp.c
+> >> drivers/scsi/libsrp.c
+> >> drivers/scsi/scsi_transport_srp_internal.h
+> >
+> > I can find | grep too :-)
+> 
+> The command "find | grep srp" would have returned a few more source
+> files. The most relevant starting point is the source file
+> drivers/infiniband/ulp/srp/ib_srp.c, which contains the struct
+> scsi_host_template.
+> 
+> > Did you profile this? Where did it burn all the CPU time on the
+> > initiator side?
+> 
+> The test I ran involved a Linux SRP initiator and a Linux SRP target
+> (SCST) using a RAM disk as backstorage. Read throughput is about 1700
+> MB/s for block sizes of 8 MB and above. But with a block size of 4 KB,
+> the read throughput on the initiator drops to 100 MB/s. At this block
+> size there are about 50.000 interrupts per second generated by the
+> InfiniBand HCA in the initiator system. On the same setup the
+> ib_send_bw tool reports a throughput of 1850 MB/s for a block size of
+> 4 KB. This last tool is not interrupt driven but uses polling.
 
-The command "find | grep srp" would have returned a few more source
-files. The most relevant starting point is the source file
-drivers/infiniband/ulp/srp/ib_srp.c, which contains the struct
-scsi_host_template.
+OK, so that looks promising at least. Which hw driver does it use? If I
+look under infiniband/, I see nes, amso, ehca, various ipath and mthca.
+That's where it needs to be hooked up, the srp above mostly looks like
+library helpers and the target hook to the scsi layer.
 
-> Did you profile this? Where did it burn all the CPU time on the
-> initiator side?
+-- 
+Jens Axboe
 
-The test I ran involved a Linux SRP initiator and a Linux SRP target
-(SCST) using a RAM disk as backstorage. Read throughput is about 1700
-MB/s for block sizes of 8 MB and above. But with a block size of 4 KB,
-the read throughput on the initiator drops to 100 MB/s. At this block
-size there are about 50.000 interrupts per second generated by the
-InfiniBand HCA in the initiator system. On the same setup the
-ib_send_bw tool reports a throughput of 1850 MB/s for a block size of
-4 KB. This last tool is not interrupt driven but uses polling.
-
-Bart.
