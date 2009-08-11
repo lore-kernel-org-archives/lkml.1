@@ -1,59 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbZHKWo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbZHKWvD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754872AbZHKWo3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 18:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbZHKWo2
+	id S1755508AbZHKWvD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 18:51:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZHKWvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 18:44:28 -0400
-Received: from neskaya.eckenfels.net ([195.49.138.57]:51088 "EHLO
-	neskaya.eckenfels.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752768AbZHKWo1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 18:44:27 -0400
-X-Greylist: delayed 2345 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Aug 2009 18:44:27 EDT
-Date: Wed, 12 Aug 2009 00:00:15 +0200 (CEST)
-Message-Id: <200908112200.n7BM0FSK070363@neskaya.eckenfels.net>
-From: Bernd Eckenfels <bernd-09@eckenfels.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: What happened to data=guarded?
-In-Reply-To: <20090810164205.GC1505@ucw.cz>
-X-Newsgroups: ka.lists.linux.kernel
-User-Agent: tin/1.8.3-20070201 ("Scotasay") (UNIX) (FreeBSD/7.2-PRERELEASE (i386))
-X-Spam-Score: -0.6 (/)
-X-Spam-Report: Spam detection software, running on the system "neskaya.eckenfels.net", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	The administrator of that system for details.
-	Content preview:  In article <20090810164205.GC1505@ucw.cz> you wrote: >> What
-	sort of files were you losing? I don't know if we can improve >> the implied
-	flush hueristics, but we should at least try to see if we >> do something
-	about it. > > IIRC... the flush heuristics invoke async flush, so you can
-	still lose > data if you are unlucky, no? [...] 
-	Content analysis details:   (-0.6 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-1.4 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	0.6 J_CHICKENPOX_47        BODY: 4alpha-pock-7alpha
-	0.2 AWL                    AWL: From: address is in the auto white-list
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: ecki@neskaya.eckenfels.net
-X-SA-Exim-Scanned: No (on neskaya.eckenfels.net); SAEximRunCond expanded to false
+	Tue, 11 Aug 2009 18:51:03 -0400
+Received: from mail.atheros.com ([12.36.123.2]:57060 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753917AbZHKWvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 18:51:02 -0400
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: <akpm@linux-foundation.org>
+CC: <linux-kernel@vger.kernel.org>, <devel@driverdev.osuosl.org>,
+       <joe@perches.com>, "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: [PATCH] scripts: add typdef removal tool
+Date: Tue, 11 Aug 2009 15:51:01 -0700
+Message-ID: <1250031061-16327-1-git-send-email-lrodriguez@atheros.com>
+X-Mailer: git-send-email 1.6.3.3
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <20090810164205.GC1505@ucw.cz> you wrote:
->> What sort of files were you losing?  I don't know if we can improve
->> the implied flush hueristics, but we should at least try to see if we
->> do something about it.
-> 
-> IIRC... the flush heuristics invoke async flush, so you can still lose
-> data if you are unlucky, no?
+If you are porting drivers and need to remove tydpefs you can use
+this to help you port the driver quicker.
 
-BTW: one good heuristic would be to flush() files on close async but if the
-file is renamed fush it sync before the rename.  The typical close temp file
-and rename it would work without a fdatasync().
+Cc: Joe Perches <joe@perches.com>
+Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+---
+ scripts/remove-typedefs |   65 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 65 insertions(+), 0 deletions(-)
+ create mode 100755 scripts/remove-typedefs
 
-Gruss
-Bernd
+diff --git a/scripts/remove-typedefs b/scripts/remove-typedefs
+new file mode 100755
+index 0000000..ae6952c
+--- /dev/null
++++ b/scripts/remove-typedefs
+@@ -0,0 +1,65 @@
++#!/bin/bash
++#
++# Copyright 2009 Joe Perches <joe@perches.com>
++# Copyright 2009 Luis R. Rodriguez <mcgrof@gmail.com>
++#
++# Lets you remove typdefs from C/header files.
++#
++# We do simple sed substituation for logical places where you would use the typdef,
++# and also replace the typdef declaration to a simple struct declaration.
++
++function usage()
++{
++	echo "Usage $0 <typdef-name> <struct-name> <paths>"
++	exit 1
++}
++
++function remove_typedef()
++{
++	if [ ! -f $1 ]; then
++		return;
++	fi
++
++	# This replaces the typdef declaration for a simple struct declaration - style 1
++	perl -i -e "local $/; while(<>) { s/\btypedef\s+struct\s+_$from\s*\{([\d\D]+?)\}\s*struct\s+$to\b[^;]*;/struct $to \{\1\};/g; print; }" $1
++
++	# This replaces the typdef declaration for a simple struct declaration - style 2
++	perl -i -e "local $/; while(<>) { s/\btypedef\s+struct\s+$to\s*\{([\d\D]+?)\}\s*$from\b[^;]*;/struct $to \{\1\};/g; print; }" $1
++
++	# This replaces the typdef usages with simple structs
++	sed -r -i -e "s/\b$from\b/struct $to/g" $1
++	sed -r -i -e "s/\bP$from\b/struct $to \*/g" $1
++	sed -r -i -e "s/struct $to\s*\*\s*\b/struct $to \*/g" $1
++	sed -r -i -e "s/\(struct $to\s*\*\)\s*/\(struct $to \*\)/g" $1
++}
++
++if [[ $# -lt 3 ]]; then
++	usage
++fi
++
++from=$1
++to=$2
++shift
++
++echo "Converting typedef $from to struct $to"
++
++while shift; do
++	REM_PATH=$1
++
++	if [ -z $REM_PATH ]; then
++		continue;
++	fi
++
++	if [ ! -d $REM_PATH ]; then
++		echo "No directory $REM_PATH";
++		continue;
++	fi
++
++	for i in $(find $REM_PATH -type f -name *.c); do
++		remove_typedef $i
++	done
++
++	for i in $(find $REM_PATH -type f -name *.h); do
++		remove_typedef $i
++	done
++done
+-- 
+1.6.3.3
+
