@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbZHKVUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbZHKVXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754910AbZHKVUm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 17:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbZHKVUm
+	id S1754946AbZHKVXy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 17:23:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbZHKVXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 17:20:42 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:57312 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754345AbZHKVUl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 17:20:41 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Alan Cox <alan@linux.intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/1] Power: fix suspend vt regression
-Date: Tue, 11 Aug 2009 23:20:41 +0200
-Message-Id: <1250025641-5763-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <4A81E073.5080703@gmail.com>
-References: <4A81E073.5080703@gmail.com>
+	Tue, 11 Aug 2009 17:23:53 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:48033 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754382AbZHKVXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 17:23:52 -0400
+Date: Tue, 11 Aug 2009 14:23:52 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Gerald Schaefer <gerald.schaefer@de.ibm.com>, manfred@colorfullife.com
+Subject: Re: [BUG] race of RCU vs NOHU
+Message-ID: <20090811212352.GF6739@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090807151529.2806b8b4@skybase> <20090807142957.GB6700@linux.vnet.ibm.com> <20090810142535.3e685109@skybase> <20090810161007.GB1505@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090810161007.GB1505@ucw.cz>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-vt_waitactive no longer accepts console parameter as console-1
-since commit "vt: add an event interface". It expects console
-number directly (as viewed by userspace -- counting from 1).
+On Mon, Aug 10, 2009 at 06:10:07PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > > > I analysed a dump of a hanging 2.6.30 system and found what I think is
+> > > > a bug of RCU vs NOHZ. There are a number of patches ontop of that
+> > > > kernel but they should be independent of the bug.
+> > > > 
+> > > > The systems has 4 cpus and uses classic RCU. cpus #0, #2 and #3 woke up
+> > > > recently, cpu #1 has been sleeping for 5 minutes, but there is a pending
+> > > > rcu batch. The timer wheel for cpu #1 is empty, it will continue to
+> > > > sleep for NEXT_TIMER_MAX_DELTA ticks.
+> > > 
+> > > Congratulations, Martin!  You have exercised what to date has been a
+> > > theoretical bug identified last year by Manfred Spraul.  The fix is to
+> > > switch from CONFIG_RCU_CLASSIC to CONFIG_RCU_TREE, which was added in
+> > > 2.6.29.
+> > > 
+> > > Of course, if you need to work with an old kernel version, you might
+> > > still need a patch, perhaps for the various -stable versions.  If so,
+> > > please let me know -- otherwise, I will focus forward on CONFIG_RCU_TREE
+> > > rather than backwards on CONFIG_RCU_CLASSIC.
+> > 
+> > SLES11 is 2.6.27 and uses classic RCU. The not-so theoretical bug is
+> > present there and I think it needs to be fixed :-/
+> 
+> Plus... if config_rcu_classic is known buggy  (and you are not willing
+> to fix it),  it should be disabled (or made depend on !CONFIG_NOHZ, or
+> maybe made depend on CONFIG_BROKEN).
 
-Fix a deadlock suspend regression by redefining adding one
-to vt in vt_move_to_console.
+Already done in -tip.  ;-)
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Alan Cox <alan@linux.intel.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
----
- drivers/char/vt_ioctl.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+	paulmck@paulmck-laptop:/home/git/linux-2.6-tip$ ls kernel/rcuclassic.c
+	ls: kernel/rcuclassic.c: No such file or directory
 
-diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
-index 0fceb8f..e3d4d13 100644
---- a/drivers/char/vt_ioctl.c
-+++ b/drivers/char/vt_ioctl.c
-@@ -1554,7 +1554,7 @@ int vt_move_to_console(unsigned int vt, int alloc)
- 		return -EIO;
- 	}
- 	release_console_sem();
--	if (vt_waitactive(vt)) {
-+	if (vt_waitactive(vt + 1)) {
- 		pr_debug("Suspend: Can't switch VCs.");
- 		return -EINTR;
- 	}
--- 
-1.6.3.3
+							Thanx, Paul
 
+> Ugh. rcu_classic  does not seem to have help text, and I'm running
+> 								known
+> 								bad
+> 								code
+> 								here
+> 								:-(.
