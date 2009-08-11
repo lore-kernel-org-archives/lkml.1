@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbZHKOzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbZHKOz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbZHKOzF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 10:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbZHKOzE
+	id S1755200AbZHKOz2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 10:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbZHKOz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 10:55:04 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:26110 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754822AbZHKOzC (ORCPT
+	Tue, 11 Aug 2009 10:55:27 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:37290 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755136AbZHKOz0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 10:55:02 -0400
-From: "Paul Congdon \(UC Davis\)" <ptcongdon@ucdavis.edu>
-To: "'Fischer, Anna'" <anna.fischer@hp.com>, "'Arnd Bergmann'" <arnd@arndb.de>
-Cc: "'Stephen Hemminger'" <shemminger@linux-foundation.org>,
-       <bridge@lists.linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       <netdev@vger.kernel.org>, <virtualization@lists.linux-foundation.org>,
-       <evb@yahoogroups.com>, <davem@davemloft.net>, <kaber@trash.net>,
-       <adobriyan@gmail.com>, "'Eric Biederman'" <ebiederm@xmission.com>
-References: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net> <200908081149.27409.arnd@arndb.de> <0199E0D51A61344794750DC57738F58E6D6AE99743@GVW1118EXC.americas.hpqcorp.net> <200908101707.32751.arnd@arndb.de> <0199E0D51A61344794750DC57738F58E6D6AE99C53@GVW1118EXC.americas.hpqcorp.net>
-In-Reply-To: <0199E0D51A61344794750DC57738F58E6D6AE99C53@GVW1118EXC.americas.hpqcorp.net>
-Subject: RE: [PATCH][RFC] net/bridge: add basic VEPA support
-Date: Tue, 11 Aug 2009 07:55:04 -0700
-Message-ID: <001001ca1a93$b6e50ee0$24af2ca0$@edu>
+	Tue, 11 Aug 2009 10:55:26 -0400
+Date: Tue, 11 Aug 2009 16:55:23 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: David Dillow <dave@thedillows.org>
+Cc: Greg KH <greg@kroah.com>, Greg KH <gregkh@suse.de>,
+       Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Jan Blunck <jblunck@suse.de>, Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+	/dev
+Message-ID: <20090811145523.GD14368@basil.fritz.box>
+References: <20090805171513.GA10443@kroah.com> <20090805192037.19c54c4d@lxorguk.ukuu.org.uk> <20090805182805.GA7534@kroah.com> <20090805185136.GA21442@kroah.com> <87ljlxhrnr.fsf@basil.nowhere.org> <1249575658.19886.8.camel@lap75545.ornl.gov> <20090806183147.GA28409@suse.de> <1249772876.22248.34.camel@obelisk.thedillows.org> <20090810153943.GB7652@kroah.com> <1250001374.22248.65.camel@obelisk.thedillows.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AcoZzGNIi2plXMD8SC2GLFrPuLsDmAAwiOTgAAExvSA=
-Content-Language: en-us
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250001374.22248.65.camel@obelisk.thedillows.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >
-> > The patch from Eric Biederman to allow macvlan to bridge between
-> > its slave ports is at
-> >
-> > http://kerneltrap.org/mailarchive/linux-netdev/2009/3/9/5125774
-> 
-> Looking through the discussions here, it does not seem as if a decision
-> was made to integrate those patches, because they would make the
-> macvlan
-> interface behave too much like a bridge. Also, it seems as if there was
-> still a problem with doing multicast/broadcast delivery when enabling
-> local VM-to-VM communication. Is that solved by now?
-> 
+> No, not really. It isn't hard to make a static /dev, or a rescue initrd
+> for the cases with dynamic device numbers.
 
-Also, is there a solution, or plans for a solution, to address macvtap
-interfaces that are set to 'promiscuous' mode?  It would seem fairly easy to
-support this for interfaces that are simply trying to listen to the port
-(e.g. Wireshark).  If the port was being used by something like a firewall
-then the VEPA filtering doesn't work too well.
+There's a world between strictly controlled embedded and fully general
+distributions.
 
-Paul
+I want a dynamic /dev, but a fast one that doesn't need initrd or
+slows down booting.
 
+This patch seems to be a good way to get that.
 
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
