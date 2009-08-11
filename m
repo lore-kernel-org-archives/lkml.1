@@ -1,91 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752079AbZHKNKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbZHKNKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752079AbZHKNKU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 09:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbZHKNKT
+	id S1752462AbZHKNKi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 09:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZHKNKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 09:10:19 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:44181 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751339AbZHKNKS (ORCPT
+	Tue, 11 Aug 2009 09:10:37 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50995 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752233AbZHKNKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 09:10:18 -0400
-Date: Tue, 11 Aug 2009 14:10:09 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: stephane eranian <eranian@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
-       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
-       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
-       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
-       roland@redhat.com
-Subject: Re: F_SETOWN_TID: F_SETOWN was thread-specific for a while
-Message-ID: <20090811131009.GB29354@shareable.org>
-References: <1248953485.6391.41.camel@twins> <20090730192040.GA9503@redhat.com> <1248984003.4164.0.camel@laptop> <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins> <20090731141122.a1939712.akpm@linux-foundation.org> <7c86c4470908030553v5a0a4448p94ab612700d68066@mail.gmail.com> <20090809054601.GA26152@shareable.org> <7c86c4470908100522q44dc1228i315b29d69fc98da3@mail.gmail.com> <20090810170338.GA14223@redhat.com>
+	Tue, 11 Aug 2009 09:10:36 -0400
+Date: Tue, 11 Aug 2009 08:59:29 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "mfasheh@suse.com" <mfasheh@suse.com>,
+       "aia21@cantab.net" <aia21@cantab.net>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "swhiteho@redhat.com" <swhiteho@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       Taketoshi Sakuraba <taketoshi.sakuraba.hc@hitachi.com>
+Subject: Re: [PATCH] [16/19] HWPOISON: Enable .remove_error_page for
+	migration aware file systems
+Message-ID: <20090811065929.GB14368@basil.fritz.box>
+References: <200908051136.682859934@firstfloor.org> <20090805093643.E0C00B15D8@basil.firstfloor.org> <4A7FBFD1.2010208@hitachi.com> <20090810070745.GA26533@localhost> <4A80EA14.4030300@hitachi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090810170338.GA14223@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4A80EA14.4030300@hitachi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> Agreed, this looks a bit odd. But at least this is documented. From
-> man 2 fcntl:
->
-> 	By using F_SETSIG with a nonzero value, and setting SA_SIGINFO
-> 	for the signal handler (see sigaction(2)), extra information
-> 	about I/O events is passed to the handler in a siginfo_t
-> 	structure.  If the si_code field indicates the source is
-> 	SI_SIGIO, the si_fd field gives the file descriptor associated
-> 	with the event.  Otherwise, there is no indication which file
-> 	descriptors are pending,
+On Tue, Aug 11, 2009 at 12:48:36PM +0900, Hidehiro Kawai wrote:
+> Wu Fengguang wrote:
 > 
-> Not sure if it is safe to change the historical behaviour.
+> >>However, we have a way to avoid this kind of data corruption at
+> >>least for ext3.  If we mount an ext3 filesystem with data=ordered
+> >>and data_err=abort, all I/O errors on file data block belonging to
+> >>the committing transaction are checked.  When I/O error is found,
+> >>abort journaling and remount the filesystem with read-only to
+> >>prevent further updates.  This kind of feature is very important
+> >>for mission critical systems.
+> > 
+> > Agreed. We also set PG_error, which should be enough to trigger such
+> > remount?
+> 
+> ext3 doesn't check PG_error.  Maybe we need to do:
 
-The change in 2.6.12 breaks some code of mine, which uses RT queued
-I/O signals on multiple threads but as far as I know it's not used
-anywhere now.
+When we truncate the page it's gone so there's no page to set PG_error 
+on.
 
-In the <= 2.4 era, there were lots of web servers and benchmarks using
-queued I/O signals for scalable event-driven I/O, but I don't know of
-any implementation who dared do it with multiple threads, except mine.
-
-It was regarded as "beware ye who enter here" territory, which I can
-attest to from the long time it took to get it right and the multitude
-of kernel bugs and version changes needing to be worked around.
-
-Since 2.6, everyone uses epoll which is much better, except that
-occasionally SIGIO comes in handy when an async notification is
-required.
-
-So the change in 2.6.12 does break something that probably isn't much
-used, but it's too late now.  Occasionally thread-specific SIGIO (or
-F_SETSIG) is useful; F_SETOWN_TID makes that nice and clear.
-
-I would drop the pseudo-"bug compatible" behaviour of using negative
-tid to mean pid; that's pointless.  I'd also make F_GETOWN return an
-error when F_SETOWN_TID has been used, and F_GETOWN_TID return an
-error when F_SETOWN has been used.
-
-> (the manpage is not exactly right though, and the comment in
-> send_sigio_to_task() is not right too: SI_SIGIO (and, btw,
-> SI_QUEUE/SI_DETHREAD) is never used).
-
-Ah, there's another historical change you see.  It was changed in
-2.3.21 from SI_SIGIO to POLL_xxx, and si_band started being set at the
-same time.  The man page could be updated to reflect that.
-
-(My portable-to-ancient-Linux code checks for si_code == SI_SIGIO, in
-which case it has the descriptor but doesn't know what type of event
-(pre 2.3.21) so adds it to a poll() set, or checks for si_code ==
-POLL_xxx, in which case it ignores the si_code value completely and
-looks at si_band for the set of pending events because some patch that
-was never mainlined could result in multiple si_band bits set).
-
--- Jamie
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
