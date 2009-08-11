@@ -1,59 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753693AbZHKNsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbZHKNuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753693AbZHKNsL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 09:48:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZHKNsK
+	id S1754245AbZHKNuG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 09:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbZHKNuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 09:48:10 -0400
-Received: from bavaria.utcluj.ro ([193.226.5.35]:65203 "EHLO bavaria.utcluj.ro"
+	Tue, 11 Aug 2009 09:50:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58972 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752247AbZHKNsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 09:48:10 -0400
-X-Greylist: delayed 4202 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Aug 2009 09:48:09 EDT
-Subject: [RFC] Multiboot protocol support in vmlinux?
-From: Cristi Magherusan <Cristi.Magherusan@net.utcluj.ro>
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-ff9LW98KudoGMExCFPhV"
-Date: Tue, 11 Aug 2009 10:12:29 +0300
-Message-Id: <1249974749.3640.11.camel@ufo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1752983AbZHKNuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 09:50:03 -0400
+Message-ID: <4A8176CA.5040501@redhat.com>
+Date: Tue, 11 Aug 2009 15:48:58 +0200
+From: Stefan Assmann <sassmann@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Olaf Dabrunz <Olaf.Dabrunz@gmx.net>
+CC: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: drivers/pci/quirks.c: irq_reroute_variant is dead code?
+References: <4A6F5670.4010405@goop.org> <20090807103318.06ed3ecd@jbarnes-g45> <20090808144520.GB25931@elte.hu> <20090810093228.54406cab@jbarnes-g45> <4A8121FD.1050307@redhat.com> <20090811080622.GA23226@elte.hu> <20090811123605.GD14714@santana.dyndns.org>
+In-Reply-To: <20090811123605.GD14714@santana.dyndns.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11.08.2009 14:36, Olaf Dabrunz wrote:
+> On 11-Aug-09, Ingo Molnar wrote:
+>> * Stefan Assmann<sassmann@redhat.com>  wrote:
+>>
+>>> On 10.08.2009 18:32, Jesse Barnes wrote:
+>>>> [Corrected Stefan's address.]
+>>> Thanks Jesse! CCing Olaf as well.
+>>>
+>>>> On Sat, 8 Aug 2009 16:45:20 +0200
+>>>> Ingo Molnar<mingo@elte.hu>   wrote:
+>>>>
+>>>>> * Jesse Barnes<jbarnes@virtuousgeek.org>   wrote:
+>>>>>
+>>>>>> On Tue, 28 Jul 2009 12:50:08 -0700
+>>>>>> Jeremy Fitzhardinge<jeremy@goop.org>   wrote:
+>>>>>>
+>>>>>>> quirk_reroute_to_boot_interrupts_intel() goes to some effort to
+>>>>>>> scan for a bunch of Intel devices and set
+>>>>>>> dev->irq_reroute_variant = INTEL_IRQ_REROUTE_VARIANT.  However,
+>>>>>>> as far as I can see that's the only reference to
+>>>>>>> dev->irq_reroute_variant and INTEL_IRQ_REROUTE_VARIANT, so the
+>>>>>>> whole thing appears to have no effect.
+>>>>>>>
+>>>>>>> Is it all dead code?  Is there something else which should be
+>>>>>>> there missing?
+>>>>>> Hm my quick look couldn't find a user either.  The initial patch
+>>>>>> to add that stuff (e1d3a90846b40ad3160bf4b648d36c6badad39ac) had
+>>>>>> an ACPI component, but it looks like that may have vanished
+>>>>>> somehow (maybe some of the IOAPIC code got shuffled around and
+>>>>>> this bit was missed?).
+>>>>>>
+>>>>>> Stefan or Ingo?
+>>>>> I dont remember ioapic interactions. Stefan?
+>>>>>
+>>>>> 	Ingo
+>>>>>
+>>> Actually the ACPI part of the commit got trashed by some major
+>>> ACPI rewrite. [...]
+>> Yeah, i remember some larger reject resolved by Len i think, about
+>> two cycles ago, in this area. So we probably lost those bits there -
+>> i've Cc:-ed Len.
+>>
+>> There's no urgency in terms of v2.6.31 (since we never really
+>> exposed this new functionality in a new release), but it would be
+>> nice to get to the bottom of this.
+>
+> Yep, that would be nice.
+>
+> I was made aware of that problem early this year when the ACPI code
+> change was made. Since then I heard that someone already wrote some
+> patch for the boot IRQ quirks. But obviously that referred to some other
+> part of the quirk. Stefan?
 
---=-ff9LW98KudoGMExCFPhV
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+That's a whole different story (other chipset). ;-)
 
-Hello,
+> As I am currently unemployed, demotivated and trying to get my work on
+> fctrace going again (as well as to get the rest of my life in order),
+> it seems I have no time to fix this. I would love to, really. We need to
+> get these quirks in, and I would like to discuss how to do this The Right
+> Way with the rewritten ACPI code (and the existing MP code).
 
-Have you considered (optionally) supporting multiboot in the future,
-directly in the ELF vmlinux image (not in bzImage as it is now)?
+Well, best of luck!
 
-What would be the pros and cons of the current implementation as
-compared to multiboot-compatible ELF from your point of view?
-
-Thanks,
-Cristi M.
-
---=20
-Ing. Cristi M=C4=83gheru=C8=99an, System/Network Engineer
-Technical University of Cluj-Napoca, Romania
-http://cc.utcluj.ro  +40264 401247
-
---=-ff9LW98KudoGMExCFPhV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkqBGdgACgkQfwrBISYVZFWpQQCcDnbbeMB4l4+0XWvq2ogeJ2fv
-PJMAniZRHJEVHqs7JfYuwVkcAn66puj6
-=9gRQ
------END PGP SIGNATURE-----
-
---=-ff9LW98KudoGMExCFPhV--
-
+   Stefan
+--
+Stefan Assmann         | Red Hat GmbH
+Software Engineer      | Otto-Hahn-Strasse 20, 85609 Dornach
+                        | HR: Amtsgericht Muenchen HRB 153243
+                        | GF: Brendan Lane, Charlie Peters,
+sassmann at redhat.com |     Michael Cunningham, Charles Cachera
