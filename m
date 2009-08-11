@@ -1,115 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZHKMGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbZHKMFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbZHKMGI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:06:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbZHKMGG
+	id S1753104AbZHKMFa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbZHKMF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:06:06 -0400
-Received: from smtp-out26.alice.it ([85.33.2.26]:3760 "EHLO
-	smtp-out26.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752991AbZHKMGE (ORCPT
+	Tue, 11 Aug 2009 08:05:28 -0400
+Received: from viefep33-int.chello.at ([62.179.121.51]:38375 "EHLO
+	viefep33-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753078AbZHKMF1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:06:04 -0400
-Date: Tue, 11 Aug 2009 14:05:00 +0200
-From: Antonio Ospite <ospite@studenti.unina.it>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Daniel Ribeiro <drwyrm@gmail.com>
-Subject: Re: [RFC] Freescale MC13783 PMIC support
-Message-Id: <20090811140500.2678b289.ospite@studenti.unina.it>
-In-Reply-To: <1249981667-4366-1-git-send-email-s.hauer@pengutronix.de>
-References: <1249981667-4366-1-git-send-email-s.hauer@pengutronix.de>
-X-Mailer: Sylpheed 2.7.0 (GTK+ 2.16.5; i686-pc-linux-gnu)
-X-Face: z*RaLf`X<@C75u6Ig9}{oW$H;1_\2t5)({*|jhM<pyWR#k60!#=#>/Vb;]yA5<GWI5`6u&+
- ;6b'@y|8w"wB;4/e!7wYYrcqdJFY,~%Gk_4]cq$Ei/7<j&N3ah(m`ku?pX.&+~:_/wC~dwn^)MizBG !pE^+iDQQ1yC6^,)YDKkxDd!T>\I~93>J<_`<4)A{':UrE
+	Tue, 11 Aug 2009 08:05:27 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [patch] cache-miss and cache-refs events on P6-mobile CPUs
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Johannes Stezenbach <js@sig21.net>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20090811110627.GA31136@elte.hu>
+References: <20090810123228.GD6838@basil.fritz.box>
+	 <20090810125651.GB6082@sig21.net> <20090810132923.GA4418@elte.hu>
+	 <20090810192658.GA15513@sig21.net> <20090810201406.GA6961@elte.hu>
+	 <20090810203706.GA17338@sig21.net> <20090810213133.GB16944@elte.hu>
+	 <20090810221307.GA19236@sig21.net> <20090811093405.GA13004@elte.hu>
+	 <1249983579.17467.156.camel@twins>  <20090811110627.GA31136@elte.hu>
+Content-Type: text/plain
+Date: Tue, 11 Aug 2009 13:21:57 +0200
+Message-Id: <1249989717.17467.159.camel@twins>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__11_Aug_2009_14_05_00_+0200_o6OqnD_11j7wEVXE"
-X-OriginalArrivalTime: 11 Aug 2009 12:05:24.0974 (UTC) FILETIME=[0243B8E0:01CA1A7C]
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__11_Aug_2009_14_05_00_+0200_o6OqnD_11j7wEVXE
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-08-11 at 13:06 +0200, Ingo Molnar wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> 
+> > On Tue, 2009-08-11 at 11:34 +0200, Ingo Molnar wrote:
+> > 
+> > > @@ -116,8 +116,8 @@ static const u64 p6_perfmon_event_map[] 
+> > >  {
+> > >    [PERF_COUNT_HW_CPU_CYCLES]		= 0x0079,
+> > >    [PERF_COUNT_HW_INSTRUCTIONS]		= 0x00c0,
+> > > -  [PERF_COUNT_HW_CACHE_REFERENCES]	= 0x0000,
+> > > -  [PERF_COUNT_HW_CACHE_MISSES]		= 0x0000,
+> > > +  [PERF_COUNT_HW_CACHE_REFERENCES]	= 0x0f2e,
+> > > +  [PERF_COUNT_HW_CACHE_MISSES]		= 0x012e,
+> > 
+> > 2e is total numer of L2 events,
+> > 
+> > 0f is all mesi states
+> > 01 is invalid states
+> 
+> here's Intel's own description:
+> 
+>  I_STATE 0x01 Counts how many times requests miss the cache.
+>  MESI    0x0F Counts how many times cache lines in any state are accessed.
+> 
+> so it's pretty close in practice. The only counts that are a bit 
+> inapplicable are fetches/prefetches it initiates on its own (they 
+> are included here) - but those too are related to the workload in 
+> general, so it's good as an approximation.
+> 
+> It's definitely better than 0x00 IMO. What do you think?
 
-On Tue, 11 Aug 2009 11:07:42 +0200
-Sascha Hauer <s.hauer@pengutronix.de> wrote:
+Well, if they say so. I was thinking that counting I states would count
+invalidates due to remote S->{E,M} transitions and invpg ins' and such. 
 
-> Hi all,
->=20
-> This series adds support for the Freescale MC13783 PMIC. The MC13783
-> is connected via SPI, the first patch adds basic support for it in
-> drivers/mfd. The rest of the patches can be applied independently.
-> Individual Maintainers are on Cc, the whole series can be found on
-> lkml and the Arm Linux Kernel mailing list.
-> Please ignore the previous mail which lacked the intrductory mail.
->=20
-> Sascha
->
+And hitting an invalidated line is a whole different thing than plain
+missing it due to it not being present.
 
-Hi Sascha,
+Anyway, if this is the Intel recommended thing for cache misses, who am
+I to argue.
 
-the MC13783 is also named Atlas, isn't it?
-Maybe you can add this name somewhere in comments or in Kconfig entry
-to help greppers and web crawlers.
-
-BTW, I only took a very brief look to some of your patches, and here's
-some humble thoughts, sorry if I don't comment patch by patch.
-
-There is a driver queued for inclusion in 2.6.31 for the PCAP2
-PMIC, which is quite similar to MC13783. This driver uses the irq_chip
-mechanism to expose the PMIC IRQs to be used as general IRQs in
-sub-devices drivers (which you call client-devices AFAICS). Also, it
-passed all the reviews so maybe you can give it a look to take some
-other solution already accepted by reviewers, like passing sub-devices
-via platform data (some of the phones which use PCAP2 don't have
-touchscreen, for instance), generalize the driver so to handle multiple
-PMICs in one system (quite unlikely scenario?), read actual pressure
-in TS driver.
-
-The latest (fixed) version of the core and ADC driver is in [1], but you
-can find also the regulator and input drivers in [2] which are queued
-for 2.6.32, the rtc driver can be found in [3]
-(rtc-driver-for-pcap2-pmic-*.patch).
-
-Regards,
-   Antonio
-
-[1]
-http://git.kernel.org/?p=3Dlinux/kernel/git/sameo/mfd-2.6.git;a=3Dblob;f=3D=
-drivers/mfd/ezx-pcap.c;h=3D016be4938e4c4baac63168e2c478f335ae162ed9;hb=3Dfo=
-r-next
-
-[2]
-http://git.kernel.org/?p=3Dlinux/kernel/git/sameo/mfd-2.6.git;a=3Dsummary
-
-[3] http://userweb.kernel.org/~akpm/mmotm/broken-out/
-
---=20
-Antonio Ospite
-http://ao2.it
-
-PGP public key ID: 0x4553B001
-
-A: Because it messes up the order in which people normally read text.
-   See http://en.wikipedia.org/wiki/Posting_style
-Q: Why is top-posting such a bad thing?
-A: Top-posting.
-Q: What is the most annoying thing in e-mail?
-
---Signature=_Tue__11_Aug_2009_14_05_00_+0200_o6OqnD_11j7wEVXE
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqBXmwACgkQ5xr2akVTsAEM4QCfVlkdwCHhytkD/jAHiOtYr2mZ
-7KAAnipKUVB67Cmg0+ji7yu0krStiiiI
-=SdRZ
------END PGP SIGNATURE-----
-
---Signature=_Tue__11_Aug_2009_14_05_00_+0200_o6OqnD_11j7wEVXE--
