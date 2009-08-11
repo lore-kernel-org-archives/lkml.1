@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751272AbZHKLxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751513AbZHKLxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751272AbZHKLxQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 07:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbZHKLxO
+	id S1751513AbZHKLxb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 07:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbZHKLxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 07:53:14 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:47296 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751141AbZHKLxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 07:53:13 -0400
-Subject: Re: [PATCH] fix memory leak in virtio_net
-From: Shirley Ma <mashirle@us.ibm.com>
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <1249934708.7400.10.camel@localhost.localdomain>
-References: <1249934708.7400.10.camel@localhost.localdomain>
+	Tue, 11 Aug 2009 07:53:30 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:52330 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751415AbZHKLx2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 07:53:28 -0400
+Subject: Re: kmemleak: Protect the seq start/next/stop sequence by
+	rcu_read_lock()
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090811073205.GA17476@elte.hu>
+References: <20090729152101.1878.71159.stgit@pc1117.cambridge.arm.com>
+	 <20090802111453.GA24927@elte.hu>
+	 <1249919718.10848.55.camel@pc1117.cambridge.arm.com>
+	 <20090810184527.GA9601@elte.hu>
+	 <1249945003.26205.23.camel@pc1117.cambridge.arm.com>
+	 <20090811073205.GA17476@elte.hu>
 Content-Type: text/plain
-Date: Mon, 10 Aug 2009 22:03:41 -0700
-Message-Id: <1249967021.4161.2.camel@localhost.localdomain>
+Organization: ARM Ltd
+Date: Tue, 11 Aug 2009 09:55:05 +0100
+Message-Id: <1249980905.27150.11.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Aug 2009 08:55:06.0411 (UTC) FILETIME=[6C4547B0:01CA1A61]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is false report. I checked kfree_skb(), it does free all pages 
-in the fraglist in skb_release_data() later.
+On Tue, 2009-08-11 at 09:32 +0200, Ingo Molnar wrote:
+> * Catalin Marinas <catalin.marinas@arm.com> wrote:
+> > I tried similar config and with the mainline kernel I get some 
+> > lockups (several seconds) with CONFIG_PREEMPT disabled on ARM 
+> > machines or x86 during a scanning episode but it eventually 
+> > completes the scanning. With the kmemleak patches for the next 
+> > merging window, I don't get any lockups as it has more 
+> > cond_resched() calls.
+> 
+> How big are those patches? Kmemleak is new in .31 so if it fixes a 
+> real problem it might still be acceptable.
 
-Thanks
-Shirley
+My patches for -next were posted here -
+http://lkml.org/lkml/2009/7/24/166 - but the relevant ones are pretty
+small (review/ack is welcomed):
 
-On Mon, 2009-08-10 at 13:05 -0700, Shirley Ma wrote:
-> Whild reading virtio code, I found some memory leak in removing
-> virtio_net.
-> 
-> In virtnet_remove, only skb has been freed not the pages in skb
-> frags. Here is the patch to fix this, please review it.
-> 
-> Signed-off-by: Shirley Ma <xma@us.ibm.com>
-> 
-> diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-> index 2a6e81d..7e629d9 100644
-> --- a/drivers/net/virtio_net.c
-> +++ b/drivers/net/virtio_net.c
-> @@ -978,6 +978,7 @@ static void virtnet_remove(struct virtio_device *vdev)
-> 
->  	/* Free our skbs in send and recv queues, if any. */
->  	while ((skb = __skb_dequeue(&vi->recv)) != NULL) {
-> +		trim_pages(vi, skb);
->  		kfree_skb(skb);
->  		vi->num--;
->  	}
-> 
-> 
-> 
-> 
+http://lkml.org/lkml/2009/7/24/176 - allow rescheduling during object
+scanning
+http://lkml.org/lkml/2009/7/24/173 - inform kmemleak about kernel stack
+allocation (needs ack by the x86 people)
+http://lkml.org/lkml/2009/7/24/172 - always scan the task stacks
+
+-- 
+Catalin
 
