@@ -1,209 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbZHKVag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbZHKVdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755474AbZHKVag (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 17:30:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbZHKVae
+	id S1755448AbZHKVdV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 17:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbZHKVdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 17:30:34 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44751 "EHLO mx2.redhat.com"
+	Tue, 11 Aug 2009 17:33:20 -0400
+Received: from sparc.brc.ubc.ca ([137.82.2.12]:54780 "EHLO sparc.brc.ubc.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755448AbZHKVaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 17:30:30 -0400
-Date: Wed, 12 Aug 2009 00:27:52 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com
-Subject: [PATCHv2 1/2] mm: export use_mm/unuse_mm to modules
-Message-ID: <20090811212752.GB26309@redhat.com>
-References: <cover.1249992497.git.mst@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cover.1249992497.git.mst@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1754591AbZHKVdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 17:33:20 -0400
+From: Vincent Li <macli@brc.ubc.ca>
+To: linux-kernel@vger.kernel.org
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Matt Mackall <mpm@selenic.com>, Vincent Li <macli@brc.ubc.ca>
+Subject: [PATCH] fs/proc/: fix input sanity check.
+Date: Tue, 11 Aug 2009 14:34:26 -0700
+Message-Id: <1250026466-8769-1-git-send-email-macli@brc.ubc.ca>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-vhost net module wants to do copy to/from user from a kernel thread,
-which needs use_mm (like what fs/aio has).  Move that into mm/ and
-export to modules.
+fix fs/proc/task_mmu.c clear_refs_write(), fs/proc/base.c proc_fault_inject_write()
+ and proc_fault_inject_operations() input sanity check by following the disccusion of
+http://marc.info/?l=linux-mm&m=124938168905463&w=2.
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+Signed-off-by: Vincent Li <macli@brc.ubc.ca>
 ---
- fs/aio.c                    |   47 +----------------------------------
- include/linux/mmu_context.h |    9 ++++++
- mm/Makefile                 |    2 +-
- mm/mmu_context.c            |   58 +++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 69 insertions(+), 47 deletions(-)
- create mode 100644 include/linux/mmu_context.h
- create mode 100644 mm/mmu_context.c
+ fs/proc/base.c     |   20 ++++++++------------
+ fs/proc/task_mmu.c |   11 +++++------
+ 2 files changed, 13 insertions(+), 18 deletions(-)
 
-diff --git a/fs/aio.c b/fs/aio.c
-index d065b2c..fc21c23 100644
---- a/fs/aio.c
-+++ b/fs/aio.c
-@@ -24,6 +24,7 @@
- #include <linux/file.h>
- #include <linux/mm.h>
- #include <linux/mman.h>
-+#include <linux/mmu_context.h>
- #include <linux/slab.h>
- #include <linux/timer.h>
- #include <linux/aio.h>
-@@ -34,7 +35,6 @@
- 
- #include <asm/kmap_types.h>
- #include <asm/uaccess.h>
--#include <asm/mmu_context.h>
- 
- #if DEBUG > 1
- #define dprintk		printk
-@@ -595,51 +595,6 @@ static struct kioctx *lookup_ioctx(unsigned long ctx_id)
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 04d29a0..44054d2 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -1190,17 +1190,16 @@ static ssize_t proc_fault_inject_write(struct file * file,
+ 		count = sizeof(buffer) - 1;
+ 	if (copy_from_user(buffer, buf, count))
+ 		return -EFAULT;
+-	make_it_fail = simple_strtol(buffer, &end, 0);
+-	if (*end == '\n')
+-		end++;
++	make_it_fail = simple_strtol(strstrip(buffer), &end, 0);
++	if (*end)
++		return -EINVAL;
+ 	task = get_proc_task(file->f_dentry->d_inode);
+ 	if (!task)
+ 		return -ESRCH;
+ 	task->make_it_fail = make_it_fail;
+ 	put_task_struct(task);
+-	if (end - buffer == 0)
+-		return -EIO;
+-	return end - buffer;
++
++	return count;
  }
  
- /*
-- * use_mm
-- *	Makes the calling kernel thread take on the specified
-- *	mm context.
-- *	Called by the retry thread execute retries within the
-- *	iocb issuer's mm context, so that copy_from/to_user
-- *	operations work seamlessly for aio.
-- *	(Note: this routine is intended to be called only
-- *	from a kernel thread context)
-- */
--static void use_mm(struct mm_struct *mm)
--{
--	struct mm_struct *active_mm;
--	struct task_struct *tsk = current;
--
--	task_lock(tsk);
--	active_mm = tsk->active_mm;
--	atomic_inc(&mm->mm_count);
--	tsk->mm = mm;
--	tsk->active_mm = mm;
--	switch_mm(active_mm, mm, tsk);
--	task_unlock(tsk);
--
--	mmdrop(active_mm);
--}
--
--/*
-- * unuse_mm
-- *	Reverses the effect of use_mm, i.e. releases the
-- *	specified mm context which was earlier taken on
-- *	by the calling kernel thread
-- *	(Note: this routine is intended to be called only
-- *	from a kernel thread context)
-- */
--static void unuse_mm(struct mm_struct *mm)
--{
--	struct task_struct *tsk = current;
--
--	task_lock(tsk);
--	tsk->mm = NULL;
--	/* active_mm is still 'mm' */
--	enter_lazy_tlb(mm, tsk);
--	task_unlock(tsk);
--}
--
--/*
-  * Queue up a kiocb to be retried. Assumes that the kiocb
-  * has already been marked as kicked, and places it on
-  * the retry run list for the corresponding ioctx, if it
-diff --git a/include/linux/mmu_context.h b/include/linux/mmu_context.h
-new file mode 100644
-index 0000000..70fffeb
---- /dev/null
-+++ b/include/linux/mmu_context.h
-@@ -0,0 +1,9 @@
-+#ifndef _LINUX_MMU_CONTEXT_H
-+#define _LINUX_MMU_CONTEXT_H
-+
-+struct mm_struct;
-+
-+void use_mm(struct mm_struct *mm);
-+void unuse_mm(struct mm_struct *mm);
-+
-+#endif
-diff --git a/mm/Makefile b/mm/Makefile
-index 5e0bd64..46c3892 100644
---- a/mm/Makefile
-+++ b/mm/Makefile
-@@ -11,7 +11,7 @@ obj-y			:= bootmem.o filemap.o mempool.o oom_kill.o fadvise.o \
- 			   maccess.o page_alloc.o page-writeback.o pdflush.o \
- 			   readahead.o swap.o truncate.o vmscan.o shmem.o \
- 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
--			   page_isolation.o mm_init.o $(mmu-y)
-+			   page_isolation.o mm_init.o mmu_context.o $(mmu-y)
- obj-y += init-mm.o
+ static const struct file_operations proc_fault_inject_operations = {
+@@ -2253,18 +2252,15 @@ static ssize_t proc_coredump_filter_write(struct file *file,
+ 		goto out_no_task;
  
- obj-$(CONFIG_PROC_PAGE_MONITOR) += pagewalk.o
-diff --git a/mm/mmu_context.c b/mm/mmu_context.c
-new file mode 100644
-index 0000000..9989c2f
---- /dev/null
-+++ b/mm/mmu_context.c
-@@ -0,0 +1,58 @@
-+/* Copyright (C) 2009 Red Hat, Inc.
-+ *
-+ * See ../COPYING for licensing terms.
-+ */
+ 	ret = -EINVAL;
+-	val = (unsigned int)simple_strtoul(buffer, &end, 0);
+-	if (*end == '\n')
+-		end++;
+-	if (end - buffer == 0)
+-		goto out_no_task;
++	val = (unsigned int)simple_strtoul(strstrip(buffer), &end, 0);
++	if (*end)
++		return ret;
+ 
+ 	ret = -ESRCH;
+ 	task = get_proc_task(file->f_dentry->d_inode);
+ 	if (!task)
+ 		goto out_no_task;
+ 
+-	ret = end - buffer;
+ 	mm = get_task_mm(task);
+ 	if (!mm)
+ 		goto out_no_mm;
+diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+index 6f61b7c..957b266 100644
+--- a/fs/proc/task_mmu.c
++++ b/fs/proc/task_mmu.c
+@@ -477,10 +477,10 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
+ 		count = sizeof(buffer) - 1;
+ 	if (copy_from_user(buffer, buf, count))
+ 		return -EFAULT;
+-	if (!simple_strtol(buffer, &end, 0))
++	if (!simple_strtol(strstrip(buffer), &end, 0))
++		return -EINVAL;
++	if (*end)
+ 		return -EINVAL;
+-	if (*end == '\n')
+-		end++;
+ 	task = get_proc_task(file->f_path.dentry->d_inode);
+ 	if (!task)
+ 		return -ESRCH;
+@@ -502,9 +502,8 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
+ 		mmput(mm);
+ 	}
+ 	put_task_struct(task);
+-	if (end - buffer == 0)
+-		return -EIO;
+-	return end - buffer;
 +
-+#include <linux/mm.h>
-+#include <linux/mmu_context.h>
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+
-+#include <asm/mmu_context.h>
-+
-+/*
-+ * use_mm
-+ *	Makes the calling kernel thread take on the specified
-+ *	mm context.
-+ *	Called by the retry thread execute retries within the
-+ *	iocb issuer's mm context, so that copy_from/to_user
-+ *	operations work seamlessly for aio.
-+ *	(Note: this routine is intended to be called only
-+ *	from a kernel thread context)
-+ */
-+void use_mm(struct mm_struct *mm)
-+{
-+	struct mm_struct *active_mm;
-+	struct task_struct *tsk = current;
-+
-+	task_lock(tsk);
-+	active_mm = tsk->active_mm;
-+	atomic_inc(&mm->mm_count);
-+	tsk->mm = mm;
-+	tsk->active_mm = mm;
-+	switch_mm(active_mm, mm, tsk);
-+	task_unlock(tsk);
-+
-+	mmdrop(active_mm);
-+}
-+EXPORT_SYMBOL_GPL(use_mm);
-+
-+/*
-+ * unuse_mm
-+ *	Reverses the effect of use_mm, i.e. releases the
-+ *	specified mm context which was earlier taken on
-+ *	by the calling kernel thread
-+ *	(Note: this routine is intended to be called only
-+ *	from a kernel thread context)
-+ */
-+void unuse_mm(struct mm_struct *mm)
-+{
-+	struct task_struct *tsk = current;
-+
-+	task_lock(tsk);
-+	tsk->mm = NULL;
-+	/* active_mm is still 'mm' */
-+	enter_lazy_tlb(mm, tsk);
-+	task_unlock(tsk);
-+}
-+EXPORT_SYMBOL_GPL(unuse_mm);
++	return count;
+ }
+ 
+ const struct file_operations proc_clear_refs_operations = {
 -- 
-1.6.2.5
+1.6.0.4
 
