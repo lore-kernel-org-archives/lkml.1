@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbZHKVXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbZHKVaM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754946AbZHKVXy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 17:23:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbZHKVXx
+	id S1754991AbZHKVaM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 17:30:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbZHKVaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 17:23:53 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:48033 "EHLO e7.ny.us.ibm.com"
+	Tue, 11 Aug 2009 17:30:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44744 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754382AbZHKVXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 17:23:52 -0400
-Date: Tue, 11 Aug 2009 14:23:52 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>, manfred@colorfullife.com
-Subject: Re: [BUG] race of RCU vs NOHU
-Message-ID: <20090811212352.GF6739@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090807151529.2806b8b4@skybase> <20090807142957.GB6700@linux.vnet.ibm.com> <20090810142535.3e685109@skybase> <20090810161007.GB1505@ucw.cz>
+	id S1753556AbZHKVaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 17:30:10 -0400
+Date: Wed, 12 Aug 2009 00:27:43 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com
+Subject: [PATCHv2 0/2] vhost: a kernel-level virtio server
+Message-ID: <20090811212743.GA26309@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090810161007.GB1505@ucw.cz>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 06:10:07PM +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > > > I analysed a dump of a hanging 2.6.30 system and found what I think is
-> > > > a bug of RCU vs NOHZ. There are a number of patches ontop of that
-> > > > kernel but they should be independent of the bug.
-> > > > 
-> > > > The systems has 4 cpus and uses classic RCU. cpus #0, #2 and #3 woke up
-> > > > recently, cpu #1 has been sleeping for 5 minutes, but there is a pending
-> > > > rcu batch. The timer wheel for cpu #1 is empty, it will continue to
-> > > > sleep for NEXT_TIMER_MAX_DELTA ticks.
-> > > 
-> > > Congratulations, Martin!  You have exercised what to date has been a
-> > > theoretical bug identified last year by Manfred Spraul.  The fix is to
-> > > switch from CONFIG_RCU_CLASSIC to CONFIG_RCU_TREE, which was added in
-> > > 2.6.29.
-> > > 
-> > > Of course, if you need to work with an old kernel version, you might
-> > > still need a patch, perhaps for the various -stable versions.  If so,
-> > > please let me know -- otherwise, I will focus forward on CONFIG_RCU_TREE
-> > > rather than backwards on CONFIG_RCU_CLASSIC.
-> > 
-> > SLES11 is 2.6.27 and uses classic RCU. The not-so theoretical bug is
-> > present there and I think it needs to be fixed :-/
-> 
-> Plus... if config_rcu_classic is known buggy  (and you are not willing
-> to fix it),  it should be disabled (or made depend on !CONFIG_NOHZ, or
-> maybe made depend on CONFIG_BROKEN).
+This implements vhost: a kernel-level backend for virtio,
+The main motivation for this work is to reduce virtualization
+overhead for virtio by removing system calls on data path,
+without guest changes. For virtio-net, this removes up to
+4 system calls per packet: vm exit for kick, reentry for kick,
+iothread wakeup for packet, interrupt injection for packet.
 
-Already done in -tip.  ;-)
+Some more detailed description attached to the patch itself.
 
-	paulmck@paulmck-laptop:/home/git/linux-2.6-tip$ ls kernel/rcuclassic.c
-	ls: kernel/rcuclassic.c: No such file or directory
+The patches are against 2.6.31-rc4.  I'd like them to go into linux-next
+and down the road 2.6.32 if possible.  Please comment.
 
-							Thanx, Paul
+Changes from v1:
+- Move use_mm/unuse_mm from fs/aio.c to mm instead of copying.
+- Reorder code to avoid need for forward declarations
+- Kill a couple of debugging printks
 
-> Ugh. rcu_classic  does not seem to have help text, and I'm running
-> 								known
-> 								bad
-> 								code
-> 								here
-> 								:-(.
+Michael S. Tsirkin (2):
+  mm: export use_mm/unuse_mm to modules
+  vhost_net: a kernel-level virtio server
+
+ MAINTAINERS                 |   10 +
+ arch/x86/kvm/Kconfig        |    1 +
+ drivers/Makefile            |    1 +
+ drivers/vhost/Kconfig       |   11 +
+ drivers/vhost/Makefile      |    2 +
+ drivers/vhost/net.c         |  411 +++++++++++++++++++++++++++
+ drivers/vhost/vhost.c       |  663 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/vhost/vhost.h       |  108 +++++++
+ fs/aio.c                    |   47 +---
+ include/linux/Kbuild        |    1 +
+ include/linux/miscdevice.h  |    1 +
+ include/linux/mmu_context.h |    9 +
+ include/linux/vhost.h       |  100 +++++++
+ mm/Makefile                 |    2 +-
+ mm/mmu_context.c            |   58 ++++
+ 15 files changed, 1378 insertions(+), 47 deletions(-)
+ create mode 100644 drivers/vhost/Kconfig
+ create mode 100644 drivers/vhost/Makefile
+ create mode 100644 drivers/vhost/net.c
+ create mode 100644 drivers/vhost/vhost.c
+ create mode 100644 drivers/vhost/vhost.h
+ create mode 100644 include/linux/mmu_context.h
+ create mode 100644 include/linux/vhost.h
+ create mode 100644 mm/mmu_context.c
