@@ -1,51 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752957AbZHKP3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbZHKP3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752957AbZHKP3P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 11:29:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZHKP3P
+	id S1753296AbZHKP3V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 11:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZHKP3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 11:29:15 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:59299 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751822AbZHKP3O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 11:29:14 -0400
-To: Frans Pop <elendil@planet.nl>
-Cc: Chris Mason <chris.mason@oracle.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       jack@suse.cz, linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: What happened to data=guarded?
-From: Andi Kleen <andi@firstfloor.org>
-References: <1249934623-15939-1-git-send-email-tytso@mit.edu>
-	<200908111535.37927.elendil@planet.nl> <20090811133721.GD29224@think>
-	<200908111654.38217.elendil@planet.nl>
-Date: Tue, 11 Aug 2009 17:29:14 +0200
-In-Reply-To: <200908111654.38217.elendil@planet.nl> (Frans Pop's message of "Tue, 11 Aug 2009 16:54:36 +0200")
-Message-ID: <878whqgyid.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Tue, 11 Aug 2009 11:29:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48927 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752061AbZHKP3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 11:29:17 -0400
+Date: Tue, 11 Aug 2009 17:29:04 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tracing: FTRACE_ITER_CONT handling fix
+Message-ID: <20090811152904.GA26065@jolsa.lab.eng.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop <elendil@planet.nl> writes:
+Hi,
 
-> On Tuesday 11 August 2009, Chris Mason wrote:
->> On Tue, Aug 11, 2009 at 03:35:36PM +0200, Frans Pop wrote:
->> > Somewhat unrelated, but what happened to the data=guarded patches
->> > Chris Mason proposed back in April?
->>
->> I missed 2.6.31 but plan on sending for 2.6.32.  I promised to send
->> along a forward port of the patches a while back, but I finally have
->> one in testing here.  It should go out shortly.
->
-> Good to hear. I've so far stayed with data=ordered as I think I'd prefer 
-> data=guarded over data=writeback. I'll certainly give it a try when it's 
-> available.
+if one filter item (for set_ftrace_filter and set_ftrace_notrace) is being 
+setup by more than 1 consecutive writes (FTRACE_ITER_CONT flag), it won't
+be handled corretly.
 
-Same here. data=writeback already cost me a few files after crashes here :/
+I used following program to test/verify:
 
--Andi
+[snip]
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+int main(int argc, char **argv)
+{
+        int fd, i;
+        char *file = argv[1];
+
+        if (-1 == (fd = open(file, O_WRONLY))) {
+                perror("open failed");
+                return -1;
+        }
+
+        for(i = 0; i < (argc - 2); i++) {
+                int len = strlen(argv[2+i]);
+                int cnt, off = 0;
+
+                while(len) {
+                        cnt = write(fd, argv[2+i] + off, len);
+                        len -= cnt;
+                        off += cnt;
+                }
+        }
+
+        close(fd);
+        return 0;
+}
+[snip]
+
+before change:
+sh-4.0# echo > ./set_ftrace_filter 
+sh-4.0# /test ./set_ftrace_filter "sys" "_open "
+sh-4.0# cat ./set_ftrace_filter 
+#### all functions enabled ####
+sh-4.0# 
+
+after change:
+sh-4.0# echo > ./set_ftrace_notrace   
+sh-4.0# test ./set_ftrace_notrace "sys" "_open "
+sh-4.0# cat ./set_ftrace_notrace 
+sys_open
+sh-4.0# 
+
+wbr,
+jirka
+
+
+Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+
+---
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 0948634..da0757a 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -2233,7 +2233,11 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
+ 	read++;
+ 	cnt--;
+ 
+-	if (!(iter->flags & ~FTRACE_ITER_CONT)) {
++	/*
++	 * If the parser haven't finished with the last write,
++	 * continue reading the user input without skipping spaces.
++	 */
++	if (!(iter->flags & FTRACE_ITER_CONT)) {
+ 		/* skip white space */
+ 		while (cnt && isspace(ch)) {
+ 			ret = get_user(ch, ubuf++);
+@@ -2243,8 +2247,9 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
+ 			cnt--;
+ 		}
+ 
++		/* only spaces were written */
+ 		if (isspace(ch)) {
+-			file->f_pos += read;
++			*ppos += read;
+ 			ret = read;
+ 			goto out;
+ 		}
+@@ -2273,12 +2278,12 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
+ 		if (ret)
+ 			goto out;
+ 		iter->buffer_idx = 0;
+-	} else
++	} else {
+ 		iter->flags |= FTRACE_ITER_CONT;
++		iter->buffer[iter->buffer_idx++] = ch;
++	}
+ 
+-
+-	file->f_pos += read;
+-
++	*ppos += read;
+ 	ret = read;
+  out:
+ 	mutex_unlock(&ftrace_regex_lock);
