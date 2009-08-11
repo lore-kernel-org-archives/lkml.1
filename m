@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751990AbZHKLzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752073AbZHKLzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751990AbZHKLzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 07:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbZHKLzg
+	id S1752073AbZHKLzT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 07:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbZHKLzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 07:55:36 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:24963
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751927AbZHKLzE (ORCPT
+	Tue, 11 Aug 2009 07:55:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34410 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751886AbZHKLzP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 07:55:04 -0400
-Message-ID: <4A8107F3.3050301@panasas.com>
-Date: Tue, 11 Aug 2009 08:56:03 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090722 Remi/fc10 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Benny Halevy <bhalevy@panasas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] MAINTAINERS: OSD LIBRARY and FILESYSTEM pattern fix
-References: <1249947969.8895.94.camel@Joe-Laptop.home>
-In-Reply-To: <1249947969.8895.94.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 11 Aug 2009 07:55:15 -0400
+Date: Mon, 10 Aug 2009 21:03:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: linux-kernel@vger.kernel.org, Nils Carlson <nils.carlson@ericsson.com>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] hpet: hpet driver periodic timer setup bug fixes
+Message-Id: <20090810210312.eb3bb57f.akpm@linux-foundation.org>
+In-Reply-To: <20090810220503.GA29239@linux-os.sc.intel.com>
+References: <20090810220503.GA29239@linux-os.sc.intel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Aug 2009 05:56:06.0159 (UTC) FILETIME=[6A94E1F0:01CA1A48]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/11/2009 02:46 AM, Joe Perches wrote:
-> Resend for Andrew Morton.
+On Mon, 10 Aug 2009 15:05:04 -0700 "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
+
+> From: Nils Carlson <nils.carlson@ericsson.com>
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> Acked-by: Benny Halevy <bhalevy@panasas.com>
+> The periodic interrupt from drivers/char/hpet.c does not work correctly,
+> both when using the periodic capability of the hardware and while
+> emulating the periodic interrupt (when hardware does not support
+> periodic mode).
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index b1114cf..50f25e3 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3796,7 +3796,7 @@ W:	http://open-osd.org
->  T:	git git://git.open-osd.org/open-osd.git
->  S:	Maintained
->  F:	drivers/scsi/osd/
-> -F:	drivers/include/scsi/osd_*
-> +F:	include/scsi/osd_*
->  F:	fs/exofs/
->  
->  P54 WIRELESS DRIVER
+> With timers capable of periodic interrupts, the comparator field is first
+> set with the period value followed by set of hidden accumulator,
+> which has the side effect of overwriting the comparator value. This
+> results in wrong periodicity for the interrupts. For,
+> periodic interrupts to work, following steps are necessary, in that order.
+> * Set config with Tn_VAL_SET_CNF bit
+> * Write to hidden accumulator, the value written is the time when the
+>   first interrupt should be generated
+> * Write compartor with period interval for subsequent interrupts
+> (http://www.intel.com/hardwaredesign/hpetspec_1.pdf )
 > 
+> When emulating periodic timer with timers not capable of periodic
+> interrupt, driver is adding the period to counter value instead of
+> comparator value, which causes slow drift when using this emulation.
+> 
+> Also, driver seems to add hpetp->hp_delta both while setting up
+> periodic interrupt and while emulating periodic interrupts with timers
+> not capable of doing periodic interrupts. This hp_delta will result in
+> slower than expected interrupt rate and should not be used while setting
+> the interval.
 > 
 
-Thanks Joe!
+Do you have any thoughts on which kernel versions this fix should be
+merged into, and when?
 
-Do you want that I push it through my tree?
-I will. It'll be in next tomorrow.
-
-Boaz
+Thanks.
