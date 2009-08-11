@@ -1,39 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbZHKRHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755037AbZHKRO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755301AbZHKRHr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 13:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbZHKRHp
+	id S1755037AbZHKRO1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 13:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbZHKRO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 13:07:45 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51812 "EHLO mx1.suse.de"
+	Tue, 11 Aug 2009 13:14:27 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:37762 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755159AbZHKRHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 13:07:44 -0400
-Date: Tue, 11 Aug 2009 10:00:50 -0700
-From: Greg KH <gregkh@suse.de>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@linux.intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/1] Power: fix suspend vt regression
-Message-ID: <20090811170050.GA26041@suse.de>
-References: <1249980093-16319-1-git-send-email-jirislaby@gmail.com>
+	id S1753719AbZHKRO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 13:14:26 -0400
+Date: Tue, 11 Aug 2009 19:14:27 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Eric.Moore@lsi.com, jeff@garzik.org
+Subject: Re: [PATCH 0/3]: blk-iopoll, a polled completion API for block
+	devices
+Message-ID: <20090811171427.GV12579@kernel.dk>
+References: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com> <e2e108260908110335tc500412mc6354359d85ae9b6@mail.gmail.com> <20090811143919.GU12579@kernel.dk> <e2e108260908110759w4fbbb5dejf852ba272fa29d75@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249980093-16319-1-git-send-email-jirislaby@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <e2e108260908110759w4fbbb5dejf852ba272fa29d75@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 10:41:33AM +0200, Jiri Slaby wrote:
-> vt_waitactive no longer accepts console parameter as console-1
-> since commit "vt: add an event interface". It expects console
-> number directly (as viewed by userspace -- counting from 1).
+On Tue, Aug 11 2009, Bart Van Assche wrote:
+> On Tue, Aug 11, 2009 at 4:39 PM, Jens Axboe<jens.axboe@oracle.com> wrote:
+> > On Tue, Aug 11 2009, Bart Van Assche wrote:
+> >> On Thu, Aug 6, 2009 at 9:58 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> >> > Anyway, YMMV, I would appreciate some test results (and as usual, that
+> >> > even includes just saying that it boots and functions for you). If
+> >> > people feel adventurous, patches for other controllers will be happily
+> >> > queued up for testing. I may even be convinced to implement support
+> >> > for your controller of choice, if you have some fast storage hooked up
+> >> > and would like to experiment. Generally, adding support to a driver is
+> >> > not very hard and the two conversions included were also meant to serve
+> >> > as an inspiration.
+> >>
+> >> Sounds very interesting. Have you already considered patching the SRP
+> >> initiator ? During the SRP performance tests I ran CPU usage on the
+> >> initiator was more than 95% and on the target less than 10%.
+> >
+> > No I haven't, if you point me at which srp files, I can take a look.
+> 
+> The relevant source files are:
+> include/scsi/srp.h
+> include/scsi/scsi_transport_srp.h
+> drivers/infiniband/ulp/srp/ib_srp.h
+> drivers/infiniband/ulp/srp/ib_srp.c
+> drivers/scsi/scsi_transport_srp.c
+> drivers/scsi/libsrp.c
+> drivers/scsi/scsi_transport_srp_internal.h
 
-As the event interface code is only in -next and not in mainline, this
-doesn't pertain to Linus's current tree, right?
+I can find | grep too :-)
 
-thanks,
+Did you profile this? Where did it burn all the CPU time on the
+initiator side?
 
-greg k-h
+-- 
+Jens Axboe
+
