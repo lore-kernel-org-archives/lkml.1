@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbZHKMmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbZHKMqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754293AbZHKMmE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZHKMmA
+	id S1754165AbZHKMqP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbZHKMqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:42:00 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:37490 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754243AbZHKMl4 (ORCPT
+	Tue, 11 Aug 2009 08:46:12 -0400
+Received: from mail-yw0-f191.google.com ([209.85.211.191]:32841 "EHLO
+	mail-yw0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753836AbZHKMqJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:41:56 -0400
-To: linux-kernel@vger.kernel.org
-Content-Disposition: inline
-From: Juergen Beisert <jbe@pengutronix.de>
-Organization: Pengutronix - Linux Solutions for Science and Industry
-Date: Tue, 11 Aug 2009 10:00:00 +0200
+	Tue, 11 Aug 2009 08:46:09 -0400
+X-Greylist: delayed 3231 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Aug 2009 08:46:09 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=ayy2rbXErtIpISAnx3/YZAoPtg/jcVlTc4BtbUISpIfIV3H9CHw1XYFt7PHTatJK28
+         t1QyaAeIpIFErJaN1ef6jq3yPiRWVacibrdEqebGRDR1wRHXU4XzAc6GHU+Ry7bG7wji
+         oSQvWmdKYFTme1vmUJPwba72bRcpMjCc2cJpk=
+Message-ID: <4A81331F.7010908@gmail.com>
+Date: Tue, 11 Aug 2009 11:00:15 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-7.3 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: roel kluin <roel.kluin@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] applicom: Prevent unsigned wrap in ac_interrupt()
+References: <4A7D961A.1020303@gmail.com> <4A7F31F6.9000706@gmail.com> <25e057c00908110154g48241b85td089e6726109b581@mail.gmail.com>
+In-Reply-To: <25e057c00908110154g48241b85td089e6726109b581@mail.gmail.com>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908111000.01316.jbe@pengutronix.de>
-X-SA-Exim-Connect-IP: 92.198.50.58
-X-SA-Exim-Mail-From: jbe@pengutronix.de
-Subject: CMOS time jumps when ntpd ist running
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi list,
+On 08/11/2009 10:54 AM, roel kluin wrote:
+>>> unsigned i wraps if this occurs in the first iteration.
+>>
+>> Could you elaborate? I don't quite understand the point.
+> 
+> `i' is unsigned. The last test in the loop is:
+> 
+> if(readb(apbs[i].RamIO + RAM_IT_TO_PC)) {
+>         /* There's another int waiting on this card */
+>         spin_unlock(&apbs[i].mutex);
+>         i--;
+> } else {
+>         spin_unlock(&apbs[i].mutex);
+> }
+> 
+> In the first iteration `i' is 0, so if this condition evaluates to true
+> then `i' becomes 0xffffffff (since it's unsigned), the for loop test
+> fails and the i++ never occurs.
 
-anybody here who saw such CMOS clock behaviour when ntpd is running?
-I synced system and CMOS time and after that I ran a simple
-  'watch -t -n 300 "date; hwclock -u" > /logfile'
-(note: When the ntpd daemon is not running, the CMOS clock does not show this 
-behaviour):
+Hmm, no. This is not how three `for' expressions are evaluated. The CFG
+of "for (a; b; c) d;" is "a->(b->d->c)*". Read 6.8.5.3 of ANSI C99.
 
-[...]
-    Mon Aug 10 03:53:20 CEST 2009              <-- system time
-    Mon Aug 10 03:53:20 2009  0.000000 seconds <-- CMOS time
+I.e. 0xff increments back to 0.
 
-    Mon Aug 10 03:58:20 CEST 2009
-    Mon Aug 10 03:58:20 2009  0.000000 seconds
-
-    Mon Aug 10 04:03:20 CEST 2009
-    Sun Aug  9 22:03:20 2009  0.000000 seconds <----- BANG !!!!!!111!1!!
-
-    Mon Aug 10 04:08:20 CEST 2009
-    Sun Aug  9 22:08:20 2009  0.000000 seconds
-[...]
-
-It seems its always -6 hours the CMOS clock jumps. And sometimes -(6h + n * 
-24h) with n from 1 to 3 I saw.
-
-Is my CMOS clock broken? (BTW: x86 arch, 32 bit, Linux kernel 2.6.28.10 and 
-there is no SMM code in the system, it runs coreboot)
-
-Regards
-Juergen
+Am I still missing something?
