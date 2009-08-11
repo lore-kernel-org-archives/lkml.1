@@ -1,50 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752306AbZHKPgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbZHKPjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752306AbZHKPgq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 11:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZHKPgq
+	id S1752779AbZHKPjB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 11:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbZHKPjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 11:36:46 -0400
-Received: from waldorf.bytemark.co.uk ([212.110.162.22]:37548 "EHLO
-	waldorf.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751222AbZHKPgp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 11:36:45 -0400
-Date: Tue, 11 Aug 2009 17:36:33 +0200
-From: "Emilio G. Cota" <cota@braap.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-Cc: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [patch 1/5] Staging: VME Framework for the Linux Kernel
-Message-ID: <20090811153633.GC32658@braap.org>
-References: <20090803205657.964064732@mini.kroah.org> <20090803210111.GB28430@kroah.com> <20090808230145.GB27151@braap.org> <4A801644.2070009@gefanuc.com> <20090810141442.GA18456@braap.org> <4A804283.5090009@gefanuc.com> <20090810193849.GA3055@braap.org> <4A812BCE.3010003@gefanuc.com> <20090811144914.GB32658@braap.org> <4A8189D9.4080709@gefanuc.com>
+	Tue, 11 Aug 2009 11:39:00 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54134 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750814AbZHKPi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 11:38:59 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jan Scholz <scholz@fias.uni-frankfurt.de>
+Subject: Re: [Bug #13935] 2.6.31-rcX breaks Apple MightyMouse (Bluetooth version)
+Date: Tue, 11 Aug 2009 17:39:36 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Adrian Ulrich" <kernel@blinkenlights.ch>,
+       "Jiri Kosina" <jkosina@suse.cz>, Jiri Slaby <jirislaby@gmail.com>
+References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera> <u1L1PAbl8zG.A.eKD.hj1fKB@chimera> <87hbwewlk4.fsf@scholz.fias.uni-frankfurt.de>
+In-Reply-To: <87hbwewlk4.fsf@scholz.fias.uni-frankfurt.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8189D9.4080709@gefanuc.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908111739.36791.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martyn Welch wrote:
-> Not the same question, but I'd agree - that would probably break the  
-> current model I have proposed. *However*, providing a resource  
-> management layer as you have proposed above the basic resource  
-> management my API provides would resolve that without added complexity  
-> in the bridge drivers themselves.
+On Tuesday 11 August 2009, Jan Scholz wrote:
+> Hi,
+> 
+> I can confirm the reported bug, but for me reverting fa047e4f6fa63a6 is
+> not sufficient. I have to remove the device id of the mighty mouse from
+> the hid_blacklist list in drivers/hid/hid-core.c as well, see the patch below.
+> 
+> Concerning the need for the quirks: I think there might be some
+> dependence on the version of X that is used. If I recall correctly, with
+> xorg-server-1.3 the quirk "APPLE_INVERT_HWHEEL" was necessary, but this
+> changed when I switched to xorg-server-1.5.3, where now horizontal
+> scrolling moves in directions you'd expect from vertical scrolling.
+> ...but I wouldn't bet on my memory regarding things with xorg-server-1.3
+> since it's been quite some time ago and I never really liked the
+> horizontal scrolling anyway.
 
-It wouldn't break it, the model simply couldn't give you more
-than 8 windows-->8 devices.
+Thanks for the information.
 
-I think it should be the bridge the one that manages its
-own resources, not someone else.
-I'm coding a layer that works this way, we'll see how it looks.
+Best,
+Rafael
 
-> Yes. If I understand you correctly, your saying that management of the  
-> devices in the VME address space is a system configuration issue.
 
-It obviously is. We cannot impose the users where they should
-plug their devices or which pins on the boards they should
-tweak. They build their crates --> they tell the kernel about
-them.
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> 
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> >
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.30.  Please verify if it still should be listed and let me know
+> > (either way).
+> >
+> >
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13935
+> > Subject		: 2.6.31-rcX breaks Apple MightyMouse (Bluetooth version)
+> > Submitter	: Adrian Ulrich <kernel@blinkenlights.ch>
+> > Date		: 2009-08-08 22:08 (2 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=fa047e4f6fa63a6e9d0ae4d7749538830d14a343
+> >
+> 
+> From b7393ed6dfe00c9e126a2dd34659156548df15cc Mon Sep 17 00:00:00 2001
+> From: Jan Scholz <Scholz@fias.uni-frankfurt.de>
+> Date: Tue, 11 Aug 2009 14:33:27 +0200
+> Subject: [PATCH] HID: commit fa047e4f is incomplete
+> 
+> Commit fa047e4f6fa63a6e9d0ae4d7749538830d14a343 "HID: fix inverted
+> wheel for bluetooth version of apple mighty mouse" is incomplete. If
+> we remove Apple MightyMouse (bluetooth version) from the list of
+> apple_devices in drivers/hid/hid-apple.c we have to remove it from
+> hid_blacklist in drivers/hid/hid-core.c as well.
+> 
+> Signed-off-by: Jan Scholz <Scholz@fias.uni-frankfurt.de>
+> ---
+>  drivers/hid/hid-core.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+> index 5eb10c2..047844d 100644
+> --- a/drivers/hid/hid-core.c
+> +++ b/drivers/hid/hid-core.c
+> @@ -1319,7 +1319,6 @@ static const struct hid_device_id hid_blacklist[] = {
+>  	{ HID_USB_DEVICE(USB_VENDOR_ID_ZEROPLUS, 0x0005) },
+>  	{ HID_USB_DEVICE(USB_VENDOR_ID_ZEROPLUS, 0x0030) },
+>  
+> -	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 0x030c) },
+>  	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_MICROSOFT, USB_DEVICE_ID_MS_PRESENTER_8K_BT) },
+>  	{ }
+>  };
