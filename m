@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbZHKMDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752852AbZHKMBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752794AbZHKMDT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZHKMDS
+	id S1752852AbZHKMBd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:01:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbZHKMBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:03:18 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:42059 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751480AbZHKMDR (ORCPT
+	Tue, 11 Aug 2009 08:01:32 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36317 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752565AbZHKMBU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:03:17 -0400
-Date: Tue, 11 Aug 2009 10:56:36 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Timur Tabi <timur@freescale.com>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH -next] soc: fix I2C build errors
-Message-ID: <20090811095636.GE24947@sirena.org.uk>
-References: <20090810203508.f3258129.sfr@canb.auug.org.au> <20090810160439.72e417de.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090810160439.72e417de.randy.dunlap@oracle.com>
-X-Cookie: BOFH excuse
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+	Tue, 11 Aug 2009 08:01:20 -0400
+Subject: Re: [RFC patch] Add boot option intel_iommu_drhd_mask
+From: David Woodhouse <dwmw2@infradead.org>
+To: Luming Yu <luming.yu@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <3877989d0908101956o303c43c5i5c5f08297afb312@mail.gmail.com>
+References: <3877989d0908101956o303c43c5i5c5f08297afb312@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 11 Aug 2009 10:22:14 +0100
+Message-Id: <1249982534.29180.25.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 04:04:39PM -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Tue, 2009-08-11 at 10:56 +0800, Luming Yu wrote:
+> **The patch is enclosed in text attachment*
+> **Using web client to send the patch* *
+> **below is for review, please apply attached  patch*/
 
-> Fix soc build errors when I2C is built as a loadable module:
+Please use a sane mailer and don't do this. Patches should be inline in
+a usable form. 
 
-> (.text+0x5d26b): undefined reference to `i2c_master_send'
-> soc-cache.c:(.text+0x5d32d): undefined reference to `i2c_transfer'
+Surely gmail allows this, even if your employer doesn't provide a
+competently-managed mail service?
 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Cc: Timur Tabi <timur@freescale.com>
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-I've applied this.
-
-It'd be helpful if in future you could try to CC the relevant
-maintainers on patches.  Here you've CCed Timur (who had nothing to do
-with any of this code) but none of the ASoC or ALSA maintainers. 
