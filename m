@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbZHKPkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbZHKPlH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753205AbZHKPkv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 11:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbZHKPku
+	id S1753440AbZHKPlH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 11:41:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbZHKPlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 11:40:50 -0400
-Received: from exprod5og107.obsmtp.com ([64.18.0.184]:51694 "EHLO
-	exprod5og107.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752389AbZHKPku (ORCPT
+	Tue, 11 Aug 2009 11:41:06 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:65041 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752883AbZHKPlD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 11:40:50 -0400
-Message-ID: <4A819130.5080802@gefanuc.com>
-Date: Tue, 11 Aug 2009 16:41:36 +0100
-From: Martyn Welch <martyn.welch@gefanuc.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Tue, 11 Aug 2009 11:41:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:date:message-id:subject:from:to:cc
+         :content-type:content-transfer-encoding;
+        b=FQbxqKB/+km8SVH/FXAPFH2QWddKhxsRL9wHkovZmXEl6s7VJNO8ej10c9ukNIAsos
+         2h3QJY/GCqQFlBjOyYWMIaJ+GybO5fxq1mXVo0P4LqP3YspOQedckw67naCWy9McDltV
+         c0jrH24AXSbE3YL/OpFxkvMdrspW6+Ym8zBr0=
 MIME-Version: 1.0
-To: "Emilio G. Cota" <cota@braap.org>
-CC: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [patch 1/5] Staging: VME Framework for the Linux Kernel
-References: <20090803205657.964064732@mini.kroah.org> <20090803210111.GB28430@kroah.com> <20090808230145.GB27151@braap.org> <4A801644.2070009@gefanuc.com> <20090810141442.GA18456@braap.org> <4A804283.5090009@gefanuc.com> <20090810193849.GA3055@braap.org> <4A812BCE.3010003@gefanuc.com> <20090811144914.GB32658@braap.org> <4A8189D9.4080709@gefanuc.com> <20090811153633.GC32658@braap.org>
-In-Reply-To: <20090811153633.GC32658@braap.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Reply-To: eranian@gmail.com
+Date: Tue, 11 Aug 2009 17:41:03 +0200
+Message-ID: <7c86c4470908110841wca07382gf7487c0ed55909f2@mail.gmail.com>
+Subject: perf_counters issue with PERF_SAMPLE_GROUP
+From: stephane eranian <eranian@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Emilio G. Cota wrote:
-> Martyn Welch wrote:
->   
->> Not the same question, but I'd agree - that would probably break the  
->> current model I have proposed. *However*, providing a resource  
->> management layer as you have proposed above the basic resource  
->> management my API provides would resolve that without added complexity  
->> in the bridge drivers themselves.
->>     
->
-> It wouldn't break it, the model simply couldn't give you more
-> than 8 windows-->8 devices.
->   
-Unless the devices we the same and the driver reused one window.
-> I think it should be the bridge the one that manages its
-> own resources, not someone else.
->   
-I still think that layering this above the driver is better - it only 
-needs to be written once rather than replicated for each bridge chip.
-> I'm coding a layer that works this way, we'll see how it looks.
->
->   
-Much obliged.
->> Yes. If I understand you correctly, your saying that management of the  
->> devices in the VME address space is a system configuration issue.
->>     
->
-> It obviously is. We cannot impose the users where they should
-> plug their devices or which pins on the boards they should
-> tweak. They build their crates --> they tell the kernel about
-> them.
->   
-Agreed.
+Hi,
 
-Martyn
+It seems to me there is a problem with the group counter values
+when you use PERF_SAMPLE_GROUP. The counts are bogus
+for all events.
 
--- 
-Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
-GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
-Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
-Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 927559189
+Test case is pretty simple:
+    - single group, 2 events
+    - sampling on PERF_COUNT_HW_CYCLES
+    - other event is PERF_COUNT_HW_CYCLES
+    - leader has SAMPLE_IP|SAMPLE_GROUP
+    - no inheritance
+    - single thread
+    - using sampling in one shot mode with PERF_COUNTER_IOC_REFRESH
+    - all events but leader start with disabled = 0 (i.e., enabled)
+    - sampling period is 240000000 (cycles)
+
+Notification 1: ip=0x401300  39100608 PERF_COUNT_HW_CPU_CYCLES (12)
+Notification 2: ip=0x401300  17991616 PERF_COUNT_HW_CPU_CYCLES (12)
+Notification 3: ip=0x401300  17981248 PERF_COUNT_HW_CPU_CYCLES (12)
+Notification 4: ip=0x401300  9409478912 PERF_COUNT_HW_CPU_CYCLES (12)
+
+I would expect the value for the 2nd event to be close to 240000000.
+But instead,
+it is going up and down. The IP, nr and id (12) fields are correct, so
+the parsing of
+the buffer is correct. This is with the latest from Linus's 2.6.31-rc5.
+
+
+Related to PERF_SAMPLE_GROUP, I believe there is some information missing.
+You need to provide the TIMING information because in the case of SAMPLE_GROUP
+you'd like to be able to scale the values of the counters you are
+collecting. And you
+need the timing at the moment, the sample was recorded not later.
