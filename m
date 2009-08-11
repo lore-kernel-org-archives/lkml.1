@@ -1,160 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbZHKTWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZHKTbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755326AbZHKTWf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 15:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755179AbZHKTWf
+	id S1754495AbZHKTbN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 15:31:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbZHKTbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 15:22:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46962 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755160AbZHKTWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 15:22:34 -0400
-Date: Tue, 11 Aug 2009 16:22:11 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
-       Mike Galbraith <efault@gmx.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Luis Claudio =?iso-8859-1?Q?R=2E_Gon=E7alves?= 
-	<lclaudio@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH tip 3/3] perf tools: Fallback to cplus_demangle when
-	bfd_demangle is not available
-Message-ID: <20090811192211.GG18061@ghostprotocols.net>
+	Tue, 11 Aug 2009 15:31:12 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:39188 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751510AbZHKTbL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 15:31:11 -0400
+Date: Tue, 11 Aug 2009 15:15:18 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Luciano Coelho <luciano.coelho@nokia.com>
+Cc: ext Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] wl1271: fix compiler warnings on 64 bit archs
+Message-ID: <20090811191518.GI2634@tuxdriver.com>
+References: <1249981107-21746-1-git-send-email-luciano.coelho@nokia.com> <20090811200746.cde6aed9.sfr@canb.auug.org.au> <4A81BB47.2020607@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A81BB47.2020607@nokia.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In old binutils we can't access bfd_demangle, use cplus_demangle just
-like oprofile.
+On Tue, Aug 11, 2009 at 09:41:11PM +0300, Luciano Coelho wrote:
+> ext Stephen Rothwell wrote:
+>> Hi Luciano,
+>>
+>> On Tue, 11 Aug 2009 11:58:27 +0300 Luciano Coelho <luciano.coelho@nokia.com> wrote:
+>>   
+>>> +++ b/drivers/net/wireless/wl12xx/wl1271_boot.c
+>>> @@ -100,8 +100,8 @@ static int wl1271_boot_upload_firmware_chunk(struct wl1271 *wl, void *buf,
+>>>   	wl1271_debug(DEBUG_BOOT, "starting firmware upload");
+>>>  -	wl1271_debug(DEBUG_BOOT, "fw_data_len %d chunk_size %d", 
+>>> fw_data_len,
+>>> -		CHUNK_SIZE);
+>>> +	wl1271_debug(DEBUG_BOOT, "fw_data_len %d chunk_size %d",
+>>> +		     (u32) fw_data_len, CHUNK_SIZE);
+>>>     
+>>
+>> fw_data_len is a size_t and so should be printed with %zd.
+>>
+>>   
+>>> @@ -148,7 +148,7 @@ static int wl1271_boot_upload_firmware_chunk(struct wl1271 *wl, void *buf,
+>>>  	addr = dest + chunk_num * CHUNK_SIZE;
+>>>  	p = buf + chunk_num * CHUNK_SIZE;
+>>>  	wl1271_debug(DEBUG_BOOT, "uploading fw last chunk (%d B) 0x%p to 0x%x",
+>>> -		     fw_data_len % CHUNK_SIZE, p, addr);
+>>> +		     (u32) fw_data_len % CHUNK_SIZE, p, addr);
+>>>     
+>>
+>> ditto.
+>>   
+>
+> Thanks! I didn't know about the z length modifier for printf (everyday  
+> learning something new!), I should have checked the manpage.  I'll fix  
+> this and send v2 of my patch.
 
-Cc: Luis Claudio R. Gonçalves <lclaudio@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/Makefile      |   29 ++++++++++++++++++-----------
- tools/perf/util/symbol.c |   15 ---------------
- tools/perf/util/symbol.h |   24 ++++++++++++++++++++++++
- 3 files changed, 42 insertions(+), 26 deletions(-)
+I've got it fixed-up already...
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index de7beac..3ab09e5 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -384,22 +384,29 @@ endif
- ifdef NO_DEMANGLE
- 	BASIC_CFLAGS += -DNO_DEMANGLE
- else
--
- 	has_bfd := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -lbfd > /dev/null 2>&1 && echo y")
- 
--	has_bfd_iberty := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -lbfd -liberty > /dev/null 2>&1 && echo y")
--
--	has_bfd_iberty_z := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -lbfd -liberty -lz > /dev/null 2>&1 && echo y")
--
- 	ifeq ($(has_bfd),y)
- 		EXTLIBS += -lbfd
--	else ifeq ($(has_bfd_iberty),y)
--		EXTLIBS += -lbfd -liberty
--	else ifeq ($(has_bfd_iberty_z),y)
--		EXTLIBS += -lbfd -liberty -lz
- 	else
--		msg := $(warning No bfd.h/libbfd found, install binutils-dev[el] to gain symbol demangling)
--		BASIC_CFLAGS += -DNO_DEMANGLE
-+		has_bfd_iberty := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -lbfd -liberty > /dev/null 2>&1 && echo y")
-+		ifeq ($(has_bfd_iberty),y)
-+			EXTLIBS += -lbfd -liberty
-+		else
-+			has_bfd_iberty_z := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -lbfd -liberty -lz > /dev/null 2>&1 && echo y")
-+			ifeq ($(has_bfd_iberty_z),y)
-+				EXTLIBS += -lbfd -liberty -lz
-+			else
-+				has_cplus_demangle := $(shell sh -c "(echo 'extern char *cplus_demangle(const char *, int);'; echo 'int main(void) { cplus_demangle(0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -liberty > /dev/null 2>&1 && echo y")
-+				ifeq ($(has_cplus_demangle),y)
-+					EXTLIBS += -liberty
-+					BASIC_CFLAGS += -DHAVE_CPLUS_DEMANGLE
-+				else
-+					msg := $(warning No bfd.h/libbfd found, install binutils-dev[el] to gain symbol demangling)
-+					BASIC_CFLAGS += -DNO_DEMANGLE
-+				endif
-+			endif
-+		endif
- 	endif
- endif
- 
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index f1dcede..2473fd4 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -7,23 +7,8 @@
- #include <gelf.h>
- #include <elf.h>
- 
--#ifndef NO_DEMANGLE
--#include <bfd.h>
--#else
--static inline
--char *bfd_demangle(void __used *v, const char __used *c, int __used i)
--{
--	return NULL;
--}
--#endif
--
- const char *sym_hist_filter;
- 
--#ifndef DMGL_PARAMS
--#define DMGL_PARAMS      (1 << 0)       /* Include function args */
--#define DMGL_ANSI        (1 << 1)       /* Include const, volatile, etc */
--#endif
--
- enum dso_origin {
- 	DSO__ORIG_KERNEL = 0,
- 	DSO__ORIG_JAVA_JIT,
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index 1e003ec..b53bf01 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -7,6 +7,30 @@
- #include <linux/rbtree.h>
- #include "module.h"
- 
-+#ifdef HAVE_CPLUS_DEMANGLE
-+extern char *cplus_demangle(const char *, int);
-+
-+static inline char *bfd_demangle(void __used *v, const char *c, int i)
-+{
-+	return cplus_demangle(c, i);
-+}
-+#else
-+#ifdef NO_DEMANGLE
-+static inline char *bfd_demangle(void __used *v, const char __used *c,
-+				 int __used i)
-+{
-+	return NULL;
-+}
-+#else
-+#include <bfd.h>
-+#endif
-+#endif
-+
-+#ifndef DMGL_PARAMS
-+#define DMGL_PARAMS      (1 << 0)       /* Include function args */
-+#define DMGL_ANSI        (1 << 1)       /* Include const, volatile, etc */
-+#endif
-+
- struct symbol {
- 	struct rb_node	rb_node;
- 	u64		start;
+John
 -- 
-1.6.2.5
-
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
