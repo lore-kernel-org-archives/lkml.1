@@ -1,113 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbZHKObM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZHKObl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754840AbZHKObM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 10:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbZHKObL
+	id S1754855AbZHKObl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 10:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbZHKObl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 10:31:11 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:43568 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754795AbZHKObK convert rfc822-to-8bit (ORCPT
+	Tue, 11 Aug 2009 10:31:41 -0400
+Received: from mail-pz0-f196.google.com ([209.85.222.196]:63720 "EHLO
+	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752054AbZHKObk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 10:31:10 -0400
-From: "Fischer, Anna" <anna.fischer@hp.com>
-To: Arnd Bergmann <arnd@arndb.de>
-CC: "'Stephen Hemminger'" <shemminger@linux-foundation.org>,
-       "bridge@lists.linux-foundation.org" 
-	<bridge@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "evb@yahoogroups.com" <evb@yahoogroups.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "kaber@trash.net" <kaber@trash.net>,
-       "adobriyan@gmail.com" <adobriyan@gmail.com>,
-       "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>,
-       Eric Biederman <ebiederm@xmission.com>
-Date: Tue, 11 Aug 2009 14:30:23 +0000
-Subject: RE: [PATCH][RFC] net/bridge: add basic VEPA support
-Thread-Topic: [PATCH][RFC] net/bridge: add basic VEPA support
-Thread-Index: AcoZzGNIi2plXMD8SC2GLFrPuLsDmAAwiOTg
-Message-ID: <0199E0D51A61344794750DC57738F58E6D6AE99C53@GVW1118EXC.americas.hpqcorp.net>
-References: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net>
- <200908081149.27409.arnd@arndb.de>
- <0199E0D51A61344794750DC57738F58E6D6AE99743@GVW1118EXC.americas.hpqcorp.net>
- <200908101707.32751.arnd@arndb.de>
-In-Reply-To: <200908101707.32751.arnd@arndb.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 11 Aug 2009 10:31:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=t8GtW/33jI0uEZcTmXcPJb+mkjLx7DDDAZNCNzbdg8u96Q8EZobkNr05HBu4hHpe3i
+         WiNOUjiz/Zp4NpAmYwwmDEov83TQkR19yX31Ne+jI9qGpFRNPAMUbFZCt/9zPOw/NOVi
+         YYP26ll5XGfFEXy0IigreIITK6bCHgt4H1Sw0=
 MIME-Version: 1.0
+Date: Tue, 11 Aug 2009 20:01:41 +0530
+Message-ID: <f74c922b0908110731ifcf162ai8770f07d7ca537d3@mail.gmail.com>
+Subject: How to get the address of the page structure from the given virtual 
+	address?
+From: "B.Vinai Kumar" <vinaibangala2001@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Subject: Re: [PATCH][RFC] net/bridge: add basic VEPA support
-> 
-> On Monday 10 August 2009, Fischer, Anna wrote:
-> > > Subject: Re: [PATCH][RFC] net/bridge: add basic VEPA support
-> > >
-> > > On Friday 07 August 2009, Paul Congdon (UC Davis) wrote:
-> > > > As I understand the macvlan code, it currently doesn't allow two
-> VMs
-> > > on the
-> > > > same machine to communicate with one another.
-> > >
-> > > There are patches to do that. I think if we add that, there should
-> be
-> > > a way to choose the behavior between either bridging between the
-> > > guests or VEPA.
-> >
-> > If you implement this direct bridging capability between local VMs
-> for
-> > macvlan, then would this not break existing applications that
-> currently
-> > use it? It would be quite a significant change to how macvlan works
-> > today. I guess, ideally, you would want to have macvlan work in
-> > separate modes, e.g. traditional macvlan, bridging, and VEPA.
-> 
-> Right, that's what I meant with my sentence above. I'm not sure
-> if we need to differentiate traditional macvlan and VEPA though.
-> AFAICT, the only difference should be the handling of broadcast
-> and multicast frames returning from the hairpin turn. Since this
-> does not happen with a traditional macvlan, we can always send them
-> to all macvlan ports except the source port.
+Hi List
 
-Yes, if you add a check for the original source port on broadcast/
-multicast delivery, then macvlan would be able to function in
-basic VEPA mode. 
+1) I allocated 8 pages using alloc_pages(GFP_KERNEL, 3). This function
+returns the pointer to the first page's page structure.
+How can I get the page structure address of the remaining 7 pages?
 
-Maybe it might still be worth preserving the old behaviour, and 
-just add an explicit VEPA mode.
-
- 
-> > > > I could imagine a hairpin mode on the adjacent bridge making this
-> > > > possible, but the macvlan code would need to be updated to filter
-> > > > reflected frames so a source did not receive his own packet.
-> > >
-> > > Right, I missed this point so far. I'll follow up with a patch
-> > > to do that.
-> >
-> > Can you maybe point me to the missing patches for macvlan that you
-> > have mentioned in other emails, and the one you mention above?
-> > E.g. enabling multicast distribution and allowing local bridging etc.
-> > I could not find any of those in the archives. Thanks.
-> 
-> The patch from Eric Biederman to allow macvlan to bridge between
-> its slave ports is at
-> 
-> http://kerneltrap.org/mailarchive/linux-netdev/2009/3/9/5125774
-
-Looking through the discussions here, it does not seem as if a decision
-was made to integrate those patches, because they would make the macvlan
-interface behave too much like a bridge. Also, it seems as if there was 
-still a problem with doing multicast/broadcast delivery when enabling
-local VM-to-VM communication. Is that solved by now?
+2) There is a function page_address() which takes the page structure
+as an argument and returns the virtual address of the page
+ that is pointed by that page structure. Is there any method which
+retrives the address of the page structure?
 
 Thanks,
-Anna
+Vinai.
