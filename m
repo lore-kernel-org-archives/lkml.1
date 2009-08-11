@@ -1,89 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbZHKSEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbZHKSFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbZHKSEJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 14:04:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZHKSEI
+	id S1755241AbZHKSFL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 14:05:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbZHKSFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 14:04:08 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:42979 "EHLO e4.ny.us.ibm.com"
+	Tue, 11 Aug 2009 14:05:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34489 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752075AbZHKSEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 14:04:07 -0400
-Date: Tue, 11 Aug 2009 11:04:07 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>, manfred@colorfullife.com,
-       Ihno Krumreich <ihno@suse.de>, Greg KH <gregkh@suse.de>
-Subject: Re: [BUG] race of RCU vs NOHU
-Message-ID: <20090811180407.GD6739@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090807151529.2806b8b4@skybase> <20090807142957.GB6700@linux.vnet.ibm.com> <20090810142535.3e685109@skybase> <20090810150807.GA6791@linux.vnet.ibm.com> <20090811125653.12c35ee8@skybase> <20090811145222.GA6739@linux.vnet.ibm.com> <20090811171751.34ca3b3b@skybase>
+	id S1752350AbZHKSFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 14:05:09 -0400
+Message-ID: <4A81B2C2.3040301@redhat.com>
+Date: Tue, 11 Aug 2009 13:04:50 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
+To: Jan Kara <jack@suse.cz>
+CC: Andi Kleen <andi@firstfloor.org>, Frans Pop <elendil@planet.nl>,
+       Chris Mason <chris.mason@oracle.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: What happened to data=guarded?
+References: <1249934623-15939-1-git-send-email-tytso@mit.edu> <200908111535.37927.elendil@planet.nl> <20090811133721.GD29224@think> <200908111654.38217.elendil@planet.nl> <878whqgyid.fsf@basil.nowhere.org> <20090811153425.GB26070@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20090811153425.GB26070@atrey.karlin.mff.cuni.cz>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090811171751.34ca3b3b@skybase>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 05:17:51PM +0200, Martin Schwidefsky wrote:
-> On Tue, 11 Aug 2009 07:52:22 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > On Tue, Aug 11, 2009 at 12:56:53PM +0200, Martin Schwidefsky wrote:
-> > > On Mon, 10 Aug 2009 08:08:07 -0700
-> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > On Mon, Aug 10, 2009 at 02:25:35PM +0200, Martin Schwidefsky wrote:
-> > > > > On Fri, 7 Aug 2009 07:29:57 -0700
-> > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > 
-> > > > > > On Fri, Aug 07, 2009 at 03:15:29PM +0200, Martin Schwidefsky wrote:
-> > > > > > > Hi Paul,
-> > > > > > > I analysed a dump of a hanging 2.6.30 system and found what I think is
-> > > > > > > a bug of RCU vs NOHZ. There are a number of patches ontop of that
-> > > > > > > kernel but they should be independent of the bug.
-> > > > > > > 
-> > > > > > > The systems has 4 cpus and uses classic RCU. cpus #0, #2 and #3 woke up
-> > > > > > > recently, cpu #1 has been sleeping for 5 minutes, but there is a pending
-> > > > > > > rcu batch. The timer wheel for cpu #1 is empty, it will continue to
-> > > > > > > sleep for NEXT_TIMER_MAX_DELTA ticks.
-> > > > > > 
-> > > > > > Congratulations, Martin!  You have exercised what to date has been a
-> > > > > > theoretical bug identified last year by Manfred Spraul.  The fix is to
-> > > > > > switch from CONFIG_RCU_CLASSIC to CONFIG_RCU_TREE, which was added in
-> > > > > > 2.6.29.
-> > > > > > 
-> > > > > > Of course, if you need to work with an old kernel version, you might
-> > > > > > still need a patch, perhaps for the various -stable versions.  If so,
-> > > > > > please let me know -- otherwise, I will focus forward on CONFIG_RCU_TREE
-> > > > > > rather than backwards on CONFIG_RCU_CLASSIC.
-> > > > > 
-> > > > > SLES11 is 2.6.27 and uses classic RCU. The not-so theoretical bug is
-> > > > > present there and I think it needs to be fixed :-/
-> > > > 
-> > > > I was afraid of that.  ;-)
-> > > > 
-> > > > Given that there are some other theoretical bugs in Classic RCU involving
-> > > > interrupts and CONFIG_NO_HZ, would backporting CONFIG_TREE_RCU make more
-> > > > sense than playing whack-a-mole on Classic RCU bugs?
-> > > 
-> > > Fine with me but I don't know if SuSE/Novell is willing to accept such a
-> > > big change for an existing distribution. I've put Ihno and Greg on Cc.
-> > 
-> > Good point!  While they are thinking about the tradeoff between
-> > whack-a-mole on Classic RCU and backporting CONFIG_TREE_RCU, if I was
-> > to send you a patch backporting CONFIG_TREE_RCU, to exactly which kernel
-> > version(s) should I backport it to?
-> 
-> We found the bug with kernel version 2.6.30 - the kernel on our test systems
-> still use classic RCU. For us it is easy to switch to tree-RCU, no patch
-> required.
+Jan Kara wrote:
+>> Frans Pop <elendil@planet.nl> writes:
+>>
+>>> On Tuesday 11 August 2009, Chris Mason wrote:
+>>>> On Tue, Aug 11, 2009 at 03:35:36PM +0200, Frans Pop wrote:
+>>>>> Somewhat unrelated, but what happened to the data=guarded patches
+>>>>> Chris Mason proposed back in April?
+>>>> I missed 2.6.31 but plan on sending for 2.6.32.  I promised to send
+>>>> along a forward port of the patches a while back, but I finally have
+>>>> one in testing here.  It should go out shortly.
+>>> Good to hear. I've so far stayed with data=ordered as I think I'd prefer 
+>>> data=guarded over data=writeback. I'll certainly give it a try when it's 
+>>> available.
+>> Same here. data=writeback already cost me a few files after crashes here :/
+>   In this regard, data=guarded need not be better than data=writeback.
+> We push out the data in guarded mode as late as in writeback mode
+> (that's where the performance benefit comes from ;). The difference is
+> that we increase i_size only after data are safely on disk so we cannot
+> expose old data.
+>   So security-wise, guarded mode is as safe as ordered mode but in other
+> aspects its more like data=writeback.
 
-Ah!  Could you please send me the test you use?  My tests were
-insufficient to force this problem to happen.
+Yes, I think the people anxiously waiting for data=guarded may be sadly
+surprised at their 0-length files.
 
-							Thanx, Paul
+For those who understand the data=writeback tradeoffs it'll be very
+useful in terms of more consistent results (easily-detectable 0-size or
+short files, vs. randomly corrupted data sprinkled around) but it's not
+going to be "data=ordered, but faster!"
+
+-Eric
+
+> 								Honza
+
