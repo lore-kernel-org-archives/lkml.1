@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbZHKUa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208AbZHKUkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754066AbZHKUa6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 16:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbZHKUa5
+	id S1754208AbZHKUkS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 16:40:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbZHKUkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 16:30:57 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34067 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751720AbZHKUa5 (ORCPT
+	Tue, 11 Aug 2009 16:40:17 -0400
+Received: from ns1.siteground211.com ([209.62.36.12]:34328 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752289AbZHKUkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 16:30:57 -0400
-Date: Mon, 10 Aug 2009 18:10:07 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>, manfred@colorfullife.com
-Subject: Re: [BUG] race of RCU vs NOHU
-Message-ID: <20090810161007.GB1505@ucw.cz>
-References: <20090807151529.2806b8b4@skybase> <20090807142957.GB6700@linux.vnet.ibm.com> <20090810142535.3e685109@skybase>
+	Tue, 11 Aug 2009 16:40:16 -0400
+Date: Tue, 11 Aug 2009 23:40:06 +0300
+From: Felipe Balbi <me@felipebalbi.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Mike Rapoport <mike@compulab.co.il>, me@felipebalbi.com,
+       Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Question about userspace-consumer
+Message-ID: <20090811204006.GA13969@gandalf>
+Reply-To: me@felipebalbi.com
+References: <20090810200553.GB4652@gandalf>
+ <20090810215800.GB4528@sirena.org.uk>
+ <20090811054438.GA7176@gandalf>
+ <4A815F64.8000105@compulab.co.il>
+ <20090811125603.GH24947@sirena.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090810142535.3e685109@skybase>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090811125603.GH24947@sirena.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > I analysed a dump of a hanging 2.6.30 system and found what I think is
-> > > a bug of RCU vs NOHZ. There are a number of patches ontop of that
-> > > kernel but they should be independent of the bug.
-> > > 
-> > > The systems has 4 cpus and uses classic RCU. cpus #0, #2 and #3 woke up
-> > > recently, cpu #1 has been sleeping for 5 minutes, but there is a pending
-> > > rcu batch. The timer wheel for cpu #1 is empty, it will continue to
-> > > sleep for NEXT_TIMER_MAX_DELTA ticks.
-> > 
-> > Congratulations, Martin!  You have exercised what to date has been a
-> > theoretical bug identified last year by Manfred Spraul.  The fix is to
-> > switch from CONFIG_RCU_CLASSIC to CONFIG_RCU_TREE, which was added in
-> > 2.6.29.
-> > 
-> > Of course, if you need to work with an old kernel version, you might
-> > still need a patch, perhaps for the various -stable versions.  If so,
-> > please let me know -- otherwise, I will focus forward on CONFIG_RCU_TREE
-> > rather than backwards on CONFIG_RCU_CLASSIC.
+On Tue, Aug 11, 2009 at 01:56:03PM +0100, Mark Brown wrote:
+> On Tue, Aug 11, 2009 at 03:09:08PM +0300, Mike Rapoport wrote:
+> > Felipe Balbi wrote:
 > 
-> SLES11 is 2.6.27 and uses classic RCU. The not-so theoretical bug is
-> present there and I think it needs to be fixed :-/
+> > > that said, power supply framework and regulator framework seem to be
+> > > well enough for implementing the basic support for SBS-enabled charging
+> > > scheme.
+> 
+> > As far as I understood SBS scheme, the host has very little impact on the
+> > charging process. Most of the charging is handled by Smart Battery and Smart
+> > Battery Charger without any host intervention.
+> 
+> I strongly suspect that in at least some designs the battery charger
+> itself will be at least partially dumb and the battery charger part of
+> the spec done by software running on the host CPU - there's examples in
+> the spec which seem to back that up.
 
-Plus... if config_rcu_classic is known buggy  (and you are not willing
-to fix it),  it should be disabled (or made depend on !CONFIG_NOHZ, or
-maybe made depend on CONFIG_BROKEN).
+and that's what I was talking about. I'll reply more to the other
+subthread.
 
-Ugh. rcu_classic  does not seem to have help text, and I'm running
-								known
-								bad
-								code
-								here
-								:-(.
-
-
-								Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+balbi
