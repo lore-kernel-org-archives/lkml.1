@@ -1,227 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbZHKMGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbZHKMHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbZHKMGy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZHKMGw
+	id S1753438AbZHKMHa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbZHKMH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:06:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38853 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753208AbZHKMGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:06:47 -0400
-Date: Tue, 11 Aug 2009 14:19:04 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/2] export cpu_tlbstate to modules
-Message-ID: <20090811111903.GA3809@redhat.com>
-References: <cover.1249930169.git.mst@redhat.com> <20090810185302.GB13924@redhat.com> <4A80979E.3080204@zytor.com> <20090810220613.GA17099@redhat.com> <4A809E32.6060206@zytor.com>
+	Tue, 11 Aug 2009 08:07:26 -0400
+Received: from mailhost11.gawab.com ([66.220.20.11]:47883 "HELO
+	info12.gawab.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753366AbZHKMHW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 08:07:22 -0400
+X-Trusted: Whitelisted
+From: Al Boldi <a1426z@gawab.com>
+To: Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH, RFC] ext3: Update Kconfig description of EXT3_DEFAULTS_TO_ORDERED
+Date: Tue, 11 Aug 2009 14:41:01 +0300
+User-Agent: KMail/1.5
+Cc: "Theodore Ts'o" <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+References: <1249934623-15939-1-git-send-email-tytso@mit.edu> <200908110649.20277.a1426z@gawab.com> <20090811093316.GA23898@duck.suse.cz>
+In-Reply-To: <20090811093316.GA23898@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A809E32.6060206@zytor.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200908111441.01832.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jan Kara wrote:
+> On Tue 11-08-09 06:49:20, Al Boldi wrote:
+> > Theodore Ts'o wrote:
+> > > +	  "data=ordered" mode can also result in major performance
+> > > +	  problems, including seconds-long delays before an fsync()
+> > > +	  call returns.	 For details, see:
+> > > +
+> > > +	  http://ext4.wiki.kernel.org/index.php/Ext3_data_mode_tradeoffs
+> >
+> > Why isn't the fsync problem fixable?
+>
+>   Because it's quite deep in the design of JBD: All the modifications done
+> to a filesystem go to one transactions. When the transaction grows big
+> enough or old enough, we commit the transaction, which means we write all
+> the metadata to the journal and all the ordered data to their final
+> location on disk. If you do fsync(), you have to wait for a transaction
+> commit with your data to finish, so that you are guaranteed a consistent
+> state of metadata is on disk. But when there is heavy background writing,
+> it means there's a lot of data you have to write out and wait for... It's
+> not easy to work around this - naively, you might want to separate out just
+> the writes you care about for fsync() but that's not easily possible
+> because bitmaps and group descriptors are modified by other writes as well.
 
-Subject: [PATCH] mm: export use_mm/unuse_mm to modules
+Ok, I remember now, that was the konqueror deadlocks problem.  I think making 
+the fsync soft in that case would yield a better result than turning 
+ordered-mode off completely.
 
-vhost net module wants to do copy to/from user from a kernel thread,
-which needs use_mm (like what fs/aio has).  Move that into mm/ and
-export to modules.
+BTW: did you get around fixing the ordered-mode redundant write out problem?
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
----
 
-On Mon, Aug 10, 2009 at 03:24:50PM -0700, H. Peter Anvin wrote:
-> On 08/10/2009 03:06 PM, Michael S. Tsirkin wrote:
-> >> Wouldn't it be a *lot* better to move use_mm() from fs/aio.c into common
-> >> code, and export that instead?
-> > 
-> > That's easy too. What would a good place for it be?
-> 
-> Somewhere in mm/, presumably.  When in doubt, make it a new file...
-> 	
-> 	-hpa
+Thanks!
 
-Like this? Ack?
-
- fs/aio.c                    |   47 +----------------------------------
- include/linux/mmu_context.h |    9 ++++++
- mm/Makefile                 |    2 +-
- mm/mmu_context.c            |   58 +++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 69 insertions(+), 47 deletions(-)
- create mode 100644 include/linux/mmu_context.h
- create mode 100644 mm/mmu_context.c
-
-diff --git a/fs/aio.c b/fs/aio.c
-index d065b2c..fc21c23 100644
---- a/fs/aio.c
-+++ b/fs/aio.c
-@@ -24,6 +24,7 @@
- #include <linux/file.h>
- #include <linux/mm.h>
- #include <linux/mman.h>
-+#include <linux/mmu_context.h>
- #include <linux/slab.h>
- #include <linux/timer.h>
- #include <linux/aio.h>
-@@ -34,7 +35,6 @@
- 
- #include <asm/kmap_types.h>
- #include <asm/uaccess.h>
--#include <asm/mmu_context.h>
- 
- #if DEBUG > 1
- #define dprintk		printk
-@@ -595,51 +595,6 @@ static struct kioctx *lookup_ioctx(unsigned long ctx_id)
- }
- 
- /*
-- * use_mm
-- *	Makes the calling kernel thread take on the specified
-- *	mm context.
-- *	Called by the retry thread execute retries within the
-- *	iocb issuer's mm context, so that copy_from/to_user
-- *	operations work seamlessly for aio.
-- *	(Note: this routine is intended to be called only
-- *	from a kernel thread context)
-- */
--static void use_mm(struct mm_struct *mm)
--{
--	struct mm_struct *active_mm;
--	struct task_struct *tsk = current;
--
--	task_lock(tsk);
--	active_mm = tsk->active_mm;
--	atomic_inc(&mm->mm_count);
--	tsk->mm = mm;
--	tsk->active_mm = mm;
--	switch_mm(active_mm, mm, tsk);
--	task_unlock(tsk);
--
--	mmdrop(active_mm);
--}
--
--/*
-- * unuse_mm
-- *	Reverses the effect of use_mm, i.e. releases the
-- *	specified mm context which was earlier taken on
-- *	by the calling kernel thread
-- *	(Note: this routine is intended to be called only
-- *	from a kernel thread context)
-- */
--static void unuse_mm(struct mm_struct *mm)
--{
--	struct task_struct *tsk = current;
--
--	task_lock(tsk);
--	tsk->mm = NULL;
--	/* active_mm is still 'mm' */
--	enter_lazy_tlb(mm, tsk);
--	task_unlock(tsk);
--}
--
--/*
-  * Queue up a kiocb to be retried. Assumes that the kiocb
-  * has already been marked as kicked, and places it on
-  * the retry run list for the corresponding ioctx, if it
-diff --git a/include/linux/mmu_context.h b/include/linux/mmu_context.h
-new file mode 100644
-index 0000000..70fffeb
---- /dev/null
-+++ b/include/linux/mmu_context.h
-@@ -0,0 +1,9 @@
-+#ifndef _LINUX_MMU_CONTEXT_H
-+#define _LINUX_MMU_CONTEXT_H
-+
-+struct mm_struct;
-+
-+void use_mm(struct mm_struct *mm);
-+void unuse_mm(struct mm_struct *mm);
-+
-+#endif
-diff --git a/mm/Makefile b/mm/Makefile
-index 5e0bd64..46c3892 100644
---- a/mm/Makefile
-+++ b/mm/Makefile
-@@ -11,7 +11,7 @@ obj-y			:= bootmem.o filemap.o mempool.o oom_kill.o fadvise.o \
- 			   maccess.o page_alloc.o page-writeback.o pdflush.o \
- 			   readahead.o swap.o truncate.o vmscan.o shmem.o \
- 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
--			   page_isolation.o mm_init.o $(mmu-y)
-+			   page_isolation.o mm_init.o mmu_context.o $(mmu-y)
- obj-y += init-mm.o
- 
- obj-$(CONFIG_PROC_PAGE_MONITOR) += pagewalk.o
-diff --git a/mm/mmu_context.c b/mm/mmu_context.c
-new file mode 100644
-index 0000000..9989c2f
---- /dev/null
-+++ b/mm/mmu_context.c
-@@ -0,0 +1,58 @@
-+/* Copyright (C) 2009 Red Hat, Inc.
-+ *
-+ * See ../COPYING for licensing terms.
-+ */
-+
-+#include <linux/mm.h>
-+#include <linux/mmu_context.h>
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+
-+#include <asm/mmu_context.h>
-+
-+/*
-+ * use_mm
-+ *	Makes the calling kernel thread take on the specified
-+ *	mm context.
-+ *	Called by the retry thread execute retries within the
-+ *	iocb issuer's mm context, so that copy_from/to_user
-+ *	operations work seamlessly for aio.
-+ *	(Note: this routine is intended to be called only
-+ *	from a kernel thread context)
-+ */
-+void use_mm(struct mm_struct *mm)
-+{
-+	struct mm_struct *active_mm;
-+	struct task_struct *tsk = current;
-+
-+	task_lock(tsk);
-+	active_mm = tsk->active_mm;
-+	atomic_inc(&mm->mm_count);
-+	tsk->mm = mm;
-+	tsk->active_mm = mm;
-+	switch_mm(active_mm, mm, tsk);
-+	task_unlock(tsk);
-+
-+	mmdrop(active_mm);
-+}
-+EXPORT_SYMBOL_GPL(use_mm);
-+
-+/*
-+ * unuse_mm
-+ *	Reverses the effect of use_mm, i.e. releases the
-+ *	specified mm context which was earlier taken on
-+ *	by the calling kernel thread
-+ *	(Note: this routine is intended to be called only
-+ *	from a kernel thread context)
-+ */
-+void unuse_mm(struct mm_struct *mm)
-+{
-+	struct task_struct *tsk = current;
-+
-+	task_lock(tsk);
-+	tsk->mm = NULL;
-+	/* active_mm is still 'mm' */
-+	enter_lazy_tlb(mm, tsk);
-+	task_unlock(tsk);
-+}
-+EXPORT_SYMBOL_GPL(unuse_mm);
--- 
-1.6.2.5
+--
+Al
 
