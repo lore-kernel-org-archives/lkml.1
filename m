@@ -1,194 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbZHKSMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbZHKSQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755378AbZHKSMJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 14:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbZHKSMI
+	id S1754907AbZHKSQm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 14:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbZHKSQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 14:12:08 -0400
-Received: from mga11.intel.com ([192.55.52.93]:6446 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754922AbZHKSMF convert rfc822-to-8bit (ORCPT
+	Tue, 11 Aug 2009 14:16:41 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:38369 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753441AbZHKSQk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 14:12:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,361,1246863600"; 
-   d="scan'208";a="715852644"
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: "'Tejun Heo'" <tj@kernel.org>
-CC: "Luck, Tony" <tony.luck@intel.com>,
-       "'lkml'" <linux-kernel@vger.kernel.org>,
-       "'linux-arch@vger.kernel.org'" <linux-arch@vger.kernel.org>,
-       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>
-Date: Tue, 11 Aug 2009 11:12:02 -0700
-Subject: RE: [RFC PATCH] ia64: convert to dynamic percpu allocator
-Thread-Topic: [RFC PATCH] ia64: convert to dynamic percpu allocator
-Thread-Index: AcoMKiKhL+SGS8FAQFirzvFTFc57JgOf5JoQ
-Message-ID: <A6AD88C3F2289247BE726C37303E1EB8B3A85355@orsmsx505.amr.corp.intel.com>
-References: <4A65B0AB.5000608@kernel.org>
- <A6AD88C3F2289247BE726C37303E1EB8B097D4C5@orsmsx505.amr.corp.intel.com>
- <4A663DC7.4060600@kernel.org>
- <A6AD88C3F2289247BE726C37303E1EB8B0A9115B@orsmsx505.amr.corp.intel.com>
- <4A695897.2020902@kernel.org>
-In-Reply-To: <4A695897.2020902@kernel.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 11 Aug 2009 14:16:40 -0400
+Message-ID: <4A81B587.8070902@skyrush.com>
+Date: Tue, 11 Aug 2009 12:16:39 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090722)
 MIME-Version: 1.0
+To: Artur Skawina <art.08.09@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, gregkh@suse.de
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Moving tty->stopped logic to ldisc (pty: fix data loss when stopped
+ (^S/^Q))
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------040405070500050403010609"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Yu, Fenghua wrote:
->
->> After cloning from
->> git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git, kernel
->> built with CONFIG_DISCONTIGMEM=y boots ok.
->>
->> After pulling from review-ia64, kernel built with
->> CONFIG_DISCONTIGMEM=y can not boot on ia64. After loading kernel and
->> initrd, system hangs and doesn't show anything on serial port.
->
->Heh, I didn't really expect it to work that easily either.  The code
->builds but is completely untested (I can't test them).  Can you try to
->track it down?  Serial console should be up and running at that point,
->no?
->
->Thanks.
+This is a multi-part message in MIME format.
+--------------040405070500050403010609
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-IA64 kernel boots hit this in mm/percpu.c
-BUG_ON(ai->unit_size < size_sum);
-ai->unit_size is PERCPU_PAGE_SIZE which is 64K on IA64. size_sum is relatively smaller than 64K.
+[Please include my email address in replies]
 
-Will you define PERCPU_DYNAMIC_RESERVE and PERCPU_MODULE_RESERVE as PAGE_SIZE or the bigger one between the current definition and PAGE_SIZE?
+Hi all,
 
-Even with the above PAGE_SIZE changes, the kernel still reports warning from 952: WARN_ON(chunk->immutable) and then panic.
+This is in regard to the problem that the recent patch ("pty: fix data
+loss when stopped (^S/^Q)") fixes.  The issue is something I've been
+looking at recently as well after noticing (I noticed it first as loss
+of echoes, since I was re-testing what my echo buffer code originally
+fixed).
 
-Calibrating delay loop... 1593.34 BogoMIPS (lpj=3186688)
-------------[ cut here ]------------
-WARNING: at mm/percpu.c:952 pcpu_alloc+0x610/0xfe0()
-Modules linked in:
+Like mentioned in the other thread on this topic, the thought also
+occurred to me that the "tty stopped" logic should be in the ldisc
+rather in the driver code (console, pty, etc.).  Also, upon digging
+further into the issue, even though the fix applied does resume previous
+behavior, there are some remaining issues that it does not address and
+that have existed for a while:
 
-Call Trace:
- [<a0000001000162e0>] show_stack+0x40/0xa0
-                                sp=a000000100c7fc30 bsp=a000000100c711f0
- [<a000000100016370>] dump_stack+0x30/0x60
-                                sp=a000000100c7fe00 bsp=a000000100c711d8
- [<a00000010009b340>] warn_slowpath_common+0xc0/0x100
-                                sp=a000000100c7fe00 bsp=a000000100c711a0
- [<a00000010009b3b0>] warn_slowpath_null+0x30/0x60
-                                sp=a000000100c7fe00 bsp=a000000100c71178
- [<a00000010018d3f0>] pcpu_alloc+0x610/0xfe0
-                                sp=a000000100c7fe00 bsp=a000000100c710e0
- [<a00000010018de50>] __alloc_percpu+0x30/0x60
-                                sp=a000000100c7fe10 bsp=a000000100c710b8
- [<a00000010044a180>] __percpu_counter_init+0x60/0x120
-                                sp=a000000100c7fe10 bsp=a000000100c71090
- [<a000000100ac1110>] mmap_init+0x30/0x60
-                                sp=a000000100c7fe20 bsp=a000000100c71078
- [<a000000100ab6420>] proc_caches_init+0x1a0/0x1c0
-                                sp=a000000100c7fe20 bsp=a000000100c71060
- [<a000000100aa1520>] start_kernel+0x7e0/0x8c0
-                                sp=a000000100c7fe20 bsp=a000000100c70fe0
- [<a00000010085be60>] _start+0x760/0x780
-                                sp=a000000100c7fe30 bsp=a000000100c70f40
----[ end trace 4eaa2a86a8e2da22 ]---
-------------[ cut here ]------------
-WARNING: at mm/vmalloc.c:106 vmap_page_range_noflush+0x3d0/0x460()
-Modules linked in:
+1) If the tty->stopped state changes during a write (either regular or
+echo output), the pty can end up throwing character away.  This is a
+small window of opportunity, but there nonetheless.
 
-Call Trace:
- [<a0000001000162e0>] show_stack+0x40/0xa0
-                                sp=a000000100c7fc40 bsp=a000000100c71300
- [<a000000100016370>] dump_stack+0x30/0x60
-                                sp=a000000100c7fe10 bsp=a000000100c712e8
- [<a00000010009b340>] warn_slowpath_common+0xc0/0x100
-                                sp=a000000100c7fe10 bsp=a000000100c712b0
- [<a00000010009b3b0>] warn_slowpath_null+0x30/0x60
-                                sp=a000000100c7fe10 bsp=a000000100c71288
- [<a00000010015f470>] vmap_page_range_noflush+0x3d0/0x460
-                                sp=a000000100c7fe10 bsp=a000000100c71210
- [<a00000010015f590>] vmap_page_range+0x30/0x60
-                                sp=a000000100c7fe10 bsp=a000000100c711d0
- [<a00000010015f610>] map_vm_area+0x50/0xa0
-                                sp=a000000100c7fe10 bsp=a000000100c711a0
- [<a00000010015f950>] __vmalloc_area_node+0x2f0/0x3a0
-                                sp=a000000100c7fe10 bsp=a000000100c71158
- [<a00000010015fae0>] __vmalloc_node+0xe0/0x120
-                                sp=a000000100c7fe20 bsp=a000000100c71118
- [<a00000010015fe60>] __vmalloc+0x40/0x60
-                                sp=a000000100c7fe20 bsp=a000000100c710e8
- [<a000000100ac0350>] alloc_large_system_hash+0x2f0/0x4e0
-                                sp=a000000100c7fe20 bsp=a000000100c71088
- [<a000000100ac58b0>] vfs_caches_init+0x150/0x280
-                                sp=a000000100c7fe20 bsp=a000000100c71060
- [<a000000100aa1540>] start_kernel+0x800/0x8c0
-                                sp=a000000100c7fe20 bsp=a000000100c70fe0
- [<a00000010085be60>] _start+0x760/0x780
-                                sp=a000000100c7fe30 bsp=a000000100c70f40
----[ end trace 4eaa2a86a8e2da23 ]---
-Dentry cache hash table entries: 1048576 (order: 7, 8388608 bytes)
-Inode-cache hash table entries: 1048576 (order: 7, 8388608 bytes)
-Mount-cache hash table entries: 4096
-Unable to handle kernel paging request at virtual address 00d0000000000000
-swapper[0]: Oops 8813272891392 [1]
-Modules linked in:
+2) Since the N_TTY ldisc relies on a reliable amount of "write room"
+during output operations (to both avoid similar loss of chars and to
+ensure certain char groupings, like "^C", stay together atomically)
+other calls to ttyp->ops->write outside the ldisc (e.g.
+tty_write_message in tty_io.c or send_prio_char in tty_ioctl.c) that
+happen in the middle of an ldisc write are problematic since they could
+cause a reduction of write room without the knowledge of N_TTY.
 
-Pid: 0, CPU 0, comm:              swapper
-psr : 00001010084a2018 ifs : 800000000000038c ip  : [<a0000001001840e0>]    Tain
-ted: G        W  (2.6.31-rc5)
-ip is at kmem_cache_alloc+0xc0/0x1a0
-unat: 0000000000000000 pfs : 000000000000040b rsc : 0000000000000003
-rnat: a000000101362dc8 bsps: a000000101363f6c pr  : 656960155aa6a659
-ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70433f
-csd : 0930ffff00078000 ssd : 0930ffff00078000
-b0  : a0000001001c6290 b6  : a0000001002fefe0 b7  : a000000100195b00
-f6  : 0fff592492492483a4000 f7  : 0ffe7cd08000000000000
-f8  : 1000f8000000000000000 f9  : 10008e000000000000000
-f10 : 1000592492492483a4000 f11 : 1003e0000000000000049
-r1  : a000000101547240 r2  : a000000101246438 r3  : a0000001011cacf0
-r8  : 0000000000000000 r9  : 0000000000000000 r10 : a000000100c70ee4
-r11 : 00000000003fffff r12 : a000000100c7fe20 r13 : a000000100c70000
-r14 : 00d0000000000000 r15 : a00000010124644c r16 : a000000100db4f58
-r17 : a000000101347b70 r18 : 656960155aa6a659 r19 : a000000100a004c0
-r20 : 0000000000000000 r21 : e00000018012c098 r22 : 0000000000000006
-r23 : 0000000000000008 r24 : 0000000000000370 r25 : e000000180130010
-r26 : 0000000000000020 r27 : a000000100cb0200 r28 : a000000101347740
-r29 : 0000000080000000 r30 : 00000000000000c1 r31 : a000000101246340
+I have attached a patch for comment which removes the checks for
+tty->stopped from pty.c and vt.c (covering the pty and console cases)
+and moves these checks to the ldisc (only N_TTY for now).  I also use
+the output lock (a finer-grained lock than the write lock that can be
+used in both write and receive paths) to protect the write room in the
+cases outside the ldisc state above.  Ultimately, we'd want to either
+make these locks only happen if ldisc=N_TTY or have all ldiscs use it, I
+would think (comments?).
 
-Call Trace:
- [<a0000001000162e0>] show_stack+0x40/0xa0
-                                sp=a000000100c7f9f0 bsp=a000000100c712a0
- [<a000000100016bf0>] show_regs+0x850/0x8a0
-                                sp=a000000100c7fbc0 bsp=a000000100c71248
- [<a00000010003a170>] die+0x1b0/0x2c0
-                                sp=a000000100c7fbc0 bsp=a000000100c71200
- [<a000000100064570>] ia64_do_page_fault+0x8d0/0xa40
-                                sp=a000000100c7fbc0 bsp=a000000100c711a8
- [<a00000010000c780>] ia64_native_leave_kernel+0x0/0x270
-                                sp=a000000100c7fc50 bsp=a000000100c711a8
- [<a0000001001840e0>] kmem_cache_alloc+0xc0/0x1a0
-                                sp=a000000100c7fe20 bsp=a000000100c71148
- [<a0000001001c6290>] alloc_vfsmnt+0x30/0x2e0
-                                sp=a000000100c7fe20 bsp=a000000100c71108
- [<a000000100197450>] vfs_kern_mount+0x30/0x1a0
-                                sp=a000000100c7fe20 bsp=a000000100c710c8
- [<a000000100197600>] kern_mount_data+0x40/0x60
-                                sp=a000000100c7fe20 bsp=a000000100c710a0
- [<a000000100ac6970>] bdev_cache_init+0xb0/0x140
-                                sp=a000000100c7fe20 bsp=a000000100c71088
- [<a000000100ac59a0>] vfs_caches_init+0x240/0x280
-                                sp=a000000100c7fe20 bsp=a000000100c71060
- [<a000000100aa1540>] start_kernel+0x800/0x8c0
-                                sp=a000000100c7fe20 bsp=a000000100c70fe0
- [<a00000010085be60>] _start+0x760/0x780
-                                sp=a000000100c7fe30 bsp=a000000100c70f40
-Disabling lock debugging due to kernel taint
-Kernel panic - not syncing: Attempted to kill the idle task!
+						-Thanks, Joe
 
-Thanks.
+--------------040405070500050403010609
+Content-Type: text/plain;
+ name="tty_move_tty_stopped_logic_to_ldisc.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="tty_move_tty_stopped_logic_to_ldisc.patch"
 
--Fenghua
+diff -Nurp a/drivers/char/n_tty.c b/drivers/char/n_tty.c
+--- a/drivers/char/n_tty.c	2009-08-11 11:28:46.352996327 -0600
++++ b/drivers/char/n_tty.c	2009-08-11 11:30:05.152996397 -0600
+@@ -366,6 +366,9 @@ static int process_output(unsigned char 
+ {
+ 	int	space, retval;
+ 
++	if (tty->stopped)
++		return -1;
++
+ 	mutex_lock(&tty->output_lock);
+ 
+ 	space = tty_write_room(tty);
+@@ -404,6 +407,9 @@ static ssize_t process_output_block(stru
+ 	int 	i;
+ 	const unsigned char *cp;
+ 
++	if (tty->stopped)
++		return 0;
++
+ 	mutex_lock(&tty->output_lock);
+ 
+ 	space = tty_write_room(tty);
+@@ -487,7 +493,7 @@ static void process_echoes(struct tty_st
+ 	unsigned char c;
+ 	unsigned char *cp, *buf_end;
+ 
+-	if (!tty->echo_cnt)
++	if (!tty->echo_cnt || tty->stopped)
+ 		return;
+ 
+ 	mutex_lock(&tty->output_lock);
+@@ -1965,7 +1971,11 @@ static ssize_t n_tty_write(struct tty_st
+ 				tty->ops->flush_chars(tty);
+ 		} else {
+ 			while (nr > 0) {
++				if (tty->stopped)
++					break;
++				mutex_lock(&tty->output_lock);
+ 				c = tty->ops->write(tty, b, nr);
++				mutex_unlock(&tty->output_lock);
+ 				if (c < 0) {
+ 					retval = c;
+ 					goto break_out;
+diff -Nurp a/drivers/char/pty.c b/drivers/char/pty.c
+--- a/drivers/char/pty.c	2009-08-11 11:33:03.603031387 -0600
++++ b/drivers/char/pty.c	2009-08-11 11:33:15.702997374 -0600
+@@ -115,9 +115,6 @@ static int pty_write(struct tty_struct *
+ 	struct tty_struct *to = tty->link;
+ 	int c;
+ 
+-	if (tty->stopped)
+-		return 0;
+-
+ 	/* This isn't locked but our 8K is quite sloppy so no
+ 	   big deal */
+ 
+@@ -144,8 +141,6 @@ static int pty_write(struct tty_struct *
+ 
+ static int pty_write_room(struct tty_struct *tty)
+ {
+-	if (tty->stopped)
+-		return 0;
+ 	return pty_space(tty->link);
+ }
+ 
+diff -Nurp a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+--- a/drivers/char/tty_io.c	2009-08-11 11:29:16.312996885 -0600
++++ b/drivers/char/tty_io.c	2009-08-11 11:30:05.242984105 -0600
+@@ -1020,8 +1020,11 @@ void tty_write_message(struct tty_struct
+ 	lock_kernel();
+ 	if (tty) {
+ 		mutex_lock(&tty->atomic_write_lock);
+-		if (tty->ops->write && !test_bit(TTY_CLOSING, &tty->flags))
++		if (tty->ops->write && !test_bit(TTY_CLOSING, &tty->flags)) {
++			mutex_lock(&tty->output_lock);
+ 			tty->ops->write(tty, msg, strlen(msg));
++			mutex_unlock(&tty->output_lock);
++		}
+ 		tty_write_unlock(tty);
+ 	}
+ 	unlock_kernel();
+diff -Nurp a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
+--- a/drivers/char/tty_ioctl.c	2009-08-11 11:29:20.582997095 -0600
++++ b/drivers/char/tty_ioctl.c	2009-08-11 11:30:05.252996746 -0600
+@@ -893,7 +893,9 @@ static int send_prio_char(struct tty_str
+ 
+ 	if (was_stopped)
+ 		start_tty(tty);
++	mutex_lock(&tty->output_lock);
+ 	tty->ops->write(tty, &ch, 1);
++	mutex_unlock(&tty->output_lock);
+ 	if (was_stopped)
+ 		stop_tty(tty);
+ 	tty_write_unlock(tty);
+diff -Nurp a/drivers/char/vt.c b/drivers/char/vt.c
+--- a/drivers/char/vt.c	2009-08-11 11:29:04.212996397 -0600
++++ b/drivers/char/vt.c	2009-08-11 11:30:05.202991508 -0600
+@@ -2149,7 +2149,7 @@ static int do_con_write(struct tty_struc
+ 
+ 	param.vc = vc;
+ 
+-	while (!tty->stopped && count) {
++	while (count) {
+ 		int orig = *buf;
+ 		c = orig;
+ 		buf++;
+@@ -2673,8 +2673,6 @@ static int con_put_char(struct tty_struc
+ 
+ static int con_write_room(struct tty_struct *tty)
+ {
+-	if (tty->stopped)
+-		return 0;
+ 	return 32768;		/* No limit, really; we're not buffering */
+ }
+ 
+
+--------------040405070500050403010609--
