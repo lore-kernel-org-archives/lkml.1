@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbZHKTmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932122AbZHKToO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197AbZHKTmi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 15:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbZHKTmh
+	id S932122AbZHKToO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 15:44:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbZHKToN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 15:42:37 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:33473 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753883AbZHKTmh (ORCPT
+	Tue, 11 Aug 2009 15:44:13 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:34614 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754332AbZHKToM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 15:42:37 -0400
-Date: Tue, 11 Aug 2009 21:46:22 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jgarzik@pobox.com, davem@redhat.com
-Subject: [PATCH] 8139cp : balance dma_map_single vs dma_unmap_single pair
-Message-ID: <20090811194622.GA4268@electric-eye.fr.zoreil.com>
-References: <c4e36d110908110621o75ff063ex6d42570ce635a243@mail.gmail.com>
+	Tue, 11 Aug 2009 15:44:12 -0400
+Message-ID: <4A81C9F4.4070000@nokia.com>
+Date: Tue, 11 Aug 2009 22:43:48 +0300
+From: Luciano Coelho <luciano.coelho@nokia.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c4e36d110908110621o75ff063ex6d42570ce635a243@mail.gmail.com>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "ext John W. Linville" <linville@tuxdriver.com>
+CC: ext Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] wl1271: fix compiler warnings on 64 bit archs
+References: <1249981107-21746-1-git-send-email-luciano.coelho@nokia.com> <20090811200746.cde6aed9.sfr@canb.auug.org.au> <4A81BB47.2020607@nokia.com> <20090811191518.GI2634@tuxdriver.com>
+In-Reply-To: <20090811191518.GI2634@tuxdriver.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Aug 2009 19:43:52.0410 (UTC) FILETIME=[0DF95BA0:01CA1ABC]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The driver always:
-1. allocate cp->rx_buf_sz + NET_IP_ALIGN
-2. map cp->rx_buf_sz
+ext John W. Linville wrote:
+> On Tue, Aug 11, 2009 at 09:41:11PM +0300, Luciano Coelho wrote:
+>   
+>> Thanks! I didn't know about the z length modifier for printf (everyday  
+>> learning something new!), I should have checked the manpage.  I'll fix  
+>> this and send v2 of my patch.
+>>     
+>
+> I've got it fixed-up already...
+>   
 
-Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
----
- drivers/net/8139cp.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+Thanks, I noticed that it was already fixed in wireless-next after I had 
+already sent v2.  Sorry for the trouble.
 
-diff --git a/drivers/net/8139cp.c b/drivers/net/8139cp.c
-index 07919d0..4a8995a 100644
---- a/drivers/net/8139cp.c
-+++ b/drivers/net/8139cp.c
-@@ -515,7 +515,7 @@ rx_status_loop:
- 		dma_addr_t mapping;
- 		struct sk_buff *skb, *new_skb;
- 		struct cp_desc *desc;
--		unsigned buflen;
-+		const unsigned buflen = cp->rx_buf_sz;
- 
- 		skb = cp->rx_skb[rx_tail];
- 		BUG_ON(!skb);
-@@ -549,8 +549,7 @@ rx_status_loop:
- 			pr_debug("%s: rx slot %d status 0x%x len %d\n",
- 			       dev->name, rx_tail, status, len);
- 
--		buflen = cp->rx_buf_sz + NET_IP_ALIGN;
--		new_skb = netdev_alloc_skb(dev, buflen);
-+		new_skb = netdev_alloc_skb(dev, buflen + NET_IP_ALIGN);
- 		if (!new_skb) {
- 			dev->stats.rx_dropped++;
- 			goto rx_next;
 -- 
-1.6.2.5
+Cheers,
+Luca.
 
