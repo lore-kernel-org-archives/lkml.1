@@ -1,107 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbZHKSqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbZHKSqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbZHKSqM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 14:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbZHKSqL
+	id S1755395AbZHKSqe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 14:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbZHKSqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 14:46:11 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:59027 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753144AbZHKSqK (ORCPT
+	Tue, 11 Aug 2009 14:46:33 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:26197 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755214AbZHKSqc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 14:46:10 -0400
-Date: Tue, 11 Aug 2009 14:36:06 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: davem@davemloft.net
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: pull request: wireless-2.6 2009-08-11
-Message-ID: <20090811183605.GG2634@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 11 Aug 2009 14:46:32 -0400
+Date: Tue, 11 Aug 2009 11:45:18 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Luciano Coelho <luciano.coelho@nokia.com>
+Cc: ext Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linville@tuxdriver.com" <linville@tuxdriver.com>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] wl1271: fix compiler warnings on 64 bit archs
+Message-Id: <20090811114518.d45d4006.randy.dunlap@oracle.com>
+In-Reply-To: <4A81BB47.2020607@nokia.com>
+References: <1249981107-21746-1-git-send-email-luciano.coelho@nokia.com>
+	<20090811200746.cde6aed9.sfr@canb.auug.org.au>
+	<4A81BB47.2020607@nokia.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt001.oracle.com [141.146.116.10]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010203.4A81BC77.0040:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave,
+On Tue, 11 Aug 2009 21:41:11 +0300 Luciano Coelho wrote:
 
-Here are a couple more minor fixes intended for 2.6.31.  Hopefully we
-are winding-down!
+> ext Stephen Rothwell wrote:
+> > Hi Luciano,
+> >
+> > On Tue, 11 Aug 2009 11:58:27 +0300 Luciano Coelho <luciano.coelho@nokia.com> wrote:
+> >   
+> >> +++ b/drivers/net/wireless/wl12xx/wl1271_boot.c
+> >> @@ -100,8 +100,8 @@ static int wl1271_boot_upload_firmware_chunk(struct wl1271 *wl, void *buf,
+> >>  
+> >>  	wl1271_debug(DEBUG_BOOT, "starting firmware upload");
+> >>  
+> >> -	wl1271_debug(DEBUG_BOOT, "fw_data_len %d chunk_size %d", fw_data_len,
+> >> -		CHUNK_SIZE);
+> >> +	wl1271_debug(DEBUG_BOOT, "fw_data_len %d chunk_size %d",
+> >> +		     (u32) fw_data_len, CHUNK_SIZE);
+> >>     
+> >
+> > fw_data_len is a size_t and so should be printed with %zd.
+> >
+> >   
+> >> @@ -148,7 +148,7 @@ static int wl1271_boot_upload_firmware_chunk(struct wl1271 *wl, void *buf,
+> >>  	addr = dest + chunk_num * CHUNK_SIZE;
+> >>  	p = buf + chunk_num * CHUNK_SIZE;
+> >>  	wl1271_debug(DEBUG_BOOT, "uploading fw last chunk (%d B) 0x%p to 0x%x",
+> >> -		     fw_data_len % CHUNK_SIZE, p, addr);
+> >> +		     (u32) fw_data_len % CHUNK_SIZE, p, addr);
+> >>     
+> >
+> > ditto.
+> >   
+> 
+> Thanks! I didn't know about the z length modifier for printf (everyday 
+> learning something new!), I should have checked the manpage.  I'll fix 
+> this and send v2 of my patch.
 
-Please let me know if there are problems!
+man page is fine, but you can also check (in the kernel source tree)
+Documentation/printk-formats.txt
 
-John
 
 ---
-
-Individual patches are available here:
-
-	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
-
----
-
-The following changes since commit 973507cb8610d4c84f090d5f1f0ca54fa0559d27:
-  roel kluin (1):
-        mlx4_en: Fix read buffer overflow in mlx4_en_complete_rx_desc()
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
-
-Christian Lamparter (1):
-      ar9170usb: fix spurious firmware related message
-
-Dan Carpenter (1):
-      ar9170: fix read & write outside array bounds
-
- drivers/net/wireless/ath/ar9170/main.c |    5 +++--
- drivers/net/wireless/ath/ar9170/usb.c  |    6 +++++-
- 2 files changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/wireless/ath/ar9170/main.c b/drivers/net/wireless/ath/ar9170/main.c
-index 9d38cf6..88c3d85 100644
---- a/drivers/net/wireless/ath/ar9170/main.c
-+++ b/drivers/net/wireless/ath/ar9170/main.c
-@@ -1967,13 +1967,14 @@ static int ar9170_conf_tx(struct ieee80211_hw *hw, u16 queue,
- 	int ret;
- 
- 	mutex_lock(&ar->mutex);
--	if ((param) && !(queue > __AR9170_NUM_TXQ)) {
-+	if (queue < __AR9170_NUM_TXQ) {
- 		memcpy(&ar->edcf[ar9170_qos_hwmap[queue]],
- 		       param, sizeof(*param));
- 
- 		ret = ar9170_set_qos(ar);
--	} else
-+	} else {
- 		ret = -EINVAL;
-+	}
- 
- 	mutex_unlock(&ar->mutex);
- 	return ret;
-diff --git a/drivers/net/wireless/ath/ar9170/usb.c b/drivers/net/wireless/ath/ar9170/usb.c
-index 754b1f8..007eb85 100644
---- a/drivers/net/wireless/ath/ar9170/usb.c
-+++ b/drivers/net/wireless/ath/ar9170/usb.c
-@@ -598,11 +598,15 @@ static int ar9170_usb_request_firmware(struct ar9170_usb *aru)
- 
- 	err = request_firmware(&aru->init_values, "ar9170-1.fw",
- 			       &aru->udev->dev);
-+	if (err) {
-+		dev_err(&aru->udev->dev, "file with init values not found.\n");
-+		return err;
-+	}
- 
- 	err = request_firmware(&aru->firmware, "ar9170-2.fw", &aru->udev->dev);
- 	if (err) {
- 		release_firmware(aru->init_values);
--		dev_err(&aru->udev->dev, "file with init values not found.\n");
-+		dev_err(&aru->udev->dev, "firmware file not found.\n");
- 		return err;
- 	}
- 
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
