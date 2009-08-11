@@ -1,96 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbZHKPR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbZHKPSG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755244AbZHKPR5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 11:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131AbZHKPR5
+	id S1755266AbZHKPSG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 11:18:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbZHKPSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 11:17:57 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:34854 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755215AbZHKPRy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 11:17:54 -0400
-Date: Tue, 11 Aug 2009 17:17:51 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>, manfred@colorfullife.com,
-       Ihno Krumreich <ihno@suse.de>, Greg KH <gregkh@suse.de>
-Subject: Re: [BUG] race of RCU vs NOHU
-Message-ID: <20090811171751.34ca3b3b@skybase>
-In-Reply-To: <20090811145222.GA6739@linux.vnet.ibm.com>
-References: <20090807151529.2806b8b4@skybase>
-	<20090807142957.GB6700@linux.vnet.ibm.com>
-	<20090810142535.3e685109@skybase>
-	<20090810150807.GA6791@linux.vnet.ibm.com>
-	<20090811125653.12c35ee8@skybase>
-	<20090811145222.GA6739@linux.vnet.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Aug 2009 11:18:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41803 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755230AbZHKPSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 11:18:01 -0400
+Message-ID: <4A818AF3.9050706@redhat.com>
+Date: Tue, 11 Aug 2009 11:14:59 -0400
+From: Prarit Bhargava <prarit@redhat.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: balbir@linux.vnet.ibm.com
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "menage@google.com" <menage@google.com>, andi.kleen@intel.com,
+       Pavel Emelianov <xemul@openvz.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: Help Resource Counters Scale better (v4)
+References: <20090811144405.GW7176@balbir.in.ibm.com> <4A81863A.2050504@redhat.com>
+In-Reply-To: <4A81863A.2050504@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Aug 2009 07:52:22 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-> On Tue, Aug 11, 2009 at 12:56:53PM +0200, Martin Schwidefsky wrote:
-> > On Mon, 10 Aug 2009 08:08:07 -0700
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > On Mon, Aug 10, 2009 at 02:25:35PM +0200, Martin Schwidefsky wrote:
-> > > > On Fri, 7 Aug 2009 07:29:57 -0700
-> > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > On Fri, Aug 07, 2009 at 03:15:29PM +0200, Martin Schwidefsky wrote:
-> > > > > > Hi Paul,
-> > > > > > I analysed a dump of a hanging 2.6.30 system and found what I think is
-> > > > > > a bug of RCU vs NOHZ. There are a number of patches ontop of that
-> > > > > > kernel but they should be independent of the bug.
-> > > > > > 
-> > > > > > The systems has 4 cpus and uses classic RCU. cpus #0, #2 and #3 woke up
-> > > > > > recently, cpu #1 has been sleeping for 5 minutes, but there is a pending
-> > > > > > rcu batch. The timer wheel for cpu #1 is empty, it will continue to
-> > > > > > sleep for NEXT_TIMER_MAX_DELTA ticks.
-> > > > > 
-> > > > > Congratulations, Martin!  You have exercised what to date has been a
-> > > > > theoretical bug identified last year by Manfred Spraul.  The fix is to
-> > > > > switch from CONFIG_RCU_CLASSIC to CONFIG_RCU_TREE, which was added in
-> > > > > 2.6.29.
-> > > > > 
-> > > > > Of course, if you need to work with an old kernel version, you might
-> > > > > still need a patch, perhaps for the various -stable versions.  If so,
-> > > > > please let me know -- otherwise, I will focus forward on CONFIG_RCU_TREE
-> > > > > rather than backwards on CONFIG_RCU_CLASSIC.
-> > > > 
-> > > > SLES11 is 2.6.27 and uses classic RCU. The not-so theoretical bug is
-> > > > present there and I think it needs to be fixed :-/
-> > > 
-> > > I was afraid of that.  ;-)
-> > > 
-> > > Given that there are some other theoretical bugs in Classic RCU involving
-> > > interrupts and CONFIG_NO_HZ, would backporting CONFIG_TREE_RCU make more
-> > > sense than playing whack-a-mole on Classic RCU bugs?
-> > 
-> > Fine with me but I don't know if SuSE/Novell is willing to accept such a
-> > big change for an existing distribution. I've put Ihno and Greg on Cc.
-> 
-> Good point!  While they are thinking about the tradeoff between
-> whack-a-mole on Classic RCU and backporting CONFIG_TREE_RCU, if I was
-> to send you a patch backporting CONFIG_TREE_RCU, to exactly which kernel
-> version(s) should I backport it to?
 
-We found the bug with kernel version 2.6.30 - the kernel on our test systems
-still use classic RCU. For us it is easy to switch to tree-RCU, no patch
-required.
+Prarit Bhargava wrote:
+>
+>
+> Balbir Singh wrote:
+>> Enhancement: Remove the overhead of root based resource counter 
+>> accounting
+>>
+>>
+>>   
+>
+> <snip>
+>> Please test/review.
+>>
+>>   
+> FWIW ...
+>
+> On a 64p/32G system running 2.6.31-git2-rc5, with RESOURCE_COUNTERS 
+> off, "time make -j64" results in
+>
+> real    4m54.972s
+> user    90m13.456s
+> sys     50m19.711s
+>
+> On the same system, running 2.6.31-git2-rc5, with RESOURCE_COUNTERS on,
+> plus Balbir's "Help Resource Counters Scale Better (v3)" patch, and 
+> this patch, results in
 
--- 
-blue skies,
-   Martin.
+Oops, sorry Balbir. 
 
-"Reality continues to ruin my life." - Calvin.
+I meant to write:
 
+On the same system, running 2.6.31-git2-rc5, with RESOURCE_COUNTERS on, 
+plus Balbir's "Help Resource Counters Scale Better (v4)" patch results 
+in ...
+
+Sorry for the typo,
+
+P.
