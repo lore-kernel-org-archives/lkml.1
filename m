@@ -1,135 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbZHKMHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751966AbZHKMG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753334AbZHKMHW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbZHKMG5
+	id S1751966AbZHKMG6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbZHKMG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:06:57 -0400
+	Tue, 11 Aug 2009 08:06:56 -0400
 Received: from mx2.redhat.com ([66.187.237.31]:38853 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753075AbZHKMGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:06:49 -0400
-Date: Tue, 11 Aug 2009 06:39:22 -0400
+	id S1753076AbZHKMGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 08:06:50 -0400
+Date: Tue, 11 Aug 2009 06:39:32 -0400
 From: Amerigo Wang <amwang@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Andi Kleen <andi@firstfloor.org>, Amerigo Wang <amwang@redhat.com>,
        akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
-Message-Id: <20090811104144.5154.77871.sendpatchset@localhost.localdomain>
-Subject: [RFC Patch 1/2] kexec: show memory info in /proc/iomem
+Message-Id: <20090811104154.5154.78710.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090811104144.5154.77871.sendpatchset@localhost.localdomain>
+References: <20090811104144.5154.77871.sendpatchset@localhost.localdomain>
+Subject: [RFC Patch 2/2] kexec: allow to shrink reserved memory
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This patch implements showing kexec memory area via /proc/iomem.
-For example, with this patch we can see:
+This patch implements shrinking the reserved memory for crash kernel,
+if it is more than enough.
 
-# cat /proc/iomem
-...
-00100000-7ffeffff : System RAM
-  01000000-012e1424 : Kernel code
-  012e1425-015f1aff : Kernel data
-  0166b000-01b4b88f : Kernel bss
-  02000000-083fffff : Crash kernel
-    02000000-028fffff : Used
-    02900000-083fffff : Unused
-...
+For example, if you have already reserved 128M, now you just want 100M,
+you can do:
 
-So that user can know how much memory the kernel uses for crash kernel.
+# echo $((100*1024*1024)) > /sys/kernel/kexec_crash_size
 
 Signed-off-by: WANG Cong <amwang@redhat.com>
 Cc: Neil Horman <nhorman@redhat.com>
 Cc: Eric W. Biederman <ebiederm@xmission.com>
 Cc: Andi Kleen <andi@firstfloor.org>
 
-
 ---
-diff --git a/kernel/kexec.c b/kernel/kexec.c
-index f336e21..01673ad 100644
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -931,6 +931,8 @@ static int kimage_load_segment(struct kimage *image,
-  */
- struct kimage *kexec_image;
- struct kimage *kexec_crash_image;
-+struct resource *kexec_res = NULL;
-+struct resource *kexec_free_res = NULL;
+Index: linux-2.6/include/linux/kexec.h
+===================================================================
+--- linux-2.6.orig/include/linux/kexec.h
++++ linux-2.6/include/linux/kexec.h
+@@ -158,6 +158,8 @@ unsigned long paddr_vmcoreinfo_note(void
  
- static DEFINE_MUTEX(kexec_mutex);
+ extern struct kimage *kexec_image;
+ extern struct kimage *kexec_crash_image;
++extern struct resource *kexec_res;
++extern struct resource *kexec_free_res;
  
-@@ -939,6 +941,8 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
- {
- 	struct kimage **dest_image, *image;
- 	int result;
-+	unsigned long kexec_start = crashk_res.start;
-+	unsigned long kexec_end = kexec_start;
+ #ifndef kexec_flush_icache_page
+ #define kexec_flush_icache_page(page)
+@@ -206,6 +208,7 @@ extern size_t vmcoreinfo_max_size;
  
- 	/* We only trust the superuser with rebooting the system. */
- 	if (!capable(CAP_SYS_BOOT))
-@@ -994,6 +998,7 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
- 			kimage_free(xchg(&kexec_crash_image, NULL));
- 			result = kimage_crash_alloc(&image, entry,
- 						     nr_segments, segments);
-+			kexec_end += KEXEC_CONTROL_PAGE_SIZE;
- 		}
- 		if (result)
- 			goto out;
-@@ -1008,6 +1013,42 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
- 			result = kimage_load_segment(image, &image->segment[i]);
- 			if (result)
- 				goto out;
-+			if (flags & KEXEC_ON_CRASH)
-+				kexec_end += image->segment[i].memsz;
-+		}
-+		if (flags & KEXEC_ON_CRASH) {
-+			if (kexec_res) {
-+				release_resource(kexec_res);
-+				release_resource(kexec_free_res);
-+				kfree(kexec_res);
-+				kfree(kexec_free_res);
-+			}
-+			kexec_res = kzalloc(sizeof(*kexec_res), GFP_KERNEL);
-+			if (!kexec_res) {
-+				result = -ENOMEM;
-+				goto out;
-+			}
-+			kexec_free_res = kzalloc(sizeof(*kexec_free_res), GFP_KERNEL);
-+			if (!kexec_free_res) {
-+				result = -ENOMEM;
-+				goto out_free;
-+			}
-+			kexec_res->name = "Used";
-+			kexec_res->start = kexec_start;
-+			kexec_res->end = roundup(kexec_end, 1<<20) - 1;
-+			kexec_res->flags = IORESOURCE_BUSY | IORESOURCE_MEM;
-+			if (insert_resource(&crashk_res, kexec_res)) {
-+				result = -EBUSY;
-+				goto out_free;
-+			}
-+			kexec_free_res->name = "Unused";
-+			kexec_free_res->start = kexec_res->end + 1;
-+			kexec_free_res->end = crashk_res.end;
-+			kexec_free_res->flags = IORESOURCE_BUSY | IORESOURCE_MEM;
-+			if (insert_resource(&crashk_res, kexec_free_res)) {
-+				result = -EBUSY;
-+				goto out_release;
-+			}
- 		}
- 		kimage_terminate(image);
+ int __init parse_crashkernel(char *cmdline, unsigned long long system_ram,
+ 		unsigned long long *crash_size, unsigned long long *crash_base);
++int shrink_crash_memory(unsigned long start, unsigned long end);
+ 
+ #else /* !CONFIG_KEXEC */
+ struct pt_regs;
+Index: linux-2.6/kernel/kexec.c
+===================================================================
+--- linux-2.6.orig/kernel/kexec.c
++++ linux-2.6/kernel/kexec.c
+@@ -1130,6 +1130,51 @@ void crash_kexec(struct pt_regs *regs)
  	}
-@@ -1019,6 +1060,13 @@ out:
- 	kimage_free(image);
- 
- 	return result;
-+
-+out_free:
-+	kfree(kexec_free_res);
-+	kfree(kexec_res);
-+out_release:
-+	release_resource(kexec_res);
-+	goto out;
  }
  
- #ifdef CONFIG_COMPAT
++int shrink_crash_memory(unsigned long start, unsigned long end)
++{
++	struct page **pages;
++	int ret = 0;
++	int  npages, i;
++	unsigned long addr;
++	void *vaddr;
++
++	if (!mutex_trylock(&kexec_mutex))
++		return -EBUSY;
++
++	if (!kexec_free_res) {
++		ret = -ENOENT;
++		goto unlock;
++	}
++
++	start = roundup(start, PAGE_SIZE);
++	end = roundup(end, PAGE_SIZE) - 1;
++	npages = (end + 1 - start ) / PAGE_SIZE;
++
++	pages = kmalloc(sizeof(struct page *) * npages, GFP_KERNEL);
++	if (!pages) {
++		ret = -ENOMEM;
++		goto unlock;
++	}
++	for (i = 0; i < npages; i++) {
++		addr = start + i * PAGE_SIZE;
++		pages[i] = virt_to_page(addr);
++	}
++
++	vaddr = vm_map_ram(pages, npages, 0, PAGE_KERNEL);
++	if (!vaddr) {
++		ret = -ENOMEM;
++		goto free;
++	}
++	kexec_free_res->end = start - 1;
++	crashk_res.end = start - 1;
++
++free:
++	kfree(pages);
++unlock:
++	mutex_unlock(&kexec_mutex);
++	return ret;
++}
++
+ static u32 *append_elf_note(u32 *buf, char *name, unsigned type, void *data,
+ 			    size_t data_len)
+ {
+Index: linux-2.6/kernel/ksysfs.c
+===================================================================
+--- linux-2.6.orig/kernel/ksysfs.c
++++ linux-2.6/kernel/ksysfs.c
+@@ -100,6 +100,32 @@ static ssize_t kexec_crash_loaded_show(s
+ }
+ KERNEL_ATTR_RO(kexec_crash_loaded);
+ 
++static ssize_t kexec_crash_size_show(struct kobject *kobj,
++				       struct kobj_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%llu\n", crashk_res.end - crashk_res.start + 1);
++}
++static ssize_t kexec_crash_size_store(struct kobject *kobj,
++				   struct kobj_attribute *attr,
++				   const char *buf, size_t count)
++{
++	unsigned long cnt;
++	int ret;
++
++	if (!kexec_res || !kexec_free_res)
++		return -ENOENT;
++	cnt = simple_strtoul(buf, NULL, 10);
++	if (cnt < kexec_res->end - kexec_res->start + 1)
++		return -ENOENT;
++	if (cnt > kexec_free_res->end - kexec_res->start + 1)
++		return -ENOENT;
++	cnt -= kexec_res->end - kexec_res->start + 1;
++	ret = shrink_crash_memory(kexec_free_res->start + cnt,
++		kexec_free_res->end);
++	return ret < 0 ? ret : count;
++}
++KERNEL_ATTR_RW(kexec_crash_size);
++
+ static ssize_t vmcoreinfo_show(struct kobject *kobj,
+ 			       struct kobj_attribute *attr, char *buf)
+ {
+@@ -147,6 +173,7 @@ static struct attribute * kernel_attrs[]
+ #ifdef CONFIG_KEXEC
+ 	&kexec_loaded_attr.attr,
+ 	&kexec_crash_loaded_attr.attr,
++	&kexec_crash_size_attr.attr,
+ 	&vmcoreinfo_attr.attr,
+ #endif
+ 	NULL
