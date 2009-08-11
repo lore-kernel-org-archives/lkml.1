@@ -1,65 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbZHKMI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753485AbZHKMKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbZHKMI7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZHKMI5
+	id S1753485AbZHKMKX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZHKMKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:08:57 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:23783 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753217AbZHKMIz (ORCPT
+	Tue, 11 Aug 2009 08:10:21 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:1203 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753217AbZHKMKT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:08:55 -0400
-Message-ID: <4A810DE4.7030202@gmail.com>
-Date: Tue, 11 Aug 2009 09:21:24 +0300
-From: Artem Bityutskiy <dedekind1@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 11 Aug 2009 08:10:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=RuPipIew+/qNjdnotNZYwWU3WXtk+xe6rfxt7Lq2CnSxn1ALEi9MAAeBLAnCa9DD1W
+         kPHArGFDc/+jnLDAW/44S/sQF0Qn0wqKUAJlgYMaPFW449A6UEufhFaAH6yq+WYW7BX+
+         73hdZAwPF4kkFzqdYnAXEfXcPD1T6sqCTcxao=
+Date: Tue, 11 Aug 2009 12:09:07 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jason Baron <jbaron@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
+       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com
+Subject: Re: [PATCH 07/12] add ftrace_event_call void * 'data' field
+Message-ID: <20090811100904.GA4938@nowhere>
+References: <cover.1249932670.git.jbaron@redhat.com> <2f63f892c862efd4f58f9d3e72cb5bc55f2d0025.1249932670.git.jbaron@redhat.com>
 MIME-Version: 1.0
-To: vimal singh <vimal.newwork@gmail.com>
-CC: Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org,
-       dedekind@infradead.org, linux-kernel@vger.kernel.org,
-       david-b@pacbell.net, linux-mtd@lists.infradead.org,
-       vimal singh <vimalsingh@ti.com>, dwmw2@infradead.org
-Subject: Re: [PATCH-v3 1:2] [MTD][NAND]omap: Adding support for nand prefetch-read
- and post-write, in MPU mode.
-References: <61339.192.168.10.89.1247226725.squirrel@dbdmail.itg.ti.com> 	<48097.192.168.10.89.1247232736.squirrel@dbdmail.itg.ti.com> 	<60361.192.168.10.89.1247482584.squirrel@dbdmail.itg.ti.com> 	<20090810162734.GH1938@atomide.com> <ce9ab5790908102245r28224bf5nfa2a1b22267767fe@mail.gmail.com>
-In-Reply-To: <ce9ab5790908102245r28224bf5nfa2a1b22267767fe@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 11 Aug 2009 06:23:05.0677 (UTC) FILETIME=[2FE3B7D0:01CA1A4C]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2f63f892c862efd4f58f9d3e72cb5bc55f2d0025.1249932670.git.jbaron@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/11/2009 08:45 AM, vimal singh wrote:
-> On Mon, Aug 10, 2009 at 9:57 PM, Tony Lindgren<tony@atomide.com>  wrote:
->> * vimal singh<vimalsingh@ti.com>  [090713 13:56]:
->>> Patch updated for ' ioreadX / iowriteX and ioreadX_rep / iowriteX_rep' as per
->>> David Brownell's comment. I updated 'omap_(read/write)_buf16' fucntions also
->>> for this.
->>>
->>> -vimal
->>>
->>> This patch adds prefetch support to access nand flash in mpu mode.
->>> This patch also adds 8-bit nand support (omap_read/write_buf8).
->>> Prefetch can be used for both 8- and 16-bit devices.
->>>
->>> Signed-off-by: Vimal Singh<vimalsingh@ti.com>
->> Sorry for the delay. I've looked at the GPMC part, and that now looks OK
->> to me. So I'm OK for this to get integrated via the MTD list.
->>
->> Acked-by: Tony Lindgren<tony@atomide.com>
->>
->
-> Can you give your ack to below patch too?
->
-> http://lists.infradead.org/pipermail/linux-mtd/2009-July/026373.html
+On Mon, Aug 10, 2009 at 04:52:44PM -0400, Jason Baron wrote:
+> add an optional * void pointer to 'ftrace_event_call' that is
+> passed in for regfunc and unregfunc.
+> 
+> Signed-off-by: Jason Baron <jbaron@redhat.com>
+> 
+> ---
+>  include/linux/ftrace_event.h |    5 +++--
+>  include/trace/ftrace.h       |    4 ++--
+>  kernel/trace/trace_events.c  |    4 ++--
+>  3 files changed, 7 insertions(+), 6 deletions(-)
+> 
+> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+> index ac8c6f8..8544f12 100644
+> --- a/include/linux/ftrace_event.h
+> +++ b/include/linux/ftrace_event.h
+> @@ -112,8 +112,8 @@ struct ftrace_event_call {
+>  	struct dentry		*dir;
+>  	struct trace_event	*event;
+>  	int			enabled;
+> -	int			(*regfunc)(void);
+> -	void			(*unregfunc)(void);
+> +	int			(*regfunc)(void *);
+> +	void			(*unregfunc)(void *);
+>  	int			id;
+>  	int			(*raw_init)(void);
+>  	int			(*show_format)(struct trace_seq *s);
+> @@ -122,6 +122,7 @@ struct ftrace_event_call {
+>  	int			filter_active;
+>  	struct event_filter	*filter;
+>  	void			*mod;
+> +	void			*data;
+>  
+>  	atomic_t		profile_count;
+>  	int			(*profile_enable)(struct ftrace_event_call *);
+> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> index 80e5f6c..a0de384 100644
+> --- a/include/trace/ftrace.h
+> +++ b/include/trace/ftrace.h
+> @@ -568,7 +568,7 @@ static void ftrace_raw_event_##call(proto)				\
+>  		trace_nowake_buffer_unlock_commit(event, irq_flags, pc); \
+>  }									\
+>  									\
+> -static int ftrace_raw_reg_event_##call(void)				\
+> +static int ftrace_raw_reg_event_##call(void *ptr)			\
 
-I've picked up both of your patches, please, check:
-http://git.infradead.org/users/dedekind/l2-mtd-2.6.git/commit/33f48f597315842f39427ee4261cbf82a9afeaf3
-http://git.infradead.org/users/dedekind/l2-mtd-2.6.git/commit/b67d52c91b26e97f981f2c292619d31667d5b272
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Shouldn't it have a __used attribute here, or something?
+
+
+>  {									\
+>  	int ret;							\
+>  									\
+> @@ -579,7 +579,7 @@ static int ftrace_raw_reg_event_##call(void)				\
+>  	return ret;							\
+>  }									\
+>  									\
+> -static void ftrace_raw_unreg_event_##call(void)				\
+> +static void ftrace_raw_unreg_event_##call(void *ptr)			\
+
+
+
+Same here.
+
+
+
+>  {									\
+>  	unregister_trace_##call(ftrace_raw_event_##call);		\
+>  }									\
+> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+> index f95f847..1d289e2 100644
+> --- a/kernel/trace/trace_events.c
+> +++ b/kernel/trace/trace_events.c
+> @@ -86,14 +86,14 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+>  		if (call->enabled) {
+>  			call->enabled = 0;
+>  			tracing_stop_cmdline_record();
+> -			call->unregfunc();
+> +			call->unregfunc(call->data);
+>  		}
+>  		break;
+>  	case 1:
+>  		if (!call->enabled) {
+>  			call->enabled = 1;
+>  			tracing_start_cmdline_record();
+> -			call->regfunc();
+> +			call->regfunc(call->data);
+>  		}
+>  		break;
+>  	}
+> -- 
+> 1.6.2.5
+> 
+
