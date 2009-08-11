@@ -1,62 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751513AbZHKLxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751603AbZHKLyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751513AbZHKLxb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 07:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbZHKLxa
+	id S1751603AbZHKLyd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 07:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbZHKLyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 07:53:30 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:52330 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751415AbZHKLx2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 07:53:28 -0400
-Subject: Re: kmemleak: Protect the seq start/next/stop sequence by
-	rcu_read_lock()
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090811073205.GA17476@elte.hu>
-References: <20090729152101.1878.71159.stgit@pc1117.cambridge.arm.com>
-	 <20090802111453.GA24927@elte.hu>
-	 <1249919718.10848.55.camel@pc1117.cambridge.arm.com>
-	 <20090810184527.GA9601@elte.hu>
-	 <1249945003.26205.23.camel@pc1117.cambridge.arm.com>
-	 <20090811073205.GA17476@elte.hu>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 11 Aug 2009 09:55:05 +0100
-Message-Id: <1249980905.27150.11.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Aug 2009 08:55:06.0411 (UTC) FILETIME=[6C4547B0:01CA1A61]
+	Tue, 11 Aug 2009 07:54:32 -0400
+Received: from cantor.suse.de ([195.135.220.2]:37431 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751383AbZHKLyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 07:54:31 -0400
+Message-Id: <20090811110902.255877673@suse.de>
+User-Agent: quilt/0.46_cvs20080326-19.1
+Date: Tue, 11 Aug 2009 21:09:02 +1000
+From: npiggin@suse.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Manfred Spraul <manfred@colorfullife.com>,
+       Nadia Derbey <Nadia.Derbey@bull.net>,
+       Pierre Peiffer <peifferp@gmail.com>, linux-kernel@vger.kernel.org
+Subject: [patch 0/4] ipc sem improvements
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-11 at 09:32 +0200, Ingo Molnar wrote:
-> * Catalin Marinas <catalin.marinas@arm.com> wrote:
-> > I tried similar config and with the mainline kernel I get some 
-> > lockups (several seconds) with CONFIG_PREEMPT disabled on ARM 
-> > machines or x86 during a scanning episode but it eventually 
-> > completes the scanning. With the kmemleak patches for the next 
-> > merging window, I don't get any lockups as it has more 
-> > cond_resched() calls.
-> 
-> How big are those patches? Kmemleak is new in .31 so if it fixes a 
-> real problem it might still be acceptable.
+Hi, this patchset is some improvements I've been trying to make to sysv
+semaphore implementation which is pretty suboptimal (O(n^2) behaviour
+with n waiting processes, among other things).
 
-My patches for -next were posted here -
-http://lkml.org/lkml/2009/7/24/166 - but the relevant ones are pretty
-small (review/ack is welcomed):
+I've been quite careful to try retaining fifo and avoiding starvation
+even for complex operations.
 
-http://lkml.org/lkml/2009/7/24/176 - allow rescheduling during object
-scanning
-http://lkml.org/lkml/2009/7/24/173 - inform kmemleak about kernel stack
-allocation (needs ack by the x86 people)
-http://lkml.org/lkml/2009/7/24/172 - always scan the task stacks
+Comments?
 
--- 
-Catalin
+Thanks,
+Nick
 
