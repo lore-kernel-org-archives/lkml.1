@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbZHKVSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbZHKVTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754569AbZHKVSs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 17:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbZHKVSs
+	id S1754850AbZHKVTw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 17:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbZHKVTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 17:18:48 -0400
-Received: from mail-yx0-f175.google.com ([209.85.210.175]:63210 "EHLO
-	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752977AbZHKVSr (ORCPT
+	Tue, 11 Aug 2009 17:19:51 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:41474 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753503AbZHKVTv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 17:18:47 -0400
+	Tue, 11 Aug 2009 17:19:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
          :content-transfer-encoding;
-        b=PR+Osb2eDRfBmLKdeNRjlts9bvAu/C42Ce/ngozaot8AWlQQ0j5w9NB8THmM7XiA4p
-         +MR+nZPngh+WijMnI2bsviWRAWHa6+azjuvSm5D8+GWTrYTqYSy+7YCP4SQsk4N3iBi/
-         rmRqYu5Ck28B4vPbaxRcUDr93i3L/XKJh8ekg=
+        b=kn6buwGwnPyLkFRI07M1oPsSDtpfPeT+Htwe7QotbPb92NdfWmZhtC7MSfC/zXnyHC
+         1GJNf4qHAwB/fugAG6qhWuPq23FHr8swS/ZRoEobW1OmrSYgQJ7l8BzbXZp5qIKQIIhg
+         HC2uGHomQeSWiD1sbIpmd+I6yZGI7Q7RwNbs0=
+Message-ID: <4A81E073.5080703@gmail.com>
+Date: Tue, 11 Aug 2009 23:19:47 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-7.4 Thunderbird/3.0b3
 MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Tue, 11 Aug 2009 14:18:28 -0700
-Message-ID: <43e72e890908111418m47910085k2d0016e2add8914f@mail.gmail.com>
-Subject: Typedef removal tool
-To: devel@driverdev.osuosl.org
-Cc: Julia Lawall <julia@diku.dk>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, Alan Cox <alan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/1] Power: fix suspend vt regression
+References: <1249980093-16319-1-git-send-email-jirislaby@gmail.com> <20090811170050.GA26041@suse.de>
+In-Reply-To: <20090811170050.GA26041@suse.de>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anyone know if there is a typedef removal tool? When porting drivers
-this needs to be done quite often.
+On 08/11/2009 07:00 PM, Greg KH wrote:
+> On Tue, Aug 11, 2009 at 10:41:33AM +0200, Jiri Slaby wrote:
+>> vt_waitactive no longer accepts console parameter as console-1
+>> since commit "vt: add an event interface". It expects console
+>> number directly (as viewed by userspace -- counting from 1).
+> 
+> As the event interface code is only in -next and not in mainline, this
+> doesn't pertain to Linus's current tree, right?
 
-FWIW I've started porting some driver and have come across some tools,
-or written my own scripts, which have helped. Using spatch to port a
-driver was such a tool I explored. I think I'll try to put together
-some info on the driver project wiki for this. typdef removal tool
-would still be neat.
+Correct. But please ignore this one. The comment above is correct, but
+the change should have been done one level deeper. A new patch for this
+will follow.
 
-  Luis
+However there is still a race or something. Sometimes the suspend goes
+through, sometimes it doesn't. I will investigate this further.
