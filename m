@@ -1,103 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751523AbZHKAYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752274AbZHKA5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751523AbZHKAYv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 20:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbZHKAYt
+	id S1752274AbZHKA5w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 20:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZHKA5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 20:24:49 -0400
-Received: from mga03.intel.com ([143.182.124.21]:6979 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750878AbZHKAYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 20:24:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,356,1246863600"; 
-   d="scan'208";a="174344816"
-Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Li, Shaohua" <shaohua.li@intel.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
-       "Brown, Len" <len.brown@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>,
-       "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090810081941.GA18649@elf.ucw.cz>
-References: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
-	 <20090806015855.GA20596@sli10-desk.sh.intel.com>
-	 <20090809120818.GA1338@ucw.cz> <200908091522.02898.rjw@sisk.pl>
-	 <20090810081941.GA18649@elf.ucw.cz>
-Content-Type: text/plain
-Date: Mon, 10 Aug 2009 17:22:17 -0700
-Message-Id: <1249950137.11545.38184.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	Mon, 10 Aug 2009 20:57:49 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:61130 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751839AbZHKA5t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 20:57:49 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=from:subject:to:date:message-id:user-agent:mime-version:
+	content-type:content-transfer-encoding;
+	b=qRqX2iRN7r0qVqRhg3yuCD4H9ZmmKo/4BWB0YjujHmEYGukDoMv4zEe4xlAa11je+
+	JroPIYB/1cNXBMgszW9Ew==
+From: Ben Blum <bblum@google.com>
+Subject: [PATCH v3 0/7] CGroups: cgroup memberlist enhancement+fix
+To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, serue@us.ibm.com, lizf@cn.fujitsu.com,
+       menage@google.com, bblum@google.com
+Date: Mon, 10 Aug 2009 17:57:30 -0700
+Message-ID: <20090811004737.21950.29188.stgit@hastromil.mtv.corp.google.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-10 at 01:19 -0700, Pavel Machek wrote:
-> On Sun 2009-08-09 15:22:02, Rafael J. Wysocki wrote:
-> > On Sunday 09 August 2009, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > > Also, approaches such as [1] can make use of this
-> > > > > extended infrastructure instead of putting the CPU to an arbitrary C-state
-> > > > > when it is offlined, thereby providing the system administrator a rope to hang
-> > > > > himself with should he feel the need to do so.
-> > > > I didn't see the reason why administrator needs to know which state offline cpu
-> > > > should stay. Don't know about powerpc side, but in x86 side, it appears deepest
-> > > > C-state is already preferred.
-> > > > 
-> > > 
-> > > Agreed, deepest c-state is always best, there's no need to make it configurable.
-> > 
-> > Unless it doesn't work.
-> 
-> If it does not work, machine will not boot. We already have
-> max_cstate= kernel command line option to work around that...
-> 
+(This patch series is a revision of http://lkml.org/lkml/2009/7/30/382 .)
 
-On x86, my earlier patch was selecting deepest C-state based on CPU
-capability. There, "unless it doesn't work" will not hold good. If a CPU
-C-state is reported in cpuid it will work. If there is any errata we
-will workaround it as we do with anything else in the kernel.
+The following series adds a "cgroup.procs" file to each cgroup that reports
+unique tgids rather than pids, which can also be written to for moving all
+threads in a threadgroup at once.
 
-My concern about having this interface for offline CPU is
-- How are we going to populate this possible states. On x86, there are
-2-3 CPU mwait cstates with each having few sub C-states. And there can
-be some BIOS supplied C-states which are IO port invocations which will
-map to some CPU mwait state,sub state pair mentioned above and we won't
-know anything about this mapping. So, we want to give all these options
-in sysfs?
-- Having all these states and having no information on what basis one
-should change this or on what reasons one should change this will result
-in some userspace superpowersaver daemon using this in a wrong way and
-some distro shipping it.
+Patch #5 modifies the subsystem attach interface to be able to attach whole
+threadgroups at a time, which could introduce potential problems if any
+subsystem were to need the old cgroup of every thread being moved. The attach
+interface would need to be revised if this becomes the case.
 
-Also, I don't think using just the ACPI/BIOS supplied states in _CST is
-right thing to do for offline. _CST is meant for C-state and BIOS may
-not include some C-state in _CST if the system manufacturer thinks that
-the latency is too high for the state to be used as a C-state. That
-limitation applies for C-state as the cpu is expected to come out of
-C-state often and execute code handle interrupts etc. But, that
-restriction does not apply for offline online which is not as frequent
-as C-state entry and it already has big latency with startup IPI, and a
-whole baggage of CPU setup code. So, using BIOS CST info for CPU offline
-state doesn't seem right.
+Patch #6 implements functionality for read/write locking all CLONE_THREAD
+fork()ing within a threadgroup, by means of an rwsem that lives in the
+sighand_struct, for per-threadgroup-ness and also for sharing a cacheline with
+the sighand's atomic count. This scheme should introduce no extra overhead in
+the fork path when there's no contention.
 
-May be having (to pick a number) 3 possible offline states for all
-platforms with one for halt equivalent and one for deepest possible that
-CPU can handle and one for deepest possible that platform likes for
-C-states may make sense. Will keeps things simpler in terms of usage
-expectations and possibly reduce the misuse oppurtubity?
+Patch #7 reveals potential for a race when forking before a subsystem's attach
+function is called - one potential solution in case any subsystem has this
+problem is to hang on to the group's fork mutex through the attach() calls,
+though no subsystem yet demonstrates need for an extended critical section.
 
-Thanks,
-Venki
+This patch series was written at the same time as Li Zefan's pid namespace
+bugfix patch (from http://lkml.org/lkml/2009/7/1/559 ), and contains a similar
+but finer-grained fix for the same bug. These patches can either be rewritten
+to be applied on top of Li's patch, or be applied as they are with Li's patch
+reversed.
+
+---
+
+Ben Blum (7):
+      Makes procs file writable to move all threads by tgid at once
+      Adds functionality to read/write lock CLONE_THREAD fork()ing per-threadgroup
+      Lets ss->can_attach and ss->attach do whole threadgroups at a time
+      Changes css_set freeing mechanism to be under RCU
+      Quick vmalloc vs kmalloc fix to the case where array size is too large
+      Ensures correct concurrent opening/reading of pidlists across pid namespaces
+      Adds a read-only "procs" file similar to "tasks" that shows only unique tgids
+
+
+ Documentation/cgroups/cgroups.txt |   25 +
+ include/linux/cgroup.h            |   70 ++-
+ include/linux/init_task.h         |    9 
+ include/linux/sched.h             |   15 +
+ kernel/cgroup.c                   |  881 +++++++++++++++++++++++++++++++------
+ kernel/cgroup_freezer.c           |   15 +
+ kernel/cpuset.c                   |   66 ++-
+ kernel/fork.c                     |    9 
+ kernel/ns_cgroup.c                |   16 +
+ kernel/sched.c                    |   35 +
+ mm/memcontrol.c                   |    3 
+ security/device_cgroup.c          |    3 
+ 12 files changed, 954 insertions(+), 193 deletions(-)
 
