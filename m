@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbZHKL5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752369AbZHKL7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752347AbZHKL5Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 07:57:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbZHKL5X
+	id S1752369AbZHKL7g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 07:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZHKL7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 07:57:23 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:52589 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752317AbZHKL5T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 07:57:19 -0400
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
-	get_user_pages() enough to prevent pages from being swapped out ?")
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: David Xiao <dxiao@broadcom.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-       Ben Dooks <ben-linux@fluff.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       v4l2_linux <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-In-Reply-To: <1249624766.32621.61.camel@david-laptop>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com>
-	 <20090806114619.GW2080@trinity.fluff.org>
-	 <200908061506.23874.laurent.pinchart@ideasonboard.com>
-	 <1249584374.29182.20.camel@david-laptop>
-	 <20090806222543.GG31579@n2100.arm.linux.org.uk>
-	 <1249624766.32621.61.camel@david-laptop>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 11 Aug 2009 10:31:02 +0100
-Message-Id: <1249983062.27150.20.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Aug 2009 09:31:03.0321 (UTC) FILETIME=[71E3A090:01CA1A66]
+	Tue, 11 Aug 2009 07:59:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35438 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752303AbZHKL73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 07:59:29 -0400
+Date: Tue, 11 Aug 2009 11:36:39 GMT
+From: tip-bot for Kevin Winchester <kjwinchester@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       petkovbb@googlemail.com, kjwinchester@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       petkovbb@googlemail.com, kjwinchester@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <4A80A5AD.2000209@gmail.com>
+References: <4A80A5AD.2000209@gmail.com>
+Subject: [tip:x86/urgent] x86: Clear incorrectly forced X86_FEATURE_LAHF_LM flag
+Message-ID: <tip-fbd8b1819e80ac5a176d085fdddc3a34d1499318@git.kernel.org>
+Git-Commit-ID: fbd8b1819e80ac5a176d085fdddc3a34d1499318
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 11 Aug 2009 11:36:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-06 at 22:59 -0700, David Xiao wrote:
-> The V7 speculative prefetching will then probably apply to DMA coherency
-> issue in general, both kernel and user space DMAs. Could this be
-> addressed by inside the dma_unmap_sg/single() calling dma_cache_maint()
-> when the direction is DMA_FROM_DEVICE/DMA_BIDIRECTIONAL, to basically
-> invalidate the related cache lines in case any filled by prefetching?
-> Assuming dma_unmap_sg/single() is called after each DMA operation is
-> completed. 
+Commit-ID:  fbd8b1819e80ac5a176d085fdddc3a34d1499318
+Gitweb:     http://git.kernel.org/tip/fbd8b1819e80ac5a176d085fdddc3a34d1499318
+Author:     Kevin Winchester <kjwinchester@gmail.com>
+AuthorDate: Mon, 10 Aug 2009 19:56:45 -0300
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 11 Aug 2009 13:34:54 +0200
 
-Theoretically, with speculative prefetching on ARMv7 and the FROM_DEVICE
-case we need to invalidate the corresponding D-cache lines both before
-and after the DMA transfer, i.e. in both dma_map_sg and dma_unmap_sg,
-otherwise there is a risk of stale data in the cache.
+x86: Clear incorrectly forced X86_FEATURE_LAHF_LM flag
 
--- 
-Catalin
+Due to an erratum with certain AMD Athlon 64 processors, the
+BIOS may need to force enable the LAHF_LM capability.
+Unfortunately, in at least one case, the BIOS does this even
+for processors that do not support the functionality.
 
+Add a specific check that will clear the feature bit for
+processors known not to support the LAHF/SAHF instructions.
+
+Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
+Acked-by: Borislav Petkov <petkovbb@googlemail.com>
+LKML-Reference: <4A80A5AD.2000209@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/cpu/amd.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+index e2485b0..63fddcd 100644
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -400,6 +400,13 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+ 		level = cpuid_eax(1);
+ 		if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
+ 			set_cpu_cap(c, X86_FEATURE_REP_GOOD);
++
++		/*
++		 * Some BIOSes incorrectly force this feature, but only K8
++		 * revision D (model = 0x14) and later actually support it.
++		 */
++		if (c->x86_model < 0x14)
++			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
+ 	}
+ 	if (c->x86 == 0x10 || c->x86 == 0x11)
+ 		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
