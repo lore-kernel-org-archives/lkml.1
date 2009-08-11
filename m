@@ -1,77 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZHKODD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbZHKOIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbZHKODD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 10:03:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZHKODB
+	id S1754305AbZHKOIl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 10:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbZHKOIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 10:03:01 -0400
-Received: from cs20.apochromatic.org ([204.152.189.161]:57380 "EHLO
-	cs20.apochromatic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751543AbZHKODB (ORCPT
+	Tue, 11 Aug 2009 10:08:41 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:23532 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752145AbZHKOIk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 10:03:01 -0400
-Date: Tue, 11 Aug 2009 15:02:24 +0100
-From: Matt Fleming <matt@console-pimps.org>
-To: Adrian Hunter <adrian.hunter@nokia.com>
-Cc: Pierre Ossman <pierre@ossman.eu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-       "nico@cam.org" <nico@cam.org>,
-       "nicolas.ferre@rfo.atmel.com" <nicolas.ferre@rfo.atmel.com>,
-       "hskinnemoen@atmel.com" <hskinnemoen@atmel.com>,
-       "tony@atomide.com" <tony@atomide.com>,
-       "david-b@pacbell.net" <david-b@pacbell.net>,
-       "manuel.lauss@gmail.com" <manuel.lauss@gmail.com>,
-       "mirq-linux@rere.qmqm.pl" <mirq-linux@rere.qmqm.pl>,
-       "ppisa@pikron.com" <ppisa@pikron.com>,
-       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>,
-       "ben@fluff.org" <ben@fluff.org>,
-       "saschasommer@freenet.de" <saschasommer@freenet.de>,
-       "avorontsov@ru.mvista.com" <avorontsov@ru.mvista.com>,
-       "oakad@yahoo.com" <oakad@yahoo.com>,
-       "ian@mnementh.co.uk" <ian@mnementh.co.uk>,
-       "HaraldWelte@viatech.com" <HaraldWelte@viatech.com>,
-       "JosephChan@via.com.tw" <JosephChan@via.com.tw>
-Subject: Re: New MMC maintainer needed
-Message-ID: <20090811140223.GA4278@console-pimps.org>
-References: <20090714153601.6dfe70ff@mjolnir.ossman.eu> <20090722151744.fffd7bf5.akpm@linux-foundation.org> <20090728222334.0c543c47@mjolnir.ossman.eu> <20090731122623.254fd0f1@mjolnir.ossman.eu> <20090731105407.GA31900@console-pimps.org> <20090803123429.390a636f@mjolnir.ossman.eu> <4A76C658.6050002@nokia.com>
+	Tue, 11 Aug 2009 10:08:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=wQaKEDIzEAZ3/bcMK5DS420WmKVDtXVQHep455UJUXFSeeK057cUaEjIOi2wNoKlsX
+         wKW7MrqFP1G60o31N7xPv1r5ioGmjQiV8tuQMYnGyWW1qKFhLOnOyrSWWDHYgYCsTdO9
+         A7jv+aYlM3111ljtWp4IOF3HSOBKDqJX31XEs=
+Date: Tue, 11 Aug 2009 22:08:24 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: mmotm 2009-08-06-00-30 uploaded
+Message-ID: <20090811140824.GA2067@darkstar>
+References: <200908060733.n767X6mN023120@imap1.linux-foundation.org> <20090807134659.GA2093@darkstar> <20090807094944.eed4bfb8.akpm@linux-foundation.org> <a8e1da0908080313k65f51185u7329e293a95861a7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4A76C658.6050002@nokia.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a8e1da0908080313k65f51185u7329e293a95861a7@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 03, 2009 at 02:13:28PM +0300, Adrian Hunter wrote:
-> Pierre Ossman wrote:
->> Con:
->>
->>  - The scanning code gets less clear as you increase the number of
->>    possible paths through it.
->>
->>  - Different systems will have different init sequences, possibly
->>    provoking bugs in the cards.
->>
->>  - Host driver writers now have more capability bits they have to
->>    consider. And these might be less than obvious since SD/MMC/SDIO are
->>    normally compatible so these bits seem useless.
->>
->>  - With the current logic (which was better in the first version),
->>    "normal" drivers will have to explicitly state that they work as
->>    intended by setting all bits.
->
-> And the pro is objective.
->
->> Pro:
->>
->>  - A slightly reduced scanning time.
->
-> That's great!  Why do you disregard this so easily?
->
+On Sat, Aug 08, 2009 at 06:13:53PM +0800, Dave Young wrote:
+> On Sat, Aug 8, 2009 at 12:49 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
+> > On Fri, 7 Aug 2009 21:47:00 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+> >
+> >> Hi, andrew
+> >>
+> >> Booting with this release, init (maybe getty?) reports something like:
+> >>
+> >> INIT: open /dev/console failed with input/output error
+> >>
+> >> 2.6.31-rc5 is fine.
+> >>
+> >> Any hints to find the root problem?
+> >
+> > Not really, sorry.  Might be tty changes in linux-next?
+> 
+> I bisected linux-next, find following patch as a result
+> 
+> commit 65b8c7d9be5862ff8ac839607b444b6f6b11d2fb
+> Author: Alan Cox <alan@linux.intel.com>
+> Date:   Thu Aug 6 09:58:02 2009 +1000
+> 
+>     cyclades: use the full port_close function
+> 
+> But, I did not select cyclades in my .config, nor do i have the hardware. Weird.
 
-Ping. Adrian, do you have any initialisation times for this patch? I'm
-afraid I don't have any eMMC hardware, so I'm not able to gather any
-numbers.
+The above result is wrong, it's a mistake.
+
+After a whole day's testing and debugging with linux-2.6 git tree and tty patch series, I found the patch causing this issue. 
+--
+From: Alan Cox <alan@linux.intel.com>
+Subject: tty: make the kref destructor occur asynchronously
+--
+
+If we make the tty release in a work queue, then tty_reopen might fail with -EIO. I read the sysvinit source code, it will retry 5 times, if still failed, it will warning, then no output before login.
+
+My distribution is slackware 12.2
+
+I tested with following debug patch.
+
+--- linux-2.6.orig/drivers/char/tty_io.c	2009-08-11 21:29:03.000000000 +0800
++++ linux-2.6/drivers/char/tty_io.c	2009-08-11 21:40:01.000000000 +0800
+@@ -1246,8 +1246,10 @@ static int tty_reopen(struct tty_struct 
+ {
+ 	struct tty_driver *driver = tty->driver;
+ 
+-	if (test_bit(TTY_CLOSING, &tty->flags))
++	if (test_bit(TTY_CLOSING, &tty->flags)) {
++		printk(KERN_INFO "tty_io.c: closing\n");
+ 		return -EIO;
++	}
+ 
+ 	if (driver->type == TTY_DRIVER_TYPE_PTY &&
+ 	    driver->subtype == PTY_TYPE_MASTER) {
+@@ -1255,8 +1257,10 @@ static int tty_reopen(struct tty_struct 
+ 		 * special case for PTY masters: only one open permitted,
+ 		 * and the slave side open count is incremented as well.
+ 		 */
+-		if (tty->count)
++		if (tty->count) {
++			printk(KERN_INFO "tty_io.c: open count %d\n", tty->count);
+ 			return -EIO;
++		}
+ 
+ 		tty->link->count++;
+ 	}
+@@ -1705,6 +1709,7 @@ static int __tty_open(struct inode *inod
+ 	int index;
+ 	dev_t device = inode->i_rdev;
+ 	unsigned saved_flags = filp->f_flags;
++	static int t;
+ 
+ 	nonseekable_open(inode, filp);
+ 
+@@ -1778,8 +1783,15 @@ got_driver:
+ 
+ 	mutex_unlock(&tty_mutex);
+ 	tty_driver_kref_put(driver);
+-	if (IS_ERR(tty))
++	if (IS_ERR(tty)) {
++		int r = PTR_ERR(tty);
++		if (t == 5) {
++			printk(KERN_INFO "%s: %d, %d, retval: %d\n", __FILE__, __LINE__, r, retval);
++			t =0;
++		} else
++			t++;
+ 		return PTR_ERR(tty);
++	}
+ 
+ 	filp->private_data = tty;
+ 	file_move(filp, &tty->tty_files);
+
+
+> 
+> >
+> >> Another problem:
+> >>
+> >> When I moving mouse or pressing key the screen will become black, then restore the normal screen.
+> >
+> > There have been quite a lot of X problems lately.
+> >
+> > Could you test the bare linux-next please?
+> >
+> 
+> 
+> 
+> -- 
+> Regards
+> dave
