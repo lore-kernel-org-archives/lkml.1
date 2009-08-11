@@ -1,82 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbZHKSqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbZHKStK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755395AbZHKSqe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 14:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbZHKSqd
+	id S1755123AbZHKStK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 14:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbZHKStJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 14:46:33 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:26197 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755214AbZHKSqc (ORCPT
+	Tue, 11 Aug 2009 14:49:09 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:42538 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753065AbZHKStI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 14:46:32 -0400
-Date: Tue, 11 Aug 2009 11:45:18 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Luciano Coelho <luciano.coelho@nokia.com>
-Cc: ext Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "linville@tuxdriver.com" <linville@tuxdriver.com>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] wl1271: fix compiler warnings on 64 bit archs
-Message-Id: <20090811114518.d45d4006.randy.dunlap@oracle.com>
-In-Reply-To: <4A81BB47.2020607@nokia.com>
-References: <1249981107-21746-1-git-send-email-luciano.coelho@nokia.com>
-	<20090811200746.cde6aed9.sfr@canb.auug.org.au>
-	<4A81BB47.2020607@nokia.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt001.oracle.com [141.146.116.10]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010203.4A81BC77.0040:SCFSTAT5015188,ss=1,fgs=0
+	Tue, 11 Aug 2009 14:49:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=jH8A9lRV9sVHIy6WsVTi/Tko8YptDLKpDaB0/weahLMJQV1BYUlEJQAPPg8dqb6u06
+         AbAmtBuRyee/M8Rgo649QNdy72KYrSRqB9MVEWpNsbS6HnrmoIsL7jezfORNiksN1LGO
+         EZOPe431ab5BUThLQYPzV5g+d7Qai8XmxemoE=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Jason Baron <jbaron@redhat.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [GIT PULL] tracing: Syscalls trace events + perf support
+Date: Tue, 11 Aug 2009 20:48:49 +0200
+Message-Id: <1250016545-6601-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Aug 2009 21:41:11 +0300 Luciano Coelho wrote:
+Hi Ingo,
 
-> ext Stephen Rothwell wrote:
-> > Hi Luciano,
-> >
-> > On Tue, 11 Aug 2009 11:58:27 +0300 Luciano Coelho <luciano.coelho@nokia.com> wrote:
-> >   
-> >> +++ b/drivers/net/wireless/wl12xx/wl1271_boot.c
-> >> @@ -100,8 +100,8 @@ static int wl1271_boot_upload_firmware_chunk(struct wl1271 *wl, void *buf,
-> >>  
-> >>  	wl1271_debug(DEBUG_BOOT, "starting firmware upload");
-> >>  
-> >> -	wl1271_debug(DEBUG_BOOT, "fw_data_len %d chunk_size %d", fw_data_len,
-> >> -		CHUNK_SIZE);
-> >> +	wl1271_debug(DEBUG_BOOT, "fw_data_len %d chunk_size %d",
-> >> +		     (u32) fw_data_len, CHUNK_SIZE);
-> >>     
-> >
-> > fw_data_len is a size_t and so should be printed with %zd.
-> >
-> >   
-> >> @@ -148,7 +148,7 @@ static int wl1271_boot_upload_firmware_chunk(struct wl1271 *wl, void *buf,
-> >>  	addr = dest + chunk_num * CHUNK_SIZE;
-> >>  	p = buf + chunk_num * CHUNK_SIZE;
-> >>  	wl1271_debug(DEBUG_BOOT, "uploading fw last chunk (%d B) 0x%p to 0x%x",
-> >> -		     fw_data_len % CHUNK_SIZE, p, addr);
-> >> +		     (u32) fw_data_len % CHUNK_SIZE, p, addr);
-> >>     
-> >
-> > ditto.
-> >   
-> 
-> Thanks! I didn't know about the z length modifier for printf (everyday 
-> learning something new!), I should have checked the manpage.  I'll fix 
-> this and send v2 of my patch.
+This pull request integrate one cleanup/fix for ftrace and
+an update for syscall tracing: the migration from old-style tracer
+to individual tracepoints/trace_events and the support for perf counter.
 
-man page is fine, but you can also check (in the kernel source tree)
-Documentation/printk-formats.txt
+I've tested it with success either with ftrace (every syscall tracepoints
+enabled at the same time without problems) and with perfcounter.
 
+May be one drawback: it creates so much trace events that the ftrace
+selftests can take some time :-)
 
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+Thanks,
+Frederic.
+
+The following changes since commit 89034bc2c7b839702c00a704e79d112737f98be0:
+  Ingo Molnar (1):
+        Merge branch 'linus' into tracing/core
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git \
+	tracing/core
+
+Frederic Weisbecker (3):
+      tracing: Add ftrace event call parameter to its field descriptor handler
+      tracing: Add fields format definition for syscall events
+      tracing: Support for syscall events raw records in perfcounters
+
+Jason Baron (12):
+      tracing: Map syscall name to number
+      tracing: Call arch_init_ftrace_syscalls at boot
+      tracing: Add DECLARE_TRACE_WITH_CALLBACK() macro
+      tracing: Add syscall tracepoints
+      tracing: Update FTRACE_SYSCALL_MAX
+      tracing: Raw_init() bailout in trace event register fail case
+      tracing: Add ftrace_event_call void * 'data' field
+      tracing: Add trace events for each syscall entry/exit
+      tracing: Add individual syscalls tracepoint id support
+      tracing: Add perf counter support for syscalls tracing
+      tracing: Add more namespace area to 'perf list' output
+      tracing: Convert x86_64 mmap and uname to use DEFINE_SYSCALL
+
+Zhaolei (1):
+      tracing: Rename set_tracer_flags()'s local variable trace_flags
+
+ arch/x86/include/asm/ftrace.h  |    4 +-
+ arch/x86/kernel/ftrace.c       |   41 ++++--
+ arch/x86/kernel/ptrace.c       |    7 +-
+ arch/x86/kernel/sys_x86_64.c   |    8 +-
+ include/linux/ftrace_event.h   |    8 +-
+ include/linux/perf_counter.h   |    2 +
+ include/linux/syscalls.h       |  126 +++++++++++++-
+ include/linux/tracepoint.h     |   31 +++-
+ include/trace/ftrace.h         |    7 +-
+ include/trace/syscall.h        |   56 +++++-
+ kernel/trace/trace.c           |   14 +-
+ kernel/trace/trace.h           |    6 -
+ kernel/trace/trace_events.c    |   35 +++--
+ kernel/trace/trace_export.c    |    6 +-
+ kernel/trace/trace_syscalls.c  |  372 +++++++++++++++++++++++++++++++---------
+ kernel/tracepoint.c            |   38 ++++
+ tools/perf/util/parse-events.c |    8 +-
+ 17 files changed, 613 insertions(+), 156 deletions(-)
