@@ -1,109 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbZHKWvD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbZHKXRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbZHKWvD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 18:51:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZHKWvD
+	id S1755573AbZHKXRN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 19:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755547AbZHKXRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 18:51:03 -0400
-Received: from mail.atheros.com ([12.36.123.2]:57060 "EHLO mail.atheros.com"
+	Tue, 11 Aug 2009 19:17:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55492 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753917AbZHKWvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 18:51:02 -0400
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: <akpm@linux-foundation.org>
-CC: <linux-kernel@vger.kernel.org>, <devel@driverdev.osuosl.org>,
-       <joe@perches.com>, "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: [PATCH] scripts: add typdef removal tool
-Date: Tue, 11 Aug 2009 15:51:01 -0700
-Message-ID: <1250031061-16327-1-git-send-email-lrodriguez@atheros.com>
-X-Mailer: git-send-email 1.6.3.3
+	id S1753430AbZHKXRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 19:17:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
+Date: Wed, 12 Aug 2009 01:17:27 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Zhang Rui <rui.zhang@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       "linux-acpi" <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
+       "dtor@mail.ru" <dtor@mail.ru>
+References: <Pine.LNX.4.44L0.0908111438230.5845-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908111438230.5845-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908120117.27961.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If you are porting drivers and need to remove tydpefs you can use
-this to help you port the driver quicker.
+On Tuesday 11 August 2009, Alan Stern wrote:
+> On Tue, 11 Aug 2009, Rafael J. Wysocki wrote:
+> 
+> > > The general algorithm for maximum parallelism goes as follows: Start by
+> > > resuming (in parallel) all the devices which don't depend on anything
+> > > else.  Each time a resume finishes, you go on to resume (in parallel)
+> > > all the devices which depend only on resumed devices and which haven't
+> > > yet started to resume.
+> > > 
+> > > As described, this can require a large number of threads.  It also
+> > > requires detailed knowledge of which devices depend on others, which we
+> > > don't have.
+> > 
+> > It's even more complicated than that.
+> > 
+> > Assume we have 7 devices, A-G, such that A is the parent of B and C,
+> > B is the parent of D and E, and C is the parent of F and G.  Assume in addition
+> > that the PM dependencies between the devices are fully reflected by the
+> > device tree structure (ie. there are no dependencies that aren't reflected
+> > parent-child relationships) and that B and G take 0.5 s to resume while the
+> > others take < 1 ms each.  So, the total sequential resume time is
+> > 2 s + O(1 ms).
+> > 
+> > Now, if we used the above algorithm, we'd first resume DEFG which would take
+> > 1 s because of G, then we'd resume BC which would take 1 s because of B and
+> > the total resume time is again 2 s + O(1 ms).
+> 
+> (You probably mean "suspend" instead of "resume".)
 
-Cc: Joe Perches <joe@perches.com>
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
----
- scripts/remove-typedefs |   65 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 65 insertions(+), 0 deletions(-)
- create mode 100755 scripts/remove-typedefs
+Yes, I got it the other way around here, sorry.
 
-diff --git a/scripts/remove-typedefs b/scripts/remove-typedefs
-new file mode 100755
-index 0000000..ae6952c
---- /dev/null
-+++ b/scripts/remove-typedefs
-@@ -0,0 +1,65 @@
-+#!/bin/bash
-+#
-+# Copyright 2009 Joe Perches <joe@perches.com>
-+# Copyright 2009 Luis R. Rodriguez <mcgrof@gmail.com>
-+#
-+# Lets you remove typdefs from C/header files.
-+#
-+# We do simple sed substituation for logical places where you would use the typdef,
-+# and also replace the typdef declaration to a simple struct declaration.
-+
-+function usage()
-+{
-+	echo "Usage $0 <typdef-name> <struct-name> <paths>"
-+	exit 1
-+}
-+
-+function remove_typedef()
-+{
-+	if [ ! -f $1 ]; then
-+		return;
-+	fi
-+
-+	# This replaces the typdef declaration for a simple struct declaration - style 1
-+	perl -i -e "local $/; while(<>) { s/\btypedef\s+struct\s+_$from\s*\{([\d\D]+?)\}\s*struct\s+$to\b[^;]*;/struct $to \{\1\};/g; print; }" $1
-+
-+	# This replaces the typdef declaration for a simple struct declaration - style 2
-+	perl -i -e "local $/; while(<>) { s/\btypedef\s+struct\s+$to\s*\{([\d\D]+?)\}\s*$from\b[^;]*;/struct $to \{\1\};/g; print; }" $1
-+
-+	# This replaces the typdef usages with simple structs
-+	sed -r -i -e "s/\b$from\b/struct $to/g" $1
-+	sed -r -i -e "s/\bP$from\b/struct $to \*/g" $1
-+	sed -r -i -e "s/struct $to\s*\*\s*\b/struct $to \*/g" $1
-+	sed -r -i -e "s/\(struct $to\s*\*\)\s*/\(struct $to \*\)/g" $1
-+}
-+
-+if [[ $# -lt 3 ]]; then
-+	usage
-+fi
-+
-+from=$1
-+to=$2
-+shift
-+
-+echo "Converting typedef $from to struct $to"
-+
-+while shift; do
-+	REM_PATH=$1
-+
-+	if [ -z $REM_PATH ]; then
-+		continue;
-+	fi
-+
-+	if [ ! -d $REM_PATH ]; then
-+		echo "No directory $REM_PATH";
-+		continue;
-+	fi
-+
-+	for i in $(find $REM_PATH -type f -name *.c); do
-+		remove_typedef $i
-+	done
-+
-+	for i in $(find $REM_PATH -type f -name *.h); do
-+		remove_typedef $i
-+	done
-+done
--- 
-1.6.3.3
+> No, you misunderstood my description.  We'd start out by suspending
+> DEFG.  DEF will finish quickly, at which time we would start suspending 
+> B because all its dependencies are satisfied.  When G finishes we would 
+> start suspending C.  When B and C are both finished, we would suspend 
+> A.  Total time would be about 1 s because B would be started shortly 
+> after G.
+
+Ah, OK.
+
+> > However, one can observe that B doesn't need to wait for G to resume, because
+> > they are independent of each other.  So, we can resume BDE in parallel with
+> > CFG, while of course DE have to wait for B and so on, but this way we can
+> > theoretically reduce the total resume time to 1 s + O(1 ms).
+> > 
+> > The question is how to do that and it seems to me that we can use completions
+> > for this purpose.  Namely, add a completion to each device with the following
+> > rules:
+> > 1) all completions are reset before dpm_resume(),
+> > 2) before executing the ->resume() callback for device D, we wait for the
+> >    completion of the D's parent,
+> > 3) we complete the D's completion after executing its ->resume() callback.
+> > Also, the items executed in parallel are now the "wait for the parent's
+> > completion, run our callback and complete our completion" things.
+> 
+> Yes, that's essentially what I described.
+
+Good.
+
+> > At first sight I don't see anything fundamentally wrong with this approach.
+> 
+> Nothing fundamentally wrong.  The problems come in the details.  Most
+> notably, the dependencies that are not reflected in the tree structure.
+> 
+> In practice, rather than completions I'd recommend using a pool of
+> threads together with a single wait queue and a list of devices which
+> _might_ be ready.  Initially this list can contain every device.
+> 
+> Each time a thread wakes up it scans the list, removing devices that
+> aren't actually ready yet (i.e., the dependencies aren't satisfied).  
+> If it doesn't find any devices that are ready, it goes back to sleep.  
+> When it finds a device that _is_ ready, it wakes up another thread and
+> invokes the callback.  When the callback is done, the thread adds to
+> the list all devices that depend on the one just finished.  Then it
+> goes back to scanning the list.
+
+That looks quite complicated at first sight, but asynchronous resume with
+completions can be done in a relatively simple patch.  I've got one, so
+tomorow I'll post it for further discussion.
+
+Thanks,
+Rafael
+
+
+PS
+Did you have a chance to look at rev. 15 of the runtime PM patch
+(http://patchwork.kernel.org/patch/40306/)?
 
