@@ -1,121 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbZHKXRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbZHKXRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573AbZHKXRN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 19:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755547AbZHKXRN
+	id S1755621AbZHKXRu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 19:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbZHKXRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 19:17:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55492 "EHLO ogre.sisk.pl"
+	Tue, 11 Aug 2009 19:17:49 -0400
+Received: from mga09.intel.com ([134.134.136.24]:26566 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753430AbZHKXRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 19:17:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
-Date: Wed, 12 Aug 2009 01:17:27 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Zhang Rui <rui.zhang@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       "linux-acpi" <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
-       "dtor@mail.ru" <dtor@mail.ru>
-References: <Pine.LNX.4.44L0.0908111438230.5845-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908111438230.5845-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S1755599AbZHKXRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 19:17:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,363,1246863600"; 
+   d="scan'208";a="438155136"
+Date: Tue, 11 Aug 2009 16:17:46 -0700
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net,
+       Tiago Vignatti <tiago.vignatti@nokia.com>
+Subject: Re: [PATCH] vga: implements VGA arbitration on Linux
+Message-ID: <20090811161746.7b8878aa@jbarnes-g45>
+In-Reply-To: <1249969927-884-1-git-send-email-airlied@gmail.com>
+References: <1249969927-884-1-git-send-email-airlied@gmail.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908120117.27961.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 11 August 2009, Alan Stern wrote:
-> On Tue, 11 Aug 2009, Rafael J. Wysocki wrote:
+On Tue, 11 Aug 2009 15:52:06 +1000
+Dave Airlie <airlied@gmail.com> wrote:
+
+> From: Tiago Vignatti <tiago.vignatti@nokia.com>
 > 
-> > > The general algorithm for maximum parallelism goes as follows: Start by
-> > > resuming (in parallel) all the devices which don't depend on anything
-> > > else.  Each time a resume finishes, you go on to resume (in parallel)
-> > > all the devices which depend only on resumed devices and which haven't
-> > > yet started to resume.
-> > > 
-> > > As described, this can require a large number of threads.  It also
-> > > requires detailed knowledge of which devices depend on others, which we
-> > > don't have.
-> > 
-> > It's even more complicated than that.
-> > 
-> > Assume we have 7 devices, A-G, such that A is the parent of B and C,
-> > B is the parent of D and E, and C is the parent of F and G.  Assume in addition
-> > that the PM dependencies between the devices are fully reflected by the
-> > device tree structure (ie. there are no dependencies that aren't reflected
-> > parent-child relationships) and that B and G take 0.5 s to resume while the
-> > others take < 1 ms each.  So, the total sequential resume time is
-> > 2 s + O(1 ms).
-> > 
-> > Now, if we used the above algorithm, we'd first resume DEFG which would take
-> > 1 s because of G, then we'd resume BC which would take 1 s because of B and
-> > the total resume time is again 2 s + O(1 ms).
+> Background:
+> Graphic devices are accessed through ranges in I/O or memory space.
+> While most modern devices allow relocation of such ranges, some
+> "Legacy" VGA devices implemented on PCI will typically have the same
+> "hard-decoded" addresses as they did on ISA. For more details see
+> "PCI Bus Binding to IEEE Std 1275-1994 Standard for Boot
+> (Initialization Configuration) Firmware Revision 2.1" Section 7,
+> Legacy Devices.
 > 
-> (You probably mean "suspend" instead of "resume".)
-
-Yes, I got it the other way around here, sorry.
-
-> No, you misunderstood my description.  We'd start out by suspending
-> DEFG.  DEF will finish quickly, at which time we would start suspending 
-> B because all its dependencies are satisfied.  When G finishes we would 
-> start suspending C.  When B and C are both finished, we would suspend 
-> A.  Total time would be about 1 s because B would be started shortly 
-> after G.
-
-Ah, OK.
-
-> > However, one can observe that B doesn't need to wait for G to resume, because
-> > they are independent of each other.  So, we can resume BDE in parallel with
-> > CFG, while of course DE have to wait for B and so on, but this way we can
-> > theoretically reduce the total resume time to 1 s + O(1 ms).
-> > 
-> > The question is how to do that and it seems to me that we can use completions
-> > for this purpose.  Namely, add a completion to each device with the following
-> > rules:
-> > 1) all completions are reset before dpm_resume(),
-> > 2) before executing the ->resume() callback for device D, we wait for the
-> >    completion of the D's parent,
-> > 3) we complete the D's completion after executing its ->resume() callback.
-> > Also, the items executed in parallel are now the "wait for the parent's
-> > completion, run our callback and complete our completion" things.
+> The Resource Access Control (RAC) module inside the X server
+> currently does the task of arbitration when more than one legacy
+> device co-exists on the same machine. But the problem happens when
+> these devices are trying to be accessed by different userspace
+> clients (e.g. two server in parallel). Their address assignments
+> conflict. Therefore an arbitration scheme _outside_ of the X server
+> is needed to control the sharing of these resources. This document
+> introduces the operation of the VGA arbiter implemented for Linux
+> kernel.
 > 
-> Yes, that's essentially what I described.
+> Signed-off-by: Tiago Vignatti <tiago.vignatti@nokia.com>
+> Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-Good.
+Ok, applied this to my linux-next branch, but I'd like to get Ben's
+s-o-b before pushing it to Linus.
 
-> > At first sight I don't see anything fundamentally wrong with this approach.
-> 
-> Nothing fundamentally wrong.  The problems come in the details.  Most
-> notably, the dependencies that are not reflected in the tree structure.
-> 
-> In practice, rather than completions I'd recommend using a pool of
-> threads together with a single wait queue and a list of devices which
-> _might_ be ready.  Initially this list can contain every device.
-> 
-> Each time a thread wakes up it scans the list, removing devices that
-> aren't actually ready yet (i.e., the dependencies aren't satisfied).  
-> If it doesn't find any devices that are ready, it goes back to sleep.  
-> When it finds a device that _is_ ready, it wakes up another thread and
-> invokes the callback.  When the callback is done, the thread adds to
-> the list all devices that depend on the one just finished.  Then it
-> goes back to scanning the list.
-
-That looks quite complicated at first sight, but asynchronous resume with
-completions can be done in a relatively simple patch.  I've got one, so
-tomorow I'll post it for further discussion.
+Ben?
 
 Thanks,
-Rafael
-
-
-PS
-Did you have a chance to look at rev. 15 of the runtime PM patch
-(http://patchwork.kernel.org/patch/40306/)?
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
