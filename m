@@ -1,77 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbZHKOU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZHKOWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753645AbZHKOU4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 10:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbZHKOUz
+	id S1754817AbZHKOWq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 10:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbZHKOWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 10:20:55 -0400
-Received: from fias.uni-frankfurt.de ([141.2.248.1]:60158 "EHLO
-	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbZHKOUy (ORCPT
+	Tue, 11 Aug 2009 10:22:45 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:45320 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751434AbZHKOWp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 10:20:54 -0400
-From: Jan Scholz <scholz@fias.uni-frankfurt.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-       "Jan Scholz" <scholz@fias.uni-frankfurt.de>
-Subject: Re: [Bug #13407] adb trackpad disappears after suspend to ram
-References: <YCu3FOC0QrC.A.MaE.RD2fKB@chimera>
-	<pRuaDVjxFBG.A.ZuF.QF2fKB@chimera>
-Date: Tue, 11 Aug 2009 16:20:33 +0200
-In-Reply-To: <pRuaDVjxFBG.A.ZuF.QF2fKB@chimera> (Rafael J. Wysocki's message
-	of "Sun, 9 Aug 2009 23:10:22 +0200 (CEST)")
-Message-ID: <87ab261lfy.fsf@scholz.fias.uni-frankfurt.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Tue, 11 Aug 2009 10:22:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TMau3d45+EAyiL/RLFW+lYcf4MuNfHluK2Fj/Zfwa8RnQCwbpH4QpcMax4QPhIRlwy
+         B7jt8xzB2UAzrs+P25flfOP/LzHs9rmhil6zz2lPbDyoGRCH1y3kavg1cg9uN2XyHqYA
+         Dw5pbtOWJdDxTkXA5o9IzsXxURW5S/rSxsrGY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1249982534.29180.25.camel@macbook.infradead.org>
+References: <3877989d0908101956o303c43c5i5c5f08297afb312@mail.gmail.com>
+	 <1249982534.29180.25.camel@macbook.infradead.org>
+Date: Tue, 11 Aug 2009 22:22:46 +0800
+Message-ID: <3877989d0908110722y7eb0cf5ds74a03512daa4d399@mail.gmail.com>
+Subject: Re: [RFC patch] Add boot option intel_iommu_drhd_mask
+From: Luming Yu <luming.yu@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-The bug is still present in v2.6.31-rc5, it is fixed by commenting out
-{suspend,resume}_device_irqs() in drivers/base/power/main.c as suggested
-by Rafael.
-Recently I find the info
-"Platform driver 'snd_powermac' needs updating - please use dev_pm_ops"
-in dmesg, could this be related?
-
-Regards,
-   Jan
-
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
-
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.29 and 2.6.30.
+On Tue, Aug 11, 2009 at 5:22 PM, David Woodhouse<dwmw2@infradead.org> wrote:
+> On Tue, 2009-08-11 at 10:56 +0800, Luming Yu wrote:
+>> **The patch is enclosed in text attachment*
+>> **Using web client to send the patch* *
+>> **below is for review, please apply attached  patch*/
 >
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-> be listed and let me know (either way).
+> Please use a sane mailer and don't do this. Patches should be inline in
+> a usable form.
 >
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13407
-> Subject		: adb trackpad disappears after suspend to ram
-> Submitter	: Jan Scholz <scholz@fias.uni-frankfurt.de>
-> Date		: 2009-05-28 7:59 (74 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2ed8d2b3a81bdbb0418301628ccdb008ac9f40b7
-> References	: http://marc.info/?l=linux-kernel&m=124349762314976&w=4
-> Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Surely gmail allows this, even if your employer doesn't provide a
+> competently-managed mail service?
 
--- 
- Jan Scholz                                ____  ____    __    ___ 
-                                          ( ___)(_  _)  /__\  / __)
- Frankfurt Institute for Advanced Studies  )__)  _)(_  /(__)\ \__ \
-                                          (__)  (____)(__)(__)(___/
- Goethe Universitaet Frankfurt
- Ruth-Moufang-Str. 1                             Tel. 069-798-47534
- 60438 Frankfurt am Main
+I found it is very converient to use web gmail, but didn't find way
+to inline in web gmail...
