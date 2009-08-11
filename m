@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbZHKTAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530AbZHKTJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754791AbZHKTAO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 15:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbZHKTAN
+	id S1752530AbZHKTJj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 15:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbZHKTJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 15:00:13 -0400
-Received: from shadow.wildlava.net ([67.40.138.81]:59864 "EHLO
-	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988AbZHKTAM (ORCPT
+	Tue, 11 Aug 2009 15:09:39 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:35865 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbZHKTJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 15:00:12 -0400
-Message-ID: <4A81BFBA.1070507@skyrush.com>
-Date: Tue, 11 Aug 2009 13:00:10 -0600
-From: Joe Peterson <joe@skyrush.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090722)
+	Tue, 11 Aug 2009 15:09:38 -0400
+Date: Tue, 11 Aug 2009 21:09:35 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
+       Frans Pop <elendil@planet.nl>, Chris Mason <chris.mason@oracle.com>,
+       jack@suse.cz, linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: What happened to data=guarded?
+Message-ID: <20090811190935.GB21252@basil.fritz.box>
+References: <1249934623-15939-1-git-send-email-tytso@mit.edu> <200908111535.37927.elendil@planet.nl> <20090811133721.GD29224@think> <200908111654.38217.elendil@planet.nl> <878whqgyid.fsf@basil.nowhere.org> <20090811185703.GQ1756@mit.edu>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Artur Skawina <art.08.09@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Moving tty->stopped logic to ldisc (pty: fix data loss when stopped
- (^S/^Q))
-References: <4A81B587.8070902@skyrush.com> <20090811185221.GA4750@suse.de>
-In-Reply-To: <20090811185221.GA4750@suse.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090811185703.GQ1756@mit.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Tue, Aug 11, 2009 at 12:16:39PM -0600, Joe Peterson wrote:
->> [Please include my email address in replies]
->>
->> Hi all,
->>
->> This is in regard to the problem that the recent patch ("pty: fix data
->> loss when stopped (^S/^Q)") fixes.  The issue is something I've been
->> looking at recently as well after noticing (I noticed it first as loss
->> of echoes, since I was re-testing what my echo buffer code originally
->> fixed).
+On Tue, Aug 11, 2009 at 02:57:03PM -0400, Theodore Tso wrote:
+> On Tue, Aug 11, 2009 at 05:29:14PM +0200, Andi Kleen wrote:
+> > > Good to hear. I've so far stayed with data=ordered as I think I'd prefer 
+> > > data=guarded over data=writeback. I'll certainly give it a try when it's 
+> > > available.
+> > 
+> > Same here. data=writeback already cost me a few files after crashes here :/
 > 
-> Hm, is this resolved by git id 85dfd81dc57e8183a277ddd7a56aa65c96f3f487
-> that Linus commited to the tree yesterday?
+> What sort of files were you losing?  I don't know if we can improve
+> the implied flush hueristics, but we should at least try to see if we
+> do something about it.
 
-Well, that patch "fixes" the issue of the lost chars in that it resumes
-previous behavior, but it does not address the two points I mentioned in
-this post - ones that are hard to fix without moving checks for
-tty->stopped to the ldisc or somehow locking the state of tty->stopped
-(which seems a bit scary).  In other words, there still exist windows
-for loss of chars.
+Common case is something patched or git checkout shortly (but not
+as short as in seconds) before the crash.
 
-						-Joe
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
