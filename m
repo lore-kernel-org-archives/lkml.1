@@ -1,57 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbZHKQue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZHKQwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754877AbZHKQue (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 12:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbZHKQud
+	id S1754838AbZHKQwh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 12:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbZHKQwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 12:50:33 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:58353 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754694AbZHKQuc (ORCPT
+	Tue, 11 Aug 2009 12:52:36 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:38757 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753925AbZHKQwf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 12:50:32 -0400
-Subject: Re: [PATCH 12/14] scsi: use printk_once
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-In-Reply-To: <adahbwe70xz.fsf@cisco.com>
-References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
-	 <1249847649-11631-13-git-send-email-marcin.slusarz@gmail.com>
-	 <1250008813.4301.55.camel@mulgrave.site>  <adahbwe70xz.fsf@cisco.com>
-Content-Type: text/plain
-Date: Tue, 11 Aug 2009 11:50:28 -0500
-Message-Id: <1250009428.4301.59.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Aug 2009 12:52:35 -0400
+Date: Tue, 11 Aug 2009 22:22:10 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       Prarit Bhargava <prarit@redhat.com>, andi.kleen@intel.com,
+       Pavel Emelianov <xemul@openvz.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: Help Resource Counters Scale better (v4)
+Message-ID: <20090811165210.GZ7176@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090811144405.GW7176@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090811144405.GW7176@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-11 at 09:46 -0700, Roland Dreier wrote:
-> > > -	static int vers_printed;
->  > > -
->  > > -	if (!vers_printed) {
->  > > -		printk(KERN_INFO "%s", version);
->  > > -		vers_printed = 1;
->  > > -	}
->  > > +	printk_once(KERN_INFO "%s", version);
-> 
->  > There's really no point to this beyond code churn.  Both patterns are
->  > correct uses so conversion buys us nothing.
-> 
-> It's a pretty small gain but I do think 6 lines -> 1 line does have value.
+* Balbir Singh <balbir@linux.vnet.ibm.com> [2009-08-11 20:14:05]:
 
-Not at the expense of churning the code base of marginal drivers.
-
-I'm not entirely convinced this is a good pattern to begin with.  If you
-add too many patterns you're effectively developing an overly complex
-development language and rule set.  Even if I go with this on the basis
-of readability (as you say, one line for six), then I still don't think
-we should churn the code base to convert correct open coding to it; we
-should just use it ongoing.
-
-James
+Here is a verion of the patch, with the checkpatch.pl warnings fixed.
+I forgot to refresh my changes :(
 
 
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+
+Enhancement: Remove the overhead of root based resource counter accounting
+
+This patch reduces the resource counter overhead (mostly spinlock)
+associated with the root cgroup. This is a part of the several
+patches to reduce mem cgroup overhead. I had posted other
+approaches earlier (including using percpu counters). Those
+patches will be a natural addition and will be added iteratively
+on top of these.
+
+The patch stops resource counter accounting for the root cgroup.
+The data for display is derived from the statisitcs we maintain
+via mem_cgroup_charge_statistics (which is more scalable).
+
+The tests results I see on a 24 way show that
+
+1. The lock contention disappears from /proc/lock_stats
+2. The results of the test are comparable to running with
+  cgroup_disable=memory.
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ mm/memcontrol.c |   89 +++++++++++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 70 insertions(+), 19 deletions(-)
+
+
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 48a38e1..4f51885 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -70,6 +70,7 @@ enum mem_cgroup_stat_index {
+ 	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
+ 	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
+ 	MEM_CGROUP_STAT_EVENTS,	/* sum of pagein + pageout for internal use */
++	MEM_CGROUP_STAT_SWAPOUT, /* # of pages, swapped out */
+ 
+ 	MEM_CGROUP_STAT_NSTATS,
+ };
+@@ -478,6 +479,19 @@ mem_cgroup_largest_soft_limit_node(struct mem_cgroup_tree_per_zone *mctz)
+ 	return mz;
+ }
+ 
++static void mem_cgroup_swap_statistics(struct mem_cgroup *mem,
++					 bool charge)
++{
++	int val = (charge) ? 1 : -1;
++	struct mem_cgroup_stat *stat = &mem->stat;
++	struct mem_cgroup_stat_cpu *cpustat;
++	int cpu = get_cpu();
++
++	cpustat = &stat->cpustat[cpu];
++	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_SWAPOUT, val);
++	put_cpu();
++}
++
+ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
+ 					 struct page_cgroup *pc,
+ 					 bool charge)
+@@ -1281,9 +1295,11 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
+ 	VM_BUG_ON(css_is_removed(&mem->css));
+ 
+ 	while (1) {
+-		int ret;
++		int ret = 0;
+ 		unsigned long flags = 0;
+ 
++		if (mem_cgroup_is_root(mem))
++			goto done;
+ 		ret = res_counter_charge(&mem->res, PAGE_SIZE, &fail_res,
+ 						&soft_fail_res);
+ 		if (likely(!ret)) {
+@@ -1343,6 +1359,7 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
+ 		if (mem_cgroup_soft_limit_check(mem_over_soft_limit))
+ 			mem_cgroup_update_tree(mem_over_soft_limit, page);
+ 	}
++done:
+ 	return 0;
+ nomem:
+ 	css_put(&mem->css);
+@@ -1415,9 +1432,12 @@ static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
+ 	lock_page_cgroup(pc);
+ 	if (unlikely(PageCgroupUsed(pc))) {
+ 		unlock_page_cgroup(pc);
+-		res_counter_uncharge(&mem->res, PAGE_SIZE, NULL);
+-		if (do_swap_account)
+-			res_counter_uncharge(&mem->memsw, PAGE_SIZE, NULL);
++		if (!mem_cgroup_is_root(mem)) {
++			res_counter_uncharge(&mem->res, PAGE_SIZE, NULL);
++			if (do_swap_account)
++				res_counter_uncharge(&mem->memsw, PAGE_SIZE,
++							NULL);
++		}
+ 		css_put(&mem->css);
+ 		return;
+ 	}
+@@ -1494,7 +1514,8 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
+ 	if (pc->mem_cgroup != from)
+ 		goto out;
+ 
+-	res_counter_uncharge(&from->res, PAGE_SIZE, NULL);
++	if (!mem_cgroup_is_root(from))
++		res_counter_uncharge(&from->res, PAGE_SIZE, NULL);
+ 	mem_cgroup_charge_statistics(from, pc, false);
+ 
+ 	page = pc->page;
+@@ -1513,7 +1534,7 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
+ 						1);
+ 	}
+ 
+-	if (do_swap_account)
++	if (do_swap_account && !mem_cgroup_is_root(from))
+ 		res_counter_uncharge(&from->memsw, PAGE_SIZE, NULL);
+ 	css_put(&from->css);
+ 
+@@ -1584,9 +1605,11 @@ uncharge:
+ 	/* drop extra refcnt by try_charge() */
+ 	css_put(&parent->css);
+ 	/* uncharge if move fails */
+-	res_counter_uncharge(&parent->res, PAGE_SIZE, NULL);
+-	if (do_swap_account)
+-		res_counter_uncharge(&parent->memsw, PAGE_SIZE, NULL);
++	if (!mem_cgroup_is_root(parent)) {
++		res_counter_uncharge(&parent->res, PAGE_SIZE, NULL);
++		if (do_swap_account)
++			res_counter_uncharge(&parent->memsw, PAGE_SIZE, NULL);
++	}
+ 	return ret;
+ }
+ 
+@@ -1775,7 +1798,10 @@ __mem_cgroup_commit_charge_swapin(struct page *page, struct mem_cgroup *ptr,
+ 			 * This recorded memcg can be obsolete one. So, avoid
+ 			 * calling css_tryget
+ 			 */
+-			res_counter_uncharge(&memcg->memsw, PAGE_SIZE, NULL);
++			if (!mem_cgroup_is_root(memcg))
++				res_counter_uncharge(&memcg->memsw, PAGE_SIZE,
++							NULL);
++			mem_cgroup_swap_statistics(memcg, false);
+ 			mem_cgroup_put(memcg);
+ 		}
+ 		rcu_read_unlock();
+@@ -1800,9 +1826,11 @@ void mem_cgroup_cancel_charge_swapin(struct mem_cgroup *mem)
+ 		return;
+ 	if (!mem)
+ 		return;
+-	res_counter_uncharge(&mem->res, PAGE_SIZE, NULL);
+-	if (do_swap_account)
+-		res_counter_uncharge(&mem->memsw, PAGE_SIZE, NULL);
++	if (!mem_cgroup_is_root(mem)) {
++		res_counter_uncharge(&mem->res, PAGE_SIZE, NULL);
++		if (do_swap_account)
++			res_counter_uncharge(&mem->memsw, PAGE_SIZE, NULL);
++	}
+ 	css_put(&mem->css);
+ }
+ 
+@@ -1855,9 +1883,14 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ 		break;
+ 	}
+ 
+-	res_counter_uncharge(&mem->res, PAGE_SIZE, &soft_limit_excess);
+-	if (do_swap_account && (ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
+-		res_counter_uncharge(&mem->memsw, PAGE_SIZE, NULL);
++	if (!mem_cgroup_is_root(mem)) {
++		res_counter_uncharge(&mem->res, PAGE_SIZE, &soft_limit_excess);
++		if (do_swap_account &&
++				(ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
++			res_counter_uncharge(&mem->memsw, PAGE_SIZE, NULL);
++	}
++	if (ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT && mem_cgroup_is_root(mem))
++		mem_cgroup_swap_statistics(mem, true);
+ 	mem_cgroup_charge_statistics(mem, pc, false);
+ 
+ 	ClearPageCgroupUsed(pc);
+@@ -1948,7 +1981,9 @@ void mem_cgroup_uncharge_swap(swp_entry_t ent)
+ 		 * We uncharge this because swap is freed.
+ 		 * This memcg can be obsolete one. We avoid calling css_tryget
+ 		 */
+-		res_counter_uncharge(&memcg->memsw, PAGE_SIZE, NULL);
++		if (!mem_cgroup_is_root(memcg))
++			res_counter_uncharge(&memcg->memsw, PAGE_SIZE, NULL);
++		mem_cgroup_swap_statistics(memcg, false);
+ 		mem_cgroup_put(memcg);
+ 	}
+ 	rcu_read_unlock();
+@@ -2461,10 +2496,26 @@ static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
+ 	name = MEMFILE_ATTR(cft->private);
+ 	switch (type) {
+ 	case _MEM:
+-		val = res_counter_read_u64(&mem->res, name);
++		if (name == RES_USAGE && mem_cgroup_is_root(mem)) {
++			val = mem_cgroup_read_stat(&mem->stat,
++					MEM_CGROUP_STAT_CACHE);
++			val += mem_cgroup_read_stat(&mem->stat,
++					MEM_CGROUP_STAT_RSS);
++			val <<= PAGE_SHIFT;
++		} else
++			val = res_counter_read_u64(&mem->res, name);
+ 		break;
+ 	case _MEMSWAP:
+-		val = res_counter_read_u64(&mem->memsw, name);
++		if (name == RES_USAGE && mem_cgroup_is_root(mem)) {
++			val = mem_cgroup_read_stat(&mem->stat,
++					MEM_CGROUP_STAT_CACHE);
++			val += mem_cgroup_read_stat(&mem->stat,
++					MEM_CGROUP_STAT_RSS);
++			val += mem_cgroup_read_stat(&mem->stat,
++					MEM_CGROUP_STAT_SWAPOUT);
++			val <<= PAGE_SHIFT;
++		} else
++			val = res_counter_read_u64(&mem->memsw, name);
+ 		break;
+ 	default:
+ 		BUG();
+
+-- 
+	Balbir
