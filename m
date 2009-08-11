@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751985AbZHKC1B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751122AbZHKLvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751985AbZHKC1B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 22:27:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZHKC1A
+	id S1751122AbZHKLvp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 07:51:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbZHKLvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 22:27:00 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:48517 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751254AbZHKC07 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 22:26:59 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=1 a=n734oir6eZo1qU3a57sL7A==:17 a=7t9U9tpv3E00FKhP1foA:9
- a=T6F30QoRrWfrHxFBPpZP0WxNjRYA:4
-Message-ID: <4A80D6D4.3080005@ubb.ca>
-Date: Mon, 10 Aug 2009 19:26:28 -0700
-From: Tony Mantler <nicoya@ubb.ca>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Tue, 11 Aug 2009 07:51:44 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49546 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751018AbZHKLvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 07:51:43 -0400
+Message-ID: <4A811545.5090209@redhat.com>
+Date: Tue, 11 Aug 2009 09:52:53 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-To: David Newall <davidn@davidnewall.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: case-duplicated filenames
-References: <a9c5028086c7f5f0e245853b9065e187.squirrel@ubb.ca> <4A80D5DF.3090402@davidnewall.com>
-In-Reply-To: <4A80D5DF.3090402@davidnewall.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Pierre Ossman <drzeus-list@drzeus.cx>, Minchan Kim <minchan.kim@gmail.com>,
+       kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Wu Fengguang <fengguang.wu@intel.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: Page allocation failures in guest
+References: <20090713115158.0a4892b0@mjolnir.ossman.eu>	<28c262360907130759w29c84117w635b21408090a06c@mail.gmail.com> <20090811083233.3b2be444@mjolnir.ossman.eu>
+In-Reply-To: <20090811083233.3b2be444@mjolnir.ossman.eu>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Newall wrote:
-> Tony Mantler wrote:
->> A co-worker reminded me this afternoon that the linux source tree does not
->> get along well with case-insensitive filesystems. Ever the curious and
->> bored sort, and in the middle of an sqlite bender, I decided to cook up a
->> quick script to find exactly what files those are.
->>   
-> 
-> Such an extravagant process: you're just being silly.
+On 08/11/2009 09:32 AM, Pierre Ossman wrote:
+> On Mon, 13 Jul 2009 23:59:52 +0900
+> Minchan Kim<minchan.kim@gmail.com>  wrote:
+>
+>    
+>> On Mon, Jul 13, 2009 at 6:51 PM, Pierre Ossman<drzeus-list@drzeus.cx>  wrote:
+>>      
+>>> Jul 12 23:04:54 loki kernel: Active_anon:14065 active_file:87384 inactive_anon:37480
+>>> Jul 12 23:04:54 loki kernel: inactive_file:95821 unevictable:4 dirty:8 writeback:0 unstable:0
+>>> Jul 12 23:04:54 loki kernel: free:1344 slab:7113 mapped:4283 pagetables:5656 bounce:0
+>>> Jul 12 23:04:54 loki kernel: Node 0 DMA free:3988kB min:24kB low:28kB high:36kB active_anon:0kB inactive_anon:0kB active_file:3532kB inactive_file:1032kB unevictable:0kB present:6840kB pages_scanned:0 all_un
+>>>        
+>> I don't know why present is bigger than free + [in]active anon ?
+>> Who know this ?
+>>
+>> There are 258 pages in inactive file.
+>> Unfortunately, it seems we don't have any discardable pages.
+>> The reclaimer can't sync dirty pages to reclaim them, too.
+>> That's because we are going on GFP_ATOMIC as I mentioned.
+>>
+>>      
+>
+> Any ideas here? Is the virtio net driver very GFP_ATOMIC happy so it
+> drains all those pages? And why is this triggered by a kernel upgrade
+> in the host?
+>
+> Avi?
+>
+>    
 
-Well I did say I was bored. ;)
+Rusty?
+
+>>> reclaimable? no
+>>> Jul 12 23:04:54 loki kernel: lowmem_reserve[]: 0 994 994 994
+>>> Jul 12 23:04:54 loki kernel: Node 0 DMA32 free:1388kB min:4020kB low:5024kB high:6028kB active_anon:56260kB inactive_anon:149920kB active_file:346004kB inactive_file:382252kB unevictable:16kB present:1018016
+>>>        
+>> free : 1388KB min : 4020KB. In addtion, now GFP_HIGH. so calculation
+>> is as follow for zone_watermark_ok.
+>>
+>> 1388<  (4020 / 2)
+>>
+>> So failed it in zone_watermark_ok.
+>> AFAIU, it's fairy OOM problem.
+>>
+>>      
+>
+> I doesn't get out of it though, or at least the virtio net driver
+> wedges itself.
+>
+> Rgds
+>    
 
 
- > There appears to be a line missing:
-> 
-> find $DIRECTORY | sed 's/^\(.*\)/INSERT INTO filenames (name) VALUES ("\1");/' >>$SQLFILE
-
-?
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
