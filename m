@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752931AbZHKTLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbZHKTND@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752931AbZHKTLA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 15:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751009AbZHKTLA
+	id S1753360AbZHKTND (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 15:13:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbZHKTNC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 15:11:00 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47052 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750844AbZHKTK7 (ORCPT
+	Tue, 11 Aug 2009 15:13:02 -0400
+Received: from mail.uni-paderborn.de ([131.234.142.9]:29615 "EHLO
+	mail.uni-paderborn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751009AbZHKTNB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 15:10:59 -0400
-Date: Tue, 11 Aug 2009 20:12:06 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ben Greear <greearb@candelatech.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: How to disable DMA for compact-flash disk?
-Message-ID: <20090811201206.14556624@lxorguk.ukuu.org.uk>
-In-Reply-To: <4A81BDA6.4080804@candelatech.com>
-References: <4A81BDA6.4080804@candelatech.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Aug 2009 15:13:01 -0400
+Date: Tue, 11 Aug 2009 21:12:59 +0200
+To: linux-kernel@vger.kernel.org
+From: Martin Gelhaus <gelhaus@upb.de>
+Subject: =?UTF-8?B?U3R1ZHkgb24gY29tbXVuaWNhdGlvbiBhbmQgY29sbGFib3JhdGlvbiBpbiBzb2Z0d2FyZSBkZXZlbG9wbWVudCB0ZWFtcw==?=
+Message-ID: <4d35cadb5c5beae2388b35ac7ca89747@thales.cs.upb.de>
+X-Priority: 3
+X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.2]
+X-Surveymailer: LimeSurvey:Emailer (LimeSurvey.sourceforge.net)
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+X-IMT-Spam-Score: 0.8 ()
+X-PMX-Version: 5.5.7.378829, Antispam-Engine: 2.7.2.376379, Antispam-Data: 2009.8.11.190316
+X-PerlMx-Spam: Gauge=IIIIIIII, Probability=8%, Report='
+  SUPERLONG_LINE 0.05, BODY_SIZE_1500_1599 0, BODY_SIZE_2000_LESS 0, BODY_SIZE_5000_LESS 0, BODY_SIZE_7000_LESS 0, TO_NO_NAME 0, WEBMAIL_SOURCE 0, WEBMAIL_XMAILER 0, __C230066_P2 0, __CP_URI_IN_BODY 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __HAS_X_PRIORITY 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __PHISH_SPEAR_STRUCTURE_1 0, __PHISH_SPEAR_STRUCTURE_2 0, __SANE_MSGID 0, __TO_MALFORMED_2 0, __URI_NS '
+X-IMT-Authenticated-Sender: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Aug 2009 11:51:18 -0700
-Ben Greear <greearb@candelatech.com> wrote:
+Dear Linux Kernel developer,
 
-> I'm trying to use Fedora 11 with default kernel on an old via system
-> that boots from compact flash.  DMA is not supported on the CF for
-> whatever reason, and in previous kernels, I've always disabled
-> DMA, first with ide=nodma, and then later with
-> ide_core.nodma=0.0 ide_core.nodma=0.1 ...
+within the scope of my diploma thesis at the University of Paderborn, Germany, with the title "Study about communication and collaboration in software development in teams" I am conducting a survey of members of software development teams.
 
-Fedora switched to libata some releases ago so
+I would be very grateful if you help me in my studies and answer the survey at http://thales.cs.upb.de/limesurvey185/index.php?lang=en&sid=91192&token=kmjn7y95s29mdwk
 
-libata.dma=n
+This is the official description of the survey:
 
-0 - off
-1 - disk only
+In the last years many means of communication and collaboration were introduced in software projects to assist the development teams with their daily work.
 
-+ 2 disk/CD
-+ 4 disk/CD/CFA
+With this study we want to identify requirements for a communication- and collaboration-supporting platform for software development. For this purpose we will evaluate the utilization and effectiveness of different means of communication and collaboration in solving software and managerial problems in software development teams.
 
-(so you can turn DMA off just for CFA devices providing they admit they
-are CFA)
+The survey will take about 10-15 minutes and contains 55 questions that cover various topics.
+
+Many thanks for your support of my research. If there are any further questions, don't hesitate to contact me.
+ 
+Best regards from Paderborn, Germany
+
+Martin Gelhaus (gelhaus@upb.de)
+
+----------------------------------------------
+Click here to do the survey:
+http://thales.cs.upb.de/limesurvey185/index.php?lang=en&sid=91192&token=kmjn7y95s29mdwk
+
+----
+Martin Gelhaus
+
+Graduand at Didactics of Informatics chair at University of Paderborn
+Fürstenallee 11
+Room F2.416
+D-33102 Paderborn			
+
 
