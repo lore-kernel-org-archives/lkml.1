@@ -1,47 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbZHKSJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbZHKSKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755332AbZHKSJu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 14:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbZHKSJt
+	id S1755359AbZHKSKH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 14:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbZHKSKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 14:09:49 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:34062 "EHLO mail-out2.uio.no"
+	Tue, 11 Aug 2009 14:10:06 -0400
+Received: from mga11.intel.com ([192.55.52.93]:55106 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753441AbZHKSJs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 14:09:48 -0400
-Subject: Re: NULL pointer dereference in __put_nfs_open_context()
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: linux-nfs@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1250010984.30628.15.camel@pc1117.cambridge.arm.com>
-References: <1249990719.27150.52.camel@pc1117.cambridge.arm.com>
-	 <1249995530.12218.3.camel@heimdal.trondhjem.org>
-	 <1250010984.30628.15.camel@pc1117.cambridge.arm.com>
+	id S1755341AbZHKSKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 14:10:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,361,1246863600"; 
+   d="scan'208";a="482666424"
+Subject: Re: [PATCH] hpet: hpet driver periodic timer setup bug fixes
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Nils Carlson <nils.carlson@ericsson.com>,
+       David Brownell <david-b@pacbell.net>
+In-Reply-To: <20090810210312.eb3bb57f.akpm@linux-foundation.org>
+References: <20090810220503.GA29239@linux-os.sc.intel.com>
+	 <20090810210312.eb3bb57f.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Tue, 11 Aug 2009 14:09:45 -0400
-Message-Id: <1250014185.26580.2.camel@heimdal.trondhjem.org>
+Date: Tue, 11 Aug 2009 11:07:42 -0700
+Message-Id: <1250014062.11545.39252.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 3 msgs/h 1 sum rcpts/h 4 sum msgs/h 1 total rcpts 1021 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 60E6349AD1BBB937E38C3CC35169B7E904F6A699
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 116 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-11 at 18:16 +0100, Catalin Marinas wrote:
-> On Tue, 2009-08-11 at 08:58 -0400, Trond Myklebust wrote:
-> > How about the following instead? This patch gets rid of those
-> > nfs_open_context references altogether...
+On Mon, 2009-08-10 at 21:03 -0700, Andrew Morton wrote:
+> On Mon, 10 Aug 2009 15:05:04 -0700 "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
 > 
-> It fixes the kernel oops.
+> > From: Nils Carlson <nils.carlson@ericsson.com>
+> > 
+> > The periodic interrupt from drivers/char/hpet.c does not work correctly,
+> > both when using the periodic capability of the hardware and while
+> > emulating the periodic interrupt (when hardware does not support
+> > periodic mode).
+> > 
+> > With timers capable of periodic interrupts, the comparator field is first
+> > set with the period value followed by set of hidden accumulator,
+> > which has the side effect of overwriting the comparator value. This
+> > results in wrong periodicity for the interrupts. For,
+> > periodic interrupts to work, following steps are necessary, in that order.
+> > * Set config with Tn_VAL_SET_CNF bit
+> > * Write to hidden accumulator, the value written is the time when the
+> >   first interrupt should be generated
+> > * Write compartor with period interval for subsequent interrupts
+> > (http://www.intel.com/hardwaredesign/hpetspec_1.pdf )
+> > 
+> > When emulating periodic timer with timers not capable of periodic
+> > interrupt, driver is adding the period to counter value instead of
+> > comparator value, which causes slow drift when using this emulation.
+> > 
+> > Also, driver seems to add hpetp->hp_delta both while setting up
+> > periodic interrupt and while emulating periodic interrupts with timers
+> > not capable of doing periodic interrupts. This hp_delta will result in
+> > slower than expected interrupt rate and should not be used while setting
+> > the interval.
+> > 
 > 
-> Thanks.
+> Do you have any thoughts on which kernel versions this fix should be
+> merged into, and when?
+> 
 
-Can I mark that as a Tested-by? :-)
+Should be OK let this bake for a while and merge this in after .31.
 
-Cheers
-  Trond
+Thanks,
+Venki
 
