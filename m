@@ -1,249 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbZHKOca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbZHKOcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbZHKOca (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 10:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZHKOc3
+	id S1754879AbZHKOcd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 10:32:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbZHKOcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 10:32:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40989 "EHLO mx2.redhat.com"
+	Tue, 11 Aug 2009 10:32:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40992 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752313AbZHKOc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 10:32:29 -0400
+	id S1753005AbZHKOcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 10:32:31 -0400
 From: Stanislaw Gruszka <sgruszka@redhat.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
        Oleg Nesterov <oleg@redhat.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Stanislaw Gruszka <sgruszka@redhat.com>
-Subject: [PATCH -tip 0/1] posix-cpu-timers: fix CPUCLOCK_{PROF,VIRT} periodic tics precision
-Date: Tue, 11 Aug 2009 16:31:39 +0200
-Message-Id: <1250001100-3936-1-git-send-email-sgruszka@redhat.com>
+Subject: [PATCH -tip 1/1] posix-cpu-timers: fix CPUCLOCK_{PROF,VIRT} periodic tics precision
+Date: Tue, 11 Aug 2009 16:31:40 +0200
+Message-Id: <1250001100-3936-2-git-send-email-sgruszka@redhat.com>
+In-Reply-To: <1250001100-3936-1-git-send-email-sgruszka@redhat.com>
+References: <1250001100-3936-1-git-send-email-sgruszka@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello. 
+When calculating next expires time and timer overrun value for periodic
+timer use real nanosecond interval value provided by user (same 64 bits
+algorithm as for CPUCLOCK_SCHED). Then round up values for cputime
+resolution based on nanosecond value of one cpu tick.
 
-POSIX 1.b cpu timers where clockid is based on CPUCLOCK_PROF and CPUCLOCK_VIRT,
-have systematic timer error, the same as had itimers. Error can be showed by
-program [1]. Results for unpatched and patched kernel are below:
+Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
+---
+ include/linux/posix-timers.h |   17 ++++++++
+ kernel/itimer.c              |   11 -----
+ kernel/posix-cpu-timers.c    |   92 +++++++++++++++++++++++++++--------------
+ 3 files changed, 77 insertions(+), 43 deletions(-)
 
-Unpatched kernel:
-
-CLK_PROF
-Period 10000:	counted time 14.51 , real time 15.99 , error -9.2 %
-Period 9998:	counted time 15.95 , real time 15.96 , error -0.1 %
-Period 1000:	counted time 7.99 , real time 15.98 , error -50.0 %
-Period 11111:	counted time 14.77 , real time 15.96 , error -7.5 %
-Period 21315:	counted time 15.45 , real time 15.96 , error -3.1 %
-Period 1500:	counted time 11.98 , real time 15.98 , error -25.0 %
-Period 15000:	counted time 14.96 , real time 15.96 , error -6.3 %
-Period 50000:	counted time 15.60 , real time 15.95 , error -2.2 %
-Period 777777:	counted time 15.56 , real time 15.95 , error -2.5 %
-Period 212341:	counted time 15.71 , real time 15.95 , error -1.5 %
-Period 10001:	counted time 14.50 , real time 15.96 , error -9.1 %
-Period 1002:	counted time 8.01 , real time 15.98 , error -49.9 %
-Period 999000:	counted time 14.98 , real time 15.95 , error -6.1 %
-Period 2222:	counted time 11.83 , real time 15.97 , error -26.0 %
-Period 500:	counted time 8.01 , real time 16.02 , error -50.0 %
-CLK_VIRT
-Period 10000:	counted time 14.50 , real time 15.96 , error -9.2 %
-Period 9998:	counted time 15.95 , real time 15.96 , error -0.1 %
-Period 1000:	counted time 7.99 , real time 15.98 , error -50.0 %
-Period 11111:	counted time 14.77 , real time 15.97 , error -7.5 %
-Period 21315:	counted time 15.45 , real time 15.96 , error -3.2 %
-Period 1500:	counted time 11.99 , real time 15.99 , error -25.0 %
-Period 15000:	counted time 14.96 , real time 15.96 , error -6.3 %
-Period 50000:	counted time 15.60 , real time 15.96 , error -2.2 %
-Period 777777:	counted time 15.56 , real time 15.95 , error -2.5 %
-Period 212341:	counted time 15.71 , real time 15.96 , error -1.5 %
-Period 10001:	counted time 14.50 , real time 15.96 , error -9.1 %
-Period 1002:	counted time 8.01 , real time 15.99 , error -49.9 %
-Period 999000:	counted time 14.98 , real time 15.95 , error -6.1 %
-Period 2222:	counted time 11.83 , real time 15.98 , error -26.0 %
-Period 500:	counted time 8.01 , real time 16.01 , error -50.0 %
-
-Patched kernel:
-
-CLK_PROF
-Period 10000:	counted time 16.05 , real time 16.06 , error -0.1 %
-Period 9998:	counted time 16.30 , real time 16.30 , error -0.0 %
-Period 1000:	counted time 16.45 , real time 16.45 , error -0.0 %
-Period 11111:	counted time 15.99 , real time 16.00 , error -0.1 %
-Period 21315:	counted time 15.99 , real time 15.99 , error -0.1 %
-Period 1500:	counted time 16.03 , real time 16.03 , error -0.0 %
-Period 15000:	counted time 15.99 , real time 16.00 , error -0.0 %
-Period 50000:	counted time 15.95 , real time 15.99 , error -0.3 %
-Period 777777:	counted time 15.56 , real time 15.99 , error -2.7 %
-Period 212341:	counted time 16.35 , real time 16.37 , error -0.1 %
-Period 10001:	counted time 15.99 , real time 16.00 , error -0.0 %
-Period 1002:	counted time 16.05 , real time 16.05 , error -0.0 %
-Period 999000:	counted time 15.98 , real time 15.99 , error -0.1 %
-Period 2222:	counted time 16.02 , real time 16.02 , error -0.0 %
-Period 500:	counted time 8.02 , real time 16.05 , error -50.0 %
-CLK_VIRT
-Period 10000:	counted time 15.99 , real time 16.00 , error -0.1 %
-Period 9998:	counted time 16.02 , real time 16.03 , error -0.1 %
-Period 1000:	counted time 16.04 , real time 16.05 , error -0.1 %
-Period 11111:	counted time 15.99 , real time 16.00 , error -0.1 %
-Period 21315:	counted time 16.39 , real time 16.40 , error -0.1 %
-Period 1500:	counted time 16.02 , real time 16.03 , error -0.0 %
-Period 15000:	counted time 15.97 , real time 16.00 , error -0.1 %
-Period 50000:	counted time 15.95 , real time 16.00 , error -0.3 %
-Period 777777:	counted time 15.56 , real time 16.00 , error -2.8 %
-Period 212341:	counted time 16.14 , real time 16.34 , error -1.2 %
-Period 10001:	counted time 15.98 , real time 16.00 , error -0.1 %
-Period 1002:	counted time 16.04 , real time 16.05 , error -0.0 %
-Period 999000:	counted time 15.98 , real time 16.00 , error -0.1 %
-Period 2222:	counted time 16.01 , real time 16.02 , error -0.1 %
-Period 500:	counted time 8.02 , real time 16.05 , error -50.0 %
-
-Even if probably nobody use these timers, I think we should fix them
-because we have this API in kernel and the timers perform bad. Patch
-is against Ingo's -tip (-sched-devel) tree where are my previous itmiers
-patches.
-
-Cheers
-Stanislaw 
-
-
-[1] Program for measurement POSIX.1b CPUCLOCK_{PROF,VIRT} cpu timers precision
-
-#include <sys/time.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
-#include <unistd.h>
-
-#define ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
-
-const int test_periods_us[] = {
-	10000,
-	9998,
-	1000,
-	11111,
-	21315,
-	1500,
-	15000,
-	50000,
-	777777,
-	212341,
-	10001,
-	1002,
-	999000,
-	2222,
-	500,
-};
-
-volatile int prof_counter;
-
-void handler(int signr)
-{
-	prof_counter++;
-}
-
-#define CPUCLOCK_PROF		0
-#define CPUCLOCK_VIRT		1
-#define CPUCLOCK_SCHED		2
-
-#define MAKE_PROCESS_CPUCLOCK(pid, clock) \
-	((~(clockid_t) (pid) << 3) | (clockid_t) (clock))
-
-#define CLK_PROF	MAKE_PROCESS_CPUCLOCK(0, CPUCLOCK_PROF)
-#define CLK_VIRT	MAKE_PROCESS_CPUCLOCK(0, CPUCLOCK_VIRT)
-#define CLK_SCHED	MAKE_PROCESS_CPUCLOCK(0, CPUCLOCK_SCHED)
-
-void test_func(void)
-{
-	long long i = 0;
-	long long count = 0;
-
-	for(i=0; i<3000000000LL; i++)
-		count++;
-}
-
-double timeval_diff(const struct timeval *start, const struct timeval *end)
-{
-	return (end->tv_sec - start->tv_sec) + (end->tv_usec - start->tv_usec)/1000000.0;
-}
-
-void measure_itimer_error(int period_us, clockid_t clk_id)
-{
-	struct sigaction act;
-	struct timeval start, end;
-	struct sigevent evt;
-	double real_time, counted_time;
-
-	timer_t tid;
-
-	prof_counter = 0;
-
-	struct timespec period_ts = {
-		.tv_sec = 0,
-		.tv_nsec = period_us * 1000,
-	};
-	struct itimerspec timer_spec = {
-		.it_interval = period_ts,
-		.it_value = period_ts
-	};
-
-	act.sa_handler = handler;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;
-	if (sigaction(SIGPROF, &act, NULL) < 0) {
-		printf("sigaction failed\n");
-		exit(1);
-	}
-
-	memset(&evt, 0, sizeof(evt));
-	evt.sigev_notify = SIGEV_SIGNAL;
-	evt.sigev_signo = SIGPROF;
-	if (timer_create(clk_id, &evt,  &tid) <  0) {
-		perror("timer_create");
-		exit(1);
-	}
-
-	if (timer_settime(tid, 0, &timer_spec,  NULL) < 0) {
-		perror("timer_settime");
-		exit(1);
-	}
-
-	/* run a busy loop and measure it */
-	gettimeofday(&start, NULL);
-	test_func();
-	gettimeofday(&end, NULL);
-
-	/* disable the timer */
-	memset(&timer_spec, 0, sizeof(timer_spec));
-	if (timer_settime(tid, 0,  &timer_spec, NULL) < 0) {
-		perror("timer_settime");
-		exit(1);
-	}
-	if (timer_delete(tid) < 0) {
-		perror("timer_delete");
-		exit(1);
-	}
-
-	counted_time = prof_counter * period_us / 1000000.0;
-	real_time = timeval_diff(&start, &end);
-
-	printf("Period %d:\tcounted time %.2f , real time %.2f , error %.1f %%\n",
-		period_us, counted_time, real_time, (counted_time/real_time - 1.0)*100.0);
-}
-
-int main()
-{
-	int i;
-	
-	printf("CLK_PROF\n");	
-	for (i=0; i<ARRAY_SIZE(test_periods_us); i++)
-		measure_itimer_error(test_periods_us[i], CLK_PROF);
-	printf("CLK_VIRT\n");
-	for (i=0; i<ARRAY_SIZE(test_periods_us); i++)
-		measure_itimer_error(test_periods_us[i], CLK_VIRT);
-	
-	return 0;
-}
+diff --git a/include/linux/posix-timers.h b/include/linux/posix-timers.h
+index 4f71bf4..68a129e 100644
+--- a/include/linux/posix-timers.h
++++ b/include/linux/posix-timers.h
+@@ -13,7 +13,9 @@ union cpu_time_count {
+ struct cpu_timer_list {
+ 	struct list_head entry;
+ 	union cpu_time_count expires, incr;
++	u64 real_incr;
+ 	struct task_struct *task;
++	u32 error;
+ 	int firing;
+ };
+ 
+@@ -119,4 +121,19 @@ long clock_nanosleep_restart(struct restart_block *restart_block);
+ 
+ void update_rlimit_cpu(unsigned long rlim_new);
+ 
++/*
++ * Helper for calculating error when rounding time values providing
++ * in nano or micro seconds to cputime_t ticks.
++ */
++static inline u32 cputime_sub_ns(cputime_t ct, s64 real_ns)
++{
++	struct timespec ts;
++	s64 cpu_ns;
++
++	cputime_to_timespec(ct, &ts);
++	cpu_ns = timespec_to_ns(&ts);
++
++	return (cpu_ns <= real_ns) ? 0 : cpu_ns - real_ns;
++}
++
+ #endif
+diff --git a/kernel/itimer.c b/kernel/itimer.c
+index 8078a32..607cb7d 100644
+--- a/kernel/itimer.c
++++ b/kernel/itimer.c
+@@ -127,17 +127,6 @@ enum hrtimer_restart it_real_fn(struct hrtimer *timer)
+ 	return HRTIMER_NORESTART;
+ }
+ 
+-static inline u32 cputime_sub_ns(cputime_t ct, s64 real_ns)
+-{
+-	struct timespec ts;
+-	s64 cpu_ns;
+-
+-	cputime_to_timespec(ct, &ts);
+-	cpu_ns = timespec_to_ns(&ts);
+-
+-	return (cpu_ns <= real_ns) ? 0 : cpu_ns - real_ns;
+-}
+-
+ static void set_cpu_itimer(struct task_struct *tsk, unsigned int clock_id,
+ 			   const struct itimerval *const value,
+ 			   struct itimerval *const ovalue)
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index 12161f7..2a32c9a 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -117,6 +117,11 @@ static inline cputime_t cputime_div_non_zero(cputime_t time, unsigned long div)
+ }
+ 
+ /*
++ * One jiffy in nanoseconds, calculated using real frequency of hardware timer.
++ */
++static u32 onecputick;
++
++/*
+  * Update expiry time from increment, and increase overrun count,
+  * given the current clock sample.
+  */
+@@ -124,46 +129,60 @@ static void bump_cpu_timer(struct k_itimer *timer,
+ 				  union cpu_time_count now)
+ {
+ 	int i;
++	unsigned long long now_ns, expires, delta, incr;
+ 
+ 	if (timer->it.cpu.incr.sched == 0)
+ 		return;
+ 
+ 	if (CPUCLOCK_WHICH(timer->it_clock) == CPUCLOCK_SCHED) {
+-		unsigned long long delta, incr;
+-
+ 		if (now.sched < timer->it.cpu.expires.sched)
+ 			return;
++
++		now_ns = now.sched;
++		expires = timer->it.cpu.expires.sched;
+ 		incr = timer->it.cpu.incr.sched;
+-		delta = now.sched + incr - timer->it.cpu.expires.sched;
+-		/* Don't use (incr*2 < delta), incr*2 might overflow. */
+-		for (i = 0; incr < delta - incr; i++)
+-			incr = incr << 1;
+-		for (; i >= 0; incr >>= 1, i--) {
+-			if (delta < incr)
+-				continue;
+-			timer->it.cpu.expires.sched += incr;
+-			timer->it_overrun += 1 << i;
+-			delta -= incr;
+-		}
+ 	} else {
+-		cputime_t delta, incr;
+-
+ 		if (cputime_lt(now.cpu, timer->it.cpu.expires.cpu))
+ 			return;
+-		incr = timer->it.cpu.incr.cpu;
+-		delta = cputime_sub(cputime_add(now.cpu, incr),
+-				    timer->it.cpu.expires.cpu);
+-		/* Don't use (incr*2 < delta), incr*2 might overflow. */
+-		for (i = 0; cputime_lt(incr, cputime_sub(delta, incr)); i++)
+-			     incr = cputime_add(incr, incr);
+-		for (; i >= 0; incr = cputime_halve(incr), i--) {
+-			if (cputime_lt(delta, incr))
+-				continue;
+-			timer->it.cpu.expires.cpu =
+-				cputime_add(timer->it.cpu.expires.cpu, incr);
+-			timer->it_overrun += 1 << i;
+-			delta = cputime_sub(delta, incr);
++
++		now_ns = cputime_to_jiffies(now.cpu);
++		now_ns *= onecputick;
++
++		expires = cputime_to_jiffies(timer->it.cpu.expires.cpu);
++		expires *= onecputick;
++		expires -= timer->it.cpu.error;
++
++		incr = timer->it.cpu.real_incr;
++	}
++
++	delta = now_ns + incr - expires;
++
++	/* Don't use (incr*2 < delta), incr*2 might overflow. */
++	for (i = 0; incr < delta - incr; i++)
++		incr = incr << 1;
++	for (; i >= 0; incr >>= 1, i--) {
++		if (delta < incr)
++			continue;
++		expires += incr;
++		timer->it_overrun += 1 << i;
++		delta -= incr;
++	}
++
++	if (CPUCLOCK_WHICH(timer->it_clock) == CPUCLOCK_SCHED)
++		timer->it.cpu.expires.sched = expires;
++	else {
++		unsigned long exp_jiffy;
++		u32 error;
++
++		error = do_div(expires, onecputick);
++		if (error == 0) {
++			exp_jiffy = expires;
++			timer->it.cpu.error = 0;
++		} else {
++			exp_jiffy = expires + 1;
++			timer->it.cpu.error = onecputick - error;
+ 		}
++		timer->it.cpu.expires.cpu = jiffies_to_cputime(exp_jiffy);
+ 	}
+ }
+ 
+@@ -397,6 +416,8 @@ int posix_cpu_timer_create(struct k_itimer *new_timer)
+ 	INIT_LIST_HEAD(&new_timer->it.cpu.entry);
+ 	new_timer->it.cpu.incr.sched = 0;
+ 	new_timer->it.cpu.expires.sched = 0;
++	new_timer->it.cpu.error = 0;
++	new_timer->it.cpu.real_incr = 0;
+ 
+ 	read_lock(&tasklist_lock);
+ 	if (CPUCLOCK_PERTHREAD(new_timer->it_clock)) {
+@@ -842,6 +863,14 @@ int posix_cpu_timer_set(struct k_itimer *timer, int flags,
+ 	timer->it.cpu.incr = timespec_to_sample(timer->it_clock,
+ 						&new->it_interval);
+ 
++	if (CPUCLOCK_WHICH(timer->it_clock) != CPUCLOCK_SCHED) {
++		cputime_t val = timespec_to_cputime(&new->it_value);
++		s64 ns_val = timespec_to_ns(&new->it_value);
++
++		timer->it.cpu.real_incr = timespec_to_ns(&new->it_interval);
++		timer->it.cpu.error = cputime_sub_ns(val, ns_val);
++	}
++
+ 	/*
+ 	 * This acts as a modification timestamp for the timer,
+ 	 * so any automatic reload attempt will punt on seeing
+@@ -1073,7 +1102,6 @@ static void stop_process_timers(struct task_struct *tsk)
+ 	spin_unlock_irqrestore(&cputimer->lock, flags);
+ }
+ 
+-static u32 onecputick;
+ 
+ static void check_cpu_itimer(struct task_struct *tsk, struct cpu_itimer *it,
+ 			     cputime_t *expires, cputime_t cur_time, int signo)
+@@ -1710,13 +1738,13 @@ static __init int init_posix_cpu_timers(void)
+ 	};
+ 	struct timespec ts;
+ 
+-	register_posix_clock(CLOCK_PROCESS_CPUTIME_ID, &process);
+-	register_posix_clock(CLOCK_THREAD_CPUTIME_ID, &thread);
+-
+ 	cputime_to_timespec(cputime_one_jiffy, &ts);
+ 	onecputick = ts.tv_nsec;
+ 	WARN_ON(ts.tv_sec != 0);
+ 
++	register_posix_clock(CLOCK_PROCESS_CPUTIME_ID, &process);
++	register_posix_clock(CLOCK_THREAD_CPUTIME_ID, &thread);
++
+ 	return 0;
+ }
+ __initcall(init_posix_cpu_timers);
+-- 
+1.6.2.5
 
