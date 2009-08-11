@@ -1,62 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZHKPs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZHKPur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787AbZHKPs7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 11:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZHKPs6
+	id S1753575AbZHKPur (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 11:50:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751124AbZHKPur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 11:48:58 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:60251 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751976AbZHKPs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 11:48:57 -0400
-Date: Tue, 11 Aug 2009 10:48:53 -0500
-From: Robin Holt <holt@sgi.com>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: System freeze on reboot - general protection fault
-Message-ID: <20090811154853.GF2763@sgi.com>
-References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com> <alpine.DEB.1.10.0908111032110.30494@gentwo.org> <c4e36d110908110752x253e30epb00cc71f4683052b@mail.gmail.com> <alpine.DEB.1.10.0908111056550.30494@gentwo.org> <c4e36d110908110832y21fba830ub8804613df571228@mail.gmail.com>
+	Tue, 11 Aug 2009 11:50:47 -0400
+Received: from bar.sig21.net ([80.81.252.164]:60266 "EHLO bar.sig21.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750847AbZHKPuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 11:50:46 -0400
+Date: Tue, 11 Aug 2009 17:50:52 +0200
+From: Johannes Stezenbach <js@sig21.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch] cache-miss and cache-refs events on P6-mobile CPUs
+Message-ID: <20090811155052.GB5315@sig21.net>
+References: <20090810122731.GA5863@sig21.net>
+ <20090810123228.GD6838@basil.fritz.box>
+ <20090810125651.GB6082@sig21.net>
+ <20090810132923.GA4418@elte.hu>
+ <20090810192658.GA15513@sig21.net>
+ <20090810201406.GA6961@elte.hu>
+ <20090810203706.GA17338@sig21.net>
+ <20090810213133.GB16944@elte.hu>
+ <20090810221307.GA19236@sig21.net>
+ <20090811093405.GA13004@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c4e36d110908110832y21fba830ub8804613df571228@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090811093405.GA13004@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Spam-21-Score: -4.1 (----)
+X-Spam-21-Report: No, score=-4.1 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.266,BAYES_00=-2.599 autolearn=no
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 05:32:16PM +0200, Zdenek Kabelac wrote:
-> 2009/8/11 Christoph Lameter <cl@linux-foundation.org>:
-> > On Tue, 11 Aug 2009, Zdenek Kabelac wrote:
-> >
-> >> Well - I've tried to switch from  'slub' allocator to  old 'slab'
-> >> allocator and the problem is gone - shutdown goes without any problem.
-> >>
-> >> So it's probably related to 'slub' allocator only?
-> >
-> > The slab allocator does not have all the diagnostics of slub. The issue
-> > may simply not be detected in slab. If you switch off diagnostics in slub
-> > then everything will seem to work fine as well. But we need to figure out
-> > what is going wrong here.
+On Tue, Aug 11, 2009 at 11:34:05AM +0200, Ingo Molnar wrote:
 > 
-> Hmm - but there are few things -
+> Could you try the patch below, does it do the trick? Note, since 
+> there's just two generic counters and perf stat uses four counters, 
+> you'll need to run longer commands than 'true' or something like:
 > 
-> My machine runs  Fedora Rawhide. If I run the same kernel within KVM
-> running Debian unstable I could easily reboot this guest machine
-> without any problems.
+>   perf stat -a sleep 1
 > 
-> Also if I boot Rawhide only to single mode - I could also reboot
-> machine without this oops.
-> The problem seems to be - when I do full machine startup to the
-> multiuser runlevel 3
+> or:
+> 
+>   perf stat --repeat 10 /bin/ls -R /usr/bin >/dev/null
+> 
+> to get all counters excercised and time-shared on your CPU.
 
-Try booting all the way and recording you output from lsmod.  Reboot
-single user mode and modprobe each of the modules in that original lists.
-Test shutdown from single user mode.  This might identify if it is one
-of your loaded modules.  If so, effectively bisect the modprobes until
-you find the offending module(s).
+OK, here are the results:
 
-Robin
+# ./perf stat -a true
+
+ Performance counter stats for 'true':
+
+       1.332145  task-clock-msecs         #      1.057 CPUs 
+              4  context-switches         #      0.003 M/sec
+              0  CPU-migrations           #      0.000 M/sec
+            121  page-faults              #      0.091 M/sec
+         788333  cycles                   #    591.777 M/sec
+         610408  instructions             #      0.774 IPC  
+  <not counted>  cache-references        
+  <not counted>  cache-misses            
+
+    0.001260775  seconds time elapsed
+
+# ./perf stat -a sleep 1
+
+ Performance counter stats for 'sleep 1':
+
+    1001.358010  task-clock-msecs         #      1.000 CPUs 
+            253  context-switches         #      0.000 M/sec
+              0  CPU-migrations           #      0.000 M/sec
+            145  page-faults              #      0.000 M/sec
+        8841883  cycles                   #      8.830 M/sec  (scaled from 85.04%)
+        6361047  instructions             #      0.719 IPC    (scaled from 78.03%)
+         801847  cache-references         #      0.801 M/sec  (scaled from 14.96%)
+          16925  cache-misses             #      0.017 M/sec  (scaled from 21.97%)
+
+    1.001540692  seconds time elapsed
+
+# ./perf stat --repeat 10 /bin/ls -R /usr/bin >/dev/null
+
+ Performance counter stats for '/bin/ls -R /usr/bin' (10 runs):
+
+       8.642859  task-clock-msecs         #      0.939 CPUs    ( +-   2.382% )
+              1  context-switches         #      0.000 M/sec   ( +-   0.000% )
+              0  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
+            375  page-faults              #      0.043 M/sec   ( +-   0.000% )
+       14796621  cycles                   #   1712.005 M/sec   ( +-   0.306% )
+       15526008  instructions             #      1.049 IPC     ( +-   0.020% )
+  <not counted>  cache-references        
+  <not counted>  cache-misses            
+
+    0.009207932  seconds time elapsed   ( +-   4.020% )
+
+# ./perf stat --repeat 10 /bin/ls -lR /usr/bin >/dev/null
+
+ Performance counter stats for '/bin/ls -lR /usr/bin' (10 runs):
+
+      49.894190  task-clock-msecs         #      0.762 CPUs    ( +-   8.231% )
+             45  context-switches         #      0.001 M/sec   ( +-  52.174% )
+              0  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
+            476  page-faults              #      0.010 M/sec   ( +-   0.000% )
+       81036819  cycles                   #   1624.173 M/sec   ( +-   3.166% )  (scaled from 96.03%)
+       88822455  instructions             #      1.096 IPC     ( +-   2.108% )  (scaled from 96.42%)
+         573228  cache-references         #     11.489 M/sec   ( +-  37.947% )
+  <not counted>  cache-misses            
+
+    0.065464625  seconds time elapsed   ( +-  19.349% )
+
+# ./perf stat --repeat 10 /bin/ls -R /usr/lib >/dev/null
+
+ Performance counter stats for '/bin/ls -R /usr/lib' (10 runs):
+
+     136.771643  task-clock-msecs         #      0.075 CPUs    ( +-  19.292% )
+            757  context-switches         #      0.006 M/sec   ( +-  56.332% )
+              0  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
+            343  page-faults              #      0.003 M/sec   ( +-   0.000% )
+      173125500  cycles                   #   1265.800 M/sec   ( +-   5.034% )  (scaled from 78.21%)
+      174597635  instructions             #      1.009 IPC     ( +-   1.829% )  (scaled from 78.34%)
+        2441413  cache-references         #     17.850 M/sec   ( +-  18.289% )  (scaled from 21.79%)
+          21112  cache-misses             #      0.154 M/sec   ( +-  11.183% )  (scaled from 21.66%)
+
+    1.824204481  seconds time elapsed   ( +-  29.781% )
+
+
+Johannes
