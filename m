@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbZHKOO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbZHKOPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754664AbZHKOO7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 10:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZHKOO6
+	id S1754776AbZHKOPI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 10:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbZHKOPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 10:14:58 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:46267 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751462AbZHKOO5 (ORCPT
+	Tue, 11 Aug 2009 10:15:06 -0400
+Received: from waldorf.bytemark.co.uk ([212.110.162.22]:42476 "EHLO
+	waldorf.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753181AbZHKOPF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 10:14:57 -0400
-Date: Tue, 11 Aug 2009 12:56:53 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>, manfred@colorfullife.com,
-       Ihno Krumreich <ihno@suse.de>, Greg KH <gregkh@suse.de>
-Subject: Re: [BUG] race of RCU vs NOHU
-Message-ID: <20090811125653.12c35ee8@skybase>
-In-Reply-To: <20090810150807.GA6791@linux.vnet.ibm.com>
-References: <20090807151529.2806b8b4@skybase>
-	<20090807142957.GB6700@linux.vnet.ibm.com>
-	<20090810142535.3e685109@skybase>
-	<20090810150807.GA6791@linux.vnet.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Aug 2009 10:15:05 -0400
+Date: Tue, 11 Aug 2009 11:40:25 +0200
+From: "Emilio G. Cota" <cota@braap.org>
+To: Martyn Welch <martyn.welch@gefanuc.com>
+Cc: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
+Subject: Re: [patch 2/5] Staging: vme: add VME userspace driver
+Message-ID: <20090811094025.GC3251@braap.org>
+References: <20090803205657.964064732@mini.kroah.org> <20090803210116.GC28430@kroah.com> <20090808232259.GA29303@braap.org> <20090809121715.GA3884@braap.org> <4A801D04.6050102@gefanuc.com> <20090810152606.GA23319@braap.org> <4A804B0B.5020809@gefanuc.com> <20090810203637.GD3055@braap.org> <4A8133ED.6070304@gefanuc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8133ED.6070304@gefanuc.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Aug 2009 08:08:07 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+Martyn Welch wrote:
+> suggest if you want something more complex that allows the user to just  
+> pick a location/size and not worry about windows at all
 
-> On Mon, Aug 10, 2009 at 02:25:35PM +0200, Martin Schwidefsky wrote:
-> > On Fri, 7 Aug 2009 07:29:57 -0700
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > On Fri, Aug 07, 2009 at 03:15:29PM +0200, Martin Schwidefsky wrote:
-> > > > Hi Paul,
-> > > > I analysed a dump of a hanging 2.6.30 system and found what I think is
-> > > > a bug of RCU vs NOHZ. There are a number of patches ontop of that
-> > > > kernel but they should be independent of the bug.
-> > > > 
-> > > > The systems has 4 cpus and uses classic RCU. cpus #0, #2 and #3 woke up
-> > > > recently, cpu #1 has been sleeping for 5 minutes, but there is a pending
-> > > > rcu batch. The timer wheel for cpu #1 is empty, it will continue to
-> > > > sleep for NEXT_TIMER_MAX_DELTA ticks.
-> > > 
-> > > Congratulations, Martin!  You have exercised what to date has been a
-> > > theoretical bug identified last year by Manfred Spraul.  The fix is to
-> > > switch from CONFIG_RCU_CLASSIC to CONFIG_RCU_TREE, which was added in
-> > > 2.6.29.
-> > > 
-> > > Of course, if you need to work with an old kernel version, you might
-> > > still need a patch, perhaps for the various -stable versions.  If so,
-> > > please let me know -- otherwise, I will focus forward on CONFIG_RCU_TREE
-> > > rather than backwards on CONFIG_RCU_CLASSIC.
-> > 
-> > SLES11 is 2.6.27 and uses classic RCU. The not-so theoretical bug is
-> > present there and I think it needs to be fixed :-/
-> 
-> I was afraid of that.  ;-)
-> 
-> Given that there are some other theoretical bugs in Classic RCU involving
-> interrupts and CONFIG_NO_HZ, would backporting CONFIG_TREE_RCU make more
-> sense than playing whack-a-mole on Classic RCU bugs?
+That's exactly the whole point. I think each bridge should manage
+its resources; putting this on the upper layer would mean the
+layer should have a mechanism of 'discovering' what the bridge
+can/can't do. Anyway this could be revisited later.
+I'm preparing a patch for this.
 
-Fine with me but I don't know if SuSE/Novell is willing to accept such a
-big change for an existing distribution. I've put Ihno and Greg on Cc.
+>> - Most accesses are 32-bit accesses. Treating all of them
+>>   as 64-bit accesses would decrease performance for most of
+>>   them--which happen to be 32-bit.
+> I'm not - I'm storing them as 64-bit values, which they are, in the  
+> structures used in *software*. These are then split *when* a write to  
+> the hardware registers is required. Similarly, when the registers are  
+> occasionally read they are combined and stored as a 64-bit value. This  
+> simplifies all *software* checking and manipulation. By storing these as  
+> 2 32-bit values every driver that uses the VME core will need to convert  
+> pci addresses, vme addresses and counts to 2 32-bit values. That is 
+> madness.
 
--- 
-blue skies,
-   Martin.
+I agree with you on that's painful for doing 64-bit accesses.
+However I'm still not convinced on the performance side (I mean
+software), since most of the time the upper 32bits will be empty.
+Will have a look though.
 
-"Reality continues to ruin my life." - Calvin.
-
+Cheers,
+E.
