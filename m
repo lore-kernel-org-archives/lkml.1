@@ -1,118 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbZHKNN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753799AbZHKNR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628AbZHKNN0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 09:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbZHKNNZ
+	id S1753799AbZHKNR6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 09:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbZHKNR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 09:13:25 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:57928 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752665AbZHKNNY (ORCPT
+	Tue, 11 Aug 2009 09:17:57 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:47456 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751069AbZHKNR4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 09:13:24 -0400
+	Tue, 11 Aug 2009 09:17:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=mWIodxFTcjZNbAevxur+xHFOu8MeNSdK2XM51ykecOkPo7NVW+Ew3SMl+C2t1StHC5
-         ugSPYlvb10Zwt1UOU+GinmCdOiQiBc+K5vgx8/lmMqiLVhR63Nqb7PhoZp5gryq4PHOX
-         byo06ij8hr6WUQYl8RoLj4uOOe2fX9ofYCneE=
-Date: Tue, 11 Aug 2009 09:42:48 +0300
-From: Jarkko Nikula <jhnikula@gmail.com>
-To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
-       Tony Lindgren <tony@atomide.com>,
-       "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 3/3 v2] ASoC: OMAP: Enhance OMAP1510 DMA progress
- software counter
-Message-Id: <20090811094248.3b869f09.jhnikula@gmail.com>
-In-Reply-To: <200908110107.11485.jkrzyszt@tis.icnet.pl>
-References: <200908101050.08074.jkrzyszt@tis.icnet.pl>
-	<200908110107.11485.jkrzyszt@tis.icnet.pl>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=yCA6OB4JvdgZmkGujjAvcdgR30Hs4Qr1HA7QPTqMh734s7YRlkIEDe46sfiDL5BwJL
+         jIPKHJO4qGyKlTZ7aORVJ2MieRKQJhyC6LpyALPs9bA2cduSAwC9N5g548TeyJiejzLt
+         ae6e+xFj9dTX4kphwoQQfzBTqXbfTiYZEeK9s=
+From: Florian Fainelli <florian@openwrt.org>
+To: Wim Van Sebroeck <wim@iguana.be>
+Subject: Re: [PATCH 7/8] ar7_wdt: fix path to ar7 header files
+Date: Tue, 11 Aug 2009 15:17:51 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200906041620.39752.florian@openwrt.org> <20090605070517.GB21360@infomag.iguana.be>
+In-Reply-To: <20090605070517.GB21360@infomag.iguana.be>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2213249.ve5L9qEj2C";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908111517.54100.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Aug 2009 01:07:10 +0200
-Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> wrote:
+--nextPart2213249.ve5L9qEj2C
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Enhance period index accuracy, particularly just before buffer rewind, by
-> making use of DMA interrupt status flags in addition to simply counting up
-> interrupts.
-> 
-> Corrections since v1:
-> 1. Fix buggy DMA interrupt handling in case of multiple status flags set in
->    parallel.
-> 2. Enable OMAP_DMA_LAST_IRQ only for playback on OMAP1510.
-> 
-> This patch applies on top of patch 2 from this series:
-> [RFC][PATCH 2/3] ASoC: OMAP: Make use of DMA channel self linking on OMAP1510
-> 
-> Created against linux-2.6.31-rc5.
-> 
-> Tested on Amstrad Delta.
-> 
-> Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-> 
-> ---
-> --- linux-2.6.31-rc5/sound/soc/omap/omap-pcm.c.orig	2009-08-10 22:41:25.000000000 +0200
-> +++ linux-2.6.31-rc5/sound/soc/omap/omap-pcm.c	2009-08-10 23:15:46.000000000 +0200
-> @@ -68,13 +68,27 @@ static void omap_pcm_dma_irq(int ch, u16
->  		 * that can be used by omap_pcm_pointer() instead.
->  		 */
->  		spin_lock_irqsave(&prtd->lock, flags);
-> +		if ((stat == OMAP_DMA_LAST_IRQ) &&
-> +				(prtd->period_index == runtime->periods - 1)) {
-> +			/* we are in sync, do nothing */
-> +			spin_unlock_irqrestore(&prtd->lock, flags);
-> +			return;
-> +		}
->  		if (prtd->period_index >= 0) {
-> -			if (++prtd->period_index == runtime->periods) {
-> +			if (stat & OMAP_DMA_BLOCK_IRQ) {
-> +				/* end of buffer reached, loop back */
-> +				prtd->period_index = 0;
-> +			} else if (stat & OMAP_DMA_LAST_IRQ) {
-> +				/* update the counter for the last period */
-> +				prtd->period_index = runtime->periods - 1;
-> +			} else if (++prtd->period_index >= runtime->periods) {
-> +				/* end of buffer missed? loop back */
->  				prtd->period_index = 0;
->  			}
->  		}
->  		spin_unlock_irqrestore(&prtd->lock, flags);
-> -	}
-> +	} else if (stat == OMAP_DMA_LAST_IRQ)
-> +		return;
->  
-Is this test needed? This interrupt is set only for playback on
-omap1510 so this looks null-op.
+Le Friday 05 June 2009 09:05:17 Wim Van Sebroeck, vous avez =E9crit=A0:
+> > While resubmitting AR7, we changed the machine specific
+> > headers from ar7 to mach-ar7, fix the watchdog driver
+> > accordingly.
+> >
+> > Signed-off-by: Florian Fainelli <florian@openwrt.org>
+>
+> Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
 
->  	snd_pcm_period_elapsed(substream);
->  }
-> @@ -175,7 +189,12 @@ static int omap_pcm_prepare(struct snd_p
->  	dma_params.frame_count	= runtime->periods;
->  	omap_set_dma_params(prtd->dma_ch, &dma_params);
->  
-> -	omap_enable_dma_irq(prtd->dma_ch, OMAP_DMA_FRAME_IRQ);
-> +	if ((cpu_is_omap1510()) &&
-> +			(substream->stream == SNDRV_PCM_STREAM_PLAYBACK))
-> +		omap_enable_dma_irq(prtd->dma_ch, OMAP_DMA_FRAME_IRQ |
-> +							OMAP_DMA_LAST_IRQ);
+Wim, can you apply this one to your tree if not done already, otherwise it=
+=20
+will cause a build failure in 2.6.31. Thanks !
+=2D-=20
+Best regards, Florian Fainelli
+Email: florian@openwrt.org
+Web: http://openwrt.org
+IRC: [florian] on irc.freenode.net
+=2D------------------------------
 
-Indent OMAP_DMA_LAST_IRQ with tab(s) and spaces to the same column
-than OMAP_DMA_FRAME_IRQ. Looks nicer then. Should the
-OMAP_DMA_BLOCK_IRQ to be set since it is handled in omap_pcm_dma_irq?
+--nextPart2213249.ve5L9qEj2C
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
--- 
-Jarkko
+iEYEABECAAYFAkqBb4AACgkQlyvkmBGtjyZ/PQCgoGTwg33gv/jmhK5LyDXnaTNg
+G7cAnjII+gohTOrq5neo0Gr0fbo3VvAn
+=wSDo
+-----END PGP SIGNATURE-----
+
+--nextPart2213249.ve5L9qEj2C--
