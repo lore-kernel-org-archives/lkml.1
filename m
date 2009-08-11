@@ -1,40 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbZHKOZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbZHKOa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754819AbZHKOZt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 10:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbZHKOZs
+	id S1754793AbZHKOa6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 10:30:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbZHKOa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 10:25:48 -0400
-Received: from cantor.suse.de ([195.135.220.2]:44396 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754061AbZHKOZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 10:25:48 -0400
-Date: Tue, 11 Aug 2009 16:25:48 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Nico Schottelius <nico-linux-20090804@schottelius.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Kernel Panic on v2.6.31-rc5-34-ga33a052
-In-Reply-To: <20090804205309.GA6291@ikn.schottelius.org>
-Message-ID: <alpine.LRH.2.00.0908111625040.11142@twin.jikos.cz>
-References: <20090804205309.GA6291@ikn.schottelius.org>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Tue, 11 Aug 2009 10:30:57 -0400
+Received: from mail.labdns.net ([68.142.129.33]:40600 "HELO mail.labdns.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751881AbZHKOa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 10:30:57 -0400
+X-Greylist: delayed 7600 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Aug 2009 10:30:56 EDT
+Message-ID: <4A80E462.1040505@infoplatter.com>
+Date: Mon, 10 Aug 2009 21:24:18 -0600
+From: Charles Johnston <charles@infoplatter.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: Re: case-duplicated filenames
+References: <a9c5028086c7f5f0e245853b9065e187.squirrel@ubb.ca>
+In-Reply-To: <a9c5028086c7f5f0e245853b9065e187.squirrel@ubb.ca>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Aug 2009, Nico Schottelius wrote:
+Tony Mantler wrote:
+> A co-worker reminded me this afternoon that the linux source tree does not
+> get along well with case-insensitive filesystems. Ever the curious and
+> bored sort, and in the middle of an sqlite bender, I decided to cook up a
+> quick script to find exactly what files those are.
+> 
 
-> Running this kernel on the Lenovo x200 and switching from X to console 
-> kernel panics the system.
+This one-liner does it too:
 
-It is not possible to debug this without you providing the kernel messages 
-that preceeded the panic (you can use digital camera to capture the image, 
-if you can't set up a serial console).
-
--- 
-Jiri Kosina
-SUSE Labs
-
+find linux-2.6.30.4 |tr '[:upper:]' '[:lower:]' | sort | uniq -d
