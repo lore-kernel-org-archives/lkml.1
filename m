@@ -1,127 +1,289 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbZHKMq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbZHKMsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754526AbZHKMq6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbZHKMqu
+	id S1754539AbZHKMsl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZHKMsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:46:50 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38403 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754488AbZHKMqs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:46:48 -0400
-Date: Tue, 11 Aug 2009 10:40:20 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Felipe Balbi <me@felipebalbi.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Mike Rapoport <mike@compulab.co.il>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Question about userspace-consumer
-Message-ID: <20090811094020.GA6762@rakim.wolfsonmicro.main>
-References: <20090810200553.GB4652@gandalf>
- <20090810215800.GB4528@sirena.org.uk>
- <20090811054438.GA7176@gandalf>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090811054438.GA7176@gandalf>
-X-Cookie: For office use only.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 11 Aug 2009 08:48:39 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:51931 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753512AbZHKMsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 08:48:37 -0400
+Date: Tue, 11 Aug 2009 18:34:34 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for August 11
+Message-Id: <20090811183434.28afaf80.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__11_Aug_2009_18_34_34_+1000_BdFgzxEmKi_VTxyr"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 08:44:42AM +0300, Felipe Balbi wrote:
-> On Mon, Aug 10, 2009 at 10:58:01PM +0100, Mark Brown wrote:
+--Signature=_Tue__11_Aug_2009_18_34_34_+1000_BdFgzxEmKi_VTxyr
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > Looking at that I'm not sure why you wish to push this into user space?
+Hi all,
 
-> we need some daemon monitoring battery statuses and taking actions on
-> that. Imagine, for example, usb charging where we can:
+Changes since 20090810:
 
-> a. charge up to 100mA when unconfigured
-> b. charge up to 500mA when configured
-> c. charge up to 2.5A when with dedicated charger
-> d. charge up to 2.5mA when bus is suspended
+This tree fails to build for powerpc allyesconfig (due to a TOC overflow
+problem in the final link).
 
-It's more complex than that - those are the limits at the USB port that
-define the power that can be drawn by the system.  The actual power
-available to the battery subsytem will be less since the rest of the
-system needs to be powered.  In many cases even with 500mA available
-the battery will need to be used to provide additional power in order to
-keep the system operational rather than being charged.
+The nfsd tree lost its conflict.
 
-For USB powered operation at least some of the management here would
-usually be implemented in hardware to provide the responsiveness
-required.  Waiting for software to get involved would often allow the
-main system supply to collapse.
+The kvm tree lost its conflicts.
 
-> handling all of those cases on kernel space seems a little bit odd,
-> especially because we still need to take care of state-of-charge,
-> pack temperature, time-to-charge, etc etc etc.
+The rr tree lost its build failure.
 
-> a big looping polling for that stuff in kernel space didn't seem ok to
-> me.
+The security-testing tree lost its build failure.
 
-No matter what you're still going to need at least some of the code
-in-kernel in order to handle the monitoring daemon exiting.  For
-example, if the battery is in fast charge then something will need to
-back the charger off at least as the charge completes (if not
-immediately user space exits) otherwise the battery or entire system is
-likely to be damaged.
+The staging tree lost a conflict.
 
-Like I say some user space control does seem reasonable but I'd not
-expect an entirely user space implementation.
+----------------------------------------------------------------------------
 
-> > The existing drivers for this sort of functionality are all regular
-> > kernel drivers (in drivers/power and to a lesser extent drivers/hwmon)
-> > and it looks like it'd be at least as much work to rearrange the power
-> > supply stuff to support userspace drivers.  My initial expectation would
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
-> power supply already does what it needs, no ? It exports battery
-> figures (state-of-charge, time-to-charge, temperature, etc etc) via
-> sysfs to userland, where our "charging daemon" could read those values
-> from.
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
 
-I'd have expected to see both the charger and the battery appear as part
-of the power supply map, or to see the charger and battery merged into
-one device.
+Below is a summary of the state of the merge.
 
-> > I'd like to preserve the bulk switch if possible - part of the thinking
-> > was that things with more complex needs may well find it easier and/or
-> > more robust to have custom kernel stubs which mapped one or more
-> > regulators into the interfaces they needed.  That was more for things
-> > like working out which of multiple supplies is which, though.
+We are up to 140 trees (counting Linus' and 21 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
 
-> gotcha. The only problem is that it becomes a litle difficult to access
-> struct regulator * for doing regulator_set_voltage() and its sibblings.
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
 
-Not really, the regulator is right there in the bulk data.  It's not
-intended to be an opaque struct.
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
 
-> > Like I say, from a quick read through of the specs I'm not sure that I'd
-> > push this into user space but I've not thought about this deeply and may
-> > be missing something.
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
 
-> I think kernel should, as long as possible, only provide functionalities
-> for userland to take decisions and actions, no ?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Policy should be punted to user space but that doesn't mean that the
-entire implementation needs to be there.  For something like this where
-you're likely to be burning a very large part of the entire system power
-consumption and lasting hardware damage is likely if something goes
-wrong the idea of removing everything from the kernel seems very risky.
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging davinci/for-next
+Merging pxa/for-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging thumb-2/thumb-2
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+CONFLICT (content): Merge conflict in arch/mips/cavium-octeon/dma-octeon.c
+CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
+x-helper-errata.c
+CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
+CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
+CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+CONFLICT (content): Merge conflict in fs/configfs/dir.c
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/board-dm646x-ev=
+m.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm355.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm644x.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm646x.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
+355.h
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
+644x.h
+Merging quota/for_next
+Merging kbuild/master
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in arch/microblaze/include/asm/socket.h
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging mmc/next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+CONFLICT (content): Merge conflict in drivers/input/misc/Kconfig
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_crtc.c
+CONFLICT (content): Merge conflict in drivers/gpu/drm/i915/intel_sdvo.c
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging drbd/drbd
+Applying: drbd: fix for removal of blk_queue_stack_limits
+Merging kmemleak/kmemleak
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in arch/x86/include/asm/socket.h
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+CONFLICT (content): Merge conflict in kernel/fork.c
+Merging oprofile/for-next
+CONFLICT (content): Merge conflict in kernel/trace/ring_buffer.c
+Merging edac-amd/for-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
+CONFLICT (content): Merge conflict in include/linux/topology.h
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/perf_counter.c
+CONFLICT (content): Merge conflict in drivers/cpufreq/cpufreq_ondemand.c
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/base/class.c
+CONFLICT (content): Merge conflict in init/main.c
+Merging quilt/tty
+CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
+Merging quilt/usb
+CONFLICT (content): Merge conflict in drivers/usb/gadget/m66592-udc.c
+CONFLICT (content): Merge conflict in drivers/usb/host/r8a66597-hcd.c
+Merging quilt/staging
+CONFLICT (delete/modify): drivers/staging/epl/VirtualEthernetLinux.c delete=
+d in quilt/staging and modified in HEAD. Version HEAD of drivers/staging/ep=
+l/VirtualEthernetLinux.c left in tree.
+$ git rm -f drivers/staging/epl/VirtualEthernetLinux.c
+Merging scsi-post-merge/master
 
-> Handling policy in kernel space I find it a little odd, specially
-> because different manufacturers might have different charging algorithms
-> they want to implement.
+--Signature=_Tue__11_Aug_2009_18_34_34_+1000_BdFgzxEmKi_VTxyr
+Content-Type: application/pgp-signature
 
-Looking at the specs (like I say I didn't look *that* closely) it
-appeared that the main goal was to encapsulate the charging algorithm in
-the battery so that the charger only needed to do whatever it was told
-by the battery.  I'd expect the policy for user space here to be more
-along the lines of setting how much power the charge is allowed to
-consume than the entire algorithm.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-I'd also expect that if this gets widely deployed in smaller devices (as
-opposed to laptops) you'd start to see chargers that are able to do some
-of the management of the charge cycle autonomously.
+iEYEARECAAYFAkqBLRoACgkQjjKRsyhoI8xOzQCgjTLgxbSKIN/qm6TszCq1B2hx
+x8IAnRvLhvgbSd6ob9vlT07bN8/8cBwe
+=+mWj
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__11_Aug_2009_18_34_34_+1000_BdFgzxEmKi_VTxyr--
