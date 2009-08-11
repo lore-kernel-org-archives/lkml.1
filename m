@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754999AbZHKOt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932070AbZHKOtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754999AbZHKOt3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 10:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbZHKOt2
+	id S932070AbZHKOtp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 10:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbZHKOto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 10:49:28 -0400
-Received: from statler.bytemark.co.uk ([212.110.162.18]:41916 "EHLO
-	statler.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754827AbZHKOt2 (ORCPT
+	Tue, 11 Aug 2009 10:49:44 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51482
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752509AbZHKOtn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 10:49:28 -0400
-Date: Tue, 11 Aug 2009 16:49:14 +0200
-From: "Emilio G. Cota" <cota@braap.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-Cc: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [patch 1/5] Staging: VME Framework for the Linux Kernel
-Message-ID: <20090811144914.GB32658@braap.org>
-References: <20090803205657.964064732@mini.kroah.org> <20090803210111.GB28430@kroah.com> <20090808230145.GB27151@braap.org> <4A801644.2070009@gefanuc.com> <20090810141442.GA18456@braap.org> <4A804283.5090009@gefanuc.com> <20090810193849.GA3055@braap.org> <4A812BCE.3010003@gefanuc.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A812BCE.3010003@gefanuc.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 11 Aug 2009 10:49:43 -0400
+Date: Tue, 11 Aug 2009 07:49:53 -0700 (PDT)
+Message-Id: <20090811.074953.130816092.davem@davemloft.net>
+To: jkosina@suse.cz
+Cc: joe@perches.com, linville@tuxdriver.com, julia@diku.dk,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: [PATCH] MAINTAINERS: Add networking wireless drivers section
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LRH.2.00.0908111555410.11142@twin.jikos.cz>
+References: <20090728.113353.08715297.davem@davemloft.net>
+	<1248806896.18284.14.camel@Joe-Laptop.home>
+	<alpine.LRH.2.00.0908111555410.11142@twin.jikos.cz>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martyn Welch wrote:
-> Again: what part of the API I have defined forces the driver to know  
-> about the underlying bridge?
+From: Jiri Kosina <jkosina@suse.cz>
+Date: Tue, 11 Aug 2009 15:55:46 +0200 (CEST)
 
-Let me answer with another question, maybe we get to understand
-each other this way:
+> On Tue, 28 Jul 2009, Joe Perches wrote:
+> 
+>> > Why not just create a plain "WIRELESS" umbrella entry that contains 
+>> > all of drivers/net/wireless, net/mac80211, and net/wireless?
+>> Whatever works for John I suppose. John, do you have a preference?
+>> I was trying to avoid the "S: Maintained" label
+>> and was copying the form of this section:
+>> 
+>> NETWORKING DRIVERS
+>> L:	netdev@vger.kernel.org
+>> W:	http://www.linuxfoundation.org/en/Net
+>> T:	git git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.git
+>> S:	Odd Fixes
+>> F:	drivers/net/
+> 
+> Just out of curiosity, why is drivers/net marked as "Odd fixes" and not 
+> "Maintained"?
 
-Could you please explain me what happens when 17 different drivers
-want to control 17 different devices, each on a different slot,
-same address modifier, only 1MB per device? Apply if necessary
-to the tsi148 bridge.
-
-NB1. Any given driver knows nothing about the other devices
-on the crate; each driver only knows about the address, am and
-size of the mapping for the device it controls--user-space
-provide this info on a per-driver basis.
-NB2. The mapping offsets configured through the cards' pins match
-the information passed from user space to each of the cards.
-
-Cheers,
-E.
+Because it depends upon the individual driver maintainers.  For
+example, I don't think one could claim 3c515.c or other ISA ethernet
+drivers to be in any kind of "Maintained" state.
