@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752523AbZHKP2K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752957AbZHKP3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752523AbZHKP2K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 11:28:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZHKP2J
+	id S1752957AbZHKP3P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 11:29:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZHKP3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 11:28:09 -0400
-Received: from smtp.ispras.ru ([83.149.198.201]:40684 "EHLO smtp.ispras.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751575AbZHKP2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 11:28:09 -0400
-From: iceberg <strakh@ispras.ru>
-Organization: ISP RAS
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH]  CIFS: memory leakage at ./fs/cifs/cifsencrypt.c
-Date: Tue, 11 Aug 2009 19:28:09 +0000
-User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
+	Tue, 11 Aug 2009 11:29:15 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59299 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751822AbZHKP3O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 11:29:14 -0400
+To: Frans Pop <elendil@planet.nl>
+Cc: Chris Mason <chris.mason@oracle.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       jack@suse.cz, linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: What happened to data=guarded?
+From: Andi Kleen <andi@firstfloor.org>
+References: <1249934623-15939-1-git-send-email-tytso@mit.edu>
+	<200908111535.37927.elendil@planet.nl> <20090811133721.GD29224@think>
+	<200908111654.38217.elendil@planet.nl>
+Date: Tue, 11 Aug 2009 17:29:14 +0200
+In-Reply-To: <200908111654.38217.elendil@planet.nl> (Frans Pop's message of "Tue, 11 Aug 2009 16:54:36 +0200")
+Message-ID: <878whqgyid.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908111928.10196.strakh@ispras.ru>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- in function calc_ntlmv2_hash memory is not released.
-1. If in the line 333 we successfully allocate memory and assign it to 
-pctxt variable:
-        pctxt = kmalloc(sizeof(struct HMACMD5Context), GFP_KERNEL);
-then we go to line 376 and exit wihout releasing memory pointed to by pctxt
-variable.
+Frans Pop <elendil@planet.nl> writes:
 
-Add a memory  releasing for pctxt variable before exit from function 
-calc_ntlmv2_hash.
+> On Tuesday 11 August 2009, Chris Mason wrote:
+>> On Tue, Aug 11, 2009 at 03:35:36PM +0200, Frans Pop wrote:
+>> > Somewhat unrelated, but what happened to the data=guarded patches
+>> > Chris Mason proposed back in April?
+>>
+>> I missed 2.6.31 but plan on sending for 2.6.32.  I promised to send
+>> along a forward port of the patches a while back, but I finally have
+>> one in testing here.  It should go out shortly.
+>
+> Good to hear. I've so far stayed with data=ordered as I think I'd prefer 
+> data=guarded over data=writeback. I'll certainly give it a try when it's 
+> available.
 
-Signed-off-by: Alexander Strakh <strakh@ispras.ru>
+Same here. data=writeback already cost me a few files after crashes here :/
 
----
-diff --git a/a/fs/cifs/cifsencrypt.c b/b/fs/cifs/cifsencrypt.c
-index 7c98095..7efe174 100644
---- a/a/fs/cifs/cifsencrypt.c
-+++ b/b/fs/cifs/cifsencrypt.c
-@@ -373,6 +373,7 @@ calc_exit_2:
-           compare with the NTLM example */
-        hmac_md5_final(ses->server->ntlmv2_hash, pctxt);
+-Andi
 
-+       kfree(pctxt);
-        return rc;
- }
-
+-- 
+ak@linux.intel.com -- Speaking for myself only.
