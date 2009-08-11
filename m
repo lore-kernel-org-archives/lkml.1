@@ -1,64 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbZHKQJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbZHKQTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753718AbZHKQJt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 12:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbZHKQJs
+	id S1754223AbZHKQTQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 12:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbZHKQTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 12:09:48 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:47455 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751705AbZHKQJs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 12:09:48 -0400
-Message-ID: <4A819642.10700@zytor.com>
-Date: Tue, 11 Aug 2009 09:03:14 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 11 Aug 2009 12:19:16 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:28298
+	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751543AbZHKQTP convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 12:19:15 -0400
+X-SpamScore: -15
+X-BigFish: VPS-15(zz1432R1521Mzz1202hzzz2dh6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-CC: Sam Ravnborg <sam@ravnborg.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Matthieu CASTET <matthieu.castet@parrot.com>,
-       Alain Knaff <alain@knaff.lu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/6] Add support for LZO-compressed kernels for ARM
-References: <20090806224055.GH31579@n2100.arm.linux.org.uk> <20090807092423.GA4455@laptop> <4A7BF5B8.4030907@knaff.lu> <20090807102117.GB4455@laptop> <4A7C14EB.1060701@parrot.com> <20090807130130.GE4455@laptop> <4A7C2BA4.7030408@parrot.com> <20090807135524.GF4455@laptop> <20090807200001.GE31543@n2100.arm.linux.org.uk> <20090807210816.GA29797@merkur.ravnborg.org> <20090811094418.GI9704@pc-ras4041.res.insa>
-In-Reply-To: <20090811094418.GI9704@pc-ras4041.res.insa>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [microblaze-uclinux] Rethinking MicroBlaze commandline precedence
+Date: Tue, 11 Aug 2009 09:18:54 -0700
+In-Reply-To: <4A81185A.6090206@petalogix.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [microblaze-uclinux] Rethinking MicroBlaze commandline precedence
+Thread-Index: AcoaU0WuasVsctMfQMSccp8i3TMOagASzzSQ
+References: <1d3f23370908092328l6e980f3ft2d5a8f8f37c26fcf@mail.gmail.com>	 <4A7FCC42.40809@petalogix.com> <1d3f23370908100156q46b9869av5ecdcc8879617be9@mail.gmail.com> <4A7FE78F.4040504@petalogix.com> <20090810164242.05DE8CC8055@mail83-dub.bigfish.com> <4A81185A.6090206@petalogix.com>
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: <microblaze-uclinux@itee.uq.edu.au>
+CC: "John Linn" <linnj@xilinx.com>, "David DeBonis" <ddeboni@xilinx.com>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 11 Aug 2009 16:19:10.0374 (UTC) FILETIME=[754F6460:01CA1A9F]
+Message-ID: <20090811161911.31858AF0053@mail161-va3.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/11/2009 02:44 AM, Albin Tonnerre wrote:
-> Hi Sam,
+> >>>>> So, how about this order instead:
+> >>>>>
+> >>>>> 1. CONFIG_CMDLINE=...
+> >>>>> 2. "chosen" section in DTS/DT
+> >>>>> 3. pointer in r5 from bootloader
+> >>>>> 4. CONFIG_CMDLINE=... and CONFIG_CMDLINE_FORCE
+> >>>>>
+> >>>>> Then, apart from CMDLINE_FORCE, the precedence goes from
+earliest
+> >>>>> binding (kernel build) to latest (runtime via bootloader/r5).
+> >
+> > This makes reasonable sense to me, although I wonder if the order is
+> > correct?  For instance, in many cases a flow may be to fix the
+hardware
+> > DTS and then iteratively compile the kernel?  Are all of these
+> > points/fallback priorities necessary?  Personally, it seems like I
+want
+> > one 'compiled-in' source, and then the option to override at boot
+time.
+> > Could it be simplified by getting rid CONFIG_CMDLINE alltogether and
+> > just using the DTS, now that this we always have a device tree?
 > 
-> On Fri, Aug 07, 2009 at 11:08:16PM +0200, Sam Ravnborg wrote :
->> We could add libgcc as a prerequisite.
->> Untested patch below.
-> 
-> When compiling with this patch applied, I get the following error:
-> 
->   Kernel: arch/arm/boot/Image is ready
->     LD      arch/arm/boot/compressed/vmlinux
-> /home/albin/x-tools/arm-unknown-linux-uclibcgnueabi/lib/gcc/arm-unknown-linux-uclibcgnueabi/4.3.2/libgcc.a(_dvmd_lnx.o):
-> In function `__div0':
-> /home/albin/devel/free-electrons/toolchain/targets/src/gcc-4.3.2/libgcc/../gcc/config/arm/lib1funcs.asm:1079:
-> undefined reference to `raise'
-> make[2]: *** [arch/arm/boot/compressed/vmlinux] Error 1
-> make[1]: *** [arch/arm/boot/compressed/vmlinux] Error 2
-> 
-> I've got no idea where this symbol is defined, though. Has anyone an idea on
-> this ?
-> 
+> From my point of view that CONFIG_CMDLINE_FORCE make perfectly sense
+to be sure
+> that no one else change my command line.
 
-raise() gets called by libgcc to handle division by zero.
+If there weren't so many options, maybe there wouldn't be so many places
+to get it wrong?
 
-	-hpa
+> >>>> I understand that you are trying to pass to kernel for example
+MTD
+> > map which could be possible but
+> >>>> IMHO better to do this in script which one with sed
+> > erase/comment/setup command line in DTS before
+> >>>> compilation.
+> >>> It's still a very early binding, and I think there are plenty of
+> >>> reasons to want to override it at boot time.  If there weren't,
+why
+> > do
+> >>> u-boot and PPC simpleBoot add the capability to tweak at boot
+time,
+> >>> the cmdline passed via the DTB?
+> >> I understand that make sense to change it - especially for
+> > development.
+> >> It should be possible to do it in u-boot. Not sure if is work to
+> > extend command line but maybe yes.
+> >> Worth to ask on u-boot mailing list.
+> >
+> > One way around this is to do what powerpc has: a simple bootloader
+with
+> > the capability to edit the cmdline on the terminal before boot.
+Then
+> > the question of 'does someone have a bootloader' is moot... they can
+> > always fall back on that one.  This would also make microblaze arch
+more
+> > in the spirit of EPapr, which exactly tries to standardize all of
+these
+> > mechanisms.
+> 
+> NO. I understand that you like PowerPC and in many cases is PowerPC
+good
+> example but create next simple bootloader just for changing command
+line.
+> For final products is definitely useless. For developing we recommend
+you to use
+> U-BOOT.
+> IIRC on ppc you have to wait some sec to continue - this extend
+booting time.
+> I believe that we want to fast boot as is possible.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+I'm not suggesting that this is what should always be done.  Generally
+speaking,
+I prefer u-boot as well, however, if the problem is
+that a user may not have a bootloader, then it is a reasonable
+assumption you could make.
+IMO, microblaze tries to do alot of initialization in the kernel proper,
+which may or may
+not be a good idea.  PowerPC avoids some of these issues by simply
+assuming there is always
+*some* sort of bootloader.
+
+> Do you have any link to that standard?
+
+I think it is publicly accessibly at power.org.  Generally the goal is
+to attempt to standardize on the mechanism of passing parameters like
+the command line to the kernel.  Nothing is explicitly disallowed, but
+the preferred way to pass information of any type is in a structured
+device tree.
+
+Steve
+
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
+
 
