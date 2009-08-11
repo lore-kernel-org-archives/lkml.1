@@ -1,100 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752763AbZHKMAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752300AbZHKL5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752763AbZHKMAc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbZHKMAa
+	id S1752300AbZHKL5I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 07:57:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbZHKL5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:00:30 -0400
-Received: from mailx.hitachi.co.jp ([133.145.228.49]:33207 "EHLO
-	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752738AbZHKMAZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:00:25 -0400
-X-AuditID: b753bd60-a8c6fba000004725-e0-4a80ea23bfc2
-Message-ID: <4A80EA14.4030300@hitachi.com>
-Date: Tue, 11 Aug 2009 12:48:36 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Tue, 11 Aug 2009 07:57:06 -0400
+Received: from cantor.suse.de ([195.135.220.2]:37433 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751204AbZHKLyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 07:54:31 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH-v3 1/2] Allow delaying initialization of queue after allocation
+Date: Tue, 11 Aug 2009 15:02:36 +0530
+User-Agent: KMail/1.11.1 (Linux/2.6.27.23-0.1-default; KDE/4.2.1; x86_64; ; )
+Cc: Mike Snitzer <snitzer@redhat.com>, Alasdair G Kergon <agk@redhat.com>,
+       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, Hannes Reinecke <hare@suse.de>
+References: <200908081025.58865.knikanth@suse.de> <200908101551.08605.knikanth@suse.de> <200908101618.18085.knikanth@suse.de>
+In-Reply-To: <200908101618.18085.knikanth@suse.de>
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "tytso@mit.edu" <tytso@mit.edu>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "mfasheh@suse.com" <mfasheh@suse.com>,
-       "aia21@cantab.net" <aia21@cantab.net>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "swhiteho@redhat.com" <swhiteho@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       Taketoshi Sakuraba <taketoshi.sakuraba.hc@hitachi.com>
-Subject: Re: [PATCH] [16/19] HWPOISON: Enable .remove_error_page for migration
-    aware file systems
-References: <200908051136.682859934@firstfloor.org> 
-    <20090805093643.E0C00B15D8@basil.firstfloor.org> 
-    <4A7FBFD1.2010208@hitachi.com> <20090810070745.GA26533@localhost>
-In-Reply-To: <20090810070745.GA26533@localhost>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
-X-FMFTCR: RANGEA
+Content-Disposition: inline
+Message-Id: <200908111502.36570.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
+Export a way to delay initializing a request_queue after allocating it. This
+is needed by device-mapper devices, as they create the queue on device
+creation time, but they decide whether it would use the elevator and requests
+only after first successful table load. Only request-based dm-devices use the
+elevator and requests. Without this either one needs to initialize and free
+the mempool and elevator, if it was a bio-based dm-device or leave it
+allocated, as it is currently done.
 
->>However, we have a way to avoid this kind of data corruption at
->>least for ext3.  If we mount an ext3 filesystem with data=ordered
->>and data_err=abort, all I/O errors on file data block belonging to
->>the committing transaction are checked.  When I/O error is found,
->>abort journaling and remount the filesystem with read-only to
->>prevent further updates.  This kind of feature is very important
->>for mission critical systems.
-> 
-> Agreed. We also set PG_error, which should be enough to trigger such
-> remount?
+This slightly changes the behaviour of block_init_queue_node() such that
+blk_put_queue() would be called, even if blk_init_free_list() fails.
 
-ext3 doesn't check PG_error.  Maybe we need to do:
+Also export elevator_register_queue() to modules.
 
-1. trylock_buffer()
-2. if step 1. succeeds, then clear_buffer_dirty(),
-   clear_buffer_uptodate(), and set_buffer_write_io_error()
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 
-Note that we can't truncate the corrupted page until the error
-check is done by kjournald.
+---
+
+diff --git a/block/blk-core.c b/block/blk-core.c
+index e3299a7..8b05b3b 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -495,6 +495,8 @@ struct request_queue *blk_alloc_queue_node(gfp_t gfp_mask, int node_id)
+ 	if (!q)
+ 		return NULL;
  
->>If we merge this patch, we would face the data corruption problem
->>again.
->>
->>I think there are three options,
->>
->>(1) drop this patch
->>(2) merge this patch with new panic_on_dirty_page_cache_corruption
->>    sysctl
->>(3) implement a more sophisticated error_remove_page function
-> 
-> In fact we proposed a patch for preventing the re-corruption case, see
-> 
->         http://lkml.org/lkml/2009/6/11/294
-> 
-> However it is hard to answer the (policy) question "How sticky should
-> the EIO bit remain?".
-
-It's a good approach!  This approach may also solve my concern,
-the re-corruption issue caused by transient IO errors.
-
-But I also think it needs a bit more consideration.  For example,
-if the application has the valid data in the user space buffer,
-it would try to re-write it after detecting an IO error from the
-previous write.  In this case, we should clear the sticky error flag.
++	q->node = node_id;
++
+ 	q->backing_dev_info.unplug_io_fn = blk_backing_dev_unplug;
+ 	q->backing_dev_info.unplug_io_data = q;
+ 	q->backing_dev_info.ra_pages =
+@@ -569,12 +571,25 @@ blk_init_queue_node(request_fn_proc *rfn, spinlock_t *lock, int node_id)
+ 	if (!q)
+ 		return NULL;
  
-Thanks,
--- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
+-	q->node = node_id;
+-	if (blk_init_free_list(q)) {
++	if (blk_init_allocated_queue(q, rfn, lock)) {
++		blk_put_queue(q);
+ 		kmem_cache_free(blk_requestq_cachep, q);
+ 		return NULL;
+ 	}
+ 
++	return q;
++}
++EXPORT_SYMBOL(blk_init_queue_node);
++
++int blk_init_allocated_queue(struct request_queue *q, request_fn_proc *rfn,
++							spinlock_t *lock)
++{
++	int err = 0;
++
++	err = blk_init_free_list(q);
++	if (err)
++		goto out;
++
+ 	q->request_fn		= rfn;
+ 	q->prep_rq_fn		= NULL;
+ 	q->unplug_fn		= generic_unplug_device;
+@@ -591,15 +606,23 @@ blk_init_queue_node(request_fn_proc *rfn, spinlock_t *lock, int node_id)
+ 	/*
+ 	 * all done
+ 	 */
+-	if (!elevator_init(q, NULL)) {
+-		blk_queue_congestion_threshold(q);
+-		return q;
+-	}
++	err = elevator_init(q, NULL);
++	if (err)
++		goto free_and_out;
+ 
+-	blk_put_queue(q);
+-	return NULL;
++	blk_queue_congestion_threshold(q);
++
++	return 0;
++
++free_and_out:
++	/*
++	 * Cleanup mempool allocated by blk_init_free_list
++	 */
++	mempool_destroy(q->rq.rq_pool);
++out:
++	return err;
+ }
+-EXPORT_SYMBOL(blk_init_queue_node);
++EXPORT_SYMBOL(blk_init_allocated_queue);
+ 
+ int blk_get_queue(struct request_queue *q)
+ {
+diff --git a/block/elevator.c b/block/elevator.c
+index 2d511f9..0827cd3 100644
+--- a/block/elevator.c
++++ b/block/elevator.c
+@@ -930,6 +930,7 @@ int elv_register_queue(struct request_queue *q)
+ 	}
+ 	return error;
+ }
++EXPORT_SYMBOL(elv_register_queue);
+ 
+ static void __elv_unregister_queue(struct elevator_queue *e)
+ {
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 69103e0..4a26fc1 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -901,6 +901,8 @@ extern void blk_abort_queue(struct request_queue *);
+ extern struct request_queue *blk_init_queue_node(request_fn_proc *rfn,
+ 					spinlock_t *lock, int node_id);
+ extern struct request_queue *blk_init_queue(request_fn_proc *, spinlock_t *);
++extern int blk_init_allocated_queue(struct request_queue *q,
++				request_fn_proc *rfn, spinlock_t *lock);
+ extern void blk_cleanup_queue(struct request_queue *);
+ extern void blk_queue_make_request(struct request_queue *, make_request_fn *);
+ extern void blk_queue_bounce_limit(struct request_queue *, u64);
 
