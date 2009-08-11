@@ -1,174 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbZHKSKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbZHKSLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755342AbZHKSKS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 14:10:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbZHKSKQ
+	id S1755352AbZHKSLr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 14:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbZHKSLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 14:10:16 -0400
-Received: from www.tglx.de ([62.245.132.106]:46146 "EHLO www.tglx.de"
+	Tue, 11 Aug 2009 14:11:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54622 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755353AbZHKSKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 14:10:11 -0400
-Date: Tue, 11 Aug 2009 20:09:06 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>
-Subject: Re: [ANNOUNCE] 2.6.31-rc4-rt1
-In-Reply-To: <1249500006.4365.86.camel@lexx>
-Message-ID: <alpine.LFD.2.00.0908112005190.1283@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>  <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain>  <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain>  <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> 
- <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain>  <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain>  <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>  <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> 
- <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>  <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>  <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>  <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> 
- <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain>  <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>  <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain>  <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> 
- <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <1249500006.4365.86.camel@lexx>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1754183AbZHKSLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 14:11:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
+Date: Tue, 11 Aug 2009 20:12:13 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Zhang Rui <rui.zhang@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       "linux-acpi" <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
+       "dtor@mail.ru" <dtor@mail.ru>
+References: <Pine.LNX.4.44L0.0908111148060.2562-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908111148060.2562-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-474308224-1250014150=:1283"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908112012.13361.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tuesday 11 August 2009, Alan Stern wrote:
+> On Tue, 11 Aug 2009, Rafael J. Wysocki wrote:
+> 
+> > In fact, we don't need the layers at all.  The only thing we have to assure is
+> > that, during resume, the devices given device depends on will be handled
+> > before we start to handle this particular device (inversely during suspend).
+> > 
+> > Please note that we're not even allowed to start executing the device's
+> > resume callback before the callbacks of the devices it depends on have
+> > returned (the same applies to the suspend callbacks, but the other way around).
+> 
+> The general algorithm for maximum parallelism goes as follows: Start by
+> resuming (in parallel) all the devices which don't depend on anything
+> else.  Each time a resume finishes, you go on to resume (in parallel)
+> all the devices which depend only on resumed devices and which haven't
+> yet started to resume.
+> 
+> As described, this can require a large number of threads.  It also
+> requires detailed knowledge of which devices depend on others, which we
+> don't have.
 
---8323328-474308224-1250014150=:1283
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+It's even more complicated than that.
 
-On Wed, 5 Aug 2009, Will Schmidt wrote:
-> /test/willschm/linux-2.6.31-rtx/kernel/spinlock.c:103: error: implicit
-> declaration of function ‘_raw_atomic_spin_relax’
+Assume we have 7 devices, A-G, such that A is the parent of B and C,
+B is the parent of D and E, and C is the parent of F and G.  Assume in addition
+that the PM dependencies between the devices are fully reflected by the
+device tree structure (ie. there are no dependencies that aren't reflected
+parent-child relationships) and that B and G take 0.5 s to resume while the
+others take < 1 ms each.  So, the total sequential resume time is
+2 s + O(1 ms).
 
-Fix below. Thanks,
+Now, if we used the above algorithm, we'd first resume DEFG which would take
+1 s because of G, then we'd resume BC which would take 1 s because of B and
+the total resume time is again 2 s + O(1 ms).
 
-    tglx
+However, one can observe that B doesn't need to wait for G to resume, because
+they are independent of each other.  So, we can resume BDE in parallel with
+CFG, while of course DE have to wait for B and so on, but this way we can
+theoretically reduce the total resume time to 1 s + O(1 ms).
 
--------
-commit ffc969930727238b847176c203bdbe1f9dffe403
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Tue Aug 11 20:03:47 2009 +0200
+The question is how to do that and it seems to me that we can use completions
+for this purpose.  Namely, add a completion to each device with the following
+rules:
+1) all completions are reset before dpm_resume(),
+2) before executing the ->resume() callback for device D, we wait for the
+   completion of the D's parent,
+3) we complete the D's completion after executing its ->resume() callback.
+Also, the items executed in parallel are now the "wait for the parent's
+completion, run our callback and complete our completion" things.
 
-    locks: Fix PREEMPT=y, LOCKBREAK=y, DEBUG_LOCK_ALLOC=n compile
-    
-    Should be folded back into the atomic lock conversion
-    
-    Reported-by: Will Schmidt <will_schmidt@vnet.ibm.com>
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+At first sight I don't see anything fundamentally wrong with this approach.
 
-diff --git a/kernel/lock-internals.h b/kernel/lock-internals.h
-index 4f0bc8b..76f694c 100644
---- a/kernel/lock-internals.h
-+++ b/kernel/lock-internals.h
-@@ -9,8 +9,8 @@
-  * (We do this in a function because inlining it would be excessive.)
-  */
- 
--#define BUILD_LOCK_OPS(op, locktype)					\
--void __lockfunc _##op##_lock(locktype##_t *lock)			\
-+#define BUILD_LOCK_OPS(prefix, op, locktype)				\
-+void __lockfunc _##prefix##_lock(locktype##_t *lock)			\
- {									\
- 	for (;;) {							\
- 		preempt_disable();					\
-@@ -20,15 +20,15 @@ void __lockfunc _##op##_lock(locktype##_t *lock)			\
- 									\
- 		if (!(lock)->break_lock)				\
- 			(lock)->break_lock = 1;				\
--		while (!op##_can_lock(lock) && (lock)->break_lock)	\
-+		while (!prefix##_can_lock(lock) && (lock)->break_lock)	\
- 			_raw_##op##_relax(&lock->raw_lock);		\
- 	}								\
- 	(lock)->break_lock = 0;						\
- }									\
- 									\
--EXPORT_SYMBOL(_##op##_lock);						\
-+EXPORT_SYMBOL(_##prefix##_lock);					\
- 									\
--unsigned long __lockfunc _##op##_lock_irqsave(locktype##_t *lock)	\
-+unsigned long __lockfunc _##prefix##_lock_irqsave(locktype##_t *lock)	\
- {									\
- 	unsigned long flags;						\
- 									\
-@@ -42,23 +42,23 @@ unsigned long __lockfunc _##op##_lock_irqsave(locktype##_t *lock)	\
- 									\
- 		if (!(lock)->break_lock)				\
- 			(lock)->break_lock = 1;				\
--		while (!op##_can_lock(lock) && (lock)->break_lock)	\
-+		while (!prefix##_can_lock(lock) && (lock)->break_lock)	\
- 			_raw_##op##_relax(&lock->raw_lock);		\
- 	}								\
- 	(lock)->break_lock = 0;						\
- 	return flags;							\
- }									\
- 									\
--EXPORT_SYMBOL(_##op##_lock_irqsave);					\
-+EXPORT_SYMBOL(_##prefix##_lock_irqsave);				\
- 									\
--void __lockfunc _##op##_lock_irq(locktype##_t *lock)			\
-+void __lockfunc _##prefix##_lock_irq(locktype##_t *lock)		\
- {									\
--	_##op##_lock_irqsave(lock);					\
-+	_##prefix##_lock_irqsave(lock);					\
- }									\
- 									\
--EXPORT_SYMBOL(_##op##_lock_irq);					\
-+EXPORT_SYMBOL(_##prefix##_lock_irq);					\
- 									\
--void __lockfunc _##op##_lock_bh(locktype##_t *lock)			\
-+void __lockfunc _##prefix##_lock_bh(locktype##_t *lock)			\
- {									\
- 	unsigned long flags;						\
- 									\
-@@ -67,9 +67,9 @@ void __lockfunc _##op##_lock_bh(locktype##_t *lock)			\
- 	/* irq-disabling. We use the generic preemption-aware	*/	\
- 	/* function:						*/	\
- 	/**/								\
--	flags = _##op##_lock_irqsave(lock);				\
-+	flags = _##prefix##_lock_irqsave(lock);				\
- 	local_bh_disable();						\
- 	local_irq_restore(flags);					\
- }									\
- 									\
--EXPORT_SYMBOL(_##op##_lock_bh)
-+EXPORT_SYMBOL(_##prefix##_lock_bh)
-diff --git a/kernel/rwlock.c b/kernel/rwlock.c
-index 35460b3..eaf34c8 100644
---- a/kernel/rwlock.c
-+++ b/kernel/rwlock.c
-@@ -146,8 +146,8 @@ EXPORT_SYMBOL(_write_lock);
-  *         _[read|write]_lock_irqsave()
-  *         _[read|write]_lock_bh()
-  */
--BUILD_LOCK_OPS(read, rwlock);
--BUILD_LOCK_OPS(write, rwlock);
-+BUILD_LOCK_OPS(read, read, rwlock);
-+BUILD_LOCK_OPS(write, write, rwlock);
- 
- #endif /* CONFIG_PREEMPT */
- 
-diff --git a/kernel/spinlock.c b/kernel/spinlock.c
-index 6a3c0c4..e3194d5 100644
---- a/kernel/spinlock.c
-+++ b/kernel/spinlock.c
-@@ -100,7 +100,7 @@ EXPORT_SYMBOL(_atomic_spin_lock);
-  *         _atomic_spin_lock_irqsave()
-  *         _atomic_spin_lock_bh()
-  */
--BUILD_LOCK_OPS(atomic_spin, atomic_spinlock);
-+BUILD_LOCK_OPS(atomic_spin, spin, atomic_spinlock);
- 
- #endif /* CONFIG_PREEMPT */
- 
-
---8323328-474308224-1250014150=:1283--
+Thanks,
+Rafael
