@@ -1,156 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbZHKMAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbZHKL7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752793AbZHKMAh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZHKMAe
+	id S1752631AbZHKL7m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 07:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZHKL7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:00:34 -0400
-Received: from mailx.hitachi.co.jp ([133.145.228.49]:33209 "EHLO
-	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752734AbZHKMAZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:00:25 -0400
-X-AuditID: b753bd60-aae45ba000006009-b1-4a80eaa734c3
-Message-ID: <4A80EAA3.7040107@hitachi.com>
-Date: Tue, 11 Aug 2009 12:50:59 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Tue, 11 Aug 2009 07:59:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35438 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752327AbZHKL7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 07:59:37 -0400
+Date: Tue, 11 Aug 2009 07:57:59 GMT
+From: tip-bot for Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       dmitry.torokhov@gmail.com, dtor@mail.ru, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       dmitry.torokhov@gmail.com, dtor@mail.ru, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090810051513.0558F526EC9@mailhub.coreip.homeip.net>
+References: <20090810051513.0558F526EC9@mailhub.coreip.homeip.net>
+Subject: [tip:x86/urgent] x86, mce: therm_throt - change when we print messages
+Message-ID: <tip-0d01f31439c1e4d602bf9fdc924ab66f407f5e38@git.kernel.org>
+Git-Commit-ID: 0d01f31439c1e4d602bf9fdc924ab66f407f5e38
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-Cc: tytso@mit.edu, hch@infradead.org, mfasheh@suse.com, aia21@cantab.net,
-       hugh.dickins@tiscali.co.uk, swhiteho@redhat.com,
-       akpm@linux-foundation.org, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com, Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       Taketoshi Sakuraba <taketoshi.sakuraba.hc@hitachi.com>
-Subject: Re: [PATCH] [16/19] HWPOISON: Enable .remove_error_page for migration
-    aware file systems
-References: <200908051136.682859934@firstfloor.org> 
-    <20090805093643.E0C00B15D8@basil.firstfloor.org> 
-    <4A7FBFD1.2010208@hitachi.com> <20090810074421.GA6838@basil.fritz.box>
-In-Reply-To: <20090810074421.GA6838@basil.fritz.box>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
-X-FMFTCR: RANGEA
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 11 Aug 2009 07:58:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
+Commit-ID:  0d01f31439c1e4d602bf9fdc924ab66f407f5e38
+Gitweb:     http://git.kernel.org/tip/0d01f31439c1e4d602bf9fdc924ab66f407f5e38
+Author:     Dmitry Torokhov <dmitry.torokhov@gmail.com>
+AuthorDate: Sun, 9 Aug 2009 21:44:49 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 11 Aug 2009 09:54:17 +0200
 
->>1. An uncorrected error on a dirty page cache page is detected by
->>   memory scrubbing
->>2. Kernel unmaps and truncates the page to recover from the error
->>3. An application reads data from the file location corresponding
->>   to the truncated page
->>   ==> Old or garbage data will be read into a new page cache page
-> 
-> The problem currently is that the error is not sticky enough and
-> doesn't stay around long enough. It gets reported once,
-> but not in later IO operations.
-> 
-> However it's a generic problem not unique to hwpoison. Me 
+x86, mce: therm_throt - change when we print messages
 
-Yes, it's a generic problem, and introducing a sticky error flag
-is one of the approach to solve the problem.  I think it is a good
-approach because it doesn't depend on individual filesystems.
+My Latitude d630 seems to be handling thermal events in SMI by
+lowering the max frequency of the CPU till it cools down but
+still leaks the "everything is normal" events.
 
-> And application
-> that doesn't handle current IO errors correctly will also
-> not necessarily handle hwpoison correctly (it's not better and not worse)
+This spams the console and with high priority printks.
 
-This is my main concern.  I'd like to prevent re-corruption even if
-applications don't have good manners.
+Adjust therm_throt driver to only print messages about the fact
+that temperatire returned back to normal when leaving the
+throttling state.
 
-As for usual I/O error, ext3/4 can now do it by using data=ordered and
-data_err=abort mount options.  Moreover, if you mount the ext3/4
-filesystem with the additional errors=panic option, kernel gets
-panic on write error instead of read-only remount.  Customers
-who regard data integrity is very important require these features.
+Also lower the severity of "back to normal" message from
+KERN_CRIT to KERN_INFO.
 
-But this patch (PATCH 16/19) introduce this problem again, because
-it doesn't provide a way to shut out further writes to the fs.
-Of course, we can do it by setting tolerant level to 0 or
-memory_failure_recovery to 0.  But it would be overkill.
-That is why I suggested this:
->>(2) merge this patch with new panic_on_dirty_page_cache_corruption
->>    sysctl
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+Acked-by: H. Peter Anvin <hpa@zytor.com>
+LKML-Reference: <20090810051513.0558F526EC9@mailhub.coreip.homeip.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-> That is something that could be improved in the VFS -- although I fear
-> any improvements here could also break compatibility. I don't think
-> it's a blocker on hwpoison for now. It needs more design
-> effort and thinking (e.g. likely the address space IO error
-> bit should be separated into multiple bits)
-> 
-> Perhaps you're interested in working on this?
+---
+ arch/x86/kernel/cpu/mcheck/therm_throt.c |   18 +++++++++++-------
+ 1 files changed, 11 insertions(+), 7 deletions(-)
 
-Yes.  Transient IO errors have a potential for causing re-corruption
-problem.  Now ext3/4 provide ways to prevent it, but not the other
-filesystems.  We would need a generic way.
+diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+index bff8dd1..8bc64cf 100644
+--- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
++++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+@@ -36,6 +36,7 @@
  
->>4. The application modifies the data and write back it to the disk
->>5. The file will corrurpt!
->>
->>(Yes, the application is wrong to not do the right thing, i.e. fsync,
->> but it's not user's fault!)
->>
->>A similar data corruption can be caused by a write I/O error,
->>because dirty flag is cleared even if the page couldn't be written
->>to the disk.
->>
->>However, we have a way to avoid this kind of data corruption at
->>least for ext3.  If we mount an ext3 filesystem with data=ordered
->>and data_err=abort, all I/O errors on file data block belonging to
->>the committing transaction are checked.  When I/O error is found,
->>abort journaling and remount the filesystem with read-only to
->>prevent further updates.  This kind of feature is very important
->>for mission critical systems.
-> 
-> Well it sounds like a potentially useful enhancement to ext3 (or ext4).
-> 
-> One issue is that the default is not ordered anymore since
-> Linus changed the default.
-
-Yes, but what is important is whether the system provides
-such feature or not.
-
-> I'm sure other enhancements for IO errors could be done too.
-> Some of the file systems also handle them still quite poorly (e.g. btrfs)
-> 
-> But again I don't think it's a blocker for hwpoison.
-
-Unfortunately, it can be a blocker.  As I stated, we can block the
-possible re-corruption caused by transient IO errors on ext3/4
-filesystems.  But applying this patch (PATCH 16/19), re-corruption
-can happen even if we use data=ordered, data_err=abort and
-errors=panic mount options.
-
-So...
-
->>I think there are three options,
->>
->>(1) drop this patch
->>(2) merge this patch with new panic_on_dirty_page_cache_corruption
->>    sysctl
->>(3) implement a more sophisticated error_remove_page function
-> 
-> (4) accept that hwpoison error handling is not better and not worse than normal
-> IO error handling.
-> 
-> We opted for (4).
-
-Could you consider adopting (2) or (3)?  Fengguang's sticky EIO
-approach (http://lkml.org/lkml/2009/6/11/294) is also OK.
-I hope HWPOISON patches are merged into 2.6.32.  So (2) is the
-best answer for me, because it's simple and less intrusive.
-
-Thanks,
--- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
-
+ static DEFINE_PER_CPU(__u64, next_check) = INITIAL_JIFFIES;
+ static DEFINE_PER_CPU(unsigned long, thermal_throttle_count);
++static DEFINE_PER_CPU(bool, thermal_throttle_active);
+ 
+ static atomic_t therm_throt_en		= ATOMIC_INIT(0);
+ 
+@@ -96,24 +97,27 @@ static int therm_throt_process(int curr)
+ {
+ 	unsigned int cpu = smp_processor_id();
+ 	__u64 tmp_jiffs = get_jiffies_64();
++	bool was_throttled = __get_cpu_var(thermal_throttle_active);
++	bool is_throttled = __get_cpu_var(thermal_throttle_active) = curr;
+ 
+-	if (curr)
++	if (is_throttled)
+ 		__get_cpu_var(thermal_throttle_count)++;
+ 
+-	if (time_before64(tmp_jiffs, __get_cpu_var(next_check)))
++	if (!(was_throttled ^ is_throttled) &&
++	    time_before64(tmp_jiffs, __get_cpu_var(next_check)))
+ 		return 0;
+ 
+ 	__get_cpu_var(next_check) = tmp_jiffs + CHECK_INTERVAL;
+ 
+ 	/* if we just entered the thermal event */
+-	if (curr) {
++	if (is_throttled) {
+ 		printk(KERN_CRIT "CPU%d: Temperature above threshold, "
+-		       "cpu clock throttled (total events = %lu)\n", cpu,
+-		       __get_cpu_var(thermal_throttle_count));
++		       "cpu clock throttled (total events = %lu)\n",
++		       cpu, __get_cpu_var(thermal_throttle_count));
+ 
+ 		add_taint(TAINT_MACHINE_CHECK);
+-	} else {
+-		printk(KERN_CRIT "CPU%d: Temperature/speed normal\n", cpu);
++	} else if (was_throttled) {
++		printk(KERN_INFO "CPU%d: Temperature/speed normal\n", cpu);
+ 	}
+ 
+ 	return 1;
