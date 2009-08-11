@@ -1,157 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZHKMFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbZHKMHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753141AbZHKMFj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbZHKMFg
+	id S1753334AbZHKMHW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbZHKMG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:05:36 -0400
-Received: from mga09.intel.com ([134.134.136.24]:11983 "EHLO mga09.intel.com"
+	Tue, 11 Aug 2009 08:06:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38853 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753106AbZHKMFa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:05:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,359,1246863600"; 
-   d="scan'208";a="540312968"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>
-Date: Tue, 11 Aug 2009 09:59:08 +0100
-Subject: RE: [PATCH] perf_counter: Fix a race on perf_counter_ctx
-Thread-Topic: [PATCH] perf_counter: Fix a race on perf_counter_ctx
-Thread-Index: AcoZwPH32O+eE+8/TDeninUWmRiuXwAjFfggAARFOmA=
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF78D@irsmsx504.ger.corp.intel.com>
-References: <928CFBE8E7CB0040959E56B4EA41A77EC1BFEFEB@irsmsx504.ger.corp.intel.com>
- <20090807103127.GA23139@elte.hu> <20090807103610.GA23728@elte.hu>
- <928CFBE8E7CB0040959E56B4EA41A77EC1BFF02D@irsmsx504.ger.corp.intel.com>
- <928CFBE8E7CB0040959E56B4EA41A77EC1BFF048@irsmsx504.ger.corp.intel.com>
- <20090807112421.GB30014@elte.hu> <20090807113349.GA31673@elte.hu>
- <1249667341.17467.5.camel@twins> <20090808120315.GA14086@elte.hu>
- <928CFBE8E7CB0040959E56B4EA41A77EC1BFF464@irsmsx504.ger.corp.intel.com>
- <20090810134608.GA8295@elte.hu> 
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+	id S1753075AbZHKMGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 08:06:49 -0400
+Date: Tue, 11 Aug 2009 06:39:22 -0400
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andi Kleen <andi@firstfloor.org>, Amerigo Wang <amwang@redhat.com>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+Message-Id: <20090811104144.5154.77871.sendpatchset@localhost.localdomain>
+Subject: [RFC Patch 1/2] kexec: show memory info in /proc/iomem
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Metzger, Markus T
->Sent: Tuesday, August 11, 2009 8:34 AM
->To: 'Ingo Molnar'
->Cc: Peter Zijlstra; tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; linux-
->kernel@vger.kernel.org; Paul Mackerras
->Subject: RE: [PATCH] perf_counter: Fix a race on perf_counter_ctx
->
->>-----Original Message-----
->>From: Ingo Molnar [mailto:mingo@elte.hu]
->>Sent: Monday, August 10, 2009 3:46 PM
->>To: Metzger, Markus T
->>Cc: Peter Zijlstra; tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; linux-
->>kernel@vger.kernel.org; Paul Mackerras
->>Subject: Re: [PATCH] perf_counter: Fix a race on perf_counter_ctx
->>
->>
->>* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
->>
->>> I've been using some old version of perf. When I try to build the
->>> version for the latest -tip, I get the following build error:
->>>
->>> builtin-annotate.o: In function `print_summary':
->>> /home/markus/linux/git-tip/tools/perf/builtin-annotate.c:1211: undefined reference to `rb_first'
->>> /home/markus/linux/git-tip/tools/perf/builtin-annotate.c:1223: undefined reference to `rb_next'
->>> builtin-annotate.o: In function `insert_source_line':
->>
->>Weird. How do you build perf? Do you do:
->>
->>  cd tools/perf/
->>  make
->>
->>? does your build directory have the ../../lib/rbtree.c file?
->
->Yes and yes.
+
+This patch implements showing kexec memory area via /proc/iomem.
+For example, with this patch we can see:
+
+# cat /proc/iomem
+...
+00100000-7ffeffff : System RAM
+  01000000-012e1424 : Kernel code
+  012e1425-015f1aff : Kernel data
+  0166b000-01b4b88f : Kernel bss
+  02000000-083fffff : Crash kernel
+    02000000-028fffff : Used
+    02900000-083fffff : Unused
+...
+
+So that user can know how much memory the kernel uses for crash kernel.
+
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: Neil Horman <nhorman@redhat.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Andi Kleen <andi@firstfloor.org>
 
 
-The rbtree object file does not seem to be an ELF file (see below).
-
-When I have gcc generate an assembly file and generate the object with a
-separate call to gcc, I can build perf.
-
-When I say "perf record -f -e branches -c 1", the kernel hangs.
-
-You said that this is working for you?
-
-regards,
-markus.
-
-----
-
-[markus@labpc212 perf]$ gcc --version
-gcc (GCC) 4.3.2 20081105 (Red Hat 4.3.2-7)
-Copyright (C) 2008 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-[markus@labpc212 perf]$ file *.o util/*.o
-builtin-annotate.o:   ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-builtin-help.o:       ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-builtin-list.o:       ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-builtin-record.o:     ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-builtin-report.o:     ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-builtin-stat.o:       ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-builtin-top.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-perf.o:               ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/abspath.o:       ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/alias.o:         ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/callchain.o:     ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/color.o:         ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/config.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/ctype.o:         ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/environment.o:   ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/exec_cmd.o:      ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/header.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/help.o:          ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/levenshtein.o:   ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/module.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/pager.o:         ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/parse-events.o:  ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/parse-options.o: ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/path.o:          ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/quote.o:         ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/rbtree.o:        data
-util/run-command.o:   ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/sigchain.o:      ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/strbuf.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/string.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/strlist.o:       data
-util/symbol.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/usage.o:         ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/values.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-util/wrapper.o:       ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
-[markus@labpc212 perf]$
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+---
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index f336e21..01673ad 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -931,6 +931,8 @@ static int kimage_load_segment(struct kimage *image,
+  */
+ struct kimage *kexec_image;
+ struct kimage *kexec_crash_image;
++struct resource *kexec_res = NULL;
++struct resource *kexec_free_res = NULL;
+ 
+ static DEFINE_MUTEX(kexec_mutex);
+ 
+@@ -939,6 +941,8 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
+ {
+ 	struct kimage **dest_image, *image;
+ 	int result;
++	unsigned long kexec_start = crashk_res.start;
++	unsigned long kexec_end = kexec_start;
+ 
+ 	/* We only trust the superuser with rebooting the system. */
+ 	if (!capable(CAP_SYS_BOOT))
+@@ -994,6 +998,7 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
+ 			kimage_free(xchg(&kexec_crash_image, NULL));
+ 			result = kimage_crash_alloc(&image, entry,
+ 						     nr_segments, segments);
++			kexec_end += KEXEC_CONTROL_PAGE_SIZE;
+ 		}
+ 		if (result)
+ 			goto out;
+@@ -1008,6 +1013,42 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
+ 			result = kimage_load_segment(image, &image->segment[i]);
+ 			if (result)
+ 				goto out;
++			if (flags & KEXEC_ON_CRASH)
++				kexec_end += image->segment[i].memsz;
++		}
++		if (flags & KEXEC_ON_CRASH) {
++			if (kexec_res) {
++				release_resource(kexec_res);
++				release_resource(kexec_free_res);
++				kfree(kexec_res);
++				kfree(kexec_free_res);
++			}
++			kexec_res = kzalloc(sizeof(*kexec_res), GFP_KERNEL);
++			if (!kexec_res) {
++				result = -ENOMEM;
++				goto out;
++			}
++			kexec_free_res = kzalloc(sizeof(*kexec_free_res), GFP_KERNEL);
++			if (!kexec_free_res) {
++				result = -ENOMEM;
++				goto out_free;
++			}
++			kexec_res->name = "Used";
++			kexec_res->start = kexec_start;
++			kexec_res->end = roundup(kexec_end, 1<<20) - 1;
++			kexec_res->flags = IORESOURCE_BUSY | IORESOURCE_MEM;
++			if (insert_resource(&crashk_res, kexec_res)) {
++				result = -EBUSY;
++				goto out_free;
++			}
++			kexec_free_res->name = "Unused";
++			kexec_free_res->start = kexec_res->end + 1;
++			kexec_free_res->end = crashk_res.end;
++			kexec_free_res->flags = IORESOURCE_BUSY | IORESOURCE_MEM;
++			if (insert_resource(&crashk_res, kexec_free_res)) {
++				result = -EBUSY;
++				goto out_release;
++			}
+ 		}
+ 		kimage_terminate(image);
+ 	}
+@@ -1019,6 +1060,13 @@ out:
+ 	kimage_free(image);
+ 
+ 	return result;
++
++out_free:
++	kfree(kexec_free_res);
++	kfree(kexec_res);
++out_release:
++	release_resource(kexec_res);
++	goto out;
+ }
+ 
+ #ifdef CONFIG_COMPAT
