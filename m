@@ -1,328 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbZHKMMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751324AbZHKMOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753597AbZHKMMh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbZHKMMg
+	id S1751324AbZHKMOh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:14:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbZHKMOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:12:36 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:59877 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753554AbZHKMMc (ORCPT
+	Tue, 11 Aug 2009 08:14:34 -0400
+Received: from exprod5og108.obsmtp.com ([64.18.0.186]:53785 "EHLO
+	exprod5og108.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937AbZHKMOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:12:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=bqOTOur/iEP5iOWQaC/xQu38vOiH26wYSfixoypsX4HtSpL6COU7wEJGkoxu9a3Jft
-         GY5ABTmCEaUa9RCTzmPPlvsZmvSW42AcqwD8fDh1WbmVEevJx3xKhpdTStAepKB0qGmP
-         BNBHs55XnpTqy1kOQqJVxs74BqWHYYalulkzc=
-Date: Tue, 11 Aug 2009 14:12:28 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com
-Subject: Re: [PATCH 10/12] add perf counter support
-Message-ID: <20090811121227.GF4938@nowhere>
-References: <cover.1249932670.git.jbaron@redhat.com> <b9d3c5f9d0ff2fb71993530873807443a0c7eb64.1249932670.git.jbaron@redhat.com>
+	Tue, 11 Aug 2009 08:14:33 -0400
+Message-ID: <4A812BCE.3010003@gefanuc.com>
+Date: Tue, 11 Aug 2009 09:29:02 +0100
+From: Martyn Welch <martyn.welch@gefanuc.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b9d3c5f9d0ff2fb71993530873807443a0c7eb64.1249932670.git.jbaron@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Emilio G. Cota" <cota@braap.org>
+CC: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
+Subject: Re: [patch 1/5] Staging: VME Framework for the Linux Kernel
+References: <20090803205657.964064732@mini.kroah.org> <20090803210111.GB28430@kroah.com> <20090808230145.GB27151@braap.org> <4A801644.2070009@gefanuc.com> <20090810141442.GA18456@braap.org> <4A804283.5090009@gefanuc.com> <20090810193849.GA3055@braap.org>
+In-Reply-To: <20090810193849.GA3055@braap.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 04:53:02PM -0400, Jason Baron wrote:
-> Make 'perf stat -e syscalls:sys_enter_blah' work with syscall style tracepoints.
+Emilio G. Cota wrote:
+> Martyn Welch wrote:
+>   
+>> That's one reason for the helper function. If VME bridges are added  
+>> which sit of on other buses then vme_alloc_consistent can be extended to  
+>> support this without requiring VME device drivers to be altered to  
+>> reflect the fact that pci_alloc_consistent might not work for all VME  
+>> bridges.
+>>     
+>
+> But it corresponds to the bridge's code (not to the generic layer) to
+> know whether the bridge sits on top of PCI or not; hence my comment.
+>
+>   
+>> The DMA controller in the tsi-148 can do PCI to PCI; PCI to VME; VME to  
+>> PCI; VME to VME; Patterns to  VME and Patterns to PCI transfers. How do  
+>> you specify all those options without providing a structure where over  
+>> 50% of the fields aren't used for any given transfer?
+>>     
+>
+> I think a struct where not _every_ field is *always* used is fine.
+> However requiring your drivers to know about what your bridge
+> looks like is a mistake; just give them something thin that doesn't
+> assume anything about what's behind it, and if it's not supported,
+> return an appropriate error message.
+>   
 
+That's what the API does - how does it require the driver writer to know 
+about what the bridge look like. All that it requires is the the 
+hardware supports the transfer mode that the driver requests, however 
+that's always going to be an issue with multiple devices with different 
+properties.
 
-It would be nice to also be able to type:
+>> Every bridge I have seen is capable of link-list execution. The API  
+>> provides the ability to do scatter-gather style DMA transfers, this  
+>> could be used as part of a "zero-copy" type driver for high speed VME  
+>> capture devices. How would you support the link-list execution with a  
+>> single call?
+>>     
+>
+> Let me say it again: "Drivers should know *nothing* about the
+> underlying bridge".
+> They should work with *any* bridge; or do we care about the PCI
+> bridge we're plug our PCI device on when writing a driver for it?
+>
+>   
 
-perf stat -e syscalls:blah
+Again: what part of the API I have defined forces the driver to know 
+about the underlying bridge?
 
-and then having both enter/exit counters.
+>> I was also looking at the ability to queue DMA transfers if the  
+>> controller was currently busy - if the consensus is that this is  
+>> overkill I will happily remove this.
+>>     
+>
+> AFAICT the tsi148 has several DMA channels; in our driver we just
+> try to find a free channel to proceed with the transfer; if there
+> aren't any then we return EBUSY.
+>   
 
-Frederic.
+Where as I request a DMA channel - a resource is returned, the driver 
+does not need to know which one, he has the resource structure which 
+refers to it. It treats the DMA engines as a resource, just as it treats 
+the windows, both master and slave as resources.
 
+> Drawing an analogy with current 'streaming DMA' transfers, we're
+> told we should check whether they failed or not, so I think
+> trying to be too clever here it's not worth it.
+>
+>   
+Yes - my driver checks to see of the transfer has succeeded, I don't see 
+quite what this has to do with the API. How's the API being clever?
+>> I implemented it using param array, I agree that the arguments might get
+>> quite long with 10 devices, especially if multiple parameters are
+>> required, but I don't see why it shouldn't work.
+>>     
+>
+> The fact that 'it works' doesn't make it less ugly or messy.
+> When referring to code, these two words usually mean "there's
+> a better way"; so let's just find it.
+>
+> E.
+>   
+If there's a better way to do this then fine - I'm happy to use it, 
+however I'm not quite sure how this relates to the API, core VME code or 
+low-level drivers. I think it's up to the authors of the VME device 
+drivers themselves how they approach this. The API uses the standard 
+bind-table approach as best as I could. If you can think of a better 
+approach to this, patches will be welcome.
 
-> 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
-> 
-> ---
->  include/linux/perf_counter.h  |    2 +
->  include/linux/syscalls.h      |   52 +++++++++++++++++-
->  include/trace/syscall.h       |    7 +++
->  kernel/trace/trace_syscalls.c |  121 +++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 181 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-> index c484834..aaf0c74 100644
-> --- a/include/linux/perf_counter.h
-> +++ b/include/linux/perf_counter.h
-> @@ -734,6 +734,8 @@ extern int sysctl_perf_counter_mlock;
->  extern int sysctl_perf_counter_sample_rate;
->  
->  extern void perf_counter_init(void);
-> +extern void perf_tpcounter_event(int event_id, u64 addr, u64 count,
-> +				 void *record, int entry_size);
->  
->  #ifndef perf_misc_flags
->  #define perf_misc_flags(regs)	(user_mode(regs) ? PERF_EVENT_MISC_USER : \
-> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-> index ce4b01c..5541e75 100644
-> --- a/include/linux/syscalls.h
-> +++ b/include/linux/syscalls.h
-> @@ -98,6 +98,53 @@ struct perf_counter_attr;
->  #define __SC_TEST5(t5, a5, ...)	__SC_TEST(t5); __SC_TEST4(__VA_ARGS__)
->  #define __SC_TEST6(t6, a6, ...)	__SC_TEST(t6); __SC_TEST5(__VA_ARGS__)
->  
-> +#ifdef CONFIG_EVENT_PROFILE
-> +#define TRACE_SYS_ENTER_PROFILE(sname)					       \
-> +static int prof_sysenter_enable_##sname(struct ftrace_event_call *event_call)  \
-> +{									       \
-> +	int ret = 0;							       \
-> +	if (!atomic_inc_return(&event_enter_##sname.profile_count))	       \
-> +		ret = reg_prof_syscall_enter("sys"#sname);		       \
-> +	return ret;							       \
-> +}									       \
-> +									       \
-> +static void prof_sysenter_disable_##sname(struct ftrace_event_call *event_call)\
-> +{									       \
-> +	if (atomic_add_negative(-1, &event_enter_##sname.profile_count))       \
-> +		unreg_prof_syscall_enter("sys"#sname);			       \
-> +}
-> +
-> +#define TRACE_SYS_EXIT_PROFILE(sname)					       \
-> +static int prof_sysexit_enable_##sname(struct ftrace_event_call *event_call)   \
-> +{									       \
-> +	int ret = 0;							       \
-> +	if (!atomic_inc_return(&event_exit_##sname.profile_count))	       \
-> +		ret = reg_prof_syscall_exit("sys"#sname);		       \
-> +	return ret;							       \
-> +}									       \
-> +									       \
-> +static void prof_sysexit_disable_##sname(struct ftrace_event_call *event_call) \
-> +{                                                                              \
-> +	if (atomic_add_negative(-1, &event_exit_##sname.profile_count))	       \
-> +		unreg_prof_syscall_exit("sys"#sname);			       \
-> +}
-> +
-> +#define TRACE_SYS_ENTER_PROFILE_INIT(sname)				       \
-> +	.profile_count = ATOMIC_INIT(-1),				       \
-> +	.profile_enable = prof_sysenter_enable_##sname,			       \
-> +	.profile_disable = prof_sysenter_disable_##sname,
-> +
-> +#define TRACE_SYS_EXIT_PROFILE_INIT(sname)				       \
-> +	.profile_count = ATOMIC_INIT(-1),				       \
-> +	.profile_enable = prof_sysexit_enable_##sname,			       \
-> +	.profile_disable = prof_sysexit_disable_##sname,
-> +#else
-> +#define TRACE_SYS_ENTER_PROFILE(sname)
-> +#define TRACE_SYS_ENTER_PROFILE_INIT(sname)
-> +#define TRACE_SYS_EXIT_PROFILE(sname)
-> +#define TRACE_SYS_EXIT_PROFILE_INIT(sname)
-> +#endif
-> +
->  #ifdef CONFIG_FTRACE_SYSCALLS
->  #define __SC_STR_ADECL1(t, a)		#a
->  #define __SC_STR_ADECL2(t, a, ...)	#a, __SC_STR_ADECL1(__VA_ARGS__)
-> @@ -113,7 +160,6 @@ struct perf_counter_attr;
->  #define __SC_STR_TDECL5(t, a, ...)	#t, __SC_STR_TDECL4(__VA_ARGS__)
->  #define __SC_STR_TDECL6(t, a, ...)	#t, __SC_STR_TDECL5(__VA_ARGS__)
->  
-> -
->  #define SYSCALL_TRACE_ENTER_EVENT(sname)				\
->  	static struct ftrace_event_call event_enter_##sname;		\
->  	struct trace_event enter_syscall_print_##sname = {		\
-> @@ -134,6 +180,7 @@ struct perf_counter_attr;
->  		init_preds(&event_enter_##sname);			\
->  		return 0;						\
->  	}								\
-> +	TRACE_SYS_ENTER_PROFILE(sname);					\
->  	static struct ftrace_event_call __used				\
->  	  __attribute__((__aligned__(4)))				\
->  	  __attribute__((section("_ftrace_events")))			\
-> @@ -145,6 +192,7 @@ struct perf_counter_attr;
->  		.regfunc		= reg_event_syscall_enter,	\
->  		.unregfunc		= unreg_event_syscall_enter,	\
->  		.data			= "sys"#sname,			\
-> +		TRACE_SYS_ENTER_PROFILE_INIT(sname)			\
->  	}
->  
->  #define SYSCALL_TRACE_EXIT_EVENT(sname)					\
-> @@ -167,6 +215,7 @@ struct perf_counter_attr;
->  		init_preds(&event_exit_##sname);			\
->  		return 0;						\
->  	}								\
-> +	TRACE_SYS_EXIT_PROFILE(sname);					\
->  	static struct ftrace_event_call __used				\
->  	  __attribute__((__aligned__(4)))				\
->  	  __attribute__((section("_ftrace_events")))			\
-> @@ -178,6 +227,7 @@ struct perf_counter_attr;
->  		.regfunc		= reg_event_syscall_exit,	\
->  		.unregfunc		= unreg_event_syscall_exit,	\
->  		.data			= "sys"#sname,			\
-> +		TRACE_SYS_EXIT_PROFILE_INIT(sname)			\
->  	}
->  
->  #define SYSCALL_METADATA(sname, nb)				\
-> diff --git a/include/trace/syscall.h b/include/trace/syscall.h
-> index df62840..3ab6dd1 100644
-> --- a/include/trace/syscall.h
-> +++ b/include/trace/syscall.h
-> @@ -58,5 +58,12 @@ extern void unreg_event_syscall_exit(void *ptr);
->  enum print_line_t print_syscall_enter(struct trace_iterator *iter, int flags);
->  enum print_line_t print_syscall_exit(struct trace_iterator *iter, int flags);
->  #endif
-> +#ifdef CONFIG_EVENT_PROFILE
-> +int reg_prof_syscall_enter(char *name);
-> +void unreg_prof_syscall_enter(char *name);
-> +int reg_prof_syscall_exit(char *name);
-> +void unreg_prof_syscall_exit(char *name);
-> +
-> +#endif
->  
->  #endif /* _TRACE_SYSCALL_H */
-> diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-> index e58a9c1..f4eaec3 100644
-> --- a/kernel/trace/trace_syscalls.c
-> +++ b/kernel/trace/trace_syscalls.c
-> @@ -1,6 +1,7 @@
->  #include <trace/syscall.h>
->  #include <linux/kernel.h>
->  #include <linux/ftrace.h>
-> +#include <linux/perf_counter.h>
->  #include <asm/syscall.h>
->  
->  #include "trace_output.h"
-> @@ -252,3 +253,123 @@ struct trace_event event_syscall_enter = {
->  struct trace_event event_syscall_exit = {
->  	.trace			= print_syscall_exit,
->  };
-> +
-> +#ifdef CONFIG_EVENT_PROFILE
-> +static DECLARE_BITMAP(enabled_prof_enter_syscalls, FTRACE_SYSCALL_MAX);
-> +static DECLARE_BITMAP(enabled_prof_exit_syscalls, FTRACE_SYSCALL_MAX);
-> +static int sys_prof_refcount_enter;
-> +static int sys_prof_refcount_exit;
-> +
-> +static void prof_syscall_enter(struct pt_regs *regs, long id)
-> +{
-> +	struct syscall_metadata *sys_data;
-> +	int syscall_nr;
-> +
-> +	syscall_nr = syscall_get_nr(current, regs);
-> +	if (!test_bit(syscall_nr, enabled_prof_enter_syscalls))
-> +		return;
-> +
-> +	sys_data = syscall_nr_to_meta(syscall_nr);
-> +	if (!sys_data)
-> +		return;
-> +
-> +	perf_tpcounter_event(sys_data->enter_id, 0, 1, NULL, 0);
-> +}
-> +
-> +int reg_prof_syscall_enter(char *name)
-> +{
-> +	int ret = 0;
-> +	int num;
-> +
-> +	num = syscall_name_to_nr(name);
-> +	if (num < 0 || num >= FTRACE_SYSCALL_MAX)
-> +		return -ENOSYS;
-> +
-> +	mutex_lock(&syscall_trace_lock);
-> +	if (!sys_prof_refcount_enter)
-> +		ret = register_trace_syscall_enter(prof_syscall_enter);
-> +	if (ret) {
-> +		pr_info("event trace: Could not activate"
-> +				"syscall entry trace point");
-> +	} else {
-> +		set_bit(num, enabled_prof_enter_syscalls);
-> +		sys_prof_refcount_enter++;
-> +	}
-> +	mutex_unlock(&syscall_trace_lock);
-> +	return ret;
-> +}
-> +
-> +void unreg_prof_syscall_enter(char *name)
-> +{
-> +	int num;
-> +
-> +	num = syscall_name_to_nr(name);
-> +	if (num < 0 || num >= FTRACE_SYSCALL_MAX)
-> +		return;
-> +
-> +	mutex_lock(&syscall_trace_lock);
-> +	sys_prof_refcount_enter--;
-> +	clear_bit(num, enabled_prof_enter_syscalls);
-> +	if (!sys_prof_refcount_enter)
-> +		unregister_trace_syscall_enter(prof_syscall_enter);
-> +	mutex_unlock(&syscall_trace_lock);
-> +}
-> +
-> +static void prof_syscall_exit(struct pt_regs *regs, long ret)
-> +{
-> +	struct syscall_metadata *sys_data;
-> +	int syscall_nr;
-> +
-> +	syscall_nr = syscall_get_nr(current, regs);
-> +	if (!test_bit(syscall_nr, enabled_prof_exit_syscalls))
-> +		return;
-> +
-> +	sys_data = syscall_nr_to_meta(syscall_nr);
-> +	if (!sys_data)
-> +		return;
-> +
-> +	perf_tpcounter_event(sys_data->exit_id, 0, 1, NULL, 0);
-> +}
-> +
-> +int reg_prof_syscall_exit(char *name)
-> +{
-> +	int ret = 0;
-> +	int num;
-> +
-> +	num = syscall_name_to_nr(name);
-> +	if (num < 0 || num >= FTRACE_SYSCALL_MAX)
-> +		return -ENOSYS;
-> +
-> +	mutex_lock(&syscall_trace_lock);
-> +	if (!sys_prof_refcount_exit)
-> +		ret = register_trace_syscall_exit(prof_syscall_exit);
-> +	if (ret) {
-> +		pr_info("event trace: Could not activate"
-> +				"syscall entry trace point");
-> +	} else {
-> +		set_bit(num, enabled_prof_exit_syscalls);
-> +		sys_prof_refcount_exit++;
-> +	}
-> +	mutex_unlock(&syscall_trace_lock);
-> +	return ret;
-> +}
-> +
-> +void unreg_prof_syscall_exit(char *name)
-> +{
-> +	int num;
-> +
-> +	num = syscall_name_to_nr(name);
-> +	if (num < 0 || num >= FTRACE_SYSCALL_MAX)
-> +		return;
-> +
-> +	mutex_lock(&syscall_trace_lock);
-> +	sys_prof_refcount_exit--;
-> +	clear_bit(num, enabled_prof_exit_syscalls);
-> +	if (!sys_prof_refcount_exit)
-> +		unregister_trace_syscall_exit(prof_syscall_exit);
-> +	mutex_unlock(&syscall_trace_lock);
-> +}
-> +
-> +#endif
-> +
-> +
-> -- 
-> 1.6.2.5
-> 
+Martyn
 
+-- 
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 927559189
