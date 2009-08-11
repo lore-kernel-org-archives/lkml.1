@@ -1,70 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbZHKNAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbZHKNCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754612AbZHKNAY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 09:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbZHKNAU
+	id S1754632AbZHKNCb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 09:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbZHKNC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 09:00:20 -0400
-Received: from mga03.intel.com ([143.182.124.21]:40969 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752990AbZHKNAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 09:00:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,360,1246863600"; 
-   d="scan'208";a="174539683"
-Date: Tue, 11 Aug 2009 20:38:19 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "tytso@mit.edu" <tytso@mit.edu>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "mfasheh@suse.com" <mfasheh@suse.com>,
-       "aia21@cantab.net" <aia21@cantab.net>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "swhiteho@redhat.com" <swhiteho@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       Taketoshi Sakuraba <taketoshi.sakuraba.hc@hitachi.com>
-Subject: Re: [PATCH] [16/19] HWPOISON: Enable .remove_error_page for
-	migration    aware file systems
-Message-ID: <20090811123819.GB18881@localhost>
-References: <200908051136.682859934@firstfloor.org> <20090805093643.E0C00B15D8@basil.firstfloor.org> <4A7FBFD1.2010208@hitachi.com> <20090810070745.GA26533@localhost> <4A80EA14.4030300@hitachi.com>
+	Tue, 11 Aug 2009 09:02:29 -0400
+Received: from fias.uni-frankfurt.de ([141.2.248.1]:47547 "EHLO
+	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754565AbZHKNC2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 09:02:28 -0400
+From: Jan Scholz <scholz@fias.uni-frankfurt.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Adrian Ulrich" <kernel@blinkenlights.ch>,
+       "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: [Bug #13935] 2.6.31-rcX breaks Apple MightyMouse (Bluetooth version)
+References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera>
+	<u1L1PAbl8zG.A.eKD.hj1fKB@chimera>
+Date: Tue, 11 Aug 2009 15:02:19 +0200
+In-Reply-To: <u1L1PAbl8zG.A.eKD.hj1fKB@chimera> (Rafael J. Wysocki's message
+	of "Sun, 9 Aug 2009 23:10:33 +0200 (CEST)")
+Message-ID: <87hbwewlk4.fsf@scholz.fias.uni-frankfurt.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A80EA14.4030300@hitachi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 11:48:36AM +0800, Hidehiro Kawai wrote:
-> Wu Fengguang wrote:
-> > In fact we proposed a patch for preventing the re-corruption case, see
-> > 
-> >         http://lkml.org/lkml/2009/6/11/294
-> > 
-> > However it is hard to answer the (policy) question "How sticky should
-> > the EIO bit remain?".
-> 
-> It's a good approach!  This approach may also solve my concern,
-> the re-corruption issue caused by transient IO errors.
-> 
-> But I also think it needs a bit more consideration.  For example,
-> if the application has the valid data in the user space buffer,
-> it would try to re-write it after detecting an IO error from the
-> previous write.  In this case, we should clear the sticky error flag.
+Hi,
 
-Yes, and maybe more than that. The IO error issue really deserves an
-independent work, which will inevitably involve lots of discussions
-with lots of people.
+I can confirm the reported bug, but for me reverting fa047e4f6fa63a6 is
+not sufficient. I have to remove the device id of the mighty mouse from
+the hid_blacklist list in drivers/hid/hid-core.c as well, see the patch below.
 
-For the data re-corruption problem, "vm.memory_failure_recovery = 0"
-should be the most clean workaround for now. Can we settle with that?
-Our goal for this initial hwpoison implementation is to achieve good
-coverage (not necessarily every possible case :).
+Concerning the need for the quirks: I think there might be some
+dependence on the version of X that is used. If I recall correctly, with
+xorg-server-1.3 the quirk "APPLE_INVERT_HWHEEL" was necessary, but this
+changed when I switched to xorg-server-1.5.3, where now horizontal
+scrolling moves in directions you'd expect from vertical scrolling.
+...but I wouldn't bet on my memory regarding things with xorg-server-1.3
+since it's been quite some time ago and I never really liked the
+horizontal scrolling anyway.
 
-Thanks,
-Fengguang
+Cheers,
+Jan
+
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13935
+> Subject		: 2.6.31-rcX breaks Apple MightyMouse (Bluetooth version)
+> Submitter	: Adrian Ulrich <kernel@blinkenlights.ch>
+> Date		: 2009-08-08 22:08 (2 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=fa047e4f6fa63a6e9d0ae4d7749538830d14a343
+>
+
+>From b7393ed6dfe00c9e126a2dd34659156548df15cc Mon Sep 17 00:00:00 2001
+From: Jan Scholz <Scholz@fias.uni-frankfurt.de>
+Date: Tue, 11 Aug 2009 14:33:27 +0200
+Subject: [PATCH] HID: commit fa047e4f is incomplete
+
+Commit fa047e4f6fa63a6e9d0ae4d7749538830d14a343 "HID: fix inverted
+wheel for bluetooth version of apple mighty mouse" is incomplete. If
+we remove Apple MightyMouse (bluetooth version) from the list of
+apple_devices in drivers/hid/hid-apple.c we have to remove it from
+hid_blacklist in drivers/hid/hid-core.c as well.
+
+Signed-off-by: Jan Scholz <Scholz@fias.uni-frankfurt.de>
+---
+ drivers/hid/hid-core.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index 5eb10c2..047844d 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -1319,7 +1319,6 @@ static const struct hid_device_id hid_blacklist[] = {
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_ZEROPLUS, 0x0005) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_ZEROPLUS, 0x0030) },
+ 
+-	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 0x030c) },
+ 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_MICROSOFT, USB_DEVICE_ID_MS_PRESENTER_8K_BT) },
+ 	{ }
+ };
+-- 
+1.6.3.3
+
