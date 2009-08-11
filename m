@@ -1,134 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbZHKUt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754437AbZHKUvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754404AbZHKUt0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 16:49:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbZHKUtZ
+	id S1754437AbZHKUvF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 16:51:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbZHKUvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 16:49:25 -0400
-Received: from ns1.siteground211.com ([209.62.36.12]:45781 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754308AbZHKUtY (ORCPT
+	Tue, 11 Aug 2009 16:51:04 -0400
+Received: from mga03.intel.com ([143.182.124.21]:29080 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753680AbZHKUvD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 16:49:24 -0400
-Date: Tue, 11 Aug 2009 23:49:18 +0300
-From: Felipe Balbi <me@felipebalbi.com>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Felipe Balbi <me@felipebalbi.com>, Mike Rapoport <mike@compulab.co.il>,
-       linux-kernel@vger.kernel.org
-Subject: Smart Battery System Design (was: Re: Question about
- userspace-consumer)
-Message-ID: <20090811204914.GB13969@gandalf>
-Reply-To: me@felipebalbi.com
-References: <20090810200553.GB4652@gandalf>
- <20090810215800.GB4528@sirena.org.uk>
- <20090811054438.GA7176@gandalf>
- <20090811094020.GA6762@rakim.wolfsonmicro.main>
- <1249986616.5807.28.camel@odin>
+	Tue, 11 Aug 2009 16:51:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,362,1246863600"; 
+   d="scan'208";a="174713748"
+From: "Yu, Fenghua" <fenghua.yu@intel.com>
+To: "'Amerigo Wang'" <amwang@redhat.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+CC: "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>,
+       "'Neil Horman'" <nhorman@redhat.com>,
+       "'Eric W. Biederman'" <ebiederm@xmission.com>,
+       "'Andi Kleen'" <andi@firstfloor.org>,
+       "'akpm@linux-foundation.org'" <akpm@linux-foundation.org>,
+       "'Ingo Molnar'" <mingo@elte.hu>
+Date: Tue, 11 Aug 2009 13:50:50 -0700
+Subject: RE: [RFC Patch 1/2] kexec: show memory info in /proc/iomem
+Thread-Topic: [RFC Patch 1/2] kexec: show memory info in /proc/iomem
+Thread-Index: AcoafM4RHlGltNHFREWDQ3C7MQxxQQASAB9g
+Message-ID: <A6AD88C3F2289247BE726C37303E1EB8B3A855AD@orsmsx505.amr.corp.intel.com>
+References: <20090811104144.5154.77871.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090811104144.5154.77871.sendpatchset@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249986616.5807.28.camel@odin>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>
+>---
+>diff --git a/kernel/kexec.c b/kernel/kexec.c
+>index f336e21..01673ad 100644
+>--- a/kernel/kexec.c
+>+++ b/kernel/kexec.c
+>@@ -931,6 +931,8 @@ static int kimage_load_segment(struct kimage *image,
+>  */
+> struct kimage *kexec_image;
+> struct kimage *kexec_crash_image;
+>+struct resource *kexec_res = NULL;
+>+struct resource *kexec_free_res = NULL;
+>
+> static DEFINE_MUTEX(kexec_mutex);
+>
+>@@ -939,6 +941,8 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry,
+>unsigned long, nr_segments,
+> {
+> 	struct kimage **dest_image, *image;
+> 	int result;
+>+	unsigned long kexec_start = crashk_res.start;
+>+	unsigned long kexec_end = kexec_start;
+>
+> 	/* We only trust the superuser with rebooting the system. */
+> 	if (!capable(CAP_SYS_BOOT))
+>@@ -994,6 +998,7 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry,
+>unsigned long, nr_segments,
+> 			kimage_free(xchg(&kexec_crash_image, NULL));
+> 			result = kimage_crash_alloc(&image, entry,
+> 						     nr_segments, segments);
+>+			kexec_end += KEXEC_CONTROL_PAGE_SIZE;
+> 		}
+> 		if (result)
+> 			goto out;
+>@@ -1008,6 +1013,42 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry,
+>unsigned long, nr_segments,
+> 			result = kimage_load_segment(image, &image->segment[i]);
+> 			if (result)
+> 				goto out;
+>+			if (flags & KEXEC_ON_CRASH)
+>+				kexec_end += image->segment[i].memsz;
+>+		}
+>+		if (flags & KEXEC_ON_CRASH) {
+>+			if (kexec_res) {
+>+				release_resource(kexec_res);
+>+				release_resource(kexec_free_res);
+>+				kfree(kexec_res);
+>+				kfree(kexec_free_res);
+>+			}
+>+			kexec_res = kzalloc(sizeof(*kexec_res), GFP_KERNEL);
+>+			if (!kexec_res) {
+>+				result = -ENOMEM;
+>+				goto out;
+>+			}
+>+			kexec_free_res = kzalloc(sizeof(*kexec_free_res),
+>GFP_KERNEL);
+>+			if (!kexec_free_res) {
+>+				result = -ENOMEM;
+>+				goto out_free;
+>+			}
+>+			kexec_res->name = "Used";
+>+			kexec_res->start = kexec_start;
+>+			kexec_res->end = roundup(kexec_end, 1<<20) - 1;
+>+			kexec_res->flags = IORESOURCE_BUSY | IORESOURCE_MEM;
+>+			if (insert_resource(&crashk_res, kexec_res)) {
+>+				result = -EBUSY;
+>+				goto out_free;
+>+			}
+>+			kexec_free_res->name = "Unused";
+>+			kexec_free_res->start = kexec_res->end + 1;
+>+			kexec_free_res->end = crashk_res.end;
+>+			kexec_free_res->flags = IORESOURCE_BUSY | IORESOURCE_MEM;
+>+			if (insert_resource(&crashk_res, kexec_free_res)) {
+>+				result = -EBUSY;
+>+				goto out_release;
+>+			}
+> 		}
+> 		kimage_terminate(image);
+> 	}
+>@@ -1019,6 +1060,13 @@ out:
+> 	kimage_free(image);
+>
+> 	return result;
+>+
+>+out_free:
+>+	kfree(kexec_free_res);
+>+	kfree(kexec_res);
+>+out_release:
+>+	release_resource(kexec_res);
+>+	goto out;
+> }
 
-On Tue, Aug 11, 2009 at 11:30:16AM +0100, Liam Girdwood wrote:
-> On Tue, 2009-08-11 at 10:40 +0100, Mark Brown wrote:
-> > On Tue, Aug 11, 2009 at 08:44:42AM +0300, Felipe Balbi wrote:
-> > > On Mon, Aug 10, 2009 at 10:58:01PM +0100, Mark Brown wrote:
-> > 
-> > > > Looking at that I'm not sure why you wish to push this into user space?
-> > 
-> > > we need some daemon monitoring battery statuses and taking actions on
-> > > that. Imagine, for example, usb charging where we can:
-> > 
-> > > a. charge up to 100mA when unconfigured
-> > > b. charge up to 500mA when configured
-> > > c. charge up to 2.5A when with dedicated charger
-> > > d. charge up to 2.5mA when bus is suspended
-> > 
-> > It's more complex than that - those are the limits at the USB port that
-> > define the power that can be drawn by the system.  The actual power
+The order of out_free: and out_release: might be reversed. You need to release_resource first; then kfree. Otherwise the previous failures jump to here and will cause problem.
 
-yeah, I understand quite well the usb standard.
+Thanks.
 
-> > available to the battery subsytem will be less since the rest of the
-> > system needs to be powered.  In many cases even with 500mA available
-> > the battery will need to be used to provide additional power in order to
-> > keep the system operational rather than being charged.
-
-and that's also rather obvious, specially since usb has overcurrent
-protection (most of roothubs if not all), so drawing exactly 500mA
-could cause current spikes that force the port to be shut off.
-
-> > For USB powered operation at least some of the management here would
-> > usually be implemented in hardware to provide the responsiveness
-> > required.  Waiting for software to get involved would often allow the
-> > main system supply to collapse.
-
-and that's all ok.
-
-> > > handling all of those cases on kernel space seems a little bit odd,
-> > > especially because we still need to take care of state-of-charge,
-> > > pack temperature, time-to-charge, etc etc etc.
-> > 
-> > > a big looping polling for that stuff in kernel space didn't seem ok to
-> > > me.
-> > 
-> > No matter what you're still going to need at least some of the code
-> > in-kernel in order to handle the monitoring daemon exiting.  For
-> > example, if the battery is in fast charge then something will need to
-> > back the charger off at least as the charge completes (if not
-> > immediately user space exits) otherwise the battery or entire system is
-> > likely to be damaged.
-
-What I mean is that on SBS design, the "charger daemon" doesn't have to
-handle the charging algorithm per se since the battery itself reports to
-charger the best condition for it to be charged, but still we need means
-for a userland application to see that a power source was attached (via
-power supply interface, be it USB, AC or whatever we want) and tell the
-charger to _start_charging_, no ?
-
-That's when I thought a call to regulator_enable() would seem plausible.
-
-> > Like I say some user space control does seem reasonable but I'd not
-> > expect an entirely user space implementation.
-
-of course not, specially since according to SBS, the hardware will
-handle most of it autonomously.
-
-> I agree, I think this probably deserves both user and kernel space
-> components although the dividing line between them is a little uncertain
-> atm. 
-
-+1
-
-> Generally, I'd expect the kernel side to provide a guaranteed *safe*
-> environment for charging wrt system stability and battery status. A
-> simple state machine would probably suffice.
-
-and wrt SBS, that would mean basically writing a driver for that Smart
-Batery Charger and the Smart Battery devices creating means for some
-entity to tell _start_charging_ based on the presence of a power source.
-
-> I think userspace is where we would manage policy. We would also store
-> past battery history in order to better manage future charging and
-> charge level estimation. 
-
-Sure. Another point to be taken into account is how often to check
-battery status; I mean, if the system is idle, we don't need to check
-battery every second since battery temperature and juice won't change
-that quickly anyways, but when doing some hardcore stuff on the CPU then
-we need to check such variables more often.
-
--- 
-balbi
+-Fenghua
