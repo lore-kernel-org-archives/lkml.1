@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752174AbZHKL4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752240AbZHKL4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752174AbZHKL4W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 07:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbZHKL4R
+	id S1752240AbZHKL4u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 07:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbZHKL4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 07:56:17 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37436 "EHLO mx1.suse.de"
+	Tue, 11 Aug 2009 07:56:14 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42900 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751537AbZHKLyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 07:54:33 -0400
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH-v3 0/2] delay initializing queue for request-based dm
-Date: Tue, 11 Aug 2009 15:02:30 +0530
-User-Agent: KMail/1.11.1 (Linux/2.6.27.23-0.1-default; KDE/4.2.1; x86_64; ; )
-Cc: Alasdair G Kergon <agk@redhat.com>, Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
-       Hannes Reinecke <hare@suse.de>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org, Mike Snitzer <snitzer@redhat.com>
-References: <200908081025.54154.knikanth@suse.de> <200908101618.12508.knikanth@suse.de>
-In-Reply-To: <200908101618.12508.knikanth@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908111502.31215.knikanth@suse.de>
+	id S1751604AbZHKLye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 07:54:34 -0400
+Message-Id: <20090811111606.852771184@suse.de>
+User-Agent: quilt/0.46_cvs20080326-19.1
+Date: Tue, 11 Aug 2009 21:09:03 +1000
+From: npiggin@suse.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Manfred Spraul <manfred@colorfullife.com>,
+       Nadia Derbey <Nadia.Derbey@bull.net>,
+       Pierre Peiffer <peifferp@gmail.com>, linux-kernel@vger.kernel.org
+Subject: [patch 1/4] ipc: sem optimise undo list search
+References: <20090811110902.255877673@suse.de>
+Content-Disposition: inline; filename=ipc-sem-undo-optimise.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 August 2009 16:18:12 Nikanth Karthikesan wrote:
-> On Saturday 08 August 2009 10:25:53 Nikanth Karthikesan wrote:
-> > Hi
-> >
-> > Currently for device-mapper devices, we initialize the mempool for
-> > requests and elevator at device creation time. But only request-based
-> > devices use the elevator and mempool. These patches change it to allocate
-> > the mempool and initialize the elevator only for request-based devices.
-> > This is done by allocating a queue at device creation time, but delaying
-> > the initialization of elevator and allocation of mempool till the first
-> > table load time, when the type of device would be known.
-> >
-> > [PATCH 1/2] Allow delaying initialization of queue after allocation
-> >
-> > [PATCH 2/2] Initialize mempool and elevator only for request-based dm
-> > devices
-> >
-> > Another approach would be to free the mempool and detach elevator, if it
-> > would be a bio-based device. But it is better to avoid initialization
-> > itself.
->
-> Changes since v1:
-> 1. Refreshed on top of a4e7d46407d73f35d217013b363b79a8f8eafcaa
-> 2. Added comments suggested by Mike Snitzer.
-> 3. Cleaned up the second patch as suggested by Mike Snitzer.
->
+Move last looked up sem_undo struct to the head of the task's undo list.
+Attempt to move common entries to the front of the list so search time is
+reduced. This reduces lookup_undo on oprofile of problematic SAP workload
+by 30% (see patch 4 for a description of SAP workload).
 
-Changes since v2:
-1. Add comments suggested by Kiyoshi Ueda
-2. Export symbol elv_register_queue() to modules.
-3. Call elv_register_queue() after initializing the queue to use the elevator.
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+ ipc/sem.c |   26 ++++++++++++++++++++------
+ 1 file changed, 20 insertions(+), 6 deletions(-)
 
-Thanks
-Nikanth
+Index: linux-2.6/ipc/sem.c
+===================================================================
+--- linux-2.6.orig/ipc/sem.c
++++ linux-2.6/ipc/sem.c
+@@ -961,17 +961,31 @@ static inline int get_undo_list(struct s
+ 	return 0;
+ }
+ 
+-static struct sem_undo *lookup_undo(struct sem_undo_list *ulp, int semid)
++static struct sem_undo *__lookup_undo(struct sem_undo_list *ulp, int semid)
+ {
+-	struct sem_undo *walk;
++	struct sem_undo *un;
+ 
+-	list_for_each_entry_rcu(walk, &ulp->list_proc, list_proc) {
+-		if (walk->semid == semid)
+-			return walk;
++	list_for_each_entry_rcu(un, &ulp->list_proc, list_proc) {
++		if (un->semid == semid)
++			return un;
+ 	}
+ 	return NULL;
+ }
+ 
++static struct sem_undo *lookup_undo(struct sem_undo_list *ulp, int semid)
++{
++	struct sem_undo *un;
++
++  	assert_spin_locked(&ulp->lock);
++
++	un = __lookup_undo(ulp, semid);
++	if (un) {
++		list_del_rcu(&un->list_proc);
++		list_add_rcu(&un->list_proc, &ulp->list_proc);
++	}
++	return un;
++}
++
+ /**
+  * find_alloc_undo - Lookup (and if not present create) undo array
+  * @ns: namespace
+@@ -1307,7 +1321,7 @@ void exit_sem(struct task_struct *tsk)
+ 		if (IS_ERR(sma))
+ 			continue;
+ 
+-		un = lookup_undo(ulp, semid);
++		un = __lookup_undo(ulp, semid);
+ 		if (un == NULL) {
+ 			/* exit_sem raced with IPC_RMID+semget() that created
+ 			 * exactly the same semid. Nothing to do.
+
 
