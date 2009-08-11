@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbZHKOyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbZHKOyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755147AbZHKOyT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 10:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbZHKOyS
+	id S1755161AbZHKOyl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 10:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbZHKOyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 10:54:18 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:49800 "EHLO
-	phenom.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755020AbZHKOyO (ORCPT
+	Tue, 11 Aug 2009 10:54:39 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:65400 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755062AbZHKOyi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 10:54:14 -0400
-Date: Tue, 11 Aug 2009 08:54:14 -0600
-From: dougthompson@xmission.com
-To: tombowfly@gmail.com, juhlenko@akamai.com,
-       bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH 1/1] edac: fix offset of reg in i3200_edac module
-Message-ID: <4a818616.pTakD6L47mEGolBL%dougthompson@xmission.com>
-User-Agent: Heirloom mailx 12.2 01/07/07
+	Tue, 11 Aug 2009 10:54:38 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Chris Mason <chris.mason@oracle.com>
+Subject: Re: What happened to data=guarded?
+Date: Tue, 11 Aug 2009 16:54:36 +0200
+User-Agent: KMail/1.9.9
+Cc: "Theodore Ts'o" <tytso@mit.edu>, jack@suse.cz,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+References: <1249934623-15939-1-git-send-email-tytso@mit.edu> <200908111535.37927.elendil@planet.nl> <20090811133721.GD29224@think>
+In-Reply-To: <20090811133721.GD29224@think>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908111654.38217.elendil@planet.nl>
+X-OriginalArrivalTime: 11 Aug 2009 14:54:38.0648 (UTC) FILETIME=[A6536B80:01CA1A93]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jason Uhlenkott <juhlenko@akamai.com>
+On Tuesday 11 August 2009, Chris Mason wrote:
+> On Tue, Aug 11, 2009 at 03:35:36PM +0200, Frans Pop wrote:
+> > Somewhat unrelated, but what happened to the data=guarded patches
+> > Chris Mason proposed back in April?
+>
+> I missed 2.6.31 but plan on sending for 2.6.32.  I promised to send
+> along a forward port of the patches a while back, but I finally have
+> one in testing here.  It should go out shortly.
 
-Fix an obviously wrong hardware register offset, which was inheirited
-from x38_edac (which was previously fixed).
+Good to hear. I've so far stayed with data=ordered as I think I'd prefer 
+data=guarded over data=writeback. I'll certainly give it a try when it's 
+available.
 
-Thanks to Lu Zhihe for spotting this.
-
-Signed-off-by: Jason Uhlenkott <juhlenko@akamai.com>
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
----
- i3200_edac.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.31-rc5/drivers/edac/i3200_edac.c
-===================================================================
---- linux-2.6.31-rc5.orig/drivers/edac/i3200_edac.c	2009-08-10 09:56:10.000000000 -0600
-+++ linux-2.6.31-rc5/drivers/edac/i3200_edac.c	2009-08-11 08:47:22.000000000 -0600
-@@ -29,7 +29,7 @@
- /* Intel 3200 register addresses - device 0 function 0 - DRAM Controller */
- 
- #define I3200_MCHBAR_LOW	0x48	/* MCH Memory Mapped Register BAR */
--#define I3200_MCHBAR_HIGH	0x4b
-+#define I3200_MCHBAR_HIGH	0x4c
- #define I3200_MCHBAR_MASK	0xfffffc000ULL	/* bits 35:14 */
- #define I3200_MMR_WINDOW_SIZE	16384
- 
+Thanks,
+FJP
