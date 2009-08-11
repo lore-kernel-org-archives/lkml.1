@@ -1,85 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbZHKMBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752970AbZHKMEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752877AbZHKMBo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbZHKMBm
+	id S1752970AbZHKMEi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbZHKMEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:01:42 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:63480 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752668AbZHKMBj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:01:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=pltiaQxrocEczq8q4Zfjqjj9rV4duuc/0ujP8EhalBEc1LwmyCRvLyAC1LlBQb80iV
-         UL4WzmvUaunS4s+QPucv3zQU40sj+ODAHCymL9aJJCzwhDYwZq1Vk5kyXZHFYhU/ByF4
-         9DQ1yofo2Anfqr49PKqdX97vHY8JasvwJ4BgA=
-Date: Tue, 11 Aug 2009 14:01:36 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
-       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
-       lizf@cn.fujitsu.com
-Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
-Message-ID: <20090811120135.GE4938@nowhere>
-References: <cover.1249932670.git.jbaron@redhat.com> <aa785a0431b72327d288ef9b921e824d7f494de2.1249932670.git.jbaron@redhat.com> <20090811105010.GB4938@nowhere> <20090811114512.GA585@elte.hu>
+	Tue, 11 Aug 2009 08:04:37 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43704 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752847AbZHKMEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 08:04:34 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Subject: Re: [PATCH-v2 2/2] Initialize mempool and elevator only for request-based dm devices
+Date: Tue, 11 Aug 2009 14:35:11 +0530
+User-Agent: KMail/1.11.1 (Linux/2.6.27.23-0.1-default; KDE/4.2.1; x86_64; ; )
+Cc: Alasdair G Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, Hannes Reinecke <hare@suse.de>
+References: <200908081026.01097.knikanth@suse.de> <200908101618.21060.knikanth@suse.de> <4A812680.7040804@ct.jp.nec.com>
+In-Reply-To: <4A812680.7040804@ct.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090811114512.GA585@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200908111435.12020.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 01:45:12PM +0200, Ingo Molnar wrote:
-> 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > > +struct trace_event event_syscall_enter = {
-> > > +	.trace			= print_syscall_enter,
-> > > +	.type			= TRACE_SYSCALL_ENTER
-> > > +};
-> > > +
-> > > +struct trace_event event_syscall_exit = {
-> > > +	.trace			= print_syscall_exit,
-> > > +	.type			= TRACE_SYSCALL_EXIT
-> > > +};
-> > > -- 
-> > > 1.6.2.5
-> > > 
-> > 
-> > Nice.
-> > 
-> > It's a bit too bad that enter and exit must be that separated 
-> > whereas their callbacks are pretty the same.
-> > 
-> > But I guess if we want to nicely decouple both, we don't have the 
-> > choice.
-> 
-> Yeah - and enter and exit are different, in terms of state.
-> 
-> One thing that would be nice in the future (as an add-on - this 
-> patch-set looks useful already) is to allow the sampling of user 
-> register state as well via these tracepoints. That way we'd have a 
-> much faster (and completely transparent) implementation of strace in 
-> essence, with unique features such as system-wide or per cpu 
-> strace-ing.
-> 
-> 	Ingo
+On Tuesday 11 August 2009 13:36:24 Kiyoshi Ueda wrote:
+> Hi Nikanth,
+>
+> On 08/10/2009 07:48 PM +0900, Nikanth Karthikesan wrote:
+> > Intialize the request_queue and elevator only when the device is marked
+> > as a request-based device. This avoids unnecessary creation of mempool
+> > for requests. Also we wrongly initialize the elevator even for bio-based
+> > devices. As the /sys/block/dm-*/queue/scheduler is exported for
+> > device-mapper devices, it is possible to confuse with scheduler options
+> > for bio-based devices where scheduler is not at all used.
+>
+> Thank you for working on this.
+> Actually, I had tried this delayed allocation thing before,
+> but I chose the current implementation since I couldn't solve
+> some problems, which your patch also has.
+> Please see my comment below.
+>
 
+Thanks for the review & comments.
 
-Indeed, a missing piece is the syscall record sampling with registers.
-Actually, IMO the registers themselves are not the right piece to export
-to perfcounter. It's too low-level.
+> > @@ -2203,6 +2199,25 @@ int dm_swap_table(struct mapped_device *md, struct
+> > dm_table *table) goto out;
+> >  	}
+> >
+> > +	/* new device is being marked as request-based */
+> > +	if (!md->map && dm_table_request_based(table)) {
+> > +		/* initialize queue for request-based dm */
+> > +		r = blk_init_allocated_queue(md->queue, dm_request_fn, NULL);
+> > +		if (r)
+> > +			goto out;
+>
+> Generally, dm must not allocate memory during resume because
+> it may cause a deadlock in no memory situation.
+> However, there is no I/O on this device at this point,
+> so the allocation should be ok for this special case.
+> I think some comments are needed here to describe that.
+>
 
-What we need are the fetched arguments, because a lot of them are adresses
-(even user adresses), pretty useless for perf tools.
+Ok. This comment can be added.
 
-We can already and easily implement that simple args, like we do for ftrace.
-That's pretty trivial.
+> > +
+> > +		/*
+> > +		 * reinitialize make_request_fn as it was reset to the
+> > +		 * default __make_request by blk_init_allocate_queue
+> > +		 */
+> > +		md->saved_make_request_fn = md->queue->make_request_fn;
+> > +		blk_queue_make_request(md->queue, dm_request);
+> > +
+> > +		blk_queue_softirq_done(md->queue, dm_softirq_done);
+> > +		blk_queue_prep_rq(md->queue, dm_prep_fn);
+> > +		blk_queue_lld_busy(md->queue, dm_lld_busy);
+> > +	}
+> > +
+> >  	__unbind(md);
+> >  	r = __bind(md, table, &limits);
+>
+> The queue has been registered at the device creation time by
+> add_disk() in alloc_dev().
+> Since the queue is reconfigured (elevator is attached), you have to
+> update the queue registration (e.g. unregister, then re-register).
+> But it may not be easy.  At least, there is no exported interface to
+> unregister/re-register queue.
 
+Ah, yes. The scheduler attributes will not be exported in 
+/sys/block/dm*/queue/iosched. Exporting elv_register_queue() and calling it 
+here solves it. Something like..
+
+@@ -2203,6 +2199,29 @@ int dm_swap_table(struct mapped_device *md, struct 
+dm_table *table)
+ 		goto out;
+ 	}
+ 
++	/* new device is being marked as request-based */
++	if (!md->map && dm_table_request_based(table)) {
++		/* initialize queue for request-based dm */
++		r = blk_init_allocated_queue(md->queue, dm_request_fn, NULL);
++		if (r)
++			goto out;
++
++		r = elv_register_queue(md->queue);
++		/* if (r)
++		 *	 goto out; Better to ignore, just like add_disk does ;-)
++		 */
++		/*
++		 * reinitialize make_request_fn as it was reset to the
++		 * default __make_request by blk_init_allocate_queue
++		 */
++		md->saved_make_request_fn = md->queue->make_request_fn;
++		blk_queue_make_request(md->queue, dm_request);
++
++		blk_queue_softirq_done(md->queue, dm_softirq_done);
++		blk_queue_prep_rq(md->queue, dm_prep_fn);
++		blk_queue_lld_busy(md->queue, dm_lld_busy);
++	}
++
+ 	__unbind(md);
+ 	r = __bind(md, table, &limits);
+ 
+I would post the v3 of the patches with this change. Do you see any problems 
+in this?
+
+This can also be solved by initializing the queue for new devices and then 
+unregistering the elevator, if it is a bio-based device at table load time. 
+Like...
+
+diff --git a/block/elevator.c b/block/elevator.c
+index 2d511f9..864dd29 100644
+--- a/block/elevator.c
++++ b/block/elevator.c
+@@ -939,9 +939,10 @@ static void __elv_unregister_queue(struct elevator_queue 
+*e)
+ 
+ void elv_unregister_queue(struct request_queue *q)
+ {
+-	if (q)
++	if (q && q->elevator)
+ 		__elv_unregister_queue(q->elevator);
+ }
++EXPORT_SYMBOL(elv_unregister_queue);
+ 
+ void elv_register(struct elevator_type *e)
+ {
+diff --git a/drivers/md/dm.c b/drivers/md/dm.c
+index 8a311ea..f6f77ea 100644
+--- a/drivers/md/dm.c
++++ b/drivers/md/dm.c
+@@ -2203,7 +2203,28 @@ int dm_swap_table(struct mapped_device *md, struct 
+dm_table *table)
+ 		goto out;
+ 	}
+ 
+-	__unbind(md);
++	if (md->map)
++		__unbind(md);
++	else if (!dm_table_request_based(table)) {
++	/*
++	 * This is a new bio-based device, and doesnt use the elevator
++	 * and requests.
++	 */
++		struct request_queue *q;
++		q = md->queue;
++		if (q->elevator) {
++			struct request_list *rl = &q->rq;
++			elevator_exit(q->elevator);
++			elv_unregister_queue(q);
++			q->elevator = 0;
++			if (rl->rq_pool) {
++				mempool_destroy(rl->rq_pool);
++				rl->rq_pool = 0;
++			}
++		}
++
++	}
++
+ 	r = __bind(md, table, &limits);
+ 
+ out:
+
+But, I think, delaying the initialization, is the best solution.
+
+Thanks
+Nikanth
