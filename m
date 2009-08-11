@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbZHKQCH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbZHKQFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754044AbZHKQCH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 12:02:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbZHKQCG
+	id S1754015AbZHKQFR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 12:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbZHKQFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 12:02:06 -0400
-Received: from mail-yw0-f191.google.com ([209.85.211.191]:45698 "EHLO
-	mail-yw0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753527AbZHKQCF convert rfc822-to-8bit (ORCPT
+	Tue, 11 Aug 2009 12:05:16 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:43381 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752660AbZHKQFP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 12:02:05 -0400
-X-Greylist: delayed 422 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Aug 2009 12:02:05 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=le2hzJaFxiHMlNTZWrmx1RF9PC7/UqKUkc7avtWddDN2VR0Hy/YX8pC+upkzAuLALu
-         9KBMxLnatZUPmqaoWAqApjttEq4Hik576qnrns3ifugyRPlJc05Hp9MEzDBUGWFjqFqc
-         Cq8gQRv54IpPdU5ifuCiokK8RgewtyHrZvPnA=
+	Tue, 11 Aug 2009 12:05:15 -0400
+Message-ID: <4A81969B.4000601@nortel.com>
+Date: Tue, 11 Aug 2009 10:04:43 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-In-Reply-To: <20090811155106.GB16173@aftab>
-References: <4A7D673A.1090401@gmail.com> <20090808152016.GB25374@liondog.tnic>
-	 <4A7E0797.7060504@gmail.com> <20090810131219.GD21879@aftab>
-	 <4A80A5AD.2000209@gmail.com>
-	 <19073.33348.459260.456740@pilspetsen.it.uu.se>
-	 <20090811155106.GB16173@aftab>
-Date: Tue, 11 Aug 2009 12:55:03 -0300
-Message-ID: <d1af83620908110855x75b1e5aeq6d814ca90c49ec22@mail.gmail.com>
-Subject: Re: [PATCH v3] x86: clear incorrectly forced X86_FEATURE_LAHF_LM flag
-From: Kevin Winchester <kjwinchester@gmail.com>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: Mikael Pettersson <mikpe@it.uu.se>,
-       Borislav Petkov <petkovbb@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
+To: Greg KH <greg@kroah.com>
+CC: Al Boldi <a1426z@gawab.com>, Andi Kleen <andi@firstfloor.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
+       gregkh@suse.de, Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+ /dev
+References: <20090805171513.GA10443@kroah.com> <200908110648.26191.a1426z@gawab.com> <20090811040431.GA1178@kroah.com> <200908111818.16399.a1426z@gawab.com> <20090811154931.GA25079@kroah.com>
+In-Reply-To: <20090811154931.GA25079@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Aug 2009 16:04:44.0722 (UTC) FILETIME=[71576120:01CA1A9D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/11 Borislav Petkov <borislav.petkov@amd.com>:
-> On Tue, Aug 11, 2009 at 04:37:56PM +0200, Mikael Pettersson wrote:
->> Since the BIOS apparently wrote some MSR to get LAHF_LM incorrectly
->> reported by CPUID, would it be possible to also correct that MSR so
->> that applications that execute CPUID get the correct feature flags?
->
-> That's a good catch, actually. We have to turn off that bit in the cpuid
-> leaf too if the CPU doesn't support the instructions so that cpuid info
-> is consistent. LAHF/SAHF support in 64bit mode has to be cpuid-checked
-> prior to using them so that info has to be correct.
->
-> @Kevin: willing to try a patch or two?
->
+Greg KH wrote:
 
-Sure, I'll give it a try this evening.  I assume that since Erratum 110 says:
+> Again, I don't really believe that you use a CONFIG_HOTPLUG=n system in
+> the real world, so barring a patch from you or anyone else, I'll leave
+> it as-is.
 
---------------------------
-Suggested Workaround
-For processors which support the feature (as determined by the
-processor revision ID), BIOS should
-write a one to:
-• MSR C001_100Dh, bit 32 for revision D silicon.
-• MSR C001_1005h, bit 32 for revision E and later silicon.
-This will cause the extended feature flag in ECX[0] to be set.
---------------------------
+That seems a bit harsh.  There are lots of embedded devices that don't
+need hotplug.
 
-That writing a zero to those same MSRs would clear the feature flag?
-
--- 
-Kevin Winchester
+Chris
