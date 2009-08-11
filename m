@@ -1,102 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbZHKMlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162AbZHKMlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754226AbZHKMlw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZHKMls
+	id S1754162AbZHKMlk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZHKMlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:41:48 -0400
-Received: from fallback.mail.elte.hu ([157.181.151.13]:34976 "EHLO
-	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754165AbZHKMlm (ORCPT
+	Tue, 11 Aug 2009 08:41:36 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:37477 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752791AbZHKMld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:41:42 -0400
-Date: Tue, 11 Aug 2009 10:45:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Feng Tang <feng.tang@intel.com>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][PATCH]x86/RTC: introduce a new generic rtc_ops for x86
-Message-ID: <20090811084529.GB25647@elte.hu>
-References: <20090811154850.3127fff0@feng-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090811154850.3127fff0@feng-desktop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 11 Aug 2009 08:41:33 -0400
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Paul Gortmaker <p_gortmaker@yahoo.com>,
+       Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com
+Subject: [PATCH 4/5] [RTC] Add Freescale MC13783 RTC driver
+Date: Tue, 11 Aug 2009 10:59:25 +0200
+Message-Id: <1249981166-4210-4-git-send-email-s.hauer@pengutronix.de>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1249981166-4210-3-git-send-email-s.hauer@pengutronix.de>
+References: <1249981166-4210-1-git-send-email-s.hauer@pengutronix.de>
+ <1249981166-4210-2-git-send-email-s.hauer@pengutronix.de>
+ <1249981166-4210-3-git-send-email-s.hauer@pengutronix.de>
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This driver provides support for the RTC part integrated into
+the Freescale MC13783 PMIC.
 
-* Feng Tang <feng.tang@intel.com> wrote:
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
+Cc: Alessandro Zummo <a.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com
+---
+ drivers/rtc/Kconfig       |    6 ++
+ drivers/rtc/Makefile      |    1 +
+ drivers/rtc/rtc-mc13783.c |  141 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 148 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/rtc/rtc-mc13783.c
 
-> Please help to review this patch, thanks!
-> 
-> It is generated against kernel 2.6.31-rc5
-> 
-> - Feng
-> 
-> From a8ee2a78bcc1df57f2f43ff526269d69a2801a64 Mon Sep 17 00:00:00 2001
-> From: Feng Tang <feng.tang@intel.com>
-> Date: Wed, 17 Jun 2009 10:31:17 +0800
-> Subject: [PATCH] x86/RTC: introduce a new generic rtc_ops for x86
-> 
-> System time keeping needs get_wallclock/set_wallclock supports, 
-> currently this support comes from Motorola 146818 like RTC device 
-> or EFI, or even virtualization, but in the future, there will be 
-> other x86 platforms which don't have these options and have their 
-> own RTC devices other than the 146818. So a more generic structure 
-> is needed to support all platforms' need
-> 
-> This patch adds a arch_rtc_ops structure, which only has 2 API 
-> pointers of get/set wall clock, each platform can register its own 
-> desired RTC ops to be the one to use
-> 
-> Current patch only modifies the rtc.c and efi.c to incorporate 
-> this change, further on we can think about to use it for the 
-> paravirt code, which could make the asm/time.h much cleaner
-> 
-> Signed-off-by: Feng Tang <feng.tang@intel.com>
-> ---
->  arch/x86/include/asm/time.h |   45 +++++++++++-------------------------------
->  arch/x86/kernel/efi.c       |   12 +++++++++++
->  arch/x86/kernel/rtc.c       |    5 ++++
->  3 files changed, 29 insertions(+), 33 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/time.h b/arch/x86/include/asm/time.h
-> index 50c733a..3665a9c 100644
-> --- a/arch/x86/include/asm/time.h
-> +++ b/arch/x86/include/asm/time.h
-> @@ -1,53 +1,32 @@
->  #ifndef _ASM_X86_TIME_H
->  #define _ASM_X86_TIME_H
->  
-> +#include <asm/mc146818rtc.h>
-> +
->  extern void hpet_time_init(void);
-> +extern void time_init(void);
->  
-> -#include <asm/mc146818rtc.h>
-> -#ifdef CONFIG_X86_32
-> -#include <linux/efi.h>
-> +struct arch_rtc_dev_ops {
-> +	unsigned long	(*get_wall_time)(void);
-> +	int		(*set_wall_time)(unsigned long);
-> +};
-> +extern struct arch_rtc_dev_ops *x86_rtc_ops;
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index 81adbdb..e4a242f 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -759,4 +759,10 @@ config RTC_DRV_PS3
+ 	  This driver can also be built as a module. If so, the module
+ 	  will be called rtc-ps3.
+ 
++config RTC_DRV_MC13783
++	depends on MFD_MC13783
++	tristate "Freescale MC13783 RTC"
++	help
++	  This enables support for the Freescale MC13783 PMIC RTC
++
+ endif # RTC_CLASS
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index 3c0f2b2..00bf66d 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -78,3 +78,4 @@ obj-$(CONFIG_RTC_DRV_WM8350)	+= rtc-wm8350.o
+ obj-$(CONFIG_RTC_DRV_X1205)	+= rtc-x1205.o
+ obj-$(CONFIG_RTC_DRV_PCF50633)	+= rtc-pcf50633.o
+ obj-$(CONFIG_RTC_DRV_PS3)	+= rtc-ps3.o
++obj-$(CONFIG_RTC_DRV_MC13783)	+= rtc-mc13783.o
+diff --git a/drivers/rtc/rtc-mc13783.c b/drivers/rtc/rtc-mc13783.c
+new file mode 100644
+index 0000000..d1f1192
+--- /dev/null
++++ b/drivers/rtc/rtc-mc13783.c
+@@ -0,0 +1,141 @@
++/*
++ * Real Time Clock driver for Freescale MC13783 PMIC
++ *
++ * (C) 2009 Sascha Hauer, Pengutronix
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/mfd/mc13783-private.h>
++#include <linux/platform_device.h>
++#include <linux/interrupt.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/ioctl.h>
++#include <linux/time.h>
++#include <linux/rtc.h>
++
++struct mc13783_rtc {
++	struct rtc_device *rtc;
++	struct mc13783 *mc13783;
++};
++
++static int mc13783_rtc_set_time(struct device *dev, struct rtc_time *tm)
++{
++	struct mc13783_rtc *priv = dev_get_drvdata(dev);
++	unsigned int seconds, days;
++	unsigned long s1970;
++
++	rtc_tm_to_time(tm, &s1970);
++
++	seconds = s1970 % 86400;
++	days = s1970 / 86400;
++
++	mc13783_reg_write(priv->mc13783, MC13783_REG_RTC_TIME, seconds);
++	mc13783_reg_write(priv->mc13783, MC13783_REG_RTC_DAY, days);
++
++	return 0;
++}
++
++static int mc13783_rtc_read_time(struct device *dev, struct rtc_time *tm)
++{
++	struct mc13783_rtc *priv = dev_get_drvdata(dev);
++	unsigned int seconds, days1, days2;
++	unsigned long s1970;
++
++	rtc_tm_to_time(tm, &s1970);
++
++	do {
++		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_TIME, &seconds);
++		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_DAY, &days1);
++		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_DAY, &days2);
++	} while (days1 != days2);
++
++	s1970 = days1 * 86400 + seconds;
++
++	rtc_time_to_tm(s1970, tm);
++
++	return 0;
++}
++
++static const struct rtc_class_ops mc13783_rtc_ops = {
++	.read_time	= mc13783_rtc_read_time,
++	.set_time	= mc13783_rtc_set_time,
++};
++
++static int mc13783_rtc_probe(struct platform_device *pdev)
++{
++	int err;
++	struct mc13783_rtc *priv;
++
++	priv = kzalloc(sizeof *priv, GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	priv->mc13783 = pdev->dev.platform_data;
++	platform_set_drvdata(pdev, priv);
++
++	priv->rtc = rtc_device_register(pdev->name,
++			&pdev->dev, &mc13783_rtc_ops, THIS_MODULE);
++
++	if (IS_ERR(priv->rtc)) {
++		err = PTR_ERR(priv->rtc);
++		goto exit_kfree;
++	}
++
++	return 0;
++
++exit_kfree:
++	kfree(priv);
++	return err;
++}
++
++static int __exit mc13783_rtc_remove(struct platform_device *pdev)
++{
++	struct mc13783_rtc *priv = platform_get_drvdata(pdev);
++
++	rtc_device_unregister(priv->rtc);
++	platform_set_drvdata(pdev, NULL);
++
++	kfree(priv);
++
++	return 0;
++}
++
++static struct platform_driver mc13783_rtc_driver = {
++	.probe		 = mc13783_rtc_probe,
++	.remove		= __exit_p(mc13783_rtc_remove),
++	.driver = {
++		.name	= "mc13783-rtc",
++		.owner	= THIS_MODULE,
++	},
++};
++
++static int __init mc13783_rtc_init(void)
++{
++	return platform_driver_register(&mc13783_rtc_driver);
++}
++module_init(mc13783_rtc_init);
++
++static void __exit mc13783_rtc_exit(void)
++{
++	platform_driver_unregister(&mc13783_rtc_driver);
++}
++module_exit(mc13783_rtc_exit);
++
++
++MODULE_AUTHOR("Sascha Hauer");
++MODULE_DESCRIPTION("RTC driver for Freescale MC13783 PMIC");
++MODULE_LICENSE("GPL");
+-- 
+1.6.3.3
 
-looks like the right direction at first glance. What's the 
-management interface around the driver (there's none at the moment)? 
-Set up at early boot time and never changed afterwards?
-
-Have you looked at other architectures (MIPS, ARM, etc.) to see how 
-they abstracted away their RTC functionality?
-
-	Ingo
