@@ -1,49 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbZHKQiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbZHKQkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754084AbZHKQiN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 12:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZHKQiM
+	id S1754103AbZHKQkS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 12:40:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbZHKQkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 12:38:12 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42885 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752067AbZHKQiL (ORCPT
+	Tue, 11 Aug 2009 12:40:17 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:52833 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752349AbZHKQkP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 12:38:11 -0400
-Message-ID: <4A819CDD.1000700@zytor.com>
-Date: Tue, 11 Aug 2009 09:31:25 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-CC: Sam Ravnborg <sam@ravnborg.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Matthieu CASTET <matthieu.castet@parrot.com>,
-       Alain Knaff <alain@knaff.lu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/6] Add support for LZO-compressed kernels for ARM
-References: <4A7BF5B8.4030907@knaff.lu> <20090807102117.GB4455@laptop> <4A7C14EB.1060701@parrot.com> <20090807130130.GE4455@laptop> <4A7C2BA4.7030408@parrot.com> <20090807135524.GF4455@laptop> <20090807200001.GE31543@n2100.arm.linux.org.uk> <20090807210816.GA29797@merkur.ravnborg.org> <20090811094418.GI9704@pc-ras4041.res.insa> <4A819642.10700@zytor.com> <20090811162730.GM9704@pc-ras4041.res.insa>
-In-Reply-To: <20090811162730.GM9704@pc-ras4041.res.insa>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 11 Aug 2009 12:40:15 -0400
+Subject: Re: [PATCH 12/14] scsi: use printk_once
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+In-Reply-To: <1249847649-11631-13-git-send-email-marcin.slusarz@gmail.com>
+References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
+	 <1249847649-11631-13-git-send-email-marcin.slusarz@gmail.com>
+Content-Type: text/plain
+Date: Tue, 11 Aug 2009 11:40:13 -0500
+Message-Id: <1250008813.4301.55.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/11/2009 09:27 AM, Albin Tonnerre wrote:
+On Sun, 2009-08-09 at 21:54 +0200, Marcin Slusarz wrote:
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+> Cc: linux-scsi@vger.kernel.org
+> ---
+>  drivers/scsi/53c700.c             |    6 +-----
+>  drivers/scsi/cxgb3i/cxgb3i_init.c |    7 +------
+>  2 files changed, 2 insertions(+), 11 deletions(-)
 > 
-> So I guess the only options left are either define a dummy raise() function, or
-> get rid of the divisions like Alain Knaff did in his patch ?
-> 
+> diff --git a/drivers/scsi/53c700.c b/drivers/scsi/53c700.c
+> index f5a9add..c5f4fa7 100644
+> --- a/drivers/scsi/53c700.c
+> +++ b/drivers/scsi/53c700.c
+> @@ -291,7 +291,6 @@ NCR_700_detect(struct scsi_host_template *tpnt,
+>  	__u8 *memory;
+>  	__u32 *script;
+>  	struct Scsi_Host *host;
+> -	static int banner = 0;
+>  	int j;
+>  
+>  	if(tpnt->sdev_attrs == NULL)
+> @@ -385,10 +384,7 @@ NCR_700_detect(struct scsi_host_template *tpnt,
+>  	else
+>  		hostdata->rev = (NCR_700_readb(host, CTEST7_REG)>>4) & 0x0f;
+>  	hostdata->fast = (NCR_700_readb(host, CTEST9_REG) == 0);
+> -	if (banner == 0) {
+> -		printk(KERN_NOTICE "53c700: Version " NCR_700_VERSION " By James.Bottomley@HansenPartnership.com\n");
+> -		banner = 1;
+> -	}
+> +	printk_once(KERN_NOTICE "53c700: Version " NCR_700_VERSION " By James.Bottomley@HansenPartnership.com\n");
+>  	printk(KERN_NOTICE "scsi%d: %s rev %d %s\n", host->host_no,
+>  	       hostdata->chip710 ? "53c710" :
+>  	       (hostdata->fast ? "53c700-66" : "53c700"),
+> diff --git a/drivers/scsi/cxgb3i/cxgb3i_init.c b/drivers/scsi/cxgb3i/cxgb3i_init.c
+> index 042d9bc..8c9285f 100644
+> --- a/drivers/scsi/cxgb3i/cxgb3i_init.c
+> +++ b/drivers/scsi/cxgb3i/cxgb3i_init.c
+> @@ -43,12 +43,7 @@ static struct cxgb3_client t3c_client = {
+>   */
+>  static void open_s3_dev(struct t3cdev *t3dev)
+>  {
+> -	static int vers_printed;
+> -
+> -	if (!vers_printed) {
+> -		printk(KERN_INFO "%s", version);
+> -		vers_printed = 1;
+> -	}
+> +	printk_once(KERN_INFO "%s", version);
 
-Define a dummy raise, get rid of the divisions, or provide your own
-division function (there is probably one in the kernel already...)
+There's really no point to this beyond code churn.  Both patterns are
+correct uses so conversion buys us nothing.
 
-	-hpa
+James
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
 
