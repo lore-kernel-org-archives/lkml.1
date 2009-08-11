@@ -1,115 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbZHKMpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbZHKMmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754388AbZHKMpG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:45:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbZHKMpD
+	id S1754293AbZHKMmE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZHKMmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:45:03 -0400
-Received: from mail-pz0-f196.google.com ([209.85.222.196]:44421 "EHLO
-	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752783AbZHKMpC (ORCPT
+	Tue, 11 Aug 2009 08:42:00 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:37490 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754243AbZHKMl4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:45:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=NkM07MzeQwdkIWdGtSvS6Y2H+BJ5E9elZMNMRshCqL+D09PheP0y2N+ei0AQONa/Ak
-         QiEEMPS6Au4wV5A5JT+E04y6c0cIx/xxHnmtudtmpp85DLqQXIM6gpQWeMPmXLB/86hs
-         J5FkfnV50pPWn+3HHG/gYMxH/S0ShZ092NGn4=
+	Tue, 11 Aug 2009 08:41:56 -0400
+To: linux-kernel@vger.kernel.org
+Content-Disposition: inline
+From: Juergen Beisert <jbe@pengutronix.de>
+Organization: Pengutronix - Linux Solutions for Science and Industry
+Date: Tue, 11 Aug 2009 10:00:00 +0200
 MIME-Version: 1.0
-In-Reply-To: <3877989d0908102002i232b4853h66a9f1950bd9e292@mail.gmail.com>
-References: <3877989d0908101956o303c43c5i5c5f08297afb312@mail.gmail.com>
-	 <3877989d0908102002i232b4853h66a9f1950bd9e292@mail.gmail.com>
-Date: Tue, 11 Aug 2009 13:10:54 +0800
-Message-ID: <3877989d0908102210p2db164dpf007bbd98af39937@mail.gmail.com>
-Subject: Re: [RFC patch] Add boot option intel_iommu_drhd_mask
-From: Luming Yu <luming.yu@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Content-Type: multipart/mixed; boundary=000e0cd2dcb821a7cc0470d6ba0c
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908111000.01316.jbe@pengutronix.de>
+X-SA-Exim-Connect-IP: 92.198.50.58
+X-SA-Exim-Mail-From: jbe@pengutronix.de
+Subject: CMOS time jumps when ntpd ist running
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---000e0cd2dcb821a7cc0470d6ba0c
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hi list,
 
-On Tue, Aug 11, 2009 at 11:02 AM, Luming Yu<luming.yu@gmail.com> wrote:
->> **The patch is enclosed in text attachment*
->> **Using web client to send the patch* *
->> **below is for review, please apply attached =C2=A0patch*/
->
-> forgot to attach it.
-> Here it is.
+anybody here who saw such CMOS clock behaviour when ntpd is running?
+I synced system and CMOS time and after that I ran a simple
+  'watch -t -n 300 "date; hwclock -u" > /logfile'
+(note: When the ntpd daemon is not running, the CMOS clock does not show this 
+behaviour):
 
-Sorry, missed one line
+[...]
+    Mon Aug 10 03:53:20 CEST 2009              <-- system time
+    Mon Aug 10 03:53:20 2009  0.000000 seconds <-- CMOS time
 
-+                       drhd_count++;
+    Mon Aug 10 03:58:20 CEST 2009
+    Mon Aug 10 03:58:20 2009  0.000000 seconds
 
-please take the updated one in the attachment.
+    Mon Aug 10 04:03:20 CEST 2009
+    Sun Aug  9 22:03:20 2009  0.000000 seconds <----- BANG !!!!!!111!1!!
 
->
+    Mon Aug 10 04:08:20 CEST 2009
+    Sun Aug  9 22:08:20 2009  0.000000 seconds
+[...]
 
---000e0cd2dcb821a7cc0470d6ba0c
-Content-Type: application/octet-stream; name=1
-Content-Disposition: attachment; filename=1
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fy86hhd01
+It seems its always -6 hours the CMOS clock jumps. And sometimes -(6h + n * 
+24h) with n from 1 to 3 I saw.
 
-ZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24va2VybmVsLXBhcmFtZXRlcnMudHh0IGIvRG9jdW1l
-bnRhdGlvbi9rZXJuZWwtcGFyYW1ldGVycy50eHQKaW5kZXggZGQxYTZkNC4uZDllYjQyMiAxMDA2
-NDQKLS0tIGEvRG9jdW1lbnRhdGlvbi9rZXJuZWwtcGFyYW1ldGVycy50eHQKKysrIGIvRG9jdW1l
-bnRhdGlvbi9rZXJuZWwtcGFyYW1ldGVycy50eHQKQEAgLTk4MSw2ICs5ODEsOSBAQCBhbmQgaXMg
-YmV0d2VlbiAyNTYgYW5kIDQwOTYgY2hhcmFjdGVycy4gSXQgaXMgZGVmaW5lZCBpbiB0aGUgZmls
-ZQogCQkJcmVzdWx0IGluIGEgaGFyZHdhcmUgSU9UTEIgZmx1c2ggb3BlcmF0aW9uIGFzIG9wcG9z
-ZWQKIAkJCXRvIGJhdGNoaW5nIHRoZW0gZm9yIHBlcmZvcm1hbmNlLgogCisJaW50ZWxfaW9tbXVf
-ZHJoZF9tYXNrPTB4QUFBQUFBQUEKKwkJCVNldCBhIGJpdCBtYXNrIG9mIERNQVIgaGFyZHdhcmUg
-dW5pdCB0byBiZSBpZ25vcmVkCisKIAlpbnR0ZXN0PQlbSUE2NF0KIAogCWlvbWVtPQkJRGlzYWJs
-ZSBzdHJpY3QgY2hlY2tpbmcgb2YgYWNjZXNzIHRvIE1NSU8gbWVtb3J5CmRpZmYgLS1naXQgYS9k
-cml2ZXJzL3BjaS9kbWFyLmMgYi9kcml2ZXJzL3BjaS9kbWFyLmMKaW5kZXggN2IyODdjYi4uNjQ5
-NTRmZSAxMDA2NDQKLS0tIGEvZHJpdmVycy9wY2kvZG1hci5jCisrKyBiL2RyaXZlcnMvcGNpL2Rt
-YXIuYwpAQCAtMTY3LDcgKzE2Nyw3IEBAIHN0YXRpYyBpbnQgX19pbml0IGRtYXJfcGFyc2VfZGV2
-X3Njb3BlKHZvaWQgKnN0YXJ0LCB2b2lkICplbmQsIGludCAqY250LAogICogcHJlc2VudCBpbiB0
-aGUgcGxhdGZvcm0KICAqLwogc3RhdGljIGludCBfX2luaXQKLWRtYXJfcGFyc2Vfb25lX2RyaGQo
-c3RydWN0IGFjcGlfZG1hcl9oZWFkZXIgKmhlYWRlcikKK2RtYXJfcGFyc2Vfb25lX2RyaGQoc3Ry
-dWN0IGFjcGlfZG1hcl9oZWFkZXIgKmhlYWRlciwgaW50IGRyaGRfY291bnQpCiB7CiAJc3RydWN0
-IGFjcGlfZG1hcl9oYXJkd2FyZV91bml0ICpkcmhkOwogCXN0cnVjdCBkbWFyX2RyaGRfdW5pdCAq
-ZG1hcnU7CkBAIC0xOTcsNiArMTk3LDggQEAgZG1hcl9wYXJzZV9vbmVfZHJoZChzdHJ1Y3QgYWNw
-aV9kbWFyX2hlYWRlciAqaGVhZGVyKQogCQlrZnJlZShkbWFydSk7CiAJCXJldHVybiByZXQ7CiAJ
-fQorCWlmIChpbnRlbF9pb21tdV9kcmhkX21hc2sgJiAoMHgxIDw8IGRyaGRfY291bnQpKQorCQlk
-bWFydS0+aWdub3JlZCA9IDE7CiAJZG1hcl9yZWdpc3Rlcl9kcmhkX3VuaXQoZG1hcnUpOwogCXJl
-dHVybiAwOwogfQpAQCAtNDA1LDYgKzQwNyw3IEBAIHBhcnNlX2RtYXJfdGFibGUodm9pZCkKIHsK
-IAlzdHJ1Y3QgYWNwaV90YWJsZV9kbWFyICpkbWFyOwogCXN0cnVjdCBhY3BpX2RtYXJfaGVhZGVy
-ICplbnRyeV9oZWFkZXI7CisJaW50IGRyaGRfY291bnQgPSAwOwogCWludCByZXQgPSAwOwogCiAJ
-LyoKQEAgLTQ0MCw3ICs0NDMsOCBAQCBwYXJzZV9kbWFyX3RhYmxlKHZvaWQpCiAKIAkJc3dpdGNo
-IChlbnRyeV9oZWFkZXItPnR5cGUpIHsKIAkJY2FzZSBBQ1BJX0RNQVJfVFlQRV9IQVJEV0FSRV9V
-TklUOgotCQkJcmV0ID0gZG1hcl9wYXJzZV9vbmVfZHJoZChlbnRyeV9oZWFkZXIpOworCQkJcmV0
-ID0gZG1hcl9wYXJzZV9vbmVfZHJoZChlbnRyeV9oZWFkZXIsIGRyaGRfY291bnQpOworCQkJZHJo
-ZF9jb3VudCsrOwogCQkJYnJlYWs7CiAJCWNhc2UgQUNQSV9ETUFSX1RZUEVfUkVTRVJWRURfTUVN
-T1JZOgogI2lmZGVmIENPTkZJR19ETUFSCmRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9pbnRlbC1p
-b21tdS5jIGIvZHJpdmVycy9wY2kvaW50ZWwtaW9tbXUuYwppbmRleCAyMzE0YWQ3Li4wM2FmZDky
-IDEwMDY0NAotLS0gYS9kcml2ZXJzL3BjaS9pbnRlbC1pb21tdS5jCisrKyBiL2RyaXZlcnMvcGNp
-L2ludGVsLWlvbW11LmMKQEAgLTMzNyw2ICszMzcsNyBAQCBzdGF0aWMgREVGSU5FX1NQSU5MT0NL
-KGRldmljZV9kb21haW5fbG9jayk7CiBzdGF0aWMgTElTVF9IRUFEKGRldmljZV9kb21haW5fbGlz
-dCk7CiAKIHN0YXRpYyBzdHJ1Y3QgaW9tbXVfb3BzIGludGVsX2lvbW11X29wczsKK3Vuc2lnbmVk
-IGludCBpbnRlbF9pb21tdV9kcmhkX21hc2s7CiAKIHN0YXRpYyBpbnQgX19pbml0IGludGVsX2lv
-bW11X3NldHVwKGNoYXIgKnN0cikKIHsKQEAgLTM3MSw2ICszNzIsMTUgQEAgc3RhdGljIGludCBf
-X2luaXQgaW50ZWxfaW9tbXVfc2V0dXAoY2hhciAqc3RyKQogfQogX19zZXR1cCgiaW50ZWxfaW9t
-bXU9IiwgaW50ZWxfaW9tbXVfc2V0dXApOwogCitzdGF0aWMgaW50IF9faW5pdCBpbnRlbF9pb21t
-dV9kcmhkX21hc2tfc2V0dXAoY2hhciAqc3RyKQoreworCWlmICghc3RyKQorCQlyZXR1cm4gLUVJ
-TlZBTDsKKwlpbnRlbF9pb21tdV9kcmhkX21hc2sgPSBzaW1wbGVfc3RydG91bChzdHIsIE5VTEws
-IDApOworCXJldHVybiAwOworfQorX19zZXR1cCgiaW50ZWxfaW9tbXVfZHJoZF9tYXNrPSIsIGlu
-dGVsX2lvbW11X2RyaGRfbWFza19zZXR1cCk7CisKIHN0YXRpYyBzdHJ1Y3Qga21lbV9jYWNoZSAq
-aW9tbXVfZG9tYWluX2NhY2hlOwogc3RhdGljIHN0cnVjdCBrbWVtX2NhY2hlICppb21tdV9kZXZp
-bmZvX2NhY2hlOwogc3RhdGljIHN0cnVjdCBrbWVtX2NhY2hlICppb21tdV9pb3ZhX2NhY2hlOwpk
-aWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9pbnRlbC1pb21tdS5oIGIvaW5jbHVkZS9saW51eC9p
-bnRlbC1pb21tdS5oCmluZGV4IDQ4MmRjOTEuLjExM2M4ZTkgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUv
-bGludXgvaW50ZWwtaW9tbXUuaAorKysgYi9pbmNsdWRlL2xpbnV4L2ludGVsLWlvbW11LmgKQEAg
-LTM1OSw1ICszNTksNiBAQCBleHRlcm4gdm9pZCBxaV9mbHVzaF9kZXZfaW90bGIoc3RydWN0IGlu
-dGVsX2lvbW11ICppb21tdSwgdTE2IHNpZCwgdTE2IHFkZXAsCiAJCQkgICAgICAgdTY0IGFkZHIs
-IHVuc2lnbmVkIG1hc2spOwogCiBleHRlcm4gaW50IHFpX3N1Ym1pdF9zeW5jKHN0cnVjdCBxaV9k
-ZXNjICpkZXNjLCBzdHJ1Y3QgaW50ZWxfaW9tbXUgKmlvbW11KTsKK2V4dGVybiB1bnNpZ25lZCBp
-bnQgaW50ZWxfaW9tbXVfZHJoZF9tYXNrOwogCiAjZW5kaWYK
---000e0cd2dcb821a7cc0470d6ba0c--
+Is my CMOS clock broken? (BTW: x86 arch, 32 bit, Linux kernel 2.6.28.10 and 
+there is no SMM code in the system, it runs coreboot)
+
+Regards
+Juergen
