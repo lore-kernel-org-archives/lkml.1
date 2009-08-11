@@ -1,176 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbZHKMHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbZHKMGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753349AbZHKMHE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:07:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbZHKMG7
+	id S1753307AbZHKMGy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZHKMGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:06:59 -0400
+	Tue, 11 Aug 2009 08:06:52 -0400
 Received: from mx2.redhat.com ([66.187.237.31]:38853 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753248AbZHKMGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:06:52 -0400
-Date: Tue, 11 Aug 2009 06:46:06 -0400
-From: Neil Horman <nhorman@redhat.com>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC Patch 2/2] kexec: allow to shrink reserved memory
-Message-ID: <20090811104606.GA26587@hmsreliant.think-freely.org>
-References: <20090811104144.5154.77871.sendpatchset@localhost.localdomain> <20090811104154.5154.78710.sendpatchset@localhost.localdomain>
+	id S1753208AbZHKMGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 08:06:47 -0400
+Date: Tue, 11 Aug 2009 14:19:04 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/2] export cpu_tlbstate to modules
+Message-ID: <20090811111903.GA3809@redhat.com>
+References: <cover.1249930169.git.mst@redhat.com> <20090810185302.GB13924@redhat.com> <4A80979E.3080204@zytor.com> <20090810220613.GA17099@redhat.com> <4A809E32.6060206@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090811104154.5154.78710.sendpatchset@localhost.localdomain>
+In-Reply-To: <4A809E32.6060206@zytor.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 06:39:32AM -0400, Amerigo Wang wrote:
-> 
-> This patch implements shrinking the reserved memory for crash kernel,
-> if it is more than enough.
-> 
-> For example, if you have already reserved 128M, now you just want 100M,
-> you can do:
-> 
-> # echo $((100*1024*1024)) > /sys/kernel/kexec_crash_size
-> 
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: Neil Horman <nhorman@redhat.com>
-> Cc: Eric W. Biederman <ebiederm@xmission.com>
-> Cc: Andi Kleen <andi@firstfloor.org>
-> 
 
-Since the reserved area is also used for heap in the new kernel, isn't this
-mechanism going to guarantee a non-bootable kernel.  It seems like it shrinks
-the reserved area to the size of the image, leaving no additional memory for
-heap allocations during the kernels boot.  Or am I missing something?
+Subject: [PATCH] mm: export use_mm/unuse_mm to modules
 
-Neil
+vhost net module wants to do copy to/from user from a kernel thread,
+which needs use_mm (like what fs/aio has).  Move that into mm/ and
+export to modules.
 
-> ---
-> Index: linux-2.6/include/linux/kexec.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/kexec.h
-> +++ linux-2.6/include/linux/kexec.h
-> @@ -158,6 +158,8 @@ unsigned long paddr_vmcoreinfo_note(void
->  
->  extern struct kimage *kexec_image;
->  extern struct kimage *kexec_crash_image;
-> +extern struct resource *kexec_res;
-> +extern struct resource *kexec_free_res;
->  
->  #ifndef kexec_flush_icache_page
->  #define kexec_flush_icache_page(page)
-> @@ -206,6 +208,7 @@ extern size_t vmcoreinfo_max_size;
->  
->  int __init parse_crashkernel(char *cmdline, unsigned long long system_ram,
->  		unsigned long long *crash_size, unsigned long long *crash_base);
-> +int shrink_crash_memory(unsigned long start, unsigned long end);
->  
->  #else /* !CONFIG_KEXEC */
->  struct pt_regs;
-> Index: linux-2.6/kernel/kexec.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/kexec.c
-> +++ linux-2.6/kernel/kexec.c
-> @@ -1130,6 +1130,51 @@ void crash_kexec(struct pt_regs *regs)
->  	}
->  }
->  
-> +int shrink_crash_memory(unsigned long start, unsigned long end)
-> +{
-> +	struct page **pages;
-> +	int ret = 0;
-> +	int  npages, i;
-> +	unsigned long addr;
-> +	void *vaddr;
-> +
-> +	if (!mutex_trylock(&kexec_mutex))
-> +		return -EBUSY;
-> +
-> +	if (!kexec_free_res) {
-> +		ret = -ENOENT;
-> +		goto unlock;
-> +	}
-> +
-> +	start = roundup(start, PAGE_SIZE);
-> +	end = roundup(end, PAGE_SIZE) - 1;
-> +	npages = (end + 1 - start ) / PAGE_SIZE;
-> +
-> +	pages = kmalloc(sizeof(struct page *) * npages, GFP_KERNEL);
-> +	if (!pages) {
-> +		ret = -ENOMEM;
-> +		goto unlock;
-> +	}
-> +	for (i = 0; i < npages; i++) {
-> +		addr = start + i * PAGE_SIZE;
-> +		pages[i] = virt_to_page(addr);
-> +	}
-> +
-> +	vaddr = vm_map_ram(pages, npages, 0, PAGE_KERNEL);
-> +	if (!vaddr) {
-> +		ret = -ENOMEM;
-> +		goto free;
-> +	}
-> +	kexec_free_res->end = start - 1;
-> +	crashk_res.end = start - 1;
-> +
-> +free:
-> +	kfree(pages);
-> +unlock:
-> +	mutex_unlock(&kexec_mutex);
-> +	return ret;
-> +}
-> +
->  static u32 *append_elf_note(u32 *buf, char *name, unsigned type, void *data,
->  			    size_t data_len)
->  {
-> Index: linux-2.6/kernel/ksysfs.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/ksysfs.c
-> +++ linux-2.6/kernel/ksysfs.c
-> @@ -100,6 +100,32 @@ static ssize_t kexec_crash_loaded_show(s
->  }
->  KERNEL_ATTR_RO(kexec_crash_loaded);
->  
-> +static ssize_t kexec_crash_size_show(struct kobject *kobj,
-> +				       struct kobj_attribute *attr, char *buf)
-> +{
-> +	return sprintf(buf, "%llu\n", crashk_res.end - crashk_res.start + 1);
-> +}
-> +static ssize_t kexec_crash_size_store(struct kobject *kobj,
-> +				   struct kobj_attribute *attr,
-> +				   const char *buf, size_t count)
-> +{
-> +	unsigned long cnt;
-> +	int ret;
-> +
-> +	if (!kexec_res || !kexec_free_res)
-> +		return -ENOENT;
-> +	cnt = simple_strtoul(buf, NULL, 10);
-> +	if (cnt < kexec_res->end - kexec_res->start + 1)
-> +		return -ENOENT;
-> +	if (cnt > kexec_free_res->end - kexec_res->start + 1)
-> +		return -ENOENT;
-> +	cnt -= kexec_res->end - kexec_res->start + 1;
-> +	ret = shrink_crash_memory(kexec_free_res->start + cnt,
-> +		kexec_free_res->end);
-> +	return ret < 0 ? ret : count;
-> +}
-> +KERNEL_ATTR_RW(kexec_crash_size);
-> +
->  static ssize_t vmcoreinfo_show(struct kobject *kobj,
->  			       struct kobj_attribute *attr, char *buf)
->  {
-> @@ -147,6 +173,7 @@ static struct attribute * kernel_attrs[]
->  #ifdef CONFIG_KEXEC
->  	&kexec_loaded_attr.attr,
->  	&kexec_crash_loaded_attr.attr,
-> +	&kexec_crash_size_attr.attr,
->  	&vmcoreinfo_attr.attr,
->  #endif
->  	NULL
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+---
+
+On Mon, Aug 10, 2009 at 03:24:50PM -0700, H. Peter Anvin wrote:
+> On 08/10/2009 03:06 PM, Michael S. Tsirkin wrote:
+> >> Wouldn't it be a *lot* better to move use_mm() from fs/aio.c into common
+> >> code, and export that instead?
+> > 
+> > That's easy too. What would a good place for it be?
+> 
+> Somewhere in mm/, presumably.  When in doubt, make it a new file...
+> 	
+> 	-hpa
+
+Like this? Ack?
+
+ fs/aio.c                    |   47 +----------------------------------
+ include/linux/mmu_context.h |    9 ++++++
+ mm/Makefile                 |    2 +-
+ mm/mmu_context.c            |   58 +++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 69 insertions(+), 47 deletions(-)
+ create mode 100644 include/linux/mmu_context.h
+ create mode 100644 mm/mmu_context.c
+
+diff --git a/fs/aio.c b/fs/aio.c
+index d065b2c..fc21c23 100644
+--- a/fs/aio.c
++++ b/fs/aio.c
+@@ -24,6 +24,7 @@
+ #include <linux/file.h>
+ #include <linux/mm.h>
+ #include <linux/mman.h>
++#include <linux/mmu_context.h>
+ #include <linux/slab.h>
+ #include <linux/timer.h>
+ #include <linux/aio.h>
+@@ -34,7 +35,6 @@
+ 
+ #include <asm/kmap_types.h>
+ #include <asm/uaccess.h>
+-#include <asm/mmu_context.h>
+ 
+ #if DEBUG > 1
+ #define dprintk		printk
+@@ -595,51 +595,6 @@ static struct kioctx *lookup_ioctx(unsigned long ctx_id)
+ }
+ 
+ /*
+- * use_mm
+- *	Makes the calling kernel thread take on the specified
+- *	mm context.
+- *	Called by the retry thread execute retries within the
+- *	iocb issuer's mm context, so that copy_from/to_user
+- *	operations work seamlessly for aio.
+- *	(Note: this routine is intended to be called only
+- *	from a kernel thread context)
+- */
+-static void use_mm(struct mm_struct *mm)
+-{
+-	struct mm_struct *active_mm;
+-	struct task_struct *tsk = current;
+-
+-	task_lock(tsk);
+-	active_mm = tsk->active_mm;
+-	atomic_inc(&mm->mm_count);
+-	tsk->mm = mm;
+-	tsk->active_mm = mm;
+-	switch_mm(active_mm, mm, tsk);
+-	task_unlock(tsk);
+-
+-	mmdrop(active_mm);
+-}
+-
+-/*
+- * unuse_mm
+- *	Reverses the effect of use_mm, i.e. releases the
+- *	specified mm context which was earlier taken on
+- *	by the calling kernel thread
+- *	(Note: this routine is intended to be called only
+- *	from a kernel thread context)
+- */
+-static void unuse_mm(struct mm_struct *mm)
+-{
+-	struct task_struct *tsk = current;
+-
+-	task_lock(tsk);
+-	tsk->mm = NULL;
+-	/* active_mm is still 'mm' */
+-	enter_lazy_tlb(mm, tsk);
+-	task_unlock(tsk);
+-}
+-
+-/*
+  * Queue up a kiocb to be retried. Assumes that the kiocb
+  * has already been marked as kicked, and places it on
+  * the retry run list for the corresponding ioctx, if it
+diff --git a/include/linux/mmu_context.h b/include/linux/mmu_context.h
+new file mode 100644
+index 0000000..70fffeb
+--- /dev/null
++++ b/include/linux/mmu_context.h
+@@ -0,0 +1,9 @@
++#ifndef _LINUX_MMU_CONTEXT_H
++#define _LINUX_MMU_CONTEXT_H
++
++struct mm_struct;
++
++void use_mm(struct mm_struct *mm);
++void unuse_mm(struct mm_struct *mm);
++
++#endif
+diff --git a/mm/Makefile b/mm/Makefile
+index 5e0bd64..46c3892 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -11,7 +11,7 @@ obj-y			:= bootmem.o filemap.o mempool.o oom_kill.o fadvise.o \
+ 			   maccess.o page_alloc.o page-writeback.o pdflush.o \
+ 			   readahead.o swap.o truncate.o vmscan.o shmem.o \
+ 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
+-			   page_isolation.o mm_init.o $(mmu-y)
++			   page_isolation.o mm_init.o mmu_context.o $(mmu-y)
+ obj-y += init-mm.o
+ 
+ obj-$(CONFIG_PROC_PAGE_MONITOR) += pagewalk.o
+diff --git a/mm/mmu_context.c b/mm/mmu_context.c
+new file mode 100644
+index 0000000..9989c2f
+--- /dev/null
++++ b/mm/mmu_context.c
+@@ -0,0 +1,58 @@
++/* Copyright (C) 2009 Red Hat, Inc.
++ *
++ * See ../COPYING for licensing terms.
++ */
++
++#include <linux/mm.h>
++#include <linux/mmu_context.h>
++#include <linux/module.h>
++#include <linux/sched.h>
++
++#include <asm/mmu_context.h>
++
++/*
++ * use_mm
++ *	Makes the calling kernel thread take on the specified
++ *	mm context.
++ *	Called by the retry thread execute retries within the
++ *	iocb issuer's mm context, so that copy_from/to_user
++ *	operations work seamlessly for aio.
++ *	(Note: this routine is intended to be called only
++ *	from a kernel thread context)
++ */
++void use_mm(struct mm_struct *mm)
++{
++	struct mm_struct *active_mm;
++	struct task_struct *tsk = current;
++
++	task_lock(tsk);
++	active_mm = tsk->active_mm;
++	atomic_inc(&mm->mm_count);
++	tsk->mm = mm;
++	tsk->active_mm = mm;
++	switch_mm(active_mm, mm, tsk);
++	task_unlock(tsk);
++
++	mmdrop(active_mm);
++}
++EXPORT_SYMBOL_GPL(use_mm);
++
++/*
++ * unuse_mm
++ *	Reverses the effect of use_mm, i.e. releases the
++ *	specified mm context which was earlier taken on
++ *	by the calling kernel thread
++ *	(Note: this routine is intended to be called only
++ *	from a kernel thread context)
++ */
++void unuse_mm(struct mm_struct *mm)
++{
++	struct task_struct *tsk = current;
++
++	task_lock(tsk);
++	tsk->mm = NULL;
++	/* active_mm is still 'mm' */
++	enter_lazy_tlb(mm, tsk);
++	task_unlock(tsk);
++}
++EXPORT_SYMBOL_GPL(unuse_mm);
+-- 
+1.6.2.5
+
