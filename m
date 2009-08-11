@@ -1,83 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbZHKQrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbZHKQtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761AbZHKQrn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 12:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbZHKQrm
+	id S1754766AbZHKQtm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 12:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbZHKQtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 12:47:42 -0400
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:42638 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753961AbZHKQrl (ORCPT
+	Tue, 11 Aug 2009 12:49:42 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4278 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753925AbZHKQtl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 12:47:41 -0400
-Date: Tue, 11 Aug 2009 18:47:40 +0200
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Wilcox <willy@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andrew Patterson <andrew.patterson@hp.com>
-Subject: Re: [Regression] PCI resources allocation problem on HP nx6325
-Message-ID: <20090811184740.49f52b57@scarran.roarinelk.net>
-In-Reply-To: <alpine.LFD.2.01.0908071116520.3390@localhost.localdomain>
-References: <200908021619.48285.rjw@sisk.pl>
-	<alpine.LFD.2.01.0908020927410.3352@localhost.localdomain>
-	<20090803165909.GA12824@roarinelk.homelinux.net>
-	<alpine.LFD.2.01.0908041555120.3270@localhost.localdomain>
-	<20090805155102.GA31646@roarinelk.homelinux.net>
-	<alpine.LFD.2.01.0908050902300.3390@localhost.localdomain>
-	<alpine.LFD.2.01.0908050931390.3390@localhost.localdomain>
-	<20090805170934.GA32274@roarinelk.homelinux.net>
-	<alpine.LFD.2.01.0908071051300.3390@localhost.localdomain>
-	<alpine.LFD.2.01.0908071116520.3390@localhost.localdomain>
-Organization: Private
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i686-pc-linux-gnu)
+	Tue, 11 Aug 2009 12:49:41 -0400
+Subject: Re: [PATCH 12/14] scsi: use printk_once
+From: Joe Perches <joe@perches.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+In-Reply-To: <1250008813.4301.55.camel@mulgrave.site>
+References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
+	 <1249847649-11631-13-git-send-email-marcin.slusarz@gmail.com>
+	 <1250008813.4301.55.camel@mulgrave.site>
+Content-Type: text/plain
+Date: Tue, 11 Aug 2009 09:49:38 -0700
+Message-Id: <1250009378.8895.425.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Aug 2009 11:40:19 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-[explanation snipped]
-
-> So this patch is not something that I'm going to apply to my tree, but 
-> it's worth testing out to just verify that yes, I finally understand 
-> exactly what's going on. Because if I'm right, your warning will now go 
-> away (and it could be replaced by _other_ issues, of course ;).
-
-
-> ---
->  drivers/pci/pci.c |    8 ++++++--
->  1 files changed, 6 insertions(+), 2 deletions(-)
+On Tue, 2009-08-11 at 11:40 -0500, James Bottomley wrote:
+> On Sun, 2009-08-09 at 21:54 +0200, Marcin Slusarz wrote:
+> > --- a/drivers/scsi/cxgb3i/cxgb3i_init.c
+> > +++ b/drivers/scsi/cxgb3i/cxgb3i_init.c
+> > @@ -43,12 +43,7 @@ static struct cxgb3_client t3c_client = {
+> >   */
+> >  static void open_s3_dev(struct t3cdev *t3dev)
+> >  {
+> > -	static int vers_printed;
+> > -
+> > -	if (!vers_printed) {
+> > -		printk(KERN_INFO "%s", version);
+> > -		vers_printed = 1;
+> > -	}
+> > +	printk_once(KERN_INFO "%s", version);
 > 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index dbd0f94..89efbb5 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -367,8 +367,12 @@ pci_find_parent_resource(const struct pci_dev *dev, struct resource *res)
->  			continue;	/* Wrong type */
->  		if (!((res->flags ^ r->flags) & IORESOURCE_PREFETCH))
->  			return r;	/* Exact match */
-> -		if ((res->flags & IORESOURCE_PREFETCH) && !(r->flags & IORESOURCE_PREFETCH))
-> -			best = r;	/* Approximating prefetchable by non-prefetchable */
-> +		/* We can't insert a non-prefetch resource inside a prefetchable parent .. */
-> +		if (r->flags & IORESOURCE_PREFETCH)
-> +			continue;
-> +		/* .. but we can put a prefetchable resource inside a non-prefetchable one */
-> +		if (!best)
-> +			best = r;
->  	}
->  	return best;
->  }
+> There's really no point to this beyond code churn.  Both patterns are
+> correct uses so conversion buys us nothing.
+
+Standards are for hacks.  Stasis is the best policy.
+Using patterns isn't worth the electron movement.
+Code shortening and readability?  Humbug.
 
 
-The warning is gone, and /proc/iomem is identical to 2.6.30.
-I'd say you've hit the nail on the head ;)
-
-Thanks!
-	Manuel Lauss
