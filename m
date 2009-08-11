@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932084AbZHKVCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbZHKVGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932084AbZHKVCS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 17:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZHKVCR
+	id S1754757AbZHKVGR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 17:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbZHKVGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 17:02:17 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41643 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754450AbZHKVCQ (ORCPT
+	Tue, 11 Aug 2009 17:06:17 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:57624 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754371AbZHKVGQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 17:02:16 -0400
-Date: Mon, 10 Aug 2009 18:42:05 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       Frans Pop <elendil@planet.nl>, Chris Mason <chris.mason@oracle.com>,
-       jack@suse.cz, linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: What happened to data=guarded?
-Message-ID: <20090810164205.GC1505@ucw.cz>
-References: <1249934623-15939-1-git-send-email-tytso@mit.edu> <200908111535.37927.elendil@planet.nl> <20090811133721.GD29224@think> <200908111654.38217.elendil@planet.nl> <878whqgyid.fsf@basil.nowhere.org> <20090811185703.GQ1756@mit.edu>
+	Tue, 11 Aug 2009 17:06:16 -0400
+Date: Tue, 11 Aug 2009 17:06:17 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Add kerneldoc for flush_scheduled_work()
+Message-ID: <Pine.LNX.4.44L0.0908111659510.5845-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090811185703.GQ1756@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-08-11 14:57:03, Theodore Tso wrote:
-> On Tue, Aug 11, 2009 at 05:29:14PM +0200, Andi Kleen wrote:
-> > > Good to hear. I've so far stayed with data=ordered as I think I'd prefer 
-> > > data=guarded over data=writeback. I'll certainly give it a try when it's 
-> > > available.
-> > 
-> > Same here. data=writeback already cost me a few files after crashes here :/
-> 
-> What sort of files were you losing?  I don't know if we can improve
-> the implied flush hueristics, but we should at least try to see if we
-> do something about it.
+This patch (as1279) adds kerneldoc for flush_scheduled_work()
+containing a stern warning that the function should be avoided.
 
-IIRC... the flush heuristics invoke async flush, so you can still lose
-data if you are unlucky, no?
-								Pavel
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+---
+
+Index: usb-2.6/kernel/workqueue.c
+===================================================================
+--- usb-2.6.orig/kernel/workqueue.c
++++ usb-2.6/kernel/workqueue.c
+@@ -739,6 +739,24 @@ int schedule_on_each_cpu(work_func_t fun
+ 	return 0;
+ }
+ 
++/**
++ * flush_scheduled_work - ensure that all work scheduled on keventd_wq has run to completion.
++ *
++ * Blocks until all works on the keventd_wq global workqueue have completed.
++ * We sleep until all works present upon entry have been handled, but we
++ * are not livelocked by new incoming ones.
++ *
++ * Use of this function is discouraged, as it is highly prone to deadlock.
++ * It should never be called from within a work routine on the global
++ * queue, and it should never be called while holding a mutex required
++ * by one of the works on the global queue.  But the fact that keventd_wq
++ * _is_ global means that it can contain works requiring practically any
++ * mutex.  Hence this routine shouldn't be called while holding any mutex.
++ *
++ * Consider using cancel_work_sync() or cancel_delayed_work_sync() instead.
++ * They don't do the same thing (they cancel the work instead of waiting
++ * for it to complete), but in most cases they will suffice.
++ */
+ void flush_scheduled_work(void)
+ {
+ 	flush_workqueue(keventd_wq);
+
