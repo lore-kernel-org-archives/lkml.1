@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbZHKUHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932118AbZHKUJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755177AbZHKUHR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 16:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZHKUHQ
+	id S932118AbZHKUJz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 16:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbZHKUJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 16:07:16 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:45693 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752067AbZHKUHP (ORCPT
+	Tue, 11 Aug 2009 16:09:54 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:19195
+	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752211AbZHKUJx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 16:07:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kEo5wBFgkBqGkznbM9lh0bL56AcHl9VzXgmwIrT7AiyGrxrlGLmgFk08qxZeepSylQ
-         OsL2uQM4R2MLo8u/T7VHiz63exER30OdgMN/vBXDyXGMEUM96NbCnwCc9ROSj6N4DbHK
-         9ooYzK/nKtqZunuYW5/Fg+v6ZYfasp6eBNrgM=
-Date: Wed, 12 Aug 2009 00:07:11 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: npiggin@suse.de
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Nadia Derbey <Nadia.Derbey@bull.net>,
-       Pierre Peiffer <peifferp@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/4] ipc: sem optimise simple operations
-Message-ID: <20090811200711.GA24213@lenovo>
-References: <20090811110902.255877673@suse.de> <20090811111607.310739140@suse.de>
+	Tue, 11 Aug 2009 16:09:53 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i203h6bh43j63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0KO8AOB-01-KBF-02
+X-M-MSG: 
+From: Mark Langsdorf <mark.langsdorf@amd.com>
+To: lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       matthew.tippett@amd.com, samuel.li@amd.com
+Subject: [PATCH][ACPI] AC/DC notifier
+Date: Tue, 11 Aug 2009 15:15:42 -0500
+User-Agent: KMail/1.9.10
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090811111607.310739140@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-ID: <200908111515.42635.mark.langsdorf@amd.com>
+X-OriginalArrivalTime: 11 Aug 2009 20:09:46.0786 (UTC) FILETIME=[AC745020:01CA1ABF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[npiggin@suse.de - Tue, Aug 11, 2009 at 09:09:06PM +1000]
-...
-| +static void update_queue_simple(struct sem_array *sma, ushort semnum)
-| +{
-| +	if (unlikely(sma->complex_count)) {
-| +		update_queue(sma);
-| +	} else {
-| +		struct sem *sem;
-| +
-| +		sem = &sma->sem_base[semnum];
-| +		if (sem->semval > 0)
-| +			update_negv_queue(sma, sem);
-| +		if (sem->semval == 0)
-| +			update_zero_queue(sma, sem);
-| +	}
-| +}
-| +
-...
+Add an ACPI event notifier for AC/DC connect/disconnect events.
 
-Hi Nick,
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
 
-mostly probably miss something but can't we trgigger BUG_ON at updating
-zero queue if semaphore was created with undo list and via new operation
-reached -ERANGE on undo value?
+---
+ drivers/acpi/ac.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Again, I could be missing something or plain wrong. Just a thought.
 
-	-- Cyrill
+diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
+index 0df8fcb..656b903 100644
+--- a/drivers/acpi/ac.c
++++ b/drivers/acpi/ac.c
+@@ -243,6 +243,7 @@ static void acpi_ac_notify(struct acpi_device *device, u32 event)
+ 		acpi_bus_generate_netlink_event(device->pnp.device_class,
+ 						  dev_name(&device->dev), event,
+ 						  (u32) ac->state);
++		acpi_notifier_call_chain(device, event, (u32) ac->state);
+ #ifdef CONFIG_ACPI_SYSFS_POWER
+ 		kobject_uevent(&ac->charger.dev->kobj, KOBJ_CHANGE);
+ #endif
+-- 
+1.6.0.2
+
+
