@@ -1,60 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbZHKSZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbZHKSbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754621AbZHKSZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 14:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbZHKSZ1
+	id S1755233AbZHKSbN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 14:31:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbZHKSbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 14:25:27 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:30080 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753633AbZHKSZ0 (ORCPT
+	Tue, 11 Aug 2009 14:31:12 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:43514 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753075AbZHKSbM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 14:25:26 -0400
-Message-ID: <4A81B728.7040200@oracle.com>
-Date: Tue, 11 Aug 2009 11:23:36 -0700
-From: Zach Brown <zach.brown@oracle.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Tue, 11 Aug 2009 14:31:12 -0400
+Date: Tue, 11 Aug 2009 14:24:26 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Daniel Mack <daniel@caiaq.de>, libertas-dev@lists.infradead.org,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dcbw@redhat.com
+Subject: Re: Libertas: Association request to the driver failed
+Message-ID: <20090811182426.GE2634@tuxdriver.com>
+References: <20090807191156.GS19257@buzzloop.caiaq.de> <20090807193610.GK7545@tuxdriver.com> <20090808123512.GZ19257@buzzloop.caiaq.de> <4A7D8AB6.9030707@gmail.com> <4A7E9596.4070901@gmail.com> <20090809102417.GH13639@buzzloop.caiaq.de> <4A7EAED8.9090900@gmail.com> <20090810175939.GH2733@tuxdriver.com> <4A811776.8090003@gmail.com>
 MIME-Version: 1.0
-To: Manfred Spraul <manfred@colorfullife.com>
-CC: npiggin@suse.de, Andrew Morton <akpm@linux-foundation.org>,
-       Nadia Derbey <Nadia.Derbey@bull.net>,
-       Pierre Peiffer <peifferp@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/4] ipc: sem optimise simple operations
-References: <20090811110902.255877673@suse.de> <20090811111607.310739140@suse.de> <4A81B646.5060301@colorfullife.com>
-In-Reply-To: <4A81B646.5060301@colorfullife.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt001.oracle.com [141.146.116.10]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010208.4A81B72B.00FE:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A811776.8090003@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manfred Spraul wrote:
-> On 08/11/2009 01:09 PM, npiggin@suse.de wrote:
->> Index: linux-2.6/include/linux/sem.h
->> ===================================================================
->> --- linux-2.6.orig/include/linux/sem.h
->> +++ linux-2.6/include/linux/sem.h
->> @@ -86,6 +86,8 @@ struct task_struct;
->>   struct sem {
->>       int    semval;        /* current value */
->>       int    sempid;        /* pid of last operation */
->> +    struct list_head    negv_pending;
->> +    struct list_head    zero_pending;
->>   };
->>    
-> struct sem is increased from 8 to 24 bytes.
+Comments from the libertas crowd?  This seems a bit long for this
+part of the cycle.
 
-And larger still with 64bit pointers.
+Should we just revert the original patch, then reapply it with this
+one for 2.6.32?
 
-If it's a problem, this can be scaled back.  You can have pointers to
-lists and you can have fewer lists.
+John
 
-Hopefully it won't be a problem, though.  We can close our eyes and
-pretend that the size of the semaphore sets scale with the size of the
-system and that it's such a relatively small consumer of memory that no
-one will notice :).
+On Tue, Aug 11, 2009 at 09:02:14AM +0200, Roel Kluin wrote:
+> The size of the tmp buffer was too small, causing a regression
+> 
+> rates->rates has an arraysize of 1, so a memcpy with
+> MAX_RATES (14) was already causing reads out of bounds.
+> 
+> In get_common_rates() the memset/memcpy can be moved upwards.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> Tested-by: Daniel Mack <daniel@caiaq.de>
+> ---
+> > Delta patch, please...
+> 
+> Here,
+> 
+> diff --git a/drivers/net/wireless/libertas/assoc.c b/drivers/net/wireless/libertas/assoc.c
+> index d699737..ba0164a 100644
+> --- a/drivers/net/wireless/libertas/assoc.c
+> +++ b/drivers/net/wireless/libertas/assoc.c
+> @@ -44,8 +44,8 @@ static int get_common_rates(struct lbs_private *priv,
+>  	u16 *rates_size)
+>  {
+>  	u8 *card_rates = lbs_bg_rates;
+> -	int ret = 0, i, j;
+> -	u8 tmp[(ARRAY_SIZE(lbs_bg_rates) - 1) * (*rates_size - 1)];
+> +	int i, j;
+> +	u8 tmp[MAX_RATES * ARRAY_SIZE(lbs_bg_rates)];
+>  	size_t tmp_size = 0;
+>  
+>  	/* For each rate in card_rates that exists in rate1, copy to tmp */
+> @@ -62,20 +62,23 @@ static int get_common_rates(struct lbs_private *priv,
+>  	lbs_deb_hex(LBS_DEB_JOIN, "common rates", tmp, tmp_size);
+>  	lbs_deb_join("TX data rate 0x%02x\n", priv->cur_rate);
+>  
+> +	memset(rates, 0, *rates_size);
+> +	*rates_size = min_t(u16, tmp_size, *rates_size);
+> +	memcpy(rates, tmp, *rates_size);
+> +
+>  	if (!priv->enablehwauto) {
+>  		for (i = 0; i < tmp_size; i++) {
+>  			if (tmp[i] == priv->cur_rate)
+> -				goto done;
+> +				break;
+> +		}
+> +		if (i == tmp_size) {
+> +			lbs_pr_alert("Previously set fixed data rate %#x isn't "
+> +					"compatible with the network.\n",
+> +					priv->cur_rate);
+> +			return -1;
+>  		}
+> -		lbs_pr_alert("Previously set fixed data rate %#x isn't "
+> -		       "compatible with the network.\n", priv->cur_rate);
+> -		ret = -1;
+>  	}
+> -done:
+> -	memset(rates, 0, *rates_size);
+> -	*rates_size = min_t(int, tmp_size, *rates_size);
+> -	memcpy(rates, tmp, *rates_size);
+> -	return ret;
+> +	return 0;
+>  }
+>  
+>  
+> @@ -319,8 +322,8 @@ static int lbs_associate(struct lbs_private *priv,
+>  
+>  	rates = (struct mrvl_ie_rates_param_set *) pos;
+>  	rates->header.type = cpu_to_le16(TLV_TYPE_RATES);
+> -	memcpy(&rates->rates, &bss->rates, MAX_RATES);
+>  	tmplen = min_t(u16, ARRAY_SIZE(rates->rates), MAX_RATES);
+> +	memcpy(&rates->rates, &bss->rates, tmplen);
+>  	if (get_common_rates(priv, rates->rates, &tmplen)) {
+>  		ret = -1;
+>  		goto done;
+> 
 
-- z
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
