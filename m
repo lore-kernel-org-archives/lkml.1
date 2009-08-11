@@ -1,100 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753747AbZHKBbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZHKBgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753747AbZHKBbU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Aug 2009 21:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbZHKBbS
+	id S1752832AbZHKBgY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Aug 2009 21:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbZHKBgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Aug 2009 21:31:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60898 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752412AbZHKBbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Aug 2009 21:31:16 -0400
-Subject: Re: module loading permissions and request_module permission
- inconsistencies
-From: Eric Paris <eparis@redhat.com>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, sds@tycho.nsa.gov,
-       davem@davemloft.net, shemminger@linux-foundation.org, kees@ubuntu.com,
-       morgan@kernel.org, serue@us.ibm.com, casey@schaufler-ca.com
-In-Reply-To: <20090810232551.GA20747@hmsreliant.think-freely.org>
-References: <1249933513.2501.58.camel@dhcp231-106.rdu.redhat.com>
-	 <20090810202308.GA15390@hmsreliant.think-freely.org>
-	 <1249937339.2501.80.camel@dhcp231-106.rdu.redhat.com>
-	 <20090810232551.GA20747@hmsreliant.think-freely.org>
-Content-Type: text/plain
-Date: Mon, 10 Aug 2009 21:29:59 -0400
-Message-Id: <1249954199.2501.123.camel@dhcp231-106.rdu.redhat.com>
+	Mon, 10 Aug 2009 21:36:23 -0400
+Received: from mail-pz0-f196.google.com ([209.85.222.196]:49044 "EHLO
+	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752479AbZHKBgW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Aug 2009 21:36:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=oBbrNck/1rK+LJqiWabu4aTmITFgmR2bbu+momG5sg5J78Zoaadjaq5e2wBpifqHKo
+         opPr5zzd6wSxI9YcmeV5TW2VY4tjsZ0S5f2CFewh5nz8Y375zk7slvObUdlEBWoMf2WI
+         gzUK6tOg8tiBOmpa/9aYJo0NA3Y+uT6jUXyxE=
+Date: Tue, 11 Aug 2009 09:44:55 +0800
+From: JiSheng Zhang <jszhang3@gmail.com>
+To: linux-mtd@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org, Artem.Bityutskiy@nokia.com,
+       adrian.hunter@nokia.com, rmk@arm.linux.org.uk, dwmw2@infradead.org
+Subject: [PATCH] UBI: Fix allocation of volume table
+Message-ID: <20090811094455.6f9cbbfe@ustc>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.4; i486-pc-linux-gnu)
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-10 at 19:25 -0400, Neil Horman wrote:
-> On Mon, Aug 10, 2009 at 04:48:59PM -0400, Eric Paris wrote:
-> > On Mon, 2009-08-10 at 16:23 -0400, Neil Horman wrote:
-> > > On Mon, Aug 10, 2009 at 03:45:13PM -0400, Eric Paris wrote:
-> > 
-> > > > 1) remove CAP_SYS_MODULE from the networking code and instead check
-> > > > CAP_NET_ADMIN.  Maybe CAP_NET_ADMIN is already being checked and I'll
-> > > > just remove the capable call altogether but at least I can more
-> > > > intelligently limit the powers of these processes and they will still be
-> > > > root limited according to DAC permissions like they are today.
-> > > > 
-> > > Would this have any adverse effect on how user space sees this working.
-> > > Intuitively I would think that if you wanted to load a module (directly or
-> > > indirectly, via an iptables command or whatnot), you would need CAP_SYS_MODULE
-> > > capabilities on the calling process, not just CAP_NET_ADMIN.  I honestly don't
-> > > know the answer here, I'm just raising the question.
-> > 
-> > While that might make intuitive sense, it's actually proving to be a bad
-> > idea to use the same capability for direct and indirect module loading
-> > (especially considering we have 125 other places in the kernel where you
-> > can do indirect module loading without any security check)  And believe
-> > me, if someone suggests I move a CAP_SYS_MODULE check down into
-> > __request_module I'll scream about what a horrible idea that is (and
-> > then laugh at them behind their back).
-> > 
-> > While I think there should be some check in __request_module I don't
-> > think it should be CAP_SYS_MODULE.
-> > 
-> Forgive my excessive density, but what exactly would be wrong with putting a
-> CAP_SYS_MODULE check into __request_module?  Is there some sort of implicit
-> behavioral change that will mess with user space in doing so?
 
-Yes I believe it would almost certainly break all of the programs
-outside of the 3 networking spots which trigger the kernel to try to
-load a module.  Take a look at everything that call request_module().  I
-believe this because currently there are no security checks on those 125
-call sites and security policy does not grant CAP_SYS_MODULE to many
-domains (for good reason, it's a @#$% dangerous permission to give
-things.)
+We can't use vmalloc for the buffer used for volume table for some NAND
+or NOR drivers may pass the buffer to DMA. And the volume table size
+a.k.a vtbl_size is small so we can use kmalloc or kzalloc for it instead
 
-If the kernel does go that route it will force the security policy to be
-loosened such that all of those programs will have permission to
-directly load arbitrary data they can create.  As it stands today,
-subverting any of those calling programs 'merely' allows the attacker to
-make the kernel load a module using modprobe whose name is sometimes
-attacker controlled and sometimes not.  I contend that triggering the
-kernel to do an upcall is not the same security behavior as loading my
-own data directly into the kernel.
+Signed-off-by: JiSheng Zhang <jszhang3@gmail.com>
+---
+ drivers/mtd/ubi/build.c |    6 +++---
+ drivers/mtd/ubi/vtbl.c  |   18 ++++++++----------
+ 2 files changed, 11 insertions(+), 13 deletions(-)
 
-That's the whole problem.  There are separate security concerns between
-triggering the loading of a known module and directly loading arbitrary
-data.  Pushing a CAP_SYS_MODULE check down into __request_module will
-result in a less secure system policy in which the attack space on a
-system grows since there would be a significantly increased number of
-programs with permission to load data directly into the kernel.
-
-If the community feels that CAP_SYS_MODULE in __request_module is the
-right way to go that's fine (but I'm not going to send that patch which
-i believe will break systems).  I'll just create new security hooks in
-init_module, delete_module, and __request_module, which have no DAC
-meaning but which LSMs can implement policy with.  Given those 2/3 new
-hooks an LSMs can freely grant CAP_SYS_MODULE like candy, since in my
-opinion, it becomes a lot less meaningful and we can still meet
-meaningful security goals.
-
--Eric
+diff --git a/drivers/mtd/ubi/build.c b/drivers/mtd/ubi/build.c
+index e1f7d0a..1c1f877 100644
+--- a/drivers/mtd/ubi/build.c
++++ b/drivers/mtd/ubi/build.c
+@@ -605,7 +605,7 @@ out_wl:
+ 	ubi_wl_close(ubi);
+ out_vtbl:
+ 	free_internal_volumes(ubi);
+-	vfree(ubi->vtbl);
++	kfree(ubi->vtbl);
+ out_si:
+ 	ubi_scan_destroy_si(si);
+ 	return err;
+@@ -1031,7 +1031,7 @@ out_detach:
+ 	if (do_free)
+ 		free_user_volumes(ubi);
+ 	free_internal_volumes(ubi);
+-	vfree(ubi->vtbl);
++	kfree(ubi->vtbl);
+ out_free:
+ 	vfree(ubi->peb_buf1);
+ 	vfree(ubi->peb_buf2);
+@@ -1102,7 +1102,7 @@ int ubi_detach_mtd_dev(int ubi_num, int anyway)
+ 	uif_close(ubi);
+ 	ubi_wl_close(ubi);
+ 	free_internal_volumes(ubi);
+-	vfree(ubi->vtbl);
++	kfree(ubi->vtbl);
+ 	put_mtd_device(ubi->mtd);
+ 	vfree(ubi->peb_buf1);
+ 	vfree(ubi->peb_buf2);
+diff --git a/drivers/mtd/ubi/vtbl.c b/drivers/mtd/ubi/vtbl.c
+index 1afc61e..59e452a 100644
+--- a/drivers/mtd/ubi/vtbl.c
++++ b/drivers/mtd/ubi/vtbl.c
+@@ -424,12 +424,11 @@ static struct ubi_vtbl_record *process_lvol(struct ubi_device *ubi,
+ 
+ 	/* Read both LEB 0 and LEB 1 into memory */
+ 	ubi_rb_for_each_entry(rb, seb, &sv->root, u.rb) {
+-		leb[seb->lnum] = vmalloc(ubi->vtbl_size);
++		leb[seb->lnum] = kzalloc(ubi->vtbl_size, GFP_KERNEL);
+ 		if (!leb[seb->lnum]) {
+ 			err = -ENOMEM;
+ 			goto out_free;
+ 		}
+-		memset(leb[seb->lnum], 0, ubi->vtbl_size);
+ 
+ 		err = ubi_io_read_data(ubi, leb[seb->lnum], seb->pnum, 0,
+ 				       ubi->vtbl_size);
+@@ -470,7 +469,7 @@ static struct ubi_vtbl_record *process_lvol(struct ubi_device *ubi,
+ 		}
+ 
+ 		/* Both LEB 1 and LEB 2 are OK and consistent */
+-		vfree(leb[1]);
++		kfree(leb[1]);
+ 		return leb[0];
+ 	} else {
+ 		/* LEB 0 is corrupted or does not exist */
+@@ -491,13 +490,13 @@ static struct ubi_vtbl_record *process_lvol(struct ubi_device *ubi,
+ 			goto out_free;
+ 		ubi_msg("volume table was restored");
+ 
+-		vfree(leb[0]);
++		kfree(leb[0]);
+ 		return leb[1];
+ 	}
+ 
+ out_free:
+-	vfree(leb[0]);
+-	vfree(leb[1]);
++	kfree(leb[0]);
++	kfree(leb[1]);
+ 	return ERR_PTR(err);
+ }
+ 
+@@ -515,10 +514,9 @@ static struct ubi_vtbl_record *create_empty_lvol(struct ubi_device *ubi,
+ 	int i;
+ 	struct ubi_vtbl_record *vtbl;
+ 
+-	vtbl = vmalloc(ubi->vtbl_size);
++	vtbl = kzalloc(ubi->vtbl_size, GFP_KERNEL);
+ 	if (!vtbl)
+ 		return ERR_PTR(-ENOMEM);
+-	memset(vtbl, 0, ubi->vtbl_size);
+ 
+ 	for (i = 0; i < ubi->vtbl_slots; i++)
+ 		memcpy(&vtbl[i], &empty_vtbl_record, UBI_VTBL_RECORD_SIZE);
+@@ -528,7 +526,7 @@ static struct ubi_vtbl_record *create_empty_lvol(struct ubi_device *ubi,
+ 
+ 		err = create_vtbl(ubi, si, i, vtbl);
+ 		if (err) {
+-			vfree(vtbl);
++			kfree(vtbl);
+ 			return ERR_PTR(err);
+ 		}
+ 	}
+@@ -856,7 +854,7 @@ int ubi_read_volume_table(struct ubi_device *ubi, struct ubi_scan_info *si)
+ 	return 0;
+ 
+ out_free:
+-	vfree(ubi->vtbl);
++	kfree(ubi->vtbl);
+ 	for (i = 0; i < ubi->vtbl_slots + UBI_INT_VOL_COUNT; i++) {
+ 		kfree(ubi->volumes[i]);
+ 		ubi->volumes[i] = NULL;
+-- 
+1.6.3.3
 
