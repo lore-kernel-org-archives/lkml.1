@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbZHKPSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbZHKPSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755266AbZHKPSG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 11:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbZHKPSE
+	id S1755284AbZHKPSJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 11:18:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbZHKPSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 11:18:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41803 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755230AbZHKPSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 11:18:01 -0400
-Message-ID: <4A818AF3.9050706@redhat.com>
-Date: Tue, 11 Aug 2009 11:14:59 -0400
-From: Prarit Bhargava <prarit@redhat.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Tue, 11 Aug 2009 11:18:07 -0400
+Received: from mailhost5.gawab.com ([66.220.20.5]:42106 "HELO info14.gawab.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755246AbZHKPSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 11:18:03 -0400
+X-Trusted: Whitelisted
+From: Al Boldi <a1426z@gawab.com>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based /dev
+Date: Tue, 11 Aug 2009 18:18:16 +0300
+User-Agent: KMail/1.5
+Cc: Chris Friesen <cfriesen@nortel.com>, Andi Kleen <andi@firstfloor.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
+       gregkh@suse.de, Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+References: <20090805171513.GA10443@kroah.com> <200908110648.26191.a1426z@gawab.com> <20090811040431.GA1178@kroah.com>
+In-Reply-To: <20090811040431.GA1178@kroah.com>
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "menage@google.com" <menage@google.com>, andi.kleen@intel.com,
-       Pavel Emelianov <xemul@openvz.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: Help Resource Counters Scale better (v4)
-References: <20090811144405.GW7176@balbir.in.ibm.com> <4A81863A.2050504@redhat.com>
-In-Reply-To: <4A81863A.2050504@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908111818.16399.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Prarit Bhargava wrote:
+Greg KH wrote:
+> On Tue, Aug 11, 2009 at 06:48:26AM +0300, Al Boldi wrote:
+> > Linux used to be lean and mean which made it fun to work with, and which
+> > made the switch from the competition easy.  Nowadays I see a lot of bloat
+> > going into the kernel which may indicate that Linux is starting to run
+> > out of steam.
 >
->
-> Balbir Singh wrote:
->> Enhancement: Remove the overhead of root based resource counter 
->> accounting
->>
->>
->>   
->
-> <snip>
->> Please test/review.
->>
->>   
-> FWIW ...
->
-> On a 64p/32G system running 2.6.31-git2-rc5, with RESOURCE_COUNTERS 
-> off, "time make -j64" results in
->
-> real    4m54.972s
-> user    90m13.456s
-> sys     50m19.711s
->
-> On the same system, running 2.6.31-git2-rc5, with RESOURCE_COUNTERS on,
-> plus Balbir's "Help Resource Counters Scale Better (v3)" patch, and 
-> this patch, results in
+> That doesn't seem to make sense, if more development is happening, and
+> our number of contributors, different companies, and rate of change is
+> increasing, how are we "running out of steam"?
 
-Oops, sorry Balbir. 
+Running out of "quality steam".  Quantity can never replace Quality.
 
-I meant to write:
+> What specific development number is proof of us slowing down?  I see
+> nothing but the exact, and extreme, opposite thing happening.
 
-On the same system, running 2.6.31-git2-rc5, with RESOURCE_COUNTERS on, 
-plus Balbir's "Help Resource Counters Scale Better (v4)" patch results 
-in ...
+The increasing number of regressions are probably cause for concern.
 
-Sorry for the typo,
+> > devtmpfs seems bloaty due to the hotplug dependency.
+>
+> Would you use it if we fix it to remove this dependancy?
 
-P.
+Yes, if it also compares to static /dev in terms of speed.
+
+> So what really is your objection here?  That we did not let devtmpfs
+> work within a CONFIG_HOTPLUG=n type system? 
+
+Yes.
+
+> Or that devtmpfs works with
+> the existing CONFIG_HOTPLUG=y systems (i.e. 99% of the world)?
+
+And that should stay an option.
+
+
+Thanks!
+
+--
+Al
+
