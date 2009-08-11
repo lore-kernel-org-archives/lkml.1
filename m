@@ -1,283 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754120AbZHKMiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751957AbZHKMjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754120AbZHKMiz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbZHKMix
+	id S1751957AbZHKMjs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbZHKMjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:38:53 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:34008 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754103AbZHKMiv (ORCPT
+	Tue, 11 Aug 2009 08:39:47 -0400
+Received: from fallback.mail.elte.hu ([157.181.151.13]:34797 "EHLO
+	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751197AbZHKMjq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:38:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=B41MGkLWPE9jdL13CIyxM5JQfY2NkO9+oMTyZ7H9ROxhyYSrvho1OV5jUx9fxPjSWe
-         nThW1xO7tMVTyERCtjnfbsgc1zomHrIcW2zpu/ArATnuE5UYDDUn5/UrvLZu+Q32TAJ0
-         XZ71+jAEMOZzmCFZl4yqYErZqTIm41PJnEkTc=
-Date: Tue, 11 Aug 2009 13:28:47 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com
-Subject: Re: [PATCH 09/12] add support traceopint ids
-Message-ID: <20090811112845.GD4938@nowhere>
-References: <cover.1249932670.git.jbaron@redhat.com> <996d6713d889ddf697d3d4fdbb08645fa8343dd5.1249932670.git.jbaron@redhat.com>
+	Tue, 11 Aug 2009 08:39:46 -0400
+Date: Tue, 11 Aug 2009 11:34:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Johannes Stezenbach <js@sig21.net>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch] cache-miss and cache-refs events on P6-mobile CPUs
+Message-ID: <20090811093405.GA13004@elte.hu>
+References: <87k51cgdt8.fsf@basil.nowhere.org> <20090810122731.GA5863@sig21.net> <20090810123228.GD6838@basil.fritz.box> <20090810125651.GB6082@sig21.net> <20090810132923.GA4418@elte.hu> <20090810192658.GA15513@sig21.net> <20090810201406.GA6961@elte.hu> <20090810203706.GA17338@sig21.net> <20090810213133.GB16944@elte.hu> <20090810221307.GA19236@sig21.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <996d6713d889ddf697d3d4fdbb08645fa8343dd5.1249932670.git.jbaron@redhat.com>
+In-Reply-To: <20090810221307.GA19236@sig21.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 04:52:53PM -0400, Jason Baron wrote:
-> This patch associates an id with each syscall trace event, so that we can
-> identify each syscall trace event using the 'perf' tool.
+
+* Johannes Stezenbach <js@sig21.net> wrote:
+
+> On Mon, Aug 10, 2009 at 11:31:33PM +0200, Ingo Molnar wrote:
+> > * Johannes Stezenbach <js@sig21.net> wrote:
+> > > 
+> > > # cat /proc/cpuinfo 
+> > > processor	: 0
+> > > vendor_id	: GenuineIntel
+> > > cpu family	: 6
+> > > model		: 13
+> > > model name	: Intel(R) Pentium(R) M processor 1.80GHz
+> > 
+> > ah, yes. There's no cache-references/misses, because in 
+> > arch/x86/kernel/cpu/perf_counter.c we have two zero entries:
+> > 
+> > static const u64 p6_perfmon_event_map[] =
+> > {
+> >   [PERF_COUNT_HW_CPU_CYCLES]            = 0x0079,
+> >   [PERF_COUNT_HW_INSTRUCTIONS]          = 0x00c0,
+> >   [PERF_COUNT_HW_CACHE_REFERENCES]      = 0x0000, <----------
+> >   [PERF_COUNT_HW_CACHE_MISSES]          = 0x0000, <----------
+> >   [PERF_COUNT_HW_BRANCH_INSTRUCTIONS]   = 0x00c4,
+> >   [PERF_COUNT_HW_BRANCH_MISSES]         = 0x00c5,
+> >   [PERF_COUNT_HW_BUS_CYCLES]            = 0x0062,
+> > };
+> > 
+> > i.e. PERF_COUNT_HW_CACHE_REFERENCES and PERF_COUNT_HW_CACHE_MISSES 
+> > is not filled in yet.
+> > 
+> > Could you try something like:
+> > 
+> >     perf stat -e r0f2e true
+> > 
+> > (0x2e: L2 requests, 0x0f: all units)
+> > 
+> > if i checked the docs right that counter would give us L2 cache 
+> > stats - does it display non-zero values?
 > 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
+> # ./perf stat -e r0f2e true
 > 
-> ---
->  arch/x86/kernel/ftrace.c      |   10 ++++++++++
->  include/linux/syscalls.h      |   22 ++++++++++++++++++----
->  include/trace/syscall.h       |    8 ++++++++
->  kernel/trace/trace.h          |    6 ------
->  kernel/trace/trace_syscalls.c |   26 ++++++++++++++++----------
->  5 files changed, 52 insertions(+), 20 deletions(-)
+>  Performance counter stats for 'true':
 > 
-> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-> index 0d93d40..3cff121 100644
-> --- a/arch/x86/kernel/ftrace.c
-> +++ b/arch/x86/kernel/ftrace.c
-> @@ -516,6 +516,16 @@ int syscall_name_to_nr(char *name)
->  	return -1;
->  }
->  
-> +void set_syscall_enter_id(int num, int id)
-> +{
-> +	syscalls_metadata[num]->enter_id = id;
-> +}
-> +
-> +void set_syscall_exit_id(int num, int id)
-> +{
-> +	syscalls_metadata[num]->exit_id = id;
-> +}
-> +
->  static int __init arch_init_ftrace_syscalls(void)
->  {
->  	int i;
-> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-> index 5e5b4d3..ce4b01c 100644
-> --- a/include/linux/syscalls.h
-> +++ b/include/linux/syscalls.h
-> @@ -116,13 +116,20 @@ struct perf_counter_attr;
->  
->  #define SYSCALL_TRACE_ENTER_EVENT(sname)				\
->  	static struct ftrace_event_call event_enter_##sname;		\
-> +	struct trace_event enter_syscall_print_##sname = {		\
-> +		.trace                  = print_syscall_enter,		\
-> +	};								\
->  	static int init_enter_##sname(void)				\
->  	{								\
-> -		int num;						\
-> +		int num, id;						\
->  		num = syscall_name_to_nr("sys"#sname);			\
->  		if (num < 0)						\
->  			return -ENOSYS;					\
-> -		register_ftrace_event(&event_syscall_enter);		\
-> +		id = register_ftrace_event(&enter_syscall_print_##sname);\
-
-
-
-Since kprobes also need a unique id despite a single print callback,
-Because this issue is then not isolated, we need a generic event number
-generator from ftrace.
-
-IIRC Masami's kprobe patchset brought this. In this case,
-we need to remember fixing this on the syscall tracing side once it's merged.
-
-
-
-
-> +		if (!id)						\
-> +			return -ENODEV;					\
-> +		event_enter_##sname.id = id;				\
-> +		set_syscall_enter_id(num, id);				\
->  		INIT_LIST_HEAD(&event_enter_##sname.fields);		\
->  		init_preds(&event_enter_##sname);			\
->  		return 0;						\
-> @@ -142,13 +149,20 @@ struct perf_counter_attr;
->  
->  #define SYSCALL_TRACE_EXIT_EVENT(sname)					\
->  	static struct ftrace_event_call event_exit_##sname;		\
-> +	struct trace_event exit_syscall_print_##sname = {		\
-> +		.trace                  = print_syscall_exit,		\
-> +	};								\
->  	static int init_exit_##sname(void)				\
->  	{								\
-> -		int num;						\
-> +		int num, id;						\
->  		num = syscall_name_to_nr("sys"#sname);			\
->  		if (num < 0)						\
->  			return -ENOSYS;					\
-> -		register_ftrace_event(&event_syscall_exit);		\
-> +		id = register_ftrace_event(&exit_syscall_print_##sname);\
-> +		if (!id)						\
-> +			return -ENODEV;					\
-> +		event_exit_##sname.id = id;				\
-> +		set_syscall_exit_id(num, id);				\
->  		INIT_LIST_HEAD(&event_exit_##sname.fields);		\
->  		init_preds(&event_exit_##sname);			\
->  		return 0;						\
-> diff --git a/include/trace/syscall.h b/include/trace/syscall.h
-> index 73fb8b4..df62840 100644
-> --- a/include/trace/syscall.h
-> +++ b/include/trace/syscall.h
-> @@ -32,23 +32,31 @@ DECLARE_TRACE_WITH_CALLBACK(syscall_exit,
->   * @nb_args: number of parameters it takes
->   * @types: list of types as strings
->   * @args: list of args as strings (args[i] matches types[i])
-> + * @enter_id: associated ftrace enter event id
-> + * @exit_id: associated ftrace exit event id
->   */
->  struct syscall_metadata {
->  	const char	*name;
->  	int		nb_args;
->  	const char	**types;
->  	const char	**args;
-> +	int		enter_id;
-> +	int		exit_id;
->  };
->  
->  #ifdef CONFIG_FTRACE_SYSCALLS
->  extern struct syscall_metadata *syscall_nr_to_meta(int nr);
->  extern int syscall_name_to_nr(char *name);
-> +void set_syscall_enter_id(int num, int id);
-> +void set_syscall_exit_id(int num, int id);
->  extern struct trace_event event_syscall_enter;
->  extern struct trace_event event_syscall_exit;
->  extern int reg_event_syscall_enter(void *ptr);
->  extern void unreg_event_syscall_enter(void *ptr);
->  extern int reg_event_syscall_exit(void *ptr);
->  extern void unreg_event_syscall_exit(void *ptr);
-> +enum print_line_t print_syscall_enter(struct trace_iterator *iter, int flags);
-> +enum print_line_t print_syscall_exit(struct trace_iterator *iter, int flags);
->  #endif
->  
->  #endif /* _TRACE_SYSCALL_H */
-> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> index 44308f3..606073c 100644
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -38,8 +38,6 @@ enum trace_type {
->  	TRACE_GRAPH_ENT,
->  	TRACE_USER_STACK,
->  	TRACE_HW_BRANCHES,
-> -	TRACE_SYSCALL_ENTER,
-> -	TRACE_SYSCALL_EXIT,
->  	TRACE_KMEM_ALLOC,
->  	TRACE_KMEM_FREE,
->  	TRACE_POWER,
-> @@ -334,10 +332,6 @@ extern void __ftrace_bad_type(void);
->  			  TRACE_KMEM_ALLOC);	\
->  		IF_ASSIGN(var, ent, struct kmemtrace_free_entry,	\
->  			  TRACE_KMEM_FREE);	\
-> -		IF_ASSIGN(var, ent, struct syscall_trace_enter,		\
-> -			  TRACE_SYSCALL_ENTER);				\
-> -		IF_ASSIGN(var, ent, struct syscall_trace_exit,		\
-> -			  TRACE_SYSCALL_EXIT);				\
->  		IF_ASSIGN(var, ent, struct ksym_trace_entry, TRACE_KSYM);\
->  		__ftrace_bad_type();					\
->  	} while (0)
-> diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-> index c7ae25e..e58a9c1 100644
-> --- a/kernel/trace/trace_syscalls.c
-> +++ b/kernel/trace/trace_syscalls.c
-> @@ -36,14 +36,18 @@ print_syscall_enter(struct trace_iterator *iter, int flags)
->  	struct syscall_metadata *entry;
->  	int i, ret, syscall;
->  
-> -	trace_assign_type(trace, ent);
-> -
-> +	trace = (typeof(trace))ent;
->  	syscall = trace->nr;
-> -
->  	entry = syscall_nr_to_meta(syscall);
-> +
->  	if (!entry)
->  		goto end;
->  
-> +	if (entry->enter_id != ent->type) {
-> +		WARN_ON_ONCE(1);
-> +		goto end;
-> +	}
-> +
->  	ret = trace_seq_printf(s, "%s(", entry->name);
->  	if (!ret)
->  		return TRACE_TYPE_PARTIAL_LINE;
-> @@ -78,16 +82,20 @@ print_syscall_exit(struct trace_iterator *iter, int flags)
->  	struct syscall_metadata *entry;
->  	int ret;
->  
-> -	trace_assign_type(trace, ent);
-> -
-> +	trace = (typeof(trace))ent;
->  	syscall = trace->nr;
-> -
->  	entry = syscall_nr_to_meta(syscall);
-> +
->  	if (!entry) {
->  		trace_seq_printf(s, "\n");
->  		return TRACE_TYPE_HANDLED;
->  	}
->  
-> +	if (entry->exit_id != ent->type) {
-> +		WARN_ON_ONCE(1);
-> +		return TRACE_TYPE_UNHANDLED;
-> +	}
-> +
->  	ret = trace_seq_printf(s, "%s -> 0x%lx\n", entry->name,
->  				trace->ret);
->  	if (!ret)
-> @@ -114,7 +122,7 @@ void ftrace_syscall_enter(struct pt_regs *regs, long id)
->  
->  	size = sizeof(*entry) + sizeof(unsigned long) * sys_data->nb_args;
->  
-> -	event = trace_current_buffer_lock_reserve(TRACE_SYSCALL_ENTER, size,
-> +	event = trace_current_buffer_lock_reserve(sys_data->enter_id, size,
->  							0, 0);
->  	if (!event)
->  		return;
-> @@ -142,7 +150,7 @@ void ftrace_syscall_exit(struct pt_regs *regs, long ret)
->  	if (!sys_data)
->  		return;
->  
-> -	event = trace_current_buffer_lock_reserve(TRACE_SYSCALL_EXIT,
-> +	event = trace_current_buffer_lock_reserve(sys_data->exit_id,
->  				sizeof(*entry), 0, 0);
->  	if (!event)
->  		return;
-> @@ -239,10 +247,8 @@ void unreg_event_syscall_exit(void *ptr)
->  
->  struct trace_event event_syscall_enter = {
->  	.trace			= print_syscall_enter,
-> -	.type			= TRACE_SYSCALL_ENTER
->  };
->  
->  struct trace_event event_syscall_exit = {
->  	.trace			= print_syscall_exit,
-> -	.type			= TRACE_SYSCALL_EXIT
->  };
-
-
-Do you still need the two above now that you have defined individual
-print callbacks from syscall.h ?
-
-> -- 
-> 1.6.2.5
+>           10584  raw 0xf2e               
 > 
+>     0.001159924  seconds time elapsed
+> 
+> The number also increases for larger programs than "true".
+> 
+> According to /usr/share/oprofile/i386/p6_mobile/events and
+> http://oprofile.sourceforge.net/docs/intel-p6-mobile-events.php
+> 0x2e + 0x0f is "L2 requests, all units", but I couldn't say how
+> to count cache references vs. misses.  Or does it work
+> with unit mask 0x0e vs. 0x01?
+> 
+> # ./perf stat -e r0e2e true
+> 
+>  Performance counter stats for 'true':
+> 
+>           10147  raw 0xe2e               
+> 
+>     0.001121651  seconds time elapsed
+> 
+> # ./perf stat -e r012e true
+> 
+>  Performance counter stats for 'true':
+> 
+>             468  raw 0x12e               
+> 
+>     0.001130870  seconds time elapsed
 
+Ok. That definitely looks like the right event to use.
+
+Could you try the patch below, does it do the trick? Note, since 
+there's just two generic counters and perf stat uses four counters, 
+you'll need to run longer commands than 'true' or something like:
+
+  perf stat -a sleep 1
+
+or:
+
+  perf stat --repeat 10 /bin/ls -R /usr/bin >/dev/null
+
+to get all counters excercised and time-shared on your CPU.
+
+	Ingo
+
+-------------->
+Subject: perf_counter, x86: Add generic cache events to P6-mobile CPUs
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue Aug 11 10:26:33 CEST 2009
+
+Johannes Stezenbach reported that 'perf stat' does not count
+cache-miss and cache-references events on his Pentium-M based
+laptop.
+
+Add the events.
+
+Reported-by: Johannes Stezenbach <js@sig21.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/cpu/perf_counter.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux/arch/x86/kernel/cpu/perf_counter.c
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/perf_counter.c
++++ linux/arch/x86/kernel/cpu/perf_counter.c
+@@ -116,8 +116,8 @@ static const u64 p6_perfmon_event_map[] 
+ {
+   [PERF_COUNT_HW_CPU_CYCLES]		= 0x0079,
+   [PERF_COUNT_HW_INSTRUCTIONS]		= 0x00c0,
+-  [PERF_COUNT_HW_CACHE_REFERENCES]	= 0x0000,
+-  [PERF_COUNT_HW_CACHE_MISSES]		= 0x0000,
++  [PERF_COUNT_HW_CACHE_REFERENCES]	= 0x0f2e,
++  [PERF_COUNT_HW_CACHE_MISSES]		= 0x012e,
+   [PERF_COUNT_HW_BRANCH_INSTRUCTIONS]	= 0x00c4,
+   [PERF_COUNT_HW_BRANCH_MISSES]		= 0x00c5,
+   [PERF_COUNT_HW_BUS_CYCLES]		= 0x0062,
