@@ -1,84 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbZHKPvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbZHKPx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127AbZHKPvj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 11:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZHKPvi
+	id S1753931AbZHKPx6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 11:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZHKPx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 11:51:38 -0400
-Received: from kroah.org ([198.145.64.141]:53430 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751086AbZHKPvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 11:51:37 -0400
-Date: Tue, 11 Aug 2009 08:49:31 -0700
-From: Greg KH <greg@kroah.com>
-To: Al Boldi <a1426z@gawab.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, Andi Kleen <andi@firstfloor.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
-       gregkh@suse.de, Harald Hoyer <harald@redhat.com>,
-       Scott James Remnant <scott@ubuntu.com>
-Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
- /dev
-Message-ID: <20090811154931.GA25079@kroah.com>
-References: <20090805171513.GA10443@kroah.com>
- <200908110648.26191.a1426z@gawab.com>
- <20090811040431.GA1178@kroah.com>
- <200908111818.16399.a1426z@gawab.com>
+	Tue, 11 Aug 2009 11:53:57 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:34364 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752476AbZHKPx5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 11:53:57 -0400
+Date: Tue, 11 Aug 2009 11:53:57 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Zhang Rui <rui.zhang@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
+       "dtor@mail.ru" <dtor@mail.ru>
+Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
+In-Reply-To: <200908111734.58949.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0908111148060.2562-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908111818.16399.a1426z@gawab.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 06:18:16PM +0300, Al Boldi wrote:
-> Greg KH wrote:
-> > On Tue, Aug 11, 2009 at 06:48:26AM +0300, Al Boldi wrote:
-> > > Linux used to be lean and mean which made it fun to work with, and which
-> > > made the switch from the competition easy.  Nowadays I see a lot of bloat
-> > > going into the kernel which may indicate that Linux is starting to run
-> > > out of steam.
-> >
-> > That doesn't seem to make sense, if more development is happening, and
-> > our number of contributors, different companies, and rate of change is
-> > increasing, how are we "running out of steam"?
+On Tue, 11 Aug 2009, Rafael J. Wysocki wrote:
+
+> In fact, we don't need the layers at all.  The only thing we have to assure is
+> that, during resume, the devices given device depends on will be handled
+> before we start to handle this particular device (inversely during suspend).
 > 
-> Running out of "quality steam".  Quantity can never replace Quality.
-> 
-> > What specific development number is proof of us slowing down?  I see
-> > nothing but the exact, and extreme, opposite thing happening.
-> 
-> The increasing number of regressions are probably cause for concern.
+> Please note that we're not even allowed to start executing the device's
+> resume callback before the callbacks of the devices it depends on have
+> returned (the same applies to the suspend callbacks, but the other way around).
 
-Is that just because we are paying more attention?  Or the fact that our
-code base is increasing?  Or something else?
+The general algorithm for maximum parallelism goes as follows: Start by
+resuming (in parallel) all the devices which don't depend on anything
+else.  Each time a resume finishes, you go on to resume (in parallel)
+all the devices which depend only on resumed devices and which haven't
+yet started to resume.
 
-> > > devtmpfs seems bloaty due to the hotplug dependency.
-> >
-> > Would you use it if we fix it to remove this dependancy?
-> 
-> Yes, if it also compares to static /dev in terms of speed.
+As described, this can require a large number of threads.  It also
+requires detailed knowledge of which devices depend on others, which we
+don't have.
 
-So again, you want something for free?  Good luck.
+Alan Stern
 
-> > So what really is your objection here?  That we did not let devtmpfs
-> > work within a CONFIG_HOTPLUG=n type system? 
-> 
-> Yes.
-
-Patches gladly welcome.
-
-> > Or that devtmpfs works with
-> > the existing CONFIG_HOTPLUG=y systems (i.e. 99% of the world)?
-> 
-> And that should stay an option.
-
-Again, I don't really believe that you use a CONFIG_HOTPLUG=n system in
-the real world, so barring a patch from you or anyone else, I'll leave
-it as-is.
-
-thanks,
-
-greg k-h
