@@ -1,154 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbZHKQGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbZHKQJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754141AbZHKQGP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 12:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZHKQGP
+	id S1753718AbZHKQJt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 12:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbZHKQJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 12:06:15 -0400
-Received: from viefep12-int.chello.at ([62.179.121.32]:47619 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751822AbZHKQGO (ORCPT
+	Tue, 11 Aug 2009 12:09:48 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:47455 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751705AbZHKQJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 12:06:14 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: perf_counters issue with PERF_SAMPLE_GROUP
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: eranian@gmail.com
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-In-Reply-To: <7c86c4470908110841wca07382gf7487c0ed55909f2@mail.gmail.com>
-References: <7c86c4470908110841wca07382gf7487c0ed55909f2@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 11 Aug 2009 18:05:44 +0200
-Message-Id: <1250006744.10001.29.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 11 Aug 2009 12:09:48 -0400
+Message-ID: <4A819642.10700@zytor.com>
+Date: Tue, 11 Aug 2009 09:03:14 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+CC: Sam Ravnborg <sam@ravnborg.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Matthieu CASTET <matthieu.castet@parrot.com>,
+       Alain Knaff <alain@knaff.lu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/6] Add support for LZO-compressed kernels for ARM
+References: <20090806224055.GH31579@n2100.arm.linux.org.uk> <20090807092423.GA4455@laptop> <4A7BF5B8.4030907@knaff.lu> <20090807102117.GB4455@laptop> <4A7C14EB.1060701@parrot.com> <20090807130130.GE4455@laptop> <4A7C2BA4.7030408@parrot.com> <20090807135524.GF4455@laptop> <20090807200001.GE31543@n2100.arm.linux.org.uk> <20090807210816.GA29797@merkur.ravnborg.org> <20090811094418.GI9704@pc-ras4041.res.insa>
+In-Reply-To: <20090811094418.GI9704@pc-ras4041.res.insa>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-11 at 17:41 +0200, stephane eranian wrote:
-> Hi,
+On 08/11/2009 02:44 AM, Albin Tonnerre wrote:
+> Hi Sam,
 > 
-> It seems to me there is a problem with the group counter values
-> when you use PERF_SAMPLE_GROUP. The counts are bogus
-> for all events.
+> On Fri, Aug 07, 2009 at 11:08:16PM +0200, Sam Ravnborg wrote :
+>> We could add libgcc as a prerequisite.
+>> Untested patch below.
 > 
-> Test case is pretty simple:
->     - single group, 2 events
->     - sampling on PERF_COUNT_HW_CYCLES
->     - other event is PERF_COUNT_HW_CYCLES
->     - leader has SAMPLE_IP|SAMPLE_GROUP
->     - no inheritance
->     - single thread
->     - using sampling in one shot mode with PERF_COUNTER_IOC_REFRESH
->     - all events but leader start with disabled = 0 (i.e., enabled)
->     - sampling period is 240000000 (cycles)
+> When compiling with this patch applied, I get the following error:
 > 
-> Notification 1: ip=0x401300  39100608 PERF_COUNT_HW_CPU_CYCLES (12)
-> Notification 2: ip=0x401300  17991616 PERF_COUNT_HW_CPU_CYCLES (12)
-> Notification 3: ip=0x401300  17981248 PERF_COUNT_HW_CPU_CYCLES (12)
-> Notification 4: ip=0x401300  9409478912 PERF_COUNT_HW_CPU_CYCLES (12)
+>   Kernel: arch/arm/boot/Image is ready
+>     LD      arch/arm/boot/compressed/vmlinux
+> /home/albin/x-tools/arm-unknown-linux-uclibcgnueabi/lib/gcc/arm-unknown-linux-uclibcgnueabi/4.3.2/libgcc.a(_dvmd_lnx.o):
+> In function `__div0':
+> /home/albin/devel/free-electrons/toolchain/targets/src/gcc-4.3.2/libgcc/../gcc/config/arm/lib1funcs.asm:1079:
+> undefined reference to `raise'
+> make[2]: *** [arch/arm/boot/compressed/vmlinux] Error 1
+> make[1]: *** [arch/arm/boot/compressed/vmlinux] Error 2
 > 
-> I would expect the value for the 2nd event to be close to 240000000.
-> But instead,
-> it is going up and down. The IP, nr and id (12) fields are correct, so
-> the parsing of
-> the buffer is correct. This is with the latest from Linus's 2.6.31-rc5.
+> I've got no idea where this symbol is defined, though. Has anyone an idea on
+> this ?
+> 
 
-Could have broken somewhere along the line, the group stuff doesn't get
-tested a lot, if at all.
+raise() gets called by libgcc to handle division by zero.
 
-perf used to have some support for it, not sure what the current state
-is.
+	-hpa
 
-You seem to have forgotten to append your test.c though :-)
-
-> Related to PERF_SAMPLE_GROUP, I believe there is some information missing.
-> You need to provide the TIMING information because in the case of SAMPLE_GROUP
-> you'd like to be able to scale the values of the counters you are
-> collecting. And you
-> need the timing at the moment, the sample was recorded not later.
-
-Right, so something like the below, possibly complemented with having
-PERF_COUNTER_IOC_RESET also reset the run-times?
-
----
- include/linux/perf_counter.h |    3 +++
- kernel/perf_counter.c        |   20 ++++++++++++++++++--
- 2 files changed, 21 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index 2b36afe..44a056b 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -365,10 +365,13 @@ enum perf_event_type {
- 	 * 	{ u64			period;   } && PERF_SAMPLE_PERIOD
- 	 *
- 	 *	{ u64			nr;
-+	 *	  { u64		time_enabled; } && PERF_FORMAT_ENABLED
-+	 *	  { u64		time_running; } && PERF_FORMAT_RUNNING
- 	 *	  { u64 id, val; }	cnt[nr];  } && PERF_SAMPLE_GROUP
- 	 *
- 	 *	{ u64			nr,
- 	 *	  u64			ips[nr];  } && PERF_SAMPLE_CALLCHAIN
-+	 *
- 	 *	{ u32			size;
- 	 *	  char                  data[size];}&& PERF_SAMPLE_RAW
- 	 * };
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index e26d2fc..e61e701 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -2636,6 +2636,7 @@ void perf_counter_output(struct perf_counter *counter, int nmi,
- {
- 	int ret;
- 	u64 sample_type = counter->attr.sample_type;
-+	u64 read_format = counter->attr.read_format;
- 	struct perf_output_handle handle;
- 	struct perf_event_header header;
- 	u64 ip;
-@@ -2703,6 +2704,10 @@ void perf_counter_output(struct perf_counter *counter, int nmi,
- 	if (sample_type & PERF_SAMPLE_GROUP) {
- 		header.size += sizeof(u64) +
- 			counter->nr_siblings * sizeof(group_entry);
-+		if (read_format & PERF_FORMAT_ENABLED)
-+			header.size += sizeof(u64);
-+		if (read_format & PERF_FORMAT_RUNNING)
-+			header.size += sizeof(u64);
- 	}
- 
- 	if (sample_type & PERF_SAMPLE_CALLCHAIN) {
-@@ -2765,9 +2770,20 @@ void perf_counter_output(struct perf_counter *counter, int nmi,
- 	 */
- 	if (sample_type & PERF_SAMPLE_GROUP) {
- 		struct perf_counter *leader, *sub;
--		u64 nr = counter->nr_siblings;
-+		u64 val;
-+
-+		val = counter->nr_siblings;
-+		perf_output_put(&handle, val);
- 
--		perf_output_put(&handle, nr);
-+		if (read_format & PERF_FORMAT_ENABLED) {
-+			val = counter->total_time_enabled;
-+			perf_output_put(&handle, val);
-+		}
-+
-+		if (read_format & PERF_FORMAT_RUNNING) {
-+			val = counter->total_time_running;
-+			perf_output_put(&handle, val);
-+		}
- 
- 		leader = counter->group_leader;
- 		list_for_each_entry(sub, &leader->sibling_list, list_entry) {
-
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
