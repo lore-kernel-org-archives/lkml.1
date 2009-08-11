@@ -1,223 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbZHKMoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754315AbZHKMnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754341AbZHKMoL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:44:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZHKMoI
+	id S1754315AbZHKMnF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:43:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbZHKMnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:44:08 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:37483 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752791AbZHKMlj (ORCPT
+	Tue, 11 Aug 2009 08:43:01 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:37130 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751012AbZHKMm5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:41:39 -0400
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       Sascha Hauer <s.hauer@pengutronix.de>,
-       Paul Gortmaker <p_gortmaker@yahoo.com>,
-       Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com
-Subject: [PATCH 4/5] [RTC] Add Freescale MC13783 RTC driver
-Date: Tue, 11 Aug 2009 11:07:46 +0200
-Message-Id: <1249981667-4366-5-git-send-email-s.hauer@pengutronix.de>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1249981667-4366-4-git-send-email-s.hauer@pengutronix.de>
-References: <1249981667-4366-1-git-send-email-s.hauer@pengutronix.de>
- <1249981667-4366-2-git-send-email-s.hauer@pengutronix.de>
- <1249981667-4366-3-git-send-email-s.hauer@pengutronix.de>
- <1249981667-4366-4-git-send-email-s.hauer@pengutronix.de>
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Tue, 11 Aug 2009 08:42:57 -0400
+Subject: Re: Question about userspace-consumer
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Felipe Balbi <me@felipebalbi.com>
+Cc: Mike Rapoport <mike@compulab.co.il>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090811094020.GA6762@rakim.wolfsonmicro.main>
+References: <20090810200553.GB4652@gandalf>
+	 <20090810215800.GB4528@sirena.org.uk> <20090811054438.GA7176@gandalf>
+	 <20090811094020.GA6762@rakim.wolfsonmicro.main>
+Content-Type: text/plain
+Date: Tue, 11 Aug 2009 11:30:16 +0100
+Message-Id: <1249986616.5807.28.camel@odin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This driver provides support for the RTC part integrated into
-the Freescale MC13783 PMIC.
+On Tue, 2009-08-11 at 10:40 +0100, Mark Brown wrote:
+> On Tue, Aug 11, 2009 at 08:44:42AM +0300, Felipe Balbi wrote:
+> > On Mon, Aug 10, 2009 at 10:58:01PM +0100, Mark Brown wrote:
+> 
+> > > Looking at that I'm not sure why you wish to push this into user space?
+> 
+> > we need some daemon monitoring battery statuses and taking actions on
+> > that. Imagine, for example, usb charging where we can:
+> 
+> > a. charge up to 100mA when unconfigured
+> > b. charge up to 500mA when configured
+> > c. charge up to 2.5A when with dedicated charger
+> > d. charge up to 2.5mA when bus is suspended
+> 
+> It's more complex than that - those are the limits at the USB port that
+> define the power that can be drawn by the system.  The actual power
+> available to the battery subsytem will be less since the rest of the
+> system needs to be powered.  In many cases even with 500mA available
+> the battery will need to be used to provide additional power in order to
+> keep the system operational rather than being charged.
+> 
+> For USB powered operation at least some of the management here would
+> usually be implemented in hardware to provide the responsiveness
+> required.  Waiting for software to get involved would often allow the
+> main system supply to collapse.
+> 
+> > handling all of those cases on kernel space seems a little bit odd,
+> > especially because we still need to take care of state-of-charge,
+> > pack temperature, time-to-charge, etc etc etc.
+> 
+> > a big looping polling for that stuff in kernel space didn't seem ok to
+> > me.
+> 
+> No matter what you're still going to need at least some of the code
+> in-kernel in order to handle the monitoring daemon exiting.  For
+> example, if the battery is in fast charge then something will need to
+> back the charger off at least as the charge completes (if not
+> immediately user space exits) otherwise the battery or entire system is
+> likely to be damaged.
+> 
+> Like I say some user space control does seem reasonable but I'd not
+> expect an entirely user space implementation.
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
-Cc: Alessandro Zummo <a.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com
----
- drivers/rtc/Kconfig       |    6 ++
- drivers/rtc/Makefile      |    1 +
- drivers/rtc/rtc-mc13783.c |  141 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 148 insertions(+), 0 deletions(-)
- create mode 100644 drivers/rtc/rtc-mc13783.c
+I agree, I think this probably deserves both user and kernel space
+components although the dividing line between them is a little uncertain
+atm. 
 
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 81adbdb..e4a242f 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -759,4 +759,10 @@ config RTC_DRV_PS3
- 	  This driver can also be built as a module. If so, the module
- 	  will be called rtc-ps3.
- 
-+config RTC_DRV_MC13783
-+	depends on MFD_MC13783
-+	tristate "Freescale MC13783 RTC"
-+	help
-+	  This enables support for the Freescale MC13783 PMIC RTC
-+
- endif # RTC_CLASS
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index 3c0f2b2..00bf66d 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -78,3 +78,4 @@ obj-$(CONFIG_RTC_DRV_WM8350)	+= rtc-wm8350.o
- obj-$(CONFIG_RTC_DRV_X1205)	+= rtc-x1205.o
- obj-$(CONFIG_RTC_DRV_PCF50633)	+= rtc-pcf50633.o
- obj-$(CONFIG_RTC_DRV_PS3)	+= rtc-ps3.o
-+obj-$(CONFIG_RTC_DRV_MC13783)	+= rtc-mc13783.o
-diff --git a/drivers/rtc/rtc-mc13783.c b/drivers/rtc/rtc-mc13783.c
-new file mode 100644
-index 0000000..d1f1192
---- /dev/null
-+++ b/drivers/rtc/rtc-mc13783.c
-@@ -0,0 +1,141 @@
-+/*
-+ * Real Time Clock driver for Freescale MC13783 PMIC
-+ *
-+ * (C) 2009 Sascha Hauer, Pengutronix
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#include <linux/mfd/mc13783-private.h>
-+#include <linux/platform_device.h>
-+#include <linux/interrupt.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/ioctl.h>
-+#include <linux/time.h>
-+#include <linux/rtc.h>
-+
-+struct mc13783_rtc {
-+	struct rtc_device *rtc;
-+	struct mc13783 *mc13783;
-+};
-+
-+static int mc13783_rtc_set_time(struct device *dev, struct rtc_time *tm)
-+{
-+	struct mc13783_rtc *priv = dev_get_drvdata(dev);
-+	unsigned int seconds, days;
-+	unsigned long s1970;
-+
-+	rtc_tm_to_time(tm, &s1970);
-+
-+	seconds = s1970 % 86400;
-+	days = s1970 / 86400;
-+
-+	mc13783_reg_write(priv->mc13783, MC13783_REG_RTC_TIME, seconds);
-+	mc13783_reg_write(priv->mc13783, MC13783_REG_RTC_DAY, days);
-+
-+	return 0;
-+}
-+
-+static int mc13783_rtc_read_time(struct device *dev, struct rtc_time *tm)
-+{
-+	struct mc13783_rtc *priv = dev_get_drvdata(dev);
-+	unsigned int seconds, days1, days2;
-+	unsigned long s1970;
-+
-+	rtc_tm_to_time(tm, &s1970);
-+
-+	do {
-+		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_TIME, &seconds);
-+		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_DAY, &days1);
-+		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_DAY, &days2);
-+	} while (days1 != days2);
-+
-+	s1970 = days1 * 86400 + seconds;
-+
-+	rtc_time_to_tm(s1970, tm);
-+
-+	return 0;
-+}
-+
-+static const struct rtc_class_ops mc13783_rtc_ops = {
-+	.read_time	= mc13783_rtc_read_time,
-+	.set_time	= mc13783_rtc_set_time,
-+};
-+
-+static int mc13783_rtc_probe(struct platform_device *pdev)
-+{
-+	int err;
-+	struct mc13783_rtc *priv;
-+
-+	priv = kzalloc(sizeof *priv, GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->mc13783 = pdev->dev.platform_data;
-+	platform_set_drvdata(pdev, priv);
-+
-+	priv->rtc = rtc_device_register(pdev->name,
-+			&pdev->dev, &mc13783_rtc_ops, THIS_MODULE);
-+
-+	if (IS_ERR(priv->rtc)) {
-+		err = PTR_ERR(priv->rtc);
-+		goto exit_kfree;
-+	}
-+
-+	return 0;
-+
-+exit_kfree:
-+	kfree(priv);
-+	return err;
-+}
-+
-+static int __exit mc13783_rtc_remove(struct platform_device *pdev)
-+{
-+	struct mc13783_rtc *priv = platform_get_drvdata(pdev);
-+
-+	rtc_device_unregister(priv->rtc);
-+	platform_set_drvdata(pdev, NULL);
-+
-+	kfree(priv);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver mc13783_rtc_driver = {
-+	.probe		 = mc13783_rtc_probe,
-+	.remove		= __exit_p(mc13783_rtc_remove),
-+	.driver = {
-+		.name	= "mc13783-rtc",
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init mc13783_rtc_init(void)
-+{
-+	return platform_driver_register(&mc13783_rtc_driver);
-+}
-+module_init(mc13783_rtc_init);
-+
-+static void __exit mc13783_rtc_exit(void)
-+{
-+	platform_driver_unregister(&mc13783_rtc_driver);
-+}
-+module_exit(mc13783_rtc_exit);
-+
-+
-+MODULE_AUTHOR("Sascha Hauer");
-+MODULE_DESCRIPTION("RTC driver for Freescale MC13783 PMIC");
-+MODULE_LICENSE("GPL");
--- 
-1.6.3.3
+Generally, I'd expect the kernel side to provide a guaranteed *safe*
+environment for charging wrt system stability and battery status. A
+simple state machine would probably suffice.
+
+I think userspace is where we would manage policy. We would also store
+past battery history in order to better manage future charging and
+charge level estimation. 
+
+Liam
 
