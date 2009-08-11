@@ -1,65 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbZHKTND@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbZHKTVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753360AbZHKTND (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 15:13:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbZHKTNC
+	id S1754091AbZHKTVX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 15:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbZHKTVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 15:13:02 -0400
-Received: from mail.uni-paderborn.de ([131.234.142.9]:29615 "EHLO
-	mail.uni-paderborn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751009AbZHKTNB (ORCPT
+	Tue, 11 Aug 2009 15:21:22 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:18412 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752273AbZHKTVV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 15:13:01 -0400
-Date: Tue, 11 Aug 2009 21:12:59 +0200
-To: linux-kernel@vger.kernel.org
-From: Martin Gelhaus <gelhaus@upb.de>
-Subject: =?UTF-8?B?U3R1ZHkgb24gY29tbXVuaWNhdGlvbiBhbmQgY29sbGFib3JhdGlvbiBpbiBzb2Z0d2FyZSBkZXZlbG9wbWVudCB0ZWFtcw==?=
-Message-ID: <4d35cadb5c5beae2388b35ac7ca89747@thales.cs.upb.de>
-X-Priority: 3
-X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.2]
-X-Surveymailer: LimeSurvey:Emailer (LimeSurvey.sourceforge.net)
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
-X-IMT-Spam-Score: 0.8 ()
-X-PMX-Version: 5.5.7.378829, Antispam-Engine: 2.7.2.376379, Antispam-Data: 2009.8.11.190316
-X-PerlMx-Spam: Gauge=IIIIIIII, Probability=8%, Report='
-  SUPERLONG_LINE 0.05, BODY_SIZE_1500_1599 0, BODY_SIZE_2000_LESS 0, BODY_SIZE_5000_LESS 0, BODY_SIZE_7000_LESS 0, TO_NO_NAME 0, WEBMAIL_SOURCE 0, WEBMAIL_XMAILER 0, __C230066_P2 0, __CP_URI_IN_BODY 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __HAS_X_PRIORITY 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __PHISH_SPEAR_STRUCTURE_1 0, __PHISH_SPEAR_STRUCTURE_2 0, __SANE_MSGID 0, __TO_MALFORMED_2 0, __URI_NS '
-X-IMT-Authenticated-Sender: 
+	Tue, 11 Aug 2009 15:21:21 -0400
+From: Luciano Coelho <luciano.coelho@nokia.com>
+To: linux-wireless@vger.kernel.org
+Cc: linville@tuxdriver.com, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sfr@canb.auug.org.au
+Subject: [PATCH v2] wl1271: fix compiler warnings on 64 bit archs
+Date: Tue, 11 Aug 2009 22:20:25 +0300
+Message-Id: <1250018425-32610-1-git-send-email-luciano.coelho@nokia.com>
+X-Mailer: git-send-email 1.6.0.4
+X-OriginalArrivalTime: 11 Aug 2009 19:20:28.0531 (UTC) FILETIME=[C9326C30:01CA1AB8]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Linux Kernel developer,
+There were a few warnings when compiling the wl1271 driver on 64 bit
+architectures.  This was due to size mismatch of integers.
 
-within the scope of my diploma thesis at the University of Paderborn, Germany, with the title "Study about communication and collaboration in software development in teams" I am conducting a survey of members of software development teams.
+This commit fixes the following warnings:
 
-I would be very grateful if you help me in my studies and answer the survey at http://thales.cs.upb.de/limesurvey185/index.php?lang=en&sid=91192&token=kmjn7y95s29mdwk
+drivers/net/wireless/wl12xx/wl1271_main.c: In function 'wl1271_irq_work':
+drivers/net/wireless/wl12xx/wl1271_main.c:184: warning: large integer implicitly truncated to unsigned type
+drivers/net/wireless/wl12xx/wl1271_boot.c: In function 'wl1271_boot_upload_firmware_chunk':
+drivers/net/wireless/wl12xx/wl1271_boot.c:103: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+drivers/net/wireless/wl12xx/wl1271_boot.c:150: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+drivers/net/wireless/wl12xx/wl1271_boot.c: In function 'wl1271_boot_enable_interrupts':
+drivers/net/wireless/wl12xx/wl1271_boot.c:278: warning: large integer implicitly truncated to unsigned type
 
-This is the official description of the survey:
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Luciano Coelho <luciano.coelho@nokia.com>
+---
+ drivers/net/wireless/wl12xx/wl1271_boot.c |    9 +++++----
+ drivers/net/wireless/wl12xx/wl1271_main.c |    3 ++-
+ 2 files changed, 7 insertions(+), 5 deletions(-)
 
-In the last years many means of communication and collaboration were introduced in software projects to assist the development teams with their daily work.
-
-With this study we want to identify requirements for a communication- and collaboration-supporting platform for software development. For this purpose we will evaluate the utilization and effectiveness of different means of communication and collaboration in solving software and managerial problems in software development teams.
-
-The survey will take about 10-15 minutes and contains 55 questions that cover various topics.
-
-Many thanks for your support of my research. If there are any further questions, don't hesitate to contact me.
+diff --git a/drivers/net/wireless/wl12xx/wl1271_boot.c b/drivers/net/wireless/wl12xx/wl1271_boot.c
+index 4c22f25..8228ef4 100644
+--- a/drivers/net/wireless/wl12xx/wl1271_boot.c
++++ b/drivers/net/wireless/wl12xx/wl1271_boot.c
+@@ -100,8 +100,8 @@ static int wl1271_boot_upload_firmware_chunk(struct wl1271 *wl, void *buf,
  
-Best regards from Paderborn, Germany
-
-Martin Gelhaus (gelhaus@upb.de)
-
-----------------------------------------------
-Click here to do the survey:
-http://thales.cs.upb.de/limesurvey185/index.php?lang=en&sid=91192&token=kmjn7y95s29mdwk
-
-----
-Martin Gelhaus
-
-Graduand at Didactics of Informatics chair at University of Paderborn
-Fürstenallee 11
-Room F2.416
-D-33102 Paderborn			
-
+ 	wl1271_debug(DEBUG_BOOT, "starting firmware upload");
+ 
+-	wl1271_debug(DEBUG_BOOT, "fw_data_len %d chunk_size %d", fw_data_len,
+-		CHUNK_SIZE);
++	wl1271_debug(DEBUG_BOOT, "fw_data_len %zd chunk_size %d",
++		     fw_data_len, CHUNK_SIZE);
+ 
+ 
+ 	if ((fw_data_len % 4) != 0) {
+@@ -147,7 +147,7 @@ static int wl1271_boot_upload_firmware_chunk(struct wl1271 *wl, void *buf,
+ 	/* 10.4 upload the last chunk */
+ 	addr = dest + chunk_num * CHUNK_SIZE;
+ 	p = buf + chunk_num * CHUNK_SIZE;
+-	wl1271_debug(DEBUG_BOOT, "uploading fw last chunk (%d B) 0x%p to 0x%x",
++	wl1271_debug(DEBUG_BOOT, "uploading fw last chunk (%zd B) 0x%p to 0x%x",
+ 		     fw_data_len % CHUNK_SIZE, p, addr);
+ 	wl1271_spi_mem_write(wl, addr, p, fw_data_len % CHUNK_SIZE);
+ 
+@@ -275,7 +275,8 @@ static int wl1271_boot_upload_nvs(struct wl1271 *wl)
+ static void wl1271_boot_enable_interrupts(struct wl1271 *wl)
+ {
+ 	enable_irq(wl->irq);
+-	wl1271_reg_write32(wl, ACX_REG_INTERRUPT_MASK, ~(WL1271_INTR_MASK));
++	wl1271_reg_write32(wl, ACX_REG_INTERRUPT_MASK,
++			   WL1271_ACX_INTR_ALL & ~(WL1271_INTR_MASK));
+ 	wl1271_reg_write32(wl, HI_CFG, HI_CFG_DEF_VAL);
+ }
+ 
+diff --git a/drivers/net/wireless/wl12xx/wl1271_main.c b/drivers/net/wireless/wl12xx/wl1271_main.c
+index 3bb45ce..4102d59 100644
+--- a/drivers/net/wireless/wl12xx/wl1271_main.c
++++ b/drivers/net/wireless/wl12xx/wl1271_main.c
+@@ -181,7 +181,8 @@ static void wl1271_irq_work(struct work_struct *work)
+ 	} while (intr && --ctr);
+ 
+ out_sleep:
+-	wl1271_reg_write32(wl, ACX_REG_INTERRUPT_MASK, ~(WL1271_INTR_MASK));
++	wl1271_reg_write32(wl, ACX_REG_INTERRUPT_MASK,
++			   WL1271_ACX_INTR_ALL & ~(WL1271_INTR_MASK));
+ 	wl1271_ps_elp_sleep(wl);
+ 
+ out:
+-- 
+1.6.0.4
 
