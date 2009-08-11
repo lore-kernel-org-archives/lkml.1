@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbZHKSlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbZHKSll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754554AbZHKSlT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 14:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZHKSlT
+	id S1755425AbZHKSll (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 14:41:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbZHKSlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 14:41:19 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:48533 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751705AbZHKSlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 14:41:18 -0400
-Date: Tue, 11 Aug 2009 20:41:19 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Eric.Moore@lsi.com, jeff@garzik.org
-Subject: Re: [PATCH 0/3]: blk-iopoll, a polled completion API for block
-	devices
-Message-ID: <20090811184118.GW12579@kernel.dk>
-References: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com> <e2e108260908110335tc500412mc6354359d85ae9b6@mail.gmail.com> <20090811143919.GU12579@kernel.dk> <e2e108260908110759w4fbbb5dejf852ba272fa29d75@mail.gmail.com> <20090811171427.GV12579@kernel.dk> <e2e108260908111137k1e0d3418qeaa4cd9775bd0f38@mail.gmail.com>
+	Tue, 11 Aug 2009 14:41:40 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:44459 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755043AbZHKSlj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 14:41:39 -0400
+Message-ID: <4A81BB47.2020607@nokia.com>
+Date: Tue, 11 Aug 2009 21:41:11 +0300
+From: Luciano Coelho <luciano.coelho@nokia.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e2e108260908111137k1e0d3418qeaa4cd9775bd0f38@mail.gmail.com>
+To: ext Stephen Rothwell <sfr@canb.auug.org.au>
+CC: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linville@tuxdriver.com" <linville@tuxdriver.com>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] wl1271: fix compiler warnings on 64 bit archs
+References: <1249981107-21746-1-git-send-email-luciano.coelho@nokia.com> <20090811200746.cde6aed9.sfr@canb.auug.org.au>
+In-Reply-To: <20090811200746.cde6aed9.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Aug 2009 18:41:14.0465 (UTC) FILETIME=[4E107510:01CA1AB3]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11 2009, Bart Van Assche wrote:
-> On Tue, Aug 11, 2009 at 7:14 PM, Jens Axboe<jens.axboe@oracle.com> wrote:
-> > On Tue, Aug 11 2009, Bart Van Assche wrote:
-> >> On Tue, Aug 11, 2009 at 4:39 PM, Jens Axboe<jens.axboe@oracle.com> wrote:
-> >> > On Tue, Aug 11 2009, Bart Van Assche wrote:
-> >> >> On Thu, Aug 6, 2009 at 9:58 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> >> >> > Anyway, YMMV, I would appreciate some test results (and as usual, that
-> >> >> > even includes just saying that it boots and functions for you). If
-> >> >> > people feel adventurous, patches for other controllers will be happily
-> >> >> > queued up for testing. I may even be convinced to implement support
-> >> >> > for your controller of choice, if you have some fast storage hooked up
-> >> >> > and would like to experiment. Generally, adding support to a driver is
-> >> >> > not very hard and the two conversions included were also meant to serve
-> >> >> > as an inspiration.
-> >> >>
-> >> >> Sounds very interesting. Have you already considered patching the SRP
-> >> >> initiator ? During the SRP performance tests I ran CPU usage on the
-> >> >> initiator was more than 95% and on the target less than 10%.
-> >> >
-> >> > No I haven't, if you point me at which srp files, I can take a look.
-> >>
-> >> The relevant source files are:
-> >> include/scsi/srp.h
-> >> include/scsi/scsi_transport_srp.h
-> >> drivers/infiniband/ulp/srp/ib_srp.h
-> >> drivers/infiniband/ulp/srp/ib_srp.c
-> >> drivers/scsi/scsi_transport_srp.c
-> >> drivers/scsi/libsrp.c
-> >> drivers/scsi/scsi_transport_srp_internal.h
-> >
-> > I can find | grep too :-)
-> 
-> The command "find | grep srp" would have returned a few more source
-> files. The most relevant starting point is the source file
-> drivers/infiniband/ulp/srp/ib_srp.c, which contains the struct
-> scsi_host_template.
-> 
-> > Did you profile this? Where did it burn all the CPU time on the
-> > initiator side?
-> 
-> The test I ran involved a Linux SRP initiator and a Linux SRP target
-> (SCST) using a RAM disk as backstorage. Read throughput is about 1700
-> MB/s for block sizes of 8 MB and above. But with a block size of 4 KB,
-> the read throughput on the initiator drops to 100 MB/s. At this block
-> size there are about 50.000 interrupts per second generated by the
-> InfiniBand HCA in the initiator system. On the same setup the
-> ib_send_bw tool reports a throughput of 1850 MB/s for a block size of
-> 4 KB. This last tool is not interrupt driven but uses polling.
+ext Stephen Rothwell wrote:
+> Hi Luciano,
+>
+> On Tue, 11 Aug 2009 11:58:27 +0300 Luciano Coelho <luciano.coelho@nokia.com> wrote:
+>   
+>> +++ b/drivers/net/wireless/wl12xx/wl1271_boot.c
+>> @@ -100,8 +100,8 @@ static int wl1271_boot_upload_firmware_chunk(struct wl1271 *wl, void *buf,
+>>  
+>>  	wl1271_debug(DEBUG_BOOT, "starting firmware upload");
+>>  
+>> -	wl1271_debug(DEBUG_BOOT, "fw_data_len %d chunk_size %d", fw_data_len,
+>> -		CHUNK_SIZE);
+>> +	wl1271_debug(DEBUG_BOOT, "fw_data_len %d chunk_size %d",
+>> +		     (u32) fw_data_len, CHUNK_SIZE);
+>>     
+>
+> fw_data_len is a size_t and so should be printed with %zd.
+>
+>   
+>> @@ -148,7 +148,7 @@ static int wl1271_boot_upload_firmware_chunk(struct wl1271 *wl, void *buf,
+>>  	addr = dest + chunk_num * CHUNK_SIZE;
+>>  	p = buf + chunk_num * CHUNK_SIZE;
+>>  	wl1271_debug(DEBUG_BOOT, "uploading fw last chunk (%d B) 0x%p to 0x%x",
+>> -		     fw_data_len % CHUNK_SIZE, p, addr);
+>> +		     (u32) fw_data_len % CHUNK_SIZE, p, addr);
+>>     
+>
+> ditto.
+>   
 
-OK, so that looks promising at least. Which hw driver does it use? If I
-look under infiniband/, I see nes, amso, ehca, various ipath and mthca.
-That's where it needs to be hooked up, the srp above mostly looks like
-library helpers and the target hook to the scsi layer.
+Thanks! I didn't know about the z length modifier for printf (everyday 
+learning something new!), I should have checked the manpage.  I'll fix 
+this and send v2 of my patch.
 
 -- 
-Jens Axboe
+Cheers,
+Luca.
 
