@@ -1,133 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbZHKQTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbZHKQWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754223AbZHKQTQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 12:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbZHKQTQ
+	id S1753895AbZHKQWF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 12:22:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZHKQWE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 12:19:16 -0400
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:28298
-	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751543AbZHKQTP convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 12:19:15 -0400
-X-SpamScore: -15
-X-BigFish: VPS-15(zz1432R1521Mzz1202hzzz2dh6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Tue, 11 Aug 2009 12:22:04 -0400
+Received: from mail-pz0-f196.google.com ([209.85.222.196]:34169 "EHLO
+	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752906AbZHKQWD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 12:22:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=ii8k+PUKlWGbGhtldkIPmAn/H1NuYy4WX6ojnmIUeQJgB/f5Y2fEEWOKA2eGFpNgYC
+         WhPWJA+BB63kR4cUIREf4JlWzWlWGPWRtfKaf25IMHlGULlUSSt3OKH1URzy3lQ5Y6Ae
+         ODb+rtKx3HQFnPCbdyJPIIRdGpBCjXKeA+Zyo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [microblaze-uclinux] Rethinking MicroBlaze commandline precedence
-Date: Tue, 11 Aug 2009 09:18:54 -0700
-In-Reply-To: <4A81185A.6090206@petalogix.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [microblaze-uclinux] Rethinking MicroBlaze commandline precedence
-Thread-Index: AcoaU0WuasVsctMfQMSccp8i3TMOagASzzSQ
-References: <1d3f23370908092328l6e980f3ft2d5a8f8f37c26fcf@mail.gmail.com>	 <4A7FCC42.40809@petalogix.com> <1d3f23370908100156q46b9869av5ecdcc8879617be9@mail.gmail.com> <4A7FE78F.4040504@petalogix.com> <20090810164242.05DE8CC8055@mail83-dub.bigfish.com> <4A81185A.6090206@petalogix.com>
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: <microblaze-uclinux@itee.uq.edu.au>
-CC: "John Linn" <linnj@xilinx.com>, "David DeBonis" <ddeboni@xilinx.com>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 11 Aug 2009 16:19:10.0374 (UTC) FILETIME=[754F6460:01CA1A9F]
-Message-ID: <20090811161911.31858AF0053@mail161-va3.bigfish.com>
+In-Reply-To: <3877989d0908101956o303c43c5i5c5f08297afb312@mail.gmail.com>
+References: <3877989d0908101956o303c43c5i5c5f08297afb312@mail.gmail.com>
+Date: Tue, 11 Aug 2009 11:02:03 +0800
+Message-ID: <3877989d0908102002i232b4853h66a9f1950bd9e292@mail.gmail.com>
+Subject: Re: [RFC patch] Add boot option intel_iommu_drhd_mask
+From: Luming Yu <luming.yu@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Content-Type: multipart/mixed; boundary=000e0cd241fc4e23be0470d4ed94
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >>>>> So, how about this order instead:
-> >>>>>
-> >>>>> 1. CONFIG_CMDLINE=...
-> >>>>> 2. "chosen" section in DTS/DT
-> >>>>> 3. pointer in r5 from bootloader
-> >>>>> 4. CONFIG_CMDLINE=... and CONFIG_CMDLINE_FORCE
-> >>>>>
-> >>>>> Then, apart from CMDLINE_FORCE, the precedence goes from
-earliest
-> >>>>> binding (kernel build) to latest (runtime via bootloader/r5).
-> >
-> > This makes reasonable sense to me, although I wonder if the order is
-> > correct?  For instance, in many cases a flow may be to fix the
-hardware
-> > DTS and then iteratively compile the kernel?  Are all of these
-> > points/fallback priorities necessary?  Personally, it seems like I
-want
-> > one 'compiled-in' source, and then the option to override at boot
-time.
-> > Could it be simplified by getting rid CONFIG_CMDLINE alltogether and
-> > just using the DTS, now that this we always have a device tree?
-> 
-> From my point of view that CONFIG_CMDLINE_FORCE make perfectly sense
-to be sure
-> that no one else change my command line.
+--000e0cd241fc4e23be0470d4ed94
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-If there weren't so many options, maybe there wouldn't be so many places
-to get it wrong?
+> **The patch is enclosed in text attachment*
+> **Using web client to send the patch* *
+> **below is for review, please apply attached =C2=A0patch*/
 
-> >>>> I understand that you are trying to pass to kernel for example
-MTD
-> > map which could be possible but
-> >>>> IMHO better to do this in script which one with sed
-> > erase/comment/setup command line in DTS before
-> >>>> compilation.
-> >>> It's still a very early binding, and I think there are plenty of
-> >>> reasons to want to override it at boot time.  If there weren't,
-why
-> > do
-> >>> u-boot and PPC simpleBoot add the capability to tweak at boot
-time,
-> >>> the cmdline passed via the DTB?
-> >> I understand that make sense to change it - especially for
-> > development.
-> >> It should be possible to do it in u-boot. Not sure if is work to
-> > extend command line but maybe yes.
-> >> Worth to ask on u-boot mailing list.
-> >
-> > One way around this is to do what powerpc has: a simple bootloader
-with
-> > the capability to edit the cmdline on the terminal before boot.
-Then
-> > the question of 'does someone have a bootloader' is moot... they can
-> > always fall back on that one.  This would also make microblaze arch
-more
-> > in the spirit of EPapr, which exactly tries to standardize all of
-these
-> > mechanisms.
-> 
-> NO. I understand that you like PowerPC and in many cases is PowerPC
-good
-> example but create next simple bootloader just for changing command
-line.
-> For final products is definitely useless. For developing we recommend
-you to use
-> U-BOOT.
-> IIRC on ppc you have to wait some sec to continue - this extend
-booting time.
-> I believe that we want to fast boot as is possible.
+forgot to attach it.
+Here it is.
 
-I'm not suggesting that this is what should always be done.  Generally
-speaking,
-I prefer u-boot as well, however, if the problem is
-that a user may not have a bootloader, then it is a reasonable
-assumption you could make.
-IMO, microblaze tries to do alot of initialization in the kernel proper,
-which may or may
-not be a good idea.  PowerPC avoids some of these issues by simply
-assuming there is always
-*some* sort of bootloader.
+--000e0cd241fc4e23be0470d4ed94
+Content-Type: application/octet-stream; name=1
+Content-Disposition: attachment; filename=1
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fy81w8zu0
 
-> Do you have any link to that standard?
-
-I think it is publicly accessibly at power.org.  Generally the goal is
-to attempt to standardize on the mechanism of passing parameters like
-the command line to the kernel.  Nothing is explicitly disallowed, but
-the preferred way to pass information of any type is in a structured
-device tree.
-
-Steve
-
-This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
-
-
+ZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24va2VybmVsLXBhcmFtZXRlcnMudHh0IGIvRG9jdW1l
+bnRhdGlvbi9rZXJuZWwtcGFyYW1ldGVycy50eHQKaW5kZXggZGQxYTZkNC4uZDllYjQyMiAxMDA2
+NDQKLS0tIGEvRG9jdW1lbnRhdGlvbi9rZXJuZWwtcGFyYW1ldGVycy50eHQKKysrIGIvRG9jdW1l
+bnRhdGlvbi9rZXJuZWwtcGFyYW1ldGVycy50eHQKQEAgLTk4MSw2ICs5ODEsOSBAQCBhbmQgaXMg
+YmV0d2VlbiAyNTYgYW5kIDQwOTYgY2hhcmFjdGVycy4gSXQgaXMgZGVmaW5lZCBpbiB0aGUgZmls
+ZQogCQkJcmVzdWx0IGluIGEgaGFyZHdhcmUgSU9UTEIgZmx1c2ggb3BlcmF0aW9uIGFzIG9wcG9z
+ZWQKIAkJCXRvIGJhdGNoaW5nIHRoZW0gZm9yIHBlcmZvcm1hbmNlLgogCisJaW50ZWxfaW9tbXVf
+ZHJoZF9tYXNrPTB4QUFBQUFBQUEKKwkJCVNldCBhIGJpdCBtYXNrIG9mIERNQVIgaGFyZHdhcmUg
+dW5pdCB0byBiZSBpZ25vcmVkCisKIAlpbnR0ZXN0PQlbSUE2NF0KIAogCWlvbWVtPQkJRGlzYWJs
+ZSBzdHJpY3QgY2hlY2tpbmcgb2YgYWNjZXNzIHRvIE1NSU8gbWVtb3J5CmRpZmYgLS1naXQgYS9k
+cml2ZXJzL3BjaS9kbWFyLmMgYi9kcml2ZXJzL3BjaS9kbWFyLmMKaW5kZXggN2IyODdjYi4uMjhm
+M2Y2YiAxMDA2NDQKLS0tIGEvZHJpdmVycy9wY2kvZG1hci5jCisrKyBiL2RyaXZlcnMvcGNpL2Rt
+YXIuYwpAQCAtMTY3LDcgKzE2Nyw3IEBAIHN0YXRpYyBpbnQgX19pbml0IGRtYXJfcGFyc2VfZGV2
+X3Njb3BlKHZvaWQgKnN0YXJ0LCB2b2lkICplbmQsIGludCAqY250LAogICogcHJlc2VudCBpbiB0
+aGUgcGxhdGZvcm0KICAqLwogc3RhdGljIGludCBfX2luaXQKLWRtYXJfcGFyc2Vfb25lX2RyaGQo
+c3RydWN0IGFjcGlfZG1hcl9oZWFkZXIgKmhlYWRlcikKK2RtYXJfcGFyc2Vfb25lX2RyaGQoc3Ry
+dWN0IGFjcGlfZG1hcl9oZWFkZXIgKmhlYWRlciwgaW50IGRyaGRfY291bnQpCiB7CiAJc3RydWN0
+IGFjcGlfZG1hcl9oYXJkd2FyZV91bml0ICpkcmhkOwogCXN0cnVjdCBkbWFyX2RyaGRfdW5pdCAq
+ZG1hcnU7CkBAIC0xOTcsNiArMTk3LDggQEAgZG1hcl9wYXJzZV9vbmVfZHJoZChzdHJ1Y3QgYWNw
+aV9kbWFyX2hlYWRlciAqaGVhZGVyKQogCQlrZnJlZShkbWFydSk7CiAJCXJldHVybiByZXQ7CiAJ
+fQorCWlmIChpbnRlbF9pb21tdV9kcmhkX21hc2sgJiAoMHgxIDw8IGRyaGRfY291bnQpKQorCQlk
+bWFydS0+aWdub3JlZCA9IDE7CiAJZG1hcl9yZWdpc3Rlcl9kcmhkX3VuaXQoZG1hcnUpOwogCXJl
+dHVybiAwOwogfQpAQCAtNDA1LDYgKzQwNyw3IEBAIHBhcnNlX2RtYXJfdGFibGUodm9pZCkKIHsK
+IAlzdHJ1Y3QgYWNwaV90YWJsZV9kbWFyICpkbWFyOwogCXN0cnVjdCBhY3BpX2RtYXJfaGVhZGVy
+ICplbnRyeV9oZWFkZXI7CisJaW50IGRyaGRfY291bnQgPSAwOwogCWludCByZXQgPSAwOwogCiAJ
+LyoKQEAgLTQ0MCw3ICs0NDMsNyBAQCBwYXJzZV9kbWFyX3RhYmxlKHZvaWQpCiAKIAkJc3dpdGNo
+IChlbnRyeV9oZWFkZXItPnR5cGUpIHsKIAkJY2FzZSBBQ1BJX0RNQVJfVFlQRV9IQVJEV0FSRV9V
+TklUOgotCQkJcmV0ID0gZG1hcl9wYXJzZV9vbmVfZHJoZChlbnRyeV9oZWFkZXIpOworCQkJcmV0
+ID0gZG1hcl9wYXJzZV9vbmVfZHJoZChlbnRyeV9oZWFkZXIsIGRyaGRfY291bnQpOwogCQkJYnJl
+YWs7CiAJCWNhc2UgQUNQSV9ETUFSX1RZUEVfUkVTRVJWRURfTUVNT1JZOgogI2lmZGVmIENPTkZJ
+R19ETUFSCmRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9pbnRlbC1pb21tdS5jIGIvZHJpdmVycy9w
+Y2kvaW50ZWwtaW9tbXUuYwppbmRleCAyMzE0YWQ3Li4wM2FmZDkyIDEwMDY0NAotLS0gYS9kcml2
+ZXJzL3BjaS9pbnRlbC1pb21tdS5jCisrKyBiL2RyaXZlcnMvcGNpL2ludGVsLWlvbW11LmMKQEAg
+LTMzNyw2ICszMzcsNyBAQCBzdGF0aWMgREVGSU5FX1NQSU5MT0NLKGRldmljZV9kb21haW5fbG9j
+ayk7CiBzdGF0aWMgTElTVF9IRUFEKGRldmljZV9kb21haW5fbGlzdCk7CiAKIHN0YXRpYyBzdHJ1
+Y3QgaW9tbXVfb3BzIGludGVsX2lvbW11X29wczsKK3Vuc2lnbmVkIGludCBpbnRlbF9pb21tdV9k
+cmhkX21hc2s7CiAKIHN0YXRpYyBpbnQgX19pbml0IGludGVsX2lvbW11X3NldHVwKGNoYXIgKnN0
+cikKIHsKQEAgLTM3MSw2ICszNzIsMTUgQEAgc3RhdGljIGludCBfX2luaXQgaW50ZWxfaW9tbXVf
+c2V0dXAoY2hhciAqc3RyKQogfQogX19zZXR1cCgiaW50ZWxfaW9tbXU9IiwgaW50ZWxfaW9tbXVf
+c2V0dXApOwogCitzdGF0aWMgaW50IF9faW5pdCBpbnRlbF9pb21tdV9kcmhkX21hc2tfc2V0dXAo
+Y2hhciAqc3RyKQoreworCWlmICghc3RyKQorCQlyZXR1cm4gLUVJTlZBTDsKKwlpbnRlbF9pb21t
+dV9kcmhkX21hc2sgPSBzaW1wbGVfc3RydG91bChzdHIsIE5VTEwsIDApOworCXJldHVybiAwOwor
+fQorX19zZXR1cCgiaW50ZWxfaW9tbXVfZHJoZF9tYXNrPSIsIGludGVsX2lvbW11X2RyaGRfbWFz
+a19zZXR1cCk7CisKIHN0YXRpYyBzdHJ1Y3Qga21lbV9jYWNoZSAqaW9tbXVfZG9tYWluX2NhY2hl
+Owogc3RhdGljIHN0cnVjdCBrbWVtX2NhY2hlICppb21tdV9kZXZpbmZvX2NhY2hlOwogc3RhdGlj
+IHN0cnVjdCBrbWVtX2NhY2hlICppb21tdV9pb3ZhX2NhY2hlOwpkaWZmIC0tZ2l0IGEvaW5jbHVk
+ZS9saW51eC9pbnRlbC1pb21tdS5oIGIvaW5jbHVkZS9saW51eC9pbnRlbC1pb21tdS5oCmluZGV4
+IDQ4MmRjOTEuLjExM2M4ZTkgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvaW50ZWwtaW9tbXUu
+aAorKysgYi9pbmNsdWRlL2xpbnV4L2ludGVsLWlvbW11LmgKQEAgLTM1OSw1ICszNTksNiBAQCBl
+eHRlcm4gdm9pZCBxaV9mbHVzaF9kZXZfaW90bGIoc3RydWN0IGludGVsX2lvbW11ICppb21tdSwg
+dTE2IHNpZCwgdTE2IHFkZXAsCiAJCQkgICAgICAgdTY0IGFkZHIsIHVuc2lnbmVkIG1hc2spOwog
+CiBleHRlcm4gaW50IHFpX3N1Ym1pdF9zeW5jKHN0cnVjdCBxaV9kZXNjICpkZXNjLCBzdHJ1Y3Qg
+aW50ZWxfaW9tbXUgKmlvbW11KTsKK2V4dGVybiB1bnNpZ25lZCBpbnQgaW50ZWxfaW9tbXVfZHJo
+ZF9tYXNrOwogCiAjZW5kaWYK
+--000e0cd241fc4e23be0470d4ed94--
