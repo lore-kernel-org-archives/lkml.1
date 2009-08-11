@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbZHKXds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755700AbZHKXez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755719AbZHKXds (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 19:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbZHKXdr
+	id S1755700AbZHKXez (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 19:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607AbZHKXez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 19:33:47 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56328 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755693AbZHKXdp (ORCPT
+	Tue, 11 Aug 2009 19:34:55 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4820 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754309AbZHKXey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 19:33:45 -0400
-Date: Wed, 12 Aug 2009 08:31:03 +0900 (JST)
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 3/6] tracing, page-allocator: Add trace event for page traffic related to the buddy lists
-Cc: kosaki.motohiro@jp.fujitsu.com, Larry Woodman <lwoodman@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       riel@redhat.com, Peter Zijlstra <peterz@infradead.org>,
-       Li Ming Chun <macli@brc.ubc.ca>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-In-Reply-To: <1249918915-16061-4-git-send-email-mel@csn.ul.ie>
-References: <1249918915-16061-1-git-send-email-mel@csn.ul.ie> <1249918915-16061-4-git-send-email-mel@csn.ul.ie>
-Message-Id: <20090811164030.9AE2.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 11 Aug 2009 19:34:54 -0400
+Subject: Re: [PATCH] scripts: add typdef removal tool
+From: Joe Perches <joe@perches.com>
+To: "Luis R. Rodriguez" <lrodriguez@Atheros.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org
+In-Reply-To: <1250031061-16327-1-git-send-email-lrodriguez@atheros.com>
+References: <1250031061-16327-1-git-send-email-lrodriguez@atheros.com>
+Content-Type: text/plain
+Date: Tue, 11 Aug 2009 16:34:15 -0700
+Message-Id: <1250033655.8895.631.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The page allocation trace event reports that a page was successfully allocated
-> but it does not specify where it came from. When analysing performance,
-> it can be important to distinguish between pages coming from the per-cpu
-> allocator and pages coming from the buddy lists as the latter requires the
-> zone lock to the taken and more data structures to be examined.
-> 
-> This patch adds a trace event for __rmqueue reporting when a page is being
-> allocated from the buddy lists. It distinguishes between being called
-> to refill the per-cpu lists or whether it is a high-order allocation.
-> Similarly, this patch adds an event to catch when the PCP lists are being
-> drained a little and pages are going back to the buddy lists.
-> 
-> This is trickier to draw conclusions from but high activity on those
-> events could explain why there were a large number of cache misses on a
-> page-allocator-intensive workload. The coalescing and splitting of buddies
-> involves a lot of writing of page metadata and cache line bounces not to
-> mention the acquisition of an interrupt-safe lock necessary to enter this
-> path.
+On Tue, 2009-08-11 at 15:51 -0700, Luis R. Rodriguez wrote:
+> If you are porting drivers and need to remove tydpefs you can use
+> this to help you port the driver quicker.
 
-Looks good to me.
-	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> +	# This replaces the typdef declaration for a simple struct declaration - style 1
+> +	perl -i -e "local $/; while(<>) { s/\btypedef\s+struct\s+_$from\s*\{([\d\D]+?)\}\s*struct\s+$to\b[^;]*;/struct $to \{\1\};/g; print; }" $1
+> +
+> +	# This replaces the typdef declaration for a simple struct declaration - style 2
+> +	perl -i -e "local $/; while(<>) { s/\btypedef\s+struct\s+$to\s*\{([\d\D]+?)\}\s*$from\b[^;]*;/struct $to \{\1\};/g; print; }" $1
+> +
+> +	# This replaces the typdef usages with simple structs
+> +	sed -r -i -e "s/\b$from\b/struct $to/g" $1
+> +	sed -r -i -e "s/\bP$from\b/struct $to \*/g" $1
+> +	sed -r -i -e "s/struct $to\s*\*\s*\b/struct $to \*/g" $1
+> +	sed -r -i -e "s/\(struct $to\s*\*\)\s*/\(struct $to \*\)/g" $1
 
+Hi Luis.
 
+A couple of comments:
+
+In the comments "typdef" should be "typedef".
+
+I believe the sed statements need to be run before the perl statements.
+
+Another common microsoft form is
+
+	typedef struct tagFOO {
+		members
+	} FOO [, *PFOO [, **PPFOO ];
+
+So maybe perl statement 1 could be:
+
+s/\btypedef\s+struct\s+$to\s*(_{0,1}|tag)$from etc
+
+and another sed statement might be:
+
+sed -r -i -e "s/\(struct $to\s*\*\s*\*\s*\)\s*/\(struct $to \*\*\)/g" $1
+
+Maybe you could test this against next:drivers/staging/hv/ to see
+how well this works.
+
+cheers, Joe
 
