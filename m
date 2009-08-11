@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752073AbZHKLzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751537AbZHKL4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752073AbZHKLzT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 07:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbZHKLzR
+	id S1751537AbZHKL4S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 07:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZHKL4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 07:55:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34410 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751886AbZHKLzP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 07:55:15 -0400
-Date: Mon, 10 Aug 2009 21:03:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: linux-kernel@vger.kernel.org, Nils Carlson <nils.carlson@ericsson.com>,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] hpet: hpet driver periodic timer setup bug fixes
-Message-Id: <20090810210312.eb3bb57f.akpm@linux-foundation.org>
-In-Reply-To: <20090810220503.GA29239@linux-os.sc.intel.com>
-References: <20090810220503.GA29239@linux-os.sc.intel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Aug 2009 07:56:16 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42899 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751063AbZHKLye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 07:54:34 -0400
+Date: Tue, 11 Aug 2009 11:33:16 +0200
+From: Jan Kara <jack@suse.cz>
+To: Al Boldi <a1426z@gawab.com>
+Cc: "Theodore Ts'o" <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH, RFC] ext3: Update Kconfig description of
+	EXT3_DEFAULTS_TO_ORDERED
+Message-ID: <20090811093316.GA23898@duck.suse.cz>
+References: <1249934623-15939-1-git-send-email-tytso@mit.edu> <200908110649.20277.a1426z@gawab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908110649.20277.a1426z@gawab.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Aug 2009 15:05:04 -0700 "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
+On Tue 11-08-09 06:49:20, Al Boldi wrote:
+> Theodore Ts'o wrote:
+> > +	  "data=ordered" mode can also result in major performance
+> > +	  problems, including seconds-long delays before an fsync()
+> > +	  call returns.	 For details, see:
+> > +
+> > +	  http://ext4.wiki.kernel.org/index.php/Ext3_data_mode_tradeoffs
+> 
+> Why isn't the fsync problem fixable?
+  Because it's quite deep in the design of JBD: All the modifications done
+to a filesystem go to one transactions. When the transaction grows big
+enough or old enough, we commit the transaction, which means we write all
+the metadata to the journal and all the ordered data to their final
+location on disk. If you do fsync(), you have to wait for a transaction
+commit with your data to finish, so that you are guaranteed a consistent
+state of metadata is on disk. But when there is heavy background writing,
+it means there's a lot of data you have to write out and wait for... It's
+not easy to work around this - naively, you might want to separate out just
+the writes you care about for fsync() but that's not easily possible
+because bitmaps and group descriptors are modified by other writes as well.
 
-> From: Nils Carlson <nils.carlson@ericsson.com>
-> 
-> The periodic interrupt from drivers/char/hpet.c does not work correctly,
-> both when using the periodic capability of the hardware and while
-> emulating the periodic interrupt (when hardware does not support
-> periodic mode).
-> 
-> With timers capable of periodic interrupts, the comparator field is first
-> set with the period value followed by set of hidden accumulator,
-> which has the side effect of overwriting the comparator value. This
-> results in wrong periodicity for the interrupts. For,
-> periodic interrupts to work, following steps are necessary, in that order.
-> * Set config with Tn_VAL_SET_CNF bit
-> * Write to hidden accumulator, the value written is the time when the
->   first interrupt should be generated
-> * Write compartor with period interval for subsequent interrupts
-> (http://www.intel.com/hardwaredesign/hpetspec_1.pdf )
-> 
-> When emulating periodic timer with timers not capable of periodic
-> interrupt, driver is adding the period to counter value instead of
-> comparator value, which causes slow drift when using this emulation.
-> 
-> Also, driver seems to add hpetp->hp_delta both while setting up
-> periodic interrupt and while emulating periodic interrupts with timers
-> not capable of doing periodic interrupts. This hp_delta will result in
-> slower than expected interrupt rate and should not be used while setting
-> the interval.
-> 
-
-Do you have any thoughts on which kernel versions this fix should be
-merged into, and when?
-
-Thanks.
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
