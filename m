@@ -1,86 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751677AbZHKLzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751838AbZHKLyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751677AbZHKLzF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 07:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbZHKLzE
+	id S1751838AbZHKLyq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 07:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbZHKLyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 07:55:04 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:42020 "EHLO
-	TX2EHSOBE009.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751927AbZHKLy5 (ORCPT
+	Tue, 11 Aug 2009 07:54:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34410 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751736AbZHKLym (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 07:54:57 -0400
-X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i209h6bh203h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KO6ZD9-04-ZGP-01
-Date: Tue, 11 Aug 2009 11:07:58 +0800
-From: Crane Cai <crane.cai@amd.com>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH v2] I2C: Add support for new AMD SMBus devices
-Message-ID: <20090811030758.GC29858@crane-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 11 Aug 2009 03:07:58.0807 (UTC) FILETIME=[EE0D1E70:01CA1A30]
-To: unlisted-recipients:; (no To-header on input)
+	Tue, 11 Aug 2009 07:54:42 -0400
+Date: Mon, 10 Aug 2009 23:05:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] kfifo reorganization for a generic interface
+Message-Id: <20090810230543.1a8a0dba.akpm@linux-foundation.org>
+In-Reply-To: <1249829760.2085.23.camel@wall-e>
+References: <1249829760.2085.23.camel@wall-e>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-AMD newer SMBus device uses the piix4 driver, and device is added by vendor ID
-and class code. This method will include AMD old SMBus controller in, and need
-to filter it out.
+On Sun, 09 Aug 2009 16:56:00 +0200 Stefani Seibold <stefani@seibold.net> wrote:
 
-Signed-off-by: Crane Cai <crane.cai@amd.com>
----
- drivers/i2c/busses/i2c-piix4.c |   17 +++++++++++++++--
- 1 files changed, 15 insertions(+), 2 deletions(-)
+> as promised: this is the first part of the new generic kfifo interfaces.
+> 
+> The current kernel fifo API is not very widely used, because it has to
+> many constrains. Only 13 files in the current 2.6.31 used it. FIFO's are
+> like list are a very basic thing and a kfifo API which handles the most
+> use case would save a lot of time and memory resources.
+> 
+> This is a series of patches which makes the kfifo API more generic.
+> 
+> This patch does reorganize the current kfifo to be ready for extensions.
+> The following changes are applied:
+> 
+> - move out spinlock of the struct kfifo because most users don't need it
+> - struct kfifo not longer be dynamically allocated. 
+> - replace kfifo_put() by kfifo_put_locked() which need an additional
+>   spinlock parameter.
+> - replace kfifo_get() by kfifo_get_locked() which need an additional 
+>   spinlock parameter.
+> - removed no longer needed __kfifo_len()
+> - removed no longer needed __kfifo_reset()
+> - kfifo_alloc() and kfifo_init() gets an additional parameter fifo, which
+>   is the address of the associated stuct kfifo_fifo.
+> - fix all users of the kfifo API:
 
-diff --git a/drivers/i2c/busses/i2c-piix4.c b/drivers/i2c/busses/i2c-piix4.c
-index 0249a7d..2539282 100644
---- a/drivers/i2c/busses/i2c-piix4.c
-+++ b/drivers/i2c/busses/i2c-piix4.c
-@@ -232,6 +232,14 @@ static int __devinit piix4_setup_sb800(struct pci_dev *PIIX4_dev,
- 	unsigned short smba_idx = 0xcd6;
- 	u8 smba_en_lo, smba_en_hi, i2ccfg, i2ccfg_offset = 0x10, smb_en = 0x2c;
+Seems reasonable.
+
+It would be nice to just get all the locking out of the kfifo code. 
+Make the whole thing unlocked and require that callers provide suitable
+locking.  Because embeddeding the need for a spinlock_t in the code is
+restrictive and unneeded - what if the caller wants to use
+mutex_lock()?
+
+
+Extra marks for working out which API functions need read-only locking
+and add comments which can be used by callers who wish to use
+rwsems/rwlocks, too.
+
+And extra extra marks for working out how callers should use RCU
+locking too ;)
+
+But I think it would be sufficient to assume that callers are holding
+either spin_lock() or mutex_lock() for now.  This would mean that all
+those callsites would need to newly instantiate a lock of some form. 
+Perhaps it would be better to avoid doing all that in the initial
+patch.  So we could do it your way for now.  In which case we'd never
+get around to converting all callers.  Oh well.
+
+
+The patch clashes a bit with a change which someone added to
+linux-next.  I dunno what tree added that change - it seems a bit
+random:
+
+
+commit 01711d972d6ec8096a571b07a92ae48889b9dbd3
+Author:     Alan Cox <alan@linux.intel.com>
+AuthorDate: Mon Aug 10 10:16:25 2009 +1000
+Commit:     Stephen Rothwell <sfr@canb.auug.org.au>
+CommitDate: Mon Aug 10 10:16:25 2009 +1000
+
+    kfifo: Use "const" definitions
+    
+    Currently kfifo cannot be used by parts of the kernel that use "const"
+    properly as kfifo itself does not use const for passed data blocks which
+    are indeed const.
+    
+    Signed-off-by: Alan Cox <alan@linux.intel.com>
+    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+diff --git a/include/linux/kfifo.h b/include/linux/kfifo.h
+index 29f62e1..ad6bdf5 100644
+--- a/include/linux/kfifo.h
++++ b/include/linux/kfifo.h
+@@ -38,7 +38,7 @@ extern struct kfifo *kfifo_alloc(unsigned int size, gfp_t gfp_mask,
+ 				 spinlock_t *lock);
+ extern void kfifo_free(struct kfifo *fifo);
+ extern unsigned int __kfifo_put(struct kfifo *fifo,
+-				unsigned char *buffer, unsigned int len);
++				const unsigned char *buffer, unsigned int len);
+ extern unsigned int __kfifo_get(struct kfifo *fifo,
+ 				unsigned char *buffer, unsigned int len);
  
-+	/* Filter AMD old SMBus controller out */
-+	if (PIIX4_dev->vendor == PCI_VENDOR_ID_AMD &&
-+	    (PIIX4_dev->device <= PCI_DEVICE_ID_AMD_8111_SMBUS &&
-+	     PIIX4_dev->device >= PCI_DEVICE_ID_AMD_VIPER_740B)) {
-+		dev_info(&PIIX4_dev->dev, "Does not support this chip.\n");
-+		return -ENODEV;
-+	}
-+
- 	/* SB800 SMBus does not support forcing address */
- 	if (force || force_addr) {
- 		dev_err(&PIIX4_dev->dev, "SB800 SMBus does not support "
-@@ -479,6 +487,10 @@ static struct pci_device_id piix4_ids[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP300_SMBUS) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP400_SMBUS) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_SBX00_SMBUS) },
-+	/* AMD Generic, PCI class code and Vendor ID for SMBus */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_ANY_ID),
-+	  .class = PCI_CLASS_SERIAL_SMBUS << 8,
-+	  .class_mask = 0xffffff },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_SERVERWORKS,
- 		     PCI_DEVICE_ID_SERVERWORKS_OSB4) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_SERVERWORKS,
-@@ -499,9 +511,10 @@ static int __devinit piix4_probe(struct pci_dev *dev,
+@@ -77,7 +77,7 @@ static inline void kfifo_reset(struct kfifo *fifo)
+  * bytes copied.
+  */
+ static inline unsigned int kfifo_put(struct kfifo *fifo,
+-				     unsigned char *buffer, unsigned int len)
++				const unsigned char *buffer, unsigned int len)
  {
- 	int retval;
+ 	unsigned long flags;
+ 	unsigned int ret;
+diff --git a/kernel/kfifo.c b/kernel/kfifo.c
+index 26539e3..3765ff3 100644
+--- a/kernel/kfifo.c
++++ b/kernel/kfifo.c
+@@ -117,7 +117,7 @@ EXPORT_SYMBOL(kfifo_free);
+  * writer, you don't need extra locking to use these functions.
+  */
+ unsigned int __kfifo_put(struct kfifo *fifo,
+-			 unsigned char *buffer, unsigned int len)
++			const unsigned char *buffer, unsigned int len)
+ {
+ 	unsigned int l;
  
--	if ((dev->vendor == PCI_VENDOR_ID_ATI) &&
-+	if (((dev->vendor == PCI_VENDOR_ID_ATI) &&
- 	    (dev->device == PCI_DEVICE_ID_ATI_SBX00_SMBUS) &&
--	    (dev->revision >= 0x40))
-+	    (dev->revision >= 0x40)) ||
-+	    dev->vendor == PCI_VENDOR_ID_AMD)
- 		/* base address location etc changed in SB800 */
- 		retval = piix4_setup_sb800(dev, id);
- 	else
--- 
-1.6.0.4
 
