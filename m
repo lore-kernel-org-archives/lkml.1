@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbZHKOLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbZHKOO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbZHKOLZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 10:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbZHKOLY
+	id S1754664AbZHKOO7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 10:14:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZHKOO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 10:11:24 -0400
-Received: from waldorf.bytemark.co.uk ([212.110.162.22]:53579 "EHLO
-	waldorf.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754492AbZHKOLX (ORCPT
+	Tue, 11 Aug 2009 10:14:58 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:46267 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751462AbZHKOO5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 10:11:23 -0400
-Date: Tue, 11 Aug 2009 09:04:08 +0200
-From: "Emilio G. Cota" <cota@braap.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Martyn Welch <martyn.welch@gefanuc.com>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [patch 2/5] Staging: vme: add VME userspace driver
-Message-ID: <20090811070408.GA3251@braap.org>
-References: <20090803205657.964064732@mini.kroah.org> <20090803210116.GC28430@kroah.com> <20090808232259.GA29303@braap.org> <20090809121715.GA3884@braap.org> <20090810162826.GA27912@suse.de> <20090810200526.GC3055@braap.org> <20090810210938.GB24623@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090810210938.GB24623@suse.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 11 Aug 2009 10:14:57 -0400
+Date: Tue, 11 Aug 2009 12:56:53 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Gerald Schaefer <gerald.schaefer@de.ibm.com>, manfred@colorfullife.com,
+       Ihno Krumreich <ihno@suse.de>, Greg KH <gregkh@suse.de>
+Subject: Re: [BUG] race of RCU vs NOHU
+Message-ID: <20090811125653.12c35ee8@skybase>
+In-Reply-To: <20090810150807.GA6791@linux.vnet.ibm.com>
+References: <20090807151529.2806b8b4@skybase>
+	<20090807142957.GB6700@linux.vnet.ibm.com>
+	<20090810142535.3e685109@skybase>
+	<20090810150807.GA6791@linux.vnet.ibm.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Mon, Aug 10, 2009 at 10:05:26PM +0200, Emilio G. Cota wrote:
-> > Greg KH wrote:
-> > > On Sun, Aug 09, 2009 at 02:17:16PM +0200, Emilio G. Cota wrote:
-> > > > > Instead of using that we implemented a heretic IOCTL-based
-> > > > > interface for user-space; at least with it you could create a
-> > > > > driver (with no interrupt support) for a device in user-space.
-> > > 
-> > > Why not just use the UIO interface instead of creating
-> > > yet-another-kernel/user-api?
-> > > 
-> > > Will that interface not work for what you want to use here?
+On Mon, 10 Aug 2009 08:08:07 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+
+> On Mon, Aug 10, 2009 at 02:25:35PM +0200, Martin Schwidefsky wrote:
+> > On Fri, 7 Aug 2009 07:29:57 -0700
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 > > 
-> > Certainly. I didn't mean we'd like to see that merged. Currently
-> > we make extensive use of IOCTLs because we are maintaining
-> > kernel and user-space code for two platforms/OSes (ppc-lynx and
-> > x86-linux), and not having access to lynx' source code doesn't
-> > help. So IOCTLs are pretty much everywhere, much to my regret.
+> > > On Fri, Aug 07, 2009 at 03:15:29PM +0200, Martin Schwidefsky wrote:
+> > > > Hi Paul,
+> > > > I analysed a dump of a hanging 2.6.30 system and found what I think is
+> > > > a bug of RCU vs NOHZ. There are a number of patches ontop of that
+> > > > kernel but they should be independent of the bug.
+> > > > 
+> > > > The systems has 4 cpus and uses classic RCU. cpus #0, #2 and #3 woke up
+> > > > recently, cpu #1 has been sleeping for 5 minutes, but there is a pending
+> > > > rcu batch. The timer wheel for cpu #1 is empty, it will continue to
+> > > > sleep for NEXT_TIMER_MAX_DELTA ticks.
+> > > 
+> > > Congratulations, Martin!  You have exercised what to date has been a
+> > > theoretical bug identified last year by Manfred Spraul.  The fix is to
+> > > switch from CONFIG_RCU_CLASSIC to CONFIG_RCU_TREE, which was added in
+> > > 2.6.29.
+> > > 
+> > > Of course, if you need to work with an old kernel version, you might
+> > > still need a patch, perhaps for the various -stable versions.  If so,
+> > > please let me know -- otherwise, I will focus forward on CONFIG_RCU_TREE
+> > > rather than backwards on CONFIG_RCU_CLASSIC.
+> > 
+> > SLES11 is 2.6.27 and uses classic RCU. The not-so theoretical bug is
+> > present there and I think it needs to be fixed :-/
 > 
-> That does not mean we will accept adding new ioctls for the Linux
-> drivers, so I fail to see the point of this :)
+> I was afraid of that.  ;-)
+> 
+> Given that there are some other theoretical bugs in Classic RCU involving
+> interrupts and CONFIG_NO_HZ, would backporting CONFIG_TREE_RCU make more
+> sense than playing whack-a-mole on Classic RCU bugs?
 
-I showed it just to point out that the vmelinux.org interface was
-not very useful--I never said I'd like to see these IOCTLs merged.
+Fine with me but I don't know if SuSE/Novell is willing to accept such a
+big change for an existing distribution. I've put Ihno and Greg on Cc.
 
-I do *not* want to see those IOCTLs anywhere outside of our code,
-and never did. Sorry for the confusion; hope it's clear now.
+-- 
+blue skies,
+   Martin.
 
-E.
+"Reality continues to ruin my life." - Calvin.
+
