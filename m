@@ -1,146 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbZHKOIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbZHKOLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754305AbZHKOIl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 10:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbZHKOIl
+	id S1754669AbZHKOLX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 10:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZHKOLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 10:08:41 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:23532 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752145AbZHKOIk (ORCPT
+	Tue, 11 Aug 2009 10:11:22 -0400
+Received: from waldorf.bytemark.co.uk ([212.110.162.22]:53578 "EHLO
+	waldorf.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753741AbZHKOLV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 10:08:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=wQaKEDIzEAZ3/bcMK5DS420WmKVDtXVQHep455UJUXFSeeK057cUaEjIOi2wNoKlsX
-         wKW7MrqFP1G60o31N7xPv1r5ioGmjQiV8tuQMYnGyWW1qKFhLOnOyrSWWDHYgYCsTdO9
-         A7jv+aYlM3111ljtWp4IOF3HSOBKDqJX31XEs=
-Date: Tue, 11 Aug 2009 22:08:24 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: mmotm 2009-08-06-00-30 uploaded
-Message-ID: <20090811140824.GA2067@darkstar>
-References: <200908060733.n767X6mN023120@imap1.linux-foundation.org> <20090807134659.GA2093@darkstar> <20090807094944.eed4bfb8.akpm@linux-foundation.org> <a8e1da0908080313k65f51185u7329e293a95861a7@mail.gmail.com>
+	Tue, 11 Aug 2009 10:11:21 -0400
+Date: Tue, 11 Aug 2009 10:43:02 +0200
+From: "Emilio G. Cota" <cota@braap.org>
+To: Martyn Welch <martyn.welch@gefanuc.com>
+Cc: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
+Subject: Re: [patch 1/5] Staging: VME Framework for the Linux Kernel
+Message-ID: <20090811084302.GB3251@braap.org>
+References: <20090803205657.964064732@mini.kroah.org> <20090803210111.GB28430@kroah.com> <20090808230145.GB27151@braap.org> <4A801644.2070009@gefanuc.com> <20090810141442.GA18456@braap.org> <20090810153127.GB23319@braap.org> <4A804D67.4080308@gefanuc.com> <20090810195048.GB3055@braap.org> <4A8125AC.30400@gefanuc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <a8e1da0908080313k65f51185u7329e293a95861a7@mail.gmail.com>
+In-Reply-To: <4A8125AC.30400@gefanuc.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 08, 2009 at 06:13:53PM +0800, Dave Young wrote:
-> On Sat, Aug 8, 2009 at 12:49 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
-> > On Fri, 7 Aug 2009 21:47:00 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
-> >
-> >> Hi, andrew
-> >>
-> >> Booting with this release, init (maybe getty?) reports something like:
-> >>
-> >> INIT: open /dev/console failed with input/output error
-> >>
-> >> 2.6.31-rc5 is fine.
-> >>
-> >> Any hints to find the root problem?
-> >
-> > Not really, sorry.  Might be tty changes in linux-next?
-> 
-> I bisected linux-next, find following patch as a result
-> 
-> commit 65b8c7d9be5862ff8ac839607b444b6f6b11d2fb
-> Author: Alan Cox <alan@linux.intel.com>
-> Date:   Thu Aug 6 09:58:02 2009 +1000
-> 
->     cyclades: use the full port_close function
-> 
-> But, I did not select cyclades in my .config, nor do i have the hardware. Weird.
+Martyn Welch wrote:
+> Emilio G. Cota wrote:
+>> Again, he (the driver writer) should know *nothing* about that.
+>>
+>> As for the scatter-gather case, what should happen is:
+>>
+>> User:		hey, there's a buffer I want to transfer. here's
+>> 		a pointer and size
+> Buffer where? On VME or PCI, where are you transferring it to? The API I  
+> have will allow scattered locations on VME to be copied to PCI and  
+> visa-versa, scattered locations on PCI to be copied to VME and  
+> visa-versa. Even scattered locations on VME to scattered locations on  
+> PCI with a bit of effort.
 
-The above result is wrong, it's a mistake.
+Admittedly our current tsi148 driver deals with the most common
+situation: DMA from main (master) CPU RAM to/from a VME slave.
 
-After a whole day's testing and debugging with linux-2.6 git tree and tty patch series, I found the patch causing this issue. 
---
-From: Alan Cox <alan@linux.intel.com>
-Subject: tty: make the kref destructor occur asynchronously
---
+I'm not claiming we shouldn't support sg lists; however the
+implementation should resemble the existing sg interfaces.
+I'm currently working on something along those lines.
 
-If we make the tty release in a work queue, then tty_reopen might fail with -EIO. I read the sysvinit source code, it will retry 5 times, if still failed, it will warning, then no output before login.
-
-My distribution is slackware 12.2
-
-I tested with following debug patch.
-
---- linux-2.6.orig/drivers/char/tty_io.c	2009-08-11 21:29:03.000000000 +0800
-+++ linux-2.6/drivers/char/tty_io.c	2009-08-11 21:40:01.000000000 +0800
-@@ -1246,8 +1246,10 @@ static int tty_reopen(struct tty_struct 
- {
- 	struct tty_driver *driver = tty->driver;
- 
--	if (test_bit(TTY_CLOSING, &tty->flags))
-+	if (test_bit(TTY_CLOSING, &tty->flags)) {
-+		printk(KERN_INFO "tty_io.c: closing\n");
- 		return -EIO;
-+	}
- 
- 	if (driver->type == TTY_DRIVER_TYPE_PTY &&
- 	    driver->subtype == PTY_TYPE_MASTER) {
-@@ -1255,8 +1257,10 @@ static int tty_reopen(struct tty_struct 
- 		 * special case for PTY masters: only one open permitted,
- 		 * and the slave side open count is incremented as well.
- 		 */
--		if (tty->count)
-+		if (tty->count) {
-+			printk(KERN_INFO "tty_io.c: open count %d\n", tty->count);
- 			return -EIO;
-+		}
- 
- 		tty->link->count++;
- 	}
-@@ -1705,6 +1709,7 @@ static int __tty_open(struct inode *inod
- 	int index;
- 	dev_t device = inode->i_rdev;
- 	unsigned saved_flags = filp->f_flags;
-+	static int t;
- 
- 	nonseekable_open(inode, filp);
- 
-@@ -1778,8 +1783,15 @@ got_driver:
- 
- 	mutex_unlock(&tty_mutex);
- 	tty_driver_kref_put(driver);
--	if (IS_ERR(tty))
-+	if (IS_ERR(tty)) {
-+		int r = PTR_ERR(tty);
-+		if (t == 5) {
-+			printk(KERN_INFO "%s: %d, %d, retval: %d\n", __FILE__, __LINE__, r, retval);
-+			t =0;
-+		} else
-+			t++;
- 		return PTR_ERR(tty);
-+	}
- 
- 	filp->private_data = tty;
- 	file_move(filp, &tty->tty_files);
-
-
-> 
-> >
-> >> Another problem:
-> >>
-> >> When I moving mouse or pressing key the screen will become black, then restore the normal screen.
-> >
-> > There have been quite a lot of X problems lately.
-> >
-> > Could you test the bare linux-next please?
-> >
-> 
-> 
-> 
-> -- 
-> Regards
-> dave
+Thanks,
+E.
