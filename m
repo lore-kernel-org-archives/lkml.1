@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZHKOWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbZHKOZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754817AbZHKOWq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 10:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbZHKOWp
+	id S1754819AbZHKOZt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 10:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbZHKOZs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 10:22:45 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:45320 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751434AbZHKOWp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 10:22:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=TMau3d45+EAyiL/RLFW+lYcf4MuNfHluK2Fj/Zfwa8RnQCwbpH4QpcMax4QPhIRlwy
-         B7jt8xzB2UAzrs+P25flfOP/LzHs9rmhil6zz2lPbDyoGRCH1y3kavg1cg9uN2XyHqYA
-         Dw5pbtOWJdDxTkXA5o9IzsXxURW5S/rSxsrGY=
+	Tue, 11 Aug 2009 10:25:48 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44396 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754061AbZHKOZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 10:25:48 -0400
+Date: Tue, 11 Aug 2009 16:25:48 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Nico Schottelius <nico-linux-20090804@schottelius.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Kernel Panic on v2.6.31-rc5-34-ga33a052
+In-Reply-To: <20090804205309.GA6291@ikn.schottelius.org>
+Message-ID: <alpine.LRH.2.00.0908111625040.11142@twin.jikos.cz>
+References: <20090804205309.GA6291@ikn.schottelius.org>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <1249982534.29180.25.camel@macbook.infradead.org>
-References: <3877989d0908101956o303c43c5i5c5f08297afb312@mail.gmail.com>
-	 <1249982534.29180.25.camel@macbook.infradead.org>
-Date: Tue, 11 Aug 2009 22:22:46 +0800
-Message-ID: <3877989d0908110722y7eb0cf5ds74a03512daa4d399@mail.gmail.com>
-Subject: Re: [RFC patch] Add boot option intel_iommu_drhd_mask
-From: Luming Yu <luming.yu@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 5:22 PM, David Woodhouse<dwmw2@infradead.org> wrote:
-> On Tue, 2009-08-11 at 10:56 +0800, Luming Yu wrote:
->> **The patch is enclosed in text attachment*
->> **Using web client to send the patch* *
->> **below is for review, please apply attached  patch*/
->
-> Please use a sane mailer and don't do this. Patches should be inline in
-> a usable form.
->
-> Surely gmail allows this, even if your employer doesn't provide a
-> competently-managed mail service?
+On Tue, 4 Aug 2009, Nico Schottelius wrote:
 
-I found it is very converient to use web gmail, but didn't find way
-to inline in web gmail...
+> Running this kernel on the Lenovo x200 and switching from X to console 
+> kernel panics the system.
+
+It is not possible to debug this without you providing the kernel messages 
+that preceeded the panic (you can use digital camera to capture the image, 
+if you can't set up a serial console).
+
+-- 
+Jiri Kosina
+SUSE Labs
+
