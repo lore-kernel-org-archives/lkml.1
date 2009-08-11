@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbZHKPe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbZHKPfC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752655AbZHKPe1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 11:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZHKPe1
+	id S1752850AbZHKPfC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 11:35:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbZHKPfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 11:34:27 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53468 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752306AbZHKPeY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 11:34:24 -0400
-Date: Tue, 11 Aug 2009 17:34:25 +0200
-From: Jan Kara <jack@suse.cz>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Frans Pop <elendil@planet.nl>, Chris Mason <chris.mason@oracle.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, jack@suse.cz,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: What happened to data=guarded?
-Message-ID: <20090811153425.GB26070@atrey.karlin.mff.cuni.cz>
-References: <1249934623-15939-1-git-send-email-tytso@mit.edu> <200908111535.37927.elendil@planet.nl> <20090811133721.GD29224@think> <200908111654.38217.elendil@planet.nl> <878whqgyid.fsf@basil.nowhere.org>
+	Tue, 11 Aug 2009 11:35:01 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54098 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751488AbZHKPfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 11:35:00 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jan Scholz <scholz@fias.uni-frankfurt.de>
+Subject: Re: [Bug #13407] adb trackpad disappears after suspend to ram
+Date: Tue, 11 Aug 2009 17:35:49 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+References: <YCu3FOC0QrC.A.MaE.RD2fKB@chimera> <pRuaDVjxFBG.A.ZuF.QF2fKB@chimera> <87ab261lfy.fsf@scholz.fias.uni-frankfurt.de>
+In-Reply-To: <87ab261lfy.fsf@scholz.fias.uni-frankfurt.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <878whqgyid.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908111735.49832.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Frans Pop <elendil@planet.nl> writes:
+On Tuesday 11 August 2009, Jan Scholz wrote:
+> Hi,
 > 
-> > On Tuesday 11 August 2009, Chris Mason wrote:
-> >> On Tue, Aug 11, 2009 at 03:35:36PM +0200, Frans Pop wrote:
-> >> > Somewhat unrelated, but what happened to the data=guarded patches
-> >> > Chris Mason proposed back in April?
-> >>
-> >> I missed 2.6.31 but plan on sending for 2.6.32.  I promised to send
-> >> along a forward port of the patches a while back, but I finally have
-> >> one in testing here.  It should go out shortly.
-> >
-> > Good to hear. I've so far stayed with data=ordered as I think I'd prefer 
-> > data=guarded over data=writeback. I'll certainly give it a try when it's 
-> > available.
-> 
-> Same here. data=writeback already cost me a few files after crashes here :/
-  In this regard, data=guarded need not be better than data=writeback.
-We push out the data in guarded mode as late as in writeback mode
-(that's where the performance benefit comes from ;). The difference is
-that we increase i_size only after data are safely on disk so we cannot
-expose old data.
-  So security-wise, guarded mode is as safe as ordered mode but in other
-aspects its more like data=writeback.
+> The bug is still present in v2.6.31-rc5, it is fixed by commenting out
+> {suspend,resume}_device_irqs() in drivers/base/power/main.c as suggested
+> by Rafael.
+> Recently I find the info
+> "Platform driver 'snd_powermac' needs updating - please use dev_pm_ops"
+> in dmesg, could this be related?
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+No, it's totally unrelated.
+
+Best,
+Rafael
