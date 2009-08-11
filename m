@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbZHKVk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbZHKVyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755477AbZHKVk3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 17:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754807AbZHKVk2
+	id S1755472AbZHKVyM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 17:54:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbZHKVyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 17:40:28 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:60267 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754779AbZHKVk2 (ORCPT
+	Tue, 11 Aug 2009 17:54:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36332 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753491AbZHKVyK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 17:40:28 -0400
-From: Thomas Schlichter <thomas.schlichter@web.de>
-To: Dave Airlie <airlied@redhat.com>
-Cc: Alex Deucher <alexdeucher@gmail.com>, Eric Anholt <eric@anholt.net>,
-       linux-kernel@vger.kernel.org,
-       Thomas Schlichter <thomas.schlichter@web.de>
-Subject: [PATCH] drm/via: add pci id for VIA VX800 chipset
-Date: Tue, 11 Aug 2009 23:40:27 +0200
-Message-Id: <1250026827-11167-1-git-send-email-thomas.schlichter@web.de>
-X-Mailer: git-send-email 1.6.0.4
-X-Provags-ID: V01U2FsdGVkX19kCp9VVA/UKpPJnPt2T69yqqKn+269iiJSRQy8
-	BYekyhXC7LH7blQNsWFKhD1AjTdhrsC2e5FHzlbKJ7ZcksOEaw
-	GqqDMo4zBZEb6V2X3EKA==
+	Tue, 11 Aug 2009 17:54:10 -0400
+Date: Tue, 11 Aug 2009 14:52:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "NeilBrown" <neilb@suse.de>
+Cc: sage@newdream.net, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] md: avoid use of broken kzalloc mempool
+Message-Id: <20090811145258.6cd823d6.akpm@linux-foundation.org>
+In-Reply-To: <8604b01355a1ff1ec6397d223c28b1d5.squirrel@neil.brown.name>
+References: <1249332888-13440-1-git-send-email-sage@newdream.net>
+	<8604b01355a1ff1ec6397d223c28b1d5.squirrel@neil.brown.name>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The VIA DRM module is able to accelerate 2D video on the VX800
-chipset, thus add the corresponding PCI ID. Accelerated 3D video
-is not implemented.
+On Tue, 4 Aug 2009 08:03:52 +1000 (EST)
+"NeilBrown" <neilb@suse.de> wrote:
 
-The modified VIA DRM module was tested with X.Org openchrome driver on
-a Samsung NC20 netbook. Video playback with xine requires nearly 30%
-less CPU cycles.
+> On Tue, August 4, 2009 6:54 am, Sage Weil wrote:
+> > The kzalloc mempool does not re-zero items that have been used and then
+> > returned to the pool.  Manually zero the allocated multipath_bh instead.
+> >
+> > CC: linux-raid@vger.kernel.org
+> > CC: Neil Brown <neilb@suse.de>
+> > CC: <stable@kernel.org>
 
-Signed-off-by: Thomas Schlichter <thomas.schlichter@web.de>
----
- include/drm/drm_pciids.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Sage, why did you cc stable@kernel.org?  The patch fixes some bug? 
+What is it?  Why is the fix sufficiently important to warrant
+backporting?
 
-diff --git a/include/drm/drm_pciids.h b/include/drm/drm_pciids.h
-index 8535084..aac8877 100644
---- a/include/drm/drm_pciids.h
-+++ b/include/drm/drm_pciids.h
-@@ -477,6 +477,7 @@
- 	{0x1106, 0x3343, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
- 	{0x1106, 0x3230, PCI_ANY_ID, PCI_ANY_ID, 0, 0, VIA_DX9_0}, \
- 	{0x1106, 0x3157, PCI_ANY_ID, PCI_ANY_ID, 0, 0, VIA_PRO_GROUP_A}, \
-+	{0x1106, 0x1122, PCI_ANY_ID, PCI_ANY_ID, 0, 0, VIA_DX9_0}, \
- 	{0, 0, 0}
- 
- #define i810_PCI_IDS \
--- 
-1.6.0.4
+> Acked-by: NeilBrown <neilb@suse.de>
+> 
+
+Thanks, I'll merge it once the above is understood.
+
+> 
+> In fact, you don't even need the memset.  After allocation
+> no assumptions are made about the content of the structure.
+> Every field is immediately initialised except retry_list, which
+> is never accessed until after the object is placed on a list.h list.
+> 
+> So this code never needed kzalloc_pool.
+
+Well, that's a bit of a functional change so let us (ie: you ;)) do
+that separately?
 
