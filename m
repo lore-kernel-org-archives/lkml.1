@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbZHKM4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbZHKM4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754496AbZHKM4N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 08:56:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbZHKM4H
+	id S1754517AbZHKM4q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 08:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZHKM4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 08:56:07 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:38320 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750855AbZHKM4H (ORCPT
+	Tue, 11 Aug 2009 08:56:46 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:43851 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbZHKM4p convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 08:56:07 -0400
-Date: Tue, 11 Aug 2009 13:56:03 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: me@felipebalbi.com, Liam Girdwood <lrg@slimlogic.co.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Question about userspace-consumer
-Message-ID: <20090811125603.GH24947@sirena.org.uk>
-References: <20090810200553.GB4652@gandalf> <20090810215800.GB4528@sirena.org.uk> <20090811054438.GA7176@gandalf> <4A815F64.8000105@compulab.co.il>
+	Tue, 11 Aug 2009 08:56:45 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A815F64.8000105@compulab.co.il>
-X-Cookie: BOFH excuse
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <adad4738l3v.fsf@cisco.com>
+References: <e2e108260908060943u344bbe03k2baab01b204c9cca@mail.gmail.com> 
+	<adad478hmi8.fsf@cisco.com> <e2e108260908061146y47ae45f5j6b8085d44cd1c45b@mail.gmail.com> 
+	<adaocqsg339.fsf@cisco.com> <e2e108260908061229v2c605aabp7cf66cbe568d6755@mail.gmail.com> 
+	<adafxc4g1e7.fsf@cisco.com> <e2e108260908070026s10658adl2c4a9a5b3eba1a08@mail.gmail.com> 
+	<20090808034817.GA30697@suse.de> <adad4738l3v.fsf@cisco.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Tue, 11 Aug 2009 14:56:28 +0200
+Message-ID: <ac3eb2510908110556s44db5e24rba901cc4d4a4c431@mail.gmail.com>
+Subject: Re: [ofa-general] IB kernel modules and the kobject release() method
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Greg KH <gregkh@suse.de>, Bart Van Assche <bart.vanassche@gmail.com>,
+       OpenIB <general@lists.openfabrics.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 03:09:08PM +0300, Mike Rapoport wrote:
-> Felipe Balbi wrote:
+On Mon, Aug 10, 2009 at 22:33, Roland Dreier<rdreier@cisco.com> wrote:
+>
+>  > No, it still makes sense :)
+>
+> So what's the fix for this?
 
-> > that said, power supply framework and regulator framework seem to be
-> > well enough for implementing the basic support for SBS-enabled charging
-> > scheme.
+The fix is not to embed any kobject/struct device into an object whose
+lifetime is not controlled by the kobject. The kobject should just be
+a pointer then, and not inlined in the same memory the object uses,
+which needs the kobject. The entire kobject embedding/release logic
+works only properly if the kobject can own/control the lifetime of the
+enclosing object - if not, it should just not be embedded.
 
-> As far as I understood SBS scheme, the host has very little impact on the
-> charging process. Most of the charging is handled by Smart Battery and Smart
-> Battery Charger without any host intervention.
+> If even you have trouble understanding
+> kobject lifetimes
 
-I strongly suspect that in at least some designs the battery charger
-itself will be at least partially dumb and the battery charger part of
-the spec done by software running on the host CPU - there's examples in
-the spec which seem to back that up.
+I don't think we have trouble understanding that, but we are
+hopelessly lost running after people who "optimize" the use of
+kobjects/struct device to save an allocation or a separate dynamic
+object.
+
+> and the requirement for a release function, is there
+> hope for anyone else?
+
+Almost all uses where kobjects/struct device are statically allocated,
+an object embeds more than a single kobject, or the embedded kobject
+does not control the lifetime of the enclosing object, is just a
+mis-use of kobjects.
+
+Not sure, maybe it needs a simpler API to use non-embedded kobjects,
+to make it easier to reach the originating object from the kobject.
+That might not be obvious how to do that in some cases.
+
+Kay
