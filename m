@@ -1,64 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755037AbZHKRO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbZHKRQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755037AbZHKRO1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 13:14:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbZHKRO1
+	id S1755176AbZHKRQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 13:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbZHKRQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 13:14:27 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:37762 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753719AbZHKRO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 13:14:26 -0400
-Date: Tue, 11 Aug 2009 19:14:27 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Eric.Moore@lsi.com, jeff@garzik.org
-Subject: Re: [PATCH 0/3]: blk-iopoll, a polled completion API for block
-	devices
-Message-ID: <20090811171427.GV12579@kernel.dk>
-References: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com> <e2e108260908110335tc500412mc6354359d85ae9b6@mail.gmail.com> <20090811143919.GU12579@kernel.dk> <e2e108260908110759w4fbbb5dejf852ba272fa29d75@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e2e108260908110759w4fbbb5dejf852ba272fa29d75@mail.gmail.com>
+	Tue, 11 Aug 2009 13:16:28 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:44921 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754662AbZHKRQ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 13:16:27 -0400
+Subject: Re: NULL pointer dereference in __put_nfs_open_context()
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: linux-nfs@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1249995530.12218.3.camel@heimdal.trondhjem.org>
+References: <1249990719.27150.52.camel@pc1117.cambridge.arm.com>
+	 <1249995530.12218.3.camel@heimdal.trondhjem.org>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Tue, 11 Aug 2009 18:16:24 +0100
+Message-Id: <1250010984.30628.15.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Aug 2009 17:16:25.0663 (UTC) FILETIME=[74E6E4F0:01CA1AA7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11 2009, Bart Van Assche wrote:
-> On Tue, Aug 11, 2009 at 4:39 PM, Jens Axboe<jens.axboe@oracle.com> wrote:
-> > On Tue, Aug 11 2009, Bart Van Assche wrote:
-> >> On Thu, Aug 6, 2009 at 9:58 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> >> > Anyway, YMMV, I would appreciate some test results (and as usual, that
-> >> > even includes just saying that it boots and functions for you). If
-> >> > people feel adventurous, patches for other controllers will be happily
-> >> > queued up for testing. I may even be convinced to implement support
-> >> > for your controller of choice, if you have some fast storage hooked up
-> >> > and would like to experiment. Generally, adding support to a driver is
-> >> > not very hard and the two conversions included were also meant to serve
-> >> > as an inspiration.
-> >>
-> >> Sounds very interesting. Have you already considered patching the SRP
-> >> initiator ? During the SRP performance tests I ran CPU usage on the
-> >> initiator was more than 95% and on the target less than 10%.
-> >
-> > No I haven't, if you point me at which srp files, I can take a look.
-> 
-> The relevant source files are:
-> include/scsi/srp.h
-> include/scsi/scsi_transport_srp.h
-> drivers/infiniband/ulp/srp/ib_srp.h
-> drivers/infiniband/ulp/srp/ib_srp.c
-> drivers/scsi/scsi_transport_srp.c
-> drivers/scsi/libsrp.c
-> drivers/scsi/scsi_transport_srp_internal.h
+On Tue, 2009-08-11 at 08:58 -0400, Trond Myklebust wrote:
+> How about the following instead? This patch gets rid of those
+> nfs_open_context references altogether...
 
-I can find | grep too :-)
+It fixes the kernel oops.
 
-Did you profile this? Where did it burn all the CPU time on the
-initiator side?
+Thanks.
 
 -- 
-Jens Axboe
+Catalin
 
