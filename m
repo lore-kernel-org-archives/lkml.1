@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbZHLUh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbZHLUlB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754920AbZHLUh6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 16:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbZHLUh6
+	id S1754962AbZHLUlB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 16:41:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbZHLUlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 16:37:58 -0400
-Received: from cantor.suse.de ([195.135.220.2]:42724 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752345AbZHLUh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 16:37:57 -0400
-Date: Wed, 12 Aug 2009 22:37:56 +0200
-From: Jan Kara <jack@suse.cz>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       Frans Pop <elendil@planet.nl>, Chris Mason <chris.mason@oracle.com>,
-       jack@suse.cz, linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: What happened to data=guarded?
-Message-ID: <20090812203756.GA10729@duck.suse.cz>
-References: <1249934623-15939-1-git-send-email-tytso@mit.edu> <200908111535.37927.elendil@planet.nl> <20090811133721.GD29224@think> <200908111654.38217.elendil@planet.nl> <878whqgyid.fsf@basil.nowhere.org> <20090811185703.GQ1756@mit.edu> <20090810164205.GC1505@ucw.cz>
+	Wed, 12 Aug 2009 16:41:01 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:35008 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754884AbZHLUlA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 16:41:00 -0400
+Date: Wed, 12 Aug 2009 16:41:01 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
+In-Reply-To: <1250108893.8829.10.camel@mulgrave.site>
+Message-ID: <Pine.LNX.4.44L0.0908121635221.23954-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090810164205.GC1505@ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 10-08-09 18:42:05, Pavel Machek wrote:
-> On Tue 2009-08-11 14:57:03, Theodore Tso wrote:
-> > On Tue, Aug 11, 2009 at 05:29:14PM +0200, Andi Kleen wrote:
-> > > > Good to hear. I've so far stayed with data=ordered as I think I'd prefer 
-> > > > data=guarded over data=writeback. I'll certainly give it a try when it's 
-> > > > available.
-> > > 
-> > > Same here. data=writeback already cost me a few files after crashes here :/
-> > 
-> > What sort of files were you losing?  I don't know if we can improve
-> > the implied flush hueristics, but we should at least try to see if we
-> > do something about it.
-> 
-> IIRC... the flush heuristics invoke async flush, so you can still lose
-> data if you are unlucky, no?
-  Of course you can but it can happen in data=ordered mode as well (if the
-machine crashes before the transaction is committed). The percieved
-difference is in the fact that kjournald starts its commit every 5 seconds
-while pdflush starts writeback every 30-35 seconds. So if you use
-data=guarded/writeback mode and set dirty_expire_centisecs to 500, the
-experience wrt. data loss is going to be similar to data=ordered mode.
-fsync with heavy background writers won't be that painful as in data=ordered
-mode but apart from that the performance will be probably comparable.
+On Wed, 12 Aug 2009, James Bottomley wrote:
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+> > I'll accept that.  However it means that the SCSI midlayer violates
+> > your own locking rules with regard to the scan mutex.  Whereas if
+> > flush_scheduled_work() were avoided, the locking rules would not be
+> > violated.
+> 
+> Why do you think I've been trying to get rid of it?  Global mutexes
+> covering large swathes of code are always a bad idea.  The async code
+> already picked up a deadlock entanglement with it.
+
+And yet it does serve an important purpose.
+
+An alternative to that mutex would be to make all scanning and removal 
+activities on a host funnel through a single thread.  Do you think that 
+would be preferable?  (I'm not trying to be sarcastic -- this is a 
+serious question.)
+
+
+> > The rules for submission are _not_ the same.  With 
+> > flush_scheduled_work():
+> > 
+> > 	Make sure that any lock you hold while flushing is private
+> > 	and is not used (even indirectly) by any of your publicly 
+> > 	exported routines.
+> > 
+> > With cancel_work_sync():
+> > 
+> > 	Make sure that any lock you hold while cancelling is not
+> > 	used (even indirectly) by the work routine being cancelled.
+> 
+> The hair splitting has got to the point where I don't really care.  The
+> point is that flush_scheduled_work() and cancel_work_sync() have similar
+> problems.  Amazingly that was my original point.
+
+And my original point was that the problems, though similar in nature, 
+are harder to deal with in one case than in the other.
+
+Alan Stern
+
