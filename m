@@ -1,60 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753140AbZHLObi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbZHLOcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753140AbZHLObi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 10:31:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbZHLObh
+	id S1753208AbZHLOcw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 10:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbZHLOcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 10:31:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47929 "EHLO mx3.mail.elte.hu"
+	Wed, 12 Aug 2009 10:32:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39952 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753048AbZHLObg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 10:31:36 -0400
-Date: Wed, 12 Aug 2009 16:31:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Brice Goglin <Brice.Goglin@inria.fr>
-Subject: Re: [GIT PULL v2] perf tools: Factorize common code
-Message-ID: <20090812143113.GC19882@elte.hu>
-References: <20090812100851.GA18577@elte.hu> <1250074112-15147-1-git-send-email-fweisbec@gmail.com> <20090812135439.GD3180@ghostprotocols.net>
+	id S1753050AbZHLOct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 10:32:49 -0400
+Message-ID: <4A82D24D.6020402@redhat.com>
+Date: Wed, 12 Aug 2009 10:31:41 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090812135439.GD3180@ghostprotocols.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>, Avi Kivity <avi@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+References: <20090806100824.GO23385@random.random> <4A7AD5DF.7090801@redhat.com> <20090807121443.5BE5.A69D9226@jp.fujitsu.com> <20090812074820.GA29631@localhost>
+In-Reply-To: <20090812074820.GA29631@localhost>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
-
-> Em Wed, Aug 12, 2009 at 12:48:29PM +0200, Frederic Weisbecker escreveu:
-> > On Wed, Aug 12, 2009 at 12:08:51PM +0200, Ingo Molnar wrote:
-> > > yeah. I've zapped those commits from perfcounters/core.
-> > >
-> > >       Ingo
-> > 
-> > Ok, sorry about that.
-> > I've rebuilt a clean tree. It should be fine now.
-> > 
-> > Thanks.
+Wu Fengguang wrote:
+> On Fri, Aug 07, 2009 at 11:17:22AM +0800, KOSAKI Motohiro wrote:
+>>> Andrea Arcangeli wrote:
+>>>
+>>>> Likely we need a cut-off point, if we detect it takes more than X
+>>>> seconds to scan the whole active list, we start ignoring young bits,
+>>> We could just make this depend on the calculated inactive_ratio,
+>>> which depends on the size of the list.
+>>>
+>>> For small systems, it may make sense to make every accessed bit
+>>> count, because the working set will often approach the size of
+>>> memory.
+>>>
+>>> On very large systems, the working set may also approach the
+>>> size of memory, but the inactive list only contains a small
+>>> percentage of the pages, so there is enough space for everything.
+>>>
+>>> Say, if the inactive_ratio is 3 or less, make the accessed bit
+>>> on the active lists count.
+>> Sound reasonable.
 > 
-> Thanks a lot for doing this work, I intended to do that but got 
-> sidetracked with symbol resolving neverending corner cases 8)
+> Yes, such kind of global measurements would be much better.
+> 
+>> How do we confirm the idea correctness?
+> 
+> In general the active list tends to grow large on under-scanned LRU.
+> I guess Rik is pretty familiar with typical inactive_ratio values of
+> the large memory systems and may even have some real numbers :)
+> 
+>> Wu, your X focus switching benchmark is sufficient test?
+> 
+> It is a major test case for memory tight desktop.  Jeff presents
+> another interesting one for KVM, hehe.
+> 
+> Anyway I collected the active/inactive list sizes, and the numbers
+> show that the inactive_ratio is roughly 1 when the LRU is scanned
+> actively and may go very high when it is under-scanned.
 
-:)
+inactive_ratio is based on the zone (or cgroup) size.
 
-Also, there's still quite a bit of code left to be factorized out of 
-builtin-annotate.c and builtin-report.c.
+For zones it is a fixed value, which is available in
+/proc/zoneinfo
 
-	Ingo
+-- 
+All rights reversed.
