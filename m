@@ -1,97 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753602AbZHLP3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638AbZHLPaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753602AbZHLP3I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 11:29:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbZHLP3H
+	id S1753638AbZHLPaH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 11:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbZHLPaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 11:29:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52725 "EHLO mx2.redhat.com"
+	Wed, 12 Aug 2009 11:30:06 -0400
+Received: from kroah.org ([198.145.64.141]:60168 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753532AbZHLP3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 11:29:05 -0400
-Date: Wed, 12 Aug 2009 10:28:43 -0500
-From: Clark Williams <williams@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: RT <linux-rt-users@vger.kernel.org>, John Kacur <jkacur@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [RT PATCH] Changed boot warning to look for CONFIG_FUNCTION &&
- !CONFIG_DYNAMIC_FTRACE
-Message-ID: <20090812102843.1e0c6d73@torg>
-Organization: Red Hat, Inc
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/tV_Q5R.WLwdS8crv4_i+3i+"; protocol="application/pgp-signature"
+	id S1753586AbZHLPaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 11:30:04 -0400
+Date: Wed, 12 Aug 2009 08:25:05 -0700
+From: Greg KH <greg@kroah.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: David Dillow <dave@thedillows.org>, Andi Kleen <andi@firstfloor.org>,
+       Greg KH <gregkh@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Jan Blunck <jblunck@suse.de>, Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+ /dev
+Message-ID: <20090812152505.GA29407@kroah.com>
+References: <20090806183147.GA28409@suse.de>
+ <1249772876.22248.34.camel@obelisk.thedillows.org>
+ <20090810153943.GB7652@kroah.com>
+ <1250001374.22248.65.camel@obelisk.thedillows.org>
+ <20090811145523.GD14368@basil.fritz.box>
+ <1250036727.26788.7.camel@obelisk.thedillows.org>
+ <20090812003433.GA25392@kroah.com>
+ <1250081813.26788.13.camel@obelisk.thedillows.org>
+ <20090812134440.GA28839@kroah.com>
+ <20090812070901.1c66bb67@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090812070901.1c66bb67@infradead.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/tV_Q5R.WLwdS8crv4_i+3i+
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Wed, Aug 12, 2009 at 07:09:01AM -0700, Arjan van de Ven wrote:
+> On Wed, 12 Aug 2009 06:44:40 -0700
+> Greg KH <greg@kroah.com> wrote:
+> 
+> > On Wed, Aug 12, 2009 at 08:56:53AM -0400, David Dillow wrote:
+> > > On Tue, 2009-08-11 at 17:34 -0700, Greg KH wrote:
+> > > > On Tue, Aug 11, 2009 at 08:25:27PM -0400, David Dillow wrote:
+> > > > > So use Eric/Arjan's program that does it in 60ms -- you get a
+> > > > > dynamic /dev, no initrd, fast boot, and no kernel changes
+> > > > > required.
+> > > > 
+> > > > Their program only handles it for a reconstruction of /dev based
+> > > > on sysfs one time at boot.  It does not handle things that are
+> > > > added or discovered by the system after that, you need udev for
+> > > > that.
+> > > > 
+> > > > So it's a great hack for boot time stuff, but not a complete /dev
+> > > > management replacement like this code can be for numerous systems.
+> > > 
+> > > What systems would those be?
+> > 
+> > Rescue disks, Embedded systems with no local users, servers with no
+> > local users, etc.  Basically anything that you are only root on, and
+> > don't care about group permissions.
+> 
+> you're speaking for devtmpfs; the tool we use actually does do group
+> and owners.
 
-Thomas,
+Yes I am, sorry if anyone inferred otherwise.
 
-After a conversation with Steven, I changed the boot warning for
-configs that may hurt performance to look for CONFIG_FUNCTION
-&& !CONFIG_DYNAMIC_FTRACE, rather than just CONFIG_FTRACE.
+thanks,
 
-Signed-off-by: Clark Williams <williams@redhat.com>
----
- init/main.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/init/main.c b/init/main.c
-index a04e102..9a0d510 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -935,7 +935,7 @@ static int __init kernel_init(void * unused)
- 	WARN_ON(irqs_disabled());
- #endif
-=20
--#define DEBUG_COUNT (defined(CONFIG_DEBUG_RT_MUTEXES) + defined(CONFIG_IRQ=
-SOFF_TRACER) + defined(CONFIG_PREEMPT_TRACER) + defined(CONFIG_STACK_TRACER=
-) + defined(CONFIG_WAKEUP_LATENCY_HIST) + defined(CONFIG_DEBUG_SLAB) + defi=
-ned(CONFIG_DEBUG_PAGEALLOC) + defined(CONFIG_LOCKDEP) + (defined(CONFIG_FTR=
-ACE) - defined(CONFIG_FTRACE_MCOUNT_RECORD)))
-+#define DEBUG_COUNT (defined(CONFIG_DEBUG_RT_MUTEXES) + defined(CONFIG_IRQ=
-SOFF_TRACER) + defined(CONFIG_PREEMPT_TRACER) + defined(CONFIG_STACK_TRACER=
-) + defined(CONFIG_WAKEUP_LATENCY_HIST) + defined(CONFIG_DEBUG_SLAB) + defi=
-ned(CONFIG_DEBUG_PAGEALLOC) + defined(CONFIG_LOCKDEP) + (defined(CONFIG_FUN=
-CTION) - defined(CONFIG_DYNAMIC_FTRACE)))
-=20
- #if DEBUG_COUNT > 0
- 	printk(KERN_ERR "********************************************************=
-*********************\n");
-@@ -955,8 +955,8 @@ static int __init kernel_init(void * unused)
- #ifdef CONFIG_PREEMPT_TRACER
- 	printk(KERN_ERR "*        CONFIG_PREEMPT_TRACER                          =
-                    *\n");
- #endif
--#ifdef CONFIG_FTRACE
--	printk(KERN_ERR "*        CONFIG_FTRACE                                  =
-                    *\n");
-+#if defined(CONFIG_FUNCTION) && !defined(CONFIG_DYNAMIC_FTRACE)
-+	printk(KERN_ERR "*        CONFIG_FUNCTION                                =
-                    *\n");
- #endif
- #ifdef CONFIG_WAKEUP_LATENCY_HIST
- 	printk(KERN_ERR "*        CONFIG_WAKEUP_LATENCY_HIST                     =
-                    *\n");
---=20
-1.6.2.5
-
-
---Sig_/tV_Q5R.WLwdS8crv4_i+3i+
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkqC37AACgkQHyuj/+TTEp2u8wCeIvYsWfoUqfhh+JgM4rtCEIg9
-69AAmwQwuWEriOROCICx0d59uDQTxKCh
-=hIzg
------END PGP SIGNATURE-----
-
---Sig_/tV_Q5R.WLwdS8crv4_i+3i+--
+greg k-h
