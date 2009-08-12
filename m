@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932537AbZHLKsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932561AbZHLKsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932537AbZHLKsi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 06:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932524AbZHLKsg
+	id S932561AbZHLKsl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 06:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932524AbZHLKsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 06:48:36 -0400
+	Wed, 12 Aug 2009 06:48:40 -0400
 Received: from mail-ew0-f214.google.com ([209.85.219.214]:53242 "EHLO
 	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932525AbZHLKse (ORCPT
+	with ESMTP id S932527AbZHLKsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 06:48:34 -0400
+	Wed, 12 Aug 2009 06:48:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=PG/I1vFSqZft8+zrZkp9H4Ankzh2prLlKb2cIkjQcUm5ZcTqHh3MTlBLvq2Lf6eMgR
-         4NT/w7kxddIu01HZPl+SMRcLFJZKz1bxnMKfm/Enq3Y1aJ0z5RNrhOcIOMefneh8J8JW
-         So+5OrOk1o2+I2bEFveXGwqZcIbxk+KeyMJCk=
+        b=ZdrJuBXqGZh81b9qELH6w5kcI6AltqhbIkBZuWpZalf56hReSb0osj7zHHvg65t8Xu
+         k5adpsEnGgDpLbWHPRHNJRe3RWCECXj4Cwhte2WQkePC/M/S/S5mXmT0DIGuqZcpMfid
+         diUfOtwofrwDaLbX2X4PnlXRepn7pJvUTC464=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -23,9 +23,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
        Brice Goglin <Brice.Goglin@inria.fr>
-Subject: [GIT PULL v2] perf tools: Factorize common code
-Date: Wed, 12 Aug 2009 12:48:29 +0200
-Message-Id: <1250074112-15147-1-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 2/3 v2] perf tools: Factorize the event structure definitions in a single file
+Date: Wed, 12 Aug 2009 12:48:31 +0200
+Message-Id: <1250074112-15147-3-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <20090812100851.GA18577@elte.hu>
 References: <20090812100851.GA18577@elte.hu>
@@ -33,48 +33,266 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 12:08:51PM +0200, Ingo Molnar wrote:
-> yeah. I've zapped those commits from perfcounters/core.
->
->       Ingo
+Factorize the multiple definition of the events structures into a
+single util/event.h file.
 
-Ok, sorry about that.
-I've rebuilt a clean tree. It should be fine now.
-
-Thanks.
-
-The following changes since commit 9f8666971185b86615a074bcac67c90fdf8af8bc:
-  Brice Goglin (1):
-        perf report: Add raw displaying of per-thread counters
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git \
-	perfcounters/core
-
-Frederic Weisbecker (3):
-      perf tools: Factorize high level dso helpers
-      perf tools: Factorize the event structure definitions in a single file
-      perf tools: Factorize the map helpers
-
- tools/perf/Makefile           |    2 +
- tools/perf/builtin-annotate.c |  209 +-------------------------------
- tools/perf/builtin-record.c   |   20 +---
- tools/perf/builtin-report.c   |  274 +----------------------------------------
- tools/perf/builtin-stat.c     |    1 -
- tools/perf/builtin-top.c      |   24 ----
- tools/perf/builtin.h          |    1 +
- tools/perf/perf.h             |    1 +
- tools/perf/util/callchain.h   |    1 +
- tools/perf/util/debug.c       |   22 ++++
- tools/perf/util/debug.h       |    5 +
- tools/perf/util/event.h       |   84 +++++++++++++
- tools/perf/util/map.c         |   97 +++++++++++++++
- tools/perf/util/symbol.c      |   97 +++++++++++++++
- tools/perf/util/symbol.h      |   12 ++
- tools/perf/util/util.h        |    1 +
- 16 files changed, 330 insertions(+), 521 deletions(-)
- create mode 100644 tools/perf/util/debug.c
- create mode 100644 tools/perf/util/debug.h
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Brice Goglin <Brice.Goglin@inria.fr>
+---
+ tools/perf/builtin-annotate.c |   34 -------------------------
+ tools/perf/builtin-record.c   |   18 -------------
+ tools/perf/builtin-report.c   |   53 ----------------------------------------
+ tools/perf/builtin-top.c      |   20 ---------------
+ tools/perf/util/event.h       |   54 +++++++++++++++++++++++++++++++++++++++++
+ tools/perf/util/util.h        |    2 +
+ 6 files changed, 56 insertions(+), 125 deletions(-)
  create mode 100644 tools/perf/util/event.h
- create mode 100644 tools/perf/util/map.c
+
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 1a79299..fee663a 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -44,40 +44,6 @@ static int		print_line;
+ static unsigned long	page_size;
+ static unsigned long	mmap_window = 32;
+ 
+-struct ip_event {
+-	struct perf_event_header header;
+-	u64 ip;
+-	u32 pid, tid;
+-};
+-
+-struct mmap_event {
+-	struct perf_event_header header;
+-	u32 pid, tid;
+-	u64 start;
+-	u64 len;
+-	u64 pgoff;
+-	char filename[PATH_MAX];
+-};
+-
+-struct comm_event {
+-	struct perf_event_header header;
+-	u32 pid, tid;
+-	char comm[16];
+-};
+-
+-struct fork_event {
+-	struct perf_event_header header;
+-	u32 pid, ppid;
+-};
+-
+-typedef union event_union {
+-	struct perf_event_header	header;
+-	struct ip_event			ip;
+-	struct mmap_event		mmap;
+-	struct comm_event		comm;
+-	struct fork_event		fork;
+-} event_t;
+-
+ 
+ struct sym_ext {
+ 	struct rb_node	node;
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index afae387..718b8f7 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -59,24 +59,6 @@ static int			file_new = 1;
+ 
+ struct perf_header		*header;
+ 
+-struct mmap_event {
+-	struct perf_event_header	header;
+-	u32				pid;
+-	u32				tid;
+-	u64				start;
+-	u64				len;
+-	u64				pgoff;
+-	char				filename[PATH_MAX];
+-};
+-
+-struct comm_event {
+-	struct perf_event_header	header;
+-	u32				pid;
+-	u32				tid;
+-	char				comm[16];
+-};
+-
+-
+ struct mmap_data {
+ 	int			counter;
+ 	void			*base;
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index 827eab2..1efefcc 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -75,59 +75,6 @@ struct callchain_param	callchain_param = {
+ 
+ static u64		sample_type;
+ 
+-struct ip_event {
+-	struct perf_event_header header;
+-	u64 ip;
+-	u32 pid, tid;
+-	unsigned char __more_data[];
+-};
+-
+-struct mmap_event {
+-	struct perf_event_header header;
+-	u32 pid, tid;
+-	u64 start;
+-	u64 len;
+-	u64 pgoff;
+-	char filename[PATH_MAX];
+-};
+-
+-struct comm_event {
+-	struct perf_event_header header;
+-	u32 pid, tid;
+-	char comm[16];
+-};
+-
+-struct fork_event {
+-	struct perf_event_header header;
+-	u32 pid, ppid;
+-	u32 tid, ptid;
+-};
+-
+-struct lost_event {
+-	struct perf_event_header header;
+-	u64 id;
+-	u64 lost;
+-};
+-
+-struct read_event {
+-	struct perf_event_header header;
+-	u32 pid,tid;
+-	u64 value;
+-	u64 time_enabled;
+-	u64 time_running;
+-	u64 id;
+-};
+-
+-typedef union event_union {
+-	struct perf_event_header	header;
+-	struct ip_event			ip;
+-	struct mmap_event		mmap;
+-	struct comm_event		comm;
+-	struct fork_event		fork;
+-	struct lost_event		lost;
+-	struct read_event		read;
+-} event_t;
+-
+ static int repsep_fprintf(FILE *fp, const char *fmt, ...)
+ {
+ 	int n;
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index 0aa5673..9a6dbbf 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -933,26 +933,6 @@ static void mmap_read_counter(struct mmap_data *md)
+ 	last_read = this_read;
+ 
+ 	for (; old != head;) {
+-		struct ip_event {
+-			struct perf_event_header header;
+-			u64 ip;
+-			u32 pid, target_pid;
+-		};
+-		struct mmap_event {
+-			struct perf_event_header header;
+-			u32 pid, target_pid;
+-			u64 start;
+-			u64 len;
+-			u64 pgoff;
+-			char filename[PATH_MAX];
+-		};
+-
+-		typedef union event_union {
+-			struct perf_event_header header;
+-			struct ip_event ip;
+-			struct mmap_event mmap;
+-		} event_t;
+-
+ 		event_t *event = (event_t *)&data[old & md->mask];
+ 
+ 		event_t event_copy;
+diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
+new file mode 100644
+index 0000000..91e2fe5
+--- /dev/null
++++ b/tools/perf/util/event.h
+@@ -0,0 +1,54 @@
++#include "../perf.h"
++
++struct ip_event {
++	struct perf_event_header header;
++	u64 ip;
++	u32 pid, tid;
++	unsigned char __more_data[];
++};
++
++struct mmap_event {
++	struct perf_event_header header;
++	u32 pid, tid;
++	u64 start;
++	u64 len;
++	u64 pgoff;
++	char filename[PATH_MAX];
++};
++
++struct comm_event {
++	struct perf_event_header header;
++	u32 pid, tid;
++	char comm[16];
++};
++
++struct fork_event {
++	struct perf_event_header header;
++	u32 pid, ppid;
++	u32 tid, ptid;
++};
++
++struct lost_event {
++	struct perf_event_header header;
++	u64 id;
++	u64 lost;
++};
++
++struct read_event {
++	struct perf_event_header header;
++	u32 pid,tid;
++	u64 value;
++	u64 time_enabled;
++	u64 time_running;
++	u64 id;
++};
++
++typedef union event_union {
++	struct perf_event_header	header;
++	struct ip_event			ip;
++	struct mmap_event		mmap;
++	struct comm_event		comm;
++	struct fork_event		fork;
++	struct lost_event		lost;
++	struct read_event		read;
++} event_t;
+diff --git a/tools/perf/util/util.h b/tools/perf/util/util.h
+index 68fe157..be4b52c 100644
+--- a/tools/perf/util/util.h
++++ b/tools/perf/util/util.h
+@@ -83,6 +83,8 @@
+ #include <inttypes.h>
+ #include "../../../include/linux/magic.h"
+ 
++#include "event.h"
++
+ #ifndef NO_ICONV
+ #include <iconv.h>
+ #endif
+-- 
+1.6.2.3
+
