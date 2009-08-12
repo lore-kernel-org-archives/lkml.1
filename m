@@ -1,119 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753600AbZHLTEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbZHLTH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753600AbZHLTEv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 15:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbZHLTEv
+	id S1753654AbZHLTH1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 15:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbZHLTH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 15:04:51 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:30924 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752185AbZHLTEu convert rfc822-to-8bit (ORCPT
+	Wed, 12 Aug 2009 15:07:26 -0400
+Received: from ns1.siteground211.com ([209.62.36.12]:33324 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751696AbZHLTHZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 15:04:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=W9Z3fZd8lgYvcaamXvU+v8UAmv2bdOEUg+ZoBruhi4jcObsbGMuW8SqOqNb0wMDoOj
-         FQNHRIzZGoCimMQB35eH4vCYC3EjoTwTj2LNU1Q+MikGgM5f7N3GJT11Z2+CuLa0QWy6
-         /nk/1F89QDZXCY/OoFVYExQmFen8gRIvz1pYM=
+	Wed, 12 Aug 2009 15:07:25 -0400
+Date: Wed, 12 Aug 2009 22:07:03 +0300
+From: Felipe Balbi <me@felipebalbi.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Felipe Balbi <me@felipebalbi.com>, Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mike Rapoport <mike@compulab.co.il>, linux-kernel@vger.kernel.org
+Subject: Re: Smart Battery System Design (was: Re: Question about
+ userspace-consumer)
+Message-ID: <20090812190659.GA21001@gandalf>
+Reply-To: me@felipebalbi.com
+References: <20090810200553.GB4652@gandalf>
+ <20090810215800.GB4528@sirena.org.uk>
+ <20090811054438.GA7176@gandalf>
+ <20090811094020.GA6762@rakim.wolfsonmicro.main>
+ <1249986616.5807.28.camel@odin>
+ <20090811204914.GB13969@gandalf>
+ <20090811223645.GA4691@sirena.org.uk>
+ <20090812064745.GA17285@gandalf>
+ <20090812100517.GA11227@sirena.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0908121841550.14314@sister.anvils>
-References: <a1b36c3a0908101347t796dedbat2ecb0535c32f325b@mail.gmail.com>
-	 <Pine.LNX.4.64.0908121841550.14314@sister.anvils>
-Date: Wed, 12 Aug 2009 15:04:51 -0400
-Message-ID: <a1b36c3a0908121204q1b59df1fk86afec9d05ec16dc@mail.gmail.com>
-Subject: Re: vma_merge issue
-From: Bill Speirs <bill.speirs@gmail.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090812100517.GA11227@sirena.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 2:26 PM, Hugh Dickins<hugh.dickins@tiscali.co.uk> wrote:
-> On Mon, 10 Aug 2009, Bill Speirs wrote:
->>
->> I came across an issue where adjacent pages are not properly coalesced
->> together when changing protections on them. This can be shown by doing
->> the following:
->>
->> 1) Map 3 pages with PROT_NONE and MAP_PRIVATE | MAP_ANONYMOUS
->> 2) Set the middle page's protection to PROT_READ | PROT_WRITE
->> 3) Set the middle page's protection back to PROT_NONE
->>
->> You are left with 3 entries in /proc/self/map where you should only
->> have 1. If you only change the protection to PROT_READ in step 2, then
->> it is properly merged together. I noticed in mprotect.c the following
->> comment in the function mprotect_fixup; I'm not sure if it applies or
->> not:
->>         /*
->>          * If we make a private mapping writable we increase our commit;
->>          * but (without finer accounting) cannot reduce our commit if we
->>          * make it unwritable again.
-> [ the following lines of the comment are not relevant here so I'll delete ]
->>          */
->>
->> I think this only applies to setting charged = nrpages; however,
->> VM_ACCOUNT is also added to newflags. Could it be that the adjacent
->> blocks don't have VM_ACCOUNT and so the call to vma_merge cannot merge
->> because the flags for the adjacent vma are not the same?
->
-> That's right, and it is working as intended.
->
-> To allow people to set up enormous PROT_READ,MAP_PRIVATE mappings
-> "for free", we don't account those initially, but only as parts
-> are mprotected writable later: at that point they're accounted,
-> and marked VM_ACCOUNT so that we know it's been done (and don't
-> double account later on).
->
-> So your middle page has been accounted (one page added to
-> /proc/meminfo's Committed_AS, which isn't allowed to exceed CommitLimit
-> if /proc/sys/vm/overcommit_memory is 2 to disable overcommit), but the
-> neighbouring pages have not been accounted: so we need separate vmas
-> for them, I'm afraid, since that accounting is done per vma.
->
->>
->> Can anyone shed some light on this? While it isn't an issue for 3
->> pages, I'm mmaping 200K+ pages and changing the perms on random pages
->> throughout and then back but I quickly run into the max_map_count when
->> I don't actually need that many mappings.
->
-> But that's easily dealt with: just make your mmap PROT_READ|PROT_WRITE,
-> which will account for the whole extent; then mprotect it all PROT_NONE,
-> which will take you to your previous starting position; then proceed as
-> before - the vmas should get merged as they are reset back to PROT_NONE.
-> That works, doesn't it?
+Hi,
 
-Unfortunately, that doesn't work. When I mmap pages as PROT_WRITE it
-is checked against the CommitLimit and returns with ENOMEM as I'm
-mmaping a lot of pages. However, I don't actually want to be charged
-for that memory, as I won't be using all of it. This is why I mmap as
-PROT_NONE as I'm not charged for it. Then when I set a page to
-PROT_WRITE I get charged (which is expected and OK), but then going
-back to PROT_NONE I don't get "uncharged". This makes sense as I could
-simply PROT_WRITE that page again and I should be charged. However, I
-have no way (that I know of) to tell the kernel "I'm done with this
-page, don't charge me for it, and set it's protection to PROT_NONE."
-I've tried madvise with MADV_DONTNEED but that doesn't seem to remove
-the VM_ACCOUNT flag.
+On Wed, Aug 12, 2009 at 11:05:17AM +0100, Mark Brown wrote:
+> You actually get notification on any change the supply chooses to notify
+> the core on IIRC.
 
-I have seen an mm patch that introduces MADV_FREE, which I believe
-removes the VM_ACCOUNT flag and decrements the commit charge. Does it
-make sense to have this type of functionality? Can I get this same
-type of functionality (start without being charged for a page, use it,
-then un-use it and remove the charge for it?) currently?
+true, but that's only (at least on the chips I've seen) for the presence
+of the charger. I haven't seen a chip that notify you based on a
+threshold of e.g. voltage change or temperature change. Which would be a
+really nice feature: you could give a "best" temperature value and a
+threshold of +-10% and if that changes over that limit, device
+interrupts processor, or something like that.
 
-> (I must offer a big thank you: replying to your mail just after writing
-> a mail about the ZERO_PAGE, brings me to realize - if I'm not mistaken -
-> that we broke the accounting of initially non-writable anonymous areas
-> when we stopped using the ZERO_PAGE there, but marked readfaulted pages
-> as dirty.  Looks like another argument to bring them back.)
+> I'd be inclined to put at least some of the basic charge cycle into the
+> kernel but it doesn't concern me too much so long as the user/kernel
+> interface doesn't expose us to the risk of damaging the battery through
+> inattention.
 
-I'm not 100% sure what you're talking about with respect to ZERO_PAGE,
-but I'm happy to help :-)
+sounds reasonable.
 
-Bill-
+> It's probably more interesting to think of prioritising between multiple
+> batteries here - most systems I've seen have power path management which
+> handles all the incoming power sources and uses them to maintain an
+> unregulated power domain which is then used as the root supply for the
+> rest of the system, including the battery chargers.  This takes the
+> supply selection well out of the domain of charging.
+
+sounds really good. Haven't a system like that so far :-(
+
+> This is the really tricky bit since you need some idea of the load from
+> the rest of the system if the charger really is able to draw current.
+> Normally there's a combination of checking various gates to see if it's
+> possible to start charging with the current parameters and then things
+> like monitoring the supply voltage to the charger to make sure it's not
+> drooping and taking corrective action if it does.
+> 
+> My feeling is that in addition to what you're saying the in-kernel side
+> of things should also describe how the system is wired together since
+> that's the sort of task the kernel is doing anyway, it's something
+> that is fixed in the hardware and it's potentially dangerous to get
+> wrong.
+
+agree with you here.
+
+> Assuming the charger also has things like voltage and current control
+> exposed.  I think I'd expect to see some sort of charger class which
+> abstracts out the functionality of the charger so that the same user
+> applications can also be used to set policy for more autonomous
+> chargers.  Those chargers may require contortions to fit them into the
+> regulator API depending on the control they provide to the system.  More
+> simple chargers may well fit cleanly into the regulator API (they're
+> regulators after all) but that'd be just one example of this class.
+> 
+> Quite how much I'd expect such a soft charger to be able to do for
+> itself I'm less sure about but I'd be inclined to at least look at doing
+> the stuff that can be done with only information from the battery in
+> kernel to make things more consistent for user space.
+
+makes sense.
+
+> Yes, exactly - there's a real danger of catastrophic system failure if
+> that happens.
+
+sure there is.
+
+I believe we're reaching some conclusions here. I'll think over your
+thoughts and try to get more time to read the specs over the weekend (so
+much work during the week, sigh). Then let's see what could be done so
+we have a good design for a charger api in kernel.
+
+-- 
+balbi
