@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932608AbZHLLQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932585AbZHLLUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932608AbZHLLQt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 07:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932555AbZHLLQt
+	id S932585AbZHLLUf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 07:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbZHLLUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 07:16:49 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:51488 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932471AbZHLLQs (ORCPT
+	Wed, 12 Aug 2009 07:20:35 -0400
+Received: from statler.bytemark.co.uk ([212.110.162.18]:39555 "EHLO
+	statler.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751606AbZHLLUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 07:16:48 -0400
-Date: Wed, 12 Aug 2009 12:16:46 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-input@vger.kernel.org
-Subject: Re: [PATCH 2/5] [input] add mc13783 touchscreen driver
-Message-ID: <20090812111646.GB11227@sirena.org.uk>
-References: <1249981667-4366-1-git-send-email-s.hauer@pengutronix.de> <1249981667-4366-2-git-send-email-s.hauer@pengutronix.de> <1249981667-4366-3-git-send-email-s.hauer@pengutronix.de> <20090812024609.5EB8B526EC9@mailhub.coreip.homeip.net> <20090812111018.GC17992@pengutronix.de>
+	Wed, 12 Aug 2009 07:20:34 -0400
+Date: Wed, 12 Aug 2009 13:20:20 +0200
+From: "Emilio G. Cota" <cota@braap.org>
+To: Martyn Welch <martyn.welch@gefanuc.com>
+Cc: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
+Subject: Re: [patch 2/5] Staging: vme: add VME userspace driver
+Message-ID: <20090812112020.GB10800@braap.org>
+References: <20090810152606.GA23319@braap.org> <4A804B0B.5020809@gefanuc.com> <20090810203637.GD3055@braap.org> <4A8133ED.6070304@gefanuc.com> <20090811094025.GC3251@braap.org> <4A81683D.2030408@gefanuc.com> <20090811210146.GB9910@braap.org> <4A827A84.3060906@gefanuc.com> <20090812093949.GB2604@braap.org> <4A8291F5.8060406@gefanuc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090812111018.GC17992@pengutronix.de>
-X-Cookie: One FISHWICH coming up!!
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <4A8291F5.8060406@gefanuc.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 01:10:18PM +0200, Sascha Hauer wrote:
-> On Tue, Aug 11, 2009 at 07:15:33PM -0700, Dmitry Torokhov wrote:
+Martyn Welch wrote:
+> However, I also need to consider other cases, such as communications  
+> between multiple SBCs and potentially a few slave devices. I have a need  
+> for this *now*, not in the future. To me, slave support and to a lesser  
+> degree location monitor support is important now, hence why it's  
+> supported in my driver and core. Hence why I am asking, how do you  
+> propose to support these features?
 
-> > This device does not appear to privide pressure readings, use BTN_TOUCH
-> > alone to indicate touches instead of fake ABS_PRESSURE event. Yes, I
-> > know that older versions of tslib only recognize ABS_PRESSURE...
+Point taken.
 
-> In fact no released version of tslib supports this :( Anyway, fixed.
+Could you tell me a bit more about your needs on this respect?
+So, you have multiple SBCs (some of them as masters, some others
+as slaves) running Linux and want to communicate between them?
+Have you got working code for all that?
 
-Android uses this.  No idea if they've got tslib or their own thing.
+E.
