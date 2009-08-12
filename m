@@ -1,79 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751216AbZHLEIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751118AbZHLELm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751216AbZHLEIG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 00:08:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbZHLEIF
+	id S1751118AbZHLELm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 00:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897AbZHLELl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 00:08:05 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43141 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750741AbZHLEIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 00:08:04 -0400
-Date: Wed, 12 Aug 2009 06:07:56 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Zach Brown <zach.brown@oracle.com>
-Cc: Manfred Spraul <manfred@colorfullife.com>,
+	Wed, 12 Aug 2009 00:11:41 -0400
+Received: from smtp.flash.net.br ([201.46.240.48]:34490 "EHLO
+	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750877AbZHLELl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 00:11:41 -0400
+X-Greylist: delayed 327 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Aug 2009 00:11:40 EDT
+In-Reply-To: <20081110074516.GB707@atrey.karlin.mff.cuni.cz>
+References: <20081106194724.GB15366@ime.usp.br> <20081107014535.GA19201@ime.usp.br> <1226044855.4913f5b7f2f45@webmail.ime.usp.br> <20081108075008.GA8177@ime.usp.br> <dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com> <20081109024514.GA11744@ime.usp.br> <20081109113332.GD6094@elf.ucw.cz> <dd18b0c30811092117mc7bd310kaac33f5b1ff0a61d@mail.gmail.com> <20081110074516.GB707@atrey.karlin.mff.cuni.cz>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
+Message-Id: <8B08E6ED-5B5F-4AC0-A147-481A54ED6B55@ime.usp.br>
+Cc: Justin Mattock <justinmattock@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Nadia Derbey <Nadia.Derbey@bull.net>,
-       Pierre Peiffer <peifferp@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/4] ipc: sem optimise simple operations
-Message-ID: <20090812040756.GA5330@wotan.suse.de>
-References: <20090811110902.255877673@suse.de> <20090811111607.310739140@suse.de> <4A81B646.5060301@colorfullife.com> <4A81B728.7040200@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A81B728.7040200@oracle.com>
-User-Agent: Mutt/1.5.9i
+       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       yakui.zhao@intel.com, bugme-daemon@bugzilla.kernel.org,
+       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
+Content-Transfer-Encoding: 8BIT
+From: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
+Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button suspends, but does not wakes up
+Date: Wed, 12 Aug 2009 01:10:24 -0300
+To: Pavel Machek <pavel@suse.cz>
+X-Mailer: Apple Mail (2.753.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 11:23:36AM -0700, Zach Brown wrote:
-> Manfred Spraul wrote:
-> > On 08/11/2009 01:09 PM, npiggin@suse.de wrote:
-> >> Index: linux-2.6/include/linux/sem.h
-> >> ===================================================================
-> >> --- linux-2.6.orig/include/linux/sem.h
-> >> +++ linux-2.6/include/linux/sem.h
-> >> @@ -86,6 +86,8 @@ struct task_struct;
-> >>   struct sem {
-> >>       int    semval;        /* current value */
-> >>       int    sempid;        /* pid of last operation */
-> >> +    struct list_head    negv_pending;
-> >> +    struct list_head    zero_pending;
-> >>   };
-> >>    
-> > struct sem is increased from 8 to 24 bytes.
-> 
-> And larger still with 64bit pointers.
+Hi, Pavel and other people.
 
-Yes it is a significant growth. To answer Manfed's question, I don't
-know if there are applications using large numbers of semaphores per
-set. Google search for increase SEMMSL results in mostly Oracle,
-which says to use 250 (which is our current default).
+I'm just resurrecting this old bug (and everybody that was involved  
+with it), as it's been quite some time now and I still have the exact  
+same problems, unfortunately. :-(
 
-A semaphore set with 250 will use 2K before, and 10K afterward. I
-don't know that it is a huge amount really, given that they also
-have to presumably be *protecting* stuff.
+(I wrote the comments below in the past year, but they are still valid).
 
-We can convert them to hlists (I was going to send a patch to do
-everything in hlists, but hlists are missing some _rcu variants...
-maybe I should just convert the pending lists to start with).
+On Nov 10 2008, Pavel Machek wrote:
+>> FWIW, running radeon and s2ram
+>> gives me a successful wakeup,
+>> no delays only bluetooth-applet fails
+>> to show back up as eye candy.
 
- 
-> If it's a problem, this can be scaled back.  You can have pointers to
-> lists and you can have fewer lists.
-> 
-> Hopefully it won't be a problem, though.  We can close our eyes and
-> pretend that the size of the semaphore sets scale with the size of the
-> system and that it's such a relatively small consumer of memory that no
-> one will notice :).
+It seems that s2disk doesn't hang here, from a limited test, but I will
+stress test this thing a bit further to see what is happening.
 
-The other thing is that using semaphores as sets really won't scale
-well at all. It will scale better now that there are per-sem lists,
-but there is still a per-set lock. They really should be discouraged.
+> So 2.6.28-rc3 actually works for you? Good ;-).
 
-It's not trivial to remove shared cachelines completely. Possible I
-think, but I think it would further increase complexity without a
-proven need at this point.
+You were replying to Justin, just to make sure. :-) The attributions are
+now completely messed up. :-)
 
+Funnily, Ubuntu's intrepid doesn't have s2ram (I think that I'll grab it
+from Debian for further testing).
+
+(...)
+
+If anybody has any idea on how to proceed, I would be thankful.
+
+
+Thanks, Rogério Brito.
+
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
