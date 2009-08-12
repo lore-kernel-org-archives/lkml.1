@@ -1,51 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752000AbZHLWEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752050AbZHLWEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752000AbZHLWEL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 18:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbZHLWEK
+	id S1752050AbZHLWEv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 18:04:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZHLWEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 18:04:10 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54331
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751845AbZHLWEJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 18:04:09 -0400
-Date: Wed, 12 Aug 2009 15:04:20 -0700 (PDT)
-Message-Id: <20090812.150420.56629284.davem@davemloft.net>
-To: linux@arm.linux.org.uk
-Cc: penberg@cs.helsinki.fi, pavel@ucw.cz, joe@perches.com, ben-linux@fluff.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, davidjon@xenontk.org,
-       mouw@nl.linux.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, khc@pm.waw.pl
-Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
- sections
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090812212502.GA24667@n2100.arm.linux.org.uk>
-References: <20090812194838.GB12117@n2100.arm.linux.org.uk>
-	<84144f020908121317g64551a2cu1b960f44ed5d0d9@mail.gmail.com>
-	<20090812212502.GA24667@n2100.arm.linux.org.uk>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Aug 2009 18:04:51 -0400
+Received: from sparc.brc.ubc.ca ([137.82.2.12]:65005 "EHLO sparc.brc.ubc.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751895AbZHLWEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 18:04:50 -0400
+From: Vincent Li <macli@brc.ubc.ca>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Vincent Li <macli@brc.ubc.ca>
+Subject: [PATCH] fs/proc/task_mmu.c: fix clear_refs_write() input sanity check
+Date: Wed, 12 Aug 2009 15:04:50 -0700
+Message-Id: <1250114690-24829-1-git-send-email-macli@brc.ubc.ca>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Wed, 12 Aug 2009 22:25:02 +0100
+Andrew Morton pointed out similar string hacking and obfuscated check for zero-length input
+at the end of the function, David Rientjes suggested to use strict_strtol to replace
+simple_strtol, this patch cover above suggestions, add removing of leading and trailing
+whitespace from user input. It does not change function behavious. 
 
-> Moreover, vger is trying to replicate the setup we had back in the
-> early 90s, which was found to be sub-optimal - we split the lists
-> into kernel stuff, userspace stuff and toolchain stuff to reduce the
-> amount of ignored postings - so that people specialising in ARM
-> userspace didn't have to wade through all the (vastly more) kernel
-> discussions.  Unfortunately, the new setup at vger would mean re-
-> combining the lists.
+This patch is rebased on mmotm-2009-08-04-14-22.
 
-This is a scarecrow.
+Signed-off-by: Vincent Li <macli@brc.ubc.ca>
+---
+ fs/proc/task_mmu.c |   18 ++++++++----------
+ 1 files changed, 8 insertions(+), 10 deletions(-)
 
-Nobody has opposed setting up a series of ARM lists on vger
-for development, if that is what works best.
+diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+index 2079969..026b532 100644
+--- a/fs/proc/task_mmu.c
++++ b/fs/proc/task_mmu.c
+@@ -494,18 +494,17 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
+ 	char buffer[PROC_NUMBUF], *end;
+ 	struct mm_struct *mm;
+ 	struct vm_area_struct *vma;
+-	int type;
++	long res;
+ 
+ 	memset(buffer, 0, sizeof(buffer));
+ 	if (count > sizeof(buffer) - 1)
+ 		count = sizeof(buffer) - 1;
+ 	if (copy_from_user(buffer, buf, count))
+ 		return -EFAULT;
+-	type = simple_strtol(buffer, &end, 0);
+-	if (type < CLEAR_REFS_ALL || type > CLEAR_REFS_MAPPED)
++	if (strict_strtol(strstrip(buffer), 10, &res)
++		return -EINVAL;
++	if (res < CLEAR_REFS_ALL || res > CLEAR_REFS_MAPPED)
+ 		return -EINVAL;
+-	if (*end == '\n')
+-		end++;
+ 	task = get_proc_task(file->f_path.dentry->d_inode);
+ 	if (!task)
+ 		return -ESRCH;
+@@ -529,9 +528,9 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
+ 			 * Writing 3 to /proc/pid/clear_refs only affects file
+ 			 * mapped pages.
+ 			 */
+-			if (type == CLEAR_REFS_ANON && vma->vm_file)
++			if (res == CLEAR_REFS_ANON && vma->vm_file)
+ 				continue;
+-			if (type == CLEAR_REFS_MAPPED && !vma->vm_file)
++			if (res == CLEAR_REFS_MAPPED && !vma->vm_file)
+ 				continue;
+ 			walk_page_range(vma->vm_start, vma->vm_end,
+ 					&clear_refs_walk);
+@@ -541,9 +540,8 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
+ 		mmput(mm);
+ 	}
+ 	put_task_struct(task);
+-	if (end - buffer == 0)
+-		return -EIO;
+-	return end - buffer;
++
++	return count;
+ }
+ 
+ const struct file_operations proc_clear_refs_operations = {
+-- 
+1.6.0.4
 
-One simply has to ask me to create them.
