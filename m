@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754120AbZHLQEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbZHLQGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754120AbZHLQEs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 12:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbZHLQEr
+	id S1754157AbZHLQGy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 12:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754108AbZHLQGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 12:04:47 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:31547 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754044AbZHLQEq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 12:04:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=EMH7jB2j+LZYV+1dhbb2SWBnonK4+7SABLsBwCmbzjpq+cBmnHnVvZfGbtsSUGCV/2
-         QeWX2IiX17AZDMwRJpRA8VuxYKajTP/xQ+o3aD6N0v2qJzaANMnwc1BextAIXQl818bP
-         hH3wRX7pbjHsu/OtvtZEqHaI1zWB6vutW27Nk=
-Date: Wed, 12 Aug 2009 09:04:38 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH 2/5] [input] add mc13783 touchscreen driver
-References: <1250089531-10399-1-git-send-email-s.hauer@pengutronix.de> <1250089531-10399-2-git-send-email-s.hauer@pengutronix.de> <1250089531-10399-3-git-send-email-s.hauer@pengutronix.de>
+	Wed, 12 Aug 2009 12:06:53 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:60523 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754078AbZHLQGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 12:06:52 -0400
+Date: Wed, 12 Aug 2009 09:06:45 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Gregory Haskins <gregory.haskins@gmail.com>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com
+Subject: Re: [PATCHv2 2/2] vhost_net: a kernel-level virtio server
+Message-ID: <20090812160645.GC6779@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <cover.1249992497.git.mst@redhat.com> <20090811212802.GC26309@redhat.com> <4A82076A.1060805@gmail.com> <20090812090219.GB26847@redhat.com> <4A82BD2F.7080405@gmail.com> <20090812132539.GD29200@redhat.com> <20090812141107.GD6833@linux.vnet.ibm.com> <20090812141559.GA29387@redhat.com> <20090812152639.GA6779@linux.vnet.ibm.com> <20090812155154.GA29797@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1250089531-10399-3-git-send-email-s.hauer@pengutronix.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090812163521.75631526EC9@mailhub.coreip.homeip.net>
+In-Reply-To: <20090812155154.GA29797@redhat.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 05:05:28PM +0200, Sascha Hauer wrote:
-> This driver provides support for the touchscreen interface
-> integrated into the Freescale MC13783.
+On Wed, Aug 12, 2009 at 06:51:54PM +0300, Michael S. Tsirkin wrote:
+> On Wed, Aug 12, 2009 at 08:26:39AM -0700, Paul E. McKenney wrote:
+> > On Wed, Aug 12, 2009 at 05:15:59PM +0300, Michael S. Tsirkin wrote:
+> > > On Wed, Aug 12, 2009 at 07:11:07AM -0700, Paul E. McKenney wrote:
+> > > > On Wed, Aug 12, 2009 at 04:25:40PM +0300, Michael S. Tsirkin wrote:
+> > > > > On Wed, Aug 12, 2009 at 09:01:35AM -0400, Gregory Haskins wrote:
+> > > > > > I think I understand what your comment above meant:  You don't need to
+> > > > > > do synchronize_rcu() because you can flush the workqueue instead to
+> > > > > > ensure that all readers have completed.
+> > > > > 
+> > > > > Yes.
+> > > > > 
+> > > > > >  But if thats true, to me, the
+> > > > > > rcu_dereference itself is gratuitous,
+> > > > > 
+> > > > > Here's a thesis on what rcu_dereference does (besides documentation):
+> > > > > 
+> > > > > reader does this
+> > > > > 
+> > > > > 	A: sock = n->sock
+> > > > > 	B: use *sock
+> > > > > 
+> > > > > Say writer does this:
+> > > > > 
+> > > > > 	C: newsock = allocate socket
+> > > > > 	D: initialize(newsock)
+> > > > > 	E: n->sock = newsock
+> > > > > 	F: flush
+> > > > > 
+> > > > > 
+> > > > > On Alpha, reads could be reordered.  So, on smp, command A could get
+> > > > > data from point F, and command B - from point D (uninitialized, from
+> > > > > cache).  IOW, you get fresh pointer but stale data.
+> > > > > So we need to stick a barrier in there.
+> > > > > 
+> > > > > > and that pointer is *not* actually
+> > > > > > RCU protected (nor does it need to be).
+> > > > > 
+> > > > > Heh, if readers are lockless and writer does init/update/sync,
+> > > > > this to me spells rcu.
+> > > > 
+> > > > If you are using call_rcu(), synchronize_rcu(), or one of the
+> > > > similar primitives, then you absolutely need rcu_read_lock() and
+> > > > rcu_read_unlock(), or one of the similar pairs of primitives.
+> > > 
+> > > Right. I don't use any of these though.
+> > > 
+> > > > If you -don't- use rcu_read_lock(), then you are pretty much restricted
+> > > > to adding data, but never removing it.
+> > > > 
+> > > > Make sense?  ;-)
+> > > 
+> > > Since I only access data from a workqueue, I replaced synchronize_rcu
+> > > with workqueue flush. That's why I don't need rcu_read_lock.
+> > 
+> > Well, you -do- need -something- that takes on the role of rcu_read_lock(),
+> > and in your case you in fact actually do.  Your equivalent of
+> > rcu_read_lock() is the beginning of execution of a workqueue item, and
+> > the equivalent of rcu_read_unlock() is the end of execution of that same
+> > workqueue item.  Implicit, but no less real.
 > 
-> changes since v1:
-> 
-> - remove unused functions
-> - use queue_delayed_work instead of queue_work
-> - report pen events as BTN_TOUCH instead of ABS_PRESSURE
-> - handle interrupt registration in open/close functions
-> - do not call input_free_device() on already registered
->   input_device
-> - use platform_driver_probe instead of platform_driver_register
+> Well put. I'll add this to comments in my code.
 
-BTW, if you are using platform_driver_probe() then __init is OK for
-.probe() because all probes will only be run once, when driver loads.
-IIRC the ability to discard probe() code was the main reason for
-introducing platform_driver_probe().
+Very good, thank you!!!
 
-> +
-> +	/* unmask the ts wakeup interrupt */
-> +	mc13783_set_bits(priv->mc13783, MC13783_REG_INTERRUPT_MASK_0,
-> +			MC13783_INT_MASK_TSM, 0);
-> +
-> +	mc13783_adc_set_ts_status(priv->mc13783, 1);
-> +
+> > If a couple more uses like this show up, I might need to add this to
+> > Documentation/RCU.  ;-)
 
-I actually expected these bits to go into ->open(); not the request IRQ
-stuff...
+And I idly wonder if this approach could replace SRCU.  Probably not
+for protecting the CPU-hotplug notifier chains, but worth some thought.
 
--- 
-Dmitry
+							Thanx, Paul
