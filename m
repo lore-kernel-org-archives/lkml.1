@@ -1,87 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752032AbZHLMhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751965AbZHLMlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752032AbZHLMhd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 08:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZHLMhc
+	id S1751965AbZHLMlh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 08:41:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbZHLMlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 08:37:32 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:60651 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751978AbZHLMhb (ORCPT
+	Wed, 12 Aug 2009 08:41:36 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:37513 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750926AbZHLMlf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 08:37:31 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [RFC PATCH] kbuild: Do not select symbols with unmet dependencies
-Date: Wed, 12 Aug 2009 14:36:58 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>
-References: <20090812112308.30683.24700.stgit@pc1117.cambridge.arm.com>
-In-Reply-To: <20090812112308.30683.24700.stgit@pc1117.cambridge.arm.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 12 Aug 2009 08:41:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=smRqwJBa2cY1dIJTSNa+IqAzqCu41Hhs8WqxEjQv4rmM//lDjJpT8AAXPLpLJYnIAh
+         9Zpn+7ZpAk+RLi/9v64sCIcJvM0HPHB6LEmPbWU1mGmQNHi3sx8hLn9MQkCP3La5Gsey
+         6S9WRAc59vc5nnV9/kRAniJyWPa7i0zYSML+Q=
+Message-ID: <4A82B87B.4010208@gmail.com>
+Date: Wed, 12 Aug 2009 08:41:31 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908121436.58490.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19xDYVcPt0w6+EmBd7ZTylXtV0X+1ENL2otUrN
- iqe8VfwYEAX35pISOFOk+p7tjSn3DBXICLseewizvzbnM6scX2
- OXYAQPKiP/hWTA9biH5hA==
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org,
+       "akpm@linux-foundation.org >> Andrew Morton" 
+	<akpm@linux-foundation.org>,
+       hpa@zytor.com, Patrick Mullaney <pmullaney@novell.com>
+Subject: Re: [PATCHv2 0/2] vhost: a kernel-level virtio server
+References: <20090811212743.GA26309@redhat.com> <4A820391.1090404@gmail.com> <20090812071636.GA26847@redhat.com> <4A82ADD5.6040909@gmail.com> <20090812120541.GA29158@redhat.com>
+In-Reply-To: <20090812120541.GA29158@redhat.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig174E0DB952567894B5C84450"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 August 2009, Catalin Marinas wrote:
-> The "select" statement in Kconfig files allows the enabling of options
-> even if they have unmet direct dependencies (i.e. "depends on" expands
-> to "no"). Currently, the "depends on" clauses are used in calculating
-> the visibility but they do not affect the reverse dependencies in any
-> way.
-> 
-> The patch introduces additional tracking of the "depends on" statements
-> and does not allow selecting an option if its direct dependencies are
-> not met, also printing a warning.
-> 
-> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig174E0DB952567894B5C84450
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I guess this will change the behaviour of a number of subsystems,
-likely causing unexpected regressions. I think your change
-makes sense, but we need to be much more careful.
+Michael S. Tsirkin wrote:
+> On Wed, Aug 12, 2009 at 07:56:05AM -0400, Gregory Haskins wrote:
+>> Michael S. Tsirkin wrote:
 
-Can you extract a list of configuration symbols that are
-impacted by your patch? A possibly way out could be to annotate
-all of them first by changing
+<snip>
 
----
-config FOO
-	bool
+>>>
+>>> 1. use a dedicated network interface with SRIOV, program mac to match=
 
-config BAR
-	depends on FOO
+>>>    that of guest (for testing, you can set promisc mode, but that is
+>>>    bad for performance)
+>>
+>> Are you saying SRIOV is a requirement, and I can either program the
+>> SRIOV adapter with a mac or use promis?  Or are you saying I can use
+>> SRIOV+programmed mac OR a regular nic + promisc (with a perf penalty).=
 
-config BAZ
-	select BAR
----
+>=20
+> SRIOV is not a requirement. And you can also use a dedicated
+> nic+programmed mac if you are so inclined.
 
-so that we either get
+Makes sense.  Got it.
 
-config BAZ
-	select FOO
-	select BAR
+I was going to add guest-to-guest to the test matrix, but I assume that
+is not supported with vhost unless you have something like a VEPA
+enabled bridge?
 
-or alternatively, on a case-by-case basis
+<snip>
 
-config BAZ
-	depends on FOO
-	select BAR
+>>> 3. add vhost=3DethX
+>> You mean via "ip link" I assume?
+>=20
+> No, that's a new flag for virtio in qemu:
+>=20
+> -net nic,model=3Dvirtio,vhost=3Dveth0
 
-Once that is in place, all the symbols have a well-defined behaviour
-and we can safely apply your patch.
+Ah, ok.  Even better.
 
-	Arnd <><
+Thanks!
+-Greg
+
+
+--------------enig174E0DB952567894B5C84450
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkqCuHsACgkQP5K2CMvXmqFbSQCfXtpBd2Q0mrhRjwRuIAyyTt5Y
+Ng4An3c7WsysfPVp8bJdLHpPutqgws9L
+=2P8B
+-----END PGP SIGNATURE-----
+
+--------------enig174E0DB952567894B5C84450--
