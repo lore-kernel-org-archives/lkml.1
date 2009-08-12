@@ -1,88 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752705AbZHLOBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbZHLODW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752705AbZHLOBy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 10:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbZHLOBx
+	id S1752713AbZHLODW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 10:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbZHLODV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 10:01:53 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:53008 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752135AbZHLOBx (ORCPT
+	Wed, 12 Aug 2009 10:03:21 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:35117 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752634AbZHLODU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 10:01:53 -0400
-Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908111659510.5845-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0908111659510.5845-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Wed, 12 Aug 2009 09:01:50 -0500
-Message-Id: <1250085710.4000.8.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Aug 2009 10:03:20 -0400
+Date: Wed, 12 Aug 2009 10:03:21 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Zhang Rui <rui.zhang@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
+       "dtor@mail.ru" <dtor@mail.ru>
+Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
+In-Reply-To: <200908120117.27961.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0908120958200.2955-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-11 at 17:06 -0400, Alan Stern wrote:
-> This patch (as1279) adds kerneldoc for flush_scheduled_work()
-> containing a stern warning that the function should be avoided.
+On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
+
+> That looks quite complicated at first sight, but asynchronous resume with
+> completions can be done in a relatively simple patch.  I've got one, so
+> tomorow I'll post it for further discussion.
+
+Okay.  I would think that managing the threads would account for most 
+of the complexity in either implementation, but I'll wait to see how 
+your approach works out.
+
+> Thanks,
+> Rafael
 > 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 > 
-> ---
-> 
-> Index: usb-2.6/kernel/workqueue.c
-> ===================================================================
-> --- usb-2.6.orig/kernel/workqueue.c
-> +++ usb-2.6/kernel/workqueue.c
-> @@ -739,6 +739,24 @@ int schedule_on_each_cpu(work_func_t fun
->  	return 0;
->  }
->  
-> +/**
-> + * flush_scheduled_work - ensure that all work scheduled on keventd_wq has run to completion.
-> + *
-> + * Blocks until all works on the keventd_wq global workqueue have completed.
-> + * We sleep until all works present upon entry have been handled, but we
-> + * are not livelocked by new incoming ones.
-> + *
-> + * Use of this function is discouraged, as it is highly prone to deadlock.
-> + * It should never be called from within a work routine on the global
-> + * queue, and it should never be called while holding a mutex required
-> + * by one of the works on the global queue.  But the fact that keventd_wq
-> + * _is_ global means that it can contain works requiring practically any
-> + * mutex.  Hence this routine shouldn't be called while holding any mutex.
+> PS
+> Did you have a chance to look at rev. 15 of the runtime PM patch
+> (http://patchwork.kernel.org/patch/40306/)?
 
-I really don't see why this should be "discouraged".  It has exactly the
-same entangled deadlock problems as a lot of other functions like
-wait_event().
+Yes, sorry for not getting back to you.  It looks okay.
 
-> + * Consider using cancel_work_sync() or cancel_delayed_work_sync() instead.
-> + * They don't do the same thing (they cancel the work instead of waiting
-> + * for it to complete), but in most cases they will suffice.
-> + */
+The one thing I'm not sure of is the pm_runtime_put_noidle calls in 
+driver_probe_device and __device_release_driver.  It seems that we 
+should always call pm_runtime_put regardless of whether the probe 
+succeeds or not.
 
-And this is wrong advice.  If you've violated the entangled deadlock
-rules, the cancel functions will deadlock on you as well if the work is
-still pending.  The other problem is that cancellation is a completely
-different operation from flushing.  Flush is usually used in driver
-shutdown routines to complete all outstanding tasks before going away.
-Cancel wouldn't really have the same effect since the tasks may never
-get done.
+For example, the USB stack is set up to suspend devices that don't have
+a driver (this is handled at the bus subsystem level).  But if probing
+failed, there wouldn't be any idle callback and so the suspend wouldn't
+take place.
 
-The final problem with this is that it creates a dichotomy between this
-function, which is simply a wrapper for flush_workqueue() on the
-keventd_wq and flush_workqueue().  flush_workqueue() has no scary
-warnings, so are we trying to encourage driver writers all to create
-their own workqueues for everything and declaring the global kernel
-workqueue useless?  Or are we saying flushing workqueues is always bad
-and we just haven't got around to updating the documentation on
-flush_workqueue()?
-
-James
-
+Alan Stern
 
