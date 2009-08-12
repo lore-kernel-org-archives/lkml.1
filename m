@@ -1,86 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbZHLRCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbZHLRDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753317AbZHLRCY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 13:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZHLRCY
+	id S1754517AbZHLRDi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 13:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZHLRDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 13:02:24 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:53470 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750774AbZHLRCX (ORCPT
+	Wed, 12 Aug 2009 13:03:37 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:54229 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752192AbZHLRDg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 13:02:23 -0400
-Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908121216500.9635-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0908121216500.9635-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Wed, 12 Aug 2009 12:02:18 -0500
-Message-Id: <1250096538.4000.106.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Wed, 12 Aug 2009 13:03:36 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: virtualization@lists.linux-foundation.org,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
+Date: Wed, 12 Aug 2009 19:03:22 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <cover.1249930169.git.mst@redhat.com> <20090810185340.GC13924@redhat.com>
+In-Reply-To: <20090810185340.GC13924@redhat.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
+ =?iso-8859-1?q?Y=2Ea=5E3zb?=)
+ =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
+ =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908121903.22325.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+roL5IJOaSoIHAedRUmR+YNXXIujYN5Unb7ZT
+ InczmH4Fykw21Hb2gHy3KNRWTMyJnYpbTSZc2qwPdc3NBsFNIh
+ 9sY7YrT484x85KH5YRLJQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-12 at 12:23 -0400, Alan Stern wrote:
-> On Wed, 12 Aug 2009, James Bottomley wrote:
-> 
-> > This all boils down to "the race window for a deadlock may be narrower".
-> > 
-> > Instead of training programmers to narrow deadlock races, we should be
-> > training them to avoid them.
-> > 
-> > The entangled deadlock problem occurs in all of our _sync() APIs as well
-> > as interrupt and other workqueue stuff.
-> > 
-> > The rules are something like
-> > 
-> > Never use synchronous operations if you can avoid them.  If you must use
-> > operations that wait for another thread to complete (say because you're
-> > about to destroy data structures that queued elements may be using):
-> >      1. Never hold any locks or mutexes while waiting for the completion
-> >         of synchronous operations
-> >      2. If you have to hold a lock while waiting:
-> >              1. If it's a global lock, make sure you're using a local
-> >                 queue and that nothing you submitted to the queue can
-> >                 take the lock
-> >              2. If it's a local lock, you may use a global queue but
-> >                 must still make sure that nothing you submitted to the
-> >                 queue can take the lock.
-> 
-> I haven't seen these rules written down anywhere in the kernel 
-> documentation.  Presumably people are supposed to be aware of them 
-> already?
+On Monday 10 August 2009, Michael S. Tsirkin wrote:
 
-Um, well they seemed pretty obvious to me, so I just wrote them down.
+> +struct workqueue_struct *vhost_workqueue;
 
-> Anyway, 2.1 and 2.2 are wrong.  They should read: "... make sure that
-> nothing submitted to the queue calls any of your routines that can take
-> the lock."  The point being that even though _you_ don't submit
-> anything bad to the queue, somebody else might do so.
+[nitpicking] This could be static. 
 
-Semantically "make sure that nothing submitted to the queue can take a
-lock" means exactly that ... it includes all routines called by the
-queue function.
+> +/* The virtqueue structure describes a queue attached to a device. */
+> +struct vhost_virtqueue {
+> +	struct vhost_dev *dev;
+> +
+> +	/* The actual ring of buffers. */
+> +	struct mutex mutex;
+> +	unsigned int num;
+> +	struct vring_desc __user *desc;
+> +	struct vring_avail __user *avail;
+> +	struct vring_used __user *used;
+> +	struct file *kick;
+> +	struct file *call;
+> +	struct file *error;
+> +	struct eventfd_ctx *call_ctx;
+> +	struct eventfd_ctx *error_ctx;
+> +
+> +	struct vhost_poll poll;
+> +
+> +	/* The routine to call when the Guest pings us, or timeout. */
+> +	work_func_t handle_kick;
+> +
+> +	/* Last available index we saw. */
+> +	u16 last_avail_idx;
+> +
+> +	/* Last index we used. */
+> +	u16 last_used_idx;
+> +
+> +	/* Outstanding buffers */
+> +	unsigned int inflight;
+> +
+> +	/* Is this blocked? */
+> +	bool blocked;
+> +
+> +	struct iovec iov[VHOST_NET_MAX_SG];
+> +
+> +} ____cacheline_aligned;
 
-> If you use cancel_work_sync() instead of flush_scheduled_work() then 
-> the rules become less onerous.  In place of your 2.1 and 2.2, we have:
-> 
-> 	Make sure the work item you are cancelling cannot take
-> 	the lock.
-> 
-> This is much easier to verify.
+We discussed this before, and I still think this could be directly derived
+from struct virtqueue, in the same way that vring_virtqueue is derived from
+struct virtqueue. That would make it possible for simple device drivers
+to use the same driver in both host and guest, similar to how Ira Snyder
+used virtqueues to make virtio_net run between two hosts running the
+same code [1].
 
-It's the same, surely ... you must verify that everything going on to
-the queue obeys the rules otherwise you get things on it which can't be
-cancelled ... and thus either the advice to call cancel is wrong, or we
-could call flush because the locking rules are obeyed.
+Ideally, I guess you should be able to even make virtio_net work in the
+host if you do that, but that could bring other complexities.
 
-James
+	Arnd <><
 
-
+[1] http://lkml.org/lkml/2009/2/23/353
