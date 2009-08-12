@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752921AbZHLXYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753010AbZHLXZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752921AbZHLXYw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 19:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbZHLXYw
+	id S1753010AbZHLXZJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 19:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbZHLXZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 19:24:52 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:60388 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752701AbZHLXYv (ORCPT
+	Wed, 12 Aug 2009 19:25:08 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55314
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752799AbZHLXZH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 19:24:51 -0400
-Date: Thu, 13 Aug 2009 00:22:20 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Joe Perches <joe@perches.com>,
-       Ben Dooks <ben-linux@fluff.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
-	sections
-Message-ID: <20090812232220.GE24667@n2100.arm.linux.org.uk>
-References: <4A7ACC8D.7030706@xenontk.org> <20090806124048.GD27773@flint.arm.linux.org.uk> <1249563730.10297.13.camel@Joe-Laptop.home> <20090806133349.GF27773@flint.arm.linux.org.uk> <1249568614.10297.20.camel@Joe-Laptop.home> <20090806150322.GX2080@trinity.fluff.org> <1249948147.8895.96.camel@Joe-Laptop.home> <20090812115520.GI24339@elf.ucw.cz> <20090812194838.GB12117@n2100.arm.linux.org.uk> <1250118277.12423.7.camel@pc1117.cambridge.arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250118277.12423.7.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 12 Aug 2009 19:25:07 -0400
+Date: Wed, 12 Aug 2009 16:25:17 -0700 (PDT)
+Message-Id: <20090812.162517.13032565.davem@davemloft.net>
+To: tj@kernel.org
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: [PATCH 2/2 2.6.31-rc5 REPOST] percpu, sparc64: fix sparse
+ possible cpu map handling
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4A825CD5.3060209@kernel.org>
+References: <20090806115705.GB10734@elte.hu>
+	<4A7B01B8.8000902@kernel.org>
+	<4A825CD5.3060209@kernel.org>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 12:04:37AM +0100, Catalin Marinas wrote:
-> For the other ARM MAINTAINERS entries (e.g. specific boards), it is up
-> to the corresponding maintainers to add whatever lists they want, which
-> may include linux-arm@vger.
+From: Tejun Heo <tj@kernel.org>
+Date: Wed, 12 Aug 2009 15:10:29 +0900
 
-Just to be clear (and my final email tonight) I don't have a problem
-with that, provided the corresponding maintainers do agree (and
-therefore provide their ack).
+> Tejun Heo wrote:
+>> Ingo Molnar wrote:
+>>> for the x86 bits:
+>>>
+>>>  Acked-by: Ingo Molnar <mingo@elte.hu>
+>>>
+>>> Once Dave acks it i suspect you can send it to Linus directly?
+> 
+> Aieeeee, no response.
 
-But to do it as a blanket "add linux-arm@vger to everything with
-linux-arm-kernel" is wrong.
+These patches look fine, and I've tested them also on my
+Niagara-2 box.
+
+Acked-by: David S. Miller <davem@davemloft.net>
+
+Sorry for the delay :)
