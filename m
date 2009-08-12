@@ -1,104 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbZHLIQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924AbZHLIRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754773AbZHLIQr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 04:16:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbZHLIQp
+	id S1754924AbZHLIRB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 04:17:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbZHLIQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 04:16:45 -0400
-Received: from exprod5og104.obsmtp.com ([64.18.0.178]:44654 "EHLO
-	exprod5og104.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754515AbZHLIQn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 04:16:43 -0400
-Message-ID: <4A827A84.3060906@gefanuc.com>
-Date: Wed, 12 Aug 2009 09:17:08 +0100
-From: Martyn Welch <martyn.welch@gefanuc.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
-MIME-Version: 1.0
-To: "Emilio G. Cota" <cota@braap.org>
-CC: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [patch 2/5] Staging: vme: add VME userspace driver
-References: <20090803210116.GC28430@kroah.com> <20090808232259.GA29303@braap.org> <20090809121715.GA3884@braap.org> <4A801D04.6050102@gefanuc.com> <20090810152606.GA23319@braap.org> <4A804B0B.5020809@gefanuc.com> <20090810203637.GD3055@braap.org> <4A8133ED.6070304@gefanuc.com> <20090811094025.GC3251@braap.org> <4A81683D.2030408@gefanuc.com> <20090811210146.GB9910@braap.org>
-In-Reply-To: <20090811210146.GB9910@braap.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Aug 2009 04:16:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54883 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932176AbZHLIQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 04:16:56 -0400
+Date: Wed, 12 Aug 2009 04:15:32 -0400
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       Neil Horman <nhorman@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andi Kleen <andi@firstfloor.org>, Amerigo Wang <amwang@redhat.com>,
+       akpm@linux-foundation.org, bernhard.walle@gmx.de,
+       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Message-Id: <20090812081755.5757.32765.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>
+References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>
+Subject: [Patch 2/8] x86: implement crashkernel=auto
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Emilio G. Cota wrote:
-> Martyn Welch wrote:
->   
->> I disagree. The bridge drivers should register their resources with the  
->> core. The core, or a layer above it, can control how those resources are  
->> used. This moves the complexity you want for managing the windows to a  
->> level that will work on all underlying drivers rather than having to be  
->> written explicitly for each one. The mechanism I have provided does this  
->> discovery.
->>     
->
-> nah, it would be foolish to think we can write an upper layer
-> that covers every corner case for every bridge we're gonna
-> encounter. 
-So it's foolish to have a generic USB layer, or a generic PCI layer or 
-generic "name you bus here" layer?
 
-Unless you provide a consistent API, such as one supporting the features 
-documented in the VME specifications, how are you planning to write 
-drivers that could potentially work on more than one specific bridge?
+Implement "crashkernel=auto" for x86 first, other arch will be added in the
+following patches.
 
-> For instance, imagine a bridge that has 10 windows,
-> with the annoying feature that window#10 *only* accepts CS/CSR
-> mappings. How stupid is that? Very stupid. But what would be
-> more stupid is to write allegedly 'generic' interfaces that
-> break every time a bridge comes up with a stupid feature.
->   
+Signed-off-by: WANG Cong <amwang@redhat.com>
 
-Actually, the VME core as it exists would support such a situation. The 
-10th window would only register as being capable of supporting that 
-address space. What about a driver only needed to access CR/CSR space 
-(to see what was available on other hosts for example), then utilized a 
-DMA controller to transfer data over the VME bus  (thereby not requiring 
-a master or slave window). It could request a window that fitted it's 
-needs ("vme_address_t aspace = VMECRCST;") and the core would be able to 
-hand it that resource. Should the underlying bridge not have such a 
-limited window, it can had it one with a larger feature set, ensuring 
-that it meets the requirements as requested by the driver.
+---
 
-> So that doesn't belong to a generic interface. Now, to avoid
-> code duplication between two (or more) _very_ similar bridges,
-> we just share the 'resource management' code among those,
-> privately. And that's pretty much it.
->   
-
-Or it could be layered on top, utilising the the resource management 
-that I have proposed and the two can sit together happily side-by-side. 
-If you are right and that method of access works best, then drivers will 
-use that rather than requesting resources. If not then the two can 
-continue to sit side-by-side. Why make the bridge drivers more complex 
-than they need to be?
-
-Also, it seems that your API doesn't currently support Location 
-Monitors. These are specified in the VME spec, I'd be interested in how 
-you plan to support this feature in a consistent manner with your 
-current API. These can only be used in a single location at a time and 
-cover a fixed number of addresses from the initial offset. The location 
-monitors are treated as a resource in my VME core which is consistent 
-with the windows being treated as resources.
-
-Come to think of it, I can't see any code managing slave windows either 
-- how is your API going to consistently manage these?
-
-Martyn
-
-> Regards,
-> E.
->   
-
-
--- 
-Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
-GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
-Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
-Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 927559189
+Index: linux-2.6/kernel/kexec.c
+===================================================================
+--- linux-2.6.orig/kernel/kexec.c
++++ linux-2.6/kernel/kexec.c
+@@ -37,6 +37,7 @@
+ #include <asm/io.h>
+ #include <asm/system.h>
+ #include <asm/sections.h>
++#include <asm/setup.h>
+ 
+ /* Per cpu memory for storing cpu states in case of system crash. */
+ note_buf_t* crash_notes;
+@@ -1297,6 +1298,39 @@ int __init parse_crashkernel(char 		 *cm
+ 
+ 	ck_cmdline += 12; /* strlen("crashkernel=") */
+ 
++#ifdef CONFIG_KEXEC_AUTO_RESERVE
++	if (strncmp(ck_cmdline, "auto", 4) == 0) {
++		unsigned long long size;
++		int len;
++		char tmp[32];
++
++		size = arch_default_crash_size(system_ram);
++		if (size != 0) {
++			*crash_size = size;
++			*crash_base = arch_default_crash_base();
++			len = scnprintf(tmp, sizeof(tmp), "%luM@%luM",
++					(unsigned long)(*crash_size)>>20,
++					(unsigned long)(*crash_base)>>20);
++			/* 'len' can't be <= 4. */
++			if (likely((len - 4 + strlen(cmdline))
++					< COMMAND_LINE_SIZE - 1)) {
++				memmove(ck_cmdline + len, ck_cmdline + 4,
++					strlen(cmdline) - (ck_cmdline + 4 - cmdline) + 1);
++				memcpy(ck_cmdline, tmp, len);
++			}
++			return 0;
++		} else {
++			/*
++			 * We can't reserve memory auotmatcally,
++			 * remove "crashkernel=auto" from cmdline.
++			 */
++			ck_cmdline += 4; /* strlen("auto") */
++			memmove(ck_cmdline - 16, ck_cmdline,
++				strlen(cmdline) - (ck_cmdline - cmdline) + 1);
++			return -ENOMEM;
++		}
++	}
++#endif
+ 	/*
+ 	 * if the commandline contains a ':', then that's the extended
+ 	 * syntax -- if not, it must be the classic syntax
+Index: linux-2.6/arch/x86/include/asm/kexec.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/kexec.h
++++ linux-2.6/arch/x86/include/asm/kexec.h
+@@ -23,6 +23,7 @@
+ 
+ #include <asm/page.h>
+ #include <asm/ptrace.h>
++#include <asm-generic/kexec.h>
+ 
+ /*
+  * KEXEC_SOURCE_MEMORY_LIMIT maximum page get_free_page can return.
+Index: linux-2.6/include/asm-generic/kexec.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/asm-generic/kexec.h
+@@ -0,0 +1,42 @@
++#ifndef _ASM_GENERIC_KEXEC_H
++#define _ASM_GENERIC_KEXEC_H
++
++#ifdef CONFIG_KEXEC_AUTO_RESERVE
++
++#ifndef KEXEC_AUTO_RESERVED_SIZE
++#define KEXEC_AUTO_RESERVED_SIZE (1ULL<<27) /* 128M */
++#endif
++#ifndef KEXEC_AUTO_THRESHOLD
++#define KEXEC_AUTO_THRESHOLD (1ULL<<32) /* 4G */
++#endif
++
++#ifndef ARCH_HAS_DEFAULT_CRASH_SIZE
++static inline
++unsigned long long arch_default_crash_size(unsigned long long total_size)
++{
++	if (total_size < KEXEC_AUTO_THRESHOLD)
++		return 0;
++	else {
++#ifdef CONFIG_64BIT
++		if (total_size > 1ULL<<40) /* 1TB */
++			return KEXEC_AUTO_RESERVED_SIZE
++				* (1ULL<<40 / KEXEC_AUTO_THRESHOLD);
++		return 1ULL<<ilog2(roundup(total_size/32, 1ULL<<21));
++#else
++		return KEXEC_AUTO_RESERVED_SIZE;
++#endif
++	}
++}
++#endif
++#ifndef ARCH_HAS_DEFAULT_CRASH_BASE
++static inline
++unsigned long long arch_default_crash_base(void)
++{
++	/* 0 means find the base address automatically. */
++	return 0;
++}
++#endif
++
++#endif /* CONFIG_KEXEC_AUTO_RESERVE */
++
++#endif
