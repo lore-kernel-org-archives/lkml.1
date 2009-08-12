@@ -1,110 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755713AbZHLCQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbZHLC1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755713AbZHLCQX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 22:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755491AbZHLCQW
+	id S1755455AbZHLC1D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 22:27:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbZHLC1C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 22:16:22 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:62152 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755317AbZHLCQV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 22:16:21 -0400
-Message-ID: <4A8225DC.1060200@ct.jp.nec.com>
-Date: Wed, 12 Aug 2009 11:15:56 +0900
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Nikanth Karthikesan <knikanth@suse.de>
-CC: Alasdair G Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org, Hannes Reinecke <hare@suse.de>
-Subject: Re: [PATCH-v2 2/2] Initialize mempool and elevator only for request-based
- dm devices
-References: <200908081026.01097.knikanth@suse.de> <200908101618.21060.knikanth@suse.de> <4A812680.7040804@ct.jp.nec.com> <200908111435.12020.knikanth@suse.de>
-In-Reply-To: <200908111435.12020.knikanth@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 11 Aug 2009 22:27:02 -0400
+Received: from mga01.intel.com ([192.55.52.88]:61426 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751634AbZHLC1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 22:27:00 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,364,1246863600"; 
+   d="scan'208";a="715981155"
+Subject: Re: [BUGFIX] crypto: Fix ctr(aes) testing by specifying geniv
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+In-Reply-To: <1249524767.24238.318.camel@yhuang-dev.sh.intel.com>
+References: <1249285483-22286-1-git-send-email-ying.huang@intel.com>
+	 <20090805094506.GA12528@gondor.apana.org.au>
+	 <1249524767.24238.318.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain
+Date: Wed, 12 Aug 2009 10:27:00 +0800
+Message-Id: <1250044020.5337.214.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nikanth,
-
-On 08/11/2009 06:05 PM +0900, Nikanth Karthikesan wrote:
-> On Tuesday 11 August 2009 13:36:24 Kiyoshi Ueda wrote:
->> On 08/10/2009 07:48 PM +0900, Nikanth Karthikesan wrote:
->>> +
->>> +		/*
->>> +		 * reinitialize make_request_fn as it was reset to the
->>> +		 * default __make_request by blk_init_allocate_queue
->>> +		 */
->>> +		md->saved_make_request_fn = md->queue->make_request_fn;
->>> +		blk_queue_make_request(md->queue, dm_request);
->>> +
->>> +		blk_queue_softirq_done(md->queue, dm_softirq_done);
->>> +		blk_queue_prep_rq(md->queue, dm_prep_fn);
->>> +		blk_queue_lld_busy(md->queue, dm_lld_busy);
->>> +	}
->>> +
->>>  	__unbind(md);
->>>  	r = __bind(md, table, &limits);
->> The queue has been registered at the device creation time by
->> add_disk() in alloc_dev().
->> Since the queue is reconfigured (elevator is attached), you have to
->> update the queue registration (e.g. unregister, then re-register).
->> But it may not be easy.  At least, there is no exported interface to
->> unregister/re-register queue.
+On Thu, 2009-08-06 at 10:12 +0800, Huang Ying wrote:
+> On Wed, 2009-08-05 at 17:45 +0800, Herbert Xu wrote:
+> > On Mon, Aug 03, 2009 at 03:44:43PM +0800, Huang Ying wrote:
+> > > When doing "modeprobe tcrypt mode=10", the following error will show
+> > > in dmesg.
+> > > 
+> > > alg: skcipher: Failed to load transform for ctr(aes): -22
+> > > alg: skcipher: Failed to load transform for ctr(aes): -22
+> > > tcrypt: one or more tests failed!
+> > 
+> > I can't reproduce it here:
+> > 
+> > etch1:~# modprobe tcrypt mode=10
+> > FATAL: Error inserting tcrypt (/lib/modules/2.6.30/kernel/crypto/tcrypt.ko): Resource temporarily unavailable
+> > etch1:~# dmesg|tail
+> > alg: No test for digest_null (digest_null-generic)
+> > alg: No test for compress_null (compress_null-generic)
+> > padlock: VIA PadLock Hash Engine not detected.
+> > padlock: VIA PadLock Hash Engine not detected.
+> > eth0: link up, 100Mbps, full-duplex, lpa 0x05E1
+> > Initializing XFRM netlink socket
+> > NET: Registered protocol family 17
+> > NET: Registered protocol family 10
+> > lo: Disabled Privacy Extensions
+> > eth0: no IPv6 routers present
+> > etch1:~# 
+> > 
+> > The tcrypt test shouldn't use geniv at all.
+> > 
+> > What kernel version was this?
 > 
-> Ah, yes. The scheduler attributes will not be exported in 
-> /sys/block/dm*/queue/iosched. Exporting elv_register_queue() and calling it 
-> here solves it. Something like..
-> 
-> @@ -2203,6 +2199,29 @@ int dm_swap_table(struct mapped_device *md, struct 
-> dm_table *table)
->  		goto out;
->  	}
->  
-> +	/* new device is being marked as request-based */
-> +	if (!md->map && dm_table_request_based(table)) {
-> +		/* initialize queue for request-based dm */
-> +		r = blk_init_allocated_queue(md->queue, dm_request_fn, NULL);
-> +		if (r)
-> +			goto out;
-> +
-> +		r = elv_register_queue(md->queue);
-> +		/* if (r)
-> +		 *	 goto out; Better to ignore, just like add_disk does ;-)
-> +		 */
-> +		/*
-> +		 * reinitialize make_request_fn as it was reset to the
-> +		 * default __make_request by blk_init_allocate_queue
-> +		 */
-> +		md->saved_make_request_fn = md->queue->make_request_fn;
-> +		blk_queue_make_request(md->queue, dm_request);
-> +
-> +		blk_queue_softirq_done(md->queue, dm_softirq_done);
-> +		blk_queue_prep_rq(md->queue, dm_prep_fn);
-> +		blk_queue_lld_busy(md->queue, dm_lld_busy);
-> +	}
-> +
->  	__unbind(md);
->  	r = __bind(md, table, &limits);
->  
-> I would post the v3 of the patches with this change. Do you see any problems 
-> in this?
+> The version is: v2.6.30-6814-gab30046. Kernel config is attached too.
 
-Humm, it might work for now, but I disagree with that.
+Any follow-up for this patch? Still can not re-produce?
 
-Since elevator is block internal and dm doesn't really care
-(its initialization is actually hidden in blk_init_allocated_queue()),
-directly calling elv_register_queue() from dm seems not right.
-It will likely introduce a bug by future changes in block layer.
+Best Regards,
+Huang Ying
 
-I think the right approach is to define a proper block layer interface
-to reflect the queue configuration change.
-That's why I said "Updating the queue registration may not be easy".
-
-Thanks,
-Kiyoshi Ueda
 
