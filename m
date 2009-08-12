@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751319AbZHLVYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbZHLVY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751319AbZHLVYT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 17:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbZHLVYS
+	id S1751399AbZHLVY0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 17:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZHLVYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 17:24:18 -0400
-Received: from mail-fx0-f228.google.com ([209.85.220.228]:40266 "EHLO
-	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751012AbZHLVYR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 17:24:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=jbRLdpde6oIRWEy13Sv+taQl9hgt/OSmlBHg09k5nEe3eiI7mYrqYrnWezM8D1a9hk
-         aK8hXZ0zonrg39JWk9fC6lJSOy/M4yvNVvQD2oYQOwkNJ7VjoRHdEDKEqv07Ru0ZQvEE
-         G9zWBuzd0qsJ1JA4Np1nWutjCNuPIr+uMFHp0=
+	Wed, 12 Aug 2009 17:24:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48363 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751339AbZHLVYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 17:24:23 -0400
+Message-ID: <4A8333B4.7020301@redhat.com>
+Date: Wed, 12 Aug 2009 17:27:16 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <loom.20090812T194647-427@post.gmane.org>
-References: <loom.20090812T194647-427@post.gmane.org>
-Date: Wed, 12 Aug 2009 22:24:16 +0100
-Message-ID: <9b2b86520908121424qff7443fn84d07fb8dff7c863@mail.gmail.com>
-Subject: Re: Can initramfs be mounted read-only?
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: David Wuertele <dave+gmane@wuertele.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Jason Baron <jbaron@redhat.com>
+Subject: Re: [RFD] Kprobes/Kretprobes perf support
+References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com>	 <4A82EEC5.8000603@redhat.com> <4A82F5A0.2090603@redhat.com>	 <20090812191305.GB5974@nowhere> <1250111397.7035.1.camel@laptop>
+In-Reply-To: <1250111397.7035.1.camel@laptop>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/12/09, David Wuertele <dave+gmane@wuertele.com> wrote:
-> I've been trying to create a system with a read-only rootfs using initramfs,
-> but I'm not having any luck.  I've included "ro" on my command line and when
-> I cat /proc/cmdline it reports "ro" like I expect.  But when I type "mount",
-> I see this:
->
->   rootfs on / type rootfs (rw)
+Peter Zijlstra wrote:
+> On Wed, 2009-08-12 at 21:13 +0200, Frederic Weisbecker wrote:
+> 
+>> Ingo, Peter do you have an idea on how we could do that?
+> 
+> Wouldn't it be easiest to use ftrace to create dynamic tracepoints in
+> the ftrace way such that they become available in
+> debugfs://tracing/events/kprobes/*/ and then have them interfaced the
+> same way as all other tracepoints?
 
-Changing this could potentially break a lot of systems.  At least
-Debian has "ro" as a default boot option, and it uses an initramfs by
-default.
+Yes, almost same. One big difference is that they are sharing
+same event-id(TRACE_KPROBE and TRACE_KRETPROBE).
+But I can make each kprobe events to have different ids, if you need.
 
-> And I can create new files and write to them just fine.  Is it possible to
-> mount an initramfs read-only?
->
-> The documentation for early userspace and initramfs does not talk about
-> read/write permissions.
+Thank you,
 
-Have you tried running "mount / -oremount,ro" in an init script?
+-- 
+Masami Hiramatsu
 
-Regards
-Alan
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
