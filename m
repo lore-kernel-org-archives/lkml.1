@@ -1,115 +1,403 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbZHLQ2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbZHLQ3B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754381AbZHLQ2E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 12:28:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbZHLQ2D
+	id S1754449AbZHLQ3B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 12:29:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbZHLQ3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 12:28:03 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:50017 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754278AbZHLQ2B (ORCPT
+	Wed, 12 Aug 2009 12:29:00 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37628 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753101AbZHLQ27 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 12:28:01 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Fischer, Anna" <anna.fischer@hp.com>
-Subject: Re: [PATCH][RFC] net/bridge: add basic VEPA support
-Date: Wed, 12 Aug 2009 18:27:28 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
-Cc: "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>,
-       "'Stephen Hemminger'" <shemminger@linux-foundation.org>,
-       "bridge@lists.linux-foundation.org" 
-	<bridge@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "evb@yahoogroups.com" <evb@yahoogroups.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "kaber@trash.net" <kaber@trash.net>,
-       "adobriyan@gmail.com" <adobriyan@gmail.com>,
-       "'Eric Biederman'" <ebiederm@xmission.com>
-References: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net> <200908121519.36808.arnd@arndb.de> <0199E0D51A61344794750DC57738F58E6D6AE9A0C1@GVW1118EXC.americas.hpqcorp.net>
-In-Reply-To: <0199E0D51A61344794750DC57738F58E6D6AE9A0C1@GVW1118EXC.americas.hpqcorp.net>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 12 Aug 2009 12:28:59 -0400
+Message-ID: <49a88ef4a1ba9ec9426febe9e3633b89.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20090812045716.GH7176@balbir.in.ibm.com>
+References: <20090811144405.GW7176@balbir.in.ibm.com>
+    <20090811163159.ddc5f5fd.akpm@linux-foundation.org>
+    <20090812045716.GH7176@balbir.in.ibm.com>
+Date: Thu, 13 Aug 2009 01:28:57 +0900 (JST)
+Subject: Re: [PATCH] Help Resource Counters Scale better (v4.1)
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp,
+       kosaki.motohiro@jp.fujitsu.com, menage@google.com, prarit@redhat.com,
+       andi.kleen@intel.com, xemul@openvz.org, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908121827.28905.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+Kphbk1+s+Ho/qgfiEP/W3tp2mP6gfVV02l0u
- Y090hilwZZlkwvzA/87ouX8+y31eif7alWDbz+PkDMt6HJiUXd
- iIkRoKFXk4sL9S+qtuEFA==
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 August 2009, Fischer, Anna wrote:
-> Yes, for the basic VEPA this is not important. For MultiChannel VEPA, it 
-> would be nice if a macvlan device could operate as VEPA and as a typical
-> VEB (VEB = traditional bridge but no learning).
+Balbir Singh wrote:
+> Hi, Andrew,
+>
+> Does this look better, could you please replace the older patch with
+> this one.
+>
+> 1. I did a quick compile test
+> 2. Ran scripts/checkpatch.pl
+>
 
-Right, this would be a logical extension in that scenario. I would imagine
-that in many scenarios running a VEB also means that you want to use
-the advanced ebtables/iptables filtering of the bridge subsystem, but
-if all guests trust each other, using macvlan to bridge between them
-sounds useful as well, if only for simplicity.
+In general, seems reasonable to me as quick hack for root cgroup.
+thank you.
 
-> Basically, what we would need to be able to support is running a VEB and
-> a VEPA simultaneously on the same uplink port (e.g. the physical device). 
-> A new component (called the S-Component) would then multiplex frames
-> to the VEB or the VEPA based on a tagging scheme.
+Reviewed-by: KAMEAZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-You can of course do that by adding one port of the S-component to
-a port of a bridge, and using another port of the S-component to
-create macvlan devices, or you could have multiple ports of the
-S-component each with a macvlan multiplexor.
+Finally, we'll have to do some rework for light-weight res_counter.
+But yes, it will take some amount of time.
+My only concern is account leak, but, if some leak, it's current code's
+bug, not this patch.
 
-Just to make sure I get the chain right, would it look like this?
-(adapted from Paul's PDF)
+And..hmm...I like following style other than open-coded.
+==
+int mem_coutner_charge(struct mem_cgroup *mem)
+{
+      if (mem_cgroup_is_root(mem))
+               return 0; // always success
+      return res_counter_charge(....)
+}
+==
+But maybe nitpick.
 
-eth0 (external) ---scomponent0 --- vlan2 --- macvlan0 
-                 |              |         \- macvlan1
-                 |               \-vlan3 --- macvlan2
-                 |-scomponent1 --- vlan2 --- br0 --- tap0
-                 |                             \ --- tap1
-                 |-scomponent2 --- vlan3 --- macvlan3
-                 \-scomponent3 ---  ---  --- macvlan4
+Thanks,
+-Kame
 
-In this scenario, tap0 and tap1 could communicate over the bridge without
-tagging, while any data going out through the S-Component gets tagged
-with both a 802.1q Q-Tag and an S-Tag. 
 
-macvlan4 would be a guest that does its own tagging, and the external
-switch would need to check the VLAN IDs, but it could communicate with
-any other guest by tagging the frames as 2 or 3.
+>
+>
+> From: Balbir Singh <balbir@linux.vnet.ibm.com>
+>
+> Enhancement: Remove the overhead of root based resource counter accounting
+>
+> This patch reduces the resource counter overhead (mostly spinlock)
+> associated with the root cgroup. This is a part of the several
+> patches to reduce mem cgroup overhead. I had posted other
+> approaches earlier (including using percpu counters). Those
+> patches will be a natural addition and will be added iteratively
+> on top of these.
+>
+> The patch stops resource counter accounting for the root cgroup.
+> The data for display is derived from the statisitcs we maintain
+> via mem_cgroup_charge_statistics (which is more scalable).
+> What happens today is that, we do double accounting, once using
+> res_counter_charge() and once using memory_cgroup_charge_statistics().
+> For the root, since we don't implement limits any more, we don't
+> need to track every charge via res_counter_charge() and check
+> for limit being exceeded and reclaim.
+>
+> The main mem->res usage_in_bytes can be derived by summing
+> the cache and rss usage data from memory statistics
+> (MEM_CGRUP_STAT_RSS and MEM_CGROUP_STAT_CACHE). However, for
+> memsw->res usage_in_bytes, we need additional data about
+> swapped out memory. This patch adds a MEM_CGROUP_STAT_SWAPOUT
+> and uses that along with MEM_CGROUP_STAT_RSS and MEM_CGROUP_STAT_CACHE
+> to derive the memsw data.
+>
+> The tests results I see on a 24 way show that
+>
+> 1. The lock contention disappears from /proc/lock_stats
+> 2. The results of the test are comparable to running with
+>   cgroup_disable=memory.
+>
+> Here is a sample of my program runs
+>
+> Without Patch
+>
+>  Performance counter stats for '/home/balbir/parallel_pagefault':
+>
+>  7192804.124144  task-clock-msecs         #     23.937 CPUs
+>          424691  context-switches         #      0.000 M/sec
+>             267  CPU-migrations           #      0.000 M/sec
+>        28498113  page-faults              #      0.004 M/sec
+>   5826093739340  cycles                   #    809.989 M/sec
+>    408883496292  instructions             #      0.070 IPC
+>      7057079452  cache-references         #      0.981 M/sec
+>      3036086243  cache-misses             #      0.422 M/sec
+>
+>   300.485365680  seconds time elapsed
+>
+> With cgroup_disable=memory
+>
+>  Performance counter stats for '/home/balbir/parallel_pagefault':
+>
+>  7182183.546587  task-clock-msecs         #     23.915 CPUs
+>          425458  context-switches         #      0.000 M/sec
+>             203  CPU-migrations           #      0.000 M/sec
+>        92545093  page-faults              #      0.013 M/sec
+>   6034363609986  cycles                   #    840.185 M/sec
+>    437204346785  instructions             #      0.072 IPC
+>      6636073192  cache-references         #      0.924 M/sec
+>      2358117732  cache-misses             #      0.328 M/sec
+>
+>   300.320905827  seconds time elapsed
+>
+> With this patch applied
+>
+>  Performance counter stats for '/home/balbir/parallel_pagefault':
+>
+>  7191619.223977  task-clock-msecs         #     23.955 CPUs
+>          422579  context-switches         #      0.000 M/sec
+>              88  CPU-migrations           #      0.000 M/sec
+>        91946060  page-faults              #      0.013 M/sec
+>   5957054385619  cycles                   #    828.333 M/sec
+>   1058117350365  instructions             #      0.178 IPC
+>      9161776218  cache-references         #      1.274 M/sec
+>      1920494280  cache-misses             #      0.267 M/sec
+>
+>   300.218764862  seconds time elapsed
+>
+>
+> Data from Prarit (kernel compile with make -j64 on a 64
+> CPU/32G machine)
+>
+> For a single run
+>
+> Without patch
+>
+> real 27m8.988s
+> user 87m24.916s
+> sys 382m6.037s
+>
+> With patch
+>
+> real    4m18.607s
+> user    84m58.943s
+> sys     50m52.682s
+>
+>
+> With config turned off
+>
+> real    4m54.972s
+> user    90m13.456s
+> sys     50m19.711s
+>
+> NOTE: The data looks counterintuitive due to the increased performance
+> with the patch, even over the config being turned off. We probably need
+> more runs, but so far all testing has shown that the patches definitely
+> help.
+>
+>
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+>
+>  mm/memcontrol.c |   89
+> +++++++++++++++++++++++++++++++++++++++++++------------
+>  1 files changed, 70 insertions(+), 19 deletions(-)
+>
+>
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 48a38e1..4f51885 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -70,6 +70,7 @@ enum mem_cgroup_stat_index {
+>  	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
+>  	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
+>  	MEM_CGROUP_STAT_EVENTS,	/* sum of pagein + pageout for internal use */
+> +	MEM_CGROUP_STAT_SWAPOUT, /* # of pages, swapped out */
+>
+>  	MEM_CGROUP_STAT_NSTATS,
+>  };
+> @@ -478,6 +479,19 @@ mem_cgroup_largest_soft_limit_node(struct
+> mem_cgroup_tree_per_zone *mctz)
+>  	return mz;
+>  }
+>
+> +static void mem_cgroup_swap_statistics(struct mem_cgroup *mem,
+> +					 bool charge)
+> +{
+> +	int val = (charge) ? 1 : -1;
+> +	struct mem_cgroup_stat *stat = &mem->stat;
+> +	struct mem_cgroup_stat_cpu *cpustat;
+> +	int cpu = get_cpu();
+> +
+> +	cpustat = &stat->cpustat[cpu];
+> +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_SWAPOUT, val);
+> +	put_cpu();
+> +}
+> +
+>  static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
+>  					 struct page_cgroup *pc,
+>  					 bool charge)
+> @@ -1281,9 +1295,11 @@ static int __mem_cgroup_try_charge(struct mm_struct
+> *mm,
+>  	VM_BUG_ON(css_is_removed(&mem->css));
+>
+>  	while (1) {
+> -		int ret;
+> +		int ret = 0;
+>  		unsigned long flags = 0;
+>
+> +		if (mem_cgroup_is_root(mem))
+> +			goto done;
+>  		ret = res_counter_charge(&mem->res, PAGE_SIZE, &fail_res,
+>  						&soft_fail_res);
+>  		if (likely(!ret)) {
+> @@ -1343,6 +1359,7 @@ static int __mem_cgroup_try_charge(struct mm_struct
+> *mm,
+>  		if (mem_cgroup_soft_limit_check(mem_over_soft_limit))
+>  			mem_cgroup_update_tree(mem_over_soft_limit, page);
+>  	}
+> +done:
+>  	return 0;
+>  nomem:
+>  	css_put(&mem->css);
+> @@ -1415,9 +1432,12 @@ static void __mem_cgroup_commit_charge(struct
+> mem_cgroup *mem,
+>  	lock_page_cgroup(pc);
+>  	if (unlikely(PageCgroupUsed(pc))) {
+>  		unlock_page_cgroup(pc);
+> -		res_counter_uncharge(&mem->res, PAGE_SIZE, NULL);
+> -		if (do_swap_account)
+> -			res_counter_uncharge(&mem->memsw, PAGE_SIZE, NULL);
+> +		if (!mem_cgroup_is_root(mem)) {
+> +			res_counter_uncharge(&mem->res, PAGE_SIZE, NULL);
+> +			if (do_swap_account)
+> +				res_counter_uncharge(&mem->memsw, PAGE_SIZE,
+> +							NULL);
+> +		}
+>  		css_put(&mem->css);
+>  		return;
+>  	}
+> @@ -1494,7 +1514,8 @@ static int mem_cgroup_move_account(struct
+> page_cgroup *pc,
+>  	if (pc->mem_cgroup != from)
+>  		goto out;
+>
+> -	res_counter_uncharge(&from->res, PAGE_SIZE, NULL);
+> +	if (!mem_cgroup_is_root(from))
+> +		res_counter_uncharge(&from->res, PAGE_SIZE, NULL);
+>  	mem_cgroup_charge_statistics(from, pc, false);
+>
+>  	page = pc->page;
+> @@ -1513,7 +1534,7 @@ static int mem_cgroup_move_account(struct
+> page_cgroup *pc,
+>  						1);
+>  	}
+>
+> -	if (do_swap_account)
+> +	if (do_swap_account && !mem_cgroup_is_root(from))
+>  		res_counter_uncharge(&from->memsw, PAGE_SIZE, NULL);
+>  	css_put(&from->css);
+>
+> @@ -1584,9 +1605,11 @@ uncharge:
+>  	/* drop extra refcnt by try_charge() */
+>  	css_put(&parent->css);
+>  	/* uncharge if move fails */
+> -	res_counter_uncharge(&parent->res, PAGE_SIZE, NULL);
+> -	if (do_swap_account)
+> -		res_counter_uncharge(&parent->memsw, PAGE_SIZE, NULL);
+> +	if (!mem_cgroup_is_root(parent)) {
+> +		res_counter_uncharge(&parent->res, PAGE_SIZE, NULL);
+> +		if (do_swap_account)
+> +			res_counter_uncharge(&parent->memsw, PAGE_SIZE, NULL);
+> +	}
+>  	return ret;
+>  }
+>
+> @@ -1775,7 +1798,10 @@ __mem_cgroup_commit_charge_swapin(struct page
+> *page, struct mem_cgroup *ptr,
+>  			 * This recorded memcg can be obsolete one. So, avoid
+>  			 * calling css_tryget
+>  			 */
+> -			res_counter_uncharge(&memcg->memsw, PAGE_SIZE, NULL);
+> +			if (!mem_cgroup_is_root(memcg))
+> +				res_counter_uncharge(&memcg->memsw, PAGE_SIZE,
+> +							NULL);
+> +			mem_cgroup_swap_statistics(memcg, false);
+>  			mem_cgroup_put(memcg);
+>  		}
+>  		rcu_read_unlock();
+> @@ -1800,9 +1826,11 @@ void mem_cgroup_cancel_charge_swapin(struct
+> mem_cgroup *mem)
+>  		return;
+>  	if (!mem)
+>  		return;
+> -	res_counter_uncharge(&mem->res, PAGE_SIZE, NULL);
+> -	if (do_swap_account)
+> -		res_counter_uncharge(&mem->memsw, PAGE_SIZE, NULL);
+> +	if (!mem_cgroup_is_root(mem)) {
+> +		res_counter_uncharge(&mem->res, PAGE_SIZE, NULL);
+> +		if (do_swap_account)
+> +			res_counter_uncharge(&mem->memsw, PAGE_SIZE, NULL);
+> +	}
+>  	css_put(&mem->css);
+>  }
+>
+> @@ -1855,9 +1883,14 @@ __mem_cgroup_uncharge_common(struct page *page,
+> enum charge_type ctype)
+>  		break;
+>  	}
+>
+> -	res_counter_uncharge(&mem->res, PAGE_SIZE, &soft_limit_excess);
+> -	if (do_swap_account && (ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
+> -		res_counter_uncharge(&mem->memsw, PAGE_SIZE, NULL);
+> +	if (!mem_cgroup_is_root(mem)) {
+> +		res_counter_uncharge(&mem->res, PAGE_SIZE, &soft_limit_excess);
+> +		if (do_swap_account &&
+> +				(ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
+> +			res_counter_uncharge(&mem->memsw, PAGE_SIZE, NULL);
+> +	}
+> +	if (ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT && mem_cgroup_is_root(mem))
+> +		mem_cgroup_swap_statistics(mem, true);
+>  	mem_cgroup_charge_statistics(mem, pc, false);
+>
+>  	ClearPageCgroupUsed(pc);
+> @@ -1948,7 +1981,9 @@ void mem_cgroup_uncharge_swap(swp_entry_t ent)
+>  		 * We uncharge this because swap is freed.
+>  		 * This memcg can be obsolete one. We avoid calling css_tryget
+>  		 */
+> -		res_counter_uncharge(&memcg->memsw, PAGE_SIZE, NULL);
+> +		if (!mem_cgroup_is_root(memcg))
+> +			res_counter_uncharge(&memcg->memsw, PAGE_SIZE, NULL);
+> +		mem_cgroup_swap_statistics(memcg, false);
+>  		mem_cgroup_put(memcg);
+>  	}
+>  	rcu_read_unlock();
+> @@ -2461,10 +2496,26 @@ static u64 mem_cgroup_read(struct cgroup *cont,
+> struct cftype *cft)
+>  	name = MEMFILE_ATTR(cft->private);
+>  	switch (type) {
+>  	case _MEM:
+> -		val = res_counter_read_u64(&mem->res, name);
+> +		if (name == RES_USAGE && mem_cgroup_is_root(mem)) {
+> +			val = mem_cgroup_read_stat(&mem->stat,
+> +					MEM_CGROUP_STAT_CACHE);
+> +			val += mem_cgroup_read_stat(&mem->stat,
+> +					MEM_CGROUP_STAT_RSS);
+> +			val <<= PAGE_SHIFT;
+> +		} else
+> +			val = res_counter_read_u64(&mem->res, name);
+>  		break;
+>  	case _MEMSWAP:
+> -		val = res_counter_read_u64(&mem->memsw, name);
+> +		if (name == RES_USAGE && mem_cgroup_is_root(mem)) {
+> +			val = mem_cgroup_read_stat(&mem->stat,
+> +					MEM_CGROUP_STAT_CACHE);
+> +			val += mem_cgroup_read_stat(&mem->stat,
+> +					MEM_CGROUP_STAT_RSS);
+> +			val += mem_cgroup_read_stat(&mem->stat,
+> +					MEM_CGROUP_STAT_SWAPOUT);
+> +			val <<= PAGE_SHIFT;
+> +		} else
+> +			val = res_counter_read_u64(&mem->memsw, name);
+>  		break;
+>  	default:
+>  		BUG();
+>
+> --
+> 	Balbir
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
 
-macvlan2 and macvlan3 could communicate with each other and with external
-guests in vlan3.
 
-Guests on scomponent1 and scomponent3 could in theory have
-subdivisions of the network with macvlan running in the guest
-to run containers.
-
-> I think the question here was whether there is a way for a macvlan interface
-> to be set to promiscuous mode. At the moment, I believe a macvlan interface
-> only receives packets based on its destination address (this is for unicast
-> packets now). What if a macvlan interface wanted to get all packets that
-> are being received (either on the physical device, or on a particular
-> VLAN if using macvlan nested in vlan). Would this work easily? Imagine
-> you have a virtual machine attached to that macvlan / macvtap device and
-> this VM wants to do packet inspection or network traffic monitoring on 
-> all packets flowing through the virtualized server.
-
-Ok, I see. As I said, the host could easily get access to all frames
-on macvlan downstream ports by opening a raw socket on the upstream
-port (with some extra work if we want to support this in bridge mode).
-
-If you want the inspection to be done in a guest rather than the host,
-the easiest way to achieve that would be to connect that raw socket
-to the guest using Or's raw frontend for qemu.
-
-	Arnd <><
