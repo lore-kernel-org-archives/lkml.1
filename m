@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752499AbZHLN1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752527AbZHLN34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752499AbZHLN1V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 09:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZHLN1V
+	id S1752527AbZHLN34 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 09:29:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbZHLN3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 09:27:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40060 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752402AbZHLN1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 09:27:20 -0400
-Date: Wed, 12 Aug 2009 16:25:40 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCHv2 2/2] vhost_net: a kernel-level virtio server
-Message-ID: <20090812132539.GD29200@redhat.com>
-References: <cover.1249992497.git.mst@redhat.com> <20090811212802.GC26309@redhat.com> <4A82076A.1060805@gmail.com> <20090812090219.GB26847@redhat.com> <4A82BD2F.7080405@gmail.com>
+	Wed, 12 Aug 2009 09:29:55 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:23460 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752487AbZHLN3z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 09:29:55 -0400
+Message-ID: <4A82C3C6.5010302@vflare.org>
+Date: Wed, 12 Aug 2009 18:59:42 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A82BD2F.7080405@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] swap: send callback when swap slot is freed
+References: <200908121817.48501.ngupta@vflare.org> <20090812125617.GA30476@elte.hu>
+In-Reply-To: <20090812125617.GA30476@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 09:01:35AM -0400, Gregory Haskins wrote:
-> I think I understand what your comment above meant:  You don't need to
-> do synchronize_rcu() because you can flush the workqueue instead to
-> ensure that all readers have completed.
+On 08/12/2009 06:26 PM, Ingo Molnar wrote:
+> * Nitin Gupta<ngupta@vflare.org>  wrote:
+>
+>> (Re-sending since I didn't get any reply last time)
+>>
+>> Currently, we have "swap discard" mechanism which sends a discard
+>> bio request when we find a free cluster during scan_swap_map().
+>> This callback can come a long time after swap slots are actually
+>> freed.
+>>
+>> This delay in callback is a great problem when (compressed) RAM
+>> [1] is used as a swap device. So, this change adds a callback
+>> which is called as soon as a swap slot becomes free. For above
+>> mentioned case of swapping over compressed RAM device, this is
+>> very useful since we can immediately free memory allocated for
+>> this swap page.
+>>
+>> This callback does not replace swap discard support. It is called
+>> with swap_lock held, so it is meant to trigger action that
+>> finishes quickly. However, swap discard is an I/O request and can
+>> be used for taking longer actions.
 
-Yes.
+<snip>
 
->  But if thats true, to me, the
-> rcu_dereference itself is gratuitous,
-
-Here's a thesis on what rcu_dereference does (besides documentation):
-
-reader does this
-
-	A: sock = n->sock
-	B: use *sock
-
-Say writer does this:
-
-	C: newsock = allocate socket
-	D: initialize(newsock)
-	E: n->sock = newsock
-	F: flush
+>
+> Shouldnt this be all be unconditional? Sounds like a reasonable VM
+> callback. The patch would become a lot smaller as well.
+>
 
 
-On Alpha, reads could be reordered.  So, on smp, command A could get
-data from point F, and command B - from point D (uninitialized, from
-cache).  IOW, you get fresh pointer but stale data.
-So we need to stick a barrier in there.
+I also think this can be made unconditional as it makes the patch
+much cleaner. I made it conditional just to be on path of least
+resistance :)
 
-> and that pointer is *not* actually
-> RCU protected (nor does it need to be).
+Thanks for looking into this. I will resend the patch removing
+all the #ifdef'ery.
 
-Heh, if readers are lockless and writer does init/update/sync,
-this to me spells rcu.
-
--- 
-MST
+Nitin
