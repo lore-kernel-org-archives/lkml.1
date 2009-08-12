@@ -1,113 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbZHLDNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbZHLDQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755793AbZHLDNL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 23:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbZHLDNK
+	id S1755816AbZHLDQO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 23:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755804AbZHLDQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 23:13:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40652 "EHLO mx2.redhat.com"
+	Tue, 11 Aug 2009 23:16:13 -0400
+Received: from mga03.intel.com ([143.182.124.21]:63607 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755612AbZHLDNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 23:13:09 -0400
-Message-ID: <4A8233A5.2020501@redhat.com>
-Date: Wed, 12 Aug 2009 11:14:45 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+	id S1755403AbZHLDQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 23:16:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,364,1246863600"; 
+   d="scan'208";a="174823074"
+Date: Wed, 12 Aug 2009 11:16:12 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, venkatesh.pallipadi@intel.com
+Subject: [PATCH] disable per-cpu hpet timer if ARAT is supported
+Message-ID: <20090812031612.GA10062@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC Patch 2/2] kexec: allow to shrink reserved memory
-References: <20090811104144.5154.77871.sendpatchset@localhost.localdomain>	<20090811104154.5154.78710.sendpatchset@localhost.localdomain>	<m1r5vi9l9v.fsf@fess.ebiederm.org> <4A821A14.1020408@redhat.com>	<m17hx9n6s5.fsf@fess.ebiederm.org> <4A822404.9030603@redhat.com> <m1ws5992gd.fsf@fess.ebiederm.org>
-In-Reply-To: <m1ws5992gd.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Amerigo Wang <amwang@redhat.com> writes:
->
->   
->> Eric W. Biederman wrote:
->>     
->>> Amerigo Wang <amwang@redhat.com> writes:
->>>
->>>   
->>>       
->>>> Eric W. Biederman wrote:
->>>>     
->>>>         
->>>>> Amerigo Wang <amwang@redhat.com> writes:
->>>>>
->>>>>         
->>>>>           
->>>>>> This patch implements shrinking the reserved memory for crash kernel,
->>>>>> if it is more than enough.
->>>>>>
->>>>>> For example, if you have already reserved 128M, now you just want 100M,
->>>>>> you can do:
->>>>>>
->>>>>> # echo $((100*1024*1024)) > /sys/kernel/kexec_crash_size
->>>>>>             
->>>>>>             
->>>>> This patch looks like a reasonable start.
->>>>>
->>>>> However once a crash kernel image is loaded we have already told that
->>>>> image about the memory that is available and what you are doing here
->>>>> will go and stop on the memory that is reserved but not yet used,
->>>>> totally breaking the DMA protections.  AKA we know the memory is safe
->>>>> from ongoing DMAs because it has lain fallow since boot up.
->>>>>
->>>>> The only safe thing to do is to reduce the memory size before (possibly
->>>>> just before) we load the crash kernel.  Which means we should only
->>>>> be allowed to shrink the size when nothing is loaded, exactly the
->>>>> opposite of what you have implemented.
->>>>>
->>>>>         
->>>>>           
->>>> Confused, why just loading the crash kernel makes it unsafe?
->>>> DMA should be avoided when reserving that memory during boot, shouldn't it?
->>>>     
->>>>         
->>> Yes.  But you are removing the reservation and starting DMA on memory
->>> we have told the crash kernel it can use.
->>>   
->>>       
->> We can modify the info given to the crash kernel.
->>     
->
-> Only by unloading and reloading.
->
->   
->>>> I know I missed the part that freeing memory before loading, but if it is safe
->>>> before loading, how can it be unsafe after that?
->>>>     
->>>>         
->>> We tell the crash kernel when loading it, it can use all of the reserved memory.
->>>   
->>>       
->> Yeah, but we should reload the kernel after shrinking the memory, it is not
->> surprised that doing this is necessary...
->>     
->
-> So unload the crash kernel first.  If you don't you open a race where
-> many of the guarantees we make for the crash kernel about the state of
-> the memory it might be using are not true.
->
-> In general I expect we will be able to do this all before we load the
-> crash kernel the first time.  But at least we should not need to reboot
-> things if there is a problem.
->   
+If CPU support always running local APIC timer, per-cpu hpet timer could be
+disabled, which is useless and wasteful in such case. Let's leave the timers
+to others.
+Impact: should have no impact except reserving less timers.
 
-Ok, thanks for your explanation.
-
-I will drop patch 1/2, since we will move it to kexec.
-I will put patch 2/2 into my "crashkernel=auto" patch set, and resend 
-them all.
-
-Thanks.
-
-
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index dedc2bd..5969e10 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -584,6 +584,8 @@ static void hpet_msi_capability_lookup(unsigned int start_timer)
+ 	unsigned int num_timers_used = 0;
+ 	int i;
+ 
++	if (boot_cpu_has(X86_FEATURE_ARAT))
++		return;
+ 	id = hpet_readl(HPET_ID);
+ 
+ 	num_timers = ((id & HPET_ID_NUMBER) >> HPET_ID_NUMBER_SHIFT);
+@@ -872,10 +874,8 @@ int __init hpet_enable(void)
+ 
+ 	if (id & HPET_ID_LEGSUP) {
+ 		hpet_legacy_clockevent_register();
+-		hpet_msi_capability_lookup(2);
+ 		return 1;
+ 	}
+-	hpet_msi_capability_lookup(0);
+ 	return 0;
+ 
+ out_nohpet:
+@@ -908,9 +908,17 @@ static __init int hpet_late_init(void)
+ 	if (!hpet_virt_address)
+ 		return -ENODEV;
+ 
++	if (hpet_readl(HPET_ID) & HPET_ID_LEGSUP)
++		hpet_msi_capability_lookup(2);
++	else
++		hpet_msi_capability_lookup(0);
++
+ 	hpet_reserve_platform_timers(hpet_readl(HPET_ID));
+ 	hpet_print_config();
+ 
++	if (boot_cpu_has(X86_FEATURE_ARAT))
++		return 0;
++
+ 	for_each_online_cpu(cpu) {
+ 		hpet_cpuhp_notify(NULL, CPU_ONLINE, (void *)(long)cpu);
+ 	}
