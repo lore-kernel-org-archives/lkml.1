@@ -1,129 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751862AbZHLMRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751879AbZHLMSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751862AbZHLMRt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 08:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbZHLMRs
+	id S1751879AbZHLMSu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 08:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbZHLMSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 08:17:48 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:45626 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751809AbZHLMRr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 08:17:47 -0400
-Subject: Re: kmemleak: Protect the seq start/next/stop sequence by
-	rcu_read_lock()
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <1249980905.27150.11.camel@pc1117.cambridge.arm.com>
-References: <20090729152101.1878.71159.stgit@pc1117.cambridge.arm.com>
-	 <20090802111453.GA24927@elte.hu>
-	 <1249919718.10848.55.camel@pc1117.cambridge.arm.com>
-	 <20090810184527.GA9601@elte.hu>
-	 <1249945003.26205.23.camel@pc1117.cambridge.arm.com>
-	 <20090811073205.GA17476@elte.hu>
-	 <1249980905.27150.11.camel@pc1117.cambridge.arm.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 12 Aug 2009 13:17:27 +0100
-Message-Id: <1250079447.20332.27.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Aug 2009 12:17:28.0172 (UTC) FILETIME=[DBBCBAC0:01CA1B46]
+	Wed, 12 Aug 2009 08:18:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54962 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751303AbZHLMSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 08:18:49 -0400
+Date: Wed, 12 Aug 2009 12:18:05 GMT
+From: tip-bot for Jens Axboe <jens.axboe@oracle.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       jens.axboe@oracle.com, fweisbec@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       jens.axboe@oracle.com, fweisbec@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090812091801.GC12579@kernel.dk>
+References: <20090812091801.GC12579@kernel.dk>
+Subject: [tip:perfcounters/urgent] perf record: Add missing -C option support for specifying profile cpu
+Message-ID: <tip-0a5ac84650fb7a7f226814103d95724e34b012ae@git.kernel.org>
+Git-Commit-ID: 0a5ac84650fb7a7f226814103d95724e34b012ae
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 12 Aug 2009 12:18:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Commit-ID:  0a5ac84650fb7a7f226814103d95724e34b012ae
+Gitweb:     http://git.kernel.org/tip/0a5ac84650fb7a7f226814103d95724e34b012ae
+Author:     Jens Axboe <jens.axboe@oracle.com>
+AuthorDate: Wed, 12 Aug 2009 11:18:01 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 12 Aug 2009 14:10:51 +0200
 
-On Tue, 2009-08-11 at 09:55 +0100, Catalin Marinas wrote:
-> On Tue, 2009-08-11 at 09:32 +0200, Ingo Molnar wrote:
-> > * Catalin Marinas <catalin.marinas@arm.com> wrote:
-> > > I tried similar config and with the mainline kernel I get some 
-> > > lockups (several seconds) with CONFIG_PREEMPT disabled on ARM 
-> > > machines or x86 during a scanning episode but it eventually 
-> > > completes the scanning. With the kmemleak patches for the next 
-> > > merging window, I don't get any lockups as it has more 
-> > > cond_resched() calls.
-> > 
-> > How big are those patches? Kmemleak is new in .31 so if it fixes a 
-> > real problem it might still be acceptable.
-> 
-> My patches for -next were posted here -
-> http://lkml.org/lkml/2009/7/24/166 - but the relevant ones are pretty
-> small (review/ack is welcomed):
-> 
-> http://lkml.org/lkml/2009/7/24/176 - allow rescheduling during object
-> scanning
+perf record: Add missing -C option support for specifying profile cpu
 
-I tried the kernel last night on x86 with most debug options enabled.
-They slow down kmemleak considerably and scanning the memory while
-rebuilding a kernel took several minutes with visible lockup (though it
-eventually recovered).
+perf top supports a -C for setting the profile CPU, but perf
+record does not. This adds the same option for perf record,
+allowing the user to specify a specific target profile CPU.
 
-Trying only the above patch to allow rescheduling during object scanning
-seems to have eliminated those lockups. So maybe we can merge this now
-and leave the task stacks for the upcoming window. I included the patch
-below for review:
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <20090812091801.GC12579@kernel.dk>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-kmemleak: Allow rescheduling during an object scanning
-
-From: Catalin Marinas <catalin.marinas@arm.com>
-
-If the object size is bigger than a predefined value (4K in this case),
-release the object lock during scanning and call cond_resched().
-Re-acquire the lock after rescheduling and test whether the object is
-still valid.
-
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 ---
- mm/kmemleak.c |   19 +++++++++++++++----
- 1 files changed, 15 insertions(+), 4 deletions(-)
+ tools/perf/builtin-record.c |   17 ++++++++++++++---
+ 1 files changed, 14 insertions(+), 3 deletions(-)
 
-diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 7e8e4b0..c665626 100644
---- a/mm/kmemleak.c
-+++ b/mm/kmemleak.c
-@@ -107,6 +107,7 @@
- #define SECS_FIRST_SCAN		60	/* delay before the first scan */
- #define SECS_SCAN_WAIT		600	/* subsequent auto scanning delay */
- #define GRAY_LIST_PASSES	25	/* maximum number of gray list scans */
-+#define MAX_SCAN_SIZE		4096	/* maximum size of a scanned block */
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 30b83de..de76008 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -35,6 +35,7 @@ static const char		*output_name			= "perf.data";
+ static int			group				= 0;
+ static unsigned int		realtime_prio			= 0;
+ static int			system_wide			= 0;
++static int			profile_cpu			= -1;
+ static pid_t			target_pid			= -1;
+ static int			inherit				= 1;
+ static int			force				= 0;
+@@ -431,6 +432,8 @@ try_again:
  
- #define BYTES_PER_POINTER	sizeof(void *)
+ 		if (err == EPERM)
+ 			die("Permission error - are you root?\n");
++		else if (err ==  ENODEV && profile_cpu != -1)
++			die("No such device - did you specify an out-of-range profile CPU?\n");
  
-@@ -950,10 +951,20 @@ static void scan_object(struct kmemleak_object *object)
- 	if (!(object->flags & OBJECT_ALLOCATED))
- 		/* already freed object */
- 		goto out;
--	if (hlist_empty(&object->area_list))
--		scan_block((void *)object->pointer,
--			   (void *)(object->pointer + object->size), object, 0);
--	else
-+	if (hlist_empty(&object->area_list)) {
-+		void *start = (void *)object->pointer;
-+		void *end = (void *)(object->pointer + object->size);
-+
-+		while (start < end && (object->flags & OBJECT_ALLOCATED)) {
-+			scan_block(start, min(start + MAX_SCAN_SIZE, end),
-+				   object, 0);
-+			start += MAX_SCAN_SIZE;
-+
-+			spin_unlock_irqrestore(&object->lock, flags);
-+			cond_resched();
-+			spin_lock_irqsave(&object->lock, flags);
+ 		/*
+ 		 * If it's cycles then fall back to hrtimer
+@@ -564,9 +567,15 @@ static int __cmd_record(int argc, const char **argv)
+ 		if (pid == -1)
+ 			pid = getpid();
+ 
+-		open_counters(-1, pid);
+-	} else for (i = 0; i < nr_cpus; i++)
+-		open_counters(i, target_pid);
++		open_counters(profile_cpu, pid);
++	} else {
++		if (profile_cpu != -1) {
++			open_counters(profile_cpu, target_pid);
++		} else {
++			for (i = 0; i < nr_cpus; i++)
++				open_counters(i, target_pid);
 +		}
-+	} else
- 		hlist_for_each_entry(area, elem, &object->area_list, node)
- 			scan_block((void *)(object->pointer + area->offset),
- 				   (void *)(object->pointer + area->offset
-
-
-Thanks.
-
--- 
-Catalin
-
++	}
+ 
+ 	if (file_new)
+ 		perf_header__write(header, output);
+@@ -645,6 +654,8 @@ static const struct option options[] = {
+ 			    "system-wide collection from all CPUs"),
+ 	OPT_BOOLEAN('A', "append", &append_file,
+ 			    "append to the output file to do incremental profiling"),
++	OPT_INTEGER('C', "profile_cpu", &profile_cpu,
++			    "CPU to profile on"),
+ 	OPT_BOOLEAN('f', "force", &force,
+ 			"overwrite existing data file"),
+ 	OPT_LONG('c', "count", &default_interval,
