@@ -1,64 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbZHLOR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbZHLOSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752878AbZHLOR7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 10:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZHLOR7
+	id S1752932AbZHLOSL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 10:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZHLOSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 10:17:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51262 "EHLO mx2.mail.elte.hu"
+	Wed, 12 Aug 2009 10:18:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47125 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752841AbZHLOR6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 10:17:58 -0400
-Date: Wed, 12 Aug 2009 16:17:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
-Message-ID: <20090812141729.GA29270@elte.hu>
-References: <20090812105106.GA7885@elte.hu> <Pine.LNX.4.44L0.0908121005370.2955-100000@iolanthe.rowland.org>
+	id S1752898AbZHLOSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 10:18:05 -0400
+Date: Wed, 12 Aug 2009 17:15:59 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Gregory Haskins <gregory.haskins@gmail.com>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com
+Subject: Re: [PATCHv2 2/2] vhost_net: a kernel-level virtio server
+Message-ID: <20090812141559.GA29387@redhat.com>
+References: <cover.1249992497.git.mst@redhat.com> <20090811212802.GC26309@redhat.com> <4A82076A.1060805@gmail.com> <20090812090219.GB26847@redhat.com> <4A82BD2F.7080405@gmail.com> <20090812132539.GD29200@redhat.com> <20090812141107.GD6833@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0908121005370.2955-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090812141107.GD6833@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Aug 12, 2009 at 07:11:07AM -0700, Paul E. McKenney wrote:
+> On Wed, Aug 12, 2009 at 04:25:40PM +0300, Michael S. Tsirkin wrote:
+> > On Wed, Aug 12, 2009 at 09:01:35AM -0400, Gregory Haskins wrote:
+> > > I think I understand what your comment above meant:  You don't need to
+> > > do synchronize_rcu() because you can flush the workqueue instead to
+> > > ensure that all readers have completed.
+> > 
+> > Yes.
+> > 
+> > >  But if thats true, to me, the
+> > > rcu_dereference itself is gratuitous,
+> > 
+> > Here's a thesis on what rcu_dereference does (besides documentation):
+> > 
+> > reader does this
+> > 
+> > 	A: sock = n->sock
+> > 	B: use *sock
+> > 
+> > Say writer does this:
+> > 
+> > 	C: newsock = allocate socket
+> > 	D: initialize(newsock)
+> > 	E: n->sock = newsock
+> > 	F: flush
+> > 
+> > 
+> > On Alpha, reads could be reordered.  So, on smp, command A could get
+> > data from point F, and command B - from point D (uninitialized, from
+> > cache).  IOW, you get fresh pointer but stale data.
+> > So we need to stick a barrier in there.
+> > 
+> > > and that pointer is *not* actually
+> > > RCU protected (nor does it need to be).
+> > 
+> > Heh, if readers are lockless and writer does init/update/sync,
+> > this to me spells rcu.
+> 
+> If you are using call_rcu(), synchronize_rcu(), or one of the
+> similar primitives, then you absolutely need rcu_read_lock() and
+> rcu_read_unlock(), or one of the similar pairs of primitives.
 
-* Alan Stern <stern@rowland.harvard.edu> wrote:
+Right. I don't use any of these though.
 
-> On Wed, 12 Aug 2009, Ingo Molnar wrote:
+> If you -don't- use rcu_read_lock(), then you are pretty much restricted
+> to adding data, but never removing it.
 > 
-> > > And here I was thinking kerneldoc doesn't actually work 
-> > > like that, but perhaps Randy fixed it so the initial 
-> > > description can line-wrap?
+> Make sense?  ;-)
 > 
-> Yes, that's what I thought too.  If kerneldoc has been fixed then the 
-> description line certainly should get wrapped.
-> 
-> On Wed, 12 Aug 2009, Ingo Molnar wrote:
-> 
-> > Looks good - a small nit: please use proper/consistent line length,
-> > something like:
-> 
-> > Ah, the main changes i did were to the body, that is what 
-> > caught my eyes.
-> 
-> Point taken.  Would you like me to reformat the body text and 
-> resubmit the patch?
+> 							Thanx, Paul
 
-Yeah, please do if you've got the time.
+Since I only access data from a workqueue, I replaced synchronize_rcu
+with workqueue flush. That's why I don't need rcu_read_lock.
 
-	Ingo
+-- 
+MST
