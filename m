@@ -1,88 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbZHLCkE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755710AbZHLClL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755639AbZHLCkE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 22:40:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbZHLCkC
+	id S1755710AbZHLClL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 22:41:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbZHLClK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 22:40:02 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:52695 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754900AbZHLCkA (ORCPT
+	Tue, 11 Aug 2009 22:41:10 -0400
+Received: from mail-pz0-f196.google.com ([209.85.222.196]:57239 "EHLO
+	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754824AbZHLClJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 22:40:00 -0400
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
-References: <20090811104144.5154.77871.sendpatchset@localhost.localdomain>
-	<m163cub067.fsf@fess.ebiederm.org> <4A82182C.1080501@redhat.com>
-	<m1eirhlryf.fsf@fess.ebiederm.org> <4A8225DB.8040008@redhat.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 11 Aug 2009 19:39:56 -0700
-In-Reply-To: <4A8225DB.8040008@redhat.com> (Amerigo Wang's message of "Wed\, 12 Aug 2009 10\:15\:55 +0800")
-Message-ID: <m1d471ah6r.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 11 Aug 2009 22:41:09 -0400
+Message-ID: <4A822BBD.1080409@qi-hardware.com>
+Date: Wed, 12 Aug 2009 10:41:01 +0800
+From: Xiangfu Liu <xiangfu@qi-hardware.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: amwang@redhat.com, mingo@elte.hu, akpm@linux-foundation.org, andi@firstfloor.org, nhorman@redhat.com, linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Amerigo Wang <amwang@redhat.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [RFC Patch 1/2] kexec: show memory info in /proc/iomem
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: "Hard- and Software Development, Kernel, Distribution, Roadmap" 
+	<developer@lists.qi-hardware.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: qi_lb60_keypad driver question?
+References: <4A819D39.2040006@qi-hardware.com> <20090812024620.E4E10526EC9@mailhub.coreip.homeip.net>
+In-Reply-To: <20090812024620.E4E10526EC9@mailhub.coreip.homeip.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amerigo Wang <amwang@redhat.com> writes:
+Hi Dmitry Torokhow
 
-2> Eric W. Biederman wrote:
->> Amerigo Wang <amwang@redhat.com> writes:
->>
->>   
->>>> Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
->>>>
->>>> We can inspect the image we are going to load to get this information.
->>>> In fact /sbin/kexec already inspects the image we are going to load
->>>> to get this information.  Putting this in the kernel adds kernel
->>>> complexity for no gain.
->>>>         
->>> /sbin/kexec is supported to know this, of course. But this is not for
->>> /sbin/kexec, this is for user (or other programs) to observe the memory
->>> information, so that he can know the memory he reserved is too much or not.
->>>     
->>
->>   
->>> Without this, it is a little hard to use patch 2/2.
->>>     
->>
->> So add on option to /sbin/kexec.
->>   
+thanks for the reply.
+
+Dmitry Torokhov wrote:
+> Which is not telling most of the people anything. For example I have no
+> idea whta .25 kernel is.
+>   
+we are current work on 2.6.25.20 kernel. make it work in 'Ben NanoNote' [1]
+all the patch is at [2]
+> There is already an updated version of matrix_keypad driver in mainline,
+> you don't need to repost it.
+> This should go into arch specific board setup code, not in drivers/input
 >
-> This can be another choice.
->> Furthermore none of this does a good job of predicting how much
->> memory /sbin/fsck will require to check the filesystem before we
->> write a crash dump.
->>   
+>   
+>> +
+>> +static struct platform_device qi_lb60_device = {
+>> +	.name		= "qi_lb60-keyboard",
+>> +	.name		= "matrix-keypad",
+>>     
 >
-> No one actually knows this without testing... But if 128M on x86 is still not
-> enough, that is probably a bug of fsck, not our fault.
+> You are setting .name twice. Also, statically allocated platform devices
+> may not be unregistered. Just create this device once in your board init
+> code instead of having a separate unloadable module.
+>   
+thanks for the info.
 
-x86 covers a very large range of hardware.  Some of it nearly as large as
-the big ia64 machines.  So why would ia64 require significantly more memory
-than x86?
+[1]http://www.qi-hardware.com/products/ben-nanonote/
+[2]http://github.com/lindnermarek/openwrt-x-burst/tree/adb28f982f25a822d2dda9aa054470f3fff02908/target/linux/xburst/patches-2.6.25
+--
+Xiangfu Liu 刘向富
+==================================
+Qi Hardware Inc.
+Mobile: +86 132 4141 2371
+Jabber: xiangfu.z at gmail.com
+Email : xiangfu at qi-hardware.com
+Web   : http://www.qi-hardware.com
+==================================
 
-Eric
