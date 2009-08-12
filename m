@@ -1,139 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752234AbZHLWOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752368AbZHLWQD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752234AbZHLWOK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 18:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZHLWOK
+	id S1752368AbZHLWQD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 18:16:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbZHLWQC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 18:14:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53699 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752075AbZHLWOJ (ORCPT
+	Wed, 12 Aug 2009 18:16:02 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:57239 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752281AbZHLWQB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 18:14:09 -0400
-Date: Wed, 12 Aug 2009 15:13:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ngupta@vflare.org
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [PATCH] swap: send callback when swap slot is freed
-Message-Id: <20090812151356.8042bd91.akpm@linux-foundation.org>
-In-Reply-To: <200908122007.43522.ngupta@vflare.org>
-References: <200908122007.43522.ngupta@vflare.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Aug 2009 18:16:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=P7eKK62SRBB2SnPQJlGKyfcdsGY65z95R//0BHVsANlkCcEE2aQ0xcCyzJpk0z5SVF
+         OlqJeGym2PPCiKtrdukW2sC/brsF9K23yJFSq+R8wh3mTGaV8LFyVMu8vompuIhCBl9n
+         A3Nw+ttHTJzi+CRnUiQMY5wla2hriscWN1lHw=
+MIME-Version: 1.0
+In-Reply-To: <c4e36d110908111410y29b922ceod6871fda2514f6e6@mail.gmail.com>
+References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>
+	 <alpine.DEB.1.10.0908111032110.30494@gentwo.org>
+	 <c4e36d110908110752x253e30epb00cc71f4683052b@mail.gmail.com>
+	 <alpine.DEB.1.10.0908111056550.30494@gentwo.org>
+	 <c4e36d110908110832y21fba830ub8804613df571228@mail.gmail.com>
+	 <20090811154853.GF2763@sgi.com>
+	 <c4e36d110908111410y29b922ceod6871fda2514f6e6@mail.gmail.com>
+Date: Thu, 13 Aug 2009 00:16:00 +0200
+Message-ID: <c4e36d110908121516u504809e9y537e9babfa95df1d@mail.gmail.com>
+Subject: Re: System freeze on reboot - general protection fault
+From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: Robin Holt <holt@sgi.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Jesper Dangaard Brouer <hawk@comx.dk>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Aug 2009 20:07:43 +0530
-Nitin Gupta <ngupta@vflare.org> wrote:
+2009/8/11 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
+> 2009/8/11 Robin Holt <holt@sgi.com>:
+>> On Tue, Aug 11, 2009 at 05:32:16PM +0200, Zdenek Kabelac wrote:
+>>> 2009/8/11 Christoph Lameter <cl@linux-foundation.org>:
+>>> > On Tue, 11 Aug 2009, Zdenek Kabelac wrote:
+>>> >
+>>> >> Well - I've tried to switch from  'slub' allocator to  old 'slab'
+>>> >> allocator and the problem is gone - shutdown goes without any problem.
+>>> >>
+>>> >> So it's probably related to 'slub' allocator only?
+>>> >
+>>> > The slab allocator does not have all the diagnostics of slub. The issue
+>>> > may simply not be detected in slab. If you switch off diagnostics in slub
+>>> > then everything will seem to work fine as well. But we need to figure out
+>>> > what is going wrong here.
+>>>
+>>> Hmm - but there are few things -
+>>>
+>>> My machine runs  Fedora Rawhide. If I run the same kernel within KVM
+>>> running Debian unstable I could easily reboot this guest machine
+>>> without any problems.
+>>>
+>>> Also if I boot Rawhide only to single mode - I could also reboot
+>>> machine without this oops.
+>>> The problem seems to be - when I do full machine startup to the
+>>> multiuser runlevel 3
+>>
+>> Try booting all the way and recording you output from lsmod.  Reboot
+>> single user mode and modprobe each of the modules in that original lists.
+>> Test shutdown from single user mode.  This might identify if it is one
+>> of your loaded modules.  If so, effectively bisect the modprobes until
+>> you find the offending module(s).
+>>
+>
+>
+> Ok - it appeared to be more complex - when I've been trying to get
+> this oops on my laptop while not being connected via wired net - but
+> to not bother here with details - the result is
+>
+> That if I remove nf_conntrack_ipv4.ko  - so it can not be loaded - the
+> problem is gone.
+> So it looks like the memory problem is related to netfiltering - there
+> are multiple modules loaded as dependecy becuase of this - so it's
+> hard to say exactly which module of them makes the trouble.
+>
+> I've checked for some recent commits in this area - and they seem to
+> be actually important
+> (i.e 941297f443f871b8c3372feccf27a8733f6ce9e9  16.Jul)
+>
+> I could probably try to revert some of them - but if someone has some
+> ideas what could make these problems ?
+>
+> I've added authors of some recent conntrack commits to Cc: - maybe
+> they might know?
 
-> Currently, we have "swap discard" mechanism which sends a discard bio request
-> when we find a free cluster during scan_swap_map(). This callback can come a
-> long time after swap slots are actually freed.
-> 
-> This delay in callback is a great problem when (compressed) RAM [1] is used
-> as a swap device. So, this change adds a callback which is called as
-> soon as a swap slot becomes free. For above mentioned case of swapping
-> over compressed RAM device, this is very useful since we can immediately
-> free memory allocated for this swap page.
-> 
-> This callback does not replace swap discard support. It is called with
-> swap_lock held, so it is meant to trigger action that finishes quickly.
-> However, swap discard is an I/O request and can be used for taking longer
-> actions.
+I've tested v2.6.30 - and it's crashing in the same way - so any other
+starting point where slub has the same detection mechanism and
+conntrack module should be working reliable ?
 
-It would be better if we could arrange for discard_swap() to be called
-synchronously so we don't have to add a second parallel implementation
-of a pretty similar thing.
-
-Running the callback under spinlock is regrettable - it rather limits
-what that handler can do.
-
-
-> 
->  include/linux/swap.h |    5 +++++
->  mm/swapfile.c        |   16 ++++++++++++++++
->  2 files changed, 21 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/swap.h b/include/linux/swap.h
-> index 7c15334..4cbe3c4 100644
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -8,6 +8,7 @@
->  #include <linux/memcontrol.h>
->  #include <linux/sched.h>
->  #include <linux/node.h>
-> +#include <linux/blkdev.h>
->  
->  #include <asm/atomic.h>
->  #include <asm/page.h>
-> @@ -20,6 +21,8 @@ struct bio;
->  #define SWAP_FLAG_PRIO_MASK	0x7fff
->  #define SWAP_FLAG_PRIO_SHIFT	0
->  
-> +typedef void (swap_free_notify_fn) (struct block_device *, unsigned long);
-> +
->  static inline int current_is_kswapd(void)
->  {
->  	return current->flags & PF_KSWAPD;
-> @@ -155,6 +158,7 @@ struct swap_info_struct {
->  	unsigned int max;
->  	unsigned int inuse_pages;
->  	unsigned int old_block_size;
-> +	swap_free_notify_fn *swap_free_notify_fn;
->  };
->  
->  struct swap_list_t {
-> @@ -295,6 +299,7 @@ extern sector_t swapdev_block(int, pgoff_t);
->  extern struct swap_info_struct *get_swap_info_struct(unsigned);
->  extern int reuse_swap_page(struct page *);
->  extern int try_to_free_swap(struct page *);
-> +extern void set_swap_free_notify(unsigned, swap_free_notify_fn *);
->  struct backing_dev_info;
->  
->  /* linux/mm/thrash.c */
-> diff --git a/mm/swapfile.c b/mm/swapfile.c
-> index 8ffdc0d..aa95fc7 100644
-> --- a/mm/swapfile.c
-> +++ b/mm/swapfile.c
-> @@ -552,6 +552,20 @@ out:
->  	return NULL;
->  }
->  
-> +/*
-> + * Sets callback for event when swap_map[offset] == 0
-> + * i.e. page at this swap offset is no longer used.
-> + */
-> +void set_swap_free_notify(unsigned type, swap_free_notify_fn *notify_fn)
-> +{
-> +	struct swap_info_struct *sis;
-> +	sis = get_swap_info_struct(type);
-> +	BUG_ON(!sis);
-> +	sis->swap_free_notify_fn = notify_fn;
-> +	return;
-> +}
-> +EXPORT_SYMBOL(set_swap_free_notify);
-
-hm, well, spose so.  There's no provision here for multiple watchers,
-the function is racy and makes no provision for telling the caller what
-the old value was and the kernel will crash horridly if the module which
-implements ->swap_free_notify_fn() gets rmmoded and forgets to do
-set_swap_free_notify(..., NULL).  
-
-But I guess we can live with those things.
-
->  static int swap_entry_free(struct swap_info_struct *p,
->  			   swp_entry_t ent, int cache)
->  {
-> @@ -583,6 +597,8 @@ static int swap_entry_free(struct swap_info_struct *p,
->  			swap_list.next = p - swap_info;
->  		nr_swap_pages++;
->  		p->inuse_pages--;
-> +		if (p->swap_free_notify_fn)
-> +			p->swap_free_notify_fn(p->bdev, offset);
->  	}
->  	if (!swap_count(count))
->  		mem_cgroup_uncharge_swap(ent);
+Zdenek
