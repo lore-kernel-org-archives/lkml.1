@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751153AbZHLVRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751288AbZHLVUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751153AbZHLVRV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 17:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbZHLVRV
+	id S1751288AbZHLVUT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 17:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbZHLVUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 17:17:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60005 "EHLO ogre.sisk.pl"
+	Wed, 12 Aug 2009 17:20:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51341 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750844AbZHLVRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 17:17:20 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
-Date: Wed, 12 Aug 2009 23:18:12 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Zhang Rui <rui.zhang@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       "linux-acpi" <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
-       "dtor@mail.ru" <dtor@mail.ru>
-References: <Pine.LNX.4.44L0.0908121633220.23954-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908121633220.23954-100000@iolanthe.rowland.org>
+	id S1750847AbZHLVUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 17:20:18 -0400
+Date: Wed, 12 Aug 2009 18:19:57 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH tip 1/1] perf report: Don't show unresolved DSOs and
+	symbols when -S/-d is used
+Message-ID: <20090812211957.GE3495@ghostprotocols.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908122318.12145.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 August 2009, Alan Stern wrote:
-> On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
-> 
-> > > The one thing I'm not sure of is the pm_runtime_put_noidle calls in 
-> > > driver_probe_device and __device_release_driver.  It seems that we 
-> > > should always call pm_runtime_put regardless of whether the probe 
-> > > succeeds or not.
-> > 
-> > Did you mean pm_runtime_put_sync()?
-> 
-> Yes.  I haven't used the new code yet so the names don't stick in my 
-> mind.
-> 
-> > > For example, the USB stack is set up to suspend devices that don't have
-> > > a driver (this is handled at the bus subsystem level).  But if probing
-> > > failed, there wouldn't be any idle callback and so the suspend wouldn't
-> > > take place.
-> > 
-> > OK, I'll make this change.
-> 
-> Thanks.  Now I just have to figure out the best way to convert USB over 
-> to the new framework...
+We're interested in just those symbols/DSOs, so filter out the
+unresolved ones.
 
-:-)
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/builtin-report.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-On a second thought, though, would it be a good idea to add
-pm_runtime_get_noresume() / pm_runtime_put_sync() around the bus_for_each_drv()
-in device_attach()?  That would prevent us from resuming-suspending the device
-on each failing probe.
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index 58a4f08..6321951 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -1340,10 +1340,11 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 	if (show & show_mask) {
+ 		struct symbol *sym = resolve_symbol(thread, &map, &dso, &ip);
+ 
+-		if (dso_list && dso && dso->name && !strlist__has_entry(dso_list, dso->name))
++		if (dso_list && (!dso || !dso->name ||
++				 !strlist__has_entry(dso_list, dso->name)))
+ 			return 0;
+ 
+-		if (sym_list && sym && !strlist__has_entry(sym_list, sym->name))
++		if (sym_list && (!sym || !strlist__has_entry(sym_list, sym->name)))
+ 			return 0;
+ 
+ 		if (hist_entry__add(thread, map, dso, sym, ip, chain, level, period)) {
+-- 
+1.6.2.5
 
-Rafael
+
