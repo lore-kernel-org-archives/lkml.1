@@ -1,89 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbZHLSnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZHLSsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754829AbZHLSnc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 14:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbZHLSnb
+	id S1754839AbZHLSsT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 14:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZHLSsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 14:43:31 -0400
-Received: from radon.netxsys.com ([204.16.202.162]:41712 "EHLO
-	radon.netxsys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752859AbZHLSnb (ORCPT
+	Wed, 12 Aug 2009 14:48:18 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:46530 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751880AbZHLSsS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 14:43:31 -0400
-X-Greylist: delayed 1282 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Aug 2009 14:43:30 EDT
-Message-ID: <48078.205.189.93.240.1250101329.squirrel@webmail.netxsys.com>
-Date: Wed, 12 Aug 2009 14:22:09 -0400 (EDT)
-Subject: WARNING: at drivers/ata/libata-core.c:5090 
-     ata_qc_issue+0x105/0x2f3 [libata](), kernel 2.6.30.4
-From: "Krzysztof Adamski" <k@adamski.org>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.9a
+	Wed, 12 Aug 2009 14:48:18 -0400
+Date: Wed, 12 Aug 2009 14:48:16 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
+In-Reply-To: <1250101677.8829.4.camel@mulgrave.site>
+Message-ID: <Pine.LNX.4.44L0.0908121432030.23954-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;boundary="----=_20090812142209_89889"
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_20090812142209_89889
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+On Wed, 12 Aug 2009, James Bottomley wrote:
 
-I'm not sure if this the right place to post this stack trace, if there is
-a better place, please let me know.
+> On Wed, 2009-08-12 at 14:16 -0400, Alan Stern wrote:
+> > On Wed, 12 Aug 2009, James Bottomley wrote:
+> > 
+> > > If it's a local lock, how would something someone else submitted to the
+> > > queue, which would be out of scope, take this local lock?  A local lock,
+> > > by definition is local to the code scope you control.
+> > 
+> > This can happen easily.  Somebody else submits a work item to the
+> > queue, the work routine calls one of your publicly exported functions,
+> > and that function takes the local lock.
+> 
+> Fine, so local means not exported and not usable by exported functions.
 
-I was doing an rsync when I got this trace.
-This is in a 2.6.30.4 self compiled 64 bit kernel, running on a Phenon
-945, the file system is XFS on a RAID5 MD array.
+I'll accept that.  However it means that the SCSI midlayer violates
+your own locking rules with regard to the scan mutex.  Whereas if
+flush_scheduled_work() were avoided, the locking rules would not be
+violated.
 
-K
-------=_20090812142209_89889
-Content-Type: text/plain; name="stack-trace.txt"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: attachment; filename="stack-trace.txt"
 
-Aug 12 10:53:38 Nitrogen kernel: [66623.989645] ------------[ cut here ]------------
-Aug 12 10:53:38 Nitrogen kernel: [66623.989725] WARNING: at drivers/ata/libata-core.c:5090 ata_qc_issue+0x105/0x2f3 [libata]()
-Aug 12 10:53:38 Nitrogen kernel: [66623.989833] Hardware name: GA-MA790FXT-UD5P
-Aug 12 10:53:38 Nitrogen kernel: [66623.989887] Modules linked in: sg ipv6 xfs exportfs cpufreq_ondemand freq_table sbp2 loop snd_hda_c
-odec_realtek mvsas libsas firmware_class snd_hda_intel snd_hda_codec i2c_piix4 scsi_transport_sas snd_hwdep i2c_core processor snd_pcm snd_timer snd soundcore snd_page_alloc pcspkr evdev button ext3 jbd mbcache dm_mirror dm_region_hash dm_log dm_snapshot dm_mod raid456 raid6_pq async_xor async_memcpy async_tx xor raid1 md_mod sd_mod crc_t10dif ata_generic jmicron ohci1394 ieee1394 atiixp ahci ehci_hcd ide_pci_generic libata ide_core ohci_hcd scsi_mod r8169 mii floppy thermal fan thermal_sys
-Aug 12 10:53:38 Nitrogen kernel: [66623.990480] Pid: 30596, comm: ssh Not tainted 2.6.30.4-KAA #2
-Aug 12 10:53:38 Nitrogen kernel: [66623.990535] Call Trace:
-Aug 12 10:53:38 Nitrogen kernel: [66623.990576]  <IRQ>  [<ffffffffa0099fd6>] ? ata_qc_issue+0x105/0x2f3 [libata]
-Aug 12 10:53:38 Nitrogen kernel: [66623.990653]  [<ffffffffa0099fd6>] ? ata_qc_issue+0x105/0x2f3 [libata]
-Aug 12 10:53:38 Nitrogen kernel: [66623.990713]  [<ffffffff8023a9bd>] ? warn_slowpath_common+0x77/0xa3
-Aug 12 10:53:38 Nitrogen kernel: [66623.990780]  [<ffffffffa003f701>] ? scsi_finish_command+0x3f/0xf0 [scsi_mod]
-Aug 12 10:53:38 Nitrogen kernel: [66623.990850]  [<ffffffffa0099fd6>] ? ata_qc_issue+0x105/0x2f3 [libata]
-Aug 12 10:53:38 Nitrogen kernel: [66623.990917]  [<ffffffffa003f7b2>] ? scsi_done+0x0/0xc [scsi_mod]
-Aug 12 10:53:38 Nitrogen kernel: [66623.990984]  [<ffffffffa009e91e>] ? ata_scsi_translate+0xf1/0x127 [libata]
-Aug 12 10:53:38 Nitrogen kernel: [66623.991057]  [<ffffffffa003f7b2>] ? scsi_done+0x0/0xc [scsi_mod]
-Aug 12 10:53:38 Nitrogen kernel: [66623.991121]  [<ffffffffa02af33f>] ? sas_queuecommand+0x82/0x26b [libsas]
-Aug 12 10:53:38 Nitrogen kernel: [66623.991194]  [<ffffffffa003fa8e>] ? scsi_dispatch_cmd+0x1ca/0x245 [scsi_mod]
-Aug 12 10:53:38 Nitrogen kernel: [66623.991275]  [<ffffffffa004507e>] ? scsi_request_fn+0x3a4/0x4f0 [scsi_mod]
-Aug 12 10:53:38 Nitrogen kernel: [66623.991335]  [<ffffffff8022df0e>] ? __wake_up+0x38/0x4f
-Aug 12 10:53:38 Nitrogen kernel: [66623.991390]  [<ffffffff8033be66>] ? blk_invoke_request_fn+0x70/0x139
-Aug 12 10:53:38 Nitrogen kernel: [66623.991452]  [<ffffffff8033c8ce>] ? blk_run_queue+0x21/0x35
-Aug 12 10:53:38 Nitrogen kernel: [66623.991518]  [<ffffffffa00445df>] ? scsi_run_queue+0x2df/0x379 [scsi_mod]
-Aug 12 10:53:38 Nitrogen kernel: [66623.991587]  [<ffffffffa00453bc>] ? scsi_next_command+0x2d/0x39 [scsi_mod]
-Aug 12 10:53:38 Nitrogen kernel: [66623.991657]  [<ffffffffa0045f46>] ? scsi_io_completion+0x421/0x467 [scsi_mod]
-Aug 12 10:53:38 Nitrogen kernel: [66623.991719]  [<ffffffff803404b6>] ? blk_done_softirq+0x62/0x6f
-Aug 12 10:53:38 Nitrogen kernel: [66623.991776]  [<ffffffff8023f602>] ? __do_softirq+0xa6/0x168
-Aug 12 10:53:38 Nitrogen kernel: [66623.991832]  [<ffffffff8020ca7c>] ? call_softirq+0x1c/0x28
-Aug 12 10:53:38 Nitrogen kernel: [66623.991886]  [<ffffffff8020e254>] ? do_softirq+0x2c/0x68
-Aug 12 10:53:38 Nitrogen kernel: [66623.991942]  [<ffffffff8023f314>] ? irq_exit+0x3f/0x7c
-Aug 12 10:53:38 Nitrogen kernel: [66623.991995]  [<ffffffff8020db36>] ? do_IRQ+0xa9/0xbf
-Aug 12 10:53:38 Nitrogen kernel: [66623.992057]  [<ffffffff8020c353>] ? ret_from_intr+0x0/0xa
-Aug 12 10:53:38 Nitrogen kernel: [66623.992121]  <EOI>  [<ffffffff8042b87c>] ? tcp_recvmsg+0x1e7/0xa28
-Aug 12 10:53:38 Nitrogen kernel: [66623.992190]  [<ffffffff8042bd91>] ? tcp_recvmsg+0x6fc/0xa28
-Aug 12 10:53:38 Nitrogen kernel: [66623.992256]  [<ffffffff803f5534>] ? sock_common_recvmsg+0x30/0x45
-Aug 12 10:53:38 Nitrogen kernel: [66623.992323]  [<ffffffff803f3523>] ? sock_aio_read+0x103/0x117
-Aug 12 10:53:38 Nitrogen kernel: [66623.992390]  [<ffffffff802bce59>] ? do_sync_read+0xce/0x113
-Aug 12 10:53:38 Nitrogen kernel: [66623.992454]  [<ffffffff8024cdf2>] ? autoremove_wake_function+0x0/0x2e
-Aug 12 10:53:38 Nitrogen kernel: [66623.992524]  [<ffffffff804708e8>] ? thread_return+0x3e/0xaa
-Aug 12 10:53:38 Nitrogen kernel: [66623.992587]  [<ffffffff802bd9a4>] ? vfs_read+0xbd/0x153
-Aug 12 10:53:38 Nitrogen kernel: [66623.992649]  [<ffffffff802bdaf6>] ? sys_read+0x45/0x6e
-Aug 12 10:53:38 Nitrogen kernel: [66623.992709]  [<ffffffff8020b9ab>] ? system_call_fastpath+0x16/0x1b
-Aug 12 10:53:38 Nitrogen kernel: [66623.992773] ---[ end trace 659503649685d5b5 ]---
-------=_20090812142209_89889--
+> > You can assure it by auditing the work routine's code.  A single work
+> > item involves a single function, plus whatever that function calls -- 
+> > it is easily checked.
+> > 
+> > You don't need to inspect every work item ever added to the queue, only 
+> > the one that you want to cancel.
+> 
+> This is true, but not relevant to the documentation you were trying to
+> add.  You're advocating using cancel sync as a replacement for flush ...
+> thus you have to cancel every pending piece of your work currently on
+> the queue.
+
+In most cases there is only one or two work items to cancel.
+
+I'll stick my neck out even farther: In the majority of places where
+flush_scheduled_work() is used in the kernel, cancel_work_sync() would
+work just as well if not better, and it isn't used only because the
+code was written before cancel_work_sync() existed (or before the
+writer knew about it).
+
+>  My contention is that this means your rules for submission
+> if you do this must be the same as they would be if you'd just called
+> flush; making the advice moot.
+
+The rules for submission are _not_ the same.  With 
+flush_scheduled_work():
+
+	Make sure that any lock you hold while flushing is private
+	and is not used (even indirectly) by any of your publicly 
+	exported routines.
+
+With cancel_work_sync():
+
+	Make sure that any lock you hold while cancelling is not
+	used (even indirectly) by the work routine being cancelled.
+
+Alan Stern
 
