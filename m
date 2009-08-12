@@ -1,46 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752394AbZHLXJD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752830AbZHLXJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752394AbZHLXJD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 19:09:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbZHLXJB
+	id S1752830AbZHLXJG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 19:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbZHLXJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 19:09:01 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33912 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750907AbZHLXJB (ORCPT
+	Wed, 12 Aug 2009 19:09:04 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:57405 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752303AbZHLXJD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 19:09:01 -0400
-Message-ID: <4A834B3F.8040705@zytor.com>
-Date: Wed, 12 Aug 2009 16:07:43 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: "Wang, Shane" <shane.wang@intel.com>
-CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>,
-       "Wei, Gang" <gang.wei@intel.com>
-Subject: Re: [RFC v6][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution	Technology
- support for Linux - Details
-References: <20090812182013.GJ28848@basil.fritz.box> <037F493892196B458CD3E193E8EBAD4F01EAB64206@pdsmsx502.ccr.corp.intel.com>
-In-Reply-To: <037F493892196B458CD3E193E8EBAD4F01EAB64206@pdsmsx502.ccr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 12 Aug 2009 19:09:03 -0400
+Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
+	sections
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Pavel Machek <pavel@ucw.cz>, Joe Perches <joe@perches.com>,
+       Ben Dooks <ben-linux@fluff.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
+In-Reply-To: <20090812194838.GB12117@n2100.arm.linux.org.uk>
+References: <20090806113104.GK31370@elf.ucw.cz>
+	 <20090806120826.GC27773@flint.arm.linux.org.uk>
+	 <4A7ACC8D.7030706@xenontk.org>
+	 <20090806124048.GD27773@flint.arm.linux.org.uk>
+	 <1249563730.10297.13.camel@Joe-Laptop.home>
+	 <20090806133349.GF27773@flint.arm.linux.org.uk>
+	 <1249568614.10297.20.camel@Joe-Laptop.home>
+	 <20090806150322.GX2080@trinity.fluff.org>
+	 <1249948147.8895.96.camel@Joe-Laptop.home>
+	 <20090812115520.GI24339@elf.ucw.cz>
+	 <20090812194838.GB12117@n2100.arm.linux.org.uk>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 13 Aug 2009 00:04:37 +0100
+Message-Id: <1250118277.12423.7.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Aug 2009 23:04:38.0521 (UTC) FILETIME=[446DC690:01CA1BA1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/12/2009 03:37 PM, Wang, Shane wrote:
+On Wed, 2009-08-12 at 20:48 +0100, Russell King - ARM Linux wrote:
+> On Wed, Aug 12, 2009 at 01:55:20PM +0200, Pavel Machek wrote:
+> > I like that. Open lists are useful.
 > 
-> OK, I agree.
-> 
+> However, that is immaterial if no one is subscribed to it - in
+> which case it acts as a black hole and a source of frustration
+> for people.
 
-Are you taking care of this?
+I've been subscribed to linux-arm@vger since its creation in case anyone
+was posting (though it seems that technically wasn't possible) and I'm
+happy to reply to questions there.
 
-	-hpa
+> I haven't noticed a great rush of support for Joe's patch, which
+> could mean that people here really aren't that bothered - maybe
+> they just aren't "open list" zealots like some people seem to be.
+
+Personally, I'm more in favour of open lists as I don't see any
+advantage in having a moderated one. As for linux-arm@vger, if people
+(cross-)post ARM specific patches and the ARM gatekeeper is not
+subscribed, they could be lost unless other subscribers forward them to
+you or the lak list (or your patch system).
+
+An option would be to subscribe lak to linux-arm@vger so that messages
+are directed to lak as well and maybe add an exception to not moderate
+those coming via linux-arm@vger.
+
+Anyway, if you (as gatekeeper) do not want to have anything to do with
+the linux-arm@vger list (IOW "moderated list" zealot ;-)) I don't see
+much point in updating the "ARM PORT" entry in the MAINTAINERS.
+
+For the other ARM MAINTAINERS entries (e.g. specific boards), it is up
+to the corresponding maintainers to add whatever lists they want, which
+may include linux-arm@vger.
+
+-- 
+Catalin
 
