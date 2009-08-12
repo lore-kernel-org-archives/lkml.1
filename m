@@ -1,62 +1,534 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932424AbZHLJ63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbZHLJ7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932424AbZHLJ63 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 05:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932257AbZHLJ63
+	id S1755279AbZHLJ7j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 05:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbZHLJ7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 05:58:29 -0400
-Received: from exprod5og102.obsmtp.com ([64.18.0.143]:42605 "EHLO
-	exprod5og102.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446AbZHLJ62 (ORCPT
+	Wed, 12 Aug 2009 05:59:39 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:36154 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751446AbZHLJ7i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 05:58:28 -0400
-Message-ID: <4A829271.6000507@gefanuc.com>
-Date: Wed, 12 Aug 2009 10:59:13 +0100
-From: Martyn Welch <martyn.welch@gefanuc.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Wed, 12 Aug 2009 05:59:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SeayZN/c6LF3yiFRXVOOa5/pKaYAfTXxElnScw7YInCAxtRLAbJeU/B4lvMWRro2BL
+         31GaketfVT1QF5Gn00IEy5hpwcAH1k6Koc1P+3PvwnsWCmaLb13pj3Udm5TpNKDHzj1s
+         CJM5w4Ip3b/eKwKv1UT6dyVbBJUDk1u/CaZWs=
+Date: Wed, 12 Aug 2009 11:59:34 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       Brice Goglin <Brice.Goglin@inria.fr>
+Subject: Re: [PATCH 1/3] perf tools: Factorize high level dso helpers
+Message-ID: <20090812095933.GB6081@nowhere>
+References: <1250069162-13099-1-git-send-email-fweisbec@gmail.com> <1250069162-13099-2-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
-To: "Emilio G. Cota" <cota@braap.org>
-CC: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [patch 1/5] Staging: VME Framework for the Linux Kernel
-References: <20090810193849.GA3055@braap.org> <4A812BCE.3010003@gefanuc.com> <20090811144914.GB32658@braap.org> <4A8189D9.4080709@gefanuc.com> <20090811153633.GC32658@braap.org> <4A819130.5080802@gefanuc.com> <20090811154226.GD32658@braap.org> <4A819E80.90103@gefanuc.com> <20090811204835.GA9910@braap.org> <4A828395.9040006@gefanuc.com> <20090812095436.GC2604@braap.org>
-In-Reply-To: <20090812095436.GC2604@braap.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250069162-13099-2-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Emilio G. Cota wrote:
-> Martyn Welch wrote:
->   
->> There is a further device situated between the two.
->>     
->>> How do you now protect the registers of this device from
->>>       
->>>> accidental/malicous/buggy behaviour from your board, since
->>>>         
->> this region of the VME bus is now enabled for transfers
->> in the PCI IO Mem space?
->>     
->
-> The kernel is not designed to work with buggy hardware--that
-> would be insane, we've got more than enough dealing with our
-> own bugs. However when there's no other solution (e.g.
-> hardware can't be fixed for whatever reason), fixes on a
-> per-case basis may be applied.
->
->   
-Apart from : not mapping regions of the VME bus that you are not using.
+On Wed, Aug 12, 2009 at 11:26:00AM +0200, Frederic Weisbecker wrote:
+> Factorize multiple definitions of high level dso helpers into the
+> symbol source file.
+> 
+> The side effect is a general export of the verbose and eprintf
+> debugging helpers into a new file dedicated to debugging purposes.
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Mike Galbraith <efault@gmx.de>
+> Cc: Brice Goglin <Brice.Goglin@inria.fr>
+> ---
+>  tools/perf/Makefile           |    1 +
+>  tools/perf/builtin-annotate.c |   96 ----------------------------------------
+>  tools/perf/builtin-record.c   |    1 -
+>  tools/perf/builtin-report.c   |   97 -----------------------------------------
+>  tools/perf/builtin-stat.c     |    1 -
+>  tools/perf/builtin-top.c      |    4 --
+>  tools/perf/builtin.h          |    1 +
+>  tools/perf/perf.h             |    1 +
+>  tools/perf/util/symbol.c      |   97 +++++++++++++++++++++++++++++++++++++++++
+>  tools/perf/util/symbol.h      |   11 +++++
+>  10 files changed, 111 insertions(+), 199 deletions(-)
+> 
+> diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+> index de7beac..2aee21b 100644
+> --- a/tools/perf/Makefile
+> +++ b/tools/perf/Makefile
+> @@ -339,6 +339,7 @@ LIB_OBJS += util/pager.o
+>  LIB_OBJS += util/header.o
+>  LIB_OBJS += util/callchain.o
+>  LIB_OBJS += util/values.o
+> +LIB_OBJS += util/debug.o
 
-Martyn
 
-> E.
->   
+Damn, did I forgot to git-add util/debug.c ?
+
+How could I fix this? Another pull request?
+
+Frederic.
 
 
--- 
-Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
-GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
-Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
-Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 927559189
+>  
+>  BUILTIN_OBJS += builtin-annotate.o
+>  BUILTIN_OBJS += builtin-help.o
+> diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+> index 1dba568..1a79299 100644
+> --- a/tools/perf/builtin-annotate.c
+> +++ b/tools/perf/builtin-annotate.c
+> @@ -26,7 +26,6 @@
+>  #define SHOW_HV		4
+>  
+>  static char		const *input_name = "perf.data";
+> -static char		*vmlinux = "vmlinux";
+>  
+>  static char		default_sort_order[] = "comm,symbol";
+>  static char		*sort_order = default_sort_order;
+> @@ -37,9 +36,6 @@ static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
+>  static int		dump_trace = 0;
+>  #define dprintf(x...)	do { if (dump_trace) printf(x); } while (0)
+>  
+> -static int		verbose;
+> -
+> -static int		modules;
+>  
+>  static int		full_paths;
+>  
+> @@ -89,98 +85,6 @@ struct sym_ext {
+>  	char		*path;
+>  };
+>  
+> -static LIST_HEAD(dsos);
+> -static struct dso *kernel_dso;
+> -static struct dso *vdso;
+> -
+> -
+> -static void dsos__add(struct dso *dso)
+> -{
+> -	list_add_tail(&dso->node, &dsos);
+> -}
+> -
+> -static struct dso *dsos__find(const char *name)
+> -{
+> -	struct dso *pos;
+> -
+> -	list_for_each_entry(pos, &dsos, node)
+> -		if (strcmp(pos->name, name) == 0)
+> -			return pos;
+> -	return NULL;
+> -}
+> -
+> -static struct dso *dsos__findnew(const char *name)
+> -{
+> -	struct dso *dso = dsos__find(name);
+> -	int nr;
+> -
+> -	if (dso)
+> -		return dso;
+> -
+> -	dso = dso__new(name, 0);
+> -	if (!dso)
+> -		goto out_delete_dso;
+> -
+> -	nr = dso__load(dso, NULL, verbose);
+> -	if (nr < 0) {
+> -		if (verbose)
+> -			fprintf(stderr, "Failed to open: %s\n", name);
+> -		goto out_delete_dso;
+> -	}
+> -	if (!nr && verbose) {
+> -		fprintf(stderr,
+> -		"No symbols found in: %s, maybe install a debug package?\n",
+> -				name);
+> -	}
+> -
+> -	dsos__add(dso);
+> -
+> -	return dso;
+> -
+> -out_delete_dso:
+> -	dso__delete(dso);
+> -	return NULL;
+> -}
+> -
+> -static void dsos__fprintf(FILE *fp)
+> -{
+> -	struct dso *pos;
+> -
+> -	list_for_each_entry(pos, &dsos, node)
+> -		dso__fprintf(pos, fp);
+> -}
+> -
+> -static struct symbol *vdso__find_symbol(struct dso *dso, u64 ip)
+> -{
+> -	return dso__find_symbol(dso, ip);
+> -}
+> -
+> -static int load_kernel(void)
+> -{
+> -	int err;
+> -
+> -	kernel_dso = dso__new("[kernel]", 0);
+> -	if (!kernel_dso)
+> -		return -1;
+> -
+> -	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, modules);
+> -	if (err <= 0) {
+> -		dso__delete(kernel_dso);
+> -		kernel_dso = NULL;
+> -	} else
+> -		dsos__add(kernel_dso);
+> -
+> -	vdso = dso__new("[vdso]", 0);
+> -	if (!vdso)
+> -		return -1;
+> -
+> -	vdso->find_symbol = vdso__find_symbol;
+> -
+> -	dsos__add(vdso);
+> -
+> -	return err;
+> -}
+> -
+>  struct map {
+>  	struct list_head node;
+>  	u64	 start;
+> diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+> index 0345aad..afae387 100644
+> --- a/tools/perf/builtin-record.c
+> +++ b/tools/perf/builtin-record.c
+> @@ -40,7 +40,6 @@ static int			inherit				= 1;
+>  static int			force				= 0;
+>  static int			append_file			= 0;
+>  static int			call_graph			= 0;
+> -static int			verbose				= 0;
+>  static int			inherit_stat			= 0;
+>  static int			no_samples			= 0;
+>  static int			sample_address			= 0;
+> diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+> index 2357c66..827eab2 100644
+> --- a/tools/perf/builtin-report.c
+> +++ b/tools/perf/builtin-report.c
+> @@ -30,7 +30,6 @@
+>  #define SHOW_HV		4
+>  
+>  static char		const *input_name = "perf.data";
+> -static char		*vmlinux = NULL;
+>  
+>  static char		default_sort_order[] = "comm,dso,symbol";
+>  static char		*sort_order = default_sort_order;
+> @@ -46,11 +45,6 @@ static int		dump_trace = 0;
+>  #define dprintf(x...)	do { if (dump_trace) printf(x); } while (0)
+>  #define cdprintf(x...)	do { if (dump_trace) color_fprintf(stdout, color, x); } while (0)
+>  
+> -static int		verbose;
+> -#define eprintf(x...)	do { if (verbose) fprintf(stderr, x); } while (0)
+> -
+> -static int		modules;
+> -
+>  static int		full_paths;
+>  static int		show_nr_samples;
+>  
+> @@ -161,98 +155,7 @@ static int repsep_fprintf(FILE *fp, const char *fmt, ...)
+>  	return n;
+>  }
+>  
+> -static LIST_HEAD(dsos);
+> -static struct dso *kernel_dso;
+> -static struct dso *vdso;
+> -static struct dso *hypervisor_dso;
+> -
+> -static void dsos__add(struct dso *dso)
+> -{
+> -	list_add_tail(&dso->node, &dsos);
+> -}
+> -
+> -static struct dso *dsos__find(const char *name)
+> -{
+> -	struct dso *pos;
+> -
+> -	list_for_each_entry(pos, &dsos, node)
+> -		if (strcmp(pos->name, name) == 0)
+> -			return pos;
+> -	return NULL;
+> -}
+> -
+> -static struct dso *dsos__findnew(const char *name)
+> -{
+> -	struct dso *dso = dsos__find(name);
+> -	int nr;
+> -
+> -	if (dso)
+> -		return dso;
+> -
+> -	dso = dso__new(name, 0);
+> -	if (!dso)
+> -		goto out_delete_dso;
+> -
+> -	nr = dso__load(dso, NULL, verbose);
+> -	if (nr < 0) {
+> -		eprintf("Failed to open: %s\n", name);
+> -		goto out_delete_dso;
+> -	}
+> -	if (!nr)
+> -		eprintf("No symbols found in: %s, maybe install a debug package?\n", name);
+> -
+> -	dsos__add(dso);
+> -
+> -	return dso;
+> -
+> -out_delete_dso:
+> -	dso__delete(dso);
+> -	return NULL;
+> -}
+> -
+> -static void dsos__fprintf(FILE *fp)
+> -{
+> -	struct dso *pos;
+> -
+> -	list_for_each_entry(pos, &dsos, node)
+> -		dso__fprintf(pos, fp);
+> -}
+> -
+> -static struct symbol *vdso__find_symbol(struct dso *dso, u64 ip)
+> -{
+> -	return dso__find_symbol(dso, ip);
+> -}
+> -
+> -static int load_kernel(void)
+> -{
+> -	int err;
+> -
+> -	kernel_dso = dso__new("[kernel]", 0);
+> -	if (!kernel_dso)
+> -		return -1;
+> -
+> -	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, modules);
+> -	if (err <= 0) {
+> -		dso__delete(kernel_dso);
+> -		kernel_dso = NULL;
+> -	} else
+> -		dsos__add(kernel_dso);
+> -
+> -	vdso = dso__new("[vdso]", 0);
+> -	if (!vdso)
+> -		return -1;
+>  
+> -	vdso->find_symbol = vdso__find_symbol;
+> -
+> -	dsos__add(vdso);
+> -
+> -	hypervisor_dso = dso__new("[hypervisor]", 0);
+> -	if (!hypervisor_dso)
+> -		return -1;
+> -	dsos__add(hypervisor_dso);
+> -
+> -	return err;
+> -}
+>  
+>  static char __cwd[PATH_MAX];
+>  static char *cwd = __cwd;
+> diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+> index b4b06c7..4b9dd4a 100644
+> --- a/tools/perf/builtin-stat.c
+> +++ b/tools/perf/builtin-stat.c
+> @@ -63,7 +63,6 @@ static struct perf_counter_attr default_attrs[] = {
+>  #define MAX_RUN			100
+>  
+>  static int			system_wide			=  0;
+> -static int			verbose				=  0;
+>  static unsigned int		nr_cpus				=  0;
+>  static int			run_idx				=  0;
+>  
+> diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+> index 7de28ce..0aa5673 100644
+> --- a/tools/perf/builtin-top.c
+> +++ b/tools/perf/builtin-top.c
+> @@ -68,8 +68,6 @@ static int			group				=  0;
+>  static unsigned int		page_size;
+>  static unsigned int		mmap_pages			= 16;
+>  static int			freq				=  0;
+> -static int			verbose				=  0;
+> -static char			*vmlinux			=  NULL;
+>  
+>  static int			delay_secs			=  2;
+>  static int			zero;
+> @@ -338,8 +336,6 @@ static void show_details(struct sym_entry *syme)
+>  		printf("%d lines not displayed, maybe increase display entries [e]\n", more);
+>  }
+>  
+> -struct dso			*kernel_dso;
+> -
+>  /*
+>   * Symbols will be added here in record_ip and will get out
+>   * after decayed.
+> diff --git a/tools/perf/builtin.h b/tools/perf/builtin.h
+> index 51d1682..3a63e41 100644
+> --- a/tools/perf/builtin.h
+> +++ b/tools/perf/builtin.h
+> @@ -22,5 +22,6 @@ extern int cmd_stat(int argc, const char **argv, const char *prefix);
+>  extern int cmd_top(int argc, const char **argv, const char *prefix);
+>  extern int cmd_version(int argc, const char **argv, const char *prefix);
+>  extern int cmd_list(int argc, const char **argv, const char *prefix);
+> +extern int cmd_trace(int argc, const char **argv, const char *prefix);
+>  
+>  #endif
+> diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+> index e5148e2..f550921 100644
+> --- a/tools/perf/perf.h
+> +++ b/tools/perf/perf.h
+> @@ -48,6 +48,7 @@
+>  
+>  #include "../../include/linux/perf_counter.h"
+>  #include "util/types.h"
+> +#include "util/debug.h"
+>  
+>  /*
+>   * prctl(PR_TASK_PERF_COUNTERS_DISABLE) will (cheaply) disable all
+> diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+> index f1dcede..e9b13b4 100644
+> --- a/tools/perf/util/symbol.c
+> +++ b/tools/perf/util/symbol.c
+> @@ -937,6 +937,103 @@ int dso__load_kernel(struct dso *self, const char *vmlinux,
+>  	return err;
+>  }
+>  
+> +LIST_HEAD(dsos);
+> +struct dso	*kernel_dso;
+> +struct dso	*vdso;
+> +struct dso	*hypervisor_dso;
+> +
+> +char		*vmlinux = "vmlinux";
+> +int		modules;
+> +
+> +static void dsos__add(struct dso *dso)
+> +{
+> +	list_add_tail(&dso->node, &dsos);
+> +}
+> +
+> +static struct dso *dsos__find(const char *name)
+> +{
+> +	struct dso *pos;
+> +
+> +	list_for_each_entry(pos, &dsos, node)
+> +		if (strcmp(pos->name, name) == 0)
+> +			return pos;
+> +	return NULL;
+> +}
+> +
+> +struct dso *dsos__findnew(const char *name)
+> +{
+> +	struct dso *dso = dsos__find(name);
+> +	int nr;
+> +
+> +	if (dso)
+> +		return dso;
+> +
+> +	dso = dso__new(name, 0);
+> +	if (!dso)
+> +		goto out_delete_dso;
+> +
+> +	nr = dso__load(dso, NULL, verbose);
+> +	if (nr < 0) {
+> +		eprintf("Failed to open: %s\n", name);
+> +		goto out_delete_dso;
+> +	}
+> +	if (!nr)
+> +		eprintf("No symbols found in: %s, maybe install a debug package?\n", name);
+> +
+> +	dsos__add(dso);
+> +
+> +	return dso;
+> +
+> +out_delete_dso:
+> +	dso__delete(dso);
+> +	return NULL;
+> +}
+> +
+> +void dsos__fprintf(FILE *fp)
+> +{
+> +	struct dso *pos;
+> +
+> +	list_for_each_entry(pos, &dsos, node)
+> +		dso__fprintf(pos, fp);
+> +}
+> +
+> +static struct symbol *vdso__find_symbol(struct dso *dso, u64 ip)
+> +{
+> +	return dso__find_symbol(dso, ip);
+> +}
+> +
+> +int load_kernel(void)
+> +{
+> +	int err;
+> +
+> +	kernel_dso = dso__new("[kernel]", 0);
+> +	if (!kernel_dso)
+> +		return -1;
+> +
+> +	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, modules);
+> +	if (err <= 0) {
+> +		dso__delete(kernel_dso);
+> +		kernel_dso = NULL;
+> +	} else
+> +		dsos__add(kernel_dso);
+> +
+> +	vdso = dso__new("[vdso]", 0);
+> +	if (!vdso)
+> +		return -1;
+> +
+> +	vdso->find_symbol = vdso__find_symbol;
+> +
+> +	dsos__add(vdso);
+> +
+> +	hypervisor_dso = dso__new("[hypervisor]", 0);
+> +	if (!hypervisor_dso)
+> +		return -1;
+> +	dsos__add(hypervisor_dso);
+> +
+> +	return err;
+> +}
+> +
+> +
+>  void symbol__init(void)
+>  {
+>  	elf_version(EV_CURRENT);
+> diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+> index 1e003ec..f3490fc 100644
+> --- a/tools/perf/util/symbol.h
+> +++ b/tools/perf/util/symbol.h
+> @@ -48,9 +48,20 @@ int dso__load_kernel(struct dso *self, const char *vmlinux,
+>  		     symbol_filter_t filter, int verbose, int modules);
+>  int dso__load_modules(struct dso *self, symbol_filter_t filter, int verbose);
+>  int dso__load(struct dso *self, symbol_filter_t filter, int verbose);
+> +struct dso *dsos__findnew(const char *name);
+> +void dsos__fprintf(FILE *fp);
+>  
+>  size_t dso__fprintf(struct dso *self, FILE *fp);
+>  char dso__symtab_origin(const struct dso *self);
+>  
+> +int load_kernel(void);
+> +
+>  void symbol__init(void);
+> +
+> +extern struct list_head dsos;
+> +extern struct dso *kernel_dso;
+> +extern struct dso *vdso;
+> +extern struct dso *hypervisor_dso;
+> +extern char *vmlinux;
+> +extern int   modules;
+>  #endif /* _PERF_SYMBOL_ */
+> -- 
+> 1.6.2.3
+> 
+
