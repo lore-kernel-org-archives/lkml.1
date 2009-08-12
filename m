@@ -1,95 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbZHLRDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754427AbZHLRJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754517AbZHLRDi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 13:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZHLRDh
+	id S1754427AbZHLRJm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 13:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbZHLRJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 13:03:37 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:54229 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752192AbZHLRDg (ORCPT
+	Wed, 12 Aug 2009 13:09:41 -0400
+Received: from mail-fx0-f228.google.com ([209.85.220.228]:36329 "EHLO
+	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751336AbZHLRJk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 13:03:36 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: virtualization@lists.linux-foundation.org,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>
-Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
-Date: Wed, 12 Aug 2009 19:03:22 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <cover.1249930169.git.mst@redhat.com> <20090810185340.GC13924@redhat.com>
-In-Reply-To: <20090810185340.GC13924@redhat.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
- =?iso-8859-1?q?Y=2Ea=5E3zb?=)
- =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
- =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 12 Aug 2009 13:09:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZOS/cZ6IgmIxK8oubNLHH4JxFSIKmp3efHyu6hheM/DkUSoYAceCycM3muqsJ1C0vL
+         08U5yLF3wu4Wcb/52j51z/+CBn+t/jspV8l4JuNrvJcjUFWliEKKXZlzlL89wqHNIs/J
+         Jx97S5bzKw4R7/hOtQMJ+SYhghycfBt4ry7gY=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908121903.22325.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+roL5IJOaSoIHAedRUmR+YNXXIujYN5Unb7ZT
- InczmH4Fykw21Hb2gHy3KNRWTMyJnYpbTSZc2qwPdc3NBsFNIh
- 9sY7YrT484x85KH5YRLJQ==
+In-Reply-To: <20090805235009.88C091007F@gold.linx.net>
+References: <20090805235009.88C091007F@gold.linx.net>
+Date: Wed, 12 Aug 2009 19:03:05 +0200
+Message-ID: <c384c5ea0908121003x2f3eef3ejd8bc4a5aaa120793@mail.gmail.com>
+Subject: Re: [PATCH 2.6.32 v3] Conditional MSI support for sata_nv
+From: Leon Woestenberg <leon.woestenberg@gmail.com>
+To: Tony Vroon <tony@linx.net>
+Cc: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Philip Langdale <philipl@overt.org>,
+       Robert Hancock <hancockrwd@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 August 2009, Michael S. Tsirkin wrote:
+Hello,
 
-> +struct workqueue_struct *vhost_workqueue;
+On Thu, Aug 6, 2009 at 1:50 AM, Tony Vroon<tony@linx.net> wrote:
+> At least the nVidia MCP55 controller quite happily supports MSI.
+> +static int msi_enabled;
+> +       if (msi_enabled) {
+> +               dev_printk(KERN_NOTICE, &pdev->dev, "Using MSI\n");
+> +               pci_enable_msi(pdev);
+> +       }
+> +
 
-[nitpicking] This could be static. 
+I just saw this patch, didn't check the full sources.
 
-> +/* The virtqueue structure describes a queue attached to a device. */
-> +struct vhost_virtqueue {
-> +	struct vhost_dev *dev;
-> +
-> +	/* The actual ring of buffers. */
-> +	struct mutex mutex;
-> +	unsigned int num;
-> +	struct vring_desc __user *desc;
-> +	struct vring_avail __user *avail;
-> +	struct vring_used __user *used;
-> +	struct file *kick;
-> +	struct file *call;
-> +	struct file *error;
-> +	struct eventfd_ctx *call_ctx;
-> +	struct eventfd_ctx *error_ctx;
-> +
-> +	struct vhost_poll poll;
-> +
-> +	/* The routine to call when the Guest pings us, or timeout. */
-> +	work_func_t handle_kick;
-> +
-> +	/* Last available index we saw. */
-> +	u16 last_avail_idx;
-> +
-> +	/* Last index we used. */
-> +	u16 last_used_idx;
-> +
-> +	/* Outstanding buffers */
-> +	unsigned int inflight;
-> +
-> +	/* Is this blocked? */
-> +	bool blocked;
-> +
-> +	struct iovec iov[VHOST_NET_MAX_SG];
-> +
-> +} ____cacheline_aligned;
+Shouldn't there be a matching "if (msi_enabled)
+pci_disabling_msi(pdev);" somewhere else?
 
-We discussed this before, and I still think this could be directly derived
-from struct virtqueue, in the same way that vring_virtqueue is derived from
-struct virtqueue. That would make it possible for simple device drivers
-to use the same driver in both host and guest, similar to how Ira Snyder
-used virtqueues to make virtio_net run between two hosts running the
-same code [1].
+Regards,
 
-Ideally, I guess you should be able to even make virtio_net work in the
-host if you do that, but that could bring other complexities.
-
-	Arnd <><
-
-[1] http://lkml.org/lkml/2009/2/23/353
+Leon.
