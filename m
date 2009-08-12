@@ -1,129 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbZHLCuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbZHLDA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755756AbZHLCuG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 22:50:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755720AbZHLCuF
+	id S1755775AbZHLDA7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 23:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbZHLDA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 22:50:05 -0400
-Received: from mail7.hitachi.co.jp ([133.145.228.42]:47416 "EHLO
-	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755541AbZHLCuE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 22:50:04 -0400
-X-AuditID: b753bd60-abe88ba000001a2f-c8-4a822dda0b3c
-Message-ID: <4A822DD4.1050202@hitachi.com>
-Date: Wed, 12 Aug 2009 11:49:56 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-Cc: tytso@mit.edu, hch@infradead.org, mfasheh@suse.com, aia21@cantab.net,
-       hugh.dickins@tiscali.co.uk, swhiteho@redhat.com,
-       akpm@linux-foundation.org, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com, Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       Taketoshi Sakuraba <taketoshi.sakuraba.hc@hitachi.com>
-Subject: Re: [PATCH] [16/19] HWPOISON: Enable .remove_error_page for migration
-    aware file systems
-References: <200908051136.682859934@firstfloor.org> 
-    <20090805093643.E0C00B15D8@basil.firstfloor.org> 
-    <4A7FBFD1.2010208@hitachi.com> <20090810074421.GA6838@basil.fritz.box> 
-    <4A80EAA3.7040107@hitachi.com> <20090811071756.GC14368@basil.fritz.box>
-In-Reply-To: <20090811071756.GC14368@basil.fritz.box>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
-X-FMFTCR: RANGEA
+	Tue, 11 Aug 2009 23:00:58 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:36893 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753521AbZHLDA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 23:00:57 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Lothar Wassmann <LW@karo-electronics.de>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH] USB: isp1362: fix build warnings on 64-bit systems
+Date: Tue, 11 Aug 2009 23:00:53 -0400
+Message-Id: <1250046053-3097-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
+A bunch of places assumed pointers were 32-bits in size (bit checking and
+debug output), but none of these affected runtime functionality.
 
-> On Tue, Aug 11, 2009 at 12:50:59PM +0900, Hidehiro Kawai wrote:
-> 
->>>And application
->>>that doesn't handle current IO errors correctly will also
->>>not necessarily handle hwpoison correctly (it's not better and not worse)
->>
->>This is my main concern.  I'd like to prevent re-corruption even if
->>applications don't have good manners.
-> 
-> I don't think there's much we can do if the application doesn't
-> check for IO errors properly. What would you do if it doesn't
-> check for IO errors at all? If it checks for IO errors it simply
-> has to check for them on all IO operations -- if they do 
-> they will detect hwpoison errors correctly too.
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/usb/host/isp1362-hcd.c |   22 +++++++++++-----------
+ drivers/usb/host/isp1362.h     |   12 ++++++------
+ 2 files changed, 17 insertions(+), 17 deletions(-)
 
-I believe it's not uncommon for applications to do buffered write
-and then exit without fsync().  And I think it's difficult to
-preclude such applications and commands from the system perfectly.
+diff --git a/drivers/usb/host/isp1362-hcd.c b/drivers/usb/host/isp1362-hcd.c
+index 16ba1ea..b7acb3c 100644
+--- a/drivers/usb/host/isp1362-hcd.c
++++ b/drivers/usb/host/isp1362-hcd.c
+@@ -1076,7 +1076,7 @@ static irqreturn_t isp1362_irq(struct usb_hcd *hcd)
+ 		DBG(1, "%s: ISTL0\n", __func__);
+ 		WARN_ON((int)!!isp1362_hcd->istl_flip);
+ 		WARN_ON(isp1362_read_reg16(isp1362_hcd, HCBUFSTAT) & HCBUFSTAT_ISTL0_ACTIVE);
+-		WARN_ON(!isp1362_read_reg16(isp1362_hcd, HCBUFSTAT) & HCBUFSTAT_ISTL0_DONE);
++		WARN_ON(!(isp1362_read_reg16(isp1362_hcd, HCBUFSTAT) & HCBUFSTAT_ISTL0_DONE));
+ 		isp1362_hcd->irqenb &= ~HCuPINT_ISTL0;
+ 	}
  
->>That is why I suggested this:
->>
->>>>(2) merge this patch with new panic_on_dirty_page_cache_corruption
->>>>    sysctl
-> 
-> You probably mean panic_on_non_anonymous_dirty_page_cache
-> Normally anonymous memory is dirty.
-
-Yes, and sorry for my ambiguous description.  I used the word "cache"
-to intend to not include anonymous pages.
+@@ -1088,7 +1088,7 @@ static irqreturn_t isp1362_irq(struct usb_hcd *hcd)
+ 		DBG(1, "%s: ISTL1\n", __func__);
+ 		WARN_ON(!(int)isp1362_hcd->istl_flip);
+ 		WARN_ON(isp1362_read_reg16(isp1362_hcd, HCBUFSTAT) & HCBUFSTAT_ISTL1_ACTIVE);
+-		WARN_ON(!isp1362_read_reg16(isp1362_hcd, HCBUFSTAT) & HCBUFSTAT_ISTL1_DONE);
++		WARN_ON(!(isp1362_read_reg16(isp1362_hcd, HCBUFSTAT) & HCBUFSTAT_ISTL1_DONE));
+ 		isp1362_hcd->irqenb &= ~HCuPINT_ISTL1;
+ 	}
  
-> It's unclear to me this special mode is really desirable.
-> Does it bring enough value to the user to justify the complexity
-> of another exotic option?  The case is relatively exotic,
-> as in dirty write cache that is mapped to a file.
-> 
-> Try to explain it in documentation and you see how ridiculous it sounds; u
-> it simply doesn't have clean semantics
-> 
-> ("In case you have applications with broken error IO handling on
-> your mission critical system ...") 
-
-Generally, dropping unwritten dirty page caches is considered to be
-risky.  So the "panic on IO error" policy has been used as usual
-practice for some systems.  I just suggested that we adopted
-this policy into machine check errors. 
-
-vm.memory_failure_recovery satisfies my minimal requirement.
-It's OK at this stage, but I'd like to improve this in the future.
-
-Another option is to introduce "ignore all" policy instead of
-panicking at the beginig of memory_failure().  Perhaps it finally
-causes SRAR machine check, and then kernel will panic or a process
-will be killed.  Anyway, this is a topic for the next stage.
+@@ -2280,10 +2280,10 @@ static int isp1362_mem_config(struct usb_hcd *hcd)
+ 	dev_info(hcd->self.controller, "ISP1362 Memory usage:\n");
+ 	dev_info(hcd->self.controller, "  ISTL:    2 * %4d:     %4d @ $%04x:$%04x\n",
+ 		 istl_size / 2, istl_size, 0, istl_size / 2);
+-	dev_info(hcd->self.controller, "  INTL: %4d * (%3u+8):  %4d @ $%04x\n",
++	dev_info(hcd->self.controller, "  INTL: %4d * (%3lu+8):  %4d @ $%04x\n",
+ 		 ISP1362_INTL_BUFFERS, intl_blksize - PTD_HEADER_SIZE,
+ 		 intl_size, istl_size);
+-	dev_info(hcd->self.controller, "  ATL : %4d * (%3u+8):  %4d @ $%04x\n",
++	dev_info(hcd->self.controller, "  ATL : %4d * (%3lu+8):  %4d @ $%04x\n",
+ 		 atl_buffers, atl_blksize - PTD_HEADER_SIZE,
+ 		 atl_size, istl_size + intl_size);
+ 	dev_info(hcd->self.controller, "  USED/FREE:   %4d      %4d\n", total,
+@@ -2673,12 +2673,12 @@ static int __devexit isp1362_remove(struct platform_device *pdev)
+ 	DBG(0, "%s: Removing HCD\n", __func__);
+ 	usb_remove_hcd(hcd);
  
->>>(4) accept that hwpoison error handling is not better and not worse than normal
->>>IO error handling.
->>>
->>>We opted for (4).
->>
->>Could you consider adopting (2) or (3)?  Fengguang's sticky EIO
->>approach (http://lkml.org/lkml/2009/6/11/294) is also OK.
-> 
-> I believe redesigned IO error handling does not belong in the 
-> core hwpoison patchkit.
-
-I agree.
+-	DBG(0, "%s: Unmapping data_reg @ %08x\n", __func__,
+-	    (u32)isp1362_hcd->data_reg);
++	DBG(0, "%s: Unmapping data_reg @ %p\n", __func__,
++	    isp1362_hcd->data_reg);
+ 	iounmap(isp1362_hcd->data_reg);
  
-> If you want to have improved IO error handling feel free to
-> submit it separately. I agree this area could use some work.
-> But it probably needs more design work first.
-
-Well, this patch set itself looks good to me.
-I also looked into the other patches, I couldn't find any
-problems (although I'm not good judge of reviewing).
-
-Reviewed-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-
-Thanks,
+-	DBG(0, "%s: Unmapping addr_reg @ %08x\n", __func__,
+-	    (u32)isp1362_hcd->addr_reg);
++	DBG(0, "%s: Unmapping addr_reg @ %p\n", __func__,
++	    isp1362_hcd->addr_reg);
+ 	iounmap(isp1362_hcd->addr_reg);
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+@@ -2806,16 +2806,16 @@ static int __init isp1362_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+  err6:
+-	DBG(0, "%s: Freeing dev %08x\n", __func__, (u32)isp1362_hcd);
++	DBG(0, "%s: Freeing dev %p\n", __func__, isp1362_hcd);
+ 	usb_put_hcd(hcd);
+  err5:
+-	DBG(0, "%s: Unmapping data_reg @ %08x\n", __func__, (u32)data_reg);
++	DBG(0, "%s: Unmapping data_reg @ %p\n", __func__, data_reg);
+ 	iounmap(data_reg);
+  err4:
+ 	DBG(0, "%s: Releasing mem region %08lx\n", __func__, (long unsigned int)data->start);
+ 	release_mem_region(data->start, resource_len(data));
+  err3:
+-	DBG(0, "%s: Unmapping addr_reg @ %08x\n", __func__, (u32)addr_reg);
++	DBG(0, "%s: Unmapping addr_reg @ %p\n", __func__, addr_reg);
+ 	iounmap(addr_reg);
+  err2:
+ 	DBG(0, "%s: Releasing mem region %08lx\n", __func__, (long unsigned int)addr->start);
+diff --git a/drivers/usb/host/isp1362.h b/drivers/usb/host/isp1362.h
+index fe60f62..1a253eb 100644
+--- a/drivers/usb/host/isp1362.h
++++ b/drivers/usb/host/isp1362.h
+@@ -580,7 +580,7 @@ static inline const char *ISP1362_INT_NAME(int n)
+ 
+ static inline void ALIGNSTAT(struct isp1362_hcd *isp1362_hcd, void *ptr)
+ {
+-	unsigned p = (unsigned)ptr;
++	unsigned long p = (unsigned long)ptr;
+ 	if (!(p & 0xf))
+ 		isp1362_hcd->stat16++;
+ 	else if (!(p & 0x7))
+@@ -770,7 +770,7 @@ static void isp1362_write_fifo(struct isp1362_hcd *isp1362_hcd, void *buf, u16 l
+ 	if (!len)
+ 		return;
+ 
+-	if ((unsigned)dp & 0x1) {
++	if ((unsigned long)dp & 0x1) {
+ 		/* not aligned */
+ 		for (; len > 1; len -= 2) {
+ 			data = *dp++;
+@@ -962,8 +962,8 @@ static void isp1362_read_buffer(struct isp1362_hcd *isp1362_hcd, void *buf, u16
+ 
+ 	isp1362_write_diraddr(isp1362_hcd, offset, len);
+ 
+-	DBG(3, "%s: Reading %d byte from buffer @%04x to memory @ %08x\n", __func__,
+-	    len, offset, (u32)buf);
++	DBG(3, "%s: Reading %d byte from buffer @%04x to memory @ %p\n",
++	    __func__, len, offset, buf);
+ 
+ 	isp1362_write_reg16(isp1362_hcd, HCuPINT, HCuPINT_EOT);
+ 	_WARN_ON((isp1362_read_reg16(isp1362_hcd, HCuPINT) & HCuPINT_EOT));
+@@ -982,8 +982,8 @@ static void isp1362_write_buffer(struct isp1362_hcd *isp1362_hcd, void *buf, u16
+ 
+ 	isp1362_write_diraddr(isp1362_hcd, offset, len);
+ 
+-	DBG(3, "%s: Writing %d byte to buffer @%04x from memory @ %08x\n", __func__,
+-	    len, offset, (u32)buf);
++	DBG(3, "%s: Writing %d byte to buffer @%04x from memory @ %p\n",
++	    __func__, len, offset, buf);
+ 
+ 	isp1362_write_reg16(isp1362_hcd, HCuPINT, HCuPINT_EOT);
+ 	_WARN_ON((isp1362_read_reg16(isp1362_hcd, HCuPINT) & HCuPINT_EOT));
 -- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
-
-
+1.6.3.3
 
