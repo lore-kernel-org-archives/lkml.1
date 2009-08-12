@@ -1,83 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932440AbZHLKJC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932453AbZHLKJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932440AbZHLKJC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 06:09:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932416AbZHLKJB
+	id S932453AbZHLKJr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 06:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932416AbZHLKJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 06:09:01 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33416 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932400AbZHLKJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 06:09:00 -0400
-Date: Wed, 12 Aug 2009 12:08:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Brice Goglin <Brice.Goglin@inria.fr>
-Subject: Re: [PATCH 1/3] perf tools: Factorize high level dso helpers
-Message-ID: <20090812100851.GA18577@elte.hu>
-References: <1250069162-13099-1-git-send-email-fweisbec@gmail.com> <1250069162-13099-2-git-send-email-fweisbec@gmail.com> <20090812095933.GB6081@nowhere>
+	Wed, 12 Aug 2009 06:09:46 -0400
+Received: from waldorf.bytemark.co.uk ([212.110.162.22]:54872 "EHLO
+	waldorf.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932352AbZHLKJp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 06:09:45 -0400
+Date: Wed, 12 Aug 2009 12:09:27 +0200
+From: "Emilio G. Cota" <cota@braap.org>
+To: Martyn Welch <martyn.welch@gefanuc.com>
+Cc: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
+Subject: Re: [patch 1/5] Staging: VME Framework for the Linux Kernel
+Message-ID: <20090812100927.GA10800@braap.org>
+References: <20090811144914.GB32658@braap.org> <4A8189D9.4080709@gefanuc.com> <20090811153633.GC32658@braap.org> <4A819130.5080802@gefanuc.com> <20090811154226.GD32658@braap.org> <4A819E80.90103@gefanuc.com> <20090811204835.GA9910@braap.org> <4A828395.9040006@gefanuc.com> <20090812095436.GC2604@braap.org> <4A829271.6000507@gefanuc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090812095933.GB6081@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4A829271.6000507@gefanuc.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Martyn Welch wrote:
+> Apart from : not mapping regions of the VME bus that you are not using.
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+The tsi148 mappings have to be on 64k boundaries, so yes, it
+happens that sometimes you map a bit more than what you need.
+But there's no way to get around that; it's a hardware thing
+so we just accept it.
 
-> On Wed, Aug 12, 2009 at 11:26:00AM +0200, Frederic Weisbecker wrote:
-> > Factorize multiple definitions of high level dso helpers into the
-> > symbol source file.
-> > 
-> > The side effect is a general export of the verbose and eprintf
-> > debugging helpers into a new file dedicated to debugging purposes.
-> > 
-> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Cc: Mike Galbraith <efault@gmx.de>
-> > Cc: Brice Goglin <Brice.Goglin@inria.fr>
-> > ---
-> >  tools/perf/Makefile           |    1 +
-> >  tools/perf/builtin-annotate.c |   96 ----------------------------------------
-> >  tools/perf/builtin-record.c   |    1 -
-> >  tools/perf/builtin-report.c   |   97 -----------------------------------------
-> >  tools/perf/builtin-stat.c     |    1 -
-> >  tools/perf/builtin-top.c      |    4 --
-> >  tools/perf/builtin.h          |    1 +
-> >  tools/perf/perf.h             |    1 +
-> >  tools/perf/util/symbol.c      |   97 +++++++++++++++++++++++++++++++++++++++++
-> >  tools/perf/util/symbol.h      |   11 +++++
-> >  10 files changed, 111 insertions(+), 199 deletions(-)
-> > 
-> > diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-> > index de7beac..2aee21b 100644
-> > --- a/tools/perf/Makefile
-> > +++ b/tools/perf/Makefile
-> > @@ -339,6 +339,7 @@ LIB_OBJS += util/pager.o
-> >  LIB_OBJS += util/header.o
-> >  LIB_OBJS += util/callchain.o
-> >  LIB_OBJS += util/values.o
-> > +LIB_OBJS += util/debug.o
-> 
-> 
-> Damn, did I forgot to git-add util/debug.c ?
-> 
-> How could I fix this? Another pull request?
-
-yeah. I've zapped those commits from perfcounters/core.
-
-	Ingo
+E.
