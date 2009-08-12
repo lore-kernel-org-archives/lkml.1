@@ -1,95 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbZHLSRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbZHLSUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752861AbZHLSRW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 14:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZHLSRW
+	id S1752886AbZHLSUS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 14:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbZHLSUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 14:17:22 -0400
-Received: from mga14.intel.com ([143.182.124.37]:27048 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752566AbZHLSRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 14:17:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,369,1246863600"; 
-   d="scan'208";a="175093807"
-Date: Wed, 12 Aug 2009 11:17:22 -0700
-From: Fenghua Yu <fenghua.yu@intel.com>
-To: Luming Yu <luming.yu@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>,
-       "Luck, Tony" <tony.luck@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC patch] init default dma_ops to prepare intel_iommu_init failure
-Message-ID: <20090812181722.GA32653@linux-os.sc.intel.com>
-References: <3877989d0908120220q5104d2e7rd272ececbc45e377@mail.gmail.com>
-Mime-Version: 1.0
+	Wed, 12 Aug 2009 14:20:17 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:35719 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752040AbZHLSUQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 14:20:16 -0400
+Date: Wed, 12 Aug 2009 20:20:13 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Wang, Shane" <shane.wang@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       "Cihula, Joseph" <joseph.cihula@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>,
+       "Wei, Gang" <gang.wei@intel.com>
+Subject: Re: [RFC v6][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution
+	Technology support for Linux - Details
+Message-ID: <20090812182013.GJ28848@basil.fritz.box>
+References: <4A4ACA60.1000209@intel.com> <20090807072752.GA12119@elte.hu> <20090812145321.GA11347@elte.hu> <4A82DBA2.2000509@zytor.com> <037F493892196B458CD3E193E8EBAD4F01EAB641FD@pdsmsx502.ccr.corp.intel.com> <4A82ED93.70705@zytor.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3877989d0908120220q5104d2e7rd272ececbc45e377@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <4A82ED93.70705@zytor.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi there,
-> 
-> On ia64 platform with dmar table and new upstream
-> kernel(config_dmar_default_on enabled),
-> if intel_iommu_init ends up without dma_ops initialized or other iommu
-> failures.
-> We got nothing to fall back. The following patch fixes it.
-> 
-x86/x86-64 also needs this fix. Please check the pci_swiotlb_init for x86/64.
+> The question is: if the user doesn't want S3, do they still need to
+> enable S3 in order to be able to use TXT?  Otherwise, this code needs to
+> be properly conditionalized.
 
-> Please review. If make sense, please apply.
-> 
-> **The patch is enclosed in text attachment*
-> **Using web client to send the patch* *
-> **below is for review, please apply attached  patch*/
-> 
-> Thanks,
-> Luming
-> 
-> Signed-off-by: Yu Luming <luming.yu@intel.com>
-> 
-> arch/ia64/kernel/pci-swiotlb.c |   14 ++++++--------
->  1 file changed, 6 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
-> index 223abb1..d5dcaf5 100644
-> --- a/arch/ia64/kernel/pci-swiotlb.c
-> +++ b/arch/ia64/kernel/pci-swiotlb.c
-> @@ -46,15 +46,13 @@ void __init swiotlb_dma_init(void)
-> 
->  void __init pci_swiotlb_init(void)
->  {
-> -	if (!iommu_detected || iommu_pass_through) {
+I doubt that's the case. Ifdef is likely the right answer.
 
-This check can not be removed. Otherwise, swiotlb_dma_ops will always override
-previous dma_ops value.
+-Andi
 
-I think you can change this check to something like:
-	if (!dma_ops || iommu_pass_through) {
-With this change, checking iommu_detected is unnecesary because checking dma_ops
-covers it.
-
->  #ifdef CONFIG_IA64_GENERIC
-> -		swiotlb = 1;
-> -		printk(KERN_INFO "PCI-DMA: Re-initialize machine vector.\n");
-> -		machvec_init("dig");
-> -		swiotlb_init();
-> -		dma_ops = &swiotlb_dma_ops;
-> +	swiotlb = 1;
-> +	printk(KERN_INFO "PCI-DMA: Re-initialize machine vector.\n");
-> +	machvec_init("dig");
-> +	swiotlb_init();
-> +	dma_ops = &swiotlb_dma_ops;
->  #else
-> -		panic("Unable to find Intel IOMMU");
-> +	panic("Unable to find Intel IOMMU");
->  #endif
-> -	}
->  }
-
-
-
+-- 
+ak@linux.intel.com -- Speaking for myself only.
