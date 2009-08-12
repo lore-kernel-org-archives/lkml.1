@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932532AbZHLKvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932545AbZHLKyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932532AbZHLKvh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 06:51:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932468AbZHLKvh
+	id S932545AbZHLKyX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 06:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932471AbZHLKyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 06:51:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44211 "EHLO mx3.mail.elte.hu"
+	Wed, 12 Aug 2009 06:54:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48702 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932067AbZHLKvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 06:51:36 -0400
-Date: Wed, 12 Aug 2009 12:51:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
-Message-ID: <20090812105106.GA7885@elte.hu>
-References: <Pine.LNX.4.44L0.0908111659510.5845-100000@iolanthe.rowland.org> <20090812094119.GC14734@elte.hu> <1250074070.10001.33.camel@twins>
+	id S932468AbZHLKyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 06:54:22 -0400
+Date: Wed, 12 Aug 2009 13:52:42 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com
+Subject: Re: [PATCHv2 2/2] vhost_net: a kernel-level virtio server
+Message-ID: <20090812105241.GA28848@redhat.com>
+References: <cover.1249992497.git.mst@redhat.com> <20090811212802.GC26309@redhat.com> <4A82076A.1060805@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1250074070.10001.33.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4A82076A.1060805@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 11, 2009 at 08:06:02PM -0400, Gregory Haskins wrote:
+> > diff --git a/include/linux/miscdevice.h b/include/linux/miscdevice.h
+> > index 0521177..781a8bb 100644
+> > --- a/include/linux/miscdevice.h
+> > +++ b/include/linux/miscdevice.h
+> > @@ -30,6 +30,7 @@
+> >  #define HPET_MINOR		228
+> >  #define FUSE_MINOR		229
+> >  #define KVM_MINOR		232
+> > +#define VHOST_NET_MINOR		233
+> 
+> Would recommend using DYNAMIC-MINOR.
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+Good idea. Thanks!
 
-> On Wed, 2009-08-12 at 11:41 +0200, Ingo Molnar wrote:
-> > * Alan Stern <stern@rowland.harvard.edu> wrote:
-> > 
-> > > This patch (as1279) adds kerneldoc for flush_scheduled_work()
-> > > containing a stern warning that the function should be avoided.
-> > > 
-> > > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> 
-> > >  
-> > > +/**
-> > > + * flush_scheduled_work - ensure that all work scheduled on keventd_wq has run to completion.
-> 
-> > > + */
-> > 
-> > Looks good - a small nit: please use proper/consistent line length, 
-> > something like:
-> > 
-> > /**
-> >  * flush_scheduled_work - ensure that all work scheduled on 
-> >  *			  keventd_wq has run to completion
-> >  *
-> 
-> >  */
-> 
-> 
-> And here I was thinking kerneldoc doesn't actually work 
-> like that, but perhaps Randy fixed it so the initial 
-> description can line-wrap?
-
-Ah, the main changes i did were to the body, that is what 
-caught my eyes. If KernelDoc doesnt handle line-wrap in the 
-first line then that has to stay so. (and KernelDoc needs to 
-be fixed as well - it should result in better documentation, 
-not worse)
-
-	Ingo
+-- 
+MST
