@@ -1,125 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZHLOh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313AbZHLOiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbZHLOh7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 10:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbZHLOh6
+	id S1753313AbZHLOiQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 10:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZHLOiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 10:37:58 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:27467 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751184AbZHLOh6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 10:37:58 -0400
-From: Nitin Gupta <ngupta@vflare.org>
-Reply-To: ngupta@vflare.org
-Date: Wed, 12 Aug 2009 20:07:43 +0530
-User-Agent: KMail/1.11.4 (Linux/2.6.29.6-217.2.3.fc11.x86_64; KDE/4.2.4; x86_64; ; )
+	Wed, 12 Aug 2009 10:38:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56947 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751116AbZHLOiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 10:38:14 -0400
+Date: Wed, 12 Aug 2009 10:37:02 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [GIT PULL] tracing: Syscalls trace events + perf support
+Message-ID: <20090812143702.GC2711@redhat.com>
+References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com> <20090812091133.GA21655@elte.hu> <20090812110307.GA806@elte.hu> <20090812111436.GA24263@elte.hu> <20090812142516.GB2711@redhat.com> <20090812142917.GA19882@elte.hu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] swap: send callback when swap slot is freed
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908122007.43522.ngupta@vflare.org>
+In-Reply-To: <20090812142917.GA19882@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, we have "swap discard" mechanism which sends a discard bio request
-when we find a free cluster during scan_swap_map(). This callback can come a
-long time after swap slots are actually freed.
+On Wed, Aug 12, 2009 at 04:29:17PM +0200, Ingo Molnar wrote:
+> * Jason Baron <jbaron@redhat.com> wrote:
+> 
+> > On Wed, Aug 12, 2009 at 01:14:36PM +0200, Ingo Molnar wrote:
+> 
+> > > another thing: could we please also have a generic, highlevel 
+> > > tracepoint (in addition to the specific tracepoints) that 
+> > > enumerates the raw syscall Nr and the parameters it gets - in a 
+> > > single tracepoint?
+> > 
+> > The specific tracepoints, are all layered on 2 (entry, exit) 
+> > generic tracepoints already. So this shouldn't be too hard...The 
+> > parameters it gets might be tricky, since there are a variable 
+> > number b/w different syscalls?
+> 
+> We should just list all ~6 of them. It's up to the sampling entity 
+> to decide which ones (if any) is relevant.
+> 
+> At least on x86 the syscall arguments will always have a value when 
+> the syscall entry code is called. (they are in GP registers)
+> 
+> 	Ingo
 
-This delay in callback is a great problem when (compressed) RAM [1] is used
-as a swap device. So, this change adds a callback which is called as
-soon as a swap slot becomes free. For above mentioned case of swapping
-over compressed RAM device, this is very useful since we can immediately
-free memory allocated for this swap page.
+ok, makes sense. I'll add to the todo list.
 
-This callback does not replace swap discard support. It is called with
-swap_lock held, so it is meant to trigger action that finishes quickly.
-However, swap discard is an I/O request and can be used for taking longer
-actions.
+-Jason
 
-Links:
-[1] http://code.google.com/p/compcache/
 
-Signed-off-by: Nitin Gupta <ngupta@vflare.org>
----
-
- include/linux/swap.h |    5 +++++
- mm/swapfile.c        |   16 ++++++++++++++++
- 2 files changed, 21 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index 7c15334..4cbe3c4 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -8,6 +8,7 @@
- #include <linux/memcontrol.h>
- #include <linux/sched.h>
- #include <linux/node.h>
-+#include <linux/blkdev.h>
- 
- #include <asm/atomic.h>
- #include <asm/page.h>
-@@ -20,6 +21,8 @@ struct bio;
- #define SWAP_FLAG_PRIO_MASK	0x7fff
- #define SWAP_FLAG_PRIO_SHIFT	0
- 
-+typedef void (swap_free_notify_fn) (struct block_device *, unsigned long);
-+
- static inline int current_is_kswapd(void)
- {
- 	return current->flags & PF_KSWAPD;
-@@ -155,6 +158,7 @@ struct swap_info_struct {
- 	unsigned int max;
- 	unsigned int inuse_pages;
- 	unsigned int old_block_size;
-+	swap_free_notify_fn *swap_free_notify_fn;
- };
- 
- struct swap_list_t {
-@@ -295,6 +299,7 @@ extern sector_t swapdev_block(int, pgoff_t);
- extern struct swap_info_struct *get_swap_info_struct(unsigned);
- extern int reuse_swap_page(struct page *);
- extern int try_to_free_swap(struct page *);
-+extern void set_swap_free_notify(unsigned, swap_free_notify_fn *);
- struct backing_dev_info;
- 
- /* linux/mm/thrash.c */
-diff --git a/mm/swapfile.c b/mm/swapfile.c
-index 8ffdc0d..aa95fc7 100644
---- a/mm/swapfile.c
-+++ b/mm/swapfile.c
-@@ -552,6 +552,20 @@ out:
- 	return NULL;
- }
- 
-+/*
-+ * Sets callback for event when swap_map[offset] == 0
-+ * i.e. page at this swap offset is no longer used.
-+ */
-+void set_swap_free_notify(unsigned type, swap_free_notify_fn *notify_fn)
-+{
-+	struct swap_info_struct *sis;
-+	sis = get_swap_info_struct(type);
-+	BUG_ON(!sis);
-+	sis->swap_free_notify_fn = notify_fn;
-+	return;
-+}
-+EXPORT_SYMBOL(set_swap_free_notify);
-+
- static int swap_entry_free(struct swap_info_struct *p,
- 			   swp_entry_t ent, int cache)
- {
-@@ -583,6 +597,8 @@ static int swap_entry_free(struct swap_info_struct *p,
- 			swap_list.next = p - swap_info;
- 		nr_swap_pages++;
- 		p->inuse_pages--;
-+		if (p->swap_free_notify_fn)
-+			p->swap_free_notify_fn(p->bdev, offset);
- 	}
- 	if (!swap_count(count))
- 		mem_cgroup_uncharge_swap(ent);
