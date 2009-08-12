@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbZHLOFD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752781AbZHLOFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752758AbZHLOFD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 10:05:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZHLOFC
+	id S1752781AbZHLOFb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 10:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZHLOFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 10:05:02 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33309 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752670AbZHLOFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 10:05:00 -0400
-Date: Wed, 12 Aug 2009 17:02:24 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
-       Patrick Mullaney <pmullaney@novell.com>
-Subject: Re: [PATCHv2 0/2] vhost: a kernel-level virtio server
-Message-ID: <20090812140224.GA29345@redhat.com>
-References: <20090811212743.GA26309@redhat.com> <200908121452.01802.arnd@arndb.de> <20090812130612.GC29200@redhat.com> <200908121540.44928.arnd@arndb.de> <4A82C8F1.4030703@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A82C8F1.4030703@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 12 Aug 2009 10:05:31 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38266 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752697AbZHLOFa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 10:05:30 -0400
+Date: Wed, 12 Aug 2009 07:07:59 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: David Dillow <dave@thedillows.org>, Andi Kleen <andi@firstfloor.org>,
+       Greg KH <greg@kroah.com>, Greg KH <gregkh@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
+       Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+ /dev
+Message-ID: <20090812070759.2b9c1f32@infradead.org>
+In-Reply-To: <20090812073152.GB28848@basil.fritz.box>
+References: <20090805182805.GA7534@kroah.com>
+	<20090805185136.GA21442@kroah.com>
+	<87ljlxhrnr.fsf@basil.nowhere.org>
+	<1249575658.19886.8.camel@lap75545.ornl.gov>
+	<20090806183147.GA28409@suse.de>
+	<1249772876.22248.34.camel@obelisk.thedillows.org>
+	<20090810153943.GB7652@kroah.com>
+	<1250001374.22248.65.camel@obelisk.thedillows.org>
+	<20090811145523.GD14368@basil.fritz.box>
+	<1250036727.26788.7.camel@obelisk.thedillows.org>
+	<20090812073152.GB28848@basil.fritz.box>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 09:51:45AM -0400, Gregory Haskins wrote:
-> Arnd Bergmann wrote:
-> > On Wednesday 12 August 2009, Michael S. Tsirkin wrote:
-> >>> If I understand it correctly, you can at least connect a veth pair
-> >>> to a bridge, right? Something like
-> >>>
-> >>>            veth0 - veth1 - vhost - guest 1 
-> >>> eth0 - br0-|
-> >>>            veth2 - veth3 - vhost - guest 2
-> >>>            
-> >> Heh, you don't need a bridge in this picture:
-> >>
-> >> guest 1 - vhost - veth0 - veth1 - vhost guest 2
-> > 
-> > Sure, but the setup I described is the one that I would expect
-> > to see in practice because it gives you external connectivity.
-> > 
-> > Measuring two guests communicating over a veth pair is
-> > interesting for finding the bottlenecks, but of little
-> > practical relevance.
-> > 
-> > 	Arnd <><
+On Wed, 12 Aug 2009 09:31:52 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
+
+> > So use Eric/Arjan's program that does it in 60ms -- you get a
+> > dynamic /dev, no initrd, fast boot, and no kernel changes required.
 > 
-> Yeah, this would be the config I would be interested in.
+> That would likely need initrd at least on the distro I use which uses
+> device files very early.
 
-Hmm, this wouldn't be the config to use for the benchmark though: there
-are just too many variables.  If you want both guest to guest and guest
-to host, create 2 nics in the guest.
+nah just need to call it early in /etc/rc.sysinit.
 
-Here's one way to do this:
+initrd is a read herring; distros don't need an initrd
+(well except fedora who ship borken with a /dev without
+even /dev/console)
 
-	-net nic,model=virtio,vlan=0 -net user,vlan=0
-	-net nic,vlan=1,model=virtio,vhost=veth0
-	-redir tcp:8022::22
-
-	-net nic,model=virtio,vlan=0 -net user,vlan=0
-	 -net nic,vlan=1,model=virtio,vhost=veth1
-	-redir tcp:8023::22
-
-In guests, for simplicity, configure eth1 and eth0
-to use separate subnets.
-
-Long term, I hope macvlan will be extended to support
-guest to guest.
-
-> Regards,
-> -Greg
-> 
+initrd and /dev are not related concepts in that sense.
 
 
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
