@@ -1,67 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755696AbZHLCP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755713AbZHLCQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755696AbZHLCP7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 22:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755637AbZHLCP5
+	id S1755713AbZHLCQX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 22:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755491AbZHLCQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 22:15:57 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:58085 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755631AbZHLCP4 (ORCPT
+	Tue, 11 Aug 2009 22:16:22 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:62152 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755317AbZHLCQV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 22:15:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:content-transfer-encoding:in-reply-to
-         :user-agent:message-id;
-        b=IBapjv+nUCIqTtdRs/wi0ohdN0efmQ/fx02H2QJ3gknZYsn6nNn9U2iHhBI5rxWDiI
-         pYPbFY3jjdNZMsQmWpCdvFhJtExzqruapeUKNyq5NQtHiqQWB90/uPVMqC+urHyxhzW4
-         Jpdrcn/cEkaabTpygowgR9E+yqPMmFa1sZ/h0=
-Date: Tue, 11 Aug 2009 19:15:54 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86, mce: therm_throt - change when we print
-	messages
-References: <20090810051513.0558F526EC9@mailhub.coreip.homeip.net> <tip-0d01f31439c1e4d602bf9fdc924ab66f407f5e38@git.kernel.org> <d1af83620908110531x5c7fb448r2a082a63ae22b95c@mail.gmail.com>
+	Tue, 11 Aug 2009 22:16:21 -0400
+Message-ID: <4A8225DC.1060200@ct.jp.nec.com>
+Date: Wed, 12 Aug 2009 11:15:56 +0900
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <d1af83620908110531x5c7fb448r2a082a63ae22b95c@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090812024629.ADFC2526EC9@mailhub.coreip.homeip.net>
+To: Nikanth Karthikesan <knikanth@suse.de>
+CC: Alasdair G Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, Hannes Reinecke <hare@suse.de>
+Subject: Re: [PATCH-v2 2/2] Initialize mempool and elevator only for request-based
+ dm devices
+References: <200908081026.01097.knikanth@suse.de> <200908101618.21060.knikanth@suse.de> <4A812680.7040804@ct.jp.nec.com> <200908111435.12020.knikanth@suse.de>
+In-Reply-To: <200908111435.12020.knikanth@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 09:31:14AM -0300, Kevin Winchester wrote:
-> 2009/8/11 tip-bot for Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> >  static DEFINE_PER_CPU(__u64, next_check) = INITIAL_JIFFIES;
-> >  static DEFINE_PER_CPU(unsigned long, thermal_throttle_count);
-> > +static DEFINE_PER_CPU(bool, thermal_throttle_active);
-> >
-> >  static atomic_t therm_throt_en         = ATOMIC_INIT(0);
-> >
-> > @@ -96,24 +97,27 @@ static int therm_throt_process(int curr)
-> >  {
-> >        unsigned int cpu = smp_processor_id();
-> >        __u64 tmp_jiffs = get_jiffies_64();
-> > +       bool was_throttled = __get_cpu_var(thermal_throttle_active);
-> > +       bool is_throttled = __get_cpu_var(thermal_throttle_active) = curr;
-> 
-> This seems a little odd (or perhaps my lack of experience is
-> showing...) - should it be:
-> 
-> bool is_throttled = __get_cpu_var(thermal_throttle_active) == curr;
-> 
-> ?
+Hi Nikanth,
 
-No, you still want to assign the value to thermal_throttle_active.
-is_throttled is just a temp so you don't need to invoke
-__get_cpu_var(thermal_throttle_active) all over the function.
+On 08/11/2009 06:05 PM +0900, Nikanth Karthikesan wrote:
+> On Tuesday 11 August 2009 13:36:24 Kiyoshi Ueda wrote:
+>> On 08/10/2009 07:48 PM +0900, Nikanth Karthikesan wrote:
+>>> +
+>>> +		/*
+>>> +		 * reinitialize make_request_fn as it was reset to the
+>>> +		 * default __make_request by blk_init_allocate_queue
+>>> +		 */
+>>> +		md->saved_make_request_fn = md->queue->make_request_fn;
+>>> +		blk_queue_make_request(md->queue, dm_request);
+>>> +
+>>> +		blk_queue_softirq_done(md->queue, dm_softirq_done);
+>>> +		blk_queue_prep_rq(md->queue, dm_prep_fn);
+>>> +		blk_queue_lld_busy(md->queue, dm_lld_busy);
+>>> +	}
+>>> +
+>>>  	__unbind(md);
+>>>  	r = __bind(md, table, &limits);
+>> The queue has been registered at the device creation time by
+>> add_disk() in alloc_dev().
+>> Since the queue is reconfigured (elevator is attached), you have to
+>> update the queue registration (e.g. unregister, then re-register).
+>> But it may not be easy.  At least, there is no exported interface to
+>> unregister/re-register queue.
+> 
+> Ah, yes. The scheduler attributes will not be exported in 
+> /sys/block/dm*/queue/iosched. Exporting elv_register_queue() and calling it 
+> here solves it. Something like..
+> 
+> @@ -2203,6 +2199,29 @@ int dm_swap_table(struct mapped_device *md, struct 
+> dm_table *table)
+>  		goto out;
+>  	}
+>  
+> +	/* new device is being marked as request-based */
+> +	if (!md->map && dm_table_request_based(table)) {
+> +		/* initialize queue for request-based dm */
+> +		r = blk_init_allocated_queue(md->queue, dm_request_fn, NULL);
+> +		if (r)
+> +			goto out;
+> +
+> +		r = elv_register_queue(md->queue);
+> +		/* if (r)
+> +		 *	 goto out; Better to ignore, just like add_disk does ;-)
+> +		 */
+> +		/*
+> +		 * reinitialize make_request_fn as it was reset to the
+> +		 * default __make_request by blk_init_allocate_queue
+> +		 */
+> +		md->saved_make_request_fn = md->queue->make_request_fn;
+> +		blk_queue_make_request(md->queue, dm_request);
+> +
+> +		blk_queue_softirq_done(md->queue, dm_softirq_done);
+> +		blk_queue_prep_rq(md->queue, dm_prep_fn);
+> +		blk_queue_lld_busy(md->queue, dm_lld_busy);
+> +	}
+> +
+>  	__unbind(md);
+>  	r = __bind(md, table, &limits);
+>  
+> I would post the v3 of the patches with this change. Do you see any problems 
+> in this?
 
--- 
-Dmitry
+Humm, it might work for now, but I disagree with that.
+
+Since elevator is block internal and dm doesn't really care
+(its initialization is actually hidden in blk_init_allocated_queue()),
+directly calling elv_register_queue() from dm seems not right.
+It will likely introduce a bug by future changes in block layer.
+
+I think the right approach is to define a proper block layer interface
+to reflect the queue configuration change.
+That's why I said "Updating the queue registration may not be easy".
+
+Thanks,
+Kiyoshi Ueda
+
