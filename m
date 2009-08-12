@@ -1,177 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbZHLNPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752456AbZHLNUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752411AbZHLNPS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 09:15:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZHLNPS
+	id S1752456AbZHLNUQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 09:20:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZHLNUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 09:15:18 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:37269 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751672AbZHLNPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 09:15:16 -0400
-Date: Wed, 12 Aug 2009 14:15:18 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Larry Woodman <lwoodman@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: riel@redhat.com, Peter Zijlstra <peterz@infradead.org>,
-       Li Ming Chun <macli@brc.ubc.ca>, Jonathan Corbet <corbet@lwn.net>,
-       Fernando Carrijo <fcarrijo@yahoo.com.br>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: [PATCH] tracing, documentation: Clarifications and corrections to
-	tracepoint-analysis.txt
-Message-ID: <20090812131517.GD19269@csn.ul.ie>
-References: <1249918915-16061-1-git-send-email-mel@csn.ul.ie> <1249918915-16061-6-git-send-email-mel@csn.ul.ie>
+	Wed, 12 Aug 2009 09:20:16 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:63576 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752397AbZHLNUO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 09:20:14 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Paul Congdon \(UC Davis\)" <ptcongdon@ucdavis.edu>
+Subject: Re: [PATCH][RFC] net/bridge: add basic VEPA support
+Date: Wed, 12 Aug 2009 15:19:36 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
+Cc: "'Fischer, Anna'" <anna.fischer@hp.com>,
+       "'Stephen Hemminger'" <shemminger@linux-foundation.org>,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       evb@yahoogroups.com, davem@davemloft.net, kaber@trash.net,
+       adobriyan@gmail.com, "'Eric Biederman'" <ebiederm@xmission.com>
+References: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net> <0199E0D51A61344794750DC57738F58E6D6AE99C53@GVW1118EXC.americas.hpqcorp.net> <001001ca1a93$b6e50ee0$24af2ca0$@edu>
+In-Reply-To: <001001ca1a93$b6e50ee0$24af2ca0$@edu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
+ =?iso-8859-1?q?Y=2Ea=5E3zb?=)
+ =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
+ =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1249918915-16061-6-git-send-email-mel@csn.ul.ie>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908121519.36808.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19x3fALh971a519DTeqKf4hyYsdKznjkiqUUfa
+ Bloh7e0GSJd1VFtAUgysc/RUaR5WA8RbsU7XCbdzcvTYPOlyza
+ kPZb8SjNSlZh3EODkO5IA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes a number of corrections and clarifications as pointed
-out by Jonathan Corbet.
+On Tuesday 11 August 2009, Paul Congdon (UC Davis) wrote:
+> > >
+> > > The patch from Eric Biederman to allow macvlan to bridge between
+> > > its slave ports is at
+> > >
+> > > http://kerneltrap.org/mailarchive/linux-netdev/2009/3/9/5125774
+> > 
+> > Looking through the discussions here, it does not seem as if a decision
+> > was made to integrate those patches, because they would make the
+> > macvlan interface behave too much like a bridge. 
 
-  o Listed some requirement kernel config options
-  o Spelled out that perf has to be installed from tools/perf
-  o Mention that tracing_enabled must be set
-  o Fix numerous minor typos
-  o Fix tense issues
-  o Expand on what -c means
+Right, that question is still open, and dont't see it as very important
+right now, as long as we can still use it for VEPA.
 
-Fernando Carrijo also spotted that a library was misnamed libpixmap
-instead of libpixman. This patch should be considered a fix to
-tracing-documentation-add-a-document-describing-how-to-do-some-performance-analysis-with-tracepoints.patch.
+> > Also, it seems as if there was still a problem with doing
+> > multicast/broadcast delivery when enabling local VM-to-VM
+> > communication. Is that solved by now?
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- Documentation/trace/tracepoint-analysis.txt |   49 ++++++++++++++++++++--------
- 1 file changed, 36 insertions(+), 13 deletions(-)
+Not yet, but I guess it comes as a natural extension when I fix
+multicast/broadcast delivery from the reflective relay for VEPA.
 
-diff --git a/Documentation/trace/tracepoint-analysis.txt b/Documentation/trace/tracepoint-analysis.txt
-index e7a7d3e..282e8d9 100644
---- a/Documentation/trace/tracepoint-analysis.txt
-+++ b/Documentation/trace/tracepoint-analysis.txt
-@@ -17,8 +17,18 @@ gathering and interpreting these events. Lacking any current Best Practises,
- this document describes some of the methods that can be used.
- 
- This document assumes that debugfs is mounted on /sys/kernel/debug and that
--the appropriate tracing options have been configured into the kernel. It is
--assumed that the PCL tool tools/perf has been installed and is in your path.
-+at least the following tracing options have been configured into the kernel
-+
-+	CONFIG_EVENT_PROFILE=y
-+	CONFIG_FTRACE=y
-+	CONFIG_DYNAMIC_FTRACE=y
-+	CONFIG_TRACEPOINTS=y
-+
-+It is also assumed that the PCL tool available from tools/perf has been
-+installed and is in your path. This can be trivially installed as
-+
-+  $ make prefix=/usr/local
-+  $ make prefix=/usr/local install
- 
- 2. Listing Available Events
- ===========================
-@@ -61,6 +71,11 @@ to page allocation would look something like
- 
-   $ for i in `find /sys/kernel/debug/tracing/events -name "enable" | grep mm_`; do echo 1 > $i; done
- 
-+To start monitoring the events then, one would do something like
-+
-+  $ echo 1 > tracing_enabled
-+  $ cat trace_pipe | some-processing-script
-+
- 2.2 System-Wide Event Enabling with SystemTap
- ---------------------------------------------
- 
-@@ -116,7 +131,7 @@ basis using set_ftrace_pid.
- 2.5 Local Event Enablement with PCL
- -----------------------------------
- 
--Events can be activate and tracked for the duration of a process on a local
-+Events can be activated and tracked for the duration of a process on a local
- basis using PCL such as follows.
- 
-   $ perf stat -e kmem:mm_page_alloc -e kmem:mm_page_free_direct \
-@@ -142,8 +157,8 @@ as any script reading trace_pipe.
- =====================================
- 
- Any workload can exhibit variances between runs and it can be important
--to know what the standard deviation in. By and large, this is left to the
--performance analyst to do it by hand. In the event that the discrete event
-+to know what the standard deviation is. By and large, this is left to the
-+performance analyst to do by hand. In the event that the discrete event
- occurrences are useful to the performance analyst, then perf can be used.
- 
-   $ perf stat --repeat 5 -e kmem:mm_page_alloc -e kmem:mm_page_free_direct
-@@ -190,11 +205,11 @@ be gathered on-line as appropriate. Examples of post-processing might include
- 
-   o Reading information from /proc for the PID that triggered the event
-   o Deriving a higher-level event from a series of lower-level events.
--  o Calculate latencies between two events
-+  o Calculating latencies between two events
- 
- Documentation/trace/postprocess/trace-pagealloc-postprocess.pl is an example
- script that can read trace_pipe from STDIN or a copy of a trace. When used
--on-line, it can be interrupted once to generate a report without existing
-+on-line, it can be interrupted once to generate a report without exiting
- and twice to exit.
- 
- Simplistically, the script just reads STDIN and counts up events but it
-@@ -204,7 +219,7 @@ also can do more such as
-     are freed to the main allocator from the per-CPU lists, it recognises
-     that as one per-CPU drain even though there is no specific tracepoint
-     for that event
--  o It can aggregate based on PID or individual process number
-+  o It can aggregate based on PID or process name
-   o In the event memory is getting externally fragmented, it reports
-     on whether the fragmentation event was severe or moderate.
-   o When receiving an event about a PID, it can record who the parent was so
-@@ -217,7 +232,7 @@ also can do more such as
- 
- There may also be a requirement to identify what functions with a program
- were generating events within the kernel. To begin this sort of analysis, the
--data must be recorded. At the time of writing, this required root
-+data must be recorded.
- 
-   $ perf record -c 1 \
- 	-e kmem:mm_page_alloc -e kmem:mm_page_free_direct \
-@@ -226,10 +241,17 @@ data must be recorded. At the time of writing, this required root
-   Time: 0.894
-   [ perf record: Captured and wrote 0.733 MB perf.data (~32010 samples) ]
- 
--Note the use of '-c 1' to set the event period to sample. The default sample
--period is quite high to minimise overhead but the information collected can be
-+Note the use of '-c 1' to set the sample period. The default sample period
-+is quite high to minimise overhead but the information collected can be
- very coarse as a result.
- 
-+The sample period is in units of "events occurred". For a hardware counter,
-+this would usually mean the PMU is programmed to "raise an interrupt after
-+this many events occured" and the event is recorded on interrupt receipt. For
-+software-events such as tracepoints, one event will be recorded every
-+"sample period" number of times the tracepoint triggered.  In this case,
-+-c 1 means "record a sample every time this tracepoint is triggered".
-+
- This record outputted a file called perf.data which can be analysed using
- perf report.
- 
-@@ -297,7 +319,8 @@ symbol.
-        0.01%     Xorg  /opt/gfx-test/lib/libpixman-1.so.0.13.1  [.] get_fast_path
-        0.00%     Xorg  [kernel]                                 [k] ftrace_trace_userstack
- 
--To see where within the function pixmanFillsse2 things are going wrong
-+Note here that kernel symbols are marked [k]. To see where within the
-+function pixmanFillsse2 things are going wrong
- 
-   $ perf annotate pixmanFillsse2
-   [ ... ]
-@@ -323,5 +346,5 @@ To see where within the function pixmanFillsse2 things are going wrong
- At a glance, it looks like the time is being spent copying pixmaps to
- the card.  Further investigation would be needed to determine why pixmaps
- are being copied around so much but a starting point would be to take an
--ancient build of libpixmap out of the library path where it was totally
-+ancient build of libpixman out of the library path where it was totally
- forgotten about from months ago!
+The logic that I would use there is:
+
+broadcast from a dowstream port:
+     if (bridge_mode(source_port)) {
+          forward_to_upstream(frame);
+          for_each_downstream(port) {
+                /* deliver to all bridge ports except self, do
+                   not deliver to any VEPA port. */
+                if (bridge_mode(port) && port != source_port) {
+                       forward_to_downstream(frame, port);
+                }
+          }
+     } else {
+          forward_to_upstream(frame);
+     }
+
+
+broadcast from the upstream port
+     if (bridge_mode(frame.source)) {
+          /* comes from a port in bridge mode, so has already been
+             delivered to all other bridge ports */
+          for_each_downstream(port) {
+                if (!bridge_mode(port)) {
+                         forward_to_downstream(frame, port);
+                }
+          }
+     } else if (vepa_mode(frame.source)) {
+          /* comes from VEPA port, so need to deliver to all
+             bridge and all vepa ports except self */
+          for_each_downstream(port) {
+                if (port != frame.source)
+                       forward_to_downstream(frame, port);
+     } else {
+          /* external source, so flood to everyone */
+          for_each_downstream(port) {
+                forward_to_downstream(frame, port);
+     }
+
+For multicast, we can do the same, or optionally add a per-port filter
+as you mentioned, if it becomes a bottleneck. 
+
+Do you think this addresses the problem, or did I miss something important?
+
+> Also, is there a solution, or plans for a solution, to address macvtap
+> interfaces that are set to 'promiscuous' mode?  It would seem fairly easy to
+> support this for interfaces that are simply trying to listen to the port
+> (e.g. Wireshark). 
+
+If you want to use tcpdump or wireshark on all ports simulateously in a pure
+VEPA, you can still attach it to the 'lowerdev', e.g. eth0 or eth0.2 (for macvlan
+nested in vlan).
+If we allow bridge ports, we might want to extend the local delivery
+to also go through all the hooks of the external port, so that you can
+attach packet sockets there.
+
+> If the port was being used by something like a firewall
+> then the VEPA filtering doesn't work too well.
+
+Not sure what you mean. Are you talking about a firewall separating the guests
+from the outside, between the VEPA and the reflective relay, or a firewall between
+the guests in case of local delivery?
+
+	Arnd <><
