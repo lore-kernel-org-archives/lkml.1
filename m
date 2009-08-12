@@ -1,42 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbZHLWey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688AbZHLWhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752614AbZHLWey (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 18:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZHLWex
+	id S1752688AbZHLWhb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 18:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbZHLWha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 18:34:53 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49948 "EHLO mx2.suse.de"
+	Wed, 12 Aug 2009 18:37:30 -0400
+Received: from mga11.intel.com ([192.55.52.93]:13856 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751896AbZHLWex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 18:34:53 -0400
-Date: Thu, 13 Aug 2009 00:34:53 +0200
-From: Jan Kara <jack@suse.cz>
-To: Sylvain Rochet <gradator@gradator.net>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       linux-nfs@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: 2.6.28.9: EXT3/NFS inodes corruption
-Message-ID: <20090812223453.GC10729@duck.suse.cz>
-References: <20090716172749.GC3740@atrey.karlin.mff.cuni.cz> <20090725151751.GA6419@gradator.net> <20090727154253.GB8332@duck.suse.cz> <20090728112715.GA8442@gradator.net> <20090728135226.GA21682@duck.suse.cz> <20090728164142.GA13662@gradator.net> <20090803222901.GB23162@duck.suse.cz> <20090804111505.GA6433@gradator.net> <20090804225619.GB11097@duck.suse.cz> <20090806131555.GA23359@gradator.net>
+	id S1752578AbZHLWha convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 18:37:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,370,1246863600"; 
+   d="scan'208";a="716297210"
+From: "Wang, Shane" <shane.wang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, "Cihula, Joseph" <joseph.cihula@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>,
+       "Wei, Gang" <gang.wei@intel.com>
+Date: Thu, 13 Aug 2009 06:37:25 +0800
+Subject: RE: [RFC v6][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution
+	Technology support for Linux - Details
+Thread-Topic: [RFC v6][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution
+	Technology support for Linux - Details
+Thread-Index: Acobgnhevh8fEJ69RNi9dOZ8RiAvKwAGu97Q
+Message-ID: <037F493892196B458CD3E193E8EBAD4F01EAB64206@pdsmsx502.ccr.corp.intel.com>
+References: <20090812182013.GJ28848@basil.fritz.box>
+In-Reply-To: <20090812182013.GJ28848@basil.fritz.box>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090806131555.GA23359@gradator.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
-
-On Thu 06-08-09 15:15:56, Sylvain Rochet wrote:
-> > I have one idea what could cause your filesystem corruption, although 
-> > it's a wild guess... Please try attached oneliner.
+H. Peter Anvin wrote:
+> Right, that was the point.
 > 
-> Running since yesterday.
-  Any news after a week of running? How often did the corruption happen
-previously?
+> Andi Kleen <andi@firstfloor.org> wrote:
+> 
+>>> The question is: if the user doesn't want S3, do they still need to
+>>> enable S3 in order to be able to use TXT?  Otherwise, this code
+>>> needs to be properly conditionalized.
+>> 
+>> I doubt that's the case. Ifdef is likely the right answer.
+>> 
+>> -Andi
+>> 
+>> --
+>> ak@linux.intel.com -- Speaking for myself only.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+OK, I agree.
+
+Shane
