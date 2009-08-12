@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752258AbZHLNHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752309AbZHLNIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752258AbZHLNHN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 09:07:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbZHLNHM
+	id S1752309AbZHLNIw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 09:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbZHLNIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 09:07:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55151 "EHLO mx2.redhat.com"
+	Wed, 12 Aug 2009 09:08:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39381 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752213AbZHLNHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 09:07:11 -0400
-Date: Wed, 12 Aug 2009 16:04:34 +0300
+	id S1751438AbZHLNIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 09:08:50 -0400
+Date: Wed, 12 Aug 2009 16:06:12 +0300
 From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org,
-       "akpm@linux-foundation.org >> Andrew Morton" 
-	<akpm@linux-foundation.org>,
-       hpa@zytor.com, Patrick Mullaney <pmullaney@novell.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Gregory Haskins <gregory.haskins@gmail.com>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
+       Patrick Mullaney <pmullaney@novell.com>
 Subject: Re: [PATCHv2 0/2] vhost: a kernel-level virtio server
-Message-ID: <20090812130433.GB29200@redhat.com>
-References: <20090811212743.GA26309@redhat.com> <4A820391.1090404@gmail.com> <20090812071636.GA26847@redhat.com> <4A82ADD5.6040909@gmail.com> <20090812120541.GA29158@redhat.com> <4A82B87B.4010208@gmail.com>
+Message-ID: <20090812130612.GC29200@redhat.com>
+References: <20090811212743.GA26309@redhat.com> <20090812120541.GA29158@redhat.com> <4A82B87B.4010208@gmail.com> <200908121452.01802.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A82B87B.4010208@gmail.com>
+In-Reply-To: <200908121452.01802.arnd@arndb.de>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 08:41:31AM -0400, Gregory Haskins wrote:
-> Michael S. Tsirkin wrote:
-> > On Wed, Aug 12, 2009 at 07:56:05AM -0400, Gregory Haskins wrote:
-> >> Michael S. Tsirkin wrote:
-> 
-> <snip>
-> 
-> >>>
-> >>> 1. use a dedicated network interface with SRIOV, program mac to match
-> >>>    that of guest (for testing, you can set promisc mode, but that is
-> >>>    bad for performance)
-> >>
-> >> Are you saying SRIOV is a requirement, and I can either program the
-> >> SRIOV adapter with a mac or use promis?  Or are you saying I can use
-> >> SRIOV+programmed mac OR a regular nic + promisc (with a perf penalty).
+On Wed, Aug 12, 2009 at 02:52:01PM +0200, Arnd Bergmann wrote:
+> On Wednesday 12 August 2009, Gregory Haskins wrote:
+> > >> Are you saying SRIOV is a requirement, and I can either program the
+> > >> SRIOV adapter with a mac or use promis?  Or are you saying I can use
+> > >> SRIOV+programmed mac OR a regular nic + promisc (with a perf penalty).
+> > > 
+> > > SRIOV is not a requirement. And you can also use a dedicated
+> > > nic+programmed mac if you are so inclined.
 > > 
-> > SRIOV is not a requirement. And you can also use a dedicated
-> > nic+programmed mac if you are so inclined.
-> 
-> Makes sense.  Got it.
-> 
-> I was going to add guest-to-guest to the test matrix, but I assume that
-> is not supported with vhost unless you have something like a VEPA
-> enabled bridge?
-> 
-> <snip>
-
-Presumably you mean on the same host?  There were also some patches to
-enable local guest to guest for macvlan, that would be a nice
-software-only solution.  For back to back, I just tried over veth, seems
-to work fine.
-
-> >>> 3. add vhost=ethX
-> >> You mean via "ip link" I assume?
+> > Makes sense.  Got it.
 > > 
-> > No, that's a new flag for virtio in qemu:
+> > I was going to add guest-to-guest to the test matrix, but I assume that
+> > is not supported with vhost unless you have something like a VEPA
+> > enabled bridge?
 > > 
-> > -net nic,model=virtio,vhost=veth0
 > 
-> Ah, ok.  Even better.
+> If I understand it correctly, you can at least connect a veth pair
+> to a bridge, right? Something like
 > 
-> Thanks!
-> -Greg
+>            veth0 - veth1 - vhost - guest 1 
+> eth0 - br0-|
+>            veth2 - veth3 - vhost - guest 2
+>           
+> It's a bit more complicated than it need to be, but should work fine.
 > 
+> 	Arnd <><
 
+Heh, you don't need a bridge in this picture:
+
+guest 1 - vhost - veth0 - veth1 - vhost guest 2
 
