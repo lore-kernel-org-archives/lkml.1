@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751603AbZHLMHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751646AbZHLML0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751603AbZHLMHV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 08:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZHLMHU
+	id S1751646AbZHLML0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 08:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZHLML0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 08:07:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38004 "EHLO mx2.redhat.com"
+	Wed, 12 Aug 2009 08:11:26 -0400
+Received: from ozlabs.org ([203.10.76.45]:50048 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750767AbZHLMHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 08:07:18 -0400
-Date: Wed, 12 Aug 2009 15:05:41 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org,
-       "akpm@linux-foundation.org >> Andrew Morton" 
-	<akpm@linux-foundation.org>,
-       hpa@zytor.com, Patrick Mullaney <pmullaney@novell.com>
-Subject: Re: [PATCHv2 0/2] vhost: a kernel-level virtio server
-Message-ID: <20090812120541.GA29158@redhat.com>
-References: <20090811212743.GA26309@redhat.com> <4A820391.1090404@gmail.com> <20090812071636.GA26847@redhat.com> <4A82ADD5.6040909@gmail.com>
+	id S1751477AbZHLMLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 08:11:25 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Remove redundant start_kernel prototypes.
+Date: Wed, 12 Aug 2009 21:41:21 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A82ADD5.6040909@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200908122141.22072.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 07:56:05AM -0400, Gregory Haskins wrote:
-> Michael S. Tsirkin wrote:
-> > On Tue, Aug 11, 2009 at 07:49:37PM -0400, Gregory Haskins wrote:
-> >> Michael S. Tsirkin wrote:
-> >>> This implements vhost: a kernel-level backend for virtio,
-> >>> The main motivation for this work is to reduce virtualization
-> >>> overhead for virtio by removing system calls on data path,
-> >>> without guest changes. For virtio-net, this removes up to
-> >>> 4 system calls per packet: vm exit for kick, reentry for kick,
-> >>> iothread wakeup for packet, interrupt injection for packet.
-> >>>
-> >>> Some more detailed description attached to the patch itself.
-> >>>
-> >>> The patches are against 2.6.31-rc4.  I'd like them to go into linux-next
-> >>> and down the road 2.6.32 if possible.  Please comment.
-> >> I will add this series to my benchmark run in the next day or so.  Any
-> >> specific instructions on how to set it up and run?
-> >>
-> >> Regards,
-> >> -Greg
-> >>
-> > 
-> > 1. use a dedicated network interface with SRIOV, program mac to match
-> >    that of guest (for testing, you can set promisc mode, but that is
-> >    bad for performance)
-> 
-> Are you saying SRIOV is a requirement, and I can either program the
-> SRIOV adapter with a mac or use promis?  Or are you saying I can use
-> SRIOV+programmed mac OR a regular nic + promisc (with a perf penalty).
+Hi Andrew, this is probably best in your tree.
 
-SRIOV is not a requirement. And you can also use a dedicated
-nic+programmed mac if you are so inclined.
+No need for redeclaration.
 
-> > 2. disable tso,gso,lro with ethtool
-> 
-> Out of curiosity, wouldnt you only need to disable LRO on the adapter,
-> since the other two (IIUC) are transmit path and are therefore
-> influenced by the skb's you generate in vhost?
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ arch/frv/include/asm/gdb-stub.h     |    1 -
+ arch/mn10300/include/asm/gdb-stub.h |    1 -
+ 2 files changed, 2 deletions(-)
 
-Hmm, makes sense. I'll check this and let you know.
-
-> 
-> > 3. add vhost=ethX
-> 
-> You mean via "ip link" I assume?
-
-No, that's a new flag for virtio in qemu:
-
--net nic,model=virtio,vhost=veth0
-
-> Regards,
-> -Greg
-> 
-
-
+diff --git a/arch/frv/include/asm/gdb-stub.h b/arch/frv/include/asm/gdb-stub.h
+--- a/arch/frv/include/asm/gdb-stub.h
++++ b/arch/frv/include/asm/gdb-stub.h
+@@ -90,7 +90,6 @@ extern void gdbstub_do_rx(void);
+ extern asmlinkage void __debug_stub_init_break(void);
+ extern asmlinkage void __break_hijack_kernel_event(void);
+ extern asmlinkage void __break_hijack_kernel_event_breaks_here(void);
+-extern asmlinkage void start_kernel(void);
+ 
+ extern asmlinkage void gdbstub_rx_handler(void);
+ extern asmlinkage void gdbstub_rx_irq(void);
+diff --git a/arch/mn10300/include/asm/gdb-stub.h b/arch/mn10300/include/asm/gdb-stub.h
+--- a/arch/mn10300/include/asm/gdb-stub.h
++++ b/arch/mn10300/include/asm/gdb-stub.h
+@@ -109,7 +109,6 @@ extern asmlinkage int  gdbstub_intercept
+ extern asmlinkage void gdbstub_exception(struct pt_regs *, enum exception_code);
+ extern asmlinkage void __gdbstub_bug_trap(void);
+ extern asmlinkage void __gdbstub_pause(void);
+-extern asmlinkage void start_kernel(void);
+ 
+ #ifndef CONFIG_MN10300_CACHE_DISABLED
+ extern asmlinkage void gdbstub_purge_cache(void);
