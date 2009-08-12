@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932077AbZHLHfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbZHLHoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932077AbZHLHfs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 03:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbZHLHfr
+	id S1754135AbZHLHoA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 03:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbZHLHoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 03:35:47 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:45791 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752472AbZHLHfq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 03:35:46 -0400
-Date: Wed, 12 Aug 2009 10:35:16 +0300
-From: "Vignatti Tiago (Nokia-D/Helsinki)" <tiago.vignatti@nokia.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Dave Airlie <airlied@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dri-devel@lists.sf.net" <dri-devel@lists.sf.net>
-Subject: Re: [PATCH] vga: implements VGA arbitration on Linux
-Message-ID: <20090812073516.GB6453@cachaca>
-Reply-To: tiago.vignatti@nokia.com
-References: <1249969927-884-1-git-send-email-airlied@gmail.com> <20090811161746.7b8878aa@jbarnes-g45> <20090811162103.1b2a65c9@jbarnes-g45>
+	Wed, 12 Aug 2009 03:44:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52815 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751799AbZHLHn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 03:43:59 -0400
+Message-ID: <4A8272B2.3030309@redhat.com>
+Date: Wed, 12 Aug 2009 10:43:46 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090811162103.1b2a65c9@jbarnes-g45>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 12 Aug 2009 07:35:18.0335 (UTC) FILETIME=[70C49CF0:01CA1B1F]
-X-Nokia-AV: Clean
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Minchan Kim <minchan.kim@gmail.com>,
+       kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Wu Fengguang <fengguang.wu@intel.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: Page allocation failures in guest
+References: <20090713115158.0a4892b0@mjolnir.ossman.eu>	<20090811083233.3b2be444@mjolnir.ossman.eu>	<4A811545.5090209@redhat.com>	<200908121249.51973.rusty@rustcorp.com.au> <20090812081934.33e8280f@mjolnir.ossman.eu>
+In-Reply-To: <20090812081934.33e8280f@mjolnir.ossman.eu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 01:21:03AM +0200, Jesse Barnes wrote:
-> Oh yeah, and we should get the documentation merged too.  I can handle
-> that or you can send it to Randy.  Tiago?
+On 08/12/2009 09:19 AM, Pierre Ossman wrote:
+> Will it still trigger the OOM killer with this patch, or will things
+> behave slightly more gracefully?
+>    
 
-Okay, I can handle this documentation pretty easy. 
-
-But honestly I'm not sure we (or some future developer) will use it. The
-header (include/linux/vgaarb.h) is already very nice documented. So, tell me
-what do you think Jesse.
+I don't think you mentioned the OOM killer in your original report?  Did 
+it trigger?
 
 
-Cheers,
+-- 
+error compiling committee.c: too many arguments to function
 
-            Tiago
