@@ -1,511 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932572AbZHLKsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932532AbZHLKvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932572AbZHLKsn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 06:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932524AbZHLKsm
+	id S932532AbZHLKvh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 06:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932468AbZHLKvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 06:48:42 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:57189 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932526AbZHLKsj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 06:48:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=SIiN2WN8z39NYbHWQmy9K2z4Hwns817lJFbtT3i/w/oWRqv/8rBoiNsfFHKRaaHrNK
-         wjDFR/QLO0S8hEsiuqQRtnPWo2aySa32OaLWoaxax7qoZQ/6bpPUPr9I2T7zaK4kWz1n
-         jXLEgE2pXq3SMP9fH5/8gqQvafWLm2voPk5VM=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Brice Goglin <Brice.Goglin@inria.fr>
-Subject: [PATCH 3/3 v2] perf tools: Factorize the map helpers
-Date: Wed, 12 Aug 2009 12:48:32 +0200
-Message-Id: <1250074112-15147-4-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <20090812100851.GA18577@elte.hu>
-References: <20090812100851.GA18577@elte.hu>
+	Wed, 12 Aug 2009 06:51:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44211 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932067AbZHLKvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 06:51:36 -0400
+Date: Wed, 12 Aug 2009 12:51:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
+Message-ID: <20090812105106.GA7885@elte.hu>
+References: <Pine.LNX.4.44L0.0908111659510.5845-100000@iolanthe.rowland.org> <20090812094119.GC14734@elte.hu> <1250074070.10001.33.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250074070.10001.33.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Factorize the dso mapping helpers into a single purpose common file
-"util/map.c"
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Brice Goglin <Brice.Goglin@inria.fr>
----
- tools/perf/Makefile           |    1 +
- tools/perf/builtin-annotate.c |   79 +--------------------------
- tools/perf/builtin-record.c   |    1 +
- tools/perf/builtin-report.c   |  124 ++---------------------------------------
- tools/perf/util/callchain.h   |    1 +
- tools/perf/util/event.h       |   30 ++++++++++
- tools/perf/util/map.c         |   97 ++++++++++++++++++++++++++++++++
- tools/perf/util/symbol.h      |    1 +
- tools/perf/util/util.h        |    1 -
- 9 files changed, 137 insertions(+), 198 deletions(-)
- create mode 100644 tools/perf/util/map.c
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 2aee21b..cb9033d 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -340,6 +340,7 @@ LIB_OBJS += util/header.o
- LIB_OBJS += util/callchain.o
- LIB_OBJS += util/values.o
- LIB_OBJS += util/debug.o
-+LIB_OBJS += util/map.o
- 
- BUILTIN_OBJS += builtin-annotate.o
- BUILTIN_OBJS += builtin-help.o
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index fee663a..543c452 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -51,83 +51,6 @@ struct sym_ext {
- 	char		*path;
- };
- 
--struct map {
--	struct list_head node;
--	u64	 start;
--	u64	 end;
--	u64	 pgoff;
--	u64	 (*map_ip)(struct map *, u64);
--	struct dso	 *dso;
--};
--
--static u64 map__map_ip(struct map *map, u64 ip)
--{
--	return ip - map->start + map->pgoff;
--}
--
--static u64 vdso__map_ip(struct map *map __used, u64 ip)
--{
--	return ip;
--}
--
--static struct map *map__new(struct mmap_event *event)
--{
--	struct map *self = malloc(sizeof(*self));
--
--	if (self != NULL) {
--		const char *filename = event->filename;
--
--		self->start = event->start;
--		self->end   = event->start + event->len;
--		self->pgoff = event->pgoff;
--
--		self->dso = dsos__findnew(filename);
--		if (self->dso == NULL)
--			goto out_delete;
--
--		if (self->dso == vdso)
--			self->map_ip = vdso__map_ip;
--		else
--			self->map_ip = map__map_ip;
--	}
--	return self;
--out_delete:
--	free(self);
--	return NULL;
--}
--
--static struct map *map__clone(struct map *self)
--{
--	struct map *map = malloc(sizeof(*self));
--
--	if (!map)
--		return NULL;
--
--	memcpy(map, self, sizeof(*self));
--
--	return map;
--}
--
--static int map__overlap(struct map *l, struct map *r)
--{
--	if (l->start > r->start) {
--		struct map *t = l;
--		l = r;
--		r = t;
--	}
--
--	if (l->end > r->start)
--		return 1;
--
--	return 0;
--}
--
--static size_t map__fprintf(struct map *self, FILE *fp)
--{
--	return fprintf(fp, " %Lx-%Lx %Lx %s\n",
--		       self->start, self->end, self->pgoff, self->dso->name);
--}
--
- 
- struct thread {
- 	struct rb_node	 rb_node;
-@@ -797,7 +720,7 @@ static int
- process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
- {
- 	struct thread *thread = threads__findnew(event->mmap.pid);
--	struct map *map = map__new(&event->mmap);
-+	struct map *map = map__new(&event->mmap, NULL, 0);
- 
- 	dprintf("%p [%p]: PERF_EVENT_MMAP %d: [%p(%p) @ %p]: %s\n",
- 		(void *)(offset + head),
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index 718b8f7..106c6ab 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -15,6 +15,7 @@
- #include "util/string.h"
- 
- #include "util/header.h"
-+#include "util/event.h"
- 
- #include <unistd.h>
- #include <sched.h>
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 1efefcc..93945ec 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -67,6 +67,10 @@ static char		callchain_default_opt[] = "fractal,0.5";
- 
- static int		callchain;
- 
-+static char		__cwd[PATH_MAX];
-+static char		*cwd = __cwd;
-+static int		cwdlen;
-+
- static
- struct callchain_param	callchain_param = {
- 	.mode	= CHAIN_GRAPH_REL,
-@@ -102,124 +106,6 @@ static int repsep_fprintf(FILE *fp, const char *fmt, ...)
- 	return n;
- }
- 
--
--
--static char __cwd[PATH_MAX];
--static char *cwd = __cwd;
--static int cwdlen;
--
--static int strcommon(const char *pathname)
--{
--	int n = 0;
--
--	while (n < cwdlen && pathname[n] == cwd[n])
--		++n;
--
--	return n;
--}
--
--struct map {
--	struct list_head node;
--	u64	 start;
--	u64	 end;
--	u64	 pgoff;
--	u64	 (*map_ip)(struct map *, u64);
--	struct dso	 *dso;
--};
--
--static u64 map__map_ip(struct map *map, u64 ip)
--{
--	return ip - map->start + map->pgoff;
--}
--
--static u64 vdso__map_ip(struct map *map __used, u64 ip)
--{
--	return ip;
--}
--
--static inline int is_anon_memory(const char *filename)
--{
--	return strcmp(filename, "//anon") == 0;
--}
--
--static struct map *map__new(struct mmap_event *event)
--{
--	struct map *self = malloc(sizeof(*self));
--
--	if (self != NULL) {
--		const char *filename = event->filename;
--		char newfilename[PATH_MAX];
--		int anon;
--
--		if (cwd) {
--			int n = strcommon(filename);
--
--			if (n == cwdlen) {
--				snprintf(newfilename, sizeof(newfilename),
--					 ".%s", filename + n);
--				filename = newfilename;
--			}
--		}
--
--		anon = is_anon_memory(filename);
--
--		if (anon) {
--			snprintf(newfilename, sizeof(newfilename), "/tmp/perf-%d.map", event->pid);
--			filename = newfilename;
--		}
--
--		self->start = event->start;
--		self->end   = event->start + event->len;
--		self->pgoff = event->pgoff;
--
--		self->dso = dsos__findnew(filename);
--		if (self->dso == NULL)
--			goto out_delete;
--
--		if (self->dso == vdso || anon)
--			self->map_ip = vdso__map_ip;
--		else
--			self->map_ip = map__map_ip;
--	}
--	return self;
--out_delete:
--	free(self);
--	return NULL;
--}
--
--static struct map *map__clone(struct map *self)
--{
--	struct map *map = malloc(sizeof(*self));
--
--	if (!map)
--		return NULL;
--
--	memcpy(map, self, sizeof(*self));
--
--	return map;
--}
--
--static int map__overlap(struct map *l, struct map *r)
--{
--	if (l->start > r->start) {
--		struct map *t = l;
--		l = r;
--		r = t;
--	}
--
--	if (l->end > r->start)
--		return 1;
--
--	return 0;
--}
--
--static size_t map__fprintf(struct map *self, FILE *fp)
--{
--	return fprintf(fp, " %Lx-%Lx %Lx %s\n",
--		       self->start, self->end, self->pgoff, self->dso->name);
--}
--
--
- struct thread {
- 	struct rb_node	 rb_node;
- 	struct list_head maps;
-@@ -1474,7 +1360,7 @@ static int
- process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
- {
- 	struct thread *thread = threads__findnew(event->mmap.pid);
--	struct map *map = map__new(&event->mmap);
-+	struct map *map = map__new(&event->mmap, cwd, cwdlen);
- 
- 	dprintf("%p [%p]: PERF_EVENT_MMAP %d: [%p(%p) @ %p]: %s\n",
- 		(void *)(offset + head),
-diff --git a/tools/perf/util/callchain.h b/tools/perf/util/callchain.h
-index a926ae4..43cf3ea 100644
---- a/tools/perf/util/callchain.h
-+++ b/tools/perf/util/callchain.h
-@@ -4,6 +4,7 @@
- #include "../perf.h"
- #include <linux/list.h>
- #include <linux/rbtree.h>
-+#include "util.h"
- #include "symbol.h"
- 
- enum chain_mode {
-diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-index 91e2fe5..d26dc88 100644
---- a/tools/perf/util/event.h
-+++ b/tools/perf/util/event.h
-@@ -1,4 +1,8 @@
-+#ifndef __PERF_EVENT_H
-+#define __PERF_EVENT_H
- #include "../perf.h"
-+#include "util.h"
-+#include <linux/list.h>
- 
- struct ip_event {
- 	struct perf_event_header header;
-@@ -52,3 +56,29 @@ typedef union event_union {
- 	struct lost_event		lost;
- 	struct read_event		read;
- } event_t;
-+
-+struct map {
-+	struct list_head	node;
-+	u64			start;
-+	u64			end;
-+	u64			pgoff;
-+	u64			(*map_ip)(struct map *, u64);
-+	struct dso		*dso;
-+};
-+
-+static inline u64 map__map_ip(struct map *map, u64 ip)
-+{
-+	return ip - map->start + map->pgoff;
-+}
-+
-+static inline u64 vdso__map_ip(struct map *map __used, u64 ip)
-+{
-+	return ip;
-+}
-+
-+struct map *map__new(struct mmap_event *event, char *cwd, int cwdlen);
-+struct map *map__clone(struct map *self);
-+int map__overlap(struct map *l, struct map *r);
-+size_t map__fprintf(struct map *self, FILE *fp);
-+
-+#endif
-diff --git a/tools/perf/util/map.c b/tools/perf/util/map.c
-new file mode 100644
-index 0000000..804e023
---- /dev/null
-+++ b/tools/perf/util/map.c
-@@ -0,0 +1,97 @@
-+#include "event.h"
-+#include "symbol.h"
-+#include <stdlib.h>
-+#include <string.h>
-+#include <stdio.h>
-+
-+static inline int is_anon_memory(const char *filename)
-+{
-+	return strcmp(filename, "//anon") == 0;
-+}
-+
-+static int strcommon(const char *pathname, char *cwd, int cwdlen)
-+{
-+	int n = 0;
-+
-+	while (n < cwdlen && pathname[n] == cwd[n])
-+		++n;
-+
-+	return n;
-+}
-+
-+ struct map *map__new(struct mmap_event *event, char *cwd, int cwdlen)
-+{
-+	struct map *self = malloc(sizeof(*self));
-+
-+	if (self != NULL) {
-+		const char *filename = event->filename;
-+		char newfilename[PATH_MAX];
-+		int anon;
-+
-+		if (cwd) {
-+			int n = strcommon(filename, cwd, cwdlen);
-+
-+			if (n == cwdlen) {
-+				snprintf(newfilename, sizeof(newfilename),
-+					 ".%s", filename + n);
-+				filename = newfilename;
-+			}
-+		}
-+
-+		anon = is_anon_memory(filename);
-+
-+		if (anon) {
-+			snprintf(newfilename, sizeof(newfilename), "/tmp/perf-%d.map", event->pid);
-+			filename = newfilename;
-+		}
-+
-+		self->start = event->start;
-+		self->end   = event->start + event->len;
-+		self->pgoff = event->pgoff;
-+
-+		self->dso = dsos__findnew(filename);
-+		if (self->dso == NULL)
-+			goto out_delete;
-+
-+		if (self->dso == vdso || anon)
-+			self->map_ip = vdso__map_ip;
-+		else
-+			self->map_ip = map__map_ip;
-+	}
-+	return self;
-+out_delete:
-+	free(self);
-+	return NULL;
-+}
-+
-+struct map *map__clone(struct map *self)
-+{
-+	struct map *map = malloc(sizeof(*self));
-+
-+	if (!map)
-+		return NULL;
-+
-+	memcpy(map, self, sizeof(*self));
-+
-+	return map;
-+}
-+
-+int map__overlap(struct map *l, struct map *r)
-+{
-+	if (l->start > r->start) {
-+		struct map *t = l;
-+		l = r;
-+		r = t;
-+	}
-+
-+	if (l->end > r->start)
-+		return 1;
-+
-+	return 0;
-+}
-+
-+size_t map__fprintf(struct map *self, FILE *fp)
-+{
-+	return fprintf(fp, " %Lx-%Lx %Lx %s\n",
-+		       self->start, self->end, self->pgoff, self->dso->name);
-+}
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index f3490fc..50f7235 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -6,6 +6,7 @@
- #include <linux/list.h>
- #include <linux/rbtree.h>
- #include "module.h"
-+#include "event.h"
- 
- struct symbol {
- 	struct rb_node	rb_node;
-diff --git a/tools/perf/util/util.h b/tools/perf/util/util.h
-index be4b52c..d61a6f0 100644
---- a/tools/perf/util/util.h
-+++ b/tools/perf/util/util.h
-@@ -83,7 +83,6 @@
- #include <inttypes.h>
- #include "../../../include/linux/magic.h"
- 
--#include "event.h"
- 
- #ifndef NO_ICONV
- #include <iconv.h>
--- 
-1.6.2.3
+> On Wed, 2009-08-12 at 11:41 +0200, Ingo Molnar wrote:
+> > * Alan Stern <stern@rowland.harvard.edu> wrote:
+> > 
+> > > This patch (as1279) adds kerneldoc for flush_scheduled_work()
+> > > containing a stern warning that the function should be avoided.
+> > > 
+> > > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> 
+> > >  
+> > > +/**
+> > > + * flush_scheduled_work - ensure that all work scheduled on keventd_wq has run to completion.
+> 
+> > > + */
+> > 
+> > Looks good - a small nit: please use proper/consistent line length, 
+> > something like:
+> > 
+> > /**
+> >  * flush_scheduled_work - ensure that all work scheduled on 
+> >  *			  keventd_wq has run to completion
+> >  *
+> 
+> >  */
+> 
+> 
+> And here I was thinking kerneldoc doesn't actually work 
+> like that, but perhaps Randy fixed it so the initial 
+> description can line-wrap?
 
+Ah, the main changes i did were to the body, that is what 
+caught my eyes. If KernelDoc doesnt handle line-wrap in the 
+first line then that has to stay so. (and KernelDoc needs to 
+be fixed as well - it should result in better documentation, 
+not worse)
+
+	Ingo
