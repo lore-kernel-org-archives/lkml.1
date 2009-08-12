@@ -1,70 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751022AbZHLLzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751220AbZHLL4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751022AbZHLLzb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 07:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbZHLLza
+	id S1751220AbZHLL4L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 07:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbZHLL4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 07:55:30 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49275 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750808AbZHLLza (ORCPT
+	Wed, 12 Aug 2009 07:56:10 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:34753 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750875AbZHLL4J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 07:55:30 -0400
-Date: Wed, 12 Aug 2009 13:55:20 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Joe Perches <joe@perches.com>
-Cc: Ben Dooks <ben-linux@fluff.org>, Russell King <rmk+lkml@arm.linux.org.uk>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
-	sections
-Message-ID: <20090812115520.GI24339@elf.ucw.cz>
-References: <20090806125751.7d0253ce@nij0285> <20090806113104.GK31370@elf.ucw.cz> <20090806120826.GC27773@flint.arm.linux.org.uk> <4A7ACC8D.7030706@xenontk.org> <20090806124048.GD27773@flint.arm.linux.org.uk> <1249563730.10297.13.camel@Joe-Laptop.home> <20090806133349.GF27773@flint.arm.linux.org.uk> <1249568614.10297.20.camel@Joe-Laptop.home> <20090806150322.GX2080@trinity.fluff.org> <1249948147.8895.96.camel@Joe-Laptop.home>
+	Wed, 12 Aug 2009 07:56:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=FHQFw8pwV1ddE9Xf3kVQQPfhgfuPr8de3w6pZqz40XU9FKlfTVHHr5m+8KMvg6N0nR
+         2KmWsP6ZUcnEjRQWz8A0KSAlnwfv/kQxWV6mtqGUN0emozHCRJJg3+X7eD4WJ6QgNtth
+         l/fLsmbx59+nQTs4ZnqqYpLBp5tKDA8ulVXVQ=
+Message-ID: <4A82ADD5.6040909@gmail.com>
+Date: Wed, 12 Aug 2009 07:56:05 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249948147.8895.96.camel@Joe-Laptop.home>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org,
+       "akpm@linux-foundation.org >> Andrew Morton" 
+	<akpm@linux-foundation.org>,
+       hpa@zytor.com, Patrick Mullaney <pmullaney@novell.com>
+Subject: Re: [PATCHv2 0/2] vhost: a kernel-level virtio server
+References: <20090811212743.GA26309@redhat.com> <4A820391.1090404@gmail.com> <20090812071636.GA26847@redhat.com>
+In-Reply-To: <20090812071636.GA26847@redhat.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigD7605C67DFA4B328715B65EB"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-08-10 16:49:07, Joe Perches wrote:
-> Resend for Andrew Morton
-> 
-> On Thu, 2009-08-06 at 16:03 +0100, Ben Dooks wrote:
-> > On Thu, Aug 06, 2009 at 07:23:34AM -0700, Joe Perches wrote:
-> > > On Thu, 2009-08-06 at 14:33 +0100, Russell King wrote:
-> > > > On Thu, Aug 06, 2009 at 06:02:10AM -0700, Joe Perches wrote:
-> > > > > I suspect a vger based ARM list would not require you to "run" it.
-> > > > There is already a vger based ARM list.  I see no signs of people
-> > > > moving over to it.  I summise that is because most people don't
-> > > > have a problem, and most people are happy with the existing lists
-> > > > as they stand.  Could it be that it's only a minority who are
-> > > > having issues.  I don't know.
-> > > 
-> > > Perhaps there is too little exposure of the
-> > > linux-arm@vger.kernel.org mailing list.
-> > 
-> > I'm not subscribed, please do not add any of the samsung entries
-> > with linux-arm@vger.kernel.org list.
-> 
-> Perhaps this patch is more palatable.  It's certainly shorter.
-> 
-> It does add both linux-arm-kernel and linux-arm to section
-> SIMTEC EB2410ITX (BAST).  By the way, another section you
-> maintain, SIMTEC EB110ATX (Chalice CATS), has neither a
-> pattern entry nor a mailing list entry.  Should it?
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigD7605C67DFA4B328715B65EB
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I like that. Open lists are useful.
-								Pavel
+Michael S. Tsirkin wrote:
+> On Tue, Aug 11, 2009 at 07:49:37PM -0400, Gregory Haskins wrote:
+>> Michael S. Tsirkin wrote:
+>>> This implements vhost: a kernel-level backend for virtio,
+>>> The main motivation for this work is to reduce virtualization
+>>> overhead for virtio by removing system calls on data path,
+>>> without guest changes. For virtio-net, this removes up to
+>>> 4 system calls per packet: vm exit for kick, reentry for kick,
+>>> iothread wakeup for packet, interrupt injection for packet.
+>>>
+>>> Some more detailed description attached to the patch itself.
+>>>
+>>> The patches are against 2.6.31-rc4.  I'd like them to go into linux-n=
+ext
+>>> and down the road 2.6.32 if possible.  Please comment.
+>> I will add this series to my benchmark run in the next day or so.  Any=
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>> specific instructions on how to set it up and run?
+>>
+>> Regards,
+>> -Greg
+>>
+>=20
+> 1. use a dedicated network interface with SRIOV, program mac to match
+>    that of guest (for testing, you can set promisc mode, but that is
+>    bad for performance)
+
+Are you saying SRIOV is a requirement, and I can either program the
+SRIOV adapter with a mac or use promis?  Or are you saying I can use
+SRIOV+programmed mac OR a regular nic + promisc (with a perf penalty).
+
+
+> 2. disable tso,gso,lro with ethtool
+
+Out of curiosity, wouldnt you only need to disable LRO on the adapter,
+since the other two (IIUC) are transmit path and are therefore
+influenced by the skb's you generate in vhost?
+
+
+> 3. add vhost=3DethX
+
+You mean via "ip link" I assume?
+
+Regards,
+-Greg
+
+
+--------------enigD7605C67DFA4B328715B65EB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkqCrdUACgkQP5K2CMvXmqEOwACeNAOQtMMRFiCXlgHvg9A3/BC2
+g4AAnRa44uxf7P8j1pmsxBIk2t1ehw2Q
+=Khle
+-----END PGP SIGNATURE-----
+
+--------------enigD7605C67DFA4B328715B65EB--
