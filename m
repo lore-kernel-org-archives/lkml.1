@@ -1,81 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbZHLRZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbZHLRdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754582AbZHLRZY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 13:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbZHLRZX
+	id S1754640AbZHLRdJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 13:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbZHLRdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 13:25:23 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:38622 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751717AbZHLRZX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 13:25:23 -0400
-Date: Wed, 12 Aug 2009 13:25:23 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
-In-Reply-To: <1250096538.4000.106.camel@mulgrave.site>
-Message-ID: <Pine.LNX.4.44L0.0908121310460.23954-100000@iolanthe.rowland.org>
+	Wed, 12 Aug 2009 13:33:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37722 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751723AbZHLRdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 13:33:07 -0400
+Date: Wed, 12 Aug 2009 20:31:04 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Cc: Arnd Bergmann <arnd@arndb.de>, virtualization@lists.linux-foundation.org,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
+Message-ID: <20090812173104.GB29966@redhat.com>
+References: <cover.1249930169.git.mst@redhat.com> <20090810185340.GC13924@redhat.com> <200908121903.22325.arnd@arndb.de> <20090812171921.GC24151@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090812171921.GC24151@ovro.caltech.edu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Aug 2009, James Bottomley wrote:
-
-> > >      2. If you have to hold a lock while waiting:
-> > >              1. If it's a global lock, make sure you're using a local
-> > >                 queue and that nothing you submitted to the queue can
-> > >                 take the lock
-> > >              2. If it's a local lock, you may use a global queue but
-> > >                 must still make sure that nothing you submitted to the
-> > >                 queue can take the lock.
-
-> > Anyway, 2.1 and 2.2 are wrong.  They should read: "... make sure that
-
-(I overstated things; 2.1 is okay.  But 2.2. is wrong.  And 
-flush_scheduled_work() definitely concerns a global queue.)
-
-> > nothing submitted to the queue calls any of your routines that can take
-> > the lock."  The point being that even though _you_ don't submit
-> > anything bad to the queue, somebody else might do so.
-> 
-> Semantically "make sure that nothing submitted to the queue can take a
-> lock" means exactly that ... it includes all routines called by the
-> queue function.
-
-James, you wrote "make sure that nothing _you_ submitted to the queue" 
-(my emphasis).  That is quite different from "make sure that nothing 
-submitted to the queue".  One is doable, the other isn't.
-
-> > If you use cancel_work_sync() instead of flush_scheduled_work() then 
-> > the rules become less onerous.  In place of your 2.1 and 2.2, we have:
+On Wed, Aug 12, 2009 at 10:19:22AM -0700, Ira W. Snyder wrote:
+> On Wed, Aug 12, 2009 at 07:03:22PM +0200, Arnd Bergmann wrote:
+> > On Monday 10 August 2009, Michael S. Tsirkin wrote:
 > > 
-> > 	Make sure the work item you are cancelling cannot take
-> > 	the lock.
+> > > +struct workqueue_struct *vhost_workqueue;
 > > 
-> > This is much easier to verify.
+> > [nitpicking] This could be static. 
+> > 
+> > > +/* The virtqueue structure describes a queue attached to a device. */
+> > > +struct vhost_virtqueue {
+> > > +	struct vhost_dev *dev;
+> > > +
+> > > +	/* The actual ring of buffers. */
+> > > +	struct mutex mutex;
+> > > +	unsigned int num;
+> > > +	struct vring_desc __user *desc;
+> > > +	struct vring_avail __user *avail;
+> > > +	struct vring_used __user *used;
+> > > +	struct file *kick;
+> > > +	struct file *call;
+> > > +	struct file *error;
+> > > +	struct eventfd_ctx *call_ctx;
+> > > +	struct eventfd_ctx *error_ctx;
+> > > +
+> > > +	struct vhost_poll poll;
+> > > +
+> > > +	/* The routine to call when the Guest pings us, or timeout. */
+> > > +	work_func_t handle_kick;
+> > > +
+> > > +	/* Last available index we saw. */
+> > > +	u16 last_avail_idx;
+> > > +
+> > > +	/* Last index we used. */
+> > > +	u16 last_used_idx;
+> > > +
+> > > +	/* Outstanding buffers */
+> > > +	unsigned int inflight;
+> > > +
+> > > +	/* Is this blocked? */
+> > > +	bool blocked;
+> > > +
+> > > +	struct iovec iov[VHOST_NET_MAX_SG];
+> > > +
+> > > +} ____cacheline_aligned;
+> > 
+> > We discussed this before, and I still think this could be directly derived
+> > from struct virtqueue, in the same way that vring_virtqueue is derived from
+> > struct virtqueue. That would make it possible for simple device drivers
+> > to use the same driver in both host and guest, similar to how Ira Snyder
+> > used virtqueues to make virtio_net run between two hosts running the
+> > same code [1].
+> > 
+> > Ideally, I guess you should be able to even make virtio_net work in the
+> > host if you do that, but that could bring other complexities.
 > 
-> It's the same, surely ... you must verify that everything going on to
-> the queue obeys the rules otherwise you get things on it which can't be
-> cancelled ...
+> I have no comments about the vhost code itself, I haven't reviewed it.
+> 
+> It might be interesting to try using a virtio-net in the host kernel to
+> communicate with the virtio-net running in the guest kernel. The lack of
+> a management interface is the biggest problem you will face (setting MAC
+> addresses, negotiating features, etc. doesn't work intuitively).
 
-Not at all.  With cancel_work_sync() you must verify only that the
-item you want to cancel obeys the rules.  There's no need to check the
-other items -- and a public workqueue like keventd_wq certainly will
-contain other items.
+That was one of the reasons I decided to move most of code out to
+userspace. My kernel driver only handles datapath,
+it's much smaller than virtio net.
 
-> and thus either the advice to call cancel is wrong, or we
-> could call flush because the locking rules are obeyed.
+> Getting
+> the network interfaces talking is relatively easy.
+> 
+> Ira
 
-No; as shown above, your logic is flawed.
+Tried this, but
+- guest memory isn't pinned, so copy_to_user
+  to access it, errors need to be handled in a sane way
+- used/available roles are reversed
+- kick/interrupt roles are reversed
 
-Alan Stern
+So most of the code then looks like
 
-P.S.: Ingo, I rather expected to see you comment on this thread.  What 
-is your opinion?
+	if (host) {
+	} else {
+	}
+	return
 
+
+The only common part is walking the descriptor list,
+but that's like 10 lines of code.
+
+At which point it's better to keep host/guest code separate, IMO.
+
+-- 
+MST
