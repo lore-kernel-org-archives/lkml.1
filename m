@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbZHLVBL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751094AbZHLVKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755165AbZHLVBL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 17:01:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755145AbZHLVBK
+	id S1751094AbZHLVKS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 17:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbZHLVKR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 17:01:10 -0400
-Received: from mail.ruggedcom.com ([204.50.190.93]:14574 "EHLO
-	mail.ruggedcom.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754190AbZHLVBK (ORCPT
+	Wed, 12 Aug 2009 17:10:17 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56776 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbZHLVKQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 17:01:10 -0400
-X-Greylist: delayed 911 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Aug 2009 17:01:09 EDT
-Message-ID: <4A832D11.3020802@ruggedcom.com>
-Date: Wed, 12 Aug 2009 16:58:57 -0400
-From: Michael Barkowski <michaelbarkowski@ruggedcom.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-CC: Andrew Morton <akpm@linux-foundation.org>, Ben Dooks <ben@fluff.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jean Delvare <khali@linux-fr.org>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/6] mtd: m25p80: Convert to device table matching
-References: <20090731003957.GA23982@oksana.dev.rtsoft.ru> <20090731004100.GB8371@oksana.dev.rtsoft.ru> <4A832A03.6020507@ruggedcom.com> <20090812205800.GA27074@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090812205800.GA27074@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=utf-8
+	Wed, 12 Aug 2009 17:10:16 -0400
+Subject: Re: [RFD] Kprobes/Kretprobes perf support
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Jason Baron <jbaron@redhat.com>
+In-Reply-To: <20090812191305.GB5974@nowhere>
+References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com>
+	 <4A82EEC5.8000603@redhat.com> <4A82F5A0.2090603@redhat.com>
+	 <20090812191305.GB5974@nowhere>
+Content-Type: text/plain
+Date: Wed, 12 Aug 2009 23:09:57 +0200
+Message-Id: <1250111397.7035.1.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Aug 2009 20:59:03.0723 (UTC) FILETIME=[B956D7B0:01CA1B8F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anton Vorontsov wrote:
-> On Wed, Aug 12, 2009 at 04:45:55PM -0400, Michael Barkowski wrote:
->> Hello Anton,
->>
->> Is m25p_probe now valid with dev.platform_data == NULL, for of platforms?
->>
->> Then shouldn't you have the following change as well, near the end of
->> the function?
->>
->> -  	} else if (data->nr_parts)
->> +  	} else if (data && data->nr_parts)
->> 		dev_warn(&spi->dev, "ignoring %d default partitions on %s\n",
->> 				data->nr_parts, data->name);
->>
->> Or am I misunderstanding something?
-> 
-> Yeah, you missed this patch:
-> http://patchwork.kernel.org/patch/38179/
-> 
-> 
-> Thanks,
-> 
+On Wed, 2009-08-12 at 21:13 +0200, Frederic Weisbecker wrote:
 
-Beautiful - thanks - sorry to interrupt
+> Ingo, Peter do you have an idea on how we could do that?
 
--- 
-Michael Barkowski
-905-482-4577
+Wouldn't it be easiest to use ftrace to create dynamic tracepoints in
+the ftrace way such that they become available in
+debugfs://tracing/events/kprobes/*/ and then have them interfaced the
+same way as all other tracepoints?
+
+
+
