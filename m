@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbZHLO3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753124AbZHLOa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbZHLO3r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 10:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbZHLO3q
+	id S1753124AbZHLOa3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 10:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbZHLOa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 10:29:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46114 "EHLO mx3.mail.elte.hu"
+	Wed, 12 Aug 2009 10:30:28 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40114 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753030AbZHLO3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 10:29:46 -0400
-Date: Wed, 12 Aug 2009 16:29:17 +0200
+	id S1753046AbZHLOa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 10:30:28 -0400
+Date: Wed, 12 Aug 2009 16:30:02 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Jason Baron <jbaron@redhat.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>,
@@ -21,12 +21,12 @@ Cc: Frederic Weisbecker <fweisbec@gmail.com>,
        Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
        Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>
 Subject: Re: [GIT PULL] tracing: Syscalls trace events + perf support
-Message-ID: <20090812142917.GA19882@elte.hu>
-References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com> <20090812091133.GA21655@elte.hu> <20090812110307.GA806@elte.hu> <20090812111436.GA24263@elte.hu> <20090812142516.GB2711@redhat.com>
+Message-ID: <20090812143002.GB19882@elte.hu>
+References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com> <20090812091133.GA21655@elte.hu> <20090812110307.GA806@elte.hu> <20090812113308.GD6081@nowhere> <20090812135954.GA2711@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090812142516.GB2711@redhat.com>
+In-Reply-To: <20090812135954.GA2711@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -42,22 +42,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Jason Baron <jbaron@redhat.com> wrote:
 
-> On Wed, Aug 12, 2009 at 01:14:36PM +0200, Ingo Molnar wrote:
-
-> > another thing: could we please also have a generic, highlevel 
-> > tracepoint (in addition to the specific tracepoints) that 
-> > enumerates the raw syscall Nr and the parameters it gets - in a 
-> > single tracepoint?
+> On Wed, Aug 12, 2009 at 01:33:09PM +0200, Frederic Weisbecker wrote:
+> > On Wed, Aug 12, 2009 at 01:03:07PM +0200, Ingo Molnar wrote:
+> > > 
+> > > one thing i noticed is that we dont seem to be catching 
+> > > compat syscalls properly:
+> > 
+> > 
+> > Oh right. While looking at fs/compat.c, it seems most of the
+> > compat syscalls haven't been defined through the SYSCALL_DEFINE
+> > macro.
+> > 
+> > Grr...
+> > 
 > 
-> The specific tracepoints, are all layered on 2 (entry, exit) 
-> generic tracepoints already. So this shouldn't be too hard...The 
-> parameters it gets might be tricky, since there are a variable 
-> number b/w different syscalls?
+> right. I mentioned this in a pervious mail that we weren't 
+> handling compat syscalls. That said, the pervious syscall tracer 
+> also had the same issue, so we haven't taken a step back. I guess 
+> we need to convert some of the compat layer to use the 
+> DEFINE_SYSCALL() macros. Also, there are a number of 64-bit 
+> syscalls that don't use DEFINE_SYSCALL either. Those need to 
+> converted as well. The patchset I submitted converted a couple of 
+> them....
 
-We should just list all ~6 of them. It's up to the sampling entity 
-to decide which ones (if any) is relevant.
-
-At least on x86 the syscall arguments will always have a value when 
-the syscall entry code is called. (they are in GP registers)
+Those should come in separate patches as DEFINE_SYSCALL() coverage 
+is useful to upstream as-is, even outside of syscall-tracing's 
+scope.
 
 	Ingo
