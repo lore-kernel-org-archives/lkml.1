@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752119AbZHLWGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752168AbZHLWK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752119AbZHLWGf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 18:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZHLWGe
+	id S1752168AbZHLWK0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 18:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbZHLWK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 18:06:34 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:51584 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751938AbZHLWGe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 18:06:34 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Javier Guerra <javier@guerrag.com>
-Subject: Re: AlacrityVM numbers updated for 31-rc4
-Date: Wed, 12 Aug 2009 17:05:54 -0500
-User-Agent: KMail/1.9.9
-Cc: Gregory Haskins <gregory.haskins@gmail.com>,
-       alacrityvm-devel@lists.sourceforge.net,
-       alacrityvm-users@lists.sourceforge.net,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org
-References: <4A83296B.3080606@gmail.com> <90eb1dc70908121433u3d5916efg5f0ef5994d6aa42c@mail.gmail.com>
-In-Reply-To: <90eb1dc70908121433u3d5916efg5f0ef5994d6aa42c@mail.gmail.com>
+	Wed, 12 Aug 2009 18:10:26 -0400
+Received: from kroah.org ([198.145.64.141]:54487 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752020AbZHLWKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 18:10:25 -0400
+Date: Wed, 12 Aug 2009 15:08:33 -0700
+From: Greg KH <greg@kroah.com>
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Jan Blunck <jblunck@suse.de>, gregkh@suse.de,
+       Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+ /dev
+Message-ID: <20090812220833.GB18647@kroah.com>
+References: <20090805171513.GA10443@kroah.com>
+ <20090812213348.GY13320@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200908121706.32874.lkml@morethan.org>
+In-Reply-To: <20090812213348.GY13320@pengutronix.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed August 12 2009, Javier Guerra wrote:
-> On Wed, Aug 12, 2009 at 3:43 PM, Gregory
-> Haskins<gregory.haskins@gmail.com> wrote:
-> > In any case, I have updated the graphs on the AlacrityVM wiki to reflect
-> > these latest numbers:
+On Wed, Aug 12, 2009 at 11:33:48PM +0200, Robert Schwebel wrote:
+> On Wed, Aug 05, 2009 at 10:15:13AM -0700, Greg KH wrote:
+> > Here's the devtmpfs patch again.
 > 
-> pseudo-3D charts are just wrong
-> (http://www.chuckchakrapani.com/articles/PDF/94070347.pdf)
+> As an embedded distro maintainer, I'd really like such an approach. With
+> ptxdist, we can today build the complete rootfs for an embedded system
+> without root permissions - just if we want to nfs-root boot the boards
+> during development, it doesn't work, because you have to create
+> /dev/console, /dev/null and /dev/zero and that works only for root.
 > 
+> On slow embedded systems (i.e. ARM 200 MHz), note that boot times are
+> often much slower than on full-blown x86. So any speed improvement is
+> welcome here as well.
 
-Nice quote.
+That's good to hear, thanks for the response, I appreciate it.
 
-Even 15 years after it was published, those first two graphs
-are prime "bad examples".
-
-The second two could stand some improvement also - like put
-the legend and numbers *on* each solid bar.
-
-@J.G. - I think you are fighting an uphill battle here against
-human nature.  People tend to go with their idea of "pretty".
-
-Mike
+greg k-h
