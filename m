@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbZHLJ4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932424AbZHLJ63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755208AbZHLJ4Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 05:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbZHLJ4X
+	id S932424AbZHLJ63 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 05:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932257AbZHLJ63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 05:56:23 -0400
-Received: from exprod5og108.obsmtp.com ([64.18.0.186]:48515 "EHLO
-	exprod5og108.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbZHLJ4X (ORCPT
+	Wed, 12 Aug 2009 05:58:29 -0400
+Received: from exprod5og102.obsmtp.com ([64.18.0.143]:42605 "EHLO
+	exprod5og102.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751446AbZHLJ62 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 05:56:23 -0400
-Message-ID: <4A8291F5.8060406@gefanuc.com>
-Date: Wed, 12 Aug 2009 10:57:09 +0100
+	Wed, 12 Aug 2009 05:58:28 -0400
+Message-ID: <4A829271.6000507@gefanuc.com>
+Date: Wed, 12 Aug 2009 10:59:13 +0100
 From: Martyn Welch <martyn.welch@gefanuc.com>
 User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
 To: "Emilio G. Cota" <cota@braap.org>
 CC: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
        devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
-Subject: Re: [patch 2/5] Staging: vme: add VME userspace driver
-References: <20090809121715.GA3884@braap.org> <4A801D04.6050102@gefanuc.com> <20090810152606.GA23319@braap.org> <4A804B0B.5020809@gefanuc.com> <20090810203637.GD3055@braap.org> <4A8133ED.6070304@gefanuc.com> <20090811094025.GC3251@braap.org> <4A81683D.2030408@gefanuc.com> <20090811210146.GB9910@braap.org> <4A827A84.3060906@gefanuc.com> <20090812093949.GB2604@braap.org>
-In-Reply-To: <20090812093949.GB2604@braap.org>
+Subject: Re: [patch 1/5] Staging: VME Framework for the Linux Kernel
+References: <20090810193849.GA3055@braap.org> <4A812BCE.3010003@gefanuc.com> <20090811144914.GB32658@braap.org> <4A8189D9.4080709@gefanuc.com> <20090811153633.GC32658@braap.org> <4A819130.5080802@gefanuc.com> <20090811154226.GD32658@braap.org> <4A819E80.90103@gefanuc.com> <20090811204835.GA9910@braap.org> <4A828395.9040006@gefanuc.com> <20090812095436.GC2604@braap.org>
+In-Reply-To: <20090812095436.GC2604@braap.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,38 +30,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Emilio G. Cota wrote:
 > Martyn Welch wrote:
 >   
->> Also, it seems that your API doesn't currently support Location
->> Monitors. These are specified in the VME spec, I'd be interested in
->> how
->> you plan to support this feature in a consistent manner with your
->> current API
+>> There is a further device situated between the two.
+>>     
+>>> How do you now protect the registers of this device from
+>>>       
+>>>> accidental/malicous/buggy behaviour from your board, since
+>>>>         
+>> this region of the VME bus is now enabled for transfers
+>> in the PCI IO Mem space?
 >>     
 >
-> What I intend to provide is a sane environment to work with VME
-> devices. The first step is to cover the needs of most use cases:
+> The kernel is not designed to work with buggy hardware--that
+> would be insane, we've got more than enough dealing with our
+> own bugs. However when there's no other solution (e.g.
+> hardware can't be fixed for whatever reason), fixes on a
+> per-case basis may be applied.
 >
-> - 1 master Single Board Computer (SBC) running Linux
-> - All the other slots have slave devices in them. These devices
->   are controlled by kernel drivers on the SBC.
-> - The SBC does DMA, direct I/O access (mapping) to/from the
->   slaves, and handles interrupts from the devices.
->
-> Once that's settled we could discuss about further parts of the
-> spec. But really today getting the above right is _much_ more
-> important than location monitors support.
 >   
-Right - this is a specific case that you see as important. Depending on 
-the number of slots in the rack and the diversity of the cards used, the 
-VME core and driver I have suggested already covers this.
-
-However, I also need to consider other cases, such as communications 
-between multiple SBCs and potentially a few slave devices. I have a need 
-for this *now*, not in the future. To me, slave support and to a lesser 
-degree location monitor support is important now, hence why it's 
-supported in my driver and core. Hence why I am asking, how do you 
-propose to support these features?
+Apart from : not mapping regions of the VME bus that you are not using.
 
 Martyn
+
 > E.
 >   
 
