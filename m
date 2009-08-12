@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752092AbZHLPJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752345AbZHLPKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752092AbZHLPJE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 11:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750806AbZHLPJD
+	id S1752345AbZHLPKP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 11:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbZHLPKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 11:09:03 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:55352 "EHLO
+	Wed, 12 Aug 2009 11:10:14 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:55453 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751310AbZHLPJA (ORCPT
+	with ESMTP id S1752037AbZHLPKN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 11:09:00 -0400
+	Wed, 12 Aug 2009 11:10:13 -0400
 From: Sascha Hauer <s.hauer@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-arm-kernel@lists.arm.linux.org.uk,
        Sascha Hauer <s.hauer@pengutronix.de>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: [PATCH 1/5] drivers/mfd: Add Freescale MC13783 driver
-Date: Wed, 12 Aug 2009 17:05:27 +0200
-Message-Id: <1250089531-10399-2-git-send-email-s.hauer@pengutronix.de>
+       Paul Gortmaker <p_gortmaker@yahoo.com>,
+       Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com
+Subject: [PATCH 4/5] [RTC] Add Freescale MC13783 RTC driver
+Date: Wed, 12 Aug 2009 17:05:30 +0200
+Message-Id: <1250089531-10399-5-git-send-email-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1250089531-10399-1-git-send-email-s.hauer@pengutronix.de>
+In-Reply-To: <1250089531-10399-4-git-send-email-s.hauer@pengutronix.de>
 References: <1250089531-10399-1-git-send-email-s.hauer@pengutronix.de>
+ <1250089531-10399-2-git-send-email-s.hauer@pengutronix.de>
+ <1250089531-10399-3-git-send-email-s.hauer@pengutronix.de>
+ <1250089531-10399-4-git-send-email-s.hauer@pengutronix.de>
 X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
 X-SA-Exim-Mail-From: sha@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
@@ -31,77 +33,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This driver provides the core Freescale MC13783 support. It
-registers the client platform_devices and provides access
-to the A/D converter.
+This driver provides support for the RTC part integrated into
+the Freescale MC13783 PMIC.
 
-Changes since v1:
-- use subsys_initcall instead of module_init
-- honour origins of the code
-- add MC13783 namespace to regulator defines
-- use mfd_add_devices to register subdevices
+changes since v1:
+
+- use set_mmss instead of set_time
+- fix __devinit / __devexit usage
+- use platform_driver_probe instead of platform_driver_register
+- add MODULE_ALIAS
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
+Cc: Alessandro Zummo <a.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com
 ---
- drivers/mfd/Kconfig                 |    9 +
- drivers/mfd/Makefile                |    2 +
- drivers/mfd/mc13783-core.c          |  427 +++++++++++++++++++++++++++++++++++
- include/linux/mfd/mc13783-private.h |  396 ++++++++++++++++++++++++++++++++
- include/linux/mfd/mc13783.h         |   84 +++++++
- 5 files changed, 918 insertions(+), 0 deletions(-)
- create mode 100644 drivers/mfd/mc13783-core.c
- create mode 100644 include/linux/mfd/mc13783-private.h
- create mode 100644 include/linux/mfd/mc13783.h
+ drivers/rtc/Kconfig       |    6 ++
+ drivers/rtc/Makefile      |    1 +
+ drivers/rtc/rtc-mc13783.c |  135 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 142 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/rtc/rtc-mc13783.c
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 491ac0f..c4e1fb4 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -228,6 +228,15 @@ config MFD_PCF50633
- 	  facilities, and registers devices for the various functions
- 	  so that function-specific drivers can bind to them.
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index 81adbdb..e4a242f 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -759,4 +759,10 @@ config RTC_DRV_PS3
+ 	  This driver can also be built as a module. If so, the module
+ 	  will be called rtc-ps3.
  
-+config MFD_MC13783
-+	tristate "Support Freescale MC13783"
-+	select MFD_CORE
++config RTC_DRV_MC13783
++	depends on MFD_MC13783
++	tristate "Freescale MC13783 RTC"
 +	help
-+	  Support for the Freescale (Atlas) MC13783 PMIC and audio CODEC.
-+	  This driver provides common support for accessing  the device,
-+	  additional drivers must be enabled in order to use the
-+	  functionality of the device.
++	  This enables support for the Freescale MC13783 PMIC RTC
 +
- config PCF50633_ADC
- 	tristate "Support for NXP PCF50633 ADC"
- 	depends on MFD_PCF50633
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 6f8a9a1..7262822 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -24,6 +24,8 @@ obj-$(CONFIG_MENELAUS)		+= menelaus.o
- 
- obj-$(CONFIG_TWL4030_CORE)	+= twl4030-core.o twl4030-irq.o
- 
-+obj-$(CONFIG_MFD_MC13783)	+= mc13783-core.o
-+
- obj-$(CONFIG_MFD_CORE)		+= mfd-core.o
- 
- obj-$(CONFIG_EZX_PCAP)		+= ezx-pcap.o
-diff --git a/drivers/mfd/mc13783-core.c b/drivers/mfd/mc13783-core.c
+ endif # RTC_CLASS
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index 3c0f2b2..0c2cea6 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -50,6 +50,7 @@ obj-$(CONFIG_RTC_DRV_SUN4V)	+= rtc-sun4v.o
+ obj-$(CONFIG_RTC_DRV_STARFIRE)	+= rtc-starfire.o
+ obj-$(CONFIG_RTC_DRV_MAX6900)	+= rtc-max6900.o
+ obj-$(CONFIG_RTC_DRV_MAX6902)	+= rtc-max6902.o
++obj-$(CONFIG_RTC_DRV_MC13783)	+= rtc-mc13783.o
+ obj-$(CONFIG_RTC_DRV_MV)	+= rtc-mv.o
+ obj-$(CONFIG_RTC_DRV_OMAP)	+= rtc-omap.o
+ obj-$(CONFIG_RTC_DRV_PCF8563)	+= rtc-pcf8563.o
+diff --git a/drivers/rtc/rtc-mc13783.c b/drivers/rtc/rtc-mc13783.c
 new file mode 100644
-index 0000000..1165fd0
+index 0000000..dfa4702
 --- /dev/null
-+++ b/drivers/mfd/mc13783-core.c
-@@ -0,0 +1,427 @@
++++ b/drivers/rtc/rtc-mc13783.c
+@@ -0,0 +1,135 @@
 +/*
-+ * Copyright 2009 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
++ * Real Time Clock driver for Freescale MC13783 PMIC
 + *
-+ * This code is in parts based on wm8350-core.c and pcf50633-core.c
-+ *
-+ * Initial development of this code was funded by
-+ * Phytec Messtechnik GmbH, http://www.phytec.de
++ * (C) 2009 Sascha Hauer, Pengutronix
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -120,900 +109,119 @@ index 0000000..1165fd0
 +
 +#include <linux/mfd/mc13783-private.h>
 +#include <linux/platform_device.h>
-+#include <linux/mfd/mc13783.h>
-+#include <linux/completion.h>
-+#include <linux/interrupt.h>
-+#include <linux/mfd/core.h>
-+#include <linux/spi/spi.h>
-+#include <linux/uaccess.h>
 +#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/slab.h>
-+#include <linux/irq.h>
++#include <linux/rtc.h>
 +
-+#define MC13783_MAX_REG_NUM	0x3f
-+#define MC13783_FRAME_MASK	0x00ffffff
-+#define MC13783_MAX_REG_NUM	0x3f
-+#define MC13783_REG_NUM_SHIFT	0x19
-+#define MC13783_WRITE_BIT_SHIFT	31
-+
-+static inline int spi_rw(struct spi_device *spi, u8 * buf, size_t len)
-+{
-+	struct spi_transfer t = {
-+		.tx_buf = (const void *)buf,
-+		.rx_buf = buf,
-+		.len = len,
-+		.cs_change = 0,
-+		.delay_usecs = 0,
-+	};
-+	struct spi_message m;
-+
-+	spi_message_init(&m);
-+	spi_message_add_tail(&t, &m);
-+	if (spi_sync(spi, &m) != 0 || m.status != 0)
-+		return -EINVAL;
-+	return len - m.actual_length;
-+}
-+
-+static int mc13783_read(struct mc13783 *mc13783, int reg_num, u32 *reg_val)
-+{
-+	unsigned int frame = 0;
-+	int ret = 0;
-+
-+	if (reg_num > MC13783_MAX_REG_NUM)
-+		return -EINVAL;
-+
-+	frame |= reg_num << MC13783_REG_NUM_SHIFT;
-+
-+	ret = spi_rw(mc13783->spi_device, (u8 *)&frame, 4);
-+
-+	*reg_val = frame & MC13783_FRAME_MASK;
-+
-+	return ret;
-+}
-+
-+static int mc13783_write(struct mc13783 *mc13783, int reg_num, u32 reg_val)
-+{
-+	unsigned int frame = 0;
-+
-+	if (reg_num > MC13783_MAX_REG_NUM)
-+		return -EINVAL;
-+
-+	frame |= (1 << MC13783_WRITE_BIT_SHIFT);
-+	frame |= reg_num << MC13783_REG_NUM_SHIFT;
-+	frame |= reg_val & MC13783_FRAME_MASK;
-+
-+	return spi_rw(mc13783->spi_device, (u8 *)&frame, 4);
-+}
-+
-+int mc13783_reg_read(struct mc13783 *mc13783, int reg_num, u32 *reg_val)
-+{
-+	int ret;
-+
-+	mutex_lock(&mc13783->io_lock);
-+	ret = mc13783_read(mc13783, reg_num, reg_val);
-+	mutex_unlock(&mc13783->io_lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(mc13783_reg_read);
-+
-+int mc13783_reg_write(struct mc13783 *mc13783, int reg_num, u32 reg_val)
-+{
-+	int ret;
-+
-+	mutex_lock(&mc13783->io_lock);
-+	ret = mc13783_write(mc13783, reg_num, reg_val);
-+	mutex_unlock(&mc13783->io_lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(mc13783_reg_write);
-+
-+/**
-+ * mc13783_set_bits - Bitmask write
-+ *
-+ * @mc13783: Pointer to mc13783 control structure
-+ * @reg:    Register to access
-+ * @mask:   Mask of bits to change
-+ * @val:    Value to set for masked bits
-+ */
-+int mc13783_set_bits(struct mc13783 *mc13783, int reg, u32 mask, u32 val)
-+{
-+	u32 tmp;
-+	int ret;
-+
-+	mutex_lock(&mc13783->io_lock);
-+
-+	ret = mc13783_read(mc13783, reg, &tmp);
-+	tmp = (tmp & ~mask) | val;
-+	if (ret == 0)
-+		ret = mc13783_write(mc13783, reg, tmp);
-+
-+	mutex_unlock(&mc13783->io_lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(mc13783_set_bits);
-+
-+int mc13783_register_irq(struct mc13783 *mc13783, int irq,
-+		void (*handler) (int, void *), void *data)
-+{
-+	if (irq < 0 || irq > MC13783_NUM_IRQ || !handler)
-+		return -EINVAL;
-+
-+	if (WARN_ON(mc13783->irq_handler[irq].handler))
-+		return -EBUSY;
-+
-+	mutex_lock(&mc13783->io_lock);
-+	mc13783->irq_handler[irq].handler = handler;
-+	mc13783->irq_handler[irq].data = data;
-+	mutex_unlock(&mc13783->io_lock);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(mc13783_register_irq);
-+
-+int mc13783_free_irq(struct mc13783 *mc13783, int irq)
-+{
-+	if (irq < 0 || irq > MC13783_NUM_IRQ)
-+		return -EINVAL;
-+
-+	mutex_lock(&mc13783->io_lock);
-+	mc13783->irq_handler[irq].handler = NULL;
-+	mutex_unlock(&mc13783->io_lock);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(mc13783_free_irq);
-+
-+static void mc13783_irq_work(struct work_struct *work)
-+{
-+	struct mc13783 *mc13783 = container_of(work, struct mc13783, work);
-+	int i;
-+	unsigned int adc_sts;
-+
-+	/* check if the adc has finished any completion */
-+	mc13783_reg_read(mc13783, MC13783_REG_INTERRUPT_STATUS_0, &adc_sts);
-+	mc13783_reg_write(mc13783, MC13783_REG_INTERRUPT_STATUS_0,
-+			adc_sts & MC13783_INT_STAT_ADCDONEI);
-+
-+	if (adc_sts & MC13783_INT_STAT_ADCDONEI)
-+		complete_all(&mc13783->adc_done);
-+
-+	for (i = 0; i < MC13783_NUM_IRQ; i++)
-+		if (mc13783->irq_handler[i].handler)
-+			mc13783->irq_handler[i].handler(i,
-+					mc13783->irq_handler[i].data);
-+	enable_irq(mc13783->irq);
-+}
-+
-+static irqreturn_t mc13783_interrupt(int irq, void *dev_id)
-+{
-+	struct mc13783 *mc13783 = dev_id;
-+
-+	disable_irq_nosync(irq);
-+
-+	schedule_work(&mc13783->work);
-+	return IRQ_HANDLED;
-+}
-+
-+/* set adc to ts interrupt mode, which generates touchscreen wakeup interrupt */
-+static inline void mc13783_adc_set_ts_irq_mode(struct mc13783 *mc13783)
-+{
-+	unsigned int reg_adc0, reg_adc1;
-+
-+	reg_adc0 = MC13783_ADC0_ADREFEN | MC13783_ADC0_ADREFMODE
-+			| MC13783_ADC0_TSMOD0;
-+	reg_adc1 = MC13783_ADC1_ADEN | MC13783_ADC1_ADTRIGIGN;
-+
-+	mc13783_reg_write(mc13783, MC13783_REG_ADC_0, reg_adc0);
-+	mc13783_reg_write(mc13783, MC13783_REG_ADC_1, reg_adc1);
-+}
-+
-+int mc13783_adc_do_conversion(struct mc13783 *mc13783, unsigned int mode,
-+		unsigned int channel, unsigned int *sample)
-+{
-+	unsigned int reg_adc0, reg_adc1;
-+	int i;
-+
-+	mutex_lock(&mc13783->adc_conv_lock);
-+
-+	/* set up auto incrementing anyway to make quick read */
-+	reg_adc0 =  MC13783_ADC0_ADINC1 | MC13783_ADC0_ADINC2;
-+	/* enable the adc, ignore external triggering and set ASC to trigger
-+	 * conversion */
-+	reg_adc1 =  MC13783_ADC1_ADEN | MC13783_ADC1_ADTRIGIGN
-+		| MC13783_ADC1_ASC;
-+
-+	/* setup channel number */
-+	if (channel > 7)
-+		reg_adc1 |= MC13783_ADC1_ADSEL;
-+
-+	switch (mode) {
-+	case MC13783_ADC_MODE_TS:
-+		/* enables touch screen reference mode and set touchscreen mode
-+		 * to position mode */
-+		reg_adc0 |= MC13783_ADC0_ADREFEN | MC13783_ADC0_ADREFMODE
-+			| MC13783_ADC0_TSMOD0 | MC13783_ADC0_TSMOD1;
-+		reg_adc1 |= 4 << MC13783_ADC1_CHAN1_SHIFT;
-+		break;
-+	case MC13783_ADC_MODE_SINGLE_CHAN:
-+		reg_adc1 |= (channel & 0x7) << MC13783_ADC1_CHAN0_SHIFT;
-+		reg_adc1 |= MC13783_ADC1_RAND;
-+		break;
-+	case MC13783_ADC_MODE_MULT_CHAN:
-+		reg_adc1 |= 4 << MC13783_ADC1_CHAN1_SHIFT;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	mc13783_reg_write(mc13783, MC13783_REG_ADC_0, reg_adc0);
-+	mc13783_reg_write(mc13783, MC13783_REG_ADC_1, reg_adc1);
-+
-+	wait_for_completion_interruptible(&mc13783->adc_done);
-+
-+	for (i = 0; i < 4; i++)
-+		mc13783_reg_read(mc13783, MC13783_REG_ADC_2, &sample[i]);
-+
-+	if (mc13783->ts_active)
-+		mc13783_adc_set_ts_irq_mode(mc13783);
-+
-+	mutex_unlock(&mc13783->adc_conv_lock);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(mc13783_adc_do_conversion);
-+
-+void mc13783_adc_set_ts_status(struct mc13783 *mc13783, unsigned int status)
-+{
-+	mc13783->ts_active = status;
-+}
-+EXPORT_SYMBOL_GPL(mc13783_adc_set_ts_status);
-+
-+static int mc13783_check_revision(struct mc13783 *mc13783)
-+{
-+	u32 rev_id, rev1, rev2, finid, icid;
-+
-+	mc13783_read(mc13783, MC13783_REG_REVISION, &rev_id);
-+
-+	rev1 = (rev_id & 0x018) >> 3;
-+	rev2 = (rev_id & 0x007);
-+	icid = (rev_id & 0x01C0) >> 6;
-+	finid = (rev_id & 0x01E00) >> 9;
-+
-+	/* Ver 0.2 is actually 3.2a.  Report as 3.2 */
-+	if ((rev1 == 0) && (rev2 == 2))
-+		rev1 = 3;
-+
-+	if (rev1 == 0 || icid != 2) {
-+		dev_err(mc13783->dev, "No MC13783 detected.\n");
-+		return -ENODEV;
-+	}
-+
-+	mc13783->revision = ((rev1 * 10) + rev2);
-+	dev_info(mc13783->dev, "MC13783 Rev %d.%d FinVer %x detected\n", rev1,
-+	       rev2, finid);
-+
-+	return 0;
-+}
-+
-+/*
-+ * Register a client device.  This is non-fatal since there is no need to
-+ * fail the entire device init due to a single platform device failing.
-+ */
-+static void mc13783_client_dev_register(struct mc13783 *mc13783,
-+				       const char *name) 
-+{
-+	struct mfd_cell cell = {};
-+
-+	cell.name = name;
-+
-+	mfd_add_devices(mc13783->dev, -1, &cell, 1, NULL, 0);
-+}
-+
-+static int __devinit mc13783_probe(struct spi_device *spi)
-+{
++struct mc13783_rtc {
++	struct rtc_device *rtc;
 +	struct mc13783 *mc13783;
-+	struct mc13783_platform_data *pdata = spi->dev.platform_data;
-+	int ret;
++};
 +
-+	mc13783 = kzalloc(sizeof(struct mc13783), GFP_KERNEL);
-+	if (!mc13783)
++static int mc13783_rtc_set_mmss(struct device *dev, unsigned long secs)
++{
++	struct mc13783_rtc *priv = dev_get_drvdata(dev);
++	unsigned int seconds, days;
++
++	seconds = secs % 86400;
++	days = secs / 86400;
++
++	mc13783_reg_write(priv->mc13783, MC13783_REG_RTC_TIME, seconds);
++	mc13783_reg_write(priv->mc13783, MC13783_REG_RTC_DAY, days);
++
++	return 0;
++}
++
++static int mc13783_rtc_read_time(struct device *dev, struct rtc_time *tm)
++{
++	struct mc13783_rtc *priv = dev_get_drvdata(dev);
++	unsigned int seconds, days1, days2;
++	unsigned long s1970;
++
++	rtc_tm_to_time(tm, &s1970);
++
++	do {
++		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_TIME, &seconds);
++		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_DAY, &days1);
++		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_DAY, &days2);
++	} while (days1 != days2);
++
++	s1970 = days1 * 86400 + seconds;
++
++	rtc_time_to_tm(s1970, tm);
++
++	return rtc_valid_tm(tm);
++}
++
++static const struct rtc_class_ops mc13783_rtc_ops = {
++	.read_time	= mc13783_rtc_read_time,
++	.set_mmss	= mc13783_rtc_set_mmss,
++};
++
++static int __devinit mc13783_rtc_probe(struct platform_device *pdev)
++{
++	int err;
++	struct mc13783_rtc *priv;
++
++	priv = kzalloc(sizeof *priv, GFP_KERNEL);
++	if (!priv)
 +		return -ENOMEM;
 +
-+	dev_set_drvdata(&spi->dev, mc13783);
-+	spi->mode = SPI_MODE_0 | SPI_CS_HIGH;
-+	spi->bits_per_word = 32;
-+	spi_setup(spi);
++	priv->mc13783 = dev_get_drvdata(pdev->dev.parent);
++	platform_set_drvdata(pdev, priv);
 +
-+	mc13783->spi_device = spi;
-+	mc13783->dev = &spi->dev;
-+	mc13783->irq = spi->irq;
++	priv->rtc = rtc_device_register(pdev->name,
++			&pdev->dev, &mc13783_rtc_ops, THIS_MODULE);
 +
-+	INIT_WORK(&mc13783->work, mc13783_irq_work);
-+	mutex_init(&mc13783->io_lock);
-+	mutex_init(&mc13783->adc_conv_lock);
-+	init_completion(&mc13783->adc_done);
-+
-+	if (pdata) {
-+		mc13783->flags = pdata->flags;
-+		mc13783->regulators = pdata->regulators;
-+		mc13783->num_regulators = pdata->num_regulators;
++	if (IS_ERR(priv->rtc)) {
++		err = PTR_ERR(priv->rtc);
++		goto exit_kfree;
 +	}
-+
-+	if (mc13783_check_revision(mc13783)) {
-+		ret = -ENODEV;
-+		goto err_out;
-+	}
-+
-+	/* clear and mask all interrupts */
-+	mc13783_reg_write(mc13783, MC13783_REG_INTERRUPT_STATUS_0, 0x00ffffff);
-+	mc13783_reg_write(mc13783, MC13783_REG_INTERRUPT_MASK_0, 0x00ffffff);
-+	mc13783_reg_write(mc13783, MC13783_REG_INTERRUPT_STATUS_1, 0x00ffffff);
-+	mc13783_reg_write(mc13783, MC13783_REG_INTERRUPT_MASK_1, 0x00ffffff);
-+
-+	/* unmask adcdone interrupts */
-+	mc13783_set_bits(mc13783, MC13783_REG_INTERRUPT_MASK_0,
-+			MC13783_INT_MASK_ADCDONEM, 0);
-+
-+	ret = request_irq(mc13783->irq, mc13783_interrupt,
-+			IRQF_DISABLED | IRQF_TRIGGER_HIGH, "mc13783",
-+			mc13783);
-+	if (ret)
-+		goto err_out;
-+
-+	if (mc13783->flags & MC13783_USE_CODEC)
-+		mc13783_client_dev_register(mc13783, "mc13783-codec");
-+	if (mc13783->flags & MC13783_USE_ADC)
-+		mc13783_client_dev_register(mc13783, "mc13783-adc");
-+	if (mc13783->flags & MC13783_USE_RTC)
-+		mc13783_client_dev_register(mc13783, "mc13783-rtc");
-+	if (mc13783->flags & MC13783_USE_REGULATOR)
-+		mc13783_client_dev_register(mc13783, "mc13783-regulator");
-+	if (mc13783->flags & MC13783_USE_TOUCHSCREEN)
-+		mc13783_client_dev_register(mc13783, "mc13783-ts");
 +
 +	return 0;
 +
-+err_out:
-+	kfree(mc13783);
-+	return ret;
++exit_kfree:
++	kfree(priv);
++	return err;
 +}
 +
-+static int __devexit mc13783_remove(struct spi_device *spi)
++static int __devexit mc13783_rtc_remove(struct platform_device *pdev)
 +{
-+	struct mc13783 *mc13783;
++	struct mc13783_rtc *priv = platform_get_drvdata(pdev);
 +
-+	mc13783 = dev_get_drvdata(&spi->dev);
++	rtc_device_unregister(priv->rtc);
++	platform_set_drvdata(pdev, NULL);
 +
-+	free_irq(mc13783->irq, mc13783);
-+
-+	mfd_remove_devices(&spi->dev);
++	kfree(priv);
 +
 +	return 0;
 +}
 +
-+static struct spi_driver pmic_driver = {
++static struct platform_driver mc13783_rtc_driver = {
++	.remove		= __devexit_p(mc13783_rtc_remove),
 +	.driver = {
-+		   .name = "mc13783",
-+		   .bus = &spi_bus_type,
-+		   .owner = THIS_MODULE,
++		.name	= "mc13783-rtc",
++		.owner	= THIS_MODULE,
 +	},
-+	.probe = mc13783_probe,
-+	.remove = __devexit_p(mc13783_remove),
 +};
 +
-+static int __init pmic_init(void)
++static int __init mc13783_rtc_init(void)
 +{
-+	return spi_register_driver(&pmic_driver);
++	return platform_driver_probe(&mc13783_rtc_driver, &mc13783_rtc_probe);
 +}
-+subsys_initcall(pmic_init);
++module_init(mc13783_rtc_init);
 +
-+static void __exit pmic_exit(void)
++static void __exit mc13783_rtc_exit(void)
 +{
-+	spi_unregister_driver(&pmic_driver);
++	platform_driver_unregister(&mc13783_rtc_driver);
 +}
-+module_exit(pmic_exit);
++module_exit(mc13783_rtc_exit);
 +
-+MODULE_DESCRIPTION("Core/Protocol driver for Freescale MC13783 PMIC");
++
 +MODULE_AUTHOR("Sascha Hauer <s.hauer@pengutronix.de>");
++MODULE_DESCRIPTION("RTC driver for Freescale MC13783 PMIC");
 +MODULE_LICENSE("GPL");
-+
-diff --git a/include/linux/mfd/mc13783-private.h b/include/linux/mfd/mc13783-private.h
-new file mode 100644
-index 0000000..47e698c
---- /dev/null
-+++ b/include/linux/mfd/mc13783-private.h
-@@ -0,0 +1,396 @@
-+/*
-+ * Copyright 2009 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
-+ *
-+ * Initial development of this code was funded by
-+ * Phytec Messtechnik GmbH, http://www.phytec.de
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#ifndef __LINUX_MFD_MC13783_PRIV_H
-+#define __LINUX_MFD_MC13783_PRIV_H
-+
-+#include <linux/platform_device.h>
-+#include <linux/mfd/mc13783.h>
-+#include <linux/workqueue.h>
-+#include <linux/mutex.h>
-+
-+struct mc13783_irq {
-+	void (*handler)(int, void *);
-+	void *data;
-+};
-+
-+#define MC13783_NUM_IRQ		2
-+#define MC13783_IRQ_TS		0
-+#define MC13783_IRQ_REGULATOR	1
-+
-+#define MC13783_ADC_MODE_TS		1
-+#define MC13783_ADC_MODE_SINGLE_CHAN	2
-+#define MC13783_ADC_MODE_MULT_CHAN	3
-+
-+struct mc13783 {
-+	int revision;
-+	struct device *dev;
-+	struct spi_device *spi_device;
-+
-+	int (*read_dev)(void *data, char reg, int count, u32 *dst);
-+	int (*write_dev)(void *data, char reg, int count, const u32 *src);
-+
-+	struct mutex io_lock;
-+	void *io_data;
-+	int irq;
-+	unsigned int flags;
-+
-+	struct mc13783_irq irq_handler[MC13783_NUM_IRQ];
-+	struct work_struct work;
-+	struct completion adc_done;
-+	unsigned int ts_active;
-+	struct mutex adc_conv_lock;
-+
-+	struct mc13783_regulator_init_data *regulators;
-+	int num_regulators;
-+};
-+
-+int mc13783_reg_read(struct mc13783 *, int reg_num, u32 *);
-+int mc13783_reg_write(struct mc13783 *, int, u32);
-+int mc13783_set_bits(struct mc13783 *, int, u32, u32);
-+int mc13783_free_irq(struct mc13783 *mc13783, int irq);
-+int mc13783_register_irq(struct mc13783 *mc13783, int irq,
-+		void (*handler) (int, void *), void *data);
-+
-+#define MC13783_REG_INTERRUPT_STATUS_0		 0
-+#define MC13783_REG_INTERRUPT_MASK_0		 1
-+#define MC13783_REG_INTERRUPT_SENSE_0		 2
-+#define MC13783_REG_INTERRUPT_STATUS_1		 3
-+#define MC13783_REG_INTERRUPT_MASK_1		 4
-+#define MC13783_REG_INTERRUPT_SENSE_1		 5
-+#define MC13783_REG_POWER_UP_MODE_SENSE		 6
-+#define MC13783_REG_REVISION			 7
-+#define MC13783_REG_SEMAPHORE			 8
-+#define MC13783_REG_ARBITRATION_PERIPHERAL_AUDIO 9
-+#define MC13783_REG_ARBITRATION_SWITCHERS	10
-+#define MC13783_REG_ARBITRATION_REGULATORS_0	11
-+#define MC13783_REG_ARBITRATION_REGULATORS_1	12
-+#define MC13783_REG_POWER_CONTROL_0		13
-+#define MC13783_REG_POWER_CONTROL_1		14
-+#define MC13783_REG_POWER_CONTROL_2		15
-+#define MC13783_REG_REGEN_ASSIGNMENT		16
-+#define MC13783_REG_CONTROL_SPARE		17
-+#define MC13783_REG_MEMORY_A			18
-+#define MC13783_REG_MEMORY_B			19
-+#define MC13783_REG_RTC_TIME			20
-+#define MC13783_REG_RTC_ALARM			21
-+#define MC13783_REG_RTC_DAY			22
-+#define MC13783_REG_RTC_DAY_ALARM		23
-+#define MC13783_REG_SWITCHERS_0			24
-+#define MC13783_REG_SWITCHERS_1			25
-+#define MC13783_REG_SWITCHERS_2			26
-+#define MC13783_REG_SWITCHERS_3			27
-+#define MC13783_REG_SWITCHERS_4			28
-+#define MC13783_REG_SWITCHERS_5			29
-+#define MC13783_REG_REGULATOR_SETTING_0		30
-+#define MC13783_REG_REGULATOR_SETTING_1		31
-+#define MC13783_REG_REGULATOR_MODE_0		32
-+#define MC13783_REG_REGULATOR_MODE_1		33
-+#define MC13783_REG_POWER_MISCELLANEOUS		34
-+#define MC13783_REG_POWER_SPARE			35
-+#define MC13783_REG_AUDIO_RX_0			36
-+#define MC13783_REG_AUDIO_RX_1			37
-+#define MC13783_REG_AUDIO_TX			38
-+#define MC13783_REG_AUDIO_SSI_NETWORK		39
-+#define MC13783_REG_AUDIO_CODEC			40
-+#define MC13783_REG_AUDIO_STEREO_DAC		41
-+#define MC13783_REG_AUDIO_SPARE			42
-+#define MC13783_REG_ADC_0			43
-+#define MC13783_REG_ADC_1			44
-+#define MC13783_REG_ADC_2			45
-+#define MC13783_REG_ADC_3			46
-+#define MC13783_REG_ADC_4			47
-+#define MC13783_REG_CHARGER			48
-+#define MC13783_REG_USB				49
-+#define MC13783_REG_CHARGE_USB_SPARE		50
-+#define MC13783_REG_LED_CONTROL_0		51
-+#define MC13783_REG_LED_CONTROL_1		52
-+#define MC13783_REG_LED_CONTROL_2		53
-+#define MC13783_REG_LED_CONTROL_3		54
-+#define MC13783_REG_LED_CONTROL_4		55
-+#define MC13783_REG_LED_CONTROL_5		56
-+#define MC13783_REG_SPARE			57
-+#define MC13783_REG_TRIM_0			58
-+#define MC13783_REG_TRIM_1			59
-+#define MC13783_REG_TEST_0			60
-+#define MC13783_REG_TEST_1			61
-+#define MC13783_REG_TEST_2			62
-+#define MC13783_REG_TEST_3			63
-+#define MC13783_REG_NB				64
-+
-+
-+/*
-+ * Interrupt Status
-+ */
-+#define MC13783_INT_STAT_ADCDONEI	(1 << 0)
-+#define MC13783_INT_STAT_ADCBISDONEI	(1 << 1)
-+#define MC13783_INT_STAT_TSI		(1 << 2)
-+#define MC13783_INT_STAT_WHIGHI		(1 << 3)
-+#define MC13783_INT_STAT_WLOWI		(1 << 4)
-+#define MC13783_INT_STAT_CHGDETI	(1 << 6)
-+#define MC13783_INT_STAT_CHGOVI		(1 << 7)
-+#define MC13783_INT_STAT_CHGREVI	(1 << 8)
-+#define MC13783_INT_STAT_CHGSHORTI	(1 << 9)
-+#define MC13783_INT_STAT_CCCVI		(1 << 10)
-+#define MC13783_INT_STAT_CHGCURRI	(1 << 11)
-+#define MC13783_INT_STAT_BPONI		(1 << 12)
-+#define MC13783_INT_STAT_LOBATLI	(1 << 13)
-+#define MC13783_INT_STAT_LOBATHI	(1 << 14)
-+#define MC13783_INT_STAT_UDPI		(1 << 15)
-+#define MC13783_INT_STAT_USBI		(1 << 16)
-+#define MC13783_INT_STAT_IDI		(1 << 19)
-+#define MC13783_INT_STAT_Unused		(1 << 20)
-+#define MC13783_INT_STAT_SE1I		(1 << 21)
-+#define MC13783_INT_STAT_CKDETI		(1 << 22)
-+#define MC13783_INT_STAT_UDMI		(1 << 23)
-+
-+/*
-+ * Interrupt Mask
-+ */
-+#define MC13783_INT_MASK_ADCDONEM	(1 << 0)
-+#define MC13783_INT_MASK_ADCBISDONEM	(1 << 1)
-+#define MC13783_INT_MASK_TSM		(1 << 2)
-+#define MC13783_INT_MASK_WHIGHM		(1 << 3)
-+#define MC13783_INT_MASK_WLOWM		(1 << 4)
-+#define MC13783_INT_MASK_CHGDETM	(1 << 6)
-+#define MC13783_INT_MASK_CHGOVM		(1 << 7)
-+#define MC13783_INT_MASK_CHGREVM	(1 << 8)
-+#define MC13783_INT_MASK_CHGSHORTM	(1 << 9)
-+#define MC13783_INT_MASK_CCCVM		(1 << 10)
-+#define MC13783_INT_MASK_CHGCURRM	(1 << 11)
-+#define MC13783_INT_MASK_BPONM		(1 << 12)
-+#define MC13783_INT_MASK_LOBATLM	(1 << 13)
-+#define MC13783_INT_MASK_LOBATHM	(1 << 14)
-+#define MC13783_INT_MASK_UDPM		(1 << 15)
-+#define MC13783_INT_MASK_USBM		(1 << 16)
-+#define MC13783_INT_MASK_IDM		(1 << 19)
-+#define MC13783_INT_MASK_SE1M		(1 << 21)
-+#define MC13783_INT_MASK_CKDETM		(1 << 22)
-+
-+/*
-+ * Reg Regulator Mode 0
-+ */
-+#define MC13783_REGCTRL_VAUDIO_EN	(1 << 0)
-+#define MC13783_REGCTRL_VAUDIO_STBY	(1 << 1)
-+#define MC13783_REGCTRL_VAUDIO_MODE	(1 << 2)
-+#define MC13783_REGCTRL_VIOHI_EN	(1 << 3)
-+#define MC13783_REGCTRL_VIOHI_STBY	(1 << 4)
-+#define MC13783_REGCTRL_VIOHI_MODE	(1 << 5)
-+#define MC13783_REGCTRL_VIOLO_EN	(1 << 6)
-+#define MC13783_REGCTRL_VIOLO_STBY 	(1 << 7)
-+#define MC13783_REGCTRL_VIOLO_MODE	(1 << 8)
-+#define MC13783_REGCTRL_VDIG_EN		(1 << 9)
-+#define MC13783_REGCTRL_VDIG_STBY	(1 << 10)
-+#define MC13783_REGCTRL_VDIG_MODE	(1 << 11)
-+#define MC13783_REGCTRL_VGEN_EN		(1 << 12)
-+#define MC13783_REGCTRL_VGEN_STBY	(1 << 13)
-+#define MC13783_REGCTRL_VGEN_MODE	(1 << 14)
-+#define MC13783_REGCTRL_VRFDIG_EN	(1 << 15)
-+#define MC13783_REGCTRL_VRFDIG_STBY	(1 << 16)
-+#define MC13783_REGCTRL_VRFDIG_MODE	(1 << 17)
-+#define MC13783_REGCTRL_VRFREF_EN	(1 << 18)
-+#define MC13783_REGCTRL_VRFREF_STBY	(1 << 19)
-+#define MC13783_REGCTRL_VRFREF_MODE	(1 << 20)
-+#define MC13783_REGCTRL_VRFCP_EN	(1 << 21)
-+#define MC13783_REGCTRL_VRFCP_STBY	(1 << 22)
-+#define MC13783_REGCTRL_VRFCP_MODE	(1 << 23)
-+
-+/*
-+ * Reg Regulator Mode 1
-+ */
-+#define MC13783_REGCTRL_VSIM_EN		(1 << 0)
-+#define MC13783_REGCTRL_VSIM_STBY	(1 << 1)
-+#define MC13783_REGCTRL_VSIM_MODE	(1 << 2)
-+#define MC13783_REGCTRL_VESIM_EN	(1 << 3)
-+#define MC13783_REGCTRL_VESIM_STBY	(1 << 4)
-+#define MC13783_REGCTRL_VESIM_MODE	(1 << 5)
-+#define MC13783_REGCTRL_VCAM_EN		(1 << 6)
-+#define MC13783_REGCTRL_VCAM_STBY	(1 << 7)
-+#define MC13783_REGCTRL_VCAM_MODE	(1 << 8)
-+#define	MC13783_REGCTRL_VRFBG_EN	(1 << 9)
-+#define MC13783_REGCTRL_VRFBG_STBY	(1 << 10)
-+#define MC13783_REGCTRL_VVIB_EN		(1 << 11)
-+#define MC13783_REGCTRL_VRF1_EN		(1 << 12)
-+#define MC13783_REGCTRL_VRF1_STBY	(1 << 13)
-+#define MC13783_REGCTRL_VRF1_MODE	(1 << 14)
-+#define MC13783_REGCTRL_VRF2_EN		(1 << 15)
-+#define MC13783_REGCTRL_VRF2_STBY	(1 << 16)
-+#define MC13783_REGCTRL_VRF2_MODE	(1 << 17)
-+#define MC13783_REGCTRL_VMMC1_EN	(1 << 18)
-+#define MC13783_REGCTRL_VMMC1_STBY	(1 << 19)
-+#define MC13783_REGCTRL_VMMC1_MODE	(1 << 20)
-+#define MC13783_REGCTRL_VMMC2_EN	(1 << 21)
-+#define MC13783_REGCTRL_VMMC2_STBY	(1 << 22)
-+#define MC13783_REGCTRL_VMMC2_MODE	(1 << 23)
-+
-+/*
-+ * Reg Regulator Misc.
-+ */
-+#define MC13783_REGCTRL_GPO1_EN		(1 << 6)
-+#define MC13783_REGCTRL_GPO2_EN		(1 << 8)
-+#define MC13783_REGCTRL_GPO3_EN		(1 << 10)
-+#define MC13783_REGCTRL_GPO4_EN		(1 << 12)
-+#define MC13783_REGCTRL_VIBPINCTRL	(1 << 14)
-+
-+/*
-+ * Reg Switcher 4
-+ */
-+#define MC13783_SWCTRL_SW1A_MODE	(1 << 0)
-+#define MC13783_SWCTRL_SW1A_STBY_MODE	(1 << 2)
-+#define MC13783_SWCTRL_SW1A_DVS_SPEED	(1 << 6)
-+#define MC13783_SWCTRL_SW1A_PANIC_MODE	(1 << 8)
-+#define MC13783_SWCTRL_SW1A_SOFTSTART	(1 << 9)
-+#define MC13783_SWCTRL_SW1B_MODE	(1 << 10)
-+#define MC13783_SWCTRL_SW1B_STBY_MODE	(1 << 12)
-+#define MC13783_SWCTRL_SW1B_DVS_SPEED	(1 << 14)
-+#define MC13783_SWCTRL_SW1B_PANIC_MODE	(1 << 16)
-+#define MC13783_SWCTRL_SW1B_SOFTSTART	(1 << 17)
-+#define MC13783_SWCTRL_PLL_EN		(1 << 18)
-+#define MC13783_SWCTRL_PLL_FACTOR	(1 << 19)
-+
-+/*
-+ * Reg Switcher 5
-+ */
-+#define MC13783_SWCTRL_SW2A_MODE	(1 << 0)
-+#define MC13783_SWCTRL_SW2A_STBY_MODE	(1 << 2)
-+#define MC13783_SWCTRL_SW2A_DVS_SPEED	(1 << 6)
-+#define MC13783_SWCTRL_SW2A_PANIC_MODE	(1 << 8)
-+#define MC13783_SWCTRL_SW2A_SOFTSTART	(1 << 9)
-+#define MC13783_SWCTRL_SW2B_MODE	(1 << 10)
-+#define MC13783_SWCTRL_SW2B_STBY_MODE	(1 << 12)
-+#define MC13783_SWCTRL_SW2B_DVS_SPEED	(1 << 14)
-+#define MC13783_SWCTRL_SW2B_PANIC_MODE	(1 << 16)
-+#define MC13783_SWCTRL_SW2B_SOFTSTART	(1 << 17)
-+#define MC13783_SWSET_SW3		(1 << 18)
-+#define MC13783_SWCTRL_SW3_EN		(1 << 20)
-+#define MC13783_SWCTRL_SW3_STBY		(1 << 21)
-+#define MC13783_SWCTRL_SW3_MODE		(1 << 22)
-+
-+/*
-+ * ADC/Touch
-+ */
-+#define MC13783_ADC0_LICELLCON		(1 << 0)
-+#define MC13783_ADC0_CHRGICON		(1 << 1)
-+#define MC13783_ADC0_BATICON		(1 << 2)
-+#define MC13783_ADC0_RTHEN 		(1 << 3)
-+#define MC13783_ADC0_DTHEN		(1 << 4)
-+#define MC13783_ADC0_UIDEN		(1 << 5)
-+#define MC13783_ADC0_ADOUTEN 		(1 << 6)
-+#define MC13783_ADC0_ADOUTPER		(1 << 7)
-+#define MC13783_ADC0_ADREFEN		(1 << 10)
-+#define MC13783_ADC0_ADREFMODE		(1 << 11)
-+#define MC13783_ADC0_TSMOD0		(1 << 12)
-+#define MC13783_ADC0_TSMOD1		(1 << 13)
-+#define MC13783_ADC0_TSMOD2		(1 << 14)
-+#define MC13783_ADC0_CHRGRAWDIV		(1 << 15)
-+#define MC13783_ADC0_ADINC1		(1 << 16)
-+#define MC13783_ADC0_ADINC2		(1 << 17)
-+#define MC13783_ADC0_WCOMP		(1 << 18)
-+#define MC13783_ADC0_ADCBIS0		(1 << 23)
-+
-+#define MC13783_ADC1_ADEN		(1 << 0)
-+#define MC13783_ADC1_RAND		(1 << 1)
-+#define MC13783_ADC1_ADSEL		(1 << 3)
-+#define MC13783_ADC1_TRIGMASK		(1 << 4)
-+#define MC13783_ADC1_ADA10		(1 << 5)
-+#define MC13783_ADC1_ADA11		(1 << 6)
-+#define MC13783_ADC1_ADA12		(1 << 7)
-+#define MC13783_ADC1_ADA20		(1 << 8)
-+#define MC13783_ADC1_ADA21		(1 << 9)
-+#define MC13783_ADC1_ADA22		(1 << 10)
-+#define MC13783_ADC1_ATO0		(1 << 11)
-+#define MC13783_ADC1_ATO1		(1 << 12)
-+#define MC13783_ADC1_ATO2		(1 << 13)
-+#define MC13783_ADC1_ATO3		(1 << 14)
-+#define MC13783_ADC1_ATO4		(1 << 15)
-+#define MC13783_ADC1_ATO5		(1 << 16)
-+#define MC13783_ADC1_ATO6		(1 << 17)
-+#define MC13783_ADC1_ATO7		(1 << 18)
-+#define MC13783_ADC1_ATOX		(1 << 19)
-+#define MC13783_ADC1_ASC		(1 << 20)
-+#define MC13783_ADC1_ADTRIGIGN		(1 << 21)
-+#define MC13783_ADC1_ADONESHOT		(1 << 22)
-+#define MC13783_ADC1_ADCBIS1		(1 << 23)
-+
-+#define MC13783_ADC1_CHAN0_SHIFT	5
-+#define MC13783_ADC1_CHAN1_SHIFT	8
-+
-+#define MC13783_ADC2_ADD10		(1 << 2)
-+#define MC13783_ADC2_ADD11		(1 << 3)
-+#define MC13783_ADC2_ADD12		(1 << 4)
-+#define MC13783_ADC2_ADD13		(1 << 5)
-+#define MC13783_ADC2_ADD14		(1 << 6)
-+#define MC13783_ADC2_ADD15		(1 << 7)
-+#define MC13783_ADC2_ADD16		(1 << 8)
-+#define MC13783_ADC2_ADD17		(1 << 9)
-+#define MC13783_ADC2_ADD18		(1 << 10)
-+#define MC13783_ADC2_ADD19		(1 << 11)
-+#define MC13783_ADC2_ADD20		(1 << 14)
-+#define MC13783_ADC2_ADD21		(1 << 15)
-+#define MC13783_ADC2_ADD22		(1 << 16)
-+#define MC13783_ADC2_ADD23		(1 << 17)
-+#define MC13783_ADC2_ADD24		(1 << 18)
-+#define MC13783_ADC2_ADD25		(1 << 19)
-+#define MC13783_ADC2_ADD26		(1 << 20)
-+#define MC13783_ADC2_ADD27		(1 << 21)
-+#define MC13783_ADC2_ADD28		(1 << 22)
-+#define MC13783_ADC2_ADD29		(1 << 23)
-+
-+#define MC13783_ADC3_WHIGH0		(1 << 0)
-+#define MC13783_ADC3_WHIGH1		(1 << 1)
-+#define MC13783_ADC3_WHIGH2		(1 << 2)
-+#define MC13783_ADC3_WHIGH3		(1 << 3)
-+#define MC13783_ADC3_WHIGH4		(1 << 4)
-+#define MC13783_ADC3_WHIGH5		(1 << 5)
-+#define MC13783_ADC3_ICID0		(1 << 6)
-+#define MC13783_ADC3_ICID1		(1 << 7)
-+#define MC13783_ADC3_ICID2		(1 << 8)
-+#define MC13783_ADC3_WLOW0		(1 << 9)
-+#define MC13783_ADC3_WLOW1		(1 << 10)
-+#define MC13783_ADC3_WLOW2		(1 << 11)
-+#define MC13783_ADC3_WLOW3		(1 << 12)
-+#define MC13783_ADC3_WLOW4		(1 << 13)
-+#define MC13783_ADC3_WLOW5		(1 << 14)
-+#define MC13783_ADC3_ADCBIS2		(1 << 23)
-+
-+#define MC13783_ADC4_ADDBIS10		(1 << 2)
-+#define MC13783_ADC4_ADDBIS11		(1 << 3)
-+#define MC13783_ADC4_ADDBIS12		(1 << 4)
-+#define MC13783_ADC4_ADDBIS13		(1 << 5)
-+#define MC13783_ADC4_ADDBIS14		(1 << 6)
-+#define MC13783_ADC4_ADDBIS15		(1 << 7)
-+#define MC13783_ADC4_ADDBIS16		(1 << 8)
-+#define MC13783_ADC4_ADDBIS17		(1 << 9)
-+#define MC13783_ADC4_ADDBIS18		(1 << 10)
-+#define MC13783_ADC4_ADDBIS19		(1 << 11)
-+#define MC13783_ADC4_ADDBIS20		(1 << 14)
-+#define MC13783_ADC4_ADDBIS21		(1 << 15)
-+#define MC13783_ADC4_ADDBIS22		(1 << 16)
-+#define MC13783_ADC4_ADDBIS23		(1 << 17)
-+#define MC13783_ADC4_ADDBIS24		(1 << 18)
-+#define MC13783_ADC4_ADDBIS25		(1 << 19)
-+#define MC13783_ADC4_ADDBIS26		(1 << 20)
-+#define MC13783_ADC4_ADDBIS27		(1 << 21)
-+#define MC13783_ADC4_ADDBIS28		(1 << 22)
-+#define MC13783_ADC4_ADDBIS29		(1 << 23)
-+
-+#endif /* __LINUX_MFD_MC13783_PRIV_H */
-+
-diff --git a/include/linux/mfd/mc13783.h b/include/linux/mfd/mc13783.h
-new file mode 100644
-index 0000000..b3a2a72
---- /dev/null
-+++ b/include/linux/mfd/mc13783.h
-@@ -0,0 +1,84 @@
-+/*
-+ * Copyright 2009 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
-+ *
-+ * Initial development of this code was funded by
-+ * Phytec Messtechnik GmbH, http://www.phytec.de
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#ifndef __INCLUDE_LINUX_MFD_MC13783_H
-+#define __INCLUDE_LINUX_MFD_MC13783_H
-+
-+struct mc13783;
-+struct regulator_init_data;
-+
-+struct mc13783_regulator_init_data {
-+	int id;
-+	struct regulator_init_data *init_data;
-+};
-+
-+struct mc13783_platform_data {
-+	struct mc13783_regulator_init_data *regulators;
-+	int num_regulators;
-+	unsigned int flags;
-+};
-+
-+/* mc13783_platform_data flags */
-+#define MC13783_USE_TOUCHSCREEN (1 << 0)
-+#define MC13783_USE_CODEC	(1 << 1)
-+#define MC13783_USE_ADC		(1 << 2)
-+#define MC13783_USE_RTC		(1 << 3)
-+#define MC13783_USE_REGULATOR	(1 << 4)
-+
-+int mc13783_adc_do_conversion(struct mc13783 *mc13783, unsigned int mode,
-+		unsigned int channel, unsigned int *sample);
-+
-+void mc13783_adc_set_ts_status(struct mc13783 *mc13783, unsigned int status);
-+
-+#define	MC13783_SW_SW1A		0
-+#define	MC13783_SW_SW1B		1
-+#define	MC13783_SW_SW2A		2
-+#define	MC13783_SW_SW2B		3
-+#define	MC13783_SW_SW3		4
-+#define	MC13783_SW_PLL		5
-+#define	MC13783_REGU_VAUDIO	6
-+#define	MC13783_REGU_VIOHI	7
-+#define	MC13783_REGU_VIOLO	8
-+#define	MC13783_REGU_VDIG	9
-+#define	MC13783_REGU_VGEN	10
-+#define	MC13783_REGU_VRFDIG	11
-+#define	MC13783_REGU_VRFREF	12
-+#define	MC13783_REGU_VRFCP	13
-+#define	MC13783_REGU_VSIM	14
-+#define	MC13783_REGU_VESIM	15
-+#define	MC13783_REGU_VCAM	16
-+#define	MC13783_REGU_VRFBG	17
-+#define	MC13783_REGU_VVIB	18
-+#define	MC13783_REGU_VRF1	19
-+#define	MC13783_REGU_VRF2	20
-+#define	MC13783_REGU_VMMC1	21
-+#define	MC13783_REGU_VMMC2	22
-+#define	MC13783_REGU_GPO1	23
-+#define	MC13783_REGU_GPO2	24
-+#define	MC13783_REGU_GPO3	25
-+#define	MC13783_REGU_GPO4	26
-+#define	MC13783_REGU_V1		27
-+#define	MC13783_REGU_V2		28
-+#define	MC13783_REGU_V3		29
-+#define	MC13783_REGU_V4		30
-+
-+#endif /* __INCLUDE_LINUX_MFD_MC13783_H */
-+
++MODULE_ALIAS("platform:mc13783-rtc");
 -- 
 1.6.3.3
 
