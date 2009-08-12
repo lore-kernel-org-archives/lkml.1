@@ -1,67 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbZHLUlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754988AbZHLUnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754962AbZHLUlB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 16:41:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbZHLUlB
+	id S1754988AbZHLUnb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 16:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbZHLUna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 16:41:01 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:35008 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754884AbZHLUlA (ORCPT
+	Wed, 12 Aug 2009 16:43:30 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:62315 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751676AbZHLUn2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 16:41:00 -0400
-Date: Wed, 12 Aug 2009 16:41:01 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
-In-Reply-To: <1250108893.8829.10.camel@mulgrave.site>
-Message-ID: <Pine.LNX.4.44L0.0908121635221.23954-100000@iolanthe.rowland.org>
+	Wed, 12 Aug 2009 16:43:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :x-enigmail-version:content-type;
+        b=p5uHW7S8Igf4C+sUO0dbAgp7THpHYEn4ef6jzc0GeOeBIJvBxriO4gKfsgttJyHxGG
+         by2uKPX0Y7Un6yqX9dYOw/Nki1r3FvblxqrSKvd/vu/MB9mOlakQpwG/bQYdR51jA9Yw
+         wyOhybC6V+WNjY2xbQktiIhNuGfO2uHYIEjWo=
+Message-ID: <4A83296B.3080606@gmail.com>
+Date: Wed, 12 Aug 2009 16:43:23 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: alacrityvm-devel@lists.sourceforge.net,
+       alacrityvm-users@lists.sourceforge.net
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org
+Subject: AlacrityVM numbers updated for 31-rc4
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig965E8CB54FAEC0A7B24CCFC8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Aug 2009, James Bottomley wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig965E8CB54FAEC0A7B24CCFC8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> > I'll accept that.  However it means that the SCSI midlayer violates
-> > your own locking rules with regard to the scan mutex.  Whereas if
-> > flush_scheduled_work() were avoided, the locking rules would not be
-> > violated.
-> 
-> Why do you think I've been trying to get rid of it?  Global mutexes
-> covering large swathes of code are always a bad idea.  The async code
-> already picked up a deadlock entanglement with it.
+I re-ran the numbers on 10GE against the actual alacrityvm v0.1 release
+available in git on kernel.org.
 
-And yet it does serve an important purpose.
+I tried to include the newly announced "vhost" driver (Michael Tsirkin)
+for virtio acceleration, but ran into issues getting the patches to apply=
+=2E
 
-An alternative to that mutex would be to make all scanning and removal 
-activities on a host funnel through a single thread.  Do you think that 
-would be preferable?  (I'm not trying to be sarcastic -- this is a 
-serious question.)
+For now, this includes native, virtio-u (virtio-userspace), and venet
+all running on 31-rc4.  If I can resolve the issue with Michaels
+patches, I will add "virtio-k" (virtio-kernel) to the mix as well.  For
+now, here are the results for 1500mtu:
+
+native:   7388Mb/s,   29.8us rtt (33505 tps udp-rr)
+venet:    3654Mb/s,   56.8us rtt (17600 tps udp-rr)
+virtio-u: 1955Mb/s, 4016.0us rtt (  249 tps udp-rr)
+
+Note that on one particular boot-session, I actually saw venet run
+consistently 4600Mb/s, and virtio-u run consistently 2800Mb/s.  I am not
+sure why other runs resulted in deterministically lower numbers, but I
+included the average of the low runs to be conservative, ~3600, ~1900
+respectively).
+
+Of interest here is that native made a huge jump (2.6.29 was more like
+4Gb/s), and also that KVM regressed a bit, especially compared to native
+numbers.  The cause for either of these changes is not known at this
+time, but I will investigate the cause over the next few days.
+
+In any case, I have updated the graphs on the AlacrityVM wiki to reflect
+these latest numbers:
+
+http://developer.novell.com/wiki/index.php/AlacrityVM
+
+Kind Regards,
+-Greg
 
 
-> > The rules for submission are _not_ the same.  With 
-> > flush_scheduled_work():
-> > 
-> > 	Make sure that any lock you hold while flushing is private
-> > 	and is not used (even indirectly) by any of your publicly 
-> > 	exported routines.
-> > 
-> > With cancel_work_sync():
-> > 
-> > 	Make sure that any lock you hold while cancelling is not
-> > 	used (even indirectly) by the work routine being cancelled.
-> 
-> The hair splitting has got to the point where I don't really care.  The
-> point is that flush_scheduled_work() and cancel_work_sync() have similar
-> problems.  Amazingly that was my original point.
+--------------enig965E8CB54FAEC0A7B24CCFC8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-And my original point was that the problems, though similar in nature, 
-are harder to deal with in one case than in the other.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-Alan Stern
+iEYEARECAAYFAkqDKWsACgkQP5K2CMvXmqHOhgCfWd6BYp0Waa95XAhrQf1NqhBm
+2EEAnj2/0Fngi3pu7fa3sbRxirTQd/+D
+=7ezu
+-----END PGP SIGNATURE-----
 
+--------------enig965E8CB54FAEC0A7B24CCFC8--
