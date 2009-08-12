@@ -1,89 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbZHLG4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbZHLG4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753308AbZHLG4J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 02:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbZHLG4J
+	id S1753552AbZHLG4i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 02:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbZHLG4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 02:56:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35344 "EHLO hera.kernel.org"
+	Wed, 12 Aug 2009 02:56:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:59698 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753051AbZHLG4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 02:56:07 -0400
-Message-ID: <4A826785.4000509@kernel.org>
-Date: Wed, 12 Aug 2009 15:56:05 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S1753061AbZHLG4f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 02:56:35 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Avi Kivity <avi@redhat.com>
+Subject: Re: Page allocation failures in guest
+Date: Wed, 12 Aug 2009 16:26:30 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; i686; ; )
+Cc: Pierre Ossman <drzeus-list@drzeus.cx>, Minchan Kim <minchan.kim@gmail.com>,
+       kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Wu Fengguang <fengguang.wu@intel.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, netdev@vger.kernel.org
+References: <20090713115158.0a4892b0@mjolnir.ossman.eu> <200908121501.53167.rusty@rustcorp.com.au> <4A825601.60000@redhat.com>
+In-Reply-To: <4A825601.60000@redhat.com>
 MIME-Version: 1.0
-To: "Yu, Fenghua" <fenghua.yu@intel.com>
-CC: "Luck, Tony" <tony.luck@intel.com>,
-       "'lkml'" <linux-kernel@vger.kernel.org>,
-       "'linux-arch@vger.kernel.org'" <linux-arch@vger.kernel.org>,
-       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>
-Subject: Re: [RFC PATCH] ia64: convert to dynamic percpu allocator
-References: <4A65B0AB.5000608@kernel.org> <A6AD88C3F2289247BE726C37303E1EB8B097D4C5@orsmsx505.amr.corp.intel.com> <4A663DC7.4060600@kernel.org> <A6AD88C3F2289247BE726C37303E1EB8B0A9115B@orsmsx505.amr.corp.intel.com> <4A695897.2020902@kernel.org> <A6AD88C3F2289247BE726C37303E1EB8B3A85355@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB8B3A85355@orsmsx505.amr.corp.intel.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 12 Aug 2009 06:56:07 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200908121626.31531.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yu, Fenghua wrote:
->> Yu, Fenghua wrote:
->>
->>> After cloning from
->>> git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git, kernel
->>> built with CONFIG_DISCONTIGMEM=y boots ok.
->>>
->>> After pulling from review-ia64, kernel built with
->>> CONFIG_DISCONTIGMEM=y can not boot on ia64. After loading kernel and
->>> initrd, system hangs and doesn't show anything on serial port.
->> Heh, I didn't really expect it to work that easily either.  The code
->> builds but is completely untested (I can't test them).  Can you try to
->> track it down?  Serial console should be up and running at that point,
->> no?
->>
->> Thanks.
+On Wed, 12 Aug 2009 03:11:21 pm Avi Kivity wrote:
+> > +	/* In theory, this can happen: if we don't get any buffers in
+> > +	 * we will*never*  try to fill again.  Sleeping in keventd if
+> > +	 * bad, but that is worse. */
+> > +	if (still_empty) {
+> > +		msleep(100);
+> > +		schedule_work(&vi->refill);
+> > +	}
+> > +}
+> > + 
 > 
-> IA64 kernel boots hit this in mm/percpu.c
-> BUG_ON(ai->unit_size < size_sum);
-> ai->unit_size is PERCPU_PAGE_SIZE which is 64K on IA64. size_sum is
-> relatively smaller than 64K.
-> 
-> Will you define PERCPU_DYNAMIC_RESERVE and PERCPU_MODULE_RESERVE as
-> PAGE_SIZE or the bigger one between the current definition and
-> PAGE_SIZE?
+> schedule_delayed_work()?
 
-Hmmm...
+Hmm, might as well, although this is v. unlikely to happen.
 
-* Is ai->reserved_size necessary for ia64?  This is necessary if
-  there's linking range restriction when loading modules.
-  ai->reserved_size guarantees that all static module percpu variables
-  are allocated in the first chunk which will be in the linear address
-  range and very close to __per_cpu_start.  If ai->reserved_size is
-  not set, these areas are likely to end up high in the vmalloc area.
+Thanks,
+Rusty.
 
-  For example, x86_64 assumes 32bit relocations should be enough to
-  link module symbols and thus needs to set reserved_size but x86_32
-  can link to the whole 32bit space and thus can leave reserved_size
-  at zero.
-
-* After determining the above, we can set ai->dyn_size to be
-
-  ai->dyn_size = min(ai->unit_size - ai->static_size - ai->reserved_size,
-		     PERCPU_DYNAMIC_RESERVE);
-
-Would the above work?
-
-> Even with the above PAGE_SIZE changes, the kernel still reports
-> warning from 952: WARN_ON(chunk->immutable) and then panic.
-
-Hah... strange.  Can you please attach full boot log?  This is
-dicontig configuration, right?
-
-Thanks.
-
--- 
-tejun
+diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
+--- a/drivers/net/virtio_net.c
++++ b/drivers/net/virtio_net.c
+@@ -72,7 +72,7 @@ struct virtnet_info
+ 	struct sk_buff_head send;
+ 
+ 	/* Work struct for refilling if we run low on memory. */
+-	struct work_struct refill;
++	struct delayed_work refill;
+ 	
+ 	/* Chain pages by the private ptr. */
+ 	struct page *pages;
+@@ -402,19 +402,16 @@ static void refill_work(struct work_stru
+ 	struct virtnet_info *vi;
+ 	bool still_empty;
+ 
+-	vi = container_of(work, struct virtnet_info, refill);
++	vi = container_of(work, struct virtnet_info, refill.work);
+ 	napi_disable(&vi->napi);
+ 	try_fill_recv(vi, GFP_KERNEL);
+ 	still_empty = (vi->num == 0);
+ 	napi_enable(&vi->napi);
+ 
+ 	/* In theory, this can happen: if we don't get any buffers in
+-	 * we will *never* try to fill again.  Sleeping in keventd if
+-	 * bad, but that is worse. */
+-	if (still_empty) {
+-		msleep(100);
+-		schedule_work(&vi->refill);
+-	}
++	 * we will *never* try to fill again. */
++	if (still_empty)
++		schedule_delayed_work(&vi->refill, HZ/2);
+ }
+ 
+ static int virtnet_poll(struct napi_struct *napi, int budget)
+@@ -434,7 +431,7 @@ again:
+ 
+ 	if (vi->num < vi->max / 2) {
+ 		if (!try_fill_recv(vi, GFP_ATOMIC))
+-			schedule_work(&vi->refill);
++			schedule_delayed_work(&vi->refill, 0);
+ 	}
+ 
+ 	/* Out of packets? */
+@@ -925,7 +922,7 @@ static int virtnet_probe(struct virtio_d
+ 	vi->vdev = vdev;
+ 	vdev->priv = vi;
+ 	vi->pages = NULL;
+-	INIT_WORK(&vi->refill, refill_work);
++	INIT_DELAYED_WORK(&vi->refill, refill_work);
+ 
+ 	/* If they give us a callback when all buffers are done, we don't need
+ 	 * the timer. */
+@@ -991,7 +988,7 @@ static int virtnet_probe(struct virtio_d
+ 
+ unregister:
+ 	unregister_netdev(dev);
+-	cancel_work_sync(&vi->refill);
++	cancel_delayed_work_sync(&vi->refill);
+ free_vqs:
+ 	vdev->config->del_vqs(vdev);
+ free:
+@@ -1020,7 +1017,7 @@ static void virtnet_remove(struct virtio
+ 	BUG_ON(vi->num != 0);
+ 
+ 	unregister_netdev(vi->dev);
+-	cancel_work_sync(&vi->refill);
++	cancel_delayed_work_sync(&vi->refill);
+ 
+ 	vdev->config->del_vqs(vi->vdev);
+ 
