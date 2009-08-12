@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932299AbZHLJ0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932329AbZHLJ0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932299AbZHLJ0Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 05:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbZHLJ0O
+	id S932329AbZHLJ0U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 05:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932309AbZHLJ0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 05:26:14 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:9440 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754998AbZHLJ0K (ORCPT
+	Wed, 12 Aug 2009 05:26:16 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:41255 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755197AbZHLJ0L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 05:26:10 -0400
+	Wed, 12 Aug 2009 05:26:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=hHev8jFUV/yg2pnNQT0Z5oU02cFY2FL5gAC7SzZKDlonCWAfCNtUd2LQ5ZtLB78rIB
-         K10VeBZcacroAAA/ishxykqVfRWI/3rGj4DyWn8B1mgh5GL5dIRKhhm3wuyHWBHRMMuU
-         k10YSZNqyzesMMv+gMMS8buVrchrWM/vnewn0=
+        b=HzTqjN7aMwpnRBs7mshmR+pkSHe0LZyLp75Z94xAovOe9KLJlbdvnAkjG+71FkpNbU
+         x03CwXtsoGQYGM2cDFk3MkkiBAnvctSJLwZzsWX6Vj4/M6FEDUyUZhHXz7z3D/AC6smO
+         0gUxh8i3QxfSg+UZ2Lg/tTRUfj+q23tjxsm5s=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -23,9 +23,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
        Brice Goglin <Brice.Goglin@inria.fr>
-Subject: [PATCH 2/3] perf tools: Factorize the event structure definitions in a single file
-Date: Wed, 12 Aug 2009 11:26:01 +0200
-Message-Id: <1250069162-13099-3-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 3/3] perf tools: Factorize the map helpers
+Date: Wed, 12 Aug 2009 11:26:02 +0200
+Message-Id: <1250069162-13099-4-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1250069162-13099-1-git-send-email-fweisbec@gmail.com>
 References: <1250069162-13099-1-git-send-email-fweisbec@gmail.com>
@@ -33,8 +33,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Factorize the multiple definition of the events structures into a
-single util/event.h file.
+Factorize the dso mapping helpers into a single purpose common file
+"util/map.c"
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
@@ -42,257 +42,470 @@ Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Brice Goglin <Brice.Goglin@inria.fr>
 ---
- tools/perf/builtin-annotate.c |   34 -------------------------
- tools/perf/builtin-record.c   |   18 -------------
- tools/perf/builtin-report.c   |   53 ----------------------------------------
- tools/perf/builtin-top.c      |   20 ---------------
- tools/perf/util/event.h       |   54 +++++++++++++++++++++++++++++++++++++++++
- tools/perf/util/util.h        |    2 +
- 6 files changed, 56 insertions(+), 125 deletions(-)
- create mode 100644 tools/perf/util/event.h
+ tools/perf/Makefile           |    1 +
+ tools/perf/builtin-annotate.c |   79 +--------------------------
+ tools/perf/builtin-record.c   |    1 +
+ tools/perf/builtin-report.c   |  124 ++---------------------------------------
+ tools/perf/util/callchain.h   |    1 +
+ tools/perf/util/event.h       |   30 ++++++++++
+ tools/perf/util/map.c         |   97 ++++++++++++++++++++++++++++++++
+ tools/perf/util/symbol.h      |    1 +
+ tools/perf/util/util.h        |    1 -
+ 9 files changed, 137 insertions(+), 198 deletions(-)
+ create mode 100644 tools/perf/util/map.c
 
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 2aee21b..f4d868c 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -340,6 +340,7 @@ LIB_OBJS += util/header.o
+ LIB_OBJS += util/callchain.o
+ LIB_OBJS += util/values.o
+ LIB_OBJS += util/debug.o
++LIB_OBJS += util/event.o
+ 
+ BUILTIN_OBJS += builtin-annotate.o
+ BUILTIN_OBJS += builtin-help.o
 diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 1a79299..fee663a 100644
+index fee663a..543c452 100644
 --- a/tools/perf/builtin-annotate.c
 +++ b/tools/perf/builtin-annotate.c
-@@ -44,40 +44,6 @@ static int		print_line;
- static unsigned long	page_size;
- static unsigned long	mmap_window = 32;
+@@ -51,83 +51,6 @@ struct sym_ext {
+ 	char		*path;
+ };
  
--struct ip_event {
--	struct perf_event_header header;
--	u64 ip;
--	u32 pid, tid;
+-struct map {
+-	struct list_head node;
+-	u64	 start;
+-	u64	 end;
+-	u64	 pgoff;
+-	u64	 (*map_ip)(struct map *, u64);
+-	struct dso	 *dso;
 -};
 -
--struct mmap_event {
--	struct perf_event_header header;
--	u32 pid, tid;
--	u64 start;
--	u64 len;
--	u64 pgoff;
--	char filename[PATH_MAX];
--};
+-static u64 map__map_ip(struct map *map, u64 ip)
+-{
+-	return ip - map->start + map->pgoff;
+-}
 -
--struct comm_event {
--	struct perf_event_header header;
--	u32 pid, tid;
--	char comm[16];
--};
+-static u64 vdso__map_ip(struct map *map __used, u64 ip)
+-{
+-	return ip;
+-}
 -
--struct fork_event {
--	struct perf_event_header header;
--	u32 pid, ppid;
--};
+-static struct map *map__new(struct mmap_event *event)
+-{
+-	struct map *self = malloc(sizeof(*self));
 -
--typedef union event_union {
--	struct perf_event_header	header;
--	struct ip_event			ip;
--	struct mmap_event		mmap;
--	struct comm_event		comm;
--	struct fork_event		fork;
--} event_t;
+-	if (self != NULL) {
+-		const char *filename = event->filename;
+-
+-		self->start = event->start;
+-		self->end   = event->start + event->len;
+-		self->pgoff = event->pgoff;
+-
+-		self->dso = dsos__findnew(filename);
+-		if (self->dso == NULL)
+-			goto out_delete;
+-
+-		if (self->dso == vdso)
+-			self->map_ip = vdso__map_ip;
+-		else
+-			self->map_ip = map__map_ip;
+-	}
+-	return self;
+-out_delete:
+-	free(self);
+-	return NULL;
+-}
+-
+-static struct map *map__clone(struct map *self)
+-{
+-	struct map *map = malloc(sizeof(*self));
+-
+-	if (!map)
+-		return NULL;
+-
+-	memcpy(map, self, sizeof(*self));
+-
+-	return map;
+-}
+-
+-static int map__overlap(struct map *l, struct map *r)
+-{
+-	if (l->start > r->start) {
+-		struct map *t = l;
+-		l = r;
+-		r = t;
+-	}
+-
+-	if (l->end > r->start)
+-		return 1;
+-
+-	return 0;
+-}
+-
+-static size_t map__fprintf(struct map *self, FILE *fp)
+-{
+-	return fprintf(fp, " %Lx-%Lx %Lx %s\n",
+-		       self->start, self->end, self->pgoff, self->dso->name);
+-}
 -
  
- struct sym_ext {
- 	struct rb_node	node;
+ struct thread {
+ 	struct rb_node	 rb_node;
+@@ -797,7 +720,7 @@ static int
+ process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+ 	struct thread *thread = threads__findnew(event->mmap.pid);
+-	struct map *map = map__new(&event->mmap);
++	struct map *map = map__new(&event->mmap, NULL, 0);
+ 
+ 	dprintf("%p [%p]: PERF_EVENT_MMAP %d: [%p(%p) @ %p]: %s\n",
+ 		(void *)(offset + head),
 diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index afae387..718b8f7 100644
+index 718b8f7..106c6ab 100644
 --- a/tools/perf/builtin-record.c
 +++ b/tools/perf/builtin-record.c
-@@ -59,24 +59,6 @@ static int			file_new = 1;
+@@ -15,6 +15,7 @@
+ #include "util/string.h"
  
- struct perf_header		*header;
+ #include "util/header.h"
++#include "util/event.h"
  
--struct mmap_event {
--	struct perf_event_header	header;
--	u32				pid;
--	u32				tid;
--	u64				start;
--	u64				len;
--	u64				pgoff;
--	char				filename[PATH_MAX];
--};
--
--struct comm_event {
--	struct perf_event_header	header;
--	u32				pid;
--	u32				tid;
--	char				comm[16];
--};
--
--
- struct mmap_data {
- 	int			counter;
- 	void			*base;
+ #include <unistd.h>
+ #include <sched.h>
 diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 827eab2..1efefcc 100644
+index 1efefcc..93945ec 100644
 --- a/tools/perf/builtin-report.c
 +++ b/tools/perf/builtin-report.c
-@@ -75,59 +75,6 @@ struct callchain_param	callchain_param = {
+@@ -67,6 +67,10 @@ static char		callchain_default_opt[] = "fractal,0.5";
  
- static u64		sample_type;
+ static int		callchain;
  
--struct ip_event {
--	struct perf_event_header header;
--	u64 ip;
--	u32 pid, tid;
--	unsigned char __more_data[];
++static char		__cwd[PATH_MAX];
++static char		*cwd = __cwd;
++static int		cwdlen;
++
+ static
+ struct callchain_param	callchain_param = {
+ 	.mode	= CHAIN_GRAPH_REL,
+@@ -102,124 +106,6 @@ static int repsep_fprintf(FILE *fp, const char *fmt, ...)
+ 	return n;
+ }
+ 
+-
+-
+-static char __cwd[PATH_MAX];
+-static char *cwd = __cwd;
+-static int cwdlen;
+-
+-static int strcommon(const char *pathname)
+-{
+-	int n = 0;
+-
+-	while (n < cwdlen && pathname[n] == cwd[n])
+-		++n;
+-
+-	return n;
+-}
+-
+-struct map {
+-	struct list_head node;
+-	u64	 start;
+-	u64	 end;
+-	u64	 pgoff;
+-	u64	 (*map_ip)(struct map *, u64);
+-	struct dso	 *dso;
 -};
 -
--struct mmap_event {
--	struct perf_event_header header;
--	u32 pid, tid;
--	u64 start;
--	u64 len;
--	u64 pgoff;
--	char filename[PATH_MAX];
--};
+-static u64 map__map_ip(struct map *map, u64 ip)
+-{
+-	return ip - map->start + map->pgoff;
+-}
 -
--struct comm_event {
--	struct perf_event_header header;
--	u32 pid, tid;
--	char comm[16];
--};
+-static u64 vdso__map_ip(struct map *map __used, u64 ip)
+-{
+-	return ip;
+-}
 -
--struct fork_event {
--	struct perf_event_header header;
--	u32 pid, ppid;
--	u32 tid, ptid;
--};
+-static inline int is_anon_memory(const char *filename)
+-{
+-	return strcmp(filename, "//anon") == 0;
+-}
 -
--struct lost_event {
--	struct perf_event_header header;
--	u64 id;
--	u64 lost;
--};
+-static struct map *map__new(struct mmap_event *event)
+-{
+-	struct map *self = malloc(sizeof(*self));
 -
--struct read_event {
--	struct perf_event_header header;
--	u32 pid,tid;
--	u64 value;
--	u64 time_enabled;
--	u64 time_running;
--	u64 id;
--};
+-	if (self != NULL) {
+-		const char *filename = event->filename;
+-		char newfilename[PATH_MAX];
+-		int anon;
 -
--typedef union event_union {
--	struct perf_event_header	header;
--	struct ip_event			ip;
--	struct mmap_event		mmap;
--	struct comm_event		comm;
--	struct fork_event		fork;
--	struct lost_event		lost;
--	struct read_event		read;
--} event_t;
+-		if (cwd) {
+-			int n = strcommon(filename);
 -
- static int repsep_fprintf(FILE *fp, const char *fmt, ...)
+-			if (n == cwdlen) {
+-				snprintf(newfilename, sizeof(newfilename),
+-					 ".%s", filename + n);
+-				filename = newfilename;
+-			}
+-		}
+-
+-		anon = is_anon_memory(filename);
+-
+-		if (anon) {
+-			snprintf(newfilename, sizeof(newfilename), "/tmp/perf-%d.map", event->pid);
+-			filename = newfilename;
+-		}
+-
+-		self->start = event->start;
+-		self->end   = event->start + event->len;
+-		self->pgoff = event->pgoff;
+-
+-		self->dso = dsos__findnew(filename);
+-		if (self->dso == NULL)
+-			goto out_delete;
+-
+-		if (self->dso == vdso || anon)
+-			self->map_ip = vdso__map_ip;
+-		else
+-			self->map_ip = map__map_ip;
+-	}
+-	return self;
+-out_delete:
+-	free(self);
+-	return NULL;
+-}
+-
+-static struct map *map__clone(struct map *self)
+-{
+-	struct map *map = malloc(sizeof(*self));
+-
+-	if (!map)
+-		return NULL;
+-
+-	memcpy(map, self, sizeof(*self));
+-
+-	return map;
+-}
+-
+-static int map__overlap(struct map *l, struct map *r)
+-{
+-	if (l->start > r->start) {
+-		struct map *t = l;
+-		l = r;
+-		r = t;
+-	}
+-
+-	if (l->end > r->start)
+-		return 1;
+-
+-	return 0;
+-}
+-
+-static size_t map__fprintf(struct map *self, FILE *fp)
+-{
+-	return fprintf(fp, " %Lx-%Lx %Lx %s\n",
+-		       self->start, self->end, self->pgoff, self->dso->name);
+-}
+-
+-
+ struct thread {
+ 	struct rb_node	 rb_node;
+ 	struct list_head maps;
+@@ -1474,7 +1360,7 @@ static int
+ process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
  {
- 	int n;
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index 0aa5673..9a6dbbf 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -933,26 +933,6 @@ static void mmap_read_counter(struct mmap_data *md)
- 	last_read = this_read;
+ 	struct thread *thread = threads__findnew(event->mmap.pid);
+-	struct map *map = map__new(&event->mmap);
++	struct map *map = map__new(&event->mmap, cwd, cwdlen);
  
- 	for (; old != head;) {
--		struct ip_event {
--			struct perf_event_header header;
--			u64 ip;
--			u32 pid, target_pid;
--		};
--		struct mmap_event {
--			struct perf_event_header header;
--			u32 pid, target_pid;
--			u64 start;
--			u64 len;
--			u64 pgoff;
--			char filename[PATH_MAX];
--		};
--
--		typedef union event_union {
--			struct perf_event_header header;
--			struct ip_event ip;
--			struct mmap_event mmap;
--		} event_t;
--
- 		event_t *event = (event_t *)&data[old & md->mask];
+ 	dprintf("%p [%p]: PERF_EVENT_MMAP %d: [%p(%p) @ %p]: %s\n",
+ 		(void *)(offset + head),
+diff --git a/tools/perf/util/callchain.h b/tools/perf/util/callchain.h
+index a926ae4..43cf3ea 100644
+--- a/tools/perf/util/callchain.h
++++ b/tools/perf/util/callchain.h
+@@ -4,6 +4,7 @@
+ #include "../perf.h"
+ #include <linux/list.h>
+ #include <linux/rbtree.h>
++#include "util.h"
+ #include "symbol.h"
  
- 		event_t event_copy;
+ enum chain_mode {
 diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-new file mode 100644
-index 0000000..91e2fe5
---- /dev/null
+index 91e2fe5..d26dc88 100644
+--- a/tools/perf/util/event.h
 +++ b/tools/perf/util/event.h
-@@ -0,0 +1,54 @@
-+#include "../perf.h"
+@@ -1,4 +1,8 @@
++#ifndef __PERF_EVENT_H
++#define __PERF_EVENT_H
+ #include "../perf.h"
++#include "util.h"
++#include <linux/list.h>
+ 
+ struct ip_event {
+ 	struct perf_event_header header;
+@@ -52,3 +56,29 @@ typedef union event_union {
+ 	struct lost_event		lost;
+ 	struct read_event		read;
+ } event_t;
 +
-+struct ip_event {
-+	struct perf_event_header header;
-+	u64 ip;
-+	u32 pid, tid;
-+	unsigned char __more_data[];
++struct map {
++	struct list_head	node;
++	u64			start;
++	u64			end;
++	u64			pgoff;
++	u64			(*map_ip)(struct map *, u64);
++	struct dso		*dso;
 +};
 +
-+struct mmap_event {
-+	struct perf_event_header header;
-+	u32 pid, tid;
-+	u64 start;
-+	u64 len;
-+	u64 pgoff;
-+	char filename[PATH_MAX];
-+};
++static inline u64 map__map_ip(struct map *map, u64 ip)
++{
++	return ip - map->start + map->pgoff;
++}
 +
-+struct comm_event {
-+	struct perf_event_header header;
-+	u32 pid, tid;
-+	char comm[16];
-+};
++static inline u64 vdso__map_ip(struct map *map __used, u64 ip)
++{
++	return ip;
++}
 +
-+struct fork_event {
-+	struct perf_event_header header;
-+	u32 pid, ppid;
-+	u32 tid, ptid;
-+};
++struct map *map__new(struct mmap_event *event, char *cwd, int cwdlen);
++struct map *map__clone(struct map *self);
++int map__overlap(struct map *l, struct map *r);
++size_t map__fprintf(struct map *self, FILE *fp);
 +
-+struct lost_event {
-+	struct perf_event_header header;
-+	u64 id;
-+	u64 lost;
-+};
++#endif
+diff --git a/tools/perf/util/map.c b/tools/perf/util/map.c
+new file mode 100644
+index 0000000..804e023
+--- /dev/null
++++ b/tools/perf/util/map.c
+@@ -0,0 +1,97 @@
++#include "event.h"
++#include "symbol.h"
++#include <stdlib.h>
++#include <string.h>
++#include <stdio.h>
 +
-+struct read_event {
-+	struct perf_event_header header;
-+	u32 pid,tid;
-+	u64 value;
-+	u64 time_enabled;
-+	u64 time_running;
-+	u64 id;
-+};
++static inline int is_anon_memory(const char *filename)
++{
++	return strcmp(filename, "//anon") == 0;
++}
 +
-+typedef union event_union {
-+	struct perf_event_header	header;
-+	struct ip_event			ip;
-+	struct mmap_event		mmap;
-+	struct comm_event		comm;
-+	struct fork_event		fork;
-+	struct lost_event		lost;
-+	struct read_event		read;
-+} event_t;
++static int strcommon(const char *pathname, char *cwd, int cwdlen)
++{
++	int n = 0;
++
++	while (n < cwdlen && pathname[n] == cwd[n])
++		++n;
++
++	return n;
++}
++
++ struct map *map__new(struct mmap_event *event, char *cwd, int cwdlen)
++{
++	struct map *self = malloc(sizeof(*self));
++
++	if (self != NULL) {
++		const char *filename = event->filename;
++		char newfilename[PATH_MAX];
++		int anon;
++
++		if (cwd) {
++			int n = strcommon(filename, cwd, cwdlen);
++
++			if (n == cwdlen) {
++				snprintf(newfilename, sizeof(newfilename),
++					 ".%s", filename + n);
++				filename = newfilename;
++			}
++		}
++
++		anon = is_anon_memory(filename);
++
++		if (anon) {
++			snprintf(newfilename, sizeof(newfilename), "/tmp/perf-%d.map", event->pid);
++			filename = newfilename;
++		}
++
++		self->start = event->start;
++		self->end   = event->start + event->len;
++		self->pgoff = event->pgoff;
++
++		self->dso = dsos__findnew(filename);
++		if (self->dso == NULL)
++			goto out_delete;
++
++		if (self->dso == vdso || anon)
++			self->map_ip = vdso__map_ip;
++		else
++			self->map_ip = map__map_ip;
++	}
++	return self;
++out_delete:
++	free(self);
++	return NULL;
++}
++
++struct map *map__clone(struct map *self)
++{
++	struct map *map = malloc(sizeof(*self));
++
++	if (!map)
++		return NULL;
++
++	memcpy(map, self, sizeof(*self));
++
++	return map;
++}
++
++int map__overlap(struct map *l, struct map *r)
++{
++	if (l->start > r->start) {
++		struct map *t = l;
++		l = r;
++		r = t;
++	}
++
++	if (l->end > r->start)
++		return 1;
++
++	return 0;
++}
++
++size_t map__fprintf(struct map *self, FILE *fp)
++{
++	return fprintf(fp, " %Lx-%Lx %Lx %s\n",
++		       self->start, self->end, self->pgoff, self->dso->name);
++}
+diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+index f3490fc..50f7235 100644
+--- a/tools/perf/util/symbol.h
++++ b/tools/perf/util/symbol.h
+@@ -6,6 +6,7 @@
+ #include <linux/list.h>
+ #include <linux/rbtree.h>
+ #include "module.h"
++#include "event.h"
+ 
+ struct symbol {
+ 	struct rb_node	rb_node;
 diff --git a/tools/perf/util/util.h b/tools/perf/util/util.h
-index 68fe157..be4b52c 100644
+index be4b52c..d61a6f0 100644
 --- a/tools/perf/util/util.h
 +++ b/tools/perf/util/util.h
-@@ -83,6 +83,8 @@
+@@ -83,7 +83,6 @@
  #include <inttypes.h>
  #include "../../../include/linux/magic.h"
  
-+#include "event.h"
-+
+-#include "event.h"
+ 
  #ifndef NO_ICONV
  #include <iconv.h>
- #endif
 -- 
 1.6.2.3
 
