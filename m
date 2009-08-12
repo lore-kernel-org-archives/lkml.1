@@ -1,106 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932283AbZHLJUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755138AbZHLJUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932283AbZHLJUN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 05:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224AbZHLJUN
+	id S1755138AbZHLJUf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 05:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932296AbZHLJUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 05:20:13 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:7058 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754146AbZHLJUL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 05:20:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=ucsXpzo964KkPf0X9FYd+MOHGGcbSVaNuiiqTAkPT3mYsMUNszgNh+mNBI2IGq1nbS
-         g/G1XXoTF73Eba4xaad6/v61LnXLYQBDidp+CGUamWc23dQ+moGWKskl/xNlUEgVTSx4
-         9CqGDLN1EAMylNX7il1FbdoDm9u3YnMRve830=
+	Wed, 12 Aug 2009 05:20:34 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:41313 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932210AbZHLJUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 05:20:33 -0400
+Date: Wed, 12 Aug 2009 10:20:34 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Cc: Juergen Beisert <jbe@pengutronix.de>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-hotplug@vger.kernel.org
+Subject: Re: Patch "page-allocator: preserve PFN ordering when __GFP_COLD
+	is set" fails on my system
+Message-ID: <20090812092034.GA19269@csn.ul.ie>
+References: <200908111830.03224.jbe@pengutronix.de> <20090812074753.GL13320@pengutronix.de>
 MIME-Version: 1.0
-Date: Wed, 12 Aug 2009 17:20:11 +0800
-Message-ID: <3877989d0908120220q5104d2e7rd272ececbc45e377@mail.gmail.com>
-Subject: [RFC patch] init default dma_ops to prepare intel_iommu_init failure
-From: Luming Yu <luming.yu@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>,
-       "Luck, Tony" <tony.luck@intel.com>, LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Content-Type: multipart/mixed; boundary=000e0cd32c086eb9fb0470ee539e
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090812074753.GL13320@pengutronix.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---000e0cd32c086eb9fb0470ee539e
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Wed, Aug 12, 2009 at 09:47:53AM +0200, Robert Schwebel wrote:
+> Hi Jürgen,
+> 
+> adding the patch author to Cc: ...
+> 
+> rsc
+> 
+> On Tue, Aug 11, 2009 at 06:30:02PM +0200, Juergen Beisert wrote:
+> > Hi,
+> > 
+> > I get the following Ooops message when "udevadm" is running on an ARM S3C2440
+> > CPU based system:
+> > 
 
-Hi there,
+This is extremely odd. All that patch is doing is changing what order pages
+are returned in to the caller when __GFP_COLD is specified.  valid memory. Does
+reverting the patch really make the problem go away?
 
-On ia64 platform with dmar table and new upstream
-kernel(config_dmar_default_on enabled),
-if intel_iommu_init ends up without dma_ops initialized or other iommu
-failures.
-We got nothing to fall back. The following patch fixes it.
+> > [...]
+> > starting udevd...done
+> > Unable to handle kernel paging request at virtual address e3540000
+> > pgd = c39d4000
+> > [e3540000] *pgd=00000000
+> > Internal error: Oops: 5 [#1]
+> > Modules linked in:
+> > CPU: 0    Not tainted  (2.6.31-rc4-00296-ge084b2d-dirty #10)
+> > PC is at strlen+0xc/0x20
+> > LR is at kobject_get_path+0x24/0xa4
 
-Please review. If make sense, please apply.
+I haven't tackled this sort of bug before but it looks more likely that
+there is garbage in the sysfs tree that is being tripped up on.
 
-**The patch is enclosed in text attachment*
-**Using web client to send the patch* *
-**below is for review, please apply attached  patch*/
+> > pc : [<c0115338>]    lr : [<c0111f48>]    psr: a0000013
+> > sp : c39bdea0  ip : 00000005  fp : c029645b
+> > r10: c02e0430  r9 : 00000000  r8 : c3802c60
+> > r7 : c001de30  r6 : 000000d0  r5 : 00000001  r4 : c001de30
+> > r3 : e3550001  r2 : e3540000  r1 : 000000d0  r0 : e3540000
+> > Flags: NzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
+> > Control: c000717f  Table: 339d4000  DAC: 00000015
+> > Process udevadm (pid: 325, stack limit = 0xc39bc270)
+> > Stack: (0xc39bdea0 to 0xc39be000)
+> > dea0: c001de28 00000003 c393d778 c399d000 c3802c60 c014dce0 c029645b c0112200
+> > dec0: c393d778 00000000 00000003 c393d780 c399d000 c0112400 00000000 00020001
+> > dee0: c0307fdc 00000000 c3950960 c027ddc3 c380cda0 c343b3d4 c3811e60 00000000
+> > df00: 00000000 c393d778 00000003 c3960520 c393d780 c02e0470 c3960538 c39bdf88
+> > df20: 00019cb0 c014dd80 c382db20 00000000 c3960538 c38ede7c 00000003 c014d464
+> > df40: c38ede7c c00bf224 c382db20 00019cb0 c39bdf88 00000004 00000003 c39bc000
+> > df60: 00000000 c0080bd8 c343b3d4 00000020 00000000 00000000 c382db20 00000004
+> > df80: c0022fa8 c0080d38 00000000 00000000 bead3250 00000000 00026d98 00000003
+> > dfa0: bead3250 c0022e00 00026d98 00000003 00000003 00019cb0 00000003 00000000
+> > dfc0: 00026d98 00000003 bead3250 00000004 00022a90 bead3678 00019cb0 00019cb0
+> > dfe0: 00022a94 bead3250 00018114 400d8f1c 40000010 00000003 00000000 00000000
+> > [<c0115338>] (strlen+0xc/0x20) from [<c0111f48>] (kobject_get_path+0x24/0xa4)
+> > [<c0111f48>] (kobject_get_path+0x24/0xa4) from [<c014dce0>] (dev_uevent+0x1dc/0x208)
+> > [<c014dce0>] (dev_uevent+0x1dc/0x208) from [<c0112400>] (kobject_uevent_env+0x18c/0x3a8)
+> > [<c0112400>] (kobject_uevent_env+0x18c/0x3a8) from [<c014dd80>] (store_uevent+0x74/0x88)
+> > [<c014dd80>] (store_uevent+0x74/0x88) from [<c014d464>] (dev_attr_store+0x20/0x28)
+> > [<c014d464>] (dev_attr_store+0x20/0x28) from [<c00bf224>] (sysfs_write_file+0x104/0x13c)
+> > [<c00bf224>] (sysfs_write_file+0x104/0x13c) from [<c0080bd8>] (vfs_write+0xb0/0x15c)
+> > [<c0080bd8>] (vfs_write+0xb0/0x15c) from [<c0080d38>] (sys_write+0x40/0x6c)
+> > [<c0080d38>] (sys_write+0x40/0x6c) from [<c0022e00>] (ret_fast_syscall+0x0/0x2c)
+> > Code: c02dbe78 e1a02000 ea000000 e2800001 (e5d03000)
+> > ---[ end trace 4d391449ae70e71a ]---
+> > Segmentation fault
+> > [...]
+> > 
+> > This Oops does not occure in v2.6.31-rc4 and occures in v2.6.31-rc5. Bisected
+> > to the commit:
+> > 
+> > e084b2d95e48b31aa45f9c49ffc6cdae8bdb21d4
+> > "page-allocator: preserve PFN ordering when __GFP_COLD is set"
+> > 
+> > But its curious: The same binary kernel still runs without this oops on an ARM
+> > S3C2410 CPU.
+> > 
+> > Regards,
+> > Juergen
+> > 
+> > -- 
+> > Pengutronix e.K.                              | Juergen Beisert             |
+> > Linux Solutions for Science and Industry      | Phone: +49-8766-939 228     |
+> > Vertretung Sued/Muenchen, Germany             | Fax:   +49-5121-206917-5555 |
+> > Amtsgericht Hildesheim, HRA 2686              | http://www.pengutronix.de/  |
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+> 
+> -- 
+> Pengutronix e.K.                           |                             |
+> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+> 
 
-Thanks,
-Luming
-
-Signed-off-by: Yu Luming <luming.yu@intel.com>
-
-arch/ia64/kernel/pci-swiotlb.c |   14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
-
-diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
-index 223abb1..d5dcaf5 100644
---- a/arch/ia64/kernel/pci-swiotlb.c
-+++ b/arch/ia64/kernel/pci-swiotlb.c
-@@ -46,15 +46,13 @@ void __init swiotlb_dma_init(void)
-
- void __init pci_swiotlb_init(void)
- {
--	if (!iommu_detected || iommu_pass_through) {
- #ifdef CONFIG_IA64_GENERIC
--		swiotlb = 1;
--		printk(KERN_INFO "PCI-DMA: Re-initialize machine vector.\n");
--		machvec_init("dig");
--		swiotlb_init();
--		dma_ops = &swiotlb_dma_ops;
-+	swiotlb = 1;
-+	printk(KERN_INFO "PCI-DMA: Re-initialize machine vector.\n");
-+	machvec_init("dig");
-+	swiotlb_init();
-+	dma_ops = &swiotlb_dma_ops;
- #else
--		panic("Unable to find Intel IOMMU");
-+	panic("Unable to find Intel IOMMU");
- #endif
--	}
- }
-
---000e0cd32c086eb9fb0470ee539e
-Content-Type: application/octet-stream; name=5
-Content-Disposition: attachment; filename=5
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fy9up8au0
-
-ZGlmZiAtLWdpdCBhL2FyY2gvaWE2NC9rZXJuZWwvcGNpLXN3aW90bGIuYyBiL2FyY2gvaWE2NC9r
-ZXJuZWwvcGNpLXN3aW90bGIuYwppbmRleCAyMjNhYmIxLi5kNWRjYWY1IDEwMDY0NAotLS0gYS9h
-cmNoL2lhNjQva2VybmVsL3BjaS1zd2lvdGxiLmMKKysrIGIvYXJjaC9pYTY0L2tlcm5lbC9wY2kt
-c3dpb3RsYi5jCkBAIC00NiwxNSArNDYsMTMgQEAgdm9pZCBfX2luaXQgc3dpb3RsYl9kbWFfaW5p
-dCh2b2lkKQogCiB2b2lkIF9faW5pdCBwY2lfc3dpb3RsYl9pbml0KHZvaWQpCiB7Ci0JaWYgKCFp
-b21tdV9kZXRlY3RlZCB8fCBpb21tdV9wYXNzX3Rocm91Z2gpIHsKICNpZmRlZiBDT05GSUdfSUE2
-NF9HRU5FUklDCi0JCXN3aW90bGIgPSAxOwotCQlwcmludGsoS0VSTl9JTkZPICJQQ0ktRE1BOiBS
-ZS1pbml0aWFsaXplIG1hY2hpbmUgdmVjdG9yLlxuIik7Ci0JCW1hY2h2ZWNfaW5pdCgiZGlnIik7
-Ci0JCXN3aW90bGJfaW5pdCgpOwotCQlkbWFfb3BzID0gJnN3aW90bGJfZG1hX29wczsKKwlzd2lv
-dGxiID0gMTsKKwlwcmludGsoS0VSTl9JTkZPICJQQ0ktRE1BOiBSZS1pbml0aWFsaXplIG1hY2hp
-bmUgdmVjdG9yLlxuIik7CisJbWFjaHZlY19pbml0KCJkaWciKTsKKwlzd2lvdGxiX2luaXQoKTsK
-KwlkbWFfb3BzID0gJnN3aW90bGJfZG1hX29wczsKICNlbHNlCi0JCXBhbmljKCJVbmFibGUgdG8g
-ZmluZCBJbnRlbCBJT01NVSIpOworCXBhbmljKCJVbmFibGUgdG8gZmluZCBJbnRlbCBJT01NVSIp
-OwogI2VuZGlmCi0JfQogfQo=
---000e0cd32c086eb9fb0470ee539e--
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
