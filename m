@@ -1,144 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932432AbZHLKFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932440AbZHLKJC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932432AbZHLKFY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 06:05:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932400AbZHLKFX
+	id S932440AbZHLKJC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 06:09:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932416AbZHLKJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 06:05:23 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:33105 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932396AbZHLKFW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 06:05:22 -0400
-Date: Wed, 12 Aug 2009 11:05:17 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Felipe Balbi <me@felipebalbi.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Mike Rapoport <mike@compulab.co.il>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Smart Battery System Design (was: Re: Question about
-	userspace-consumer)
-Message-ID: <20090812100517.GA11227@sirena.org.uk>
-References: <20090810200553.GB4652@gandalf> <20090810215800.GB4528@sirena.org.uk> <20090811054438.GA7176@gandalf> <20090811094020.GA6762@rakim.wolfsonmicro.main> <1249986616.5807.28.camel@odin> <20090811204914.GB13969@gandalf> <20090811223645.GA4691@sirena.org.uk> <20090812064745.GA17285@gandalf>
+	Wed, 12 Aug 2009 06:09:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33416 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932400AbZHLKJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 06:09:00 -0400
+Date: Wed, 12 Aug 2009 12:08:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       Brice Goglin <Brice.Goglin@inria.fr>
+Subject: Re: [PATCH 1/3] perf tools: Factorize high level dso helpers
+Message-ID: <20090812100851.GA18577@elte.hu>
+References: <1250069162-13099-1-git-send-email-fweisbec@gmail.com> <1250069162-13099-2-git-send-email-fweisbec@gmail.com> <20090812095933.GB6081@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090812064745.GA17285@gandalf>
-X-Cookie: One FISHWICH coming up!!
+In-Reply-To: <20090812095933.GB6081@nowhere>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 09:47:50AM +0300, Felipe Balbi wrote:
-> On Tue, Aug 11, 2009 at 11:36:46PM +0100, Mark Brown wrote:
 
-> > This is already handled in kernel by the drivers/power code.  Whenever a
-> > power supply updates its status it notifies the subsystem which will
-> > then notify user space and also notify any other power supplies which
-> > have been configured as being supplied by the changing supply.  This is
-> > used by existing drivers for non-autonomous battery chargers to initiate
-> > charging (usually via a GPIO connected to the charger).
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> but that'll depend very much on the chip being used. Check bq24150, for
-> example. We cannot rely on a gpio since we have to tell the charger if
+> On Wed, Aug 12, 2009 at 11:26:00AM +0200, Frederic Weisbecker wrote:
+> > Factorize multiple definitions of high level dso helpers into the
+> > symbol source file.
+> > 
+> > The side effect is a general export of the verbose and eprintf
+> > debugging helpers into a new file dedicated to debugging purposes.
+> > 
+> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> > Cc: Peter Zijlstra <peterz@infradead.org>
+> > Cc: Mike Galbraith <efault@gmx.de>
+> > Cc: Brice Goglin <Brice.Goglin@inria.fr>
+> > ---
+> >  tools/perf/Makefile           |    1 +
+> >  tools/perf/builtin-annotate.c |   96 ----------------------------------------
+> >  tools/perf/builtin-record.c   |    1 -
+> >  tools/perf/builtin-report.c   |   97 -----------------------------------------
+> >  tools/perf/builtin-stat.c     |    1 -
+> >  tools/perf/builtin-top.c      |    4 --
+> >  tools/perf/builtin.h          |    1 +
+> >  tools/perf/perf.h             |    1 +
+> >  tools/perf/util/symbol.c      |   97 +++++++++++++++++++++++++++++++++++++++++
+> >  tools/perf/util/symbol.h      |   11 +++++
+> >  10 files changed, 111 insertions(+), 199 deletions(-)
+> > 
+> > diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+> > index de7beac..2aee21b 100644
+> > --- a/tools/perf/Makefile
+> > +++ b/tools/perf/Makefile
+> > @@ -339,6 +339,7 @@ LIB_OBJS += util/pager.o
+> >  LIB_OBJS += util/header.o
+> >  LIB_OBJS += util/callchain.o
+> >  LIB_OBJS += util/values.o
+> > +LIB_OBJS += util/debug.o
+> 
+> 
+> Damn, did I forgot to git-add util/debug.c ?
+> 
+> How could I fix this? Another pull request?
 
-You actually get notification on any change the supply chooses to notify
-the core on IIRC.
+yeah. I've zapped those commits from perfcounters/core.
 
-> it can charger with up to 100mA, up to 500mA or more (in case of a
-> dedicated usb charger we can draw up to 2.5A if I'm not wrong, but most
-> chargers I've seen source up to 1.5A). A gpio would only be able to tell
-> the charger is present or not.
-
-Well, that's just the addition of a second GPIO to put it into fast
-charge mode (which has other constraints beyond the system supply
-current).  It'd probably help clarity to not refer so directly to the
-USB current limits here due to all the stuff in between the USB supply
-and the charger.
-
-> > This is all a bit of a sidetrack, though - the issue is if there is an
-> > in-kernel part to the SBS charger support.  With the userspace consumer
-> > there's nothing at all, even an extremely basic stub which does nothing
-
-> sure, but where do we draw the line between kernel and userspace in this
-> case ?
-
-> do we just be sure that information goes to userland and in case there's
-> no application monitoring battery we stop charging ? Or do we monitor
-> the battery in-kernel ?
-
-I'd be inclined to put at least some of the basic charge cycle into the
-kernel but it doesn't concern me too much so long as the user/kernel
-interface doesn't expose us to the risk of damaging the battery through
-inattention.
-
-> I'd go for monitoring in userland since we might have way too many
-> points to be tracking. One might be:
-
-> 1. doing ADC conversions for fetching battery voltage (not so used since most
->    battery chips can report that)
-> 2. checking whether we're connect to a usb host or a usb dedicated
->    charger (have to kick usb charger detection as per USB Battery Charger
->    Spec 1.1
-
-Or a wall supply.  The best you can get from the 100mA limit is that
-it's not even worth trying a fast charge but that's not the same thing
-as being able to do one, having more than that isn't that much of a
-reliable guide.
-
-> 3. Priotizing one or other charger (imagine a system with both usb and
->    AC charger support)
-
-It's probably more interesting to think of prioritising between multiple
-batteries here - most systems I've seen have power path management which
-handles all the incoming power sources and uses them to maintain an
-unregulated power domain which is then used as the root supply for the
-rest of the system, including the battery chargers.  This takes the
-supply selection well out of the domain of charging.
-
-> 4. enabling the charger after figuring out how much current we can draw
->    from that supply
-
-This is the really tricky bit since you need some idea of the load from
-the rest of the system if the charger really is able to draw current.
-Normally there's a combination of checking various gates to see if it's
-possible to start charging with the current parameters and then things
-like monitoring the supply voltage to the charger to make sure it's not
-drooping and taking corrective action if it does.
-
-My feeling is that in addition to what you're saying the in-kernel side
-of things should also describe how the system is wired together since
-that's the sort of task the kernel is doing anyway, it's something
-that is fixed in the hardware and it's potentially dangerous to get
-wrong.
-
-> enabling the charger could be regulator_enable() call.
-
-Assuming the charger also has things like voltage and current control
-exposed.  I think I'd expect to see some sort of charger class which
-abstracts out the functionality of the charger so that the same user
-applications can also be used to set policy for more autonomous
-chargers.  Those chargers may require contortions to fit them into the
-regulator API depending on the control they provide to the system.  More
-simple chargers may well fit cleanly into the regulator API (they're
-regulators after all) but that'd be just one example of this class.
-
-Quite how much I'd expect such a soft charger to be able to do for
-itself I'm less sure about but I'd be inclined to at least look at doing
-the stuff that can be done with only information from the battery in
-kernel to make things more consistent for user space.
-
-> > charger will be doing all the management of the regulators).  If the SBS
-> > is done entirely in software the kernel at least needs to be able to
-> > notice the management software exiting and clean up after it, even if
-> > that's all it is able to do for itself.
-
-> ok, now I got your point. Your concerned with the case where a userland
-> application, say, crashes and the battery is left for overcharging and
-> overheating.
-
-Yes, exactly - there's a real danger of catastrophic system failure if
-that happens.
+	Ingo
