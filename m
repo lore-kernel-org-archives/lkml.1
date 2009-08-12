@@ -1,45 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbZHLD5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751216AbZHLEIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbZHLD5p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 23:57:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZHLD5o
+	id S1751216AbZHLEIG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 00:08:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbZHLEIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 23:57:44 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:36502 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753058AbZHLD5n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 23:57:43 -0400
-Date: Wed, 12 Aug 2009 09:27:40 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp,
-       kosaki.motohiro@jp.fujitsu.com, menage@google.com, prarit@redhat.com,
-       andi.kleen@intel.com, xemul@openvz.org, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: Help Resource Counters Scale better (v4)
-Message-ID: <20090812035740.GG7176@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090811144405.GW7176@balbir.in.ibm.com> <20090811163159.ddc5f5fd.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 12 Aug 2009 00:08:05 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43141 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750741AbZHLEIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 00:08:04 -0400
+Date: Wed, 12 Aug 2009 06:07:56 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Zach Brown <zach.brown@oracle.com>
+Cc: Manfred Spraul <manfred@colorfullife.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nadia Derbey <Nadia.Derbey@bull.net>,
+       Pierre Peiffer <peifferp@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 4/4] ipc: sem optimise simple operations
+Message-ID: <20090812040756.GA5330@wotan.suse.de>
+References: <20090811110902.255877673@suse.de> <20090811111607.310739140@suse.de> <4A81B646.5060301@colorfullife.com> <4A81B728.7040200@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090811163159.ddc5f5fd.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A81B728.7040200@oracle.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton <akpm@linux-foundation.org> [2009-08-11 16:31:59]:
+On Tue, Aug 11, 2009 at 11:23:36AM -0700, Zach Brown wrote:
+> Manfred Spraul wrote:
+> > On 08/11/2009 01:09 PM, npiggin@suse.de wrote:
+> >> Index: linux-2.6/include/linux/sem.h
+> >> ===================================================================
+> >> --- linux-2.6.orig/include/linux/sem.h
+> >> +++ linux-2.6/include/linux/sem.h
+> >> @@ -86,6 +86,8 @@ struct task_struct;
+> >>   struct sem {
+> >>       int    semval;        /* current value */
+> >>       int    sempid;        /* pid of last operation */
+> >> +    struct list_head    negv_pending;
+> >> +    struct list_head    zero_pending;
+> >>   };
+> >>    
+> > struct sem is increased from 8 to 24 bytes.
+> 
+> And larger still with 64bit pointers.
 
-> Is this an alternative approach to using percpu_counters, or do we do
-> both or do we choose one or the other?  res_counter_charge() really is
-> quite sucky.
->
+Yes it is a significant growth. To answer Manfed's question, I don't
+know if there are applications using large numbers of semaphores per
+set. Google search for increase SEMMSL results in mostly Oracle,
+which says to use 250 (which is our current default).
 
-This is an alternative approach, I'll still do the percpu counter
-patches, but once the overhead for root is gone, most users not using
-this functionality will not see any major overhead. 
+A semaphore set with 250 will use 2K before, and 10K afterward. I
+don't know that it is a huge amount really, given that they also
+have to presumably be *protecting* stuff.
 
--- 
-	Balbir
+We can convert them to hlists (I was going to send a patch to do
+everything in hlists, but hlists are missing some _rcu variants...
+maybe I should just convert the pending lists to start with).
+
+ 
+> If it's a problem, this can be scaled back.  You can have pointers to
+> lists and you can have fewer lists.
+> 
+> Hopefully it won't be a problem, though.  We can close our eyes and
+> pretend that the size of the semaphore sets scale with the size of the
+> system and that it's such a relatively small consumer of memory that no
+> one will notice :).
+
+The other thing is that using semaphores as sets really won't scale
+well at all. It will scale better now that there are per-sem lists,
+but there is still a per-set lock. They really should be discouraged.
+
+It's not trivial to remove shared cachelines completely. Possible I
+think, but I think it would further increase complexity without a
+proven need at this point.
+
