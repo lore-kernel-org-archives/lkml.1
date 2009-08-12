@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932475AbZHLK0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932494AbZHLK0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932475AbZHLK0J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 06:26:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932465AbZHLK0J
+	id S932494AbZHLK0V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 06:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932480AbZHLK0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 06:26:09 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52538 "EHLO mail.dvmed.net"
+	Wed, 12 Aug 2009 06:26:18 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52545 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932446AbZHLK0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 06:26:08 -0400
-Message-ID: <4A8298BD.8020500@pobox.com>
-Date: Wed, 12 Aug 2009 06:26:05 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
+	id S932478AbZHLK0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 06:26:15 -0400
+Message-ID: <4A8298B6.4060608@garzik.org>
+Date: Wed, 12 Aug 2009 06:25:58 -0400
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Tony Vroon <tony@linx.net>
-CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Philip Langdale <philipl@overt.org>,
-       Robert Hancock <hancockrwd@gmail.com>
-Subject: Re: [PATCH 2.6.32 v3] Conditional MSI support for sata_nv
-References: <20090805235009.88C091007F@gold.linx.net>
-In-Reply-To: <20090805235009.88C091007F@gold.linx.net>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Krystian Juskowiak <jusko@tlen.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Borislav Petkov <bbpetkov@yahoo.de>,
+       Robert Hancock <hancockrwd@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pata_atiixp: fix slave device support
+References: <200908061740.15902.bzolnier@gmail.com> <200908061747.05944.bzolnier@gmail.com>
+In-Reply-To: <200908061747.05944.bzolnier@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -30,44 +32,41 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tony Vroon wrote:
-> At least the nVidia MCP55 controller quite happily supports MSI.
-> This adds an option to use it. It is disabled by default.
-> As per feedback by Robert Hancock, it will honour the user 
-> request as the kernel will not enable MSI where the controller 
-> or the specific system configuration do not support it.
+Bartlomiej Zolnierkiewicz wrote:
+> On Thursday 06 August 2009 17:40:15 Bartlomiej Zolnierkiewicz wrote:
+>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>> Subject: [PATCH] pata_atiixp: fix slave device support
 > 
-> Signed-off-by: Tony Vroon <tony@linx.net>
+> Argh, I pushed the "Send" button too quick..
+> 
+> Below version with the correct patch description
+> (I doubt that this fix will help with bug #13921)..
+> 
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH v2] pata_atiixp: fix second channel support
+> 
+> PIO and MWDMA timings are never programmed for the second channel
+> because timing registers are treated as 16-bit long ones.
+> 
+> The bug is an attixp -> pata_atiixp regression and goes back to:
+> 
+> 	commit 669a5db411d85a14f86cd92bc16bf7ab5b8aa235
+> 	Author: Jeff Garzik <jeff@garzik.org>
+> 	Date:   Tue Aug 29 18:12:40 2006 -0400
+> 
+> 	    [libata] Add a bunch of PATA drivers.
+> 
+> Cc: Krystian Juskowiak <jusko@tlen.pl>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Borislav Petkov <bbpetkov@yahoo.de>
 > Cc: Robert Hancock <hancockrwd@gmail.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+> After this patch pata_atiixp still have two bugs (+ few superfluous oddities)
+> not present in atiixp (although not as severe as this one)..
 > 
-> diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
-> index b2d11f3..4598f19 100644
-> --- a/drivers/ata/sata_nv.c
-> +++ b/drivers/ata/sata_nv.c
-> @@ -602,6 +602,7 @@ MODULE_VERSION(DRV_VERSION);
->  
->  static int adma_enabled;
->  static int swncq_enabled = 1;
-> +static int msi_enabled;
->  
->  static void nv_adma_register_mode(struct ata_port *ap)
->  {
-> @@ -2459,6 +2460,12 @@ static int nv_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
->  	} else if (type == SWNCQ)
->  		nv_swncq_host_init(host);
->  
-> +	if (msi_enabled) {
-> +		dev_printk(KERN_NOTICE, &pdev->dev, "Using MSI\n");
-> +		pci_enable_msi(pdev);
-> +	}
-> +
->  	pci_set_master(pdev);
->  	return ata_host_activate(host, pdev->irq, ipriv->irq_handler,
->  				 IRQF_SHARED, ipriv->sht);
-> @@ -2558,4 +2565,6 @@ module_param_named(adma, adma_enabled, bool, 0444);
->  MODULE_PARM_DESC(adma, "Enable use of ADMA (Default: false)");
->  module_param_named(swncq, swncq_enabled, bool, 0444);
->  MODULE_PARM_DESC(swncq, "Enable use of SWNCQ (Default: true)");
+>  drivers/ata/pata_atiixp.c |   19 ++++++++++---------
+>  1 file changed, 10 insertions(+), 9 deletions(-)
 
 applied
 
