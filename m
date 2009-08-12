@@ -1,104 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752368AbZHLWQD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbZHLWQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752368AbZHLWQD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 18:16:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbZHLWQC
+	id S1752476AbZHLWQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 18:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbZHLWQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 18:16:02 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:57239 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752281AbZHLWQB convert rfc822-to-8bit (ORCPT
+	Wed, 12 Aug 2009 18:16:26 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:54897 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752388AbZHLWQ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 18:16:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=P7eKK62SRBB2SnPQJlGKyfcdsGY65z95R//0BHVsANlkCcEE2aQ0xcCyzJpk0z5SVF
-         OlqJeGym2PPCiKtrdukW2sC/brsF9K23yJFSq+R8wh3mTGaV8LFyVMu8vompuIhCBl9n
-         A3Nw+ttHTJzi+CRnUiQMY5wla2hriscWN1lHw=
-MIME-Version: 1.0
-In-Reply-To: <c4e36d110908111410y29b922ceod6871fda2514f6e6@mail.gmail.com>
-References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>
-	 <alpine.DEB.1.10.0908111032110.30494@gentwo.org>
-	 <c4e36d110908110752x253e30epb00cc71f4683052b@mail.gmail.com>
-	 <alpine.DEB.1.10.0908111056550.30494@gentwo.org>
-	 <c4e36d110908110832y21fba830ub8804613df571228@mail.gmail.com>
-	 <20090811154853.GF2763@sgi.com>
-	 <c4e36d110908111410y29b922ceod6871fda2514f6e6@mail.gmail.com>
-Date: Thu, 13 Aug 2009 00:16:00 +0200
-Message-ID: <c4e36d110908121516u504809e9y537e9babfa95df1d@mail.gmail.com>
-Subject: Re: System freeze on reboot - general protection fault
-From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-To: Robin Holt <holt@sgi.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 12 Aug 2009 18:16:26 -0400
+Subject: Re: kmemleak: Protect the seq start/next/stop sequence
+	byrcu_read_lock()
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090812205215.GA21451@elte.hu>
+References: <20090812205215.GA21451@elte.hu>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Wed, 12 Aug 2009 23:16:15 +0100
+Message-Id: <1250115375.11496.25.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Aug 2009 22:16:16.0132 (UTC) FILETIME=[82785C40:01CA1B9A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/11 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
-> 2009/8/11 Robin Holt <holt@sgi.com>:
->> On Tue, Aug 11, 2009 at 05:32:16PM +0200, Zdenek Kabelac wrote:
->>> 2009/8/11 Christoph Lameter <cl@linux-foundation.org>:
->>> > On Tue, 11 Aug 2009, Zdenek Kabelac wrote:
->>> >
->>> >> Well - I've tried to switch from  'slub' allocator to  old 'slab'
->>> >> allocator and the problem is gone - shutdown goes without any problem.
->>> >>
->>> >> So it's probably related to 'slub' allocator only?
->>> >
->>> > The slab allocator does not have all the diagnostics of slub. The issue
->>> > may simply not be detected in slab. If you switch off diagnostics in slub
->>> > then everything will seem to work fine as well. But we need to figure out
->>> > what is going wrong here.
->>>
->>> Hmm - but there are few things -
->>>
->>> My machine runs  Fedora Rawhide. If I run the same kernel within KVM
->>> running Debian unstable I could easily reboot this guest machine
->>> without any problems.
->>>
->>> Also if I boot Rawhide only to single mode - I could also reboot
->>> machine without this oops.
->>> The problem seems to be - when I do full machine startup to the
->>> multiuser runlevel 3
->>
->> Try booting all the way and recording you output from lsmod.  Reboot
->> single user mode and modprobe each of the modules in that original lists.
->> Test shutdown from single user mode.  This might identify if it is one
->> of your loaded modules.  If so, effectively bisect the modprobes until
->> you find the offending module(s).
->>
->
->
-> Ok - it appeared to be more complex - when I've been trying to get
-> this oops on my laptop while not being connected via wired net - but
-> to not bother here with details - the result is
->
-> That if I remove nf_conntrack_ipv4.ko  - so it can not be loaded - the
-> problem is gone.
-> So it looks like the memory problem is related to netfiltering - there
-> are multiple modules loaded as dependecy becuase of this - so it's
-> hard to say exactly which module of them makes the trouble.
->
-> I've checked for some recent commits in this area - and they seem to
-> be actually important
-> (i.e 941297f443f871b8c3372feccf27a8733f6ce9e9  16.Jul)
->
-> I could probably try to revert some of them - but if someone has some
-> ideas what could make these problems ?
->
-> I've added authors of some recent conntrack commits to Cc: - maybe
-> they might know?
+On Wed, 2009-08-12 at 21:52 +0100, Ingo Molnar wrote:
+> * Catalin Marinas <catalin.marinas@arm.com> wrote:
+> 
+> > kmemleak: Allow rescheduling during an object scanning
+> 
+> i tried this in -tip testing, and it crashes quickly:
+> 
+> [   81.900051] BUG: unable to handle kernel paging request at ffff880020000000
+> [   81.901382] IP: [<ffffffff8112ae7e>] scan_block+0xee/0x190
 
-I've tested v2.6.30 - and it's crashing in the same way - so any other
-starting point where slub has the same detection mechanism and
-conntrack module should be working reliable ?
+It looks like my check for object->flags & OBJECT_ALLOCATED in
+scan_object() may not be enough.
 
-Zdenek
+I'm a bit confused as the config you sent says x86_32 but the fault
+address above looks like a 64 bit one (and my knowledge of x86 isn't
+great). Is this x86_64?
+
+Anyway, does the virtual address above happen to be in the vmalloc
+range? The kmemleak_free() callback for vfree() is run before __vunmap()
+is executed and the OBJECT_ALLOCATED bit should be cleared.
+
+If it's not vmalloc, do you know what else could be at that virtual
+address which may be unmapped without first calling kmemleak_free()?
+
+I've been testing the patch on both x86_32 and ARM and seemed fine (more
+intensively on the latter, though obviously not exactly with the same
+config as yours but as close as possible).
+
+Thanks.
+
+-- 
+Catalin
+
