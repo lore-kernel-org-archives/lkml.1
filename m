@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbZHLQWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754358AbZHLQXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754336AbZHLQWI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 12:22:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbZHLQWH
+	id S1754358AbZHLQXf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 12:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbZHLQXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 12:22:07 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:36645 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754293AbZHLQWG (ORCPT
+	Wed, 12 Aug 2009 12:23:35 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:43345 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754207AbZHLQXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 12:22:06 -0400
+	Wed, 12 Aug 2009 12:23:34 -0400
+Date: Wed, 12 Aug 2009 12:23:35 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.44L0.0908121005370.2955-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0908121005370.2955-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Wed, 12 Aug 2009 11:22:03 -0500
-Message-Id: <1250094123.4000.43.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1250092711.4000.33.camel@mulgrave.site>
+Message-ID: <Pine.LNX.4.44L0.0908121216500.9635-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-12 at 10:13 -0400, Alan Stern wrote:
-> On Wed, 12 Aug 2009, Ingo Molnar wrote:
+On Wed, 12 Aug 2009, James Bottomley wrote:
+
+> This all boils down to "the race window for a deadlock may be narrower".
 > 
-> > > And here I was thinking kerneldoc doesn't actually work 
-> > > like that, but perhaps Randy fixed it so the initial 
-> > > description can line-wrap?
+> Instead of training programmers to narrow deadlock races, we should be
+> training them to avoid them.
 > 
-> Yes, that's what I thought too.  If kerneldoc has been fixed then the 
-> description line certainly should get wrapped.
+> The entangled deadlock problem occurs in all of our _sync() APIs as well
+> as interrupt and other workqueue stuff.
+> 
+> The rules are something like
+> 
+> Never use synchronous operations if you can avoid them.  If you must use
+> operations that wait for another thread to complete (say because you're
+> about to destroy data structures that queued elements may be using):
+>      1. Never hold any locks or mutexes while waiting for the completion
+>         of synchronous operations
+>      2. If you have to hold a lock while waiting:
+>              1. If it's a global lock, make sure you're using a local
+>                 queue and that nothing you submitted to the queue can
+>                 take the lock
+>              2. If it's a local lock, you may use a global queue but
+>                 must still make sure that nothing you submitted to the
+>                 queue can take the lock.
 
-I really don't think it needs to be fixed: it's a feature not a bug.  It
-requires people writing kernel doc actually to think of one line
-summaries.
+I haven't seen these rules written down anywhere in the kernel 
+documentation.  Presumably people are supposed to be aware of them 
+already?
 
-LSI recently tried to submit a ten line wrapped summary which the
-current feature makes it very easy to knock back and say this must be a
-single line, so trim it and move the rest to the function description
-body.
+Anyway, 2.1 and 2.2 are wrong.  They should read: "... make sure that
+nothing submitted to the queue calls any of your routines that can take
+the lock."  The point being that even though _you_ don't submit
+anything bad to the queue, somebody else might do so.
 
-James
+If you use cancel_work_sync() instead of flush_scheduled_work() then 
+the rules become less onerous.  In place of your 2.1 and 2.2, we have:
 
+	Make sure the work item you are cancelling cannot take
+	the lock.
+
+This is much easier to verify.
+
+Alan Stern
 
