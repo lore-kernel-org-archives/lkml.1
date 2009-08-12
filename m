@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbZHLQiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbZHLQjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbZHLQiY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 12:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbZHLQiX
+	id S1754501AbZHLQjS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 12:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbZHLQjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 12:38:23 -0400
-Received: from mail-fx0-f228.google.com ([209.85.220.228]:42625 "EHLO
-	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbZHLQiX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 12:38:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=K1PTIRBW38T/nKY/Iagp8jj6Q0u0THQH657FjVW7f9lyY047CQiIP1jIwVOF3S8zSE
-         yWwFQT4F7xmJo5MP74WoMkfzEPgMzUVSy8+rrp8STWHFhiPiWNjvoiojYPMAq0HZL8x6
-         Qb7Lkb87l0EfOba6WdSevdqR3Huy1tcNheAaQ=
-Message-ID: <4A82EEB5.70506@gmail.com>
-Date: Wed, 12 Aug 2009 18:32:53 +0200
-From: Sandro Bonazzola <sandro.bonazzola@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090722)
+	Wed, 12 Aug 2009 12:39:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53898 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753725AbZHLQjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 12:39:17 -0400
+Date: Wed, 12 Aug 2009 19:37:37 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
+       Patrick Mullaney <pmullaney@novell.com>
+Subject: Re: [PATCHv2 0/2] vhost: a kernel-level virtio server
+Message-ID: <20090812163737.GA29903@redhat.com>
+References: <20090811212743.GA26309@redhat.com> <200908121452.01802.arnd@arndb.de> <20090812130612.GC29200@redhat.com> <200908121540.44928.arnd@arndb.de> <4A82C8F1.4030703@gmail.com> <20090812140224.GA29345@redhat.com> <4A82EA37.3010902@gmail.com>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Pavel Machek <pavel@ucw.cz>, gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] w35und: Remove some write-only struct members
-References: <1250064219-7372-1-git-send-email-penberg@cs.helsinki.fi>	 <1250064219-7372-2-git-send-email-penberg@cs.helsinki.fi>	 <1250064219-7372-3-git-send-email-penberg@cs.helsinki.fi>	 <1250064219-7372-4-git-send-email-penberg@cs.helsinki.fi>	 <1250064219-7372-5-git-send-email-penberg@cs.helsinki.fi>	 <1250064219-7372-6-git-send-email-penberg@cs.helsinki.fi>	 <1250064219-7372-7-git-send-email-penberg@cs.helsinki.fi>	 <20090812081550.GG23832@elf.ucw.cz> <84144f020908120121j542a895fw5f4cdda18890d417@mail.gmail.com>
-In-Reply-To: <84144f020908120121j542a895fw5f4cdda18890d417@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A82EA37.3010902@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Wed, Aug 12, 2009 at 12:13:43PM -0400, Gregory Haskins wrote:
+> Michael S. Tsirkin wrote:
+> > On Wed, Aug 12, 2009 at 09:51:45AM -0400, Gregory Haskins wrote:
+> >> Arnd Bergmann wrote:
+> >>> On Wednesday 12 August 2009, Michael S. Tsirkin wrote:
+> >>>>> If I understand it correctly, you can at least connect a veth pair
+> >>>>> to a bridge, right? Something like
+> >>>>>
+> >>>>>            veth0 - veth1 - vhost - guest 1 
+> >>>>> eth0 - br0-|
+> >>>>>            veth2 - veth3 - vhost - guest 2
+> >>>>>            
+> >>>> Heh, you don't need a bridge in this picture:
+> >>>>
+> >>>> guest 1 - vhost - veth0 - veth1 - vhost guest 2
+> >>> Sure, but the setup I described is the one that I would expect
+> >>> to see in practice because it gives you external connectivity.
+> >>>
+> >>> Measuring two guests communicating over a veth pair is
+> >>> interesting for finding the bottlenecks, but of little
+> >>> practical relevance.
+> >>>
+> >>> 	Arnd <><
+> >> Yeah, this would be the config I would be interested in.
+> > 
+> > Hmm, this wouldn't be the config to use for the benchmark though: there
+> > are just too many variables.  If you want both guest to guest and guest
+> > to host, create 2 nics in the guest.
+> > 
+> > Here's one way to do this:
+> > 
+> > 	-net nic,model=virtio,vlan=0 -net user,vlan=0
+> > 	-net nic,vlan=1,model=virtio,vhost=veth0
+> > 	-redir tcp:8022::22
+> > 
+> > 	-net nic,model=virtio,vlan=0 -net user,vlan=0
+> > 	 -net nic,vlan=1,model=virtio,vhost=veth1
+> > 	-redir tcp:8023::22
+> > 
+> > In guests, for simplicity, configure eth1 and eth0
+> > to use separate subnets.
+> 
+> I can try to do a few variations, but what I am interested is in
+> performance in a real-world L2 configuration.  This would generally mean
+>  all hosts (virtual or physical) in the same L2 domain.
+> 
+> If I get a chance, though, I will try to also wire them up in isolation
+> as another data point.
+> 
+> Regards,
+> -Greg
+> 
+> 
 
-Pekka Enberg wrote:
+Or patch macvlan to support guest to guest:
+http://markmail.org/message/sjy74g57qsvdo2wh
+That patch needs to be updated to support guest to guest multiast,
+but it seems functional enough for your purposes.
 
-> OK, do you still want to be CC'd on the patches? I much appreciate the review!
-
-Yes, feel free to CC me for 235und patches. I've not so much time but I'll try
-yo test them as soon as I can.
-
-
-- --
-Sandro
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkqC7rUACgkQV871CybFeznITwCeLSzP7SCYlzqTt9aC8iaQRH9U
-mZwAoKpKPPT4MKq1zidLGLgOoG9NuX2M
-=Syvz
------END PGP SIGNATURE-----
+-- 
+MST
