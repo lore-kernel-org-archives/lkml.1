@@ -1,284 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbZHLLjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbZHLLjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbZHLLjP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 07:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbZHLLjP
+	id S1752546AbZHLLjq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 07:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbZHLLjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 07:39:15 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:54485 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751627AbZHLLjO (ORCPT
+	Wed, 12 Aug 2009 07:39:45 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:42645 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751684AbZHLLjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 07:39:14 -0400
-Date: Wed, 12 Aug 2009 13:39:13 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Paul Gortmaker <p_gortmaker@yahoo.com>, rtc-linux@googlegroups.com
-Subject: Re: [PATCH 4/5] [RTC] Add Freescale MC13783 RTC driver
-Message-ID: <20090812113913.GE17992@pengutronix.de>
-References: <1249981166-4210-1-git-send-email-s.hauer@pengutronix.de> <1249981166-4210-2-git-send-email-s.hauer@pengutronix.de> <1249981166-4210-3-git-send-email-s.hauer@pengutronix.de> <1249981166-4210-4-git-send-email-s.hauer@pengutronix.de> <20090812114134.421303c4@i1501.lan.towertech.it>
+	Wed, 12 Aug 2009 07:39:44 -0400
+Subject: [RFC PATCH] kbuild: Do not select symbols with unmet dependencies
+To: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+From: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Date: Wed, 12 Aug 2009 12:39:40 +0100
+Message-ID: <20090812112308.30683.24700.stgit@pc1117.cambridge.arm.com>
+User-Agent: StGit/0.15-rc1-11-g9876
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090812114134.421303c4@i1501.lan.towertech.it>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 13:37:09 up 6 days, 22:56, 27 users,  load average: 0.06, 0.59,
-	0.94
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Aug 2009 11:39:40.0811 (UTC) FILETIME=[9448E5B0:01CA1B41]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Allessandro,
+The "select" statement in Kconfig files allows the enabling of options
+even if they have unmet direct dependencies (i.e. "depends on" expands
+to "no"). Currently, the "depends on" clauses are used in calculating
+the visibility but they do not affect the reverse dependencies in any
+way.
 
-I addressed your comments. Will be fixed next round.
+The patch introduces additional tracking of the "depends on" statements
+and does not allow selecting an option if its direct dependencies are
+not met, also printing a warning.
 
-Thanks for reviewing,
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+---
 
- Sascha
+This patch is meant to make "select" safer in Kconfig files. The
+"depends on", if not true, takes priority over "select".
 
-On Wed, Aug 12, 2009 at 11:41:34AM +0200, Alessandro Zummo wrote:
-> On Tue, 11 Aug 2009 10:59:25 +0200
-> Sascha Hauer <s.hauer@pengutronix.de> wrote:
-> 
-> > This driver provides support for the RTC part integrated into
-> > the Freescale MC13783 PMIC.
-> > 
-> > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> > Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
-> > Cc: Alessandro Zummo <a.zummo@towertech.it>
-> > Cc: rtc-linux@googlegroups.com
-> 
-> 
->  thanks for your submission, comments below
-> 
-> > ---
-> >  drivers/rtc/Kconfig       |    6 ++
-> >  drivers/rtc/Makefile      |    1 +
-> >  drivers/rtc/rtc-mc13783.c |  141 +++++++++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 148 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/rtc/rtc-mc13783.c
-> > 
-> > diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-> > index 81adbdb..e4a242f 100644
-> > --- a/drivers/rtc/Kconfig
-> > +++ b/drivers/rtc/Kconfig
-> > @@ -759,4 +759,10 @@ config RTC_DRV_PS3
-> >  	  This driver can also be built as a module. If so, the module
-> >  	  will be called rtc-ps3.
-> >  
-> > +config RTC_DRV_MC13783
-> > +	depends on MFD_MC13783
-> > +	tristate "Freescale MC13783 RTC"
-> > +	help
-> > +	  This enables support for the Freescale MC13783 PMIC RTC
-> > +
-> >  endif # RTC_CLASS
-> > diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-> > index 3c0f2b2..00bf66d 100644
-> > --- a/drivers/rtc/Makefile
-> > +++ b/drivers/rtc/Makefile
-> > @@ -78,3 +78,4 @@ obj-$(CONFIG_RTC_DRV_WM8350)	+= rtc-wm8350.o
-> >  obj-$(CONFIG_RTC_DRV_X1205)	+= rtc-x1205.o
-> >  obj-$(CONFIG_RTC_DRV_PCF50633)	+= rtc-pcf50633.o
-> >  obj-$(CONFIG_RTC_DRV_PS3)	+= rtc-ps3.o
-> > +obj-$(CONFIG_RTC_DRV_MC13783)	+= rtc-mc13783.o
-> 
->  keep in in alphabetic order.
-> 
-> > diff --git a/drivers/rtc/rtc-mc13783.c b/drivers/rtc/rtc-mc13783.c
-> > new file mode 100644
-> > index 0000000..d1f1192
-> > --- /dev/null
-> > +++ b/drivers/rtc/rtc-mc13783.c
-> > @@ -0,0 +1,141 @@
-> > +/*
-> > + * Real Time Clock driver for Freescale MC13783 PMIC
-> > + *
-> > + * (C) 2009 Sascha Hauer, Pengutronix
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify
-> > + * it under the terms of the GNU General Public License as published by
-> > + * the Free Software Foundation; either version 2 of the License, or
-> > + * (at your option) any later version.
-> > + *
-> > + * This program is distributed in the hope that it will be useful,
-> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> > + * GNU General Public License for more details.
-> > + *
-> > + * You should have received a copy of the GNU General Public License
-> > + * along with this program; if not, write to the Free Software
-> > + * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-> > + */
-> > +
-> > +#include <linux/mfd/mc13783-private.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/interrupt.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/module.h>
-> > +#include <linux/ioctl.h>
-> > +#include <linux/time.h>
-> > +#include <linux/rtc.h>
-> 
->  too many includes?
-> 
-> > +
-> > +struct mc13783_rtc {
-> > +	struct rtc_device *rtc;
-> > +	struct mc13783 *mc13783;
-> > +};
-> > +
-> > +static int mc13783_rtc_set_time(struct device *dev, struct rtc_time *tm)
-> 
->  please implement set_mmss instad of set_time
-> 
-> > +	struct mc13783_rtc *priv = dev_get_drvdata(dev);
-> > +	unsigned int seconds, days;
-> > +	unsigned long s1970;
-> > +
-> > +	rtc_tm_to_time(tm, &s1970);
-> > +
-> > +	seconds = s1970 % 86400;
-> > +	days = s1970 / 86400;
-> > +
-> > +	mc13783_reg_write(priv->mc13783, MC13783_REG_RTC_TIME, seconds);
-> > +	mc13783_reg_write(priv->mc13783, MC13783_REG_RTC_DAY, days);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int mc13783_rtc_read_time(struct device *dev, struct rtc_time *tm)
-> > +{
-> > +	struct mc13783_rtc *priv = dev_get_drvdata(dev);
-> > +	unsigned int seconds, days1, days2;
-> > +	unsigned long s1970;
-> > +
-> > +	rtc_tm_to_time(tm, &s1970);
-> > +
-> > +	do {
-> > +		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_TIME, &seconds);
-> > +		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_DAY, &days1);
-> > +		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_DAY, &days2);
-> > +	} while (days1 != days2);
-> > +
-> > +	s1970 = days1 * 86400 + seconds;
-> > +
-> > +	rtc_time_to_tm(s1970, tm);
-> > +
-> > +	return 0;
-> 
->  use rtc_valid_tm
-> 
-> > +}
-> > +
-> > +static const struct rtc_class_ops mc13783_rtc_ops = {
-> > +	.read_time	= mc13783_rtc_read_time,
-> > +	.set_time	= mc13783_rtc_set_time,
-> > +};
-> > +
-> > +static int mc13783_rtc_probe(struct platform_device *pdev)
-> > +{
-> > +	int err;
-> > +	struct mc13783_rtc *priv;
-> > +
-> > +	priv = kzalloc(sizeof *priv, GFP_KERNEL);
-> > +	if (!priv)
-> > +		return -ENOMEM;
-> > +
-> > +	priv->mc13783 = pdev->dev.platform_data;
-> > +	platform_set_drvdata(pdev, priv);
-> > +
-> > +	priv->rtc = rtc_device_register(pdev->name,
-> > +			&pdev->dev, &mc13783_rtc_ops, THIS_MODULE);
-> > +
-> > +	if (IS_ERR(priv->rtc)) {
-> > +		err = PTR_ERR(priv->rtc);
-> > +		goto exit_kfree;
-> > +	}
-> > +
-> > +	return 0;
-> > +
-> > +exit_kfree:
-> > +	kfree(priv);
-> > +	return err;
-> > +}
-> > +
-> > +static int __exit mc13783_rtc_remove(struct platform_device *pdev)
-> > +{
-> > +	struct mc13783_rtc *priv = platform_get_drvdata(pdev);
-> > +
-> > +	rtc_device_unregister(priv->rtc);
-> > +	platform_set_drvdata(pdev, NULL);
-> > +
-> > +	kfree(priv);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static struct platform_driver mc13783_rtc_driver = {
-> > +	.probe		 = mc13783_rtc_probe,
-> > +	.remove		= __exit_p(mc13783_rtc_remove),
-> > +	.driver = {
-> > +		.name	= "mc13783-rtc",
-> > +		.owner	= THIS_MODULE,
-> > +	},
-> > +};
-> > +
-> > +static int __init mc13783_rtc_init(void)
-> > +{
-> > +	return platform_driver_register(&mc13783_rtc_driver);
-> 
->  can you use platform_driver_probe?
-> 
-> > +}
-> > +module_init(mc13783_rtc_init);
-> > +
-> > +static void __exit mc13783_rtc_exit(void)
-> > +{
-> > +	platform_driver_unregister(&mc13783_rtc_driver);
-> > +}
-> > +module_exit(mc13783_rtc_exit);
-> > +
-> > +
-> > +MODULE_AUTHOR("Sascha Hauer");
-> 
->  email here please.
-> 
-> > +MODULE_DESCRIPTION("RTC driver for Freescale MC13783 PMIC");
-> > +MODULE_LICENSE("GPL");
-> > -- 
-> > 1.6.3.3
-> > 
-> 
-> 
-> -- 
-> 
->  Best regards,
-> 
->  Alessandro Zummo,
->   Tower Technologies - Torino, Italy
-> 
->   http://www.towertech.it
-> 
-> 
+For example, in -next, the ARM FRAME_POINTER (arch/arm/Kconfig.debug)
+depends on !THUMB2_KERNEL because compiling the kernel to the Thumb-2
+instruction set and FRAME_POINTER enabled fails. However, there are
+several places where this symbol is forced by "select" statements (where
+stacktrace support would be enough). Another example is DEBUG_PAGEALLOC
+which depends on ARCH_SUPPORTS_DEBUG_PAGEALLOC (=n on ARM) but still
+selected.
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+A safer approach currently may be to only warn but still select the
+corresponding symbol.
+
+The patch could probably be improved to also point to the symbols
+containing the "select" statements, though I was getting some segfaults
+with expr_list_for_each_sym(sym->rev_dep.expr).
+
+Please note that the patch doesn't entirely follow the maximum line
+length recommendation as none of the modified files comply with it.
+
+Thank you for you comments.
+
+ scripts/kconfig/expr.h   |    1 +
+ scripts/kconfig/menu.c   |    5 +++++
+ scripts/kconfig/symbol.c |   17 ++++++++++++++++-
+ 3 files changed, 22 insertions(+), 1 deletions(-)
+
+diff --git a/scripts/kconfig/expr.h b/scripts/kconfig/expr.h
+index 6408fef..2381562 100644
+--- a/scripts/kconfig/expr.h
++++ b/scripts/kconfig/expr.h
+@@ -83,6 +83,7 @@ struct symbol {
+ 	tristate visible;
+ 	int flags;
+ 	struct property *prop;
++	struct expr_value dep;
+ 	struct expr_value rev_dep;
+ };
+ 
+diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
+index 07ff8d1..7d32d74 100644
+--- a/scripts/kconfig/menu.c
++++ b/scripts/kconfig/menu.c
+@@ -385,6 +385,11 @@ void menu_finalize(struct menu *parent)
+ 				expr_alloc_and(parent->prompt->visible.expr,
+ 					expr_alloc_symbol(&symbol_mod)));
+ 	}
++
++	if (sym) {
++		sym->dep.expr = expr_transform(expr_copy(parent->dep));
++		sym->dep.expr = expr_eliminate_dups(sym->dep.expr);
++	}
+ }
+ 
+ bool menu_is_visible(struct menu *menu)
+diff --git a/scripts/kconfig/symbol.c b/scripts/kconfig/symbol.c
+index 18f3e5c..af362d0 100644
+--- a/scripts/kconfig/symbol.c
++++ b/scripts/kconfig/symbol.c
+@@ -205,6 +205,16 @@ static void sym_calc_visibility(struct symbol *sym)
+ 	}
+ 	if (sym_is_choice_value(sym))
+ 		return;
++	/* defaulting to "yes" if no explicit "depends on" are given */
++	tri = yes;
++	if (sym->dep.expr)
++		tri = expr_calc_value(sym->dep.expr);
++	if (tri == mod)
++		tri = yes;
++	if (sym->dep.tri != tri) {
++		sym->dep.tri = tri;
++		sym_set_changed(sym);
++	}
+ 	tri = no;
+ 	if (sym->rev_dep.expr)
+ 		tri = expr_calc_value(sym->rev_dep.expr);
+@@ -321,7 +331,12 @@ void sym_calc_value(struct symbol *sym)
+ 				}
+ 			}
+ 		calc_newval:
+-			newval.tri = EXPR_OR(newval.tri, sym->rev_dep.tri);
++			if (sym->dep.tri == no && sym->rev_dep.tri != no)
++				fprintf(stderr, "%s:%d:warning: not selecting symbol with unmet dependencies: %s\n",
++					sym->prop->file->name, sym->prop->lineno,
++					sym->name ? sym->name : "<choice>");
++			else
++				newval.tri = EXPR_OR(newval.tri, sym->rev_dep.tri);
+ 		}
+ 		if (newval.tri == mod && sym_get_type(sym) == S_BOOLEAN)
+ 			newval.tri = yes;
+
