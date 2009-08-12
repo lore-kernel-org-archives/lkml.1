@@ -1,92 +1,679 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751933AbZHLEbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbZHLEsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751933AbZHLEbN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 00:31:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbZHLEbN
+	id S1752184AbZHLEsS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 00:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZHLEsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 00:31:13 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:31386 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751417AbZHLEbL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 00:31:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=VBE0aI+gHynKUdE+IJ0GMUnxh5f2mLQbrnff32Cdfl4tnZU+1ex3avbRdppVzjYchr
-         ebQuz7mMGMhYeQZAxBu2lqFCgDD3Bwvn5LtzRSvCTfeRr+khyqeHXv+voCWO6zVi7eFJ
-         ZZ1TSt2F0Y31JL7ZGcT6EKk0fQpPdOulImD8Y=
-Message-ID: <4A8245A0.3030409@gmail.com>
-Date: Tue, 11 Aug 2009 21:31:28 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
-CC: Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       yakui.zhao@intel.com, bugme-daemon@bugzilla.kernel.org,
-       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
-Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button suspends,
- but does not wakes up
-References: <20081106194724.GB15366@ime.usp.br> <20081107014535.GA19201@ime.usp.br> <1226044855.4913f5b7f2f45@webmail.ime.usp.br> <20081108075008.GA8177@ime.usp.br> <dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com> <20081109024514.GA11744@ime.usp.br> <20081109113332.GD6094@elf.ucw.cz> <dd18b0c30811092117mc7bd310kaac33f5b1ff0a61d@mail.gmail.com> <20081110074516.GB707@atrey.karlin.mff.cuni.cz> <8B08E6ED-5B5F-4AC0-A147-481A54ED6B55@ime.usp.br>
-In-Reply-To: <8B08E6ED-5B5F-4AC0-A147-481A54ED6B55@ime.usp.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Wed, 12 Aug 2009 00:48:17 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:36497 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751691AbZHLEsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 00:48:15 -0400
+From: Anuj Aggarwal <anuj.aggarwal@ti.com>
+To: broonie@opensource.wolfsonmicro.com, lrg@slimlogic.co.uk,
+       felipe.balbi@nokia.com, linux-omap@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
+Cc: Anuj Aggarwal <anuj.aggarwal@ti.com>
+Subject: [PATCHv2 1/8] Regulator: Add TPS65023 regulator driver
+Date: Wed, 12 Aug 2009 10:17:56 +0530
+Message-Id: <1250052476-28763-1-git-send-email-anuj.aggarwal@ti.com>
+X-Mailer: git-send-email 1.6.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rogério Brito wrote:
-> Hi, Pavel and other people.
->
-> I'm just resurrecting this old bug (and everybody that was involved 
-> with it), as it's been quite some time now and I still have the exact 
-> same problems, unfortunately. :-(
->
-> (I wrote the comments below in the past year, but they are still valid).
->
-> On Nov 10 2008, Pavel Machek wrote:
->>> FWIW, running radeon and s2ram
->>> gives me a successful wakeup,
->>> no delays only bluetooth-applet fails
->>> to show back up as eye candy.
->
-> It seems that s2disk doesn't hang here, from a limited test, but I will
-> stress test this thing a bit further to see what is happening.
->
->> So 2.6.28-rc3 actually works for you? Good ;-).
->
-> You were replying to Justin, just to make sure. :-) The attributions are
-> now completely messed up. :-)
->
-> Funnily, Ubuntu's intrepid doesn't have s2ram (I think that I'll grab it
-> from Debian for further testing).
->
-> (...)
->
-> If anybody has any idea on how to proceed, I would be thankful.
->
->
-> Thanks, Rogério Brito.
->
-Sh^t forgot about this...
-Anyways at the moment seems
-the powerbutton does shutdown the system, and closing the
-lid suspends the machine.(in the exception for an erb error from
-bluetoooth which might be causing the delay(not sure yet)
-works as is(kernel= latest git a week or so old).
+Adding support for TI TPS65023 regulator driver
 
-At the moment I'm using acpid for these functions to work.
-(keep in mind /etc/acpi/has my own commands in them
-not any from a dist).
-As for the suspend button I did e-mail the acpid maintainer, and
-it seems their might not be a sleep button on the keyboard for
-a macbook(143 or whatever the number is).  but you can adjust acpid to
-react accordingly.
+Signed-off-by: Anuj Aggarwal <anuj.aggarwal@ti.com>
+---
+ drivers/regulator/tps65023-regulator.c |  638 ++++++++++++++++++++++++++++++++
+ 1 files changed, 638 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/regulator/tps65023-regulator.c
 
-In response to the bug your just not getting a reaction to the keyboard
-while its sleeping?(maybe the s* state needs to be changed for that,
-but then again I could be wrong).
+diff --git a/drivers/regulator/tps65023-regulator.c b/drivers/regulator/tps65023-regulator.c
+new file mode 100644
+index 0000000..dbaf295
+--- /dev/null
++++ b/drivers/regulator/tps65023-regulator.c
+@@ -0,0 +1,638 @@
++/*
++ * tps65023-regulator.c
++ *
++ * Supports TPS65023 Regulator
++ *
++ * Copyright (C) 2009 Texas Instrument Incorporated - http://www.ti.com/
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation version 2.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any kind,
++ * whether express or implied; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/err.h>
++#include <linux/platform_device.h>
++#include <linux/regulator/driver.h>
++#include <linux/regulator/machine.h>
++#include <linux/i2c.h>
++#include <linux/delay.h>
++
++/* Register definitions */
++#define	TPS65023_REG_VERSION		0
++#define	TPS65023_REG_PGOODZ		1
++#define	TPS65023_REG_MASK		2
++#define	TPS65023_REG_REG_CTRL		3
++#define	TPS65023_REG_CON_CTRL		4
++#define	TPS65023_REG_CON_CTRL2		5
++#define	TPS65023_REG_DEF_CORE		6
++#define	TPS65023_REG_DEFSLEW		7
++#define	TPS65023_REG_LDO_CTRL		8
++
++/* PGOODZ bitfields */
++#define	TPS65023_PGOODZ_PWRFAILZ	BIT(7)
++#define	TPS65023_PGOODZ_LOWBATTZ	BIT(6)
++#define	TPS65023_PGOODZ_VDCDC1		BIT(5)
++#define	TPS65023_PGOODZ_VDCDC2		BIT(4)
++#define	TPS65023_PGOODZ_VDCDC3		BIT(3)
++#define	TPS65023_PGOODZ_LDO2		BIT(2)
++#define	TPS65023_PGOODZ_LDO1		BIT(1)
++
++/* MASK bitfields */
++#define	TPS65023_MASK_PWRFAILZ		BIT(7)
++#define	TPS65023_MASK_LOWBATTZ		BIT(6)
++#define	TPS65023_MASK_VDCDC1		BIT(5)
++#define	TPS65023_MASK_VDCDC2		BIT(4)
++#define	TPS65023_MASK_VDCDC3		BIT(3)
++#define	TPS65023_MASK_LDO2		BIT(2)
++#define	TPS65023_MASK_LDO1		BIT(1)
++
++/* REG_CTRL bitfields */
++#define TPS65023_REG_CTRL_VDCDC1_EN	BIT(5)
++#define TPS65023_REG_CTRL_VDCDC2_EN	BIT(4)
++#define TPS65023_REG_CTRL_VDCDC3_EN	BIT(3)
++#define TPS65023_REG_CTRL_LDO2_EN	BIT(2)
++#define TPS65023_REG_CTRL_LDO1_EN	BIT(1)
++
++/* LDO_CTRL bitfields */
++#define TPS65023_LDO_CTRL_LDOx_SHIFT(ldo_id)	((ldo_id)*4)
++#define TPS65023_LDO_CTRL_LDOx_MASK(ldo_id)	(0xF0 >> ((ldo_id)*4))
++
++/* Number of step-down converters available */
++#define TPS65023_NUM_DCDC		3
++/* Number of LDO voltage regulators  available */
++#define TPS65023_NUM_LDO		2
++/* Number of total regulators available */
++#define TPS65023_NUM_REGULATOR	(TPS65023_NUM_DCDC + TPS65023_NUM_LDO)
++
++/* DCDCs */
++#define TPS65023_DCDC_1			0
++#define TPS65023_DCDC_2			1
++#define TPS65023_DCDC_3			2
++/* LDOs */
++#define TPS65023_LDO_1			3
++#define TPS65023_LDO_2			4
++
++#define TPS65023_MAX_REG_ID		TPS65023_LDO_2
++
++/* Supported voltage values for regulators */
++static const u16 VDCDC1_VSEL_table[] = {
++	800, 825, 850, 875,
++	900, 925, 950, 975,
++	1000, 1025, 1050, 1075,
++	1100, 1125, 1150, 1175,
++	1200, 1225, 1250, 1275,
++	1300, 1325, 1350, 1375,
++	1400, 1425, 1450, 1475,
++	1500, 1525, 1550, 1600,
++};
++
++static const u16 LDO1_VSEL_table[] = {
++	1000, 1100, 1300, 1800,
++	2200, 2600, 2800, 3150,
++};
++
++static const u16 LDO2_VSEL_table[] = {
++	1050, 1200, 1300, 1800,
++	2500, 2800, 3000, 3300,
++};
++
++static unsigned int num_voltages[] = {ARRAY_SIZE(VDCDC1_VSEL_table),
++				0, 0, ARRAY_SIZE(LDO1_VSEL_table),
++				ARRAY_SIZE(LDO2_VSEL_table)};
++
++/* Regulator specific details */
++struct tps_info {
++	const char *name;
++	unsigned min_uV;
++	unsigned max_uV;
++	bool fixed;
++	u8 table_len;
++	const u16 *table;
++};
++
++/* PMIC details */
++struct tps_pmic {
++	struct regulator_desc desc[TPS65023_NUM_REGULATOR];
++	struct i2c_client *client;
++	struct regulator_dev *rdev[TPS65023_NUM_REGULATOR];
++	const struct tps_info *info[TPS65023_NUM_REGULATOR];
++	struct mutex io_lock;
++};
++
++static inline int tps_65023_read(struct tps_pmic *tps, u8 reg)
++{
++	return i2c_smbus_read_byte_data(tps->client, reg);
++}
++
++static inline int tps_65023_write(struct tps_pmic *tps, u8 reg, u8 val)
++{
++	return i2c_smbus_write_byte_data(tps->client, reg, val);
++}
++
++static int tps_65023_set_bits(struct tps_pmic *tps, u8 reg, u8 mask)
++{
++	int err;
++	u8 data;
++
++	mutex_lock(&tps->io_lock);
++
++	data = tps_65023_read(tps, reg);
++	if (data < 0) {
++		dev_err(&tps->client->dev, "Read from reg 0x%x failed\n", reg);
++		err = data;
++		goto out;
++	}
++
++	data |= mask;
++	err = tps_65023_write(tps, reg, data);
++	if (err)
++		dev_err(&tps->client->dev, "Write for reg 0x%x failed\n", reg);
++
++out:
++	mutex_unlock(&tps->io_lock);
++	return err;
++}
++
++static int tps_65023_clear_bits(struct tps_pmic *tps, u8 reg, u8 mask)
++{
++	int err;
++	u8 data;
++
++	mutex_lock(&tps->io_lock);
++
++	data = tps_65023_read(tps, reg);
++	if (data < 0) {
++		dev_err(&tps->client->dev, "Read from reg 0x%x failed\n", reg);
++		err = data;
++		goto out;
++	}
++
++	data &= ~mask;
++
++	err = tps_65023_write(tps, reg, data);
++	if (err)
++		dev_err(&tps->client->dev, "Write for reg 0x%x failed\n", reg);
++
++out:
++	mutex_unlock(&tps->io_lock);
++	return err;
++
++}
++
++static int tps_65023_reg_read(struct tps_pmic *tps, u8 reg)
++{
++	u8 data;
++
++	mutex_lock(&tps->io_lock);
++
++	data = tps_65023_read(tps, reg);
++	if (data < 0)
++		dev_err(&tps->client->dev, "Read from reg 0x%x failed\n", reg);
++
++	mutex_unlock(&tps->io_lock);
++	return data;
++}
++
++static int tps_65023_reg_write(struct tps_pmic *tps, u8 reg, u8 val)
++{
++	int err;
++
++	mutex_lock(&tps->io_lock);
++
++	err = tps_65023_write(tps, reg, val);
++	if (err < 0)
++		dev_err(&tps->client->dev, "Write for reg 0x%x failed\n", reg);
++
++	mutex_unlock(&tps->io_lock);
++	return err;
++}
++
++static int tps65023_dcdc_is_enabled(struct regulator_dev *dev)
++{
++	u8 data;
++	struct tps_pmic *tps = rdev_get_drvdata(dev);
++	int dcdc = rdev_get_id(dev);
++	u8 shift;
++
++	if (dcdc < TPS65023_DCDC_1 || dcdc > TPS65023_DCDC_3)
++		return -EINVAL;
++
++	shift = TPS65023_NUM_REGULATOR - dcdc;
++	data = tps_65023_reg_read(tps, TPS65023_REG_REG_CTRL);
++
++	if (data >= 0) {
++		data &= (1 << shift);
++		return data ? 1 : 0;
++	} else
++		return data;
++}
++
++static int tps65023_ldo_is_enabled(struct regulator_dev *dev)
++{
++	struct tps_pmic *tps = rdev_get_drvdata(dev);
++	int ldo = rdev_get_id(dev);
++	u8 shift;
++	u8 data;
++
++	if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
++		return -EINVAL;
++
++	shift = (ldo == TPS65023_LDO_1 ? 1 : 2);
++	data = tps_65023_reg_read(tps, TPS65023_REG_REG_CTRL);
++
++	if (data >= 0) {
++		data &= (1 << shift);
++		return data ? 1 : 0;
++	} else
++		return data;
++}
++
++static int tps65023_dcdc_enable(struct regulator_dev *dev)
++{
++	struct tps_pmic *tps = rdev_get_drvdata(dev);
++	int dcdc = rdev_get_id(dev);
++	u8 shift;
++
++	if (dcdc < TPS65023_DCDC_1 || dcdc > TPS65023_DCDC_3)
++		return -EINVAL;
++
++	shift = TPS65023_NUM_REGULATOR - dcdc;
++	return tps_65023_set_bits(tps, TPS65023_REG_REG_CTRL, 1 << shift);
++}
++
++static int tps65023_dcdc_disable(struct regulator_dev *dev)
++{
++	struct tps_pmic *tps = rdev_get_drvdata(dev);
++	int dcdc = rdev_get_id(dev);
++	u8 shift;
++
++	if (dcdc < TPS65023_DCDC_1 || dcdc > TPS65023_DCDC_3)
++		return -EINVAL;
++
++	shift = TPS65023_NUM_REGULATOR - dcdc;
++	return tps_65023_clear_bits(tps, TPS65023_REG_REG_CTRL, 1 << shift);
++}
++
++static int tps65023_ldo_enable(struct regulator_dev *dev)
++{
++	struct tps_pmic *tps = rdev_get_drvdata(dev);
++	int ldo = rdev_get_id(dev);
++	u8 shift;
++
++	if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
++		return -EINVAL;
++
++	shift = (ldo == TPS65023_LDO_1 ? 1 : 2);
++	return tps_65023_set_bits(tps, TPS65023_REG_REG_CTRL, 1 << shift);
++}
++
++static int tps65023_ldo_disable(struct regulator_dev *dev)
++{
++	struct tps_pmic *tps = rdev_get_drvdata(dev);
++	int ldo = rdev_get_id(dev);
++	u8 shift;
++
++	if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
++		return -EINVAL;
++
++	shift = (ldo == TPS65023_LDO_1 ? 1 : 2);
++	return tps_65023_clear_bits(tps, TPS65023_REG_REG_CTRL, 1 << shift);
++}
++
++static int tps65023_dcdc_get_voltage(struct regulator_dev *dev)
++{
++	u8 data;
++	struct tps_pmic *tps = rdev_get_drvdata(dev);
++	int dcdc = rdev_get_id(dev);
++
++	if (dcdc < TPS65023_DCDC_1 || dcdc > TPS65023_DCDC_3)
++		return -EINVAL;
++
++	if (dcdc == TPS65023_DCDC_1) {
++		data = tps_65023_reg_read(tps, TPS65023_REG_DEF_CORE);
++		if (data < 0)
++			return data;
++		data &= (tps->info[dcdc]->table_len - 1);
++		return tps->info[dcdc]->table[data] * 1000;
++	} else
++		return tps->info[dcdc]->min_uV;
++}
++
++static int tps65023_dcdc_set_voltage(struct regulator_dev *dev,
++				int min_uV, int max_uV)
++{
++	struct tps_pmic *tps = rdev_get_drvdata(dev);
++	int dcdc = rdev_get_id(dev);
++	int vsel;
++
++	if (dcdc != TPS65023_DCDC_1)
++		return -EINVAL;
++
++	if (min_uV < tps->info[dcdc]->min_uV 
++			|| min_uV > tps->info[dcdc]->max_uV)
++		return -EINVAL;
++	if (max_uV < tps->info[dcdc]->min_uV 
++			|| max_uV > tps->info[dcdc]->max_uV)
++		return -EINVAL;
++
++	for (vsel = 0; vsel < tps->info[dcdc]->table_len; vsel++) {
++		int mV = tps->info[dcdc]->table[vsel];
++		int uV = mV * 1000;
++
++		/* Break at the first in-range value */
++		if (min_uV <= uV && uV <= max_uV)
++			break;
++	}
++
++	/* write to the register in case we found a match */
++	if (vsel == tps->info[dcdc]->table_len)
++		return -EINVAL;
++	else
++		return tps_65023_reg_write(tps, TPS65023_REG_DEF_CORE, vsel);
++}
++
++static int tps65023_ldo_get_voltage(struct regulator_dev *dev)
++{
++	u8 data;
++	struct tps_pmic *tps = rdev_get_drvdata(dev);
++	int ldo = rdev_get_id(dev);
++
++	if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
++		return -EINVAL;
++
++	data = tps_65023_reg_read(tps, TPS65023_REG_LDO_CTRL);
++	if (data < 0)
++		return data;
++
++	data >>= (TPS65023_LDO_CTRL_LDOx_SHIFT(ldo - TPS65023_LDO_1));
++	data &= (tps->info[ldo]->table_len - 1);
++	return tps->info[ldo]->table[data] * 1000;
++}
++
++static int tps65023_ldo_set_voltage(struct regulator_dev *dev,
++				int min_uV, int max_uV)
++{
++	struct tps_pmic *tps = rdev_get_drvdata(dev);
++	int ldo = rdev_get_id(dev);
++	int vsel;
++	u8 data;
++
++	if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
++		return -EINVAL;
++
++	if (min_uV < tps->info[ldo]->min_uV || min_uV > tps->info[ldo]->max_uV)
++		return -EINVAL;
++	if (max_uV < tps->info[ldo]->min_uV || max_uV > tps->info[ldo]->max_uV)
++		return -EINVAL;
++
++	for (vsel = 0; vsel < tps->info[ldo]->table_len; vsel++) {
++		int mV = tps->info[ldo]->table[vsel];
++		int uV = mV * 1000;
++
++		/* Break at the first in-range value */
++		if (min_uV <= uV && uV <= max_uV)
++			break;
++	}
++
++	if (vsel == tps->info[ldo]->table_len)
++		return -EINVAL;
++
++	data = tps_65023_reg_read(tps, TPS65023_REG_LDO_CTRL);
++	if (data < 0)
++		return data;
++
++	data &= TPS65023_LDO_CTRL_LDOx_MASK(ldo - TPS65023_LDO_1);
++	data |= (vsel << (TPS65023_LDO_CTRL_LDOx_SHIFT(ldo - TPS65023_LDO_1)));
++	return tps_65023_reg_write(tps, TPS65023_REG_LDO_CTRL, data);
++}
++
++static int tps65023_dcdc_list_voltage(struct regulator_dev *dev,
++					unsigned selector)
++{
++	struct tps_pmic *tps = rdev_get_drvdata(dev);
++	int dcdc = rdev_get_id(dev);
++
++	if (dcdc < TPS65023_DCDC_1 || dcdc > TPS65023_DCDC_3)
++		return -EINVAL;
++
++	if (dcdc == TPS65023_DCDC_1) {
++		if (selector >= tps->info[dcdc]->table_len)
++			return -EINVAL;
++		else
++			return tps->info[dcdc]->table[selector] * 1000;
++	} else
++		return tps->info[dcdc]->min_uV;
++}
++
++static int tps65023_ldo_list_voltage(struct regulator_dev *dev,
++					unsigned selector)
++{
++	struct tps_pmic *tps = rdev_get_drvdata(dev);
++	int ldo = rdev_get_id(dev);
++
++	if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
++		return -EINVAL;
++
++	if (selector >= tps->info[ldo]->table_len)
++		return -EINVAL;
++	else
++		return tps->info[ldo]->table[selector] * 1000;
++}
++
++/* Operations permitted on VDCDCx */
++static struct regulator_ops tps65023_dcdc_ops = {
++	.is_enabled = tps65023_dcdc_is_enabled,
++	.enable = tps65023_dcdc_enable,
++	.disable = tps65023_dcdc_disable,
++	.get_voltage = tps65023_dcdc_get_voltage,
++	.set_voltage = tps65023_dcdc_set_voltage,
++	.list_voltage = tps65023_dcdc_list_voltage,
++};
++
++/* Operations permitted on LDOx */
++static struct regulator_ops tps65023_ldo_ops = {
++	.is_enabled = tps65023_ldo_is_enabled,
++	.enable = tps65023_ldo_enable,
++	.disable = tps65023_ldo_disable,
++	.get_voltage = tps65023_ldo_get_voltage,
++	.set_voltage = tps65023_ldo_set_voltage,
++	.list_voltage = tps65023_ldo_list_voltage,
++};
++
++static
++int tps_65023_probe(struct i2c_client *client, const struct i2c_device_id *id)
++{
++	static int desc_id;
++	const struct tps_info *info = (void *)id->driver_data;
++	struct regulator_init_data *init_data;
++	struct regulator_dev *rdev;
++	struct tps_pmic *tps;
++	int i;
++
++	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
++		return -EIO;
++
++	/**
++	 * init_data points to array of regulator_init structures
++	 * coming from the board-evm file.
++	 */
++	init_data = client->dev.platform_data;
++
++	if (!init_data)
++		return -EIO;
++
++	tps = kzalloc(sizeof(*tps), GFP_KERNEL);
++	if (!tps)
++		return -ENOMEM;
++
++	tps->client = client;
++
++	for (i = 0; i < TPS65023_NUM_REGULATOR; i++, info++, init_data++) {
++		/* Store regulator specific information */
++		tps->info[i] = info;
++
++		tps->desc[i].name = info->name;
++		tps->desc[i].id = desc_id++;
++		tps->desc[i].n_voltages = num_voltages[i];
++		tps->desc[i].ops = (i > TPS65023_DCDC_3 ?
++					&tps65023_ldo_ops : &tps65023_dcdc_ops);
++		tps->desc[i].type = REGULATOR_VOLTAGE;
++		tps->desc[i].owner = THIS_MODULE;
++
++		/* Register the regulators */
++		rdev = regulator_register(&tps->desc[i], &client->dev,
++								init_data, tps);
++		if (IS_ERR(rdev)) {
++			dev_err(&client->dev, "failed to register %s\n",
++				id->name);
++
++			/* Unregister */
++			while (i)
++				regulator_unregister(tps->rdev[--i]);
++
++			tps->client = NULL;
++
++			/* clear the client data in i2c */
++			i2c_set_clientdata(client, NULL);
++			kfree(tps);
++			return PTR_ERR(rdev);
++		}
++
++		/* Save regulator for cleanup */
++		tps->rdev[i] = rdev;
++	}
++
++	i2c_set_clientdata(client, tps);
++
++	return 0;
++}
++
++/**
++ * tps_65023_remove - TPS65023 driver i2c remove handler
++ * @client: i2c driver client device structure
++ *
++ * Unregister TPS driver as an i2c client device driver
++ */
++static int __devexit tps_65023_remove(struct i2c_client *client)
++{
++	struct tps_pmic *tps = i2c_get_clientdata(client);
++	int i;
++
++	for (i = 0; i < TPS65023_NUM_REGULATOR; i++)
++		regulator_unregister(tps->rdev[i]);
++
++	tps->client = NULL;
++
++	/* clear the client data in i2c */
++	i2c_set_clientdata(client, NULL);
++	kfree(tps);
++
++	return 0;
++}
++
++static const struct tps_info tps65023_regs[] = {
++	{
++		.name = "VDCDC1",
++		.min_uV =  800000,
++		.max_uV = 1600000,
++		.table_len = ARRAY_SIZE(VDCDC1_VSEL_table),
++		.table = VDCDC1_VSEL_table,
++	},
++	{
++		.name = "VDCDC2",
++		.min_uV =  3300000,
++		.max_uV = 3300000,
++		.fixed = 1,
++	},
++	{
++		.name = "VDCDC3",
++		.min_uV =  1800000,
++		.max_uV = 1800000,
++		.fixed = 1,
++	},
++	{
++		.name = "LDO1",
++		.min_uV = 1000000,
++		.max_uV = 3150000,
++		.table_len = ARRAY_SIZE(LDO1_VSEL_table),
++		.table = LDO1_VSEL_table,
++	},
++	{
++		.name = "LDO2",
++		.min_uV = 1050000,
++		.max_uV = 3300000,
++		.table_len = ARRAY_SIZE(LDO2_VSEL_table),
++		.table = LDO2_VSEL_table,
++	},
++};
++
++static const struct i2c_device_id tps_65023_id = {
++	.name = "tps65023",
++	.driver_data = (unsigned long) &tps65023_regs[0],
++};
++
++MODULE_DEVICE_TABLE(i2c, tps_65023_id);
++
++static struct i2c_driver tps_65023_i2c_driver = {
++	.driver = {
++		.name = "tps65023",
++		.owner = THIS_MODULE,
++	},
++	.probe = tps_65023_probe,
++	.remove = __devexit_p(tps_65023_remove),
++	.id_table = &tps_65023_id,
++};
++
++/**
++ * tps_65023_init
++ *
++ * Module init function
++ */
++static int __init tps_65023_init(void)
++{
++	return i2c_add_driver(&tps_65023_i2c_driver);
++}
++subsys_initcall(tps_65023_init);
++
++/**
++ * tps_65023_cleanup
++ *
++ * Module exit function
++ */
++static void __exit tps_65023_cleanup(void)
++{
++	i2c_del_driver(&tps_65023_i2c_driver);
++}
++module_exit(tps_65023_cleanup);
++
++MODULE_AUTHOR("Texas Instruments");
++MODULE_DESCRIPTION("TPS65023 voltage regulator driver");
++MODULE_LICENSE("GPLv2");
+-- 
+1.6.2.4
 
-Justin P. Mattock
