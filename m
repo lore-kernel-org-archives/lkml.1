@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831AbZHLPrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753868AbZHLPrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753831AbZHLPrJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 11:47:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbZHLPrJ
+	id S1753868AbZHLPrS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 11:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZHLPrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 11:47:09 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:44336 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751737AbZHLPrI (ORCPT
+	Wed, 12 Aug 2009 11:47:16 -0400
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:49294 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753835AbZHLPrN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 11:47:08 -0400
-Date: Wed, 12 Aug 2009 11:47:08 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Magnus Damm <magnus.damm@gmail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <gregkh@suse.de>,
-       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH update] PM: Introduce core framework for run-time PM of
-  I/O devices (rev. 15)
-In-Reply-To: <aec7e5c30908120337g2928b825m1a17a311a0756305@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0908121145200.9635-100000@iolanthe.rowland.org>
+	Wed, 12 Aug 2009 11:47:13 -0400
+X-Greylist: delayed 1232 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Aug 2009 11:47:12 EDT
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4A828AE9.9090807@cam.ac.uk>
+Date: Wed, 12 Aug 2009 09:27:05 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: RFC: Merge strategy for Industrial I/O (staging?)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Aug 2009, Magnus Damm wrote:
+Dear All,
 
-> > --- /dev/null
-> > +++ linux-2.6/drivers/base/power/runtime.c
-> [...]
-> > +int __pm_runtime_suspend(struct device *dev, bool from_wq)
-> > +       __releases(&dev->power.lock) __acquires(&dev->power.lock)
-> [...]
-> > +       if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend) {
-> > +               spin_unlock_irq(&dev->power.lock);
-> > +
-> > +               retval = dev->bus->pm->runtime_suspend(dev);
-> > +
-> > +               spin_lock_irq(&dev->power.lock);
-> > +               dev->power.runtime_error = retval;
-> > +       } else {
-> > +               retval = -ENOSYS;
-> > +       }
-> 
-> Nit: { and } above do not follow the regular coding style.
+IIO is intended to be a subsystem for sensors such as ADCs, accelerometers,
+gyros, light sensors and others that have reasonably high update rates and
+typically are connected via i2c or spi busses.
 
-As a matter of fact they do.  From Documentation/CodingStyle:
+The latest patch set posted to lkml was v4
+http://thread.gmane.org/gmane.linux.kernel/860693
+Tree at 
+http://git.kernel.org/?p=linux/kernel/git/jic23/iio_v4.git;a=summary
 
+original discussion of the need for such a subsystem:
+http://lkml.org/lkml/2008/5/20/135
 
-Do not unnecessarily use braces where a single statement will do.
+The last couple of versions of IIO have recieved some useful feedback from
+a number of people, and feedback from various users has led to a number
+of recent bug fixes.  Unfortunately, full reviews of any given element have
+not be forthcoming.  Several people who have in principle offered to help
+haven't had the time as yet.
 
-if (condition)
-	action();
+In the short term, the lack of review of the core (patch 1 of the above set)
+leads to a stack of device drivers sitting in the git repository waiting on
+the core being merged. Currently in the tree there are 3 acceleromters, an
+adc and a light sensor.  I also have an IMU driver (ADIS16350 family) that
+needs a little more cleaning up and testing with latest IIO core.
 
-This does not apply if one branch of a conditional statement is a single
-statement. Use braces in both branches.
+Increasing numbers of drivers that would fall within the scope of IIO are
+being submitted to various other subsystems (hwmon for example) and getting
+bounced out as inappropriate for that subsystem.  So, whilst I'd be reasonably
+happy to maintain the subsystem out of kernel until interest in the devices
+covered grows, or people have time to assist, I was wondering whether it
+would be appropriate to submit the subsystem and the associated driver
+set to staging.
 
-if (condition) {
-	do_this();
-	do_that();
-} else {
-	otherwise();
-}
+Whilst some elements could definitely do with more work (for example the
+use of rtc's to get periodic timers, is clunky at best), much of the core
+and the actual device drivers are to my mind pretty clean.  So the question
+is, 'Is lack of reviewers a valid reason to submit to staging in the meantime?'
 
+What do people think?
 
-Alan Stern
+All offers of review or other suggestions on how to proceed also welcome!
 
+Also I'm still not that keen on the name if anyone has a better idea.
+
+Thanks
+
+Jonathan
