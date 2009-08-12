@@ -1,174 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbZHLQTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbZHLQWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754321AbZHLQTM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 12:19:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbZHLQTM
+	id S1754336AbZHLQWI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 12:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbZHLQWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 12:19:12 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37467 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754223AbZHLQTK (ORCPT
+	Wed, 12 Aug 2009 12:22:07 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:36645 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754293AbZHLQWG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 12:19:10 -0400
-Message-ID: <5de2e6e6dafe61357de744c749e24a46.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <4A829F1B.4060205@redhat.com>
-References: <20090811144405.GW7176@balbir.in.ibm.com>
-    <20090811163159.ddc5f5fd.akpm@linux-foundation.org>
-    <20090812045716.GH7176@balbir.in.ibm.com>
-    <4A829F1B.4060205@redhat.com>
-Date: Thu, 13 Aug 2009 01:19:08 +0900 (JST)
-Subject: Re: [PATCH] Help Resource Counters Scale better (v4.1)
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Prarit Bhargava" <prarit@redhat.com>
-Cc: balbir@linux.vnet.ibm.com, "Andrew Morton" <akpm@linux-foundation.org>,
-       kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp,
-       kosaki.motohiro@jp.fujitsu.com, menage@google.com, andi.kleen@intel.com,
-       xemul@openvz.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-User-Agent: SquirrelMail/1.4.16
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
+	Wed, 12 Aug 2009 12:22:06 -0400
+Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.44L0.0908121005370.2955-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0908121005370.2955-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Wed, 12 Aug 2009 11:22:03 -0500
+Message-Id: <1250094123.4000.43.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Prarit Bhargava さんは書きました：
->
->
-> Balbir Singh wrote:
->> Hi, Andrew,
->>
->> Does this look better, could you please replace the older patch with
->> this one.
->>
->> 1. I did a quick compile test
->> 2. Ran scripts/checkpatch.pl
->>
->>
->>
->
-> Andi Kleen suggested I use kernbench to profile the kernel.
->
-> 2.6.31-rc5-git2 w/ CONFIG_RESOURCE_COUNTERS on
->
-> Tue Aug 11 13:45:14 EDT 2009
-> 2.6.31-rc5-git2-resources
-> Average Half load -j 32 Run (std deviation):
-> Elapsed Time 622.588 (119.243)
-> User Time 4820.8 (962.286)
-> System Time 9807.63 (2669.55)
-> Percent CPU 2324 (167.236)
-> Context Switches 2009606 (368703)
-> Sleeps 1.24949e+06 (118210)
->
-> Average Optimal load -j 256 Run (std deviation):
-> Elapsed Time 770.97 (90.8685)
-> User Time 5068.42 (750.933)
-> System Time 21499.8 (12822.3)
-> Percent CPU 3660 (1425.28)
-> Context Switches 2.86467e+06 (971764)
-> Sleeps 1.32784e+06 (129048)
->
-> Average Maximal load -j Run (std deviation):
-> Elapsed Time 757.018 (22.8371)
-> User Time 4958.85 (644.65)
-> System Time 24916.5 (11454.3)
-> Percent CPU 4046.93 (1279.6)
-> Context Switches 3.04894e+06 (826687)
-> Sleeps 1.26053e+06 (146073)
->
->
-> 2.6.31-rc5-git2 w/ CONFIG_RESOURCE_COUNTERS off
->
-> Tue Aug 11 17:58:58 EDT 2009
-> 2.6.31-rc5-git2-no-resources
-> Average Half load -j 32 Run (std deviation):
-> Elapsed Time 280.176 (21.1131)
-> User Time 3558.51 (389.488)
-> System Time 2393.87 (142.692)
-> Percent CPU 2122.6 (50.5104)
-> Context Switches 1.20474e+06 (131112)
-> Sleeps 1062507 (59366.3)
->
-> Average Optimal load -j 256 Run (std deviation):
-> Elapsed Time 223.192 (42.7007)
-> User Time 4243.19 (967.575)
-> System Time 2649.57 (344.462)
-> Percent CPU 2845.5 (856.217)
-> Context Switches 1.52187e+06 (391821)
-> Sleeps 1.28862e+06 (274222)
->
-> Average Maximal load -j Run (std deviation):
-> Elapsed Time 216.942 (45.4824)
-> User Time 3860.46 (966.452)
-> System Time 2782.17 (344.154)
-> Percent CPU 2862.47 (720.904)
-> Context Switches 1.43379e+06 (341021)
-> Sleeps 1184325 (269392)
->
-> 2.6.31-rc5-git2 w/ CONFIG_RESOURCE_COUNTERS on + patch
->
-> Tue Aug 11 20:58:31 EDT 2009
-> 2.6.31-rc5-git2-mem-patch
-> Average Half load -j 32 Run (std deviation):
-> Elapsed Time 285.788 (18.577)
-> User Time 3483.14 (346.56)
-> System Time 2426.37 (132.015)
-> Percent CPU 2066.8 (80.3754)
-> Context Switches 1.16588e+06 (134701)
-> Sleeps 1048810 (59891.2)
->
-> Average Optimal load -j 256 Run (std deviation):
-> Elapsed Time 239.81 (14.0759)
-> User Time 3797.7 (422.118)
-> System Time 2622.74 (225.361)
-> Percent CPU 2480.9 (446.735)
-> Context Switches 1.37301e+06 (238886)
-> Sleeps 1195957 (161659)
->
-> Average Maximal load -j Run (std deviation):
-> Elapsed Time 203.884 (8.59151)
-> User Time 3578.02 (482.79)
-> System Time 2759.9 (273.03)
-> Percent CPU 2663.53 (450.476)
-> Context Switches 1.33907e+06 (199658)
-> Sleeps 1119205 (172089)
->
->
-> ... The odd thing is that the run with the patch is still less than the
-> run with CONFIG_RESOURCE_COUNTERS off.  It was so odd that I double
-> checked that I actually built in RESOURCE_COUNTERS and had applied the
-> patch, both of which I had done.
->
-Hmm, CONFIG_RESOURCE_COUNTER actually means CONFIG_MEM_CGROUP ?
+On Wed, 2009-08-12 at 10:13 -0400, Alan Stern wrote:
+> On Wed, 12 Aug 2009, Ingo Molnar wrote:
+> 
+> > > And here I was thinking kerneldoc doesn't actually work 
+> > > like that, but perhaps Randy fixed it so the initial 
+> > > description can line-wrap?
+> 
+> Yes, that's what I thought too.  If kerneldoc has been fixed then the 
+> description line certainly should get wrapped.
 
+I really don't think it needs to be fixed: it's a feature not a bug.  It
+requires people writing kernel doc actually to think of one line
+summaries.
 
-Then, more requests from me. (if you can)
-Apply patch and set config ON. plz check your bench in following cases.
+LSI recently tried to submit a ten line wrapped summary which the
+current feature makes it very easy to knock back and say this must be a
+single line, so trim it and move the rest to the function description
+body.
 
- 1. boot with cgroup_disable=memory (will have the same effect as
-    config=off)
-
-    boot without above option...and
-    2. Run your bench without mount memcg.
-    3. Run your bench with memcg...as...
-       #mount -tcgroup none /cgroups -omemory
-       #mkdir /cgroups/test
-       #echo $$ > /cgroups/test
-       #kernbench.
-
-Thanks,
--Kame
-
-
-
-
-
-
-> P.
->
+James
 
 
