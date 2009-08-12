@@ -1,31 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbZHLXFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752394AbZHLXJD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752853AbZHLXFs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 19:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZHLXFs
+	id S1752394AbZHLXJD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 19:09:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbZHLXJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 19:05:48 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:59450 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752816AbZHLXFr (ORCPT
+	Wed, 12 Aug 2009 19:09:01 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33912 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750907AbZHLXJB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 19:05:47 -0400
-Date: Wed, 12 Aug 2009 19:05:43 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: David Wuertele <dave+gmane@wuertele.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Can initramfs be mounted read-only?
-In-Reply-To: <loom.20090812T220624-312@post.gmane.org>
-Message-ID: <alpine.DEB.1.10.0908121902400.32025@gentwo.org>
-References: <loom.20090812T194647-427@post.gmane.org> <9b2b86520908121424qff7443fn84d07fb8dff7c863@mail.gmail.com> <loom.20090812T220624-312@post.gmane.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 12 Aug 2009 19:09:01 -0400
+Message-ID: <4A834B3F.8040705@zytor.com>
+Date: Wed, 12 Aug 2009 16:07:43 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Wang, Shane" <shane.wang@intel.com>
+CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       "Cihula, Joseph" <joseph.cihula@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>,
+       "Wei, Gang" <gang.wei@intel.com>
+Subject: Re: [RFC v6][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution	Technology
+ support for Linux - Details
+References: <20090812182013.GJ28848@basil.fritz.box> <037F493892196B458CD3E193E8EBAD4F01EAB64206@pdsmsx502.ccr.corp.intel.com>
+In-Reply-To: <037F493892196B458CD3E193E8EBAD4F01EAB64206@pdsmsx502.ccr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Try cramfs or romfs instead? Those are definitely readonly.
+On 08/12/2009 03:37 PM, Wang, Shane wrote:
+> 
+> OK, I agree.
+> 
 
+Are you taking care of this?
+
+	-hpa
 
