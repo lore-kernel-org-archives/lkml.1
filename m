@@ -1,74 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932151AbZHLIQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbZHLIQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932151AbZHLIQm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 04:16:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbZHLIQl
+	id S1754773AbZHLIQr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 04:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbZHLIQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 04:16:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54856 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754158AbZHLIQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 04:16:40 -0400
-Date: Wed, 12 Aug 2009 04:15:09 -0400
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       Neil Horman <nhorman@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andi Kleen <andi@firstfloor.org>, Amerigo Wang <amwang@redhat.com>,
-       akpm@linux-foundation.org, bernhard.walle@gmx.de,
-       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Message-Id: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>
-Subject: [Patch 0/8] V3 Implement crashkernel=auto
+	Wed, 12 Aug 2009 04:16:45 -0400
+Received: from exprod5og104.obsmtp.com ([64.18.0.178]:44654 "EHLO
+	exprod5og104.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754515AbZHLIQn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 04:16:43 -0400
+Message-ID: <4A827A84.3060906@gefanuc.com>
+Date: Wed, 12 Aug 2009 09:17:08 +0100
+From: Martyn Welch <martyn.welch@gefanuc.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+MIME-Version: 1.0
+To: "Emilio G. Cota" <cota@braap.org>
+CC: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org, Sebastien Dugue <sebastien.dugue@bull.net>
+Subject: Re: [patch 2/5] Staging: vme: add VME userspace driver
+References: <20090803210116.GC28430@kroah.com> <20090808232259.GA29303@braap.org> <20090809121715.GA3884@braap.org> <4A801D04.6050102@gefanuc.com> <20090810152606.GA23319@braap.org> <4A804B0B.5020809@gefanuc.com> <20090810203637.GD3055@braap.org> <4A8133ED.6070304@gefanuc.com> <20090811094025.GC3251@braap.org> <4A81683D.2030408@gefanuc.com> <20090811210146.GB9910@braap.org>
+In-Reply-To: <20090811210146.GB9910@braap.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Emilio G. Cota wrote:
+> Martyn Welch wrote:
+>   
+>> I disagree. The bridge drivers should register their resources with the  
+>> core. The core, or a layer above it, can control how those resources are  
+>> used. This moves the complexity you want for managing the windows to a  
+>> level that will work on all underlying drivers rather than having to be  
+>> written explicitly for each one. The mechanism I have provided does this  
+>> discovery.
+>>     
+>
+> nah, it would be foolish to think we can write an upper layer
+> that covers every corner case for every bridge we're gonna
+> encounter. 
+So it's foolish to have a generic USB layer, or a generic PCI layer or 
+generic "name you bus here" layer?
 
-V2 -> V3:
- - Use more clever way to calculate reserved memory size, especially for IA64.
- - Add that patch that implements shrinking reserved memory
+Unless you provide a consistent API, such as one supporting the features 
+documented in the VME specifications, how are you planning to write 
+drivers that could potentially work on more than one specific bridge?
 
-V1 -> V2:
- - Use include/asm-generic/kexec.h, suggested by Neil.
- - Rename a local variable, suggested by Fenghua.
- - Fix some style problems found by checkpatch.pl.
- - Unify the Kconfig docs.
+> For instance, imagine a bridge that has 10 windows,
+> with the annoying feature that window#10 *only* accepts CS/CSR
+> mappings. How stupid is that? Very stupid. But what would be
+> more stupid is to write allegedly 'generic' interfaces that
+> break every time a bridge comes up with a stupid feature.
+>   
 
-This series of patch implements automatically reserved memory for crashkernel,
-by introducing a new boot option "crashkernel=auto". This idea is from Neil.
+Actually, the VME core as it exists would support such a situation. The 
+10th window would only register as being capable of supporting that 
+address space. What about a driver only needed to access CR/CSR space 
+(to see what was available on other hosts for example), then utilized a 
+DMA controller to transfer data over the VME bus  (thereby not requiring 
+a master or slave window). It could request a window that fitted it's 
+needs ("vme_address_t aspace = VMECRCST;") and the core would be able to 
+hand it that resource. Should the underlying bridge not have such a 
+limited window, it can had it one with a larger feature set, ensuring 
+that it meets the requirements as requested by the driver.
 
-In case of breaking user-space applications, it modifies this boot option after
-it decides how much memory should be reserved.
+> So that doesn't belong to a generic interface. Now, to avoid
+> code duplication between two (or more) _very_ similar bridges,
+> we just share the 'resource management' code among those,
+> privately. And that's pretty much it.
+>   
 
-On different arch, the threshold and reserved memory size is different. Please
-refer patch 7/8 which contains an update for the documentation.
+Or it could be layered on top, utilising the the resource management 
+that I have proposed and the two can sit together happily side-by-side. 
+If you are right and that method of access works best, then drivers will 
+use that rather than requesting resources. If not then the two can 
+continue to sit side-by-side. Why make the bridge drivers more complex 
+than they need to be?
 
-Patch 8/8 implements shrinking reserved memory at run-time.
+Also, it seems that your API doesn't currently support Location 
+Monitors. These are specified in the VME spec, I'd be interested in how 
+you plan to support this feature in a consistent manner with your 
+current API. These can only be used in a single location at a time and 
+cover a fixed number of addresses from the initial offset. The location 
+monitors are treated as a resource in my VME core which is consistent 
+with the windows being treated as resources.
 
-Note: This patchset was only tested on x86_64 with differernt memory sizes.
+Come to think of it, I can't see any code managing slave windows either 
+- how is your API going to consistently manage these?
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Neil Horman <nhorman@redhat.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Bernhard Walle <bernhard.walle@gmx.de>
+Martyn
 
----
- Documentation/kdump/kdump.txt    |   28 ++++++++++
- arch/ia64/Kconfig                |   14 +++++
- arch/ia64/include/asm/kexec.h    |   23 ++++++++
- arch/powerpc/Kconfig             |   11 ++++
- arch/powerpc/include/asm/kexec.h |    8 +++
- arch/x86/Kconfig                 |   13 ++++
- arch/x86/include/asm/kexec.h     |    1 
- include/asm-generic/kexec.h      |   42 +++++++++++++++
- include/linux/kexec.h            |    3 +
- kernel/kexec.c                   |  104 +++++++++++++++++++++++++++++++++++++++
- kernel/ksysfs.c                  |   21 +++++++
- 11 files changed, 268 insertions(+)
+> Regards,
+> E.
+>   
+
+
+-- 
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 927559189
