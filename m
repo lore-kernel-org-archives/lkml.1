@@ -1,84 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbZHLNug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbZHLNuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752597AbZHLNug (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 09:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbZHLNug
+	id S1752640AbZHLNuk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 09:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbZHLNuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 09:50:36 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:60696 "EHLO gir.skynet.ie"
+	Wed, 12 Aug 2009 09:50:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51700 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751708AbZHLNuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 09:50:35 -0400
-Date: Wed, 12 Aug 2009 14:50:36 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Juergen Beisert <jbe@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-hotplug@vger.kernel.org
-Subject: Re: Patch "page-allocator: preserve PFN ordering when __GFP_COLD
-	is set" fails on my system
-Message-ID: <20090812135036.GE19269@csn.ul.ie>
-References: <200908111830.03224.jbe@pengutronix.de> <20090812074753.GL13320@pengutronix.de> <20090812092034.GA19269@csn.ul.ie> <200908121311.35321.jbe@pengutronix.de>
+	id S1751985AbZHLNug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 09:50:36 -0400
+Date: Wed, 12 Aug 2009 16:47:15 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
+       paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCHv2 2/2] vhost_net: a kernel-level virtio server
+Message-ID: <20090812134715.GB29340@redhat.com>
+References: <cover.1249992497.git.mst@redhat.com> <20090811212802.GC26309@redhat.com> <4A82076A.1060805@gmail.com> <20090812090219.GB26847@redhat.com> <4A82BD2F.7080405@gmail.com> <20090812132539.GD29200@redhat.com> <4A82C68F.8070306@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200908121311.35321.jbe@pengutronix.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <4A82C68F.8070306@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 01:11:34PM +0200, Juergen Beisert wrote:
-> On Mittwoch, 12. August 2009, Mel Gorman wrote:
-> > > > I get the following Ooops message when "udevadm" is running on an ARM
-> > > > S3C2440 CPU based system:
-> >
-> > This is extremely odd. All that patch is doing is changing what order pages
-> > are returned in to the caller when __GFP_COLD is specified.  valid memory.
-> > Does reverting the patch really make the problem go away?
+On Wed, Aug 12, 2009 at 09:41:35AM -0400, Gregory Haskins wrote:
+> Michael S. Tsirkin wrote:
+> > On Wed, Aug 12, 2009 at 09:01:35AM -0400, Gregory Haskins wrote:
+> >> I think I understand what your comment above meant:  You don't need to
+> >> do synchronize_rcu() because you can flush the workqueue instead to
+> >> ensure that all readers have completed.
+> > 
+> > Yes.
+> > 
+> >>  But if thats true, to me, the
+> >> rcu_dereference itself is gratuitous,
+> > 
+> > Here's a thesis on what rcu_dereference does (besides documentation):
+> > 
+> > reader does this
+> > 
+> > 	A: sock = n->sock
+> > 	B: use *sock
+> > 
+> > Say writer does this:
+> > 
+> > 	C: newsock = allocate socket
+> > 	D: initialize(newsock)
+> > 	E: n->sock = newsock
+> > 	F: flush
+> > 
+> > 
+> > On Alpha, reads could be reordered.  So, on smp, command A could get
+> > data from point F, and command B - from point D (uninitialized, from
+> > cache).  IOW, you get fresh pointer but stale data.
+> > So we need to stick a barrier in there.
 > 
-> At least I can work with the system if I remove this patch. Theres is no oops, 
-> so udev creates all the required devnodes and the system comes up into the 
-> login prompt.
+> Yes, that is understood.  Perhaps you should just use a normal barrier,
+> however.  (Or at least a comment that says "I am just using this for its
+> barrier").
+> 
+> > 
+> >> and that pointer is *not* actually
+> >> RCU protected (nor does it need to be).
+> > 
+> > Heh, if readers are lockless and writer does init/update/sync,
+> > this to me spells rcu.
+> 
+> More correctly: it "smells like" RCU, but its not. ;)  It's rcu-like,
+> but you are not really using the rcu facilities.  I think anyone that
+> knows RCU and reads your code will likely be scratching their heads as well.
+> 
+> Its probably not a big deal, as I understand your code now.  Just a
+> suggestion to help clarify it.
+> 
+> Regards,
+> -Greg
 > 
 
-One reason I can think of that the patch would make a different to booting
-is that there is a buffer overrun somewhere. When the pages in one order, the
-buffer overrun is into pages that are not being used so it's not spotted. In
-the other order, the overrun causes damage. The patch only alters the
-order of pages in a linked list and ordinarily that shouldn't make any
-functional difference.
-
-Can you enable the config option DEBUG_PAGEALLOC please and tell me if
-that blows up in some unexpected fashion? It would also be helpful if
-you could enable all slab/slqb/slub debugging (whichever one you are
-using).
-
-> > > > [...]
-> > > > starting udevd...done
-> > > > Unable to handle kernel paging request at virtual address e3540000
-> > > > pgd = c39d4000
-> > > > [e3540000] *pgd=00000000
-> > > > Internal error: Oops: 5 [#1]
-> > > > Modules linked in:
-> > > > CPU: 0    Not tainted  (2.6.31-rc4-00296-ge084b2d-dirty #10)
-> > > > PC is at strlen+0xc/0x20
-> > > > LR is at kobject_get_path+0x24/0xa4
-> >
-> > I haven't tackled this sort of bug before but it looks more likely that
-> > there is garbage in the sysfs tree that is being tripped up on.
-> 
-> Yes, I think so, too. Because the same binary rc5 image runs on an S3C2410 CPU 
-> without an oops, but oopses on an S3C2440 (both CPUs are nearly the same, but 
-> only nearly). But how to track down such a failure?
-> 
-
-Lets start with a full dmesg with CONFIG_DEBUG_KOBJECT and
-CONFIG_DEBUG_OBJECTS set and see if anything springs up that looks
-unusual on that platform.
-
-Thanks
+OK, I'll add some comments about that.
+Thanks for the review!
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+MST
