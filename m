@@ -1,70 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbZHLUKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbZHLUMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754511AbZHLUKK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 16:10:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbZHLUKJ
+	id S1754544AbZHLUMY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 16:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbZHLUMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 16:10:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59701 "EHLO ogre.sisk.pl"
+	Wed, 12 Aug 2009 16:12:23 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59727 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752571AbZHLUKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 16:10:08 -0400
+	id S1752571AbZHLUMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 16:12:23 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
-Date: Wed, 12 Aug 2009 22:10:35 +0200
+To: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH update] PM: Introduce core framework for run-time PM of I/O devices (rev. 15)
+Date: Wed, 12 Aug 2009 22:13:14 +0200
 User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Zhang Rui <rui.zhang@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       "linux-acpi" <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
-       "dtor@mail.ru" <dtor@mail.ru>
-References: <Pine.LNX.4.44L0.0908120958200.2955-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908120958200.2955-100000@iolanthe.rowland.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
+       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>
+References: <200908081625.57333.rjw@sisk.pl> <200908092313.05541.rjw@sisk.pl> <aec7e5c30908120337g2928b825m1a17a311a0756305@mail.gmail.com>
+In-Reply-To: <aec7e5c30908120337g2928b825m1a17a311a0756305@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908122210.35591.rjw@sisk.pl>
+Message-Id: <200908122213.14174.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 August 2009, Alan Stern wrote:
-> On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
-> 
-> > That looks quite complicated at first sight, but asynchronous resume with
-> > completions can be done in a relatively simple patch.  I've got one, so
-> > tomorow I'll post it for further discussion.
-> 
-> Okay.  I would think that managing the threads would account for most 
-> of the complexity in either implementation, but I'll wait to see how 
-> your approach works out.
-> 
-> > Thanks,
-> > Rafael
-> > 
-> > 
-> > PS
-> > Did you have a chance to look at rev. 15 of the runtime PM patch
-> > (http://patchwork.kernel.org/patch/40306/)?
-> 
-> Yes, sorry for not getting back to you.  It looks okay.
-> 
-> The one thing I'm not sure of is the pm_runtime_put_noidle calls in 
-> driver_probe_device and __device_release_driver.  It seems that we 
-> should always call pm_runtime_put regardless of whether the probe 
-> succeeds or not.
+On Wednesday 12 August 2009, Magnus Damm wrote:
+> Hi Rafael,
 
-Did you mean pm_runtime_put_sync()?
+Hi,
 
-> For example, the USB stack is set up to suspend devices that don't have
-> a driver (this is handled at the bus subsystem level).  But if probing
-> failed, there wouldn't be any idle callback and so the suspend wouldn't
-> take place.
+> On Mon, Aug 10, 2009 at 6:13 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > Subject: PM: Introduce core framework for run-time PM of I/O devices (rev. 15)
+> >
+> > Introduce a core framework for run-time power management of I/O
+> > devices.  Add device run-time PM fields to 'struct dev_pm_info'
+> > and device run-time PM callbacks to 'struct dev_pm_ops'.  Introduce
+> > a run-time PM workqueue and define some device run-time PM helper
+> > functions at the core level.  Document all these things.
+> >
+> > Special thanks to Alan Stern for his help with the design and
+> > multiple detailed reviews of the pereceding versions of this patch
+> > and to Magnus Damm for testing feedback.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Looking good! I have a few nitpicks below, but from a functional
+> perspective it's all good. I've tested v15 with platform device
+> drivers for I2C, UIO and framebuffer. Before adding my "Acked-by"  I
+> also want to test the V4L capture driver, but I need to wait a few
+> days until I can get my hands on such a hardware platform.
+> 
+> Thanks for folding in and fixing up the debug patch. I was able to
+> drop most remaining patches thanks to feedback from Alan. So the only
+> needed patch apart from this one (and the ones in your linux-next
+> branch) is the one in this micro-series: "PM: Runtime PM v15 for
+> Platform Devices 20090812".
+> 
+> > --- linux-2.6.orig/include/linux/pm.h
+> > +++ linux-2.6/include/linux/pm.h
+> [..]
+> >  struct dev_pm_info {
+> >        pm_message_t            power_state;
+> > -       unsigned                can_wakeup:1;
+> > -       unsigned                should_wakeup:1;
+> > +       unsigned int            can_wakeup:1;
+> > +       unsigned int            should_wakeup:1;
+> >        enum dpm_state          status;         /* Owned by the PM core */
+> > -#ifdef CONFIG_PM_SLEEP
+> > +#ifdef CONFIG_PM_SLEEP
+> >        struct list_head        entry;
+> >  #endif
+> > +#ifdef CONFIG_PM_RUNTIME
+> > +       struct timer_list       suspend_timer;
+> > +       unsigned long           timer_expires;
+> > +       struct work_struct      work;
+> > +       wait_queue_head_t       wait_queue;
+> > +       spinlock_t              lock;
+> > +       atomic_t                usage_count;
+> > +       atomic_t                child_count;
+> 
+> I suppose child_count has to be atomic?
 
-OK, I'll make this change.
+I'd say so, it's modified in a few places without locking.
+
+> > --- /dev/null
+> > +++ linux-2.6/drivers/base/power/runtime.c
+> [...]
+> > +int __pm_runtime_suspend(struct device *dev, bool from_wq)
+> > +       __releases(&dev->power.lock) __acquires(&dev->power.lock)
+> [...]
+> > +       if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend) {
+> > +               spin_unlock_irq(&dev->power.lock);
+> > +
+> > +               retval = dev->bus->pm->runtime_suspend(dev);
+> > +
+> > +               spin_lock_irq(&dev->power.lock);
+> > +               dev->power.runtime_error = retval;
+> > +       } else {
+> > +               retval = -ENOSYS;
+> > +       }
+> 
+> Nit: { and } above do not follow the regular coding style.
+
+Well, you've got a very good answer to this from Alan. ;-)
 
 Thanks,
 Rafael
