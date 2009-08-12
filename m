@@ -1,181 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752141AbZHLM4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752168AbZHLM4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752141AbZHLM4Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 08:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZHLM4X
+	id S1752168AbZHLM4z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 08:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZHLM4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 08:56:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56653 "EHLO mx3.mail.elte.hu"
+	Wed, 12 Aug 2009 08:56:54 -0400
+Received: from smtp.knology.net ([24.214.63.101]:56776 "EHLO smtp.knology.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751361AbZHLM4W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 08:56:22 -0400
-Date: Wed, 12 Aug 2009 14:56:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Nitin Gupta <ngupta@vflare.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org
-Subject: Re: [RFC][PATCH] swap: send callback when swap slot is freed
-Message-ID: <20090812125617.GA30476@elte.hu>
-References: <200908121817.48501.ngupta@vflare.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908121817.48501.ngupta@vflare.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751487AbZHLM4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 08:56:54 -0400
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+ /dev
+From: David Dillow <dave@thedillows.org>
+To: Greg KH <greg@kroah.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Greg KH <gregkh@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
+       Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20090812003433.GA25392@kroah.com>
+References: <20090805182805.GA7534@kroah.com>
+	 <20090805185136.GA21442@kroah.com> <87ljlxhrnr.fsf@basil.nowhere.org>
+	 <1249575658.19886.8.camel@lap75545.ornl.gov>
+	 <20090806183147.GA28409@suse.de>
+	 <1249772876.22248.34.camel@obelisk.thedillows.org>
+	 <20090810153943.GB7652@kroah.com>
+	 <1250001374.22248.65.camel@obelisk.thedillows.org>
+	 <20090811145523.GD14368@basil.fritz.box>
+	 <1250036727.26788.7.camel@obelisk.thedillows.org>
+	 <20090812003433.GA25392@kroah.com>
+Content-Type: text/plain
+Date: Wed, 12 Aug 2009 08:56:53 -0400
+Message-Id: <1250081813.26788.13.camel@obelisk.thedillows.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-08-11 at 17:34 -0700, Greg KH wrote:
+> On Tue, Aug 11, 2009 at 08:25:27PM -0400, David Dillow wrote:
+> > So use Eric/Arjan's program that does it in 60ms -- you get a
+> > dynamic /dev, no initrd, fast boot, and no kernel changes required.
+> 
+> Their program only handles it for a reconstruction of /dev based on
+> sysfs one time at boot.  It does not handle things that are added or
+> discovered by the system after that, you need udev for that.
+> 
+> So it's a great hack for boot time stuff, but not a complete /dev
+> management replacement like this code can be for numerous systems.
 
-* Nitin Gupta <ngupta@vflare.org> wrote:
+What systems would those be? Perhaps it's just too early in the morning
+for me, but I'm having a hard time thinking of ones that wouldn't want
+to use udev in that case for the event notification, or have their own
+handler, such as an embedded system.
 
-> (Re-sending since I didn't get any reply last time)
-> 
-> Currently, we have "swap discard" mechanism which sends a discard 
-> bio request when we find a free cluster during scan_swap_map(). 
-> This callback can come a long time after swap slots are actually 
-> freed.
-> 
-> This delay in callback is a great problem when (compressed) RAM 
-> [1] is used as a swap device. So, this change adds a callback 
-> which is called as soon as a swap slot becomes free. For above 
-> mentioned case of swapping over compressed RAM device, this is 
-> very useful since we can immediately free memory allocated for 
-> this swap page.
-> 
-> This callback does not replace swap discard support. It is called 
-> with swap_lock held, so it is meant to trigger action that 
-> finishes quickly. However, swap discard is an I/O request and can 
-> be used for taking longer actions.
-> 
-> This patch is simply a quick hack but it works (tested on x86 and 
-> x64). Can anyone please suggest a cleaner and proper way to do 
-> this? Any feedback would be really helpful. Thanks.
-> 
-> 
-> Links:
-> [1] http://code.google.com/p/compcache/
-> 
-> Signed-off-by: Nitin Gupta <ngupta@vflare.org>
-> ---
-> 
->  include/linux/swap.h |   14 ++++++++++++++
->  init/Kconfig         |    9 +++++++++
->  mm/swapfile.c        |   20 ++++++++++++++++++++
->  3 files changed, 43 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/swap.h b/include/linux/swap.h
-> index 7c15334..483d0b9 100644
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -8,6 +8,7 @@
->  #include <linux/memcontrol.h>
->  #include <linux/sched.h>
->  #include <linux/node.h>
-> +#include <linux/blkdev.h>
->  
->  #include <asm/atomic.h>
->  #include <asm/page.h>
-> @@ -20,6 +21,8 @@ struct bio;
->  #define SWAP_FLAG_PRIO_MASK	0x7fff
->  #define SWAP_FLAG_PRIO_SHIFT	0
->  
-> +typedef void (swap_free_notify_fn) (struct block_device *, unsigned long);
-> +
->  static inline int current_is_kswapd(void)
->  {
->  	return current->flags & PF_KSWAPD;
-> @@ -155,6 +158,9 @@ struct swap_info_struct {
->  	unsigned int max;
->  	unsigned int inuse_pages;
->  	unsigned int old_block_size;
-> +#ifdef CONFIG_SWAP_FREE_NOTIFY
-> +	swap_free_notify_fn *swap_free_notify_fn;
-> +#endif
->  };
->  
->  struct swap_list_t {
-> @@ -297,6 +303,14 @@ extern int reuse_swap_page(struct page *);
->  extern int try_to_free_swap(struct page *);
->  struct backing_dev_info;
->  
-> +#ifdef CONFIG_SWAP_FREE_NOTIFY
-> +extern void set_swap_free_notify(unsigned, swap_free_notify_fn *);
-> +#else
-> +void set_swap_free_notify(unsigned, swap_free_notify_fn *)
-> +{
-> +}
-> +#endif
-> +
->  /* linux/mm/thrash.c */
->  extern struct mm_struct *swap_token_mm;
->  extern void grab_swap_token(struct mm_struct *);
-> diff --git a/init/Kconfig b/init/Kconfig
-> index 3f7e609..b0112c6 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -176,6 +176,15 @@ config SWAP
->  	  used to provide more virtual memory than the actual RAM present
->  	  in your computer.  If unsure say Y.
->  
-> +config SWAP_FREE_NOTIFY
-> +	bool "Enable swap free notification"
-> +	depends on SWAP
-> +	default y
-> +	help
-> +	  This causes swap subsystem to send a callback to swap device when
-> +	  a swap block becomes free. This is useful in cases such as when
-> +	  compressed RAM device is used as swap disk.
-> +
->  config SYSVIPC
->  	bool "System V IPC"
->  	---help---
-> diff --git a/mm/swapfile.c b/mm/swapfile.c
-> index 8ffdc0d..25bacfd 100644
-> --- a/mm/swapfile.c
-> +++ b/mm/swapfile.c
-> @@ -552,6 +552,22 @@ out:
->  	return NULL;
->  }
->  
-> +#ifdef CONFIG_SWAP_FREE_NOTIFY
-> +/*
-> + * Sets callback for event when swap_map[offset] == 0
-> + * i.e. page at this swap offset is not longer used.
-> + */
-> +void set_swap_free_notify(unsigned type, swap_free_notify_fn *notify_fn)
-> +{
-> +	struct swap_info_struct *sis;
-> +	sis = get_swap_info_struct(type);
-> +	BUG_ON(!sis);
-> +	sis->swap_free_notify_fn = notify_fn;
-> +	return;
-> +}
-> +EXPORT_SYMBOL(set_swap_free_notify);
-> +#endif
-> +
->  static int swap_entry_free(struct swap_info_struct *p,
->  			   swp_entry_t ent, int cache)
->  {
-> @@ -583,6 +599,10 @@ static int swap_entry_free(struct swap_info_struct *p,
->  			swap_list.next = p - swap_info;
->  		nr_swap_pages++;
->  		p->inuse_pages--;
-> +#ifdef CONFIG_SWAP_FREE_NOTIFY
-> +		if (p->swap_free_notify_fn)
-> +			p->swap_free_notify_fn(p->bdev, offset);
-> +#endif
->  	}
->  	if (!swap_count(count))
->  		mem_cgroup_uncharge_swap(ent);
-
-Shouldnt this be all be unconditional? Sounds like a reasonable VM 
-callback. The patch would become a lot smaller as well.
-
-	Ingo
