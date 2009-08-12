@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752833AbZHLONK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbZHLOOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752833AbZHLONK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 10:13:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbZHLONJ
+	id S1752844AbZHLOOW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 10:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZHLOOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 10:13:09 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:41304 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752751AbZHLONI (ORCPT
+	Wed, 12 Aug 2009 10:14:22 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39787 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752806AbZHLOOV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 10:13:08 -0400
-Date: Wed, 12 Aug 2009 10:13:09 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
-In-Reply-To: <20090812105106.GA7885@elte.hu>
-Message-ID: <Pine.LNX.4.44L0.0908121005370.2955-100000@iolanthe.rowland.org>
+	Wed, 12 Aug 2009 10:14:21 -0400
+Date: Wed, 12 Aug 2009 16:14:21 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, David Dillow <dave@thedillows.org>,
+       Greg KH <greg@kroah.com>, Greg KH <gregkh@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
+       Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+	/dev
+Message-ID: <20090812141421.GG28848@basil.fritz.box>
+References: <87ljlxhrnr.fsf@basil.nowhere.org> <1249575658.19886.8.camel@lap75545.ornl.gov> <20090806183147.GA28409@suse.de> <1249772876.22248.34.camel@obelisk.thedillows.org> <20090810153943.GB7652@kroah.com> <1250001374.22248.65.camel@obelisk.thedillows.org> <20090811145523.GD14368@basil.fritz.box> <1250036727.26788.7.camel@obelisk.thedillows.org> <20090812073152.GB28848@basil.fritz.box> <20090812070759.2b9c1f32@infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090812070759.2b9c1f32@infradead.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Aug 2009, Ingo Molnar wrote:
+On Wed, Aug 12, 2009 at 07:07:59AM -0700, Arjan van de Ven wrote:
+> On Wed, 12 Aug 2009 09:31:52 +0200
+> Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > > So use Eric/Arjan's program that does it in 60ms -- you get a
+> > > dynamic /dev, no initrd, fast boot, and no kernel changes required.
+> > 
+> > That would likely need initrd at least on the distro I use which uses
+> > device files very early.
+> 
+> nah just need to call it early in /etc/rc.sysinit.
+> 
+> initrd is a read herring; distros don't need an initrd
+> (well except fedora who ship borken with a /dev without
+> even /dev/console)
 
-> > And here I was thinking kerneldoc doesn't actually work 
-> > like that, but perhaps Randy fixed it so the initial 
-> > description can line-wrap?
+SUSE has the same problem. If the on disk /dev is empty
+and it typically is out of the box then and there's no
+initrd you don't boot.
 
-Yes, that's what I thought too.  If kerneldoc has been fixed then the 
-description line certainly should get wrapped.
+-Andi
 
-On Wed, 12 Aug 2009, Ingo Molnar wrote:
-
-> Looks good - a small nit: please use proper/consistent line length,
-> something like:
-
-> Ah, the main changes i did were to the body, that is what 
-> caught my eyes.
-
-Point taken.  Would you like me to reformat the body text and resubmit
-the patch?
-
-Alan Stern
-
+-- 
+ak@linux.intel.com -- Speaking for myself only.
