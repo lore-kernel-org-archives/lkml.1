@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbZHLBq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbZHLBv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755357AbZHLBq3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 21:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZHLBq2
+	id S1755432AbZHLBv5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 21:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755098AbZHLBv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 21:46:28 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:50490 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbZHLBq1 (ORCPT
+	Tue, 11 Aug 2009 21:51:56 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:52082 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754348AbZHLBvz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 21:46:27 -0400
+	Tue, 11 Aug 2009 21:51:55 -0400
 To: Amerigo Wang <amwang@redhat.com>
 Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
        Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
        akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
 References: <20090811104144.5154.77871.sendpatchset@localhost.localdomain>
-	<20090811104154.5154.78710.sendpatchset@localhost.localdomain>
-	<m1r5vi9l9v.fsf@fess.ebiederm.org> <4A821A14.1020408@redhat.com>
+	<m163cub067.fsf@fess.ebiederm.org> <4A82182C.1080501@redhat.com>
 From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 11 Aug 2009 18:46:18 -0700
-In-Reply-To: <4A821A14.1020408@redhat.com> (Amerigo Wang's message of "Wed\, 12 Aug 2009 09\:25\:40 +0800")
-Message-ID: <m17hx9n6s5.fsf@fess.ebiederm.org>
+Date: Tue, 11 Aug 2009 18:51:52 -0700
+In-Reply-To: <4A82182C.1080501@redhat.com> (Amerigo Wang's message of "Wed\, 12 Aug 2009 09\:17\:32 +0800")
+Message-ID: <m1eirhlryf.fsf@fess.ebiederm.org>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,7 +27,7 @@ X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiede
 X-SA-Exim-Connect-IP: 76.21.114.89
 X-SA-Exim-Rcpt-To: amwang@redhat.com, mingo@elte.hu, akpm@linux-foundation.org, andi@firstfloor.org, nhorman@redhat.com, linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
 X-Spam-Combo: ;Amerigo Wang <amwang@redhat.com>
 X-Spam-Relay-Country: 
 X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
@@ -37,10 +36,10 @@ X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
 	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
 	*      [score: 0.0000]
 	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
 	*  0.0 XM_SPF_Neutral SPF-Neutral
 	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [RFC Patch 2/2] kexec: allow to shrink reserved memory
+Subject: Re: [RFC Patch 1/2] kexec: show memory info in /proc/iomem
 X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
 X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -49,45 +48,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Amerigo Wang <amwang@redhat.com> writes:
 
-> Eric W. Biederman wrote:
->> Amerigo Wang <amwang@redhat.com> writes:
+>> Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 >>
->>   
->>> This patch implements shrinking the reserved memory for crash kernel,
->>> if it is more than enough.
->>>
->>> For example, if you have already reserved 128M, now you just want 100M,
->>> you can do:
->>>
->>> # echo $((100*1024*1024)) > /sys/kernel/kexec_crash_size
->>>     
->>
->> This patch looks like a reasonable start.
->>
->> However once a crash kernel image is loaded we have already told that
->> image about the memory that is available and what you are doing here
->> will go and stop on the memory that is reserved but not yet used,
->> totally breaking the DMA protections.  AKA we know the memory is safe
->> from ongoing DMAs because it has lain fallow since boot up.
->>
->> The only safe thing to do is to reduce the memory size before (possibly
->> just before) we load the crash kernel.  Which means we should only
->> be allowed to shrink the size when nothing is loaded, exactly the
->> opposite of what you have implemented.
->>
+>> We can inspect the image we are going to load to get this information.
+>> In fact /sbin/kexec already inspects the image we are going to load
+>> to get this information.  Putting this in the kernel adds kernel
+>> complexity for no gain.
 >>   
 >
-> Confused, why just loading the crash kernel makes it unsafe?
-> DMA should be avoided when reserving that memory during boot, shouldn't it?
+> /sbin/kexec is supported to know this, of course. But this is not for
+> /sbin/kexec, this is for user (or other programs) to observe the memory
+> information, so that he can know the memory he reserved is too much or not.
 
-Yes.  But you are removing the reservation and starting DMA on memory
-we have told the crash kernel it can use.
+> Without this, it is a little hard to use patch 2/2.
 
-> I know I missed the part that freeing memory before loading, but if it is safe
-> before loading, how can it be unsafe after that?
+So add on option to /sbin/kexec.
 
-We tell the crash kernel when loading it, it can use all of the reserved memory.
+Furthermore none of this does a good job of predicting how much
+memory /sbin/fsck will require to check the filesystem before we
+write a crash dump.
 
-Only when you don't have a crash kernel loaded is that interesting.
+The only way I know of reliably obtaining that kind of information is
+testing your crash userspace with different amounts of memory and
+understanding what is going on.
 
 Eric
