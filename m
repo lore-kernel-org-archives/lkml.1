@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751628AbZHLXs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750940AbZHLX7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751628AbZHLXs6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 19:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbZHLXs5
+	id S1750940AbZHLX7c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 19:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbZHLX7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 19:48:57 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:55922 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741AbZHLXs4 (ORCPT
+	Wed, 12 Aug 2009 19:59:32 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:33169 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741AbZHLX7b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 19:48:56 -0400
-Date: Wed, 12 Aug 2009 18:48:55 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, sds@tycho.nsa.gov,
-       davem@davemloft.net, shemminger@linux-foundation.org, kees@ubuntu.com,
-       morgan@kernel.org, casey@schaufler-ca.com, dwlash@redhat.com
-Subject: Re: module loading permissions and request_module permission
-	inconsistencies
-Message-ID: <20090812234855.GA12505@us.ibm.com>
-References: <1249933513.2501.58.camel@dhcp231-106.rdu.redhat.com>
+	Wed, 12 Aug 2009 19:59:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=w5O7ZIx0RJKYc3EKd0AxykqJ/DPfOxyzvDgO758a0mEjUijD4y1rdIIZK1S0HVXgbu
+         BRi/lqdKwMtkx/np9qu1jCoRtjAPIpm4U9U9LEJe8XL40LoFwjTZ2mzeUZ9GfzHvrJbT
+         Kx6QwBtsK4hfyVMW+gkZuWfH4HSYpsn4ZqKIA=
+Message-ID: <4A835760.2050803@gmail.com>
+Date: Wed, 12 Aug 2009 17:59:28 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249933513.2501.58.camel@dhcp231-106.rdu.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Luis Fernando Planella Gonzalez <lfpg.dev@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Flooded by do_IRQ: 0.91 No irq handler for vector
+References: <d12c1890908101630m2a4d0d68yf6dc1e0e0e4f4314@mail.gmail.com>	 <4A80C2F8.2040208@gmail.com>	 <d12c1890908101825t44138bf4x9a4733ece6f74b88@mail.gmail.com> <d12c1890908111528p47cdd30bw24749e34fc1cc8d3@mail.gmail.com>
+In-Reply-To: <d12c1890908111528p47cdd30bw24749e34fc1cc8d3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric Paris (eparis@redhat.com):
-> I'd like to hear thoughts on how we currently do permissions handling on
-> request_module() and if it really makes sense?  request_module() is the
-> function which will do an upcall to try to get modprobe to load a
-> specified module into the kernel.  It is called in a lot of places
-> around the kernel (~128).  Of those places only three check to see if
-> the REQUESTING process has some sort of module loading permissions
-> (CAP_SYS_RAWIO.)  Those three are in net/core/dev.c::dev_load() and in
-> the IPv4 tcp congestion code in tcp_set_default_congestion_control() and
-> tcp_set_congestion_control().  All 125 other calls to request_module()
-> appear to be done without any permissions check against the triggering
-> process.  The actual loading of a module is done in another thread which
-> always has permissions, so that side of things appears to not be an
-> issue.
-> 
-> First question, why does networking do it's own CAP_SYS_MODULE checks?
-> (this is VERY old code, pre-git days)  And, does it make sense?  In the
-> past this has come up in [1] when /sbin/ip triggered the loading of a
-> module to get IPv6 tunnel support.  It's perfectly reasonable
-> for /sbin/ip to do this.  But is it reasonable for /sbin/ip to need
-> CAP_SYS_MODULE?  CAP_SYS_MODULE says that /sbin/ip has permissions to
-> load any arbitrary binary it feels like as a kernel module directly.  Is
-> this really what we want?  Should SELinux have to give a hacked /sbin/ip
-> permissions to load any arbitrary module?  Recently in [2] we find that
-> now bluetoothd needs to be granted permissions to directly load any
-> kernel module it pleases, just so it can request the upcall loads bnep.
-> The same holds basically true for congestion control hooks.  Note that
-> I'm saying we are giving permission for these to load kernel modules
-> directly, not just through the upcall.
+On 08/11/2009 04:28 PM, Luis Fernando Planella Gonzalez wrote:
+> I'm really concerned that all those interrupts might slow down the
+> computer somehow...
+> Here is an attached syslog part after a reboot.
+> Sometimes, the ratelimit says that thousands of callbacks were suppressed.
+> Is there a way to make this message be displayed only once?
+>
+> In arch/x86/kernel/irq.c, the line 213 is:
+> irq = __get_cpu_var(vector_irq)[vector];
+>
+> In my case, the returned irq is -1. Doesn't it makes sense to not log
+> the "No irq handler for vector" message when irq<  0?
+>
+> Or even a deeper answer: Why, in my case, the resulting irq is -1?
 
-Right, so taking a more extreme example, the request_module() in
-search_binary_handler...  requiring CAP_SYS_MODULE there would mean
-you'd have to be privileged to be the first to execute say a
-binfmt_misc.
+Not logging would just cover up the problem, the issue in your case is 
+that something seems to be asserting a ton of interrupts on an IRQ line 
+that no driver has claimed..
 
-The actual modules are to be protected by protecting /lib/modules
-and /sbin/modprobe themselves.  So long as those are properly
-protected, the ability to cause a call to __request_module() at most
-takes up more memory.
+>
+>
+>
+> 2009/8/10 Luis Fernando Planella Gonzalez<lfpg.dev@gmail.com>:
+>> I've just compiled 2.6.30.4, and it shows another info:
+>> do_IRQ: 0.91 No irq handler for vector (irq -1)
+>>
+>> Attached are the /proc/interrupts and the lspci -vv
+>>
+>> Anyway, sorry for not specifying my hardware:
+>> * Intel Core2 Duo 2.13 GHz
+>> * 2GB RAM
+>> * NVidia 7900 GS
+>>
+>> Thanks.
+>>
 
-So what you say seems to make sense.
-
--serge
