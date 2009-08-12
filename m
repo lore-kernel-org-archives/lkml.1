@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbZHLUeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbZHLUh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754910AbZHLUeh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 16:34:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbZHLUeh
+	id S1754920AbZHLUh6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 16:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbZHLUh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 16:34:37 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:32771 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754084AbZHLUeg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 16:34:36 -0400
-Date: Wed, 12 Aug 2009 16:34:37 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Zhang Rui <rui.zhang@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
-       "dtor@mail.ru" <dtor@mail.ru>
-Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
-In-Reply-To: <200908122210.35591.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0908121633220.23954-100000@iolanthe.rowland.org>
+	Wed, 12 Aug 2009 16:37:58 -0400
+Received: from cantor.suse.de ([195.135.220.2]:42724 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752345AbZHLUh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 16:37:57 -0400
+Date: Wed, 12 Aug 2009 22:37:56 +0200
+From: Jan Kara <jack@suse.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
+       Frans Pop <elendil@planet.nl>, Chris Mason <chris.mason@oracle.com>,
+       jack@suse.cz, linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: What happened to data=guarded?
+Message-ID: <20090812203756.GA10729@duck.suse.cz>
+References: <1249934623-15939-1-git-send-email-tytso@mit.edu> <200908111535.37927.elendil@planet.nl> <20090811133721.GD29224@think> <200908111654.38217.elendil@planet.nl> <878whqgyid.fsf@basil.nowhere.org> <20090811185703.GQ1756@mit.edu> <20090810164205.GC1505@ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090810164205.GC1505@ucw.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
-
-> > The one thing I'm not sure of is the pm_runtime_put_noidle calls in 
-> > driver_probe_device and __device_release_driver.  It seems that we 
-> > should always call pm_runtime_put regardless of whether the probe 
-> > succeeds or not.
+On Mon 10-08-09 18:42:05, Pavel Machek wrote:
+> On Tue 2009-08-11 14:57:03, Theodore Tso wrote:
+> > On Tue, Aug 11, 2009 at 05:29:14PM +0200, Andi Kleen wrote:
+> > > > Good to hear. I've so far stayed with data=ordered as I think I'd prefer 
+> > > > data=guarded over data=writeback. I'll certainly give it a try when it's 
+> > > > available.
+> > > 
+> > > Same here. data=writeback already cost me a few files after crashes here :/
+> > 
+> > What sort of files were you losing?  I don't know if we can improve
+> > the implied flush hueristics, but we should at least try to see if we
+> > do something about it.
 > 
-> Did you mean pm_runtime_put_sync()?
+> IIRC... the flush heuristics invoke async flush, so you can still lose
+> data if you are unlucky, no?
+  Of course you can but it can happen in data=ordered mode as well (if the
+machine crashes before the transaction is committed). The percieved
+difference is in the fact that kjournald starts its commit every 5 seconds
+while pdflush starts writeback every 30-35 seconds. So if you use
+data=guarded/writeback mode and set dirty_expire_centisecs to 500, the
+experience wrt. data loss is going to be similar to data=ordered mode.
+fsync with heavy background writers won't be that painful as in data=ordered
+mode but apart from that the performance will be probably comparable.
 
-Yes.  I haven't used the new code yet so the names don't stick in my 
-mind.
-
-> > For example, the USB stack is set up to suspend devices that don't have
-> > a driver (this is handled at the bus subsystem level).  But if probing
-> > failed, there wouldn't be any idle callback and so the suspend wouldn't
-> > take place.
-> 
-> OK, I'll make this change.
-
-Thanks.  Now I just have to figure out the best way to convert USB over 
-to the new framework...
-
-Alan Stern
-
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
