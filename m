@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932561AbZHLKsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932550AbZHLKsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932561AbZHLKsl (ORCPT <rfc822;w@1wt.eu>);
+	id S932550AbZHLKsl (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 12 Aug 2009 06:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932524AbZHLKsk
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932541AbZHLKsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 06:48:40 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:53242 "EHLO
+	Wed, 12 Aug 2009 06:48:38 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:57189 "EHLO
 	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932527AbZHLKsh (ORCPT
+	with ESMTP id S932526AbZHLKsg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 06:48:37 -0400
+	Wed, 12 Aug 2009 06:48:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=ZdrJuBXqGZh81b9qELH6w5kcI6AltqhbIkBZuWpZalf56hReSb0osj7zHHvg65t8Xu
-         k5adpsEnGgDpLbWHPRHNJRe3RWCECXj4Cwhte2WQkePC/M/S/S5mXmT0DIGuqZcpMfid
-         diUfOtwofrwDaLbX2X4PnlXRepn7pJvUTC464=
+        b=MTTVEsvGGutK5nd0IPDs3E3om4gZy99ied5rA0nyyD3PL6+KM/vPjW/IUCnZzkwyIr
+         gYid15Ny3K0niCdcmXZI+NIRWODZcNtqUgpRzAp7XDXPXFdn4dzvlDCy8SiFhviu/cE8
+         9fs3u/EKIGZG9sPvP2fhwEyNTbgM7I8OP85mM=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -23,9 +23,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
        Brice Goglin <Brice.Goglin@inria.fr>
-Subject: [PATCH 2/3 v2] perf tools: Factorize the event structure definitions in a single file
-Date: Wed, 12 Aug 2009 12:48:31 +0200
-Message-Id: <1250074112-15147-3-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 1/3 v2] perf tools: Factorize high level dso helpers
+Date: Wed, 12 Aug 2009 12:48:30 +0200
+Message-Id: <1250074112-15147-2-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <20090812100851.GA18577@elte.hu>
 References: <20090812100851.GA18577@elte.hu>
@@ -33,8 +33,11 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Factorize the multiple definition of the events structures into a
-single util/event.h file.
+Factorize multiple definitions of high level dso helpers into the
+symbol source file.
+
+The side effect is a general export of the verbose and eprintf
+debugging helpers into a new file dedicated to debugging purposes.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
@@ -42,257 +45,519 @@ Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Brice Goglin <Brice.Goglin@inria.fr>
 ---
- tools/perf/builtin-annotate.c |   34 -------------------------
- tools/perf/builtin-record.c   |   18 -------------
- tools/perf/builtin-report.c   |   53 ----------------------------------------
- tools/perf/builtin-top.c      |   20 ---------------
- tools/perf/util/event.h       |   54 +++++++++++++++++++++++++++++++++++++++++
- tools/perf/util/util.h        |    2 +
- 6 files changed, 56 insertions(+), 125 deletions(-)
- create mode 100644 tools/perf/util/event.h
+ tools/perf/Makefile           |    1 +
+ tools/perf/builtin-annotate.c |   96 ----------------------------------------
+ tools/perf/builtin-record.c   |    1 -
+ tools/perf/builtin-report.c   |   97 -----------------------------------------
+ tools/perf/builtin-stat.c     |    1 -
+ tools/perf/builtin-top.c      |    4 --
+ tools/perf/builtin.h          |    1 +
+ tools/perf/perf.h             |    1 +
+ tools/perf/util/debug.c       |   22 +++++++++
+ tools/perf/util/debug.h       |    5 ++
+ tools/perf/util/symbol.c      |   97 +++++++++++++++++++++++++++++++++++++++++
+ tools/perf/util/symbol.h      |   11 +++++
+ 12 files changed, 138 insertions(+), 199 deletions(-)
+ create mode 100644 tools/perf/util/debug.c
+ create mode 100644 tools/perf/util/debug.h
 
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index de7beac..2aee21b 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -339,6 +339,7 @@ LIB_OBJS += util/pager.o
+ LIB_OBJS += util/header.o
+ LIB_OBJS += util/callchain.o
+ LIB_OBJS += util/values.o
++LIB_OBJS += util/debug.o
+ 
+ BUILTIN_OBJS += builtin-annotate.o
+ BUILTIN_OBJS += builtin-help.o
 diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 1a79299..fee663a 100644
+index 1dba568..1a79299 100644
 --- a/tools/perf/builtin-annotate.c
 +++ b/tools/perf/builtin-annotate.c
-@@ -44,40 +44,6 @@ static int		print_line;
- static unsigned long	page_size;
- static unsigned long	mmap_window = 32;
+@@ -26,7 +26,6 @@
+ #define SHOW_HV		4
  
--struct ip_event {
--	struct perf_event_header header;
--	u64 ip;
--	u32 pid, tid;
--};
--
--struct mmap_event {
--	struct perf_event_header header;
--	u32 pid, tid;
--	u64 start;
--	u64 len;
--	u64 pgoff;
--	char filename[PATH_MAX];
--};
--
--struct comm_event {
--	struct perf_event_header header;
--	u32 pid, tid;
--	char comm[16];
--};
--
--struct fork_event {
--	struct perf_event_header header;
--	u32 pid, ppid;
--};
--
--typedef union event_union {
--	struct perf_event_header	header;
--	struct ip_event			ip;
--	struct mmap_event		mmap;
--	struct comm_event		comm;
--	struct fork_event		fork;
--} event_t;
--
+ static char		const *input_name = "perf.data";
+-static char		*vmlinux = "vmlinux";
  
- struct sym_ext {
- 	struct rb_node	node;
+ static char		default_sort_order[] = "comm,symbol";
+ static char		*sort_order = default_sort_order;
+@@ -37,9 +36,6 @@ static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
+ static int		dump_trace = 0;
+ #define dprintf(x...)	do { if (dump_trace) printf(x); } while (0)
+ 
+-static int		verbose;
+-
+-static int		modules;
+ 
+ static int		full_paths;
+ 
+@@ -89,98 +85,6 @@ struct sym_ext {
+ 	char		*path;
+ };
+ 
+-static LIST_HEAD(dsos);
+-static struct dso *kernel_dso;
+-static struct dso *vdso;
+-
+-
+-static void dsos__add(struct dso *dso)
+-{
+-	list_add_tail(&dso->node, &dsos);
+-}
+-
+-static struct dso *dsos__find(const char *name)
+-{
+-	struct dso *pos;
+-
+-	list_for_each_entry(pos, &dsos, node)
+-		if (strcmp(pos->name, name) == 0)
+-			return pos;
+-	return NULL;
+-}
+-
+-static struct dso *dsos__findnew(const char *name)
+-{
+-	struct dso *dso = dsos__find(name);
+-	int nr;
+-
+-	if (dso)
+-		return dso;
+-
+-	dso = dso__new(name, 0);
+-	if (!dso)
+-		goto out_delete_dso;
+-
+-	nr = dso__load(dso, NULL, verbose);
+-	if (nr < 0) {
+-		if (verbose)
+-			fprintf(stderr, "Failed to open: %s\n", name);
+-		goto out_delete_dso;
+-	}
+-	if (!nr && verbose) {
+-		fprintf(stderr,
+-		"No symbols found in: %s, maybe install a debug package?\n",
+-				name);
+-	}
+-
+-	dsos__add(dso);
+-
+-	return dso;
+-
+-out_delete_dso:
+-	dso__delete(dso);
+-	return NULL;
+-}
+-
+-static void dsos__fprintf(FILE *fp)
+-{
+-	struct dso *pos;
+-
+-	list_for_each_entry(pos, &dsos, node)
+-		dso__fprintf(pos, fp);
+-}
+-
+-static struct symbol *vdso__find_symbol(struct dso *dso, u64 ip)
+-{
+-	return dso__find_symbol(dso, ip);
+-}
+-
+-static int load_kernel(void)
+-{
+-	int err;
+-
+-	kernel_dso = dso__new("[kernel]", 0);
+-	if (!kernel_dso)
+-		return -1;
+-
+-	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, modules);
+-	if (err <= 0) {
+-		dso__delete(kernel_dso);
+-		kernel_dso = NULL;
+-	} else
+-		dsos__add(kernel_dso);
+-
+-	vdso = dso__new("[vdso]", 0);
+-	if (!vdso)
+-		return -1;
+-
+-	vdso->find_symbol = vdso__find_symbol;
+-
+-	dsos__add(vdso);
+-
+-	return err;
+-}
+-
+ struct map {
+ 	struct list_head node;
+ 	u64	 start;
 diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index afae387..718b8f7 100644
+index 0345aad..afae387 100644
 --- a/tools/perf/builtin-record.c
 +++ b/tools/perf/builtin-record.c
-@@ -59,24 +59,6 @@ static int			file_new = 1;
- 
- struct perf_header		*header;
- 
--struct mmap_event {
--	struct perf_event_header	header;
--	u32				pid;
--	u32				tid;
--	u64				start;
--	u64				len;
--	u64				pgoff;
--	char				filename[PATH_MAX];
--};
--
--struct comm_event {
--	struct perf_event_header	header;
--	u32				pid;
--	u32				tid;
--	char				comm[16];
--};
--
--
- struct mmap_data {
- 	int			counter;
- 	void			*base;
+@@ -40,7 +40,6 @@ static int			inherit				= 1;
+ static int			force				= 0;
+ static int			append_file			= 0;
+ static int			call_graph			= 0;
+-static int			verbose				= 0;
+ static int			inherit_stat			= 0;
+ static int			no_samples			= 0;
+ static int			sample_address			= 0;
 diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 827eab2..1efefcc 100644
+index 2357c66..827eab2 100644
 --- a/tools/perf/builtin-report.c
 +++ b/tools/perf/builtin-report.c
-@@ -75,59 +75,6 @@ struct callchain_param	callchain_param = {
+@@ -30,7 +30,6 @@
+ #define SHOW_HV		4
  
- static u64		sample_type;
+ static char		const *input_name = "perf.data";
+-static char		*vmlinux = NULL;
  
--struct ip_event {
--	struct perf_event_header header;
--	u64 ip;
--	u32 pid, tid;
--	unsigned char __more_data[];
--};
+ static char		default_sort_order[] = "comm,dso,symbol";
+ static char		*sort_order = default_sort_order;
+@@ -46,11 +45,6 @@ static int		dump_trace = 0;
+ #define dprintf(x...)	do { if (dump_trace) printf(x); } while (0)
+ #define cdprintf(x...)	do { if (dump_trace) color_fprintf(stdout, color, x); } while (0)
+ 
+-static int		verbose;
+-#define eprintf(x...)	do { if (verbose) fprintf(stderr, x); } while (0)
 -
--struct mmap_event {
--	struct perf_event_header header;
--	u32 pid, tid;
--	u64 start;
--	u64 len;
--	u64 pgoff;
--	char filename[PATH_MAX];
--};
+-static int		modules;
 -
--struct comm_event {
--	struct perf_event_header header;
--	u32 pid, tid;
--	char comm[16];
--};
+ static int		full_paths;
+ static int		show_nr_samples;
+ 
+@@ -161,98 +155,7 @@ static int repsep_fprintf(FILE *fp, const char *fmt, ...)
+ 	return n;
+ }
+ 
+-static LIST_HEAD(dsos);
+-static struct dso *kernel_dso;
+-static struct dso *vdso;
+-static struct dso *hypervisor_dso;
 -
--struct fork_event {
--	struct perf_event_header header;
--	u32 pid, ppid;
--	u32 tid, ptid;
--};
+-static void dsos__add(struct dso *dso)
+-{
+-	list_add_tail(&dso->node, &dsos);
+-}
 -
--struct lost_event {
--	struct perf_event_header header;
--	u64 id;
--	u64 lost;
--};
+-static struct dso *dsos__find(const char *name)
+-{
+-	struct dso *pos;
 -
--struct read_event {
--	struct perf_event_header header;
--	u32 pid,tid;
--	u64 value;
--	u64 time_enabled;
--	u64 time_running;
--	u64 id;
--};
+-	list_for_each_entry(pos, &dsos, node)
+-		if (strcmp(pos->name, name) == 0)
+-			return pos;
+-	return NULL;
+-}
 -
--typedef union event_union {
--	struct perf_event_header	header;
--	struct ip_event			ip;
--	struct mmap_event		mmap;
--	struct comm_event		comm;
--	struct fork_event		fork;
--	struct lost_event		lost;
--	struct read_event		read;
--} event_t;
+-static struct dso *dsos__findnew(const char *name)
+-{
+-	struct dso *dso = dsos__find(name);
+-	int nr;
 -
- static int repsep_fprintf(FILE *fp, const char *fmt, ...)
- {
- 	int n;
+-	if (dso)
+-		return dso;
+-
+-	dso = dso__new(name, 0);
+-	if (!dso)
+-		goto out_delete_dso;
+-
+-	nr = dso__load(dso, NULL, verbose);
+-	if (nr < 0) {
+-		eprintf("Failed to open: %s\n", name);
+-		goto out_delete_dso;
+-	}
+-	if (!nr)
+-		eprintf("No symbols found in: %s, maybe install a debug package?\n", name);
+-
+-	dsos__add(dso);
+-
+-	return dso;
+-
+-out_delete_dso:
+-	dso__delete(dso);
+-	return NULL;
+-}
+-
+-static void dsos__fprintf(FILE *fp)
+-{
+-	struct dso *pos;
+-
+-	list_for_each_entry(pos, &dsos, node)
+-		dso__fprintf(pos, fp);
+-}
+-
+-static struct symbol *vdso__find_symbol(struct dso *dso, u64 ip)
+-{
+-	return dso__find_symbol(dso, ip);
+-}
+-
+-static int load_kernel(void)
+-{
+-	int err;
+-
+-	kernel_dso = dso__new("[kernel]", 0);
+-	if (!kernel_dso)
+-		return -1;
+-
+-	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, modules);
+-	if (err <= 0) {
+-		dso__delete(kernel_dso);
+-		kernel_dso = NULL;
+-	} else
+-		dsos__add(kernel_dso);
+-
+-	vdso = dso__new("[vdso]", 0);
+-	if (!vdso)
+-		return -1;
+ 
+-	vdso->find_symbol = vdso__find_symbol;
+-
+-	dsos__add(vdso);
+-
+-	hypervisor_dso = dso__new("[hypervisor]", 0);
+-	if (!hypervisor_dso)
+-		return -1;
+-	dsos__add(hypervisor_dso);
+-
+-	return err;
+-}
+ 
+ static char __cwd[PATH_MAX];
+ static char *cwd = __cwd;
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index b4b06c7..4b9dd4a 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -63,7 +63,6 @@ static struct perf_counter_attr default_attrs[] = {
+ #define MAX_RUN			100
+ 
+ static int			system_wide			=  0;
+-static int			verbose				=  0;
+ static unsigned int		nr_cpus				=  0;
+ static int			run_idx				=  0;
+ 
 diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index 0aa5673..9a6dbbf 100644
+index 7de28ce..0aa5673 100644
 --- a/tools/perf/builtin-top.c
 +++ b/tools/perf/builtin-top.c
-@@ -933,26 +933,6 @@ static void mmap_read_counter(struct mmap_data *md)
- 	last_read = this_read;
+@@ -68,8 +68,6 @@ static int			group				=  0;
+ static unsigned int		page_size;
+ static unsigned int		mmap_pages			= 16;
+ static int			freq				=  0;
+-static int			verbose				=  0;
+-static char			*vmlinux			=  NULL;
  
- 	for (; old != head;) {
--		struct ip_event {
--			struct perf_event_header header;
--			u64 ip;
--			u32 pid, target_pid;
--		};
--		struct mmap_event {
--			struct perf_event_header header;
--			u32 pid, target_pid;
--			u64 start;
--			u64 len;
--			u64 pgoff;
--			char filename[PATH_MAX];
--		};
+ static int			delay_secs			=  2;
+ static int			zero;
+@@ -338,8 +336,6 @@ static void show_details(struct sym_entry *syme)
+ 		printf("%d lines not displayed, maybe increase display entries [e]\n", more);
+ }
+ 
+-struct dso			*kernel_dso;
 -
--		typedef union event_union {
--			struct perf_event_header header;
--			struct ip_event ip;
--			struct mmap_event mmap;
--		} event_t;
--
- 		event_t *event = (event_t *)&data[old & md->mask];
+ /*
+  * Symbols will be added here in record_ip and will get out
+  * after decayed.
+diff --git a/tools/perf/builtin.h b/tools/perf/builtin.h
+index 51d1682..3a63e41 100644
+--- a/tools/perf/builtin.h
++++ b/tools/perf/builtin.h
+@@ -22,5 +22,6 @@ extern int cmd_stat(int argc, const char **argv, const char *prefix);
+ extern int cmd_top(int argc, const char **argv, const char *prefix);
+ extern int cmd_version(int argc, const char **argv, const char *prefix);
+ extern int cmd_list(int argc, const char **argv, const char *prefix);
++extern int cmd_trace(int argc, const char **argv, const char *prefix);
  
- 		event_t event_copy;
-diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-new file mode 100644
-index 0000000..91e2fe5
---- /dev/null
-+++ b/tools/perf/util/event.h
-@@ -0,0 +1,54 @@
-+#include "../perf.h"
-+
-+struct ip_event {
-+	struct perf_event_header header;
-+	u64 ip;
-+	u32 pid, tid;
-+	unsigned char __more_data[];
-+};
-+
-+struct mmap_event {
-+	struct perf_event_header header;
-+	u32 pid, tid;
-+	u64 start;
-+	u64 len;
-+	u64 pgoff;
-+	char filename[PATH_MAX];
-+};
-+
-+struct comm_event {
-+	struct perf_event_header header;
-+	u32 pid, tid;
-+	char comm[16];
-+};
-+
-+struct fork_event {
-+	struct perf_event_header header;
-+	u32 pid, ppid;
-+	u32 tid, ptid;
-+};
-+
-+struct lost_event {
-+	struct perf_event_header header;
-+	u64 id;
-+	u64 lost;
-+};
-+
-+struct read_event {
-+	struct perf_event_header header;
-+	u32 pid,tid;
-+	u64 value;
-+	u64 time_enabled;
-+	u64 time_running;
-+	u64 id;
-+};
-+
-+typedef union event_union {
-+	struct perf_event_header	header;
-+	struct ip_event			ip;
-+	struct mmap_event		mmap;
-+	struct comm_event		comm;
-+	struct fork_event		fork;
-+	struct lost_event		lost;
-+	struct read_event		read;
-+} event_t;
-diff --git a/tools/perf/util/util.h b/tools/perf/util/util.h
-index 68fe157..be4b52c 100644
---- a/tools/perf/util/util.h
-+++ b/tools/perf/util/util.h
-@@ -83,6 +83,8 @@
- #include <inttypes.h>
- #include "../../../include/linux/magic.h"
- 
-+#include "event.h"
-+
- #ifndef NO_ICONV
- #include <iconv.h>
  #endif
+diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+index e5148e2..f550921 100644
+--- a/tools/perf/perf.h
++++ b/tools/perf/perf.h
+@@ -48,6 +48,7 @@
+ 
+ #include "../../include/linux/perf_counter.h"
+ #include "util/types.h"
++#include "util/debug.h"
+ 
+ /*
+  * prctl(PR_TASK_PERF_COUNTERS_DISABLE) will (cheaply) disable all
+diff --git a/tools/perf/util/debug.c b/tools/perf/util/debug.c
+new file mode 100644
+index 0000000..7cb8464
+--- /dev/null
++++ b/tools/perf/util/debug.c
+@@ -0,0 +1,22 @@
++/* For general debugging purposes */
++
++#include "../perf.h"
++#include <string.h>
++#include <stdarg.h>
++#include <stdio.h>
++
++int verbose = 0;
++
++int eprintf(const char *fmt, ...)
++{
++	va_list args;
++	int ret = 0;
++
++	if (verbose) {
++		va_start(args, fmt);
++		ret = vfprintf(stderr, fmt, args);
++		va_end(args);
++	}
++
++	return ret;
++}
+diff --git a/tools/perf/util/debug.h b/tools/perf/util/debug.h
+new file mode 100644
+index 0000000..2ae9090
+--- /dev/null
++++ b/tools/perf/util/debug.h
+@@ -0,0 +1,5 @@
++/* For debugging general purposes */
++
++extern int verbose;
++
++int eprintf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index f1dcede..e9b13b4 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -937,6 +937,103 @@ int dso__load_kernel(struct dso *self, const char *vmlinux,
+ 	return err;
+ }
+ 
++LIST_HEAD(dsos);
++struct dso	*kernel_dso;
++struct dso	*vdso;
++struct dso	*hypervisor_dso;
++
++char		*vmlinux = "vmlinux";
++int		modules;
++
++static void dsos__add(struct dso *dso)
++{
++	list_add_tail(&dso->node, &dsos);
++}
++
++static struct dso *dsos__find(const char *name)
++{
++	struct dso *pos;
++
++	list_for_each_entry(pos, &dsos, node)
++		if (strcmp(pos->name, name) == 0)
++			return pos;
++	return NULL;
++}
++
++struct dso *dsos__findnew(const char *name)
++{
++	struct dso *dso = dsos__find(name);
++	int nr;
++
++	if (dso)
++		return dso;
++
++	dso = dso__new(name, 0);
++	if (!dso)
++		goto out_delete_dso;
++
++	nr = dso__load(dso, NULL, verbose);
++	if (nr < 0) {
++		eprintf("Failed to open: %s\n", name);
++		goto out_delete_dso;
++	}
++	if (!nr)
++		eprintf("No symbols found in: %s, maybe install a debug package?\n", name);
++
++	dsos__add(dso);
++
++	return dso;
++
++out_delete_dso:
++	dso__delete(dso);
++	return NULL;
++}
++
++void dsos__fprintf(FILE *fp)
++{
++	struct dso *pos;
++
++	list_for_each_entry(pos, &dsos, node)
++		dso__fprintf(pos, fp);
++}
++
++static struct symbol *vdso__find_symbol(struct dso *dso, u64 ip)
++{
++	return dso__find_symbol(dso, ip);
++}
++
++int load_kernel(void)
++{
++	int err;
++
++	kernel_dso = dso__new("[kernel]", 0);
++	if (!kernel_dso)
++		return -1;
++
++	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, modules);
++	if (err <= 0) {
++		dso__delete(kernel_dso);
++		kernel_dso = NULL;
++	} else
++		dsos__add(kernel_dso);
++
++	vdso = dso__new("[vdso]", 0);
++	if (!vdso)
++		return -1;
++
++	vdso->find_symbol = vdso__find_symbol;
++
++	dsos__add(vdso);
++
++	hypervisor_dso = dso__new("[hypervisor]", 0);
++	if (!hypervisor_dso)
++		return -1;
++	dsos__add(hypervisor_dso);
++
++	return err;
++}
++
++
+ void symbol__init(void)
+ {
+ 	elf_version(EV_CURRENT);
+diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+index 1e003ec..f3490fc 100644
+--- a/tools/perf/util/symbol.h
++++ b/tools/perf/util/symbol.h
+@@ -48,9 +48,20 @@ int dso__load_kernel(struct dso *self, const char *vmlinux,
+ 		     symbol_filter_t filter, int verbose, int modules);
+ int dso__load_modules(struct dso *self, symbol_filter_t filter, int verbose);
+ int dso__load(struct dso *self, symbol_filter_t filter, int verbose);
++struct dso *dsos__findnew(const char *name);
++void dsos__fprintf(FILE *fp);
+ 
+ size_t dso__fprintf(struct dso *self, FILE *fp);
+ char dso__symtab_origin(const struct dso *self);
+ 
++int load_kernel(void);
++
+ void symbol__init(void);
++
++extern struct list_head dsos;
++extern struct dso *kernel_dso;
++extern struct dso *vdso;
++extern struct dso *hypervisor_dso;
++extern char *vmlinux;
++extern int   modules;
+ #endif /* _PERF_SYMBOL_ */
 -- 
 1.6.2.3
 
