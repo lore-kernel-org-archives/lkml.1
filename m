@@ -1,84 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932289AbZHLJSD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932283AbZHLJUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932289AbZHLJSD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 05:18:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932226AbZHLJSC
+	id S932283AbZHLJUN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 05:20:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224AbZHLJUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 05:18:02 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:41978 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932222AbZHLJSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 05:18:01 -0400
-Date: Wed, 12 Aug 2009 11:18:01 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: mingo@elte.hu
-Subject: [PATCH] perf: add support for specifying profile cpu for record
-Message-ID: <20090812091801.GC12579@kernel.dk>
+	Wed, 12 Aug 2009 05:20:13 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:7058 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754146AbZHLJUL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 05:20:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=ucsXpzo964KkPf0X9FYd+MOHGGcbSVaNuiiqTAkPT3mYsMUNszgNh+mNBI2IGq1nbS
+         g/G1XXoTF73Eba4xaad6/v61LnXLYQBDidp+CGUamWc23dQ+moGWKskl/xNlUEgVTSx4
+         9CqGDLN1EAMylNX7il1FbdoDm9u3YnMRve830=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Date: Wed, 12 Aug 2009 17:20:11 +0800
+Message-ID: <3877989d0908120220q5104d2e7rd272ececbc45e377@mail.gmail.com>
+Subject: [RFC patch] init default dma_ops to prepare intel_iommu_init failure
+From: Luming Yu <luming.yu@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>,
+       "Yu, Fenghua" <fenghua.yu@intel.com>,
+       "Luck, Tony" <tony.luck@intel.com>, LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Content-Type: multipart/mixed; boundary=000e0cd32c086eb9fb0470ee539e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--000e0cd32c086eb9fb0470ee539e
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-perf top supports a -C for setting the profile CPU, but perf record does
-not. This adds the same option for perf record, allowing the user to
-specify a specific target profile CPU.
+Hi there,
 
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+On ia64 platform with dmar table and new upstream
+kernel(config_dmar_default_on enabled),
+if intel_iommu_init ends up without dma_ops initialized or other iommu
+failures.
+We got nothing to fall back. The following patch fixes it.
 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index 6da0992..8e85543 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -35,6 +35,7 @@ static const char		*output_name			= "perf.data";
- static int			group				= 0;
- static unsigned int		realtime_prio			= 0;
- static int			system_wide			= 0;
-+static int			profile_cpu			= -1;
- static pid_t			target_pid			= -1;
- static int			inherit				= 1;
- static int			force				= 0;
-@@ -425,6 +426,9 @@ try_again:
- 
- 		if (err == EPERM)
- 			die("Permission error - are you root?\n");
-+		else if (err ==  ENODEV && profile_cpu != -1)
-+			die("No such device - did you specify an out-of-range"
-+				" profile CPU?\n");
- 
- 		/*
- 		 * If it's cycles then fall back to hrtimer
-@@ -554,9 +558,13 @@ static int __cmd_record(int argc, const char **argv)
- 		if (pid == -1)
- 			pid = getpid();
- 
--		open_counters(-1, pid);
--	} else for (i = 0; i < nr_cpus; i++)
--		open_counters(i, target_pid);
-+		open_counters(profile_cpu, pid);
-+	} else if (profile_cpu != -1)
-+		open_counters(profile_cpu, target_pid);
-+	else {
-+		for (i = 0; i < nr_cpus; i++)
-+			open_counters(i, target_pid);
-+	}
- 
- 	if (file_new)
- 		perf_header__write(header, output);
-@@ -635,6 +643,8 @@ static const struct option options[] = {
- 			    "system-wide collection from all CPUs"),
- 	OPT_BOOLEAN('A', "append", &append_file,
- 			    "append to the output file to do incremental profiling"),
-+	OPT_INTEGER('C', "profile_cpu", &profile_cpu,
-+			    "CPU to profile on"),
- 	OPT_BOOLEAN('f', "force", &force,
- 			"overwrite existing data file"),
- 	OPT_LONG('c', "count", &default_interval,
+Please review. If make sense, please apply.
 
--- 
-Jens Axboe
+**The patch is enclosed in text attachment*
+**Using web client to send the patch* *
+**below is for review, please apply attached  patch*/
 
+Thanks,
+Luming
+
+Signed-off-by: Yu Luming <luming.yu@intel.com>
+
+arch/ia64/kernel/pci-swiotlb.c |   14 ++++++--------
+ 1 file changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
+index 223abb1..d5dcaf5 100644
+--- a/arch/ia64/kernel/pci-swiotlb.c
++++ b/arch/ia64/kernel/pci-swiotlb.c
+@@ -46,15 +46,13 @@ void __init swiotlb_dma_init(void)
+
+ void __init pci_swiotlb_init(void)
+ {
+-	if (!iommu_detected || iommu_pass_through) {
+ #ifdef CONFIG_IA64_GENERIC
+-		swiotlb = 1;
+-		printk(KERN_INFO "PCI-DMA: Re-initialize machine vector.\n");
+-		machvec_init("dig");
+-		swiotlb_init();
+-		dma_ops = &swiotlb_dma_ops;
++	swiotlb = 1;
++	printk(KERN_INFO "PCI-DMA: Re-initialize machine vector.\n");
++	machvec_init("dig");
++	swiotlb_init();
++	dma_ops = &swiotlb_dma_ops;
+ #else
+-		panic("Unable to find Intel IOMMU");
++	panic("Unable to find Intel IOMMU");
+ #endif
+-	}
+ }
+
+--000e0cd32c086eb9fb0470ee539e
+Content-Type: application/octet-stream; name=5
+Content-Disposition: attachment; filename=5
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fy9up8au0
+
+ZGlmZiAtLWdpdCBhL2FyY2gvaWE2NC9rZXJuZWwvcGNpLXN3aW90bGIuYyBiL2FyY2gvaWE2NC9r
+ZXJuZWwvcGNpLXN3aW90bGIuYwppbmRleCAyMjNhYmIxLi5kNWRjYWY1IDEwMDY0NAotLS0gYS9h
+cmNoL2lhNjQva2VybmVsL3BjaS1zd2lvdGxiLmMKKysrIGIvYXJjaC9pYTY0L2tlcm5lbC9wY2kt
+c3dpb3RsYi5jCkBAIC00NiwxNSArNDYsMTMgQEAgdm9pZCBfX2luaXQgc3dpb3RsYl9kbWFfaW5p
+dCh2b2lkKQogCiB2b2lkIF9faW5pdCBwY2lfc3dpb3RsYl9pbml0KHZvaWQpCiB7Ci0JaWYgKCFp
+b21tdV9kZXRlY3RlZCB8fCBpb21tdV9wYXNzX3Rocm91Z2gpIHsKICNpZmRlZiBDT05GSUdfSUE2
+NF9HRU5FUklDCi0JCXN3aW90bGIgPSAxOwotCQlwcmludGsoS0VSTl9JTkZPICJQQ0ktRE1BOiBS
+ZS1pbml0aWFsaXplIG1hY2hpbmUgdmVjdG9yLlxuIik7Ci0JCW1hY2h2ZWNfaW5pdCgiZGlnIik7
+Ci0JCXN3aW90bGJfaW5pdCgpOwotCQlkbWFfb3BzID0gJnN3aW90bGJfZG1hX29wczsKKwlzd2lv
+dGxiID0gMTsKKwlwcmludGsoS0VSTl9JTkZPICJQQ0ktRE1BOiBSZS1pbml0aWFsaXplIG1hY2hp
+bmUgdmVjdG9yLlxuIik7CisJbWFjaHZlY19pbml0KCJkaWciKTsKKwlzd2lvdGxiX2luaXQoKTsK
+KwlkbWFfb3BzID0gJnN3aW90bGJfZG1hX29wczsKICNlbHNlCi0JCXBhbmljKCJVbmFibGUgdG8g
+ZmluZCBJbnRlbCBJT01NVSIpOworCXBhbmljKCJVbmFibGUgdG8gZmluZCBJbnRlbCBJT01NVSIp
+OwogI2VuZGlmCi0JfQogfQo=
+--000e0cd32c086eb9fb0470ee539e--
