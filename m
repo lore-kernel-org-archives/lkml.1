@@ -1,72 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbZHLC1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbZHLCkE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755455AbZHLC1D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 22:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbZHLC1C
+	id S1755639AbZHLCkE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 22:40:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbZHLCkC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 22:27:02 -0400
-Received: from mga01.intel.com ([192.55.52.88]:61426 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751634AbZHLC1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 22:27:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,364,1246863600"; 
-   d="scan'208";a="715981155"
-Subject: Re: [BUGFIX] crypto: Fix ctr(aes) testing by specifying geniv
-From: Huang Ying <ying.huang@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-In-Reply-To: <1249524767.24238.318.camel@yhuang-dev.sh.intel.com>
-References: <1249285483-22286-1-git-send-email-ying.huang@intel.com>
-	 <20090805094506.GA12528@gondor.apana.org.au>
-	 <1249524767.24238.318.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain
-Date: Wed, 12 Aug 2009 10:27:00 +0800
-Message-Id: <1250044020.5337.214.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Aug 2009 22:40:02 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:52695 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754900AbZHLCkA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 22:40:00 -0400
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+References: <20090811104144.5154.77871.sendpatchset@localhost.localdomain>
+	<m163cub067.fsf@fess.ebiederm.org> <4A82182C.1080501@redhat.com>
+	<m1eirhlryf.fsf@fess.ebiederm.org> <4A8225DB.8040008@redhat.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 11 Aug 2009 19:39:56 -0700
+In-Reply-To: <4A8225DB.8040008@redhat.com> (Amerigo Wang's message of "Wed\, 12 Aug 2009 10\:15\:55 +0800")
+Message-ID: <m1d471ah6r.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: amwang@redhat.com, mingo@elte.hu, akpm@linux-foundation.org, andi@firstfloor.org, nhorman@redhat.com, linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Amerigo Wang <amwang@redhat.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [RFC Patch 1/2] kexec: show memory info in /proc/iomem
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-06 at 10:12 +0800, Huang Ying wrote:
-> On Wed, 2009-08-05 at 17:45 +0800, Herbert Xu wrote:
-> > On Mon, Aug 03, 2009 at 03:44:43PM +0800, Huang Ying wrote:
-> > > When doing "modeprobe tcrypt mode=10", the following error will show
-> > > in dmesg.
-> > > 
-> > > alg: skcipher: Failed to load transform for ctr(aes): -22
-> > > alg: skcipher: Failed to load transform for ctr(aes): -22
-> > > tcrypt: one or more tests failed!
-> > 
-> > I can't reproduce it here:
-> > 
-> > etch1:~# modprobe tcrypt mode=10
-> > FATAL: Error inserting tcrypt (/lib/modules/2.6.30/kernel/crypto/tcrypt.ko): Resource temporarily unavailable
-> > etch1:~# dmesg|tail
-> > alg: No test for digest_null (digest_null-generic)
-> > alg: No test for compress_null (compress_null-generic)
-> > padlock: VIA PadLock Hash Engine not detected.
-> > padlock: VIA PadLock Hash Engine not detected.
-> > eth0: link up, 100Mbps, full-duplex, lpa 0x05E1
-> > Initializing XFRM netlink socket
-> > NET: Registered protocol family 17
-> > NET: Registered protocol family 10
-> > lo: Disabled Privacy Extensions
-> > eth0: no IPv6 routers present
-> > etch1:~# 
-> > 
-> > The tcrypt test shouldn't use geniv at all.
-> > 
-> > What kernel version was this?
-> 
-> The version is: v2.6.30-6814-gab30046. Kernel config is attached too.
+Amerigo Wang <amwang@redhat.com> writes:
 
-Any follow-up for this patch? Still can not re-produce?
+2> Eric W. Biederman wrote:
+>> Amerigo Wang <amwang@redhat.com> writes:
+>>
+>>   
+>>>> Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+>>>>
+>>>> We can inspect the image we are going to load to get this information.
+>>>> In fact /sbin/kexec already inspects the image we are going to load
+>>>> to get this information.  Putting this in the kernel adds kernel
+>>>> complexity for no gain.
+>>>>         
+>>> /sbin/kexec is supported to know this, of course. But this is not for
+>>> /sbin/kexec, this is for user (or other programs) to observe the memory
+>>> information, so that he can know the memory he reserved is too much or not.
+>>>     
+>>
+>>   
+>>> Without this, it is a little hard to use patch 2/2.
+>>>     
+>>
+>> So add on option to /sbin/kexec.
+>>   
+>
+> This can be another choice.
+>> Furthermore none of this does a good job of predicting how much
+>> memory /sbin/fsck will require to check the filesystem before we
+>> write a crash dump.
+>>   
+>
+> No one actually knows this without testing... But if 128M on x86 is still not
+> enough, that is probably a bug of fsck, not our fault.
 
-Best Regards,
-Huang Ying
+x86 covers a very large range of hardware.  Some of it nearly as large as
+the big ia64 machines.  So why would ia64 require significantly more memory
+than x86?
 
-
+Eric
