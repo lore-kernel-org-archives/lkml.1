@@ -1,133 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbZHLLjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbZHLLku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752546AbZHLLjq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 07:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbZHLLjp
+	id S1752532AbZHLLku (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 07:40:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbZHLLkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 07:39:45 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:42645 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751684AbZHLLjo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 07:39:44 -0400
-Subject: [RFC PATCH] kbuild: Do not select symbols with unmet dependencies
-To: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-From: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Date: Wed, 12 Aug 2009 12:39:40 +0100
-Message-ID: <20090812112308.30683.24700.stgit@pc1117.cambridge.arm.com>
-User-Agent: StGit/0.15-rc1-11-g9876
+	Wed, 12 Aug 2009 07:40:49 -0400
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:38507
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751566AbZHLLks convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 07:40:48 -0400
+X-SpamScore: -23
+X-BigFish: VPS-23(zz1432R98dN936eM14e1I1444M12b6izz1202hzzz32i6bh203h43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KO9HRN-04-8E6-01
+Date: Wed, 12 Aug 2009 13:40:38 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Kevin Winchester <kjwinchester@gmail.com>
+CC: Mikael Pettersson <mikpe@it.uu.se>,
+       Borislav Petkov <petkovbb@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3] x86: clear incorrectly forced X86_FEATURE_LAHF_LM
+ flag
+Message-ID: <20090812114038.GD15396@aftab>
+References: <4A7D673A.1090401@gmail.com>
+ <20090808152016.GB25374@liondog.tnic>
+ <4A7E0797.7060504@gmail.com>
+ <20090810131219.GD21879@aftab>
+ <4A80A5AD.2000209@gmail.com>
+ <19073.33348.459260.456740@pilspetsen.it.uu.se>
+ <20090811155106.GB16173@aftab>
+ <d1af83620908110855x75b1e5aeq6d814ca90c49ec22@mail.gmail.com>
+ <20090811160116.GD16173@aftab>
+ <4A8209B6.8050306@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Aug 2009 11:39:40.0811 (UTC) FILETIME=[9448E5B0:01CA1B41]
+Content-Disposition: inline
+In-Reply-To: <4A8209B6.8050306@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 12 Aug 2009 11:40:36.0093 (UTC) FILETIME=[B53C42D0:01CA1B41]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The "select" statement in Kconfig files allows the enabling of options
-even if they have unmet direct dependencies (i.e. "depends on" expands
-to "no"). Currently, the "depends on" clauses are used in calculating
-the visibility but they do not affect the reverse dependencies in any
-way.
+On Tue, Aug 11, 2009 at 09:15:50PM -0300, Kevin Winchester wrote:
+> Borislav Petkov wrote:
+> > On Tue, Aug 11, 2009 at 12:55:03PM -0300, Kevin Winchester wrote:
+> >> 2009/8/11 Borislav Petkov <borislav.petkov@amd.com>:
+> >>> On Tue, Aug 11, 2009 at 04:37:56PM +0200, Mikael Pettersson wrote:
+> >>>> Since the BIOS apparently wrote some MSR to get LAHF_LM incorrectly
+> >>>> reported by CPUID, would it be possible to also correct that MSR so
+> >>>> that applications that execute CPUID get the correct feature flags?
+> >>> That's a good catch, actually. We have to turn off that bit in the cpuid
+> >>> leaf too if the CPU doesn't support the instructions so that cpuid info
+> >>> is consistent. LAHF/SAHF support in 64bit mode has to be cpuid-checked
+> >>> prior to using them so that info has to be correct.
+> >>>
+> >>> @Kevin: willing to try a patch or two?
+> >>>
+> >> Sure, I'll give it a try this evening.  I assume that since Erratum 110 says:
+> >>
+> >> --------------------------
+> >> Suggested Workaround
+> >> For processors which support the feature (as determined by the
+> >> processor revision ID), BIOS should
+> >> write a one to:
+> >> • MSR C001_100Dh, bit 32 for revision D silicon.
+> >> • MSR C001_1005h, bit 32 for revision E and later silicon.
+> >> This will cause the extended feature flag in ECX[0] to be set.
+> >> --------------------------
+> >>
+> >> That writing a zero to those same MSRs would clear the feature flag?
+> > 
+> > Yep :). Patch coming up...
+> > 
+> 
+> I have been attempting to read those MSRs through the /dev/cpu/0/msr device
+> file, without any success.  Is it possible that my CPU will not have those
+> MSRs?  And if so, then maybe my original assumption about the BIOS forcing
+> on the LAHF_LM feature is wrong.
+> 
+> In any case, clearing the feature flag (and thus fixing /proc/cpuinfo) is
+> still the right thing to do.
+> 
+> Do you have any other suggestions for how I would affect that CPUID flag?
 
-The patch introduces additional tracking of the "depends on" statements
-and does not allow selecting an option if its direct dependencies are
-not met, also printing a warning.
+Before we do that though I'd like to verify that the BIOS is falsely
+setting that bit. Can you run this small c program on your machine and
+send me the result:
 
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
----
+#include <stdio.h>
 
-This patch is meant to make "select" safer in Kconfig files. The
-"depends on", if not true, takes priority over "select".
+int main()
+{
 
-For example, in -next, the ARM FRAME_POINTER (arch/arm/Kconfig.debug)
-depends on !THUMB2_KERNEL because compiling the kernel to the Thumb-2
-instruction set and FRAME_POINTER enabled fails. However, there are
-several places where this symbol is forced by "select" statements (where
-stacktrace support would be enough). Another example is DEBUG_PAGEALLOC
-which depends on ARCH_SUPPORTS_DEBUG_PAGEALLOC (=n on ARM) but still
-selected.
+	unsigned int ecx = 0;
 
-A safer approach currently may be to only warn but still select the
-corresponding symbol.
+	asm volatile("cpuid"
+		     : "=c" (ecx)
+		     : "a" (0x80000001));
 
-The patch could probably be improved to also point to the symbols
-containing the "select" statements, though I was getting some segfaults
-with expr_list_for_each_sym(sym->rev_dep.expr).
+	printf("0x8000_0001_ecx = 0x%08x\n", ecx);
 
-Please note that the patch doesn't entirely follow the maximum line
-length recommendation as none of the modified files comply with it.
+	return 0;
+}
 
-Thank you for you comments.
 
- scripts/kconfig/expr.h   |    1 +
- scripts/kconfig/menu.c   |    5 +++++
- scripts/kconfig/symbol.c |   17 ++++++++++++++++-
- 3 files changed, 22 insertions(+), 1 deletions(-)
+-- 
+Regards/Gruss,
+Boris.
 
-diff --git a/scripts/kconfig/expr.h b/scripts/kconfig/expr.h
-index 6408fef..2381562 100644
---- a/scripts/kconfig/expr.h
-+++ b/scripts/kconfig/expr.h
-@@ -83,6 +83,7 @@ struct symbol {
- 	tristate visible;
- 	int flags;
- 	struct property *prop;
-+	struct expr_value dep;
- 	struct expr_value rev_dep;
- };
- 
-diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
-index 07ff8d1..7d32d74 100644
---- a/scripts/kconfig/menu.c
-+++ b/scripts/kconfig/menu.c
-@@ -385,6 +385,11 @@ void menu_finalize(struct menu *parent)
- 				expr_alloc_and(parent->prompt->visible.expr,
- 					expr_alloc_symbol(&symbol_mod)));
- 	}
-+
-+	if (sym) {
-+		sym->dep.expr = expr_transform(expr_copy(parent->dep));
-+		sym->dep.expr = expr_eliminate_dups(sym->dep.expr);
-+	}
- }
- 
- bool menu_is_visible(struct menu *menu)
-diff --git a/scripts/kconfig/symbol.c b/scripts/kconfig/symbol.c
-index 18f3e5c..af362d0 100644
---- a/scripts/kconfig/symbol.c
-+++ b/scripts/kconfig/symbol.c
-@@ -205,6 +205,16 @@ static void sym_calc_visibility(struct symbol *sym)
- 	}
- 	if (sym_is_choice_value(sym))
- 		return;
-+	/* defaulting to "yes" if no explicit "depends on" are given */
-+	tri = yes;
-+	if (sym->dep.expr)
-+		tri = expr_calc_value(sym->dep.expr);
-+	if (tri == mod)
-+		tri = yes;
-+	if (sym->dep.tri != tri) {
-+		sym->dep.tri = tri;
-+		sym_set_changed(sym);
-+	}
- 	tri = no;
- 	if (sym->rev_dep.expr)
- 		tri = expr_calc_value(sym->rev_dep.expr);
-@@ -321,7 +331,12 @@ void sym_calc_value(struct symbol *sym)
- 				}
- 			}
- 		calc_newval:
--			newval.tri = EXPR_OR(newval.tri, sym->rev_dep.tri);
-+			if (sym->dep.tri == no && sym->rev_dep.tri != no)
-+				fprintf(stderr, "%s:%d:warning: not selecting symbol with unmet dependencies: %s\n",
-+					sym->prop->file->name, sym->prop->lineno,
-+					sym->name ? sym->name : "<choice>");
-+			else
-+				newval.tri = EXPR_OR(newval.tri, sym->rev_dep.tri);
- 		}
- 		if (newval.tri == mod && sym_get_type(sym) == S_BOOLEAN)
- 			newval.tri = yes;
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
