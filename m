@@ -1,227 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752345AbZHLPKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752465AbZHLPNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752345AbZHLPKP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 11:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbZHLPKO
+	id S1752465AbZHLPNp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 11:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbZHLPNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 11:10:14 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:55453 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752037AbZHLPKN (ORCPT
+	Wed, 12 Aug 2009 11:13:45 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33159 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751993AbZHLPNo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 11:10:13 -0400
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       Sascha Hauer <s.hauer@pengutronix.de>,
-       Paul Gortmaker <p_gortmaker@yahoo.com>,
-       Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com
-Subject: [PATCH 4/5] [RTC] Add Freescale MC13783 RTC driver
-Date: Wed, 12 Aug 2009 17:05:30 +0200
-Message-Id: <1250089531-10399-5-git-send-email-s.hauer@pengutronix.de>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1250089531-10399-4-git-send-email-s.hauer@pengutronix.de>
-References: <1250089531-10399-1-git-send-email-s.hauer@pengutronix.de>
- <1250089531-10399-2-git-send-email-s.hauer@pengutronix.de>
- <1250089531-10399-3-git-send-email-s.hauer@pengutronix.de>
- <1250089531-10399-4-git-send-email-s.hauer@pengutronix.de>
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Wed, 12 Aug 2009 11:13:44 -0400
+Message-ID: <4A82DBA2.2000509@zytor.com>
+Date: Wed, 12 Aug 2009 08:11:30 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Joseph Cihula <joseph.cihula@intel.com>, Shane Wang <shane.wang@intel.com>,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
+       andi@firstfloor.org, chrisw@sous-sol.org, jmorris@namei.org,
+       jbeulich@novell.com, peterm@redhat.com, gang.wei@intel.com
+Subject: Re: [RFC v6][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution	Technology
+ support for Linux - Details
+References: <4A4ACA60.1000209@intel.com> <20090807072752.GA12119@elte.hu> <20090812145321.GA11347@elte.hu>
+In-Reply-To: <20090812145321.GA11347@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This driver provides support for the RTC part integrated into
-the Freescale MC13783 PMIC.
+On 08/12/2009 07:53 AM, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+>> i reviewed & tried the latest patches. Structure of v6 looks now 
+>> looks pretty good, but there are some build problems:
+>>
+>> arch/x86/kernel/tboot.c: In function ‘tboot_probe’:
+>> arch/x86/kernel/tboot.c:76: error: implicit declaration of function ‘set_fixmap’
+>> arch/x86/kernel/tboot.c:76: error: ‘FIX_TBOOT_BASE’ undeclared (first use in this function)
+>> arch/x86/kernel/tboot.c:76: error: (Each undeclared identifier is reported only once
+>> arch/x86/kernel/tboot.c:76: error: for each function it appears in.)
+>> arch/x86/kernel/tboot.c:77: error: implicit declaration of function ‘fix_to_virt’
+>> arch/x86/kernel/tboot.c:77: warning: cast to pointer from integer of different size
+>>
+>> config attached.
+> 
+> ok, hpa fixed this bug - i tested it some more and here's the next 
+> issue:
+> 
+> arch/x86/built-in.o: In function `tboot_shutdown':
+> (.text+0x2e3b5): undefined reference to `acpi_wakeup_address'arch/x86/built-in.o: In function `tboot_sleep':
+> (.text+0x2e679): undefined reference to `acpi_wakeup_address'
+> 
+> Config attached below.
+> 
 
-changes since v1:
+tboot_sleep() references acpi_wakeup_address, which is only defined if
+CONFIG_ACPI_SLEEP is set.  We *could* make TBOOT require
+CONFIG_ACPI_SLEEP, but that looks like the wrong thing to do to me,
+unless TXT somehow depends on having S3 support.
 
-- use set_mmss instead of set_time
-- fix __devinit / __devexit usage
-- use platform_driver_probe instead of platform_driver_register
-- add MODULE_ALIAS
+	-hpa
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
-Cc: Alessandro Zummo <a.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com
----
- drivers/rtc/Kconfig       |    6 ++
- drivers/rtc/Makefile      |    1 +
- drivers/rtc/rtc-mc13783.c |  135 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 142 insertions(+), 0 deletions(-)
- create mode 100644 drivers/rtc/rtc-mc13783.c
-
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 81adbdb..e4a242f 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -759,4 +759,10 @@ config RTC_DRV_PS3
- 	  This driver can also be built as a module. If so, the module
- 	  will be called rtc-ps3.
- 
-+config RTC_DRV_MC13783
-+	depends on MFD_MC13783
-+	tristate "Freescale MC13783 RTC"
-+	help
-+	  This enables support for the Freescale MC13783 PMIC RTC
-+
- endif # RTC_CLASS
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index 3c0f2b2..0c2cea6 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -50,6 +50,7 @@ obj-$(CONFIG_RTC_DRV_SUN4V)	+= rtc-sun4v.o
- obj-$(CONFIG_RTC_DRV_STARFIRE)	+= rtc-starfire.o
- obj-$(CONFIG_RTC_DRV_MAX6900)	+= rtc-max6900.o
- obj-$(CONFIG_RTC_DRV_MAX6902)	+= rtc-max6902.o
-+obj-$(CONFIG_RTC_DRV_MC13783)	+= rtc-mc13783.o
- obj-$(CONFIG_RTC_DRV_MV)	+= rtc-mv.o
- obj-$(CONFIG_RTC_DRV_OMAP)	+= rtc-omap.o
- obj-$(CONFIG_RTC_DRV_PCF8563)	+= rtc-pcf8563.o
-diff --git a/drivers/rtc/rtc-mc13783.c b/drivers/rtc/rtc-mc13783.c
-new file mode 100644
-index 0000000..dfa4702
---- /dev/null
-+++ b/drivers/rtc/rtc-mc13783.c
-@@ -0,0 +1,135 @@
-+/*
-+ * Real Time Clock driver for Freescale MC13783 PMIC
-+ *
-+ * (C) 2009 Sascha Hauer, Pengutronix
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#include <linux/mfd/mc13783-private.h>
-+#include <linux/platform_device.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/rtc.h>
-+
-+struct mc13783_rtc {
-+	struct rtc_device *rtc;
-+	struct mc13783 *mc13783;
-+};
-+
-+static int mc13783_rtc_set_mmss(struct device *dev, unsigned long secs)
-+{
-+	struct mc13783_rtc *priv = dev_get_drvdata(dev);
-+	unsigned int seconds, days;
-+
-+	seconds = secs % 86400;
-+	days = secs / 86400;
-+
-+	mc13783_reg_write(priv->mc13783, MC13783_REG_RTC_TIME, seconds);
-+	mc13783_reg_write(priv->mc13783, MC13783_REG_RTC_DAY, days);
-+
-+	return 0;
-+}
-+
-+static int mc13783_rtc_read_time(struct device *dev, struct rtc_time *tm)
-+{
-+	struct mc13783_rtc *priv = dev_get_drvdata(dev);
-+	unsigned int seconds, days1, days2;
-+	unsigned long s1970;
-+
-+	rtc_tm_to_time(tm, &s1970);
-+
-+	do {
-+		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_TIME, &seconds);
-+		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_DAY, &days1);
-+		mc13783_reg_read(priv->mc13783, MC13783_REG_RTC_DAY, &days2);
-+	} while (days1 != days2);
-+
-+	s1970 = days1 * 86400 + seconds;
-+
-+	rtc_time_to_tm(s1970, tm);
-+
-+	return rtc_valid_tm(tm);
-+}
-+
-+static const struct rtc_class_ops mc13783_rtc_ops = {
-+	.read_time	= mc13783_rtc_read_time,
-+	.set_mmss	= mc13783_rtc_set_mmss,
-+};
-+
-+static int __devinit mc13783_rtc_probe(struct platform_device *pdev)
-+{
-+	int err;
-+	struct mc13783_rtc *priv;
-+
-+	priv = kzalloc(sizeof *priv, GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->mc13783 = dev_get_drvdata(pdev->dev.parent);
-+	platform_set_drvdata(pdev, priv);
-+
-+	priv->rtc = rtc_device_register(pdev->name,
-+			&pdev->dev, &mc13783_rtc_ops, THIS_MODULE);
-+
-+	if (IS_ERR(priv->rtc)) {
-+		err = PTR_ERR(priv->rtc);
-+		goto exit_kfree;
-+	}
-+
-+	return 0;
-+
-+exit_kfree:
-+	kfree(priv);
-+	return err;
-+}
-+
-+static int __devexit mc13783_rtc_remove(struct platform_device *pdev)
-+{
-+	struct mc13783_rtc *priv = platform_get_drvdata(pdev);
-+
-+	rtc_device_unregister(priv->rtc);
-+	platform_set_drvdata(pdev, NULL);
-+
-+	kfree(priv);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver mc13783_rtc_driver = {
-+	.remove		= __devexit_p(mc13783_rtc_remove),
-+	.driver = {
-+		.name	= "mc13783-rtc",
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init mc13783_rtc_init(void)
-+{
-+	return platform_driver_probe(&mc13783_rtc_driver, &mc13783_rtc_probe);
-+}
-+module_init(mc13783_rtc_init);
-+
-+static void __exit mc13783_rtc_exit(void)
-+{
-+	platform_driver_unregister(&mc13783_rtc_driver);
-+}
-+module_exit(mc13783_rtc_exit);
-+
-+
-+MODULE_AUTHOR("Sascha Hauer <s.hauer@pengutronix.de>");
-+MODULE_DESCRIPTION("RTC driver for Freescale MC13783 PMIC");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:mc13783-rtc");
 -- 
-1.6.3.3
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
