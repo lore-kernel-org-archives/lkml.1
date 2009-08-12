@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbZHLODW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbZHLOFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752713AbZHLODW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 10:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbZHLODV
+	id S1752758AbZHLOFD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 10:05:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZHLOFC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 10:03:21 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:35117 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752634AbZHLODU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 10:03:20 -0400
-Date: Wed, 12 Aug 2009 10:03:21 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Zhang Rui <rui.zhang@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
-       "dtor@mail.ru" <dtor@mail.ru>
-Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
-In-Reply-To: <200908120117.27961.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0908120958200.2955-100000@iolanthe.rowland.org>
+	Wed, 12 Aug 2009 10:05:02 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33309 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752670AbZHLOFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 10:05:00 -0400
+Date: Wed, 12 Aug 2009 17:02:24 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
+       Patrick Mullaney <pmullaney@novell.com>
+Subject: Re: [PATCHv2 0/2] vhost: a kernel-level virtio server
+Message-ID: <20090812140224.GA29345@redhat.com>
+References: <20090811212743.GA26309@redhat.com> <200908121452.01802.arnd@arndb.de> <20090812130612.GC29200@redhat.com> <200908121540.44928.arnd@arndb.de> <4A82C8F1.4030703@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A82C8F1.4030703@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
-
-> That looks quite complicated at first sight, but asynchronous resume with
-> completions can be done in a relatively simple patch.  I've got one, so
-> tomorow I'll post it for further discussion.
-
-Okay.  I would think that managing the threads would account for most 
-of the complexity in either implementation, but I'll wait to see how 
-your approach works out.
-
-> Thanks,
-> Rafael
+On Wed, Aug 12, 2009 at 09:51:45AM -0400, Gregory Haskins wrote:
+> Arnd Bergmann wrote:
+> > On Wednesday 12 August 2009, Michael S. Tsirkin wrote:
+> >>> If I understand it correctly, you can at least connect a veth pair
+> >>> to a bridge, right? Something like
+> >>>
+> >>>            veth0 - veth1 - vhost - guest 1 
+> >>> eth0 - br0-|
+> >>>            veth2 - veth3 - vhost - guest 2
+> >>>            
+> >> Heh, you don't need a bridge in this picture:
+> >>
+> >> guest 1 - vhost - veth0 - veth1 - vhost guest 2
+> > 
+> > Sure, but the setup I described is the one that I would expect
+> > to see in practice because it gives you external connectivity.
+> > 
+> > Measuring two guests communicating over a veth pair is
+> > interesting for finding the bottlenecks, but of little
+> > practical relevance.
+> > 
+> > 	Arnd <><
 > 
+> Yeah, this would be the config I would be interested in.
+
+Hmm, this wouldn't be the config to use for the benchmark though: there
+are just too many variables.  If you want both guest to guest and guest
+to host, create 2 nics in the guest.
+
+Here's one way to do this:
+
+	-net nic,model=virtio,vlan=0 -net user,vlan=0
+	-net nic,vlan=1,model=virtio,vhost=veth0
+	-redir tcp:8022::22
+
+	-net nic,model=virtio,vlan=0 -net user,vlan=0
+	 -net nic,vlan=1,model=virtio,vhost=veth1
+	-redir tcp:8023::22
+
+In guests, for simplicity, configure eth1 and eth0
+to use separate subnets.
+
+Long term, I hope macvlan will be extended to support
+guest to guest.
+
+> Regards,
+> -Greg
 > 
-> PS
-> Did you have a chance to look at rev. 15 of the runtime PM patch
-> (http://patchwork.kernel.org/patch/40306/)?
 
-Yes, sorry for not getting back to you.  It looks okay.
-
-The one thing I'm not sure of is the pm_runtime_put_noidle calls in 
-driver_probe_device and __device_release_driver.  It seems that we 
-should always call pm_runtime_put regardless of whether the probe 
-succeeds or not.
-
-For example, the USB stack is set up to suspend devices that don't have
-a driver (this is handled at the bus subsystem level).  But if probing
-failed, there wouldn't be any idle callback and so the suspend wouldn't
-take place.
-
-Alan Stern
 
