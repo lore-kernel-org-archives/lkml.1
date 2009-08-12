@@ -1,60 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751643AbZHLVhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751600AbZHLVmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751643AbZHLVhN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 17:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbZHLVhM
+	id S1751600AbZHLVmu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 17:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZHLVmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 17:37:12 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:40677 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751324AbZHLVhL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 17:37:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=NVOfmWACCL7bX3HXYkE0k8duux3zKdbA15UoPi5G8ygGd/zUI1b86eur9XszEttAXa
-         R3DPOkQ1gmT6e+aYqpSyVSaDOTaUhVFsXRgqpRniHJEvavspjcWmUJ5VMWe/cSDgm0ds
-         tq+A0q/4o9iE8CvtQAxDPWDKQNFghp+R6GJPU=
-Date: Wed, 12 Aug 2009 23:37:09 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Jason Baron <jbaron@redhat.com>
-Subject: Re: [RFD] Kprobes/Kretprobes perf support
-Message-ID: <20090812213707.GD5974@nowhere>
-References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com> <4A82EEC5.8000603@redhat.com> <4A82F5A0.2090603@redhat.com> <20090812191305.GB5974@nowhere> <1250111397.7035.1.camel@laptop> <4A8333B4.7020301@redhat.com>
+	Wed, 12 Aug 2009 17:42:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60089 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750927AbZHLVms (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 17:42:48 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
+Date: Wed, 12 Aug 2009 23:43:20 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       "linux-acpi" <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+References: <Pine.LNX.4.44L0.0908121702520.23954-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908121702520.23954-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8333B4.7020301@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908122343.20554.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 05:27:16PM -0400, Masami Hiramatsu wrote:
-> Peter Zijlstra wrote:
-> > On Wed, 2009-08-12 at 21:13 +0200, Frederic Weisbecker wrote:
-> > 
-> >> Ingo, Peter do you have an idea on how we could do that?
-> > 
-> > Wouldn't it be easiest to use ftrace to create dynamic tracepoints in
-> > the ftrace way such that they become available in
-> > debugfs://tracing/events/kprobes/*/ and then have them interfaced the
-> > same way as all other tracepoints?
+On Wednesday 12 August 2009, Alan Stern wrote:
+> On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
 > 
-> Yes, almost same. One big difference is that they are sharing
-> same event-id(TRACE_KPROBE and TRACE_KRETPROBE).
-> But I can make each kprobe events to have different ids, if you need.
+> > Hi,
+> > 
+> > The following patches introduce a mechanism allowing us to execute device
+> > drivers' suspend and resume callbacks asynchronously during system sleep
+> > transitions, such as suspend to RAM.  The idea is explained in the [1/1] patch
+> > message.
+> > 
+> > Comments welcome.
 > 
-> Thank you,
+> I get the idea.  Not bad.
 
-Yeah that would be better. That's also what Jason did with the syscall events.
+Thanks!
 
+> Have you tried it in a serious way?  For example, turning on the
+> async_suspend flag for every device?
+
+No, I've only tested it with a few selected drivers.  I'm going to try the
+"async everyone" scenario, though.
+
+> In one way it isn't as efficient as it could be.  You fire off a bunch
+> of async threads and then make many of them wait for parent or child
+> devices.  They could be doing useful work instead.
+
+I kind of agree, but then the patches would be more complicated.
+
+> It would be interesting to invent a way of representing explicitly the 
+> non-tree dependencies -- assuming there aren't too many of them!  (I 
+> can just hear the TI guys hollering about power and timer domains...)
+
+I have an idea.
+
+Every such dependency involves two devices, one of which is a "master"
+and the second of which is a "slave", meaning that the "slave" have to be
+suspended before the "master" and cannot be resumed before it.  In principle
+we could give each device two lists of "dependency objects", one containing
+"dependency objects" where the device is the "master" and the other containing
+"dependency objects" where the device is the "slave".  Then, each "dependency
+object" could be represented as
+
+struct pm_connection {
+    struct device *master;
+    struct list_head master_hook;
+    struct device *slave;
+    struct list_head slave_hook;
+};
+
+Add some locking, helpers for adding / removing "dependency objects" etc.
+and it should work.  Instead of checking the parent, walk the list of
+"masters", instead of walking the list of children, walk the list of "slaves".
+
+The core could create those objects for parent-child relationships
+automatically, the other ones would have to be added by platforms / bus types /
+drivers etc.
+
+This approach has a problem that it's prone to adding circular dependencies by
+mistake, but then I think it would apply to any other approach just as well.
+
+Best,
+Rafael
