@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753220AbZHLQvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZHLQ7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753220AbZHLQvj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 12:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZHLQvi
+	id S1754205AbZHLQ7b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 12:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbZHLQ7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 12:51:38 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:57370 "EHLO kernel.dk"
+	Wed, 12 Aug 2009 12:59:30 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39569 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750922AbZHLQvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 12:51:38 -0400
-Date: Wed, 12 Aug 2009 18:51:38 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Alan.Brunelle@hp.com
-Subject: [GIT PULL] blktrace fix for 2.6.31
-Message-ID: <20090812165138.GN12579@kernel.dk>
+	id S1753360AbZHLQ7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 12:59:30 -0400
+Message-ID: <4A82F5A0.2090603@redhat.com>
+Date: Wed, 12 Aug 2009 13:02:24 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Jason Baron <jbaron@redhat.com>
+Subject: Re: [GIT PULL] tracing: Syscalls trace events + perf support
+References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com> <4A82EEC5.8000603@redhat.com>
+In-Reply-To: <4A82EEC5.8000603@redhat.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-Just a single patch there, fixing a critical issue with blktrace. Please
-pull.
 
-  git://git.kernel.dk/linux-2.6-block.git for-linus
+Masami Hiramatsu wrote:
+> Hi Frederic and Jason,
+> 
+> Frederic Weisbecker wrote:
+>> Frederic Weisbecker (3):
+>>         tracing: Add ftrace event call parameter to its field descriptor handler
+> 
+>> Jason Baron (12):
+>>         tracing: Add ftrace_event_call void * 'data' field
+> 
+> Both of you added a parameter to ftrace_event_call for passing
+> sycall name (call->data) to handlers, but one passes 'ftrace_event_call *'
+> and another passes 'void *'. It seems not enough unified.
+> 
+> And also, I'm now updating my patch for 'dynamic ftrace_event_call'
+> http://lkml.org/lkml/2009/7/24/234
+> which adds 'ftrace_event_call *' for all handlers.
+> 
+> I think passing 'ftrace_event_call *' is more generic way
+> to do that. What would you think about that?
 
-Alan D. Brunelle (1):
-      Remove double removal of blktrace directory
+Hmm, I changed my mind that passing 'void *' is enough, since
+all other fields of ftrace_event_call will be handled in
+trace_events.c.
 
- kernel/trace/blktrace.c |   12 +-----------
- 1 files changed, 1 insertions(+), 11 deletions(-)
+Thank you,
 
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 1090b0a..7a34cb5 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -267,8 +267,8 @@ static void blk_trace_free(struct blk_trace *bt)
- {
- 	debugfs_remove(bt->msg_file);
- 	debugfs_remove(bt->dropped_file);
--	debugfs_remove(bt->dir);
- 	relay_close(bt->rchan);
-+	debugfs_remove(bt->dir);
- 	free_percpu(bt->sequence);
- 	free_percpu(bt->msg_data);
- 	kfree(bt);
-@@ -378,18 +378,8 @@ static int blk_subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
- 
- static int blk_remove_buf_file_callback(struct dentry *dentry)
- {
--	struct dentry *parent = dentry->d_parent;
- 	debugfs_remove(dentry);
- 
--	/*
--	* this will fail for all but the last file, but that is ok. what we
--	* care about is the top level buts->name directory going away, when
--	* the last trace file is gone. Then we don't have to rmdir() that
--	* manually on trace stop, so it nicely solves the issue with
--	* force killing of running traces.
--	*/
--
--	debugfs_remove(parent);
- 	return 0;
- }
- 
 
 -- 
-Jens Axboe
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
