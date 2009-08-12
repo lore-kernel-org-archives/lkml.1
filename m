@@ -1,67 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932104AbZHLHpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932148AbZHLHqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932104AbZHLHpz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 03:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbZHLHpz
+	id S932148AbZHLHqN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 03:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932122AbZHLHqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 03:45:55 -0400
-Received: from mail-yw0-f191.google.com ([209.85.211.191]:52360 "EHLO
-	mail-yw0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753593AbZHLHpy convert rfc822-to-8bit (ORCPT
+	Wed, 12 Aug 2009 03:46:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34284 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932119AbZHLHqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 03:45:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=ipTeQEMKkIKIQLHq9HJJGUyeUcAPM+M0BkIQCjxmSiCPWo4/JOPM1SOBf/ST170U0e
-         DSlVE7FDmMPUdOxviPdtlvzrmGLm3HZykn6WXvEz4gn5q/LfNHxgYi3hpIzLoBqVw433
-         3aY+vLTR1hIAeoonBNybNaq423kXwVRGA8dT0=
+	Wed, 12 Aug 2009 03:46:11 -0400
+Date: Wed, 12 Aug 2009 09:46:11 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, tytso@mit.edu, hch@infradead.org,
+       mfasheh@suse.com, aia21@cantab.net, hugh.dickins@tiscali.co.uk,
+       swhiteho@redhat.com, akpm@linux-foundation.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com, Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       Taketoshi Sakuraba <taketoshi.sakuraba.hc@hitachi.com>
+Subject: Re: [PATCH] [16/19] HWPOISON: Enable .remove_error_page for
+	migration aware file systems
+Message-ID: <20090812074611.GC28848@basil.fritz.box>
+References: <200908051136.682859934@firstfloor.org> <20090805093643.E0C00B15D8@basil.firstfloor.org> <4A7FBFD1.2010208@hitachi.com> <20090810074421.GA6838@basil.fritz.box> <4A80EAA3.7040107@hitachi.com> <20090811071756.GC14368@basil.fritz.box> <4A822DD4.1050202@hitachi.com>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0908120659001.32131@ask.diku.dk>
-References: <43e72e890908111418m47910085k2d0016e2add8914f@mail.gmail.com> 
-	<Pine.LNX.4.64.0908120659001.32131@ask.diku.dk>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Wed, 12 Aug 2009 00:45:35 -0700
-Message-ID: <43e72e890908120045s6e94bd5es480bb4ef1a66597c@mail.gmail.com>
-Subject: Re: Typedef removal tool
-To: Julia Lawall <julia@diku.dk>
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
-       Nicolas Palix <npalix@diku.dk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A822DD4.1050202@hitachi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 10:01 PM, Julia Lawall<julia@diku.dk> wrote:
-> On Tue, 11 Aug 2009, Luis R. Rodriguez wrote:
->
->> Anyone know if there is a typedef removal tool? When porting drivers
->> this needs to be done quite often.
->>
->> FWIW I've started porting some driver and have come across some tools,
->> or written my own scripts, which have helped. Using spatch to port a
->> driver was such a tool I explored. I think I'll try to put together
->> some info on the driver project wiki for this. typdef removal tool
->> would still be neat.
->
-> Nicolas Palix (in CC) did a bit of work on this recently using Coccinelle,
-> but the problem is that simply removing the typedef is not enough, one has
-> to come up with a name that is within the spirit of the names used in
-> Linux, or perhaps recognize that the structure in question already exists
-> in a more general form in the kernel an thus the declaration should be
-> removed completely.
->
-> Someone else made a dedicated tool using a dictionary of the old and new
-> names that at least partially addresses these problems.  Nicolas knows who
-> that person is.
+On Wed, Aug 12, 2009 at 11:49:56AM +0900, Hidehiro Kawai wrote:
+> > I don't think there's much we can do if the application doesn't
+> > check for IO errors properly. What would you do if it doesn't
+> > check for IO errors at all? If it checks for IO errors it simply
+> > has to check for them on all IO operations -- if they do 
+> > they will detect hwpoison errors correctly too.
+> 
+> I believe it's not uncommon for applications to do buffered write
+> and then exit without fsync().  And I think it's difficult to
+> preclude such applications and commands from the system perfectly.
 
-Sounds like a very proper way to do this.
+That's true, but for anything mission critical you would expect them
+to use some transactional mechanism, either with O_SYNC or fsync().
+Otherwise they always risk data loss anyways.
 
-I wrote something not-so-proper and simple based on Joe's work that
-just replaces a specified typedef name with one the user specifies.
-Should do it for simple porting where you do not have to prove
-correctness and avoid namespace collisions.
+> > It's unclear to me this special mode is really desirable.
+> > Does it bring enough value to the user to justify the complexity
+> > of another exotic option?  The case is relatively exotic,
+> > as in dirty write cache that is mapped to a file.
+> > 
+> > Try to explain it in documentation and you see how ridiculous it sounds; u
+> > it simply doesn't have clean semantics
+> > 
+> > ("In case you have applications with broken error IO handling on
+> > your mission critical system ...") 
+> 
+> Generally, dropping unwritten dirty page caches is considered to be
+> risky.  So the "panic on IO error" policy has been used as usual
+> practice for some systems.  I just suggested that we adopted
+> this policy into machine check errors. 
 
-  Luis
+Hmm, what we could possibly do -- as followon patches -- would be to
+let error_remove_page check the per file system panic-on-io-error
+super block setting for dirty pages and panic in this case too.  
+Unfortunately this setting is currently per file system, not generic,
+so it would need to be a fs specific check (or the flag would need
+to be moved into a generic fs superblock field first)
+
+I think that would be relatively clean semantics wise. Would you be 
+interested in working on patches for that? 
+
+> Another option is to introduce "ignore all" policy instead of
+> panicking at the beginig of memory_failure().  Perhaps it finally
+> causes SRAR machine check, and then kernel will panic or a process
+> will be killed.  Anyway, this is a topic for the next stage.
+
+The problem is memory_failure() would then need to start distingushing
+between AR=1 and AR=0 which it doesn't today.
+
+It could be done, but would need some more work. 
+
+> > If you want to have improved IO error handling feel free to
+> > submit it separately. I agree this area could use some work.
+> > But it probably needs more design work first.
+> 
+> Well, this patch set itself looks good to me.
+> I also looked into the other patches, I couldn't find any
+> problems (although I'm not good judge of reviewing).
+> 
+> Reviewed-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+
+Thanks for your review and your comments.
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
