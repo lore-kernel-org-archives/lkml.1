@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbZHLIRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbZHLISA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755156AbZHLIRn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 04:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbZHLIRl
+	id S1755184AbZHLISA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 04:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbZHLIR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 04:17:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54921 "EHLO mx2.redhat.com"
+	Wed, 12 Aug 2009 04:17:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54936 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754729AbZHLIRk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 04:17:40 -0400
-Date: Wed, 12 Aug 2009 04:16:20 -0400
+	id S1754066AbZHLIR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 04:17:56 -0400
+Date: Wed, 12 Aug 2009 04:16:32 -0400
 From: Amerigo Wang <amwang@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
@@ -19,38 +19,64 @@ Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
        akpm@linux-foundation.org, bernhard.walle@gmx.de,
        Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
        Anton Vorontsov <avorontsov@ru.mvista.com>
-Message-Id: <20090812081843.5757.64083.sendpatchset@localhost.localdomain>
+Message-Id: <20090812081854.5757.88620.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>
 References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>
-Subject: [Patch 6/8] powerpc: implement crashkernel=auto
+Subject: [Patch 7/8] doc: update the kdump document
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Since in patch 2/8 we already implement the generic part, this will
-add the rest part for powerpc.
+Update the document for kdump.
 
 Signed-off-by: WANG Cong <amwang@redhat.com>
 
 ---
 
-Index: linux-2.6/arch/powerpc/include/asm/kexec.h
+Index: linux-2.6/Documentation/kdump/kdump.txt
 ===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/kexec.h
-+++ linux-2.6/arch/powerpc/include/asm/kexec.h
-@@ -39,6 +39,14 @@ typedef void (*crash_shutdown_t)(void);
+--- linux-2.6.orig/Documentation/kdump/kdump.txt
++++ linux-2.6/Documentation/kdump/kdump.txt
+@@ -147,6 +147,15 @@ System kernel config options
+    analysis tools require a vmlinux with debug symbols in order to read
+    and analyze a dump file.
  
- #ifdef CONFIG_KEXEC
- 
-+#ifdef CONFIG_KEXEC_AUTO_RESERVE
-+#ifdef KEXEC_AUTO_RESERVED_SIZE
-+#undef KEXEC_AUTO_RESERVED_SIZE
-+#endif
-+#define KEXEC_AUTO_RESERVED_SIZE (1ULL<<28) /* 256M */
-+#include <asm-generic/kexec.h>
-+#endif
++4) Enable "automatically reserve memory for kexec kernel" in
++   "Processor type and features."
 +
- /*
-  * This function is responsible for capturing register states if coming
-  * via panic or invoking dump using sysrq-trigger.
++   CONFIG_KEXEC_AUTO_RESERVE=y
++
++   This will let you to use "crashkernel=auto", instead of specifying
++   numbers for "crashkernel=". Note, you need to have enough memory.
++   The threshold and reserved memory size are arch-dependent.
++
+ Dump-capture kernel config options (Arch Independent)
+ -----------------------------------------------------
+ 
+@@ -266,6 +275,25 @@ This would mean:
+     2) if the RAM size is between 512M and 2G (exclusive), then reserve 64M
+     3) if the RAM size is larger than 2G, then reserve 128M
+ 
++Or you can use:
++
++    crashkernel=auto
++
++if you have enough memory. The threshold is 4G, below which this won't work.
++
++The automatically reserved memory size would be 128M on x86_32, 256M on
++ppc, 1/32 of your physical memory size on x86_64 and ppc64 (but it will not
++exceed 1TB/32 if you have more). IA64 has its own policy, shown below:
++
++	Memory size	Reserved memory
++	===========	===============
++	[4G, 12G)	256M
++	[12G, 128G)	512M
++	[128G, 256G)	768M
++	[256G, 378G)	1024M
++	[378G, 512G)	1536M
++	[512G, 768G)	2048M
++	[768G, )	3072M
+ 
+ 
+ Boot into System Kernel
