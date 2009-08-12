@@ -1,68 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZHLPjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbZHLPmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbZHLPjl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 11:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbZHLPjk
+	id S1753692AbZHLPmu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 11:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbZHLPmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 11:39:40 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:61342 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752744AbZHLPjk (ORCPT
+	Wed, 12 Aug 2009 11:42:49 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42918 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752241AbZHLPms (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 11:39:40 -0400
-Subject: Re: kmemleak: Protect the seq start/next/stop sequence by
-	rcu_read_lock()
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.01.0908120831060.28882@localhost.localdomain>
-References: <20090729152101.1878.71159.stgit@pc1117.cambridge.arm.com>
-	 <20090802111453.GA24927@elte.hu>
-	 <1249919718.10848.55.camel@pc1117.cambridge.arm.com>
-	 <20090810184527.GA9601@elte.hu>
-	 <1249945003.26205.23.camel@pc1117.cambridge.arm.com>
-	 <20090811073205.GA17476@elte.hu>
-	 <1249980905.27150.11.camel@pc1117.cambridge.arm.com>
-	 <1250079447.20332.27.camel@pc1117.cambridge.arm.com>
-	 <alpine.LFD.2.01.0908120831060.28882@localhost.localdomain>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 12 Aug 2009 16:39:17 +0100
-Message-Id: <1250091558.20332.63.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Aug 2009 15:39:18.0906 (UTC) FILETIME=[0E4C15A0:01CA1B63]
+	Wed, 12 Aug 2009 11:42:48 -0400
+Message-Id: <20090812153529.716542680@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Wed, 12 Aug 2009 17:35:29 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       stephane eranian <eranian@googlemail.com>
+Cc: Corey J Ashford <cjashfor@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/2] perf_counter: fix the group mess
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-12 at 08:32 -0700, Linus Torvalds wrote:
-> 
-> On Wed, 12 Aug 2009, Catalin Marinas wrote:
-> > 
-> > If the object size is bigger than a predefined value (4K in this case),
-> > release the object lock during scanning and call cond_resched().
-> 
-> What guarantees that the object isn't released during this?
 
-There is no guarantee but the while() loop rechecks that object->flags
-still has the OBJECT_ALLOCATED bit set after every cond_resched():
+With these two patches the below proglet gives:
 
-+               while (start < end && (object->flags & OBJECT_ALLOCATED)) {
-+                       scan_block(start, min(start + MAX_SCAN_SIZE, end),
-+                                  object, 0);
-+                       start += MAX_SCAN_SIZE;
-+
-+                       spin_unlock_irqrestore(&object->lock, flags);
-+                       cond_resched();
-+                       spin_lock_irqsave(&object->lock, flags);
-+               }
+# ./test
+EVNT: 0xffffffff811c0f4c scale: nan ID: 37 CNT: 1006180 ID: 38 CNT: 1010230 ID: 39 CNT: 1010332 ID: 40 CNT: 1010420
 
-It seems to be working fine with LTP running in parallel with kmemleak
-scanning for nearly a day.
+I can't seem to catch the SIGIO thing, but at least all the counters report
+more or less the same value.  Also, that scale stuff doesn't seem to quite work
+yet.. I'll be poking at that too.
 
--- 
-Catalin
+
+
+---
+#include "perf.h"
+
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <sys/mman.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <unistd.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <string.h>
+
+void work(void)
+{
+	int i;
+
+	for (i = 0; i < 1000000000; i++) {
+		asm("nop");
+		asm("nop");
+		asm("nop");
+		asm("nop");
+		asm("nop");
+		asm("nop");
+		asm("nop");
+	}
+}
+
+unsigned long page_size;
+int fd = -1, fd1 = 0;
+pid_t me;
+void *output;
+
+void handle_sigio(int sig)
+{
+	printf("signal\n"); // not signal safe
+	fflush(stdout);
+
+	ioctl(fd, PERF_COUNTER_IOC_REFRESH, 1);
+}
+
+static unsigned long mmap_read_head(void)
+{
+	struct perf_counter_mmap_page *pc = output;
+	long head;
+
+	head = pc->data_head;
+	rmb();
+
+	return head;
+}
+
+static void *mmap_read_base(void)
+{
+	return output + page_size;
+}
+
+struct event {
+	struct perf_event_header header;
+
+	u64 ip;
+	u64 nr;
+	u64 time_enabled;
+	u64 time_running;
+	struct {
+		u64 val;
+		u64 id;
+	} cnt[0];
+};
+
+int main(int argc, char **argv)
+{
+	struct perf_counter_attr attr;
+	unsigned long offset = 0, head;
+	int err, i;
+
+	page_size = sysconf(_SC_PAGE_SIZE);
+	me = getpid();
+
+	memset(&attr, 0, sizeof(attr));
+
+	attr.type = PERF_TYPE_HARDWARE;
+	attr.config = PERF_COUNT_HW_CPU_CYCLES;
+	attr.sample_period = 1000000;
+	attr.sample_type = PERF_SAMPLE_IP |
+			   PERF_SAMPLE_READ;
+	attr.read_format = PERF_FORMAT_TOTAL_TIME_RUNNING |
+			   PERF_FORMAT_TOTAL_TIME_ENABLED |
+			   PERF_FORMAT_ID |
+			   PERF_FORMAT_GROUP;
+	attr.disabled = 1;
+	attr.wakeup_events = 1;
+
+	fd  = sys_perf_counter_open(&attr, me, -1, fd, 0);
+	if (fd <= 0) {
+		perror("FAIL fd: ");
+		exit(-1);
+	}
+
+	attr.sample_period = 0;
+	attr.disabled = 0;
+
+	for (i = 0; i < 3; i++) {
+		fd1 = sys_perf_counter_open(&attr, me, -1, fd, 0);
+		if (fd1 <= 0) {
+			perror("FAIL fd1: ");
+			exit(-1);
+		}
+	}
+
+	signal(SIGIO, handle_sigio);
+	err = fcntl(fd, F_SETOWN, me);
+	if (err == -1) {
+		perror("FAIL fcntl: ");
+		exit(-1);
+	}
+
+	output = mmap(NULL, page_size * 3, PROT_READ, MAP_SHARED, fd, 0);
+	if (output == ((void *)-1)) {
+		perror("FAIL mmap:");
+		exit(-1);
+	}
+
+	ioctl(fd, PERF_COUNTER_IOC_REFRESH, 1);
+
+	work();
+
+	ioctl(fd, PERF_COUNTER_IOC_DISABLE, 0);
+
+	head = mmap_read_head();
+
+	for (; offset < head; ) {
+		struct event *evnt = mmap_read_base() + offset;
+
+		offset += evnt->header.size;
+
+		printf("EVNT: %p scale: %f ", (void *)evnt->ip,
+				((double)evnt->time_running)/evnt->time_enabled
+				);
+		for (i = 0; i < evnt->nr; i++) {
+			printf("ID: %Lu CNT: %Lu ", 
+					evnt->cnt[i].id, evnt->cnt[i].val);
+		}
+		printf("\n");
+	}
+
+	return 0;
+}
 
