@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751150AbZHLVML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751241AbZHLVOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751150AbZHLVML (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 17:12:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbZHLVMK
+	id S1751241AbZHLVOS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 17:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbZHLVOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 17:12:10 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:48508 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751005AbZHLVMJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 17:12:09 -0400
-Date: Wed, 12 Aug 2009 17:12:09 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
+	Wed, 12 Aug 2009 17:14:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59986 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750844AbZHLVOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 17:14:17 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Harald Dunkel <harald.dunkel@t-online.de>
+Subject: Re: [Bug #13374] reiserfs blocked for more than 120secs
+Date: Wed, 12 Aug 2009 23:15:09 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: =?iso-8859-2?q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
-In-Reply-To: <200908122218.13975.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0908121702520.23954-100000@iolanthe.rowland.org>
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jeff Mahoney <jeffm@suse.com>
+References: <upey9ZSfnaF.A.-oE.rpgdKB@chimera> <200908032113.46588.rjw@sisk.pl> <4A83296E.6010700@t-online.de>
+In-Reply-To: <4A83296E.6010700@t-online.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908122315.09420.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
-
-> Hi,
+On Wednesday 12 August 2009, Harald Dunkel wrote:
+> Rafael J. Wysocki wrote:
+> > 
+> > Please let us know either way.
+> > 
 > 
-> The following patches introduce a mechanism allowing us to execute device
-> drivers' suspend and resume callbacks asynchronously during system sleep
-> transitions, such as suspend to RAM.  The idea is explained in the [1/1] patch
-> message.
-> 
-> Comments welcome.
+> I am running 2.6.31-rc5 for amd64 on 2 systems. By now I haven't
+> seen this problem on the new kernel yet, but since I saw it only
+> once for an older kernel I cannot say whether it is really gone.
 
-I get the idea.  Not bad.  Have you tried it in a serious way?  For 
-example, turning on the async_suspend flag for every device?
+I closed the bug as not reproducible.
 
-In one way it isn't as efficient as it could be.  You fire off a bunch
-of async threads and then make many of them wait for parent or child
-devices.  They could be doing useful work instead.
+Please go to the Bugzilla and reopen the bug entry if you see it again.
 
-It would be interesting to invent a way of representing explicitly the 
-non-tree dependencies -- assuming there aren't too many of them!  (I 
-can just hear the TI guys hollering about power and timer domains...)
-
-Alan Stern
-
+Thanks,
+Rafael
