@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688AbZHLWhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752380AbZHLWps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752688AbZHLWhb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 18:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbZHLWha
+	id S1752380AbZHLWps (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 18:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbZHLWps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 18:37:30 -0400
-Received: from mga11.intel.com ([192.55.52.93]:13856 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752578AbZHLWha convert rfc822-to-8bit (ORCPT
+	Wed, 12 Aug 2009 18:45:48 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34521 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbZHLWpr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 18:37:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,370,1246863600"; 
-   d="scan'208";a="716297210"
-From: "Wang, Shane" <shane.wang@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, "Cihula, Joseph" <joseph.cihula@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>,
-       "Wei, Gang" <gang.wei@intel.com>
-Date: Thu, 13 Aug 2009 06:37:25 +0800
-Subject: RE: [RFC v6][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution
-	Technology support for Linux - Details
-Thread-Topic: [RFC v6][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution
-	Technology support for Linux - Details
-Thread-Index: Acobgnhevh8fEJ69RNi9dOZ8RiAvKwAGu97Q
-Message-ID: <037F493892196B458CD3E193E8EBAD4F01EAB64206@pdsmsx502.ccr.corp.intel.com>
-References: <20090812182013.GJ28848@basil.fritz.box>
-In-Reply-To: <20090812182013.GJ28848@basil.fritz.box>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 12 Aug 2009 18:45:47 -0400
+Date: Wed, 12 Aug 2009 23:43:19 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Joe Perches <joe@perches.com>,
+       Ben Dooks <ben-linux@fluff.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
+	sections
+Message-ID: <20090812224319.GC24667@n2100.arm.linux.org.uk>
+References: <1249563730.10297.13.camel@Joe-Laptop.home> <20090806133349.GF27773@flint.arm.linux.org.uk> <1249568614.10297.20.camel@Joe-Laptop.home> <20090806150322.GX2080@trinity.fluff.org> <1249948147.8895.96.camel@Joe-Laptop.home> <20090812115520.GI24339@elf.ucw.cz> <20090812194838.GB12117@n2100.arm.linux.org.uk> <84144f020908121317g64551a2cu1b960f44ed5d0d9@mail.gmail.com> <20090812212502.GA24667@n2100.arm.linux.org.uk> <20090812220029.GA1387@ucw.cz>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090812220029.GA1387@ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Right, that was the point.
+On Thu, Aug 13, 2009 at 12:00:30AM +0200, Pavel Machek wrote:
+> Hi!
 > 
-> Andi Kleen <andi@firstfloor.org> wrote:
+> > > > I haven't noticed a great rush of support for Joe's patch, which
+> > > > could mean that people here really aren't that bothered - maybe
+> > > > they just aren't "open list" zealots like some people seem to be.
+> > > 
+> > > I for one support open lists because subscriber-only lists are a PITA
+> > 
+> > Let me make this clear, yet again.  The lists are *not* subscriber only
+> > lists.  We do NOT reject non-subscriber posts for no reason what so ever
+> > (although it does seem to have happened, both Erik and myself both
+> > contend that we have never rejected a mailing intentionally without
+> > giving a reason - whether the original poster receives that reason is
+> > a function of how buggy mailman is.)
 > 
->>> The question is: if the user doesn't want S3, do they still need to
->>> enable S3 in order to be able to use TXT?  Otherwise, this code
->>> needs to be properly conditionalized.
->> 
->> I doubt that's the case. Ifdef is likely the right answer.
->> 
->> -Andi
->> 
->> --
->> ak@linux.intel.com -- Speaking for myself only.
+> FAQ still states that cc-ing between l-k and lakml is
+> unwelcome. Reason why people prefer open lists is that you can cc both
+> l-k and the other relevant list.
 
-OK, I agree.
+Yes, because the FAQ tends to be out of date unless someone either
+sends me a patch or I actually read it and correct things in there.
+The FAQ is more or less something I never read, but end up looking
+after.
 
-Shane
+I'll see about updating it at some point.
