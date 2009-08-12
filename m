@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbZHLNrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbZHLNug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752504AbZHLNrD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 09:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZHLNrD
+	id S1752597AbZHLNug (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 09:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbZHLNug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 09:47:03 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:54395 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751141AbZHLNrB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 09:47:01 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCHv2 0/2] vhost: a kernel-level virtio server
-Date: Wed, 12 Aug 2009 15:40:44 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
-Cc: Gregory Haskins <gregory.haskins@gmail.com>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
-       Patrick Mullaney <pmullaney@novell.com>
-References: <20090811212743.GA26309@redhat.com> <200908121452.01802.arnd@arndb.de> <20090812130612.GC29200@redhat.com>
-In-Reply-To: <20090812130612.GC29200@redhat.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 12 Aug 2009 09:50:36 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:60696 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751708AbZHLNuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 09:50:35 -0400
+Date: Wed, 12 Aug 2009 14:50:36 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Juergen Beisert <jbe@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-hotplug@vger.kernel.org
+Subject: Re: Patch "page-allocator: preserve PFN ordering when __GFP_COLD
+	is set" fails on my system
+Message-ID: <20090812135036.GE19269@csn.ul.ie>
+References: <200908111830.03224.jbe@pengutronix.de> <20090812074753.GL13320@pengutronix.de> <20090812092034.GA19269@csn.ul.ie> <200908121311.35321.jbe@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908121540.44928.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/JRs+BJXxMLF4iIxXFMCqv+JCuEraKs+MM5gW
- V4dh9t3j5KjGvR8ql+MUBOUE+6RHpUsNeYHVNb8JVu4VoDg6+X
- XlsDXiAlI04E4huJblNTw==
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <200908121311.35321.jbe@pengutronix.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 August 2009, Michael S. Tsirkin wrote:
-> > If I understand it correctly, you can at least connect a veth pair
-> > to a bridge, right? Something like
-> > 
-> >            veth0 - veth1 - vhost - guest 1 
-> > eth0 - br0-|
-> >            veth2 - veth3 - vhost - guest 2
-> >            
-> Heh, you don't need a bridge in this picture:
+On Wed, Aug 12, 2009 at 01:11:34PM +0200, Juergen Beisert wrote:
+> On Mittwoch, 12. August 2009, Mel Gorman wrote:
+> > > > I get the following Ooops message when "udevadm" is running on an ARM
+> > > > S3C2440 CPU based system:
+> >
+> > This is extremely odd. All that patch is doing is changing what order pages
+> > are returned in to the caller when __GFP_COLD is specified.  valid memory.
+> > Does reverting the patch really make the problem go away?
 > 
-> guest 1 - vhost - veth0 - veth1 - vhost guest 2
+> At least I can work with the system if I remove this patch. Theres is no oops, 
+> so udev creates all the required devnodes and the system comes up into the 
+> login prompt.
+> 
 
-Sure, but the setup I described is the one that I would expect
-to see in practice because it gives you external connectivity.
+One reason I can think of that the patch would make a different to booting
+is that there is a buffer overrun somewhere. When the pages in one order, the
+buffer overrun is into pages that are not being used so it's not spotted. In
+the other order, the overrun causes damage. The patch only alters the
+order of pages in a linked list and ordinarily that shouldn't make any
+functional difference.
 
-Measuring two guests communicating over a veth pair is
-interesting for finding the bottlenecks, but of little
-practical relevance.
+Can you enable the config option DEBUG_PAGEALLOC please and tell me if
+that blows up in some unexpected fashion? It would also be helpful if
+you could enable all slab/slqb/slub debugging (whichever one you are
+using).
 
-	Arnd <><
+> > > > [...]
+> > > > starting udevd...done
+> > > > Unable to handle kernel paging request at virtual address e3540000
+> > > > pgd = c39d4000
+> > > > [e3540000] *pgd=00000000
+> > > > Internal error: Oops: 5 [#1]
+> > > > Modules linked in:
+> > > > CPU: 0    Not tainted  (2.6.31-rc4-00296-ge084b2d-dirty #10)
+> > > > PC is at strlen+0xc/0x20
+> > > > LR is at kobject_get_path+0x24/0xa4
+> >
+> > I haven't tackled this sort of bug before but it looks more likely that
+> > there is garbage in the sysfs tree that is being tripped up on.
+> 
+> Yes, I think so, too. Because the same binary rc5 image runs on an S3C2410 CPU 
+> without an oops, but oopses on an S3C2440 (both CPUs are nearly the same, but 
+> only nearly). But how to track down such a failure?
+> 
+
+Lets start with a full dmesg with CONFIG_DEBUG_KOBJECT and
+CONFIG_DEBUG_OBJECTS set and see if anything springs up that looks
+unusual on that platform.
+
+Thanks
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
