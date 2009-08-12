@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752698AbZHLSNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbZHLSPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752698AbZHLSNG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 14:13:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbZHLSNG
+	id S1752734AbZHLSPW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 14:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbZHLSPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 14:13:06 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:43796 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752016AbZHLSNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 14:13:04 -0400
-Date: Wed, 12 Aug 2009 20:13:05 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, fweisbec@gmail.com,
-       mingo@elte.hu
-Subject: Re: [PATCH] basic perf support for sparc
-Message-ID: <20090812181305.GQ12579@kernel.dk>
-References: <20090729112509.GN4148@kernel.dk> <20090802.131705.81498579.davem@davemloft.net> <20090806070242.GF12579@kernel.dk> <20090812.110646.239052896.davem@davemloft.net>
+	Wed, 12 Aug 2009 14:15:21 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:25827 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752527AbZHLSPV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 14:15:21 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <8af5e5b5-31a6-47f3-adee-19ef4ee7d43c@default>
+Date: Wed, 12 Aug 2009 11:14:35 -0700 (PDT)
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: <peterz@infradead.org>
+Cc: <stern@rowland.harvard.edu>, <James.Bottomley@HansenPartnership.com>,
+       <akpm@linux-foundation.org>, <mingo@elte.hu>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
+X-Mailer: Zimbra on Oracle Beehive
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090812.110646.239052896.davem@davemloft.net>
+X-Source-IP: abhmt012.oracle.com [141.146.116.21]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010201.4A83068D.019B:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12 2009, David Miller wrote:
-> From: Jens Axboe <jens.axboe@oracle.com>
-> Date: Thu, 6 Aug 2009 09:02:42 +0200
+From: peterz@infradead.org
+
+On Wed, 2009-08-12 at 11:41 +0200, Ingo Molnar wrote:
+> * Alan Stern <stern@rowland.harvard.edu> wrote:
 > 
-> > On Sun, Aug 02 2009, David Miller wrote:
-> >> From: Jens Axboe <jens.axboe@oracle.com>
-> >> Date: Wed, 29 Jul 2009 13:25:10 +0200
-> >> 
-> >> > -#define NR_SYSCALLS		327
-> >> > +#define NR_SYSCALLS		328
-> >> 
-> >> When you increase this value, you have to add entries to all of the
-> >> syscall tables.  The syscall dispatch checks against this as a limit,
-> >> so if you don't explicitly add an entry to all the tables, it's
-> >> possible to deref garbage past the end of the table and try to jump to
-> >> it as a syscall.
+> > This patch (as1279) adds kerneldoc for flush_scheduled_work()
+> > containing a stern warning that the function should be avoided.
 > > 
-> > Oops, missed the 32-bit table. Does the below look better?
+> > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+
+> >  
+> > +/**
+> > + * flush_scheduled_work - ensure that all work scheduled on keventd_wq has run to completion.
+
+> > + */
 > 
-> I'll take a look at this as soon as I can Jens, sorry for taking
-> so long.
+> Looks good - a small nit: please use proper/consistent line length, 
+> something like:
+> 
+> /**
+>  * flush_scheduled_work - ensure that all work scheduled on 
+>  *			  keventd_wq has run to completion
+>  *
 
-No problem, I figured you'd get to it eventually and in the mean time
-I'll just keep patching it in.
+>  */
 
--- 
-Jens Axboe
 
+| And here I was thinking kerneldoc doesn't actually work like that, but
+| perhaps Randy fixed it so the initial description can line-wrap?
+
+Nope, function short description is still just a one-liner.
+
+~Randy
