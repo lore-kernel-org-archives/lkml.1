@@ -1,84 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932159AbZHLAPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932204AbZHLARn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932159AbZHLAPy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 20:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbZHLAPy
+	id S932204AbZHLARn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 20:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932136AbZHLARm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 20:15:54 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:53371 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754091AbZHLAPx (ORCPT
+	Tue, 11 Aug 2009 20:17:42 -0400
+Received: from n14.bullet.mail.mud.yahoo.com ([68.142.206.41]:28276 "HELO
+	n14.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932131AbZHLARl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 20:15:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=FakzgYnoumWA+oJRKY/uB9M0Uoz+xb8aiwGJ7RIUvitTl6tQqyVl6Xwcke2Iqp2Goo
-         eW7Fh4/rOHCqBhm9/xcgYd6afvM5nZZ9wvoWvr4aKjPJjnr6LkYpciKV4fX9+HdW+iRJ
-         VUOsDcN/85nuGk3P/c1bbklJdAQvG5EoPVIQg=
-Message-ID: <4A8209B6.8050306@gmail.com>
-Date: Tue, 11 Aug 2009 21:15:50 -0300
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090725)
-MIME-Version: 1.0
-To: Borislav Petkov <borislav.petkov@amd.com>
-CC: Mikael Pettersson <mikpe@it.uu.se>,
-       Borislav Petkov <petkovbb@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v3] x86: clear incorrectly forced X86_FEATURE_LAHF_LM
- flag
-References: <4A7D673A.1090401@gmail.com> <20090808152016.GB25374@liondog.tnic> <4A7E0797.7060504@gmail.com> <20090810131219.GD21879@aftab> <4A80A5AD.2000209@gmail.com> <19073.33348.459260.456740@pilspetsen.it.uu.se> <20090811155106.GB16173@aftab> <d1af83620908110855x75b1e5aeq6d814ca90c49ec22@mail.gmail.com> <20090811160116.GD16173@aftab>
-In-Reply-To: <20090811160116.GD16173@aftab>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+	Tue, 11 Aug 2009 20:17:41 -0400
+X-Yahoo-Newman-Id: 182218.83942.bm@omp418.mail.mud.yahoo.com
+X-YMail-OSG: VUslhMQVM1m_x_FmFTLnuY6Qi7r0UbA52rRZ6eBCepHelgVFNoIZ8OHPqEbsdDNLLFTJ0ftgJKn.WvDvpkgexk6maMJdZTAOen2m_oH_cGNWFjdXGEtBoZbPDm1EY3Hu5tEza7rYHRMshcVtxK0_CzXkifYHqfTLC.bKIjKfJNdwGGfQhcg8DGlvGRGNKXWHriW9owfwNDmxY7hhgBXF7iWLi4Mj2cS6zqzcpgacqb8GjvPNPxV9XGQE6pEzUG5xCes7BSbWKMoY0p2u8I.lnZu6g5IrE71e7RqmVw0Bemnk_dcK_ig-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [PATCH 1/2] [Target_Core_Mod/Persistent_Reservations]: Add
+	Specify Initiator Port Capable (SPEC_I_PT=1) support
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: dgilbert@interlog.com
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>, Hannes Reinecke <hare@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Smart <James.Smart@Emulex.Com>,
+       Philipp Reisner <philipp.reisner@linbit.com>
+In-Reply-To: <4A8090AE.1090701@interlog.com>
+References: <1249793770.11105.235.camel@haakon2.linux-iscsi.org>
+	 <4A8090AE.1090701@interlog.com>
+Content-Type: text/plain
+Date: Tue, 11 Aug 2009 17:17:40 -0700
+Message-Id: <1250036260.31984.32.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov wrote:
-> On Tue, Aug 11, 2009 at 12:55:03PM -0300, Kevin Winchester wrote:
->> 2009/8/11 Borislav Petkov <borislav.petkov@amd.com>:
->>> On Tue, Aug 11, 2009 at 04:37:56PM +0200, Mikael Pettersson wrote:
->>>> Since the BIOS apparently wrote some MSR to get LAHF_LM incorrectly
->>>> reported by CPUID, would it be possible to also correct that MSR so
->>>> that applications that execute CPUID get the correct feature flags?
->>> That's a good catch, actually. We have to turn off that bit in the cpuid
->>> leaf too if the CPU doesn't support the instructions so that cpuid info
->>> is consistent. LAHF/SAHF support in 64bit mode has to be cpuid-checked
->>> prior to using them so that info has to be correct.
->>>
->>> @Kevin: willing to try a patch or two?
->>>
->> Sure, I'll give it a try this evening.  I assume that since Erratum 110 says:
->>
->> --------------------------
->> Suggested Workaround
->> For processors which support the feature (as determined by the
->> processor revision ID), BIOS should
->> write a one to:
->> • MSR C001_100Dh, bit 32 for revision D silicon.
->> • MSR C001_1005h, bit 32 for revision E and later silicon.
->> This will cause the extended feature flag in ECX[0] to be set.
->> --------------------------
->>
->> That writing a zero to those same MSRs would clear the feature flag?
+On Mon, 2009-08-10 at 17:27 -0400, Douglas Gilbert wrote:
+> Nicholas A. Bellinger wrote:
+> > Hello,
+> > 
+> > This patch adds exhaustive support for handling SPEC_I_PT=1 processing of fabric dependent
+> > TransportIDs in PROUT SA REGISTER ops containing SCSI Initiator port/device identifiers as
+> > defined by spc4r17.
 > 
-> Yep :). Patch coming up...
+> [snip]
+> 
+> > Here is what it looks like in action doing a PROUT SA REGISTER with SPEC_I_PT: from a
+> > local initiator port (debian) for a remote initiator port (opensuse) using sg_persist
+> > from an Open-iSCSI Initiator:
+> > 
+> > 	initiator# sg_persist -vvv --out --device /dev/sde --register --param-rk=0 --param-sark=0x1234ffff -T 5 -X  05,0,33,32,69,71,6E,2E,31,39,39,36,2D,30,34,2E,64,65,2E,73,75,73,65,3A,30,31,3A,31,36,36,31,66,39,65,65,37,62,35,00
+> > 	number of tranport-ids decoded from command line (or stdin): 1
+> > 	  Decode given transport-ids:
+> > 	      Transport Id of initiator:
+> > 	        iSCSI name: iqn.1996-04.de.suse:01:1661f9ee7b5
+> > 	open /dev/sde with flags=0x800
+> > 	    inquiry cdb: 12 00 00 00 24 00
+> > 	      duration=4 ms
+> > 	  LIO-ORG  IBLOCK  3.0
+> > 	  Peripheral device type: disk
+> > 	open /dev/sde with flags=0x802
+> > 	    Persistent Reservation Out cmd: 5f 00 05 00 00 00 00 00 44 00
+> > 	    Persistent Reservation Out parameters:
+> > 	 00     00 00 00 00 00 00 00 00  00 00 00 00 12 34 ff ff    .............4..
+> > 	 10     00 00 00 00 08 00 00 00  00 00 00 28 05 00 33 32    ...........(..32
+> > 	 20     69 71 6e 2e 31 39 39 36  2d 30 34 2e 64 65 2e 73    iqn.1996-04.de.s
+> > 	 30     75 73 65 3a 30 31 3a 31  36 36 31 66 39 65 65 37    use:01:1661f9ee7
+> > 	 40     62 35 00 00                                         b5..
+> > 	      duration=12 ms
+> > 	PR out: command (Register) successful
+> 
+> [snip]
+> 
+> The additional length field in the TransportID above is a bit
+> strange.vRefer to spc4r20.pdf table 406 on page 482. I would
+> interpretvthe above additional length as 3332h which is
+> possible but notvprobable. Looking at the data I think the
+> additional lengthvshould be 24h (22h round up to 24h because
+> of the "multiplevof 4" rule).
 > 
 
-I have been attempting to read those MSRs through the /dev/cpu/0/msr device
-file, without any success.  Is it possible that my CPU will not have those
-MSRs?  And if so, then maybe my original assumption about the BIOS forcing
-on the LAHF_LM feature is wrong.
+Yes, I ran into a problem with the additional length of the iSCSI
+Transport ID with sg_persist -X when I was testing this patch.  I ended
+up adding some additional logic to the LIO-Target fabric module's iSCSI
+Initiator TransportID parser that would extract the additional length
+from the TransportID, and then compare against strlen() of the passed
+TransportID, which works with iSCSI TransportIDs because they are NULL
+terminated)
 
-In any case, clearing the feature flag (and thus fixing /proc/cpuinfo) is
-still the right thing to do.
+If the extracted additional length does not match the strlen() for the
+processed TransportID, the latter will be returned as the correct value
+to generic target code PR doing the processing.
 
-Do you have any other suggestions for how I would affect that CPUID flag?
+> Looks like sg_persist needs a better way of representing
+> TransportIDs that contain iSCSI names. Possibilities might be:
+>    ... -X 05,0,0,24,iqn.1996-04.de.suse:01:1661f9ee7b5
+> or
+>    ... -X 05,0,iqn.1996-04.de.suse:01:1661f9ee7b5
+> 
 
--- 
-Kevin Winchester
+This would be great, even better would be to get rid of the prefix from
+-X all together (not sure if that is possible for other types of
+Transport IDs) and just have sg_persist generate the '05' prefix for
+passed iqn's that are defining a iSCSI Initiator Device, and generate
+the '45' for passed iqn's containing the ',i,0x<ISID>' defining a iSCSI
+Initiator Port.
+
+> Both variants could trigger on "iqn" (is "IQN" allowable)?
+> In the latter case sg_persist could work out the iSCSI name
+> length, round it up if necessary and insert it in the
+> transportID.
+> 
+
+I don't do any strict checks in LIO-Target fabric code for using lower
+case 'iqn', and I don't recall any wording in RFC-3720 about this.  Of
+course, I have never seen anyone using a upper case 'IQN' prefix before,
+so it is probably safe to assume only lower case.
+
+Thanks for your comments Doug!
+
+--nab
+
+
 
