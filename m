@@ -1,59 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbZHLQSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbZHLQTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754253AbZHLQSj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 12:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZHLQSj
+	id S1754321AbZHLQTM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 12:19:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbZHLQTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 12:18:39 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:57452 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754164AbZHLQSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 12:18:38 -0400
-Date: Wed, 12 Aug 2009 18:18:39 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, akpm@linux-foundation.org,
-       jack@suse.cz, yanmin_zhang@linux.intel.com, richard@rsk.demon.co.uk,
-       damien.wyart@free.fr, fweisbec@gmail.com, Alan.Brunelle@hp.com
-Subject: Re: [PATCH 1/9] writeback: move dirty inodes from super_block to
-	backing_dev_info
-Message-ID: <20090812161838.GL12579@kernel.dk>
-References: <1248989044-21605-1-git-send-email-jens.axboe@oracle.com> <1248989044-21605-2-git-send-email-jens.axboe@oracle.com> <20090806213505.GB20538@infradead.org> <20090812161250.GK12579@kernel.dk>
+	Wed, 12 Aug 2009 12:19:12 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37467 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754223AbZHLQTK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 12:19:10 -0400
+Message-ID: <5de2e6e6dafe61357de744c749e24a46.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <4A829F1B.4060205@redhat.com>
+References: <20090811144405.GW7176@balbir.in.ibm.com>
+    <20090811163159.ddc5f5fd.akpm@linux-foundation.org>
+    <20090812045716.GH7176@balbir.in.ibm.com>
+    <4A829F1B.4060205@redhat.com>
+Date: Thu, 13 Aug 2009 01:19:08 +0900 (JST)
+Subject: Re: [PATCH] Help Resource Counters Scale better (v4.1)
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Prarit Bhargava" <prarit@redhat.com>
+Cc: balbir@linux.vnet.ibm.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp,
+       kosaki.motohiro@jp.fujitsu.com, menage@google.com, andi.kleen@intel.com,
+       xemul@openvz.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090812161250.GK12579@kernel.dk>
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12 2009, Jens Axboe wrote:
-> On Thu, Aug 06 2009, Christoph Hellwig wrote:
-> > On Thu, Jul 30, 2009 at 11:23:56PM +0200, Jens Axboe wrote:
-> > > This is a first step at introducing per-bdi flusher threads. We should
-> > > have no change in behaviour, although sb_has_dirty_inodes() is now
-> > > ridiculously expensive, as there's no easy way to answer that question.
-> > > Not a huge problem, since it'll be deleted in subsequent patches.
-> > 
-> > Looking at this again and again I don't really like this at all. What
-> > is the problem with having per-bdi flushing threads that just iterate
-> > a list of superblocks per-bdi and then the inodes from there?  That
-> > would keep a lot of the calling conventions much more logical, as we
-> > have to writeback data per-sb for all data integrity and some other
-> > writes.
-> 
-> OK, so you'd prefer leaving the super block lists in place and rather
-> have the super blocks hanging off the bdi? What about file systems that
-> support more than one block device per mount, like btrfs? Can we assume
-> that they will forever provide a single bdi backing? btrfs currently has
-> this, just wondering about future implications.
+Prarit Bhargava さんは書きました：
+>
+>
+> Balbir Singh wrote:
+>> Hi, Andrew,
+>>
+>> Does this look better, could you please replace the older patch with
+>> this one.
+>>
+>> 1. I did a quick compile test
+>> 2. Ran scripts/checkpatch.pl
+>>
+>>
+>>
+>
+> Andi Kleen suggested I use kernbench to profile the kernel.
+>
+> 2.6.31-rc5-git2 w/ CONFIG_RESOURCE_COUNTERS on
+>
+> Tue Aug 11 13:45:14 EDT 2009
+> 2.6.31-rc5-git2-resources
+> Average Half load -j 32 Run (std deviation):
+> Elapsed Time 622.588 (119.243)
+> User Time 4820.8 (962.286)
+> System Time 9807.63 (2669.55)
+> Percent CPU 2324 (167.236)
+> Context Switches 2009606 (368703)
+> Sleeps 1.24949e+06 (118210)
+>
+> Average Optimal load -j 256 Run (std deviation):
+> Elapsed Time 770.97 (90.8685)
+> User Time 5068.42 (750.933)
+> System Time 21499.8 (12822.3)
+> Percent CPU 3660 (1425.28)
+> Context Switches 2.86467e+06 (971764)
+> Sleeps 1.32784e+06 (129048)
+>
+> Average Maximal load -j Run (std deviation):
+> Elapsed Time 757.018 (22.8371)
+> User Time 4958.85 (644.65)
+> System Time 24916.5 (11454.3)
+> Percent CPU 4046.93 (1279.6)
+> Context Switches 3.04894e+06 (826687)
+> Sleeps 1.26053e+06 (146073)
+>
+>
+> 2.6.31-rc5-git2 w/ CONFIG_RESOURCE_COUNTERS off
+>
+> Tue Aug 11 17:58:58 EDT 2009
+> 2.6.31-rc5-git2-no-resources
+> Average Half load -j 32 Run (std deviation):
+> Elapsed Time 280.176 (21.1131)
+> User Time 3558.51 (389.488)
+> System Time 2393.87 (142.692)
+> Percent CPU 2122.6 (50.5104)
+> Context Switches 1.20474e+06 (131112)
+> Sleeps 1062507 (59366.3)
+>
+> Average Optimal load -j 256 Run (std deviation):
+> Elapsed Time 223.192 (42.7007)
+> User Time 4243.19 (967.575)
+> System Time 2649.57 (344.462)
+> Percent CPU 2845.5 (856.217)
+> Context Switches 1.52187e+06 (391821)
+> Sleeps 1.28862e+06 (274222)
+>
+> Average Maximal load -j Run (std deviation):
+> Elapsed Time 216.942 (45.4824)
+> User Time 3860.46 (966.452)
+> System Time 2782.17 (344.154)
+> Percent CPU 2862.47 (720.904)
+> Context Switches 1.43379e+06 (341021)
+> Sleeps 1184325 (269392)
+>
+> 2.6.31-rc5-git2 w/ CONFIG_RESOURCE_COUNTERS on + patch
+>
+> Tue Aug 11 20:58:31 EDT 2009
+> 2.6.31-rc5-git2-mem-patch
+> Average Half load -j 32 Run (std deviation):
+> Elapsed Time 285.788 (18.577)
+> User Time 3483.14 (346.56)
+> System Time 2426.37 (132.015)
+> Percent CPU 2066.8 (80.3754)
+> Context Switches 1.16588e+06 (134701)
+> Sleeps 1048810 (59891.2)
+>
+> Average Optimal load -j 256 Run (std deviation):
+> Elapsed Time 239.81 (14.0759)
+> User Time 3797.7 (422.118)
+> System Time 2622.74 (225.361)
+> Percent CPU 2480.9 (446.735)
+> Context Switches 1.37301e+06 (238886)
+> Sleeps 1195957 (161659)
+>
+> Average Maximal load -j Run (std deviation):
+> Elapsed Time 203.884 (8.59151)
+> User Time 3578.02 (482.79)
+> System Time 2759.9 (273.03)
+> Percent CPU 2663.53 (450.476)
+> Context Switches 1.33907e+06 (199658)
+> Sleeps 1119205 (172089)
+>
+>
+> ... The odd thing is that the run with the patch is still less than the
+> run with CONFIG_RESOURCE_COUNTERS off.  It was so odd that I double
+> checked that I actually built in RESOURCE_COUNTERS and had applied the
+> patch, both of which I had done.
+>
+Hmm, CONFIG_RESOURCE_COUNTER actually means CONFIG_MEM_CGROUP ?
 
-Another issue with that approach is that you then need some logic to
-decide which lists to do first, how much, etc. A single list is nicely
-time ordered and retains our current approach, at least on a per-sb per
-device level.
 
--- 
-Jens Axboe
+Then, more requests from me. (if you can)
+Apply patch and set config ON. plz check your bench in following cases.
+
+ 1. boot with cgroup_disable=memory (will have the same effect as
+    config=off)
+
+    boot without above option...and
+    2. Run your bench without mount memcg.
+    3. Run your bench with memcg...as...
+       #mount -tcgroup none /cgroups -omemory
+       #mkdir /cgroups/test
+       #echo $$ > /cgroups/test
+       #kernbench.
+
+Thanks,
+-Kame
+
+
+
+
+
+
+> P.
+>
+
 
