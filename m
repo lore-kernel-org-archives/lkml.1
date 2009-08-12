@@ -1,119 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932570AbZHLLAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932580AbZHLLDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932570AbZHLLAc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 07:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932528AbZHLLAc
+	id S932580AbZHLLDa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 07:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932530AbZHLLD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 07:00:32 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:58123 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932519AbZHLLAb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 07:00:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=DWvtZ0URRviaPGLNKr/tYTdvDKcHznDuzTHoQgi+3+atVzSaeHT4TImDLojloYZpXD
-         fX+abZEwvq3qJy7J6g6q2hGsvJ/x5Kbp8fh8hB+CXO5X1eGMdQhSsqst9mYKzGL1VwDy
-         ypM/IocpyJ/mnJ62Ypp+bZYTWzKiGITdlBhRQ=
-Date: Wed, 12 Aug 2009 13:00:28 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Brice Goglin <Brice.Goglin@inria.fr>
-Subject: Re: [GIT PULL v2] perf tools: Factorize common code
-Message-ID: <20090812110027.GC6081@nowhere>
-References: <20090812100851.GA18577@elte.hu> <1250074112-15147-1-git-send-email-fweisbec@gmail.com> <20090812105433.GB7885@elte.hu>
+	Wed, 12 Aug 2009 07:03:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32832 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932502AbZHLLD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 07:03:28 -0400
+Date: Wed, 12 Aug 2009 13:03:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Jason Baron <jbaron@redhat.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [GIT PULL] tracing: Syscalls trace events + perf support
+Message-ID: <20090812110307.GA806@elte.hu>
+References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com> <20090812091133.GA21655@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090812105433.GB7885@elte.hu>
+In-Reply-To: <20090812091133.GA21655@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 12:54:33PM +0200, Ingo Molnar wrote:
-> 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > On Wed, Aug 12, 2009 at 12:08:51PM +0200, Ingo Molnar wrote:
-> > > yeah. I've zapped those commits from perfcounters/core.
-> > >
-> > >       Ingo
-> > 
-> > Ok, sorry about that.
-> > I've rebuilt a clean tree. It should be fine now.
-> 
-> btw., you can always check whether there's any missing 
-> git-add, via:
-> 
->   git ls-files --others
+
+one thing i noticed is that we dont seem to be catching 
+compat syscalls properly:
+
+phoenix:~/linux/linux/tools/perf> perf stat -e 
+syscalls:sys_enter_read -e syscalls:sys_enter_write -e 
+syscalls:sys_enter_mmap ~/hackbench 10
+Time: 0.236
+
+ Performance counter stats for '/home/mingo/hackbench 10':
+
+              0  syscalls:sys_enter_read 
+              0  syscalls:sys_enter_write
+              0  syscalls:sys_enter_mmap 
+
+    0.270062020  seconds time elapsed
+
+phoenix:~/linux/linux/tools/perf> file ~/hackbench 
+/home/mingo/hackbench: ELF 32-bit LSB executable, Intel 
+80386, version 1 (SYSV), dynamically linked (uses shared 
+libs), for GNU/Linux 2.2.5, not stripped
+phoenix:~/linux/linux/tools/perf> uname -a
+Linux phoenix 2.6.31-rc5-tip #3 SMP Wed Aug 12 12:50:38 CEST 
+2009 x86_64 x86_64 x86_64 GNU/Linux
 
 
-Ah nice tip.
+phoenix:~> perf stat -e syscalls:sys_enter_read -e 
+syscalls:sys_enter_write -e syscalls:sys_enter_mmap 
+~/hackbench64 10
+Running with 10*40 (== 400) tasks.
+Time: 0.199
 
+ Performance counter stats for '/home/mingo/hackbench64 10':
 
- 
-> And the safest way to commit is to use 'git commit -a' - 
-> that will auto-include new files. (but the tree has to be 
-> clean for that)
+         400402  syscalls:sys_enter_read 
+         400403  syscalls:sys_enter_write
+             12  syscalls:sys_enter_mmap 
 
+    0.247919263  seconds time elapsed
 
-Well, I always have junks in my directories. .rej/.orig files,
-or more especially scripts and tests in the case of the tools/perf
-directory. So it's hard to check everything this way.
+phoenix:~> file hackbench64 
+hackbench64: ELF 64-bit LSB executable, x86-64, version 1 
+(SYSV), dynamically linked (uses shared libs), for GNU/Linux 
+2.6.9, not stripped
 
-Note that most of the time I use git-commit -a, but it doesn't include
-untracked files AFAICS.
-
-
-> > 
-> > Thanks.
-> > 
-> > The following changes since commit 9f8666971185b86615a074bcac67c90fdf8af8bc:
-> >   Brice Goglin (1):
-> >         perf report: Add raw displaying of per-thread counters
-> > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git \
-> > 	perfcounters/core
-> > 
-> > Frederic Weisbecker (3):
-> >       perf tools: Factorize high level dso helpers
-> >       perf tools: Factorize the event structure definitions in a single file
-> >       perf tools: Factorize the map helpers
-> > 
-> >  tools/perf/Makefile           |    2 +
-> >  tools/perf/builtin-annotate.c |  209 +-------------------------------
-> >  tools/perf/builtin-record.c   |   20 +---
-> >  tools/perf/builtin-report.c   |  274 +----------------------------------------
-> >  tools/perf/builtin-stat.c     |    1 -
-> >  tools/perf/builtin-top.c      |   24 ----
-> >  tools/perf/builtin.h          |    1 +
-> >  tools/perf/perf.h             |    1 +
-> >  tools/perf/util/callchain.h   |    1 +
-> >  tools/perf/util/debug.c       |   22 ++++
-> >  tools/perf/util/debug.h       |    5 +
-> >  tools/perf/util/event.h       |   84 +++++++++++++
-> >  tools/perf/util/map.c         |   97 +++++++++++++++
-> >  tools/perf/util/symbol.c      |   97 +++++++++++++++
-> >  tools/perf/util/symbol.h      |   12 ++
-> >  tools/perf/util/util.h        |    1 +
-> >  16 files changed, 330 insertions(+), 521 deletions(-)
-> >  create mode 100644 tools/perf/util/debug.c
-> >  create mode 100644 tools/perf/util/debug.h
-> >  create mode 100644 tools/perf/util/event.h
-> >  create mode 100644 tools/perf/util/map.c
-> 
-> Re-pulled it - it works fine here too - thanks!
-> 
-> 	Ingo
-
-
-Cool, thanks.
-
+	Ingo
