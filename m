@@ -1,99 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbZHLS0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbZHLS2C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754741AbZHLS0m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 14:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbZHLS0l
+	id S1754763AbZHLS2C (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 14:28:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbZHLS2B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 14:26:41 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:55533 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753391AbZHLS0k (ORCPT
+	Wed, 12 Aug 2009 14:28:01 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:59689 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753857AbZHLS2B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 14:26:40 -0400
-X-Trace: 241712741/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.104.135/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.104.135
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArUEAFOmgkpPRWiH/2dsb2JhbACBUsErCJBjgkUIgUwF
-X-IronPort-AV: E=Sophos;i="4.43,369,1246834800"; 
-   d="scan'208";a="241712741"
-Date: Wed, 12 Aug 2009 19:26:21 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Bill Speirs <bill.speirs@gmail.com>
-cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: vma_merge issue
-In-Reply-To: <a1b36c3a0908101347t796dedbat2ecb0535c32f325b@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0908121841550.14314@sister.anvils>
-References: <a1b36c3a0908101347t796dedbat2ecb0535c32f325b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 12 Aug 2009 14:28:01 -0400
+Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908121407140.23954-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0908121407140.23954-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Wed, 12 Aug 2009 18:27:57 +0000
+Message-Id: <1250101677.8829.4.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Aug 2009, Bill Speirs wrote:
+On Wed, 2009-08-12 at 14:16 -0400, Alan Stern wrote:
+> On Wed, 12 Aug 2009, James Bottomley wrote:
 > 
-> I came across an issue where adjacent pages are not properly coalesced
-> together when changing protections on them. This can be shown by doing
-> the following:
+> > If it's a local lock, how would something someone else submitted to the
+> > queue, which would be out of scope, take this local lock?  A local lock,
+> > by definition is local to the code scope you control.
 > 
-> 1) Map 3 pages with PROT_NONE and MAP_PRIVATE | MAP_ANONYMOUS
-> 2) Set the middle page's protection to PROT_READ | PROT_WRITE
-> 3) Set the middle page's protection back to PROT_NONE
+> This can happen easily.  Somebody else submits a work item to the
+> queue, the work routine calls one of your publicly exported functions,
+> and that function takes the local lock.
+
+Fine, so local means not exported and not usable by exported functions.
+
+> > > Not at all.  With cancel_work_sync() you must verify only that the
+> > > item you want to cancel obeys the rules.  There's no need to check the
+> > > other items -- and a public workqueue like keventd_wq certainly will
+> > > contain other items.
+> > 
+> > Um, so this is called on driver removal, which is an asynchronous event.
+> > Thus, how can you assure that what's on the queue (which you are
+> > advocating calling cancel sync for) doesn't violate the locking rules at
+> > the time the driver is removed, unless you assure that every piece of
+> > work submitted doesn't violate them.
 > 
-> You are left with 3 entries in /proc/self/map where you should only
-> have 1. If you only change the protection to PROT_READ in step 2, then
-> it is properly merged together. I noticed in mprotect.c the following
-> comment in the function mprotect_fixup; I'm not sure if it applies or
-> not:
->         /*
->          * If we make a private mapping writable we increase our commit;
->          * but (without finer accounting) cannot reduce our commit if we
->          * make it unwritable again.
-[ the following lines of the comment are not relevant here so I'll delete ]
->          */
+> You can assure it by auditing the work routine's code.  A single work
+> item involves a single function, plus whatever that function calls -- 
+> it is easily checked.
 > 
-> I think this only applies to setting charged = nrpages; however,
-> VM_ACCOUNT is also added to newflags. Could it be that the adjacent
-> blocks don't have VM_ACCOUNT and so the call to vma_merge cannot merge
-> because the flags for the adjacent vma are not the same?
+> You don't need to inspect every work item ever added to the queue, only 
+> the one that you want to cancel.
 
-That's right, and it is working as intended.
+This is true, but not relevant to the documentation you were trying to
+add.  You're advocating using cancel sync as a replacement for flush ...
+thus you have to cancel every pending piece of your work currently on
+the queue.  My contention is that this means your rules for submission
+if you do this must be the same as they would be if you'd just called
+flush; making the advice moot.
 
-To allow people to set up enormous PROT_READ,MAP_PRIVATE mappings 
-"for free", we don't account those initially, but only as parts
-are mprotected writable later: at that point they're accounted,
-and marked VM_ACCOUNT so that we know it's been done (and don't
-double account later on).
+James
 
-So your middle page has been accounted (one page added to
-/proc/meminfo's Committed_AS, which isn't allowed to exceed CommitLimit
-if /proc/sys/vm/overcommit_memory is 2 to disable overcommit), but the
-neighbouring pages have not been accounted: so we need separate vmas
-for them, I'm afraid, since that accounting is done per vma.
 
+> > Thus the rules for calling flush and cancel sync are the same.
 > 
-> Can anyone shed some light on this? While it isn't an issue for 3
-> pages, I'm mmaping 200K+ pages and changing the perms on random pages
-> throughout and then back but I quickly run into the max_map_count when
-> I don't actually need that many mappings.
+> They are not.  With cancel you need to verify that the one item you are
+> cancelling obeys the rules.  With flush you need to verify that
+> _everything_ on the queue is safe with respect to locking.
+> 
+> The only valid reason for a driver to call flush_scheduled_work()  
+> would be that it knows there's an outstanding work item, which has to
+> be completed or cancelled, but it doesn't have a pointer to the item.  
+> Then cancellation is impossible.
+> 
+> Alan Stern
 
-But that's easily dealt with: just make your mmap PROT_READ|PROT_WRITE,
-which will account for the whole extent; then mprotect it all PROT_NONE,
-which will take you to your previous starting position; then proceed as
-before - the vmas should get merged as they are reset back to PROT_NONE.
-That works, doesn't it?
-
-(I must offer a big thank you: replying to your mail just after writing
-a mail about the ZERO_PAGE, brings me to realize - if I'm not mistaken -
-that we broke the accounting of initially non-writable anonymous areas
-when we stopped using the ZERO_PAGE there, but marked readfaulted pages
-as dirty.  Looks like another argument to bring them back.)
-
-Hugh
