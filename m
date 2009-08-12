@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313AbZHLOiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752859AbZHLOkE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753313AbZHLOiQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 10:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZHLOiP
+	id S1752859AbZHLOkE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 10:40:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbZHLOkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 10:38:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56947 "EHLO mx2.redhat.com"
+	Wed, 12 Aug 2009 10:40:03 -0400
+Received: from smtp.knology.net ([24.214.63.101]:48837 "EHLO smtp.knology.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751116AbZHLOiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 10:38:14 -0400
-Date: Wed, 12 Aug 2009 10:37:02 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [GIT PULL] tracing: Syscalls trace events + perf support
-Message-ID: <20090812143702.GC2711@redhat.com>
-References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com> <20090812091133.GA21655@elte.hu> <20090812110307.GA806@elte.hu> <20090812111436.GA24263@elte.hu> <20090812142516.GB2711@redhat.com> <20090812142917.GA19882@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090812142917.GA19882@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751116AbZHLOkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 10:40:01 -0400
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+ /dev
+From: David Dillow <dave@thedillows.org>
+To: Greg KH <greg@kroah.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Greg KH <gregkh@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
+       Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20090812134440.GA28839@kroah.com>
+References: <87ljlxhrnr.fsf@basil.nowhere.org>
+	 <1249575658.19886.8.camel@lap75545.ornl.gov>
+	 <20090806183147.GA28409@suse.de>
+	 <1249772876.22248.34.camel@obelisk.thedillows.org>
+	 <20090810153943.GB7652@kroah.com>
+	 <1250001374.22248.65.camel@obelisk.thedillows.org>
+	 <20090811145523.GD14368@basil.fritz.box>
+	 <1250036727.26788.7.camel@obelisk.thedillows.org>
+	 <20090812003433.GA25392@kroah.com>
+	 <1250081813.26788.13.camel@obelisk.thedillows.org>
+	 <20090812134440.GA28839@kroah.com>
+Content-Type: text/plain
+Date: Wed, 12 Aug 2009 10:39:57 -0400
+Message-Id: <1250087997.8566.9.camel@obelisk.thedillows.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 04:29:17PM +0200, Ingo Molnar wrote:
-> * Jason Baron <jbaron@redhat.com> wrote:
-> 
-> > On Wed, Aug 12, 2009 at 01:14:36PM +0200, Ingo Molnar wrote:
-> 
-> > > another thing: could we please also have a generic, highlevel 
-> > > tracepoint (in addition to the specific tracepoints) that 
-> > > enumerates the raw syscall Nr and the parameters it gets - in a 
-> > > single tracepoint?
+On Wed, 2009-08-12 at 06:44 -0700, Greg KH wrote:
+> On Wed, Aug 12, 2009 at 08:56:53AM -0400, David Dillow wrote:
+> > On Tue, 2009-08-11 at 17:34 -0700, Greg KH wrote:
+> > > On Tue, Aug 11, 2009 at 08:25:27PM -0400, David Dillow wrote:
+> > > > So use Eric/Arjan's program that does it in 60ms -- you get a
+> > > > dynamic /dev, no initrd, fast boot, and no kernel changes required.
+> > > 
+> > > Their program only handles it for a reconstruction of /dev based on
+> > > sysfs one time at boot.  It does not handle things that are added or
+> > > discovered by the system after that, you need udev for that.
+> > > 
+> > > So it's a great hack for boot time stuff, but not a complete /dev
+> > > management replacement like this code can be for numerous systems.
 > > 
-> > The specific tracepoints, are all layered on 2 (entry, exit) 
-> > generic tracepoints already. So this shouldn't be too hard...The 
-> > parameters it gets might be tricky, since there are a variable 
-> > number b/w different syscalls?
+> > What systems would those be?
 > 
-> We should just list all ~6 of them. It's up to the sampling entity 
-> to decide which ones (if any) is relevant.
-> 
-> At least on x86 the syscall arguments will always have a value when 
-> the syscall entry code is called. (they are in GP registers)
-> 
-> 	Ingo
+> Rescue disks, Embedded systems with no local users, servers with no
+> local users, etc.  Basically anything that you are only root on, and
+> don't care about group permissions.
 
-ok, makes sense. I'll add to the todo list.
+We've discussed those, though, and I think most of those fall under
+either having full control of their static environment, or would have
+something to watch for hotplug events -- udev or a replacement -- and so
+would have the ability to create the node from user space.
 
--Jason
+Rescue disks may be an exception, but they only need a minimal
+static /dev and then run a tool to get the initial setup. If you are
+expecting an expert to use them, then either running the tool by hand or
+as a post-modprobe rule should catch updates. They can also run udev (or
+a replacement) with stripped rules if you want to make it friendlier to
+non-expert users.
 
 
