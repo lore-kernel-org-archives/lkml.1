@@ -1,81 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbZHLRTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbZHLRXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754598AbZHLRTr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 13:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbZHLRTq
+	id S1754559AbZHLRXA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 13:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZHLRXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 13:19:46 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:35288 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754579AbZHLRTp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 13:19:45 -0400
-Date: Wed, 12 Aug 2009 22:49:40 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nishimura@mxp.nes.nec.co.jp,
-       kosaki.motohiro@jp.fujitsu.com, menage@google.com, prarit@redhat.com,
-       andi.kleen@intel.com, xemul@openvz.org, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] Help Resource Counters Scale better (v4.1)
-Message-ID: <20090812171940.GD5087@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090811144405.GW7176@balbir.in.ibm.com> <20090811163159.ddc5f5fd.akpm@linux-foundation.org> <20090812045716.GH7176@balbir.in.ibm.com> <49a88ef4a1ba9ec9426febe9e3633b89.squirrel@webmail-b.css.fujitsu.com>
+	Wed, 12 Aug 2009 13:23:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34141 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752018AbZHLRW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 13:22:59 -0400
+Date: Wed, 12 Aug 2009 20:21:41 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: virtualization@lists.linux-foundation.org,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
+Message-ID: <20090812172141.GA29966@redhat.com>
+References: <cover.1249930169.git.mst@redhat.com> <20090810185340.GC13924@redhat.com> <200908121903.22325.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49a88ef4a1ba9ec9426febe9e3633b89.squirrel@webmail-b.css.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200908121903.22325.arnd@arndb.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-13 01:28:57]:
-
-> Balbir Singh wrote:
-> > Hi, Andrew,
-> >
-> > Does this look better, could you please replace the older patch with
-> > this one.
-> >
-> > 1. I did a quick compile test
-> > 2. Ran scripts/checkpatch.pl
-> >
+On Wed, Aug 12, 2009 at 07:03:22PM +0200, Arnd Bergmann wrote:
+> On Monday 10 August 2009, Michael S. Tsirkin wrote:
 > 
-> In general, seems reasonable to me as quick hack for root cgroup.
-> thank you.
+> > +struct workqueue_struct *vhost_workqueue;
 > 
-> Reviewed-by: KAMEAZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
+> [nitpicking] This could be static. 
 
-Thanks, yes, we still need to do the percpu counter work, but this
-will give us breathing space to do it correctly and define strict and
-non-strict accounting.
- 
-> Finally, we'll have to do some rework for light-weight res_counter.
-> But yes, it will take some amount of time.
-> My only concern is account leak, but, if some leak, it's current code's
-> bug, not this patch.
+Good catch. Thanks!
+
+> > +/* The virtqueue structure describes a queue attached to a device. */
+> > +struct vhost_virtqueue {
+> > +	struct vhost_dev *dev;
+> > +
+> > +	/* The actual ring of buffers. */
+> > +	struct mutex mutex;
+> > +	unsigned int num;
+> > +	struct vring_desc __user *desc;
+> > +	struct vring_avail __user *avail;
+> > +	struct vring_used __user *used;
+> > +	struct file *kick;
+> > +	struct file *call;
+> > +	struct file *error;
+> > +	struct eventfd_ctx *call_ctx;
+> > +	struct eventfd_ctx *error_ctx;
+> > +
+> > +	struct vhost_poll poll;
+> > +
+> > +	/* The routine to call when the Guest pings us, or timeout. */
+> > +	work_func_t handle_kick;
+> > +
+> > +	/* Last available index we saw. */
+> > +	u16 last_avail_idx;
+> > +
+> > +	/* Last index we used. */
+> > +	u16 last_used_idx;
+> > +
+> > +	/* Outstanding buffers */
+> > +	unsigned int inflight;
+> > +
+> > +	/* Is this blocked? */
+> > +	bool blocked;
+> > +
+> > +	struct iovec iov[VHOST_NET_MAX_SG];
+> > +
+> > +} ____cacheline_aligned;
 > 
+> We discussed this before, and I still think this could be directly derived
+> from struct virtqueue, in the same way that vring_virtqueue is derived from
+> struct virtqueue.
 
-Yeah.. we'll need to check for that.
+I prefer keeping it simple. Much of abstraction in virtio is due to the
+fact that it needs to work on top of different hardware emulations:
+lguest,kvm, possibly others in the future.  vhost is always working on
+real hardware, using eventfd as the interface, so it does not need that.
 
-> And..hmm...I like following style other than open-coded.
-> ==
-> int mem_coutner_charge(struct mem_cgroup *mem)
-> {
->       if (mem_cgroup_is_root(mem))
->                return 0; // always success
->       return res_counter_charge(....)
-> }
-> ==
-> But maybe nitpick.
+> That would make it possible for simple device drivers
+> to use the same driver in both host and guest,
+
+I don't think so. For example, there's a callback field that gets
+invoked in guest when buffers are consumed.  It could be overloaded to
+mean "buffers are available" in host but you never handle both
+situations in the same way, so what's the point?
+
+> similar to how Ira Snyder used virtqueues to make virtio_net run
+> between two hosts running the same code [1].
+> Ideally, I guess you should be able to even make virtio_net work in the
+> host if you do that, but that could bring other complexities.
 > 
+> 	Arnd <><
+> 
+> [1] http://lkml.org/lkml/2009/2/23/353
 
-Yes, we can refactor for simplication, but we'll need some exceptions.
-I'll do that as an add-on patch.
-
-
+As I pointed out earlier, most code in virtio net is asymmetrical: guest
+provides buffers, host consumes them.  Possibly, one could use virtio
+rings in a symmetrical way, but support of existing guest virtio net
+means there's almost no shared code.
 
 -- 
-	Balbir
+MST
