@@ -1,44 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbZHLDMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbZHLDNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755754AbZHLDMR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Aug 2009 23:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbZHLDMQ
+	id S1755793AbZHLDNL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Aug 2009 23:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbZHLDNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Aug 2009 23:12:16 -0400
-Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:48135 "EHLO
-	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754030AbZHLDMQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Aug 2009 23:12:16 -0400
-Subject: Re: [PATCH] amd5536udc: fixed shared interrupt bug and warning oops
-From: Vadim Lobanov <vlobanov@speakeasy.net>
-To: Thomas Dahlmann <dahlmann.thomas@arcor.de>
-Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-In-Reply-To: <1250028056.14854.18.camel@pc>
-References: <1250028056.14854.18.camel@pc>
-Content-Type: text/plain
-Date: Tue, 11 Aug 2009 20:05:34 -0700
-Message-Id: <1250046334.2688.1.camel@leonidas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	Tue, 11 Aug 2009 23:13:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40652 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755612AbZHLDNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Aug 2009 23:13:09 -0400
+Message-ID: <4A8233A5.2020501@redhat.com>
+Date: Wed, 12 Aug 2009 11:14:45 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC Patch 2/2] kexec: allow to shrink reserved memory
+References: <20090811104144.5154.77871.sendpatchset@localhost.localdomain>	<20090811104154.5154.78710.sendpatchset@localhost.localdomain>	<m1r5vi9l9v.fsf@fess.ebiederm.org> <4A821A14.1020408@redhat.com>	<m17hx9n6s5.fsf@fess.ebiederm.org> <4A822404.9030603@redhat.com> <m1ws5992gd.fsf@fess.ebiederm.org>
+In-Reply-To: <m1ws5992gd.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-12 at 00:00 +0200, Thomas Dahlmann wrote:
-> >From 9654f85cbeabec4b8652f9785bea317cd7068edb Mon Sep 17 00:00:00 2001
-> From: Thomas <dahlmann.thomas@arcor.de>
-> Date: Tue, 11 Aug 2009 22:09:55 +0200
-> Subject: [PATCH] amd5536udc: fixed shared interrupt bug and warning oops
->   - fixed shared interrupt bug reported by Vadim Lobanov
->   - fixed possible warning oops on driver unload when connected
->   - prevent interrupt flood in PIO mode ("modprobe amd5536udc use_dma=0")
->     when using gadget ether
->   - applied patch "Drop NULL test on list_entry result" submitted by Julia Lawall
+Eric W. Biederman wrote:
+> Amerigo Wang <amwang@redhat.com> writes:
+>
+>   
+>> Eric W. Biederman wrote:
+>>     
+>>> Amerigo Wang <amwang@redhat.com> writes:
+>>>
+>>>   
+>>>       
+>>>> Eric W. Biederman wrote:
+>>>>     
+>>>>         
+>>>>> Amerigo Wang <amwang@redhat.com> writes:
+>>>>>
+>>>>>         
+>>>>>           
+>>>>>> This patch implements shrinking the reserved memory for crash kernel,
+>>>>>> if it is more than enough.
+>>>>>>
+>>>>>> For example, if you have already reserved 128M, now you just want 100M,
+>>>>>> you can do:
+>>>>>>
+>>>>>> # echo $((100*1024*1024)) > /sys/kernel/kexec_crash_size
+>>>>>>             
+>>>>>>             
+>>>>> This patch looks like a reasonable start.
+>>>>>
+>>>>> However once a crash kernel image is loaded we have already told that
+>>>>> image about the memory that is available and what you are doing here
+>>>>> will go and stop on the memory that is reserved but not yet used,
+>>>>> totally breaking the DMA protections.  AKA we know the memory is safe
+>>>>> from ongoing DMAs because it has lain fallow since boot up.
+>>>>>
+>>>>> The only safe thing to do is to reduce the memory size before (possibly
+>>>>> just before) we load the crash kernel.  Which means we should only
+>>>>> be allowed to shrink the size when nothing is loaded, exactly the
+>>>>> opposite of what you have implemented.
+>>>>>
+>>>>>         
+>>>>>           
+>>>> Confused, why just loading the crash kernel makes it unsafe?
+>>>> DMA should be avoided when reserving that memory during boot, shouldn't it?
+>>>>     
+>>>>         
+>>> Yes.  But you are removing the reservation and starting DMA on memory
+>>> we have told the crash kernel it can use.
+>>>   
+>>>       
+>> We can modify the info given to the crash kernel.
+>>     
+>
+> Only by unloading and reloading.
+>
+>   
+>>>> I know I missed the part that freeing memory before loading, but if it is safe
+>>>> before loading, how can it be unsafe after that?
+>>>>     
+>>>>         
+>>> We tell the crash kernel when loading it, it can use all of the reserved memory.
+>>>   
+>>>       
+>> Yeah, but we should reload the kernel after shrinking the memory, it is not
+>> surprised that doing this is necessary...
+>>     
+>
+> So unload the crash kernel first.  If you don't you open a race where
+> many of the guarantees we make for the crash kernel about the state of
+> the memory it might be using are not true.
+>
+> In general I expect we will be able to do this all before we load the
+> crash kernel the first time.  But at least we should not need to reboot
+> things if there is a problem.
+>   
 
-I'll give this patch a spin on our boxes as soon as I get a chance to do
-so. Thanks for sending it out. :)
+Ok, thanks for your explanation.
+
+I will drop patch 1/2, since we will move it to kexec.
+I will put patch 2/2 into my "crashkernel=auto" patch set, and resend 
+them all.
+
+Thanks.
 
 
