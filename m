@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752749AbZHLFlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752896AbZHLFnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752749AbZHLFlg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 01:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbZHLFlf
+	id S1752896AbZHLFnP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 01:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbZHLFnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 01:41:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59292 "EHLO mx2.redhat.com"
+	Wed, 12 Aug 2009 01:43:14 -0400
+Received: from mga14.intel.com ([143.182.124.37]:7776 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750940AbZHLFle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 01:41:34 -0400
-Message-ID: <4A825601.60000@redhat.com>
-Date: Wed, 12 Aug 2009 08:41:21 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	id S1752480AbZHLFnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 01:43:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,365,1246863600"; 
+   d="scan'208";a="174852993"
+Date: Wed, 12 Aug 2009 13:41:09 +0800
+From: Feng Tang <feng.tang@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC][PATCH]x86/RTC: introduce a new generic rtc_ops for x86
+Message-ID: <20090812134109.0913f9a9@feng-desktop>
+In-Reply-To: <20090811084529.GB25647@elte.hu>
+References: <20090811154850.3127fff0@feng-desktop>
+	<20090811084529.GB25647@elte.hu>
+Organization: intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Pierre Ossman <drzeus-list@drzeus.cx>, Minchan Kim <minchan.kim@gmail.com>,
-       kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Wu Fengguang <fengguang.wu@intel.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, netdev@vger.kernel.org
-Subject: Re: Page allocation failures in guest
-References: <20090713115158.0a4892b0@mjolnir.ossman.eu> <4A811545.5090209@redhat.com> <200908121249.51973.rusty@rustcorp.com.au> <200908121501.53167.rusty@rustcorp.com.au>
-In-Reply-To: <200908121501.53167.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/12/2009 08:31 AM, Rusty Russell wrote:
-> +static void refill_work(struct work_struct *work)
-> +{
-> +	struct virtnet_info *vi;
-> +	bool still_empty;
-> +
-> +	vi = container_of(work, struct virtnet_info, refill);
-> +	napi_disable(&vi->napi);
-> +	try_fill_recv(vi, GFP_KERNEL);
-> +	still_empty = (vi->num == 0);
-> +	napi_enable(&vi->napi);
-> +
-> +	/* In theory, this can happen: if we don't get any buffers in
-> +	 * we will*never*  try to fill again.  Sleeping in keventd if
-> +	 * bad, but that is worse. */
-> +	if (still_empty) {
-> +		msleep(100);
-> +		schedule_work(&vi->refill);
-> +	}
-> +}
-> +
->    
+On Tue, 11 Aug 2009 16:45:29 +0800
+Ingo Molnar <mingo@elte.hu> wrote:
+> > -#include <asm/mc146818rtc.h>
+> > -#ifdef CONFIG_X86_32
+> > -#include <linux/efi.h>
+> > +struct arch_rtc_dev_ops {
+> > +	unsigned long	(*get_wall_time)(void);
+> > +	int		(*set_wall_time)(unsigned long);
+> > +};
+> > +extern struct arch_rtc_dev_ops *x86_rtc_ops;
+> 
+> looks like the right direction at first glance. What's the 
+> management interface around the driver (there's none at the moment)? 
+> Set up at early boot time and never changed afterwards?
+Currently there is no management interface around it, the structure works
+the way like x86_quirks, as EFI/mc146818 are kindly fixed and can't be
+dynamically detected.
 
-schedule_delayed_work()?
+> 
+> Have you looked at other architectures (MIPS, ARM, etc.) to see how 
+> they abstracted away their RTC functionality?
+I did a quick look at other architectures, and didn't see a nice abstracted
+way for RTC.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+In kernel early boot phase, read_persistent_clock() is called to get the HW
+time, x86 implements the API by calling get_wall_time(), but just a few other
+architectures implement their own read_persistent_clock() if they have rtc
+devices/services that could be accessed in early boot phase, like some of
+MIPS/PowerPC/s390...(ARM doesn't). So it would be difficult to ask all
+architectures to use the arch_rtc_dev_ops structure.
 
+But as kernel needs the HW time anyway, some arch/platforms implements
+their rtc driver in drivers/rtc/ not in arch/.../kernel/, which will get HW
+time and set it to the system time in late boot phase using late_initcall
+
+Thanks,
+Feng
+> 
+> 	Ingo
