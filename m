@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752283AbZHLRxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752833AbZHLR7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752283AbZHLRxB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 13:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbZHLRxA
+	id S1752833AbZHLR7y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 13:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbZHLR7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 13:53:00 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34405 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751039AbZHLRw7 (ORCPT
+	Wed, 12 Aug 2009 13:59:53 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:49422 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751336AbZHLR7w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 13:52:59 -0400
-Message-ID: <4A83011A.2090808@zytor.com>
-Date: Wed, 12 Aug 2009 10:51:22 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Wed, 12 Aug 2009 13:59:52 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
+Date: Wed, 12 Aug 2009 19:59:47 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
+Cc: virtualization@lists.linux-foundation.org,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <cover.1249930169.git.mst@redhat.com> <200908121903.22325.arnd@arndb.de> <20090812172141.GA29966@redhat.com>
+In-Reply-To: <20090812172141.GA29966@redhat.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: "Wang, Shane" <shane.wang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>,
-       "Wei, Gang" <gang.wei@intel.com>
-Subject: Re: [RFC v6][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution	Technology
- support for Linux - Details
-References: <4A4ACA60.1000209@intel.com> <20090807072752.GA12119@elte.hu> <20090812145321.GA11347@elte.hu> <4A82DBA2.2000509@zytor.com> <037F493892196B458CD3E193E8EBAD4F01EAB641FD@pdsmsx502.ccr.corp.intel.com> <4A82ED93.70705@zytor.com> <4A82EE1E.5080001@linux.intel.com>
-In-Reply-To: <4A82EE1E.5080001@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908121959.47222.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+EN+WCl1yem1K92Qeb5IXu+ca4T99PqgzNYdP
+ 9SCsz2PJvKV22K78SES3vSyVYlAeJz5odAveC7ne7HcJaTRMTZ
+ loYlC0kAnMbCGIX6KiHvg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/12/2009 09:30 AM, Arjan van de Ven wrote:
-> H. Peter Anvin wrote:
->> On 08/12/2009 08:42 AM, Wang, Shane wrote:
->>> oh, S3 support by TXT is one of TXT support. We have code to secure
->>> S3 sleep and resume.
->>> Without S3 support, TXT code is incomplete.
->>>
->>
->> That doesn't make any sense.
->>
->> The question is: if the user doesn't want S3, do they still need to
->> enable S3 in order to be able to use TXT?  Otherwise, this code needs to
->> be properly conditionalized.
->>
+On Wednesday 12 August 2009, Michael S. Tsirkin wrote:
+> On Wed, Aug 12, 2009 at 07:03:22PM +0200, Arnd Bergmann wrote:
+> > We discussed this before, and I still think this could be directly derived
+> > from struct virtqueue, in the same way that vring_virtqueue is derived from
+> > struct virtqueue.
 > 
-> it's the other way around
-> if you have S3 support, you also need the TXT S3 piece.
-> the S3 piece of TXT is irrelevant if you cannot do S3.
+> I prefer keeping it simple. Much of abstraction in virtio is due to the
+> fact that it needs to work on top of different hardware emulations:
+> lguest,kvm, possibly others in the future.  vhost is always working on
+> real hardware, using eventfd as the interface, so it does not need that.
 
-Right.  Which means the S3 TXT part should be conditionalized on
-CONFIG_ACPI_SLEEP.
+Well, that was my point: virtio can already work on a number of abstractions,
+so adding one more for vhost should not be too hard.
 
-	-hpa
+> > That would make it possible for simple device drivers
+> > to use the same driver in both host and guest,
+> 
+> I don't think so. For example, there's a callback field that gets
+> invoked in guest when buffers are consumed.  It could be overloaded to
+> mean "buffers are available" in host but you never handle both
+> situations in the same way, so what's the point?
+>
+...
+> 
+> As I pointed out earlier, most code in virtio net is asymmetrical: guest
+> provides buffers, host consumes them.  Possibly, one could use virtio
+> rings in a symmetrical way, but support of existing guest virtio net
+> means there's almost no shared code.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+The trick is to swap the virtqueues instead. virtio-net is actually
+mostly symmetric in just the same way that the physical wires on a
+twisted pair ethernet are symmetric (I like how that analogy fits).
 
+virtio_net kicks the transmit virtqueue when it has data and
+it kicks the receive queue when it has empty buffers to fill,
+and it has callbacks when the two are done. You can do the
+same in both the guest and the host, but then the guests input
+virtqueue is the hosts output virtqueue and vice versa.
+
+Once a virtqueue got kicked from both sides, the vhost_virtqueue
+implementation between the two only needs to do a copy_from_user
+or copy_to_user (possibly from a thread if it is in atomic context)
+and then call the two callback functions. This is basically the
+same thing you do already, except that you use slightly different
+names for the components.
+
+	Arnd <><
