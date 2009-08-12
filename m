@@ -1,534 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbZHLJ7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932432AbZHLKFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755279AbZHLJ7j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 05:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbZHLJ7j
+	id S932432AbZHLKFY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 06:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932400AbZHLKFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 05:59:39 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:36154 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446AbZHLJ7i (ORCPT
+	Wed, 12 Aug 2009 06:05:23 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:33105 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932396AbZHLKFW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 05:59:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=SeayZN/c6LF3yiFRXVOOa5/pKaYAfTXxElnScw7YInCAxtRLAbJeU/B4lvMWRro2BL
-         31GaketfVT1QF5Gn00IEy5hpwcAH1k6Koc1P+3PvwnsWCmaLb13pj3Udm5TpNKDHzj1s
-         CJM5w4Ip3b/eKwKv1UT6dyVbBJUDk1u/CaZWs=
-Date: Wed, 12 Aug 2009 11:59:34 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Brice Goglin <Brice.Goglin@inria.fr>
-Subject: Re: [PATCH 1/3] perf tools: Factorize high level dso helpers
-Message-ID: <20090812095933.GB6081@nowhere>
-References: <1250069162-13099-1-git-send-email-fweisbec@gmail.com> <1250069162-13099-2-git-send-email-fweisbec@gmail.com>
+	Wed, 12 Aug 2009 06:05:22 -0400
+Date: Wed, 12 Aug 2009 11:05:17 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Felipe Balbi <me@felipebalbi.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Mike Rapoport <mike@compulab.co.il>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Smart Battery System Design (was: Re: Question about
+	userspace-consumer)
+Message-ID: <20090812100517.GA11227@sirena.org.uk>
+References: <20090810200553.GB4652@gandalf> <20090810215800.GB4528@sirena.org.uk> <20090811054438.GA7176@gandalf> <20090811094020.GA6762@rakim.wolfsonmicro.main> <1249986616.5807.28.camel@odin> <20090811204914.GB13969@gandalf> <20090811223645.GA4691@sirena.org.uk> <20090812064745.GA17285@gandalf>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1250069162-13099-2-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <20090812064745.GA17285@gandalf>
+X-Cookie: One FISHWICH coming up!!
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 11:26:00AM +0200, Frederic Weisbecker wrote:
-> Factorize multiple definitions of high level dso helpers into the
-> symbol source file.
-> 
-> The side effect is a general export of the verbose and eprintf
-> debugging helpers into a new file dedicated to debugging purposes.
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Mike Galbraith <efault@gmx.de>
-> Cc: Brice Goglin <Brice.Goglin@inria.fr>
-> ---
->  tools/perf/Makefile           |    1 +
->  tools/perf/builtin-annotate.c |   96 ----------------------------------------
->  tools/perf/builtin-record.c   |    1 -
->  tools/perf/builtin-report.c   |   97 -----------------------------------------
->  tools/perf/builtin-stat.c     |    1 -
->  tools/perf/builtin-top.c      |    4 --
->  tools/perf/builtin.h          |    1 +
->  tools/perf/perf.h             |    1 +
->  tools/perf/util/symbol.c      |   97 +++++++++++++++++++++++++++++++++++++++++
->  tools/perf/util/symbol.h      |   11 +++++
->  10 files changed, 111 insertions(+), 199 deletions(-)
-> 
-> diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-> index de7beac..2aee21b 100644
-> --- a/tools/perf/Makefile
-> +++ b/tools/perf/Makefile
-> @@ -339,6 +339,7 @@ LIB_OBJS += util/pager.o
->  LIB_OBJS += util/header.o
->  LIB_OBJS += util/callchain.o
->  LIB_OBJS += util/values.o
-> +LIB_OBJS += util/debug.o
+On Wed, Aug 12, 2009 at 09:47:50AM +0300, Felipe Balbi wrote:
+> On Tue, Aug 11, 2009 at 11:36:46PM +0100, Mark Brown wrote:
 
+> > This is already handled in kernel by the drivers/power code.  Whenever a
+> > power supply updates its status it notifies the subsystem which will
+> > then notify user space and also notify any other power supplies which
+> > have been configured as being supplied by the changing supply.  This is
+> > used by existing drivers for non-autonomous battery chargers to initiate
+> > charging (usually via a GPIO connected to the charger).
 
-Damn, did I forgot to git-add util/debug.c ?
+> but that'll depend very much on the chip being used. Check bq24150, for
+> example. We cannot rely on a gpio since we have to tell the charger if
 
-How could I fix this? Another pull request?
+You actually get notification on any change the supply chooses to notify
+the core on IIRC.
 
-Frederic.
+> it can charger with up to 100mA, up to 500mA or more (in case of a
+> dedicated usb charger we can draw up to 2.5A if I'm not wrong, but most
+> chargers I've seen source up to 1.5A). A gpio would only be able to tell
+> the charger is present or not.
 
+Well, that's just the addition of a second GPIO to put it into fast
+charge mode (which has other constraints beyond the system supply
+current).  It'd probably help clarity to not refer so directly to the
+USB current limits here due to all the stuff in between the USB supply
+and the charger.
 
->  
->  BUILTIN_OBJS += builtin-annotate.o
->  BUILTIN_OBJS += builtin-help.o
-> diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-> index 1dba568..1a79299 100644
-> --- a/tools/perf/builtin-annotate.c
-> +++ b/tools/perf/builtin-annotate.c
-> @@ -26,7 +26,6 @@
->  #define SHOW_HV		4
->  
->  static char		const *input_name = "perf.data";
-> -static char		*vmlinux = "vmlinux";
->  
->  static char		default_sort_order[] = "comm,symbol";
->  static char		*sort_order = default_sort_order;
-> @@ -37,9 +36,6 @@ static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
->  static int		dump_trace = 0;
->  #define dprintf(x...)	do { if (dump_trace) printf(x); } while (0)
->  
-> -static int		verbose;
-> -
-> -static int		modules;
->  
->  static int		full_paths;
->  
-> @@ -89,98 +85,6 @@ struct sym_ext {
->  	char		*path;
->  };
->  
-> -static LIST_HEAD(dsos);
-> -static struct dso *kernel_dso;
-> -static struct dso *vdso;
-> -
-> -
-> -static void dsos__add(struct dso *dso)
-> -{
-> -	list_add_tail(&dso->node, &dsos);
-> -}
-> -
-> -static struct dso *dsos__find(const char *name)
-> -{
-> -	struct dso *pos;
-> -
-> -	list_for_each_entry(pos, &dsos, node)
-> -		if (strcmp(pos->name, name) == 0)
-> -			return pos;
-> -	return NULL;
-> -}
-> -
-> -static struct dso *dsos__findnew(const char *name)
-> -{
-> -	struct dso *dso = dsos__find(name);
-> -	int nr;
-> -
-> -	if (dso)
-> -		return dso;
-> -
-> -	dso = dso__new(name, 0);
-> -	if (!dso)
-> -		goto out_delete_dso;
-> -
-> -	nr = dso__load(dso, NULL, verbose);
-> -	if (nr < 0) {
-> -		if (verbose)
-> -			fprintf(stderr, "Failed to open: %s\n", name);
-> -		goto out_delete_dso;
-> -	}
-> -	if (!nr && verbose) {
-> -		fprintf(stderr,
-> -		"No symbols found in: %s, maybe install a debug package?\n",
-> -				name);
-> -	}
-> -
-> -	dsos__add(dso);
-> -
-> -	return dso;
-> -
-> -out_delete_dso:
-> -	dso__delete(dso);
-> -	return NULL;
-> -}
-> -
-> -static void dsos__fprintf(FILE *fp)
-> -{
-> -	struct dso *pos;
-> -
-> -	list_for_each_entry(pos, &dsos, node)
-> -		dso__fprintf(pos, fp);
-> -}
-> -
-> -static struct symbol *vdso__find_symbol(struct dso *dso, u64 ip)
-> -{
-> -	return dso__find_symbol(dso, ip);
-> -}
-> -
-> -static int load_kernel(void)
-> -{
-> -	int err;
-> -
-> -	kernel_dso = dso__new("[kernel]", 0);
-> -	if (!kernel_dso)
-> -		return -1;
-> -
-> -	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, modules);
-> -	if (err <= 0) {
-> -		dso__delete(kernel_dso);
-> -		kernel_dso = NULL;
-> -	} else
-> -		dsos__add(kernel_dso);
-> -
-> -	vdso = dso__new("[vdso]", 0);
-> -	if (!vdso)
-> -		return -1;
-> -
-> -	vdso->find_symbol = vdso__find_symbol;
-> -
-> -	dsos__add(vdso);
-> -
-> -	return err;
-> -}
-> -
->  struct map {
->  	struct list_head node;
->  	u64	 start;
-> diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-> index 0345aad..afae387 100644
-> --- a/tools/perf/builtin-record.c
-> +++ b/tools/perf/builtin-record.c
-> @@ -40,7 +40,6 @@ static int			inherit				= 1;
->  static int			force				= 0;
->  static int			append_file			= 0;
->  static int			call_graph			= 0;
-> -static int			verbose				= 0;
->  static int			inherit_stat			= 0;
->  static int			no_samples			= 0;
->  static int			sample_address			= 0;
-> diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-> index 2357c66..827eab2 100644
-> --- a/tools/perf/builtin-report.c
-> +++ b/tools/perf/builtin-report.c
-> @@ -30,7 +30,6 @@
->  #define SHOW_HV		4
->  
->  static char		const *input_name = "perf.data";
-> -static char		*vmlinux = NULL;
->  
->  static char		default_sort_order[] = "comm,dso,symbol";
->  static char		*sort_order = default_sort_order;
-> @@ -46,11 +45,6 @@ static int		dump_trace = 0;
->  #define dprintf(x...)	do { if (dump_trace) printf(x); } while (0)
->  #define cdprintf(x...)	do { if (dump_trace) color_fprintf(stdout, color, x); } while (0)
->  
-> -static int		verbose;
-> -#define eprintf(x...)	do { if (verbose) fprintf(stderr, x); } while (0)
-> -
-> -static int		modules;
-> -
->  static int		full_paths;
->  static int		show_nr_samples;
->  
-> @@ -161,98 +155,7 @@ static int repsep_fprintf(FILE *fp, const char *fmt, ...)
->  	return n;
->  }
->  
-> -static LIST_HEAD(dsos);
-> -static struct dso *kernel_dso;
-> -static struct dso *vdso;
-> -static struct dso *hypervisor_dso;
-> -
-> -static void dsos__add(struct dso *dso)
-> -{
-> -	list_add_tail(&dso->node, &dsos);
-> -}
-> -
-> -static struct dso *dsos__find(const char *name)
-> -{
-> -	struct dso *pos;
-> -
-> -	list_for_each_entry(pos, &dsos, node)
-> -		if (strcmp(pos->name, name) == 0)
-> -			return pos;
-> -	return NULL;
-> -}
-> -
-> -static struct dso *dsos__findnew(const char *name)
-> -{
-> -	struct dso *dso = dsos__find(name);
-> -	int nr;
-> -
-> -	if (dso)
-> -		return dso;
-> -
-> -	dso = dso__new(name, 0);
-> -	if (!dso)
-> -		goto out_delete_dso;
-> -
-> -	nr = dso__load(dso, NULL, verbose);
-> -	if (nr < 0) {
-> -		eprintf("Failed to open: %s\n", name);
-> -		goto out_delete_dso;
-> -	}
-> -	if (!nr)
-> -		eprintf("No symbols found in: %s, maybe install a debug package?\n", name);
-> -
-> -	dsos__add(dso);
-> -
-> -	return dso;
-> -
-> -out_delete_dso:
-> -	dso__delete(dso);
-> -	return NULL;
-> -}
-> -
-> -static void dsos__fprintf(FILE *fp)
-> -{
-> -	struct dso *pos;
-> -
-> -	list_for_each_entry(pos, &dsos, node)
-> -		dso__fprintf(pos, fp);
-> -}
-> -
-> -static struct symbol *vdso__find_symbol(struct dso *dso, u64 ip)
-> -{
-> -	return dso__find_symbol(dso, ip);
-> -}
-> -
-> -static int load_kernel(void)
-> -{
-> -	int err;
-> -
-> -	kernel_dso = dso__new("[kernel]", 0);
-> -	if (!kernel_dso)
-> -		return -1;
-> -
-> -	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, modules);
-> -	if (err <= 0) {
-> -		dso__delete(kernel_dso);
-> -		kernel_dso = NULL;
-> -	} else
-> -		dsos__add(kernel_dso);
-> -
-> -	vdso = dso__new("[vdso]", 0);
-> -	if (!vdso)
-> -		return -1;
->  
-> -	vdso->find_symbol = vdso__find_symbol;
-> -
-> -	dsos__add(vdso);
-> -
-> -	hypervisor_dso = dso__new("[hypervisor]", 0);
-> -	if (!hypervisor_dso)
-> -		return -1;
-> -	dsos__add(hypervisor_dso);
-> -
-> -	return err;
-> -}
->  
->  static char __cwd[PATH_MAX];
->  static char *cwd = __cwd;
-> diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-> index b4b06c7..4b9dd4a 100644
-> --- a/tools/perf/builtin-stat.c
-> +++ b/tools/perf/builtin-stat.c
-> @@ -63,7 +63,6 @@ static struct perf_counter_attr default_attrs[] = {
->  #define MAX_RUN			100
->  
->  static int			system_wide			=  0;
-> -static int			verbose				=  0;
->  static unsigned int		nr_cpus				=  0;
->  static int			run_idx				=  0;
->  
-> diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-> index 7de28ce..0aa5673 100644
-> --- a/tools/perf/builtin-top.c
-> +++ b/tools/perf/builtin-top.c
-> @@ -68,8 +68,6 @@ static int			group				=  0;
->  static unsigned int		page_size;
->  static unsigned int		mmap_pages			= 16;
->  static int			freq				=  0;
-> -static int			verbose				=  0;
-> -static char			*vmlinux			=  NULL;
->  
->  static int			delay_secs			=  2;
->  static int			zero;
-> @@ -338,8 +336,6 @@ static void show_details(struct sym_entry *syme)
->  		printf("%d lines not displayed, maybe increase display entries [e]\n", more);
->  }
->  
-> -struct dso			*kernel_dso;
-> -
->  /*
->   * Symbols will be added here in record_ip and will get out
->   * after decayed.
-> diff --git a/tools/perf/builtin.h b/tools/perf/builtin.h
-> index 51d1682..3a63e41 100644
-> --- a/tools/perf/builtin.h
-> +++ b/tools/perf/builtin.h
-> @@ -22,5 +22,6 @@ extern int cmd_stat(int argc, const char **argv, const char *prefix);
->  extern int cmd_top(int argc, const char **argv, const char *prefix);
->  extern int cmd_version(int argc, const char **argv, const char *prefix);
->  extern int cmd_list(int argc, const char **argv, const char *prefix);
-> +extern int cmd_trace(int argc, const char **argv, const char *prefix);
->  
->  #endif
-> diff --git a/tools/perf/perf.h b/tools/perf/perf.h
-> index e5148e2..f550921 100644
-> --- a/tools/perf/perf.h
-> +++ b/tools/perf/perf.h
-> @@ -48,6 +48,7 @@
->  
->  #include "../../include/linux/perf_counter.h"
->  #include "util/types.h"
-> +#include "util/debug.h"
->  
->  /*
->   * prctl(PR_TASK_PERF_COUNTERS_DISABLE) will (cheaply) disable all
-> diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-> index f1dcede..e9b13b4 100644
-> --- a/tools/perf/util/symbol.c
-> +++ b/tools/perf/util/symbol.c
-> @@ -937,6 +937,103 @@ int dso__load_kernel(struct dso *self, const char *vmlinux,
->  	return err;
->  }
->  
-> +LIST_HEAD(dsos);
-> +struct dso	*kernel_dso;
-> +struct dso	*vdso;
-> +struct dso	*hypervisor_dso;
-> +
-> +char		*vmlinux = "vmlinux";
-> +int		modules;
-> +
-> +static void dsos__add(struct dso *dso)
-> +{
-> +	list_add_tail(&dso->node, &dsos);
-> +}
-> +
-> +static struct dso *dsos__find(const char *name)
-> +{
-> +	struct dso *pos;
-> +
-> +	list_for_each_entry(pos, &dsos, node)
-> +		if (strcmp(pos->name, name) == 0)
-> +			return pos;
-> +	return NULL;
-> +}
-> +
-> +struct dso *dsos__findnew(const char *name)
-> +{
-> +	struct dso *dso = dsos__find(name);
-> +	int nr;
-> +
-> +	if (dso)
-> +		return dso;
-> +
-> +	dso = dso__new(name, 0);
-> +	if (!dso)
-> +		goto out_delete_dso;
-> +
-> +	nr = dso__load(dso, NULL, verbose);
-> +	if (nr < 0) {
-> +		eprintf("Failed to open: %s\n", name);
-> +		goto out_delete_dso;
-> +	}
-> +	if (!nr)
-> +		eprintf("No symbols found in: %s, maybe install a debug package?\n", name);
-> +
-> +	dsos__add(dso);
-> +
-> +	return dso;
-> +
-> +out_delete_dso:
-> +	dso__delete(dso);
-> +	return NULL;
-> +}
-> +
-> +void dsos__fprintf(FILE *fp)
-> +{
-> +	struct dso *pos;
-> +
-> +	list_for_each_entry(pos, &dsos, node)
-> +		dso__fprintf(pos, fp);
-> +}
-> +
-> +static struct symbol *vdso__find_symbol(struct dso *dso, u64 ip)
-> +{
-> +	return dso__find_symbol(dso, ip);
-> +}
-> +
-> +int load_kernel(void)
-> +{
-> +	int err;
-> +
-> +	kernel_dso = dso__new("[kernel]", 0);
-> +	if (!kernel_dso)
-> +		return -1;
-> +
-> +	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, modules);
-> +	if (err <= 0) {
-> +		dso__delete(kernel_dso);
-> +		kernel_dso = NULL;
-> +	} else
-> +		dsos__add(kernel_dso);
-> +
-> +	vdso = dso__new("[vdso]", 0);
-> +	if (!vdso)
-> +		return -1;
-> +
-> +	vdso->find_symbol = vdso__find_symbol;
-> +
-> +	dsos__add(vdso);
-> +
-> +	hypervisor_dso = dso__new("[hypervisor]", 0);
-> +	if (!hypervisor_dso)
-> +		return -1;
-> +	dsos__add(hypervisor_dso);
-> +
-> +	return err;
-> +}
-> +
-> +
->  void symbol__init(void)
->  {
->  	elf_version(EV_CURRENT);
-> diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-> index 1e003ec..f3490fc 100644
-> --- a/tools/perf/util/symbol.h
-> +++ b/tools/perf/util/symbol.h
-> @@ -48,9 +48,20 @@ int dso__load_kernel(struct dso *self, const char *vmlinux,
->  		     symbol_filter_t filter, int verbose, int modules);
->  int dso__load_modules(struct dso *self, symbol_filter_t filter, int verbose);
->  int dso__load(struct dso *self, symbol_filter_t filter, int verbose);
-> +struct dso *dsos__findnew(const char *name);
-> +void dsos__fprintf(FILE *fp);
->  
->  size_t dso__fprintf(struct dso *self, FILE *fp);
->  char dso__symtab_origin(const struct dso *self);
->  
-> +int load_kernel(void);
-> +
->  void symbol__init(void);
-> +
-> +extern struct list_head dsos;
-> +extern struct dso *kernel_dso;
-> +extern struct dso *vdso;
-> +extern struct dso *hypervisor_dso;
-> +extern char *vmlinux;
-> +extern int   modules;
->  #endif /* _PERF_SYMBOL_ */
-> -- 
-> 1.6.2.3
-> 
+> > This is all a bit of a sidetrack, though - the issue is if there is an
+> > in-kernel part to the SBS charger support.  With the userspace consumer
+> > there's nothing at all, even an extremely basic stub which does nothing
 
+> sure, but where do we draw the line between kernel and userspace in this
+> case ?
+
+> do we just be sure that information goes to userland and in case there's
+> no application monitoring battery we stop charging ? Or do we monitor
+> the battery in-kernel ?
+
+I'd be inclined to put at least some of the basic charge cycle into the
+kernel but it doesn't concern me too much so long as the user/kernel
+interface doesn't expose us to the risk of damaging the battery through
+inattention.
+
+> I'd go for monitoring in userland since we might have way too many
+> points to be tracking. One might be:
+
+> 1. doing ADC conversions for fetching battery voltage (not so used since most
+>    battery chips can report that)
+> 2. checking whether we're connect to a usb host or a usb dedicated
+>    charger (have to kick usb charger detection as per USB Battery Charger
+>    Spec 1.1
+
+Or a wall supply.  The best you can get from the 100mA limit is that
+it's not even worth trying a fast charge but that's not the same thing
+as being able to do one, having more than that isn't that much of a
+reliable guide.
+
+> 3. Priotizing one or other charger (imagine a system with both usb and
+>    AC charger support)
+
+It's probably more interesting to think of prioritising between multiple
+batteries here - most systems I've seen have power path management which
+handles all the incoming power sources and uses them to maintain an
+unregulated power domain which is then used as the root supply for the
+rest of the system, including the battery chargers.  This takes the
+supply selection well out of the domain of charging.
+
+> 4. enabling the charger after figuring out how much current we can draw
+>    from that supply
+
+This is the really tricky bit since you need some idea of the load from
+the rest of the system if the charger really is able to draw current.
+Normally there's a combination of checking various gates to see if it's
+possible to start charging with the current parameters and then things
+like monitoring the supply voltage to the charger to make sure it's not
+drooping and taking corrective action if it does.
+
+My feeling is that in addition to what you're saying the in-kernel side
+of things should also describe how the system is wired together since
+that's the sort of task the kernel is doing anyway, it's something
+that is fixed in the hardware and it's potentially dangerous to get
+wrong.
+
+> enabling the charger could be regulator_enable() call.
+
+Assuming the charger also has things like voltage and current control
+exposed.  I think I'd expect to see some sort of charger class which
+abstracts out the functionality of the charger so that the same user
+applications can also be used to set policy for more autonomous
+chargers.  Those chargers may require contortions to fit them into the
+regulator API depending on the control they provide to the system.  More
+simple chargers may well fit cleanly into the regulator API (they're
+regulators after all) but that'd be just one example of this class.
+
+Quite how much I'd expect such a soft charger to be able to do for
+itself I'm less sure about but I'd be inclined to at least look at doing
+the stuff that can be done with only information from the battery in
+kernel to make things more consistent for user space.
+
+> > charger will be doing all the management of the regulators).  If the SBS
+> > is done entirely in software the kernel at least needs to be able to
+> > notice the management software exiting and clean up after it, even if
+> > that's all it is able to do for itself.
+
+> ok, now I got your point. Your concerned with the case where a userland
+> application, say, crashes and the battery is left for overcharging and
+> overheating.
+
+Yes, exactly - there's a real danger of catastrophic system failure if
+that happens.
