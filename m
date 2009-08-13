@@ -1,133 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbZHME6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbZHME7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752858AbZHME6e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 00:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbZHME6d
+	id S1752912AbZHME7j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 00:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbZHME7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 00:58:33 -0400
-Received: from sparc.brc.ubc.ca ([137.82.2.12]:51246 "EHLO sparc.brc.ubc.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752365AbZHME6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 00:58:33 -0400
-Date: Wed, 12 Aug 2009 22:20:28 -0700 (PDT)
-From: Vincent Li <macli@brc.ubc.ca>
-To: Amerigo Wang <xiyou.wangcong@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH] fs/proc/task_mmu.c v1: fix clear_refs_write() input
- sanity check
-In-Reply-To: <20090813020952.GA5031@cr0.nay.redhat.com>
-Message-ID: <alpine.DEB.1.00.0908122143060.22452@mail.selltech.ca>
-References: <1250119794-8016-1-git-send-email-macli@brc.ubc.ca> <20090813020952.GA5031@cr0.nay.redhat.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Thu, 13 Aug 2009 00:59:38 -0400
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:49908 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752715AbZHME7i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 00:59:38 -0400
+Date: Thu, 13 Aug 2009 10:29:31 +0530
+From: Dipankar Sarma <dipankar@in.ibm.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Li, Shaohua" <shaohua.li@intel.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
+       "Brown, Len" <len.brown@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>,
+       "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+Message-ID: <20090813045931.GB14649@in.ibm.com>
+Reply-To: dipankar@in.ibm.com
+References: <20090805142311.553.78286.stgit@sofia.in.ibm.com> <20090806015855.GA20596@sli10-desk.sh.intel.com> <20090809120818.GA1338@ucw.cz> <200908091522.02898.rjw@sisk.pl> <20090810081941.GA18649@elf.ucw.cz> <1249950137.11545.38184.camel@localhost.localdomain> <20090812115806.GK24339@elf.ucw.cz> <20090812195753.GA14649@in.ibm.com> <alpine.LFD.2.00.0908122036580.22946@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0908122036580.22946@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Aug 2009, Amerigo Wang wrote:
-
-> On Wed, Aug 12, 2009 at 04:29:54PM -0700, Vincent Li wrote:
-> >v1 fix the compiling errors and keep the type variable name.
-> >
-> >Andrew Morton pointed out similar string hacking and obfuscated check for zero-length input
-> >at the end of the function, David Rientjes suggested to use strict_strtol to replace
-> >simple_strtol, this patch cover above suggestions, add removing of leading and trailing
-> >whitespace from user input. It does not change function behavious.
-> >
+On Wed, Aug 12, 2009 at 08:45:18PM -0400, Len Brown wrote:
+> On Thu, 13 Aug 2009, Dipankar Sarma wrote:
+> > In a native system, I think we should the platform-specific code
+> > export what makes sense. That may be just the lowest possible
+> > state only. Or may be more than one.
 > 
-> 
-> Sorry, what real benefits can we get from this patch?
+> For x86, it is 1 state.
 
-It removes the redundant and weird zero-length check at the end of the 
-function since the the function already check the returning value of 
-simple_strtol, if it is zero-length input, the function should already 
-return error -EINVAL. Also using strict_strtol would only accept ascii 
-numbers, not something like:
+Native x86, yes. For virtualized systems, that may not be the
+case depending on how the hypervisor behaves.
 
-echo 1foo > /proc/pid/clear_refs
+> > In a virtualized system, we would want to do at least the following -
+> 
+> Are you talking about Linux as a para-virtualized guest here?
+> 
+> > 1. An offline configuration state where the hypervisor can
+> > take the cpu back and allocate it to another VM.
+> 
+> The hypervisor gets control no matter what idle state
+> the guest enters, yes?
 
-> 
-> With this patch, we can accept input like:
-> 
-> echo '                    1' > /proc/<pid>/clear_refs
-> 
-> right?
+The hypervisor may get control, but what they do may depend
+on that the guest OS wished/hinted for - config change or just
+shutdown unused cpu if possible for a while.
 
-It will accept 'echo     1    > /proc/pid/clear_refs', but I think 
-nobody will do that on purpose, only accidently typed one or two space 
-before or after.
-
-> 
-> If this is really necessary, why not other files similar to 'clear_refs'?
-> 
-
-I did the same to other functions, but Andrew pointed out making changes 
-without fully understanding the patch impact would be risky and break 
-existing applications, So I need to fully understand what those functions 
-do before I make any changes.
- 
-> How about adding strstrip() for simple_strtol()? 
-> 
-
-simple_strtol will accept 'echo 1foo > /proc/pid/clear_refs' which is not 
-ideal.
-
-> 
-> >This patch is rebased on mmotm-2009-08-04-14-22.
-> >
-> >Signed-off-by: Vincent Li <macli@brc.ubc.ca>
-> >---
-> > fs/proc/task_mmu.c |   14 ++++++--------
-> > 1 files changed, 6 insertions(+), 8 deletions(-)
-> >
-> >diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-> >index 2079969..c7cf8f3 100644
-> >--- a/fs/proc/task_mmu.c
-> >+++ b/fs/proc/task_mmu.c
-> >@@ -491,21 +491,20 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
-> > 				size_t count, loff_t *ppos)
-> > {
-> > 	struct task_struct *task;
-> >-	char buffer[PROC_NUMBUF], *end;
-> >+	char buffer[PROC_NUMBUF];
-> > 	struct mm_struct *mm;
-> > 	struct vm_area_struct *vma;
-> >-	int type;
-> >+	long type;
+> > 2. A low-power state where the guest indicates it doesn't need the
+> > CPU (and can be put in low power state) but doesn't want to give up 
+> > its allocated cpu share. IOW, no visible configuration changes.
 > > 
-> > 	memset(buffer, 0, sizeof(buffer));
-> > 	if (count > sizeof(buffer) - 1)
-> > 		count = sizeof(buffer) - 1;
-> > 	if (copy_from_user(buffer, buf, count))
-> > 		return -EFAULT;
-> >-	type = simple_strtol(buffer, &end, 0);
-> >+	if (strict_strtol(strstrip(buffer), 10, &type))
-> >+		return -EINVAL;
-> > 	if (type < CLEAR_REFS_ALL || type > CLEAR_REFS_MAPPED)
-> > 		return -EINVAL;
-> >-	if (*end == '\n')
-> >-		end++;
-> > 	task = get_proc_task(file->f_path.dentry->d_inode);
-> > 	if (!task)
-> > 		return -ESRCH;
-> >@@ -541,9 +540,8 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
-> > 		mmput(mm);
-> > 	}
-> > 	put_task_struct(task);
-> >-	if (end - buffer == 0)
-> >-		return -EIO;
-> >-	return end - buffer;
-> >+
-> >+	return count;
-> > }
-> > 
-> > const struct file_operations proc_clear_refs_operations = {
-> >-- 
-> >1.6.0.4
-> >
+> > So, in any case we would probably want more than one states.
+> 
+> How are #1 and #2 different when the hypervisor
+> gets control in all idle states?  I assert that
+> they are the same, and thus 1 state will suffice.
 
-Vincent Li
-Biomedical Research Center
-University of British Columbia
+It depends on the hypervisor implementation. On pseries (powerpc)
+hypervisor, for example, they are different. By offlining a vcpu
+(and in turn shutting a cpu), you will actually create a configuration
+change in the VM that is visible to other systems management tools
+which may not be what the system administrator wanted. Ideally,
+we would like to distinguish between these two states.
+
+Hope that suffices as an example.
+
+Thanks
+Dipankar
