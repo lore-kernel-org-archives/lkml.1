@@ -1,108 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbZHMKEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbZHMKGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754079AbZHMKEV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 06:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbZHMKEU
+	id S1754099AbZHMKGN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 06:06:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbZHMKGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 06:04:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40923 "EHLO mx2.mail.elte.hu"
+	Thu, 13 Aug 2009 06:06:12 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:39517 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752312AbZHMKET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 06:04:19 -0400
-Date: Thu, 13 Aug 2009 12:03:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andy Whitcroft <apw@canonical.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
-Message-ID: <20090813100353.GC28446@elte.hu>
-References: <Pine.LNX.4.44L0.0908121005370.2955-100000@iolanthe.rowland.org> <1250094123.4000.43.camel@mulgrave.site> <20090813072514.GF12143@elte.hu> <20090813084724.GA24333@cmpxchg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090813084724.GA24333@cmpxchg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751060AbZHMKGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 06:06:11 -0400
+Date: Thu, 13 Aug 2009 20:05:59 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for August 13
+Message-Id: <20090813200559.6bf4f5d9.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__13_Aug_2009_20_05_59_+1000_D/c7hJT8AcOdX2+I"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Thu__13_Aug_2009_20_05_59_+1000_D/c7hJT8AcOdX2+I
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Johannes Weiner <hannes@cmpxchg.org> wrote:
+Hi all,
 
-> On Thu, Aug 13, 2009 at 09:25:14AM +0200, Ingo Molnar wrote:
-> > 
-> > * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > 
-> > > On Wed, 2009-08-12 at 10:13 -0400, Alan Stern wrote:
-> > > > On Wed, 12 Aug 2009, Ingo Molnar wrote:
-> > > > 
-> > > > > > And here I was thinking kerneldoc doesn't actually work 
-> > > > > > like that, but perhaps Randy fixed it so the initial 
-> > > > > > description can line-wrap?
-> > > > 
-> > > > Yes, that's what I thought too.  If kerneldoc has been fixed 
-> > > > then the description line certainly should get wrapped.
-> > > 
-> > > I really don't think it needs to be fixed: it's a feature not a 
-> > > bug.  It requires people writing kernel doc actually to think of 
-> > > one line summaries.
-> > 
-> > As long as the argument is that it's good to have limitations just 
-> > because it has good effects as well (which the gist of your argument 
-> > seems to be), i disagree.
-> > 
-> > That's a very basic argument of freedom. Just consider the Gestapo 
-> > which was also a 'feature' to keep criminals in check. Did you know 
-> > that there were record low levels of petty criminality both in nazi 
-> > Germany and during communism (and under just about any totalitarian 
-> > regime)? Still nobody in their right mind is arguing that just due 
-> > to that they are the right social model ...
-> 
-> Although I really like how you Godwin'd kerneldoc comments ;-), 
-> [...]
+News:
 
-Yeah, i'm quite proud of that angle too! It helps keep things 
-technical ;-)
+The git tree is now hosted at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git and the
+patches are now at http://www.kernel.org/pub/linux/kernel/v2.6/next/ .
+There are symlinks from the old locations (so they will continue to work).
 
-> [...] we do have other features that are features because of their 
-> limiting effect all over the place, don't we?  The 80-columns code 
-> rule e.g. or our limited set of allowed indenting characters.
+Changes since 20090812:
 
-The difference is that KernelDoc violations break the KernelDoc 
-build (and the KernelDoc end result) and get reported (and fixed) as 
-regressions.
+This tree fails to build for powerpc allyesconfig (due to a TOC overflow
+problem in the final link).
 
-While 80-columns code rule is a flexible rule that can be ignored if 
-it causes a worse end result.
+The v4l-dvb tree got its conflicts back (it looks like the davinci
+patches were removed and then readded).
 
-I'd even proffer that the majority of overlong lines in KernelDoc 
-are real problems. (just like the majority of line-80 problems are 
-real problems on some level)
+The kvm tree gained a build failure so I used the version from
+next-20090812.
 
-> > I think this DocBook limitation needs to be fixed, because there 
-> > are legitimate cases where a function name got too long (for no 
-> > fault of its own, but for properties of the name-space it is 
-> > operating in), and we do not want a nanny state beat it into a 
-> > single line.
-> 
-> Agreed, just as in the other rules, one should be able to bend 
-> this one once in a while without technical consequences, i.e. 
-> without kerneldoc breaking.
+The percup tree lost 2 conflicts.
 
-Yeah, exactly. Which is why i suggested KernelDoc to be fixed. In 
-terms of non-intrusive warnings, scripts/checkpatch.pl is a pretty 
-good place.
+----------------------------------------------------------------------------
 
-	Ingo
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 140 trees (counting Linus' and 21 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging davinci/for-next
+Merging pxa/for-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging thumb-2/thumb-2
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+CONFLICT (content): Merge conflict in arch/mips/cavium-octeon/dma-octeon.c
+CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
+x-helper-errata.c
+CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
+CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
+CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+CONFLICT (content): Merge conflict in fs/configfs/dir.c
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/board-dm646x-ev=
+m.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm355.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm644x.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm646x.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
+355.h
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
+644x.h
+Merging quota/for_next
+Merging kbuild/master
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+$ git reset --hard HEAD^
+Merging refs/next/20090812/kvm
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in arch/microblaze/include/asm/socket.h
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging mmc/next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+CONFLICT (content): Merge conflict in drivers/input/misc/Kconfig
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_crtc.c
+CONFLICT (content): Merge conflict in drivers/gpu/drm/i915/intel_sdvo.c
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging drbd/drbd
+Applying: drbd: fix for removal of blk_queue_stack_limits
+Merging kmemleak/kmemleak
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in arch/x86/include/asm/socket.h
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+CONFLICT (content): Merge conflict in kernel/fork.c
+Merging oprofile/for-next
+CONFLICT (content): Merge conflict in kernel/trace/ring_buffer.c
+Merging edac-amd/for-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
+CONFLICT (content): Merge conflict in include/linux/topology.h
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/base/class.c
+CONFLICT (content): Merge conflict in init/main.c
+Merging quilt/tty
+CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
+Merging quilt/usb
+CONFLICT (content): Merge conflict in drivers/usb/gadget/m66592-udc.c
+CONFLICT (content): Merge conflict in drivers/usb/host/r8a66597-hcd.c
+Merging quilt/staging
+CONFLICT (delete/modify): drivers/staging/epl/VirtualEthernetLinux.c delete=
+d in quilt/staging and modified in HEAD. Version HEAD of drivers/staging/ep=
+l/VirtualEthernetLinux.c left in tree.
+$ git rm -f drivers/staging/epl/VirtualEthernetLinux.c
+Merging scsi-post-merge/master
+
+--Signature=_Thu__13_Aug_2009_20_05_59_+1000_D/c7hJT8AcOdX2+I
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqD5YcACgkQjjKRsyhoI8xojgCgjevnZojn0klLtBZNm0huBd5t
+gc8AmQF/v7fzdDSDCt7EXj++G+jq3RyB
+=kpkk
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__13_Aug_2009_20_05_59_+1000_D/c7hJT8AcOdX2+I--
