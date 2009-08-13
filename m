@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbZHMNsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbZHMNtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754607AbZHMNsF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 09:48:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbZHMNsE
+	id S1754634AbZHMNtv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 09:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbZHMNtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 09:48:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49772 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753883AbZHMNsD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 09:48:03 -0400
-Date: Thu, 13 Aug 2009 09:38:46 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: Kurt Garloff <garloff@suse.de>
-Cc: Linux kernel list <linux-kernel@vger.kernel.org>,
-       Norbert Eicker <N.Eicker@fz-juelich.de>,
-       Greg Kroah-Hartman <GregKH@suse.de>,
-       Alexey Starikovskiy <AStarikovskiy@suse.cz>,
-       Len Brown <LenB@kernel.org>, <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH 0/3]: Discard reserved PXM bits for SRAT v1
-Message-ID: <20090813093846.6acbbf57@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <20090518093352.GC15531@tpkurt2.garloff.de>
-References: <20090518093352.GC15531@tpkurt2.garloff.de>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Aug 2009 09:49:50 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:58624 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753904AbZHMNtt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 09:49:49 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
+Date: Thu, 13 Aug 2009 15:48:35 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+References: <cover.1249930169.git.mst@redhat.com> <20090813060615.GC3029@redhat.com> <200908131538.44465.arnd@arndb.de>
+In-Reply-To: <200908131538.44465.arnd@arndb.de>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908131548.35199.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+eZLTYg27rt8QREoMs9vJmlQuNgoKKcxTqxcB
+ jEkRFetM3yq9RSrepBjyNsS5ycPoUdDHbOwiaj1X4dp/lW58Oy
+ 169wQMuSY8D1SEYiA/HmA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 May 2009 11:33:52 +0200
-Kurt Garloff <garloff@suse.de> wrote:
+On Thursday 13 August 2009, Arnd Bergmann wrote:
+> Unfortunately, this also implies that you could no longer simply use the
+> packet socket interface as you do currently, as I realized only now.
+> This obviously has a significant impact on your user space interface.
 
-> Hi,
-> 
-> ACPI specification says that the OS must disregard reserved bits.
-> The x86_64 SRAT parser does not discard the upper 24 bits of the
-> proximity_domain (pxm) in the acpi_srat_mem_affinity entries for
-> SRAT v1 tables. (v2 has 32 bits wide fields.)
-> This can lead to problems with poor BIOS implementations that failed
-> to set resreved bytes to zero. (The ACPI spec is a bit vague here
-> unfortunately.)
-> 
-> This was also inconsistent: On x86-64 (srat_64.c), the 
-> _cpu_affinity does only use the low 8 bits of pxm, while the
-> full 32 bits of _mem_affinity are consumed.
-> In srat_32.c (x86), only 8bits are used (which is OK, a 32bit system
-> with >256 PXMs does not seem reasonable at all).
-> On ia64, the support of more than 8 bits was consistent between
-> mem and cpu affinity entries, however it dependent on "sn2" platform.
-> 
-> The patch series has the following goals:
-> * Make the kernel support consistently 8bits or 32bits for the
->   proximity domain
-> * Make this dependent on the SRAT version; v1 => 8bits, v2 => 32bits.
-> 
-> Overview over the patches:
-> - [1/3] Store the SRAT table version value in acpi_srat_revision 
-> - [2/3] x86-64: Discard the upper 24 bits in mem_affinity if rev <= 1
->         and use upper 24bits in cpu_affinity if rev >= 2
-> - [3/3] ia64: Also use upper 8/24bits if rev >= 2 (but leave logic to
->         enable on sn2 as well -- I don't know if sn2 reports v1 or v2
->         SRAT) Also add two __init decls in ia64 pxm accessors.
-> 
+Also, if we do the copy in the transport, it definitely means that we
+can't get to zero-copy RX/TX from guest space any more. The current
+vhost_net driver doesn't do that yet, but could be extended in the
+same way that I'm hoping to do it for macvtap.
 
-Did this patchset get lost or something? I don't see it anywhere, not even
-in the ACPI 'testing' tree...
+	Arnd <><
