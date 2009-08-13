@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932354AbZHMUHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932294AbZHMUHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932354AbZHMUHA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:07:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756140AbZHMUG5
+	id S932294AbZHMUHj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZHMUHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:06:57 -0400
-Received: from kroah.org ([198.145.64.141]:41823 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 16:07:36 -0400
+Received: from kroah.org ([198.145.64.141]:41819 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932206AbZHMT7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:46 -0400
+	id S932197AbZHMT7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:45 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:30 2009
-Message-Id: <20090813195130.664882602@mini.kroah.org>
+Message-Id: <20090813195130.514363745@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:16 -0700
+Date: Thu, 13 Aug 2009 12:50:15 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Dave Airlie <airlied@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 41/74] x86, pat: Fix set_memory_wc related corruption
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 40/74] x86: fix assembly constraints in native_save_fl()
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=x86-pat-fix-set_memory_wc-related-corruption.patch
+Content-Disposition: inline; filename=x86-fix-assembly-constraints-in-native_save_fl.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,67 +30,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
+From: H. Peter Anvin <hpa@zytor.com>
 
-commit bdc6340f4eb68295b1e7c0ade2356b56dca93d93 upstream.
+commit f1f029c7bfbf4ee1918b90a431ab823bed812504 upstream.
 
-Changeset 3869c4aa18835c8c61b44bd0f3ace36e9d3b5bd0
-that went in after 2.6.30-rc1 was a seemingly small change to _set_memory_wc()
-to make it complaint with SDM requirements. But, introduced a nasty bug, which
-can result in crash and/or strange corruptions when set_memory_wc is used.
-One such crash reported here
-http://lkml.org/lkml/2009/7/30/94
+>From Gabe Black in bugzilla 13888:
 
-Actually, that changeset introduced two bugs.
-* change_page_attr_set() takes &addr as first argument and can the addr value
-  might have changed on return, even for single page change_page_attr_set()
-  call. That will make the second change_page_attr_set() in this routine
-  operate on unrelated addr, that can eventually cause strange corruptions
-  and bad page state crash.
-* The second change_page_attr_set() call, before setting _PAGE_CACHE_WC, should
-  clear the earlier _PAGE_CACHE_UC_MINUS, as otherwise cache attribute will not
-  be WC (will be UC instead).
+native_save_fl is implemented as follows:
 
-The patch below fixes both these problems. Sending a single patch to fix both
-the problems, as the change is to the same line of code. The change to have a
-addr_copy is not very clean. But, it is simpler than making more changes
-through various routines in pageattr.c.
+  11static inline unsigned long native_save_fl(void)
+  12{
+  13        unsigned long flags;
+  14
+  15        asm volatile("# __raw_save_flags\n\t"
+  16                     "pushf ; pop %0"
+  17                     : "=g" (flags)
+  18                     : /* no input */
+  19                     : "memory");
+  20
+  21        return flags;
+  22}
 
-A huge thanks to Jerome for reporting this problem and providing a simple test
-case that helped us root cause the problem.
+If gcc chooses to put flags on the stack, for instance because this is
+inlined into a larger function with more register pressure, the offset
+of the flags variable from the stack pointer will change when the
+pushf is performed. gcc doesn't attempt to understand that fact, and
+address used for pop will still be the same. It will write to
+somewhere near flags on the stack but not actually into it and
+overwrite some other value.
 
-Reported-by: Jerome Glisse <glisse@freedesktop.org>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-LKML-Reference: <20090730214319.GA1889@linux-os.sc.intel.com>
-Acked-by: Dave Airlie <airlied@redhat.com>
+I saw this happen in the ide_device_add_all function when running in a
+simulator I work on. I'm assuming that some quirk of how the simulated
+hardware is set up caused the code path this is on to be executed when
+it normally wouldn't.
+
+A simple fix might be to change "=g" to "=r".
+
+Reported-by: Gabe Black <spamforgabe@umich.edu>
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- arch/x86/mm/pageattr.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -1002,12 +1002,15 @@ EXPORT_SYMBOL(set_memory_array_uc);
- int _set_memory_wc(unsigned long addr, int numpages)
+--- a/arch/x86/include/asm/irqflags.h
++++ b/arch/x86/include/asm/irqflags.h
+@@ -12,9 +12,15 @@ static inline unsigned long native_save_fl(void)
  {
- 	int ret;
-+	unsigned long addr_copy = addr;
-+
- 	ret = change_page_attr_set(&addr, numpages,
- 				    __pgprot(_PAGE_CACHE_UC_MINUS), 0);
--
- 	if (!ret) {
--		ret = change_page_attr_set(&addr, numpages,
--				    __pgprot(_PAGE_CACHE_WC), 0);
-+		ret = change_page_attr_set_clr(&addr_copy, numpages,
-+					       __pgprot(_PAGE_CACHE_WC),
-+					       __pgprot(_PAGE_CACHE_MASK),
-+					       0, 0, NULL);
- 	}
- 	return ret;
- }
+ 	unsigned long flags;
+ 
++	/*
++	 * Note: this needs to be "=r" not "=rm", because we have the
++	 * stack offset from what gcc expects at the time the "pop" is
++	 * executed, and so a memory reference with respect to the stack
++	 * would end up using the wrong address.
++	 */
+ 	asm volatile("# __raw_save_flags\n\t"
+ 		     "pushf ; pop %0"
+-		     : "=g" (flags)
++		     : "=r" (flags)
+ 		     : /* no input */
+ 		     : "memory");
+ 
 
 
