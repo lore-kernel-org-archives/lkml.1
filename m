@@ -1,89 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbZHMIgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbZHMIhE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753542AbZHMIgT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 04:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbZHMIgS
+	id S1753522AbZHMIhE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 04:37:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbZHMIhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 04:36:18 -0400
-Received: from smtpx.philips.com ([168.87.56.21]:53007 "EHLO smtpx.philips.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753514AbZHMIgO convert rfc822-to-8bit (ORCPT
+	Thu, 13 Aug 2009 04:37:03 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:4706 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753248AbZHMIhB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 04:36:14 -0400
-From: "Zeisel, Michael" <michael.zeisel@philips.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Thu, 13 Aug 2009 10:35:54 +0200
-Subject: PROBLEM: full speed HID device with payload of 64 bytes
-Thread-Topic: PROBLEM: full speed HID device with payload of 64 bytes
-Thread-Index: Acob7oWPWs90Fs5sQEyLh3SE+T3WHgAAlfhg
-Message-ID: <A3467C2CEA21E3469A3218B394AD2534C3B9CE2C68@NLCLUEXM09.connect1.local>
-Accept-Language: de-DE, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-cr-puzzleid: {C418F4FB-9E93-4489-B3B2-53484A67DDA3}
-x-cr-hashedpuzzle: Dayx ERki EYbi FNgt F8C/ F8Ee GOuc GTyE GWuT G2hz HHTb
- HdbJ Hso6 H6mi H92C
- KPcc;1;bABpAG4AdQB4AC0AawBlAHIAbgBlAGwAQAB2AGcAZQByAC4AawBlAHIAbgBlAGwALgBvAHIAZwA=;Sosha1_v1;7;{C418F4FB-9E93-4489-B3B2-53484A67DDA3};bQBpAGMAaABhAGUAbAAuAHoAZQBpAHMAZQBsAEAAcABoAGkAbABpAHAAcwAuAGMAbwBtAA==;Thu,
- 13 Aug 2009 08:35:54
- GMT;UABSAE8AQgBMAEUATQA6ACAAZgB1AGwAbAAgAHMAcABlAGUAZAAgAEgASQBEACAAZABlAHYAaQBjAGUAIAB3AGkAdABoACAAcABhAHkAbABvAGEAZAAgAG8AZgAgADYANAAgAGIAeQB0AGUAcwA=
-acceptlanguage: de-DE, en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Thu, 13 Aug 2009 04:37:01 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=U1B/eK0S3HJbSUugxDXjm9XGtQ32W9h+dv9nqnR0OFCxbLvnvEh7orupFJUVf0P4g
+	52kJZkMYoILO4/OT1XRKA==
+Date: Thu, 13 Aug 2009 01:36:54 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Vincent Li <macli@brc.ubc.ca>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fs/proc/task_mmu.c v1: fix clear_refs_write() input
+ sanity check
+In-Reply-To: <1250119794-8016-1-git-send-email-macli@brc.ubc.ca>
+Message-ID: <alpine.DEB.2.00.0908130136440.4418@chino.kir.corp.google.com>
+References: <1250119794-8016-1-git-send-email-macli@brc.ubc.ca>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear ladies and gentlemen,
+On Wed, 12 Aug 2009, Vincent Li wrote:
 
-We have experienced problems connecting HID devices, which have a data payload of 64 bytes with the following LINUX kernel:
+> v1 fix the compiling errors and keep the type variable name.
+> 
+> Andrew Morton pointed out similar string hacking and obfuscated check for zero-length input
+> at the end of the function, David Rientjes suggested to use strict_strtol to replace
+> simple_strtol, this patch cover above suggestions, add removing of leading and trailing
+> whitespace from user input. It does not change function behavious.
+> 
+> This patch is rebased on mmotm-2009-08-04-14-22.
+> 
+> Signed-off-by: Vincent Li <macli@brc.ubc.ca>
 
-2.6.24-24-generic
-
-What we did:
-
-We experienced those problems with one of our devices, the Digital Pocket Memo 3 (DPM), by simply trying to receive button events via the
-
-Cat /dev/usb/hiddev0
-
-Command -> no success. The only difference between this device and older ones (which work on this kernel version) in the USB descriptor is the data payload which is 64 byte.
-
-To narrow down the cause for that behavior we simply took the same device, put in a FW with a low speed device protocol with a data payload of 8 byte and plugged it again to the PC.
-
-Now the button events produced some symbols in the "terminal", which proves that the device was recognized correctly and works.
-
-According to the USB 2.0 specification under
-
-http://www.usb.org/developers/docs/
-
-USB 2.0 specification, Chapter 5.7.4: Interrupt Transfer Bus Access Constraints
-
-A full speed device should support a maximum data payload of 64 bytes (Table 5-7. Full-speed Interrupt Transaction Limits: max.payload 64 bytes x max.transfers 19  = max. 1216bytes/frame)
-
-To us it seems that the current implementation of the HID device support in LINUX just supports the protocol for low speed devices (Table 5-6. Low-speed Interrupt Transaction Limits: max.payload 8 bytes x max.transfers 6  = max. 48bytes/frame)
-
-On Windows OS and Mac OS all our devices work properly.
-
-My question to you now is, if you could reproduce/investigate that behavior and give me a feeling what the cause and the solution for that problem will be?
-
-I think it is a good idea, if you would have a Digital Pocket Memo to experience the described behavior- so to whom I should send that device?
-
-Kind regards,
-
-Michael Zeisel
-
-Michael Zeisel
-SW Project Leader
-Philips Consumer Lifestyle
-
-Philips Speech Processing
-Gutheil-Schoder-Gasse 12
-A - 1102, Vienna
-Austria
-Tel: +43 1 60101 2806
-Fax:+43 1 60101 1833
-Mobile: +43 (0)664 8131256
-
-
-The information contained in this message may be confidential and legally protected under applicable law. The message is intended solely for the addressee(s). If you are not the intended recipient, you are hereby notified that any use, forwarding, dissemination, or reproduction of this message is strictly prohibited and may be unlawful. If you are not the intended recipient, please contact the sender by return e-mail and destroy all copies of the original message.
+Acked-by: David Rientjes <rientjes@google.com>
