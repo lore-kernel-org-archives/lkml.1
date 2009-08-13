@@ -1,52 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbZHMFsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752199AbZHMF5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752388AbZHMFsp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 01:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZHMFsp
+	id S1752199AbZHMF5P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 01:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZHMF5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 01:48:45 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:33953 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbZHMFso (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 01:48:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZKcnU83XSc6RUE2TqZ+xVOm4ciMicvIepIGdFxGpfo0W/llBqMtqPYylABEG8+cE2T
-         rP88/f6nru2F+c5hNO6hGftPffQWtnAgxSlLOKfPkqdmNhFGeow2cL/XRDW6uJI0G3YH
-         DHbRJ8eemi4lFyQ4+D0uKmy8lXAKyeL8CnY8Q=
+	Thu, 13 Aug 2009 01:57:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49525 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751216AbZHMF5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 01:57:13 -0400
+Date: Thu, 13 Aug 2009 08:55:50 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Cc: Arnd Bergmann <arnd@arndb.de>, virtualization@lists.linux-foundation.org,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
+Message-ID: <20090813055550.GA3029@redhat.com>
+References: <cover.1249930169.git.mst@redhat.com> <20090810185340.GC13924@redhat.com> <200908121903.22325.arnd@arndb.de> <20090812171921.GC24151@ovro.caltech.edu> <20090812173104.GB29966@redhat.com> <20090812174821.GD24151@ovro.caltech.edu>
 MIME-Version: 1.0
-In-Reply-To: <20090813132845R.fujita.tomonori@lab.ntt.co.jp>
-References: <3877989d0908120220q5104d2e7rd272ececbc45e377@mail.gmail.com>
-	 <20090812181722.GA32653@linux-os.sc.intel.com>
-	 <20090813132845R.fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 13 Aug 2009 13:48:45 +0800
-Message-ID: <3877989d0908122248s4212ef95w7606a4dca5c7a855@mail.gmail.com>
-Subject: Re: [RFC patch] init default dma_ops to prepare intel_iommu_init 
-	failure
-From: Luming Yu <luming.yu@gmail.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: fenghua.yu@intel.com, dwmw2@infradead.org, tony.luck@intel.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090812174821.GD24151@ovro.caltech.edu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>
->> This check can not be removed. Otherwise, swiotlb_dma_ops will always override
->> previous dma_ops value.
->
-> Yeah.
+On Wed, Aug 12, 2009 at 10:48:21AM -0700, Ira W. Snyder wrote:
+> On Wed, Aug 12, 2009 at 08:31:04PM +0300, Michael S. Tsirkin wrote:
+> > On Wed, Aug 12, 2009 at 10:19:22AM -0700, Ira W. Snyder wrote:
+> 
+> [ snip out code ]
+> 
+> > > > 
+> > > > We discussed this before, and I still think this could be directly derived
+> > > > from struct virtqueue, in the same way that vring_virtqueue is derived from
+> > > > struct virtqueue. That would make it possible for simple device drivers
+> > > > to use the same driver in both host and guest, similar to how Ira Snyder
+> > > > used virtqueues to make virtio_net run between two hosts running the
+> > > > same code [1].
+> > > > 
+> > > > Ideally, I guess you should be able to even make virtio_net work in the
+> > > > host if you do that, but that could bring other complexities.
+> > > 
+> > > I have no comments about the vhost code itself, I haven't reviewed it.
+> > > 
+> > > It might be interesting to try using a virtio-net in the host kernel to
+> > > communicate with the virtio-net running in the guest kernel. The lack of
+> > > a management interface is the biggest problem you will face (setting MAC
+> > > addresses, negotiating features, etc. doesn't work intuitively).
+> > 
+> > That was one of the reasons I decided to move most of code out to
+> > userspace. My kernel driver only handles datapath,
+> > it's much smaller than virtio net.
+> > 
+> > > Getting
+> > > the network interfaces talking is relatively easy.
+> > > 
+> > > Ira
+> > 
+> > Tried this, but
+> > - guest memory isn't pinned, so copy_to_user
+> >   to access it, errors need to be handled in a sane way
+> > - used/available roles are reversed
+> > - kick/interrupt roles are reversed
+> > 
+> > So most of the code then looks like
+> > 
+> > 	if (host) {
+> > 	} else {
+> > 	}
+> > 	return
+> > 
+> > 
+> > The only common part is walking the descriptor list,
+> > but that's like 10 lines of code.
+> > 
+> > At which point it's better to keep host/guest code separate, IMO.
+> > 
+> 
+> Ok, that makes sense. Let me see if I understand the concept of the
+> driver. Here's a picture of what makes sense to me:
+> 
+> guest system
+> ---------------------------------
+> | userspace applications        |
+> ---------------------------------
+> | kernel network stack          |
+> ---------------------------------
+> | virtio-net                    |
+> ---------------------------------
+> | transport (virtio-ring, etc.) |
+> ---------------------------------
+>                |
+>                |
+> ---------------------------------
+> | transport (virtio-ring, etc.) |
+> ---------------------------------
+> | some driver (maybe vhost?)    | <-- [1]
+> ---------------------------------
+> | kernel network stack          |
+> ---------------------------------
+> host system
+> 
+> >From the host's network stack, packets can be forwarded out to the
+> physical network, or be consumed by a normal userspace application on
+> the host. Just as if this were any other network interface.
+> 
+> In my patch, [1] was the virtio-net driver, completely unmodified.
+> 
+> So, does this patch accomplish the above diagram?
 
-I think pci_swiotlb_init needs to be cleaned up for both x86_{32,64} and ia64.
-it should be used to init default dma_ops, and the call site of it should be
-as early as platform_dma_init in mem_init. SInce swiotlb_dma_ops is pitched as
-default dma_ops for x86, ia64, we really don't need to let pci_swiotlb_init
-know iommu_deteced, dmar_disabled or iommu_passthrough...and anything
-like that..
-Please note the major wrong assumption of the current implementation is
-"iommu_deteced == iommu working" that I was trying to fix.
+Not exactly. vhost passes packets to a physical device,
+through a raw socket, not into host network stack.
+
+> If so, why the copy_to_user(), etc?
+
+Guest memory is not pinned. Memory access needs to go through
+translation process, could cause page faults, etc.
+
+> Maybe I'm confusing this with my system, where the
+> "guest" is another physical system, separated by the PCI bus.
+> 
+> Ira
+
+Yes, that's different.
