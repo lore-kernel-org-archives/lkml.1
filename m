@@ -1,100 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610AbZHMQ02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbZHMQ1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752610AbZHMQ02 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 12:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbZHMQ02
+	id S1754869AbZHMQ1F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 12:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZHMQ1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 12:26:28 -0400
-Received: from smtp-out-089.synserver.de ([212.40.180.89]:1049 "HELO
-	smtp-out-089.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751513AbZHMQ01 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 12:26:27 -0400
-X-SynServer-TrustedSrc: 1
-X-SynServer-AuthUser: markus@trippelsdorf.de
-X-SynServer-PPID: 19685
-Date: Thu, 13 Aug 2009 18:26:21 +0200
-From: Markus Trippelsdorf <markus@trippelsdorf.de>
-To: Matthew Wilcox <willy@linux.intel.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Nitin Gupta <ngupta@vflare.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
- slot is freed)
-Message-ID: <20090813162621.GB1915@phenom2.trippelsdorf.de>
-References: <200908122007.43522.ngupta@vflare.org>
- <Pine.LNX.4.64.0908122312380.25501@sister.anvils>
- <20090813151312.GA13559@linux.intel.com>
+	Thu, 13 Aug 2009 12:27:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37552 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751513AbZHMQ1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 12:27:03 -0400
+Message-ID: <4A843EAE.6070200@redhat.com>
+Date: Thu, 13 Aug 2009 12:26:22 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090813151312.GA13559@linux.intel.com>
+To: Avi Kivity <avi@redhat.com>
+CC: Wu Fengguang <fengguang.wu@intel.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+References: <20090806100824.GO23385@random.random> <4A7AD5DF.7090801@redhat.com> <20090807121443.5BE5.A69D9226@jp.fujitsu.com> <20090812074820.GA29631@localhost> <4A82D24D.6020402@redhat.com> <20090813010356.GA7619@localhost> <4A843565.3010104@redhat.com> <4A843B72.6030204@redhat.com>
+In-Reply-To: <4A843B72.6030204@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 08:13:12AM -0700, Matthew Wilcox wrote:
-> On Wed, Aug 12, 2009 at 11:48:27PM +0100, Hugh Dickins wrote:
-> > But fundamentally, though I can see how this cutdown communication
-> > path is useful to compcache, I'd much rather deal with it by the more
-> > general discard route if we can.  (I'm one of those still puzzled by
-> > the way swap is mixed up with block device in compcache: probably
-> > because I never found time to pay attention when you explained.)
-> > 
-> > You're right to question the utility of the current swap discard
-> > placement.  That code is almost a year old, written from a position
-> > of great ignorance, yet only now do we appear to be on the threshold
-> > of having an SSD which really supports TRIM (ah, the Linux ATA TRIM
-> > support seems to have gone missing now, but perhaps it's been
-> > waiting for a reality to check against too - Willy?).
+Avi Kivity wrote:
+> On 08/13/2009 06:46 PM, Rik van Riel wrote:
+>> We need to ignore the referenced bit on active anon pages
+>> on very large systems, but it could indeed be helpful to
+>> respect the referenced bit on smaller systems.
+>>
+>> I have no idea where the cut-off between them would be.
+>>
+>> Maybe at inactive_ratio <= 4 ?
 > 
-> I am indeed waiting for hardware with TRIM support to appear on my
-> desk before resubmitting the TRIM code.  It'd also be nice to be able to
-> get some performance numbers.
-> 
+> Why do we need to ignore the referenced bit in such cases?  To avoid 
+> overscanning?
 
-OCZ just released a new firmware with full TRIM support for their Vertex
-SSDs. 
+Because swapping out anonymous pages tends to be a relatively
+rare operation, we'll have many gigabytes of anonymous pages
+that all have the referenced bit set (because there was lots
+of time between swapout bursts).
 
-> > I won't be surprised if we find that we need to move swap discard
-> > support much closer to swap_free (though I know from trying before
-> > that it's much messier there): in which case, even if we decided to
-> > keep your hotline to compcache (to avoid allocating bios etc.), it
-> > would be better placed alongside.
-> 
-> 
-> Solid State Drives are introducing an ATA command called TRIM.  SSDs
-> generally have an intenal mapping layer, and due to their low, low seek
-> penalty, will happily remap blocks anywhere on the flash.  They want
-> to know when a block isn't in use any more, so they don't have to copy
-> it around when they want to erase the chunk of storage that it's on.
-> The unfortunate thing about the TRIM command is that it's not NCQ, so
-> all NCQ commands have to finish, then we can send the TRIM command and
-> wait for it to finish, then we can send NCQ commands again.
-> 
-> So TRIM isn't free, and there's a better way for the drive to find
-> out that the contents of a block no longer matter -- write some new
-> data to it.  So if we just swapped a page in, and we're going to swap
-> something else back out again soon, just write it to the same location
-> instead of to a fresh location.  You've saved a command, and you've
-> saved the drive some work, plus you've allowed other users to continue
-> accessing the drive in the meantime.
-> 
-> I am planning a complete overhaul of the discard work.  Users can send
-> down discard requests as frequently as they like.  The block layer will
-> cache them, and invalidate them if writes come through.  Periodically,
-> the block layer will send down a TRIM or an UNMAP (depending on the
-> underlying device) and get rid of the blocks that have remained unwanted
-> in the interim.
+Ignoring the referenced bit on active anon pages makes no
+difference on these systems, because all active anon pages
+have the referenced bit set, anyway.
 
-That is a very good idea. I've tested your original TRIM implementation on
-my Vertex yesterday and it was awful ;-). The SSD needs hundreds of
-milliseconds to digest a single TRIM command. And since your implementation
-sends a TRIM for each extent of each deleted file, the whole system is
-unusable after a short while. 
-An optimal solution would be to consolidate the discard requests, bundle
-them and send them to the drive as infrequent as possible.
+All we need to do is put the pages on the inactive list and
+give them a chance to get referenced.
+
+However, on smaller systems (and cgroups!), the speed at
+which we can do pageout IO is larger, compared to the amount
+of memory.  This means we can cycle through the pages more
+quickly and we may want to count references on the active
+list, too.
+
+Yes, on smaller systems we'll also often end up with bursty
+swapout loads and all pages referenced - but since we have
+fewer pages to begin with, it won't hurt as much.
+
+I suspect that an inactive_ratio of 3 or 4 might make a
+good cutoff value.
 
 -- 
-Markus
+All rights reversed.
