@@ -1,68 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbZHMPmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbZHMPnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827AbZHMPmB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 11:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbZHMPmA
+	id S1754834AbZHMPnT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 11:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbZHMPnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 11:42:00 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:48743 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612AbZHMPmA (ORCPT
+	Thu, 13 Aug 2009 11:43:18 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:60805 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751513AbZHMPnR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 11:42:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=vdzrqPk2fy52djPy/zFVwQgViF9NeDEGQqGWVExAACLBsZDZRK25E3u4ohjKn46/Gy
-         wx20E5viRLyfRaWJlk99kCxaOsNPWfyyp1QjUsUA/+UZyw5bX8ACZwQIFKLq9ebuoe00
-         txPbXFGKTv1HQmZ9VrrT7dsKaFX5mP2LoSpOY=
-Message-ID: <4A84345D.60506@gmail.com>
-Date: Thu, 13 Aug 2009 08:42:21 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: system gets stuck in a lock during boot
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 13 Aug 2009 11:43:17 -0400
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+ slot is freed)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Matthew Wilcox <willy@linux.intel.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Nitin Gupta <ngupta@vflare.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
+In-Reply-To: <20090813151312.GA13559@linux.intel.com>
+References: <200908122007.43522.ngupta@vflare.org>
+	 <Pine.LNX.4.64.0908122312380.25501@sister.anvils>
+	 <20090813151312.GA13559@linux.intel.com>
+Content-Type: text/plain
+Date: Thu, 13 Aug 2009 15:43:12 +0000
+Message-Id: <1250178192.3901.54.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I posted already and had no reply,
-I cannot boot my system with the latest git
+On Thu, 2009-08-13 at 08:13 -0700, Matthew Wilcox wrote:
+> On Wed, Aug 12, 2009 at 11:48:27PM +0100, Hugh Dickins wrote:
+> > But fundamentally, though I can see how this cutdown communication
+> > path is useful to compcache, I'd much rather deal with it by the more
+> > general discard route if we can.  (I'm one of those still puzzled by
+> > the way swap is mixed up with block device in compcache: probably
+> > because I never found time to pay attention when you explained.)
+> > 
+> > You're right to question the utility of the current swap discard
+> > placement.  That code is almost a year old, written from a position
+> > of great ignorance, yet only now do we appear to be on the threshold
+> > of having an SSD which really supports TRIM (ah, the Linux ATA TRIM
+> > support seems to have gone missing now, but perhaps it's been
+> > waiting for a reality to check against too - Willy?).
+> 
+> I am indeed waiting for hardware with TRIM support to appear on my
+> desk before resubmitting the TRIM code.  It'd also be nice to be able to
+> get some performance numbers.
+> 
+> > I won't be surprised if we find that we need to move swap discard
+> > support much closer to swap_free (though I know from trying before
+> > that it's much messier there): in which case, even if we decided to
+> > keep your hotline to compcache (to avoid allocating bios etc.), it
+> > would be better placed alongside.
+> 
+> It turns out there are a lot of tradeoffs involved with discard, and
+> they're different between TRIM and UNMAP.
+> 
+> Let's start with UNMAP.  This SCSI command is used by giant arrays.
+> They want to do Thin Provisioning, so allocate physical storage to virtual
+> LUNs on demand, and want to deallocate it when they get an UNMAP command.
+> They allocate storage in large chunks (hundreds of kilobytes at a time).
+> They only care about discards that enable them to free an entire chunk.
+> The vast majority of users *do not care* about these arrays, because
+> they don't have one, and will never be able to afford one.  We should
+> ignore the desires of these vendors when designing our software.
 
-seems to be stuck in some lock:
+Fundamentally, unmap, trim and write_same do similar things, so
+realistically they all map to discard in linux.
 
-[   0.655640] [<ffffffff81440c33>] panic+0x84/0x129
-[   0.655883] [<ffffffff81063f96>]  do_exit+0x84/0x67e
-[   0.656125] [<ffffffff81445044>] oops_end+0x9c/0xb7
-[   0.656368] [<ffffffff81044a6c>] no_context+0x200/0x223
-[   0.656611] [<ffffffff81442d3d>] ? __mutex_lock_slowpath+0x226/0x249
-[   0.656848] [<ffffffff81044c36>] __bad_area_nosemaphore+0x1a7/0x1e1
-[   0.657097] [<ffffffff81442b01>]? mutex_unlock+0x1c/0x32
-[   0.657097] [<ffffffff811ce094>] ? inode_doinit_with_dentry+0x533/0x5be
-[   0.657579] [<ffffffff81443ee0>] ? _spin_unlock+0x1c/0x32
-[   0.657822] [<ffffffff81044c91>] bad_area_nosemaphore+0x2a/0x40
-[   0.658066] [<ffffffff811ce149>] ? selinux_d_instantiate+0x2a/0x40
-[   0.658309] [<ffffffff8144687d>] do_page_fault+0x192/0x2dd
-[   0.658549] [<ffffffff814444cf>] page_fault+0x1f/0x30
-[   0.658791] [<ffffffff8120e856>] ? strcmp+0x17/0x46
-[   0.659040] [<ffffffff810b9ca0>] event_create_dir+0x49/0x37b
-[   0.659276] [<ffffffff81696f0a>] ? event_trace_init+0x0/0x1a2
-[   0.659519] [<ffffffff81697061>] event_trace_init+0x157/0x1a2
-[   0.659762] [<ffffffff81696f0a>] ? event_trace_init+0x0/0x1a2
-[   0.660008] [<ffffffff810091db>] do_one_initcall+0x65/0x14e
-[   0.660251] [<ffffffff81140000>] ? proc_set_super+0x49/0x5d
-[   0.660488] [<ffffffff8167ef53>] kernel_init+0x160/0x1cc
-[   0.660731] [<ffffffff8102801a>] child_rip+0xa/0x20
-[   0.660973] [<ffffffff8167edf3>] ? kernel_init+0x0/0x1cc
-[   0.661220] [<ffffffff81028010>] ? child_rip+0x0/0x20
+Ignoring the desires of the enterprise isn't an option, since they are a
+good base for us.  However, they really do need to step up with a useful
+patch set for discussion that does what they want, so in the interim I'm
+happy with any proposal that doesn't actively damage what the enterprise
+wants to do with trim/write_same.
+
+> Solid State Drives are introducing an ATA command called TRIM.  SSDs
+> generally have an intenal mapping layer, and due to their low, low seek
+> penalty, will happily remap blocks anywhere on the flash.  They want
+> to know when a block isn't in use any more, so they don't have to copy
+> it around when they want to erase the chunk of storage that it's on.
+> The unfortunate thing about the TRIM command is that it's not NCQ, so
+> all NCQ commands have to finish, then we can send the TRIM command and
+> wait for it to finish, then we can send NCQ commands again.
+
+That's a bit of a silly protocol oversight ... I assume there's no way
+it can be corrected?
+
+> So TRIM isn't free, and there's a better way for the drive to find
+> out that the contents of a block no longer matter -- write some new
+> data to it.  So if we just swapped a page in, and we're going to swap
+> something else back out again soon, just write it to the same location
+> instead of to a fresh location.  You've saved a command, and you've
+> saved the drive some work, plus you've allowed other users to continue
+> accessing the drive in the meantime.
+> 
+> I am planning a complete overhaul of the discard work.  Users can send
+> down discard requests as frequently as they like.  The block layer will
+> cache them, and invalidate them if writes come through.  Periodically,
+> the block layer will send down a TRIM or an UNMAP (depending on the
+> underlying device) and get rid of the blocks that have remained unwanted
+> in the interim.
+> 
+> Thoughts on that are welcome.
+
+What you're basically planning is discard accumulation ... it's
+certainly closer to what the enterprise is looking for, so no objections
+from me.
+
+James
 
 
-
-seems my other machine boots just fine, maybe this is something
-with x86_64.
-
-Justin P. Mattock
