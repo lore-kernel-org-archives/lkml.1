@@ -1,100 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbZHMPze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZHMP4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754864AbZHMPze (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 11:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbZHMPzd
+	id S1754855AbZHMP4s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 11:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZHMP4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 11:55:33 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:33896 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754848AbZHMPzc convert rfc822-to-8bit (ORCPT
+	Thu, 13 Aug 2009 11:56:48 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:29030 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751737AbZHMP4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 11:55:32 -0400
+	Thu, 13 Aug 2009 11:56:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=OWJ+kMAPFlib5oHbkJ8eybBqDqQQLhOdNlZgpn5mEj1gP6OXFjdDi7bLPxes/oEzlo
-         E+Ela5Yahy9K/GM6/BgbWhISLp/Z3ppMLJT1ydUGxft/igcNvLeci523kvUz8VMDydZB
-         H5zw3mtU8X63QhLGdbZxveeoiwIM25DVzeXoY=
+        h=date:from:to:cc:subject:references:mime-version:content-type
+         :content-disposition:content-transfer-encoding:in-reply-to
+         :user-agent:message-id;
+        b=Nf2XuvGOiM8GQvRtiCGSbgPDd2cXB+bZoqQ4Bk9ULvj8wJaD32vq7iUYTt4JMpeC81
+         2LwuooGVKg/NaNf/NYXEqxK+LXoxYeR4zF1a4aBDGGTdC7kbo0SSr7N5ws/VIA2HlJBP
+         4inK2/A0mWI6SX6B1dXLeNHc822dRQg28Qjb4=
+Date: Thu, 13 Aug 2009 08:56:37 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       jbarnes@virtuousgeek.org, akpm@linux-foundation.org,
+       bjorn.helgaas@hp.com, randy.dunlap@oracle.com
+Subject: Re: [patch 2/2] Add a driver for the Winbond WPCD376I Consumer IR
+	hardware
+References: <20090809095645.198777507@hardeman.nu> <20090809095744.090206173@hardeman.nu> <20090813072905.56FB4526EC9@mailhub.coreip.homeip.net> <d92044dd553973571c2dd5cb18a925f9.squirrel@www.hardeman.nu>
 MIME-Version: 1.0
-In-Reply-To: <d1af83620908130754i7db4bd33p26cd54d0c30d68a5@mail.gmail.com>
-References: <20090813122337.GB7029@aftab>
-	 <1250166687-17673-2-git-send-email-borislav.petkov@amd.com>
-	 <73c1f2160908130721y3c14c4e7h1ff967bac867d7e6@mail.gmail.com>
-	 <d1af83620908130754i7db4bd33p26cd54d0c30d68a5@mail.gmail.com>
-Date: Thu, 13 Aug 2009 11:55:32 -0400
-Message-ID: <73c1f2160908130855h128c9908h486d583ee9fdcea5@mail.gmail.com>
-Subject: Re: [PATCH 2/2] x86: Clear incorrectly forced X86_FEATURE_LAHF_LM 
-	flag
-From: Brian Gerst <brgerst@gmail.com>
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: Borislav Petkov <borislav.petkov@amd.com>, mikpe@it.uu.se, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <d92044dd553973571c2dd5cb18a925f9.squirrel@www.hardeman.nu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <20090813162726.DBD9A526EC9@mailhub.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 10:54 AM, Kevin
-Winchester<kjwinchester@gmail.com> wrote:
-> 2009/8/13 Brian Gerst <brgerst@gmail.com>:
->> On Thu, Aug 13, 2009 at 8:31 AM, Borislav Petkov<borislav.petkov@amd.com> wrote:
->>> From: Kevin Winchester <kjwinchester@gmail.com>
->>>
->>> Due to an erratum with certain AMD Athlon 64 processors, the BIOS may
->>> need to force enable the LAHF_LM capability.  Unfortunately, in at
->>> least one case, the BIOS does this even for processors that do not
->>> support the functionality.
->>>
->>> Add a specific check that will clear the feature bit for processors
->>> known not to support the LAHF/SAHF instructions.
->>>
->>> Borislav: turn off cpuid bit.
->>>
->>> Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
->>> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
->>> ---
->>>  arch/x86/kernel/cpu/amd.c |   16 ++++++++++++++++
->>>  1 files changed, 16 insertions(+), 0 deletions(-)
->>>
->>> diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
->>> index e2485b0..9cd6fc7 100644
->>> --- a/arch/x86/kernel/cpu/amd.c
->>> +++ b/arch/x86/kernel/cpu/amd.c
->>> @@ -400,6 +400,22 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
->>>                level = cpuid_eax(1);
->>>                if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
->>>                        set_cpu_cap(c, X86_FEATURE_REP_GOOD);
->>> +
->>> +               /*
->>> +                * Some BIOSes incorrectly force this feature, but only K8
->>> +                * revision D (model = 0x14) and later actually support it.
->>> +                */
->>> +               if (c->x86_model < 0x14) {
->>
->> Shouldn't you test that the flag is actually set before trying to clear it?
->>
+On Thu, Aug 13, 2009 at 11:34:44AM +0200, David H�rdeman wrote:
+> On Thu, August 13, 2009 08:58, Dmitry Torokhov wrote:
+> > Hi David,
+> 
+> Hi,
+> 
+> > Please keep Makefile sorted alphabetically.
+> 
+> Ok
+> 
+> >> +static struct wbcir_key rc6_def_keymap[] = {
+> >> +	{ 0x800F0400, KEY_0			},
+> >> +	{ 0x800F0401, KEY_1			},
+> >> +	{ 0x800F0402, KEY_2			},
+> >> +	{ 0x800F0403, KEY_3			},
+> >> +	{ 0x800F0404, KEY_4			},
+> >> +	{ 0x800F0405, KEY_5			},
+> >> +	{ 0x800F0406, KEY_6			},
+> >> +	{ 0x800F0407, KEY_7			},
+> >> +	{ 0x800F0408, KEY_8			},
+> >> +	{ 0x800F0409, KEY_9			},
+> >
+> > Make these ones KEY_NUMERIC_* as well, this should help users whose
+> > keymaps have numbers in upper register normally.
+> 
+> Ok
+> 
+> >> +	{ 0x800F041D, KEY_NUMERIC_STAR		},
+> >> +	{ 0x800F041C, KEY_NUMERIC_POUND		},
+> >> +	{ 0x800F0410, KEY_VOLUMEUP		},
+> >> +	{ 0x800F0411, KEY_VOLUMEDOWN		},
+> >> +	{ 0x800F0412, KEY_CHANNELUP		},
+> >> +	{ 0x800F0413, KEY_CHANNELDOWN		},
+> >> +	{ 0x800F040E, KEY_MUTE			},
+> >> +	{ 0x800F040D, KEY_VENDOR		}, /* Vista Logo Key */
+> >> +	{ 0x800F041E, KEY_UP			},
+> >> +	{ 0x800F041F, KEY_DOWN			},
+> >> +	{ 0x800F0420, KEY_LEFT			},
+> >> +	{ 0x800F0421, KEY_RIGHT			},
+> >> +	{ 0x800F0422, KEY_OK			},
+> >> +	{ 0x800F0423, KEY_ESC			},
+> >> +	{ 0x800F040F, KEY_INFO			},
+> >> +	{ 0x800F040A, KEY_CLEAR			},
+> >> +	{ 0x800F040B, KEY_ENTER			},
+> >> +	{ 0x800F045B, KEY_RED			},
+> >> +	{ 0x800F045C, KEY_GREEN			},
+> >> +	{ 0x800F045D, KEY_YELLOW		},
+> >> +	{ 0x800F045E, KEY_BLUE			},
+> >> +	{ 0x800F045A, KEY_TEXT			},
+> >> +	{ 0x800F0427, KEY_SWITCHVIDEOMODE	},
+> >> +	{ 0x800F040C, KEY_POWER			},
+> >> +	{ 0x800F0450, KEY_RADIO			},
+> >> +	{ 0x800F0448, KEY_PVR			},
+> >> +	{ 0x800F0447, KEY_AUDIO			},
+> >> +	{ 0x800F0426, KEY_EPG			},
+> >> +	{ 0x800F0449, KEY_CAMERA		},
+> >> +	{ 0x800F0425, KEY_TV			},
+> >> +	{ 0x800F044A, KEY_VIDEO			},
+> >> +	{ 0x800F0424, KEY_DVD			},
+> >> +	{ 0x800F0416, KEY_PLAY			},
+> >> +	{ 0x800F0418, KEY_PAUSE			},
+> >> +	{ 0x800F0419, KEY_STOP			},
+> >> +	{ 0x800F0414, KEY_FASTFORWARD		},
+> >> +	{ 0x800F041A, KEY_NEXT			},
+> >> +	{ 0x800F041B, KEY_PREVIOUS		},
+> >> +	{ 0x800F0415, KEY_REWIND		},
+> >> +	{ 0x800F0417, KEY_RECORD		},
+> >
+> > Umm, it looks like if you do (code & 0x800F0400) you can switch to
+> > standard array-based keymap and won't even need list manipulation.
+> 
+> I didn't want to do that since it would potentially tie the driver to one
+> particular remote (the one I used for testing while writing the driver).
+> The hardware isn't shipped with any specific remote so that wouldn't be
+> very user friendly.
+> 
+> This was the best solution I could come up with without adding some real
+> limitations to the functionality of the driver.
+
+I see.
+
+> 
+> The main problem right now is that getkeycode is practically useless since
+> you can't blindly guess at a full range of 2^32 different scancodes to get
+> the complete keymap. Perhaps a index-based getkeycode would make sense...
+
+The drivers that have such sparce keymaps are expected to issue
+EV_MSC/MSC_SCAN events to aid userspace in identifying the "scancodes"
+that are emitted by the device.
+
+> 
+> Anyway, I hope that I can make this a moot point in the future by adding
+> more IR-specific functionality to the input system. I've been thinking
+> along the lines of IR-specific get/set-keycode ioctl's which would take a
+> struct which defines the IR command to map to a key.
+> 
+> >> +};
+> >> +
+> >> +/* Registers and other state is protected by wbcir_lock */
+> >> +struct wbcir_data {
+> >> +	unsigned long wbase;        /* Wake-Up Baseaddr		*/
+> >> +	unsigned long ebase;        /* Enhanced Func. Baseaddr	*/
+> >> +	unsigned long sbase;        /* Serial Port Baseaddr	*/
+> >> +	unsigned int  irq;          /* Serial Port IRQ		*/
+> >> +
+> >> +	struct input_dev *input_dev;
+> >> +	struct timer_list timer_keyup;
+> >> +	struct led_trigger *rxtrigger;
+> >> +	struct led_trigger *txtrigger;
+> >> +	struct led_classdev led;
+> >> +
+> >> +	u32 last_scancode;
+> >> +	unsigned int last_keycode;
+> >> +	u8 last_toggle;
+> >> +	u8 keypressed;
+> >> +	unsigned long keyup_jiffies;
+> >> +	unsigned int idle_count;
+> >> +
+> >> +	/* RX irdata and parsing state */
+> >> +	unsigned long irdata[30];
+> >> +	unsigned int irdata_count;
+> >> +	unsigned int irdata_idle;
+> >> +	unsigned int irdata_off;
+> >> +	unsigned int irdata_error;
+> >> +
+> >> +	/* Protected by keytable_lock */
+> >> +	struct list_head keytable;
+> >
+> > I think this has a potential to deadlock... Set and get keycodes are
+> > called with event lock taken, and then your implementations acquire
+> > keytable lock. When you emit input events the opposite happens - you
+> > take the keytable lock and then input core takes event lock.
+> 
+> Good catch, I'll have to look into that...
+> 
+> >> +static struct device_attribute dev_attr_last_scancode = {
+> >> +	.attr = {
+> >> +		.name = "last_scancode",
+> >> +		.mode = 0444,
+> >> +	},
+> >> +	.show = wbcir_show_last_scancode,
+> >> +	.store = NULL,
+> >> +
+> >> +};
+> >
+> > Why is this needed? And if this is needed we have a nice macro
+> > for that.
+> 
+> I hope I've explained it wrt. EV_IR in my other mail. It's for building
+> keymaps of unknown remotes. And it'll go away once EV_IR is supported so I
+> don't think there's much point in fiddling with it now?
+> 
+
+Because once the driver is in mainline it becomes part of userspace ABI
+and has to stay for a looong time.
+
+> >> +static int
+> >> +wbcir_probe(struct pnp_dev *device, const struct pnp_device_id *dev_id)
+> >
+> > __devinit
+> >
+> ...
+> >> +	dev_info(&device->dev, "Found device "
+> >> +		 "(w: 0x%lX, e: 0x%lX, s: 0x%lX, i: %u)\n",
+> >> +		 data->wbase, data->ebase, data->sbase, data->irq);
+> >> +
+> >
+> > dev_dbg() I think.
+> 
+> Ok
+> 
+> >> +static void
+> >> +wbcir_remove(struct pnp_dev *device)
+> >
+> > __devexit
+> 
+> Ok
+> 
+> >> +static struct pnp_driver wbcir_driver = {
+> >> +	.name     = WBCIR_ACPI_NAME,
+> >> +	.id_table = wbcir_ids,
+> >> +	.probe    = wbcir_probe,
+> >> +	.remove   = wbcir_remove,
+> >
+> > __devexit_p()
+> 
+> Ok
+> 
+> >> +	.suspend  = wbcir_suspend,
+> >> +	.resume   = wbcir_resume,
+> >
+> > Switch to dev_pm_ops?
+> 
+> Don't want to do that just yet. dev_pm_ops wasn't even on my radar until
+> yesterday when I stumbled upon the documentation (in a header file rather
+> than in Documentation/...eh?). I'll certainly look into it when the
+> suspend/resume functionality has seen more testing and bug fixing.
+> 
+> Thanks for the review. Are you willing to push the driver upstream through
+> the input tree once I've implemented your suggested fixes?
 >
-> Possibly.  If there were some concern that:
->
-> - The extra instructions would cause a performance impact, and the
-> test was significantly faster than the clear.
 
-Testing a bit is cheap and MSR accesses are not.
+I'd need to take a look at your EV_IR patyches and see how they will
+affect this driver. I do nt want to merge something that will stay one
+way for half a release and then will switch to completely new interface.
 
-> - The extra instructions might actually cause more problems if the
-> flag is not set.
-
-These MSRs don't exist on older cpus and will cause a fault, which is
-handled at additional cost.
-
-> Then we would certainly want to test it first.  In my opinion, a few
-> simple instructions to clear the flag and the CPUID bit will not
-> affect performance, and clearing a flag that is already cleared should
-> not cause any additional problems, so I would not bother testing the
-> flag first.  That results in fewer lines of code to change.
-
---
-Brian Gerst
+-- 
+Dmitry
