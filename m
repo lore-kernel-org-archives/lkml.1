@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932554AbZHMUed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932562AbZHMUee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932554AbZHMUed (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932426AbZHMUe3
+	id S932562AbZHMUee (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932505AbZHMUeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:34:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33164 "EHLO mx2.redhat.com"
+	Thu, 13 Aug 2009 16:34:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33163 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756212AbZHMUda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756209AbZHMUda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 13 Aug 2009 16:33:30 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v14 09/12] tracing: Kprobe-tracer supports more than 6
-	arguments
+Subject: [PATCH -tip v14 11/12] tracing: Kprobe tracer assigns new event ids
+	for each event
 To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
@@ -32,8 +32,8 @@ Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
        Vegard Nossum <vegard.nossum@gmail.com>
-Date: Thu, 13 Aug 2009 16:35:18 -0400
-Message-ID: <20090813203518.31965.96979.stgit@localhost.localdomain>
+Date: Thu, 13 Aug 2009 16:35:34 -0400
+Message-ID: <20090813203534.31965.49105.stgit@localhost.localdomain>
 In-Reply-To: <20090813203403.31965.20973.stgit@localhost.localdomain>
 References: <20090813203403.31965.20973.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -44,7 +44,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support up to 128 arguments for each kprobes event.
+Assigns new event ids for each kprobes event. This doesn't clear ring_buffer
+when unregistering each kprobe event. Thus, if you mind 'Unknown event'
+messages, clear the buffer manually after changing kprobe events.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
@@ -69,91 +71,164 @@ Cc: Tom Zanussi <tzanussi@gmail.com>
 Cc: Vegard Nossum <vegard.nossum@gmail.com>
 ---
 
- Documentation/trace/kprobetrace.txt |    2 +-
- kernel/trace/trace_kprobe.c         |   21 +++++++++++++--------
- 2 files changed, 14 insertions(+), 9 deletions(-)
+ kernel/trace/trace.h        |    6 -----
+ kernel/trace/trace_kprobe.c |   51 +++++++++++++------------------------------
+ 2 files changed, 15 insertions(+), 42 deletions(-)
 
-diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
-index efff6eb..c9c09b4 100644
---- a/Documentation/trace/kprobetrace.txt
-+++ b/Documentation/trace/kprobetrace.txt
-@@ -32,7 +32,7 @@ Synopsis of kprobe_events
-  SYMBOL[+offs|-offs]	: Symbol+offset where the probe is inserted.
-  MEMADDR		: Address where the probe is inserted.
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 4ce4525..0b78d76 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -43,8 +43,6 @@ enum trace_type {
+ 	TRACE_POWER,
+ 	TRACE_BLK,
+ 	TRACE_KSYM,
+-	TRACE_KPROBE,
+-	TRACE_KRETPROBE,
  
-- FETCHARGS		: Arguments.
-+ FETCHARGS		: Arguments. Each probe can have up to 128 args.
-   %REG	: Fetch register REG
-   sN	: Fetch Nth entry of stack (N >= 0)
-   sa	: Fetch stack address.
+ 	__TRACE_LAST_TYPE,
+ };
+@@ -358,10 +356,6 @@ extern void __ftrace_bad_type(void);
+ 		IF_ASSIGN(var, ent, struct kmemtrace_free_entry,	\
+ 			  TRACE_KMEM_FREE);	\
+ 		IF_ASSIGN(var, ent, struct ksym_trace_entry, TRACE_KSYM);\
+-		IF_ASSIGN(var, ent, struct kprobe_trace_entry,		\
+-			  TRACE_KPROBE);				\
+-		IF_ASSIGN(var, ent, struct kretprobe_trace_entry,	\
+-			  TRACE_KRETPROBE);				\
+ 		__ftrace_bad_type();					\
+ 	} while (0)
+ 
 diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index d92877a..4704e40 100644
+index ec137ed..0e8498e 100644
 --- a/kernel/trace/trace_kprobe.c
 +++ b/kernel/trace/trace_kprobe.c
-@@ -32,7 +32,7 @@
- #include "trace.h"
- #include "trace_output.h"
- 
--#define TRACE_KPROBE_ARGS 6
-+#define MAX_TRACE_ARGS 128
- #define MAX_ARGSTR_LEN 63
- 
- /* currently, trace_kprobe only supports X86. */
-@@ -184,11 +184,15 @@ struct trace_probe {
- 		struct kretprobe	rp;
+@@ -186,6 +186,7 @@ struct trace_probe {
  	};
  	const char		*symbol;	/* symbol name */
--	unsigned int		nr_args;
--	struct fetch_func	args[TRACE_KPROBE_ARGS];
  	struct ftrace_event_call	call;
-+	unsigned int		nr_args;
-+	struct fetch_func	args[];
++	struct trace_event		event;
+ 	unsigned int		nr_args;
+ 	struct fetch_func	args[];
  };
+@@ -795,7 +796,7 @@ static __kprobes int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs)
  
-+#define SIZEOF_TRACE_PROBE(n)			\
-+	(offsetof(struct trace_probe, args) +	\
-+	(sizeof(struct fetch_func) * (n)))
-+
- static int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs);
- static int kretprobe_trace_func(struct kretprobe_instance *ri,
- 				struct pt_regs *regs);
-@@ -263,11 +267,11 @@ static DEFINE_MUTEX(probe_lock);
- static LIST_HEAD(probe_list);
+ 	size = SIZEOF_KPROBE_TRACE_ENTRY(tp->nr_args);
  
- static struct trace_probe *alloc_trace_probe(const char *symbol,
--					     const char *event)
-+					     const char *event, int nargs)
+-	event = trace_current_buffer_lock_reserve(TRACE_KPROBE, size,
++	event = trace_current_buffer_lock_reserve(call->id, size,
+ 						  irq_flags, pc);
+ 	if (!event)
+ 		return 0;
+@@ -827,7 +828,7 @@ static __kprobes int kretprobe_trace_func(struct kretprobe_instance *ri,
+ 
+ 	size = SIZEOF_KRETPROBE_TRACE_ENTRY(tp->nr_args);
+ 
+-	event = trace_current_buffer_lock_reserve(TRACE_KRETPROBE, size,
++	event = trace_current_buffer_lock_reserve(call->id, size,
+ 						  irq_flags, pc);
+ 	if (!event)
+ 		return 0;
+@@ -853,7 +854,7 @@ print_kprobe_event(struct trace_iterator *iter, int flags)
+ 	struct trace_seq *s = &iter->seq;
+ 	int i;
+ 
+-	trace_assign_type(field, iter->ent);
++	field = (struct kprobe_trace_entry *)iter->ent;
+ 
+ 	if (!seq_print_ip_sym(s, field->ip, flags | TRACE_ITER_SYM_OFFSET))
+ 		goto partial;
+@@ -880,7 +881,7 @@ print_kretprobe_event(struct trace_iterator *iter, int flags)
+ 	struct trace_seq *s = &iter->seq;
+ 	int i;
+ 
+-	trace_assign_type(field, iter->ent);
++	field = (struct kretprobe_trace_entry *)iter->ent;
+ 
+ 	if (!seq_print_ip_sym(s, field->ret_ip, flags | TRACE_ITER_SYM_OFFSET))
+ 		goto partial;
+@@ -906,16 +907,6 @@ partial:
+ 	return TRACE_TYPE_PARTIAL_LINE;
+ }
+ 
+-static struct trace_event kprobe_trace_event = {
+-	.type	 	= TRACE_KPROBE,
+-	.trace		= print_kprobe_event,
+-};
+-
+-static struct trace_event kretprobe_trace_event = {
+-	.type	 	= TRACE_KRETPROBE,
+-	.trace		= print_kretprobe_event,
+-};
+-
+ static int probe_event_enable(struct ftrace_event_call *call)
  {
- 	struct trace_probe *tp;
- 
--	tp = kzalloc(sizeof(struct trace_probe), GFP_KERNEL);
-+	tp = kzalloc(SIZEOF_TRACE_PROBE(nargs), GFP_KERNEL);
- 	if (!tp)
- 		return ERR_PTR(-ENOMEM);
- 
-@@ -573,9 +577,10 @@ static int create_trace_probe(int argc, char **argv)
- 		if (offset && is_return)
- 			return -EINVAL;
+ 	struct trace_probe *tp = (struct trace_probe *)call->data;
+@@ -1107,35 +1098,35 @@ static int register_probe_event(struct trace_probe *tp)
+ 	/* Initialize ftrace_event_call */
+ 	call->system = "kprobes";
+ 	if (probe_is_return(tp)) {
+-		call->event = &kretprobe_trace_event;
+-		call->id = TRACE_KRETPROBE;
++		tp->event.trace = print_kretprobe_event;
+ 		call->raw_init = probe_event_raw_init;
+ 		call->show_format = kretprobe_event_show_format;
+ 		call->define_fields = kretprobe_event_define_fields;
+ 	} else {
+-		call->event = &kprobe_trace_event;
+-		call->id = TRACE_KPROBE;
++		tp->event.trace = print_kprobe_event;
+ 		call->raw_init = probe_event_raw_init;
+ 		call->show_format = kprobe_event_show_format;
+ 		call->define_fields = kprobe_event_define_fields;
  	}
-+	argc -= 2; argv += 2;
++	call->event = &tp->event;
++	call->id = register_ftrace_event(&tp->event);
++	if (!call->id)
++		return -ENODEV;
+ 	call->enabled = 1;
+ 	call->regfunc = probe_event_enable;
+ 	call->unregfunc = probe_event_disable;
+ 	call->data = tp;
+ 	ret = trace_add_event_call(call);
+-	if (ret)
++	if (ret) {
+ 		pr_info("Failed to register kprobe event: %s\n", call->name);
++		unregister_ftrace_event(&tp->event);
++	}
+ 	return ret;
+ }
  
- 	/* setup a probe */
--	tp = alloc_trace_probe(symbol, event);
-+	tp = alloc_trace_probe(symbol, event, argc);
- 	if (IS_ERR(tp))
- 		return PTR_ERR(tp);
+ static void unregister_probe_event(struct trace_probe *tp)
+ {
+-	/*
+-	 * Prevent to unregister event itself because the event is shared
+-	 * among other probes.
+-	 */
+-	tp->call.event = NULL;
++	/* tp->event is unregistered in trace_remove_event_call() */
+ 	trace_remove_event_call(&tp->call);
+ }
  
-@@ -594,8 +599,8 @@ static int create_trace_probe(int argc, char **argv)
- 		kp->addr = addr;
+@@ -1144,18 +1135,6 @@ static __init int init_kprobe_trace(void)
+ {
+ 	struct dentry *d_tracer;
+ 	struct dentry *entry;
+-	int ret;
+-
+-	ret = register_ftrace_event(&kprobe_trace_event);
+-	if (!ret) {
+-		pr_warning("Could not register kprobe_trace_event type.\n");
+-		return 0;
+-	}
+-	ret = register_ftrace_event(&kretprobe_trace_event);
+-	if (!ret) {
+-		pr_warning("Could not register kretprobe_trace_event type.\n");
+-		return 0;
+-	}
  
- 	/* parse arguments */
--	argc -= 2; argv += 2; ret = 0;
--	for (i = 0; i < argc && i < TRACE_KPROBE_ARGS; i++) {
-+	ret = 0;
-+	for (i = 0; i < argc && i < MAX_TRACE_ARGS; i++) {
- 		if (strlen(argv[i]) > MAX_ARGSTR_LEN) {
- 			pr_info("Argument%d(%s) is too long.\n", i, argv[i]);
- 			ret = -ENOSPC;
+ 	d_tracer = tracing_init_dentry();
+ 	if (!d_tracer)
 
 
 -- 
