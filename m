@@ -1,50 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbZHMNtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbZHMOCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754634AbZHMNtv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 09:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbZHMNtu
+	id S1753537AbZHMOCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 10:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbZHMOCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 09:49:50 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:58624 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753904AbZHMNtt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 09:49:49 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
-Date: Thu, 13 Aug 2009 15:48:35 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-References: <cover.1249930169.git.mst@redhat.com> <20090813060615.GC3029@redhat.com> <200908131538.44465.arnd@arndb.de>
-In-Reply-To: <200908131538.44465.arnd@arndb.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 13 Aug 2009 10:02:18 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:60741 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752547AbZHMOCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 10:02:17 -0400
+Date: Thu, 13 Aug 2009 09:01:58 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       sds@tycho.nsa.gov, davem@davemloft.net, shemminger@linux-foundation.org,
+       kees@ubuntu.com, morgan@kernel.org, casey@schaufler-ca.com,
+       dwalsh@redhat.com
+Subject: Re: [PATCH 1/3] Networking: use CAP_NET_ADMIN when deciding to
+	call request_module
+Message-ID: <20090813140158.GB30731@us.ibm.com>
+References: <20090813134451.29186.41664.stgit@paris.rdu.redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908131548.35199.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+eZLTYg27rt8QREoMs9vJmlQuNgoKKcxTqxcB
- jEkRFetM3yq9RSrepBjyNsS5ycPoUdDHbOwiaj1X4dp/lW58Oy
- 169wQMuSY8D1SEYiA/HmA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090813134451.29186.41664.stgit@paris.rdu.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 August 2009, Arnd Bergmann wrote:
-> Unfortunately, this also implies that you could no longer simply use the
-> packet socket interface as you do currently, as I realized only now.
-> This obviously has a significant impact on your user space interface.
+Quoting Eric Paris (eparis@redhat.com):
+> The networking code checks CAP_SYS_MODULE before using request_module() to
+> try to load a kernel module.  While this seems reasonable it's actually
+> weakening system security since we have to allow CAP_SYS_MODULE for things
+> like /sbin/ip and bluetoothd which need to be able to trigger module loads.
+> CAP_SYS_MODULE actually grants those binaries the ability to directly load
+> any code into the kernel.  We should instead be protecting modprobe and the
+> modules on disk, rather than granting random programs the ability to load code
+> directly into the kernel.  Instead we are going to gate those networking checks
+> on CAP_NET_ADMIN which still limits them to root but which does not grant
+> those processes the ability to load arbitrary code into the kernel.
 
-Also, if we do the copy in the transport, it definitely means that we
-can't get to zero-copy RX/TX from guest space any more. The current
-vhost_net driver doesn't do that yet, but could be extended in the
-same way that I'm hoping to do it for macvtap.
+Right, so we want to check that the caller has the rights to perform the
+action which (in the end) requires the module load, not the module load
+itself.  CAP_SYS_MODULE should be reserved for callers which specify a
+module (full pathname) to load.
 
-	Arnd <><
+> Signed-off-by: Eric Paris <eparis@redhat.com>
+
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+
+> ---
+> 
+>  drivers/staging/comedi/comedi_fops.c |    8 ++++----
+>  net/core/dev.c                       |    2 +-
+>  net/ipv4/tcp_cong.c                  |    4 ++--
+>  3 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/staging/comedi/comedi_fops.c b/drivers/staging/comedi/comedi_fops.c
+> index 42e4bc4..f54bb9b 100644
+> --- a/drivers/staging/comedi/comedi_fops.c
+> +++ b/drivers/staging/comedi/comedi_fops.c
+> @@ -1772,12 +1772,12 @@ static int comedi_open(struct inode *inode, struct file *file)
+>  	mutex_lock(&dev->mutex);
+>  	if (dev->attached)
+>  		goto ok;
+> -	if (!capable(CAP_SYS_MODULE) && dev->in_request_module) {
+> +	if (!capable(CAP_NET_ADMIN) && dev->in_request_module) {
+>  		DPRINTK("in request module\n");
+>  		mutex_unlock(&dev->mutex);
+>  		return -ENODEV;
+>  	}
+> -	if (capable(CAP_SYS_MODULE) && dev->in_request_module)
+> +	if (capable(CAP_NET_ADMIN) && dev->in_request_module)
+>  		goto ok;
+> 
+>  	dev->in_request_module = 1;
+> @@ -1790,8 +1790,8 @@ static int comedi_open(struct inode *inode, struct file *file)
+> 
+>  	dev->in_request_module = 0;
+> 
+> -	if (!dev->attached && !capable(CAP_SYS_MODULE)) {
+> -		DPRINTK("not attached and not CAP_SYS_MODULE\n");
+> +	if (!dev->attached && !capable(CAP_NET_ADMIN)) {
+> +		DPRINTK("not attached and not CAP_NET_ADMIN\n");
+>  		mutex_unlock(&dev->mutex);
+>  		return -ENODEV;
+>  	}
+> diff --git a/net/core/dev.c b/net/core/dev.c
+> index 09fb03f..2604db9 100644
+> --- a/net/core/dev.c
+> +++ b/net/core/dev.c
+> @@ -1031,7 +1031,7 @@ void dev_load(struct net *net, const char *name)
+>  	dev = __dev_get_by_name(net, name);
+>  	read_unlock(&dev_base_lock);
+> 
+> -	if (!dev && capable(CAP_SYS_MODULE))
+> +	if (!dev && capable(CAP_NET_ADMIN))
+>  		request_module("%s", name);
+>  }
+> 
+> diff --git a/net/ipv4/tcp_cong.c b/net/ipv4/tcp_cong.c
+> index e92beb9..6428b34 100644
+> --- a/net/ipv4/tcp_cong.c
+> +++ b/net/ipv4/tcp_cong.c
+> @@ -116,7 +116,7 @@ int tcp_set_default_congestion_control(const char *name)
+>  	spin_lock(&tcp_cong_list_lock);
+>  	ca = tcp_ca_find(name);
+>  #ifdef CONFIG_MODULES
+> -	if (!ca && capable(CAP_SYS_MODULE)) {
+> +	if (!ca && capable(CAP_NET_ADMIN)) {
+>  		spin_unlock(&tcp_cong_list_lock);
+> 
+>  		request_module("tcp_%s", name);
+> @@ -246,7 +246,7 @@ int tcp_set_congestion_control(struct sock *sk, const char *name)
+> 
+>  #ifdef CONFIG_MODULES
+>  	/* not found attempt to autoload module */
+> -	if (!ca && capable(CAP_SYS_MODULE)) {
+> +	if (!ca && capable(CAP_NET_ADMIN)) {
+>  		rcu_read_unlock();
+>  		request_module("tcp_%s", name);
+>  		rcu_read_lock();
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
