@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbZHMUEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbZHMUCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756138AbZHMUEI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756107AbZHMUDZ
+	id S1756074AbZHMUCW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756055AbZHMUCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:03:25 -0400
-Received: from kroah.org ([198.145.64.141]:41923 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 16:02:18 -0400
+Received: from kroah.org ([198.145.64.141]:41968 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932279AbZHMUAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:00:03 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:33 2009
-Message-Id: <20090813195133.309452779@mini.kroah.org>
+	id S932288AbZHMUAL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 16:00:11 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:34 2009
+Message-Id: <20090813195134.630212134@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:34 -0700
+Date: Thu, 13 Aug 2009 12:50:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mike Galbraith <efault@gmx.de>, Peter Teoh <htmldeveloper@gmail.com>
-Subject: [patch 59/74] Staging: rt2870: Revert d44ca7 Removal of kernel_thread() API
+       Oleg Nesterov <oleg@redhat.com>, Serge Hallyn <serue@us.ibm.com>,
+       James Morris <jmorris@namei.org>
+Subject: [patch 68/74] mm_for_maps: shift down_read(mmap_sem) to the caller
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=staging-rt2870-revert-d44ca7-removal-of-kernel_thread-api.patch
+Content-Disposition: inline; filename=mm_for_maps-shift-down_read-to-the-caller.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,329 +31,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
+From: Oleg Nesterov <oleg@redhat.com>
 
-commit 2c63abf9e8a51dec886da482dfd8ae752581a61c upstream.
+commit 00f89d218523b9bf6b522349c039d5ac80aa536d upstream.
 
-[Mike Galbraith did the upstream revert, which was more complex]
+mm_for_maps() takes ->mmap_sem after security checks, this looks
+strange and obfuscates the locking rules. Move this lock to its
+single caller, m_start().
 
-Staging: rt2870: Revert d44ca7 Removal of kernel_thread() API
-
-The sanity check this patch introduced triggers on shutdown, apparently due to
-threads having already exited by the time BUG_ON() is reached.
-
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Teoh <htmldeveloper@gmail.com>
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Signed-off-by: James Morris <jmorris@namei.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- drivers/staging/rt2870/2870_main_dev.c         |   67 ++++++++++++++++---------
- drivers/staging/rt2870/common/2870_rtmp_init.c |   35 +++++--------
- drivers/staging/rt2870/common/cmm_data.c       |    3 +
- drivers/staging/rt2870/common/rtmp_init.c      |    2 
- drivers/staging/rt2870/common/rtusb_io.c       |    3 -
- drivers/staging/rt2870/rt2870.h                |    6 --
- drivers/staging/rt2870/rt_linux.h              |   11 ++--
- 7 files changed, 74 insertions(+), 53 deletions(-)
+ fs/proc/base.c       |    8 +++-----
+ fs/proc/task_mmu.c   |    1 +
+ fs/proc/task_nommu.c |    1 +
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
---- a/drivers/staging/rt2870/2870_main_dev.c
-+++ b/drivers/staging/rt2870/2870_main_dev.c
-@@ -265,7 +265,7 @@ INT MlmeThread(
- 	 */
- 	DBGPRINT(RT_DEBUG_TRACE,( "<---%s\n",__func__));
- 
--	pObj->MLMEThr_task = NULL;
-+	pObj->MLMEThr_pid = THREAD_PID_INIT_VALUE;
- 
- 	complete_and_exit (&pAd->mlmeComplete, 0);
- 	return 0;
-@@ -373,7 +373,7 @@ INT RTUSBCmdThread(
- 	 */
- 	DBGPRINT(RT_DEBUG_TRACE,( "<---RTUSBCmdThread\n"));
- 
--	pObj->RTUSBCmdThr_task = NULL;
-+	pObj->RTUSBCmdThr_pid = THREAD_PID_INIT_VALUE;
- 
- 	complete_and_exit (&pAd->CmdQComplete, 0);
- 	return 0;
-@@ -467,7 +467,7 @@ INT TimerQThread(
- 	 */
- 	DBGPRINT(RT_DEBUG_TRACE,( "<---%s\n",__func__));
- 
--	pObj->TimerQThr_task = NULL;
-+	pObj->TimerQThr_pid = THREAD_PID_INIT_VALUE;
- 
- 	complete_and_exit(&pAd->TimerQComplete, 0);
- 	return 0;
-@@ -944,46 +944,69 @@ VOID RT28xxThreadTerminate(
- 	RTUSBCancelPendingIRPs(pAd);
- 
- 	// Terminate Threads
--	BUG_ON(pObj->TimerQThr_task == NULL);
--	CHECK_PID_LEGALITY(task_pid(pObj->TimerQThr_task))
-+	CHECK_PID_LEGALITY(pObj->TimerQThr_pid)
- 	{
- 		POS_COOKIE pObj = (POS_COOKIE)pAd->OS_Cookie;
- 
--		printk(KERN_DEBUG "Terminate the TimerQThr pid=%d!\n",
--			pid_nr(task_pid(pObj->TimerQThr_task)));
-+		printk("Terminate the TimerQThr_pid=%d!\n", GET_PID_NUMBER(pObj->TimerQThr_pid));
- 		mb();
- 		pAd->TimerFunc_kill = 1;
- 		mb();
--		kthread_stop(pObj->TimerQThr_task);
--		pObj->TimerQThr_task = NULL;
-+		ret = KILL_THREAD_PID(pObj->TimerQThr_pid, SIGTERM, 1);
-+		if (ret)
-+		{
-+			printk(KERN_WARNING "%s: unable to stop TimerQThread, pid=%d, ret=%d!\n",
-+					pAd->net_dev->name, GET_PID_NUMBER(pObj->TimerQThr_pid), ret);
-+		}
-+		else
-+		{
-+			wait_for_completion(&pAd->TimerQComplete);
-+			pObj->TimerQThr_pid = THREAD_PID_INIT_VALUE;
-+		}
- 	}
- 
--	BUG_ON(pObj->MLMEThr_task == NULL);
--	CHECK_PID_LEGALITY(task_pid(pObj->MLMEThr_task))
-+	CHECK_PID_LEGALITY(pObj->MLMEThr_pid)
- 	{
--		printk(KERN_DEBUG "Terminate the MLMEThr pid=%d!\n",
--			pid_nr(task_pid(pObj->MLMEThr_task)));
-+		printk("Terminate the MLMEThr_pid=%d!\n", GET_PID_NUMBER(pObj->MLMEThr_pid));
- 		mb();
- 		pAd->mlme_kill = 1;
- 		//RT28XX_MLME_HANDLER(pAd);
- 		mb();
--		kthread_stop(pObj->MLMEThr_task);
--		pObj->MLMEThr_task = NULL;
-+		ret = KILL_THREAD_PID(pObj->MLMEThr_pid, SIGTERM, 1);
-+		if (ret)
-+		{
-+			printk (KERN_WARNING "%s: unable to Mlme thread, pid=%d, ret=%d!\n",
-+					pAd->net_dev->name, GET_PID_NUMBER(pObj->MLMEThr_pid), ret);
-+		}
-+		else
-+		{
-+			//wait_for_completion (&pAd->notify);
-+			wait_for_completion (&pAd->mlmeComplete);
-+			pObj->MLMEThr_pid = THREAD_PID_INIT_VALUE;
-+		}
- 	}
- 
--	BUG_ON(pObj->RTUSBCmdThr_task == NULL);
--	CHECK_PID_LEGALITY(task_pid(pObj->RTUSBCmdThr_task))
-+	CHECK_PID_LEGALITY(pObj->RTUSBCmdThr_pid)
- 	{
--		printk(KERN_DEBUG "Terminate the RTUSBCmdThr pid=%d!\n",
--			pid_nr(task_pid(pObj->RTUSBCmdThr_task)));
-+		printk("Terminate the RTUSBCmdThr_pid=%d!\n", GET_PID_NUMBER(pObj->RTUSBCmdThr_pid));
- 		mb();
- 		NdisAcquireSpinLock(&pAd->CmdQLock);
- 		pAd->CmdQ.CmdQState = RT2870_THREAD_STOPED;
- 		NdisReleaseSpinLock(&pAd->CmdQLock);
- 		mb();
- 		//RTUSBCMDUp(pAd);
--		kthread_stop(pObj->RTUSBCmdThr_task);
--		pObj->RTUSBCmdThr_task = NULL;
-+		ret = KILL_THREAD_PID(pObj->RTUSBCmdThr_pid, SIGTERM, 1);
-+		if (ret)
-+		{
-+			printk(KERN_WARNING "%s: unable to RTUSBCmd thread, pid=%d, ret=%d!\n",
-+					pAd->net_dev->name, GET_PID_NUMBER(pObj->RTUSBCmdThr_pid), ret);
-+		}
-+		else
-+		{
-+			//wait_for_completion (&pAd->notify);
-+			wait_for_completion (&pAd->CmdQComplete);
-+			pObj->RTUSBCmdThr_pid = THREAD_PID_INIT_VALUE;
-+	}
- 	}
- 
- 
-@@ -1044,7 +1067,7 @@ BOOLEAN RT28XXChipsetCheck(
- 		if (dev_p->descriptor.idVendor == rtusb_usb_id[i].idVendor &&
- 			dev_p->descriptor.idProduct == rtusb_usb_id[i].idProduct)
- 		{
--			printk(KERN_DEBUG "rt2870: idVendor = 0x%x, idProduct = 0x%x\n",
-+			printk("rt2870: idVendor = 0x%x, idProduct = 0x%x\n",
- 					dev_p->descriptor.idVendor, dev_p->descriptor.idProduct);
- 			break;
- 		}
---- a/drivers/staging/rt2870/common/2870_rtmp_init.c
-+++ b/drivers/staging/rt2870/common/2870_rtmp_init.c
-@@ -727,8 +727,8 @@ NDIS_STATUS AdapterBlockAllocateMemory(
- 
- 	usb_dev = pObj->pUsb_Dev;
- 
--	pObj->MLMEThr_task		= NULL;
--	pObj->RTUSBCmdThr_task	= NULL;
-+	pObj->MLMEThr_pid		= THREAD_PID_INIT_VALUE;
-+	pObj->RTUSBCmdThr_pid	= THREAD_PID_INIT_VALUE;
- 
- 	*ppAd = (PVOID)vmalloc(sizeof(RTMP_ADAPTER));
- 
-@@ -765,7 +765,7 @@ NDIS_STATUS	 CreateThreads(
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -235,9 +235,8 @@ static int check_mem_permission(struct t
+ struct mm_struct *mm_for_maps(struct task_struct *task)
  {
- 	PRTMP_ADAPTER pAd = net_dev->ml_priv;
- 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;
--	struct task_struct *tsk;
-+	pid_t pid_number = -1;
- 
- 	//init_MUTEX(&(pAd->usbdev_semaphore));
- 
-@@ -779,39 +779,36 @@ NDIS_STATUS	 CreateThreads(
- 	init_completion (&pAd->TimerQComplete);
- 
- 	// Creat MLME Thread
--	pObj->MLMEThr_task = NULL;
--	tsk = kthread_run(MlmeThread, pAd, pAd->net_dev->name);
--
--	if (IS_ERR(tsk)) {
-+	pObj->MLMEThr_pid= THREAD_PID_INIT_VALUE;
-+	pid_number = kernel_thread(MlmeThread, pAd, CLONE_VM);
-+	if (pid_number < 0)
-+	{
- 		printk (KERN_WARNING "%s: unable to start Mlme thread\n",pAd->net_dev->name);
- 		return NDIS_STATUS_FAILURE;
- 	}
--
--	pObj->MLMEThr_task = tsk;
-+	pObj->MLMEThr_pid = GET_PID(pid_number);
- 	// Wait for the thread to start
- 	wait_for_completion(&(pAd->mlmeComplete));
- 
- 	// Creat Command Thread
--	pObj->RTUSBCmdThr_task = NULL;
--	tsk = kthread_run(RTUSBCmdThread, pAd, pAd->net_dev->name);
--
--	if (IS_ERR(tsk) < 0)
-+	pObj->RTUSBCmdThr_pid= THREAD_PID_INIT_VALUE;
-+	pid_number = kernel_thread(RTUSBCmdThread, pAd, CLONE_VM);
-+	if (pid_number < 0)
- 	{
- 		printk (KERN_WARNING "%s: unable to start RTUSBCmd thread\n",pAd->net_dev->name);
- 		return NDIS_STATUS_FAILURE;
- 	}
--
--	pObj->RTUSBCmdThr_task = tsk;
-+	pObj->RTUSBCmdThr_pid = GET_PID(pid_number);
- 	wait_for_completion(&(pAd->CmdQComplete));
- 
--	pObj->TimerQThr_task = NULL;
--	tsk = kthread_run(TimerQThread, pAd, pAd->net_dev->name);
--	if (IS_ERR(tsk) < 0)
-+	pObj->TimerQThr_pid= THREAD_PID_INIT_VALUE;
-+	pid_number = kernel_thread(TimerQThread, pAd, CLONE_VM);
-+	if (pid_number < 0)
- 	{
- 		printk (KERN_WARNING "%s: unable to start TimerQThread\n",pAd->net_dev->name);
- 		return NDIS_STATUS_FAILURE;
- 	}
--	pObj->TimerQThr_task = tsk;
-+	pObj->TimerQThr_pid = GET_PID(pid_number);
- 	// Wait for the thread to start
- 	wait_for_completion(&(pAd->TimerQComplete));
- 
---- a/drivers/staging/rt2870/common/cmm_data.c
-+++ b/drivers/staging/rt2870/common/cmm_data.c
-@@ -709,6 +709,9 @@ BOOLEAN RTMP_FillTxBlkInfo(
- 	}
- 
- 	return TRUE;
+ 	struct mm_struct *mm = get_task_mm(task);
+-	if (!mm)
+-		return NULL;
+-	if (mm != current->mm) {
 +
-+FillTxBlkErr:
-+	return FALSE;
++	if (mm && mm != current->mm) {
+ 		/*
+ 		 * task->mm can be changed before security check,
+ 		 * in that case we must notice the change after.
+@@ -245,10 +244,9 @@ struct mm_struct *mm_for_maps(struct tas
+ 		if (!ptrace_may_access(task, PTRACE_MODE_READ) ||
+ 		    mm != task->mm) {
+ 			mmput(mm);
+-			return NULL;
++			mm = NULL;
+ 		}
+ 	}
+-	down_read(&mm->mmap_sem);
+ 	return mm;
  }
  
+--- a/fs/proc/task_mmu.c
++++ b/fs/proc/task_mmu.c
+@@ -119,6 +119,7 @@ static void *m_start(struct seq_file *m,
+ 	mm = mm_for_maps(priv->task);
+ 	if (!mm)
+ 		return NULL;
++	down_read(&mm->mmap_sem);
  
---- a/drivers/staging/rt2870/common/rtmp_init.c
-+++ b/drivers/staging/rt2870/common/rtmp_init.c
-@@ -3655,7 +3655,7 @@ VOID	UserCfgInit(
- #ifdef RALINK_28xx_QA
- 	//pAd->ate.Repeat = 0;
- 	pAd->ate.TxStatus = 0;
--	pAd->ate.AtePid = NULL;
-+	pAd->ate.AtePid = THREAD_PID_INIT_VALUE;
- #endif // RALINK_28xx_QA //
- #endif // RALINK_ATE //
+ 	tail_vma = get_gate_vma(priv->task);
+ 	priv->tail_vma = tail_vma;
+--- a/fs/proc/task_nommu.c
++++ b/fs/proc/task_nommu.c
+@@ -189,6 +189,7 @@ static void *m_start(struct seq_file *m,
+ 		priv->task = NULL;
+ 		return NULL;
+ 	}
++	down_read(&mm->mmap_sem);
  
---- a/drivers/staging/rt2870/common/rtusb_io.c
-+++ b/drivers/staging/rt2870/common/rtusb_io.c
-@@ -958,8 +958,7 @@ NDIS_STATUS	RTUSBEnqueueCmdFromNdis(
- 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;
- 
- 
--	BUG_ON(pObj->RTUSBCmdThr_task == NULL);
--	CHECK_PID_LEGALITY(task_pid(pObj->RTUSBCmdThr_task))
-+	CHECK_PID_LEGALITY(pObj->RTUSBCmdThr_pid)
- 		return (NDIS_STATUS_RESOURCES);
- 
- 	status = RTMPAllocateMemory((PVOID *)&cmdqelmt, sizeof(CmdQElmt));
---- a/drivers/staging/rt2870/rt2870.h
-+++ b/drivers/staging/rt2870/rt2870.h
-@@ -580,16 +580,14 @@ VOID RTUSBBulkRxComplete(purbb_t pUrb, s
- #define RTUSBMlmeUp(pAd)	        \
- {								    \
- 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;	\
--	BUG_ON(pObj->MLMEThr_task == NULL);		    \
--	CHECK_PID_LEGALITY(task_pid(pObj->MLMEThr_task))		    \
-+	CHECK_PID_LEGALITY(pObj->MLMEThr_pid)		    \
-         up(&(pAd->mlme_semaphore)); \
- }
- 
- #define RTUSBCMDUp(pAd)	                \
- {									    \
- 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;	\
--	BUG_ON(pObj->RTUSBCmdThr_task == NULL);	    \
--	CHECK_PID_LEGALITY(task_pid(pObj->RTUSBCmdThr_task))	    \
-+	CHECK_PID_LEGALITY(pObj->RTUSBCmdThr_pid)	    \
- 	    up(&(pAd->RTUSBCmd_semaphore)); \
- }
- 
---- a/drivers/staging/rt2870/rt_linux.h
-+++ b/drivers/staging/rt2870/rt_linux.h
-@@ -44,7 +44,6 @@
- #include <linux/module.h>
- #include <linux/version.h>
- #include <linux/kernel.h>
--#include <linux/kthread.h>
- 
- #include <linux/spinlock.h>
- #include <linux/init.h>
-@@ -166,12 +165,14 @@ typedef int (*HARD_START_XMIT_FUNC)(stru
- 
- #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27)
- typedef	struct pid *	THREAD_PID;
-+#define	THREAD_PID_INIT_VALUE	NULL
- #define	GET_PID(_v)	find_get_pid(_v)
- #define	GET_PID_NUMBER(_v)	pid_nr(_v)
- #define CHECK_PID_LEGALITY(_pid)	if (pid_nr(_pid) >= 0)
- #define KILL_THREAD_PID(_A, _B, _C)	kill_pid(_A, _B, _C)
- #else
- typedef	pid_t	THREAD_PID;
-+#define	THREAD_PID_INIT_VALUE	-1
- #define	GET_PID(_v)	_v
- #define	GET_PID_NUMBER(_v)	_v
- #define CHECK_PID_LEGALITY(_pid)	if (_pid >= 0)
-@@ -187,11 +188,11 @@ struct os_lock  {
- struct os_cookie {
- 
- #ifdef RT2870
--	struct usb_device	*pUsb_Dev;
-+	struct usb_device		*pUsb_Dev;
- 
--	struct task_struct	*MLMEThr_task;
--	struct task_struct	*RTUSBCmdThr_task;
--	struct task_struct	*TimerQThr_task;
-+	THREAD_PID				MLMEThr_pid;
-+	THREAD_PID				RTUSBCmdThr_pid;
-+	THREAD_PID				TimerQThr_pid;
- #endif // RT2870 //
- 
- 	struct tasklet_struct 	rx_done_task;
+ 	/* start from the Nth VMA */
+ 	for (p = rb_first(&mm->mm_rb); p; p = rb_next(p))
 
 
