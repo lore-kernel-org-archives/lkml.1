@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752263AbZHMIXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbZHMIXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752263AbZHMIXc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 04:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbZHMIXb
+	id S1752767AbZHMIXn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 04:23:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZHMIXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 04:23:31 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42735 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751312AbZHMIXa (ORCPT
+	Thu, 13 Aug 2009 04:23:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43682 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752338AbZHMIXf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 04:23:30 -0400
-Subject: Re: [RFC patch] clean up swiotlb check in intel_iommu_init
-From: David Woodhouse <dwmw2@infradead.org>
-To: Luming Yu <luming.yu@gmail.com>
-Cc: "Yu, Fenghua" <fenghua.yu@intel.com>, "Luck, Tony" <tony.luck@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <3877989d0908122011n27589ff8wfc6d6b50912496c6@mail.gmail.com>
-References: <3877989d0908122011n27589ff8wfc6d6b50912496c6@mail.gmail.com>
+	Thu, 13 Aug 2009 04:23:35 -0400
+Subject: Re: [PATCH 4/2] perf_counter: Fix swcounter context invariance
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       stephane eranian <eranian@googlemail.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090813080515.GA6001@nowhere>
+References: <20090812153529.716542680@chello.nl>
+	 <1250149915.10001.66.camel@twins>  <20090813080515.GA6001@nowhere>
 Content-Type: text/plain
-Date: Thu, 13 Aug 2009 09:23:21 +0100
-Message-Id: <1250151801.29180.192.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Date: Thu, 13 Aug 2009 10:22:58 +0200
+Message-Id: <1250151778.10001.67.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-13 at 11:11 +0800, Luming Yu wrote:
+On Thu, 2009-08-13 at 10:05 +0200, Frederic Weisbecker wrote:
+> On Thu, Aug 13, 2009 at 09:51:55AM +0200, Peter Zijlstra wrote:
+> > Not really related to this topic, but it needs posting anyway.
+> > 
+> > ---
+> > 
+> > Subject: perf_counter: Fix swcounter context invariance
+> > From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Date: Fri Aug 07 13:29:13 CEST 2009
+> > 
+> > perf_swcounter_is_counting() uses a lock, which means we cannot use
+> > swcounters from NMI or when holding that particular lock, this is
+> > unintended.
+> > 
+> > The below removes the lock, this opens up race window, but not worse
+> > than the swcounters already experience due to RCU traversal of the
+> > context in perf_swcounter_ctx_event().
+> > 
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 > 
-> Since swiotlb is an fall back option that might have
-> initialized. We don't need to stop intel_iommu_init
-> because of swiotlb..
 > 
-> Please review. If make sense, please apply.
+> 
+> As a side effect, it's possible this also fixes the hard lockups
+> while opening a lockdep tracepoint counter.
 
-It doesn't apply to the iommu-2.6.git tree.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+It will -- not a side-effect at all, intended consequence :-)
