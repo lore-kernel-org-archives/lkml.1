@@ -1,159 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755280AbZHMSk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755286AbZHMSmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755280AbZHMSk3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 14:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZHMSk2
+	id S1755286AbZHMSmR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 14:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbZHMSmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 14:40:28 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:34908 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752646AbZHMSk1 (ORCPT
+	Thu, 13 Aug 2009 14:42:17 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:53859 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752929AbZHMSmQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 14:40:27 -0400
-Date: Thu, 13 Aug 2009 13:40:09 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       sds@tycho.nsa.gov, davem@davemloft.net, shemminger@linux-foundation.org,
-       kees@ubuntu.com, morgan@kernel.org, casey@schaufler-ca.com,
-       dwalsh@redhat.com
-Subject: Re: [PATCH 2/3] security: introducing security_request_module
-Message-ID: <20090813184009.GA8391@us.ibm.com>
-References: <20090813134451.29186.41664.stgit@paris.rdu.redhat.com> <20090813134457.29186.7182.stgit@paris.rdu.redhat.com>
+	Thu, 13 Aug 2009 14:42:16 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAM/7g0qrR7MV/2dsb2JhbAC7XIgrkRMFhBk
+X-IronPort-AV: E=Sophos;i="4.43,375,1246838400"; 
+   d="scan'208";a="366859266"
+Date: Thu, 13 Aug 2009 11:42:18 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: [PATCH] Combine two one-character CR-LF writes into one
+	two-character write for O_ONLCR
+Message-ID: <20090813184218.GA12832@cuplxvomd02.corp.sa.net>
+References: <20090813175430.GA8769@cuplxvomd02.corp.sa.net> <20090813181521.GB28172@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090813134457.29186.7182.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20090813181521.GB28172@kroah.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-1; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric Paris (eparis@redhat.com):
-> Calling request_module() will trigger a userspace upcall which will load a
-> new module into the kernel.  This can be a dangerous event if the process
-> able to trigger request_module() is able to control either the modprobe
-> binary or the module binary.  This patch adds a new security hook to
-> request_module() which can be used by an LSM to control a processes ability
-> to call request_module().
+On Thu, Aug 13, 2009 at 11:15:21AM -0700, Greg KH wrote:
+> On Thu, Aug 13, 2009 at 10:54:30AM -0700, David VomLehn wrote:
+> > When handling output of a newline character in O_ONLCR mode, the n_tty.c
+> > do_output_char() function uses the struct tty_operations function write_room()
+> > to determine whether it is possible to write two characters. It uses
+> > tty_put_char() for each character which, for the USB generic serial driver,
+> > translates into a write() for each character. For the USB generic serial
+> > driver the value returned by write_room() only applies to the next write().
+> > A second write() done in quick succession will fail because the write URB
+> > buffer is still busy from the first write(). In this case, it results in the
+> > printing of a carriage return without the following line feed.
 > 
-> Signed-off-by: Eric Paris <eparis@redhat.com>
+> How about fixing the usb-serial generic driver to properly handle stuff
+> like this instead?  It should be using a fifo and not the stupid method
+> it currently is.
 
-Looks fine code-wise.
+Good question. Right now, there are a number of USB serial devices that don't
+use the generic USB serial framework, but they generally seem to use the
+write_urb_busy flag the same way the generic code does. This makes it easier
+to mix and match generic and non-generic code. Going to a FIFO approach and
+doing away with the write_urb_busy flag seemed like a lot of change for very
+little benefit. In addition, I would argue that doing one two-character write()
+of two one-character writes() is a more logical way to output two characters,
+anyway.
 
-Just to match the rest of the documentation, the description in
-security.h should probably mention 'Return 0 if allowed'.
+I have another motivation for maintaining the write_urb_busy flag as part of
+the standard USB generic serial environment: I'm finishing up an RFC patchset
+that provides for a polled USB console. This way you won't need any of the
+buffering some of the USB serial drivers use, for which overruns can still
+occur and, which may very well not have written the output by the time they
+return. In other words USB consoles will have the same synchronous output
+behavior as dumb UART consoles.  I have it working with EHCI and am looking
+at OHCI.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+> Anyway, what device are you using that uses the usb-serial generic
+> driver that you are seeing this problem with?
 
-> ---
-> 
->  include/linux/security.h |   10 ++++++++++
->  kernel/kmod.c            |    4 ++++
->  security/capability.c    |    6 ++++++
->  security/security.c      |    5 +++++
->  4 files changed, 25 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/security.h b/include/linux/security.h
-> index d5f6578..34c5465 100644
-> --- a/include/linux/security.h
-> +++ b/include/linux/security.h
-> @@ -678,6 +678,9 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
->   *	@inode points to the inode to use as a reference.
->   *	The current task must be the one that nominated @inode.
->   *	Return 0 if successful.
-> + * @kernel_module_request:
-> + *	Ability to trigger the kernel to automatically upcall to userspace for
-> + *	userspace to load a kernel module with the given name.
->   * @task_setuid:
->   *	Check permission before setting one or more of the user identity
->   *	attributes of the current process.  The @flags parameter indicates
-> @@ -1500,6 +1503,7 @@ struct security_operations {
->  	void (*cred_commit)(struct cred *new, const struct cred *old);
->  	int (*kernel_act_as)(struct cred *new, u32 secid);
->  	int (*kernel_create_files_as)(struct cred *new, struct inode *inode);
-> +	int (*kernel_module_request)(void);
->  	int (*task_setuid) (uid_t id0, uid_t id1, uid_t id2, int flags);
->  	int (*task_fix_setuid) (struct cred *new, const struct cred *old,
->  				int flags);
-> @@ -1755,6 +1759,7 @@ int security_prepare_creds(struct cred *new, const struct cred *old, gfp_t gfp);
->  void security_commit_creds(struct cred *new, const struct cred *old);
->  int security_kernel_act_as(struct cred *new, u32 secid);
->  int security_kernel_create_files_as(struct cred *new, struct inode *inode);
-> +int security_kernel_module_request(void);
->  int security_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags);
->  int security_task_fix_setuid(struct cred *new, const struct cred *old,
->  			     int flags);
-> @@ -2306,6 +2311,11 @@ static inline int security_kernel_create_files_as(struct cred *cred,
->  	return 0;
->  }
-> 
-> +static inline int security_kernel_module_request(void)
-> +{
-> +	return 0;
-> +}
-> +
->  static inline int security_task_setuid(uid_t id0, uid_t id1, uid_t id2,
->  				       int flags)
->  {
-> diff --git a/kernel/kmod.c b/kernel/kmod.c
-> index 385c31a..5a7ae57 100644
-> --- a/kernel/kmod.c
-> +++ b/kernel/kmod.c
-> @@ -78,6 +78,10 @@ int __request_module(bool wait, const char *fmt, ...)
->  #define MAX_KMOD_CONCURRENT 50	/* Completely arbitrary value - KAO */
->  	static int kmod_loop_msg;
-> 
-> +	ret = security_kernel_module_request();
-> +	if (ret)
-> +		return ret;
-> +
->  	va_start(args, fmt);
->  	ret = vsnprintf(module_name, MODULE_NAME_LEN, fmt, args);
->  	va_end(args);
-> diff --git a/security/capability.c b/security/capability.c
-> index 4f23f4f..06400cf 100644
-> --- a/security/capability.c
-> +++ b/security/capability.c
-> @@ -396,6 +396,11 @@ static int cap_kernel_create_files_as(struct cred *new, struct inode *inode)
->  	return 0;
->  }
-> 
-> +static int cap_kernel_module_request(void)
-> +{
-> +	return 0;
-> +}
-> +
->  static int cap_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags)
->  {
->  	return 0;
-> @@ -961,6 +966,7 @@ void security_fixup_ops(struct security_operations *ops)
->  	set_to_cap_if_null(ops, cred_commit);
->  	set_to_cap_if_null(ops, kernel_act_as);
->  	set_to_cap_if_null(ops, kernel_create_files_as);
-> +	set_to_cap_if_null(ops, kernel_module_request);
->  	set_to_cap_if_null(ops, task_setuid);
->  	set_to_cap_if_null(ops, task_fix_setuid);
->  	set_to_cap_if_null(ops, task_setgid);
-> diff --git a/security/security.c b/security/security.c
-> index b98c684..f88eaf6 100644
-> --- a/security/security.c
-> +++ b/security/security.c
-> @@ -709,6 +709,11 @@ int security_kernel_create_files_as(struct cred *new, struct inode *inode)
->  	return security_ops->kernel_create_files_as(new, inode);
->  }
-> 
-> +int security_kernel_module_request(void)
-> +{
-> +	return security_ops->kernel_module_request();
-> +}
-> +
->  int security_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags)
->  {
->  	return security_ops->task_setuid(id0, id1, id2, flags);
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I'm using a cp210x work-alike.
+
+> greg k-h
+
+David VL
