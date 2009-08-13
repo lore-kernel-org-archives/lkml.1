@@ -1,128 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbZHMUFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbZHMUGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756065AbZHMUFm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbZHMUFh
+	id S1756126AbZHMUGq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:06:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932211AbZHMT7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:05:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36999 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755657AbZHMUFc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:05:32 -0400
-Date: Thu, 13 Aug 2009 13:05:10 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [GIT pull] genirq fixes for 2.6.31
-In-Reply-To: <alpine.LFD.2.00.0908132145340.1283@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0908131259340.28882@localhost.localdomain>
-References: <alpine.LFD.2.00.0908132100210.1283@localhost.localdomain> <alpine.LFD.2.01.0908131211550.28882@localhost.localdomain> <alpine.LFD.2.00.0908132145340.1283@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 13 Aug 2009 15:59:49 -0400
+Received: from kroah.org ([198.145.64.141]:41834 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932214AbZHMT7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:48 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:31 2009
+Message-Id: <20090813195130.963233083@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Thu, 13 Aug 2009 12:50:18 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       NeilBrown <neilb@suse.de>
+Subject: [patch 43/74] md: when a level change reduces the number of devices, remove the excess.
+References: <20090813194935.985368088@mini.kroah.org>
+Content-Disposition: inline; filename=md-when-a-level-change-reduces-the-number-of-devices-remove-the-excess.patch
+In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
+------------------
 
-On Thu, 13 Aug 2009, Thomas Gleixner wrote:
+From: NeilBrown <neilb@suse.de>
 
-> On Thu, 13 Aug 2009, Linus Torvalds wrote:
-> > Now, I can see a bug, which is that "action->tsk" may have been set to 
-> > NULL. But I can't see a race, and I can't see a reason for all the code 
-> > movement. So quite frankly, I think the comments (both in the code and in 
-> > the commit message) are just wrong. And the odd "load it first, then do 
-> > other things" code looks confused.
-> > 
-> > So why is this not just a
-> > 
-> > 	if (action->thread)
-> > 		wake_up_process(action->thread);
-> > 
-> > with appropriate comments?
-> 
-> What guarantees that the compiler does not dereference action->thread
-> twice and the action->thread = NULL; operation happens between the
-> check and the wake_up_process() call? I might be paranoid, but ...
+commit 3a981b03f38dc3b8a69b77cbc679e66c1318a44a upstream.
 
-Aren't we holding the lock here?
+When an array is changed from RAID6 to RAID5, fewer drives are
+needed.  So any device that is made superfluous by the level
+conversion must be marked as not-active.
+For the RAID6->RAID5 conversion, this will be a drive which only
+has 'Q' blocks on it.
 
-And if we are _not_ holding the lock, then it's racy anyway, and the right 
-fix is the other one I suggested:
-
-> > Or, alternatively, just move all the "clear action->thread" in free_irq() 
-> > to after having done the "synchronize_irq()" thing, and then - afaik - 
-> > you'll not need that test at all, because you're guaranteed that as long 
-> > as you're in an interrupt handler, the thing shouldn't be cleared.
-> 
-> Right, I looked at that as well, but we need to do it different than
-> just calling synchronize_irq(), as we need to keep desc->lock after we
-> established that no interrupt is in progress. Otherwise we can run
-> into the same problem which we have right now. Patch below.
-
-But we already _do_ call synchronize_irq().
-
-And no, we'd better not be running into the same problem, becaue dang it, 
-if we do, then 'action' itself is unreliable (since we'll be doing a 
-'kfree()' in it in free_irq())
-
-IOW, why not just make the patch do something like the appended? 
-
-NOTE! This is UNTESTED. And I also - on purpose - removed the "set 
-action->thread to NULL", because we're going to free 'action', so if 
-anything depends on it, it's already buggy.
-
-What am I missing?
-
-		Linus
+Signed-off-by: NeilBrown <neilb@suse.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/irq/manage.c |   17 ++++++++---------
- 1 files changed, 8 insertions(+), 9 deletions(-)
+ drivers/md/md.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 61c679d..0747f22 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -809,9 +809,6 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
- 			desc->chip->disable(irq);
- 	}
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -2680,6 +2680,7 @@ level_store(mddev_t *mddev, const char *
+ 	ssize_t rv = len;
+ 	struct mdk_personality *pers;
+ 	void *priv;
++	mdk_rdev_t *rdev;
  
--	irqthread = action->thread;
--	action->thread = NULL;
--
- 	spin_unlock_irqrestore(&desc->lock, flags);
- 
- 	unregister_handler_proc(irq, action);
-@@ -819,12 +816,6 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
- 	/* Make sure it's not being used on another CPU: */
- 	synchronize_irq(irq);
- 
--	if (irqthread) {
--		if (!test_bit(IRQTF_DIED, &action->thread_flags))
--			kthread_stop(irqthread);
--		put_task_struct(irqthread);
--	}
--
- #ifdef CONFIG_DEBUG_SHIRQ
- 	/*
- 	 * It's a shared IRQ -- the driver ought to be prepared for an IRQ
-@@ -840,6 +831,14 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
- 		local_irq_restore(flags);
- 	}
- #endif
-+
-+	irqthread = action->thread;
-+	if (irqthread) {
-+		if (!test_bit(IRQTF_DIED, &action->thread_flags))
-+			kthread_stop(irqthread);
-+		put_task_struct(irqthread);
-+	}
-+
- 	return action;
- }
- 
+ 	if (mddev->pers == NULL) {
+ 		if (len == 0)
+@@ -2759,6 +2760,12 @@ level_store(mddev_t *mddev, const char *
+ 	mddev_suspend(mddev);
+ 	mddev->pers->stop(mddev);
+ 	module_put(mddev->pers->owner);
++	/* Invalidate devices that are now superfluous */
++	list_for_each_entry(rdev, &mddev->disks, same_set)
++		if (rdev->raid_disk >= mddev->raid_disks) {
++			rdev->raid_disk = -1;
++			clear_bit(In_sync, &rdev->flags);
++		}
+ 	mddev->pers = pers;
+ 	mddev->private = priv;
+ 	strlcpy(mddev->clevel, pers->name, sizeof(mddev->clevel));
+
+
