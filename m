@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbZHMTwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932142AbZHMTr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755793AbZHMTwa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:52:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbZHMTw1
+	id S932142AbZHMTr5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932099AbZHMTr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:52:27 -0400
-Received: from kroah.org ([198.145.64.141]:36723 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:47:56 -0400
+Received: from kroah.org ([198.145.64.141]:36746 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755600AbZHMTrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:47:48 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:36 2009
-Message-Id: <20090813194336.755724865@mini.kroah.org>
+	id S932098AbZHMTrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:47:53 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:37 2009
+Message-Id: <20090813194337.619553936@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:30 -0700
+Date: Thu, 13 Aug 2009 12:40:35 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Giacomo Lozito <james@develia.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 09/28] USB: storage: raise timeout in usb_stor_Bulk_max_lun
+       Mark Langsdorf <mark.langsdorf@amd.com>,
+       Joerg Roedel <joerg.roedel@amd.com>, jbarnes@virtuousgeek.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 14/28] x86: enable GART-IOMMU only after setting up protection methods
 References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=usb-storage-raise-timeout-in-usb_stor_bulk_max_lun.patch
+Content-Disposition: inline; filename=x86-enable-gart-iommu-only-after-setting-up-protection-methods.patch
 In-Reply-To: <20090813194554.GA13947@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,33 +32,60 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Giacomo Lozito <james@develia.org>
+From: Mark Langsdorf <mark.langsdorf@amd.com>
 
-commit 7a777919bbeec3eac1d7904a728a60e9c2bb9c67 upstream.
+commit fe2245c905631a3a353504fc04388ce3dfaf9d9e upstream.
 
-Requests to get max LUN, for certain USB storage devices, require a
-longer timeout before a correct reply is returned. This happens for a
-Realtek USB Card Reader (0bda:0152), which has a max LUN of 3 but is set
-to 0, thus losing functionality, because of the timeout occurring too
-quickly.
+The current code to set up the GART as an IOMMU enables GART
+translations before it removes the aperture from the kernel memory
+map, sets the GART PTEs to UC, sets up the guard and scratch
+pages, or does a wbinvd().  This leaves the possibility of cache
+aliasing open and can cause system crashes.
 
-Raising the timeout value fixes the issue and might help other devices
-to return a correct max LUN value as well.
+Re-order the code so as to enable the GART translations only
+after all safeguards are in place and the tlb has been flushed.
 
-Signed-off-by: Giacomo Lozito <james@develia.org>
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+AMD has tested this patch on both Istanbul systems and 1st
+generation Opteron systems with APG enabled and seen no adverse
+effects.  Istanbul systems with HT Assist enabled sometimes
+see MCE errors due to cache artifacts with the unmodified
+code.
 
---- a/drivers/usb/storage/transport.c
-+++ b/drivers/usb/storage/transport.c
-@@ -961,7 +961,7 @@ int usb_stor_Bulk_max_lun(struct us_data *us)
- 				 US_BULK_GET_MAX_LUN, 
- 				 USB_DIR_IN | USB_TYPE_CLASS | 
- 				 USB_RECIP_INTERFACE,
--				 0, us->ifnum, us->iobuf, 1, HZ);
-+				 0, us->ifnum, us->iobuf, 1, 10*HZ);
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>
+Cc: akpm@linux-foundation.org
+Cc: jbarnes@virtuousgeek.org
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+---
+ arch/x86/kernel/pci-gart_64.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -658,8 +658,6 @@ static __init int init_k8_gatt(struct ag
+ 	memset(gatt, 0, gatt_size);
+ 	agp_gatt_table = gatt;
  
- 	US_DEBUGP("GetMaxLUN command result is %d, data is %d\n", 
- 		  result, us->iobuf[0]);
+-	enable_gart_translations();
+-
+ 	error = sysdev_class_register(&gart_sysdev_class);
+ 	if (!error)
+ 		error = sysdev_register(&device_gart);
+@@ -828,6 +826,14 @@ void __init gart_iommu_init(void)
+ 	wbinvd();
+ 
+ 	/*
++	 * Now all caches are flushed and we can safely enable
++	 * GART hardware.  Doing it early leaves the possibility
++	 * of stale cache entries that can lead to GART PTE
++	 * errors.
++	 */
++	enable_gart_translations();
++
++	/*
+ 	 * Try to workaround a bug (thanks to BenH):
+ 	 * Set unmapped entries to a scratch page instead of 0.
+ 	 * Any prefetches that hit unmapped entries won't get an bus abort
 
 
