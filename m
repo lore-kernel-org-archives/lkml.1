@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbZHMV3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbZHMVav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756358AbZHMV3v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 17:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZHMV3u
+	id S1756387AbZHMVav (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 17:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbZHMVav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 17:29:50 -0400
-Received: from smtprelay01.ispgateway.de ([80.67.31.35]:58362 "EHLO
-	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360AbZHMV3u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 17:29:50 -0400
-References: <20090813121722.48988dfc.peter@piie.net> <20090813135648.77c99f68.akpm@linux-foundation.org>
-Message-ID: <cone.1250198719.400680.26378.1000@deskpiie>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, petkovbb@googlemail.com, lenb@kernel.org,
-       andi@lisas.de
-Subject: Re: [PATCH 1/2] acerhdf: convert to dev_pm_ops
-Date: Thu, 13 Aug 2009 23:25:19 +0200
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
+	Thu, 13 Aug 2009 17:30:51 -0400
+Received: from kroah.org ([198.145.64.141]:47165 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752515AbZHMVau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 17:30:50 -0400
+Date: Thu, 13 Aug 2009 14:27:50 -0700
+From: Greg KH <greg@kroah.com>
+To: David VomLehn <dvomlehn@cisco.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [PATCH] Combine two one-character CR-LF writes into one
+ two-character write for O_ONLCR
+Message-ID: <20090813212750.GB24127@kroah.com>
+References: <20090813175430.GA8769@cuplxvomd02.corp.sa.net>
+ <20090813205018.4d781c74@lxorguk.ukuu.org.uk>
+ <20090813195554.GA22751@cuplxvomd02.corp.sa.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
+In-Reply-To: <20090813195554.GA22751@cuplxvomd02.corp.sa.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton writes:
+On Thu, Aug 13, 2009 at 12:55:54PM -0700, David VomLehn wrote:
+> On Thu, Aug 13, 2009 at 08:50:18PM +0100, Alan Cox wrote:
+> > > do_output_char() function uses the struct tty_operations function write_room()
+> > > to determine whether it is possible to write two characters. It uses
+> > > tty_put_char() for each character which, for the USB generic serial driver,
+> > > translates into a write() for each character. For the USB generic serial
+> > > driver the value returned by write_room() only applies to the next write().
+> > 
+> > The USB serial driver is broken, fix it instead. It's not even hard to
+> > fix.
+> > 
+> > > +			tty->ops->write(tty, crlf, ARRAY_SIZE(crlf));
+> > > +			return ARRAY_SIZE(crlf);
+> > 
+> > Emphatic NAK. Someone needs to actually fix the broken USB drivers for
+> > once. This is just one example of where the device will go kersplat if its
+> > broken, others include things like losing flow control.
+> 
+> Works for me; please consider the patch withdrawn. I'll take a crack at fixing
+> the generic serial driver the right way; if other drivers are doing mix-and-match
+> with per-device code and generic code, they could get broken. I have no way to
+> test for this, so I'm hoping others will help out.
 
-> On Thu, 13 Aug 2009 12:17:22 +0200
-> Peter Feuerer <peter@piie.net> wrote:
-> 
->> acerhdf: convert to dev_pm_ops
->> 
->> v 1.1:
->> Add .freeze func ptr to support suspend-to-disk,
->> as suggested by Dmitry Torokhov.
->> 
->> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
->> Signed-off-by: Peter Feuerer <peter@piie.net>
->> Cc: Andreas Mohr <andi@lisas.de>
->> Cc: Len Brown <lenb@kernel.org>
-> 
-> I believe that Boris wrote this, yes?
+I have a whole box of different usb-serial devices, and can test just
+about everything out.
 
-Yes, Boris wrote the patch.
+thanks,
 
-> 
-> The way this patch/email was presented implies that you were the
-> primary author.
-> 
-> Please use an explicit From: line right at the top of the changelog
-> (after all the mail headers) to explicitly identify the primary author.
-> 
-> I added a
-> 
-> 	From: Borislav Petkov <petkovbb@gmail.com>
-> 
-> to my copy of this patch.  Please let me kow if that was incorrect.
-
-Thank you very much for adding this line. And thanks for teaching,.. yet 
-another thing I've learned from you :)
-
---peter
-
+greg k-h
