@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbZHMUAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbZHMT7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932275AbZHMUAA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932246AbZHMT74
+	id S1755952AbZHMT7a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755928AbZHMT73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:59:56 -0400
-Received: from kroah.org ([198.145.64.141]:41869 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:59:29 -0400
+Received: from kroah.org ([198.145.64.141]:41696 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932245AbZHMT7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:54 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:32 2009
-Message-Id: <20090813195131.992427366@mini.kroah.org>
+	id S1755909AbZHMT71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:27 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:27 2009
+Message-Id: <20090813195127.628539086@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:25 -0700
+Date: Thu, 13 Aug 2009 12:49:56 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch 50/74] ieee1394: sbp2: add support for disks >2 TB (and 16 bytes long CDBs)
+       Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+Subject: [patch 21/74] sysfs: fix hardlink count on device_move
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=ieee1394-sbp2-add-support-for-disks-2-tb.patch
+Content-Disposition: inline; filename=sysfs-fix-hardlink-count-on-device_move.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,55 +30,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
 
-Commit ebbb16bffa646f853899ef3fdc0ac7abab888703 upstream.
+commit 0f58b44582001c8bcdb75f36cf85ebbe5170e959 upstream.
 
-Increase the command ORB data structure to transport up to 16 bytes long
-CDBs (instead of 12 bytes), and tell the SCSI mid layer about it.  This
-is notably necessary for READ CAPACITY(16) and friends, i.e. support of
-large disks.
+Update directory hardlink count when moving kobjects to a new parent.
+Fixes the following problem which occurs when several devices are
+moved to the same parent and then unregistered:
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> ls -laF /sys/devices/css0/defunct/
+> total 0
+> drwxr-xr-x 4294967295 root root    0 2009-07-14 17:02 ./
+> drwxr-xr-x        114 root root    0 2009-07-14 17:02 ../
+> drwxr-xr-x          2 root root    0 2009-07-14 17:01 power/
+> -rw-r--r--          1 root root 4096 2009-07-14 17:01 uevent
+
+Signed-off-by: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/ieee1394/sbp2.c |    1 +
- drivers/ieee1394/sbp2.h |    8 +++++++-
- 2 files changed, 8 insertions(+), 1 deletion(-)
 
---- a/drivers/ieee1394/sbp2.c
-+++ b/drivers/ieee1394/sbp2.c
-@@ -880,6 +880,7 @@ static struct sbp2_lu *sbp2_alloc_device
- 	}
+---
+ fs/sysfs/dir.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -939,8 +939,10 @@ again:
+ 	/* Remove from old parent's list and insert into new parent's list. */
+ 	sysfs_unlink_sibling(sd);
+ 	sysfs_get(new_parent_sd);
++	drop_nlink(old_parent->d_inode);
+ 	sysfs_put(sd->s_parent);
+ 	sd->s_parent = new_parent_sd;
++	inc_nlink(new_parent->d_inode);
+ 	sysfs_link_sibling(sd);
  
- 	shost->hostdata[0] = (unsigned long)lu;
-+	shost->max_cmd_len = SBP2_MAX_CDB_SIZE;
- 
- 	if (!scsi_add_host(shost, &ud->device)) {
- 		lu->shost = shost;
---- a/drivers/ieee1394/sbp2.h
-+++ b/drivers/ieee1394/sbp2.h
-@@ -25,6 +25,12 @@
- #define SBP2_DEVICE_NAME		"sbp2"
- 
- /*
-+ * There is no transport protocol limit to the CDB length,  but we implement
-+ * a fixed length only.  16 bytes is enough for disks larger than 2 TB.
-+ */
-+#define SBP2_MAX_CDB_SIZE		16
-+
-+/*
-  * SBP-2 specific definitions
-  */
- 
-@@ -51,7 +57,7 @@ struct sbp2_command_orb {
- 	u32 data_descriptor_hi;
- 	u32 data_descriptor_lo;
- 	u32 misc;
--	u8 cdb[12];
-+	u8 cdb[SBP2_MAX_CDB_SIZE];
- } __attribute__((packed));
- 
- #define SBP2_LOGIN_REQUEST		0x0
+  out_unlock:
 
 
