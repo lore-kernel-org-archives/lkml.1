@@ -1,144 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbZHMGLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbZHMGSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752746AbZHMGLo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 02:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbZHMGLo
+	id S1752655AbZHMGSq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 02:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbZHMGSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 02:11:44 -0400
-Received: from cantor.suse.de ([195.135.220.2]:55434 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751360AbZHMGLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 02:11:43 -0400
-From: Neil Brown <neilb@suse.de>
-To: tomerma1@tau.ac.il (Tomer Margalit)
-Date: Thu, 13 Aug 2009 16:11:55 +1000
+	Thu, 13 Aug 2009 02:18:44 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:50569 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751222AbZHMGSn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 02:18:43 -0400
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, linux-mm@kvack.org,
+       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       akpm@linux-foundation.org, bernhard.walle@gmx.de,
+       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>
+	<20090812081906.5757.39417.sendpatchset@localhost.localdomain>
+	<m1bpmk8l1g.fsf@fess.ebiederm.org> <4A83893D.50707@redhat.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 12 Aug 2009 23:18:33 -0700
+In-Reply-To: <4A83893D.50707@redhat.com> (Amerigo Wang's message of "Thu\, 13 Aug 2009 11\:32\:13 +0800")
+Message-ID: <m1eirg5j9i.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19075.44715.906342.101666@notabene.brown>
-Cc: linux-kernel@vger.kernel.org, nzaidenberg@mac.com,
-       Nezer.Zaidenberg@edfenergy.com, scipioenterprises@yahoo.com,
-       tomerma1@post.tau.ac.il
-Subject: Re: Asynchronous Mirror
-In-Reply-To: message from Tomer Margalit on Friday August 7
-References: <20090807172938.GA1882@localhost.localdomain>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: amwang@redhat.com, avorontsov@ru.mvista.com, mingo@elte.hu, fenghua.yu@intel.com, bernhard.walle@gmx.de, akpm@linux-foundation.org, andi@firstfloor.org, nhorman@redhat.com, linux-mm@kvack.org, linux-ia64@vger.kernel.org, tony.luck@intel.com, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Amerigo Wang <amwang@redhat.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [Patch 8/8] kexec: allow to shrink reserved memory
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday August 7, tomerma1@tau.ac.il wrote:
-> Hi,
-> 
-> I am currently writing a (BSD licensed) asynchronous mirror device, as part of a workshop for Tel Aviv University (under the direction of Nezer Zaidenberg).
+Amerigo Wang <amwang@redhat.com> writes:
 
-You are aware, I assume, that the Linux kernel already contains this
-functionality as part of 'md', and is likely to gain a second
-implementation in DRDB shortly..
+> Eric W. Biederman wrote:
+>> Amerigo Wang <amwang@redhat.com> writes:
+>>
+>>   
+>>> This patch implements shrinking the reserved memory for crash kernel,
+>>> if it is more than enough.
+>>>
+>>> For example, if you have already reserved 128M, now you just want 100M,
+>>> you can do:
+>>>
+>>> # echo $((100*1024*1024)) > /sys/kernel/kexec_crash_size
+>>>     
+>>
+>> Getting closer (comments inline)
+>>
+>> Semantically this patch is non-contriversial and pretty
+>> simple, but still needs a fair amount of review.  Can
+>> you put this patch at the front of your patch set.
+>>
+>>   
+>
+> Sure, I will do it when I resend them next time.
+>
+> I add mm people into Cc.
+>>> Index: linux-2.6/kernel/kexec.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/kernel/kexec.c
+>>> +++ linux-2.6/kernel/kexec.c
+>>> @@ -1083,6 +1083,76 @@ void crash_kexec(struct pt_regs *regs)
+>>>  	}
+>>>  }
+>>>  +int kexec_crash_kernel_loaded(void)
+>>> +{
+>>> +	int ret;
+>>> +	if (!mutex_trylock(&kexec_mutex))
+>>> +		return 1;
+>>>     
+>>
+>> We don't need trylock on this code path   
+>
+> OK.
+>
+>>   
+>>> +	ret = kexec_crash_image != NULL;
+>>> +	mutex_unlock(&kexec_mutex);
+>>> +	return ret;
+>>> +}
+>>> +
+>>> +size_t get_crash_memory_size(void)
+>>> +{
+>>> +	size_t size;
+>>> +	if (!mutex_trylock(&kexec_mutex))
+>>> +		return 1;
+>>>     
+>>
+>> We don't need trylock on this code path 
+>>
+>>   
+>
+> Hmm, crashk_res is a global struct, so other process can also
+> change it... but currently no process does that, right?
+>
 
-Of course that doesn't mean you shouldn't enjoy yourself writing your
-own.
+We still need the lock.  Just doing trylock doesn't instead
+of just sleeping doesn't seem to make any sense on these
+code paths.
 
+>>> +	size = crashk_res.end - crashk_res.start + 1;
+>>> +	mutex_unlock(&kexec_mutex);
+>>> +	return size;
+>>> +}
+>>> +
+>>> +int shrink_crash_memory(unsigned long new_size)
+>>> +{
+>>> +	struct page **pages;
+>>> +	int ret = 0;
+>>> +	int  npages, i;
+>>> +	unsigned long addr;
+>>> +	unsigned long start, end;
+>>> +	void *vaddr;
+>>> +
+>>> +	if (!mutex_trylock(&kexec_mutex))
+>>> +		return -EBUSY;
+>>>     
+>>
+>> We don't need trylock on this code path 
+>>
+>> We are missing the check to see if the crash_kernel is loaded
+>> under this lock instance. So I please move the kexec_crash_image != NULL
+>> test inline here and kill the kexec_crash_kernel_loaded function.
+>>   
+>
+> Ok, no problem.
+>
+>>   
+>>> +	start = crashk_res.start;
+>>> +	end = crashk_res.end;
+>>> +
+>>> +	if (new_size >= end - start + 1) {
+>>> +		ret = -EINVAL;
+>>> +		if (new_size == end - start + 1)
+>>> +			ret = 0;
+>>> +		goto unlock;
+>>> +	}
+>>> +
+>>> +	start = roundup(start, PAGE_SIZE);
+>>> +	end = roundup(start + new_size, PAGE_SIZE) - 1;
+>>> +	npages = (end + 1 - start ) / PAGE_SIZE;
+>>> +
+>>> +	pages = kmalloc(sizeof(struct page *) * npages, GFP_KERNEL);
+>>> +	if (!pages) {
+>>> +		ret = -ENOMEM;
+>>> +		goto unlock;
+>>> +	}
+>>> +	for (i = 0; i < npages; i++) {
+>>> +		addr = end + 1 + i * PAGE_SIZE;
+>>> +		pages[i] = virt_to_page(addr);
+>>> +	}
+>>> +
+>>> +	vaddr = vm_map_ram(pages, npages, 0, PAGE_KERNEL);
+>>>     
+>>
+>> This is the wrong kernel call to use.  I expect this needs to look
+>> like a memory hotplug event.  This does not put the pages into the
+>> free page pool.
+>>   
+>
+> Well, I also wanted to use an memory-hotplug API, but that will make the code
+> depend on memory-hotplug, which certainly is not what we want...
+>
+> I checked the mm code, actually what I need is an API which is similar to
+> add_active_range(), but add_active_range() can't be used here since it is marked
+> as "__init".
+>
+> Do we have that kind of API in mm? I can't find one.
 
-> 
-> The purpose of the device is to be able to attach to an existing device, intercept the incoming writes, and send them to a remote location (and remote here means other side of the world).
-> The asynchronous part is that the device keeps a window of about a minute of writes and makes sure it sends all of it (if more writes are recieved while the window is full, they are blocked until the it clears).
-> 
-> I am in charge of writing the kernel part of it, and so ive written an alpha version (Located in "http://www.cs.tau.ac.il/~tomerma1/amirror_src.zip")).
-> 
-> Right now the driver is designed like this (right now it is designed only for one asynchronous mirror device):
-> There are two modules. The main module creates a device on top of the target device, intercepts writes, and puts them in a kernel buffer (several dozen pages - but will be changed to the whole window to save copies).
-> The other module creates a device, only to be used by a daemon. The daemon allocates a buffer (the send window) and creates two threads - one ioctls the other module, and stays in the ioctl. The ioctl/daemon thread continously copies the kernel buffer to the daemon buffer. The other thread just sends whatever is in the send buffer.
-> 
-> Right now im trying to get rid of the other module and put the ioctl in the main module (and just tell the daemon to ioctl the main module).
-> However, this causes a problem that i cant explain...
-> When i do a write to the device (offset: 0, data: "a" (len: 1)), the following thing happens:
-> 1) The device is opened.
-> 2) A read is issued (as it should to get the data that must be rewritten in the rest of the page ).
-> 3) The device is closed and the write ends successfully.
-> 4) 30+ seconds afterwards the actual write is recieved.
-> 
-> When i use two modules, this never happens - the write comes before the device is closed, and (i think, no proof though) the write ends after the write is issued. Needless to say that i added an idle ioctl that just waits to the two-module version and the same thing (as the single-module version) happens (hinting that the ioctl is changing some things).
-> 
+Perhaps we will need to remove __init from add_active_range.  I know the logic
+but I'm not up to speed on the mm pieces at the moment.
 
-I suspect the important difference isn't the ioctl but rather the fact
-that your daemon is keeping the device open.
-When you open /dev/whatever and write, the data is stored in the page
-cache and doesn't get sent to the device until the page is flushed,
-usually after 30 seconds.
-However when the last close on a block device happens (so there are no
-longer any open filedescriptors on the device) it flushes all cached
-pages immediately.
-This explains what you see.
-
-
-> Since it seems like the ioctl causes the problem i will probably change the ioctl to spawn a kernel thread and work from there (hoping that will solve it).
-> 
-> (BTW, im using a custom make_request function (i call blk_queue_make_request)).
-> 
-> I would appreciate it if you could help me with the following:
-> 1) Why is the ioctl causing this sort of behavior (if there is no ioctl in the same module it seems to be ok...)?
-
-It isn't the ioctl, it is the fact that the device is being held open.
-
-> 2) Does the custom make_request function promise me that EVERY bio recieved by the device is directly handed to my make_request function? Or is there some kind of schedualer that hands me the requests (I looked at the I/O schedualer algorithm in the biodoc.txt, but it seems to be relevant only for devices that use a request_queue)?
-
-Every bio received should be passed on immediately.  However writes to
-a file or to /dev/XXX don't get translated into a bio immediately.
-
-
-> 3) I saw (in the generic_make_request code) that only one make request can be active at a time... Is that something i can/should base my code on?
-
-I guess you are talking about the recursion prevention...
-If the code in the make_request function tries to call
-generic_make_request on another device then that request is queued
-until the first make_request completes.
-You shouldn't need to worry about this in your code.
-
-
-> 4) Can generic_make_request be called several times? Cause in the code 
-> (blk-core.c) the first line checks that current->bio_tail is non-null and then dereferences, and the last line changes it to null.. If generic_make_request can be called several times then how do you know that they cant mess each other up (i havent seen any locking (in the low level at least))?
-
-'current' is a per-thread data structure.  There is never any
-contention accessing it so no locking is needed.
-
-> 5) I have assumed in the code that the bios that i get are sector aligned and are in sector multiples... Is that a correct assumption? (cause i havent seen an exact statement that that is the case anywhere...) Also (sorry, silly question, but i dont like assuming things) would it be valid to assume that the size of a page (kmap(p) where p is struct page) is PAGE_SIZE (or more specifically, is the maximal length for a single bio_vec PAGE_SIZE?)?
-
-Yes, bios are sector aligned and bi_size is a multiple of 512.
-Each page in bio_vec is PAGE_SIZE though offset/size may point to a
-subrange of that page.
-
-> 6) Im currently using generic_make_request to resubmit a bio (or returning non-zero in make_request and changing bi_bdev to the target)... Does it resubmit it to the request_queue in the usual way? Or does it bypass it somehow?
-
-I think that answer it 'yes', but I'm not certain what you mean.
-
-
-> 7) About my open and release, i thought that the proper thing to put there is the target device's open and release (so that target device can prepare), but as far as i could see, in the raid implementation (md.c i think), the open and release methods dont tell the underlying devices to open/release... So, should i forget about it? or is it important?
-
-See lock_rdev in md.c
-It calls open_by_devnum from fs/block_dev.c
-This call blkdev_get which called the ->open routine of the underlying device.
-
-> 8) I dont use procfs or sysfs at all, and i intend on using only ioctls for special commands... However in several places it was written that sysfs is supposed to introduce standartization to the driver model (didnt really try to understand it cause ioctls are fine by me)... Should i reconsider not using sysfs/procfs?
-
-If you want this accepted in to mainline (which would seem pointless
-as we have 2 async-mirrors as I have already said), then using sysfs
-(not procfs) would be advised, rather than ioctl.
-If you are just doing it for your own education, then do whatever you
-like.
-
-NeilBrown
-
-
-> 9) Any suggestions for the code/interesting features would be most welcome.
-> 
-> Thanks in advance,
->          Tomer
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Eric
