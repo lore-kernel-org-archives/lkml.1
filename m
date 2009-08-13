@@ -1,95 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754942AbZHMQjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbZHMQkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754942AbZHMQjt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 12:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbZHMQjs
+	id S1754983AbZHMQkH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 12:40:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbZHMQkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 12:39:48 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:62703 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752317AbZHMQjs (ORCPT
+	Thu, 13 Aug 2009 12:40:06 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:30893 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754349AbZHMQkE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 12:39:48 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Michael Schnell <mschnell@lumino.de>
-Subject: Re: implementing Futex
-Date: Thu, 13 Aug 2009 18:39:41 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>
-References: <4A842B32.5030401@lumino.de>
-In-Reply-To: <4A842B32.5030401@lumino.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 13 Aug 2009 12:40:04 -0400
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+To: mingo@elte.hu
+Subject: Re: [PATCH] swap: send callback when swap slot is freed v2
+Date: Thu, 13 Aug 2009 22:09:54 +0530
+User-Agent: KMail/1.11.4 (Linux/2.6.29.6-217.2.3.fc11.x86_64; KDE/4.2.4; x86_64; ; )
+Cc: akpm@linux-foundation.org, hugh.dickins@tiscali.co.uk,
+       peterz@infradead.org, willy@linux.intel.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-mm-cc@laptop.org
+References: <200908132201.05719.ngupta@vflare.org>
+In-Reply-To: <200908132201.05719.ngupta@vflare.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908131839.41803.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18b+LaSrIwW7nQnNDrCuundpbyqURoojuNFLJs
- 12bevDYINNHX1QMxdPZHDRWtNAfkM5ONJiYOr3gNUZ7AzIh0I1
- p1i/tmOAIYa47yrcwix3A==
+Content-Disposition: inline
+Message-Id: <200908132209.54891.ngupta@vflare.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 August 2009, Michael Schnell wrote:
-> I am planning to implement a Futex on the upcoming MMU-enabled NIOS
-> architecture.
+(Re-sending with correct linux-mm mailing list address. My bad.)
 
-Ah, I'm always interested in new architectures. Are you already using
-all the asm-generic header files that we have in 2.6.31? Please tell
-me if you find problems with those.
+Currently, we have "swap discard" mechanism which sends a discard bio request
+when we find a free cluster during scan_swap_map(). This callback can come a
+long time after swap slots are actually freed.
 
-> One of the tasks is to provide the appropriate atomic user-space
-> operations for the Futex implementation. I was able to successfully do
-> this for the x86 user space code and we have been discussing, how to do
->  this with other archs.
-> 
-> Now in the Kernel code in "linux-2.6/arch/x86/include/asm/futex.h" there
-> are two different implementations for some atomic operations for the  Futex:
-> 
-> "futex_atomic_op_inuser()"    and
-> "futex_atomic_cmpxhg__inatomic()"
+This delay in callback is a great problem when (compressed) RAM [1] is used
+as a swap device. So, this change adds a callback which is called as
+soon as a swap slot becomes free. For above mentioned case of swapping
+over compressed RAM device, this is very useful since we can immediately
+free memory allocated for this swap page.
 
-Common trap. Just don't look at any x86 code when implementing
-a new architecture. The code isn't necessarily bad, but much of
-it has either too much compatibility crap for old interfaces, or
-it optimizes some functionality much more than you'd care for.
+This callback does not replace swap discard support. It is called with
+swap_lock held, so it is meant to trigger action that finishes quickly.
+However, swap discard is an I/O request and can be used for taking longer
+actions.
 
-In case of futex, look at how arch/sh does it. As Mike Frysinger
-mentioned in http://lkml.org/lkml/2009/7/3/70 , the asm-generic
-version is currently lacking functionality and we should use
-the sh version for new stuff. 
+Links:
+[1] http://code.google.com/p/compcache/
 
-Feel free to submit a patch that implements the operations correctly
-for non-SMP architectures in include/asm-generic/futex.h.
+Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+---
 
-> "futex_atomic_op_inuser()" seemingly accesses user space data while
-> being run in Kernel space (doing the .section __ex_table trick).
-> 
-> Questions:
-> 
-> Is this correct ?
+ include/linux/swap.h |    5 +++++
+ mm/swapfile.c        |   33 +++++++++++++++++++++++++++++++++
+ 2 files changed, 38 insertions(+), 0 deletions(-)
 
-yes.
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 7c15334..64796fc 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -8,6 +8,7 @@
+ #include <linux/memcontrol.h>
+ #include <linux/sched.h>
+ #include <linux/node.h>
++#include <linux/blkdev.h>
  
-> In a non-SMP environment do we need to use really atomic code here, or
-> does futex_atomic_op_inuser() run with interrupt disabled, anyway?
-
-The sh version just disables interrupts to get atomicity.
-
-> From reading the code (futex_atomic_op_inuser() seems only to be called
-> once (in futex.c) ), it seems that futex_atomic_op_inuser() is not
-> really used at all. It seems that it'd only called for futex_wake, and
-> here the "Operation" is derived from the last parameter of the system
-> call, which the man page says is ignored.  So, are all the operations
-> implemented there really necessary or just "nice to have" ?
-
-You misread futex_wake_op(). The operation comes from the second parameter
-of the syscall, not the last one.
-
-	Arnd <><
+ #include <asm/atomic.h>
+ #include <asm/page.h>
+@@ -20,6 +21,8 @@ struct bio;
+ #define SWAP_FLAG_PRIO_MASK	0x7fff
+ #define SWAP_FLAG_PRIO_SHIFT	0
+ 
++typedef void (swap_free_notify_fn) (struct block_device *, unsigned long);
++
+ static inline int current_is_kswapd(void)
+ {
+ 	return current->flags & PF_KSWAPD;
+@@ -155,6 +158,7 @@ struct swap_info_struct {
+ 	unsigned int max;
+ 	unsigned int inuse_pages;
+ 	unsigned int old_block_size;
++	swap_free_notify_fn *swap_free_notify_fn;
+ };
+ 
+ struct swap_list_t {
+@@ -295,6 +299,7 @@ extern sector_t swapdev_block(int, pgoff_t);
+ extern struct swap_info_struct *get_swap_info_struct(unsigned);
+ extern int reuse_swap_page(struct page *);
+ extern int try_to_free_swap(struct page *);
++extern void set_swap_free_notify(struct block_device *, swap_free_notify_fn *);
+ struct backing_dev_info;
+ 
+ /* linux/mm/thrash.c */
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index 8ffdc0d..d75729a 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -552,6 +552,37 @@ out:
+ 	return NULL;
+ }
+ 
++/*
++ * Sets callback for event when swap_map[offset] == 0
++ * i.e. page at this swap offset is no longer used.
++ */
++void set_swap_free_notify(struct block_device *bdev,
++			swap_free_notify_fn *notify_fn)
++{
++	unsigned int i;
++	struct swap_info_struct *sis;
++
++	spin_lock(&swap_lock);
++	for (i = 0; i <= nr_swapfiles; i++) {
++		sis = &swap_info[i];
++		if (!(sis->flags & SWP_USED))
++			continue;
++		if (sis->bdev == bdev)
++			break;
++	}
++
++	/* swap device not found */
++	if (i > nr_swapfiles)
++		return;
++
++	BUG_ON(!sis || sis->swap_free_notify_fn);
++	sis->swap_free_notify_fn = notify_fn;
++	spin_unlock(&swap_lock);
++
++	return;
++}
++EXPORT_SYMBOL_GPL(set_swap_free_notify);
++
+ static int swap_entry_free(struct swap_info_struct *p,
+ 			   swp_entry_t ent, int cache)
+ {
+@@ -583,6 +614,8 @@ static int swap_entry_free(struct swap_info_struct *p,
+ 			swap_list.next = p - swap_info;
+ 		nr_swap_pages++;
+ 		p->inuse_pages--;
++		if (p->swap_free_notify_fn)
++			p->swap_free_notify_fn(p->bdev, offset);
+ 	}
+ 	if (!swap_count(count))
+ 		mem_cgroup_uncharge_swap(ent);
