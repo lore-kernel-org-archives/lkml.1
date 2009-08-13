@@ -1,239 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755623AbZHMTsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbZHMTsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755623AbZHMTsO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:48:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbZHMTsM
+	id S1755639AbZHMTsS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbZHMTsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:48:12 -0400
-Received: from kroah.org ([198.145.64.141]:36824 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:48:14 -0400
+Received: from kroah.org ([198.145.64.141]:36831 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932189AbZHMTsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:48:06 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:40 2009
-Message-Id: <20090813194339.967167938@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:49 -0700
+	id S1755523AbZHMTsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:48:11 -0400
+Date: Thu, 13 Aug 2009 12:45:54 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [patch 28/28] NFS: Fix an O_DIRECT Oops...
-References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=nfs-fix-an-o_direct-oops.patch
-In-Reply-To: <20090813194554.GA13947@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/28] 2.6.27.30-stable review
+Message-ID: <20090813194554.GA13947@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-------------------
+This is the start of the stable review cycle for the 2.6.27.30 release.
+There are 28 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-commit 1ae88b2e446261c038f2c0c3150ffae142b227a2 upstream.
+Responses should be made by Saturday, August 15, 2009 19:00:00 UTC.
+Anything received after that time might be too late.
 
-We can't call nfs_readdata_release()/nfs_writedata_release() without
-first initialising and referencing args.context. Doing so inside
-nfs_direct_read_schedule_segment()/nfs_direct_write_schedule_segment()
-causes an Oops.
-
-We should rather be calling nfs_readdata_free()/nfs_writedata_free() in
-those cases.
-
-Looking at the O_DIRECT code, the "struct nfs_direct_req" is already
-referencing the nfs_open_context for us. Since the readdata and writedata
-structures carry a reference to that, we can simplify things by getting rid
-of the extra nfs_open_context references, so that we can replace all
-instances of nfs_readdata_release()/nfs_writedata_release().
-
-Reported-by: Catalin Marinas <catalin.marinas@arm.com>
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-Tested-by: Catalin Marinas <catalin.marinas@arm.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- fs/nfs/direct.c        |   20 ++++++++++----------
- fs/nfs/read.c          |    6 ++----
- fs/nfs/write.c         |    6 ++----
- include/linux/nfs_fs.h |    5 ++---
- 4 files changed, 16 insertions(+), 21 deletions(-)
-
---- a/fs/nfs/direct.c
-+++ b/fs/nfs/direct.c
-@@ -255,7 +255,7 @@ static void nfs_direct_read_release(void
- 
- 	if (put_dreq(dreq))
- 		nfs_direct_complete(dreq);
--	nfs_readdata_release(calldata);
-+	nfs_readdata_free(data);
- }
- 
- static const struct rpc_call_ops nfs_read_direct_ops = {
-@@ -311,14 +311,14 @@ static ssize_t nfs_direct_read_schedule_
- 					data->npages, 1, 0, data->pagevec, NULL);
- 		up_read(&current->mm->mmap_sem);
- 		if (result < 0) {
--			nfs_readdata_release(data);
-+			nfs_readdata_free(data);
- 			break;
- 		}
- 		if ((unsigned)result < data->npages) {
- 			bytes = result * PAGE_SIZE;
- 			if (bytes <= pgbase) {
- 				nfs_direct_release_pages(data->pagevec, result);
--				nfs_readdata_release(data);
-+				nfs_readdata_free(data);
- 				break;
- 			}
- 			bytes -= pgbase;
-@@ -331,7 +331,7 @@ static ssize_t nfs_direct_read_schedule_
- 		data->inode = inode;
- 		data->cred = msg.rpc_cred;
- 		data->args.fh = NFS_FH(inode);
--		data->args.context = get_nfs_open_context(ctx);
-+		data->args.context = ctx;
- 		data->args.offset = pos;
- 		data->args.pgbase = pgbase;
- 		data->args.pages = data->pagevec;
-@@ -438,7 +438,7 @@ static void nfs_direct_free_writedata(st
- 		struct nfs_write_data *data = list_entry(dreq->rewrite_list.next, struct nfs_write_data, pages);
- 		list_del(&data->pages);
- 		nfs_direct_release_pages(data->pagevec, data->npages);
--		nfs_writedata_release(data);
-+		nfs_writedata_free(data);
- 	}
- }
- 
-@@ -531,7 +531,7 @@ static void nfs_direct_commit_release(vo
- 
- 	dprintk("NFS: %5u commit returned %d\n", data->task.tk_pid, status);
- 	nfs_direct_write_complete(dreq, data->inode);
--	nfs_commitdata_release(calldata);
-+	nfs_commit_free(data);
- }
- 
- static const struct rpc_call_ops nfs_commit_direct_ops = {
-@@ -564,7 +564,7 @@ static void nfs_direct_commit_schedule(s
- 	data->args.fh = NFS_FH(data->inode);
- 	data->args.offset = 0;
- 	data->args.count = 0;
--	data->args.context = get_nfs_open_context(dreq->ctx);
-+	data->args.context = dreq->ctx;
- 	data->res.count = 0;
- 	data->res.fattr = &data->fattr;
- 	data->res.verf = &data->verf;
-@@ -725,14 +725,14 @@ static ssize_t nfs_direct_write_schedule
- 					data->npages, 0, 0, data->pagevec, NULL);
- 		up_read(&current->mm->mmap_sem);
- 		if (result < 0) {
--			nfs_writedata_release(data);
-+			nfs_writedata_free(data);
- 			break;
- 		}
- 		if ((unsigned)result < data->npages) {
- 			bytes = result * PAGE_SIZE;
- 			if (bytes <= pgbase) {
- 				nfs_direct_release_pages(data->pagevec, result);
--				nfs_writedata_release(data);
-+				nfs_writedata_free(data);
- 				break;
- 			}
- 			bytes -= pgbase;
-@@ -747,7 +747,7 @@ static ssize_t nfs_direct_write_schedule
- 		data->inode = inode;
- 		data->cred = msg.rpc_cred;
- 		data->args.fh = NFS_FH(inode);
--		data->args.context = get_nfs_open_context(ctx);
-+		data->args.context = ctx;
- 		data->args.offset = pos;
- 		data->args.pgbase = pgbase;
- 		data->args.pages = data->pagevec;
---- a/fs/nfs/read.c
-+++ b/fs/nfs/read.c
-@@ -58,17 +58,15 @@ struct nfs_read_data *nfs_readdata_alloc
- 	return p;
- }
- 
--static void nfs_readdata_free(struct nfs_read_data *p)
-+void nfs_readdata_free(struct nfs_read_data *p)
- {
- 	if (p && (p->pagevec != &p->page_array[0]))
- 		kfree(p->pagevec);
- 	mempool_free(p, nfs_rdata_mempool);
- }
- 
--void nfs_readdata_release(void *data)
-+static void nfs_readdata_release(struct nfs_read_data *rdata)
- {
--	struct nfs_read_data *rdata = data;
--
- 	put_nfs_open_context(rdata->args.context);
- 	nfs_readdata_free(rdata);
- }
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -84,17 +84,15 @@ struct nfs_write_data *nfs_writedata_all
- 	return p;
- }
- 
--static void nfs_writedata_free(struct nfs_write_data *p)
-+void nfs_writedata_free(struct nfs_write_data *p)
- {
- 	if (p && (p->pagevec != &p->page_array[0]))
- 		kfree(p->pagevec);
- 	mempool_free(p, nfs_wdata_mempool);
- }
- 
--void nfs_writedata_release(void *data)
-+static void nfs_writedata_release(struct nfs_write_data *wdata)
- {
--	struct nfs_write_data *wdata = data;
--
- 	put_nfs_open_context(wdata->args.context);
- 	nfs_writedata_free(wdata);
- }
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -461,7 +461,6 @@ extern int  nfs_writepages(struct addres
- extern int  nfs_flush_incompatible(struct file *file, struct page *page);
- extern int  nfs_updatepage(struct file *, struct page *, unsigned int, unsigned int);
- extern int nfs_writeback_done(struct rpc_task *, struct nfs_write_data *);
--extern void nfs_writedata_release(void *);
- 
- /*
-  * Try to write back everything synchronously (but check the
-@@ -476,7 +475,6 @@ extern int nfs_wb_page_cancel(struct ino
- extern int  nfs_commit_inode(struct inode *, int);
- extern struct nfs_write_data *nfs_commitdata_alloc(void);
- extern void nfs_commit_free(struct nfs_write_data *wdata);
--extern void nfs_commitdata_release(void *wdata);
- #else
- static inline int
- nfs_commit_inode(struct inode *inode, int how)
-@@ -495,6 +493,7 @@ nfs_have_writebacks(struct inode *inode)
-  * Allocate nfs_write_data structures
-  */
- extern struct nfs_write_data *nfs_writedata_alloc(unsigned int npages);
-+extern void nfs_writedata_free(struct nfs_write_data *);
- 
- /*
-  * linux/fs/nfs/read.c
-@@ -503,12 +502,12 @@ extern int  nfs_readpage(struct file *, 
- extern int  nfs_readpages(struct file *, struct address_space *,
- 		struct list_head *, unsigned);
- extern int  nfs_readpage_result(struct rpc_task *, struct nfs_read_data *);
--extern void nfs_readdata_release(void *data);
- 
- /*
-  * Allocate nfs_read_data structures
-  */
- extern struct nfs_read_data *nfs_readdata_alloc(unsigned int npages);
-+extern void nfs_readdata_free(struct nfs_read_data *);
- 
- /*
-  * linux/fs/nfs3proc.c
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.30-rc1.gz
+and the diffstat can be found below.
 
 
+thanks,
+
+greg k-h
+
+------------
+
+ Makefile                           |    2 +-
+ arch/parisc/kernel/cache.c         |   23 +++++++++++++++--------
+ arch/parisc/kernel/pci-dma.c       |   12 ++++++++----
+ arch/x86/kernel/pci-gart_64.c      |   10 ++++++++--
+ block/Kconfig                      |   11 +++++++----
+ drivers/firewire/fw-sbp2.c         |   10 +++++++++-
+ drivers/hwmon/smsc47m1.c           |   11 +++++++++++
+ drivers/i2c/chips/tsl2550.c        |   17 ++++++++++-------
+ drivers/ieee1394/sbp2.c            |    1 +
+ drivers/ieee1394/sbp2.h            |    8 +++++++-
+ drivers/misc/Kconfig               |    4 +++-
+ drivers/net/usb/asix.c             |    8 ++++++++
+ drivers/scsi/libsas/sas_port.c     |   19 +++++++++++++++----
+ drivers/usb/core/devio.c           |   10 ++++++----
+ drivers/usb/serial/ftdi_sio.c      |    3 +++
+ drivers/usb/serial/ftdi_sio.h      |   14 ++++++++++++++
+ drivers/usb/storage/transport.c    |    2 +-
+ drivers/usb/storage/unusual_devs.h |    7 +++++++
+ fs/binfmt_flat.c                   |   17 ++++++++++++-----
+ fs/compat_ioctl.c                  |    1 +
+ fs/nfs/direct.c                    |   20 ++++++++++----------
+ fs/nfs/read.c                      |    6 ++----
+ fs/nfs/write.c                     |    6 ++----
+ fs/proc/base.c                     |   27 ++++++++++++---------------
+ fs/proc/task_mmu.c                 |    1 +
+ fs/proc/task_nommu.c               |    1 +
+ fs/sysfs/dir.c                     |    2 ++
+ include/asm-parisc/tlbflush.h      |   13 ++++++-------
+ include/asm-x86/irqflags.h         |    8 +++++++-
+ include/linux/nfs_fs.h             |    5 ++---
+ kernel/fork.c                      |   22 +++++++++++-----------
+ mm/hugetlb.c                       |    2 +-
+ mm/page_alloc.c                    |   13 +++++++++----
+ net/socket.c                       |    2 +-
+ sound/pci/hda/patch_realtek.c      |    2 ++
+ 35 files changed, 216 insertions(+), 104 deletions(-)
