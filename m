@@ -1,72 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932328AbZHMUAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932332AbZHMUAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932328AbZHMUAZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967AbZHMUAT
+	id S932332AbZHMUAt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbZHMUAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:00:19 -0400
-Received: from kroah.org ([198.145.64.141]:42006 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 16:00:23 -0400
+Received: from www.tglx.de ([62.245.132.106]:39902 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755831AbZHMUAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:00:16 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:35 2009
-Message-Id: <20090813195135.602994150@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:49 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Maxime Bizon <mbizon@freebox.fr>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Simon Kirby <sim@netnation.com>
-Subject: [patch 74/74] ide: fix memory leak when flush command is issued
-References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=ide-fix-memory-leak-when-flush-command-is-issued.patch
-In-Reply-To: <20090813195705.GA22393@kroah.com>
+	id S1755963AbZHMUAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 16:00:19 -0400
+Date: Thu, 13 Aug 2009 21:59:34 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [GIT pull] genirq fixes for 2.6.31
+In-Reply-To: <alpine.LFD.2.00.0908132145340.1283@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0908132157170.1283@localhost.localdomain>
+References: <alpine.LFD.2.00.0908132100210.1283@localhost.localdomain> <alpine.LFD.2.01.0908131211550.28882@localhost.localdomain> <alpine.LFD.2.00.0908132145340.1283@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.30-stable review patch.  If anyone has any objections, please let us know.
+Sorry, sent out the wrong patch :(
 
-------------------
+On Thu, 13 Aug 2009, Thomas Gleixner wrote:
 
-From: Maxime Bizon <mbizon@freebox.fr>
+> On Thu, 13 Aug 2009, Linus Torvalds wrote:
+> > Now, I can see a bug, which is that "action->tsk" may have been set to 
+> > NULL. But I can't see a race, and I can't see a reason for all the code 
+> > movement. So quite frankly, I think the comments (both in the code and in 
+> > the commit message) are just wrong. And the odd "load it first, then do 
+> > other things" code looks confused.
+> > 
+> > So why is this not just a
+> > 
+> > 	if (action->thread)
+> > 		wake_up_process(action->thread);
+> > 
+> > with appropriate comments?
+> 
+> What guarantees that the compiler does not dereference action->thread
+> twice and the action->thread = NULL; operation happens between the
+> check and the wake_up_process() call? I might be paranoid, but ...
+> 
+> > Or, alternatively, just move all the "clear action->thread" in free_irq() 
+> > to after having done the "synchronize_irq()" thing, and then - afaik - 
+> > you'll not need that test at all, because you're guaranteed that as long 
+> > as you're in an interrupt handler, the thing shouldn't be cleared.
+> 
+> Right, I looked at that as well, but we need to do it different than
+> just calling synchronize_irq(), as we need to keep desc->lock after we
+> established that no interrupt is in progress. Otherwise we can run
+> into the same problem which we have right now. Patch below.
+> 
+> Thanks,
+> 
+> 	tglx
 
-commit bc146d23d1358af43f03793c3ad8c9f16bbcffcb upstream.
-
-I'm using ide on 2.6.30.1 with xfs filesystem. I noticed a kernel memory
-leak after writing lots of data, the kmalloc-96 slab cache keeps
-growing. It seems the struct ide_cmd kmalloced by idedisk_prepare_flush
-is never kfreed.
-
-Commit a09485df9cda49fbde2766c86eb18a9cae585162 ("ide: move request
-type specific code from ide_end_drive_cmd() to callers (v3)") and
-f505d49ffd25ed062e76ffd17568d3937fcd338c ("ide: fix barriers support")
-cause this regression, cmd->rq must now be set for ide_complete_cmd to
-honor the IDE_TFLAG_DYN flag.
-
-Signed-off-by: Maxime Bizon <mbizon@freebox.fr>
-Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Cc: Simon Kirby <sim@netnation.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/ide/ide-disk.c |    1 +
- 1 file changed, 1 insertion(+)
-
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -413,6 +413,7 @@ static void idedisk_prepare_flush(struct
- 	rq->cmd_type = REQ_TYPE_ATA_TASKFILE;
- 	rq->cmd_flags |= REQ_SOFTBARRIER;
- 	rq->special = cmd;
-+	cmd->rq = rq;
- }
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -895,7 +907,28 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
+ 	if (!desc)
+ 		return NULL;
  
- ide_devset_get(multcount, mult_count);
-
-
+-	spin_lock_irqsave(&desc->lock, flags);
++	while (1) {
++		/*
++		 * Wait until we're out of the critical section.  This might
++		 * give the wrong answer due to the lack of memory barriers.
++		 */
++		while (desc->status & IRQ_INPROGRESS)
++			cpu_relax();
++
++		/*
++		 * Check under the lock again. If irq is not in
++		 * progress we keep the lock held until we removed
++		 * action. We do not care about an already running irq
++		 * thread here. We care about it when we stop the thread.
++		 */
++		spin_lock_irqsave(&desc->lock, flags);
++
++		if (!(desc->status & IRQ_INPROGRESS))
++			break;
++
++		/* Try again */
++		spin_unlock_irqrestore(&desc->lock, flags);
++	}
+ 
+ 	/*
+ 	 * There can be multiple actions per IRQ descriptor, find the right
