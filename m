@@ -1,64 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756356AbZHMWbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756225AbZHMWdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756356AbZHMWbE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 18:31:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbZHMWbD
+	id S1756225AbZHMWdb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 18:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbZHMWda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 18:31:03 -0400
-Received: from saarni.dnainternet.net ([83.102.40.136]:59453 "EHLO
-	saarni.dnainternet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755296AbZHMWbC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 18:31:02 -0400
-X-Greylist: delayed 598 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Aug 2009 18:31:02 EDT
-X-Spam-Flag: NO
-X-Spam-Score: -0.91
-Message-ID: <4A8491E3.4070907@gmail.com>
-Date: Fri, 14 Aug 2009 01:21:23 +0300
-From: Kari Laine <klaine8@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 13 Aug 2009 18:33:30 -0400
+Received: from kroah.org ([198.145.64.141]:55687 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753462AbZHMWd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 18:33:29 -0400
+Date: Thu, 13 Aug 2009 15:32:21 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable-review@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 00/74] 2.6.30.5-stable review
+Message-ID: <20090813223221.GA12823@kroah.com>
+References: <20090813195705.GA22393@kroah.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, klaine8@gmail.com
-Subject: I2C -bus programming
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090813195705.GA22393@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear List,
+On Thu, Aug 13, 2009 at 12:57:05PM -0700, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.30.5 release.
+> There are 74 patches in this series, all will be posted as a response to
+> this one.  If anyone has any issues with these being applied, please let
+> us know.  If anyone is a maintainer of the proper subsystem, and wants
+> to add a Signed-off-by: line to the patch, please respond with it.
+> 
+> These patches are sent out with a number of different people on the Cc:
+> line.  If you wish to be a reviewer, please email stable@kernel.org to
+> add your name to the list.  If you want to be off the reviewer list,
+> also email us.
+> 
+> Responses should be made by Saturday, August 15, 2009 19:00:00 UTC.
+> Anything received after that time might be too late.
+> 
+> The whole patch series can be found in one patch at:
+> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.30.5-rc1.gz
+> and the diffstat can be found below.
 
-this is my first post here and I am not sure if this is a suitable topic
-here. Anyway I have a Velleman K8000 IO-card and it uses I2C over
-parallel port to communicate.
+I've now released 2.6.30.5-rc2 to fix a build error in the thinkpad
+code.  It can be found at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.30.5-rc2.gz
 
-when I modprobe i2c-parport it does not complain. I tested without card
-connected and it complained so it seems to find the card.
+and the diffstat is below.
 
-modprobe pcf8591
+thanks,
 
-modprobe i2c-core
+greg k-h
 
-modprobe i2c-dev
+-----------------
 
-I am not sure I am doing it right. Should i2c-core probed first ?
-
-anyway now I have
-
-/dev/i2c-0  /dev/i2c-1
-
-Now I don't know whether these i2c-devices refer to this Velleman  board
-or some other i2c-device which happen to be in the computer...
-
-If these devices probably refer to Velleman - then how I can refer
-different i2c-devices on the board.
-
-
-I am totally new to this i2c thing (reading spec at the moment but it
-does not help much with Linux).
-
-I would be very greatfull if some could point me the way - thanks.
-
-Best Regards
-Kari Laine
-
+ Makefile                                       |    2 +-
+ arch/powerpc/boot/dts/asp834x-redboot.dts      |    2 +-
+ arch/powerpc/boot/dts/mpc8349emitx.dts         |    2 +-
+ arch/powerpc/boot/dts/mpc834x_mds.dts          |    2 +-
+ arch/powerpc/boot/dts/sbc8349.dts              |    2 +-
+ arch/powerpc/platforms/83xx/mpc83xx.h          |    4 +-
+ arch/powerpc/platforms/83xx/usb.c              |   10 ++--
+ arch/x86/include/asm/irqflags.h                |    8 +++-
+ arch/x86/kernel/vmi_32.c                       |    2 +-
+ arch/x86/mm/pageattr.c                         |   39 ++++++++++----
+ block/Kconfig                                  |   11 +++--
+ drivers/acpi/sleep.c                           |    8 +++
+ drivers/edac/x38_edac.c                        |    2 +-
+ drivers/firewire/fw-sbp2.c                     |   10 +++-
+ drivers/gpu/drm/i915/i915_dma.c                |    5 ++-
+ drivers/gpu/drm/i915/i915_drv.h                |    8 +++
+ drivers/gpu/drm/i915/i915_gem.c                |   13 +++++
+ drivers/gpu/drm/i915/i915_irq.c                |    2 -
+ drivers/gpu/drm/i915/i915_suspend.c            |   20 +++++++
+ drivers/gpu/drm/i915/intel_bios.c              |   10 ++--
+ drivers/gpu/drm/i915/intel_display.c           |    2 +
+ drivers/gpu/drm/i915/intel_fb.c                |    8 +++-
+ drivers/gpu/drm/i915/intel_lvds.c              |   17 +++++-
+ drivers/hwmon/asus_atk0110.c                   |    6 ++-
+ drivers/hwmon/smsc47m1.c                       |   11 ++++
+ drivers/i2c/chips/tsl2550.c                    |   17 ++++---
+ drivers/ide/ide-disk.c                         |    1 +
+ drivers/ide/ide-dma.c                          |   21 -------
+ drivers/ide/ide-iops.c                         |    3 -
+ drivers/ide/ide-probe.c                        |   23 +++++++-
+ drivers/ieee1394/sbp2.c                        |    1 +
+ drivers/ieee1394/sbp2.h                        |    8 +++-
+ drivers/md/md.c                                |   15 +++++-
+ drivers/md/raid5.c                             |   26 ++++-----
+ drivers/net/atl1c/atl1c.h                      |    8 ++--
+ drivers/net/atl1c/atl1c_ethtool.c              |    2 +-
+ drivers/net/atl1c/atl1c_main.c                 |    2 +-
+ drivers/net/benet/be.h                         |    2 +-
+ drivers/net/benet/be_ethtool.c                 |    4 +-
+ drivers/net/benet/be_main.c                    |   45 +++++++++++-----
+ drivers/net/e100.c                             |    3 +
+ drivers/net/sky2.c                             |    2 +-
+ drivers/net/usb/cdc_subset.c                   |    7 ++-
+ drivers/net/wireless/iwlwifi/iwl-agn.c         |   19 +------
+ drivers/net/wireless/iwlwifi/iwl3945-base.c    |   19 +------
+ drivers/parisc/eisa_eeprom.c                   |    2 +-
+ drivers/platform/x86/Kconfig                   |    4 +-
+ drivers/scsi/libsas/sas_port.c                 |   19 +++++--
+ drivers/staging/rt2870/2870_main_dev.c         |   67 ++++++++++++++++--------
+ drivers/staging/rt2870/common/2870_rtmp_init.c |   35 ++++++-------
+ drivers/staging/rt2870/common/cmm_data.c       |    3 +
+ drivers/staging/rt2870/common/rtmp_init.c      |    2 +-
+ drivers/staging/rt2870/common/rtusb_io.c       |    3 +-
+ drivers/staging/rt2870/rt2870.h                |    6 +--
+ drivers/staging/rt2870/rt_linux.h              |   11 ++--
+ drivers/usb/core/devio.c                       |   10 ++--
+ drivers/usb/serial/ftdi_sio.c                  |    3 +
+ drivers/usb/serial/ftdi_sio.h                  |   14 +++++
+ drivers/usb/storage/transport.c                |    2 +-
+ drivers/usb/storage/unusual_devs.h             |    7 +++
+ fs/binfmt_flat.c                               |   17 ++++--
+ fs/cifs/cifs_dfs_ref.c                         |   12 +++-
+ fs/cifs/connect.c                              |   13 ++++-
+ fs/compat_ioctl.c                              |    1 +
+ fs/nfs/direct.c                                |   20 ++++----
+ fs/nfs/read.c                                  |    6 +--
+ fs/nfs/write.c                                 |    6 +--
+ fs/nilfs2/segment.c                            |   16 +++++-
+ fs/proc/base.c                                 |   27 ++++-----
+ fs/proc/task_mmu.c                             |    1 +
+ fs/proc/task_nommu.c                           |    1 +
+ fs/sysfs/dir.c                                 |    2 +
+ include/linux/ide.h                            |    2 -
+ include/linux/netdevice.h                      |    5 +-
+ include/linux/nfs_fs.h                         |    5 +-
+ include/net/sctp/sctp.h                        |    1 +
+ include/net/sock.h                             |   34 +++++++-----
+ kernel/fork.c                                  |   22 ++++----
+ kernel/posix-timers.c                          |    7 +++
+ kernel/smp.c                                   |    2 +-
+ kernel/trace/ring_buffer.c                     |   11 ++--
+ kernel/trace/trace.c                           |   10 +++-
+ kernel/trace/trace_functions_graph.c           |   11 +++-
+ mm/hugetlb.c                                   |    2 +-
+ mm/page_alloc.c                                |   13 +++--
+ net/ax25/ax25_in.c                             |    3 +-
+ net/core/dev.c                                 |   10 ++--
+ net/core/sock.c                                |   39 ++++++++++++--
+ net/ipv4/ip_input.c                            |    3 +
+ net/ipv6/ip6_input.c                           |    3 +
+ net/irda/af_irda.c                             |    3 -
+ net/irda/ircomm/ircomm_lmp.c                   |    1 +
+ net/socket.c                                   |    2 +-
+ net/wireless/scan.c                            |    4 +-
+ net/xfrm/xfrm_algo.c                           |    4 +-
+ sound/pci/hda/patch_realtek.c                  |    2 +
+ 96 files changed, 612 insertions(+), 331 deletions(-)
