@@ -1,112 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbZHMHwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbZHMH5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753450AbZHMHwY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 03:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbZHMHwY
+	id S1753390AbZHMH5j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 03:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbZHMH5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 03:52:24 -0400
-Received: from casper.infradead.org ([85.118.1.10]:52942 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752337AbZHMHwX (ORCPT
+	Thu, 13 Aug 2009 03:57:39 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:35823 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752316AbZHMH5i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 03:52:23 -0400
-Subject: [PATCH 3/2] perf tools: Fixup read ABI breakage
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mackerras <paulus@samba.org>,
-       stephane eranian <eranian@googlemail.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090812153529.716542680@chello.nl>
-References: <20090812153529.716542680@chello.nl>
-Content-Type: text/plain
+	Thu, 13 Aug 2009 03:57:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OTP+Fp38FkB7Yl05rITzT1D227jT0VD8u7TrHWo6kpCQAlhkKzq9b8MNdCyeRHhBCm
+         feRf4Dg8hON3QyalLjX+uUbL4YMR7wkvMfktL2H8zfijclaUVKrM6GFPc3Pp5DGEZQLW
+         qFkzNZYfNRw4eDt9b8z1IoqEyTTUS7HIjuAVM=
+MIME-Version: 1.0
+In-Reply-To: <1250149366.10001.54.camel@twins>
+References: <a8e1da0908121923j1fd291fbtb3576653ebd45bff@mail.gmail.com>
+	 <1250149366.10001.54.camel@twins>
+Date: Thu, 13 Aug 2009 15:57:38 +0800
+Message-ID: <a8e1da0908130057q27af3d0cnb7a6132aeceec95f@mail.gmail.com>
+Subject: Re: Top shows cpu usage 165% with kvm lunched
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Date: Thu, 13 Aug 2009 09:51:53 +0200
-Message-Id: <1250149914.10001.65.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: perf tools: Fixup read ABI breakage
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Thu Aug 13 09:03:33 CEST 2009
+On Thu, Aug 13, 2009 at 3:42 PM, Peter Zijlstra<peterz@infradead.org> wrote:
+> On Thu, 2009-08-13 at 10:23 +0800, Dave Young wrote:
+>> Hi,
+>>
+>> Kvm guest runs slackware-current, doing extracting linux tarball, top
+>> shows over 100% cpu usage. Is this a known issue?
+>
+> Does: top -H, show the same?
 
-Update the perf tool to the new read output format.
+top -H show normal results with several qemu threads.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- tools/perf/builtin-record.c |    2 +-
- tools/perf/builtin-stat.c   |    8 +++++---
- tools/perf/util/event.h     |   10 ++++++++--
- 3 files changed, 14 insertions(+), 6 deletions(-)
+>
+> I suspect it might be the cumulative cpu usage of several threads.
 
-Index: linux-2.6/tools/perf/builtin-record.c
-===================================================================
---- linux-2.6.orig/tools/perf/builtin-record.c
-+++ linux-2.6/tools/perf/builtin-record.c
-@@ -370,9 +370,9 @@ static void create_counter(int counter, 
- 	struct perf_header_attr *h_attr;
- 	int track = !counter; /* only the first counter needs these */
- 	struct {
--		u64 count;
- 		u64 time_enabled;
- 		u64 time_running;
-+		u64 count;
- 		u64 id;
- 	} read_data;
- 
-Index: linux-2.6/tools/perf/builtin-stat.c
-===================================================================
---- linux-2.6.orig/tools/perf/builtin-stat.c
-+++ linux-2.6/tools/perf/builtin-stat.c
-@@ -168,10 +168,12 @@ static void read_counter(int counter)
- 		close(fd[cpu][counter]);
- 		fd[cpu][counter] = -1;
- 
--		count[0] += single_count[0];
- 		if (scale) {
--			count[1] += single_count[1];
--			count[2] += single_count[2];
-+			count[0] += single_count[2]; /* value   */
-+			count[1] += single_count[0]; /* enabled */
-+			count[2] += single_count[1]; /* running */
-+		} else {
-+			count[0] += single_count[0]; /* value   */
- 		}
- 	}
- 
-Index: linux-2.6/tools/perf/util/event.h
-===================================================================
---- linux-2.6.orig/tools/perf/util/event.h
-+++ linux-2.6/tools/perf/util/event.h
-@@ -4,6 +4,9 @@
- #include "util.h"
- #include <linux/list.h>
- 
-+/*
-+ * PERF_SAMPLE_IP | PERF_SAMPLE_TID | *
-+ */
- struct ip_event {
- 	struct perf_event_header header;
- 	u64 ip;
-@@ -38,12 +41,15 @@ struct lost_event {
- 	u64 lost;
- };
- 
--struct read_event {
-+/*
-+ * PERF_FORMAT_ENABLED | PERF_FORMAT_RUNNING | PERF_FORMAT_ID
-+ */
-+struct read_event {
- 	struct perf_event_header header;
- 	u32 pid,tid;
--	u64 value;
- 	u64 time_enabled;
- 	u64 time_running;
-+	u64 value;
- 	u64 id;
- };
- 
+Thanks for telling, I never know top will hidden the thread usage.
 
+-- 
+Regards
+dave
