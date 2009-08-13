@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752441AbZHMDQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752579AbZHMDSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752441AbZHMDQg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 23:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbZHMDQf
+	id S1752579AbZHMDSq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 23:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbZHMDSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 23:16:35 -0400
-Received: from sh.osrg.net ([192.16.179.4]:60176 "EHLO sh.osrg.net"
+	Wed, 12 Aug 2009 23:18:45 -0400
+Received: from sh.osrg.net ([192.16.179.4]:60190 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751252AbZHMDQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 23:16:35 -0400
-Date: Thu, 13 Aug 2009 12:15:46 +0900
-To: luming.yu@gmail.com
-Cc: fujita.tomonori@lab.ntt.co.jp, dwmw2@infradead.org, fenghua.yu@intel.com,
+	id S1752097AbZHMDSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 23:18:44 -0400
+Date: Thu, 13 Aug 2009 12:18:04 +0900
+To: fujita.tomonori@lab.ntt.co.jp
+Cc: luming.yu@gmail.com, dwmw2@infradead.org, fenghua.yu@intel.com,
        tony.luck@intel.com, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org
 Subject: Re: [RFC patch] init default dma_ops to prepare intel_iommu_init 
 	failure
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <3877989d0908121924t1589941fmcd45d3669b78bba4@mail.gmail.com>
-References: <3877989d0908120220q5104d2e7rd272ececbc45e377@mail.gmail.com>
-	<20090813110948V.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090813121444W.fujita.tomonori@lab.ntt.co.jp>
+References: <20090813110948V.fujita.tomonori@lab.ntt.co.jp>
 	<3877989d0908121924t1589941fmcd45d3669b78bba4@mail.gmail.com>
+	<20090813121444W.fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090813121444W.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 13 Aug 2009 12:15:46 +0900 (JST)
+Message-Id: <20090813121727W.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 13 Aug 2009 12:18:04 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Aug 2009 10:24:20 +0800
-Luming Yu <luming.yu@gmail.com> wrote:
+On Thu, 13 Aug 2009 12:15:46 +0900
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-> On Thu, Aug 13, 2009 at 10:11 AM, FUJITA
-> Tomonori<fujita.tomonori@lab.ntt.co.jp> wrote:
-> > On Wed, 12 Aug 2009 17:20:11 +0800
-> > Luming Yu <luming.yu@gmail.com> wrote:
-> >
-> >> Hi there,
-> >>
-> >> On ia64 platform with dmar table and new upstream
-> >> kernel(config_dmar_default_on enabled),
-> >> if intel_iommu_init ends up without dma_ops initialized or other iommu
-> >> failures.
-> >> We got nothing to fall back. The following patch fixes it.
-> >
-> > Hmm, I think that the current code should work.
+> On Thu, 13 Aug 2009 10:24:20 +0800
+> Luming Yu <luming.yu@gmail.com> wrote:
 > 
-> Without the patch, I encounters boot failure with the following .config
+> > On Thu, Aug 13, 2009 at 10:11 AM, FUJITA
+> > Tomonori<fujita.tomonori@lab.ntt.co.jp> wrote:
+> > > On Wed, 12 Aug 2009 17:20:11 +0800
+> > > Luming Yu <luming.yu@gmail.com> wrote:
+> > >
+> > >> Hi there,
+> > >>
+> > >> On ia64 platform with dmar table and new upstream
+> > >> kernel(config_dmar_default_on enabled),
+> > >> if intel_iommu_init ends up without dma_ops initialized or other iommu
+> > >> failures.
+> > >> We got nothing to fall back. The following patch fixes it.
+> > >
+> > > Hmm, I think that the current code should work.
+> > 
+> > Without the patch, I encounters boot failure with the following .config
+> > 
+> > 162-CONFIG_IA64_GENERIC=y
+> > 163-# CONFIG_IA64_DIG is not set
+> > 164:# CONFIG_IA64_DIG_VTD is not set
 > 
-> 162-CONFIG_IA64_GENERIC=y
-> 163-# CONFIG_IA64_DIG is not set
-> 164:# CONFIG_IA64_DIG_VTD is not set
+> Duh, yeah, intel_iommu_init() fails, it doesn't work.
+> 
+> X86 falls back into nommu_dam_ops but IA64 has nothing.
+> 
+> pci_swiotlb_init() can't set swiotlb to 1 or overwrite dma_ops? If it
+> sets swiotlb to 1, intel_iommu_init() fails.
+> 
+> A quick fix could be something like this:
 
-Duh, yeah, intel_iommu_init() fails, it doesn't work.
-
-X86 falls back into nommu_dam_ops but IA64 has nothing.
-
-pci_swiotlb_init() can't set swiotlb to 1 or overwrite dma_ops? If it
-sets swiotlb to 1, intel_iommu_init() fails.
-
-A quick fix could be something like this:
-
+Oops, here's a good one.
 
 diff --git a/arch/ia64/include/asm/swiotlb.h b/arch/ia64/include/asm/swiotlb.h
 index dcbaea7..21b076e 100644
@@ -105,18 +109,17 @@ index f6b1ff0..344d783 100644
  	return 0;
  }
 diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
-index 223abb1..ad164cf 100644
+index 223abb1..fb06ef6 100644
 --- a/arch/ia64/kernel/pci-swiotlb.c
 +++ b/arch/ia64/kernel/pci-swiotlb.c
 @@ -46,12 +46,14 @@ void __init swiotlb_dma_init(void)
  
  void __init pci_swiotlb_init(void)
  {
--	if (!iommu_detected || iommu_pass_through) {
 +	/* for fallback */
 +	swiotlb_init();
 +
-+	if (!dma_ops) {
+ 	if (!iommu_detected || iommu_pass_through) {
  #ifdef CONFIG_IA64_GENERIC
  		swiotlb = 1;
  		printk(KERN_INFO "PCI-DMA: Re-initialize machine vector.\n");
