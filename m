@@ -1,136 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbZHMPRH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbZHMPSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754640AbZHMPRH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 11:17:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbZHMPRG
+	id S1754726AbZHMPSO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 11:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZHMPSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 11:17:06 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57006 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752852AbZHMPRF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 11:17:05 -0400
-Date: Thu, 13 Aug 2009 11:17:05 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       <linux-pci@vger.kernel.org>, <linux-usb@vger.kernel.org>
-Subject: Re: [RFC] PCI: Runtime power management
-In-Reply-To: <20090813002925.GA2532@srcf.ucam.org>
-Message-ID: <Pine.LNX.4.44L0.0908131100440.2940-100000@iolanthe.rowland.org>
+	Thu, 13 Aug 2009 11:18:13 -0400
+Received: from mail.lang.hm ([64.81.33.126]:37905 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751660AbZHMPSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 11:18:12 -0400
+Date: Thu, 13 Aug 2009 08:17:34 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Matthew Wilcox <willy@linux.intel.com>
+cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Nitin Gupta <ngupta@vflare.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+ slot is freed)
+In-Reply-To: <20090813151312.GA13559@linux.intel.com>
+Message-ID: <alpine.DEB.2.00.0908130815450.30426@asgard.lang.hm>
+References: <200908122007.43522.ngupta@vflare.org> <Pine.LNX.4.64.0908122312380.25501@sister.anvils> <20090813151312.GA13559@linux.intel.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Aug 2009, Matthew Garrett wrote:
+On Thu, 13 Aug 2009, Matthew Wilcox wrote:
 
-> --- a/drivers/pci/pci-driver.c
-> +++ b/drivers/pci/pci-driver.c
+> So TRIM isn't free, and there's a better way for the drive to find
+> out that the contents of a block no longer matter -- write some new
+> data to it.  So if we just swapped a page in, and we're going to swap
+> something else back out again soon, just write it to the same location
+> instead of to a fresh location.  You've saved a command, and you've
+> saved the drive some work, plus you've allowed other users to continue
+> accessing the drive in the meantime.
 
-> +#ifdef CONFIG_PM_RUNTIME
-> +
-> +static int pci_pm_runtime_suspend(struct device *dev)
-> +{
-> +	struct pci_dev *pci_dev = to_pci_dev(dev);
-> +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> +	int error;
-> +
-> +	device_set_wakeup_enable(dev, 1);
+on the other hand, if you then end up swapping the page you read in out 
+again and haven't dirtied it, you now have to actually write it as opposed 
+to just throwing it away (knowing that you already have a copy of it 
+stored on the swap device)
 
-This is a userspace policy parameter.  Kernel code should not alter it.
-Instead you should test device_may_wakeup.
-
-> +	error = pci_enable_runtime_wake(pci_dev, true);
-> +
-> +	if (error)
-> +		return -EBUSY;
-> +
-> +	if (pm && pm->runtime_suspend)
-> +		error = pm->runtime_suspend(dev);
-> +
-> +	if (error)
-> +		goto out;
-> +
-> +	error = pci_pm_suspend(dev);
-> +
-> +	if (error)
-> +		goto resume;
-> +
-> +	disable_irq(pci_dev->irq);
-> +	error = pci_pm_suspend_noirq(dev);
-> +	enable_irq(pci_dev->irq);
-> +
-> +	if (error)
-> +		goto resume_noirq;
-> +
-> +	return 0;
-> +
-> +resume_noirq:
-> +	disable_irq(pci_dev->irq);
-> +	pci_pm_resume_noirq(dev);
-> +	enable_irq(pci_dev->irq);
-> +resume:
-> +	pci_pm_resume(dev);
-> +out:
-> +	pci_enable_runtime_wake(pci_dev, false);
-> +	return error;
-> +}
-
-The goto statements and unwinding code don't match up.
-
-> +static int pci_pm_runtime_resume(struct device *dev)
-> +{
-> +	struct pci_dev *pci_dev = to_pci_dev(dev);
-> +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> +	int error = 0;
-> +
-> +	disable_irq(pci_dev->irq);
-> +	error = pci_pm_resume_noirq(dev);
-> +	enable_irq(pci_dev->irq);
-> +
-> +	if (error)
-> +		return error;
-> +
-> +	error = pci_pm_resume(dev);
-> +
-> +	if (error)
-> +		return error;
-> +
-> +	if (pm->runtime_resume)
-> +		error = pm->runtime_resume(dev);
-> +
-> +	if (error)
-> +		return error;
-> +
-> +	error = pci_enable_runtime_wake(pci_dev, false);
-> +
-> +	if (error)
-> +		return error;
-> +
-> +	return 0;
-> +}
-
-Log an error message when something goes wrong?
-
-> +static void pci_pm_runtime_idle(struct device *dev)
-> +{
-> +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> +
-> +	if (pm && pm->runtime_idle)
-> +		pm->runtime_idle(dev);
-> +
-> +	pm_schedule_suspend(dev, 0);
-> +}
-
-This misses the point.  The whole idea of runtime_idle is to tell you 
-that the device is idle and might be ready to be suspended.  If you're 
-going to call pm_schedule_suspend anyway, there's no reason to invoke 
-pm->runtime_idle.
-
-Alan Stern
-
+David Lang
