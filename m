@@ -1,119 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752981AbZHMFGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbZHMFLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752981AbZHMFGb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 01:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZHMFGb
+	id S1753077AbZHMFLn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 01:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbZHMFLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 01:06:31 -0400
-Received: from mail-pz0-f196.google.com ([209.85.222.196]:49795 "EHLO
-	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751661AbZHMFGa (ORCPT
+	Thu, 13 Aug 2009 01:11:43 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:60860 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752880AbZHMFLm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 01:06:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kzKZ89PvWZVcAEZZpnqPS16oOtQ/rB6DP2btyDQZJ9O1tPAVxzba3+WrsDNV+IqwJh
-         c060vEzL8hK1KvGpp+03i6K5VWhVexUtP/OgG42XnNak9NLz0hVsr8nPiTTwrhoNkifK
-         TY7FbRWBBiFHLib47eVCSLy3IMbzMunf6kXBs=
-Date: Thu, 13 Aug 2009 13:08:45 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>, Jeff Dike <jdike@addtoit.com>
-Subject: Re: [PATCH 1/5] arch/um: handle compat_ioctl in tty line driver
-Message-ID: <20090813050845.GD5031@cr0.nay.redhat.com>
-References: <1249564170-18627-1-git-send-email-arnd@arndb.de> <1249564170-18627-2-git-send-email-arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249564170-18627-2-git-send-email-arnd@arndb.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 13 Aug 2009 01:11:42 -0400
+Date: Thu, 13 Aug 2009 14:08:40 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, kamezawa.hiroyu@jp.fujitsu.com,
+       kosaki.motohiro@jp.fujitsu.com, menage@google.com, prarit@redhat.com,
+       andi.kleen@intel.com, xemul@openvz.org, lizf@cn.fujitsu.com,
+       nishimura@mxp.nes.nec.co.jp, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] Help Resource Counters Scale better (v4.1)
+Message-Id: <20090813140840.125b31fb.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090813033335.GF5087@balbir.in.ibm.com>
+References: <20090811144405.GW7176@balbir.in.ibm.com>
+	<20090811163159.ddc5f5fd.akpm@linux-foundation.org>
+	<20090812045716.GH7176@balbir.in.ibm.com>
+	<20090813100350.bc09c568.nishimura@mxp.nes.nec.co.jp>
+	<20090813033335.GF5087@balbir.in.ibm.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06, 2009 at 03:09:26PM +0200, Arnd Bergmann wrote:
->This pushes the handling of VT specific ioctls down to the
->UML specific drivers so we can remove it from the common
->compat_ioctl.c file.
->
->Cc: Jeff Dike <jdike@addtoit.com>
->Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-
-Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
-
-
-
->---
-> arch/um/drivers/line.c          |    6 ++++++
-> arch/um/drivers/ssl.c           |    1 +
-> arch/um/drivers/stdio_console.c |    1 +
-> arch/um/include/shared/line.h   |    2 ++
-> 4 files changed, 10 insertions(+), 0 deletions(-)
->
->diff --git a/arch/um/drivers/line.c b/arch/um/drivers/line.c
->index 14a102e..9819a3b 100644
->--- a/arch/um/drivers/line.c
->+++ b/arch/um/drivers/line.c
->@@ -314,6 +314,12 @@ int line_ioctl(struct tty_struct *tty, struct file * file,
-> 	return ret;
-> }
+On Thu, 13 Aug 2009 09:03:35 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> * nishimura@mxp.nes.nec.co.jp <nishimura@mxp.nes.nec.co.jp> [2009-08-13 10:03:50]:
 > 
->+long line_compat_ioctl(struct tty_struct *tty, struct file * file,
->+	       unsigned int cmd, unsigned long arg)
->+{
->+	return line_ioctl(tty, file, cmd, arg);
->+}
->+
-> void line_throttle(struct tty_struct *tty)
-> {
-> 	struct line *line = tty->driver_data;
->diff --git a/arch/um/drivers/ssl.c b/arch/um/drivers/ssl.c
->index f1786e6..eccf14a 100644
->--- a/arch/um/drivers/ssl.c
->+++ b/arch/um/drivers/ssl.c
->@@ -137,6 +137,7 @@ static const struct tty_operations ssl_ops = {
-> 	.flush_chars 		= line_flush_chars,
-> 	.set_termios 		= line_set_termios,
-> 	.ioctl 	 		= line_ioctl,
->+	.compat_ioctl 	 	= line_compat_ioctl,
-> 	.throttle 		= line_throttle,
-> 	.unthrottle 		= line_unthrottle,
-> #if 0
->diff --git a/arch/um/drivers/stdio_console.c b/arch/um/drivers/stdio_console.c
->index 49266f6..2cb1f04 100644
->--- a/arch/um/drivers/stdio_console.c
->+++ b/arch/um/drivers/stdio_console.c
->@@ -120,6 +120,7 @@ static const struct tty_operations console_ops = {
-> 	.flush_chars 		= line_flush_chars,
-> 	.set_termios 		= line_set_termios,
-> 	.ioctl 	 		= line_ioctl,
->+	.compat_ioctl 	 	= line_compat_ioctl,
-> 	.throttle 		= line_throttle,
-> 	.unthrottle 		= line_unthrottle,
-> };
->diff --git a/arch/um/include/shared/line.h b/arch/um/include/shared/line.h
->index 311a0d3..6ef62e4 100644
->--- a/arch/um/include/shared/line.h
->+++ b/arch/um/include/shared/line.h
->@@ -79,6 +79,8 @@ extern void line_flush_chars(struct tty_struct *tty);
-> extern int line_write_room(struct tty_struct *tty);
-> extern int line_ioctl(struct tty_struct *tty, struct file * file,
-> 		      unsigned int cmd, unsigned long arg);
->+extern long line_compat_ioctl(struct tty_struct *tty, struct file * file,
->+		      unsigned int cmd, unsigned long arg);
-> extern void line_throttle(struct tty_struct *tty);
-> extern void line_unthrottle(struct tty_struct *tty);
+> > > @@ -1855,9 +1883,14 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+> > >  		break;
+> > >  	}
+> > >  
+> > > -	res_counter_uncharge(&mem->res, PAGE_SIZE, &soft_limit_excess);
+> > > -	if (do_swap_account && (ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
+> > > -		res_counter_uncharge(&mem->memsw, PAGE_SIZE, NULL);
+> > > +	if (!mem_cgroup_is_root(mem)) {
+> > > +		res_counter_uncharge(&mem->res, PAGE_SIZE, &soft_limit_excess);
+> > > +		if (do_swap_account &&
+> > > +				(ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
+> > > +			res_counter_uncharge(&mem->memsw, PAGE_SIZE, NULL);
+> > > +	}
+> > > +	if (ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT && mem_cgroup_is_root(mem))
+> > > +		mem_cgroup_swap_statistics(mem, true);
+> > I think mem_cgroup_is_root(mem) would be unnecessary here.
+> > Otherwise, MEM_CGROUP_STAT_SWAPOUT of groups except root memcgroup wouldn't
+> > be counted properly.
+> > 
 > 
->-- 
->1.6.3.3
->
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+> I think you have a valid point, but it will not impact us currently
+> since we use SWAPOUT only for root accounting.
+> 
+> > 
+> > > @@ -2461,10 +2496,26 @@ static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
+> > >  	name = MEMFILE_ATTR(cft->private);
+> > >  	switch (type) {
+> > >  	case _MEM:
+> > > -		val = res_counter_read_u64(&mem->res, name);
+> > > +		if (name == RES_USAGE && mem_cgroup_is_root(mem)) {
+> > > +			val = mem_cgroup_read_stat(&mem->stat,
+> > > +					MEM_CGROUP_STAT_CACHE);
+> > > +			val += mem_cgroup_read_stat(&mem->stat,
+> > > +					MEM_CGROUP_STAT_RSS);
+> > > +			val <<= PAGE_SHIFT;
+> > > +		} else
+> > > +			val = res_counter_read_u64(&mem->res, name);
+> > >  		break;
+> > >  	case _MEMSWAP:
+> > > -		val = res_counter_read_u64(&mem->memsw, name);
+> > > +		if (name == RES_USAGE && mem_cgroup_is_root(mem)) {
+> > > +			val = mem_cgroup_read_stat(&mem->stat,
+> > > +					MEM_CGROUP_STAT_CACHE);
+> > > +			val += mem_cgroup_read_stat(&mem->stat,
+> > > +					MEM_CGROUP_STAT_RSS);
+> > > +			val += mem_cgroup_read_stat(&mem->stat,
+> > > +					MEM_CGROUP_STAT_SWAPOUT);
+> > > +			val <<= PAGE_SHIFT;
+> > > +		} else
+> > > +			val = res_counter_read_u64(&mem->memsw, name);
+> > >  		break;
+> > >  	default:
+> > >  		BUG();
+> > Considering use_hierarchy==1 case in the root memcgroup, shouldn't we use
+> > mem_cgroup_walk_tree() here to sum up all the children's usage ?
+> > *.usage_in_bytes show sum of all the children's usage now if use_hierarchy==1.
+> 
+> If memory.use_hiearchy=1, we should use total_stats..right. Let me
+> send out a newer version for review.
+> 
+BTW, I don't think the patch title is suitable for this patch.
+This patch doesn't make res_counter scalable at all :)
+
+Of course, I think the patch using percpu_counter for scalability is also important.
+
+
+Thanks,
+Daisuke Nishimura.
