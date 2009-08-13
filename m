@@ -1,113 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbZHMTxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbZHMTwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755867AbZHMTxO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755612AbZHMTxL
+	id S1755774AbZHMTwy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbZHMTwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:53:11 -0400
-Received: from kroah.org ([198.145.64.141]:36709 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:52:53 -0400
+Received: from www.tglx.de ([62.245.132.106]:44334 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755581AbZHMTrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:47:45 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:36 2009
-Message-Id: <20090813194336.304160624@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:27 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mel Gorman <mel@csn.ul.ie>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [patch 06/28] page-allocator: preserve PFN ordering when __GFP_COLD is set
-References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=page-allocator-preserve-pfn-ordering-when-__gfp_cold-is-set.patch
-In-Reply-To: <20090813194554.GA13947@kroah.com>
+	id S1755794AbZHMTwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:52:51 -0400
+Date: Thu, 13 Aug 2009 21:52:32 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [GIT pull] genirq fixes for 2.6.31
+In-Reply-To: <alpine.LFD.2.01.0908131211550.28882@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0908132145340.1283@localhost.localdomain>
+References: <alpine.LFD.2.00.0908132100210.1283@localhost.localdomain> <alpine.LFD.2.01.0908131211550.28882@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+On Thu, 13 Aug 2009, Linus Torvalds wrote:
+> Now, I can see a bug, which is that "action->tsk" may have been set to 
+> NULL. But I can't see a race, and I can't see a reason for all the code 
+> movement. So quite frankly, I think the comments (both in the code and in 
+> the commit message) are just wrong. And the odd "load it first, then do 
+> other things" code looks confused.
+> 
+> So why is this not just a
+> 
+> 	if (action->thread)
+> 		wake_up_process(action->thread);
+> 
+> with appropriate comments?
 
-------------------
+What guarantees that the compiler does not dereference action->thread
+twice and the action->thread = NULL; operation happens between the
+check and the wake_up_process() call? I might be paranoid, but ...
 
-From: Mel Gorman <mel@csn.ul.ie>
+> Or, alternatively, just move all the "clear action->thread" in free_irq() 
+> to after having done the "synchronize_irq()" thing, and then - afaik - 
+> you'll not need that test at all, because you're guaranteed that as long 
+> as you're in an interrupt handler, the thing shouldn't be cleared.
 
-commit e084b2d95e48b31aa45f9c49ffc6cdae8bdb21d4 upstream.
+Right, I looked at that as well, but we need to do it different than
+just calling synchronize_irq(), as we need to keep desc->lock after we
+established that no interrupt is in progress. Otherwise we can run
+into the same problem which we have right now. Patch below.
 
-Fix a post-2.6.24 performace regression caused by
-3dfa5721f12c3d5a441448086bee156887daa961 ("page-allocator: preserve PFN
-ordering when __GFP_COLD is set").
+Thanks,
 
-Narayanan reports "The regression is around 15%.  There is no disk controller
-as our setup is based on Samsung OneNAND used as a memory mapped device on a
-OMAP2430 based board."
-
-The page allocator tries to preserve contiguous PFN ordering when returning
-pages such that repeated callers to the allocator have a strong chance of
-getting physically contiguous pages, particularly when external fragmentation
-is low.  However, of the bulk of the allocations have __GFP_COLD set as they
-are due to aio_read() for example, then the PFNs are in reverse PFN order.
-This can cause performance degration when used with IO controllers that could
-have merged the requests.
-
-This patch attempts to preserve the contiguous ordering of PFNs for users of
-__GFP_COLD.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Reported-by: Narayananu Gopalakrishnan <narayanan.g@samsung.com>
-Tested-by: Narayanan Gopalakrishnan <narayanan.g@samsung.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+	tglx
 ---
- mm/page_alloc.c |   13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
-
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -846,7 +846,7 @@ static struct page *__rmqueue(struct zon
-  */
- static int rmqueue_bulk(struct zone *zone, unsigned int order, 
- 			unsigned long count, struct list_head *list,
--			int migratetype)
-+			int migratetype, int cold)
- {
- 	int i;
- 	
-@@ -865,7 +865,10 @@ static int rmqueue_bulk(struct zone *zon
- 		 * merge IO requests if the physical pages are ordered
- 		 * properly.
- 		 */
--		list_add(&page->lru, list);
-+		if (likely(cold == 0))
-+			list_add(&page->lru, list);
-+		else
-+			list_add_tail(&page->lru, list);
- 		set_page_private(page, migratetype);
- 		list = &page->lru;
- 	}
-@@ -1068,7 +1071,8 @@ again:
- 		local_irq_save(flags);
- 		if (!pcp->count) {
- 			pcp->count = rmqueue_bulk(zone, 0,
--					pcp->batch, &pcp->list, migratetype);
-+					pcp->batch, &pcp->list,
-+					migratetype, cold);
- 			if (unlikely(!pcp->count))
- 				goto failed;
- 		}
-@@ -1087,7 +1091,8 @@ again:
- 		/* Allocate more to the pcp list if necessary */
- 		if (unlikely(&page->lru == &pcp->list)) {
- 			pcp->count += rmqueue_bulk(zone, 0,
--					pcp->batch, &pcp->list, migratetype);
-+					pcp->batch, &pcp->list,
-+					migratetype, cold);
- 			page = list_entry(pcp->list.next, struct page, lru);
- 		}
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 76e109a..06fa022 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -895,7 +907,28 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
+ 	if (!desc)
+ 		return NULL;
  
+-	atomic_spin_lock_irqsave(&desc->lock, flags);
++	while (1) {
++		/*
++		 * Wait until we're out of the critical section.  This might
++		 * give the wrong answer due to the lack of memory barriers.
++		 */
++		while (desc->status & IRQ_INPROGRESS)
++			cpu_relax();
++
++		/*
++		 * Check under the lock again. If irq is not in
++		 * progress we keep the lock held until we removed
++		 * action. We do not care about an already running irq
++		 * thread here. We care about it when we stop the thread.
++		 */
++		atomic_spin_lock_irqsave(&desc->lock, flags);
++
++		if (!(desc->status & IRQ_INPROGRESS))
++			break;
++
++		/* Try again */
++		atomic_spin_unlock_irqrestore(&desc->lock, flags);
++	}
+ 
+ 	/*
+ 	 * There can be multiple actions per IRQ descriptor, find the right
 
 
