@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbZHMUMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbZHMULi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755925AbZHMUMv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:12:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbZHMT7X
+	id S1756054AbZHMULi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:11:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932082AbZHMULg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:59:23 -0400
-Received: from kroah.org ([198.145.64.141]:41669 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 16:11:36 -0400
+Received: from kroah.org ([198.145.64.141]:41704 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755875AbZHMT7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:20 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:26 2009
-Message-Id: <20090813195126.482792691@mini.kroah.org>
+	id S1755932AbZHMT73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:29 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:28 2009
+Message-Id: <20090813195127.947446438@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:49:48 -0700
+Date: Thu, 13 Aug 2009 12:49:58 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Anholt <eric@anholt.net>
-Subject: [patch 13/74] drm/i915: Save/restore cursor state on suspend/resume.
+       Lu Zhihe <tombowfly@gmail.com>,
+       Doug Thompson <dougthompson@xmission.com>
+Subject: [patch 23/74] edac: x38 fix mchbar high register addr
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=drm-i915-save-restore-cursor-state-on-suspend-resume.patch
+Content-Disposition: inline; filename=edac-x38-fix-mchbar-high-register-addr.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,83 +31,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eric Anholt <eric@anholt.net>
+From: Lu Zhihe <tombowfly@gmail.com>
 
-(cherry picked from commit 1fd1c624362819ecc36db2458c6a972c48ae92d6)
+commit 3d768213a6c34a27fac1804143da8cf18b8b175f upstream.
 
-This may fix cursor corruption in X on resume, which would persist until
-the cursor was hidden and then shown again.
+Intel X38 MCHBAR is a 64bits register, base from 0x48, so its higher base
+is 0x4C.
 
-V2: Also include the cursor control regs.
-
-Signed-off-by: Eric Anholt <eric@anholt.net>
-Reviewed-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Lu Zhihe <tombowfly@gmail.com>
+Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/i915/i915_drv.h     |    8 ++++++++
- drivers/gpu/drm/i915/i915_suspend.c |   20 ++++++++++++++++++++
- 2 files changed, 28 insertions(+)
+ drivers/edac/x38_edac.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/gpu/drm/i915/i915_drv.h
-+++ b/drivers/gpu/drm/i915/i915_drv.h
-@@ -285,6 +285,13 @@ typedef struct drm_i915_private {
- 	u8 saveDACMASK;
- 	u8 saveCR[37];
- 	uint64_t saveFENCE[16];
-+	u32 saveCURACNTR;
-+	u32 saveCURAPOS;
-+	u32 saveCURABASE;
-+	u32 saveCURBCNTR;
-+	u32 saveCURBPOS;
-+	u32 saveCURBBASE;
-+	u32 saveCURSIZE;
+--- a/drivers/edac/x38_edac.c
++++ b/drivers/edac/x38_edac.c
+@@ -30,7 +30,7 @@
+ /* Intel X38 register addresses - device 0 function 0 - DRAM Controller */
  
- 	struct {
- 		struct drm_mm gtt_space;
-@@ -642,6 +649,7 @@ void i915_gem_detach_phys_object(struct 
- void i915_gem_free_all_phys_object(struct drm_device *dev);
- int i915_gem_object_get_pages(struct drm_gem_object *obj);
- void i915_gem_object_put_pages(struct drm_gem_object *obj);
-+void i915_gem_release(struct drm_device * dev, struct drm_file *file_priv);
- 
- /* i915_gem_tiling.c */
- void i915_gem_detect_bit_6_swizzle(struct drm_device *dev);
---- a/drivers/gpu/drm/i915/i915_suspend.c
-+++ b/drivers/gpu/drm/i915/i915_suspend.c
-@@ -295,6 +295,16 @@ int i915_save_state(struct drm_device *d
- 	i915_save_palette(dev, PIPE_B);
- 	dev_priv->savePIPEBSTAT = I915_READ(PIPEBSTAT);
- 
-+	/* Cursor state */
-+	dev_priv->saveCURACNTR = I915_READ(CURACNTR);
-+	dev_priv->saveCURAPOS = I915_READ(CURAPOS);
-+	dev_priv->saveCURABASE = I915_READ(CURABASE);
-+	dev_priv->saveCURBCNTR = I915_READ(CURBCNTR);
-+	dev_priv->saveCURBPOS = I915_READ(CURBPOS);
-+	dev_priv->saveCURBBASE = I915_READ(CURBBASE);
-+	if (!IS_I9XX(dev))
-+		dev_priv->saveCURSIZE = I915_READ(CURSIZE);
-+
- 	/* CRT state */
- 	dev_priv->saveADPA = I915_READ(ADPA);
- 
-@@ -480,6 +490,16 @@ int i915_restore_state(struct drm_device
- 	I915_WRITE(DSPBCNTR, dev_priv->saveDSPBCNTR);
- 	I915_WRITE(DSPBADDR, I915_READ(DSPBADDR));
- 
-+	/* Cursor state */
-+	I915_WRITE(CURAPOS, dev_priv->saveCURAPOS);
-+	I915_WRITE(CURACNTR, dev_priv->saveCURACNTR);
-+	I915_WRITE(CURABASE, dev_priv->saveCURABASE);
-+	I915_WRITE(CURBPOS, dev_priv->saveCURBPOS);
-+	I915_WRITE(CURBCNTR, dev_priv->saveCURBCNTR);
-+	I915_WRITE(CURBBASE, dev_priv->saveCURBBASE);
-+	if (!IS_I9XX(dev))
-+		I915_WRITE(CURSIZE, dev_priv->saveCURSIZE);
-+
- 	/* CRT state */
- 	I915_WRITE(ADPA, dev_priv->saveADPA);
+ #define X38_MCHBAR_LOW	0x48	/* MCH Memory Mapped Register BAR */
+-#define X38_MCHBAR_HIGH	0x4b
++#define X38_MCHBAR_HIGH	0x4c
+ #define X38_MCHBAR_MASK	0xfffffc000ULL	/* bits 35:14 */
+ #define X38_MMR_WINDOW_SIZE	16384
  
 
 
