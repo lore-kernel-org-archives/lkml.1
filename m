@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756047AbZHMUOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755863AbZHMUOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756047AbZHMUOa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:14:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755843AbZHMT7R
+	id S1755863AbZHMUOo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbZHMUOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:59:17 -0400
-Received: from kroah.org ([198.145.64.141]:41647 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 16:14:40 -0400
+Received: from kroah.org ([198.145.64.141]:41661 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755698AbZHMT7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:14 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:25 2009
-Message-Id: <20090813195125.668127635@mini.kroah.org>
+	id S1755825AbZHMT7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:17 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:26 2009
+Message-Id: <20090813195126.055293320@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:49:42 -0700
+Date: Thu, 13 Aug 2009 12:49:45 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Dumazet <eric.dumazet@gmail.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 07/74] net: sk_prot_alloc() should not blindly overwrite memory
+Subject: [patch 10/74] gso: Stop fraglists from escaping
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=net-sk_prot_alloc-should-not-blindly-overwrite-memory.patch
+Content-Disposition: inline; filename=gso-stop-fraglists-from-escaping.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,52 +31,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eric Dumazet <eric.dumazet@gmail.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-[ Upstream commit e912b1142be8f1e2c71c71001dc992c6e5eb2ec1 ]
+[ Upstream commit 278b2513f76161a9cf1ebddd620dc9d1714fe573 ]
 
-Some sockets use SLAB_DESTROY_BY_RCU, and our RCU code correctness
-depends on sk->sk_nulls_node.next being always valid. A NULL
-value is not allowed as it might fault a lockless reader.
+As it stands skb fraglists can get past the check in dev_queue_xmit
+if the skb is marked as GSO.  In particular, if the packet doesn't
+have the proper checksums for GSO, but can otherwise be handled by
+the underlying device, we will not perform the fraglist check on it
+at all.
 
-Current sk_prot_alloc() implementation doesnt respect this hypothesis,
-calling kmem_cache_alloc() with __GFP_ZERO. Just call memset() around
-the forbidden field.
+If the underlying device cannot handle fraglists, then this will
+break.
 
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+The fix is as simple as moving the fraglist check from the device
+check into skb_gso_ok.
+
+This has caused crashes with Xen when used together with GRO which
+can generate GSO packets with fraglists.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/core/sock.c |   19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
+ include/linux/netdevice.h |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -935,8 +935,23 @@ static struct sock *sk_prot_alloc(struct
- 	struct kmem_cache *slab;
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1856,15 +1856,14 @@ static inline int net_gso_ok(int feature
  
- 	slab = prot->slab;
--	if (slab != NULL)
--		sk = kmem_cache_alloc(slab, priority);
-+	if (slab != NULL) {
-+		sk = kmem_cache_alloc(slab, priority & ~__GFP_ZERO);
-+		if (!sk)
-+			return sk;
-+		if (priority & __GFP_ZERO) {
-+			/*
-+			 * caches using SLAB_DESTROY_BY_RCU should let
-+			 * sk_node.next un-modified. Special care is taken
-+			 * when initializing object to zero.
-+			 */
-+			if (offsetof(struct sock, sk_node.next) != 0)
-+				memset(sk, 0, offsetof(struct sock, sk_node.next));
-+			memset(&sk->sk_node.pprev, 0,
-+			       prot->obj_size - offsetof(struct sock,
-+							 sk_node.pprev));
-+		}
-+	}
- 	else
- 		sk = kmalloc(prot->obj_size, priority);
+ static inline int skb_gso_ok(struct sk_buff *skb, int features)
+ {
+-	return net_gso_ok(features, skb_shinfo(skb)->gso_type);
++	return net_gso_ok(features, skb_shinfo(skb)->gso_type) &&
++	       (!skb_shinfo(skb)->frag_list || (features & NETIF_F_FRAGLIST));
+ }
+ 
+ static inline int netif_needs_gso(struct net_device *dev, struct sk_buff *skb)
+ {
+ 	return skb_is_gso(skb) &&
+ 	       (!skb_gso_ok(skb, dev->features) ||
+-	        (skb_shinfo(skb)->frag_list &&
+-	         !(dev->features & NETIF_F_FRAGLIST)) ||
+ 		unlikely(skb->ip_summed != CHECKSUM_PARTIAL));
+ }
  
 
 
