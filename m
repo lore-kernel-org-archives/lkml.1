@@ -1,67 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbZHMVtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbZHMVvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753383AbZHMVtw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 17:49:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbZHMVtw
+	id S1754100AbZHMVvh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 17:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbZHMVvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 17:49:52 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:55831 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751415AbZHMVtv (ORCPT
+	Thu, 13 Aug 2009 17:51:37 -0400
+Received: from mail-yw0-f193.google.com ([209.85.211.193]:33593 "EHLO
+	mail-yw0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753589AbZHMVve (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 17:49:51 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=qXX+/YOLDjoGOgT+RrLSnXSsW/lWPJyWoW+XEG36azOqrOsT9Dk3j9xOMQqnlGu17
-	8W/DauKNS7pRUDogkABlg==
-Date: Thu, 13 Aug 2009 14:49:45 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Eric B Munson <ebmunson@us.ibm.com>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-man@vger.kernel.org, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com
-Subject: Re: [PATCH 3/3] Add MAP_HUGETLB example to vm/hugetlbpage.txt V2
-In-Reply-To: <617054c59f53f43f6fecfd6908cfb86ea1dd6f72.1250156841.git.ebmunson@us.ibm.com>
-Message-ID: <alpine.DEB.2.00.0908131449270.9805@chino.kir.corp.google.com>
-References: <cover.1250156841.git.ebmunson@us.ibm.com> <e9b02974a0cca308927ff3a4a0765b93faa6d12f.1250156841.git.ebmunson@us.ibm.com> <83949d066e2a7221a25dd74d12d6dcf7e8b4e9ba.1250156841.git.ebmunson@us.ibm.com>
- <617054c59f53f43f6fecfd6908cfb86ea1dd6f72.1250156841.git.ebmunson@us.ibm.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 13 Aug 2009 17:51:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=d8Yj/i2Ed+5wLfY9VLiek6CP5TEghgWGvWsmBIscOM1jLgzA5KCUPS8HBQHGBE16N5
+         RrlrRtfNPIzBb/S3vK0kL44MkkYRI3x6wHDUtpUsKf6/eSQhK9rrwbGYpLu07kRj3off
+         X9QipwkgABfT62qogx5blyeh9jGfNdzggq9aw=
+Message-ID: <4A848AE2.5010600@gmail.com>
+Date: Thu, 13 Aug 2009 23:51:30 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-7.4 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: "Brown, Len" <len.brown@intel.com>, linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: hibernate causes nobody cared on acpi irq
+References: <4A833CAD.5050209@gmail.com> <200908130021.34378.rjw@sisk.pl> <4A846F04.9050005@gmail.com> <200908132220.01334.rjw@sisk.pl> <4A847BA1.9080805@gmail.com>
+In-Reply-To: <4A847BA1.9080805@gmail.com>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Aug 2009, Eric B Munson wrote:
+On 08/13/2009 10:46 PM, Jiri Slaby wrote:
+> On 08/13/2009 10:20 PM, Rafael J. Wysocki wrote:
+>> Well, nothing obvious comes to mind.
+> 
+> Hmm, looks like a fresh qemu-kvm bug.
 
-> This patch adds an example of how to use the MAP_HUGETLB flag to
-> the vm documentation.
-> 
-> Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
-> ---
-> Changes from V1:
->  Rebase to newest linux-2.6 tree
->  Change MAP_LARGEPAGE to MAP_HUGETLB to match flag name in huge page shm
-> 
->  Documentation/vm/hugetlbpage.txt |   80 ++++++++++++++++++++++++++++++++++++++
->  1 files changed, 80 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Documentation/vm/hugetlbpage.txt b/Documentation/vm/hugetlbpage.txt
-> index ea8714f..d30fa1a 100644
-> --- a/Documentation/vm/hugetlbpage.txt
-> +++ b/Documentation/vm/hugetlbpage.txt
-> @@ -337,3 +337,83 @@ int main(void)
->  
->  	return 0;
->  }
-> +
-> +*******************************************************************
-> +
-> +/*
-> + * Example of using hugepage memory in a user application using the mmap
-> + * system call with MAP_LARGEPAGE flag.  Before running this program make
-
-s/MAP_LARGEPAGE/MAP_HUGETLB/
+FWIW downgrading from kvm userspace 88 to 78 fixed the issue.
