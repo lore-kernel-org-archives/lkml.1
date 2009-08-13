@@ -1,200 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbZHMWGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754315AbZHMWHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754341AbZHMWGr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 18:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbZHMWGq
+	id S1754315AbZHMWHh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 18:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbZHMWHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 18:06:46 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43253 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754285AbZHMWGp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 18:06:45 -0400
-X-Authenticated: #1587495
-X-Provags-ID: V01U2FsdGVkX1972mcVmMx7vnkcZF+y3TDWEA7GjCc99BoXZANFsp
-	LkLCqEvNY4F/eH
-From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
-To: Greg KH <gregkh@suse.de>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [patch 28/74] thinkpad-acpi: fix incorrect use of TPACPI_BRGHT_MODE_ECNVRAM
-Date: Fri, 14 Aug 2009 00:06:43 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-sidux-amd64; KDE/4.3.0; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       Len Brown <len.brown@intel.com>
-References: <20090813194935.985368088@mini.kroah.org> <20090813195128.703325684@mini.kroah.org>
-In-Reply-To: <20090813195128.703325684@mini.kroah.org>
+	Thu, 13 Aug 2009 18:07:37 -0400
+Received: from smtp-2.sys.kth.se ([130.237.32.160]:60523 "EHLO
+	smtp-2.sys.kth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753441AbZHMWHg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 18:07:36 -0400
+X-Greylist: delayed 1774 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Aug 2009 18:07:35 EDT
+Message-ID: <4A8487AA.1070002@kth.se>
+Date: Thu, 13 Aug 2009 23:37:46 +0200
+From: Arvid Brodin <arvidb@kth.se>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090705)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: linux-kernel@vger.kernel.org
+Subject: PROBLEM: kernel freezes, possibly via velocity-related
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908140006.45800.s.L-H@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Hi,
 
-On Thursday 13 August 2009, Greg KH wrote:
-> 2.6.30-stable review patch.  If anyone has any objections, please let us know.
-> 
-> ------------------
-> 
-> From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-> 
-> commit 59fe4fe34d7afdf63208124f313be9056feaa2f4 upstream.
-> 
-> HBRV-based default selection of backlight control strategy didn't work
-> well, at least the X41 defines it but doesn't use it and I don't think
-> it will stop there.
-> 
-> Switch to a white/blacklist.  All models that have HBRV defined have
-> been included in the list, and initially all ATI GPUs will get
-> ECNVRAM, and the Intel GPUs will get UCMS_STEP.
-> 
-> Symptoms of incorrect backlight mode selection are:
-> 
-> 1. Non-working backlight control through sysfs;
-> 
-> 2. Backlight gets reset to the lowest level at every shutdown, reboot
->    and when thinkpad-acpi gets unloaded;
-> 
-> This fixes a regression in 2.6.30, bugzilla #13826
+Since I started running deluged (a bittorrent daemon) on my file server,
+I've started getting sporadic kernel freezes, a few times a week or so.
 
-As already reported in [1] and confirmed by hmh in [2], this patch breaks 
-compiling thinkpad_acpi in 2.6.31-rc5.
+Symptoms:
+* Keyboard stops responding (SysRq combos does not work),
+* No panic/oops message on the console; the screen displays the normal
+login prompt with a blinking cursor,
+* The network activity LED flashes steadily at 1-2 Hz. The corresponding
+LED on my switch blinks too, but the traffic does not seem to get
+forwarded to any other port on the switch (no other lights blinking),
+* The machine does not respond to pings or ssh logins,
+* Nothing in var/log/messages or kern.log that I can relate to the
+freeze (I have gotten some "UDP: short packet" and "eth0: excessive work
+at interrupt" messages a few hours before the freezes a few times, but
+that's all).
 
-[...]
-  CC [M]  drivers/platform/x86/hp-wmi.o
-  CC [M]  drivers/platform/x86/sony-laptop.o
-  CC [M]  drivers/platform/x86/thinkpad_acpi.o
-drivers/platform/x86/thinkpad_acpi.c:5769: error: array type has incomplete element type
-drivers/platform/x86/thinkpad_acpi.c:5771: error: implicit declaration of function 'TPACPI_Q_IBM'
-drivers/platform/x86/thinkpad_acpi.c: In function 'brightness_init':
-drivers/platform/x86/thinkpad_acpi.c:5799: error: implicit declaration of function 'tpacpi_check_quirks'
-drivers/platform/x86/thinkpad_acpi.c:5800: warning: type defaults to 'int' in declaration of 'type name'
-drivers/platform/x86/thinkpad_acpi.c:5800: warning: type defaults to 'int' in declaration of 'type name'
-drivers/platform/x86/thinkpad_acpi.c:5800: error: size of array 'type name' is negative
-make[6]: *** [drivers/platform/x86/thinkpad_acpi.o] Error 1
-make[5]: *** [drivers/platform/x86] Error 2
-make[4]: *** [drivers/platform] Error 2
-make[3]: *** [drivers] Error 2
+I've never gotten a freeze with the deluge daemon stopped (which it has
+been for many weeks sometimes), but consistently get freezes, often
+within a day or two, when it is started and have active torrents.
 
-Regards
-	Stefan Lippers-Hollmann
+In addition to the kernel I currently run (2.6.29.4), the freezes also
+occured with gentoo kernels 2.6.23-gentoo-r8 and 2.6.27-gentoo-r10.
 
-[1]	From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
-	Date: Fri, 7 Aug 2009 01:08:10 +0200
-	Subject: Re: patch thinkpad-acpi-fix-incorrect-use-of-tpacpi_brght_mode_ecnvram.patch added to 2.6.30-stable tree
-	Message-Id: <200908070108.15095.s.L-H@gmx.de>
-	http://lkml.indiana.edu/hypermail/linux/kernel/0908.0/02520.html
-[2]	From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-	Date: Thu, 6 Aug 2009 20:31:11 -0300
-	Subject: Re: patch thinkpad-acpi-fix-incorrect-use-of-tpacpi_brght_mode_ecnvram.patch added to 2.6.30-stable tree
-	Message-ID: <20090806233111.GB14381@khazad-dum.debian.net>
-	http://lkml.indiana.edu/hypermail/linux/kernel/0908.0/02526.html
+# uname -a
+Linux sv1 2.6.29.4 #1 Thu May 21 03:26:33 CEST 2009 i686 VIA Esther
+processor 1200MHz CentaurHauls GNU/Linux
+
+# lspci -vvv
+See http://pastebin.com/f21145883
+
+# cat /proc/cpuinfo
+processor	: 0
+vendor_id	: CentaurHauls
+cpu family	: 6
+model		: 10
+model name	: VIA Esther processor 1200MHz
+stepping	: 9
+cpu MHz		: 1199.496
+cache size	: 128 KB
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 1
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce apic sep mtrr pge cmov pat
+clflush acpi mmx fxsr sse sse2 tm nx pni est tm2 rng rng_en ace ace_en
+ace2 ace2_en phe phe_en pmm pmm_en
+bogomips	: 2399.95
+clflush size	: 64
+power management:
+
+
+Should I report this to the maintainer of my network driver? I'm not
+sure the symptoms are clear enough to directly blame the network driver,
+but I do suspect it. Is there some way I can debug a frozen kernel to
+zoom in on the problem?
 
 -- 
-> Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-> Reported-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
->  drivers/platform/x86/thinkpad_acpi.c |   61 ++++++++++++++++++++++++++---------
->  1 file changed, 47 insertions(+), 14 deletions(-)
-> 
-> --- a/drivers/platform/x86/thinkpad_acpi.c
-> +++ b/drivers/platform/x86/thinkpad_acpi.c
-> @@ -5757,14 +5757,48 @@ static struct backlight_ops ibm_backligh
->  
->  /* --------------------------------------------------------------------- */
->  
-> +/*
-> + * These are only useful for models that have only one possibility
-> + * of GPU.  If the BIOS model handles both ATI and Intel, don't use
-> + * these quirks.
-> + */
-> +#define TPACPI_BRGHT_Q_NOEC	0x0001	/* Must NOT use EC HBRV */
-> +#define TPACPI_BRGHT_Q_EC	0x0002  /* Should or must use EC HBRV */
-> +#define TPACPI_BRGHT_Q_ASK	0x8000	/* Ask for user report */
-> +
-> +static const struct tpacpi_quirk brightness_quirk_table[] __initconst = {
-> +	/* Models with ATI GPUs known to require ECNVRAM mode */
-> +	TPACPI_Q_IBM('1', 'Y', TPACPI_BRGHT_Q_EC),	/* T43/p ATI */
-> +
-> +	/* Models with ATI GPUs (waiting confirmation) */
-> +	TPACPI_Q_IBM('1', 'R', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
-> +	TPACPI_Q_IBM('1', 'Q', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
-> +	TPACPI_Q_IBM('7', '6', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
-> +	TPACPI_Q_IBM('7', '8', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
-> +
-> +	/* Models with Intel Extreme Graphics 2 (waiting confirmation) */
-> +	TPACPI_Q_IBM('1', 'V', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
-> +	TPACPI_Q_IBM('1', 'W', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
-> +	TPACPI_Q_IBM('1', 'U', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
-> +
-> +	/* Models with Intel GMA900 */
-> +	TPACPI_Q_IBM('7', '0', TPACPI_BRGHT_Q_NOEC),	/* T43, R52 */
-> +	TPACPI_Q_IBM('7', '4', TPACPI_BRGHT_Q_NOEC),	/* X41 */
-> +	TPACPI_Q_IBM('7', '5', TPACPI_BRGHT_Q_NOEC),	/* X41 Tablet */
-> +};
-> +
->  static int __init brightness_init(struct ibm_init_struct *iibm)
->  {
->  	int b;
-> +	unsigned long quirks;
->  
->  	vdbg_printk(TPACPI_DBG_INIT, "initializing brightness subdriver\n");
->  
->  	mutex_init(&brightness_mutex);
->  
-> +	quirks = tpacpi_check_quirks(brightness_quirk_table,
-> +				ARRAY_SIZE(brightness_quirk_table));
-> +
->  	/*
->  	 * We always attempt to detect acpi support, so as to switch
->  	 * Lenovo Vista BIOS to ACPI brightness mode even if we are not
-> @@ -5821,23 +5855,13 @@ static int __init brightness_init(struct
->  	/* TPACPI_BRGHT_MODE_AUTO not implemented yet, just use default */
->  	if (brightness_mode == TPACPI_BRGHT_MODE_AUTO ||
->  	    brightness_mode == TPACPI_BRGHT_MODE_MAX) {
-> -		if (thinkpad_id.vendor == PCI_VENDOR_ID_IBM) {
-> -			/*
-> -			 * IBM models that define HBRV probably have
-> -			 * EC-based backlight level control
-> -			 */
-> -			if (acpi_evalf(ec_handle, NULL, "HBRV", "qd"))
-> -				/* T40-T43, R50-R52, R50e, R51e, X31-X41 */
-> -				brightness_mode = TPACPI_BRGHT_MODE_ECNVRAM;
-> -			else
-> -				/* all other IBM ThinkPads */
-> -				brightness_mode = TPACPI_BRGHT_MODE_UCMS_STEP;
-> -		} else
-> -			/* All Lenovo ThinkPads */
-> +		if (quirks & TPACPI_BRGHT_Q_EC)
-> +			brightness_mode = TPACPI_BRGHT_MODE_ECNVRAM;
-> +		else
->  			brightness_mode = TPACPI_BRGHT_MODE_UCMS_STEP;
->  
->  		dbg_printk(TPACPI_DBG_BRGHT,
-> -			   "selected brightness_mode=%d\n",
-> +			   "driver auto-selected brightness_mode=%d\n",
->  			   brightness_mode);
->  	}
->  
-> @@ -5858,6 +5882,15 @@ static int __init brightness_init(struct
->  	vdbg_printk(TPACPI_DBG_INIT | TPACPI_DBG_BRGHT,
->  			"brightness is supported\n");
->  
-> +	if (quirks & TPACPI_BRGHT_Q_ASK) {
-> +		printk(TPACPI_NOTICE
-> +			"brightness: will use unverified default: "
-> +			"brightness_mode=%d\n", brightness_mode);
-> +		printk(TPACPI_NOTICE
-> +			"brightness: please report to %s whether it works well "
-> +			"or not on your ThinkPad\n", TPACPI_MAIL);
-> +	}
-> +
->  	ibm_backlight_device->props.max_brightness =
->  				(tp_features.bright_16levels)? 15 : 7;
->  	ibm_backlight_device->props.brightness = b & TP_EC_BACKLIGHT_LVLMSK;
+Arvid
