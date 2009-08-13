@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbZHMJak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753950AbZHMJdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753939AbZHMJak (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 05:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbZHMJaj
+	id S1753950AbZHMJdN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 05:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbZHMJdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 05:30:39 -0400
-Received: from mail.free-electrons.com ([88.191.76.200]:50125 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753907AbZHMJai (ORCPT
+	Thu, 13 Aug 2009 05:33:12 -0400
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:51565 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753363AbZHMJdM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 05:30:38 -0400
-Date: Thu, 13 Aug 2009 11:30:36 +0200
-From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-To: "H. Peter Anvin" <hpa@zytor.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Matthieu CASTET <matthieu.castet@parrot.com>,
-       Alain Knaff <alain@knaff.lu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/6] Add support for LZO-compressed kernels for ARM
-Message-ID: <20090813093036.GG4051@pc-ras4041.res.insa>
-References: <4A7C14EB.1060701@parrot.com> <20090807130130.GE4455@laptop> <4A7C2BA4.7030408@parrot.com> <20090807135524.GF4455@laptop> <20090807200001.GE31543@n2100.arm.linux.org.uk> <20090807210816.GA29797@merkur.ravnborg.org> <20090811094418.GI9704@pc-ras4041.res.insa> <4A819642.10700@zytor.com> <20090811162730.GM9704@pc-ras4041.res.insa> <4A819CDD.1000700@zytor.com>
+	Thu, 13 Aug 2009 05:33:12 -0400
+Date: Thu, 13 Aug 2009 11:30:45 +0200
+From: Bastian Blank <bastian@waldi.eu.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Remove SMP warning from PowerMac cpufreq
+Message-ID: <20090813093045.GA7085@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <20090811093931.GA15940@wavehammer.waldi.eu.org> <1250144098.3587.111.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <4A819CDD.1000700@zytor.com>
+In-Reply-To: <1250144098.3587.111.camel@pasglop>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 09:31:25AM -0700, H. Peter Anvin wrote :
-> On 08/11/2009 09:27 AM, Albin Tonnerre wrote:
-> > 
-> > So I guess the only options left are either define a dummy raise() function, or
-> > get rid of the divisions like Alain Knaff did in his patch ?
-> > 
-> 
-> Define a dummy raise, get rid of the divisions, or provide your own
-> division function (there is probably one in the kernel already...)
+On Thu, Aug 13, 2009 at 04:14:58PM +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2009-08-11 at 11:39 +0200, Bastian Blank wrote:
+> > This patch just disables this driver on SMP kernels, as it is obviously
+> > not supported.
+> Why not remove the #error instead ? :-) I don't think it's still
+> meaningful, especially since we use the timebase for delays nowadays
+> which doesn't depend on the CPU frequency...
 
-Yes, there's such a function in arch/arm/lib/lib1funcs.S, which in turns
-requires the __div0 symbol, defined in arch/arm/kernel/traps.c, and this one
-cannot be used as it brings plenty of symbols that aren't available in the
-pre-boot environment. So anyway, we have to define our own symbols there. Either
-we use libgcc and define raise(), or lib1funcs and define __div0().
+Your call. Take this one:
 
-Russell, what's your take on this ?
+The build of a PowerMac 32bit kernel currently fails with
 
-Regards,
+error: #warning "WARNING, CPUFREQ not recommended on SMP kernels"
+
+Thie patch removes the not longer applicable SMP warning from the
+PowerMac cpufreq code.
+
+Signed-off-by: Bastian Blank <waldi@debian.org>
+
+diff --git a/arch/powerpc/platforms/powermac/cpufreq_32.c b/arch/powerpc/platforms/powermac/cpufreq_32.c
+index 65c585b..08d94e4 100644
+--- a/arch/powerpc/platforms/powermac/cpufreq_32.c
++++ b/arch/powerpc/platforms/powermac/cpufreq_32.c
+@@ -44,14 +44,6 @@
+  */
+ #undef DEBUG_FREQ
+ 
+-/*
+- * There is a problem with the core cpufreq code on SMP kernels,
+- * it won't recalculate the Bogomips properly
+- */
+-#ifdef CONFIG_SMP
+-#warning "WARNING, CPUFREQ not recommended on SMP kernels"
+-#endif
+-
+ extern void low_choose_7447a_dfs(int dfs);
+ extern void low_choose_750fx_pll(int pll);
+ extern void low_sleep_handler(void);
 -- 
-Albin Tonnerre, Free Electrons
-Kernel, drivers and embedded Linux development,
-consulting, training and support.
-http://free-electrons.com
+Those who hate and fight must stop themselves -- otherwise it is not stopped.
+		-- Spock, "Day of the Dove", stardate unknown
