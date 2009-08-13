@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932364AbZHMUHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756098AbZHMUIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932364AbZHMUHm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932296AbZHMUHk
+	id S1756098AbZHMUIB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932216AbZHMUH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:07:40 -0400
-Received: from kroah.org ([198.145.64.141]:41796 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 16:07:59 -0400
+Received: from kroah.org ([198.145.64.141]:41789 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932192AbZHMT7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:44 -0400
+	id S932190AbZHMT7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:43 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:30 2009
-Message-Id: <20090813195130.384492696@mini.kroah.org>
+Message-Id: <20090813195130.226828111@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:14 -0700
+Date: Thu, 13 Aug 2009 12:50:13 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Hellstrom <thellstrom@vmware.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       dri-devel@lists.sourceforge.net, venkatesh.pallipadi@intel.com,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 39/74] x86: Fix CPA memtype reserving in the set_pages_array*() cases
+       Mel Gorman <mel@csn.ul.ie>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [patch 38/74] page-allocator: preserve PFN ordering when __GFP_COLD is set
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=x86-fix-cpa-memtype-reserving-in-the-set_pages_array-cases.patch
+Content-Disposition: inline; filename=page-allocator-preserve-pfn-ordering-when-__gfp_cold-is-set.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,98 +31,83 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Thomas Hellstrom <thellstrom@vmware.com>
+From: Mel Gorman <mel@csn.ul.ie>
 
-commit 8523acfe40efc1a8d3da8f473ca67cb195b06f0c upstream.
+commit e084b2d95e48b31aa45f9c49ffc6cdae8bdb21d4 upstream.
 
-The code was incorrectly reserving memtypes using the page
-virtual address instead of the physical address. Furthermore,
-the code was not ignoring highmem pages as it ought to.
+Fix a post-2.6.24 performace regression caused by
+3dfa5721f12c3d5a441448086bee156887daa961 ("page-allocator: preserve PFN
+ordering when __GFP_COLD is set").
 
-( upstream does not pass in highmem pages yet - but upcoming
-  graphics code will do it and there's no reason to not handle
-  this properly in the CPA APIs.)
+Narayanan reports "The regression is around 15%.  There is no disk controller
+as our setup is based on Samsung OneNAND used as a memory mapped device on a
+OMAP2430 based board."
 
-Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=13884
+The page allocator tries to preserve contiguous PFN ordering when returning
+pages such that repeated callers to the allocator have a strong chance of
+getting physically contiguous pages, particularly when external fragmentation
+is low.  However, of the bulk of the allocations have __GFP_COLD set as they
+are due to aio_read() for example, then the PFNs are in reverse PFN order.
+This can cause performance degration when used with IO controllers that could
+have merged the requests.
 
-Signed-off-by: Thomas Hellstrom <thellstrom@vmware.com>
-Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: dri-devel@lists.sourceforge.net
-Cc: venkatesh.pallipadi@intel.com
-LKML-Reference: <1249284345-7654-1-git-send-email-thellstrom@vmware.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+This patch attempts to preserve the contiguous ordering of PFNs for users of
+__GFP_COLD.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Reported-by: Narayananu Gopalakrishnan <narayanan.g@samsung.com>
+Tested-by: Narayanan Gopalakrishnan <narayanan.g@samsung.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/mm/pageattr.c |   30 +++++++++++++++++++++---------
- 1 file changed, 21 insertions(+), 9 deletions(-)
+ mm/page_alloc.c |   13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -590,9 +590,12 @@ static int __change_page_attr(struct cpa
- 	unsigned int level;
- 	pte_t *kpte, old_pte;
- 
--	if (cpa->flags & CPA_PAGES_ARRAY)
--		address = (unsigned long)page_address(cpa->pages[cpa->curpage]);
--	else if (cpa->flags & CPA_ARRAY)
-+	if (cpa->flags & CPA_PAGES_ARRAY) {
-+		struct page *page = cpa->pages[cpa->curpage];
-+		if (unlikely(PageHighMem(page)))
-+			return 0;
-+		address = (unsigned long)page_address(page);
-+	} else if (cpa->flags & CPA_ARRAY)
- 		address = cpa->vaddr[cpa->curpage];
- 	else
- 		address = *cpa->vaddr;
-@@ -695,9 +698,12 @@ static int cpa_process_alias(struct cpa_
- 	 * No need to redo, when the primary call touched the direct
- 	 * mapping already:
- 	 */
--	if (cpa->flags & CPA_PAGES_ARRAY)
--		vaddr = (unsigned long)page_address(cpa->pages[cpa->curpage]);
--	else if (cpa->flags & CPA_ARRAY)
-+	if (cpa->flags & CPA_PAGES_ARRAY) {
-+		struct page *page = cpa->pages[cpa->curpage];
-+		if (unlikely(PageHighMem(page)))
-+			return 0;
-+		vaddr = (unsigned long)page_address(page);
-+	} else if (cpa->flags & CPA_ARRAY)
- 		vaddr = cpa->vaddr[cpa->curpage];
- 	else
- 		vaddr = *cpa->vaddr;
-@@ -1118,7 +1124,9 @@ int set_pages_array_uc(struct page **pag
- 	int free_idx;
- 
- 	for (i = 0; i < addrinarray; i++) {
--		start = (unsigned long)page_address(pages[i]);
-+		if (PageHighMem(pages[i]))
-+			continue;
-+		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
- 		end = start + PAGE_SIZE;
- 		if (reserve_memtype(start, end, _PAGE_CACHE_UC_MINUS, NULL))
- 			goto err_out;
-@@ -1131,7 +1139,9 @@ int set_pages_array_uc(struct page **pag
- err_out:
- 	free_idx = i;
- 	for (i = 0; i < free_idx; i++) {
--		start = (unsigned long)page_address(pages[i]);
-+		if (PageHighMem(pages[i]))
-+			continue;
-+		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
- 		end = start + PAGE_SIZE;
- 		free_memtype(start, end);
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -858,7 +858,7 @@ static struct page *__rmqueue(struct zon
+  */
+ static int rmqueue_bulk(struct zone *zone, unsigned int order, 
+ 			unsigned long count, struct list_head *list,
+-			int migratetype)
++			int migratetype, int cold)
+ {
+ 	int i;
+ 	
+@@ -877,7 +877,10 @@ static int rmqueue_bulk(struct zone *zon
+ 		 * merge IO requests if the physical pages are ordered
+ 		 * properly.
+ 		 */
+-		list_add(&page->lru, list);
++		if (likely(cold == 0))
++			list_add(&page->lru, list);
++		else
++			list_add_tail(&page->lru, list);
+ 		set_page_private(page, migratetype);
+ 		list = &page->lru;
  	}
-@@ -1160,7 +1170,9 @@ int set_pages_array_wb(struct page **pag
- 		return retval;
+@@ -1077,7 +1080,8 @@ again:
+ 		local_irq_save(flags);
+ 		if (!pcp->count) {
+ 			pcp->count = rmqueue_bulk(zone, 0,
+-					pcp->batch, &pcp->list, migratetype);
++					pcp->batch, &pcp->list,
++					migratetype, cold);
+ 			if (unlikely(!pcp->count))
+ 				goto failed;
+ 		}
+@@ -1096,7 +1100,8 @@ again:
+ 		/* Allocate more to the pcp list if necessary */
+ 		if (unlikely(&page->lru == &pcp->list)) {
+ 			pcp->count += rmqueue_bulk(zone, 0,
+-					pcp->batch, &pcp->list, migratetype);
++					pcp->batch, &pcp->list,
++					migratetype, cold);
+ 			page = list_entry(pcp->list.next, struct page, lru);
+ 		}
  
- 	for (i = 0; i < addrinarray; i++) {
--		start = (unsigned long)page_address(pages[i]);
-+		if (PageHighMem(pages[i]))
-+			continue;
-+		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
- 		end = start + PAGE_SIZE;
- 		free_memtype(start, end);
- 	}
 
 
