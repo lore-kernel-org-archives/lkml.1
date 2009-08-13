@@ -1,87 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbZHME7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbZHMFFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752912AbZHME7j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 00:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbZHME7i
+	id S1752967AbZHMFFK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 01:05:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZHMFFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 00:59:38 -0400
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:49908 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752715AbZHME7i (ORCPT
+	Thu, 13 Aug 2009 01:05:09 -0400
+Received: from mailhost11.gawab.com ([66.220.20.11]:35853 "HELO
+	info12.gawab.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751702AbZHMFFI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 00:59:38 -0400
-Date: Thu, 13 Aug 2009 10:29:31 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "Li, Shaohua" <shaohua.li@intel.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
-       "Brown, Len" <len.brown@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>,
-       "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
-Message-ID: <20090813045931.GB14649@in.ibm.com>
-Reply-To: dipankar@in.ibm.com
-References: <20090805142311.553.78286.stgit@sofia.in.ibm.com> <20090806015855.GA20596@sli10-desk.sh.intel.com> <20090809120818.GA1338@ucw.cz> <200908091522.02898.rjw@sisk.pl> <20090810081941.GA18649@elf.ucw.cz> <1249950137.11545.38184.camel@localhost.localdomain> <20090812115806.GK24339@elf.ucw.cz> <20090812195753.GA14649@in.ibm.com> <alpine.LFD.2.00.0908122036580.22946@localhost.localdomain>
+	Thu, 13 Aug 2009 01:05:08 -0400
+X-Trusted: Whitelisted
+From: Al Boldi <a1426z@gawab.com>
+To: ngupta@vflare.org, Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: compcache as a pre-swap area (was: [PATCH] swap: send callback when swap slot is freed)
+Date: Thu, 13 Aug 2009 08:05:36 +0300
+User-Agent: KMail/1.5
+Cc: Matthew Wilcox <willy@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+References: <200908122007.43522.ngupta@vflare.org> <Pine.LNX.4.64.0908122312380.25501@sister.anvils> <4A837D5A.3070407@vflare.org>
+In-Reply-To: <4A837D5A.3070407@vflare.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0908122036580.22946@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908130805.36787.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 08:45:18PM -0400, Len Brown wrote:
-> On Thu, 13 Aug 2009, Dipankar Sarma wrote:
-> > In a native system, I think we should the platform-specific code
-> > export what makes sense. That may be just the lowest possible
-> > state only. Or may be more than one.
-> 
-> For x86, it is 1 state.
+Nitin Gupta wrote:
+> BTW, last time compcache was not accepted due to lack of performance
+> numbers. Now the project has lot more data for various cases:
+> http://code.google.com/p/compcache/wiki/Performance
+> Still need to collect data for worst-case behaviors and such...
 
-Native x86, yes. For virtualized systems, that may not be the
-case depending on how the hypervisor behaves.
+I checked the link, and it looks like you are positioning compcache as a swap 
+replacement.  If so, then repositioning it as a compressed pre-swap area 
+working together with normal swap-space, if available, may yield a much more 
+powerful system.
 
-> > In a virtualized system, we would want to do at least the following -
-> 
-> Are you talking about Linux as a para-virtualized guest here?
-> 
-> > 1. An offline configuration state where the hypervisor can
-> > take the cpu back and allocate it to another VM.
-> 
-> The hypervisor gets control no matter what idle state
-> the guest enters, yes?
 
-The hypervisor may get control, but what they do may depend
-on that the guest OS wished/hinted for - config change or just
-shutdown unused cpu if possible for a while.
+Thanks!
 
-> > 2. A low-power state where the guest indicates it doesn't need the
-> > CPU (and can be put in low power state) but doesn't want to give up 
-> > its allocated cpu share. IOW, no visible configuration changes.
-> > 
-> > So, in any case we would probably want more than one states.
-> 
-> How are #1 and #2 different when the hypervisor
-> gets control in all idle states?  I assert that
-> they are the same, and thus 1 state will suffice.
+--
+Al
 
-It depends on the hypervisor implementation. On pseries (powerpc)
-hypervisor, for example, they are different. By offlining a vcpu
-(and in turn shutting a cpu), you will actually create a configuration
-change in the VM that is visible to other systems management tools
-which may not be what the system administrator wanted. Ideally,
-we would like to distinguish between these two states.
-
-Hope that suffices as an example.
-
-Thanks
-Dipankar
