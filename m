@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbZHMUCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbZHMUC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756096AbZHMUCv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756064AbZHMUCT
+	id S1755914AbZHMUC5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756068AbZHMUCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:02:19 -0400
-Received: from kroah.org ([198.145.64.141]:41938 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932298AbZHMUAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:00:07 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:34 2009
-Message-Id: <20090813195134.019510489@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:39 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+	Thu, 13 Aug 2009 16:02:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53786 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755928AbZHMUCr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 16:02:47 -0400
+Date: Thu, 13 Aug 2009 12:59:05 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Greg KH <gregkh@suse.de>
+cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Michael Buesch <mb@bu3sch.de>, Pete Zaitcev <zaitcev@redhat.com>
-Subject: [patch 64/74] USB: devio: Properly do access_ok() checks
-References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=usb-devio-properly-do-access_ok-checks.patch
-In-Reply-To: <20090813195705.GA22393@kroah.com>
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: [patch 27/28] ALSA: hda - Add missing vmaster initialization
+ for ALC269
+In-Reply-To: <20090813194339.809516126@mini.kroah.org>
+Message-ID: <alpine.LFD.2.01.0908131258420.28882@localhost.localdomain>
+References: <20090813194021.446758568@mini.kroah.org> <20090813194339.809516126@mini.kroah.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.30-stable review patch.  If anyone has any objections, please let us know.
-
-------------------
-
-From: Michael Buesch <mb@bu3sch.de>
-
-commit 18753ebc8a98efe0e8ff6167afb31cef220c8e50 upstream.
-
-access_ok() checks must be done on every part of the userspace structure
-that is accessed. If access_ok() on one part of the struct succeeded, it
-does not imply it will succeed on other parts of the struct. (Does
-depend on the architecture implementation of access_ok()).
-
-This changes the __get_user() users to first check access_ok() on the
-data structure.
-
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
-Cc: Pete Zaitcev <zaitcev@redhat.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/usb/core/devio.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
---- a/drivers/usb/core/devio.c
-+++ b/drivers/usb/core/devio.c
-@@ -1308,7 +1308,8 @@ static int get_urb32(struct usbdevfs_urb
- 		     struct usbdevfs_urb32 __user *uurb)
- {
- 	__u32  uptr;
--	if (get_user(kurb->type, &uurb->type) ||
-+	if (!access_ok(VERIFY_READ, uurb, sizeof(*uurb)) ||
-+	    __get_user(kurb->type, &uurb->type) ||
- 	    __get_user(kurb->endpoint, &uurb->endpoint) ||
- 	    __get_user(kurb->status, &uurb->status) ||
- 	    __get_user(kurb->flags, &uurb->flags) ||
-@@ -1523,8 +1524,9 @@ static int proc_ioctl_compat(struct dev_
- 	u32 udata;
- 
- 	uioc = compat_ptr((long)arg);
--	if (get_user(ctrl.ifno, &uioc->ifno) ||
--	    get_user(ctrl.ioctl_code, &uioc->ioctl_code) ||
-+	if (!access_ok(VERIFY_READ, uioc, sizeof(*uioc)) ||
-+	    __get_user(ctrl.ifno, &uioc->ifno) ||
-+	    __get_user(ctrl.ioctl_code, &uioc->ioctl_code) ||
- 	    __get_user(udata, &uioc->data))
- 		return -EFAULT;
- 	ctrl.data = compat_ptr(udata);
 
 
+On Thu, 13 Aug 2009, Greg KH wrote:
+> 
+> From: Takashi Iwai <tiwai@suse.de>
+> 
+> commit 100d5eb36ba20dc0b99a17ea2b9800c567bfc3d1 upstream.
+> 
+> Without the initialization of vmaster NID, the dB information got
+> confused for ALC269 codec.
+> 
+> Reference: Novell bnc#527361
+> 	https://bugzilla.novell.com/show_bug.cgi?id=527361
+> 
+> Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  sound/pci/hda/patch_realtek.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> --- a/sound/pci/hda/patch_realtek.c
+> +++ b/sound/pci/hda/patch_realtek.c
+> @@ -13767,6 +13767,8 @@ static int patch_alc861vd(struct hda_cod
+>  
+>  	spec->vmaster_nid = 0x02;
+>  
+> +	spec->vmaster_nid = 0x02;
+> +
+>  	codec->patch_ops = alc_patch_ops;
+
+You seem to have already applied this one earlier ;)
+
+		Linus
