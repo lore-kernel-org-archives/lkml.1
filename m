@@ -1,211 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755265AbZHMSb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbZHMSdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755265AbZHMSb7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 14:31:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbZHMSb6
+	id S1755257AbZHMSdz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 14:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZHMSdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 14:31:58 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57137 "EHLO mx2.redhat.com"
+	Thu, 13 Aug 2009 14:33:55 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35813 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751768AbZHMSb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 14:31:56 -0400
-Date: Thu, 13 Aug 2009 21:29:14 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, hpa@zytor.com, gregory.haskins@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCHv3 1/2] mm: export use_mm/unuse_mm to modules
-Message-ID: <20090813182913.GB6585@redhat.com>
-References: <cover.1250187913.git.mst@redhat.com>
+	id S1751383AbZHMSdy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 14:33:54 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: q-funk@iki.fi
+Subject: Re: [Bug #13941] x86 Geode issue
+Date: Thu, 13 Aug 2009 20:34:34 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Alexander Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera> <200908131654.45227.rjw@sisk.pl> <11fae7c70908130800q7b4a5293t5c373613d736d74@mail.gmail.com>
+In-Reply-To: <11fae7c70908130800q7b4a5293t5c373613d736d74@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cover.1250187913.git.mst@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200908132034.34951.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-vhost net module wants to do copy to/from user from a kernel thread,
-which needs use_mm (like what fs/aio has).  Move that into mm/ and
-export to modules.
+On Thursday 13 August 2009, Martin-Éric Racine wrote:
+> On Thu, Aug 13, 2009 at 5:54 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> > On Thursday 13 August 2009, Martin-Éric Racine wrote:
+> >> 2009/8/13 Martin-Éric Racine <q-funk@iki.fi>:
+> >> > On Thu, Aug 13, 2009 at 12:07 PM, Ingo Molnar<mingo@elte.hu> wrote:
+> >> >> * Martin-Éric Racine <q-funk@iki.fi> wrote:
+> >> >>> Yes, this bug is still valid.
+> >> >>>
+> >> >>> Ubuntu kernel team member Leann Ogasawara and I are slowly
+> >> >>> bisecting our way through the changes that took place since 2.6.30
+> >> >>> to find the commit that introduced this regression. Please stay
+> >> >>> tuned.
+> >> >>
+> >> >> hm, the only outright Geode related commit was:
+> >> >>
+> >> >>  d6c585a: x86: geode: Mark mfgpt irq IRQF_TIMER to prevent resume failure
+> >> >>
+> >> >> the jpg at:
+> >> >>
+> >> >>  http://launchpadlibrarian.net/28892781/00002.jpg
+> >> >>
+> >> >> is very out of focus - but what i could decypher suggests a
+> >> >> pagefault crash in the VFS code, in generic_delete_inode().
+> >>
+> >> This one might be a bit better:
+> >>
+> >> http://launchpadlibrarian.net/30267494/2.6.31-5.24.jpg
 
-Acked-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
----
- fs/aio.c                    |   47 +----------------------------------
- include/linux/mmu_context.h |    9 ++++++
- mm/Makefile                 |    2 +-
- mm/mmu_context.c            |   58 +++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 69 insertions(+), 47 deletions(-)
- create mode 100644 include/linux/mmu_context.h
- create mode 100644 mm/mmu_context.c
+Hmm.  This looks like a sysfs oops to my untrained eye.
 
-diff --git a/fs/aio.c b/fs/aio.c
-index d065b2c..fc21c23 100644
---- a/fs/aio.c
-+++ b/fs/aio.c
-@@ -24,6 +24,7 @@
- #include <linux/file.h>
- #include <linux/mm.h>
- #include <linux/mman.h>
-+#include <linux/mmu_context.h>
- #include <linux/slab.h>
- #include <linux/timer.h>
- #include <linux/aio.h>
-@@ -34,7 +35,6 @@
- 
- #include <asm/kmap_types.h>
- #include <asm/uaccess.h>
--#include <asm/mmu_context.h>
- 
- #if DEBUG > 1
- #define dprintk		printk
-@@ -595,51 +595,6 @@ static struct kioctx *lookup_ioctx(unsigned long ctx_id)
- }
- 
- /*
-- * use_mm
-- *	Makes the calling kernel thread take on the specified
-- *	mm context.
-- *	Called by the retry thread execute retries within the
-- *	iocb issuer's mm context, so that copy_from/to_user
-- *	operations work seamlessly for aio.
-- *	(Note: this routine is intended to be called only
-- *	from a kernel thread context)
-- */
--static void use_mm(struct mm_struct *mm)
--{
--	struct mm_struct *active_mm;
--	struct task_struct *tsk = current;
--
--	task_lock(tsk);
--	active_mm = tsk->active_mm;
--	atomic_inc(&mm->mm_count);
--	tsk->mm = mm;
--	tsk->active_mm = mm;
--	switch_mm(active_mm, mm, tsk);
--	task_unlock(tsk);
--
--	mmdrop(active_mm);
--}
--
--/*
-- * unuse_mm
-- *	Reverses the effect of use_mm, i.e. releases the
-- *	specified mm context which was earlier taken on
-- *	by the calling kernel thread
-- *	(Note: this routine is intended to be called only
-- *	from a kernel thread context)
-- */
--static void unuse_mm(struct mm_struct *mm)
--{
--	struct task_struct *tsk = current;
--
--	task_lock(tsk);
--	tsk->mm = NULL;
--	/* active_mm is still 'mm' */
--	enter_lazy_tlb(mm, tsk);
--	task_unlock(tsk);
--}
--
--/*
-  * Queue up a kiocb to be retried. Assumes that the kiocb
-  * has already been marked as kicked, and places it on
-  * the retry run list for the corresponding ioctx, if it
-diff --git a/include/linux/mmu_context.h b/include/linux/mmu_context.h
-new file mode 100644
-index 0000000..70fffeb
---- /dev/null
-+++ b/include/linux/mmu_context.h
-@@ -0,0 +1,9 @@
-+#ifndef _LINUX_MMU_CONTEXT_H
-+#define _LINUX_MMU_CONTEXT_H
-+
-+struct mm_struct;
-+
-+void use_mm(struct mm_struct *mm);
-+void unuse_mm(struct mm_struct *mm);
-+
-+#endif
-diff --git a/mm/Makefile b/mm/Makefile
-index 5e0bd64..46c3892 100644
---- a/mm/Makefile
-+++ b/mm/Makefile
-@@ -11,7 +11,7 @@ obj-y			:= bootmem.o filemap.o mempool.o oom_kill.o fadvise.o \
- 			   maccess.o page_alloc.o page-writeback.o pdflush.o \
- 			   readahead.o swap.o truncate.o vmscan.o shmem.o \
- 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
--			   page_isolation.o mm_init.o $(mmu-y)
-+			   page_isolation.o mm_init.o mmu_context.o $(mmu-y)
- obj-y += init-mm.o
- 
- obj-$(CONFIG_PROC_PAGE_MONITOR) += pagewalk.o
-diff --git a/mm/mmu_context.c b/mm/mmu_context.c
-new file mode 100644
-index 0000000..9989c2f
---- /dev/null
-+++ b/mm/mmu_context.c
-@@ -0,0 +1,58 @@
-+/* Copyright (C) 2009 Red Hat, Inc.
-+ *
-+ * See ../COPYING for licensing terms.
-+ */
-+
-+#include <linux/mm.h>
-+#include <linux/mmu_context.h>
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+
-+#include <asm/mmu_context.h>
-+
-+/*
-+ * use_mm
-+ *	Makes the calling kernel thread take on the specified
-+ *	mm context.
-+ *	Called by the retry thread execute retries within the
-+ *	iocb issuer's mm context, so that copy_from/to_user
-+ *	operations work seamlessly for aio.
-+ *	(Note: this routine is intended to be called only
-+ *	from a kernel thread context)
-+ */
-+void use_mm(struct mm_struct *mm)
-+{
-+	struct mm_struct *active_mm;
-+	struct task_struct *tsk = current;
-+
-+	task_lock(tsk);
-+	active_mm = tsk->active_mm;
-+	atomic_inc(&mm->mm_count);
-+	tsk->mm = mm;
-+	tsk->active_mm = mm;
-+	switch_mm(active_mm, mm, tsk);
-+	task_unlock(tsk);
-+
-+	mmdrop(active_mm);
-+}
-+EXPORT_SYMBOL_GPL(use_mm);
-+
-+/*
-+ * unuse_mm
-+ *	Reverses the effect of use_mm, i.e. releases the
-+ *	specified mm context which was earlier taken on
-+ *	by the calling kernel thread
-+ *	(Note: this routine is intended to be called only
-+ *	from a kernel thread context)
-+ */
-+void unuse_mm(struct mm_struct *mm)
-+{
-+	struct task_struct *tsk = current;
-+
-+	task_lock(tsk);
-+	tsk->mm = NULL;
-+	/* active_mm is still 'mm' */
-+	enter_lazy_tlb(mm, tsk);
-+	task_unlock(tsk);
-+}
-+EXPORT_SYMBOL_GPL(unuse_mm);
--- 
-1.6.2.5
-
+Thanks,
+Rafael
