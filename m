@@ -1,57 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753443AbZHMHoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753464AbZHMHw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753443AbZHMHoT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 03:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbZHMHoT
+	id S1753464AbZHMHw0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 03:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbZHMHwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 03:44:19 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36127 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752055AbZHMHoS (ORCPT
+	Thu, 13 Aug 2009 03:52:25 -0400
+Received: from casper.infradead.org ([85.118.1.10]:52943 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752530AbZHMHwX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 03:44:18 -0400
-Date: Thu, 13 Aug 2009 08:38:34 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Joe Perches <joe@perches.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>,
-       Ben Dooks <ben-linux@fluff.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
-	sections
-Message-ID: <20090813073834.GA4837@n2100.arm.linux.org.uk>
-References: <1249563730.10297.13.camel@Joe-Laptop.home> <20090806133349.GF27773@flint.arm.linux.org.uk> <1249568614.10297.20.camel@Joe-Laptop.home> <20090806150322.GX2080@trinity.fluff.org> <1249948147.8895.96.camel@Joe-Laptop.home> <20090812115520.GI24339@elf.ucw.cz> <20090812194838.GB12117@n2100.arm.linux.org.uk> <84144f020908121317g64551a2cu1b960f44ed5d0d9@mail.gmail.com> <20090812212502.GA24667@n2100.arm.linux.org.uk> <1250126332.14728.3.camel@Joe-Laptop.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250126332.14728.3.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 13 Aug 2009 03:52:23 -0400
+Subject: [PATCH 4/2] perf_counter: Fix swcounter context invariance
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>,
+       stephane eranian <eranian@googlemail.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090812153529.716542680@chello.nl>
+References: <20090812153529.716542680@chello.nl>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 13 Aug 2009 09:51:55 +0200
+Message-Id: <1250149915.10001.66.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 06:18:52PM -0700, Joe Perches wrote:
-> On Wed, 2009-08-12 at 22:25 +0100, Russell King - ARM Linux wrote:
-> > On Wed, Aug 12, 2009 at 11:17:54PM +0300, Pekka Enberg wrote:
-> > > On Wed, Aug 12, 2009 at 10:48 PM, Russell King - ARM
-> > > Linux<linux@arm.linux.org.uk> wrote:
-> > > > I haven't noticed a great rush of support for Joe's patch, which
-> > > > could mean that people here really aren't that bothered - maybe
-> > > > they just aren't "open list" zealots like some people seem to be.
-> > > 
-> > > I for one support open lists because subscriber-only lists are a PITA
-> > 
-> > Let me make this clear, yet again.  The lists are *not* subscriber only
-> > lists.  We do NOT reject non-subscriber posts for no reason what so ever
-> > (although it does seem to have happened, both Erik and myself both
-> > contend that we have never rejected a mailing intentionally without
-> > giving a reason - whether the original poster receives that reason is
-> > a function of how buggy mailman is.)
-> 
-> Umm.  (and I'd cc'd you about this privately _last week_)
+Not really related to this topic, but it needs posting anyway.
 
-1. I have no trace of that.  Really.
-2. Did you send it to only me or did also copy Erik?
+---
+
+Subject: perf_counter: Fix swcounter context invariance
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Fri Aug 07 13:29:13 CEST 2009
+
+perf_swcounter_is_counting() uses a lock, which means we cannot use
+swcounters from NMI or when holding that particular lock, this is
+unintended.
+
+The below removes the lock, this opens up race window, but not worse
+than the swcounters already experience due to RCU traversal of the
+context in perf_swcounter_ctx_event().
+
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/perf_counter.c |   44 ++++++++++++++++++--------------------------
+ 1 file changed, 18 insertions(+), 26 deletions(-)
+
+Index: linux-2.6/kernel/perf_counter.c
+===================================================================
+--- linux-2.6.orig/kernel/perf_counter.c
++++ linux-2.6/kernel/perf_counter.c
+@@ -3519,40 +3519,32 @@ static void perf_swcounter_add(struct pe
+ 
+ static int perf_swcounter_is_counting(struct perf_counter *counter)
+ {
+-	struct perf_counter_context *ctx;
+-	unsigned long flags;
+-	int count;
+-
++	/*
++	 * The counter is active, we're good!
++	 */
+ 	if (counter->state == PERF_COUNTER_STATE_ACTIVE)
+ 		return 1;
+ 
++	/*
++	 * The counter is off/error, not counting.
++	 */
+ 	if (counter->state != PERF_COUNTER_STATE_INACTIVE)
+ 		return 0;
+ 
+ 	/*
+-	 * If the counter is inactive, it could be just because
+-	 * its task is scheduled out, or because it's in a group
+-	 * which could not go on the PMU.  We want to count in
+-	 * the first case but not the second.  If the context is
+-	 * currently active then an inactive software counter must
+-	 * be the second case.  If it's not currently active then
+-	 * we need to know whether the counter was active when the
+-	 * context was last active, which we can determine by
+-	 * comparing counter->tstamp_stopped with ctx->time.
+-	 *
+-	 * We are within an RCU read-side critical section,
+-	 * which protects the existence of *ctx.
++	 * The counter is inactive, if the context is active
++	 * we're part of a group that didn't make it on the 'pmu',
++	 * not counting.
+ 	 */
+-	ctx = counter->ctx;
+-	spin_lock_irqsave(&ctx->lock, flags);
+-	count = 1;
+-	/* Re-check state now we have the lock */
+-	if (counter->state < PERF_COUNTER_STATE_INACTIVE ||
+-	    counter->ctx->is_active ||
+-	    counter->tstamp_stopped < ctx->time)
+-		count = 0;
+-	spin_unlock_irqrestore(&ctx->lock, flags);
+-	return count;
++	if (counter->ctx->is_active)
++		return 0;
++
++	/*
++	 * We're inactive and the context is too, this means the
++	 * task is scheduled out, we're counting events that happen
++	 * to us, like migration events.
++	 */
++	return 1;
+ }
+ 
+ static int perf_swcounter_match(struct perf_counter *counter,
+
