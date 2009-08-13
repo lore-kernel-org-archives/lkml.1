@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932282AbZHMUKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbZHMULx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932282AbZHMUKv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932112AbZHMUKt
+	id S1756101AbZHMULx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbZHMT72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:10:49 -0400
-Received: from kroah.org ([198.145.64.141]:41733 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:59:28 -0400
+Received: from kroah.org ([198.145.64.141]:41688 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932095AbZHMT7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:35 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:29 2009
-Message-Id: <20090813195129.013296149@mini.kroah.org>
+	id S1755907AbZHMT7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:25 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:27 2009
+Message-Id: <20090813195127.336139759@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:05 -0700
+Date: Thu, 13 Aug 2009 12:49:54 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [patch 30/74] tracing: Fix invalid function_graph entry
+       =?ISO-8859-15?q?Gr=C3=A9goire=20Henry?= <henry@pps.jussieu.fr>,
+       Eric Anholt <eric@anholt.net>
+Subject: [patch 19/74] drm/i915: initialize fence registers to zero when loading GEM
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=tracing-fix-invalid-function_graph-entry.patch
+Content-Disposition: inline; filename=0006-drm-i915-initialize-fence-registers-to-zero-when-loa.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,55 +31,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
+From: Grégoire Henry <henry@pps.jussieu.fr>
 
-commit 38ceb592fcac9110c6b3c87ea0a27bff68c43486 upstream.
+(cherry picked from commit b5aa8a0fc132dd512c33e7c2621d075e3b77a65e)
 
-When print_graph_entry() computes a function call entry event, it needs
-to also check the next entry to guess if it matches the return event of
-the current function entry.
-In order to look at this next event, it needs to consume the current
-entry before going ahead in the ring buffer.
+Unitialized fence register could leads to corrupted display. Problem
+encountered on MacBooks (revision 1 and 2), directly booting from EFI
+or through BIOS emulation.
 
-However, if the current event that gets consumed is the last one in the
-ring buffer head page, the ring_buffer may reuse the page for writers.
-The consumed entry will then become invalid because of possible
-racy overwriting.
+(bug #21710 at freedestop.org)
 
-Me must then handle this entry by making a copy of it.
-
-The fix also applies on 2.6.30
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <4A6EEAEC.3050508@cn.fujitsu.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Grégoire Henry <henry@pps.jussieu.fr>
+Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- kernel/trace/trace_functions_graph.c |   11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/i915/i915_gem.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -798,9 +798,16 @@ print_graph_function(struct trace_iterat
+--- a/drivers/gpu/drm/i915/i915_gem.c
++++ b/drivers/gpu/drm/i915/i915_gem.c
+@@ -4154,6 +4154,7 @@ i915_gem_lastclose(struct drm_device *de
+ void
+ i915_gem_load(struct drm_device *dev)
+ {
++	int i;
+ 	drm_i915_private_t *dev_priv = dev->dev_private;
  
- 	switch (entry->type) {
- 	case TRACE_GRAPH_ENT: {
--		struct ftrace_graph_ent_entry *field;
-+		/*
-+		 * print_graph_entry() may consume the current event,
-+		 * thus @field may become invalid, so we need to save it.
-+		 * sizeof(struct ftrace_graph_ent_entry) is very small,
-+		 * it can be safely saved at the stack.
-+		 */
-+		struct ftrace_graph_ent_entry *field, saved;
- 		trace_assign_type(field, entry);
--		return print_graph_entry(field, s, iter);
-+		saved = *field;
-+		return print_graph_entry(&saved, s, iter);
- 	}
- 	case TRACE_GRAPH_RET: {
- 		struct ftrace_graph_ret_entry *field;
+ 	spin_lock_init(&dev_priv->mm.active_list_lock);
+@@ -4173,6 +4174,18 @@ i915_gem_load(struct drm_device *dev)
+ 	else
+ 		dev_priv->num_fence_regs = 8;
+ 
++	/* Initialize fence registers to zero */
++	if (IS_I965G(dev)) {
++		for (i = 0; i < 16; i++)
++			I915_WRITE64(FENCE_REG_965_0 + (i * 8), 0);
++	} else {
++		for (i = 0; i < 8; i++)
++			I915_WRITE(FENCE_REG_830_0 + (i * 4), 0);
++		if (IS_I945G(dev) || IS_I945GM(dev) || IS_G33(dev))
++			for (i = 0; i < 8; i++)
++				I915_WRITE(FENCE_REG_945_8 + (i * 4), 0);
++	}
++
+ 	i915_gem_detect_bit_6_swizzle(dev);
+ }
+ 
 
 
