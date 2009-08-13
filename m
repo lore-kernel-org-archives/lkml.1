@@ -1,160 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932136AbZHMT7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932339AbZHMUFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932136AbZHMT7i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932111AbZHMT7h
+	id S932339AbZHMUFD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:05:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932294AbZHMUFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:59:37 -0400
-Received: from kroah.org ([198.145.64.141]:41726 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 16:05:00 -0400
+Received: from kroah.org ([198.145.64.141]:41888 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932065AbZHMT7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:34 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:28 2009
-Message-Id: <20090813195128.703325684@mini.kroah.org>
+	id S932259AbZHMT76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:58 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:32 2009
+Message-Id: <20090813195132.580843987@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:03 -0700
+Date: Thu, 13 Aug 2009 12:50:29 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 28/74] thinkpad-acpi: fix incorrect use of TPACPI_BRGHT_MODE_ECNVRAM
+       NeilBrown <neilb@suse.de>
+Subject: [patch 54/74] md: Handle growth of v1.x metadata correctly.
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=thinkpad-acpi-fix-incorrect-use-of-tpacpi_brght_mode_ecnvram.patch
+Content-Disposition: inline; filename=md-handle-growth-of-v1.x-metadata-correctly.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+From: Neil Brown <neilb@suse.de>
 
-commit 59fe4fe34d7afdf63208124f313be9056feaa2f4 upstream.
+commit 70471dafe3390243c598a3165dfb86b8b8b3f4fe upstream.
 
-HBRV-based default selection of backlight control strategy didn't work
-well, at least the X41 defines it but doesn't use it and I don't think
-it will stop there.
+The v1.x metadata does not have a fixed size and can grow
+when devices are added.
+If it grows enough to require an extra sector of storage,
+we need to update the 'sb_size' to match.
 
-Switch to a white/blacklist.  All models that have HBRV defined have
-been included in the list, and initially all ATI GPUs will get
-ECNVRAM, and the Intel GPUs will get UCMS_STEP.
+Without this, md can write out an incomplete superblock with a
+bad checksum, which will be rejected when trying to re-assemble
+the array.
 
-Symptoms of incorrect backlight mode selection are:
-
-1. Non-working backlight control through sysfs;
-
-2. Backlight gets reset to the lowest level at every shutdown, reboot
-   and when thinkpad-acpi gets unloaded;
-
-This fixes a regression in 2.6.30, bugzilla #13826
-
-Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Reported-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: NeilBrown <neilb@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/platform/x86/thinkpad_acpi.c |   61 ++++++++++++++++++++++++++---------
- 1 file changed, 47 insertions(+), 14 deletions(-)
+ drivers/md/md.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
---- a/drivers/platform/x86/thinkpad_acpi.c
-+++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -5757,14 +5757,48 @@ static struct backlight_ops ibm_backligh
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -1410,8 +1410,14 @@ static void super_1_sync(mddev_t *mddev,
+ 		if (rdev2->desc_nr+1 > max_dev)
+ 			max_dev = rdev2->desc_nr+1;
  
- /* --------------------------------------------------------------------- */
- 
-+/*
-+ * These are only useful for models that have only one possibility
-+ * of GPU.  If the BIOS model handles both ATI and Intel, don't use
-+ * these quirks.
-+ */
-+#define TPACPI_BRGHT_Q_NOEC	0x0001	/* Must NOT use EC HBRV */
-+#define TPACPI_BRGHT_Q_EC	0x0002  /* Should or must use EC HBRV */
-+#define TPACPI_BRGHT_Q_ASK	0x8000	/* Ask for user report */
-+
-+static const struct tpacpi_quirk brightness_quirk_table[] __initconst = {
-+	/* Models with ATI GPUs known to require ECNVRAM mode */
-+	TPACPI_Q_IBM('1', 'Y', TPACPI_BRGHT_Q_EC),	/* T43/p ATI */
-+
-+	/* Models with ATI GPUs (waiting confirmation) */
-+	TPACPI_Q_IBM('1', 'R', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
-+	TPACPI_Q_IBM('1', 'Q', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
-+	TPACPI_Q_IBM('7', '6', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
-+	TPACPI_Q_IBM('7', '8', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
-+
-+	/* Models with Intel Extreme Graphics 2 (waiting confirmation) */
-+	TPACPI_Q_IBM('1', 'V', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
-+	TPACPI_Q_IBM('1', 'W', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
-+	TPACPI_Q_IBM('1', 'U', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
-+
-+	/* Models with Intel GMA900 */
-+	TPACPI_Q_IBM('7', '0', TPACPI_BRGHT_Q_NOEC),	/* T43, R52 */
-+	TPACPI_Q_IBM('7', '4', TPACPI_BRGHT_Q_NOEC),	/* X41 */
-+	TPACPI_Q_IBM('7', '5', TPACPI_BRGHT_Q_NOEC),	/* X41 Tablet */
-+};
-+
- static int __init brightness_init(struct ibm_init_struct *iibm)
- {
- 	int b;
-+	unsigned long quirks;
- 
- 	vdbg_printk(TPACPI_DBG_INIT, "initializing brightness subdriver\n");
- 
- 	mutex_init(&brightness_mutex);
- 
-+	quirks = tpacpi_check_quirks(brightness_quirk_table,
-+				ARRAY_SIZE(brightness_quirk_table));
-+
- 	/*
- 	 * We always attempt to detect acpi support, so as to switch
- 	 * Lenovo Vista BIOS to ACPI brightness mode even if we are not
-@@ -5821,23 +5855,13 @@ static int __init brightness_init(struct
- 	/* TPACPI_BRGHT_MODE_AUTO not implemented yet, just use default */
- 	if (brightness_mode == TPACPI_BRGHT_MODE_AUTO ||
- 	    brightness_mode == TPACPI_BRGHT_MODE_MAX) {
--		if (thinkpad_id.vendor == PCI_VENDOR_ID_IBM) {
--			/*
--			 * IBM models that define HBRV probably have
--			 * EC-based backlight level control
--			 */
--			if (acpi_evalf(ec_handle, NULL, "HBRV", "qd"))
--				/* T40-T43, R50-R52, R50e, R51e, X31-X41 */
--				brightness_mode = TPACPI_BRGHT_MODE_ECNVRAM;
--			else
--				/* all other IBM ThinkPads */
--				brightness_mode = TPACPI_BRGHT_MODE_UCMS_STEP;
--		} else
--			/* All Lenovo ThinkPads */
-+		if (quirks & TPACPI_BRGHT_Q_EC)
-+			brightness_mode = TPACPI_BRGHT_MODE_ECNVRAM;
-+		else
- 			brightness_mode = TPACPI_BRGHT_MODE_UCMS_STEP;
- 
- 		dbg_printk(TPACPI_DBG_BRGHT,
--			   "selected brightness_mode=%d\n",
-+			   "driver auto-selected brightness_mode=%d\n",
- 			   brightness_mode);
- 	}
- 
-@@ -5858,6 +5882,15 @@ static int __init brightness_init(struct
- 	vdbg_printk(TPACPI_DBG_INIT | TPACPI_DBG_BRGHT,
- 			"brightness is supported\n");
- 
-+	if (quirks & TPACPI_BRGHT_Q_ASK) {
-+		printk(TPACPI_NOTICE
-+			"brightness: will use unverified default: "
-+			"brightness_mode=%d\n", brightness_mode);
-+		printk(TPACPI_NOTICE
-+			"brightness: please report to %s whether it works well "
-+			"or not on your ThinkPad\n", TPACPI_MAIL);
+-	if (max_dev > le32_to_cpu(sb->max_dev))
++	if (max_dev > le32_to_cpu(sb->max_dev)) {
++		int bmask;
+ 		sb->max_dev = cpu_to_le32(max_dev);
++		rdev->sb_size = max_dev * 2 + 256;
++		bmask = queue_hardsect_size(rdev->bdev->bd_disk->queue)-1;
++		if (rdev->sb_size & bmask)
++			rdev->sb_size = (rdev->sb_size | bmask) + 1;
 +	}
-+
- 	ibm_backlight_device->props.max_brightness =
- 				(tp_features.bright_16levels)? 15 : 7;
- 	ibm_backlight_device->props.brightness = b & TP_EC_BACKLIGHT_LVLMSK;
+ 	for (i=0; i<max_dev;i++)
+ 		sb->dev_roles[i] = cpu_to_le16(0xfffe);
+ 	
 
 
