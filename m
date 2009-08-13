@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbZHMO36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753628AbZHMOax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545AbZHMO36 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 10:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZHMO35
+	id S1753628AbZHMOax (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 10:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbZHMOaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 10:29:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37963 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751719AbZHMO35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 10:29:57 -0400
-Date: Thu, 13 Aug 2009 11:29:36 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH 1/2] perf tools: Add a per tracepoint counter attribute
-	to get raw sample
-Message-ID: <20090813142936.GG3495@ghostprotocols.net>
-References: <1250152039-7284-1-git-send-email-fweisbec@gmail.com>
+	Thu, 13 Aug 2009 10:30:52 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:45397 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752446AbZHMOav (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 10:30:51 -0400
+Date: Thu, 13 Aug 2009 10:30:50 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Zhang Rui <rui.zhang@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
+       "dtor@mail.ru" <dtor@mail.ru>
+Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
+In-Reply-To: <200908122318.12145.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0908131028370.2940-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250152039-7284-1-git-send-email-fweisbec@gmail.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, Aug 13, 2009 at 10:27:18AM +0200, Frederic Weisbecker escreveu:
-> Add a new flag field while opening a tracepoint perf counter:
-> 
-> 	-e tracepoint_subsystem:tracepoint_name:flags
-> 
-> This is intended to be generic although for now it only supports the
-> r[e[c[o[r[d]]]]] flag:
-> 
-> 	./perf record -e workqueue:workqueue_insertion:record
-> 	./perf record -e workqueue:workqueue_insertion:r
-> 
-> will have the same effect: enabling the raw samples record for the
-> given tracepoint counter.
-> 
-> In the future, we may want to support further flags, separated by
-> commas.
+On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
 
-Will you at some point get those commit messages massaged into 'perf
-record --help'? :-)
+> On a second thought, though, would it be a good idea to add
+> pm_runtime_get_noresume() / pm_runtime_put_sync() around the bus_for_each_drv()
+> in device_attach()?  That would prevent us from resuming-suspending the device
+> on each failing probe.
 
-- Arnaldo
+Good idea.  But don't remove the existing code in driver_probe_device.
+
+Alan Stern
+
