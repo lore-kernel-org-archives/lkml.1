@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753082AbZHMQNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbZHMQN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753082AbZHMQNP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 12:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbZHMQNO
+	id S1754857AbZHMQN1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 12:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbZHMQN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 12:13:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56861 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751735AbZHMQNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 12:13:13 -0400
-Message-ID: <4A843B72.6030204@redhat.com>
-Date: Thu, 13 Aug 2009 19:12:34 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Thu, 13 Aug 2009 12:13:26 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:19218 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754158AbZHMQNY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 12:13:24 -0400
+Message-ID: <4A843B96.3010200@vflare.org>
+Date: Thu, 13 Aug 2009 21:43:10 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Wu Fengguang <fengguang.wu@intel.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-References: <20090806100824.GO23385@random.random> <4A7AD5DF.7090801@redhat.com> <20090807121443.5BE5.A69D9226@jp.fujitsu.com> <20090812074820.GA29631@localhost> <4A82D24D.6020402@redhat.com> <20090813010356.GA7619@localhost> <4A843565.3010104@redhat.com>
-In-Reply-To: <4A843565.3010104@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Matthew Wilcox <willy@linux.intel.com>
+CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+ slot is freed)
+References: <200908122007.43522.ngupta@vflare.org> <Pine.LNX.4.64.0908122312380.25501@sister.anvils> <20090813151312.GA13559@linux.intel.com>
+In-Reply-To: <20090813151312.GA13559@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/13/2009 06:46 PM, Rik van Riel wrote:
-> We need to ignore the referenced bit on active anon pages
-> on very large systems, but it could indeed be helpful to
-> respect the referenced bit on smaller systems.
+On 08/13/2009 08:43 PM, Matthew Wilcox wrote:
+
 >
-> I have no idea where the cut-off between them would be.
+> I am planning a complete overhaul of the discard work.  Users can send
+> down discard requests as frequently as they like.  The block layer will
+> cache them, and invalidate them if writes come through.  Periodically,
+> the block layer will send down a TRIM or an UNMAP (depending on the
+> underlying device) and get rid of the blocks that have remained unwanted
+> in the interim.
 >
-> Maybe at inactive_ratio <= 4 ?
 
-Why do we need to ignore the referenced bit in such cases?  To avoid 
-overscanning?
+This batching of discard requests is still sub-optimal for compcache. 
+The optimal solution in this case is to get callback *as soon as* a swap 
+slot becomes free and this is what this patch does.
 
--- 
-error compiling committee.c: too many arguments to function
+I see that it will be difficult to accept this patch since compcache 
+seems to be the only user for now. However, this little addition makes a 
+*big* difference for the project. Currently, much of memory is wasted to 
+store all the stale data.
 
+I will be posting compcache patches for review in next merge window. So, 
+maybe this patch can be included now as the first step? The revised 
+patch is ready which addresses issues raised during the first review -- 
+will post it soon.
+
+Thanks,
+Nitin
