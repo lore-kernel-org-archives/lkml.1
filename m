@@ -1,46 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbZHMJ5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbZHMJ7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754068AbZHMJ5d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 05:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbZHMJ5c
+	id S1754063AbZHMJ7b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 05:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbZHMJ7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 05:57:32 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36851 "EHLO mx2.suse.de"
+	Thu, 13 Aug 2009 05:59:30 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36895 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754050AbZHMJ5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 05:57:31 -0400
-Date: Thu, 13 Aug 2009 11:57:31 +0200 (CEST)
+	id S1753967AbZHMJ7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 05:59:30 -0400
+Date: Thu, 13 Aug 2009 11:59:27 +0200 (CEST)
 From: Jiri Kosina <jkosina@suse.cz>
 X-X-Sender: jkosina@wotan.suse.de
-To: Joe Perches <joe@perches.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH linux-next] treewide: remove unnecessary semicolons
-In-Reply-To: <1248472866.3498.79.camel@Joe-Laptop.home>
-Message-ID: <alpine.LNX.2.00.0908131155510.25797@wotan.suse.de>
-References: <1248472866.3498.79.camel@Joe-Laptop.home>
+To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Alessandro Zummo <a.zummo@towertech.it>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hannes Eder <hannes@hanneseder.net>
+Subject: Re: [PATCH] move stk17ta8's probe function to .devinit.text
+In-Reply-To: <1247345591-22643-37-git-send-email-u.kleine-koenig@pengutronix.de>
+Message-ID: <alpine.LNX.2.00.0908131158570.25797@wotan.suse.de>
+References: <20090711170548.GC5205@suse.de> <1247345591-22643-25-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-26-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-27-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-28-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-29-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-30-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-31-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-32-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-33-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-34-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-35-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-36-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-37-git-send-email-u.kleine-koenig@pengutronix.de>
 User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-1753176629-1250157570=:25797"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Jul 2009, Joe Perches wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> Previous discussion at: http://lkml.org/lkml/2009/6/28/288
-> Signed-off-by: Joe Perches <joe@perches.com>
+--168427776-1753176629-1250157570=:25797
+Content-Type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 
-Thanks. I have one more request if you don't mind -- please take out the 
-drivers/staging part and push that one individually to Greg. I'll then 
-merge the remaining bits through trivial tree.
+On Sat, 11 Jul 2009, Uwe Kleine-König wrote:
 
-The code in staging tree is supposed to be changing rapidly, so we'll be 
-getting conflicts very often.
+> A pointer to stk17ta8_rtc_probe is passed to the core via
+> platform_driver_register and so the function must not disappear when the
+> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+> unbinding and binding a device to the driver via sysfs will result in an
+> oops as does a device being registered late.
+> 
+> An alternative to this patch is using platform_driver_probe instead of
+> platform_driver_register plus removing the pointer to the probe function
+> from the struct platform_driver.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Cc: Alessandro Zummo <a.zummo@towertech.it>
+> Cc: David Brownell <dbrownell@users.sourceforge.net>
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Hannes Eder <hannes@hanneseder.net>
+> Cc: Jiri Kosina <jkosina@suse.cz>
+> Cc: David Brownell <dbrownell@users.sourceforge.net>
+> ---
+>  drivers/rtc/rtc-stk17ta8.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/rtc/rtc-stk17ta8.c b/drivers/rtc/rtc-stk17ta8.c
+> index 7d1547b..d491eb2 100644
+> --- a/drivers/rtc/rtc-stk17ta8.c
+> +++ b/drivers/rtc/rtc-stk17ta8.c
+> @@ -286,7 +286,7 @@ static struct bin_attribute stk17ta8_nvram_attr = {
+>  	.write = stk17ta8_nvram_write,
+>  };
+>  
+> -static int __init stk17ta8_rtc_probe(struct platform_device *pdev)
+> +static int __devinit stk17ta8_rtc_probe(struct platform_device *pdev)
+>  {
+>  	struct rtc_device *rtc;
+>  	struct resource *res;
 
-Thanks,
+Has this been picked up by anyone? I don't seem to see it in linux-next as 
+of today.
 
 -- 
 Jiri Kosina
 SUSE Labs
+--168427776-1753176629-1250157570=:25797--
