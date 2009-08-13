@@ -1,55 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbZHMNpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbZHMNp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754558AbZHMNpG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 09:45:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbZHMNpE
+	id S1754578AbZHMNp6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 09:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754565AbZHMNp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 09:45:04 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:59338 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753910AbZHMNpD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 09:45:03 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
-Date: Thu, 13 Aug 2009 15:45:00 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
-Cc: "Michael S. Tsirkin" <mst@redhat.com>,
-       virtualization@lists.linux-foundation.org,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <cover.1249930169.git.mst@redhat.com> <20090812172141.GA29966@redhat.com> <4A83167E.2080701@codemonkey.ws>
-In-Reply-To: <4A83167E.2080701@codemonkey.ws>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 13 Aug 2009 09:45:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49718 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753926AbZHMNp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 09:45:56 -0400
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH 1/3] Networking: use CAP_NET_ADMIN when deciding to call
+	request_module
+To: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org
+Cc: sds@tycho.nsa.gov, davem@davemloft.net, shemminger@linux-foundation.org,
+       kees@ubuntu.com, morgan@kernel.org, casey@schaufler-ca.com,
+       dwalsh@redhat.com
+Date: Thu, 13 Aug 2009 09:44:51 -0400
+Message-ID: <20090813134451.29186.41664.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908131545.00304.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18sZob9tSKQNRV9erZDZxuvLBtIJY7Dui2ii5q
- l01pyLZ60n36g5gnrd66fxhBEgoL7NzcdKdJAzk0bhDPr6eS20
- 8BZOE6XTpLytDppfEHItw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 August 2009, Anthony Liguori wrote:
-> At any rate, I'd like to see performance results before we consider 
-> trying to reuse virtio code.
+The networking code checks CAP_SYS_MODULE before using request_module() to
+try to load a kernel module.  While this seems reasonable it's actually
+weakening system security since we have to allow CAP_SYS_MODULE for things
+like /sbin/ip and bluetoothd which need to be able to trigger module loads.
+CAP_SYS_MODULE actually grants those binaries the ability to directly load
+any code into the kernel.  We should instead be protecting modprobe and the
+modules on disk, rather than granting random programs the ability to load code
+directly into the kernel.  Instead we are going to gate those networking checks
+on CAP_NET_ADMIN which still limits them to root but which does not grant
+those processes the ability to load arbitrary code into the kernel.
 
-Yes, I agree. I'd also like to do more work on the macvlan extensions
-to see if it works out without involving a socket. Passing the socket
-into the vhost_net device is a nice feature of the current implementation
-that we'd have to give up for something else (e.g. making the vhost
-a real network interface that you can hook up to a bridge) if it were
-to use virtio.
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
 
-Unless I can come up with a solution that is clearly superior, I'm
-taking back my objections on that part for now.
+ drivers/staging/comedi/comedi_fops.c |    8 ++++----
+ net/core/dev.c                       |    2 +-
+ net/ipv4/tcp_cong.c                  |    4 ++--
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-	Arnd <><
+diff --git a/drivers/staging/comedi/comedi_fops.c b/drivers/staging/comedi/comedi_fops.c
+index 42e4bc4..f54bb9b 100644
+--- a/drivers/staging/comedi/comedi_fops.c
++++ b/drivers/staging/comedi/comedi_fops.c
+@@ -1772,12 +1772,12 @@ static int comedi_open(struct inode *inode, struct file *file)
+ 	mutex_lock(&dev->mutex);
+ 	if (dev->attached)
+ 		goto ok;
+-	if (!capable(CAP_SYS_MODULE) && dev->in_request_module) {
++	if (!capable(CAP_NET_ADMIN) && dev->in_request_module) {
+ 		DPRINTK("in request module\n");
+ 		mutex_unlock(&dev->mutex);
+ 		return -ENODEV;
+ 	}
+-	if (capable(CAP_SYS_MODULE) && dev->in_request_module)
++	if (capable(CAP_NET_ADMIN) && dev->in_request_module)
+ 		goto ok;
+ 
+ 	dev->in_request_module = 1;
+@@ -1790,8 +1790,8 @@ static int comedi_open(struct inode *inode, struct file *file)
+ 
+ 	dev->in_request_module = 0;
+ 
+-	if (!dev->attached && !capable(CAP_SYS_MODULE)) {
+-		DPRINTK("not attached and not CAP_SYS_MODULE\n");
++	if (!dev->attached && !capable(CAP_NET_ADMIN)) {
++		DPRINTK("not attached and not CAP_NET_ADMIN\n");
+ 		mutex_unlock(&dev->mutex);
+ 		return -ENODEV;
+ 	}
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 09fb03f..2604db9 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -1031,7 +1031,7 @@ void dev_load(struct net *net, const char *name)
+ 	dev = __dev_get_by_name(net, name);
+ 	read_unlock(&dev_base_lock);
+ 
+-	if (!dev && capable(CAP_SYS_MODULE))
++	if (!dev && capable(CAP_NET_ADMIN))
+ 		request_module("%s", name);
+ }
+ 
+diff --git a/net/ipv4/tcp_cong.c b/net/ipv4/tcp_cong.c
+index e92beb9..6428b34 100644
+--- a/net/ipv4/tcp_cong.c
++++ b/net/ipv4/tcp_cong.c
+@@ -116,7 +116,7 @@ int tcp_set_default_congestion_control(const char *name)
+ 	spin_lock(&tcp_cong_list_lock);
+ 	ca = tcp_ca_find(name);
+ #ifdef CONFIG_MODULES
+-	if (!ca && capable(CAP_SYS_MODULE)) {
++	if (!ca && capable(CAP_NET_ADMIN)) {
+ 		spin_unlock(&tcp_cong_list_lock);
+ 
+ 		request_module("tcp_%s", name);
+@@ -246,7 +246,7 @@ int tcp_set_congestion_control(struct sock *sk, const char *name)
+ 
+ #ifdef CONFIG_MODULES
+ 	/* not found attempt to autoload module */
+-	if (!ca && capable(CAP_SYS_MODULE)) {
++	if (!ca && capable(CAP_NET_ADMIN)) {
+ 		rcu_read_unlock();
+ 		request_module("tcp_%s", name);
+ 		rcu_read_lock();
+
