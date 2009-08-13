@@ -1,92 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbZHMVe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756436AbZHMVeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756413AbZHMVe3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 17:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbZHMVe2
+	id S1756436AbZHMVeo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 17:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756427AbZHMVen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 17:34:28 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4321 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752892AbZHMVe2 (ORCPT
+	Thu, 13 Aug 2009 17:34:43 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50203 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756421AbZHMVem (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 17:34:28 -0400
-Subject: Re: [PATCH] Use bool for boolean flag in printk_once()
-From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org
-In-Reply-To: <20090813142144.37509d52.akpm@linux-foundation.org>
-References: <adak5174ezp.fsf@cisco.com>
-	 <20090813142144.37509d52.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 13 Aug 2009 14:33:47 -0700
-Message-Id: <1250199227.28285.142.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Aug 2009 17:34:42 -0400
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: rt-users <linux-rt-users@vger.kernel.org>,
+       Nicolas Pitre <nico@marvell.com>, MinChan Kim <minchan.kim@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Li Zefan <lizf@cn.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] [RFC, RT] fix kmap_high_get
+Date: Thu, 13 Aug 2009 23:34:03 +0200
+Message-Id: <1250199243-18677-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1249810600-21946-3-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1249810600-21946-3-git-send-email-u.kleine-koenig@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-13 at 14:21 -0700, Andrew Morton wrote:
-> On Thu, 13 Aug 2009 13:48:26 -0700
-> Roland Dreier <rdreier@cisco.com> wrote:
-> 
-> > Using the type bool (instead of int) for the __print_once flag in the
-> > printk_once() macro matches the intent of the code better, and allows
-> > the compiler to generate smaller code; eg a typical callsite with gcc
-> > 4.3.3 on i386:
-> > 
-> > add/remove: 0/0 grow/shrink: 0/2 up/down: 0/-6 (-6)
-> > function                                     old     new   delta
-> > static.__print_once                            4       1      -3
-> > get_cpu_vendor                               146     143      -3
-> > 
-> > Saving 6 bytes of object size per callsite by slightly improving the
-> > readability of the source seems like a win to me.
-> > 
-> > Signed-off-by: Roland Dreier <rolandd@cisco.com>
-> > ---
-> >  include/linux/kernel.h |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> > index d6320a3..f828ce9 100644
-> > --- a/include/linux/kernel.h
-> > +++ b/include/linux/kernel.h
-> > @@ -249,10 +249,10 @@ extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
-> >   * Print a one-time message (analogous to WARN_ONCE() et al):
-> >   */
-> >  #define printk_once(x...) ({			\
-> > -	static int __print_once = 1;		\
-> > +	static bool __print_once = true;	\
-> >  						\
-> >  	if (__print_once) {			\
-> > -		__print_once = 0;		\
-> > +		__print_once = false;		\
-> >  		printk(x);			\
-> >  	}					\
-> >  })
-> 
-> hm, OK,  in trace_recursive_lock() we get:
-> 
-> 	cmpl	$0, __print_once.28104(%rip)	#, __print_once
-> 	je	.L719	#,
-> 
-> changed to
-> 
-> 	cmpb	$0, __print_once.28104(%rip)	# __print_once
-> 	je	.L719	#,
+This fixes the build failure with ARCH_NEEDS_KMAP_HIGH_GET.
+This is only compile tested.
 
-The test should be inverted so that it's not initialized.
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Nicolas Pitre <nico@marvell.com>
+Cc: MinChan Kim <minchan.kim@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org
+---
+Hello
 
-I submitted this once:
-http://lkml.indiana.edu/hypermail/linux/kernel/0905.2/02636.html
+this bases on the patch "[PATCH RT 9/6] [RFH] Build failure on
+2.6.31-rc4-rt1 in mm/highmem.c" earlier in this thread.
 
-	static bool printed;
-	if (!printed) {
-		printed = true;
-		printk...
-	}
+I don't know if kmap_high_get() has to call kmap_account().  Anyone?
 
+As I don't have any knowledge about highmem (or mm in general) I'll go into
+hiding before tglx caughts me with his trout.
+
+Best regards
+Uwe
+
+ mm/highmem.c |   79 ++++++++++++++++++++-------------------------------------
+ 1 files changed, 28 insertions(+), 51 deletions(-)
+
+diff --git a/mm/highmem.c b/mm/highmem.c
+index 4aa9eea..b5f5faf 100644
+--- a/mm/highmem.c
++++ b/mm/highmem.c
+@@ -75,26 +75,6 @@ pte_t * pkmap_page_table;
+ 
+ static DECLARE_WAIT_QUEUE_HEAD(pkmap_wait);
+ 
+-
+-/*
+- * Most architectures have no use for kmap_high_get(), so let's abstract
+- * the disabling of IRQ out of the locking in that case to save on a
+- * potential useless overhead.
+- */
+-#ifdef ARCH_NEEDS_KMAP_HIGH_GET
+-#define lock_kmap()             spin_lock_irq(&kmap_lock)
+-#define unlock_kmap()           spin_unlock_irq(&kmap_lock)
+-#define lock_kmap_any(flags)    spin_lock_irqsave(&kmap_lock, flags)
+-#define unlock_kmap_any(flags)  spin_unlock_irqrestore(&kmap_lock, flags)
+-#else
+-#define lock_kmap()             spin_lock(&kmap_lock)
+-#define unlock_kmap()           spin_unlock(&kmap_lock)
+-#define lock_kmap_any(flags)    \
+-		do { spin_lock(&kmap_lock); (void)(flags); } while (0)
+-#define unlock_kmap_any(flags)  \
+-		do { spin_unlock(&kmap_lock); (void)(flags); } while (0)
+-#endif
+-
+ /*
+  * Try to free a given kmap slot.
+  *
+@@ -313,22 +293,32 @@ static void kunmap_account(void)
+ 	wake_up(&pkmap_wait);
+ }
+ 
+-void *kmap_high(struct page *page)
++/**
++ * kmap_high_get - pin a highmem page into memory
++ * @page: &struct page to pin
++ *
++ * Returns the page's current virtual memory address, or NULL if no mapping
++ * exists.  When and only when a non null address is returned then a
++ * matching call to kunmap_high() is necessary.
++ *
++ * This can be called from any context.
++ */
++void *kmap_high_get(struct page *page)
+ {
+ 	unsigned long vaddr;
+ 
+-
+-	kmap_account();
+ again:
+ 	vaddr = (unsigned long)page_address(page);
+ 	if (vaddr) {
+ 		atomic_t *counter = &pkmap_count[PKMAP_NR(vaddr)];
+ 		if (atomic_inc_not_zero(counter)) {
+ 			/*
+-			 * atomic_inc_not_zero implies a (memory) barrier on success
+-			 * so page address will be reloaded.
++			 * atomic_inc_not_zero implies a (memory) barrier on
++			 * success, so page address will be reloaded.
+ 			 */
+-			unsigned long vaddr2 = (unsigned long)page_address(page);
++			unsigned long vaddr2 =
++				(unsigned long)page_address(page);
++
+ 			if (likely(vaddr == vaddr2))
+ 				return (void *)vaddr;
+ 
+@@ -344,6 +334,18 @@ again:
+ 			goto again;
+ 		}
+ 	}
++	return NULL;
++}
++
++void *kmap_high(struct page *page)
++{
++	unsigned long vaddr;
++
++	kmap_account();
++again:
++	vaddr = (unsigned long)kmap_high_get(page);
++	if (vaddr)
++		return (void *)vaddr;
+ 
+ 	vaddr = pkmap_insert(page);
+ 	if (!vaddr)
+@@ -354,31 +356,6 @@ again:
+ 
+ EXPORT_SYMBOL(kmap_high);
+ 
+-#ifdef ARCH_NEEDS_KMAP_HIGH_GET
+-/**
+- * kmap_high_get - pin a highmem page into memory
+- * @page: &struct page to pin
+- *
+- * Returns the page's current virtual memory address, or NULL if no mapping
+- * exists.  When and only when a non null address is returned then a
+- * matching call to kunmap_high() is necessary.
+- *
+- * This can be called from any context.
+- */
+-void *kmap_high_get(struct page *page)
+-{
+-	unsigned long vaddr, flags;
+-
+-	lock_kmap_any(flags);
+-	vaddr = (unsigned long)page_address(page);
+-	if (vaddr) {
+-		BUG_ON(atomic_read(&pkmap_count[PKMAP_NR(vaddr)]) < 1);
+-		atomic_add(1, pkmap_count[PKMAP_NR(vaddr)]);
+-	}
+-	unlock_kmap_any(flags);
+-	return (void*) vaddr;
+-}
+-#endif
+ 
+  void kunmap_high(struct page *page)
+ {
+-- 
+1.6.3.3
 
