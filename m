@@ -1,75 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751661AbZHMIV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752100AbZHMIWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751661AbZHMIV4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 04:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbZHMIVz
+	id S1752100AbZHMIWt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 04:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbZHMIWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 04:21:55 -0400
-Received: from cs20.apochromatic.org ([204.152.189.161]:56244 "EHLO
-	cs20.apochromatic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751059AbZHMIVy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 04:21:54 -0400
-Date: Thu, 13 Aug 2009 09:21:17 +0100
-From: Matt Fleming <matt@console-pimps.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: adrian.hunter@nokia.com, pierre@ossman.eu, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, nico@cam.org,
-       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
-       david-b@pacbell.net, manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl,
-       ppisa@pikron.com, jarkko.lavinen@nokia.com, ben@fluff.org,
-       saschasommer@freenet.de, avorontsov@ru.mvista.com, oakad@yahoo.com,
-       ian@mnementh.co.uk, HaraldWelte@viatech.com, JosephChan@via.com.tw
-Subject: Re: New MMC maintainer needed
-Message-ID: <20090813082117.GA6837@console-pimps.org>
-References: <20090714153601.6dfe70ff@mjolnir.ossman.eu> <20090722151744.fffd7bf5.akpm@linux-foundation.org> <20090728222334.0c543c47@mjolnir.ossman.eu> <20090731122623.254fd0f1@mjolnir.ossman.eu> <20090731105407.GA31900@console-pimps.org> <20090803123429.390a636f@mjolnir.ossman.eu> <4A76C658.6050002@nokia.com> <20090811140223.GA4278@console-pimps.org> <20090812152731.d07bd980.akpm@linux-foundation.org>
+	Thu, 13 Aug 2009 04:22:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48257 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751128AbZHMIWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 04:22:46 -0400
+Message-ID: <4A83CD84.8040609@redhat.com>
+Date: Thu, 13 Aug 2009 16:23:32 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090812152731.d07bd980.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, linux-mm@kvack.org,
+       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       akpm@linux-foundation.org, bernhard.walle@gmx.de,
+       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 8/8] kexec: allow to shrink reserved memory
+References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>	<20090812081906.5757.39417.sendpatchset@localhost.localdomain>	<m1bpmk8l1g.fsf@fess.ebiederm.org> <4A83893D.50707@redhat.com> <m1eirg5j9i.fsf@fess.ebiederm.org>
+In-Reply-To: <m1eirg5j9i.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 03:27:31PM -0700, Andrew Morton wrote:
-> 
-> davem has set up linux-mmc@vger.kernel.org for us.  It will be archived
-> at marc.info.  Thanks to both..
-> 
-> I was thinking that we wouldn't need a separate list but then I
-> realised I didn't have anywhere to send MMC bug reports.
-> 
-> 	echo "subscribe linux-mmc" | mail majordomo@vger.kernel.org
-> 
+Eric W. Biederman wrote:
+> Amerigo Wang <amwang@redhat.com> writes:
+>
+>   
+>>>   
+>>>       
+>>>> +	ret = kexec_crash_image != NULL;
+>>>> +	mutex_unlock(&kexec_mutex);
+>>>> +	return ret;
+>>>> +}
+>>>> +
+>>>> +size_t get_crash_memory_size(void)
+>>>> +{
+>>>> +	size_t size;
+>>>> +	if (!mutex_trylock(&kexec_mutex))
+>>>> +		return 1;
+>>>>     
+>>>>         
+>>> We don't need trylock on this code path 
+>>>
+>>>   
+>>>       
+>> Hmm, crashk_res is a global struct, so other process can also
+>> change it... but currently no process does that, right?
+>>
+>>     
+>
+> We still need the lock.  Just doing trylock doesn't instead
+> of just sleeping doesn't seem to make any sense on these
+> code paths.
+>
+>   
 
-Unless someone has beaten me to it,
+Ok, got it.
 
->From a920e6c11635cab6261541a487db7b68b4892a74 Mon Sep 17 00:00:00 2001
-From: Matt Fleming <matt@console-pimps.org>
-Date: Thu, 13 Aug 2009 09:17:23 +0100
-Subject: [PATCH] mmc: Add linux-mmc mailing list
+>>>   
+>>>       
+>>>> +	start = crashk_res.start;
+>>>> +	end = crashk_res.end;
+>>>> +
+>>>> +	if (new_size >= end - start + 1) {
+>>>> +		ret = -EINVAL;
+>>>> +		if (new_size == end - start + 1)
+>>>> +			ret = 0;
+>>>> +		goto unlock;
+>>>> +	}
+>>>> +
+>>>> +	start = roundup(start, PAGE_SIZE);
+>>>> +	end = roundup(start + new_size, PAGE_SIZE) - 1;
+>>>> +	npages = (end + 1 - start ) / PAGE_SIZE;
+>>>> +
+>>>> +	pages = kmalloc(sizeof(struct page *) * npages, GFP_KERNEL);
+>>>> +	if (!pages) {
+>>>> +		ret = -ENOMEM;
+>>>> +		goto unlock;
+>>>> +	}
+>>>> +	for (i = 0; i < npages; i++) {
+>>>> +		addr = end + 1 + i * PAGE_SIZE;
+>>>> +		pages[i] = virt_to_page(addr);
+>>>> +	}
+>>>> +
+>>>> +	vaddr = vm_map_ram(pages, npages, 0, PAGE_KERNEL);
+>>>>     
+>>>>         
+>>> This is the wrong kernel call to use.  I expect this needs to look
+>>> like a memory hotplug event.  This does not put the pages into the
+>>> free page pool.
+>>>   
+>>>       
+>> Well, I also wanted to use an memory-hotplug API, but that will make the code
+>> depend on memory-hotplug, which certainly is not what we want...
+>>
+>> I checked the mm code, actually what I need is an API which is similar to
+>> add_active_range(), but add_active_range() can't be used here since it is marked
+>> as "__init".
+>>
+>> Do we have that kind of API in mm? I can't find one.
+>>     
+>
+> Perhaps we will need to remove __init from add_active_range.  I know the logic
+> but I'm not up to speed on the mm pieces at the moment.
+>   
 
-A new linux-mmc mailing list has been set up at vger.kernel.org for all
-things related to MMC/SD development.
+Not that simple, marking it as "__init" means it uses some "__init" data 
+which will be dropped after initialization.
 
-Signed-off-by: Matt Fleming <matt@console-pimps.org>
----
- MAINTAINERS |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index b1114cf..e16c7dd 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3420,6 +3420,7 @@ S:	Supported
- F:	drivers/mfd/
- 
- MULTIMEDIA CARD (MMC), SECURE DIGITAL (SD) AND SDIO SUBSYSTEM
-+L:	linux-mmc@vger.kernel.org
- S:	Orphan
- F:	drivers/mmc/
- F:	include/linux/mmc/
--- 
-1.6.4.rc0
+Thanks.
 
