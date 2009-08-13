@@ -1,116 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932477AbZHMUpD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbZHMUq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932477AbZHMUpD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:45:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbZHMUpA
+	id S1756187AbZHMUq2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:46:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbZHMUq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:45:00 -0400
-Received: from mail.lang.hm ([64.81.33.126]:58699 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753227AbZHMUo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:44:59 -0400
-Date: Thu, 13 Aug 2009 13:44:11 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Greg Freemyer <greg.freemyer@gmail.com>
-cc: Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
- 	slot is freed)
-In-Reply-To: <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0908131342460.28013@asgard.lang.hm>
-References: <200908122007.43522.ngupta@vflare.org>  <Pine.LNX.4.64.0908122312380.25501@sister.anvils>  <20090813151312.GA13559@linux.intel.com>  <20090813162621.GB1915@phenom2.trippelsdorf.de>  <alpine.DEB.1.10.0908130931400.28013@asgard.lang.hm>
- <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 13 Aug 2009 16:46:27 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:58397 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752129AbZHMUq0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 16:46:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=YecoRKrTgTm3qm5IzxghJIKsIjP+nSJc1X3cdvACVQK7Hy4+tv1yCJe1M09ZeAv+cv
+         xs1vf678bbveJ1zyfg/3fGINW6Ey8woxgZdxYHWjGFoUyCIeSb2ajdMNVW3xMokuoVGU
+         PMOi8eqi0sPZ+gzth7DrEzdIHiN6WcQf58dro=
+Message-ID: <4A847BA1.9080805@gmail.com>
+Date: Thu, 13 Aug 2009 22:46:25 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-7.4 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="680960-654879901-1250196252=:28013"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: "Brown, Len" <len.brown@intel.com>, linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: hibernate causes nobody cared on acpi irq
+References: <4A833CAD.5050209@gmail.com> <200908130021.34378.rjw@sisk.pl> <4A846F04.9050005@gmail.com> <200908132220.01334.rjw@sisk.pl>
+In-Reply-To: <200908132220.01334.rjw@sisk.pl>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On 08/13/2009 10:20 PM, Rafael J. Wysocki wrote:
+> Well, nothing obvious comes to mind.
 
---680960-654879901-1250196252=:28013
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-
-On Thu, 13 Aug 2009, Greg Freemyer wrote:
-
-> On Thu, Aug 13, 2009 at 12:33 PM, <david@lang.hm> wrote:
->> On Thu, 13 Aug 2009, Markus Trippelsdorf wrote:
->>
->>> On Thu, Aug 13, 2009 at 08:13:12AM -0700, Matthew Wilcox wrote:
->>>>
->>>> I am planning a complete overhaul of the discard work.  Users can send
->>>> down discard requests as frequently as they like.  The block layer will
->>>> cache them, and invalidate them if writes come through.  Periodically,
->>>> the block layer will send down a TRIM or an UNMAP (depending on the
->>>> underlying device) and get rid of the blocks that have remained unwanted
->>>> in the interim.
->>>
->>> That is a very good idea. I've tested your original TRIM implementation on
->>> my Vertex yesterday and it was awful ;-). The SSD needs hundreds of
->>> milliseconds to digest a single TRIM command. And since your
->>> implementation
->>> sends a TRIM for each extent of each deleted file, the whole system is
->>> unusable after a short while.
->>> An optimal solution would be to consolidate the discard requests, bundle
->>> them and send them to the drive as infrequent as possible.
->>
->> or queue them up and send them when the drive is idle (you would need to
->> keep track to make sure the space isn't re-used)
->>
->> as an example, if you would consider spinning down a drive you don't hurt
->> performance by sending accumulated trim commands.
->>
->> David Lang
->
-> An alternate approach is the block layer maintain its own bitmap of
-> used unused sectors / blocks. Unmap commands from the filesystem just
-> cause the bitmap to be updated.  No other effect.
-
-how does the block layer know what blocks are unused by the filesystem?
-
-or would it be a case of the filesystem generating discard/trim requests 
-to the block layer so that it can maintain it's bitmap, and then the block 
-layer generating the requests to the drive below it?
-
-David Lang
-
-> (Big unknown: Where will the bitmap live between reboots?  Require DM
-> volumes so we can have a dedicated bitmap volume in the mix to store
-> the bitmap to? Maybe on mount, the filesystem has to be scanned to
-> initially populate the bitmap?   Other options?)
->
-> Assuming we have a persistent bitmap in place, have a background
-> scanner that kicks in when the cpu / disk is idle.  It just
-> continuously scans the bitmap looking for contiguous blocks of unused
-> sectors.  Each time it finds one, it sends the largest possible unmap
-> down the block stack and eventually to the device.
->
-> When normal cpu / disk activity kicks in, this process goes to sleep.
->
-> That way much of the smarts are concentrated in the block layer, not
-> in the filesystem code.  And it is being done when the disk is
-> otherwise idle, so you don't have the ncq interference.
->
-> Even laptop users should have enough idle cpu available to manage
-> this.  Enterprise would get the large discards it wants, and
-> unmentioned in the previous discussion, mdraid gets the large discards
-> it also wants.
->
-> ie. If a mdraid raid5/raid6 volume is built of SSDs, it will only be
-> able to discard a full stripe at a time. Otherwise the P=D1 ^ D2 logic
-> is lost.
->
-> Another benefit of the above is the code should be extremely safe and testable.
->
-> Greg
->
---680960-654879901-1250196252=:28013--
+Hmm, looks like a fresh qemu-kvm bug. noapic fixes that. I never needed
+that, but even 2.6.30 doesn't work with it now. Or maybe something on
+the host kernel broke recently. -ETOOMANYBUGS. Thanks.
