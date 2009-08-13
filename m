@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbZHMOmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbZHMOoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753854AbZHMOmw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 10:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZHMOmv
+	id S1753907AbZHMOoo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 10:44:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbZHMOoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 10:42:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38703 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752175AbZHMOmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 10:42:50 -0400
-Date: Thu, 13 Aug 2009 17:41:30 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
-Message-ID: <20090813144129.GB5080@redhat.com>
-References: <cover.1249930169.git.mst@redhat.com> <20090813060615.GC3029@redhat.com> <200908131538.44465.arnd@arndb.de> <200908131548.35199.arnd@arndb.de>
+	Thu, 13 Aug 2009 10:44:44 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:25354 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751461AbZHMOon (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 10:44:43 -0400
+Message-ID: <4A8426CE.5090605@vflare.org>
+Date: Thu, 13 Aug 2009 20:14:30 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908131548.35199.arnd@arndb.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Matthew Wilcox <willy@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] swap: send callback when swap slot is freed
+References: <200908122007.43522.ngupta@vflare.org>	 <Pine.LNX.4.64.0908122312380.25501@sister.anvils>	 <4A837AAF.4050103@vflare.org> <1250146380.10001.47.camel@twins>
+In-Reply-To: <1250146380.10001.47.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 03:48:35PM +0200, Arnd Bergmann wrote:
-> On Thursday 13 August 2009, Arnd Bergmann wrote:
-> > Unfortunately, this also implies that you could no longer simply use the
-> > packet socket interface as you do currently, as I realized only now.
-> > This obviously has a significant impact on your user space interface.
-> 
-> Also, if we do the copy in the transport, it definitely means that we
-> can't get to zero-copy RX/TX from guest space any more. The current
-> vhost_net driver doesn't do that yet, but could be extended in the
-> same way that I'm hoping to do it for macvtap.
-> 
-> 	Arnd <><
+(resending in plain text)
 
-The best way to do this IMO would be to add zero copy support to raw
-sockets, vhost will then get it basically for free.
+On 08/13/2009 12:23 PM, Peter Zijlstra wrote:
+> On Thu, 2009-08-13 at 08:00 +0530, Nitin Gupta wrote:
+>>> I don't share Peter's view that it should be using a more general
+>>> notifier interface (but I certainly agree with his EXPORT_SYMBOL_GPL).
+>> Considering that the callback is made under swap_lock, we should not
+>> have an array of callbacks to do. But what if this callback finds other
+>> users too? I think we should leave it in its current state till it finds
+>> more users and probably add BUG() to make sure callback is not already set.
+>>
+>> I will make it EXPORT_SYMBOL_GPL.
+>
+> If its such a tightly coupled system, then why is compcache a module?
+>
 
--- 
-MST
+Keeping everything as separate kernel modules has been the goal of this 
+project. However, this callback is the only thing which I could not do 
+without this small patching.
+
+Nitin
