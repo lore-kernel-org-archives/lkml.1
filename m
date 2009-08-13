@@ -1,90 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753760AbZHMMCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbZHMMFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753760AbZHMMCV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 08:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbZHMMCU
+	id S1754057AbZHMMFP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 08:05:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZHMMFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 08:02:20 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:43588 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751132AbZHMMCT (ORCPT
+	Thu, 13 Aug 2009 08:05:15 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:24017 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbZHMMFM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 08:02:19 -0400
-Subject: Re: [PROBLEM] perf report is broken in latest linus git
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       paulus@samba.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1250163212.5241.9.camel@twins>
-References: <1250155708.6052.2.camel@penberg-laptop>
-	 <20090813093648.GA22762@elte.hu>  <1250156837.8141.4.camel@penberg-laptop>
-	 <1250163212.5241.9.camel@twins>
-Date: Thu, 13 Aug 2009 15:02:18 +0300
-Message-Id: <1250164938.4941.2.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Thu, 13 Aug 2009 08:05:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=h17FF3mAhkzP/+dBBn9ycdNY+a5jVWa0LZ9tU4HlwccfmdEIPKxRL/qVS7ncoJ+xP0
+         abXJPoRujrpCph6qjRFHRjXRAE+hQxxbqhp3QCicxO5f2QP3L/PvjE7MEYIHfkzn4PtP
+         AEeZoIoN0sjlHKcAvLgO3xF3ITPw0AvQ3GitM=
+Message-ID: <4A840172.8020707@gmail.com>
+Date: Thu, 13 Aug 2009 08:05:06 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+MIME-Version: 1.0
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: alacrityvm-devel@lists.sourceforge.net,
+       alacrityvm-users@lists.sourceforge.net,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org
+Subject: Re: AlacrityVM numbers updated for 31-rc4
+References: <4A83296B.3080606@gmail.com> <4A834ABB.4010801@codemonkey.ws> <4A834E75.9060204@gmail.com>
+In-Reply-To: <4A834E75.9060204@gmail.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig21D5013D96877AA48AB44C19"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-13 at 13:33 +0200, Peter Zijlstra wrote:
-> > > Perhaps it's this commit:
-> > > 
-> > > 4d1e00a: perf symbol: Fix symbol parsing in certain cases: use the build-id as a symlink
-> > > 
-> > > it does not revert cleanly, so you might want to check out these two 
-> > > commits:
-> > > 
-> > >   4d1e00a
-> > >   4d1e00a~1
-> > > 
-> > > and build perf on both, and check with your anomalous perf.data 
-> > > (without changing it) whether the output makes most sense.
-> > 
-> > The commit seems fine. Like I said, the perf.data file is busted even
-> > with 2.6.31-rc4 userspace so I think it's a kernel bug.
-> 
-> Hrmm, does a -tip kernel work as expected? I'll go audit the kernel
-> changes between -rc4 and -rc5.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig21D5013D96877AA48AB44C19
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-tip/master seems to be broken too:
+Gregory Haskins wrote:
+> Anthony Liguori wrote:
 
-penberg@penberg-laptop:~/testing/jato$ perf report
-# Samples: 65806
-#
-# Overhead  Command                            Shared Object  Symbol
-# ........  .......  .......................................  ......
-#
-    64.31%     perf  /home/penberg/bin/perf                   [.] strlist__load
-     3.10%     perf  /home/penberg/bin/jato                   [.] 0x0000000000c6e8
-     1.61%     perf  [kernel]                                 [k] get_page_from_freelist
-     1.13%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] _int_malloc
-     1.11%     perf  /lib/tls/i686/cmov/libpthread-2.8.90.so  [.] 0x00000000012532
-     1.08%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] _fitoa
-     0.96%     perf                                 a7d23660  [.] 0x000000a7d23660
-     0.86%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] ____strtold_l_internal
-     0.85%     perf  /usr/lib/libz.so.1.2.3.3                 [.] 0x0000000000eef2
-     0.83%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] __GI_strcmp
-     0.74%     perf  /home/penberg/bin/jato                   [.] zalloc
-     0.69%     perf  [kernel]                                 [k] scsi_dispatch_cmd
-     0.66%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] getsubopt
-     0.56%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] __realpath
-     0.50%     perf  /usr/lib/libzip.so.1.0.0                 [.] _zip_get_name
+>> Just FYI, the numbers quoted are wrong for virtio-u.  Greg's machine
+>> didn't have high res timers enabled in the kernel.  He'll post newer
+>> numbers later but they're much better than these (venet is still ahead=
 
-penberg@penberg-laptop:~/src/linux/tools/perf$ git log|head -10
-commit d1fa7782b090a3ab0f55c9003d7315b5f0f5e9d6
-Merge: e93673b... daac07b...
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Thu Aug 13 10:37:33 2009 +0200
+>> though).
+>>
+>> Regards,
+>>
+>> Anthony Liguori
+>=20
+> Anthony is correct.  The new numbers after fixing the HRT clock issue a=
+re:
+>=20
+> virtio-u: 2670Mb/s, 266us rtt (3764 tps udp-rr)
+>=20
+> I will update the charts later tonight.
+>=20
 
-    Merge branch 'perfcounters/urgent'
-
-commit daac07b2e6b77f1bd44104aa2f0593e5505f27d4
-Author: Frederic Weisbecker <fweisbec@gmail.com>
-Date:   Thu Aug 13 10:27:19 2009 +0200
-
-			Pekka
+done
 
 
+--------------enig21D5013D96877AA48AB44C19
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkqEAXIACgkQP5K2CMvXmqEhtwCfcSwKKYWysNLQmF7VISNrNPwl
+CkIAniQ8z8sQcIkd/hdeXQhfHuxx1TIa
+=jRLu
+-----END PGP SIGNATURE-----
+
+--------------enig21D5013D96877AA48AB44C19--
