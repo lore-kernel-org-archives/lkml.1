@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932142AbZHMTr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755627AbZHMTuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932142AbZHMTr5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932099AbZHMTr4
+	id S1755627AbZHMTuy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:50:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932139AbZHMTr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:47:56 -0400
-Received: from kroah.org ([198.145.64.141]:36746 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:47:57 -0400
+Received: from kroah.org ([198.145.64.141]:36743 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932098AbZHMTrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:47:53 -0400
+	id S932090AbZHMTrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:47:52 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:37 2009
-Message-Id: <20090813194337.619553936@mini.kroah.org>
+Message-Id: <20090813194337.329198375@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:35 -0700
+Date: Thu, 13 Aug 2009 12:40:34 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mark Langsdorf <mark.langsdorf@amd.com>,
-       Joerg Roedel <joerg.roedel@amd.com>, jbarnes@virtuousgeek.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 14/28] x86: enable GART-IOMMU only after setting up protection methods
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 13/28] firewire: sbp2: add support for disks >2 TB (and 16 bytes long CDBs)
 References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=x86-enable-gart-iommu-only-after-setting-up-protection-methods.patch
+Content-Disposition: inline; filename=firewire-sbp2-add-support-for-disks-2-tb.patch
 In-Reply-To: <20090813194554.GA13947@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,60 +30,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mark Langsdorf <mark.langsdorf@amd.com>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-commit fe2245c905631a3a353504fc04388ce3dfaf9d9e upstream.
+Commit af2719415a5ceae06f2a6d33e78b555e64697fc8 upstream.
 
-The current code to set up the GART as an IOMMU enables GART
-translations before it removes the aperture from the kernel memory
-map, sets the GART PTEs to UC, sets up the guard and scratch
-pages, or does a wbinvd().  This leaves the possibility of cache
-aliasing open and can cause system crashes.
+Increase the command ORB data structure to transport up to 16 bytes long
+CDBs (instead of 12 bytes), and tell the SCSI mid layer about it.  This
+is notably necessary for READ CAPACITY(16) and friends, i.e. support of
+large disks.
 
-Re-order the code so as to enable the GART translations only
-after all safeguards are in place and the tlb has been flushed.
-
-AMD has tested this patch on both Istanbul systems and 1st
-generation Opteron systems with APG enabled and seen no adverse
-effects.  Istanbul systems with HT Assist enabled sometimes
-see MCE errors due to cache artifacts with the unmodified
-code.
-
-Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-Cc: Joerg Roedel <joerg.roedel@amd.com>
-Cc: akpm@linux-foundation.org
-Cc: jbarnes@virtuousgeek.org
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/kernel/pci-gart_64.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/firewire/fw-sbp2.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -658,8 +658,6 @@ static __init int init_k8_gatt(struct ag
- 	memset(gatt, 0, gatt_size);
- 	agp_gatt_table = gatt;
+--- a/drivers/firewire/fw-sbp2.c
++++ b/drivers/firewire/fw-sbp2.c
+@@ -188,6 +188,12 @@ struct sbp2_target {
+ #define SBP2_RETRY_LIMIT		0xf		/* 15 retries */
+ #define SBP2_CYCLE_LIMIT		(0xc8 << 12)	/* 200 125us cycles */
  
--	enable_gart_translations();
--
- 	error = sysdev_class_register(&gart_sysdev_class);
- 	if (!error)
- 		error = sysdev_register(&device_gart);
-@@ -828,6 +826,14 @@ void __init gart_iommu_init(void)
- 	wbinvd();
- 
- 	/*
-+	 * Now all caches are flushed and we can safely enable
-+	 * GART hardware.  Doing it early leaves the possibility
-+	 * of stale cache entries that can lead to GART PTE
-+	 * errors.
-+	 */
-+	enable_gart_translations();
++/*
++ * There is no transport protocol limit to the CDB length,  but we implement
++ * a fixed length only.  16 bytes is enough for disks larger than 2 TB.
++ */
++#define SBP2_MAX_CDB_SIZE		16
 +
-+	/*
- 	 * Try to workaround a bug (thanks to BenH):
- 	 * Set unmapped entries to a scratch page instead of 0.
- 	 * Any prefetches that hit unmapped entries won't get an bus abort
+ /* Unit directory keys */
+ #define SBP2_CSR_UNIT_CHARACTERISTICS	0x3a
+ #define SBP2_CSR_FIRMWARE_REVISION	0x3c
+@@ -293,7 +299,7 @@ struct sbp2_command_orb {
+ 		struct sbp2_pointer next;
+ 		struct sbp2_pointer data_descriptor;
+ 		__be32 misc;
+-		u8 command_block[12];
++		u8 command_block[SBP2_MAX_CDB_SIZE];
+ 	} request;
+ 	struct scsi_cmnd *cmd;
+ 	scsi_done_fn_t done;
+@@ -1159,6 +1165,8 @@ static int sbp2_probe(struct device *dev
+ 	if (fw_device_enable_phys_dma(device) < 0)
+ 		goto fail_shost_put;
+ 
++	shost->max_cmd_len = SBP2_MAX_CDB_SIZE;
++
+ 	if (scsi_add_host(shost, &unit->device) < 0)
+ 		goto fail_shost_put;
+ 
 
 
