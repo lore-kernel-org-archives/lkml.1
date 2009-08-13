@@ -1,52 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752942AbZHMOx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbZHMOyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752942AbZHMOx5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 10:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbZHMOx5
+	id S1754645AbZHMOyL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 10:54:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbZHMOyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 10:53:57 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:64098 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752866AbZHMOx4 (ORCPT
+	Thu, 13 Aug 2009 10:54:09 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:47465 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754621AbZHMOyF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 10:53:56 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
-Date: Thu, 13 Aug 2009 16:53:46 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
-Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-References: <cover.1249930169.git.mst@redhat.com> <200908131548.35199.arnd@arndb.de> <20090813144129.GB5080@redhat.com>
-In-Reply-To: <20090813144129.GB5080@redhat.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 13 Aug 2009 10:54:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=dY38lmlIvyjNRMtO5VDCoWQcAPu4fHIHKnJbH+UiOORvUezXFEv3GyGRhvZORXDdvj
+         nBsDamrbaXfikIwIOVJWEjsH4gSOghQBrJWnrX6I4b6qF+MpF0MfUB812zvpelGyn8gb
+         dTotklLIZ/ElK5AzWSSqXOxXHoE+OnKkpT+q4=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908131653.47029.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+wTWIIfCIT2jdjzJ2N+FAyncbzyl5NggA2/CV
- a7RY8h/yWYTkN231aHLtTTajkRpE6tcKj5E0jQNUE0rOWqyR2f
- do7QIcSSqFbKhhfl92uXA==
+In-Reply-To: <73c1f2160908130721y3c14c4e7h1ff967bac867d7e6@mail.gmail.com>
+References: <20090813122337.GB7029@aftab>
+	 <1250166687-17673-2-git-send-email-borislav.petkov@amd.com>
+	 <73c1f2160908130721y3c14c4e7h1ff967bac867d7e6@mail.gmail.com>
+Date: Thu, 13 Aug 2009 11:54:05 -0300
+Message-ID: <d1af83620908130754i7db4bd33p26cd54d0c30d68a5@mail.gmail.com>
+Subject: Re: [PATCH 2/2] x86: Clear incorrectly forced X86_FEATURE_LAHF_LM 
+	flag
+From: Kevin Winchester <kjwinchester@gmail.com>
+To: Brian Gerst <brgerst@gmail.com>
+Cc: Borislav Petkov <borislav.petkov@amd.com>, mikpe@it.uu.se, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 August 2009, Michael S. Tsirkin wrote:
-> The best way to do this IMO would be to add zero copy support to raw
-> sockets, vhost will then get it basically for free.
+2009/8/13 Brian Gerst <brgerst@gmail.com>:
+> On Thu, Aug 13, 2009 at 8:31 AM, Borislav Petkov<borislav.petkov@amd.com> wrote:
+>> From: Kevin Winchester <kjwinchester@gmail.com>
+>>
+>> Due to an erratum with certain AMD Athlon 64 processors, the BIOS may
+>> need to force enable the LAHF_LM capability.  Unfortunately, in at
+>> least one case, the BIOS does this even for processors that do not
+>> support the functionality.
+>>
+>> Add a specific check that will clear the feature bit for processors
+>> known not to support the LAHF/SAHF instructions.
+>>
+>> Borislav: turn off cpuid bit.
+>>
+>> Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
+>> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+>> ---
+>>  arch/x86/kernel/cpu/amd.c |   16 ++++++++++++++++
+>>  1 files changed, 16 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+>> index e2485b0..9cd6fc7 100644
+>> --- a/arch/x86/kernel/cpu/amd.c
+>> +++ b/arch/x86/kernel/cpu/amd.c
+>> @@ -400,6 +400,22 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+>>                level = cpuid_eax(1);
+>>                if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
+>>                        set_cpu_cap(c, X86_FEATURE_REP_GOOD);
+>> +
+>> +               /*
+>> +                * Some BIOSes incorrectly force this feature, but only K8
+>> +                * revision D (model = 0x14) and later actually support it.
+>> +                */
+>> +               if (c->x86_model < 0x14) {
+>
+> Shouldn't you test that the flag is actually set before trying to clear it?
+>
 
-Yes, that would be nice. I wonder if that could lead to security
-problems on TX though. I guess It will only bring significant performance
-improvements if we leave the data writable in the user space or guest
-during the operation. If the user finds the right timing, it could
-modify the frame headers after they have been checked using netfilter,
-or while the frames are being consumed in the kernel (e.g. an NFS
-server running in a guest).
+Possibly.  If there were some concern that:
 
-	Ardn <><
+- The extra instructions would cause a performance impact, and the
+test was significantly faster than the clear.
+- The extra instructions might actually cause more problems if the
+flag is not set.
+
+Then we would certainly want to test it first.  In my opinion, a few
+simple instructions to clear the flag and the CPUID bit will not
+affect performance, and clearing a flag that is already cleared should
+not cause any additional problems, so I would not bother testing the
+flag first.  That results in fewer lines of code to change.
+
+-- 
+Kevin Winchester
