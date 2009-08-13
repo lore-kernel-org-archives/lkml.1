@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbZHMUPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbZHMUOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbZHMUPh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbZHMUPX
+	id S1756183AbZHMUOq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:14:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbZHMT7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:15:23 -0400
-Received: from kroah.org ([198.145.64.141]:41639 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:59:14 -0400
+Received: from kroah.org ([198.145.64.141]:41635 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755722AbZHMT7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:12 -0400
+	id S1755702AbZHMT7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:11 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:25 2009
-Message-Id: <20090813195125.351956918@mini.kroah.org>
+Message-Id: <20090813195125.214786279@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:49:40 -0700
+Date: Thu, 13 Aug 2009 12:49:39 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 05/74] sky2: Fix checksum endianness
+Subject: [patch 04/74] ipsec: Fix name of CAST algorithm
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=sky2-fix-checksum-endianness.patch
+Content-Disposition: inline; filename=ipsec-fix-name-of-cast-algorithm.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,46 +31,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-[ Upstream commit b9389796fa4c87fbdff33816e317cdae5f36dd0b ]
+[ Upstream commit 245acb87729bc76ba65c7476665c01837e0cdccb ]
 
-sky2 driver on PowerPC targets floods kernel log with following errors:
+Our CAST algorithm is called cast5, not cast128.  Clearly nobody
+has ever used it :)
 
-  eth1: hw csum failure.
-  Call Trace:
-  [ef84b8a0] [c00075e4] show_stack+0x50/0x160 (unreliable)
-  [ef84b8d0] [c02fa178] netdev_rx_csum_fault+0x3c/0x5c
-  [ef84b8f0] [c02f6920] __skb_checksum_complete_head+0x7c/0x84
-  [ef84b900] [c02f693c] __skb_checksum_complete+0x14/0x24
-  [ef84b910] [c0337e08] tcp_v4_rcv+0x4c8/0x6f8
-  [ef84b940] [c031a9c8] ip_local_deliver+0x98/0x210
-  [ef84b960] [c031a788] ip_rcv+0x38c/0x534
-  [ef84b990] [c0300338] netif_receive_skb+0x260/0x36c
-  [ef84b9c0] [c025de00] sky2_poll+0x5dc/0xcf8
-  [ef84ba20] [c02fb7fc] net_rx_action+0xc0/0x144
-
-The NIC is Yukon-2 EC chip revision 1.
-
-Converting checksum field from le16 to CPU byte order fixes the issue.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/sky2.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/xfrm/xfrm_algo.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -2441,7 +2441,7 @@ static int sky2_status_intr(struct sky2_
- 			if (likely(status >> 16 == (status & 0xffff))) {
- 				skb = sky2->rx_ring[sky2->rx_next].skb;
- 				skb->ip_summed = CHECKSUM_COMPLETE;
--				skb->csum = status & 0xffff;
-+				skb->csum = le16_to_cpu(status);
- 			} else {
- 				printk(KERN_NOTICE PFX "%s: hardware receive "
- 				       "checksum problem (status = %#x)\n",
+--- a/net/xfrm/xfrm_algo.c
++++ b/net/xfrm/xfrm_algo.c
+@@ -292,8 +292,8 @@ static struct xfrm_algo_desc ealg_list[]
+ 	}
+ },
+ {
+-	.name = "cbc(cast128)",
+-	.compat = "cast128",
++	.name = "cbc(cast5)",
++	.compat = "cast5",
+ 
+ 	.uinfo = {
+ 		.encr = {
 
 
