@@ -1,90 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbZHMJ7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbZHMKAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbZHMJ7b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 05:59:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbZHMJ7a
+	id S1754075AbZHMKAn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 06:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbZHMKAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 05:59:30 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36895 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753967AbZHMJ7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 05:59:30 -0400
-Date: Thu, 13 Aug 2009 11:59:27 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Paul Mundt <lethal@linux-sh.org>,
+	Thu, 13 Aug 2009 06:00:43 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:59659 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753715AbZHMKAm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 06:00:42 -0400
+Date: Thu, 13 Aug 2009 10:58:02 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>,
+       Joe Perches <joe@perches.com>, Ben Dooks <ben-linux@fluff.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Hannes Eder <hannes@hanneseder.net>
-Subject: Re: [PATCH] move stk17ta8's probe function to .devinit.text
-In-Reply-To: <1247345591-22643-37-git-send-email-u.kleine-koenig@pengutronix.de>
-Message-ID: <alpine.LNX.2.00.0908131158570.25797@wotan.suse.de>
-References: <20090711170548.GC5205@suse.de> <1247345591-22643-25-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-26-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-27-git-send-email-u.kleine-koenig@pengutronix.de>
- <1247345591-22643-28-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-29-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-30-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-31-git-send-email-u.kleine-koenig@pengutronix.de>
- <1247345591-22643-32-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-33-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-34-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-35-git-send-email-u.kleine-koenig@pengutronix.de>
- <1247345591-22643-36-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-37-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
+	sections
+Message-ID: <20090813095802.GB6132@n2100.arm.linux.org.uk>
+References: <1249568614.10297.20.camel@Joe-Laptop.home> <20090806150322.GX2080@trinity.fluff.org> <1249948147.8895.96.camel@Joe-Laptop.home> <20090812115520.GI24339@elf.ucw.cz> <20090812194838.GB12117@n2100.arm.linux.org.uk> <84144f020908121317g64551a2cu1b960f44ed5d0d9@mail.gmail.com> <20090812212502.GA24667@n2100.arm.linux.org.uk> <20090813103511.2928a085@lxorguk.ukuu.org.uk> <20090813094736.GZ6132@n2100.arm.linux.org.uk> <20090813105426.5cd259f6@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-1753176629-1250157570=:25797"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090813105426.5cd259f6@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---168427776-1753176629-1250157570=:25797
-Content-Type: TEXT/PLAIN; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-
-On Sat, 11 Jul 2009, Uwe Kleine-König wrote:
-
-> A pointer to stk17ta8_rtc_probe is passed to the core via
-> platform_driver_register and so the function must not disappear when the
-> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-> unbinding and binding a device to the driver via sysfs will result in an
-> oops as does a device being registered late.
+On Thu, Aug 13, 2009 at 10:54:26AM +0100, Alan Cox wrote:
+> On Thu, 13 Aug 2009 10:47:36 +0100
+> Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
 > 
-> An alternative to this patch is using platform_driver_probe instead of
-> platform_driver_register plus removing the pointer to the probe function
-> from the struct platform_driver.
+> > On Thu, Aug 13, 2009 at 10:35:11AM +0100, Alan Cox wrote:
+> > > O> Let me make this clear, yet again.  The lists are *not* subscriber only
+> > > > lists.  We do NOT reject non-subscriber posts for no reason what so ever
+> > > > (although it does seem to have happened, both Erik and myself both
+> > > > contend that we have never rejected a mailing intentionally without
+> > > > giving a reason - whether the original poster receives that reason is
+> > > > a function of how buggy mailman is.)
+> > > 
+> > > Does it matter one iota whether mailman is rejecting the posts or you
+> > > are. It's a long standing nuisance. And if the software is that buggy why
+> > > not move it to vger which works and has its own active maintainers which
+> > > will free up your time ?
+> > 
+> > As I've already pointed out in previous threads, people believe that they
+> > should talk to me about ARM mailing lists.  Proven, multiple times by
+> > multiple people.
 > 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
-> Cc: Alessandro Zummo <a.zummo@towertech.it>
-> Cc: David Brownell <dbrownell@users.sourceforge.net>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Hannes Eder <hannes@hanneseder.net>
-> Cc: Jiri Kosina <jkosina@suse.cz>
-> Cc: David Brownell <dbrownell@users.sourceforge.net>
-> ---
->  drivers/rtc/rtc-stk17ta8.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> You are missing the point entirely. Actually with your comment you are
+> now missing two points
 > 
-> diff --git a/drivers/rtc/rtc-stk17ta8.c b/drivers/rtc/rtc-stk17ta8.c
-> index 7d1547b..d491eb2 100644
-> --- a/drivers/rtc/rtc-stk17ta8.c
-> +++ b/drivers/rtc/rtc-stk17ta8.c
-> @@ -286,7 +286,7 @@ static struct bin_attribute stk17ta8_nvram_attr = {
->  	.write = stk17ta8_nvram_write,
->  };
->  
-> -static int __init stk17ta8_rtc_probe(struct platform_device *pdev)
-> +static int __devinit stk17ta8_rtc_probe(struct platform_device *pdev)
->  {
->  	struct rtc_device *rtc;
->  	struct resource *res;
+> 1. The point in the email that you ignored: Nobody cared whether mailman
+> is buggy or the list admins are not doing their job or the list is badly
+> configured. They just care it doesn't let them easily cc stuff over. In
+> reality they probably blame the admins regardless of the real cause.
+> 
+> 2. People talk to you on the ARM list because you don't seem to respond
+> on the vger arm list ?
 
-Has this been picked up by anyone? I don't seem to see it in linux-next as 
-of today.
+You've totally missed the point.
 
--- 
-Jiri Kosina
-SUSE Labs
---168427776-1753176629-1250157570=:25797--
+When people have a problem with the existing lists, they talk to me and
+only me about it.  I'm *not* talking about normal list traffic.
+
+What I'm saying is that even if we did move over to vger, people would
+NOT talk to davem about problems.  Their first stop reaction would be
+to talk to me.
+
+> > Moving them to vger isn't going to change that.  The only effect that
+> > it'll have is make me frustrated because I'm then constantly bothered
+> > by people who can't do the sodding research to work out who they should
+> > be talking to.
+> 
+> Reality check. A mailing list name such as "linux-arm" is a tag attached
+> to an object, its a handle nothing more. Moving the object behind that
+> handle to vger as a vger linux-arm list doesn't change things in the way
+> you wish to pretend.
+
+Correction - it does.  I can only assume that this is a continuation of
+your above misunderstanding.
+
+> Most folks working on the kernel are far too busy to spend their time on
+> that, and I'm curious how you could even arrive at such a ludicrous
+> conclusion - what is the motiviation of this evil plot you see ?
+
+>From what I've seen, that is also far from reality.  Some kernel people
+seem to have ample spare time to plot like this.
