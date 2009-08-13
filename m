@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbZHMDGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbZHMDL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752543AbZHMDGs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 23:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbZHMDGs
+	id S1752457AbZHMDL1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 23:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbZHMDL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 23:06:48 -0400
-Received: from mail-pz0-f196.google.com ([209.85.222.196]:63789 "EHLO
-	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751184AbZHMDGr (ORCPT
+	Wed, 12 Aug 2009 23:11:27 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:13581 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751036AbZHMDL0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 23:06:47 -0400
+	Wed, 12 Aug 2009 23:11:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ib1vR3LSb775Ct2fIk2ecupS54y9poipbyKbyareTo7Qrc6AfMQuJrGgS0gPvkWqaw
-         71y1QmefiDesS9N2XGABADBvxqQFCHfph3qHbdd1gOqjpLhIkj9Smws++qRc3NtGPUjt
-         WXHwHkvijbFEiEWflgc87eimfG1CGJNBmnU4o=
-Date: Thu, 13 Aug 2009 11:09:03 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 0/7] new kfifo API
-Message-ID: <20090813030903.GC5031@cr0.nay.redhat.com>
-References: <1250029873.17599.98.camel@wall-e>
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=r8spRUHo82ILn5b387LSNJZepMe89nnBjVTSl0QXccKzmsala26zTY2z7ooddBufT1
+         ikBGKnYjc8UXnfKy0b+gopodVgyXu7llhFdldwozX5Fe409824iSx+FkXKydBUQ7rIhb
+         mbWEsRhm6IBjbcfiP+Oat2Ve8z9jCzkqTvmsw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250029873.17599.98.camel@wall-e>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Thu, 13 Aug 2009 11:11:27 +0800
+Message-ID: <3877989d0908122011n27589ff8wfc6d6b50912496c6@mail.gmail.com>
+Subject: [RFC patch] clean up swiotlb check in intel_iommu_init
+From: Luming Yu <luming.yu@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>,
+       "Yu, Fenghua" <fenghua.yu@intel.com>,
+       "Luck, Tony" <tony.luck@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Content-Type: multipart/mixed; boundary=000e0cd146569816fb0470fd4ad7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 12:31:13AM +0200, Stefani Seibold wrote:
->This is a proposal of a new generic kernel FIFO implementation.
->The patch is splitted into 7 parts:
-> Part 1: Code reorganization, no functional change
-> Part 2: Move out spinlock
-> Part 3: Cleanup namespace
-> Part 4: rename kfifo_put... -> kfifo_in... and kfifo_get... -> kfifo_out...
-> Part 5: add DEFINE_KFIFO and friends, add very tiny functions
-> Part 6: add kfifo_from_user and kfifo_to_user
-> Part 7: add record handling functions (does some reorg)
+--000e0cd146569816fb0470fd4ad7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hi, Stefani
+Hi there,
 
-Can you put these patches into one thread? I have to search my
-inbox to find all of them. :)
+Since swiotlb is an fall back option that might have
+initialized. We don't need to stop intel_iommu_init
+because of swiotlb..
 
-And, personally I don't like your splitting of these patches,
-I prefer to see kfifo API changes first, then their usages.
+Please review. If make sense, please apply.
 
-Anyway, nice work! Thanks!
+**The patch is enclosed in text attachment*
+**Using web client to send the patch* *
+**below is for review, please apply attached  patch*/
+
+Thanks,
+Luming
+
+Signed-off-by: Yu Luming <luming.yu@intel.com>
+
+ intel-iommu.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index 2314ad7..246acb9 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -3194,7 +3194,7 @@ int __init intel_iommu_init(void)
+ 	 * Check the need for DMA-remapping initialization now.
+ 	 * Above initialization will also be used by Interrupt-remapping.
+ 	 */
+-	if (no_iommu || (swiotlb && !iommu_pass_through) || dmar_disabled)
++	if (no_iommu || dmar_disabled)
+ 		return -ENODEV;
+
+ 	iommu_init_mempool();
+
+--000e0cd146569816fb0470fd4ad7
+Content-Type: application/octet-stream; name=6
+Content-Disposition: attachment; filename=6
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fyax5aa60
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvcGNpL2ludGVsLWlvbW11LmMgYi9kcml2ZXJzL3BjaS9pbnRl
+bC1pb21tdS5jCmluZGV4IDIzMTRhZDcuLjI0NmFjYjkgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvcGNp
+L2ludGVsLWlvbW11LmMKKysrIGIvZHJpdmVycy9wY2kvaW50ZWwtaW9tbXUuYwpAQCAtMzE5NCw3
+ICszMTk0LDcgQEAgaW50IF9faW5pdCBpbnRlbF9pb21tdV9pbml0KHZvaWQpCiAJICogQ2hlY2sg
+dGhlIG5lZWQgZm9yIERNQS1yZW1hcHBpbmcgaW5pdGlhbGl6YXRpb24gbm93LgogCSAqIEFib3Zl
+IGluaXRpYWxpemF0aW9uIHdpbGwgYWxzbyBiZSB1c2VkIGJ5IEludGVycnVwdC1yZW1hcHBpbmcu
+CiAJICovCi0JaWYgKG5vX2lvbW11IHx8IChzd2lvdGxiICYmICFpb21tdV9wYXNzX3Rocm91Z2gp
+IHx8IGRtYXJfZGlzYWJsZWQpCisJaWYgKG5vX2lvbW11IHx8IGRtYXJfZGlzYWJsZWQpCiAJCXJl
+dHVybiAtRU5PREVWOwogCiAJaW9tbXVfaW5pdF9tZW1wb29sKCk7Cg==
+--000e0cd146569816fb0470fd4ad7--
