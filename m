@@ -1,89 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbZHMTro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932129AbZHMTr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755576AbZHMTro (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbZHMTro
+	id S932129AbZHMTr4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932099AbZHMTrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:47:44 -0400
-Received: from kroah.org ([198.145.64.141]:36691 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:47:53 -0400
+Received: from kroah.org ([198.145.64.141]:36738 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755486AbZHMTrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:47:42 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:36 2009
-Message-Id: <20090813194335.880835446@mini.kroah.org>
+	id S932095AbZHMTrv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:47:51 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:37 2009
+Message-Id: <20090813194337.191574540@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:24 -0700
+Date: Thu, 13 Aug 2009 12:40:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Michele Jr De Candia <michele.decandia@valueteam.com>,
-       Rodolfo Giometti <giometti@linux.it>, Jean Delvare <khali@linux-fr.org>
-Subject: [patch 03/28] i2c/tsl2550: Fix lux value in dark environment
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 12/28] ieee1394: sbp2: add support for disks >2 TB (and 16 bytes long CDBs)
 References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=i2c-tsl2550-fix-lux-value-in-dark-environment.patch
+Content-Disposition: inline; filename=ieee1394-sbp2-add-support-for-disks-2-tb.patch
 In-Reply-To: <20090813194554.GA13947@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Michele Jr De Candia <michele.decandia@valueteam.com>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-commit 96f699ad09c8b3c55cd229506a9add0047838e3e upstream.
+Commit ebbb16bffa646f853899ef3fdc0ac7abab888703 upstream.
 
-I've tested TSL2550 driver and I've found a bug: when light is off,
-returned value from tsl2550_calculate_lux function is -1 when it should
-be 0 (sensor correctly read that light was off).
+Increase the command ORB data structure to transport up to 16 bytes long
+CDBs (instead of 12 bytes), and tell the SCSI mid layer about it.  This
+is notably necessary for READ CAPACITY(16) and friends, i.e. support of
+large disks.
 
-I think the bug is that a zero c0 value (approximated value of ch0) is
-misinterpreted as an error.
-
-Signed-off-by: Michele Jr De Candia <michele.decandia@valueteam.com>
-Acked-by: Rodolfo Giometti <giometti@linux.it>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- drivers/i2c/chips/tsl2550.c |   17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+ drivers/ieee1394/sbp2.c |    1 +
+ drivers/ieee1394/sbp2.h |    8 +++++++-
+ 2 files changed, 8 insertions(+), 1 deletion(-)
 
---- a/drivers/i2c/chips/tsl2550.c
-+++ b/drivers/i2c/chips/tsl2550.c
-@@ -27,7 +27,7 @@
- #include <linux/delay.h>
+--- a/drivers/ieee1394/sbp2.c
++++ b/drivers/ieee1394/sbp2.c
+@@ -874,6 +874,7 @@ static struct sbp2_lu *sbp2_alloc_device
+ 	}
  
- #define TSL2550_DRV_NAME	"tsl2550"
--#define DRIVER_VERSION		"1.1.1"
-+#define DRIVER_VERSION		"1.1.2"
+ 	shost->hostdata[0] = (unsigned long)lu;
++	shost->max_cmd_len = SBP2_MAX_CDB_SIZE;
+ 
+ 	if (!scsi_add_host(shost, &ud->device)) {
+ 		lu->shost = shost;
+--- a/drivers/ieee1394/sbp2.h
++++ b/drivers/ieee1394/sbp2.h
+@@ -25,6 +25,12 @@
+ #define SBP2_DEVICE_NAME		"sbp2"
  
  /*
-  * Defines
-@@ -189,13 +189,16 @@ static int tsl2550_calculate_lux(u8 ch0,
- 	u8 r = 128;
- 
- 	/* Avoid division by 0 and count 1 cannot be greater than count 0 */
--	if (c0 && (c1 <= c0))
--		r = c1 * 128 / c0;
-+	if (c1 <= c0)
-+		if (c0) {
-+			r = c1 * 128 / c0;
++ * There is no transport protocol limit to the CDB length,  but we implement
++ * a fixed length only.  16 bytes is enough for disks larger than 2 TB.
++ */
++#define SBP2_MAX_CDB_SIZE		16
 +
-+			/* Calculate LUX */
-+			lux = ((c0 - c1) * ratio_lut[r]) / 256;
-+		} else
-+			lux = 0;
- 	else
--		return -1;
--
--	/* Calculate LUX */
--	lux = ((c0 - c1) * ratio_lut[r]) / 256;
-+		return -EAGAIN;
++/*
+  * SBP-2 specific definitions
+  */
  
- 	/* LUX range check */
- 	return lux > TSL2550_MAX_LUX ? TSL2550_MAX_LUX : lux;
+@@ -51,7 +57,7 @@ struct sbp2_command_orb {
+ 	u32 data_descriptor_hi;
+ 	u32 data_descriptor_lo;
+ 	u32 misc;
+-	u8 cdb[12];
++	u8 cdb[SBP2_MAX_CDB_SIZE];
+ } __attribute__((packed));
+ 
+ #define SBP2_LOGIN_REQUEST		0x0
 
 
