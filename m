@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbZHMTtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbZHMTsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755728AbZHMTtL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:49:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbZHMTtI
+	id S1755662AbZHMTsW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755647AbZHMTsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:49:08 -0400
-Received: from kroah.org ([198.145.64.141]:36819 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932157AbZHMTsF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:48:05 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:39 2009
-Message-Id: <20090813194339.809516126@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:48 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 27/28] ALSA: hda - Add missing vmaster initialization for ALC269
-References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=alsa-hda-add-missing-vmaster-initialization-for-alc269.patch
-In-Reply-To: <20090813194554.GA13947@kroah.com>
+	Thu, 13 Aug 2009 15:48:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35097 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755619AbZHMTsT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:48:19 -0400
+Date: Thu, 13 Aug 2009 12:46:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Frans Pop <elendil@planet.nl>
+cc: mano@roarinelk.homelinux.net, rjw@sisk.pl, willy@linux.intel.com,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       akpm@linux-foundation.org, andrew.patterson@hp.com
+Subject: Re: [Regression] PCI resources allocation problem on HP nx6325
+In-Reply-To: <200908132128.31439.elendil@planet.nl>
+Message-ID: <alpine.LFD.2.01.0908131244280.28882@localhost.localdomain>
+References: <200908021619.48285.rjw@sisk.pl> <alpine.LFD.2.01.0908020927410.3352@localhost.localdomain> <20090803165909.GA12824@roarinelk.homelinux.net> <alpine.LFD.2.01.0908041555120.3270@localhost.localdomain> <20090805155102.GA31646@roarinelk.homelinux.net>
+ <alpine.LFD.2.01.0908050902300.3390@localhost.localdomain> <alpine.LFD.2.01.0908050931390.3390@localhost.localdomain> <20090805170934.GA32274@roarinelk.homelinux.net> <alpine.LFD.2.01.0908071051300.3390@localhost.localdomain> <alpine.LFD.2.01.0908071116520.3390@localhost.localdomain>
+ <20090811184740.49f52b57@scarran.roarinelk.net> <20090811184740.49f52b57@scarran.roarinelk.net> <alpine.LFD.2.01.0908131113580.28882@localhost.localdomain> <200908132128.31439.elendil@planet.nl>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
-
-------------------
-
-From: Takashi Iwai <tiwai@suse.de>
-
-commit 100d5eb36ba20dc0b99a17ea2b9800c567bfc3d1 upstream.
-
-Without the initialization of vmaster NID, the dB information got
-confused for ALC269 codec.
-
-Reference: Novell bnc#527361
-	https://bugzilla.novell.com/show_bug.cgi?id=527361
-
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- sound/pci/hda/patch_realtek.c |    2 ++
- 1 file changed, 2 insertions(+)
-
---- a/sound/pci/hda/patch_realtek.c
-+++ b/sound/pci/hda/patch_realtek.c
-@@ -13767,6 +13767,8 @@ static int patch_alc861vd(struct hda_cod
- 
- 	spec->vmaster_nid = 0x02;
- 
-+	spec->vmaster_nid = 0x02;
-+
- 	codec->patch_ops = alc_patch_ops;
- 
- 	if (board_config == ALC861VD_AUTO)
 
 
+On Thu, 13 Aug 2009, Frans Pop wrote:
+> 
+> It's never resulted in things not working, but it would still be nice if
+> it got solved. Please let me know if you'd like anything tested.
+
+Did you test the trial-balloon patch I sent to Manuel? It's not the one 
+I'd ever commit, but behavior-wise it's likely very close in practice to a 
+patch that would iterate over possible parent resources (ie there are 
+differences in theory but probably not so many in practice).
+
+So testing it on your machine would be sensible. And you might also remind 
+me after 2.6.31 is out.
+
+		Linus
