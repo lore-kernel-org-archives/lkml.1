@@ -1,88 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbZHMDL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbZHMDMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752457AbZHMDL1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 23:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbZHMDL1
+	id S1752565AbZHMDMH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 23:12:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbZHMDMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 23:11:27 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:13581 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbZHMDL0 (ORCPT
+	Wed, 12 Aug 2009 23:12:06 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:43840 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbZHMDME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 23:11:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=r8spRUHo82ILn5b387LSNJZepMe89nnBjVTSl0QXccKzmsala26zTY2z7ooddBufT1
-         ikBGKnYjc8UXnfKy0b+gopodVgyXu7llhFdldwozX5Fe409824iSx+FkXKydBUQ7rIhb
-         mbWEsRhm6IBjbcfiP+Oat2Ve8z9jCzkqTvmsw=
+	Wed, 12 Aug 2009 23:12:04 -0400
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
+       bernhard.walle@gmx.de, Fenghua Yu <fenghua.yu@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Anton Vorontsov <avorontsov@ru.mvista.com>
+References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>
+	<20090812081906.5757.39417.sendpatchset@localhost.localdomain>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 12 Aug 2009 20:11:55 -0700
+In-Reply-To: <20090812081906.5757.39417.sendpatchset@localhost.localdomain> (Amerigo Wang's message of "Wed\, 12 Aug 2009 04\:16\:44 -0400")
+Message-ID: <m1bpmk8l1g.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Date: Thu, 13 Aug 2009 11:11:27 +0800
-Message-ID: <3877989d0908122011n27589ff8wfc6d6b50912496c6@mail.gmail.com>
-Subject: [RFC patch] clean up swiotlb check in intel_iommu_init
-From: Luming Yu <luming.yu@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>,
-       "Luck, Tony" <tony.luck@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Content-Type: multipart/mixed; boundary=000e0cd146569816fb0470fd4ad7
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: amwang@redhat.com, avorontsov@ru.mvista.com, mingo@elte.hu, fenghua.yu@intel.com, bernhard.walle@gmx.de, akpm@linux-foundation.org, andi@firstfloor.org, nhorman@redhat.com, linux-ia64@vger.kernel.org, tony.luck@intel.com, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Amerigo Wang <amwang@redhat.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  1.0 XM_Sft_Co_L33T XM_Sft_Co_L33T
+	*  0.0 XM_Sft_Brands_C00 XM_Sft_Brands_C00
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [Patch 8/8] kexec: allow to shrink reserved memory
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---000e0cd146569816fb0470fd4ad7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Amerigo Wang <amwang@redhat.com> writes:
 
-Hi there,
+> This patch implements shrinking the reserved memory for crash kernel,
+> if it is more than enough.
+>
+> For example, if you have already reserved 128M, now you just want 100M,
+> you can do:
+>
+> # echo $((100*1024*1024)) > /sys/kernel/kexec_crash_size
 
-Since swiotlb is an fall back option that might have
-initialized. We don't need to stop intel_iommu_init
-because of swiotlb..
+Getting closer (comments inline)
 
-Please review. If make sense, please apply.
+Semantically this patch is non-contriversial and pretty
+simple, but still needs a fair amount of review.  Can
+you put this patch at the front of your patch set.
 
-**The patch is enclosed in text attachment*
-**Using web client to send the patch* *
-**below is for review, please apply attached  patch*/
+> Signed-off-by: WANG Cong <amwang@redhat.com>
+> Cc: Neil Horman <nhorman@redhat.com>
+> Cc: Eric W. Biederman <ebiederm@xmission.com>
+> Cc: Andi Kleen <andi@firstfloor.org>
+>
+> ---
+>
+> Index: linux-2.6/include/linux/kexec.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/kexec.h
+> +++ linux-2.6/include/linux/kexec.h
+> @@ -206,6 +206,9 @@ extern size_t vmcoreinfo_max_size;
+>  
+>  int __init parse_crashkernel(char *cmdline, unsigned long long system_ram,
+>  		unsigned long long *crash_size, unsigned long long *crash_base);
+> +int shrink_crash_memory(unsigned long new_size);
+> +int kexec_crash_kernel_loaded(void);
+> +size_t get_crash_memory_size(void);
+>  
+>  #else /* !CONFIG_KEXEC */
+>  struct pt_regs;
+> Index: linux-2.6/kernel/kexec.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/kexec.c
+> +++ linux-2.6/kernel/kexec.c
+> @@ -1083,6 +1083,76 @@ void crash_kexec(struct pt_regs *regs)
+>  	}
+>  }
+>  
+> +int kexec_crash_kernel_loaded(void)
+> +{
+> +	int ret;
+> +	if (!mutex_trylock(&kexec_mutex))
+> +		return 1;
 
-Thanks,
-Luming
+We don't need trylock on this code path 
 
-Signed-off-by: Yu Luming <luming.yu@intel.com>
+> +	ret = kexec_crash_image != NULL;
+> +	mutex_unlock(&kexec_mutex);
+> +	return ret;
+> +}
+> +
+> +size_t get_crash_memory_size(void)
+> +{
+> +	size_t size;
+> +	if (!mutex_trylock(&kexec_mutex))
+> +		return 1;
 
- intel-iommu.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+We don't need trylock on this code path 
 
+> +	size = crashk_res.end - crashk_res.start + 1;
+> +	mutex_unlock(&kexec_mutex);
+> +	return size;
+> +}
+> +
+> +int shrink_crash_memory(unsigned long new_size)
+> +{
+> +	struct page **pages;
+> +	int ret = 0;
+> +	int  npages, i;
+> +	unsigned long addr;
+> +	unsigned long start, end;
+> +	void *vaddr;
+> +
+> +	if (!mutex_trylock(&kexec_mutex))
+> +		return -EBUSY;
 
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index 2314ad7..246acb9 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -3194,7 +3194,7 @@ int __init intel_iommu_init(void)
- 	 * Check the need for DMA-remapping initialization now.
- 	 * Above initialization will also be used by Interrupt-remapping.
- 	 */
--	if (no_iommu || (swiotlb && !iommu_pass_through) || dmar_disabled)
-+	if (no_iommu || dmar_disabled)
- 		return -ENODEV;
+We don't need trylock on this code path 
 
- 	iommu_init_mempool();
+We are missing the check to see if the crash_kernel is loaded
+under this lock instance. So I please move the kexec_crash_image != NULL
+test inline here and kill the kexec_crash_kernel_loaded function.
 
---000e0cd146569816fb0470fd4ad7
-Content-Type: application/octet-stream; name=6
-Content-Disposition: attachment; filename=6
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fyax5aa60
+> +	start = crashk_res.start;
+> +	end = crashk_res.end;
+> +
+> +	if (new_size >= end - start + 1) {
+> +		ret = -EINVAL;
+> +		if (new_size == end - start + 1)
+> +			ret = 0;
+> +		goto unlock;
+> +	}
+> +
+> +	start = roundup(start, PAGE_SIZE);
+> +	end = roundup(start + new_size, PAGE_SIZE) - 1;
+> +	npages = (end + 1 - start ) / PAGE_SIZE;
+> +
+> +	pages = kmalloc(sizeof(struct page *) * npages, GFP_KERNEL);
+> +	if (!pages) {
+> +		ret = -ENOMEM;
+> +		goto unlock;
+> +	}
+> +	for (i = 0; i < npages; i++) {
+> +		addr = end + 1 + i * PAGE_SIZE;
+> +		pages[i] = virt_to_page(addr);
+> +	}
+> +
+> +	vaddr = vm_map_ram(pages, npages, 0, PAGE_KERNEL);
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvcGNpL2ludGVsLWlvbW11LmMgYi9kcml2ZXJzL3BjaS9pbnRl
-bC1pb21tdS5jCmluZGV4IDIzMTRhZDcuLjI0NmFjYjkgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvcGNp
-L2ludGVsLWlvbW11LmMKKysrIGIvZHJpdmVycy9wY2kvaW50ZWwtaW9tbXUuYwpAQCAtMzE5NCw3
-ICszMTk0LDcgQEAgaW50IF9faW5pdCBpbnRlbF9pb21tdV9pbml0KHZvaWQpCiAJICogQ2hlY2sg
-dGhlIG5lZWQgZm9yIERNQS1yZW1hcHBpbmcgaW5pdGlhbGl6YXRpb24gbm93LgogCSAqIEFib3Zl
-IGluaXRpYWxpemF0aW9uIHdpbGwgYWxzbyBiZSB1c2VkIGJ5IEludGVycnVwdC1yZW1hcHBpbmcu
-CiAJICovCi0JaWYgKG5vX2lvbW11IHx8IChzd2lvdGxiICYmICFpb21tdV9wYXNzX3Rocm91Z2gp
-IHx8IGRtYXJfZGlzYWJsZWQpCisJaWYgKG5vX2lvbW11IHx8IGRtYXJfZGlzYWJsZWQpCiAJCXJl
-dHVybiAtRU5PREVWOwogCiAJaW9tbXVfaW5pdF9tZW1wb29sKCk7Cg==
---000e0cd146569816fb0470fd4ad7--
+This is the wrong kernel call to use.  I expect this needs to look
+like a memory hotplug event.  This does not put the pages into the
+free page pool.
+
+> +	if (!vaddr) {
+> +		ret = -ENOMEM;
+> +		goto free;
+> +	}
+> +	crashk_res.end = end;
+> +
+> +free:
+> +	kfree(pages);
+> +unlock:
+> +	mutex_unlock(&kexec_mutex);
+> +	return ret;
+> +}
+> +
+>  static u32 *append_elf_note(u32 *buf, char *name, unsigned type, void *data,
+>  			    size_t data_len)
+>  {
+> Index: linux-2.6/kernel/ksysfs.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/ksysfs.c
+> +++ linux-2.6/kernel/ksysfs.c
+> @@ -100,6 +100,26 @@ static ssize_t kexec_crash_loaded_show(s
+>  }
+>  KERNEL_ATTR_RO(kexec_crash_loaded);
+>  
+> +static ssize_t kexec_crash_size_show(struct kobject *kobj,
+> +				       struct kobj_attribute *attr, char *buf)
+> +{
+> +	return sprintf(buf, "%lu\n", get_crash_memory_size());
+> +}
+> +static ssize_t kexec_crash_size_store(struct kobject *kobj,
+> +				   struct kobj_attribute *attr,
+> +				   const char *buf, size_t count)
+> +{
+> +	unsigned long cnt;
+> +	int ret;
+> +
+> +	if (kexec_crash_kernel_loaded())
+> +		return -ENOENT;
+> +	cnt = simple_strtoul(buf, NULL, 10);
+> +	ret = shrink_crash_memory(cnt);
+> +	return ret < 0 ? ret: count;
+> +}
+> +KERNEL_ATTR_RW(kexec_crash_size);
+> +
+>  static ssize_t vmcoreinfo_show(struct kobject *kobj,
+>  			       struct kobj_attribute *attr, char *buf)
+>  {
+> @@ -147,6 +167,7 @@ static struct attribute * kernel_attrs[]
+>  #ifdef CONFIG_KEXEC
+>  	&kexec_loaded_attr.attr,
+>  	&kexec_crash_loaded_attr.attr,
+> +	&kexec_crash_size_attr.attr,
+>  	&vmcoreinfo_attr.attr,
+>  #endif
+>  	NULL
