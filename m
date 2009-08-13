@@ -1,63 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbZHMPGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164AbZHMPNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754744AbZHMPGN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 11:06:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbZHMPGM
+	id S1754164AbZHMPNX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 11:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZHMPNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 11:06:12 -0400
-Received: from mail-pz0-f196.google.com ([209.85.222.196]:58720 "EHLO
-	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754687AbZHMPGL (ORCPT
+	Thu, 13 Aug 2009 11:13:21 -0400
+Received: from mga05.intel.com ([192.55.52.89]:30816 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750845AbZHMPNT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 11:06:11 -0400
-To: Wim Van Sebroeck <wim@iguana.be>
-Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH RT 8/6] [ARM, WATCHDOG] davinci: include mach/timex.h in davinci_wdt.c
-References: <20090807203939.GA19374@pengutronix.de>
-	<1249810600-21946-1-git-send-email-u.kleine-koenig@pengutronix.de>
-	<1249810600-21946-2-git-send-email-u.kleine-koenig@pengutronix.de>
-	<20090809094306.GA26591@n2100.arm.linux.org.uk>
-	<87iqgvk43c.fsf@deeprootsystems.com>
-	<20090810172637.GC27147@n2100.arm.linux.org.uk>
-	<87zla7fkio.fsf@deeprootsystems.com>
-	<20090810220234.GD27147@n2100.arm.linux.org.uk>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Thu, 13 Aug 2009 08:06:09 -0700
-In-Reply-To: <20090810220234.GD27147@n2100.arm.linux.org.uk> (Russell King's message of "Mon\, 10 Aug 2009 23\:02\:34 +0100")
-Message-ID: <87zla3hhy6.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 13 Aug 2009 11:13:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,375,1246863600"; 
+   d="scan'208";a="716518995"
+Date: Thu, 13 Aug 2009 08:13:12 -0700
+From: Matthew Wilcox <willy@linux.intel.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Discard support (was Re: [PATCH] swap: send callback when swap
+	slot is freed)
+Message-ID: <20090813151312.GA13559@linux.intel.com>
+References: <200908122007.43522.ngupta@vflare.org> <Pine.LNX.4.64.0908122312380.25501@sister.anvils>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0908122312380.25501@sister.anvils>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King - ARM Linux <linux@arm.linux.org.uk> writes:
+On Wed, Aug 12, 2009 at 11:48:27PM +0100, Hugh Dickins wrote:
+> But fundamentally, though I can see how this cutdown communication
+> path is useful to compcache, I'd much rather deal with it by the more
+> general discard route if we can.  (I'm one of those still puzzled by
+> the way swap is mixed up with block device in compcache: probably
+> because I never found time to pay attention when you explained.)
+> 
+> You're right to question the utility of the current swap discard
+> placement.  That code is almost a year old, written from a position
+> of great ignorance, yet only now do we appear to be on the threshold
+> of having an SSD which really supports TRIM (ah, the Linux ATA TRIM
+> support seems to have gone missing now, but perhaps it's been
+> waiting for a reality to check against too - Willy?).
 
-> On Mon, Aug 10, 2009 at 02:04:31PM -0700, Kevin Hilman wrote:
->> @@ -86,6 +88,9 @@ static void wdt_enable(void)
->>  {
->>  	u32 tgcr;
->>  	u32 timer_margin;
->> +	u32 wdt_freq;
->> +
->> +	wdt_freq = clk_get_rate(wdt_clk);
->
-> Much better - and only a minor nit which doesn't deserve a repost -
-> wdt_freq should probably match the return type of clk_get_rate.  IOW
-> unsigned long.
+I am indeed waiting for hardware with TRIM support to appear on my
+desk before resubmitting the TRIM code.  It'd also be nice to be able to
+get some performance numbers.
 
-Wim,
+> I won't be surprised if we find that we need to move swap discard
+> support much closer to swap_free (though I know from trying before
+> that it's much messier there): in which case, even if we decided to
+> keep your hotline to compcache (to avoid allocating bios etc.), it
+> would be better placed alongside.
 
-If you're OK with this, can you queue this one for 2.6.32?
+It turns out there are a lot of tradeoffs involved with discard, and
+they're different between TRIM and UNMAP.
 
-Thanks,
+Let's start with UNMAP.  This SCSI command is used by giant arrays.
+They want to do Thin Provisioning, so allocate physical storage to virtual
+LUNs on demand, and want to deallocate it when they get an UNMAP command.
+They allocate storage in large chunks (hundreds of kilobytes at a time).
+They only care about discards that enable them to free an entire chunk.
+The vast majority of users *do not care* about these arrays, because
+they don't have one, and will never be able to afford one.  We should
+ignore the desires of these vendors when designing our software.
 
-Kevin
+Solid State Drives are introducing an ATA command called TRIM.  SSDs
+generally have an intenal mapping layer, and due to their low, low seek
+penalty, will happily remap blocks anywhere on the flash.  They want
+to know when a block isn't in use any more, so they don't have to copy
+it around when they want to erase the chunk of storage that it's on.
+The unfortunate thing about the TRIM command is that it's not NCQ, so
+all NCQ commands have to finish, then we can send the TRIM command and
+wait for it to finish, then we can send NCQ commands again.
+
+So TRIM isn't free, and there's a better way for the drive to find
+out that the contents of a block no longer matter -- write some new
+data to it.  So if we just swapped a page in, and we're going to swap
+something else back out again soon, just write it to the same location
+instead of to a fresh location.  You've saved a command, and you've
+saved the drive some work, plus you've allowed other users to continue
+accessing the drive in the meantime.
+
+I am planning a complete overhaul of the discard work.  Users can send
+down discard requests as frequently as they like.  The block layer will
+cache them, and invalidate them if writes come through.  Periodically,
+the block layer will send down a TRIM or an UNMAP (depending on the
+underlying device) and get rid of the blocks that have remained unwanted
+in the interim.
+
+Thoughts on that are welcome.
