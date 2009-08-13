@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbZHMTvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbZHMTun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755806AbZHMTvv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755760AbZHMTvt
+	id S1755739AbZHMTun (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbZHMTul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:51:49 -0400
-Received: from kroah.org ([198.145.64.141]:36755 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:50:41 -0400
+Received: from kroah.org ([198.145.64.141]:36776 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932109AbZHMTrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:47:55 -0400
+	id S932148AbZHMTr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:47:59 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:38 2009
-Message-Id: <20090813194338.094383349@mini.kroah.org>
+Message-Id: <20090813194338.719404891@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:37 -0700
+Date: Thu, 13 Aug 2009 12:40:41 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Sandeen <sandeen@redhat.com>, <linux-ext4@vger.kernel.org>,
-       Mark Lord <lkml@rtr.ca>, Arnd Bergmann <arnd@arndb.de>,
-       Josef Bacik <josef@redhat.com>, Jan Kara <jack@suse.cz>
-Subject: [patch 16/28] compat_ioctl: hook up compat handler for FIEMAP ioctl
+       =?ISO-8859-15?q?Marko=20H=C3=A4nninen?= <bugitus@gmail.com>
+Subject: [patch 20/28] USB: ftdi_sio: add vendor and product id for Bayer glucose meter serial converter cable
 References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=compat_ioctl-hook-up-compat-handler-for-fiemap-ioctl.patch
+Content-Disposition: inline; filename=usb-ftdi_sio-add-vendor-and-product-id-for-bayer-glucose-meter-serial-converter-cable.patch
 In-Reply-To: <20090813194554.GA13947@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,42 +30,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eric Sandeen <sandeen@redhat.com>
+From: Marko Hänninen <bugitus@gmail.com>
 
-commit 69130c7cf96ea853dc5be599dd6a4b98907d39cc upstream.
+commit c47aacc67a3d26dfab9c9b8965975ed2b2010b30 upstream.
 
-The FIEMAP_IOC_FIEMAP mapping ioctl was missing a 32-bit compat handler,
-which means that 32-bit suerspace on 64-bit kernels cannot use this ioctl
-command.
+Attached patch adds USB vendor and product IDs for Bayer's USB to serial
+converter cable used by Bayer blood glucose meters. It seems to be a
+FT232RL based device and works without any problem with ftdi_sio driver
+when this patch is applied. See: http://winglucofacts.com/cables/
 
-The structure is nicely aligned, padded, and sized, so it is just this
-simple.
 
-Tested w/ 32-bit ioctl tester (from Josef) on a 64-bit kernel on ext4.
-
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-Cc: <linux-ext4@vger.kernel.org>
-Cc: Mark Lord <lkml@rtr.ca>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Josef Bacik <josef@redhat.com>
-Cc: Jan Kara <jack@suse.cz>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Marko Hänninen <bugitus@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/compat_ioctl.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/usb/serial/ftdi_sio.c |    1 +
+ drivers/usb/serial/ftdi_sio.h |    7 +++++++
+ 2 files changed, 8 insertions(+)
 
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -1910,6 +1910,7 @@ COMPATIBLE_IOCTL(FIONCLEX)
- COMPATIBLE_IOCTL(FIOASYNC)
- COMPATIBLE_IOCTL(FIONBIO)
- COMPATIBLE_IOCTL(FIONREAD)  /* This is also TIOCINQ */
-+COMPATIBLE_IOCTL(FS_IOC_FIEMAP)
- /* 0x00 */
- COMPATIBLE_IOCTL(FIBMAP)
- COMPATIBLE_IOCTL(FIGETBSZ)
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -663,6 +663,7 @@ static struct usb_device_id id_table_com
+ 	{ USB_DEVICE(ADI_VID, ADI_GNICE_PID),
+ 		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
+ 	{ USB_DEVICE(JETI_VID, JETI_SPC1201_PID) },
++	{ USB_DEVICE(BAYER_VID, BAYER_CONTOUR_CABLE_PID) },
+ 	{ },					/* Optional parameter entry */
+ 	{ }					/* Terminating entry */
+ };
+--- a/drivers/usb/serial/ftdi_sio.h
++++ b/drivers/usb/serial/ftdi_sio.h
+@@ -897,6 +897,13 @@
+ #define JETI_SPC1201_PID	0x04b2
+ 
+ /*
++ * Bayer Ascensia Contour blood glucose meter USB-converter cable.
++ * http://winglucofacts.com/cables/
++ */
++#define BAYER_VID                      0x1A79
++#define BAYER_CONTOUR_CABLE_PID        0x6001
++
++/*
+  *   BmRequestType:  1100 0000b
+  *   bRequest:       FTDI_E2_READ
+  *   wValue:         0
 
 
