@@ -1,149 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbZHMQkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbZHMQzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754983AbZHMQkH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 12:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbZHMQkG
+	id S1755002AbZHMQzb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 12:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbZHMQza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 12:40:06 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:30893 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754349AbZHMQkE (ORCPT
+	Thu, 13 Aug 2009 12:55:30 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:30669 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752153AbZHMQz3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 12:40:04 -0400
-From: Nitin Gupta <ngupta@vflare.org>
-Reply-To: ngupta@vflare.org
-To: mingo@elte.hu
-Subject: Re: [PATCH] swap: send callback when swap slot is freed v2
-Date: Thu, 13 Aug 2009 22:09:54 +0530
-User-Agent: KMail/1.11.4 (Linux/2.6.29.6-217.2.3.fc11.x86_64; KDE/4.2.4; x86_64; ; )
-Cc: akpm@linux-foundation.org, hugh.dickins@tiscali.co.uk,
-       peterz@infradead.org, willy@linux.intel.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-mm-cc@laptop.org
-References: <200908132201.05719.ngupta@vflare.org>
-In-Reply-To: <200908132201.05719.ngupta@vflare.org>
+	Thu, 13 Aug 2009 12:55:29 -0400
+From: "Fischer, Anna" <anna.fischer@hp.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+CC: Stephen Hemminger <shemminger@linux-foundation.org>,
+       "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>,
+       "evb@yahoogroups.com" <evb@yahoogroups.com>,
+       "bridge@lists.linux-foundation.org" 
+	<bridge@lists.linux-foundation.org>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kaber@trash.net" <kaber@trash.net>, Arnd Bergmann <arnd@arndb.de>,
+       "Dickson, Mike (ISS Software)" <mike.dickson@hp.com>,
+       "adobriyan@gmail.com" <adobriyan@gmail.com>,
+       "bridge@osdl.org" <bridge@osdl.org>
+Date: Thu, 13 Aug 2009 16:55:16 +0000
+Subject: [PATCH] net/bridge: Add 'hairpin' port forwarding mode
+Thread-Topic: [PATCH] net/bridge: Add 'hairpin' port forwarding mode
+Thread-Index: AcocNtV+HJLiuqM3QOCpEB5SIWIPdw==
+Message-ID: <0199E0D51A61344794750DC57738F58E6D6B0C70D9@GVW1118EXC.americas.hpqcorp.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908132209.54891.ngupta@vflare.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Re-sending with correct linux-mm mailing list address. My bad.)
+This patch adds a 'hairpin' (also called 'reflective relay') mode
+port configuration to the Linux Ethernet bridge kernel module.
+A bridge supporting hairpin forwarding mode can send frames back
+out through the port the frame was received on.
 
-Currently, we have "swap discard" mechanism which sends a discard bio request
-when we find a free cluster during scan_swap_map(). This callback can come a
-long time after swap slots are actually freed.
+Hairpin mode is required to support basic VEPA (Virtual
+Ethernet Port Aggregator) capabilities.
 
-This delay in callback is a great problem when (compressed) RAM [1] is used
-as a swap device. So, this change adds a callback which is called as
-soon as a swap slot becomes free. For above mentioned case of swapping
-over compressed RAM device, this is very useful since we can immediately
-free memory allocated for this swap page.
+You can find additional information on VEPA here:
+http://tech.groups.yahoo.com/group/evb/
+http://www.ieee802.org/1/files/public/docs2009/new-hudson-vepa_seminar-20090514d.pdf
+http://www.internet2.edu/presentations/jt2009jul/20090719-congdon.pdf
 
-This callback does not replace swap discard support. It is called with
-swap_lock held, so it is meant to trigger action that finishes quickly.
-However, swap discard is an I/O request and can be used for taking longer
-actions.
+An additional patch 'bridge-utils: Add 'hairpin' port forwarding mode'
+is provided to allow configuring hairpin mode from userspace tools.
 
-Links:
-[1] http://code.google.com/p/compcache/
+Signed-off-by: Paul Congdon <paul.congdon@hp.com>
+Signed-off-by: Anna Fischer <anna.fischer@hp.com>
 
-Signed-off-by: Nitin Gupta <ngupta@vflare.org>
 ---
 
- include/linux/swap.h |    5 +++++
- mm/swapfile.c        |   33 +++++++++++++++++++++++++++++++++
- 2 files changed, 38 insertions(+), 0 deletions(-)
+ net/bridge/br_forward.c  |    3 ++-
+ net/bridge/br_if.c       |    1 +
+ net/bridge/br_private.h  |    3 +++
+ net/bridge/br_sysfs_if.c |   17 +++++++++++++++++
+ 4 files changed, 23 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index 7c15334..64796fc 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -8,6 +8,7 @@
- #include <linux/memcontrol.h>
- #include <linux/sched.h>
- #include <linux/node.h>
-+#include <linux/blkdev.h>
- 
- #include <asm/atomic.h>
- #include <asm/page.h>
-@@ -20,6 +21,8 @@ struct bio;
- #define SWAP_FLAG_PRIO_MASK	0x7fff
- #define SWAP_FLAG_PRIO_SHIFT	0
- 
-+typedef void (swap_free_notify_fn) (struct block_device *, unsigned long);
-+
- static inline int current_is_kswapd(void)
+diff --git a/net/bridge/br_forward.c b/net/bridge/br_forward.c
+index d2c27c8..bc1704a 100644
+--- a/net/bridge/br_forward.c
++++ b/net/bridge/br_forward.c
+@@ -22,7 +22,8 @@
+ static inline int should_deliver(const struct net_bridge_port *p,
+ 				 const struct sk_buff *skb)
  {
- 	return current->flags & PF_KSWAPD;
-@@ -155,6 +158,7 @@ struct swap_info_struct {
- 	unsigned int max;
- 	unsigned int inuse_pages;
- 	unsigned int old_block_size;
-+	swap_free_notify_fn *swap_free_notify_fn;
- };
- 
- struct swap_list_t {
-@@ -295,6 +299,7 @@ extern sector_t swapdev_block(int, pgoff_t);
- extern struct swap_info_struct *get_swap_info_struct(unsigned);
- extern int reuse_swap_page(struct page *);
- extern int try_to_free_swap(struct page *);
-+extern void set_swap_free_notify(struct block_device *, swap_free_notify_fn *);
- struct backing_dev_info;
- 
- /* linux/mm/thrash.c */
-diff --git a/mm/swapfile.c b/mm/swapfile.c
-index 8ffdc0d..d75729a 100644
---- a/mm/swapfile.c
-+++ b/mm/swapfile.c
-@@ -552,6 +552,37 @@ out:
- 	return NULL;
+-	return (skb->dev != p->dev && p->state == BR_STATE_FORWARDING);
++	return (((p->flags & BR_HAIRPIN_MODE) || skb->dev != p->dev) &&
++		p->state == BR_STATE_FORWARDING);
  }
  
-+/*
-+ * Sets callback for event when swap_map[offset] == 0
-+ * i.e. page at this swap offset is no longer used.
-+ */
-+void set_swap_free_notify(struct block_device *bdev,
-+			swap_free_notify_fn *notify_fn)
+ static inline unsigned packet_length(const struct sk_buff *skb)
+diff --git a/net/bridge/br_if.c b/net/bridge/br_if.c
+index eb404dc..e486f1f 100644
+--- a/net/bridge/br_if.c
++++ b/net/bridge/br_if.c
+@@ -256,6 +256,7 @@ static struct net_bridge_port *new_nbp(struct net_bridge *br,
+ 	p->path_cost = port_cost(dev);
+ 	p->priority = 0x8000 >> BR_PORT_BITS;
+ 	p->port_no = index;
++	p->flags = 0;
+ 	br_init_port(p);
+ 	p->state = BR_STATE_DISABLED;
+ 	br_stp_port_timer_init(p);
+diff --git a/net/bridge/br_private.h b/net/bridge/br_private.h
+index d5b5537..8319247 100644
+--- a/net/bridge/br_private.h
++++ b/net/bridge/br_private.h
+@@ -81,6 +81,9 @@ struct net_bridge_port
+ 	struct timer_list		message_age_timer;
+ 	struct kobject			kobj;
+ 	struct rcu_head			rcu;
++
++	unsigned long 			flags;
++#define BR_HAIRPIN_MODE		0x00000001
+ };
+ 
+ struct net_bridge
+diff --git a/net/bridge/br_sysfs_if.c b/net/bridge/br_sysfs_if.c
+index 4a3cdf8..820643a 100644
+--- a/net/bridge/br_sysfs_if.c
++++ b/net/bridge/br_sysfs_if.c
+@@ -143,6 +143,22 @@ static ssize_t store_flush(struct net_bridge_port *p, unsigned long v)
+ }
+ static BRPORT_ATTR(flush, S_IWUSR, NULL, store_flush);
+ 
++static ssize_t show_hairpin_mode(struct net_bridge_port *p, char *buf)
 +{
-+	unsigned int i;
-+	struct swap_info_struct *sis;
-+
-+	spin_lock(&swap_lock);
-+	for (i = 0; i <= nr_swapfiles; i++) {
-+		sis = &swap_info[i];
-+		if (!(sis->flags & SWP_USED))
-+			continue;
-+		if (sis->bdev == bdev)
-+			break;
-+	}
-+
-+	/* swap device not found */
-+	if (i > nr_swapfiles)
-+		return;
-+
-+	BUG_ON(!sis || sis->swap_free_notify_fn);
-+	sis->swap_free_notify_fn = notify_fn;
-+	spin_unlock(&swap_lock);
-+
-+	return;
++	int hairpin_mode = (p->flags & BR_HAIRPIN_MODE) ? 1 : 0;
++	return sprintf(buf, "%d\n", hairpin_mode);
 +}
-+EXPORT_SYMBOL_GPL(set_swap_free_notify);
++static ssize_t store_hairpin_mode(struct net_bridge_port *p, unsigned long v)
++{
++	if (v)
++		p->flags |= BR_HAIRPIN_MODE;
++	else
++		p->flags &= ~BR_HAIRPIN_MODE;
++	return 0;
++}
++static BRPORT_ATTR(hairpin_mode, S_IRUGO | S_IWUSR,
++		   show_hairpin_mode, store_hairpin_mode);
 +
- static int swap_entry_free(struct swap_info_struct *p,
- 			   swp_entry_t ent, int cache)
- {
-@@ -583,6 +614,8 @@ static int swap_entry_free(struct swap_info_struct *p,
- 			swap_list.next = p - swap_info;
- 		nr_swap_pages++;
- 		p->inuse_pages--;
-+		if (p->swap_free_notify_fn)
-+			p->swap_free_notify_fn(p->bdev, offset);
- 	}
- 	if (!swap_count(count))
- 		mem_cgroup_uncharge_swap(ent);
+ static struct brport_attribute *brport_attrs[] = {
+ 	&brport_attr_path_cost,
+ 	&brport_attr_priority,
+@@ -159,6 +175,7 @@ static struct brport_attribute *brport_attrs[] = {
+ 	&brport_attr_forward_delay_timer,
+ 	&brport_attr_hold_timer,
+ 	&brport_attr_flush,
++	&brport_attr_hairpin_mode,
+ 	NULL
+ };
+
