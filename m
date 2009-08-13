@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752917AbZHMI0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbZHMI0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752917AbZHMI0S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 04:26:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbZHMI0R
+	id S1753184AbZHMI0i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 04:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbZHMI0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 04:26:17 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42750 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751512AbZHMI0Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 04:26:16 -0400
-Subject: Re: [RFC patch] init default dma_ops to prepare intel_iommu_init 
- failure
-From: David Woodhouse <dwmw2@infradead.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: luming.yu@gmail.com, fenghua.yu@intel.com, tony.luck@intel.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20090813121727W.fujita.tomonori@lab.ntt.co.jp>
-References: <20090813110948V.fujita.tomonori@lab.ntt.co.jp>
-	 <3877989d0908121924t1589941fmcd45d3669b78bba4@mail.gmail.com>
-	 <20090813121444W.fujita.tomonori@lab.ntt.co.jp>
-	 <20090813121727W.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain
-Date: Thu, 13 Aug 2009 09:26:12 +0100
-Message-Id: <1250151972.29180.193.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 13 Aug 2009 04:26:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59195 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751974AbZHMI0f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 04:26:35 -0400
+From: Xiaotian Feng <dfeng@redhat.com>
+To: jmorris@namei.org, eparis@parisplace.org, sds@tycho.nsa.gov,
+       paul.moore@hp.com, serue@us.ibm.com,
+       linux-security-module@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Xiaotian Feng <dfeng@redhat.com>
+Subject: [PATCH] selinux: fix memory leak in sel_make_bools
+Date: Thu, 13 Aug 2009 16:26:16 +0800
+Message-Id: <1250151976-19399-1-git-send-email-dfeng@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-13 at 12:18 +0900, FUJITA Tomonori wrote:
-> > Duh, yeah, intel_iommu_init() fails, it doesn't work.
-> > 
-> > X86 falls back into nommu_dam_ops but IA64 has nothing.
-> > 
-> > pci_swiotlb_init() can't set swiotlb to 1 or overwrite dma_ops? If it
-> > sets swiotlb to 1, intel_iommu_init() fails.
-> > 
-> > A quick fix could be something like this:
-> 
-> Oops, here's a good one.
+In sel_make_bools, kernel allocates memory for bool_pending_names[i]
+with security_get_bools. So if we just free bool_pending_names, those
+memories for bool_pending_names[i] will be leaked.
 
-Closer, but don't we still want to free the swiotlb buffers if the iommu
-init _does_ actually work?
+This patch resolves dozens of following kmemleak report after resuming
+from suspend:
+unreferenced object 0xffff88022e4c7380 (size 32):
+  comm "init", pid 1, jiffies 4294677173
+  backtrace:
+    [<ffffffff810f76b5>] create_object+0x1a2/0x2a9
+    [<ffffffff810f78bb>] kmemleak_alloc+0x26/0x4b
+    [<ffffffff810ef3eb>] __kmalloc+0x18f/0x1b8
+    [<ffffffff811cd511>] security_get_bools+0xd7/0x16f
+    [<ffffffff811c48c0>] sel_write_load+0x12e/0x62b
+    [<ffffffff810f9a39>] vfs_write+0xae/0x10b
+    [<ffffffff810f9b56>] sys_write+0x4a/0x6e
+    [<ffffffff81011b82>] system_call_fastpath+0x16/0x1b
+    [<ffffffffffffffff>] 0xffffffffffffffff
 
-And we want the same on x86 too -- we want swiotlb, not nommu.
+Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+---
+ security/selinux/selinuxfs.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
+diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
+index b4fc506..ab93472 100644
+--- a/security/selinux/selinuxfs.c
++++ b/security/selinux/selinuxfs.c
+@@ -979,7 +979,11 @@ static int sel_make_bools(void)
+ 	u32 sid;
+ 
+ 	/* remove any existing files */
+-	kfree(bool_pending_names);
++	if (bool_pending_names) {
++		for (i = 0; i < bool_num; i++)
++			kfree(bool_pending_names[i]);
++		kfree(bool_pending_names);
++	}
+ 	kfree(bool_pending_values);
+ 	bool_pending_names = NULL;
+ 	bool_pending_values = NULL;
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+1.6.2.5
 
