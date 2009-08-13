@@ -1,45 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZHMUfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932477AbZHMUpD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbZHMUfm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756179AbZHMUfl
+	id S932477AbZHMUpD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:45:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbZHMUpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:35:41 -0400
-Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:52029 "EHLO
-	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755554AbZHMUfj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:35:39 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Regression] PCI resources allocation problem on HP nx6325
-Date: Thu, 13 Aug 2009 22:35:36 +0200
-User-Agent: KMail/1.9.9
-Cc: mano@roarinelk.homelinux.net, rjw@sisk.pl, willy@linux.intel.com,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       akpm@linux-foundation.org, andrew.patterson@hp.com
-References: <200908021619.48285.rjw@sisk.pl> <200908132128.31439.elendil@planet.nl> <alpine.LFD.2.01.0908131244280.28882@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0908131244280.28882@localhost.localdomain>
+	Thu, 13 Aug 2009 16:45:00 -0400
+Received: from mail.lang.hm ([64.81.33.126]:58699 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753227AbZHMUo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 16:44:59 -0400
+Date: Thu, 13 Aug 2009 13:44:11 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Greg Freemyer <greg.freemyer@gmail.com>
+cc: Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+ 	slot is freed)
+In-Reply-To: <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0908131342460.28013@asgard.lang.hm>
+References: <200908122007.43522.ngupta@vflare.org>  <Pine.LNX.4.64.0908122312380.25501@sister.anvils>  <20090813151312.GA13559@linux.intel.com>  <20090813162621.GB1915@phenom2.trippelsdorf.de>  <alpine.DEB.1.10.0908130931400.28013@asgard.lang.hm>
+ <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908132235.39171.elendil@planet.nl>
-X-OriginalArrivalTime: 13 Aug 2009 20:35:39.0688 (UTC) FILETIME=[9EE1DA80:01CA1C55]
+Content-Type: MULTIPART/MIXED; BOUNDARY="680960-654879901-1250196252=:28013"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 August 2009, Linus Torvalds wrote:
-> On Thu, 13 Aug 2009, Frans Pop wrote:
-> > It's never resulted in things not working, but it would still be nice
-> > if it got solved. Please let me know if you'd like anything tested.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--680960-654879901-1250196252=:28013
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+
+On Thu, 13 Aug 2009, Greg Freemyer wrote:
+
+> On Thu, Aug 13, 2009 at 12:33 PM, <david@lang.hm> wrote:
+>> On Thu, 13 Aug 2009, Markus Trippelsdorf wrote:
+>>
+>>> On Thu, Aug 13, 2009 at 08:13:12AM -0700, Matthew Wilcox wrote:
+>>>>
+>>>> I am planning a complete overhaul of the discard work.  Users can send
+>>>> down discard requests as frequently as they like.  The block layer will
+>>>> cache them, and invalidate them if writes come through.  Periodically,
+>>>> the block layer will send down a TRIM or an UNMAP (depending on the
+>>>> underlying device) and get rid of the blocks that have remained unwanted
+>>>> in the interim.
+>>>
+>>> That is a very good idea. I've tested your original TRIM implementation on
+>>> my Vertex yesterday and it was awful ;-). The SSD needs hundreds of
+>>> milliseconds to digest a single TRIM command. And since your
+>>> implementation
+>>> sends a TRIM for each extent of each deleted file, the whole system is
+>>> unusable after a short while.
+>>> An optimal solution would be to consolidate the discard requests, bundle
+>>> them and send them to the drive as infrequent as possible.
+>>
+>> or queue them up and send them when the drive is idle (you would need to
+>> keep track to make sure the space isn't re-used)
+>>
+>> as an example, if you would consider spinning down a drive you don't hurt
+>> performance by sending accumulated trim commands.
+>>
+>> David Lang
 >
-> Did you test the trial-balloon patch I sent to Manuel?
+> An alternate approach is the block layer maintain its own bitmap of
+> used unused sectors / blocks. Unmap commands from the filesystem just
+> cause the bitmap to be updated.  No other effect.
 
-I had not, but I've tried it now. And it does not change anything: the 
-errors are still there. So it probably isn't the same issue after all.
+how does the block layer know what blocks are unused by the filesystem?
 
-I'll try to find out exactly which commits made the errors go away 
-with .31-rc2 and reappear with .31-rc5.
+or would it be a case of the filesystem generating discard/trim requests 
+to the block layer so that it can maintain it's bitmap, and then the block 
+layer generating the requests to the drive below it?
+
+David Lang
+
+> (Big unknown: Where will the bitmap live between reboots?  Require DM
+> volumes so we can have a dedicated bitmap volume in the mix to store
+> the bitmap to? Maybe on mount, the filesystem has to be scanned to
+> initially populate the bitmap?   Other options?)
+>
+> Assuming we have a persistent bitmap in place, have a background
+> scanner that kicks in when the cpu / disk is idle.  It just
+> continuously scans the bitmap looking for contiguous blocks of unused
+> sectors.  Each time it finds one, it sends the largest possible unmap
+> down the block stack and eventually to the device.
+>
+> When normal cpu / disk activity kicks in, this process goes to sleep.
+>
+> That way much of the smarts are concentrated in the block layer, not
+> in the filesystem code.  And it is being done when the disk is
+> otherwise idle, so you don't have the ncq interference.
+>
+> Even laptop users should have enough idle cpu available to manage
+> this.  Enterprise would get the large discards it wants, and
+> unmentioned in the previous discussion, mdraid gets the large discards
+> it also wants.
+>
+> ie. If a mdraid raid5/raid6 volume is built of SSDs, it will only be
+> able to discard a full stripe at a time. Otherwise the P=D1 ^ D2 logic
+> is lost.
+>
+> Another benefit of the above is the code should be extremely safe and testable.
+>
+> Greg
+>
+--680960-654879901-1250196252=:28013--
