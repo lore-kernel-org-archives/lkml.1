@@ -1,44 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbZHMUIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbZHMUJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158AbZHMUIo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756146AbZHMUIl
+	id S932227AbZHMUJX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932170AbZHMUJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:08:41 -0400
-Received: from vena.lwn.net ([206.168.112.25]:46249 "EHLO vena.lwn.net"
+	Thu, 13 Aug 2009 16:09:17 -0400
+Received: from kroah.org ([198.145.64.141]:41756 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756145AbZHMUIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:08:40 -0400
-Date: Thu, 13 Aug 2009 14:05:54 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Mark Gross <mgross@linux.intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH, RESEND 0/2] pm_qos: remove BKL and de-race
-Message-ID: <20090813140554.014ce1e0@bike.lwn.net>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	id S932146AbZHMT7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:39 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:29 2009
+Message-Id: <20090813195129.603296702@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Thu, 13 Aug 2009 12:50:09 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 34/74] posix-timers: Fix oops in clock_nanosleep() with CLOCK_MONOTONIC_RAW
+References: <20090813194935.985368088@mini.kroah.org>
+Content-Disposition: inline; filename=posix-timers-fix-oops-in-clock_nanosleep-with-clock_monotonic_raw.patch
+In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a repost of my two-patch set getting rid of the BKL and some
-racy code in pm_qos_params.c.  There's been no changes since the last
-time around other than the addition of a couple of tags.  Patches
-follow, or they can be pulled from:
+2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
-	git://git.lwn.net/linux-2.6.git bkl-removal
+------------------
 
-Ingo, you didn't say whether these could find a home in your
-violent-death-to-the-bkl tree until the merge window opens.  So they're
-still looking for a place to rest; I guess I could ask Stephen to take
-the bkl-removal tree back into linux-next, but that seems like
-overkill.
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Thanks,
+commit 70d715fd0597f18528f389b5ac59102263067744 upstream.
 
-jon
+Prevent calling do_nanosleep() with clockid
+CLOCK_MONOTONIC_RAW, it may cause oops, such as NULL pointer
+dereference.
+
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Stultz <johnstul@us.ibm.com>
+LKML-Reference: <4A764FF3.50607@ct.jp.nec.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ kernel/posix-timers.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+--- a/kernel/posix-timers.c
++++ b/kernel/posix-timers.c
+@@ -202,6 +202,12 @@ static int no_timer_create(struct k_itim
+ 	return -EOPNOTSUPP;
+ }
+ 
++static int no_nsleep(const clockid_t which_clock, int flags,
++		     struct timespec *tsave, struct timespec __user *rmtp)
++{
++	return -EOPNOTSUPP;
++}
++
+ /*
+  * Return nonzero if we know a priori this clockid_t value is bogus.
+  */
+@@ -254,6 +260,7 @@ static __init int init_posix_timers(void
+ 		.clock_get = posix_get_monotonic_raw,
+ 		.clock_set = do_posix_clock_nosettime,
+ 		.timer_create = no_timer_create,
++		.nsleep = no_nsleep,
+ 	};
+ 
+ 	register_posix_clock(CLOCK_REALTIME, &clock_realtime);
+
+
