@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbZHMUGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbZHMUIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756126AbZHMUGq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932211AbZHMT7t
+	id S1756158AbZHMUIo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756146AbZHMUIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:59:49 -0400
-Received: from kroah.org ([198.145.64.141]:41834 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 16:08:41 -0400
+Received: from vena.lwn.net ([206.168.112.25]:46249 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932214AbZHMT7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:48 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:31 2009
-Message-Id: <20090813195130.963233083@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:18 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       NeilBrown <neilb@suse.de>
-Subject: [patch 43/74] md: when a level change reduces the number of devices, remove the excess.
-References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=md-when-a-level-change-reduces-the-number-of-devices-remove-the-excess.patch
-In-Reply-To: <20090813195705.GA22393@kroah.com>
+	id S1756145AbZHMUIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 16:08:40 -0400
+Date: Thu, 13 Aug 2009 14:05:54 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Mark Gross <mgross@linux.intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH, RESEND 0/2] pm_qos: remove BKL and de-race
+Message-ID: <20090813140554.014ce1e0@bike.lwn.net>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.30-stable review patch.  If anyone has any objections, please let us know.
+Here's a repost of my two-patch set getting rid of the BKL and some
+racy code in pm_qos_params.c.  There's been no changes since the last
+time around other than the addition of a couple of tags.  Patches
+follow, or they can be pulled from:
 
-------------------
+	git://git.lwn.net/linux-2.6.git bkl-removal
 
-From: NeilBrown <neilb@suse.de>
+Ingo, you didn't say whether these could find a home in your
+violent-death-to-the-bkl tree until the merge window opens.  So they're
+still looking for a place to rest; I guess I could ask Stephen to take
+the bkl-removal tree back into linux-next, but that seems like
+overkill.
 
-commit 3a981b03f38dc3b8a69b77cbc679e66c1318a44a upstream.
+Thanks,
 
-When an array is changed from RAID6 to RAID5, fewer drives are
-needed.  So any device that is made superfluous by the level
-conversion must be marked as not-active.
-For the RAID6->RAID5 conversion, this will be a drive which only
-has 'Q' blocks on it.
-
-Signed-off-by: NeilBrown <neilb@suse.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/md/md.c |    7 +++++++
- 1 file changed, 7 insertions(+)
-
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -2680,6 +2680,7 @@ level_store(mddev_t *mddev, const char *
- 	ssize_t rv = len;
- 	struct mdk_personality *pers;
- 	void *priv;
-+	mdk_rdev_t *rdev;
- 
- 	if (mddev->pers == NULL) {
- 		if (len == 0)
-@@ -2759,6 +2760,12 @@ level_store(mddev_t *mddev, const char *
- 	mddev_suspend(mddev);
- 	mddev->pers->stop(mddev);
- 	module_put(mddev->pers->owner);
-+	/* Invalidate devices that are now superfluous */
-+	list_for_each_entry(rdev, &mddev->disks, same_set)
-+		if (rdev->raid_disk >= mddev->raid_disks) {
-+			rdev->raid_disk = -1;
-+			clear_bit(In_sync, &rdev->flags);
-+		}
- 	mddev->pers = pers;
- 	mddev->private = priv;
- 	strlcpy(mddev->clevel, pers->name, sizeof(mddev->clevel));
-
-
+jon
