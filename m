@@ -1,85 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbZHMMFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbZHMMHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057AbZHMMFP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 08:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZHMMFP
+	id S1753763AbZHMMHT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 08:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZHMMHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 08:05:15 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:24017 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751208AbZHMMFM (ORCPT
+	Thu, 13 Aug 2009 08:07:19 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:24326 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751286AbZHMMHS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 08:05:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=h17FF3mAhkzP/+dBBn9ycdNY+a5jVWa0LZ9tU4HlwccfmdEIPKxRL/qVS7ncoJ+xP0
-         abXJPoRujrpCph6qjRFHRjXRAE+hQxxbqhp3QCicxO5f2QP3L/PvjE7MEYIHfkzn4PtP
-         AEeZoIoN0sjlHKcAvLgO3xF3ITPw0AvQ3GitM=
-Message-ID: <4A840172.8020707@gmail.com>
-Date: Thu, 13 Aug 2009 08:05:06 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Thu, 13 Aug 2009 08:07:18 -0400
 MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: alacrityvm-devel@lists.sourceforge.net,
-       alacrityvm-users@lists.sourceforge.net,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org
-Subject: Re: AlacrityVM numbers updated for 31-rc4
-References: <4A83296B.3080606@gmail.com> <4A834ABB.4010801@codemonkey.ws> <4A834E75.9060204@gmail.com>
-In-Reply-To: <4A834E75.9060204@gmail.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig21D5013D96877AA48AB44C19"
+Message-ID: <13a78aa7-dd27-49d9-8164-d6e802bd4796@default>
+Date: Thu, 13 Aug 2009 05:06:28 -0700 (PDT)
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: <hannes@cmpxchg.org>
+Cc: <stern@rowland.harvard.edu>, <James.Bottomley@HansenPartnership.com>,
+       <akpm@linux-foundation.org>, <apw@canonical.com>, <mingo@elte.hu>,
+       <linux-kernel@vger.kernel.org>, <peterz@infradead.org>
+Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
+X-Mailer: Zimbra on Oracle Beehive
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+X-Source-IP: abhmt003.oracle.com [141.146.116.12]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010206.4A8401C6.01AD:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig21D5013D96877AA48AB44C19
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: hannes@cmpxchg.org
 
-Gregory Haskins wrote:
-> Anthony Liguori wrote:
+On Thu, Aug 13, 2009 at 09:25:14AM +0200, Ingo Molnar wrote:
+> 
+> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> 
+> > On Wed, 2009-08-12 at 10:13 -0400, Alan Stern wrote:
+> > > On Wed, 12 Aug 2009, Ingo Molnar wrote:
+> > > 
+> > > > > And here I was thinking kerneldoc doesn't actually work 
+> > > > > like that, but perhaps Randy fixed it so the initial 
+> > > > > description can line-wrap?
+> > > 
+> > > Yes, that's what I thought too.  If kerneldoc has been fixed 
+> > > then the description line certainly should get wrapped.
+> > 
+> > I really don't think it needs to be fixed: it's a feature not a 
+> > bug.  It requires people writing kernel doc actually to think of 
+> > one line summaries.
+> 
+> As long as the argument is that it's good to have limitations just 
+> because it has good effects as well (which the gist of your argument 
+> seems to be), i disagree.
+> 
+> That's a very basic argument of freedom. Just consider the Gestapo 
+> which was also a 'feature' to keep criminals in check. Did you know 
+> that there were record low levels of petty criminality both in nazi 
+> Germany and during communism (and under just about any totalitarian 
+> regime)? Still nobody in their right mind is arguing that just due 
+> to that they are the right social model ...
 
->> Just FYI, the numbers quoted are wrong for virtio-u.  Greg's machine
->> didn't have high res timers enabled in the kernel.  He'll post newer
->> numbers later but they're much better than these (venet is still ahead=
+| Although I really like how you Godwin'd kerneldoc comments ;-), we do
+| have other features that are features because of their limiting effect
+| all over the place, don't we?  The 80-columns code rule e.g. or our
+| limited set of allowed indenting characters.
 
->> though).
->>
->> Regards,
->>
->> Anthony Liguori
->=20
-> Anthony is correct.  The new numbers after fixing the HRT clock issue a=
-re:
->=20
-> virtio-u: 2670Mb/s, 266us rtt (3764 tps udp-rr)
->=20
-> I will update the charts later tonight.
->=20
+> I think this DocBook limitation needs to be fixed, because there are 
+> legitimate cases where a function name got too long (for no fault of 
+> its own, but for properties of the name-space it is operating in), 
+> and we do not want a nanny state beat it into a single line.
 
-done
+| Agreed, just as in the other rules, one should be able to bend this
+| one once in a while without technical consequences, i.e. without
+| kerneldoc breaking.
 
 
---------------enig21D5013D96877AA48AB44C19
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Any of you, please feel free to send patches.  Thanks.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqEAXIACgkQP5K2CMvXmqEhtwCfcSwKKYWysNLQmF7VISNrNPwl
-CkIAniQ8z8sQcIkd/hdeXQhfHuxx1TIa
-=jRLu
------END PGP SIGNATURE-----
-
---------------enig21D5013D96877AA48AB44C19--
+~Randy
