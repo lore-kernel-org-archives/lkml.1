@@ -1,145 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753799AbZHMJrK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbZHMJrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753799AbZHMJrK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 05:47:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbZHMJrJ
+	id S1753949AbZHMJrT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 05:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbZHMJrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 05:47:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55888 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752530AbZHMJrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 05:47:08 -0400
-Date: Thu, 13 Aug 2009 11:46:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: eranian@gmail.com
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: perf_counters issue with PERF_SAMPLE_GROUP
-Message-ID: <20090813094635.GA26612@elte.hu>
-References: <7c86c4470908110841wca07382gf7487c0ed55909f2@mail.gmail.com> <1250006744.10001.29.camel@twins> <7c86c4470908111240s58385748wdb3c3e4a0d66a1ea@mail.gmail.com> <1250024143.7091.7.camel@laptop> <7c86c4470908111408x256e294i13ac90035fd8f5c8@mail.gmail.com> <1250065963.10001.30.camel@twins> <20090812090234.GB14114@elte.hu> <7c86c4470908120522m1eaf891bqb394df072dddc701@mail.gmail.com>
-MIME-Version: 1.0
+	Thu, 13 Aug 2009 05:47:18 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:35875 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753816AbZHMJrR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 05:47:17 -0400
+Subject: Re: [PROBLEM] perf report is broken in latest linus git
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, paulus@samba.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090813093648.GA22762@elte.hu>
+References: <1250155708.6052.2.camel@penberg-laptop>
+	 <20090813093648.GA22762@elte.hu>
+Date: Thu, 13 Aug 2009 12:47:17 +0300
+Message-Id: <1250156837.8141.4.camel@penberg-laptop>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <7c86c4470908120522m1eaf891bqb394df072dddc701@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Ingo,
 
-* stephane eranian <eranian@googlemail.com> wrote:
-
-> On Wed, Aug 12, 2009 at 11:02 AM, Ingo Molnar<mingo@elte.hu> wrote:
->
-> > Not sure we want to change it. Mixing PID and CPU into the same 
-> > space disallows the simultaneous application of both. I.e. right 
-> > now we allow 3 models:
-> >
-> >  - PID-ish
-> >  - CPU-ish
-> >  - PID and CPU [say measure CPU#2 component of an inherited workload.]
->
-> How useful is that last model, especially why only one CPU?
-
-It's somewhat useful: say on an inherited workload one could 'cut 
-out' just a single CPU worth of samples.
-
-Or a tool could implement a more scalable sampling model: say on a 
-quad core CPU one could have four counters in an inherited workload:
-
-  cycles:cpu0
-  cycles:cpu1
-  cycles:cpu2
-  cycles:cpu3
-
-... and depending on which CPU a sub-process or sub-thread is 
-running on, would the according (nicely per cpu local) sampling 
-buffer be used.
-
-> > Also, i dont really see the use-cases for new targets. (i've 
-> > seen a few mentioned but none seemed valid) What new targets do 
-> > people have in mind?
+On Thu, 2009-08-13 at 11:36 +0200, Ingo Molnar wrote:
+> * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 > 
-> I seem to recall people mentioned:
->    1- CPU socket, e.g., uncore PMU
->    2- chipset
->    3- GPU
+> > Latest Linus git kernel with -rc4 perf userspace:
+> > 
+> >   penberg@penberg-laptop:~/testing/jato$ perf record -f jato HelloWorldSwing
+> >   [ perf record: Captured and wrote 1.402 MB perf.data (~61261 samples) ]
+> > 
+> >   penberg@penberg-laptop:~/testing/jato$ perf report --sort comm,dso,symbol|head -30
+> >   # Samples: 60457
+> >   #
+> >   # Overhead  Command                            Shared Object  Symbol
+> >   # ........  .......  .......................................  ......
+> >   #
+> > 
+> >   [ Note: the jato executable doesn't appear anywhere in the trace. I'm
+> >     pretty sure the libzip functions, for example, are from jato, not perf.  ]
+> > 
+> >       36.14%     perf  /home/penberg/bin/perf                   [.] dso__synthesize_plt_symbols
+> >       35.20%     perf  /home/penberg/bin/perf                   [.] dso__new
+> >        3.57%     perf  /home/penberg/bin/jato                   [.] 0x0000000000c910
 > 
-> I can see 1/ being indirectly achievable by specifying a CPU.
-
-Correct.
-
-( Note, it's not just indirectly achievable as a side-effect - for 
-  example the Intel uncore PMU has a target CPU irq-mask, so it 
-  makes sense to allow the specification of the specific CPU we are
-  measuring on as well. The physical socket maps from the CPU. )
-
-> [...] But the others are uncorrelated to either a CPU or thread. I 
-> have already seen requests for accessing chipsets, and seems GPU 
-> are around the corner now.
+> Perhaps it's this commit:
 > 
-> Why do you think those would be invalid targets given the goal of 
-> this API?
+> 4d1e00a: perf symbol: Fix symbol parsing in certain cases: use the build-id as a symlink
+> 
+> it does not revert cleanly, so you might want to check out these two 
+> commits:
+> 
+>   4d1e00a
+>   4d1e00a~1
+> 
+> and build perf on both, and check with your anomalous perf.data 
+> (without changing it) whether the output makes most sense.
 
-No.
+The commit seems fine. Like I said, the perf.data file is busted even
+with 2.6.31-rc4 userspace so I think it's a kernel bug.
 
-Chipset and GPU measurements are very much possible via perfcounters 
-as well - but that does not require the touching of the pid,cpu 
-target parameters to sys_perf_counter_open().
+			Pekka
 
-I think the confusion in this discussion comes from the fact that 
-there are two different types of 'targets':
+4d1e00a~1:
 
-The first type of target, the <pid,cpu> target is a _scheduling_, 
-task management abstraction. Adding a chipset ID or GPU ID to that 
-makes little sense! Tasks dont get scheduled on a 'chipset' - to 
-each task the chipset looks like an external entity.
+penberg@penberg-laptop:~/testing/jato$ perf report
+# Samples: 57821
+#
+# Overhead  Command                            Shared Object  Symbol
+# ........  .......  .......................................  ......
+#
+    73.55%     perf  /home/penberg/bin/perf                   [.] dso__synthesize_plt_symbols
+     6.54%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] 0x0000000014b8c0
+     3.31%     perf  /home/penberg/bin/jato                   [.] 0x0000000000c910
+     1.37%     perf  [kernel]                                 [k] get_page_from_freelist
+     1.05%     perf  /home/penberg/bin/perf                   [.] dso__load_sym
+     0.91%     perf  /usr/lib/libzip.so.1.0.0                 [.] _zip_get_name
+     0.59%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] __GI_strcmp
+     0.57%     perf  /usr/lib/libfontconfig.so.1.3.0          [.] 0x00000000019700
+     0.53%     perf  /usr/lib/libz.so.1.2.3.3                 [.] 0x0000000000f0c5
+     0.49%     perf  /home/penberg/bin/perf                   [.] dso__load_kernel
 
-The second type of target is the 'event source itself'. (and it's 
-not really a target but a source.)
+4d1e00a:
 
-A chipset or GPU should be abstracted via an _event source_ 
-abstraction. We've got wide possibilities to do that, and we already 
-abstract a fair amount of non-CPU-sourced events that way: say we 
-have irq tracepoint counters:
+penberg@penberg-laptop:~/testing/jato$ perf report
+# Samples: 57821
+#
+# Overhead  Command                            Shared Object  Symbol
+# ........  .......  .......................................  ......
+#
+    73.55%     perf  /home/penberg/bin/perf                   [.] dso__synthesize_plt_symbols
+     6.53%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] 0x0000000014b8c0
+     3.31%     perf  /home/penberg/bin/jato                   [.] 0x0000000000c910
+     1.37%     perf  [kernel]                                 [k] get_page_from_freelist
+     1.05%     perf  /home/penberg/bin/perf                   [.] dso__load_sym
+     0.91%     perf  /usr/lib/libzip.so.1.0.0                 [.] _zip_get_name
+     0.59%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] __GI_strcmp
+     0.57%     perf  /usr/lib/libfontconfig.so.1.3.0          [.] 0x00000000019700
+     0.53%     perf  /usr/lib/libz.so.1.2.3.3                 [.] 0x0000000000f0c5
+     0.49%     perf  /home/penberg/bin/perf                   [.] dso__load_kernel
+     0.43%     perf  /home/penberg/bin/perf                   [.] cmd_stat
+     0.35%     perf  /home/penberg/bin/perf                   [.] store_aux
+     0.34%     perf  [kernel]                                 [k] kunmap_atomic
+     0.33%     perf  /home/penberg/bin/perf                   [.] quote_c_style_counted
+     0.31%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] _int_malloc
+     0.29%     perf  /home/penberg/bin/perf                   [.] 0x00000000026951
+     0.29%     perf  /home/penberg/bin/perf                   [.] strbuf_addf
+     0.28%     perf  /usr/lib/libzip.so.1.0.0                 [.] _zip_name_locate
 
-  aldebaran:~> perf list 2>&1 | grep irq
-    irq:irq_handler_entry                      [Tracepoint event]
 
-irqs come from the chipset, so in an (unintended) way perfcounters 
-already instruments the chipset today.
-
-So yes, both chipset and GPU sampling is very much possible, and it 
-does not require the tweaking of the syscall target parameters - 
-each CPU has a typically symmetric view on it.
-
-Note that there's overlap: a CPU can be an event source and a 
-scheduling target as well. I think some of the confusion in 
-terminology comes from that.
-
-To support chipset or GPU sampling, the perf_type_id and/or the 
-struct perf_counter_attr space can be extended.
-
-We'd have to see the patches to decide the best way forward - it's 
-difficult to argue this hypothetically, as there are so many 
-solutions (with different levels of complexity and utility) to 
-expose chipsets and GPUs to perfcounters. In any case, the counter 
-scheduling target parameters dont need to be touched for them.
-
-	Ingo
