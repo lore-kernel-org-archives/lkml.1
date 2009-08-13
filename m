@@ -1,60 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083AbZHML50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753760AbZHMMCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754083AbZHML50 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 07:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZHML5Z
+	id S1753760AbZHMMCV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 08:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbZHMMCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 07:57:25 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:37063 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751588AbZHML5Y (ORCPT
+	Thu, 13 Aug 2009 08:02:20 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:43588 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751132AbZHMMCT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 07:57:24 -0400
-Date: Thu, 13 Aug 2009 12:54:44 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Joe Perches <joe@perches.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Pavel Machek <pavel@ucw.cz>, Ben Dooks <ben-linux@fluff.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
-	sections
-Message-ID: <20090813115444.GB10450@n2100.arm.linux.org.uk>
-References: <1249948147.8895.96.camel@Joe-Laptop.home> <20090812115520.GI24339@elf.ucw.cz> <20090812194838.GB12117@n2100.arm.linux.org.uk> <84144f020908121317g64551a2cu1b960f44ed5d0d9@mail.gmail.com> <20090812212502.GA24667@n2100.arm.linux.org.uk> <20090813103511.2928a085@lxorguk.ukuu.org.uk> <20090813094736.GZ6132@n2100.arm.linux.org.uk> <1250158593.28285.23.camel@Joe-Laptop.home> <20090813103513.GC6132@n2100.arm.linux.org.uk> <1250161714.28285.61.camel@Joe-Laptop.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250161714.28285.61.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 13 Aug 2009 08:02:19 -0400
+Subject: Re: [PROBLEM] perf report is broken in latest linus git
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       paulus@samba.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1250163212.5241.9.camel@twins>
+References: <1250155708.6052.2.camel@penberg-laptop>
+	 <20090813093648.GA22762@elte.hu>  <1250156837.8141.4.camel@penberg-laptop>
+	 <1250163212.5241.9.camel@twins>
+Date: Thu, 13 Aug 2009 15:02:18 +0300
+Message-Id: <1250164938.4941.2.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 04:08:34AM -0700, Joe Perches wrote:
-> On Thu, 2009-08-13 at 11:35 +0100, Russell King - ARM Linux wrote:
-> > And... have your emails been held for moderation recently?
+On Thu, 2009-08-13 at 13:33 +0200, Peter Zijlstra wrote:
+> > > Perhaps it's this commit:
+> > > 
+> > > 4d1e00a: perf symbol: Fix symbol parsing in certain cases: use the build-id as a symlink
+> > > 
+> > > it does not revert cleanly, so you might want to check out these two 
+> > > commits:
+> > > 
+> > >   4d1e00a
+> > >   4d1e00a~1
+> > > 
+> > > and build perf on both, and check with your anomalous perf.data 
+> > > (without changing it) whether the output makes most sense.
+> > 
+> > The commit seems fine. Like I said, the perf.data file is busted even
+> > with 2.6.31-rc4 userspace so I think it's a kernel bug.
 > 
-> Umm... (while chuckling)
+> Hrmm, does a -tip kernel work as expected? I'll go audit the kernel
+> changes between -rc4 and -rc5.
 
-Yes.  The reason being is you removed the 'Re:' from the subject
-line but still pressed "reply".
+tip/master seems to be broken too:
 
-We have an etiquette item which discourages that - we have people
-who like to use the "reply" button to start a completely new and
-unrelated topic of conversation.  So the mailing list catches this
-behaviour and holds it for moderation, so we don't end up with
-irrelevent sub-threads tagged on to existing threads in the archives
-(or even in our threaded mail readers.)
+penberg@penberg-laptop:~/testing/jato$ perf report
+# Samples: 65806
+#
+# Overhead  Command                            Shared Object  Symbol
+# ........  .......  .......................................  ......
+#
+    64.31%     perf  /home/penberg/bin/perf                   [.] strlist__load
+     3.10%     perf  /home/penberg/bin/jato                   [.] 0x0000000000c6e8
+     1.61%     perf  [kernel]                                 [k] get_page_from_freelist
+     1.13%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] _int_malloc
+     1.11%     perf  /lib/tls/i686/cmov/libpthread-2.8.90.so  [.] 0x00000000012532
+     1.08%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] _fitoa
+     0.96%     perf                                 a7d23660  [.] 0x000000a7d23660
+     0.86%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] ____strtold_l_internal
+     0.85%     perf  /usr/lib/libz.so.1.2.3.3                 [.] 0x0000000000eef2
+     0.83%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] __GI_strcmp
+     0.74%     perf  /home/penberg/bin/jato                   [.] zalloc
+     0.69%     perf  [kernel]                                 [k] scsi_dispatch_cmd
+     0.66%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] getsubopt
+     0.56%     perf  /lib/tls/i686/cmov/libc-2.8.90.so        [.] __realpath
+     0.50%     perf  /usr/lib/libzip.so.1.0.0                 [.] _zip_get_name
 
-So, the list _correctly_ holds such attempts so that someone can
-see whether this really is the case, and ask the person to re-post
-without burying their message in the middle of an existing thread,
-or if it is relevant, approve it.  You can't deduce this using rules
-alone.  It *requires* human intervention.
+penberg@penberg-laptop:~/src/linux/tools/perf$ git log|head -10
+commit d1fa7782b090a3ab0f55c9003d7315b5f0f5e9d6
+Merge: e93673b... daac07b...
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Thu Aug 13 10:37:33 2009 +0200
 
-So chuckle all you want.  This is one of the things we _do_ get right
-to improve the overall quality for existing subscribers, and make the
-archives more searchable.
+    Merge branch 'perfcounters/urgent'
+
+commit daac07b2e6b77f1bd44104aa2f0593e5505f27d4
+Author: Frederic Weisbecker <fweisbec@gmail.com>
+Date:   Thu Aug 13 10:27:19 2009 +0200
+
+			Pekka
+
+
