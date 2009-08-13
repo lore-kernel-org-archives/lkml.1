@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbZHMTld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbZHMTlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755534AbZHMTld (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524AbZHMTlc
+	id S1755546AbZHMTlk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbZHMTlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:41:32 -0400
-Received: from www.tglx.de ([62.245.132.106]:56312 "EHLO www.tglx.de"
+	Thu, 13 Aug 2009 15:41:39 -0400
+Received: from www.tglx.de ([62.245.132.106]:56316 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755522AbZHMTla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:41:30 -0400
-Message-Id: <20090813193116.463023904@linutronix.de>
+	id S1755524AbZHMTlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:41:37 -0400
+Message-Id: <20090813193116.509070851@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Thu, 13 Aug 2009 19:40:42 -0000
+Date: Thu, 13 Aug 2009 19:40:47 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -25,176 +25,302 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        t.fujak@samsung.com, kyungmin.park@samsung.com,
        David Brownell <david-b@pacbell.net>, Daniel Ribeiro <drwyrm@gmail.com>,
        arve@android.com, Barry Song <21cnbao@gmail.com>
-Subject: [RFC patch 1/3] genirq: Add oneshot support
+Subject: [RFC patch 2/3] genirq: Add buslock support for irq chips on slow
+	busses
 References: <20090813191535.945521006@linutronix.de>
-Content-Disposition: inline; filename=genirq-add-oneshot-support.patch
+Content-Disposition: inline; filename=genirq-add-buslock-support.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For threaded interrupt handlers we expect the hard interrupt handler
-part to mask the interrupt on the originating device. The interrupt
-line itself is reenabled after the hard interrupt handler has
-executed.
+Some interrupt chips are connected to a "slow" bus (i2c, spi ...). The
+bus access needs to sleep and therefor cannot be called in atomic
+contexts.
 
-This requires access to the originating device from hard interrupt
-context which is not always possible. There are devices which can only
-be accessed via a bus (i2c, spi, ...). The bus access requires thread
-context. For such devices we need to keep the interrupt line masked
-until the threaded handler has executed.
+Some of the generic interrupt management functions like disable_irq(),
+enable_irq() ... call interrupt chip functions with the irq_desc->lock
+held and interrupts disabled. This does not work for such devices.
 
-Add a new flag IRQF_ONESHOT which allows drivers to request that the
-interrupt is not unmasked after the hard interrupt context handler has
-been executed and the thread has been woken. The interrupt line is
-unmasked after the thread handler function has been executed.
+Provide a separate synchronization mechanism for such interrupt
+chips. The irq_chip structure is extended by two optional functions
+(bus_lock and bus_sync_and_unlock).
 
-Note that for now IRQF_ONESHOT cannot be used with IRQF_SHARED to
-avoid complex accounting mechanisms.
+The idea is to serialize the bus access for those operations in the
+core code so that drivers which are behind that bus operated interrupt
+controller do not have to worry about it and just can use the normal
+interfaces. To achieve this we add two function pointers to the
+irq_chip: bus_lock and bus_sync_unlock.
+
+bus_lock() is called to serialize access to the interrupt controller
+bus.
+
+Now the core code can issue chip->mask/unmask ... commands without
+changing the fast path code at all. The chip implementation merily
+stores that information in a chip private data structure and
+returns. No bus interaction as these functions are called from atomic
+context.
+
+After that bus_sync_unlock() is called outside the atomic context. Now
+the chip implementation issues the bus commands, waits for completion
+and unlocks the interrupt controller bus.
+
+The irq_chip implementation as pseudo code:
+
+struct irq_chip_data {
+       struct mutex   mutex;
+       unsigned int   irq_offset;
+       unsigned long  mask;
+       unsigned long  mask_status;
+}
+
+static void bus_lock(unsigned int irq)
+{
+        struct irq_chip_data *data = get_irq_desc_chip_data(irq);
+
+        mutex_lock(&data->mutex);
+}
+
+static void mask(unsigned int irq)
+{
+        struct irq_chip_data *data = get_irq_desc_chip_data(irq);
+
+        irq -= data->irq_offset;
+        data->mask |= (1 << irq);
+}
+
+static void unmask(unsigned int irq)
+{
+        struct irq_chip_data *data = get_irq_desc_chip_data(irq);
+
+        irq -= data->irq_offset;
+        data->mask &= ~(1 << irq);
+}
+
+static void bus_sync_unlock(unsigned int irq)
+{
+        struct irq_chip_data *data = get_irq_desc_chip_data(irq);
+
+        if (data->mask != data->mask_status) {
+                do_bus_magic_to_set_mask(data->mask);
+                data->mask_status = data->mask;
+        }
+        mutex_unlock(&data->mutex);
+}
+
+For the device drivers a new set of functions is provided:
+request_threaded_slowbus_irq, free_slowbus_irq, disable_slowbus_irq
+and enable_slowbus_irq. They work the same as the !slowbus variants
+with the only restriction that the calls need to come from non atomic
+context.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 ---
- include/linux/interrupt.h |    4 ++++
- include/linux/irq.h       |    1 +
- kernel/irq/chip.c         |   14 +++++++++++---
- kernel/irq/manage.c       |   29 +++++++++++++++++++++++++++--
- 4 files changed, 43 insertions(+), 5 deletions(-)
+ include/linux/interrupt.h |    9 +++
+ include/linux/irq.h       |    6 ++
+ kernel/irq/manage.c       |  117 +++++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 131 insertions(+), 1 deletion(-)
 
 Index: linux-2.6-tip/include/linux/interrupt.h
 ===================================================================
 --- linux-2.6-tip.orig/include/linux/interrupt.h
 +++ linux-2.6-tip/include/linux/interrupt.h
-@@ -49,6 +49,9 @@
-  * IRQF_IRQPOLL - Interrupt is used for polling (only the interrupt that is
-  *                registered first in an shared interrupt is considered for
-  *                performance reasons)
-+ * IRQF_ONESHOT - Interrupt is not reenabled after the hardirq handler finished.
-+ *                Used by threaded interrupts which need to keep the
-+ *                irq line disabled until the threaded handler has been run.
-  */
- #define IRQF_DISABLED		0x00000020
- #define IRQF_SAMPLE_RANDOM	0x00000040
-@@ -58,6 +61,7 @@
- #define IRQF_PERCPU		0x00000400
- #define IRQF_NOBALANCING	0x00000800
- #define IRQF_IRQPOLL		0x00001000
-+#define IRQF_ONESHOT		0x00002000
+@@ -113,6 +113,11 @@ request_threaded_irq(unsigned int irq, i
+ 		     irq_handler_t thread_fn,
+ 		     unsigned long flags, const char *name, void *dev);
  
- /*
-  * Bits used by threaded handlers:
++extern int __must_check
++request_threaded_slowbus_irq(unsigned int irq, irq_handler_t handler,
++			     irq_handler_t thread_fn,
++			     unsigned long flags, const char *name, void *dev);
++
+ static inline int __must_check
+ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
+ 	    const char *name, void *dev)
+@@ -145,6 +150,7 @@ static inline void exit_irq_thread(void)
+ #endif
+ 
+ extern void free_irq(unsigned int, void *);
++extern void free_slowbus_irq(unsigned int irq, void *dev_id);
+ 
+ struct device;
+ 
+@@ -186,6 +192,9 @@ extern void disable_irq_nosync(unsigned 
+ extern void disable_irq(unsigned int irq);
+ extern void enable_irq(unsigned int irq);
+ 
++extern void disable_slowbus_irq(unsigned int irq);
++extern void enable_slowbus_irq(unsigned int irq);
++
+ /* The following three functions are for the core kernel use only. */
+ #ifdef CONFIG_GENERIC_HARDIRQS
+ extern void suspend_device_irqs(void);
 Index: linux-2.6-tip/include/linux/irq.h
 ===================================================================
 --- linux-2.6-tip.orig/include/linux/irq.h
 +++ linux-2.6-tip/include/linux/irq.h
-@@ -69,6 +69,7 @@ typedef	void (*irq_flow_handler_t)(unsig
- #define IRQ_MOVE_PCNTXT		0x01000000	/* IRQ migration from process context */
- #define IRQ_AFFINITY_SET	0x02000000	/* IRQ affinity was set from userspace*/
- #define IRQ_SUSPENDED		0x04000000	/* IRQ has gone through suspend sequence */
-+#define IRQ_ONESHOT		0x08000000	/* IRQ is not unmasked after hardirq */
+@@ -101,6 +101,9 @@ struct msi_desc;
+  * @set_type:		set the flow type (IRQ_TYPE_LEVEL/etc.) of an IRQ
+  * @set_wake:		enable/disable power-management wake-on of an IRQ
+  *
++ * @bus_lock:		function to lock access to slow bus (i2c) chips
++ * @bus_sync_unlock:	function to sync and unlock slow bus (i2c) chips
++ *
+  * @release:		release function solely used by UML
+  * @typename:		obsoleted by name, kept as migration helper
+  */
+@@ -124,6 +127,9 @@ struct irq_chip {
+ 	int		(*set_type)(unsigned int irq, unsigned int flow_type);
+ 	int		(*set_wake)(unsigned int irq, unsigned int on);
  
- #ifdef CONFIG_IRQ_PER_CPU
- # define CHECK_IRQ_PER_CPU(var) ((var) & IRQ_PER_CPU)
-Index: linux-2.6-tip/kernel/irq/chip.c
-===================================================================
---- linux-2.6-tip.orig/kernel/irq/chip.c
-+++ linux-2.6-tip/kernel/irq/chip.c
-@@ -382,7 +382,10 @@ handle_level_irq(unsigned int irq, struc
- 
- 	spin_lock(&desc->lock);
- 	desc->status &= ~IRQ_INPROGRESS;
--	if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
++	void		(*bus_lock)(unsigned int irq);
++	void		(*bus_sync_unlock)(unsigned int irq);
 +
-+	if (unlikely(desc->status & IRQ_ONESHOT))
-+		desc->status |= IRQ_MASKED;
-+	else if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
- 		desc->chip->unmask(irq);
- out_unlock:
- 	spin_unlock(&desc->lock);
-@@ -478,8 +481,13 @@ handle_edge_irq(unsigned int irq, struct
- 	kstat_incr_irqs_this_cpu(irq, desc);
- 
- 	/* Start handling the irq */
--	if (desc->chip->ack)
--		desc->chip->ack(irq);
-+	if (unlikely(desc->status & IRQ_ONESHOT)) {
-+		desc->status |= IRQ_MASKED;
-+		mask_ack_irq(desc, irq);
-+	} else {
-+		if (desc->chip->ack)
-+			desc->chip->ack(irq);
-+	}
- 
- 	/* Mark the IRQ currently in progress.*/
- 	desc->status |= IRQ_INPROGRESS;
+ 	/* Currently used only by UML, might disappear one day.*/
+ #ifdef CONFIG_IRQ_RELEASE_METHOD
+ 	void		(*release)(unsigned int irq, void *dev_id);
 Index: linux-2.6-tip/kernel/irq/manage.c
 ===================================================================
 --- linux-2.6-tip.orig/kernel/irq/manage.c
 +++ linux-2.6-tip/kernel/irq/manage.c
-@@ -444,6 +444,21 @@ static int irq_wait_for_interrupt(struct
+@@ -253,6 +253,33 @@ void disable_irq(unsigned int irq)
  }
+ EXPORT_SYMBOL(disable_irq);
  
- /*
-+ * Oneshot interrupts keep the irq line masked until the threaded
-+ * handler finished. unmask if the interrupt has not been disabled and
-+ * is marked MASKED.
++/**
++ *	disable_slowbus_irq - disable an slowbus irq and wait for completion
++ *	@irq: Interrupt to disable
++ *
++ *	Disable the selected interrupt line.  Enables and Disables are
++ *	nested.
++ *	This function waits for any pending IRQ handlers for this interrupt
++ *	to complete before returning. If you use this function while
++ *	holding a resource the IRQ handler may need you will deadlock.
++ *
++ *	This function must not be called from IRQ context.
 + */
-+static void irq_finalize_oneshot(unsigned int irq, struct irq_desc *desc)
++void disable_slowbus_irq(unsigned int irq)
 +{
-+	spin_lock_irq(&desc->lock);
-+	if (!(desc->status & IRQ_DISABLED) && (desc->status & IRQ_MASKED)) {
-+		desc->status &= ~IRQ_MASKED;
-+		desc->chip->unmask(irq);
-+	}
-+	spin_unlock_irq(&desc->lock);
++	struct irq_desc *desc = irq_to_desc(irq);
++
++	if (!desc || !desc->chip || !desc->chip->bus_lock)
++		return;
++
++	desc->chip->bus_lock(irq);
++	disable_irq_nosync(irq);
++	if (desc->action)
++		synchronize_irq(irq);
++	desc->chip->bus_sync_unlock(irq);
 +}
++EXPORT_SYMBOL(disable_slowbus_irq);
 +
-+/*
-  * Interrupt handler thread
-  */
- static int irq_thread(void *data)
-@@ -451,7 +466,7 @@ static int irq_thread(void *data)
- 	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO/2, };
- 	struct irqaction *action = data;
- 	struct irq_desc *desc = irq_to_desc(action->irq);
--	int wake;
-+	int wake, oneshot = desc->status & IRQ_ONESHOT;
+ void __enable_irq(struct irq_desc *desc, unsigned int irq, bool resume)
+ {
+ 	if (resume)
+@@ -302,6 +329,32 @@ void enable_irq(unsigned int irq)
+ }
+ EXPORT_SYMBOL(enable_irq);
  
- 	sched_setscheduler(current, SCHED_FIFO, &param);
- 	current->irqaction = action;
-@@ -475,6 +490,9 @@ static int irq_thread(void *data)
- 			spin_unlock_irq(&desc->lock);
- 
- 			action->thread_fn(action->irq, action->dev_id);
++/**
++ *	enable_slowbus_irq - enable handling of a slowbus irq
++ *	@irq: Interrupt to enable
++ *
++ *	Undoes the effect of one call to disable_irq(). If this
++ *	matches the last disable, processing of interrupts on this
++ *	IRQ line is re-enabled.
++ *
++ *	This function must not be called from IRQ context
++ */
++void enable_slowbus_irq(unsigned int irq)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++	unsigned long flags;
 +
-+			if (oneshot)
-+				irq_finalize_oneshot(action->irq, desc);
- 		}
++	if (!desc || !desc->chip || !desc->chip->bus_lock)
++		return;
++
++	desc->chip->bus_lock(irq);
++	spin_lock_irqsave(&desc->lock, flags);
++	__enable_irq(desc, irq, false);
++	spin_unlock_irqrestore(&desc->lock, flags);
++	desc->chip->bus_sync_unlock(irq);
++}
++EXPORT_SYMBOL(enable_slowbus_irq);
++
+ static int set_irq_wake_real(unsigned int irq, unsigned int on)
+ {
+ 	struct irq_desc *desc = irq_to_desc(irq);
+@@ -859,6 +912,33 @@ void free_irq(unsigned int irq, void *de
+ EXPORT_SYMBOL(free_irq);
  
- 		wake = atomic_dec_and_test(&desc->threads_active);
-@@ -547,6 +565,10 @@ __setup_irq(unsigned int irq, struct irq
- 		rand_initialize_irq(irq);
- 	}
- 
-+	/* Oneshot interrupts are not allowed with shared */
-+	if ((new->flags & IRQF_ONESHOT) && (new->flags & IRQF_SHARED))
+ /**
++ *	free_slowbus_irq - free an interrupt allocated with request_slowbus_irq
++ *	@irq: Interrupt line to free
++ *	@dev_id: Device identity to free
++ *
++ *	Remove an interrupt handler. The handler is removed and if the
++ *	interrupt line is no longer in use by any driver it is disabled.
++ *	On a shared IRQ the caller must ensure the interrupt is disabled
++ *	on the card it drives before calling this function. The function
++ *	does not return until any executing interrupts for this IRQ
++ *	have completed.
++ *
++ *	This function must not be called from interrupt context.
++ */
++void free_slowbus_irq(unsigned int irq, void *dev_id)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++
++	if (!desc || !desc->chip || !desc->chip->bus_lock)
++		return;
++
++	desc->chip->bus_lock(irq);
++	kfree(__free_irq(irq, dev_id));
++	desc->chip->bus_sync_unlock(irq);
++}
++EXPORT_SYMBOL(free_slowbus_irq);
++
++/**
+  *	request_threaded_irq - allocate an interrupt line
+  *	@irq: Interrupt line to allocate
+  *	@handler: Function to be called when the IRQ occurs.
+@@ -981,3 +1061,37 @@ int request_threaded_irq(unsigned int ir
+ 	return retval;
+ }
+ EXPORT_SYMBOL(request_threaded_irq);
++
++/**
++ *	request_slowbus_threaded_irq - allocate a slowbus interrupt line
++ *	@irq: Interrupt line to allocate
++ *	@handler: Function to be called when the IRQ occurs.
++ *		  Primary handler for threaded interrupts
++ *	@thread_fn: Function called from the irq handler thread
++ *		    If NULL, no irq thread is created
++ *	@irqflags: Interrupt type flags
++ *	@devname: An ascii name for the claiming device
++ *	@dev_id: A cookie passed back to the handler function
++ *
++ *	See request_threaded_irq for further information
++ */
++int request_slowbus_threaded_irq(unsigned int irq, irq_handler_t handler,
++				 irq_handler_t thread_fn,
++				 unsigned long irqflags,
++				 const char *devname, void *dev_id)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++	int res;
++
++	if (!desc || !desc->chip || !desc->chip->bus_lock)
 +		return -EINVAL;
 +
- 	/*
- 	 * Threaded handler ?
- 	 */
-@@ -620,9 +642,12 @@ __setup_irq(unsigned int irq, struct irq
- 			desc->status |= IRQ_PER_CPU;
- #endif
- 
--		desc->status &= ~(IRQ_AUTODETECT | IRQ_WAITING |
-+		desc->status &= ~(IRQ_AUTODETECT | IRQ_WAITING | IRQ_ONESHOT |
- 				  IRQ_INPROGRESS | IRQ_SPURIOUS_DISABLED);
- 
-+		if (new->flags & IRQF_ONESHOT)
-+			desc->status |= IRQ_ONESHOT;
++	desc->chip->bus_lock(irq);
++	res = request_threaded_irq(irq, handler, thread_fn, irqflags, devname,
++				   dev_id);
 +
- 		if (!(desc->status & IRQ_NOAUTOEN)) {
- 			desc->depth = 0;
- 			desc->status &= ~IRQ_DISABLED;
++	desc->chip->bus_sync_unlock(irq);
++
++	return res;
++}
++EXPORT_SYMBOL(request_slowbus_threaded_irq);
 
 
