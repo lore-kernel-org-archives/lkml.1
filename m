@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbZHMTw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbZHMTvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755840AbZHMTw3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbZHMTw2
+	id S1755806AbZHMTvv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755760AbZHMTvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:52:28 -0400
-Received: from kroah.org ([198.145.64.141]:36716 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:51:49 -0400
+Received: from kroah.org ([198.145.64.141]:36755 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755595AbZHMTrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:47:47 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:36 2009
-Message-Id: <20090813194336.600606763@mini.kroah.org>
+	id S932109AbZHMTrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:47:55 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:38 2009
+Message-Id: <20090813194338.094383349@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:29 -0700
+Date: Thu, 13 Aug 2009 12:40:37 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 08/28] thinkpad-acpi: disable broken bay and dock subdrivers
+       Eric Sandeen <sandeen@redhat.com>, <linux-ext4@vger.kernel.org>,
+       Mark Lord <lkml@rtr.ca>, Arnd Bergmann <arnd@arndb.de>,
+       Josef Bacik <josef@redhat.com>, Jan Kara <jack@suse.cz>
+Subject: [patch 16/28] compat_ioctl: hook up compat handler for FIEMAP ioctl
 References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=thinkpad-acpi-disable-broken-bay-and-dock-subdrivers.patch
+Content-Disposition: inline; filename=compat_ioctl-hook-up-compat-handler-for-fiemap-ioctl.patch
 In-Reply-To: <20090813194554.GA13947@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,57 +32,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+From: Eric Sandeen <sandeen@redhat.com>
 
-commit 550e7fd8afb7664ae7cedb398c407694e2bf7d3c upstream.
+commit 69130c7cf96ea853dc5be599dd6a4b98907d39cc upstream.
 
-Currently, the ThinkPad-ACPI bay and dock drivers are completely
-broken, and cause a NULL pointer derreference in kernel mode (and,
-therefore, an OOPS) when they try to issue events (i.e. on dock,
-undock, bay ejection, etc).
+The FIEMAP_IOC_FIEMAP mapping ioctl was missing a 32-bit compat handler,
+which means that 32-bit suerspace on 64-bit kernels cannot use this ioctl
+command.
 
-OTOH, the standard ACPI dock driver can handle the hotplug bays and
-docks of the ThinkPads just fine (including batteries) as of 2.6.27.
-In fact, it does a much better job of it than thinkpad-acpi ever did.
+The structure is nicely aligned, padded, and sized, so it is just this
+simple.
 
-It is just not worth the hassle to find a way to fix this crap without
-breaking the (deprecated) thinkpad-acpi dock/bay ABI.  This is old,
-deprecated code that sees little testing or use.
+Tested w/ 32-bit ioctl tester (from Josef) on a 64-bit kernel on ext4.
 
-As a quick fix suitable for -stable backports, mark the thinkpad-acpi
-bay and dock subdrivers as BROKEN in Kconfig.  The dead code will be
-removed by a later patch.
-
-This fixes bugzilla #13669, and should be applied to 2.6.27 and later.
-
-Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Reported-by: Joerg Platte <jplatte@naasa.net>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Cc: <linux-ext4@vger.kernel.org>
+Cc: Mark Lord <lkml@rtr.ca>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Josef Bacik <josef@redhat.com>
+Cc: Jan Kara <jack@suse.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/misc/Kconfig |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ fs/compat_ioctl.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -321,6 +321,7 @@ config THINKPAD_ACPI_DOCK
- 	bool "Legacy Docking Station Support"
- 	depends on THINKPAD_ACPI
- 	depends on ACPI_DOCK=n
-+	depends on BROKEN
- 	default n
- 	---help---
- 	  Allows the thinkpad_acpi driver to handle docking station events.
-@@ -334,7 +335,8 @@ config THINKPAD_ACPI_DOCK
- config THINKPAD_ACPI_BAY
- 	bool "Legacy Removable Bay Support"
- 	depends on THINKPAD_ACPI
--	default y
-+	depends on BROKEN
-+	default n
- 	---help---
- 	  Allows the thinkpad_acpi driver to handle removable bays.  It will
- 	  electrically disable the device in the bay, and also generate
+--- a/fs/compat_ioctl.c
++++ b/fs/compat_ioctl.c
+@@ -1910,6 +1910,7 @@ COMPATIBLE_IOCTL(FIONCLEX)
+ COMPATIBLE_IOCTL(FIOASYNC)
+ COMPATIBLE_IOCTL(FIONBIO)
+ COMPATIBLE_IOCTL(FIONREAD)  /* This is also TIOCINQ */
++COMPATIBLE_IOCTL(FS_IOC_FIEMAP)
+ /* 0x00 */
+ COMPATIBLE_IOCTL(FIBMAP)
+ COMPATIBLE_IOCTL(FIGETBSZ)
 
 
