@@ -1,103 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbZHMInY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753655AbZHMInm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753642AbZHMInY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 04:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbZHMInX
+	id S1753655AbZHMInm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 04:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZHMInl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 04:43:23 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:51251 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753505AbZHMInX (ORCPT
+	Thu, 13 Aug 2009 04:43:41 -0400
+Received: from mail-pz0-f196.google.com ([209.85.222.196]:49765 "EHLO
+	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753505AbZHMInl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 04:43:23 -0400
-Date: Thu, 13 Aug 2009 14:13:16 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+	Thu, 13 Aug 2009 04:43:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SmajYVXhZpXoTY2AqKazxVNiBvXUOuji3swlVU9leWF7y4HXi32WDljC9OEX0eIkkb
+         x5bgTP+H3/AjUtVrzCx0Fp3EVC8oREpROggmU0S9bYF3owMlCYdiqircbxrHUB5dnMn3
+         eKTZq/Cg9LLM2b5J/+fJjAWICKJ2RzxLFokxM=
+Date: Thu, 13 Aug 2009 16:45:57 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Vincent Li <macli@brc.ubc.ca>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "menage@google.com" <menage@google.com>, xemul@openvz.org,
-       prarit@redhat.com, andi.kleen@intel.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [UPDATED][PATCH][mmotm] Help Root Memory Cgroup Resource
-	Counters Scale Better (v5)
-Message-ID: <20090813084316.GI5087@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090813065504.GG5087@balbir.in.ibm.com> <20090813162640.fe2349e9.nishimura@mxp.nes.nec.co.jp> <20090813080206.GH5087@balbir.in.ibm.com> <20090813083524.GC21389@elte.hu>
+       David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH] fs/proc/task_mmu.c v1: fix clear_refs_write() input
+	sanity check
+Message-ID: <20090813084557.GB5663@cr0.nay.redhat.com>
+References: <1250119794-8016-1-git-send-email-macli@brc.ubc.ca> <20090813020952.GA5031@cr0.nay.redhat.com> <alpine.DEB.1.00.0908122143060.22452@mail.selltech.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090813083524.GC21389@elte.hu>
+In-Reply-To: <alpine.DEB.1.00.0908122143060.22452@mail.selltech.ca>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2009-08-13 10:35:24]:
+On Wed, Aug 12, 2009 at 10:20:28PM -0700, Vincent Li wrote:
+>On Thu, 13 Aug 2009, Amerigo Wang wrote:
+>
+>> On Wed, Aug 12, 2009 at 04:29:54PM -0700, Vincent Li wrote:
+>> >v1 fix the compiling errors and keep the type variable name.
+>> >
+>> >Andrew Morton pointed out similar string hacking and obfuscated check for zero-length input
+>> >at the end of the function, David Rientjes suggested to use strict_strtol to replace
+>> >simple_strtol, this patch cover above suggestions, add removing of leading and trailing
+>> >whitespace from user input. It does not change function behavious.
+>> >
+>> 
+>> 
+>> Sorry, what real benefits can we get from this patch?
+>
+>It removes the redundant and weird zero-length check at the end of the 
+>function since the the function already check the returning value of 
+>simple_strtol, if it is zero-length input, the function should already 
+>return error -EINVAL. Also using strict_strtol would only accept ascii 
+>numbers, not something like:
+>>echo 1foo > /proc/pid/clear_refs
+>
 
-> 
-> * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > Without Patch
-> > 
-> >  Performance counter stats for '/home/balbir/parallel_pagefault':
-> > 
-> >   5826093739340  cycles                   #    809.989 M/sec
-> >    408883496292  instructions             #      0.070 IPC
-> >      7057079452  cache-references         #      0.981 M/sec
-> >      3036086243  cache-misses             #      0.422 M/sec
-> 
-> > With this patch applied
-> > 
-> >  Performance counter stats for '/home/balbir/parallel_pagefault':
-> > 
-> >   5957054385619  cycles                   #    828.333 M/sec
-> >   1058117350365  instructions             #      0.178 IPC
-> >      9161776218  cache-references         #      1.274 M/sec
-> >      1920494280  cache-misses             #      0.267 M/sec
-> 
-> Nice how the instruction count and the IPC value incraesed, and the 
-> cache-miss count decreased.
-> 
-> Btw., a 'perf stat' suggestion: you can also make use of built-in 
-> error bars via repeating parallel_pagefault N times:
-> 
->   aldebaran:~> perf stat --repeat 3 /bin/ls
-> 
->  Performance counter stats for '/bin/ls' (3 runs):
-> 
->        1.108886  task-clock-msecs         #      0.875 CPUs    ( +-   4.316% )
->               0  context-switches         #      0.000 M/sec   ( +-   0.000% )
->               0  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
->             254  page-faults              #      0.229 M/sec   ( +-   0.000% )
->         3461896  cycles                   #   3121.958 M/sec   ( +-   3.508% )
->         3044445  instructions             #      0.879 IPC     ( +-   0.134% )
->           21213  cache-references         #     19.130 M/sec   ( +-   1.612% )
->            2610  cache-misses             #      2.354 M/sec   ( +-  39.640% )
-> 
->     0.001267355  seconds time elapsed   ( +-   4.762% )
-> 
-> that way even small changes in metrics can be identified as positive 
-> effects of a patch, if the improvement is beyond the error 
-> percentage that perf reports.
-> 
-> For example in the /bin/ls numbers i cited above, the 'instructions' 
-> value can be trusted up to 99.8% (with a ~0.13% noise), while say 
-> the cache-misses value can not really be trusted, as it has 40% of 
-> noise. (Increasing the repeat count will drive down the noise level 
-> - at the cost of longer measurement time.)
-> 
-> For your patch the improvement is so drastic that this isnt needed - 
-> but the error estimations can be quite useful for more borderline 
-> improvements. (and they are also useful in finding and proving small 
-> performance regressions)
+IIRC, many /proc files can accept input like this...
 
-Thanks for the tip, let me try and use the repeats feature. BTW, nice
-work on the perf counters, I was pleasantly surprised to see a
-wonderful tool in the kernel with a good set of options and detailed
-analysis capabilities.
+I sent a patch some time ago to "fix" this, but Andrew pointed out
+that things like "1foo" can be hackish. :-/
 
--- 
-	Balbir
+
+>
+>> 
+>> If this is really necessary, why not other files similar to 'clear_refs'?
+>> 
+>
+>I did the same to other functions, but Andrew pointed out making changes 
+>without fully understanding the patch impact would be risky and break 
+>existing applications, So I need to fully understand what those functions 
+>do before I make any changes.
+> 
+
+
+I can't find any strong reason why this one is differernt from others
+in accepting input like "1foo"...
+
