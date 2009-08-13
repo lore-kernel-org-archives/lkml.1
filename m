@@ -1,96 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbZHMOVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbZHMOZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753459AbZHMOVY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 10:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbZHMOVX
+	id S1753503AbZHMOZu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 10:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbZHMOZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 10:21:23 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:64282 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbZHMOVX convert rfc822-to-8bit (ORCPT
+	Thu, 13 Aug 2009 10:25:49 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:53321 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752852AbZHMOZs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 10:21:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=pWJoAtult5t2N2macEKimcuWXOJsfPvJUc7PzbXw3Q29X5WZ/60oXUOXRCv224hU1i
-         AlI6vGqoaNBL7u37uaNQNEX50SbQCaViYlO3tzzviZ56Bed++8EZFCEovxwr/SABn2mK
-         GfgWCR+Uz2tzRbISPv5E5XsoOutGNbMnz3gMs=
+	Thu, 13 Aug 2009 10:25:48 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [linux-pm] [RFC] usb: Add support for runtime power management of the hcd
+Date: Thu, 13 Aug 2009 16:26:33 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.31-rc4-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-usb@vger.kernel.org, linux-pci@vger.kernel.org,
+       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
+References: <200908081625.57333.rjw@sisk.pl> <200908131416.42189.oliver@neukum.org> <20090813123034.GA25770@srcf.ucam.org>
+In-Reply-To: <20090813123034.GA25770@srcf.ucam.org>
 MIME-Version: 1.0
-In-Reply-To: <1250166687-17673-2-git-send-email-borislav.petkov@amd.com>
-References: <20090813122337.GB7029@aftab>
-	 <1250166687-17673-2-git-send-email-borislav.petkov@amd.com>
-Date: Thu, 13 Aug 2009 10:21:22 -0400
-Message-ID: <73c1f2160908130721y3c14c4e7h1ff967bac867d7e6@mail.gmail.com>
-Subject: Re: [PATCH 2/2] x86: Clear incorrectly forced X86_FEATURE_LAHF_LM 
-	flag
-From: Brian Gerst <brgerst@gmail.com>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: kjwinchester@gmail.com, mikpe@it.uu.se, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908131626.33891.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 8:31 AM, Borislav Petkov<borislav.petkov@amd.com> wrote:
-> From: Kevin Winchester <kjwinchester@gmail.com>
+Am Donnerstag, 13. August 2009 14:30:34 schrieb Matthew Garrett:
+> > Your earlier failures don't look promising regarding BIOSes.
+> > What do you have in mind?
 >
-> Due to an erratum with certain AMD Athlon 64 processors, the BIOS may
-> need to force enable the LAHF_LM capability.  Unfortunately, in at
-> least one case, the BIOS does this even for processors that do not
-> support the functionality.
->
-> Add a specific check that will clear the feature bit for processors
-> known not to support the LAHF/SAHF instructions.
->
-> Borislav: turn off cpuid bit.
->
-> Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
-> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-> ---
->  arch/x86/kernel/cpu/amd.c |   16 ++++++++++++++++
->  1 files changed, 16 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-> index e2485b0..9cd6fc7 100644
-> --- a/arch/x86/kernel/cpu/amd.c
-> +++ b/arch/x86/kernel/cpu/amd.c
-> @@ -400,6 +400,22 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
->                level = cpuid_eax(1);
->                if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
->                        set_cpu_cap(c, X86_FEATURE_REP_GOOD);
-> +
-> +               /*
-> +                * Some BIOSes incorrectly force this feature, but only K8
-> +                * revision D (model = 0x14) and later actually support it.
-> +                */
-> +               if (c->x86_model < 0x14) {
+> They range from pragmatic to ugly. We could blacklist all Dells, though
+> I'm trying to find out if there's a BIOS date that guarantees the system
+> is fixed. Alternatively, it's a single-line bug in the DSDT - we could
+> implement some kind of fixup in the ACPI parsing code. I find the latter
+> interesting but possibly too hideous to live :)
 
-Shouldn't you test that the flag is actually set before trying to clear it?
+Is there any indication only those BIOSes are affected?
 
-> +                       u64 val;
-> +
-> +                       clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
-> +                       if (!rdmsrl_amd_safe(0xc001100d, &val)) {
-> +                               val &= ~(1ULL << 32);
-> +                               wrmsr_amd_safe(0xc001100d, (u32) val,
-> +                                                          (u32)(val >> 32));
-> +                       }
-> +               }
-> +
->        }
->        if (c->x86 == 0x10 || c->x86 == 0x11)
->                set_cpu_cap(c, X86_FEATURE_REP_GOOD);
-> --
-> 1.6.3.3
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+	Regards
+		Oliver
+
