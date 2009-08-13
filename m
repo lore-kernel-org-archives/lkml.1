@@ -1,76 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754443AbZHMMan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbZHMMbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754443AbZHMMan (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 08:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbZHMMam
+	id S1754449AbZHMMbn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 08:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZHMMbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 08:30:42 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:54726 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754423AbZHMMal (ORCPT
+	Thu, 13 Aug 2009 08:31:42 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:22056
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751498AbZHMMbm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 08:30:41 -0400
-Date: Thu, 13 Aug 2009 13:30:34 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-usb@vger.kernel.org, linux-pci@vger.kernel.org,
-       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] [RFC] usb: Add support for runtime power management
-	of the hcd
-Message-ID: <20090813123034.GA25770@srcf.ucam.org>
-References: <200908081625.57333.rjw@sisk.pl> <20090813002925.GA2532@srcf.ucam.org> <20090813003544.GB2532@srcf.ucam.org> <200908131416.42189.oliver@neukum.org>
+	Thu, 13 Aug 2009 08:31:42 -0400
+X-SpamScore: 11
+X-BigFish: VPS11(zza4b1ozz1202hzz5a6ciz32i203h43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KOBESJ-03-GL6-01
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: kjwinchester@gmail.com
+CC: mikpe@it.uu.se, <mingo@elte.hu>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/2] x86: Clear incorrectly forced X86_FEATURE_LAHF_LM flag
+Date: Thu, 13 Aug 2009 14:31:27 +0200
+Message-ID: <1250166687-17673-2-git-send-email-borislav.petkov@amd.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <20090813122337.GB7029@aftab>
+References: <20090813122337.GB7029@aftab>
+X-OriginalArrivalTime: 13 Aug 2009 12:31:29.0082 (UTC) FILETIME=[FB5F29A0:01CA1C11]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908131416.42189.oliver@neukum.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 02:16:41PM +0200, Oliver Neukum wrote:
-> Am Donnerstag, 13. August 2009 02:35:44 schrieb Matthew Garrett:
-> 
-> > The power savings from this are measurable but not huge - it still seems
-> 
-> How large?
+From: Kevin Winchester <kjwinchester@gmail.com>
 
-About 0.2W on an ich9 system.
+Due to an erratum with certain AMD Athlon 64 processors, the BIOS may
+need to force enable the LAHF_LM capability.  Unfortunately, in at
+least one case, the BIOS does this even for processors that do not
+support the functionality.
 
-> > like a decent optimisation. The main problem is that BIOS bugs on some
-> > Dell laptops will kill USB if this is used, so we either default to off
-> > or add some quirks to handle that case (I have some ideas in that
-> > respect).
-> 
-> Your earlier failures don't look promising regarding BIOSes.
-> What do you have in mind?
+Add a specific check that will clear the feature bit for processors
+known not to support the LAHF/SAHF instructions.
 
-They range from pragmatic to ugly. We could blacklist all Dells, though 
-I'm trying to find out if there's a BIOS date that guarantees the system 
-is fixed. Alternatively, it's a single-line bug in the DSDT - we could 
-implement some kind of fixup in the ACPI parsing code. I find the latter 
-interesting but possibly too hideous to live :)
+Borislav: turn off cpuid bit.
 
-> > @@ -1968,6 +1972,9 @@ struct usb_hcd *usb_create_hcd (const struct
-> > hc_driver *driver, INIT_WORK(&hcd->wakeup_work, hcd_resume_work);
-> >  #endif
-> >
-> > +	pm_runtime_enable(dev);
-> 
-> So you don't get a reference from that?
+Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+---
+ arch/x86/kernel/cpu/amd.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-No, but...
-
-> > +	pm_runtime_get(dev);
-> 
-> What happens if you get a runtime suspend request in between? Is this a flaw
-> of the API?
-
-I suspect that just swapping the order of those two lines would be fine.
-
+diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+index e2485b0..9cd6fc7 100644
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -400,6 +400,22 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+ 		level = cpuid_eax(1);
+ 		if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
+ 			set_cpu_cap(c, X86_FEATURE_REP_GOOD);
++
++		/*
++		 * Some BIOSes incorrectly force this feature, but only K8
++		 * revision D (model = 0x14) and later actually support it.
++		 */
++		if (c->x86_model < 0x14) {
++			u64 val;
++
++			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
++			if (!rdmsrl_amd_safe(0xc001100d, &val)) {
++				val &= ~(1ULL << 32);
++				wrmsr_amd_safe(0xc001100d, (u32) val,
++							   (u32)(val >> 32));
++			}
++		}
++
+ 	}
+ 	if (c->x86 == 0x10 || c->x86 == 0x11)
+ 		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+1.6.3.3
+
+
