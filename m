@@ -1,146 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbZHMQzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbZHMRAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755002AbZHMQzb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 12:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbZHMQza
+	id S1754043AbZHMRAk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 13:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbZHMRAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 12:55:30 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:30669 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752153AbZHMQz3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 12:55:29 -0400
-From: "Fischer, Anna" <anna.fischer@hp.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-CC: Stephen Hemminger <shemminger@linux-foundation.org>,
-       "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>,
-       "evb@yahoogroups.com" <evb@yahoogroups.com>,
-       "bridge@lists.linux-foundation.org" 
-	<bridge@lists.linux-foundation.org>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kaber@trash.net" <kaber@trash.net>, Arnd Bergmann <arnd@arndb.de>,
-       "Dickson, Mike (ISS Software)" <mike.dickson@hp.com>,
-       "adobriyan@gmail.com" <adobriyan@gmail.com>,
-       "bridge@osdl.org" <bridge@osdl.org>
-Date: Thu, 13 Aug 2009 16:55:16 +0000
-Subject: [PATCH] net/bridge: Add 'hairpin' port forwarding mode
-Thread-Topic: [PATCH] net/bridge: Add 'hairpin' port forwarding mode
-Thread-Index: AcocNtV+HJLiuqM3QOCpEB5SIWIPdw==
-Message-ID: <0199E0D51A61344794750DC57738F58E6D6B0C70D9@GVW1118EXC.americas.hpqcorp.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Thu, 13 Aug 2009 13:00:39 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:51704 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751060AbZHMRAj (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 13:00:39 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>, Zhu Yi <yi.zhu@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net
+Subject: mmotm0812 - something in linux-next killed iwl-3945.c
+From: Valdis.Kletnieks@vt.edu
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1250182794_3970P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 13 Aug 2009 12:59:54 -0400
+Message-ID: <19728.1250182794@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a 'hairpin' (also called 'reflective relay') mode
-port configuration to the Linux Ethernet bridge kernel module.
-A bridge supporting hairpin forwarding mode can send frames back
-out through the port the frame was received on.
+--==_Exmh_1250182794_3970P
+Content-Type: text/plain; charset=us-ascii
 
-Hairpin mode is required to support basic VEPA (Virtual
-Ethernet Port Aggregator) capabilities.
+Build bombs out:
 
-You can find additional information on VEPA here:
-http://tech.groups.yahoo.com/group/evb/
-http://www.ieee802.org/1/files/public/docs2009/new-hudson-vepa_seminar-20090514d.pdf
-http://www.internet2.edu/presentations/jt2009jul/20090719-congdon.pdf
+  CC      drivers/net/wireless/iwlwifi/iwl-3945.o
+drivers/net/wireless/iwlwifi/iwl-3945.c: In function 'iwl3945_pass_packet_to_mac80211':
+drivers/net/wireless/iwlwifi/iwl-3945.c:580: error: 'hdr' undeclared (first use in this function)
+drivers/net/wireless/iwlwifi/iwl-3945.c:580: error: (Each undeclared identifier is reported only once
+drivers/net/wireless/iwlwifi/iwl-3945.c:580: error: for each function it appears in.)
+make[1]: *** [drivers/net/wireless/iwlwifi/iwl-3945.o] Error 1
 
-An additional patch 'bridge-utils: Add 'hairpin' port forwarding mode'
-is provided to allow configuring hairpin mode from userspace tools.
+due to this in linux-next.patch:
 
-Signed-off-by: Paul Congdon <paul.congdon@hp.com>
-Signed-off-by: Anna Fischer <anna.fischer@hp.com>
-
----
-
- net/bridge/br_forward.c  |    3 ++-
- net/bridge/br_if.c       |    1 +
- net/bridge/br_private.h  |    3 +++
- net/bridge/br_sysfs_if.c |   17 +++++++++++++++++
- 4 files changed, 23 insertions(+), 1 deletions(-)
-
-diff --git a/net/bridge/br_forward.c b/net/bridge/br_forward.c
-index d2c27c8..bc1704a 100644
---- a/net/bridge/br_forward.c
-+++ b/net/bridge/br_forward.c
-@@ -22,7 +22,8 @@
- static inline int should_deliver(const struct net_bridge_port *p,
- 				 const struct sk_buff *skb)
- {
--	return (skb->dev != p->dev && p->state == BR_STATE_FORWARDING);
-+	return (((p->flags & BR_HAIRPIN_MODE) || skb->dev != p->dev) &&
-+		p->state == BR_STATE_FORWARDING);
- }
- 
- static inline unsigned packet_length(const struct sk_buff *skb)
-diff --git a/net/bridge/br_if.c b/net/bridge/br_if.c
-index eb404dc..e486f1f 100644
---- a/net/bridge/br_if.c
-+++ b/net/bridge/br_if.c
-@@ -256,6 +256,7 @@ static struct net_bridge_port *new_nbp(struct net_bridge *br,
- 	p->path_cost = port_cost(dev);
- 	p->priority = 0x8000 >> BR_PORT_BITS;
- 	p->port_no = index;
-+	p->flags = 0;
- 	br_init_port(p);
- 	p->state = BR_STATE_DISABLED;
- 	br_stp_port_timer_init(p);
-diff --git a/net/bridge/br_private.h b/net/bridge/br_private.h
-index d5b5537..8319247 100644
---- a/net/bridge/br_private.h
-+++ b/net/bridge/br_private.h
-@@ -81,6 +81,9 @@ struct net_bridge_port
- 	struct timer_list		message_age_timer;
- 	struct kobject			kobj;
- 	struct rcu_head			rcu;
+index 46288e7..ae7f163 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-3945.c
++++ b/drivers/net/wireless/iwlwifi/iwl-3945.c
+(skipping)
+@@ -577,7 +577,10 @@ static void iwl3945_pass_packet_to_mac80211(struct iwl_priv
+ *priv,
+        if (ieee80211_is_data(hdr->frame_control))
+                priv->rxtxpackets += len;
+ #endif
+-       ieee80211_rx_irqsafe(priv->hw, rxb->skb, stats);
++       iwl_update_stats(priv, false, hdr->frame_control, len);
 +
-+	unsigned long 			flags;
-+#define BR_HAIRPIN_MODE		0x00000001
- };
- 
- struct net_bridge
-diff --git a/net/bridge/br_sysfs_if.c b/net/bridge/br_sysfs_if.c
-index 4a3cdf8..820643a 100644
---- a/net/bridge/br_sysfs_if.c
-+++ b/net/bridge/br_sysfs_if.c
-@@ -143,6 +143,22 @@ static ssize_t store_flush(struct net_bridge_port *p, unsigned long v)
- }
- static BRPORT_ATTR(flush, S_IWUSR, NULL, store_flush);
- 
-+static ssize_t show_hairpin_mode(struct net_bridge_port *p, char *buf)
-+{
-+	int hairpin_mode = (p->flags & BR_HAIRPIN_MODE) ? 1 : 0;
-+	return sprintf(buf, "%d\n", hairpin_mode);
-+}
-+static ssize_t store_hairpin_mode(struct net_bridge_port *p, unsigned long v)
-+{
-+	if (v)
-+		p->flags |= BR_HAIRPIN_MODE;
-+	else
-+		p->flags &= ~BR_HAIRPIN_MODE;
-+	return 0;
-+}
-+static BRPORT_ATTR(hairpin_mode, S_IRUGO | S_IWUSR,
-+		   show_hairpin_mode, store_hairpin_mode);
-+
- static struct brport_attribute *brport_attrs[] = {
- 	&brport_attr_path_cost,
- 	&brport_attr_priority,
-@@ -159,6 +175,7 @@ static struct brport_attribute *brport_attrs[] = {
- 	&brport_attr_forward_delay_timer,
- 	&brport_attr_hold_timer,
- 	&brport_attr_flush,
-+	&brport_attr_hairpin_mode,
- 	NULL
- };
++       memcpy(IEEE80211_SKB_RXCB(rxb->skb), stats, sizeof(*stats));
++       ieee80211_rx_irqsafe(priv->hw, rxb->skb);
+        rxb->skb = NULL;
 
+Sorry, don't have a linux-next git tree, so no 'git blame' for what did it.
+Hopefully somebody recognizes their handiwork... ;)
+
+--==_Exmh_1250182794_3970P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKhEaKcC3lWbTT17ARAsAPAKC3u6aJQvZHnwQRCJO79r5NHvHw3ACfZSd0
+Xr8EhV4G5ef8ihpmCa2ko9Q=
+=jqP2
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1250182794_3970P--
