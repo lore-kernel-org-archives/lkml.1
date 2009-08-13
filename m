@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZHMNi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbZHMNk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754542AbZHMNi4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 09:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbZHMNiy
+	id S1754530AbZHMNk3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 09:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754409AbZHMNk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 09:38:54 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:50901 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753857AbZHMNiv (ORCPT
+	Thu, 13 Aug 2009 09:40:28 -0400
+Received: from mail-yw0-f193.google.com ([209.85.211.193]:53300 "EHLO
+	mail-yw0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752313AbZHMNk1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 09:38:51 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
-Date: Thu, 13 Aug 2009 15:38:43 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
-Cc: virtualization@lists.linux-foundation.org,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <cover.1249930169.git.mst@redhat.com> <200908121959.47222.arnd@arndb.de> <20090813060615.GC3029@redhat.com>
-In-Reply-To: <20090813060615.GC3029@redhat.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 13 Aug 2009 09:40:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=anX9T5xwTn6T/WtA6ky2VnVtsl17LU2Me73z+4OmJX6n7Ja5W9rMkYSUdZA4XCO/Na
+         h04F72BwnBK2wFhumbOWWeiItwcY/GYGs1chj+4aPds6GLseM/+FC4jWuPrNDrUgM1VV
+         0UngOfcM32zAcAYmO64Y+gRNMTbjmU81vFjN4=
+Date: Thu, 13 Aug 2009 16:43:39 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Len Brown <len.brown@intel.com>, Lin Ming <ming.m.lin@intel.com>,
+       Bob Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: acpi_ex_system_memory_space_handler oops
+Message-ID: <20090813134339.GA5660@localdomain.by>
+References: <20090812201034.GA2983@localdomain.by>
+ <alpine.LFD.2.00.0908122009170.22946@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908131538.44465.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/JEDJT2qGntojMJRdXOSUJBrOuj17237Cie1n
- NvwP91FLyU7fHUiS4k2EoAxi3RvcMP5pJLzgXcLBgz06U6XIAD
- KnhPNaulUmKVAswPfikLQ==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="liOOAslEiF7prFVr"
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0908122009170.22946@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 August 2009, Michael S. Tsirkin wrote:
-> On Wed, Aug 12, 2009 at 07:59:47PM +0200, Arnd Bergmann wrote:
-> > The trick is to swap the virtqueues instead. virtio-net is actually
-> > mostly symmetric in just the same way that the physical wires on a
-> > twisted pair ethernet are symmetric (I like how that analogy fits).
-> 
-> You need to really squint hard for it to look symmetric.
-> 
-> For example, for RX, virtio allocates an skb, puts a descriptor on a
-> ring and waits for host to fill it in. Host system can not do the same:
-> guest does not have access to host memory.
-> 
-> You can do a copy in transport to hide this fact, but it will kill
-> performance.
 
-Yes, that is what I was suggesting all along. The actual copy operation
-has to be done by the host transport, which is obviously different from
-the guest transport that just calls the host using vring_kick().
+--liOOAslEiF7prFVr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Right now, the number of copy operations in your code is the same.
-You are doing the copy a little bit later in skb_copy_datagram_iovec(),
-which is indeed a very nice hack. Changing to a virtqueue based method
-would imply that the host needs to add each skb_frag_t to its outbound
-virtqueue, which then gets copied into the guests inbound virtqueue.
+rc5-git0
+FAIL
 
-Unfortunately, this also implies that you could no longer simply use the
-packet socket interface as you do currently, as I realized only now.
-This obviously has a significant impact on your user space interface.
+rc4-got0
+seems to be ok (after 15 reboots).
 
-	Arnd <><
+	Sergey
+--liOOAslEiF7prFVr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iJwEAQECAAYFAkqEGIsACgkQfKHnntdSXjS25AP/VMnEM/orQlpa6aYQVK+sa+Dz
+0/CMzLhtrpKjBF0C6d1uQ1TCAR8BdsvSS4xCSJB8uxgE2m+C0DfG1/6Z/9nhW12t
+6NvJTlod77+nB7vjjSrDnmODgN7ceTyJMF1u2Y/6rZCWg2kTKnbJVXOlITShDY2y
+bW4SCu6Ry2G2X9VQHdw=
+=trgh
+-----END PGP SIGNATURE-----
+
+--liOOAslEiF7prFVr--
