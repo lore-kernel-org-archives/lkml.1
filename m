@@ -1,62 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbZHMPrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZHMPti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842AbZHMPrb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 11:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbZHMPrb
+	id S1754809AbZHMPti (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 11:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbZHMPth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 11:47:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47424 "EHLO mx2.redhat.com"
+	Thu, 13 Aug 2009 11:49:37 -0400
+Received: from smtp-4.hut.fi ([130.233.228.94]:40190 "EHLO smtp-4.hut.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751717AbZHMPra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 11:47:30 -0400
-Message-ID: <4A843565.3010104@redhat.com>
-Date: Thu, 13 Aug 2009 11:46:45 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1750951AbZHMPth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 11:49:37 -0400
+X-Greylist: delayed 1020 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Aug 2009 11:49:36 EDT
+Date: Thu, 13 Aug 2009 18:32:11 +0300 (EEST)
+From: Jan Wagner <jwagner@kurp.hut.fi>
+X-X-Sender: jwagner@orbit.lan
+To: linux-kernel@vger.kernel.org
+Subject: 32-bit sys/times.h incorrect return value (fwd)
+Message-ID: <alpine.DEB.2.00.0908131831580.28962@orbit.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>, Avi Kivity <avi@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-References: <20090806100824.GO23385@random.random> <4A7AD5DF.7090801@redhat.com> <20090807121443.5BE5.A69D9226@jp.fujitsu.com> <20090812074820.GA29631@localhost> <4A82D24D.6020402@redhat.com> <20090813010356.GA7619@localhost>
-In-Reply-To: <20090813010356.GA7619@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-TKK-Virus-Scanned: by amavisd-new-2.1.2-hutcc at katosiko.hut.fi
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
-> On Wed, Aug 12, 2009 at 10:31:41PM +0800, Rik van Riel wrote:
+Hi,
 
->> For zones it is a fixed value, which is available in
->> /proc/zoneinfo
-> 
-> On my 64bit desktop with 4GB memory:
-> 
->         DMA     inactive_ratio:    1
->         DMA32   inactive_ratio:    4
->         Normal  inactive_ratio:    1
-> 
-> The biggest zone DMA32 has inactive_ratio=4. But I guess the
-> referenced bit should not be ignored on this typical desktop
-> configuration?
+we see times() return a really large positive value like 0x66693CF1 i.e. 
+signed int32 +1718172913 just a few minutes after booting.
 
-We need to ignore the referenced bit on active anon pages
-on very large systems, but it could indeed be helpful to
-respect the referenced bit on smaller systems.
+Note that clock_gettime(CLOCK_MONOTONIC) works correctly and returns the 
+uptime. While times() +1718172913/100Hz time is in no relation to uptime.
 
-I have no idea where the cut-off between them would be.
+Checking 'man 2 times': "Since Linux 2.6, this point is (2^32/HZ) - 300 (i.e., 
+about 429 million) seconds before system boot time. [...] the returned value 
+may overflow the range of clock_t [...]"
 
-Maybe at inactive_ratio <= 4 ?
+Hence in theory on a 32-bit platform where clock_t is signed 32-bit, at first 
+times() should return negative values.
 
--- 
-All rights reversed.
+Then 300 seconds later they should become positive. Correct?
+
+This should also happen via glibc times() call. There the times()
+   ./sysdeps/unix/sysv/linux/times.c
+simply does
+   clock_t ret = INTERNAL_SYSCALL (times, err, 1, buf);
+with no extra "+- some constant".
+
+In the kernel all jiffies and times syscall related handling is 64-bit:
+
+---------
+amn@multics:/home/etu/Desktop/linux-2.6.30.3/include$ fgrep INITIAL_JIFFIES
+linux/jiffies.h:#define INITIAL_JIFFIES ((unsigned long)(unsigned int) 
+(-300*HZ))
+
+kernel/sys.c:   return (long) jiffies_64_to_clock_t(get_jiffies_64());
+
+kernel/time.c:u64 get_jiffies_64(void)
+kernel/time.c:          ret = jiffies_64;
+---------
+
+On 32-bit platforms and signed int32 clock_t it should take at least
+
+octave:1>  2^31/(24*60*60 * 100)
+ans =  248.55
+octave:2>  (2^31/100 - 300)/(24*60*60)
+ans =  248.55
+
+days until the positive times() return value wraps back to smallest negative 
+signed 32-bit int.
+
+However, two bugs(?) :
+
+1) times() return value after 1080 'uptime' seconds is 0x66693CF1, why?
+
+Expected value would be (1080-300)*100Hz = 78000 = 0x000130B0 !
+
+2) the times() wraps to negative only after 50 days uptime. Following the 
+intention of INITIAL_JIFFIES, how is this 50-day warp supposed to reveal 
+wrapping bugs right at 300 seconds after boot?
+
+2) on 64-bit platforms, clock_t is 64-bit. There times() does not wrap after 50 
+days, however it still starts at 0x000000006669**** !?
+
+
+Any ideas?
+
+  - Jan
