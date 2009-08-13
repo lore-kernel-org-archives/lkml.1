@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbZHMUBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbZHMUCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756028AbZHMUBs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932321AbZHMUAN
+	id S1756089AbZHMUCf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756068AbZHMUCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:00:13 -0400
-Received: from kroah.org ([198.145.64.141]:41955 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 16:02:20 -0400
+Received: from kroah.org ([198.145.64.141]:41932 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932303AbZHMUAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:00:09 -0400
+	id S932292AbZHMUAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 16:00:07 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:34 2009
-Message-Id: <20090813195134.338486356@mini.kroah.org>
+Message-Id: <20090813195133.863693403@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:41 -0700
+Date: Thu, 13 Aug 2009 12:50:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alok N Kataria <akataria@vmware.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 66/74] x86: Fix VMI && stack protector
+       Alan Stern <stern@rowland.harvard.edu>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: [patch 63/74] USB: usbfs: fix -ENOENT error code to be -ENODEV
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=x86-fix-vmi-stack-protector.patch
+Content-Disposition: inline; filename=usb-usbfs-fix-enoent-error-code-to-be-enodev.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,38 +31,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alok Kataria <akataria@vmware.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 7d5b005652bc5ae3e1e0efc53fd0e25a643ec506 upstream.
+commit 01105a246345f011fde64d24a601090b646e9e4c upstream.
 
-With CONFIG_STACK_PROTECTOR turned on, VMI doesn't boot with
-more than one processor. The problem is with the gs value not
-being initialized correctly when registering the secondary
-processor for VMI's case.
+This patch (as1272) changes the error code returned when an open call
+for a USB device node fails to locate the corresponding device.  The
+appropriate error code is -ENODEV, not -ENOENT.
 
-The patch below initializes the gs value for the AP to
-__KERNEL_STACK_CANARY. Without this the secondary processor
-keeps on taking a GP on every gs access.
-
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
-LKML-Reference: <1249425262.18955.40.camel@ank32.eng.vmware.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+CC: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/vmi_32.c |    2 +-
+ drivers/usb/core/devio.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/x86/kernel/vmi_32.c
-+++ b/arch/x86/kernel/vmi_32.c
-@@ -441,7 +441,7 @@ vmi_startup_ipi_hook(int phys_apicid, un
- 	ap.ds = __USER_DS;
- 	ap.es = __USER_DS;
- 	ap.fs = __KERNEL_PERCPU;
--	ap.gs = 0;
-+	ap.gs = __KERNEL_STACK_CANARY;
+--- a/drivers/usb/core/devio.c
++++ b/drivers/usb/core/devio.c
+@@ -582,7 +582,7 @@ static int usbdev_open(struct inode *ino
+ 	if (!ps)
+ 		goto out;
  
- 	ap.eflags = 0;
+-	ret = -ENOENT;
++	ret = -ENODEV;
  
+ 	/* usbdev device-node */
+ 	if (imajor(inode) == USB_DEVICE_MAJOR)
 
 
