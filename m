@@ -1,91 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752761AbZHMDp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbZHMDqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752761AbZHMDp5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 23:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbZHMDp4
+	id S1752814AbZHMDqN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 23:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZHMDqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 23:45:56 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:35229 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752521AbZHMDpz (ORCPT
+	Wed, 12 Aug 2009 23:46:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58261
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752655AbZHMDqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 23:45:55 -0400
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
-       serue@us.ibm.com, Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
-       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
-       hpa@zytor.com, Containers <containers@lists.linux-foundation.org>,
-       sukadev@us.ibm.com, Oleg Nesterov <oleg@redhat.com>
-References: <20090807061103.GA19343@us.ibm.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 12 Aug 2009 20:45:43 -0700
-In-Reply-To: <20090807061103.GA19343@us.ibm.com> (Sukadev Bhattiprolu's message of "Thu\, 6 Aug 2009 23\:11\:03 -0700")
-Message-ID: <m1vdks5qc8.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: sukadev@linux.vnet.ibm.com, oleg@redhat.com, sukadev@us.ibm.com, containers@lists.linux-foundation.org, hpa@zytor.com, mingo@elte.hu, mikew@google.com, torvalds@linux-foundation.org, akpm@osdl.org, xemul@openvz.org, adobriyan@gmail.com, serue@us.ibm.com, orenl@cs.columbia.edu, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  1.5 TR_Symld_Words too many words that have symbols inside
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 T_TooManySym_03 6+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.0 T_TooManySym_02 5+ unique symbols in subject
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [RFC][v4][PATCH 0/7] clone_with_pids() system call
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+	Wed, 12 Aug 2009 23:46:11 -0400
+Date: Wed, 12 Aug 2009 20:46:21 -0700 (PDT)
+Message-Id: <20090812.204621.87530668.davem@davemloft.net>
+To: dfeng@redhat.com
+Cc: john.ronciak@intel.com, peter.p.waskiewicz.jr@intel.com,
+       bruce.w.allan@intel.com, jesse.brandeburg@intel.com,
+       jeffrey.t.kirsher@intel.com, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] e1000e: fix use of pci_enable_pcie_error_reporting
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1249637774-32419-1-git-send-email-dfeng@redhat.com>
+References: <1249637774-32419-1-git-send-email-dfeng@redhat.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+From: Xiaotian Feng <dfeng@redhat.com>
+Date: Fri,  7 Aug 2009 17:36:14 +0800
 
-> === NEW CLONE() SYSTEM CALL:
->
-> To support application checkpoint/restart, a task must have the same pid it
-> had when it was checkpointed.  When containers are nested, the tasks within
-> the containers exist in multiple pid namespaces and hence have multiple pids
-> to specify during restart.
->
-> This patchset implements a new system call, clone_with_pids() that lets a
-> process specify the pids of the child process.
->
-> Patches 1 through 5 are helpers and we believe they are needed for application
-> restart, regardless of the kernel implementation of application restart.
+> commit 111b9dc5 introduces pcie aer support for e1000e, but it is not
+> reasonable to disable it in e1000_remove but enable it in e1000_resume.
+> This patch enables aer support in e1000_probe.
+> 
+> Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
 
-I'm not very impressed.
+In moving this block of code, you've corrupted the indentation,
+making it more indented than it should be.
 
-- static int alloc_pidmap(struct pid_namespace *pid_ns)
-+ static int alloc_pidmap(struct pid_namespace *pid_ns, int pid_max, int last_pid)
+In any event, I expect the Intel folks to pick this up.
 
-Do that.
-
-That is pass in pid_max and last_pid, and you don't have to do weird
-things in alloc_pidmap, and no set_pidmap is needed.
-
-No changes to copy_process are needed it already takes a struct pid
-argument.
-
-I haven't been following closely what is gained by having a clone_with_pids
-syscall?  
-
-As for new namespaces that don't need to happen at process creation time
-(which is just about anything that is left) we can create a new syscall that
-unshares just that one.
-
-
-Eric
+> diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+> index 63415bb..e2f0304 100644
+> --- a/drivers/net/e1000e/netdev.c
+> +++ b/drivers/net/e1000e/netdev.c
+> @@ -4670,14 +4670,6 @@ static int e1000_resume(struct pci_dev *pdev)
+>  		return err;
+>  	}
+>  
+> -	/* AER (Advanced Error Reporting) hooks */
+> -	err = pci_enable_pcie_error_reporting(pdev);
+> -	if (err) {
+> -		dev_err(&pdev->dev, "pci_enable_pcie_error_reporting failed "
+> -		                    "0x%x\n", err);
+> -		/* non-fatal, continue */
+> -	}
+> -
+>  	pci_set_master(pdev);
+>  
+>  	pci_enable_wake(pdev, PCI_D3hot, 0);
+> @@ -4990,6 +4982,14 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
+>  	if (err)
+>  		goto err_pci_reg;
+>  
+> +        /* AER (Advanced Error Reporting) hooks */
+> +        err = pci_enable_pcie_error_reporting(pdev);
+> +        if (err) {
+> +                dev_err(&pdev->dev, "pci_enable_pcie_error_reporting failed "
+> +                                    "0x%x\n", err);
+> +                /* non-fatal, continue */
+> +        }
+> +
+>  	pci_set_master(pdev);
+>  	/* PCI config space info */
+>  	err = pci_save_state(pdev);
+> -- 
+> 1.6.2.5
+> 
