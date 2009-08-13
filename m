@@ -1,78 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932165AbZHMTsD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755685AbZHMTsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932165AbZHMTsD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:48:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932099AbZHMTsA
+	id S1755685AbZHMTsd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbZHMTsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:48:00 -0400
-Received: from kroah.org ([198.145.64.141]:36773 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932143AbZHMTr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:47:57 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:38 2009
-Message-Id: <20090813194338.587709244@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:40 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Michael Buesch <mb@bu3sch.de>, Pete Zaitcev <zaitcev@redhat.com>
-Subject: [patch 19/28] USB: devio: Properly do access_ok() checks
-References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=usb-devio-properly-do-access_ok-checks.patch
-In-Reply-To: <20090813194554.GA13947@kroah.com>
+	Thu, 13 Aug 2009 15:48:30 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52644
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755599AbZHMTs2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:48:28 -0400
+Date: Thu, 13 Aug 2009 12:48:38 -0700 (PDT)
+Message-Id: <20090813.124838.210334778.davem@davemloft.net>
+To: heyongli@gmail.com
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: Sparc miss chance to fix recoverable fault in copy_from_user
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <505766fa0908111853y7030399ewb07d4cec6829fd16@mail.gmail.com>
+References: <505766fa0908111853y7030399ewb07d4cec6829fd16@mail.gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+From: hyl <heyongli@gmail.com>
+Date: Wed, 12 Aug 2009 09:53:01 +0800
 
-------------------
+Please post all Sparc patches and questions CC:'d to
+sparclinux@vger.kernel.org otherwise no Sparc experts are going to see
+it.
 
-From: Michael Buesch <mb@bu3sch.de>
+> --- a/arch/sparc/kernel/sun4v_tlb_miss.S
+> +++ b/arch/sparc/kernel/sun4v_tlb_miss.S
+> @@ -124,7 +124,7 @@ sun4v_dtlb_load:
+>  	mov	%g3, %o2		! PTE
+>  	mov	HV_MMU_DMMU, %o3	! flags
+>  	ta	HV_MMU_MAP_ADDR_TRAP
+> -	brnz,pn	%o0, sun4v_dtlb_error
+> +	brnz,pn	%o0, sun4v_dtlb_prot
+>  	 mov	%g2, %o1		! restore %o1
+>  	mov	%g1, %o0		! restore %o0
+>  	mov	%g5, %o2		! restore %o2
+> 
+> 
+> 
+> am i miss understanding the merged sparc/spar64?
+> 
+> this problem found on sparc64, via a simple module just access address 0
+> via copy_from_user. another simple test is kgdb, issue a cmd:
+> x 0
 
-commit 18753ebc8a98efe0e8ff6167afb31cef220c8e50 upstream.
+That condition should never trigger, the problem is caused
+elsewhere.
 
-access_ok() checks must be done on every part of the userspace structure
-that is accessed. If access_ok() on one part of the struct succeeded, it
-does not imply it will succeed on other parts of the struct. (Does
-depend on the architecture implementation of access_ok()).
+If the HV_MMU_MAP_ADDR_TRAP hypervisor call gives an error it means:
 
-This changes the __get_user() users to first check access_ok() on the
-data structure.
+1) The PTE passed in is invalid
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
-Cc: Pete Zaitcev <zaitcev@redhat.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+2) The PTE passed in translates to addresses outside of the
+   range accessible to the guest
 
----
- drivers/usb/core/devio.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+3) The virtual address is invalid
 
---- a/drivers/usb/core/devio.c
-+++ b/drivers/usb/core/devio.c
-@@ -1305,7 +1305,8 @@ static int get_urb32(struct usbdevfs_urb
- 		     struct usbdevfs_urb32 __user *uurb)
- {
- 	__u32  uptr;
--	if (get_user(kurb->type, &uurb->type) ||
-+	if (!access_ok(VERIFY_READ, uurb, sizeof(*uurb)) ||
-+	    __get_user(kurb->type, &uurb->type) ||
- 	    __get_user(kurb->endpoint, &uurb->endpoint) ||
- 	    __get_user(kurb->status, &uurb->status) ||
- 	    __get_user(kurb->flags, &uurb->flags) ||
-@@ -1522,8 +1523,9 @@ static int proc_ioctl_compat(struct dev_
- 	u32 udata;
- 
- 	uioc = compat_ptr((long)arg);
--	if (get_user(ctrl.ifno, &uioc->ifno) ||
--	    get_user(ctrl.ioctl_code, &uioc->ioctl_code) ||
-+	if (!access_ok(VERIFY_READ, uioc, sizeof(*uioc)) ||
-+	    __get_user(ctrl.ifno, &uioc->ifno) ||
-+	    __get_user(ctrl.ioctl_code, &uioc->ioctl_code) ||
- 	    __get_user(udata, &uioc->data))
- 		return -EFAULT;
- 	ctrl.data = compat_ptr(udata);
+And the kernel should never have such an illegal address or
+PTE mapping here.
 
-
+You need to figure out how the bad mapping gets into the kernel page
+tables and/or translations in the first place.
