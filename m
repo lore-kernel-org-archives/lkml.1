@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbZHMUIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932281AbZHMUGD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbZHMUIj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932153AbZHMT7k
+	id S932281AbZHMUGD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:06:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932263AbZHMUGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:59:40 -0400
-Received: from kroah.org ([198.145.64.141]:41750 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 16:06:00 -0400
+Received: from kroah.org ([198.145.64.141]:41859 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932120AbZHMT7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:38 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:29 2009
-Message-Id: <20090813195129.458122866@mini.kroah.org>
+	id S932235AbZHMT7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:52 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:31 2009
+Message-Id: <20090813195131.678614026@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:08 -0700
+Date: Thu, 13 Aug 2009 12:50:23 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 33/74] cfg80211: add two missing NULL pointer checks
+       Michele Jr De Candia <michele.decandia@valueteam.com>,
+       Rodolfo Giometti <giometti@linux.it>, Jean Delvare <khali@linux-fr.org>
+Subject: [patch 48/74] i2c/tsl2550: Fix lux value in dark environment
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=cfg80211-add-two-missing-null-pointer-checks.patch
+Content-Disposition: inline; filename=i2c-tsl2550-fix-lux-value-in-dark-environment.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,41 +31,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Michele Jr De Candia <michele.decandia@valueteam.com>
 
-commit cd3468bad96c00b5a512f551674f36776129520e upstream.
+commit 96f699ad09c8b3c55cd229506a9add0047838e3e upstream.
 
-These pointers can be NULL, the is_mesh() case isn't
-ever hit in the current kernel, but cmp_ies() can be
-hit under certain conditions.
+I've tested TSL2550 driver and I've found a bug: when light is off,
+returned value from tsl2550_calculate_lux function is -1 when it should
+be 0 (sensor correctly read that light was off).
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+I think the bug is that a zero c0 value (approximated value of ch0) is
+misinterpreted as an error.
+
+Signed-off-by: Michele Jr De Candia <michele.decandia@valueteam.com>
+Acked-by: Rodolfo Giometti <giometti@linux.it>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- net/wireless/scan.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
---- a/net/wireless/scan.c
-+++ b/net/wireless/scan.c
-@@ -118,7 +118,7 @@ static int cmp_ies(u8 num, u8 *ies1, siz
+--- a/drivers/i2c/chips/tsl2550.c
++++ b/drivers/i2c/chips/tsl2550.c
+@@ -27,7 +27,7 @@
+ #include <linux/delay.h>
  
- 	if (!ie1 && !ie2)
- 		return 0;
--	if (!ie1)
-+	if (!ie1 || !ie2)
- 		return -1;
+ #define TSL2550_DRV_NAME	"tsl2550"
+-#define DRIVER_VERSION		"1.1.1"
++#define DRIVER_VERSION		"1.1.2"
  
- 	r = memcmp(ie1 + 2, ie2 + 2, min(ie1[1], ie2[1]));
-@@ -171,6 +171,8 @@ static bool is_mesh(struct cfg80211_bss 
- 	ie = find_ie(WLAN_EID_MESH_CONFIG,
- 		     a->information_elements,
- 		     a->len_information_elements);
-+	if (!ie)
-+		return false;
- 	if (ie[1] != IEEE80211_MESH_CONFIG_LEN)
- 		return false;
+ /*
+  * Defines
+@@ -189,13 +189,16 @@ static int tsl2550_calculate_lux(u8 ch0, u8 ch1)
+ 	u8 r = 128;
  
+ 	/* Avoid division by 0 and count 1 cannot be greater than count 0 */
+-	if (c0 && (c1 <= c0))
+-		r = c1 * 128 / c0;
++	if (c1 <= c0)
++		if (c0) {
++			r = c1 * 128 / c0;
++
++			/* Calculate LUX */
++			lux = ((c0 - c1) * ratio_lut[r]) / 256;
++		} else
++			lux = 0;
+ 	else
+-		return -1;
+-
+-	/* Calculate LUX */
+-	lux = ((c0 - c1) * ratio_lut[r]) / 256;
++		return -EAGAIN;
+ 
+ 	/* LUX range check */
+ 	return lux > TSL2550_MAX_LUX ? TSL2550_MAX_LUX : lux;
 
 
