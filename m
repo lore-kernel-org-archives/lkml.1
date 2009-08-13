@@ -1,63 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbZHMVxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbZHMWGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172AbZHMVxO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 17:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbZHMVxN
+	id S1754232AbZHMWGb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 18:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbZHMWGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 17:53:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36591 "EHLO ogre.sisk.pl"
+	Thu, 13 Aug 2009 18:06:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48859 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753412AbZHMVxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 17:53:13 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
-Date: Thu, 13 Aug 2009 23:53:54 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       "linux-acpi" <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-References: <Pine.LNX.4.44L0.0908121702520.23954-100000@iolanthe.rowland.org> <200908122343.20554.rjw@sisk.pl>
-In-Reply-To: <200908122343.20554.rjw@sisk.pl>
+	id S1753441AbZHMWG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 18:06:29 -0400
+Date: Thu, 13 Aug 2009 22:05:56 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       peterz@infradead.org, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, jbaron@redhat.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, jbaron@redhat.com, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:tracing/core] tracing: Fix syscall tracing on !HAVE_FTRACE_SYSCALLS architectures
+Message-ID: <tip-60d970c254b95ec7a0fc4c590b510253987b64a0@git.kernel.org>
+Git-Commit-ID: 60d970c254b95ec7a0fc4c590b510253987b64a0
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908132353.54902.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 13 Aug 2009 22:05:57 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 August 2009, Rafael J. Wysocki wrote:
-> On Wednesday 12 August 2009, Alan Stern wrote:
-> > On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
-> > 
-> > > Hi,
-> > > 
-> > > The following patches introduce a mechanism allowing us to execute device
-> > > drivers' suspend and resume callbacks asynchronously during system sleep
-> > > transitions, such as suspend to RAM.  The idea is explained in the [1/1] patch
-> > > message.
-> > > 
-> > > Comments welcome.
-> > 
-> > I get the idea.  Not bad.
-> 
-> Thanks!
-> 
-> > Have you tried it in a serious way?  For example, turning on the
-> > async_suspend flag for every device?
-> 
-> No, I've only tested it with a few selected drivers.  I'm going to try the
-> "async everyone" scenario, though.
+Commit-ID:  60d970c254b95ec7a0fc4c590b510253987b64a0
+Gitweb:     http://git.kernel.org/tip/60d970c254b95ec7a0fc4c590b510253987b64a0
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Thu, 13 Aug 2009 23:37:26 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 13 Aug 2009 23:38:20 +0200
 
-On HP nx6325 booted with init=/bin/bash it doesn't pass the
-'echo devices > /sys/power/pm_test && echo mem > /sys/power/state' test.
+tracing: Fix syscall tracing on !HAVE_FTRACE_SYSCALLS architectures
 
-The suspend part actually seems to work, but the resume part crashes
-miserably.
+The new syscall_regfunc()/unregfunc() functions rely on
+the existence of TIF_SYSCALL_FTRACE - but that TIF flag
+is only offered by HAVE_FTRACE_SYSCALLS.
 
-Thanks,
-Rafael
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Jason Baron <jbaron@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/tracepoint.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
+index 070a42b..35dd27a 100644
+--- a/kernel/tracepoint.c
++++ b/kernel/tracepoint.c
+@@ -579,6 +579,8 @@ __initcall(init_tracepoints);
+ 
+ #endif /* CONFIG_MODULES */
+ 
++#ifdef CONFIG_FTRACE_SYSCALLS
++
+ static DEFINE_MUTEX(regfunc_mutex);
+ static int sys_tracepoint_refcount;
+ 
+@@ -615,3 +617,4 @@ void syscall_unregfunc(void)
+ 	}
+ 	mutex_unlock(&regfunc_mutex);
+ }
++#endif
