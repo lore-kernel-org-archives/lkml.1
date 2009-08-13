@@ -1,98 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbZHMP2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbZHMP3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754798AbZHMP2b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 11:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbZHMP2a
+	id S1754803AbZHMP3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 11:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbZHMP3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 11:28:30 -0400
-Received: from arroyo.ext.ti.com ([192.94.94.40]:48034 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754777AbZHMP23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 11:28:29 -0400
-From: "Madhusudhan" <madhu.cr@ti.com>
-To: "'Matt Fleming'" <matt@console-pimps.org>,
-       "'Adrian Hunter'" <adrian.hunter@nokia.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>
-Cc: "'Jarkko Lavinen'" <jarkko.lavinen@nokia.com>,
-       "'linux-omap Mailing List'" <linux-omap@vger.kernel.org>,
-       "'Pierre Ossman'" <pierre@ossman.eu>,
-       "'Denis Karpov'" <ext-denis.2.karpov@nokia.com>,
-       "'lkml'" <linux-kernel@vger.kernel.org>
-References: <20090728103834.2371.65809.sendpatchset@ahunter-laptop> <20090729111327.GB6057@console-pimps.org> <000c01ca1179$387d6f20$544ff780@am.dhcp.ti.com>
-Subject: RE: [PATCH V2 0/32] mmc and omap_hsmmc patches
-Date: Thu, 13 Aug 2009 10:27:15 -0500
-Message-ID: <005201ca1c2a$898b4390$544ff780@am.dhcp.ti.com>
+	Thu, 13 Aug 2009 11:29:16 -0400
+Received: from www.lumino.de ([85.159.12.10]:45622 "HELO imap.lumino.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752175AbZHMP3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 11:29:16 -0400
+X-Greylist: delayed 1561 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Aug 2009 11:29:15 EDT
+Message-ID: <4A842B32.5030401@lumino.de>
+Date: Thu, 13 Aug 2009 17:03:14 +0200
+From: Michael Schnell <mschnell@lumino.de>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: linux-kernel@vger.kernel.org
+Subject: implementing Futex
+X-Enigmail-Version: 0.95.7
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-Thread-Index: AcoQPdcF+XiSuPlPQFmCCOmzo8eBXABOrEGAAqxe59A=
-In-Reply-To: <000c01ca1179$387d6f20$544ff780@am.dhcp.ti.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi experts,
+
+I am planning to implement a Futex on the upcoming MMU-enabled NIOS
+architecture.
+
+I do know that the pure user-space part of the Futex is done in gLibC,
+so that pthread_mutex...() automatically uses Futex, if same is
+available in the underlying arch, and use some system call it it is not.
+But for my first tests, I will not recompile gLibC but I do have a
+working (on x86) Futex user code implementation, inspired by Ulrich
+Drepper: "Futexes Are Tricky".
+
+One of the tasks is to provide the appropriate atomic user-space
+operations for the Futex implementation. I was able to successfully do
+this for the x86 user space code and we have been discussing, how to do
+ this with other archs.
+
+Now in the Kernel code in "linux-2.6/arch/x86/include/asm/futex.h" there
+are two different implementations for some atomic operations for the  Futex:
+
+"futex_atomic_op_inuser()"    and
+"futex_atomic_cmpxhg__inatomic()"
 
 
-> -----Original Message-----
-> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
-> owner@vger.kernel.org] On Behalf Of Madhusudhan
-> Sent: Thursday, July 30, 2009 7:53 PM
-> To: 'Matt Fleming'; 'Adrian Hunter'
-> Cc: 'Andrew Morton'; 'Jarkko Lavinen'; 'linux-omap Mailing List'; 'Pierre
-> Ossman'; 'Denis Karpov'; 'lkml'
-> Subject: RE: [PATCH V2 0/32] mmc and omap_hsmmc patches
-> 
-> 
-> 
-> > -----Original Message-----
-> > From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
-> > owner@vger.kernel.org] On Behalf Of Matt Fleming
-> > Sent: Wednesday, July 29, 2009 6:13 AM
-> > To: Adrian Hunter
-> > Cc: Andrew Morton; Jarkko Lavinen; linux-omap Mailing List; Pierre
-> Ossman;
-> > Denis Karpov; lkml
-> > Subject: Re: [PATCH V2 0/32] mmc and omap_hsmmc patches
-> >
-> > On Tue, Jul 28, 2009 at 01:38:34PM +0300, Adrian Hunter wrote:
-> > > Hi
-> > >
-> > > Here is version 2 of our 32 patches for mmc and omap_hsmmc.
-> > >
-> > > They include Matt Fleming's change for card caps, and 2 other fixes:
-> > > 	- use a spin lock rather than enable / diable irq
-> > > 	- make disable delay specified in milliseconds not jiffies because
-> > the
-> > > 	value is an int, and jiffies are unsigned long (also millisecs are
-> > > 	better anyway)
-> > >
-> >
-> > Thanks for doing this Adrian. I appreciate it. My Reviewed-by tag still
-> > applies.
-> 
-> I reviewed the omap_hsmmc series. They look good.
-> 
-> Regards,
-> Madhu
+"futex_atomic_op_inuser()" seemingly accesses user space data while
+being run in Kernel space (doing the .section __ex_table trick).
 
-Hi Andrew,
+Questions:
 
-I am curious to know is this series lined up for upstream?
+Is this correct ?
 
-Thanks,
-Madhu
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+In a non-SMP environment do we need to use really atomic code here, or
+does futex_atomic_op_inuser() run with interrupt disabled, anyway?
+
+When we are doing futex_atomic_op_inuser(), is this Kernel code running
+in system mode so that we can disable the interrupt do protect the
+atomic code in a non-SMP System ?
+
+>From reading the code (futex_atomic_op_inuser() seems only to be called
+once (in futex.c) ), it seems that futex_atomic_op_inuser() is not
+really used at all. It seems that it'd only called for futex_wake, and
+here the "Operation" is derived from the last parameter of the system
+call, which the man page says is ignored.  So, are all the operations
+implemented there really necessary or just "nice to have" ?
 
 
+I see that futex_atomic_cmpxhg__inatomic() really is used by futex.c
+
+"futex_atomic_cmpxhg__inatomic()" accesses the Futex without doing the
+user-space-access-trick, so here, the MMU seems to be in User mode
+configuration. So how does the Kernel use it ? (in the CPU's "user mode"
+or "System mode", with interrupts enabled or disabled (protected against
+concurrent SMP accesses by a spinlock) )
+
+Any pointers ?
+
+Thanks for all answers,
+-Michael
