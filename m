@@ -1,73 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbZHMLXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751697AbZHMLeE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754337AbZHMLXV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 07:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbZHMLXU
+	id S1751697AbZHMLeE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 07:34:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbZHMLeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 07:23:20 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:61303 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752937AbZHMLXU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 07:23:20 -0400
-Date: Thu, 13 Aug 2009 13:23:16 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Daniel Walker <dwalker@fifo99.com>
-Subject: Re: [RFC][patch 10/12] move NTP adjusted clock multiplier to struct
- timekeeper
-Message-ID: <20090813132316.04f91bb3@skybase>
-In-Reply-To: <63386a3d0908130415x76993440ifd38e4bcb6a1d07e@mail.gmail.com>
-References: <20090729134125.313191633@de.ibm.com>
-	<20090729134231.515027738@de.ibm.com>
-	<63386a3d0908130415x76993440ifd38e4bcb6a1d07e@mail.gmail.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Aug 2009 07:34:03 -0400
+Received: from cantor.suse.de ([195.135.220.2]:36399 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750973AbZHMLeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 07:34:01 -0400
+Date: Thu, 13 Aug 2009 13:33:59 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: "Zeisel, Michael" <michael.zeisel@philips.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+Subject: Re: PROBLEM: full speed HID device with payload of 64 bytes
+In-Reply-To: <A3467C2CEA21E3469A3218B394AD2534C3B9CE2C68@NLCLUEXM09.connect1.local>
+Message-ID: <alpine.LRH.2.00.0908131331030.11142@twin.jikos.cz>
+References: <A3467C2CEA21E3469A3218B394AD2534C3B9CE2C68@NLCLUEXM09.connect1.local>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Aug 2009 13:15:06 +0200
-Linus Walleij <linus.ml.walleij@gmail.com> wrote:
 
-> 2009/7/29 Martin Schwidefsky <schwidefsky@de.ibm.com>:
-> 
-> > Index: linux-2.6/arch/arm/plat-omap/common.c
-> > ===================================================================
-> > --- linux-2.6.orig/arch/arm/plat-omap/common.c
-> > +++ linux-2.6/arch/arm/plat-omap/common.c
-> > @@ -256,7 +256,7 @@ unsigned long long sched_clock(void)
-> >        unsigned long long ret;
-> >
-> >        ret = (unsigned long long)clocksource_32k.read(&clocksource_32k);
-> > -       ret = (ret * clocksource_32k.mult_orig) >> clocksource_32k.shift;
-> > +       ret = (ret * clocksource_32k.mult) >> clocksource_32k.shift;
-> 
-> Doesn't the overall effect of your patch mean that the above can simply be
-> replaced by
-> 
-> ret = cyc2ns(&clocksource_32k, ret);
-> 
-> Or clocksource_cyc2ns() if that was renamed (I don't have the entire
-> picture here...)
-> 
-> >        return ret;
-> >  }
+[ added linux-usb to CC ]
 
-Yes, you can do that. More specifically it will be
+On Thu, 13 Aug 2009, Zeisel, Michael wrote:
 
-  clocksource_cyc2ns(ret, clocksource_32k.mult, clocksource_32k.shift)
+> We experienced those problems with one of our devices, the Digital 
+> Pocket Memo 3 (DPM), by simply trying to receive button events via the
+> 
+> Cat /dev/usb/hiddev0
+> 
+> Command -> no success. The only difference between this device and older 
+> ones (which work on this kernel version) in the USB descriptor is the 
+> data payload which is 64 byte.
+> 
+> To narrow down the cause for that behavior we simply took the same 
+> device, put in a FW with a low speed device protocol with a data payload 
+> of 8 byte and plugged it again to the PC.
+> 
+> Now the button events produced some symbols in the "terminal", which 
+> proves that the device was recognized correctly and works.
+> 
+> According to the USB 2.0 specification under
+> 
+> http://www.usb.org/developers/docs/
+> 
+> USB 2.0 specification, Chapter 5.7.4: Interrupt Transfer Bus Access Constraints
+> 
+> A full speed device should support a maximum data payload of 64 bytes 
+> (Table 5-7. Full-speed Interrupt Transaction Limits: max.payload 64 
+> bytes x max.transfers 19 = max. 1216bytes/frame)
+> 
+> To us it seems that the current implementation of the HID device support 
+> in LINUX just supports the protocol for low speed devices (Table 5-6. 
+> Low-speed Interrupt Transaction Limits: max.payload 8 bytes x 
+> max.transfers 6 = max. 48bytes/frame)
+> 
+> On Windows OS and Mac OS all our devices work properly.
 
-after all patches are applied.
+Could you please compile your kernel with CONFIG_USB_DEBUG and 
+CONFIG_HID_DEBUG enabled, modprobe the 'hid' module with 'debug=2' 
+parameter, and post the dmesg output that appears when you connect the 
+device and press the buttons?
+
+> I think it is a good idea, if you would have a Digital Pocket Memo to 
+> experience the described behavior- so to whom I should send that device?
+
+Let's see if something obvious pops out from the kernel debugging logs 
+first.
+
+Thanks,
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+Jiri Kosina
+SUSE Labs
 
