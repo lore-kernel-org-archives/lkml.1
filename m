@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932196AbZHMTsH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932165AbZHMTsD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932196AbZHMTsH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:48:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932176AbZHMTsE
+	id S932165AbZHMTsD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:48:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932099AbZHMTsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:48:04 -0400
-Received: from kroah.org ([198.145.64.141]:36781 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:48:00 -0400
+Received: from kroah.org ([198.145.64.141]:36773 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932157AbZHMTr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:47:59 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:39 2009
-Message-Id: <20090813194338.890630696@mini.kroah.org>
+	id S932143AbZHMTr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:47:57 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:38 2009
+Message-Id: <20090813194338.587709244@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:42 -0700
+Date: Thu, 13 Aug 2009 12:40:40 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dhaval Vasa <dhaval.vasa@einfochips.com>
-Subject: [patch 21/28] USB: ftdi_sio: add product_id for Marvell OpenRD Base, Client
+       Michael Buesch <mb@bu3sch.de>, Pete Zaitcev <zaitcev@redhat.com>
+Subject: [patch 19/28] USB: devio: Properly do access_ok() checks
 References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=usb-ftdi_sio-add-product_id-for-marvell-openrd-base-client.patch
+Content-Disposition: inline; filename=usb-devio-properly-do-access_ok-checks.patch
 In-Reply-To: <20090813194554.GA13947@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,47 +30,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dhaval Vasa <dhaval.vasa@einfochips.com>
+From: Michael Buesch <mb@bu3sch.de>
 
-commit 50d0678e2026c18e4147f0b16b5853113659b82d upstream.
+commit 18753ebc8a98efe0e8ff6167afb31cef220c8e50 upstream.
 
-reference:
-http://www.open-rd.org
+access_ok() checks must be done on every part of the userspace structure
+that is accessed. If access_ok() on one part of the struct succeeded, it
+does not imply it will succeed on other parts of the struct. (Does
+depend on the architecture implementation of access_ok()).
 
-Signed-off-by: Dhaval Vasa <dhaval.vasa@einfochips.com>
+This changes the __get_user() users to first check access_ok() on the
+data structure.
+
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Cc: Pete Zaitcev <zaitcev@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/ftdi_sio.c |    2 ++
- drivers/usb/serial/ftdi_sio.h |    7 +++++++
- 2 files changed, 9 insertions(+)
+ drivers/usb/core/devio.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -664,6 +664,8 @@ static struct usb_device_id id_table_com
- 		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
- 	{ USB_DEVICE(JETI_VID, JETI_SPC1201_PID) },
- 	{ USB_DEVICE(BAYER_VID, BAYER_CONTOUR_CABLE_PID) },
-+	{ USB_DEVICE(FTDI_VID, MARVELL_OPENRD_PID),
-+		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
- 	{ },					/* Optional parameter entry */
- 	{ }					/* Terminating entry */
- };
---- a/drivers/usb/serial/ftdi_sio.h
-+++ b/drivers/usb/serial/ftdi_sio.h
-@@ -904,6 +904,13 @@
- #define BAYER_CONTOUR_CABLE_PID        0x6001
+--- a/drivers/usb/core/devio.c
++++ b/drivers/usb/core/devio.c
+@@ -1305,7 +1305,8 @@ static int get_urb32(struct usbdevfs_urb
+ 		     struct usbdevfs_urb32 __user *uurb)
+ {
+ 	__u32  uptr;
+-	if (get_user(kurb->type, &uurb->type) ||
++	if (!access_ok(VERIFY_READ, uurb, sizeof(*uurb)) ||
++	    __get_user(kurb->type, &uurb->type) ||
+ 	    __get_user(kurb->endpoint, &uurb->endpoint) ||
+ 	    __get_user(kurb->status, &uurb->status) ||
+ 	    __get_user(kurb->flags, &uurb->flags) ||
+@@ -1522,8 +1523,9 @@ static int proc_ioctl_compat(struct dev_
+ 	u32 udata;
  
- /*
-+ * Marvell OpenRD Base, Client
-+ * http://www.open-rd.org
-+ * OpenRD Base, Client use VID 0x0403
-+ */
-+#define MARVELL_OPENRD_PID	0x9e90
-+
-+/*
-  *   BmRequestType:  1100 0000b
-  *   bRequest:       FTDI_E2_READ
-  *   wValue:         0
+ 	uioc = compat_ptr((long)arg);
+-	if (get_user(ctrl.ifno, &uioc->ifno) ||
+-	    get_user(ctrl.ioctl_code, &uioc->ioctl_code) ||
++	if (!access_ok(VERIFY_READ, uioc, sizeof(*uioc)) ||
++	    __get_user(ctrl.ifno, &uioc->ifno) ||
++	    __get_user(ctrl.ioctl_code, &uioc->ioctl_code) ||
+ 	    __get_user(udata, &uioc->data))
+ 		return -EFAULT;
+ 	ctrl.data = compat_ptr(udata);
 
 
