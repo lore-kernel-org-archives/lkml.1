@@ -1,87 +1,317 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932435AbZHMUbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932432AbZHMUcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932435AbZHMUbU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932408AbZHMUbS
+	id S932432AbZHMUcQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932378AbZHMUcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:31:18 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:42051 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932378AbZHMUbP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:31:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Q73rWVqmitqIzKk/VDRnJLoBm0DD9Skl+qPfrBmUu58qBUtUt6iEbU/smehITaLlB4
-         tFmqgmUgAAHwPBR3d+dcs6Ai3zp9xlM6YOTd2qb/aKyBpKU0FZXyEMlNkg1vq0ymYrFw
-         ShP7RmUPJeVS5WQO65dvBdFMcLqBIQkvR2vHM=
+	Thu, 13 Aug 2009 16:32:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58554 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755836AbZHMUcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 16:32:12 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip v14 02/12] x86: x86 instruction decoder build-time
+	selftest
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       =?utf-8?q?Przemys=C5=82aw?= =?utf-8?q?Pawe=C5=82czyk?= 
+	<przemyslaw@pawelczyk.it>,
+       Roland McGrath <roland@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Date: Thu, 13 Aug 2009 16:34:21 -0400
+Message-ID: <20090813203421.31965.29006.stgit@localhost.localdomain>
+In-Reply-To: <20090813203403.31965.20973.stgit@localhost.localdomain>
+References: <20090813203403.31965.20973.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-In-Reply-To: <1250191095.3901.116.camel@mulgrave.site>
-References: <200908122007.43522.ngupta@vflare.org>
-	 <Pine.LNX.4.64.0908122312380.25501@sister.anvils>
-	 <20090813151312.GA13559@linux.intel.com>
-	 <20090813162621.GB1915@phenom2.trippelsdorf.de>
-	 <alpine.DEB.1.10.0908130931400.28013@asgard.lang.hm>
-	 <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>
-	 <1250191095.3901.116.camel@mulgrave.site>
-Date: Thu, 13 Aug 2009 13:31:15 -0700
-Message-ID: <46b8a8850908131331g5b40a9c8j17bd80c8ba13a55f@mail.gmail.com>
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap 
-	slot is freed)
-From: Richard Sharpe <realrichardsharpe@gmail.com>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Greg Freemyer <greg.freemyer@gmail.com>, david@lang.hm,
-       Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 12:18 PM, James Bottomley
-<James.Bottomley@hansenpartnership.com> wrote:
-> Actually, I think, if we go in-kernel, the discard might be better tied
-> into the block plugging mechanism. �The real test might be no
-> outstanding commands and queue plugged, keep plugged and begin
-> discarding.
+Add a user-space selftest of x86 instruction decoder at kernel build time.
+When CONFIG_X86_DECODER_SELFTEST=y, Kbuild builds a test harness of x86
+instruction decoder and performs it after building vmlinux.
+The test compares the results of objdump and x86 instruction decoder
+code and check there are no differences.
 
-I am very interested in this topic, as I have implemented UNMAP
-support in SCST and scst_local.c and ib_srp.c for one SSD vendor, as
-well as the block layer changes to have it work correctly (they were
-minor changes and based on Matthew's original TRIM or UNMAP patch from
-long ago). I believe that the performance was acceptable for them (I
-will have to check).
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Signed-off-by: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Avi Kivity <avi@redhat.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Frank Ch. Eigler <fche@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jason Baron <jbaron@redhat.com>
+Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Przemysław Pawełczyk <przemyslaw@pawelczyk.it>
+Cc: Roland McGrath <roland@redhat.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Tom Zanussi <tzanussi@gmail.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>
+---
 
-I am also working on other, non-SSD, devices that are in a lower price
-range than the large storage arrays where both DISCARD/UNMAP (and
-WRITE SAME) would be useful in Linux. It also seems that Microsoft
-supports TRIM in Windows 7 if you switch it on, although that really
-only implies we should implement UNMAP support in our firmware and
-hook it up to existing mechanisms.
+ arch/x86/Kconfig.debug        |    9 +++
+ arch/x86/Makefile             |    3 +
+ arch/x86/tools/Makefile       |   15 +++++
+ arch/x86/tools/distill.awk    |   42 +++++++++++++++
+ arch/x86/tools/test_get_len.c |  113 +++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 182 insertions(+), 0 deletions(-)
+ create mode 100644 arch/x86/tools/Makefile
+ create mode 100644 arch/x86/tools/distill.awk
+ create mode 100644 arch/x86/tools/test_get_len.c
 
-I have logged internal enhancement bugs in bugzilla asking for both
-TRIM and UNMAP/WRITE SAME support, and although one environment is
-iSCSI in userland, and thus can be dealt with without support in the
-Linux kernel, there are use cases where DISCARD/UNMAP support in the
-Linux kernel would be useful.
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index d105f29..7d0b681 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -186,6 +186,15 @@ config X86_DS_SELFTEST
+ config HAVE_MMIOTRACE_SUPPORT
+ 	def_bool y
+ 
++config X86_DECODER_SELFTEST
++     bool "x86 instruction decoder selftest"
++     depends on DEBUG_KERNEL
++	---help---
++	 Perform x86 instruction decoder selftests at build time.
++	 This option is useful for checking the sanity of x86 instruction
++	 decoder code.
++	 If unsure, say "N".
++
+ #
+ # IO delay types:
+ #
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index 1f3851a..f79580c 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -154,6 +154,9 @@ all: bzImage
+ KBUILD_IMAGE := $(boot)/bzImage
+ 
+ bzImage: vmlinux
++ifeq ($(CONFIG_X86_DECODER_SELFTEST),y)
++	$(Q)$(MAKE) $(build)=arch/x86/tools posttest
++endif
+ 	$(Q)$(MAKE) $(build)=$(boot) $(KBUILD_IMAGE)
+ 	$(Q)mkdir -p $(objtree)/arch/$(UTS_MACHINE)/boot
+ 	$(Q)ln -fsn ../../x86/boot/bzImage $(objtree)/arch/$(UTS_MACHINE)/boot/$@
+diff --git a/arch/x86/tools/Makefile b/arch/x86/tools/Makefile
+new file mode 100644
+index 0000000..3dd626b
+--- /dev/null
++++ b/arch/x86/tools/Makefile
+@@ -0,0 +1,15 @@
++PHONY += posttest
++quiet_cmd_posttest = TEST    $@
++      cmd_posttest = $(OBJDUMP) -d $(objtree)/vmlinux | awk -f $(srctree)/arch/x86/tools/distill.awk | $(obj)/test_get_len
++
++posttest: $(obj)/test_get_len vmlinux
++	$(call cmd,posttest)
++
++hostprogs-y	:= test_get_len
++
++# -I needed for generated C source and C source which in the kernel tree.
++HOSTCFLAGS_test_get_len.o := -Wall -I$(objtree)/arch/x86/lib/ -I$(srctree)/arch/x86/include/ -I$(srctree)/arch/x86/lib/
++
++# Dependancies are also needed.
++$(obj)/test_get_len.o: $(srctree)/arch/x86/lib/insn.c $(srctree)/arch/x86/lib/inat.c $(srctree)/arch/x86/include/asm/inat_types.h $(srctree)/arch/x86/include/asm/inat.h $(srctree)/arch/x86/include/asm/insn.h $(objtree)/arch/x86/lib/inat-tables.c
++
+diff --git a/arch/x86/tools/distill.awk b/arch/x86/tools/distill.awk
+new file mode 100644
+index 0000000..d433619
+--- /dev/null
++++ b/arch/x86/tools/distill.awk
+@@ -0,0 +1,42 @@
++#!/bin/awk -f
++# Usage: objdump -d a.out | awk -f distill.awk | ./test_get_len
++# Distills the disassembly as follows:
++# - Removes all lines except the disassembled instructions.
++# - For instructions that exceed 1 line (7 bytes), crams all the hex bytes
++# into a single line.
++# - Remove bad(or prefix only) instructions
++
++BEGIN {
++	prev_addr = ""
++	prev_hex = ""
++	prev_mnemonic = ""
++	bad_expr = "(\\(bad\\)|^rex|^.byte|^rep(z|nz)$|^lock$|^es$|^cs$|^ss$|^ds$|^fs$|^gs$|^data(16|32)$|^addr(16|32|64))"
++	fwait_expr = "^9b "
++	fwait_str="9b\tfwait"
++}
++
++/^ *[0-9a-f]+:/ {
++	if (split($0, field, "\t") < 3) {
++		# This is a continuation of the same insn.
++		prev_hex = prev_hex field[2]
++	} else {
++		# Skip bad instructions
++		if (match(prev_mnemonic, bad_expr))
++			prev_addr = ""
++		# Split fwait from other f* instructions
++		if (match(prev_hex, fwait_expr) && prev_mnemonic != "fwait") {
++			printf "%s\t%s\n", prev_addr, fwait_str
++			sub(fwait_expr, "", prev_hex)
++		}
++		if (prev_addr != "")
++			printf "%s\t%s\t%s\n", prev_addr, prev_hex, prev_mnemonic
++		prev_addr = field[1]
++		prev_hex = field[2]
++		prev_mnemonic = field[3]
++	}
++}
++
++END {
++	if (prev_addr != "")
++		printf "%s\t%s\t%s\n", prev_addr, prev_hex, prev_mnemonic
++}
+diff --git a/arch/x86/tools/test_get_len.c b/arch/x86/tools/test_get_len.c
+new file mode 100644
+index 0000000..1e81adb
+--- /dev/null
++++ b/arch/x86/tools/test_get_len.c
+@@ -0,0 +1,113 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Copyright (C) IBM Corporation, 2009
++ */
++
++#include <stdlib.h>
++#include <stdio.h>
++#include <string.h>
++#include <assert.h>
++
++#ifdef __x86_64__
++#define CONFIG_X86_64
++#else
++#define CONFIG_X86_32
++#endif
++#define unlikely(cond) (cond)
++
++#include <asm/insn.h>
++#include <inat.c>
++#include <insn.c>
++
++/*
++ * Test of instruction analysis in general and insn_get_length() in
++ * particular.  See if insn_get_length() and the disassembler agree
++ * on the length of each instruction in an elf disassembly.
++ *
++ * Usage: objdump -d a.out | awk -f distill.awk | ./test_get_len
++ */
++
++const char *prog;
++
++static void usage(void)
++{
++	fprintf(stderr, "Usage: objdump -d a.out | awk -f distill.awk |"
++		" ./test_get_len\n");
++	exit(1);
++}
++
++static void malformed_line(const char *line, int line_nr)
++{
++	fprintf(stderr, "%s: malformed line %d:\n%s", prog, line_nr, line);
++	exit(3);
++}
++
++#define BUFSIZE 256
++
++int main(int argc, char **argv)
++{
++	char line[BUFSIZE];
++	unsigned char insn_buf[16];
++	struct insn insn;
++	int insns = 0;
++
++	prog = argv[0];
++	if (argc > 1)
++		usage();
++
++	while (fgets(line, BUFSIZE, stdin)) {
++		char copy[BUFSIZE], *s, *tab1, *tab2;
++		int nb = 0;
++		unsigned int b;
++
++		insns++;
++		memset(insn_buf, 0, 16);
++		strcpy(copy, line);
++		tab1 = strchr(copy, '\t');
++		if (!tab1)
++			malformed_line(line, insns);
++		s = tab1 + 1;
++		s += strspn(s, " ");
++		tab2 = strchr(s, '\t');
++		if (!tab2)
++			malformed_line(line, insns);
++		*tab2 = '\0';	/* Characters beyond tab2 aren't examined */
++		while (s < tab2) {
++			if (sscanf(s, "%x", &b) == 1) {
++				insn_buf[nb++] = (unsigned char) b;
++				s += 3;
++			} else
++				break;
++		}
++		/* Decode an instruction */
++#ifdef __x86_64__
++		insn_init(&insn, insn_buf, 1);
++#else
++		insn_init(&insn, insn_buf, 0);
++#endif
++		insn_get_length(&insn);
++		if (insn.length != nb) {
++			fprintf(stderr, "Error: %s", line);
++			fprintf(stderr, "Error: objdump says %d bytes, but "
++				"insn_get_length() says %d (attr:%x)\n", nb,
++				insn.length, insn.attr);
++			exit(2);
++		}
++	}
++	fprintf(stderr, "Succeed: decoded and checked %d instructions\n",
++		insns);
++	return 0;
++}
 
-I would be very willing to make the firmware changes needed in our
-device to support UNMAP/WRITE SAME and to test changes to the Linux
-kernel to support same.
 
-I will go through this thread in more detail when I get back from my
-trip to Australia, but if there are any GIT trees around with nascent
-support in them I would love to know about them, as it will help my
-internal efforts to get UNMAP/WRITE SAME support implemented as well.
+-- 
+Masami Hiramatsu
 
---
-Regards,
-Richard Sharpe
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
