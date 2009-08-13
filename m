@@ -1,55 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbZHMH5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbZHMH7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753390AbZHMH5j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 03:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbZHMH5j
+	id S1752829AbZHMH7o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 03:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbZHMH7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 03:57:39 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:35823 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752316AbZHMH5i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 03:57:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=OTP+Fp38FkB7Yl05rITzT1D227jT0VD8u7TrHWo6kpCQAlhkKzq9b8MNdCyeRHhBCm
-         feRf4Dg8hON3QyalLjX+uUbL4YMR7wkvMfktL2H8zfijclaUVKrM6GFPc3Pp5DGEZQLW
-         qFkzNZYfNRw4eDt9b8z1IoqEyTTUS7HIjuAVM=
+	Thu, 13 Aug 2009 03:59:44 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:33676 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752324AbZHMH7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 03:59:43 -0400
+Date: Thu, 13 Aug 2009 01:00:49 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+       serue@us.ibm.com, Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Containers <containers@lists.linux-foundation.org>,
+       sukadev@us.ibm.com, Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [RFC][v4][PATCH 0/7] clone_with_pids() system call
+Message-ID: <20090813080049.GA16639@us.ibm.com>
+References: <20090807061103.GA19343@us.ibm.com> <m1vdks5qc8.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-In-Reply-To: <1250149366.10001.54.camel@twins>
-References: <a8e1da0908121923j1fd291fbtb3576653ebd45bff@mail.gmail.com>
-	 <1250149366.10001.54.camel@twins>
-Date: Thu, 13 Aug 2009 15:57:38 +0800
-Message-ID: <a8e1da0908130057q27af3d0cnb7a6132aeceec95f@mail.gmail.com>
-Subject: Re: Top shows cpu usage 165% with kvm lunched
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1vdks5qc8.fsf@fess.ebiederm.org>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 3:42 PM, Peter Zijlstra<peterz@infradead.org> wrote:
-> On Thu, 2009-08-13 at 10:23 +0800, Dave Young wrote:
->> Hi,
->>
->> Kvm guest runs slackware-current, doing extracting linux tarball, top
->> shows over 100% cpu usage. Is this a known issue?
->
-> Does: top -H, show the same?
+Eric W. Biederman [ebiederm@xmission.com] wrote:
+| Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+| 
+| > === NEW CLONE() SYSTEM CALL:
+| >
+| > To support application checkpoint/restart, a task must have the same pid it
+| > had when it was checkpointed.  When containers are nested, the tasks within
+| > the containers exist in multiple pid namespaces and hence have multiple pids
+| > to specify during restart.
+| >
+| > This patchset implements a new system call, clone_with_pids() that lets a
+| > process specify the pids of the child process.
+| >
+| > Patches 1 through 5 are helpers and we believe they are needed for application
+| > restart, regardless of the kernel implementation of application restart.
+| 
+| I'm not very impressed.
+| 
+| - static int alloc_pidmap(struct pid_namespace *pid_ns)
+| + static int alloc_pidmap(struct pid_namespace *pid_ns, int pid_max, int last_pid)
+| 
+| Do that.
+| 
+| That is pass in pid_max and last_pid, and you don't have to do weird
+| things in alloc_pidmap, and no set_pidmap is needed.
 
-top -H show normal results with several qemu threads.
+But last_pid is from the pid_ns. Do you mean to have alloc_pidmap()
+take a pid_min and pid_max and when choosing a specific pid, have
+pid_min == pid_max == target_pid ?
 
->
-> I suspect it might be the cumulative cpu usage of several threads.
+| 
+| No changes to copy_process are needed it already takes a struct pid
+| argument.
 
-Thanks for telling, I never know top will hidden the thread usage.
 
--- 
-Regards
-dave
+I see your point about passing in both 'struct pid*' and target_pids[].
+But in the common case the struct pid passed into copy_process() is
+NULL - allocating pid in do_fork() would significantly alter the
+existing control flow - no ? alloc_pid() assumes any new pid namespace
+has been created - in copy_namespaces(). Moving the alloc_pid() to
+do_fork() would require parsing clone_flags in do_fork() and pulling
+pid namespace code out of copy_namespaces().
+
+| 
+| I haven't been following closely what is gained by having a clone_with_pids
+| syscall?  
+
+When restarting an application from a checkpoint, the application must get
+the same pid it had at the time of checkpoint. clone_with_pids() would be
+used during restart so the child can be created with a specific set of pids.
+
+| 
+| As for new namespaces that don't need to happen at process creation time
+| (which is just about anything that is left) we can create a new syscall that
+| unshares just that one.
+| 
+
+Ok. If all new namespaces can be handled with a variant of unshare(), we can
+decouple clone_with_pids() from the clone-flags issue.
+
+| 
+| Eric
