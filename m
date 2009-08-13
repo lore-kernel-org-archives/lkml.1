@@ -1,16 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932503AbZHMUdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932494AbZHMUdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932503AbZHMUdd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbZHMUdb
+	id S932494AbZHMUdN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756208AbZHMUdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:33:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33157 "EHLO mx2.redhat.com"
+	Thu, 13 Aug 2009 16:33:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58660 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756210AbZHMUd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:33:28 -0400
+	id S1756206AbZHMUdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 16:33:07 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v14 07/12] tracing: Introduce TRACE_FIELD_ZERO() macro
+Subject: [PATCH -tip v14 04/12] kprobes: cleanup fix_riprel() using insn
+	decoder on x86
 To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
@@ -31,8 +32,8 @@ Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
        Vegard Nossum <vegard.nossum@gmail.com>
-Date: Thu, 13 Aug 2009 16:35:01 -0400
-Message-ID: <20090813203501.31965.30172.stgit@localhost.localdomain>
+Date: Thu, 13 Aug 2009 16:34:36 -0400
+Message-ID: <20090813203436.31965.34374.stgit@localhost.localdomain>
 In-Reply-To: <20090813203403.31965.20973.stgit@localhost.localdomain>
 References: <20090813203403.31965.20973.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -43,8 +44,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use TRACE_FIELD_ZERO(type, item) instead of TRACE_FIELD_ZERO_CHAR(item).
-This also includes a fix of TRACE_ZERO_CHAR() macro.
+Cleanup fix_riprel() in arch/x86/kernel/kprobes.c by using x86 instruction
+decoder.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
@@ -69,80 +70,156 @@ Cc: Tom Zanussi <tzanussi@gmail.com>
 Cc: Vegard Nossum <vegard.nossum@gmail.com>
 ---
 
- kernel/trace/trace_event_types.h |    4 ++--
- kernel/trace/trace_export.c      |   16 ++++++++--------
- 2 files changed, 10 insertions(+), 10 deletions(-)
+ arch/x86/kernel/kprobes.c |  128 ++++++++-------------------------------------
+ 1 files changed, 23 insertions(+), 105 deletions(-)
 
-diff --git a/kernel/trace/trace_event_types.h b/kernel/trace/trace_event_types.h
-index 6db005e..e74f090 100644
---- a/kernel/trace/trace_event_types.h
-+++ b/kernel/trace/trace_event_types.h
-@@ -109,7 +109,7 @@ TRACE_EVENT_FORMAT(bprint, TRACE_BPRINT, bprint_entry, ignore,
- 	TRACE_STRUCT(
- 		TRACE_FIELD(unsigned long, ip, ip)
- 		TRACE_FIELD(char *, fmt, fmt)
--		TRACE_FIELD_ZERO_CHAR(buf)
-+		TRACE_FIELD_ZERO(char, buf)
- 	),
- 	TP_RAW_FMT("%08lx (%d) fmt:%p %s")
- );
-@@ -117,7 +117,7 @@ TRACE_EVENT_FORMAT(bprint, TRACE_BPRINT, bprint_entry, ignore,
- TRACE_EVENT_FORMAT(print, TRACE_PRINT, print_entry, ignore,
- 	TRACE_STRUCT(
- 		TRACE_FIELD(unsigned long, ip, ip)
--		TRACE_FIELD_ZERO_CHAR(buf)
-+		TRACE_FIELD_ZERO(char, buf)
- 	),
- 	TP_RAW_FMT("%08lx (%d) fmt:%p %s")
- );
-diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
-index 71c8d7f..b0ac92c 100644
---- a/kernel/trace/trace_export.c
-+++ b/kernel/trace/trace_export.c
-@@ -42,9 +42,9 @@ extern void __bad_type_size(void);
- 	if (!ret)							\
- 		return 0;
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index 80d493f..98f48d0 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -109,50 +109,6 @@ static const u32 twobyte_is_boostable[256 / 32] = {
+ 	/*      -----------------------------------------------         */
+ 	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+ };
+-static const u32 onebyte_has_modrm[256 / 32] = {
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-	/*      -----------------------------------------------         */
+-	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 00 */
+-	W(0x10, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 10 */
+-	W(0x20, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 20 */
+-	W(0x30, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 30 */
+-	W(0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 40 */
+-	W(0x50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 50 */
+-	W(0x60, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0) | /* 60 */
+-	W(0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 70 */
+-	W(0x80, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 80 */
+-	W(0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 90 */
+-	W(0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* a0 */
+-	W(0xb0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* b0 */
+-	W(0xc0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* c0 */
+-	W(0xd0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1) , /* d0 */
+-	W(0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* e0 */
+-	W(0xf0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1)   /* f0 */
+-	/*      -----------------------------------------------         */
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-};
+-static const u32 twobyte_has_modrm[256 / 32] = {
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-	/*      -----------------------------------------------         */
+-	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1) | /* 0f */
+-	W(0x10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0) , /* 1f */
+-	W(0x20, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1) | /* 2f */
+-	W(0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 3f */
+-	W(0x40, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 4f */
+-	W(0x50, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 5f */
+-	W(0x60, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 6f */
+-	W(0x70, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1) , /* 7f */
+-	W(0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 8f */
+-	W(0x90, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 9f */
+-	W(0xa0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1) | /* af */
+-	W(0xb0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1) , /* bf */
+-	W(0xc0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* cf */
+-	W(0xd0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* df */
+-	W(0xe0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* ef */
+-	W(0xf0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)   /* ff */
+-	/*      -----------------------------------------------         */
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-};
+ #undef W
  
--#undef TRACE_FIELD_ZERO_CHAR
--#define TRACE_FIELD_ZERO_CHAR(item)					\
--	ret = trace_seq_printf(s, "\tfield:char " #item ";\t"		\
-+#undef TRACE_FIELD_ZERO
-+#define TRACE_FIELD_ZERO(type, item)					\
-+	ret = trace_seq_printf(s, "\tfield:" #type " " #item ";\t"	\
- 			       "offset:%u;\tsize:0;\n",			\
- 			       (unsigned int)offsetof(typeof(field), item)); \
- 	if (!ret)							\
-@@ -92,9 +92,6 @@ ftrace_format_##call(struct ftrace_event_call *unused,			\
- 
- #include "trace_event_types.h"
- 
--#undef TRACE_ZERO_CHAR
--#define TRACE_ZERO_CHAR(arg)
+ struct kretprobe_blackpoint kretprobe_blacklist[] = {
+@@ -345,68 +301,30 @@ static int __kprobes is_IF_modifier(kprobe_opcode_t *insn)
+ static void __kprobes fix_riprel(struct kprobe *p)
+ {
+ #ifdef CONFIG_X86_64
+-	u8 *insn = p->ainsn.insn;
+-	s64 disp;
+-	int need_modrm;
 -
- #undef TRACE_FIELD
- #define TRACE_FIELD(type, item, assign)\
- 	entry->item = assign;
-@@ -107,6 +104,9 @@ ftrace_format_##call(struct ftrace_event_call *unused,			\
- #define TRACE_FIELD_SIGN(type, item, assign, is_signed)	\
- 	TRACE_FIELD(type, item, assign)
+-	/* Skip legacy instruction prefixes.  */
+-	while (1) {
+-		switch (*insn) {
+-		case 0x66:
+-		case 0x67:
+-		case 0x2e:
+-		case 0x3e:
+-		case 0x26:
+-		case 0x64:
+-		case 0x65:
+-		case 0x36:
+-		case 0xf0:
+-		case 0xf3:
+-		case 0xf2:
+-			++insn;
+-			continue;
+-		}
+-		break;
+-	}
++	struct insn insn;
++	kernel_insn_init(&insn, p->ainsn.insn);
  
-+#undef TRACE_FIELD_ZERO
-+#define TRACE_FIELD_ZERO(type, item)
-+
- #undef TP_CMD
- #define TP_CMD(cmd...)	cmd
- 
-@@ -178,8 +178,8 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
- 	if (ret)							\
- 		return ret;
- 
--#undef TRACE_FIELD_ZERO_CHAR
--#define TRACE_FIELD_ZERO_CHAR(item)
-+#undef TRACE_FIELD_ZERO
-+#define TRACE_FIELD_ZERO(type, item)
- 
- #undef TRACE_EVENT_FORMAT
- #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+-	/* Skip REX instruction prefix.  */
+-	if (is_REX_prefix(insn))
+-		++insn;
+-
+-	if (*insn == 0x0f) {
+-		/* Two-byte opcode.  */
+-		++insn;
+-		need_modrm = test_bit(*insn,
+-				      (unsigned long *)twobyte_has_modrm);
+-	} else
+-		/* One-byte opcode.  */
+-		need_modrm = test_bit(*insn,
+-				      (unsigned long *)onebyte_has_modrm);
+-
+-	if (need_modrm) {
+-		u8 modrm = *++insn;
+-		if ((modrm & 0xc7) == 0x05) {
+-			/* %rip+disp32 addressing mode */
+-			/* Displacement follows ModRM byte.  */
+-			++insn;
+-			/*
+-			 * The copied instruction uses the %rip-relative
+-			 * addressing mode.  Adjust the displacement for the
+-			 * difference between the original location of this
+-			 * instruction and the location of the copy that will
+-			 * actually be run.  The tricky bit here is making sure
+-			 * that the sign extension happens correctly in this
+-			 * calculation, since we need a signed 32-bit result to
+-			 * be sign-extended to 64 bits when it's added to the
+-			 * %rip value and yield the same 64-bit result that the
+-			 * sign-extension of the original signed 32-bit
+-			 * displacement would have given.
+-			 */
+-			disp = (u8 *) p->addr + *((s32 *) insn) -
+-			       (u8 *) p->ainsn.insn;
+-			BUG_ON((s64) (s32) disp != disp); /* Sanity check.  */
+-			*(s32 *)insn = (s32) disp;
+-		}
++	if (insn_rip_relative(&insn)) {
++		s64 newdisp;
++		u8 *disp;
++		insn_get_displacement(&insn);
++		/*
++		 * The copied instruction uses the %rip-relative addressing
++		 * mode.  Adjust the displacement for the difference between
++		 * the original location of this instruction and the location
++		 * of the copy that will actually be run.  The tricky bit here
++		 * is making sure that the sign extension happens correctly in
++		 * this calculation, since we need a signed 32-bit result to
++		 * be sign-extended to 64 bits when it's added to the %rip
++		 * value and yield the same 64-bit result that the sign-
++		 * extension of the original signed 32-bit displacement would
++		 * have given.
++		 */
++		newdisp = (u8 *) p->addr + (s64) insn.displacement.value -
++			  (u8 *) p->ainsn.insn;
++		BUG_ON((s64) (s32) newdisp != newdisp); /* Sanity check.  */
++		disp = (u8 *) p->ainsn.insn + insn_offset_displacement(&insn);
++		*(s32 *) disp = (s32) newdisp;
+ 	}
+ #endif
+ }
 
 
 -- 
