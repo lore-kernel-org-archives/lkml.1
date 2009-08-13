@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753422AbZHMLeO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753244AbZHMLn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753422AbZHMLeO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 07:34:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbZHMLeL
+	id S1753244AbZHMLn0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 07:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbZHMLn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 07:34:11 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45969 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752636AbZHMLeJ (ORCPT
+	Thu, 13 Aug 2009 07:43:26 -0400
+Received: from mail-yw0-f193.google.com ([209.85.211.193]:40251 "EHLO
+	mail-yw0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751069AbZHMLnZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 07:34:09 -0400
-Subject: Re: [PROBLEM] perf report is broken in latest linus git
-From: Peter Zijlstra <peterz@infradead.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       paulus@samba.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1250156837.8141.4.camel@penberg-laptop>
-References: <1250155708.6052.2.camel@penberg-laptop>
-	 <20090813093648.GA22762@elte.hu>  <1250156837.8141.4.camel@penberg-laptop>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 13 Aug 2009 13:33:32 +0200
-Message-Id: <1250163212.5241.9.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 13 Aug 2009 07:43:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=lHArfMP/RMzvVQ0v1QJ2+ETtK3gxPWDlcmIWihEyqOAEwgaK73QYYirItrKolPZCUJ
+         +UScyjNManYNoHcmk21vohtEVCu5jk3uXkMqBWZUlN+OIZdpXlpb/W9Gfe6EvLz1Rs+V
+         lRdx/bDTYvsYwwO1/IaLevuhly3ckPGFGmlbg=
+MIME-Version: 1.0
+In-Reply-To: <1250138537.15796.18.camel@quadrophenia.thebigcorporation.com>
+References: <1250138537.15796.18.camel@quadrophenia.thebigcorporation.com>
+Date: Thu, 13 Aug 2009 13:35:50 +0200
+Message-ID: <520f0cf10908130435t2aba0d23mb1465daef3a4a997@mail.gmail.com>
+Subject: Re: [PATCH][RT] pty low latency
+From: John Kacur <jkacur@gmail.com>
+To: Sven-Thorsten Dietrich <sdietrich@novell.com>
+Cc: linux-rt-users <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-13 at 12:47 +0300, Pekka Enberg wrote:
-> Hi Ingo,
-> 
-> On Thu, 2009-08-13 at 11:36 +0200, Ingo Molnar wrote:
-> > * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > 
-> > > Latest Linus git kernel with -rc4 perf userspace:
-> > > 
-> > >   penberg@penberg-laptop:~/testing/jato$ perf record -f jato HelloWorldSwing
-> > >   [ perf record: Captured and wrote 1.402 MB perf.data (~61261 samples) ]
-> > > 
-> > >   penberg@penberg-laptop:~/testing/jato$ perf report --sort comm,dso,symbol|head -30
-> > >   # Samples: 60457
-> > >   #
-> > >   # Overhead  Command                            Shared Object  Symbol
-> > >   # ........  .......  .......................................  ......
-> > >   #
-> > > 
-> > >   [ Note: the jato executable doesn't appear anywhere in the trace. I'm
-> > >     pretty sure the libzip functions, for example, are from jato, not perf.  ]
-> > > 
-> > >       36.14%     perf  /home/penberg/bin/perf                   [.] dso__synthesize_plt_symbols
-> > >       35.20%     perf  /home/penberg/bin/perf                   [.] dso__new
-> > >        3.57%     perf  /home/penberg/bin/jato                   [.] 0x0000000000c910
-> > 
-> > Perhaps it's this commit:
-> > 
-> > 4d1e00a: perf symbol: Fix symbol parsing in certain cases: use the build-id as a symlink
-> > 
-> > it does not revert cleanly, so you might want to check out these two 
-> > commits:
-> > 
-> >   4d1e00a
-> >   4d1e00a~1
-> > 
-> > and build perf on both, and check with your anomalous perf.data 
-> > (without changing it) whether the output makes most sense.
-> 
-> The commit seems fine. Like I said, the perf.data file is busted even
-> with 2.6.31-rc4 userspace so I think it's a kernel bug.
+On Thu, Aug 13, 2009 at 6:42 AM, Sven-Thorsten
+Dietrich<sdietrich@novell.com> wrote:
+>
+> Subject: add hunks dropped in rt 2.6.31-rc5-rt1.1 forward port
+> From: patch-2.6.31-rc4-rt1
+> Signed-off-by: Sven-Thorsten Dietrich <sdietrich@suse.de>
+> --- a/drivers/char/pty.c
+> +++ b/drivers/char/pty.c
+> @@ -52,6 +52,7 @@ static void pty_close(struct tty_struct *tty, struct file *filp)
+>                return;
+>        tty->link->packet = 0;
+>        set_bit(TTY_OTHER_CLOSED, &tty->link->flags);
+> +       tty_flip_buffer_push(tty->link);
+>        wake_up_interruptible(&tty->link->read_wait);
+>        wake_up_interruptible(&tty->link->write_wait);
+>        if (tty->driver->subtype == PTY_TYPE_MASTER) {
+> @@ -207,6 +208,7 @@ static int pty_open(struct tty_struct *tty, struct file *filp)
+>        clear_bit(TTY_OTHER_CLOSED, &tty->link->flags);
+>        set_bit(TTY_THROTTLED, &tty->flags);
+>        retval = 0;
+> +       tty->low_latency = 1;
+>  out:
+>        return retval;
+>  }
+>
 
-Hrmm, does a -tip kernel work as expected? I'll go audit the kernel
-changes between -rc4 and -rc5.
+Thank You - I applied this.
