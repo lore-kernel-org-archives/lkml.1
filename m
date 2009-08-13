@@ -1,71 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbZHMRyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752221AbZHMR6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752462AbZHMRyb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 13:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbZHMRya
+	id S1752221AbZHMR6r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 13:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZHMR6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 13:54:30 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:37039 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752351AbZHMRy3 (ORCPT
+	Thu, 13 Aug 2009 13:58:46 -0400
+Received: from 1-1-12-13a.han.sth.bostream.se ([82.182.30.168]:46851 "EHLO
+	palpatine.hardeman.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751434AbZHMR6q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 13:54:29 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEABbwg0qrR7MV/2dsb2JhbAC7S4grkRAFhBk
-X-IronPort-AV: E=Sophos;i="4.43,375,1246838400"; 
-   d="scan'208";a="366829311"
-Date: Thu, 13 Aug 2009 10:54:30 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: linux-kernel@vger.kernel.org
-Cc: greg@kroah.com, linux-usb@vger.kernel.org
-Subject: [PATCH] Combine two one-character CR-LF writes into one
-	two-character write for O_ONLCR
-Message-ID: <20090813175430.GA8769@cuplxvomd02.corp.sa.net>
+	Thu, 13 Aug 2009 13:58:46 -0400
+Date: Thu, 13 Aug 2009 19:58:43 +0200
+From: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       jbarnes@virtuousgeek.org, akpm@linux-foundation.org
+Subject: Re: [patch 2/2] Add a driver for the Winbond WPCD376I Consumer IR
+ hardware
+Message-ID: <20090813175843.GA11922@hardeman.nu>
+Mail-Followup-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+	jbarnes@virtuousgeek.org, akpm@linux-foundation.org
+References: <20090809095645.198777507@hardeman.nu>
+ <20090809095744.090206173@hardeman.nu>
+ <20090813072905.56FB4526EC9@mailhub.coreip.homeip.net>
+ <d92044dd553973571c2dd5cb18a925f9.squirrel@www.hardeman.nu>
+ <20090813162726.DBD9A526EC9@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-1; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090813162726.DBD9A526EC9@mailhub.coreip.homeip.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When handling output of a newline character in O_ONLCR mode, the n_tty.c
-do_output_char() function uses the struct tty_operations function write_room()
-to determine whether it is possible to write two characters. It uses
-tty_put_char() for each character which, for the USB generic serial driver,
-translates into a write() for each character. For the USB generic serial
-driver the value returned by write_room() only applies to the next write().
-A second write() done in quick succession will fail because the write URB
-buffer is still busy from the first write(). In this case, it results in the
-printing of a carriage return without the following line feed.
+On Thu, Aug 13, 2009 at 08:56:37AM -0700, Dmitry Torokhov wrote:
+>On Thu, Aug 13, 2009 at 11:34:44AM +0200, David Härdeman wrote:
+>> The main problem right now is that getkeycode is practically useless since
+>> you can't blindly guess at a full range of 2^32 different scancodes to get
+>> the complete keymap. Perhaps a index-based getkeycode would make sense...
+>
+>The drivers that have such sparce keymaps are expected to issue
+>EV_MSC/MSC_SCAN events to aid userspace in identifying the "scancodes"
+>that are emitted by the device.
 
-This patch combines the two write() calls into a single, two-character, write().
+Ok, I've added EV_MSC/MSC_SCAN support.
 
-Signed-off-by: David VomLehn
----
- drivers/char/n_tty.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+>>>> +static struct device_attribute dev_attr_last_scancode = {
+>>>> +	.attr = {
+>>>> +		.name = "last_scancode",
+>>>> +		.mode = 0444,
+>>>> +	},
+>>>> +	.show = wbcir_show_last_scancode,
+>>>> +	.store = NULL,
+>>>> +
+>>>> +};
+>>>
+>>> Why is this needed? And if this is needed we have a nice macro
+>>> for that.
+>>
+>> I hope I've explained it wrt. EV_IR in my other mail. It's for building
+>> keymaps of unknown remotes. And it'll go away once EV_IR is supported so I
+>> don't think there's much point in fiddling with it now?
+>>
+>
+>Because once the driver is in mainline it becomes part of userspace ABI
+>and has to stay for a looong time.
 
-diff --git a/drivers/char/n_tty.c b/drivers/char/n_tty.c
-index 973be2f..bf06c61 100644
---- a/drivers/char/n_tty.c
-+++ b/drivers/char/n_tty.c
-@@ -297,12 +297,12 @@ static int do_output_char(unsigned char c, struct tty_struct *tty, int space)
- 		if (O_ONLRET(tty))
- 			tty->column = 0;
- 		if (O_ONLCR(tty)) {
--			if (space < 2)
-+			static const char crlf[] = {'\r', '\n'};
-+			if (space < ARRAY_SIZE(crlf))
- 				return -1;
- 			tty->canon_column = tty->column = 0;
--			tty_put_char(tty, '\r');
--			tty_put_char(tty, c);
--			return 2;
-+			tty->ops->write(tty, crlf, ARRAY_SIZE(crlf));
-+			return ARRAY_SIZE(crlf);
- 		}
- 		tty->canon_column = tty->column;
- 		break;
+I've removed the sysfs attribute as EV_MSC/MSC_SCAN provides the same 
+functionality.
+
+>> Thanks for the review. Are you willing to push the driver upstream through
+>> the input tree once I've implemented your suggested fixes?
+>>
+>
+>I'd need to take a look at your EV_IR patyches and see how they will
+>affect this driver. I do nt want to merge something that will stay one
+>way for half a release and then will switch to completely new interface.
+
+The EV_IR functionality is intended to be used in addition to regular 
+key up/down/repeat events. Much like EV_MSC/MSC_SCAN but more 
+descriptive and specific to IR protocols. Then advanced user-space apps 
+can choose whether to use the in-kernel keymap or map remote codes 
+directly to suitable events (and it allows remote keymaps to be built 
+easily in user-space).
+
+As the future EV_IR functionality is additional to the current 
+functionality, I hope the driver still can be merged before I have EV_IR 
+patches ready for review. I'll post an updated patch shortly.
+
+-- 
+David Härdeman
