@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932371AbZHMULG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbZHMT7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932371AbZHMULG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932153AbZHMULE
+	id S1755890AbZHMT7W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755877AbZHMT7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:11:04 -0400
-Received: from kroah.org ([198.145.64.141]:41730 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:59:21 -0400
+Received: from kroah.org ([198.145.64.141]:41667 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932072AbZHMT7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:34 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:29 2009
-Message-Id: <20090813195128.860303934@mini.kroah.org>
+	id S1755702AbZHMT7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:19 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:26 2009
+Message-Id: <20090813195126.321194634@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:04 -0700
+Date: Thu, 13 Aug 2009 12:49:47 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [patch 29/74] nilfs2: fix oops due to inconsistent state in page with discrete b-tree nodes
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 12/74] inet: Call skb_orphan before tproxy activates
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=nilfs2-fix-oops-due-to-inconsistent-state-in-page-with-discrete-b-tree-nodes.patch
+Content-Disposition: inline; filename=inet-call-skb_orphan-before-tproxy-activates.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,61 +31,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-commit a97778457f22181e8c38c4cd7d7e528378738a98 upstream.
+[ Upstream commit 71f9dacd2e4d233029e9e956ca3f79531f411827 ]
 
-Andrea Gelmini gave me a report that a kernel oops hit on a nilfs
-filesystem with a 1KB block size when doing rsync.
+As transparent proxying looks up the socket early and assigns
+it to the skb for later processing, we must drop any existing
+socket ownership prior to that in order to distinguish between
+the case where tproxy is active and where it is not.
 
-This turned out to be caused by an inconsistency of dirty state
-between a page and its buffers storing b-tree node blocks.
-
-If the page had multiple buffers split over multiple logs, and if the
-logs were written at a time, a dirty flag remained in the page even
-every dirty flag in the buffers was cleared.
-
-This will fix the failure by dropping the dirty flag properly for
-pages with the discrete multiple b-tree nodes.
-
-Reported-by: Andrea Gelmini <andrea.gelmini@gmail.com>
-Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Tested-by: Andrea Gelmini <andrea.gelmini@gmail.com>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- fs/nilfs2/segment.c |   16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+ net/ipv4/ip_input.c  |    3 +++
+ net/ipv6/ip6_input.c |    3 +++
+ 2 files changed, 6 insertions(+)
 
---- a/fs/nilfs2/segment.c
-+++ b/fs/nilfs2/segment.c
-@@ -1876,12 +1876,26 @@ static void nilfs_end_page_io(struct pag
- 	if (!page)
- 		return;
+--- a/net/ipv4/ip_input.c
++++ b/net/ipv4/ip_input.c
+@@ -437,6 +437,9 @@ int ip_rcv(struct sk_buff *skb, struct n
+ 	/* Remove any debris in the socket control block */
+ 	memset(IPCB(skb), 0, sizeof(struct inet_skb_parm));
  
--	if (buffer_nilfs_node(page_buffers(page)) && !PageWriteback(page))
-+	if (buffer_nilfs_node(page_buffers(page)) && !PageWriteback(page)) {
- 		/*
- 		 * For b-tree node pages, this function may be called twice
- 		 * or more because they might be split in a segment.
- 		 */
-+		if (PageDirty(page)) {
-+			/*
-+			 * For pages holding split b-tree node buffers, dirty
-+			 * flag on the buffers may be cleared discretely.
-+			 * In that case, the page is once redirtied for
-+			 * remaining buffers, and it must be cancelled if
-+			 * all the buffers get cleaned later.
-+			 */
-+			lock_page(page);
-+			if (nilfs_page_buffers_clean(page))
-+				__nilfs_clear_page_dirty(page);
-+			unlock_page(page);
-+		}
- 		return;
-+	}
++	/* Must drop socket now because of tproxy. */
++	skb_orphan(skb);
++
+ 	return NF_HOOK(PF_INET, NF_INET_PRE_ROUTING, skb, dev, NULL,
+ 		       ip_rcv_finish);
  
- 	__nilfs_end_page_io(page, err);
- }
+--- a/net/ipv6/ip6_input.c
++++ b/net/ipv6/ip6_input.c
+@@ -139,6 +139,9 @@ int ipv6_rcv(struct sk_buff *skb, struct
+ 
+ 	rcu_read_unlock();
+ 
++	/* Must drop socket now because of tproxy. */
++	skb_orphan(skb);
++
+ 	return NF_HOOK(PF_INET6, NF_INET_PRE_ROUTING, skb, dev, NULL,
+ 		       ip6_rcv_finish);
+ err:
 
 
