@@ -1,97 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755747AbZHMTvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbZHMTwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755747AbZHMTvs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932106AbZHMTry
+	id S1755856AbZHMTwm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:52:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755823AbZHMTwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:47:54 -0400
-Received: from kroah.org ([198.145.64.141]:36726 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932077AbZHMTrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:47:49 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:37 2009
-Message-Id: <20090813194336.882627721@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:31 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 10/28] x86: fix assembly constraints in native_save_fl()
-References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=x86-fix-assembly-constraints-in-native_save_fl.patch
-In-Reply-To: <20090813194554.GA13947@kroah.com>
+	Thu, 13 Aug 2009 15:52:40 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:20527 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755818AbZHMTwj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:52:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=FDsXrfiEcgP7ztGFNqUhQ0/GfwdXLAxDNIYvtwO5R4gP0dnfDVcShlvni25x8nuXeS
+         qzt5k0IZLdEGZpN+xF81IQYeVp5DK6f3fYgma5yjf2x7Tqm4tLtjbeEVpD3mRMkqxkzl
+         vS2r9tmrfrecxST4jUa15wTV5YjXaiPwuva+s=
+Message-ID: <4A846F04.9050005@gmail.com>
+Date: Thu, 13 Aug 2009 21:52:36 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-7.4 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: "Brown, Len" <len.brown@intel.com>, linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: hibernate causes nobody cared on acpi irq
+References: <4A833CAD.5050209@gmail.com> <200908130021.34378.rjw@sisk.pl>
+In-Reply-To: <200908130021.34378.rjw@sisk.pl>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+On 08/13/2009 12:21 AM, Rafael J. Wysocki wrote:
+> On Thursday 13 August 2009, Jiri Slaby wrote:
+>> with current mmotm I get this while trying to hibernate from a system in
+>> qemu:
+> 
+> Does it trigger with the "core" test:
 
-------------------
+Yes, but I found out it's totally unrelated to the susp code. There is
+an interrupt storm on IRQ9 after system boot -- 150000 intrs on both
+CPUs in the first minute. Then the message emerges.
 
-From: H. Peter Anvin <hpa@zytor.com>
+It's just a coincidence it appears during hibernation (after interrupts
+enable phase).
 
-commit f1f029c7bfbf4ee1918b90a431ab823bed812504 upstream.
+Any idea what it could be?
 
->From Gabe Black in bugzilla 13888:
-
-native_save_fl is implemented as follows:
-
-  11static inline unsigned long native_save_fl(void)
-  12{
-  13        unsigned long flags;
-  14
-  15        asm volatile("# __raw_save_flags\n\t"
-  16                     "pushf ; pop %0"
-  17                     : "=g" (flags)
-  18                     : /* no input */
-  19                     : "memory");
-  20
-  21        return flags;
-  22}
-
-If gcc chooses to put flags on the stack, for instance because this is
-inlined into a larger function with more register pressure, the offset
-of the flags variable from the stack pointer will change when the
-pushf is performed. gcc doesn't attempt to understand that fact, and
-address used for pop will still be the same. It will write to
-somewhere near flags on the stack but not actually into it and
-overwrite some other value.
-
-I saw this happen in the ide_device_add_all function when running in a
-simulator I work on. I'm assuming that some quirk of how the simulated
-hardware is set up caused the code path this is on to be executed when
-it normally wouldn't.
-
-A simple fix might be to change "=g" to "=r".
-
-Reported-by: Gabe Black <spamforgabe@umich.edu>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- include/asm-x86/irqflags.h |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
---- a/include/asm-x86/irqflags.h
-+++ b/include/asm-x86/irqflags.h
-@@ -12,9 +12,15 @@ static inline unsigned long native_save_
- {
- 	unsigned long flags;
- 
-+	/*
-+	 * Note: this needs to be "=r" not "=rm", because we have the
-+	 * stack offset from what gcc expects at the time the "pop" is
-+	 * executed, and so a memory reference with respect to the stack
-+	 * would end up using the wrong address.
-+	 */
- 	asm volatile("# __raw_save_flags\n\t"
- 		     "pushf ; pop %0"
--		     : "=g" (flags)
-+		     : "=r" (flags)
- 		     : /* no input */
- 		     : "memory");
- 
-
-
+Thanks.
