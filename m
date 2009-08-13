@@ -1,542 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbZHMSmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbZHMSoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755298AbZHMSmV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 14:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbZHMSmV
+	id S1755294AbZHMSoE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 14:44:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbZHMSoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 14:42:21 -0400
-Received: from mail-fx0-f228.google.com ([209.85.220.228]:35737 "EHLO
-	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753470AbZHMSmS convert rfc822-to-8bit (ORCPT
+	Thu, 13 Aug 2009 14:44:03 -0400
+Received: from e39.co.us.ibm.com ([32.97.110.160]:36390 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752657AbZHMSoB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 14:42:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=eojiID4zhiTlje9bX87m1YSMl0r7SBkNPRXR5//NaAvLMrJ5oLJ17l3UuiCXKuFJWY
-         SPkUXB/uTjOC+8x4mAdSC4e7TAVtthj5yirdlCgXmgrmASatgDAr5mSO5i3Bg+f8frg0
-         CpUs9c9xHmttN4UGBcs9BJoX3tEJAOX4g0jdc=
+	Thu, 13 Aug 2009 14:44:01 -0400
+Date: Thu, 13 Aug 2009 13:43:59 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       sds@tycho.nsa.gov, davem@davemloft.net, shemminger@linux-foundation.org,
+       kees@ubuntu.com, morgan@kernel.org, casey@schaufler-ca.com,
+       dwalsh@redhat.com
+Subject: Re: [PATCH 3/3] SELinux: add selinux_kernel_module_request
+Message-ID: <20090813184359.GB8391@us.ibm.com>
+References: <20090813134451.29186.41664.stgit@paris.rdu.redhat.com> <20090813134502.29186.7938.stgit@paris.rdu.redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <191fb4ca0906271134r2c9761e3la56bdea3f66b60f4@mail.gmail.com>
-References: <20090609083406.GE25316@prithivi.gnumonks.org>
-	 <20090619231132.22296525@hyperion.delvare>
-	 <191fb4ca0906271134r2c9761e3la56bdea3f66b60f4@mail.gmail.com>
-Date: Thu, 13 Aug 2009 11:42:17 -0700
-Message-ID: <191fb4ca0908131142m4f976d98yb434da72257f64ea@mail.gmail.com>
-Subject: Re: [lm-sensors] [PATCH] hwmon: Add driver for VIA CPU core 
-	temperature
-From: Juerg Haefliger <juergh@gmail.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Harald Welte <HaraldWelte@viatech.com>,
-       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       lm-sensors@lm-sensors.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090813134502.29186.7938.stgit@paris.rdu.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean,
+Quoting Eric Paris (eparis@redhat.com):
+> This patch adds a new selinux hook so SELinux can arbitrate if a given
+> process should be allowed to trigger a request for the kernel to try to
+> load a module.  This is a different operation than a process trying to load
+> a module itself, which is already protected by CAP_SYS_MODULE.
+> 
+> Signed-off-by: Eric Paris <eparis@redhat.com>
 
-Harald seems to be to busy to answer emails. Can we push my driver upstream?
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-...juerg
-
-
-On Sat, Jun 27, 2009 at 11:34 AM, Juerg Haefliger<juergh@gmail.com> wrote:
-> Hi Jean,
->
->
->> Hi Harald,
->>
->> On Tue, 9 Jun 2009 16:34:06 +0800, Harald Welte wrote:
->>> This is a driver for the on-die digital temperature sensor of
->>> VIA's recent CPU models.
->>>
->>> Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
->>> ---
->>>  drivers/hwmon/Kconfig       |    8 +
->>>  drivers/hwmon/Makefile      |    1 +
->>>  drivers/hwmon/via-cputemp.c |  354 +++++++++++++++++++++++++++++++++++++++++++
->>>  3 files changed, 363 insertions(+), 0 deletions(-)
->>>  create mode 100644 drivers/hwmon/via-cputemp.c
->>
->> Interesting. I'm adding Juerg Haefliger in Cc. A few months ago, Juerg
->> submitted a driver named "c7temp" doing basically the same, with
->> mitigated success. I seem to remember that Juerg's driver was also
->> displaying either the VID or Vcore for the CPU. We don't want to have
->> two drivers for the same hardware, so let's merge everything in one
->> driver and push this upstream.
->>
->> Juerg, you were there first, so I'd like to hear you on this. Are there
->> differences between Harald'd driver and yours? Which one should I pick?
->
-> Personally I don't care which driver you pick as long as we get one
-> into mainline eventually. Just a few comments:
->
-> 1) My driver uses the CPUID instruction to read the performance
-> registers that contain the temp and voltage data. Harald's driver
-> reads MSRs. I don't know if there are any benefits of using one method
-> over the other.
->
-> 2) If we pick Harald's, it would be nice if his driver can also read
-> and export the CPU core voltage.
->
-> 3) Quite a few testers of my driver reported 0 temp readings for some
-> C7 CPUs. I was never able to figure out why some CPUs return 0 temp
-> but I'm guessing it depends on the thermal monitor settings. I'd like
-> to understand what is going on and hope Harald can shed some light.
->
-> ...juerg
->
->
->> For now, here's a review of Harald's driver:
->>
->>>
->>> diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
->>> index d73f5f4..e863833 100644
->>> --- a/drivers/hwmon/Kconfig
->>> +++ b/drivers/hwmon/Kconfig
->>> @@ -787,6 +787,14 @@ config SENSORS_THMC50
->>>         This driver can also be built as a module.  If so, the module
->>>         will be called thmc50.
->>>
->>> +config SENSORS_VIA_CPUTEMP
->>> +     tristate "VIA CPU temperature sensor"
->>> +     depends on X86
->>> +     help
->>> +       If you say yes here you get support for the temperature
->>> +       sensor inside your CPU. Supported all are all known variants
->>> +       of the VIA C7 and Nano.
->>> +
->>>  config SENSORS_VIA686A
->>>       tristate "VIA686A"
->>>       depends on PCI
->>> diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
->>> index 0ae2698..3edf7fa 100644
->>> --- a/drivers/hwmon/Makefile
->>> +++ b/drivers/hwmon/Makefile
->>> @@ -82,6 +82,7 @@ obj-$(CONFIG_SENSORS_SMSC47B397)+= smsc47b397.o
->>>  obj-$(CONFIG_SENSORS_SMSC47M1)       += smsc47m1.o
->>>  obj-$(CONFIG_SENSORS_SMSC47M192)+= smsc47m192.o
->>>  obj-$(CONFIG_SENSORS_THMC50) += thmc50.o
->>> +obj-$(CONFIG_SENSORS_VIA_CPUTEMP)+= via-cputemp.o
->>>  obj-$(CONFIG_SENSORS_VIA686A)        += via686a.o
->>>  obj-$(CONFIG_SENSORS_VT1211) += vt1211.o
->>>  obj-$(CONFIG_SENSORS_VT8231) += vt8231.o
->>> diff --git a/drivers/hwmon/via-cputemp.c b/drivers/hwmon/via-cputemp.c
->>> new file mode 100644
->>> index 0000000..1032355
->>> --- /dev/null
->>> +++ b/drivers/hwmon/via-cputemp.c
->>> @@ -0,0 +1,354 @@
->>> +/*
->>> + * via-cputemp.c - Driver for VIA CPU core temperature monitoring
->>> + * Copyright (C) 2009 VIA Technologies, Inc.
->>> + *
->>> + * based on existing coretemp.c, which is
->>> + *
->>> + * Copyright (C) 2007 Rudolf Marek <r.marek@assembler.cz>
->>> + *
->>> + * This program is free software; you can redistribute it and/or modify
->>> + * it under the terms of the GNU General Public License as published by
->>> + * the Free Software Foundation; version 2 of the License.
->>> + *
->>> + * This program is distributed in the hope that it will be useful,
->>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->>> + * GNU General Public License for more details.
->>> + *
->>> + * You should have received a copy of the GNU General Public License
->>> + * along with this program; if not, write to the Free Software
->>> + * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
->>> + * 02110-1301 USA.
->>> + */
->>> +
->>> +#include <linux/module.h>
->>> +#include <linux/delay.h>
->>> +#include <linux/init.h>
->>> +#include <linux/slab.h>
->>> +#include <linux/jiffies.h>
->>> +#include <linux/hwmon.h>
->>> +#include <linux/sysfs.h>
->>> +#include <linux/hwmon-sysfs.h>
->>> +#include <linux/err.h>
->>> +#include <linux/mutex.h>
->>> +#include <linux/list.h>
->>> +#include <linux/platform_device.h>
->>> +#include <linux/cpu.h>
->>> +#include <asm/msr.h>
->>> +#include <asm/processor.h>
->>> +
->>> +#define DRVNAME      "via-cputemp"
->>> +
->>> +typedef enum { SHOW_TEMP, SHOW_LABEL, SHOW_NAME } SHOW;
->>
->> No typedef in kernel code please, an enum is enough.
->>
->>> +
->>> +/*
->>> + * Functions declaration
->>> + */
->>> +
->>> +struct via_cputemp_data {
->>> +     struct device *hwmon_dev;
->>> +     const char *name;
->>> +     u32 id;
->>> +     u32 msr;
->>> +};
->>> +
->>> +/*
->>> + * Sysfs stuff
->>> + */
->>> +
->>> +static ssize_t show_name(struct device *dev, struct device_attribute
->>> +                       *devattr, char *buf)
->>> +{
->>> +     int ret;
->>> +     struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
->>> +     struct via_cputemp_data *data = dev_get_drvdata(dev);
->>> +
->>> +     if (attr->index == SHOW_NAME)
->>> +             ret = sprintf(buf, "%s\n", data->name);
->>> +     else    /* show label */
->>> +             ret = sprintf(buf, "Core %d\n", data->id);
->>> +     return ret;
->>> +}
->>> +
->>> +static ssize_t show_temp(struct device *dev,
->>> +                      struct device_attribute *devattr, char *buf)
->>> +{
->>> +     struct via_cputemp_data *data = dev_get_drvdata(dev);
->>> +     u32 eax, edx;
->>> +     int err;
->>> +
->>> +     err = rdmsr_safe_on_cpu(data->id, data->msr, &eax, &edx);
->>> +     if (err)
->>> +             return -EAGAIN;
->>> +
->>> +     err = sprintf(buf, "%d\n", eax & 0xffffff);
->>> +
->>> +     return err;
->>
->> return sprintf()... would be clearer, as the returned value is never an
->> error in this case.
->>
->> Also note that in theory the result could overflow once multiplied by
->> 1000.
->>
->>> +}
->>> +
->>> +static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp, NULL,
->>> +                       SHOW_TEMP);
->>> +static SENSOR_DEVICE_ATTR(temp1_label, S_IRUGO, show_name, NULL, SHOW_LABEL);
->>> +static SENSOR_DEVICE_ATTR(name, S_IRUGO, show_name, NULL, SHOW_NAME);
->>> +
->>> +static struct attribute *via_cputemp_attributes[] = {
->>> +     &sensor_dev_attr_name.dev_attr.attr,
->>> +     &sensor_dev_attr_temp1_label.dev_attr.attr,
->>> +     &sensor_dev_attr_temp1_input.dev_attr.attr,
->>> +     NULL
->>> +};
->>> +
->>> +static const struct attribute_group via_cputemp_group = {
->>> +     .attrs = via_cputemp_attributes,
->>> +};
->>> +
->>> +static int __devinit via_cputemp_probe(struct platform_device *pdev)
->>> +{
->>> +     struct via_cputemp_data *data;
->>> +     struct cpuinfo_x86 *c = &cpu_data(pdev->id);
->>> +     int err;
->>> +     u32 eax, edx;
->>> +
->>> +     if (!(data = kzalloc(sizeof(struct via_cputemp_data), GFP_KERNEL))) {
->>
->> ERROR: do not use assignment in if condition
->>
->>> +             err = -ENOMEM;
->>> +             dev_err(&pdev->dev, "Out of memory\n");
->>> +             goto exit;
->>> +     }
->>> +
->>> +     data->id = pdev->id;
->>
->> pdev->id is an unsigned int, so shouldn't data->id be too?
->>
->>> +     data->name = "via-cputemp";
->>
->> This must be made "via_cputemp", as dashes aren't accepted in hwmon
->> device names.
->>
->>> +
->>> +     switch (c->x86_model) {
->>> +     case 0xA:
->>> +             /* C7 A */
->>> +     case 0xD:
->>> +             /* C7 D */
->>> +             data->msr = 0x1169;
->>> +             break;
->>> +     case 0xF:
->>> +             /* Nano */
->>> +             data->msr = 0x1423;
->>> +             break;
->>> +     default:
->>> +             err = -ENODEV;
->>> +             goto exit_free;
->>> +     }
->>> +
->>> +     /* test if we can access the TEMPERATURE MSR */
->>> +     err = rdmsr_safe_on_cpu(data->id, data->msr, &eax, &edx);
->>> +     if (err) {
->>
->> In the runtime read function, you handle errors with -EAGAIN, which
->> means transient errors are expected. If such an error happens at
->> registration time, we could see random failures. That's confusing for
->> the user. I believe you should either skip the test at registration
->> (are there really CPU models where it always fails?) or try more than
->> once to rule out temporary failures.
->>
->>> +             dev_err(&pdev->dev,
->>> +                     "Unable to access TEMPERATURE MSR, giving up\n");
->>> +             goto exit_free;
->>> +     }
->>> +
->>> +     platform_set_drvdata(pdev, data);
->>> +
->>> +     if ((err = sysfs_create_group(&pdev->dev.kobj, &via_cputemp_group)))
->>
->> ERROR: do not use assignment in if condition
->>
->>> +             goto exit_free;
->>> +
->>> +     data->hwmon_dev = hwmon_device_register(&pdev->dev);
->>> +     if (IS_ERR(data->hwmon_dev)) {
->>> +             err = PTR_ERR(data->hwmon_dev);
->>> +             dev_err(&pdev->dev, "Class registration failed (%d)\n",
->>> +                     err);
->>> +             goto exit_class;
->>> +     }
->>> +
->>> +     return 0;
->>> +
->>> +exit_class:
->>> +     sysfs_remove_group(&pdev->dev.kobj, &via_cputemp_group);
->>> +exit_free:
->>
->> A platform_set_drvdata(pdev, NULL) would be welcome here.
->>
->>> +     kfree(data);
->>
->> This is a little inconsistent, as the first label refers to the last
->> action that succeeded and the second label refers to the first cleanup
->> step to execute. Renaming exit_class to exit_remove would help.
->>
->>> +exit:
->>> +     return err;
->>> +}
->>> +
->>> +static int __devexit via_cputemp_remove(struct platform_device *pdev)
->>> +{
->>> +     struct via_cputemp_data *data = platform_get_drvdata(pdev);
->>> +
->>> +     hwmon_device_unregister(data->hwmon_dev);
->>> +     sysfs_remove_group(&pdev->dev.kobj, &via_cputemp_group);
->>> +     platform_set_drvdata(pdev, NULL);
->>> +     kfree(data);
->>> +     return 0;
->>> +}
->>> +
->>> +static struct platform_driver via_cputemp_driver = {
->>> +     .driver = {
->>> +             .owner = THIS_MODULE,
->>> +             .name = DRVNAME,
->>> +     },
->>> +     .probe = via_cputemp_probe,
->>> +     .remove = __devexit_p(via_cputemp_remove),
->>> +};
->>> +
->>> +struct pdev_entry {
->>> +     struct list_head list;
->>> +     struct platform_device *pdev;
->>> +     unsigned int cpu;
->>> +};
->>> +
->>> +static LIST_HEAD(pdev_list);
->>> +static DEFINE_MUTEX(pdev_list_mutex);
->>> +
->>> +static int __cpuinit via_cputemp_device_add(unsigned int cpu)
->>> +{
->>> +     int err;
->>> +     struct platform_device *pdev;
->>> +     struct pdev_entry *pdev_entry;
->>> +
->>> +     pdev = platform_device_alloc(DRVNAME, cpu);
->>> +     if (!pdev) {
->>> +             err = -ENOMEM;
->>> +             printk(KERN_ERR DRVNAME ": Device allocation failed\n");
->>> +             goto exit;
->>> +     }
->>> +
->>> +     pdev_entry = kzalloc(sizeof(struct pdev_entry), GFP_KERNEL);
->>> +     if (!pdev_entry) {
->>> +             err = -ENOMEM;
->>> +             goto exit_device_put;
->>> +     }
->>> +
->>> +     err = platform_device_add(pdev);
->>> +     if (err) {
->>> +             printk(KERN_ERR DRVNAME ": Device addition failed (%d)\n",
->>> +                    err);
->>> +             goto exit_device_free;
->>> +     }
->>> +
->>> +     pdev_entry->pdev = pdev;
->>> +     pdev_entry->cpu = cpu;
->>> +     mutex_lock(&pdev_list_mutex);
->>> +     list_add_tail(&pdev_entry->list, &pdev_list);
->>> +     mutex_unlock(&pdev_list_mutex);
->>> +
->>> +     return 0;
->>> +
->>> +exit_device_free:
->>> +     kfree(pdev_entry);
->>> +exit_device_put:
->>> +     platform_device_put(pdev);
->>> +exit:
->>> +     return err;
->>> +}
->>> +
->>> +#ifdef CONFIG_HOTPLUG_CPU
->>> +static void via_cputemp_device_remove(unsigned int cpu)
->>> +{
->>> +     struct pdev_entry *p, *n;
->>> +     mutex_lock(&pdev_list_mutex);
->>> +     list_for_each_entry_safe(p, n, &pdev_list, list) {
->>> +             if (p->cpu == cpu) {
->>> +                     platform_device_unregister(p->pdev);
->>> +                     list_del(&p->list);
->>> +                     kfree(p);
->>> +             }
->>> +     }
->>> +     mutex_unlock(&pdev_list_mutex);
->>> +}
->>> +
->>> +static int __cpuinit via_cputemp_cpu_callback(struct notifier_block *nfb,
->>> +                              unsigned long action, void *hcpu)
->>> +{
->>> +     unsigned int cpu = (unsigned long) hcpu;
->>> +
->>> +     switch (action) {
->>> +     case CPU_ONLINE:
->>> +     case CPU_DOWN_FAILED:
->>> +             via_cputemp_device_add(cpu);
->>> +             break;
->>> +     case CPU_DOWN_PREPARE:
->>> +             via_cputemp_device_remove(cpu);
->>> +             break;
->>> +     }
->>> +     return NOTIFY_OK;
->>> +}
->>> +
->>> +static struct notifier_block via_cputemp_cpu_notifier __refdata = {
->>> +     .notifier_call = via_cputemp_cpu_callback,
->>> +};
->>> +#endif                               /* !CONFIG_HOTPLUG_CPU */
->>> +
->>> +static int __init via_cputemp_init(void)
->>> +{
->>> +     int i, err = -ENODEV;
->>
->> err would be better initialized when the error occurs, for consistency.
->>
->>> +     struct pdev_entry *p, *n;
->>> +
->>> +     if (cpu_data(0).x86_vendor != X86_VENDOR_CENTAUR) {
->>> +             printk(KERN_DEBUG "not a VIA CPU\n");
->>
->> Missing DRV_NAME.
->>
->>> +             goto exit;
->>> +     }
->>> +
->>> +     err = platform_driver_register(&via_cputemp_driver);
->>> +     if (err)
->>> +             goto exit;
->>> +
->>> +     for_each_online_cpu(i) {
->>> +             struct cpuinfo_x86 *c = &cpu_data(i);
->>> +
->>> +             if (c->x86 != 6)
->>> +                     continue;
->>> +
->>> +             if (c->x86_model < 0x0a)
->>> +                     continue;
->>> +
->>> +             if (c->x86_model > 0x0f) {
->>> +                     printk(KERN_WARNING DRVNAME ": Unknown CPU "
->>> +                             "model %x\n", c->x86_model);
->>
->> Please use 0x%x for clarity.
->>
->>> +                     continue;
->>> +             }
->>> +
->>> +             err = via_cputemp_device_add(i);
->>> +             if (err)
->>> +                     goto exit_devices_unreg;
->>> +     }
->>> +     if (list_empty(&pdev_list)) {
->>> +             err = -ENODEV;
->>> +             goto exit_driver_unreg;
->>> +     }
->>> +
->>> +#ifdef CONFIG_HOTPLUG_CPU
->>> +     register_hotcpu_notifier(&via_cputemp_cpu_notifier);
->>> +#endif
->>> +     return 0;
->>> +
->>> +exit_devices_unreg:
->>> +     mutex_lock(&pdev_list_mutex);
->>> +     list_for_each_entry_safe(p, n, &pdev_list, list) {
->>> +             platform_device_unregister(p->pdev);
->>> +             list_del(&p->list);
->>> +             kfree(p);
->>> +     }
->>> +     mutex_unlock(&pdev_list_mutex);
->>> +exit_driver_unreg:
->>> +     platform_driver_unregister(&via_cputemp_driver);
->>> +exit:
->>> +     return err;
->>> +}
->>> +
->>> +static void __exit via_cputemp_exit(void)
->>> +{
->>> +     struct pdev_entry *p, *n;
->>> +#ifdef CONFIG_HOTPLUG_CPU
->>> +     unregister_hotcpu_notifier(&via_cputemp_cpu_notifier);
->>> +#endif
->>> +     mutex_lock(&pdev_list_mutex);
->>> +     list_for_each_entry_safe(p, n, &pdev_list, list) {
->>> +             platform_device_unregister(p->pdev);
->>> +             list_del(&p->list);
->>> +             kfree(p);
->>> +     }
->>> +     mutex_unlock(&pdev_list_mutex);
->>> +     platform_driver_unregister(&via_cputemp_driver);
->>> +}
->>> +
->>> +MODULE_AUTHOR("Harald Welte <HaraldWelte@viatech.com>");
->>> +MODULE_DESCRIPTION("VIA CPU temperature monitor");
->>> +MODULE_LICENSE("GPL");
->>> +
->>> +module_init(via_cputemp_init)
->>> +module_exit(via_cputemp_exit)
->>
->> The rest looks OK.
->>
->> --
->> Jean Delvare
->>
->
+> ---
+> 
+>  security/selinux/hooks.c                     |    6 ++++++
+>  security/selinux/include/av_perm_to_string.h |    1 +
+>  security/selinux/include/av_permissions.h    |    1 +
+>  3 files changed, 8 insertions(+), 0 deletions(-)
+> 
+> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+> index 38afca9..b0d72f1 100644
+> --- a/security/selinux/hooks.c
+> +++ b/security/selinux/hooks.c
+> @@ -3296,6 +3296,11 @@ static int selinux_kernel_create_files_as(struct cred *new, struct inode *inode)
+>  	return 0;
+>  }
+> 
+> +static int selinux_kernel_module_request(void)
+> +{
+> +	return task_has_system(current, SYSTEM__MODULE_REQUEST);
+> +}
+> +
+>  static int selinux_task_setpgid(struct task_struct *p, pid_t pgid)
+>  {
+>  	return current_has_perm(p, PROCESS__SETPGID);
+> @@ -5457,6 +5462,7 @@ static struct security_operations selinux_ops = {
+>  	.cred_prepare =			selinux_cred_prepare,
+>  	.kernel_act_as =		selinux_kernel_act_as,
+>  	.kernel_create_files_as =	selinux_kernel_create_files_as,
+> +	.kernel_module_request =	selinux_kernel_module_request,
+>  	.task_setpgid =			selinux_task_setpgid,
+>  	.task_getpgid =			selinux_task_getpgid,
+>  	.task_getsid =			selinux_task_getsid,
+> diff --git a/security/selinux/include/av_perm_to_string.h b/security/selinux/include/av_perm_to_string.h
+> index 31df1d7..2b683ad 100644
+> --- a/security/selinux/include/av_perm_to_string.h
+> +++ b/security/selinux/include/av_perm_to_string.h
+> @@ -107,6 +107,7 @@
+>     S_(SECCLASS_SYSTEM, SYSTEM__SYSLOG_READ, "syslog_read")
+>     S_(SECCLASS_SYSTEM, SYSTEM__SYSLOG_MOD, "syslog_mod")
+>     S_(SECCLASS_SYSTEM, SYSTEM__SYSLOG_CONSOLE, "syslog_console")
+> +   S_(SECCLASS_SYSTEM, SYSTEM__MODULE_REQUEST, "module_request")
+>     S_(SECCLASS_CAPABILITY, CAPABILITY__CHOWN, "chown")
+>     S_(SECCLASS_CAPABILITY, CAPABILITY__DAC_OVERRIDE, "dac_override")
+>     S_(SECCLASS_CAPABILITY, CAPABILITY__DAC_READ_SEARCH, "dac_read_search")
+> diff --git a/security/selinux/include/av_permissions.h b/security/selinux/include/av_permissions.h
+> index 0b41ad5..0546d61 100644
+> --- a/security/selinux/include/av_permissions.h
+> +++ b/security/selinux/include/av_permissions.h
+> @@ -530,6 +530,7 @@
+>  #define SYSTEM__SYSLOG_READ                       0x00000002UL
+>  #define SYSTEM__SYSLOG_MOD                        0x00000004UL
+>  #define SYSTEM__SYSLOG_CONSOLE                    0x00000008UL
+> +#define SYSTEM__MODULE_REQUEST                    0x00000010UL
+>  #define CAPABILITY__CHOWN                         0x00000001UL
+>  #define CAPABILITY__DAC_OVERRIDE                  0x00000002UL
+>  #define CAPABILITY__DAC_READ_SEARCH               0x00000004UL
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
