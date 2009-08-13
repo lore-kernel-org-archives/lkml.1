@@ -1,148 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbZHMWLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470AbZHMWNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754313AbZHMWLq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 18:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbZHMWLp
+	id S1754470AbZHMWNt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 18:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbZHMWNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 18:11:45 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:5479 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751591AbZHMWLo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 18:11:44 -0400
-From: "Fischer, Anna" <anna.fischer@hp.com>
-To: Arnd Bergmann <arnd@arndb.de>
-CC: "Paul Congdon (UC Davis)" <ptcongdon@ucdavis.edu>,
-       "'Stephen Hemminger'" <shemminger@linux-foundation.org>,
-       "bridge@lists.linux-foundation.org" 
-	<bridge@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "evb@yahoogroups.com" <evb@yahoogroups.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "kaber@trash.net" <kaber@trash.net>,
-       "adobriyan@gmail.com" <adobriyan@gmail.com>,
-       "'Eric Biederman'" <ebiederm@xmission.com>
-Date: Thu, 13 Aug 2009 22:11:06 +0000
-Subject: RE: [PATCH][RFC] net/bridge: add basic VEPA support
-Thread-Topic: [PATCH][RFC] net/bridge: add basic VEPA support
-Thread-Index: AcobadLaFqsqRfjsQ2ypyNMBGTOH6gA9U9pg
-Message-ID: <0199E0D51A61344794750DC57738F58E6D6B0C7111@GVW1118EXC.americas.hpqcorp.net>
-References: <0199E0D51A61344794750DC57738F58E67D2DCECBB@GVW1118EXC.americas.hpqcorp.net>
- <200908121519.36808.arnd@arndb.de>
- <0199E0D51A61344794750DC57738F58E6D6AE9A0C1@GVW1118EXC.americas.hpqcorp.net>
- <200908121827.28905.arnd@arndb.de>
-In-Reply-To: <200908121827.28905.arnd@arndb.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 13 Aug 2009 18:13:48 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37712 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754426AbZHMWNs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 18:13:48 -0400
+X-Authenticated: #1587495
+X-Provags-ID: V01U2FsdGVkX18+kiIAq5s+DpXL1dhl9/Tk0vVHcTsm3ykSqFNRJD
+	/zw6zRhUpgg9aU
+From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [patch 28/74] thinkpad-acpi: fix incorrect use of TPACPI_BRGHT_MODE_ECNVRAM
+Date: Fri, 14 Aug 2009 00:13:38 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-sidux-amd64; KDE/4.3.0; x86_64; ; )
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, stable-review@kernel.org,
+       Len Brown <len.brown@intel.com>
+References: <20090813194935.985368088@mini.kroah.org> <20090813195128.703325684@mini.kroah.org> <200908140006.45800.s.L-H@gmx.de>
+In-Reply-To: <200908140006.45800.s.L-H@gmx.de>
 MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908140013.48439.s.L-H@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.52
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Subject: Re: [PATCH][RFC] net/bridge: add basic VEPA support
-> 
-> On Wednesday 12 August 2009, Fischer, Anna wrote:
-> > Yes, for the basic VEPA this is not important. For MultiChannel VEPA,
-> it
-> > would be nice if a macvlan device could operate as VEPA and as a
-> typical
-> > VEB (VEB = traditional bridge but no learning).
-> 
-> Right, this would be a logical extension in that scenario. I would
-> imagine
-> that in many scenarios running a VEB also means that you want to use
-> the advanced ebtables/iptables filtering of the bridge subsystem, but
-> if all guests trust each other, using macvlan to bridge between them
-> sounds useful as well, if only for simplicity.
-> 
-> > Basically, what we would need to be able to support is running a VEB
-> and
-> > a VEPA simultaneously on the same uplink port (e.g. the physical
-> device).
-> > A new component (called the S-Component) would then multiplex frames
-> > to the VEB or the VEPA based on a tagging scheme.
-> 
-> You can of course do that by adding one port of the S-component to
-> a port of a bridge, and using another port of the S-component to
-> create macvlan devices, or you could have multiple ports of the
-> S-component each with a macvlan multiplexor.
-> 
-> Just to make sure I get the chain right, would it look like this?
-> (adapted from Paul's PDF)
-> 
-> eth0 (external) ---scomponent0 --- vlan2 --- macvlan0
->                  |              |         \- macvlan1
->                  |               \-vlan3 --- macvlan2
->                  |-scomponent1 --- vlan2 --- br0 --- tap0
->                  |                             \ --- tap1
->                  |-scomponent2 --- vlan3 --- macvlan3
->                  \-scomponent3 ---  ---  --- macvlan4
-> 
-> In this scenario, tap0 and tap1 could communicate over the bridge
-> without
-> tagging, while any data going out through the S-Component gets tagged
-> with both a 802.1q Q-Tag and an S-Tag.
+Hi
 
-Yes, that looks right. If all the different interfaces, e.g. bridge ports,
-macvlan devices, vlan tagging devices can be stacked that easily without
-any known issues, that would be great.
+On Friday 14 August 2009, Stefan Lippers-Hollmann wrote:
+[...]
+> > From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+> > 
+> > commit 59fe4fe34d7afdf63208124f313be9056feaa2f4 upstream.
+[...]
+> > This fixes a regression in 2.6.30, bugzilla #13826
+> 
+> As already reported in [1] and confirmed by hmh in [2], this patch breaks 
+> compiling thinkpad_acpi in 2.6.31-rc5.
+
+ERR, 2.6.30.5-rc1 of course, it's fine in linux-2.6 HEAD/ 2.6.31-rc5[-git9]
+as that contains the additionally required patches.
+
+Sorry about the confusion.
+	Stefan Lippers-Hollmann
 
 
-> macvlan4 would be a guest that does its own tagging, and the external
-> switch would need to check the VLAN IDs, but it could communicate with
-> any other guest by tagging the frames as 2 or 3.
+[...]
+>   CC [M]  drivers/platform/x86/hp-wmi.o
+>   CC [M]  drivers/platform/x86/sony-laptop.o
+>   CC [M]  drivers/platform/x86/thinkpad_acpi.o
+> drivers/platform/x86/thinkpad_acpi.c:5769: error: array type has incomplete element type
+> drivers/platform/x86/thinkpad_acpi.c:5771: error: implicit declaration of function 'TPACPI_Q_IBM'
+> drivers/platform/x86/thinkpad_acpi.c: In function 'brightness_init':
+> drivers/platform/x86/thinkpad_acpi.c:5799: error: implicit declaration of function 'tpacpi_check_quirks'
+> drivers/platform/x86/thinkpad_acpi.c:5800: warning: type defaults to 'int' in declaration of 'type name'
+> drivers/platform/x86/thinkpad_acpi.c:5800: warning: type defaults to 'int' in declaration of 'type name'
+> drivers/platform/x86/thinkpad_acpi.c:5800: error: size of array 'type name' is negative
+> make[6]: *** [drivers/platform/x86/thinkpad_acpi.o] Error 1
+> make[5]: *** [drivers/platform/x86] Error 2
+> make[4]: *** [drivers/platform] Error 2
+> make[3]: *** [drivers] Error 2
 > 
-> macvlan2 and macvlan3 could communicate with each other and with
-> external
-> guests in vlan3.
+> Regards
+> 	Stefan Lippers-Hollmann
 > 
-> Guests on scomponent1 and scomponent3 could in theory have
-> subdivisions of the network with macvlan running in the guest
-> to run containers.
+> [1]	From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
+> 	Date: Fri, 7 Aug 2009 01:08:10 +0200
+> 	Subject: Re: patch thinkpad-acpi-fix-incorrect-use-of-tpacpi_brght_mode_ecnvram.patch added to 2.6.30-stable tree
+> 	Message-Id: <200908070108.15095.s.L-H@gmx.de>
+> 	http://lkml.indiana.edu/hypermail/linux/kernel/0908.0/02520.html
+> [2]	From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+> 	Date: Thu, 6 Aug 2009 20:31:11 -0300
+> 	Subject: Re: patch thinkpad-acpi-fix-incorrect-use-of-tpacpi_brght_mode_ecnvram.patch added to 2.6.30-stable tree
+> 	Message-ID: <20090806233111.GB14381@khazad-dum.debian.net>
+> 	http://lkml.indiana.edu/hypermail/linux/kernel/0908.0/02526.html
 > 
-> > I think the question here was whether there is a way for a macvlan
-> interface
-> > to be set to promiscuous mode. At the moment, I believe a macvlan
-> interface
-> > only receives packets based on its destination address (this is for
-> unicast
-> > packets now). What if a macvlan interface wanted to get all packets
-> that
-> > are being received (either on the physical device, or on a particular
-> > VLAN if using macvlan nested in vlan). Would this work easily?
-> Imagine
-> > you have a virtual machine attached to that macvlan / macvtap device
-> and
-> > this VM wants to do packet inspection or network traffic monitoring
-> on
-> > all packets flowing through the virtualized server.
-> 
-> Ok, I see. As I said, the host could easily get access to all frames
-> on macvlan downstream ports by opening a raw socket on the upstream
-> port (with some extra work if we want to support this in bridge mode).
-> 
-> If you want the inspection to be done in a guest rather than the host,
-> the easiest way to achieve that would be to connect that raw socket
-> to the guest using Or's raw frontend for qemu.
-
-I am not too familiar with that raw frontend for qemu to be honest, but 
-if it can share the physical device with other macvlan interfaces 
-simultaneously, then I think that would indeed be sufficient to support
-promiscuous mode ports. We would need to have a similar sort of driver
-for Xen and other hypervisor solutions again as well though.
-
-If it is possible to easily stack macvlan devices and bridges as you
-describe above, then a promiscuous port should also be realized quite
-easily as a typical bridge port, e.g. as shown above tap0 and tap1 
-would be typical, traditional bridge ports and though could send
-and receive from/with any MAC addresses they like.
-
-Anna
+> > Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+> > Reported-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+> > Signed-off-by: Len Brown <len.brown@intel.com>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+[...]
