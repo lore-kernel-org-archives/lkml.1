@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbZHMO3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbZHMO36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753476AbZHMO3f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 10:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbZHMO3e
+	id S1753545AbZHMO36 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 10:29:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZHMO35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 10:29:34 -0400
-Received: from 89-19-13-10.cizgibilgisayar.com ([89.19.13.10]:4724 "HELO
-	localhost" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751344AbZHMO3e convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 10:29:34 -0400
-X-Greylist: delayed 3668 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Aug 2009 10:29:33 EDT
-Reply-To: iletisim@isilkirtasiye.com
-Message-ID: <f40b79971f472aa18c977abd2ef24732@isilkirtasiye.com>
-From: "=?iso-8859-9?B?Sf79bCBL/XJ0YXNpeWU=?=" <iletisim@isilkirtasiye.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: =?iso-8859-9?B?Sd5JTCBLSVJUQVPdWUUgS0FNUEFOWUFMQVJJ?=
-Date: Thu, 13 Aug 2009 16:28:27 +0300
+	Thu, 13 Aug 2009 10:29:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37963 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751719AbZHMO35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 10:29:57 -0400
+Date: Thu, 13 Aug 2009 11:29:36 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH 1/2] perf tools: Add a per tracepoint counter attribute
+	to get raw sample
+Message-ID: <20090813142936.GG3495@ghostprotocols.net>
+References: <1250152039-7284-1-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-9"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250152039-7284-1-git-send-email-fweisbec@gmail.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOPTAN FÝYATINA PAREKENDE KIRTASÝYE.
-ÜSTELÝK ADRESE TESLÝM.
-IÞIL KIRTASÝYE SÝPARÝÞ TEL: 
+Em Thu, Aug 13, 2009 at 10:27:18AM +0200, Frederic Weisbecker escreveu:
+> Add a new flag field while opening a tracepoint perf counter:
+> 
+> 	-e tracepoint_subsystem:tracepoint_name:flags
+> 
+> This is intended to be generic although for now it only supports the
+> r[e[c[o[r[d]]]]] flag:
+> 
+> 	./perf record -e workqueue:workqueue_insertion:record
+> 	./perf record -e workqueue:workqueue_insertion:r
+> 
+> will have the same effect: enabling the raw samples record for the
+> given tracepoint counter.
+> 
+> In the future, we may want to support further flags, separated by
+> commas.
 
-                                     496 20 61 
-      
-                		
-Birlik mahallesi 441.cadde 458 sokak 25/A Çankaya / Ankara		
-TEL : 0312  496 20 61      e-mail : isilkirtasiye@hotmail.com		
-FAX : 0312 496 20 62        web adres : www.isilkirtasiye.com
+Will you at some point get those commit messages massaged into 'perf
+record --help'? :-)
 
-
-
+- Arnaldo
