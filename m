@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbZHMUBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932243AbZHMT7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984AbZHMUBB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbZHMUAW
+	id S932243AbZHMT7x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932229AbZHMT7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:00:22 -0400
-Received: from kroah.org ([198.145.64.141]:41996 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:59:51 -0400
+Received: from kroah.org ([198.145.64.141]:41841 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755928AbZHMUAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:00:15 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:35 2009
-Message-Id: <20090813195135.282259870@mini.kroah.org>
+	id S932222AbZHMT7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:50 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:31 2009
+Message-Id: <20090813195131.225373807@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:47 -0700
+Date: Thu, 13 Aug 2009 12:50:20 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [patch 72/74] NFS: Fix an O_DIRECT Oops...
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 45/74] ide: relax DMA info validity checking
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=nfs-fix-an-o_direct-oops.patch
+Content-Disposition: inline; filename=ide-relax-dma-info-validity-checking.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,212 +31,100 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-commit 1ae88b2e446261c038f2c0c3150ffae142b227a2 upstream.
+commit 346c17a6cf60375323adfaa4b8a9d841049f890e upstream.
 
-We can't call nfs_readdata_release()/nfs_writedata_release() without
-first initialising and referencing args.context. Doing so inside
-nfs_direct_read_schedule_segment()/nfs_direct_write_schedule_segment()
-causes an Oops.
+There are some broken devices that report multiple DMA xfer modes
+enabled at once (ATA spec doesn't allow it) but otherwise work fine
+with DMA so just delete ide_id_dma_bug().
 
-We should rather be calling nfs_readdata_free()/nfs_writedata_free() in
-those cases.
+[ As discovered by detective work by Frans and Bart, due to how
+  handling of the ID block was handled before commit c419993
+  ("ide-iops: only clear DMA words on setting DMA mode") this
+  check was always seeing zeros in the fields or other similar
+  garbage.  Therefore this check wasn't actually checking anything.
+  Now that the tests actually check the real bits, all we see are
+  devices that trigger the check yet work perfectly fine, therefore
+  killing this useless check is the best thing to do. -DaveM ]
 
-Looking at the O_DIRECT code, the "struct nfs_direct_req" is already
-referencing the nfs_open_context for us. Since the readdata and writedata
-structures carry a reference to that, we can simplify things by getting rid
-of the extra nfs_open_context references, so that we can replace all
-instances of nfs_readdata_release()/nfs_writedata_release().
-
-Reported-by: Catalin Marinas <catalin.marinas@arm.com>
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-Tested-by: Catalin Marinas <catalin.marinas@arm.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Reported-by: Frans Pop <elendil@planet.nl>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfs/direct.c        |   20 ++++++++++----------
- fs/nfs/read.c          |    6 ++----
- fs/nfs/write.c         |    6 ++----
- include/linux/nfs_fs.h |    5 ++---
- 4 files changed, 16 insertions(+), 21 deletions(-)
+ drivers/ide/ide-dma.c  |   21 ---------------------
+ drivers/ide/ide-iops.c |    3 ---
+ include/linux/ide.h    |    2 --
+ 3 files changed, 26 deletions(-)
 
---- a/fs/nfs/direct.c
-+++ b/fs/nfs/direct.c
-@@ -255,7 +255,7 @@ static void nfs_direct_read_release(void
+--- a/drivers/ide/ide-dma.c
++++ b/drivers/ide/ide-dma.c
+@@ -362,9 +362,6 @@ static int ide_tune_dma(ide_drive_t *dri
+ 	if (__ide_dma_bad_drive(drive))
+ 		return 0;
  
- 	if (put_dreq(dreq))
- 		nfs_direct_complete(dreq);
--	nfs_readdata_release(calldata);
-+	nfs_readdata_free(data);
- }
- 
- static const struct rpc_call_ops nfs_read_direct_ops = {
-@@ -311,14 +311,14 @@ static ssize_t nfs_direct_read_schedule_
- 					data->npages, 1, 0, data->pagevec, NULL);
- 		up_read(&current->mm->mmap_sem);
- 		if (result < 0) {
--			nfs_readdata_release(data);
-+			nfs_readdata_free(data);
- 			break;
- 		}
- 		if ((unsigned)result < data->npages) {
- 			bytes = result * PAGE_SIZE;
- 			if (bytes <= pgbase) {
- 				nfs_direct_release_pages(data->pagevec, result);
--				nfs_readdata_release(data);
-+				nfs_readdata_free(data);
- 				break;
- 			}
- 			bytes -= pgbase;
-@@ -331,7 +331,7 @@ static ssize_t nfs_direct_read_schedule_
- 		data->inode = inode;
- 		data->cred = msg.rpc_cred;
- 		data->args.fh = NFS_FH(inode);
--		data->args.context = get_nfs_open_context(ctx);
-+		data->args.context = ctx;
- 		data->args.offset = pos;
- 		data->args.pgbase = pgbase;
- 		data->args.pages = data->pagevec;
-@@ -438,7 +438,7 @@ static void nfs_direct_free_writedata(st
- 		struct nfs_write_data *data = list_entry(dreq->rewrite_list.next, struct nfs_write_data, pages);
- 		list_del(&data->pages);
- 		nfs_direct_release_pages(data->pagevec, data->npages);
--		nfs_writedata_release(data);
-+		nfs_writedata_free(data);
- 	}
- }
- 
-@@ -531,7 +531,7 @@ static void nfs_direct_commit_release(vo
- 
- 	dprintk("NFS: %5u commit returned %d\n", data->task.tk_pid, status);
- 	nfs_direct_write_complete(dreq, data->inode);
--	nfs_commitdata_release(calldata);
-+	nfs_commit_free(data);
- }
- 
- static const struct rpc_call_ops nfs_commit_direct_ops = {
-@@ -564,7 +564,7 @@ static void nfs_direct_commit_schedule(s
- 	data->args.fh = NFS_FH(data->inode);
- 	data->args.offset = 0;
- 	data->args.count = 0;
--	data->args.context = get_nfs_open_context(dreq->ctx);
-+	data->args.context = dreq->ctx;
- 	data->res.count = 0;
- 	data->res.fattr = &data->fattr;
- 	data->res.verf = &data->verf;
-@@ -725,14 +725,14 @@ static ssize_t nfs_direct_write_schedule
- 					data->npages, 0, 0, data->pagevec, NULL);
- 		up_read(&current->mm->mmap_sem);
- 		if (result < 0) {
--			nfs_writedata_release(data);
-+			nfs_writedata_free(data);
- 			break;
- 		}
- 		if ((unsigned)result < data->npages) {
- 			bytes = result * PAGE_SIZE;
- 			if (bytes <= pgbase) {
- 				nfs_direct_release_pages(data->pagevec, result);
--				nfs_writedata_release(data);
-+				nfs_writedata_free(data);
- 				break;
- 			}
- 			bytes -= pgbase;
-@@ -747,7 +747,7 @@ static ssize_t nfs_direct_write_schedule
- 		data->inode = inode;
- 		data->cred = msg.rpc_cred;
- 		data->args.fh = NFS_FH(inode);
--		data->args.context = get_nfs_open_context(ctx);
-+		data->args.context = ctx;
- 		data->args.offset = pos;
- 		data->args.pgbase = pgbase;
- 		data->args.pages = data->pagevec;
---- a/fs/nfs/read.c
-+++ b/fs/nfs/read.c
-@@ -59,17 +59,15 @@ struct nfs_read_data *nfs_readdata_alloc
- 	return p;
- }
- 
--static void nfs_readdata_free(struct nfs_read_data *p)
-+void nfs_readdata_free(struct nfs_read_data *p)
- {
- 	if (p && (p->pagevec != &p->page_array[0]))
- 		kfree(p->pagevec);
- 	mempool_free(p, nfs_rdata_mempool);
- }
- 
--void nfs_readdata_release(void *data)
-+static void nfs_readdata_release(struct nfs_read_data *rdata)
- {
--	struct nfs_read_data *rdata = data;
+-	if (ide_id_dma_bug(drive))
+-		return 0;
 -
- 	put_nfs_open_context(rdata->args.context);
- 	nfs_readdata_free(rdata);
- }
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -84,17 +84,15 @@ struct nfs_write_data *nfs_writedata_all
- 	return p;
+ 	if (hwif->host_flags & IDE_HFLAG_TRUST_BIOS_FOR_DMA)
+ 		return config_drive_for_dma(drive);
+ 
+@@ -395,24 +392,6 @@ static int ide_dma_check(ide_drive_t *dr
+ 	return -1;
  }
  
--static void nfs_writedata_free(struct nfs_write_data *p)
-+void nfs_writedata_free(struct nfs_write_data *p)
- {
- 	if (p && (p->pagevec != &p->page_array[0]))
- 		kfree(p->pagevec);
- 	mempool_free(p, nfs_wdata_mempool);
- }
- 
--void nfs_writedata_release(void *data)
-+static void nfs_writedata_release(struct nfs_write_data *wdata)
- {
--	struct nfs_write_data *wdata = data;
+-int ide_id_dma_bug(ide_drive_t *drive)
+-{
+-	u16 *id = drive->id;
 -
- 	put_nfs_open_context(wdata->args.context);
- 	nfs_writedata_free(wdata);
- }
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -473,7 +473,6 @@ extern int  nfs_writepages(struct addres
- extern int  nfs_flush_incompatible(struct file *file, struct page *page);
- extern int  nfs_updatepage(struct file *, struct page *, unsigned int, unsigned int);
- extern int nfs_writeback_done(struct rpc_task *, struct nfs_write_data *);
--extern void nfs_writedata_release(void *);
+-	if (id[ATA_ID_FIELD_VALID] & 4) {
+-		if ((id[ATA_ID_UDMA_MODES] >> 8) &&
+-		    (id[ATA_ID_MWDMA_MODES] >> 8))
+-			goto err_out;
+-	} else if ((id[ATA_ID_MWDMA_MODES] >> 8) &&
+-		   (id[ATA_ID_SWDMA_MODES] >> 8))
+-		goto err_out;
+-
+-	return 0;
+-err_out:
+-	printk(KERN_ERR "%s: bad DMA info in identify block\n", drive->name);
+-	return 1;
+-}
+-
+ int ide_set_dma(ide_drive_t *drive)
+ {
+ 	int rc;
+--- a/drivers/ide/ide-iops.c
++++ b/drivers/ide/ide-iops.c
+@@ -306,9 +306,6 @@ int ide_driveid_update(ide_drive_t *driv
  
- /*
-  * Try to write back everything synchronously (but check the
-@@ -488,7 +487,6 @@ extern int nfs_wb_page_cancel(struct ino
- extern int  nfs_commit_inode(struct inode *, int);
- extern struct nfs_write_data *nfs_commitdata_alloc(void);
- extern void nfs_commit_free(struct nfs_write_data *wdata);
--extern void nfs_commitdata_release(void *wdata);
+ 	kfree(id);
+ 
+-	if ((drive->dev_flags & IDE_DFLAG_USING_DMA) && ide_id_dma_bug(drive))
+-		ide_dma_off(drive);
+-
+ 	return 1;
+ out_err:
+ 	SELECT_MASK(drive, 0);
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1384,7 +1384,6 @@ int ide_in_drive_list(u16 *, const struc
+ #ifdef CONFIG_BLK_DEV_IDEDMA
+ int ide_dma_good_drive(ide_drive_t *);
+ int __ide_dma_bad_drive(ide_drive_t *);
+-int ide_id_dma_bug(ide_drive_t *);
+ 
+ u8 ide_find_dma_mode(ide_drive_t *, u8);
+ 
+@@ -1425,7 +1424,6 @@ void ide_dma_lost_irq(ide_drive_t *);
+ ide_startstop_t ide_dma_timeout_retry(ide_drive_t *, int);
+ 
  #else
- static inline int
- nfs_commit_inode(struct inode *inode, int how)
-@@ -507,6 +505,7 @@ nfs_have_writebacks(struct inode *inode)
-  * Allocate nfs_write_data structures
-  */
- extern struct nfs_write_data *nfs_writedata_alloc(unsigned int npages);
-+extern void nfs_writedata_free(struct nfs_write_data *);
- 
- /*
-  * linux/fs/nfs/read.c
-@@ -515,7 +514,6 @@ extern int  nfs_readpage(struct file *, 
- extern int  nfs_readpages(struct file *, struct address_space *,
- 		struct list_head *, unsigned);
- extern int  nfs_readpage_result(struct rpc_task *, struct nfs_read_data *);
--extern void nfs_readdata_release(void *data);
- extern int  nfs_readpage_async(struct nfs_open_context *, struct inode *,
- 			       struct page *);
- 
-@@ -523,6 +521,7 @@ extern int  nfs_readpage_async(struct nf
-  * Allocate nfs_read_data structures
-  */
- extern struct nfs_read_data *nfs_readdata_alloc(unsigned int npages);
-+extern void nfs_readdata_free(struct nfs_read_data *);
- 
- /*
-  * linux/fs/nfs3proc.c
+-static inline int ide_id_dma_bug(ide_drive_t *drive) { return 0; }
+ static inline u8 ide_find_dma_mode(ide_drive_t *drive, u8 speed) { return 0; }
+ static inline u8 ide_max_dma_mode(ide_drive_t *drive) { return 0; }
+ static inline void ide_dma_off_quietly(ide_drive_t *drive) { ; }
 
 
