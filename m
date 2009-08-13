@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754114AbZHMSUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbZHMSUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754114AbZHMSUG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 14:20:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbZHMSUE
+	id S1754576AbZHMSUf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 14:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbZHMSUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 14:20:04 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:50371 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754016AbZHMSUA (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 14:20:00 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Zhu Yi <yi.zhu@intel.com>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ipw3945-devel@lists.sourceforge.net
-Subject: Re: [ipw3945-devel] mmotm0812 - something in linux-next killed iwl-3945.c
-In-Reply-To: Your message of "Thu, 13 Aug 2009 13:28:19 EDT."
-             <20090813172819.GD2647@tuxdriver.com>
-From: Valdis.Kletnieks@vt.edu
-References: <19728.1250182794@turing-police.cc.vt.edu>
-            <20090813172819.GD2647@tuxdriver.com>
+	Thu, 13 Aug 2009 14:20:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55892 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752626AbZHMSUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 14:20:33 -0400
+Subject: Re: [PATCH 2/3] security: introducing security_request_module
+From: Eric Paris <eparis@redhat.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       sds@tycho.nsa.gov, davem@davemloft.net, shemminger@linux-foundation.org,
+       kees@ubuntu.com, morgan@kernel.org, casey@schaufler-ca.com,
+       dwalsh@redhat.com
+In-Reply-To: <20090813175405.GA6824@us.ibm.com>
+References: <20090813134451.29186.41664.stgit@paris.rdu.redhat.com>
+	 <20090813134457.29186.7182.stgit@paris.rdu.redhat.com>
+	 <20090813140306.GC30731@us.ibm.com>
+	 <1250177334.2182.88.camel@dhcp231-106.rdu.redhat.com>
+	 <20090813175405.GA6824@us.ibm.com>
+Content-Type: text/plain
+Date: Thu, 13 Aug 2009 14:19:10 -0400
+Message-Id: <1250187550.2115.19.camel@dhcp231-106.rdu.redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1250187563_3970P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Date: Thu, 13 Aug 2009 14:19:23 -0400
-Message-ID: <28042.1250187563@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1250187563_3970P
-Content-Type: text/plain; charset=us-ascii
-
-On Thu, 13 Aug 2009 13:28:19 EDT, "John W. Linville" said:
-> On Thu, Aug 13, 2009 at 12:59:54PM -0400, Valdis.Kletnieks@vt.edu wrote:
-> > Build bombs out:
+On Thu, 2009-08-13 at 12:54 -0500, Serge E. Hallyn wrote:
+> Quoting Eric Paris (eparis@redhat.com):
+> > On Thu, 2009-08-13 at 09:03 -0500, Serge E. Hallyn wrote:
+> > > Quoting Eric Paris (eparis@redhat.com):
+> > > > Calling request_module() will trigger a userspace upcall which will load a
+> > > > new module into the kernel.  This can be a dangerous event if the process
+> > > > able to trigger request_module() is able to control either the modprobe
+> > > > binary or the module binary.  This patch adds a new security hook to
+> > > > request_module() which can be used by an LSM to control a processes ability
+> > > > to call request_module().
+> > > 
+> > > Is there a specific case in which you'd want to deny this ability
+> > > from a real task?
 > > 
-> >   CC      drivers/net/wireless/iwlwifi/iwl-3945.o
-> > drivers/net/wireless/iwlwifi/iwl-3945.c: In function 'iwl3945_pass_packet_to_mac80211':
-> > drivers/net/wireless/iwlwifi/iwl-3945.c:580: error: 'hdr' undeclared (first use in this function)
-> > drivers/net/wireless/iwlwifi/iwl-3945.c:580: error: (Each undeclared identifier is reported only once
-> > drivers/net/wireless/iwlwifi/iwl-3945.c:580: error: for each function it appears in.)
-> > make[1]: *** [drivers/net/wireless/iwlwifi/iwl-3945.o] Error 1
-
-> > Sorry, don't have a linux-next git tree, so no 'git blame' for what did it.
-> > Hopefully somebody recognizes their handiwork... ;)
+> > qemu and any network facing daemon are all programs I don't want to be
+> > able to even ask the kernel to load a module.  Clearly you are right,
 > 
-> I think this is the LEDS-related build failure, which already has a patch.
+> ...  What if the network facing daemon might want to use a kernel crypto
+> module?  What if qemu needs the tun module loaded?
 
-Found Kalle Valo's patch removing the #ifdef's in the linux-wireless
-archives, build is now proceeding thanks...
+Loading code into the kernel is a dangerous operation.  We should find
+the places where high risk processes are doing this and either choose to
+accept the security risk or make sure they are loaded before the
+dangerous code is run, aka libvirt knows if the guest needs the tun
+device and it should be allowed to trigger it's loading.  It's shouldn't
+be the guest doing the triggering.
 
-Now to figure out how I managed to trip over it, CONFIG_IWLWIFI_LEDS looks
-like a config option I would have selected...
+It was also pointed out to me that stopping processes from being able to
+trigger module loads could be useful to keep a subverted process from
+loading an uncommon or unloaded module with a vulnerability which they
+could then use to exploit the kernel.  It's all about hardening.
 
---==_Exmh_1250187563_3970P
-Content-Type: application/pgp-signature
+It won't be a simple task for SELinux policy to do something useful with
+this hook as they need to identify all of the legitimate callers of
+request_module(), but then again, that should be a lot easier than 90%
+of what SELinux already has to do, and until SELinux policy decides to
+make use of the new permission things will 'just work'
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+-Eric
 
-iD8DBQFKhFkrcC3lWbTT17ARAi0fAJ9OQyXD3P8XXIMNjVTHH5o9gBNhmgCdGi0l
-yBJWPe7t+Nsrkyrzrj7nzvQ=
-=695o
------END PGP SIGNATURE-----
-
---==_Exmh_1250187563_3970P--
