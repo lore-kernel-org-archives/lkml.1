@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932303AbZHMUAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbZHMUBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932303AbZHMUAO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932295AbZHMUAI
+	id S1755984AbZHMUBB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:01:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbZHMUAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:00:08 -0400
-Received: from kroah.org ([198.145.64.141]:41938 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 16:00:22 -0400
+Received: from kroah.org ([198.145.64.141]:41996 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932289AbZHMUAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:00:05 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:33 2009
-Message-Id: <20090813195133.720254371@mini.kroah.org>
+	id S1755928AbZHMUAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 16:00:15 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:35 2009
+Message-Id: <20090813195135.282259870@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:37 -0700
+Date: Thu, 13 Aug 2009 12:50:47 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Rogerio Brito <rbrito@ime.usp.br>, Phil Dibowitz <phil@ipom.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Robert Hancock <hancockrwd@gmail.com>
-Subject: [patch 62/74] USB: storage: include Prolific Technology USB drive in unusual_devs list
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [patch 72/74] NFS: Fix an O_DIRECT Oops...
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=usb-storage-include-prolific-technology-usb-drive-in-unusual_devs-list.patch
+Content-Disposition: inline; filename=nfs-fix-an-o_direct-oops.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,43 +30,212 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Rogerio Brito <rbrito@ime.usp.br>
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-commit c15e3ca1d822abba78c00b1ffc3e7b382a50396e upstream.
+commit 1ae88b2e446261c038f2c0c3150ffae142b227a2 upstream.
 
-Add a quirk entry for the Leading Driver UD-11 usb flash drive.
+We can't call nfs_readdata_release()/nfs_writedata_release() without
+first initialising and referencing args.context. Doing so inside
+nfs_direct_read_schedule_segment()/nfs_direct_write_schedule_segment()
+causes an Oops.
 
-As Alan Stern told me, the device doesn't deal correctly with the
-locking media feature of the device, and this patch incorporates it.
+We should rather be calling nfs_readdata_free()/nfs_writedata_free() in
+those cases.
 
-Compiled, tested, working.
+Looking at the O_DIRECT code, the "struct nfs_direct_req" is already
+referencing the nfs_open_context for us. Since the readdata and writedata
+structures carry a reference to that, we can simplify things by getting rid
+of the extra nfs_open_context references, so that we can replace all
+instances of nfs_readdata_release()/nfs_writedata_release().
 
-Signed-off-by: Rogerio Brito <rbrito@ime.usp.br>
-Cc: Phil Dibowitz <phil@ipom.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Robert Hancock <hancockrwd@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Reported-by: Catalin Marinas <catalin.marinas@arm.com>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Tested-by: Catalin Marinas <catalin.marinas@arm.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/unusual_devs.h |    7 +++++++
- 1 file changed, 7 insertions(+)
+ fs/nfs/direct.c        |   20 ++++++++++----------
+ fs/nfs/read.c          |    6 ++----
+ fs/nfs/write.c         |    6 ++----
+ include/linux/nfs_fs.h |    5 ++---
+ 4 files changed, 16 insertions(+), 21 deletions(-)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -838,6 +838,13 @@ UNUSUAL_DEV( 0x066f, 0x8000, 0x0001, 0x0
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_CAPACITY ),
+--- a/fs/nfs/direct.c
++++ b/fs/nfs/direct.c
+@@ -255,7 +255,7 @@ static void nfs_direct_read_release(void
  
-+/* Reported by Rogerio Brito <rbrito@ime.usp.br> */
-+UNUSUAL_DEV( 0x067b, 0x2317, 0x0001, 0x001,
-+		"Prolific Technology, Inc.",
-+		"Mass Storage Device",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		US_FL_NOT_LOCKABLE ),
-+
- /* Reported by Richard -=[]=- <micro_flyer@hotmail.com> */
- /* Change to bcdDeviceMin (0x0100 to 0x0001) reported by
-  * Thomas Bartosik <tbartdev@gmx-topmail.de> */
+ 	if (put_dreq(dreq))
+ 		nfs_direct_complete(dreq);
+-	nfs_readdata_release(calldata);
++	nfs_readdata_free(data);
+ }
+ 
+ static const struct rpc_call_ops nfs_read_direct_ops = {
+@@ -311,14 +311,14 @@ static ssize_t nfs_direct_read_schedule_
+ 					data->npages, 1, 0, data->pagevec, NULL);
+ 		up_read(&current->mm->mmap_sem);
+ 		if (result < 0) {
+-			nfs_readdata_release(data);
++			nfs_readdata_free(data);
+ 			break;
+ 		}
+ 		if ((unsigned)result < data->npages) {
+ 			bytes = result * PAGE_SIZE;
+ 			if (bytes <= pgbase) {
+ 				nfs_direct_release_pages(data->pagevec, result);
+-				nfs_readdata_release(data);
++				nfs_readdata_free(data);
+ 				break;
+ 			}
+ 			bytes -= pgbase;
+@@ -331,7 +331,7 @@ static ssize_t nfs_direct_read_schedule_
+ 		data->inode = inode;
+ 		data->cred = msg.rpc_cred;
+ 		data->args.fh = NFS_FH(inode);
+-		data->args.context = get_nfs_open_context(ctx);
++		data->args.context = ctx;
+ 		data->args.offset = pos;
+ 		data->args.pgbase = pgbase;
+ 		data->args.pages = data->pagevec;
+@@ -438,7 +438,7 @@ static void nfs_direct_free_writedata(st
+ 		struct nfs_write_data *data = list_entry(dreq->rewrite_list.next, struct nfs_write_data, pages);
+ 		list_del(&data->pages);
+ 		nfs_direct_release_pages(data->pagevec, data->npages);
+-		nfs_writedata_release(data);
++		nfs_writedata_free(data);
+ 	}
+ }
+ 
+@@ -531,7 +531,7 @@ static void nfs_direct_commit_release(vo
+ 
+ 	dprintk("NFS: %5u commit returned %d\n", data->task.tk_pid, status);
+ 	nfs_direct_write_complete(dreq, data->inode);
+-	nfs_commitdata_release(calldata);
++	nfs_commit_free(data);
+ }
+ 
+ static const struct rpc_call_ops nfs_commit_direct_ops = {
+@@ -564,7 +564,7 @@ static void nfs_direct_commit_schedule(s
+ 	data->args.fh = NFS_FH(data->inode);
+ 	data->args.offset = 0;
+ 	data->args.count = 0;
+-	data->args.context = get_nfs_open_context(dreq->ctx);
++	data->args.context = dreq->ctx;
+ 	data->res.count = 0;
+ 	data->res.fattr = &data->fattr;
+ 	data->res.verf = &data->verf;
+@@ -725,14 +725,14 @@ static ssize_t nfs_direct_write_schedule
+ 					data->npages, 0, 0, data->pagevec, NULL);
+ 		up_read(&current->mm->mmap_sem);
+ 		if (result < 0) {
+-			nfs_writedata_release(data);
++			nfs_writedata_free(data);
+ 			break;
+ 		}
+ 		if ((unsigned)result < data->npages) {
+ 			bytes = result * PAGE_SIZE;
+ 			if (bytes <= pgbase) {
+ 				nfs_direct_release_pages(data->pagevec, result);
+-				nfs_writedata_release(data);
++				nfs_writedata_free(data);
+ 				break;
+ 			}
+ 			bytes -= pgbase;
+@@ -747,7 +747,7 @@ static ssize_t nfs_direct_write_schedule
+ 		data->inode = inode;
+ 		data->cred = msg.rpc_cred;
+ 		data->args.fh = NFS_FH(inode);
+-		data->args.context = get_nfs_open_context(ctx);
++		data->args.context = ctx;
+ 		data->args.offset = pos;
+ 		data->args.pgbase = pgbase;
+ 		data->args.pages = data->pagevec;
+--- a/fs/nfs/read.c
++++ b/fs/nfs/read.c
+@@ -59,17 +59,15 @@ struct nfs_read_data *nfs_readdata_alloc
+ 	return p;
+ }
+ 
+-static void nfs_readdata_free(struct nfs_read_data *p)
++void nfs_readdata_free(struct nfs_read_data *p)
+ {
+ 	if (p && (p->pagevec != &p->page_array[0]))
+ 		kfree(p->pagevec);
+ 	mempool_free(p, nfs_rdata_mempool);
+ }
+ 
+-void nfs_readdata_release(void *data)
++static void nfs_readdata_release(struct nfs_read_data *rdata)
+ {
+-	struct nfs_read_data *rdata = data;
+-
+ 	put_nfs_open_context(rdata->args.context);
+ 	nfs_readdata_free(rdata);
+ }
+--- a/fs/nfs/write.c
++++ b/fs/nfs/write.c
+@@ -84,17 +84,15 @@ struct nfs_write_data *nfs_writedata_all
+ 	return p;
+ }
+ 
+-static void nfs_writedata_free(struct nfs_write_data *p)
++void nfs_writedata_free(struct nfs_write_data *p)
+ {
+ 	if (p && (p->pagevec != &p->page_array[0]))
+ 		kfree(p->pagevec);
+ 	mempool_free(p, nfs_wdata_mempool);
+ }
+ 
+-void nfs_writedata_release(void *data)
++static void nfs_writedata_release(struct nfs_write_data *wdata)
+ {
+-	struct nfs_write_data *wdata = data;
+-
+ 	put_nfs_open_context(wdata->args.context);
+ 	nfs_writedata_free(wdata);
+ }
+--- a/include/linux/nfs_fs.h
++++ b/include/linux/nfs_fs.h
+@@ -473,7 +473,6 @@ extern int  nfs_writepages(struct addres
+ extern int  nfs_flush_incompatible(struct file *file, struct page *page);
+ extern int  nfs_updatepage(struct file *, struct page *, unsigned int, unsigned int);
+ extern int nfs_writeback_done(struct rpc_task *, struct nfs_write_data *);
+-extern void nfs_writedata_release(void *);
+ 
+ /*
+  * Try to write back everything synchronously (but check the
+@@ -488,7 +487,6 @@ extern int nfs_wb_page_cancel(struct ino
+ extern int  nfs_commit_inode(struct inode *, int);
+ extern struct nfs_write_data *nfs_commitdata_alloc(void);
+ extern void nfs_commit_free(struct nfs_write_data *wdata);
+-extern void nfs_commitdata_release(void *wdata);
+ #else
+ static inline int
+ nfs_commit_inode(struct inode *inode, int how)
+@@ -507,6 +505,7 @@ nfs_have_writebacks(struct inode *inode)
+  * Allocate nfs_write_data structures
+  */
+ extern struct nfs_write_data *nfs_writedata_alloc(unsigned int npages);
++extern void nfs_writedata_free(struct nfs_write_data *);
+ 
+ /*
+  * linux/fs/nfs/read.c
+@@ -515,7 +514,6 @@ extern int  nfs_readpage(struct file *, 
+ extern int  nfs_readpages(struct file *, struct address_space *,
+ 		struct list_head *, unsigned);
+ extern int  nfs_readpage_result(struct rpc_task *, struct nfs_read_data *);
+-extern void nfs_readdata_release(void *data);
+ extern int  nfs_readpage_async(struct nfs_open_context *, struct inode *,
+ 			       struct page *);
+ 
+@@ -523,6 +521,7 @@ extern int  nfs_readpage_async(struct nf
+  * Allocate nfs_read_data structures
+  */
+ extern struct nfs_read_data *nfs_readdata_alloc(unsigned int npages);
++extern void nfs_readdata_free(struct nfs_read_data *);
+ 
+ /*
+  * linux/fs/nfs3proc.c
 
 
