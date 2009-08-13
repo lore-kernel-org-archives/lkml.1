@@ -1,79 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbZHMS2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752400AbZHMSbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539AbZHMS2W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 14:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbZHMS2V
+	id S1752400AbZHMSbM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 14:31:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbZHMSbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 14:28:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35785 "EHLO ogre.sisk.pl"
+	Thu, 13 Aug 2009 14:31:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57119 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752762AbZHMS2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 14:28:21 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
-Date: Thu, 13 Aug 2009 20:28:52 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       "linux-acpi" <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-References: <Pine.LNX.4.44L0.0908131031060.2940-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908131031060.2940-100000@iolanthe.rowland.org>
+	id S1752165AbZHMSbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 14:31:10 -0400
+Date: Thu, 13 Aug 2009 21:27:50 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com
+Subject: [PATCHv3 0/2] vhost: a kernel-level virtio server
+Message-ID: <20090813182749.GA6585@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908132028.53094.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 August 2009, Alan Stern wrote:
-> On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
-> 
-> > I have an idea.
-> > 
-> > Every such dependency involves two devices, one of which is a "master"
-> > and the second of which is a "slave", meaning that the "slave" have to be
-> > suspended before the "master" and cannot be resumed before it.  In principle
-> > we could give each device two lists of "dependency objects", one containing
-> > "dependency objects" where the device is the "master" and the other containing
-> > "dependency objects" where the device is the "slave".  Then, each "dependency
-> > object" could be represented as
-> > 
-> > struct pm_connection {
-> >     struct device *master;
-> >     struct list_head master_hook;
-> >     struct device *slave;
-> >     struct list_head slave_hook;
-> > };
-> > 
-> > Add some locking, helpers for adding / removing "dependency objects" etc.
-> > and it should work.  Instead of checking the parent, walk the list of
-> > "masters", instead of walking the list of children, walk the list of "slaves".
-> 
-> If the set of pm_connection objects is reasonably small then the
-> master_hook and slave_hook aren't needed; you can just read through the
-> entire list.  Leaving out parent-child connections, which we already
-> know, would help shrink the set.
+This implements vhost: a kernel-level backend for virtio,
+The main motivation for this work is to reduce virtualization
+overhead for virtio by removing system calls on data path,
+without guest changes. For virtio-net, this removes up to
+4 system calls per packet: vm exit for kick, reentry for kick,
+iothread wakeup for packet, interrupt injection for packet.
 
-Do you mean a global list for the entire system?  I'm not sure if that wouldn't
-hurt performance (please note that it also affects runtime PM).
+Some more detailed description attached to the patch itself.
 
-We could use counters of "suspended slaves" and "active masters" to optimize
-things, but still updating these counters could take time (one has to find all
-devices dependent on given one and update a counter for each of them).
+The patches are against 2.6.31-rc4.  I'd like them to go into linux-next
+and down the road 2.6.32 if possible.  Please comment.
 
-> The layout of the pm_connection objects could then be improved
-> slightly.  Each object could contain a variable-sized array of device
-> pointers together with two integers, M and S.  The first M pointers
-> would be masters and the remaining S pointers would be slaves.  This
-> could be useful when, for example, a large number of devices all depend
-> on one particular power device.
+Changelog from v2:
+- Comments on RCU usage
+- Compat ioctl support
+- Make variable static
+- Copied more idiomatic english from Rusty
 
-I'm not sure.  If we use the coutners, this case will be quite easy to handle.
+Changes from v1:
+- Move use_mm/unuse_mm from fs/aio.c to mm instead of copying.
+- Reorder code to avoid need for forward declarations
+- Kill a couple of debugging printks
 
-Thanks,
-Rafael
+Michael S. Tsirkin (2):
+  mm: export use_mm/unuse_mm to modules
+  vhost_net: a kernel-level virtio server
+
+ MAINTAINERS                 |   10 +
+ arch/x86/kvm/Kconfig        |    1 +
+ drivers/Makefile            |    1 +
+ drivers/vhost/Kconfig       |   11 +
+ drivers/vhost/Makefile      |    2 +
+ drivers/vhost/net.c         |  429 ++++++++++++++++++++++++++++
+ drivers/vhost/vhost.c       |  663 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/vhost/vhost.h       |  108 +++++++
+ fs/aio.c                    |   47 +---
+ include/linux/Kbuild        |    1 +
+ include/linux/miscdevice.h  |    1 +
+ include/linux/mmu_context.h |    9 +
+ include/linux/vhost.h       |  100 +++++++
+ mm/Makefile                 |    2 +-
+ mm/mmu_context.c            |   58 ++++
+ 15 files changed, 1396 insertions(+), 47 deletions(-)
+ create mode 100644 drivers/vhost/Kconfig
+ create mode 100644 drivers/vhost/Makefile
+ create mode 100644 drivers/vhost/net.c
+ create mode 100644 drivers/vhost/vhost.c
+ create mode 100644 drivers/vhost/vhost.h
+ create mode 100644 include/linux/mmu_context.h
+ create mode 100644 include/linux/vhost.h
+ create mode 100644 mm/mmu_context.c
