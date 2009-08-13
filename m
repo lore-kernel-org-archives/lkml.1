@@ -1,91 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbZHMMui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbZHMNMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbZHMMui (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 08:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbZHMMuh
+	id S1754467AbZHMNMz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 09:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754391AbZHMNMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 08:50:37 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:50389 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753847AbZHMMug (ORCPT
+	Thu, 13 Aug 2009 09:12:55 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:40515 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753847AbZHMNMy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 08:50:36 -0400
-Date: Thu, 13 Aug 2009 14:26:48 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH 2/5] [input] add mc13783 touchscreen driver
-Message-ID: <20090813122648.GH17992@pengutronix.de>
-References: <1250089531-10399-1-git-send-email-s.hauer@pengutronix.de> <1250089531-10399-2-git-send-email-s.hauer@pengutronix.de> <1250089531-10399-3-git-send-email-s.hauer@pengutronix.de> <20090812163521.75631526EC9@mailhub.coreip.homeip.net>
+	Thu, 13 Aug 2009 09:12:54 -0400
+Date: Thu, 13 Aug 2009 23:12:53 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Subject: Re: [BUGFIX] crypto: Fix ctr(aes) testing by specifying geniv
+Message-ID: <20090813131253.GA27289@gondor.apana.org.au>
+References: <1249285483-22286-1-git-send-email-ying.huang@intel.com> <20090805094506.GA12528@gondor.apana.org.au> <1249524767.24238.318.camel@yhuang-dev.sh.intel.com> <1250044020.5337.214.camel@yhuang-dev.sh.intel.com> <20090813045300.GA19993@gondor.apana.org.au> <20090813073910.GA21784@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090812163521.75631526EC9@mailhub.coreip.homeip.net>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 14:25:00 up 7 days, 23:44, 62 users,  load average: 0.00, 0.00,
-	0.00
+In-Reply-To: <20090813073910.GA21784@gondor.apana.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 09:04:38AM -0700, Dmitry Torokhov wrote:
-> On Wed, Aug 12, 2009 at 05:05:28PM +0200, Sascha Hauer wrote:
-> > This driver provides support for the touchscreen interface
-> > integrated into the Freescale MC13783.
-> > 
-> > changes since v1:
-> > 
-> > - remove unused functions
-> > - use queue_delayed_work instead of queue_work
-> > - report pen events as BTN_TOUCH instead of ABS_PRESSURE
-> > - handle interrupt registration in open/close functions
-> > - do not call input_free_device() on already registered
-> >   input_device
-> > - use platform_driver_probe instead of platform_driver_register
+On Thu, Aug 13, 2009 at 05:39:10PM +1000, Herbert Xu wrote:
 > 
-> BTW, if you are using platform_driver_probe() then __init is OK for
-> .probe() because all probes will only be run once, when driver loads.
-> IIRC the ability to discard probe() code was the main reason for
-> introducing platform_driver_probe().
+> Oh I see what's going on.  It's the switch from chainiv to eseqiv
+> that created the error.  I'll apply your patch.
 
-But __devinit should be ok also, right?
+Actually we can't use seqiv on raw counter mode because it cannot
+guarantee IV uniqueness.  I think reverting to chainiv is the safer
+option.
 
-> 
-> > +
-> > +	/* unmask the ts wakeup interrupt */
-> > +	mc13783_set_bits(priv->mc13783, MC13783_REG_INTERRUPT_MASK_0,
-> > +			MC13783_INT_MASK_TSM, 0);
-> > +
-> > +	mc13783_adc_set_ts_status(priv->mc13783, 1);
-> > +
-> 
-> I actually expected these bits to go into ->open(); not the request IRQ
-> stuff...
+commit aef27136b8b5e526f2e96ca1caa30a6d07e70f42
+Author: Herbert Xu <herbert@gondor.apana.org.au>
+Date:   Thu Aug 13 23:10:39 2009 +1000
 
-Yes I know, I just found it convenient to request the interrupts there
-so that we do not risk getting interrupts nobody is interested in this
-moment.
+    crypto: ctr - Use chainiv on raw counter mode
+    
+    Raw counter mode only works with chainiv, which is no longer
+    the default IV generator on SMP machines.  This broke raw counter
+    mode as it can no longer instantiate as a givcipher.
+    
+    This patch fixes it by always picking chainiv on raw counter
+    mode.  This is based on the diagnosis and a patch by Huang
+    Ying.
+    
+    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
-Sascha
+diff --git a/crypto/ctr.c b/crypto/ctr.c
+index 2d7425f..6c3bfab 100644
+--- a/crypto/ctr.c
++++ b/crypto/ctr.c
+@@ -219,6 +219,8 @@ static struct crypto_instance *crypto_ctr_alloc(struct rtattr **tb)
+ 	inst->alg.cra_blkcipher.encrypt = crypto_ctr_crypt;
+ 	inst->alg.cra_blkcipher.decrypt = crypto_ctr_crypt;
+ 
++	inst->alg.cra_blkcipher.geniv = "chainiv";
++
+ out:
+ 	crypto_mod_put(alg);
+ 	return inst;
 
+Cheers,
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
