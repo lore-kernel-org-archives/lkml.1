@@ -1,156 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756225AbZHMWdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbZHMWwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756225AbZHMWdb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 18:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbZHMWda
+	id S1755347AbZHMWwK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 18:52:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZHMWwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 18:33:30 -0400
-Received: from kroah.org ([198.145.64.141]:55687 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 18:52:09 -0400
+Received: from mga03.intel.com ([143.182.124.21]:19224 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753462AbZHMWd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 18:33:29 -0400
-Date: Thu, 13 Aug 2009 15:32:21 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/74] 2.6.30.5-stable review
-Message-ID: <20090813223221.GA12823@kroah.com>
-References: <20090813195705.GA22393@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090813195705.GA22393@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1752456AbZHMWwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 18:52:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,377,1246863600"; 
+   d="scan'208";a="175625275"
+Subject: [patch]  clockevents_notify() need to be called with irq's enabled
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
+To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
+       len.brown@intel.com
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Thu, 13 Aug 2009 15:48:01 -0700
+Message-Id: <1250203681.27006.10842.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 12:57:05PM -0700, Greg KH wrote:
-> This is the start of the stable review cycle for the 2.6.30.5 release.
-> There are 74 patches in this series, all will be posted as a response to
-> this one.  If anyone has any issues with these being applied, please let
-> us know.  If anyone is a maintainer of the proper subsystem, and wants
-> to add a Signed-off-by: line to the patch, please respond with it.
-> 
-> These patches are sent out with a number of different people on the Cc:
-> line.  If you wish to be a reviewer, please email stable@kernel.org to
-> add your name to the list.  If you want to be off the reviewer list,
-> also email us.
-> 
-> Responses should be made by Saturday, August 15, 2009 19:00:00 UTC.
-> Anything received after that time might be too late.
-> 
-> The whole patch series can be found in one patch at:
-> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.30.5-rc1.gz
-> and the diffstat can be found below.
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: clockevents_notify() need to be called with irq's enabled
 
-I've now released 2.6.30.5-rc2 to fix a build error in the thinkpad
-code.  It can be found at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.30.5-rc2.gz
+Currently clockevents_notify() is called with interrupts enabled at some
+places and interrupts disabled at some other places.
 
-and the diffstat is below.
+This results in a deadlock in this scenario.
 
-thanks,
+cpu A holding the clockevents_lock in clockevents_notify() with irq enabled
+cpu B waiting for the clockevents_lock in clockevents_notify() with irq disabled
+cpu C doing set_mtrr() which will try to rendezvous of all the cpus.
 
-greg k-h
+This will result in C and A come to the rendezvous point and waiting for B.
+B stuck forever waiting for the spinlock and thus not reaching rendezvous
+point.
 
------------------
+Fix the usage of clockevents_notify() so that it will always be called
+with interrupts enabled and thus avoid the above deadlock.
 
- Makefile                                       |    2 +-
- arch/powerpc/boot/dts/asp834x-redboot.dts      |    2 +-
- arch/powerpc/boot/dts/mpc8349emitx.dts         |    2 +-
- arch/powerpc/boot/dts/mpc834x_mds.dts          |    2 +-
- arch/powerpc/boot/dts/sbc8349.dts              |    2 +-
- arch/powerpc/platforms/83xx/mpc83xx.h          |    4 +-
- arch/powerpc/platforms/83xx/usb.c              |   10 ++--
- arch/x86/include/asm/irqflags.h                |    8 +++-
- arch/x86/kernel/vmi_32.c                       |    2 +-
- arch/x86/mm/pageattr.c                         |   39 ++++++++++----
- block/Kconfig                                  |   11 +++--
- drivers/acpi/sleep.c                           |    8 +++
- drivers/edac/x38_edac.c                        |    2 +-
- drivers/firewire/fw-sbp2.c                     |   10 +++-
- drivers/gpu/drm/i915/i915_dma.c                |    5 ++-
- drivers/gpu/drm/i915/i915_drv.h                |    8 +++
- drivers/gpu/drm/i915/i915_gem.c                |   13 +++++
- drivers/gpu/drm/i915/i915_irq.c                |    2 -
- drivers/gpu/drm/i915/i915_suspend.c            |   20 +++++++
- drivers/gpu/drm/i915/intel_bios.c              |   10 ++--
- drivers/gpu/drm/i915/intel_display.c           |    2 +
- drivers/gpu/drm/i915/intel_fb.c                |    8 +++-
- drivers/gpu/drm/i915/intel_lvds.c              |   17 +++++-
- drivers/hwmon/asus_atk0110.c                   |    6 ++-
- drivers/hwmon/smsc47m1.c                       |   11 ++++
- drivers/i2c/chips/tsl2550.c                    |   17 ++++---
- drivers/ide/ide-disk.c                         |    1 +
- drivers/ide/ide-dma.c                          |   21 -------
- drivers/ide/ide-iops.c                         |    3 -
- drivers/ide/ide-probe.c                        |   23 +++++++-
- drivers/ieee1394/sbp2.c                        |    1 +
- drivers/ieee1394/sbp2.h                        |    8 +++-
- drivers/md/md.c                                |   15 +++++-
- drivers/md/raid5.c                             |   26 ++++-----
- drivers/net/atl1c/atl1c.h                      |    8 ++--
- drivers/net/atl1c/atl1c_ethtool.c              |    2 +-
- drivers/net/atl1c/atl1c_main.c                 |    2 +-
- drivers/net/benet/be.h                         |    2 +-
- drivers/net/benet/be_ethtool.c                 |    4 +-
- drivers/net/benet/be_main.c                    |   45 +++++++++++-----
- drivers/net/e100.c                             |    3 +
- drivers/net/sky2.c                             |    2 +-
- drivers/net/usb/cdc_subset.c                   |    7 ++-
- drivers/net/wireless/iwlwifi/iwl-agn.c         |   19 +------
- drivers/net/wireless/iwlwifi/iwl3945-base.c    |   19 +------
- drivers/parisc/eisa_eeprom.c                   |    2 +-
- drivers/platform/x86/Kconfig                   |    4 +-
- drivers/scsi/libsas/sas_port.c                 |   19 +++++--
- drivers/staging/rt2870/2870_main_dev.c         |   67 ++++++++++++++++--------
- drivers/staging/rt2870/common/2870_rtmp_init.c |   35 ++++++-------
- drivers/staging/rt2870/common/cmm_data.c       |    3 +
- drivers/staging/rt2870/common/rtmp_init.c      |    2 +-
- drivers/staging/rt2870/common/rtusb_io.c       |    3 +-
- drivers/staging/rt2870/rt2870.h                |    6 +--
- drivers/staging/rt2870/rt_linux.h              |   11 ++--
- drivers/usb/core/devio.c                       |   10 ++--
- drivers/usb/serial/ftdi_sio.c                  |    3 +
- drivers/usb/serial/ftdi_sio.h                  |   14 +++++
- drivers/usb/storage/transport.c                |    2 +-
- drivers/usb/storage/unusual_devs.h             |    7 +++
- fs/binfmt_flat.c                               |   17 ++++--
- fs/cifs/cifs_dfs_ref.c                         |   12 +++-
- fs/cifs/connect.c                              |   13 ++++-
- fs/compat_ioctl.c                              |    1 +
- fs/nfs/direct.c                                |   20 ++++----
- fs/nfs/read.c                                  |    6 +--
- fs/nfs/write.c                                 |    6 +--
- fs/nilfs2/segment.c                            |   16 +++++-
- fs/proc/base.c                                 |   27 ++++-----
- fs/proc/task_mmu.c                             |    1 +
- fs/proc/task_nommu.c                           |    1 +
- fs/sysfs/dir.c                                 |    2 +
- include/linux/ide.h                            |    2 -
- include/linux/netdevice.h                      |    5 +-
- include/linux/nfs_fs.h                         |    5 +-
- include/net/sctp/sctp.h                        |    1 +
- include/net/sock.h                             |   34 +++++++-----
- kernel/fork.c                                  |   22 ++++----
- kernel/posix-timers.c                          |    7 +++
- kernel/smp.c                                   |    2 +-
- kernel/trace/ring_buffer.c                     |   11 ++--
- kernel/trace/trace.c                           |   10 +++-
- kernel/trace/trace_functions_graph.c           |   11 +++-
- mm/hugetlb.c                                   |    2 +-
- mm/page_alloc.c                                |   13 +++--
- net/ax25/ax25_in.c                             |    3 +-
- net/core/dev.c                                 |   10 ++--
- net/core/sock.c                                |   39 ++++++++++++--
- net/ipv4/ip_input.c                            |    3 +
- net/ipv6/ip6_input.c                           |    3 +
- net/irda/af_irda.c                             |    3 -
- net/irda/ircomm/ircomm_lmp.c                   |    1 +
- net/socket.c                                   |    2 +-
- net/wireless/scan.c                            |    4 +-
- net/xfrm/xfrm_algo.c                           |    4 +-
- sound/pci/hda/patch_realtek.c                  |    2 +
- 96 files changed, 612 insertions(+), 331 deletions(-)
+This issue left us wondering if we need to change the MTRR rendezvous logic to
+use stop machine logic (instead of smp_call_function) or add a check
+in spinlock debug code to see if there are other spinlocks which gets
+taken under both interrupts enabled/disabled conditions.
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+---
+
+Index: tip/arch/x86/kernel/process.c
+===================================================================
+--- tip.orig/arch/x86/kernel/process.c
++++ tip/arch/x86/kernel/process.c
+@@ -520,17 +520,13 @@ static void c1e_idle(void)
+ 			       cpu);
+ 			local_irq_disable();
+ 		}
++		local_irq_enable();
+ 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
++		local_irq_disable();
+ 
+ 		default_idle();
+ 
+-		/*
+-		 * The switch back from broadcast mode needs to be
+-		 * called with interrupts disabled.
+-		 */
+-		 local_irq_disable();
+ 		 clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
+-		 local_irq_enable();
+ 	} else
+ 		default_idle();
+ }
+Index: tip/drivers/acpi/processor_idle.c
+===================================================================
+--- tip.orig/drivers/acpi/processor_idle.c
++++ tip/drivers/acpi/processor_idle.c
+@@ -829,16 +829,18 @@ static int acpi_idle_enter_c1(struct cpu
+ 	if (unlikely(!pr))
+ 		return 0;
+ 
++	local_irq_enable();
++	lapic_timer_state_broadcast(pr, cx, 1);
+ 	local_irq_disable();
+ 
+ 	/* Do not access any ACPI IO ports in suspend path */
+ 	if (acpi_idle_suspend) {
+ 		local_irq_enable();
+ 		cpu_relax();
++		lapic_timer_state_broadcast(pr, cx, 0);
+ 		return 0;
+ 	}
+ 
+-	lapic_timer_state_broadcast(pr, cx, 1);
+ 	kt1 = ktime_get_real();
+ 	acpi_idle_do_entry(cx);
+ 	kt2 = ktime_get_real();
+@@ -873,6 +875,13 @@ static int acpi_idle_enter_simple(struct
+ 	if (acpi_idle_suspend)
+ 		return(acpi_idle_enter_c1(dev, state));
+ 
++	local_irq_enable();
++	/*
++	 * Must be done before busmaster disable as we might need to
++	 * access HPET !
++	 */
++	lapic_timer_state_broadcast(pr, cx, 1);
++
+ 	local_irq_disable();
+ 	current_thread_info()->status &= ~TS_POLLING;
+ 	/*
+@@ -884,15 +893,10 @@ static int acpi_idle_enter_simple(struct
+ 	if (unlikely(need_resched())) {
+ 		current_thread_info()->status |= TS_POLLING;
+ 		local_irq_enable();
++		lapic_timer_state_broadcast(pr, cx, 0);
+ 		return 0;
+ 	}
+ 
+-	/*
+-	 * Must be done before busmaster disable as we might need to
+-	 * access HPET !
+-	 */
+-	lapic_timer_state_broadcast(pr, cx, 1);
+-
+ 	if (cx->type == ACPI_STATE_C3)
+ 		ACPI_FLUSH_CPU_CACHE();
+ 
+@@ -957,6 +961,12 @@ static int acpi_idle_enter_bm(struct cpu
+ 			return 0;
+ 		}
+ 	}
++	local_irq_enable();
++	/*
++	 * Must be done before busmaster disable as we might need to
++	 * access HPET !
++	 */
++	lapic_timer_state_broadcast(pr, cx, 1);
+ 
+ 	local_irq_disable();
+ 	current_thread_info()->status &= ~TS_POLLING;
+@@ -969,6 +979,7 @@ static int acpi_idle_enter_bm(struct cpu
+ 	if (unlikely(need_resched())) {
+ 		current_thread_info()->status |= TS_POLLING;
+ 		local_irq_enable();
++		lapic_timer_state_broadcast(pr, cx, 0);
+ 		return 0;
+ 	}
+ 
+@@ -976,11 +987,6 @@ static int acpi_idle_enter_bm(struct cpu
+ 
+ 	/* Tell the scheduler that we are going deep-idle: */
+ 	sched_clock_idle_sleep_event();
+-	/*
+-	 * Must be done before busmaster disable as we might need to
+-	 * access HPET !
+-	 */
+-	lapic_timer_state_broadcast(pr, cx, 1);
+ 
+ 	kt1 = ktime_get_real();
+ 	/*
+
+
