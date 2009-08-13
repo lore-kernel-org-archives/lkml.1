@@ -1,94 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932491AbZHMUzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932558AbZHMUzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932491AbZHMUzA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:55:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756220AbZHMUy7
+	id S932558AbZHMUzX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:55:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755844AbZHMUzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:54:59 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:43370 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754935AbZHMUy6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:54:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=V1PEbR/ZL/gk/31m0tLoEPzNxRmrAk/Wtn/ikhDmP1/pFLM6ik4Uet7r3Doi8nAkdj
-         3sWidWDGQe+E7YVGuPX9RV0jvbkGzHWybxjjAPV03vHJx0CkwAcLYoRr3++upTep9RaA
-         RpWaYkc47R/Y0Lzx2bUN3nf4fppDPIsShOf5o=
+	Thu, 13 Aug 2009 16:55:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53160 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751705AbZHMUzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 16:55:16 -0400
+Message-ID: <4A847E30.9050903@redhat.com>
+Date: Thu, 13 Aug 2009 16:57:20 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.1.10.0908131342460.28013@asgard.lang.hm>
-References: <200908122007.43522.ngupta@vflare.org> <Pine.LNX.4.64.0908122312380.25501@sister.anvils> 
-	<20090813151312.GA13559@linux.intel.com> <20090813162621.GB1915@phenom2.trippelsdorf.de> 
-	<alpine.DEB.1.10.0908130931400.28013@asgard.lang.hm> <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com> 
-	<alpine.DEB.1.10.0908131342460.28013@asgard.lang.hm>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Thu, 13 Aug 2009 16:54:34 -0400
-Message-ID: <3e8340490908131354q167840fcv124ec56c92bbb830@mail.gmail.com>
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap 
-	slot is freed)
-To: david@lang.hm
-Cc: Greg Freemyer <greg.freemyer@gmail.com>,
-       Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>
+CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jason Baron <jbaron@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       =?UTF-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>,
+       Roland McGrath <roland@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: [TOOL] kprobestest : Kprobe stress test tool
+References: <20090813203403.31965.20973.stgit@localhost.localdomain>
+In-Reply-To: <20090813203403.31965.20973.stgit@localhost.localdomain>
+Content-Type: multipart/mixed;
+ boundary="------------000702000009000002030102"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 4:44 PM, <david@lang.hm> wrote:
-> On Thu, 13 Aug 2009, Greg Freemyer wrote:
->
->> On Thu, Aug 13, 2009 at 12:33 PM, <david@lang.hm> wrote:
->>>
->>> On Thu, 13 Aug 2009, Markus Trippelsdorf wrote:
->>>
->>>> On Thu, Aug 13, 2009 at 08:13:12AM -0700, Matthew Wilcox wrote:
->>>>>
->>>>> I am planning a complete overhaul of the discard work.  Users can send
->>>>> down discard requests as frequently as they like.  The block layer will
->>>>> cache them, and invalidate them if writes come through.  Periodically,
->>>>> the block layer will send down a TRIM or an UNMAP (depending on the
->>>>> underlying device) and get rid of the blocks that have remained
->>>>> unwanted
->>>>> in the interim.
->>>>
->>>> That is a very good idea. I've tested your original TRIM implementation
->>>> on
->>>> my Vertex yesterday and it was awful ;-). The SSD needs hundreds of
->>>> milliseconds to digest a single TRIM command. And since your
->>>> implementation
->>>> sends a TRIM for each extent of each deleted file, the whole system is
->>>> unusable after a short while.
->>>> An optimal solution would be to consolidate the discard requests, bundle
->>>> them and send them to the drive as infrequent as possible.
->>>
->>> or queue them up and send them when the drive is idle (you would need to
->>> keep track to make sure the space isn't re-used)
->>>
->>> as an example, if you would consider spinning down a drive you don't hurt
->>> performance by sending accumulated trim commands.
->>>
->>> David Lang
->>
->> An alternate approach is the block layer maintain its own bitmap of
->> used unused sectors / blocks. Unmap commands from the filesystem just
->> cause the bitmap to be updated.  No other effect.
->
-> how does the block layer know what blocks are unused by the filesystem?
->
-> or would it be a case of the filesystem generating discard/trim requests to
-> the block layer so that it can maintain it's bitmap, and then the block
-> layer generating the requests to the drive below it?
+This is a multi-part message in MIME format.
+--------------000702000009000002030102
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Perhaps an interface (ioctl, etc) can be added to ask a filesystem to
-discard all unused blocks in a certain range? (That is, have the
-filesystem validate the request under any necessary locks before
-passing it to the block IO layer)
+This script tests kprobes to probe on all symbols in the kernel and finds
+symbols which must be blacklisted.
+
+
+Usage
+-----
+   kprobestest [-s SYMLIST] [-b BLACKLIST] [-w WHITELIST]
+      Run stress test. If SYMLIST file is specified, use it as
+      an initial symbol list (This is useful for verifying white list
+      after diagnosing all symbols).
+
+   kprobestest cleanup
+      Cleanup all lists
+
+
+How to Work
+-----------
+This tool list up all symbols in the kernel via /proc/kallsyms, and sorts
+it into groups (each of them including 64 symbols in default). And then,
+it tests each group by using kprobe-tracer. If a kernel crash occurred,
+that group is moved into 'failed' dir. If the group passed the test, this
+script moves it into 'passed' dir and saves kprobe_profile into
+'passed/profiles/'.
+After testing all groups, all 'failed' groups are merged and sorted into
+smaller groups (divided by 4, in default). And those are tested again.
+This loop will be repeated until all group has just 1 symbol.
+
+Finally, the script sorts all 'passed' symbols into 'tested', 'untested',
+and 'missed' based on profiles.
+
+
+Note
+----
+  - This script just gives us some clues to the blacklisted functions.
+    In some cases, a combination of probe points will cause a problem, but
+    each of them doesn't cause the problem alone.
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
+
+--------------000702000009000002030102
+Content-Type: text/plain;
+ name="kprobestest"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="kprobestest"
+
+IyEvYmluL2Jhc2gKIwojICBrcHJvYmVzdGVzdDogS3Byb2JlcyBzdHJlc3MgdGVzdCB0b29s
+CiMgIFdyaXR0ZW4gYnkgTWFzYW1pIEhpcmFtYXRzdSA8bWhpcmFtYXRAcmVkaGF0LmNvbT4K
+IwojICBVc2FnZToKIyAgICAgJCBrcHJvYmVzdGVzdCBbLXMgU1lNTElTVF0gWy1iIEJMQUNL
+TElTVF0gWy13IFdISVRFTElTVF0KIyAgICAgICAgUnVuIHN0cmVzcyB0ZXN0LiBJZiBTWU1M
+SVNUIGZpbGUgaXMgc3BlY2lmaWVkLCB1c2UgaXQgYXMgCiMgICAgICAgIGFuIGluaXRpYWwg
+c3ltYm9sIGxpc3QgKFRoaXMgaXMgdXNlZnVsIGZvciB2ZXJpZnlpbmcgd2hpdGUgbGlzdAoj
+ICAgICAgICBhZnRlciBkaWFnbm9zaW5nIGFsbCBzeW1ib2xzKS4KIwojICAgICAkIGtwcm9i
+ZXN0ZXN0IGNsZWFudXAKIyAgICAgICAgQ2xlYW51cCBhbGwgbGlzdHMKCiMgQ29uZmlndXJh
+dGlvbnMgCkRFQlVHRlM9L3N5cy9rZXJuZWwvZGVidWcKSU5JVE5SPTY0CkRJVj00ClNZTUZJ
+TEU9c3ltcy5saXN0CkZBSUxGSUxFPWJsYWNrLmxpc3QKCmZ1bmN0aW9uIGRvX3Rlc3QgKCkg
+ewogICMgRG8gc29tZSBiZW5jaG1hcmsKICBmb3IgaSBpbiB7MS4uNH0gOyBkbwogIHNsZWVw
+IDAuNQogIGVjaG8gLW4gIi4iCiAgZG9uZQp9CgpmdW5jdGlvbiB1c2FnZSAoKSB7CiAgZWNo
+byAiVXNhZ2U6IGtwcm9iZXN0ZXN0IFtjbGVhbnVwXSBbLXMgU1lNTElTVF0gWy1iIEJMQUNL
+TElTVF0gWy13IFdISVRFTElTVF0iCiAgZXhpdCAwCn0KCmZ1bmN0aW9uIGNsZWFudXBfdGVz
+dCAoKSB7CiAgZWNobyAiQ2xlYW51cCBhbGwgZmlsZXMiCiAgcm0gLXJmICRTWU1GSUxFIGZh
+aWxlZCBwYXNzZWQgdGVzdGluZyB1bnNldAogIGV4aXQgMAp9CgoKIyBQYXJzZSBhcmd1bWVu
+dHMKV0hJVEVMSVNUPQpCTEFDS0xJU1Q9ClNZTUxJU1Q9Cgp3aGlsZSBbICIkMSIgXTsgZG8K
+ICBjYXNlICQxIGluCiAgICBjbGVhbnVwKQogICAgICBjbGVhbnVwX3Rlc3QKICAgICAgOzsK
+ICAgIC1zKQogICAgICBTWU1MSVNUPSQyCiAgICAgIHNoaWZ0IDEKICAgICAgOzsKICAgIC1i
+KQogICAgICBCTEFDS0xJU1Q9JDIKICAgICAgc2hpZnQgMQogICAgICA7OwogICAgLXcpCiAg
+ICAgIFdISVRFTElTVD0kMgogICAgICBzaGlmdCAxCiAgICAgIDs7CiAgICAqKQogICAgICB1
+c2FnZQogICAgICA7OwogIGVzYWMKICBzaGlmdCAxCmRvbmUKCiMgU2hvdyBjb25maWd1cmF0
+aW9ucwplY2hvICJLcHJvYmUgc3RyZXNzIHRlc3Qgc3RhcnRpbmcuIgpbIC1mICIkQkxBQ0tM
+SVNUIiBdICYmIGVjaG8gIkJsYWNrbGlzdDogJEJMQUNLTElTVCIgfHwgQkxBQ0tMSVNUPSIi
+ClsgLWYgIiRXSElURUxJU1QiIF0gJiYgZWNobyAiV2hpdGVsaXN0OiAkV0hJVEVMSVNUIiB8
+fCBXSElURUxJU1Q9IiIKWyAtZiAiJFNZTUxJU1QiIF0gJiYgZWNobyAiU3ltbGlzdDogJFNZ
+TUxJU1QiIHx8IFNZTUxJU1Q9IiIKCmZ1bmN0aW9uIG1ha2VfZmlsdGVyICgpIHsKICBsb2Nh
+bCBFWFA9IiIKICBpZiBbIC16ICIkV0hJVEVMSVNUIiAtYSAteiAiJEJMQUNLTElTVCIgXTsg
+dGhlbgogICAgZWNobyAicy9eJC8vZyIKICBlbHNlCiAgICBmb3IgaSBpbiBgY2F0ICRXSElU
+RUxJU1QgJEJMQUNLTElTVGAgO2RvCiAgICAgIFsgLXogIiRFWFAiIF0gJiYgRVhQPSJeJGlc
+JCIgfHwgRVhQPSIkRVhQXFx8XiRpXCQiCiAgICBkb25lIDsgRVhQPSJzLyRFWFAvL2ciCiAg
+ICBlY2hvICRFWFAKICBmaQp9CgpmdW5jdGlvbiBsaXN0X2FsbHN5bXMgKCkgewogIGxvY2Fs
+IHN5bQogIGxvY2FsIG91dD0xCiAgZm9yIHN5bSBpbiBgc29ydCAvcHJvYy9rYWxsc3ltcyB8
+IGVncmVwICdbMC05YS1mXSsgW1R0XSBbXltdKiQnIHwgY3V0IC1kXCAgLWYgM2A7ZG8KICAg
+IFsgJHN5bSAgPSAiX19rcHJvYmVzX3RleHRfc3RhcnQiIF0gJiYgb3V0PTAgJiYgY29udGlu
+dWUKICAgIFsgJHN5bSAgPSAiX19rcHJvYmVzX3RleHRfZW5kIiBdICYmIG91dD0xICYmIGNv
+bnRpbnVlCiAgICBbICRzeW0gID0gIl9ldGV4dCIgXSAmJiBicmVhawogICAgWyAkb3V0IC1l
+cSAxIF0gJiYgZWNobyAkc3ltCiAgZG9uZQp9CgpmdW5jdGlvbiBwcmVwX3Rlc3RpbmcgKCkg
+ewogIGxvY2FsIGk9MAogIGxvY2FsIG49MAogIGxvY2FsIE5SPSQxCiAgbG9jYWwgZm5hbWU9
+CgogIGVjaG8gIkdyb3VwaW5nIHN5bWJvbHM6ICROUiIKCiAgZm5hbWU9YHByaW50ZiAibGlz
+dC0lMDNkLiVkIiAkaSAkTlJgCiAgY2F0ICRTWU1GSUxFIHwgd2hpbGUgcmVhZCBsbjsgZG8K
+ICAgIFsgLXogIiRsbiIgXSAmJiBjb250aW51ZQogICAgZWNobyAiJGxuIiA+PiB0ZXN0aW5n
+LyRmbmFtZQogICAgbj0kKChuKzEpKQogICAgaWYgWyAkbiAtZXEgJE5SIF07IHRoZW4KICAg
+ICAgbj0wCiAgICAgIGk9JCgoaSsxKSkKICAgICAgZm5hbWU9YHByaW50ZiAibGlzdC0lMDNk
+LiVkIiAkaSAkTlJgCiAgICBmaQogIGRvbmUKICBzeW5jCn0KCmZ1bmN0aW9uIGluaXRfZmly
+c3QgKCkgewogIGxvY2FsIEVYUAogIEVYUD1gbWFrZV9maWx0ZXJgCiAgaWYgWyAtZiAiJFNZ
+TUxJU1QiIF07IHRoZW4KICAgIGNhdCAkU1lNTElTVCB8IHNlZCAkRVhQID4gJFNZTUZJTEUK
+ICBlbHNlCiAgICBlY2hvIC1uICJHZW5lcmF0aW5nIHN5bWJvbCBsaXN0IGZyb20gL3Byb2Mv
+a2FsbHN5bXMuLi4iCiAgICBsaXN0X2FsbHN5bXMgfCBzZWQgJEVYUCA+ICRTWU1GSUxFCiAg
+ICBlY2hvICJkb25lLiAiIGB3YyAtbCAkU1lNRklMRSB8IGN1dCAtZjEgLWRcICBgICJzeW1i
+b2xzIGxpc3RlZC4iCiAgZmkKICBta2RpciAtcCB0ZXN0aW5nIGZhaWxlZCB1bnNldCBwYXNz
+ZWQgcGFzc2VkL3Byb2ZpbGVzCiAgcHJlcF90ZXN0aW5nICRJTklUTlIKfQoKZnVuY3Rpb24g
+Z2V0X21heF9uciAoKSB7CiAgd2MgLWwgZmFpbGVkL2xpc3QtKiB1bnNldC9saXN0LSogMj4v
+ZGV2L251bGwgfFwKICBhd2sgJy9eICpbMC05XSsgLipsaXN0LiokL3sgaWYgKG5yIDwgJDEp
+IG5yPSQxIH0gQkVHSU4geyBucj0wIH0gRU5EIHsgcHJpbnQgbnJ9Jwp9CgpmdW5jdGlvbiBp
+bml0X25leHQgKCkgewogIGxvY2FsIE5SCiAgTlI9YGdldF9tYXhfbnJgCiAgWyAkTlIgLWVx
+IDAgXSAmJiByZXR1cm4gMQogIFsgJE5SIC1lcSAxIF0gJiYgcmV0dXJuIDIKICBbICROUiAt
+bGUgJERJViBdICYmIE5SPTEgfHwgTlI9YGV4cHIgJE5SIC8gJERJVmAKCiAgY2F0IGZhaWxl
+ZC8qIHVuc2V0LyogPiAkU1lNRklMRQogIHJtIGZhaWxlZC8qIHVuc2V0LyoKCiAgcHJlcF90
+ZXN0aW5nICROUgogIHJldHVybiAwCn0KCgojIEluaXRpYWxpemUgc3ltYm9scwppZiBbICEg
+LWQgdGVzdGluZyBdOyB0aGVuCiAgaW5pdF9maXJzdAplbGlmIFsgLXogImBscyB0ZXN0aW5n
+L2AiIF07IHRoZW4KICBpbml0X25leHQKZmkKCmZ1bmN0aW9uIHNldF9wcm9iZXMgKCkgewog
+IGxvY2FsIHMKICBmb3IgcyBpbiBgY2F0ICQxYDsgZG8KICAgIGVjaG8gInA6JHMiICRzID4+
+ICRERUJVR0ZTL3RyYWNpbmcva3Byb2JlX2V2ZW50cwogICAgWyAkPyAtbmUgMCBdICYmIHJl
+dHVybiAtMQogIGRvbmUKICByZXR1cm4gMAp9CgpmdW5jdGlvbiBjbGVhcl9wcm9iZXMgKCkg
+ewogIGVjaG8gPiAkREVCVUdGUy90cmFjaW5nL2twcm9iZV9ldmVudHMKfQoKZnVuY3Rpb24g
+c2F2ZV9wcm9maWxlICgpIHsKICBjYXQgJERFQlVHRlMvdHJhY2luZy9rcHJvYmVfcHJvZmls
+ZSA+IHBhc3NlZC9wcm9maWxlcy8kMS5wcm9mCn0KCmNsZWFyX3Byb2JlcwoKZWNobyAiU3Rh
+cnRpbmcgdGVzdHMuLiIKClJFVD0wCgojIE1haW4gbG9vcAp3aGlsZSBbICRSRVQgLWVxIDAg
+XTsgZG8KCiAgZm9yIGxpc3QgaW4gYGNkIHRlc3RpbmcvOyBsc2A7IGRvCiAgICBlY2hvIC1u
+ICRsaXN0CiAgICAjIFRlbXBvcmFyeSBtb3ZpbmcgbGlzdCBpbnRvIGZhaWxlZC4KICAgIG12
+IHRlc3RpbmcvJGxpc3QgZmFpbGVkLwogICAgc3luYztzeW5jCiAgICBlY2hvIC1uICJzeW5j
+Li4iCiAgICBzZXRfcHJvYmVzIGZhaWxlZC8kbGlzdAogICAgaWYgWyAkPyAtbmUgMCBdOyB0
+aGVuCiAgICAgIGNsZWFyX3Byb2JlcwogICAgICBzeW5jO3N5bmMKICAgICAgZWNobyAiY2Fu
+IG5vdCBzZXQiCiAgICAgIG12IGZhaWxlZC8kbGlzdCB1bnNldC8KICAgICAgc3luYztzeW5j
+CiAgICBlbHNlCiAgICAgIGRvX3Rlc3QKICAgICAgc2F2ZV9wcm9maWxlICRsaXN0CiAgICAg
+IGNsZWFyX3Byb2JlcwogICAgICBzeW5jO3N5bmMKICAgICAgZWNobyAiZG9uZSIKICAgICAg
+bXYgZmFpbGVkLyRsaXN0IHBhc3NlZC8KICAgICAgc3luYztzeW5jCiAgICBmaQogIGRvbmUK
+CiAgaW5pdF9uZXh0CiAgUkVUPSQ/CmRvbmUKCmlmIFsgJFJFVCAtZXEgMSBdO3RoZW4KICAj
+IE5vIGZhaWxlZCBzeW1ib2xzCiAgZWNobyAibm8gZmFpbGVkIHN5bWJvbHMgZm91bmQuIgpl
+bHNlCiAgZWNobyAiZm91bmQgZmFpbGVkIHN5bWJvbHM6IgogIGNhdCBmYWlsZWQvKiB8IHRl
+ZSAkRkFJTEZJTEUKICBybSBmYWlsZWQvKgpmaQoKZnVuY3Rpb24gcHJvZmlsZV9zeW1ib2xz
+ICgpIHsKICBsb2NhbCBzIGggbQogIHJtIC1mIHRlc3RlZC5saXN0IG1pc3NlZC5saXN0IHVu
+dGVzdGVkLmxpc3QKICBjYXQgcGFzc2VkL3Byb2ZpbGVzLyoucHJvZiB8IHdoaWxlIHJlYWQg
+cyBoIG0gO2RvCiAgICBpZiBbICRoIC1uZSAwIF07IHRoZW4gCiAgICAgIGVjaG8gJHMgPj4g
+dGVzdGVkLmxpc3QKICAgIGVsaWYgWyAkbSAtbmUgMCBdOyB0aGVuCiAgICAgIGVjaG8gJHMg
+Pj4gbWlzc2VkLmxpc3QKICAgIGVsc2UKICAgICAgZWNobyAkcyA+PiB1bnRlc3RlZC5saXN0
+CiAgICBmaQogIGRvbmUKfQoKZWNobyAtbiAiUHJvZmlsaW5nIHN5bWJvbHMuLi4iCnByb2Zp
+bGVfc3ltYm9scwplY2hvIGRvbmUKZWNobyB0ZXN0ZWQ6IGB3YyAtbCB0ZXN0ZWQubGlzdCB8
+IGN1dCAtZFwgIC1mMWAgc3ltYm9scwplY2hvIG1pc3NlZDogYHdjIC1sIG1pc3NlZC5saXN0
+IHwgY3V0IC1kXCAgLWYxYCBzeW1ib2xzCmVjaG8gdW50ZXN0ZWQ6IGB3YyAtbCB1bnRlc3Rl
+ZC5saXN0IHwgY3V0IC1kXCAgLWYxYCBzeW1ib2xzCg==
+--------------000702000009000002030102--
