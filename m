@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752340AbZHMFjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbZHMFsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752340AbZHMFjM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 01:39:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbZHMFjL
+	id S1752388AbZHMFsp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 01:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZHMFsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 01:39:11 -0400
-Received: from mail.gmx.net ([213.165.64.20]:57699 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752016AbZHMFjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 01:39:10 -0400
-X-Authenticated: #2360897
-X-Provags-ID: V01U2FsdGVkX1/BMjxWdcHBjsvV9uwAfHtcwVQeqhVNWoL40qKC/m
-	aygkdDDXMPSILq
-Date: Thu, 13 Aug 2009 07:39:52 +0200
-From: Bernhard Walle <bernhard.walle@gmx.de>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 0/8] V3 Implement crashkernel=auto
-Message-ID: <20090813053952.GA9037@mail1.bwalle.de>
-References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>
- <20090812124659.GA4808@mail1.bwalle.de>
- <4A837F49.9060003@redhat.com>
+	Thu, 13 Aug 2009 01:48:45 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:33953 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751630AbZHMFso (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 01:48:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZKcnU83XSc6RUE2TqZ+xVOm4ciMicvIepIGdFxGpfo0W/llBqMtqPYylABEG8+cE2T
+         rP88/f6nru2F+c5hNO6hGftPffQWtnAgxSlLOKfPkqdmNhFGeow2cL/XRDW6uJI0G3YH
+         DHbRJ8eemi4lFyQ4+D0uKmy8lXAKyeL8CnY8Q=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A837F49.9060003@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.62
+In-Reply-To: <20090813132845R.fujita.tomonori@lab.ntt.co.jp>
+References: <3877989d0908120220q5104d2e7rd272ececbc45e377@mail.gmail.com>
+	 <20090812181722.GA32653@linux-os.sc.intel.com>
+	 <20090813132845R.fujita.tomonori@lab.ntt.co.jp>
+Date: Thu, 13 Aug 2009 13:48:45 +0800
+Message-ID: <3877989d0908122248s4212ef95w7606a4dca5c7a855@mail.gmail.com>
+Subject: Re: [RFC patch] init default dma_ops to prepare intel_iommu_init 
+	failure
+From: Luming Yu <luming.yu@gmail.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: fenghua.yu@intel.com, dwmw2@infradead.org, tony.luck@intel.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>>
+>> This check can not be removed. Otherwise, swiotlb_dma_ops will always override
+>> previous dma_ops value.
+>
+> Yeah.
 
-* Amerigo Wang <amwang@redhat.com> [2009-08-13 04:49]:
-> Bernhard Walle wrote:
-> >
-> >Honestly I don't see why everything is guarded by
-> >CONFIG_KEXEC_AUTO_RESERVE. We do we need that new configuration
-> >option? I mean, if I don't specify 'crashkernel=auto', then the patch
-> >does nothing, right? Then the option CONFIG_KEXEC_AUTO_RESERVE would
-> >only be needed so save some bytes of code. Is that really worth it?
-> 
-> Hi,  CONFIG_KEXEC_AUTO_RESERVE is not for saving bytes, it just
-> provides a choice for the user to decide to enable it or not.
-
-Still, I don't understand it. When I don't say "crashkernel=auto" on
-command line, then nothing is done, right? So the choice for the user
-is the "crashkernel=auto". Why do we need CONFIG_KEXEC_AUTO_RESERVE
-then? Maybe I just missed something in my logic ...
-
-
-Regards,
-Bernhard
+I think pci_swiotlb_init needs to be cleaned up for both x86_{32,64} and ia64.
+it should be used to init default dma_ops, and the call site of it should be
+as early as platform_dma_init in mem_init. SInce swiotlb_dma_ops is pitched as
+default dma_ops for x86, ia64, we really don't need to let pci_swiotlb_init
+know iommu_deteced, dmar_disabled or iommu_passthrough...and anything
+like that..
+Please note the major wrong assumption of the current implementation is
+"iommu_deteced == iommu working" that I was trying to fix.
