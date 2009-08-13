@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbZHMTrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbZHMTro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932086AbZHMTrt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598AbZHMTrs
+	id S1755576AbZHMTro (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbZHMTro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:47:48 -0400
-Received: from kroah.org ([198.145.64.141]:36712 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:47:44 -0400
+Received: from kroah.org ([198.145.64.141]:36691 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755579AbZHMTrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:47:46 -0400
+	id S1755486AbZHMTrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:47:42 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:36 2009
-Message-Id: <20090813194336.458805351@mini.kroah.org>
+Message-Id: <20090813194335.880835446@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:28 -0700
+Date: Thu, 13 Aug 2009 12:40:24 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-Subject: [patch 07/28] sysfs: fix hardlink count on device_move
+       Michele Jr De Candia <michele.decandia@valueteam.com>,
+       Rodolfo Giometti <giometti@linux.it>, Jean Delvare <khali@linux-fr.org>
+Subject: [patch 03/28] i2c/tsl2550: Fix lux value in dark environment
 References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=sysfs-fix-hardlink-count-on-device_move.patch
+Content-Disposition: inline; filename=i2c-tsl2550-fix-lux-value-in-dark-environment.patch
 In-Reply-To: <20090813194554.GA13947@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,40 +31,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+From: Michele Jr De Candia <michele.decandia@valueteam.com>
 
-commit 0f58b44582001c8bcdb75f36cf85ebbe5170e959 upstream.
+commit 96f699ad09c8b3c55cd229506a9add0047838e3e upstream.
 
-Update directory hardlink count when moving kobjects to a new parent.
-Fixes the following problem which occurs when several devices are
-moved to the same parent and then unregistered:
+I've tested TSL2550 driver and I've found a bug: when light is off,
+returned value from tsl2550_calculate_lux function is -1 when it should
+be 0 (sensor correctly read that light was off).
 
-> ls -laF /sys/devices/css0/defunct/
-> total 0
-> drwxr-xr-x 4294967295 root root    0 2009-07-14 17:02 ./
-> drwxr-xr-x        114 root root    0 2009-07-14 17:02 ../
-> drwxr-xr-x          2 root root    0 2009-07-14 17:01 power/
-> -rw-r--r--          1 root root 4096 2009-07-14 17:01 uevent
+I think the bug is that a zero c0 value (approximated value of ch0) is
+misinterpreted as an error.
 
-Signed-off-by: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+Signed-off-by: Michele Jr De Candia <michele.decandia@valueteam.com>
+Acked-by: Rodolfo Giometti <giometti@linux.it>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/sysfs/dir.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/i2c/chips/tsl2550.c |   17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
 
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -914,8 +914,10 @@ again:
- 	/* Remove from old parent's list and insert into new parent's list. */
- 	sysfs_unlink_sibling(sd);
- 	sysfs_get(new_parent_sd);
-+	drop_nlink(old_parent->d_inode);
- 	sysfs_put(sd->s_parent);
- 	sd->s_parent = new_parent_sd;
-+	inc_nlink(new_parent->d_inode);
- 	sysfs_link_sibling(sd);
+--- a/drivers/i2c/chips/tsl2550.c
++++ b/drivers/i2c/chips/tsl2550.c
+@@ -27,7 +27,7 @@
+ #include <linux/delay.h>
  
-  out_unlock:
+ #define TSL2550_DRV_NAME	"tsl2550"
+-#define DRIVER_VERSION		"1.1.1"
++#define DRIVER_VERSION		"1.1.2"
+ 
+ /*
+  * Defines
+@@ -189,13 +189,16 @@ static int tsl2550_calculate_lux(u8 ch0,
+ 	u8 r = 128;
+ 
+ 	/* Avoid division by 0 and count 1 cannot be greater than count 0 */
+-	if (c0 && (c1 <= c0))
+-		r = c1 * 128 / c0;
++	if (c1 <= c0)
++		if (c0) {
++			r = c1 * 128 / c0;
++
++			/* Calculate LUX */
++			lux = ((c0 - c1) * ratio_lut[r]) / 256;
++		} else
++			lux = 0;
+ 	else
+-		return -1;
+-
+-	/* Calculate LUX */
+-	lux = ((c0 - c1) * ratio_lut[r]) / 256;
++		return -EAGAIN;
+ 
+ 	/* LUX range check */
+ 	return lux > TSL2550_MAX_LUX ? TSL2550_MAX_LUX : lux;
 
 
