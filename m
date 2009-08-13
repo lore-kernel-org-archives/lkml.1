@@ -1,60 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbZHMVav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbZHMVcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756387AbZHMVav (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 17:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbZHMVav
+	id S1756397AbZHMVcT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 17:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbZHMVcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 17:30:51 -0400
-Received: from kroah.org ([198.145.64.141]:47165 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 17:32:19 -0400
+Received: from www.tglx.de ([62.245.132.106]:52434 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752515AbZHMVau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 17:30:50 -0400
-Date: Thu, 13 Aug 2009 14:27:50 -0700
-From: Greg KH <greg@kroah.com>
-To: David VomLehn <dvomlehn@cisco.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH] Combine two one-character CR-LF writes into one
- two-character write for O_ONLCR
-Message-ID: <20090813212750.GB24127@kroah.com>
-References: <20090813175430.GA8769@cuplxvomd02.corp.sa.net>
- <20090813205018.4d781c74@lxorguk.ukuu.org.uk>
- <20090813195554.GA22751@cuplxvomd02.corp.sa.net>
+	id S1752755AbZHMVcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 17:32:18 -0400
+Date: Thu, 13 Aug 2009 23:31:44 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [GIT pull] genirq fixes for 2.6.31 -V2
+Message-ID: <alpine.LFD.2.00.0908132311510.1283@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090813195554.GA22751@cuplxvomd02.corp.sa.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 12:55:54PM -0700, David VomLehn wrote:
-> On Thu, Aug 13, 2009 at 08:50:18PM +0100, Alan Cox wrote:
-> > > do_output_char() function uses the struct tty_operations function write_room()
-> > > to determine whether it is possible to write two characters. It uses
-> > > tty_put_char() for each character which, for the USB generic serial driver,
-> > > translates into a write() for each character. For the USB generic serial
-> > > driver the value returned by write_room() only applies to the next write().
-> > 
-> > The USB serial driver is broken, fix it instead. It's not even hard to
-> > fix.
-> > 
-> > > +			tty->ops->write(tty, crlf, ARRAY_SIZE(crlf));
-> > > +			return ARRAY_SIZE(crlf);
-> > 
-> > Emphatic NAK. Someone needs to actually fix the broken USB drivers for
-> > once. This is just one example of where the device will go kersplat if its
-> > broken, others include things like losing flow control.
-> 
-> Works for me; please consider the patch withdrawn. I'll take a crack at fixing
-> the generic serial driver the right way; if other drivers are doing mix-and-match
-> with per-device code and generic code, they could get broken. I have no way to
-> test for this, so I'm hoping others will help out.
+Linus,
 
-I have a whole box of different usb-serial devices, and can test just
-about everything out.
+Please pull the latest irq-fixes-for-linus-2 git tree from:
 
-thanks,
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git irq-fixes-for-linus-2
 
-greg k-h
+Thanks for pointing out the obvious solution. 
+
+I hope it's ok for you that I precautionary added your Signed-off-by
+to the commit.
+
+Thanks,
+
+	tglx
+
+------------------>
+Linus Torvalds (1):
+      genirq: prevent wakeup of freed irq thread
+
+
+ kernel/irq/manage.c |   17 +++++++----------
+ 1 files changed, 7 insertions(+), 10 deletions(-)
+
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 61c679d..d222515 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -761,7 +761,6 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
+ {
+ 	struct irq_desc *desc = irq_to_desc(irq);
+ 	struct irqaction *action, **action_ptr;
+-	struct task_struct *irqthread;
+ 	unsigned long flags;
+ 
+ 	WARN(in_interrupt(), "Trying to free IRQ %d from IRQ context!\n", irq);
+@@ -809,9 +808,6 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
+ 			desc->chip->disable(irq);
+ 	}
+ 
+-	irqthread = action->thread;
+-	action->thread = NULL;
+-
+ 	spin_unlock_irqrestore(&desc->lock, flags);
+ 
+ 	unregister_handler_proc(irq, action);
+@@ -819,12 +815,6 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
+ 	/* Make sure it's not being used on another CPU: */
+ 	synchronize_irq(irq);
+ 
+-	if (irqthread) {
+-		if (!test_bit(IRQTF_DIED, &action->thread_flags))
+-			kthread_stop(irqthread);
+-		put_task_struct(irqthread);
+-	}
+-
+ #ifdef CONFIG_DEBUG_SHIRQ
+ 	/*
+ 	 * It's a shared IRQ -- the driver ought to be prepared for an IRQ
+@@ -840,6 +830,13 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
+ 		local_irq_restore(flags);
+ 	}
+ #endif
++
++	if (action->thread) {
++		if (!test_bit(IRQTF_DIED, &action->thread_flags))
++			kthread_stop(action->thread);
++		put_task_struct(action->thread);
++	}
++
+ 	return action;
+ }
+ 
