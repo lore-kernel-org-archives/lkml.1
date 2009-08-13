@@ -1,173 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbZHMWwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588AbZHMWxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755347AbZHMWwK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 18:52:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZHMWwJ
+	id S1755588AbZHMWxR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 18:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbZHMWxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 18:52:09 -0400
-Received: from mga03.intel.com ([143.182.124.21]:19224 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752456AbZHMWwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 18:52:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,377,1246863600"; 
-   d="scan'208";a="175625275"
-Subject: [patch]  clockevents_notify() need to be called with irq's enabled
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
-       len.brown@intel.com
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 13 Aug 2009 15:48:01 -0700
-Message-Id: <1250203681.27006.10842.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+	Thu, 13 Aug 2009 18:53:17 -0400
+Received: from mail-gx0-f205.google.com ([209.85.217.205]:59055 "EHLO
+	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753005AbZHMWxQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 18:53:16 -0400
+X-Greylist: delayed 438 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Aug 2009 18:53:15 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=qElH02cSQTo3Wfn1ux2lzS/DaqNMBwSNW9Gd/EnklLA+6HqkFxfwigPfyOliY5XaQz
+         3RfXy9EpLojMmfH8qRkFsU2Do46TUJqvFS3r4YP65kq8qdYDfYPstd2IHgfp/OiOopGT
+         vUdrDdUemm3BaA3oNGVYY8jw/PoZE+gTVCrJs=
+Message-ID: <4A8497A3.8090800@gmail.com>
+Date: Thu, 13 Aug 2009 19:45:55 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090725)
+MIME-Version: 1.0
+To: Brian Gerst <brgerst@gmail.com>
+CC: Borislav Petkov <borislav.petkov@amd.com>, mikpe@it.uu.se, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] x86: Clear incorrectly forced X86_FEATURE_LAHF_LM
+ flag
+References: <20090813122337.GB7029@aftab>	 <1250166687-17673-2-git-send-email-borislav.petkov@amd.com>	 <73c1f2160908130721y3c14c4e7h1ff967bac867d7e6@mail.gmail.com>	 <d1af83620908130754i7db4bd33p26cd54d0c30d68a5@mail.gmail.com> <73c1f2160908130855h128c9908h486d583ee9fdcea5@mail.gmail.com>
+In-Reply-To: <73c1f2160908130855h128c9908h486d583ee9fdcea5@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: clockevents_notify() need to be called with irq's enabled
+Brian Gerst wrote:
+> On Thu, Aug 13, 2009 at 10:54 AM, Kevin
+> Winchester<kjwinchester@gmail.com> wrote:
+>> 2009/8/13 Brian Gerst <brgerst@gmail.com>:
+>>> On Thu, Aug 13, 2009 at 8:31 AM, Borislav Petkov<borislav.petkov@amd.com> wrote:
+>>>> From: Kevin Winchester <kjwinchester@gmail.com>
+>>>>
+>>>> Due to an erratum with certain AMD Athlon 64 processors, the BIOS may
+>>>> need to force enable the LAHF_LM capability.  Unfortunately, in at
+>>>> least one case, the BIOS does this even for processors that do not
+>>>> support the functionality.
+>>>>
+>>>> Add a specific check that will clear the feature bit for processors
+>>>> known not to support the LAHF/SAHF instructions.
+>>>>
+>>>> Borislav: turn off cpuid bit.
+>>>>
+>>>> Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
+>>>> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+>>>> ---
+>>>>  arch/x86/kernel/cpu/amd.c |   16 ++++++++++++++++
+>>>>  1 files changed, 16 insertions(+), 0 deletions(-)
+>>>>
+>>>> diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+>>>> index e2485b0..9cd6fc7 100644
+>>>> --- a/arch/x86/kernel/cpu/amd.c
+>>>> +++ b/arch/x86/kernel/cpu/amd.c
+>>>> @@ -400,6 +400,22 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+>>>>                level = cpuid_eax(1);
+>>>>                if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
+>>>>                        set_cpu_cap(c, X86_FEATURE_REP_GOOD);
+>>>> +
+>>>> +               /*
+>>>> +                * Some BIOSes incorrectly force this feature, but only K8
+>>>> +                * revision D (model = 0x14) and later actually support it.
+>>>> +                */
+>>>> +               if (c->x86_model < 0x14) {
+>>> Shouldn't you test that the flag is actually set before trying to clear it?
+>>>
+>> Possibly.  If there were some concern that:
+>>
+>> - The extra instructions would cause a performance impact, and the
+>> test was significantly faster than the clear.
+> 
+> Testing a bit is cheap and MSR accesses are not.
+> 
+>> - The extra instructions might actually cause more problems if the
+>> flag is not set.
+> 
+> These MSRs don't exist on older cpus and will cause a fault, which is
+> handled at additional cost.
+> 
 
-Currently clockevents_notify() is called with interrupts enabled at some
-places and interrupts disabled at some other places.
+I stand corrected.  I was unaware of this, so I guess testing the flag first
+would be a good idea.
 
-This results in a deadlock in this scenario.
+Thanks,
 
-cpu A holding the clockevents_lock in clockevents_notify() with irq enabled
-cpu B waiting for the clockevents_lock in clockevents_notify() with irq disabled
-cpu C doing set_mtrr() which will try to rendezvous of all the cpus.
-
-This will result in C and A come to the rendezvous point and waiting for B.
-B stuck forever waiting for the spinlock and thus not reaching rendezvous
-point.
-
-Fix the usage of clockevents_notify() so that it will always be called
-with interrupts enabled and thus avoid the above deadlock.
-
-This issue left us wondering if we need to change the MTRR rendezvous logic to
-use stop machine logic (instead of smp_call_function) or add a check
-in spinlock debug code to see if there are other spinlocks which gets
-taken under both interrupts enabled/disabled conditions.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
----
-
-Index: tip/arch/x86/kernel/process.c
-===================================================================
---- tip.orig/arch/x86/kernel/process.c
-+++ tip/arch/x86/kernel/process.c
-@@ -520,17 +520,13 @@ static void c1e_idle(void)
- 			       cpu);
- 			local_irq_disable();
- 		}
-+		local_irq_enable();
- 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
-+		local_irq_disable();
- 
- 		default_idle();
- 
--		/*
--		 * The switch back from broadcast mode needs to be
--		 * called with interrupts disabled.
--		 */
--		 local_irq_disable();
- 		 clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
--		 local_irq_enable();
- 	} else
- 		default_idle();
- }
-Index: tip/drivers/acpi/processor_idle.c
-===================================================================
---- tip.orig/drivers/acpi/processor_idle.c
-+++ tip/drivers/acpi/processor_idle.c
-@@ -829,16 +829,18 @@ static int acpi_idle_enter_c1(struct cpu
- 	if (unlikely(!pr))
- 		return 0;
- 
-+	local_irq_enable();
-+	lapic_timer_state_broadcast(pr, cx, 1);
- 	local_irq_disable();
- 
- 	/* Do not access any ACPI IO ports in suspend path */
- 	if (acpi_idle_suspend) {
- 		local_irq_enable();
- 		cpu_relax();
-+		lapic_timer_state_broadcast(pr, cx, 0);
- 		return 0;
- 	}
- 
--	lapic_timer_state_broadcast(pr, cx, 1);
- 	kt1 = ktime_get_real();
- 	acpi_idle_do_entry(cx);
- 	kt2 = ktime_get_real();
-@@ -873,6 +875,13 @@ static int acpi_idle_enter_simple(struct
- 	if (acpi_idle_suspend)
- 		return(acpi_idle_enter_c1(dev, state));
- 
-+	local_irq_enable();
-+	/*
-+	 * Must be done before busmaster disable as we might need to
-+	 * access HPET !
-+	 */
-+	lapic_timer_state_broadcast(pr, cx, 1);
-+
- 	local_irq_disable();
- 	current_thread_info()->status &= ~TS_POLLING;
- 	/*
-@@ -884,15 +893,10 @@ static int acpi_idle_enter_simple(struct
- 	if (unlikely(need_resched())) {
- 		current_thread_info()->status |= TS_POLLING;
- 		local_irq_enable();
-+		lapic_timer_state_broadcast(pr, cx, 0);
- 		return 0;
- 	}
- 
--	/*
--	 * Must be done before busmaster disable as we might need to
--	 * access HPET !
--	 */
--	lapic_timer_state_broadcast(pr, cx, 1);
--
- 	if (cx->type == ACPI_STATE_C3)
- 		ACPI_FLUSH_CPU_CACHE();
- 
-@@ -957,6 +961,12 @@ static int acpi_idle_enter_bm(struct cpu
- 			return 0;
- 		}
- 	}
-+	local_irq_enable();
-+	/*
-+	 * Must be done before busmaster disable as we might need to
-+	 * access HPET !
-+	 */
-+	lapic_timer_state_broadcast(pr, cx, 1);
- 
- 	local_irq_disable();
- 	current_thread_info()->status &= ~TS_POLLING;
-@@ -969,6 +979,7 @@ static int acpi_idle_enter_bm(struct cpu
- 	if (unlikely(need_resched())) {
- 		current_thread_info()->status |= TS_POLLING;
- 		local_irq_enable();
-+		lapic_timer_state_broadcast(pr, cx, 0);
- 		return 0;
- 	}
- 
-@@ -976,11 +987,6 @@ static int acpi_idle_enter_bm(struct cpu
- 
- 	/* Tell the scheduler that we are going deep-idle: */
- 	sched_clock_idle_sleep_event();
--	/*
--	 * Must be done before busmaster disable as we might need to
--	 * access HPET !
--	 */
--	lapic_timer_state_broadcast(pr, cx, 1);
- 
- 	kt1 = ktime_get_real();
- 	/*
-
+-- 
+Kevin Winchester
 
