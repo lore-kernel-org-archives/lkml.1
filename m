@@ -1,42 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZHMQ3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbZHMQb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754904AbZHMQ3n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 12:29:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbZHMQ3m
+	id S1754914AbZHMQb0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 12:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbZHMQb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 12:29:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40677 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751612AbZHMQ3l (ORCPT
+	Thu, 13 Aug 2009 12:31:26 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:29885 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752187AbZHMQbZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 12:29:41 -0400
-Date: Thu, 13 Aug 2009 09:29:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Madhusudhan" <madhu.cr@ti.com>
-Cc: "'Matt Fleming'" <matt@console-pimps.org>,
-       "'Adrian Hunter'" <adrian.hunter@nokia.com>,
-       "'Jarkko Lavinen'" <jarkko.lavinen@nokia.com>,
-       "'linux-omap Mailing List'" <linux-omap@vger.kernel.org>,
-       "'Pierre Ossman'" <pierre@ossman.eu>,
-       "'Denis Karpov'" <ext-denis.2.karpov@nokia.com>,
-       "'lkml'" <linux-kernel@vger.kernel.org>, linux-mmc@vger.kernel.org
-Subject: Re: [PATCH V2 0/32] mmc and omap_hsmmc patches
-Message-Id: <20090813092927.bed99855.akpm@linux-foundation.org>
-In-Reply-To: <005201ca1c2a$898b4390$544ff780@am.dhcp.ti.com>
-References: <20090728103834.2371.65809.sendpatchset@ahunter-laptop>
-	<20090729111327.GB6057@console-pimps.org>
-	<000c01ca1179$387d6f20$544ff780@am.dhcp.ti.com>
-	<005201ca1c2a$898b4390$544ff780@am.dhcp.ti.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Aug 2009 12:31:25 -0400
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+To: mingo@elte.hu
+Subject: [PATCH] swap: send callback when swap slot is freed v2
+Date: Thu, 13 Aug 2009 22:01:05 +0530
+User-Agent: KMail/1.11.4 (Linux/2.6.29.6-217.2.3.fc11.x86_64; KDE/4.2.4; x86_64; ; )
+Cc: akpm@linux-foundation.org, hugh.dickins@tiscali.co.uk,
+       peterz@infradead.org, willy@linux.intel.com,
+       linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
+       linux-mm-cc@laptop.org
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908132201.05719.ngupta@vflare.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Aug 2009 10:27:15 -0500 "Madhusudhan" <madhu.cr@ti.com> wrote:
+Currently, we have "swap discard" mechanism which sends a discard bio request
+when we find a free cluster during scan_swap_map(). This callback can come a
+long time after swap slots are actually freed.
 
-> I am curious to know is this series lined up for upstream?
+This delay in callback is a great problem when (compressed) RAM [1] is used
+as a swap device. So, this change adds a callback which is called as
+soon as a swap slot becomes free. For above mentioned case of swapping
+over compressed RAM device, this is very useful since we can immediately
+free memory allocated for this swap page.
 
-yup.  http://userweb.kernel.org/~akpm/mmotm/ is the place to check for that.
+This callback does not replace swap discard support. It is called with
+swap_lock held, so it is meant to trigger action that finishes quickly.
+However, swap discard is an I/O request and can be used for taking longer
+actions.
+
+Links:
+[1] http://code.google.com/p/compcache/
+
+Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+---
+
+ include/linux/swap.h |    5 +++++
+ mm/swapfile.c        |   33 +++++++++++++++++++++++++++++++++
+ 2 files changed, 38 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 7c15334..64796fc 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -8,6 +8,7 @@
+ #include <linux/memcontrol.h>
+ #include <linux/sched.h>
+ #include <linux/node.h>
++#include <linux/blkdev.h>
+ 
+ #include <asm/atomic.h>
+ #include <asm/page.h>
+@@ -20,6 +21,8 @@ struct bio;
+ #define SWAP_FLAG_PRIO_MASK	0x7fff
+ #define SWAP_FLAG_PRIO_SHIFT	0
+ 
++typedef void (swap_free_notify_fn) (struct block_device *, unsigned long);
++
+ static inline int current_is_kswapd(void)
+ {
+ 	return current->flags & PF_KSWAPD;
+@@ -155,6 +158,7 @@ struct swap_info_struct {
+ 	unsigned int max;
+ 	unsigned int inuse_pages;
+ 	unsigned int old_block_size;
++	swap_free_notify_fn *swap_free_notify_fn;
+ };
+ 
+ struct swap_list_t {
+@@ -295,6 +299,7 @@ extern sector_t swapdev_block(int, pgoff_t);
+ extern struct swap_info_struct *get_swap_info_struct(unsigned);
+ extern int reuse_swap_page(struct page *);
+ extern int try_to_free_swap(struct page *);
++extern void set_swap_free_notify(struct block_device *, swap_free_notify_fn *);
+ struct backing_dev_info;
+ 
+ /* linux/mm/thrash.c */
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index 8ffdc0d..d75729a 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -552,6 +552,37 @@ out:
+ 	return NULL;
+ }
+ 
++/*
++ * Sets callback for event when swap_map[offset] == 0
++ * i.e. page at this swap offset is no longer used.
++ */
++void set_swap_free_notify(struct block_device *bdev,
++			swap_free_notify_fn *notify_fn)
++{
++	unsigned int i;
++	struct swap_info_struct *sis;
++
++	spin_lock(&swap_lock);
++	for (i = 0; i <= nr_swapfiles; i++) {
++		sis = &swap_info[i];
++		if (!(sis->flags & SWP_USED))
++			continue;
++		if (sis->bdev == bdev)
++			break;
++	}
++
++	/* swap device not found */
++	if (i > nr_swapfiles)
++		return;
++
++	BUG_ON(!sis || sis->swap_free_notify_fn);
++	sis->swap_free_notify_fn = notify_fn;
++	spin_unlock(&swap_lock);
++
++	return;
++}
++EXPORT_SYMBOL_GPL(set_swap_free_notify);
++
+ static int swap_entry_free(struct swap_info_struct *p,
+ 			   swp_entry_t ent, int cache)
+ {
+@@ -583,6 +614,8 @@ static int swap_entry_free(struct swap_info_struct *p,
+ 			swap_list.next = p - swap_info;
+ 		nr_swap_pages++;
+ 		p->inuse_pages--;
++		if (p->swap_free_notify_fn)
++			p->swap_free_notify_fn(p->bdev, offset);
+ 	}
+ 	if (!swap_count(count))
+ 		mem_cgroup_uncharge_swap(ent);
