@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbZHMIkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593AbZHMIks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753538AbZHMIkk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 04:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbZHMIkj
+	id S1753593AbZHMIks (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 04:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZHMIkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 04:40:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33424 "EHLO hera.kernel.org"
+	Thu, 13 Aug 2009 04:40:47 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33431 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752323AbZHMIki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 04:40:38 -0400
-Date: Thu, 13 Aug 2009 08:40:06 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+	id S1752732AbZHMIkj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 04:40:39 -0400
+Date: Thu, 13 Aug 2009 08:39:53 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
-       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1250152039-7284-1-git-send-email-fweisbec@gmail.com>
-References: <1250152039-7284-1-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/urgent] perf tools: Add a per tracepoint counter attribute to get raw sample
-Message-ID: <tip-3a9f131fb00b8ac5950a11ad1599e45edfb5ae44@git.kernel.org>
-Git-Commit-ID: 3a9f131fb00b8ac5950a11ad1599e45edfb5ae44
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, fweisbec@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf_counter: Provide hw_perf_counter_setup_online() APIs
+Message-ID: <tip-28402971d869e26271b25301011f667d3a5640c3@git.kernel.org>
+Git-Commit-ID: 28402971d869e26271b25301011f667d3a5640c3
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -32,82 +32,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3a9f131fb00b8ac5950a11ad1599e45edfb5ae44
-Gitweb:     http://git.kernel.org/tip/3a9f131fb00b8ac5950a11ad1599e45edfb5ae44
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Thu, 13 Aug 2009 10:27:18 +0200
+Commit-ID:  28402971d869e26271b25301011f667d3a5640c3
+Gitweb:     http://git.kernel.org/tip/28402971d869e26271b25301011f667d3a5640c3
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Thu, 13 Aug 2009 10:13:22 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 13 Aug 2009 10:37:25 +0200
+CommitDate: Thu, 13 Aug 2009 10:13:22 +0200
 
-perf tools: Add a per tracepoint counter attribute to get raw sample
+perf_counter: Provide hw_perf_counter_setup_online() APIs
 
-Add a new flag field while opening a tracepoint perf counter:
+Provide weak aliases for hw_perf_counter_setup_online(). This is
+used by the BTS patches (for v2.6.32), but it interacts with
+fixes so propagate this upstream. (it has no effect as of yet)
 
-	-e tracepoint_subsystem:tracepoint_name:flags
+Also export perf_counter_output() to architecture code.
 
-This is intended to be generic although for now it only supports the
-r[e[c[o[r[d]]]]] flag:
-
-	./perf record -e workqueue:workqueue_insertion:record
-	./perf record -e workqueue:workqueue_insertion:r
-
-will have the same effect: enabling the raw samples record for
-the given tracepoint counter.
-
-In the future, we may want to support further flags, separated
-by commas.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
-LKML-Reference: <1250152039-7284-1-git-send-email-fweisbec@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-record.c    |    2 +-
- tools/perf/util/parse-events.c |   10 ++++++++++
+ include/linux/perf_counter.h |    2 ++
+ kernel/perf_counter.c        |   10 +++++++++-
  2 files changed, 11 insertions(+), 1 deletions(-)
 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index de76008..78adc47 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -398,7 +398,7 @@ static void create_counter(int counter, int cpu, pid_t pid)
- 				  PERF_FORMAT_TOTAL_TIME_RUNNING |
- 				  PERF_FORMAT_ID;
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index a9d823a..2b36afe 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -694,6 +694,8 @@ struct perf_sample_data {
  
--	attr->sample_type	= PERF_SAMPLE_IP | PERF_SAMPLE_TID;
-+	attr->sample_type	|= PERF_SAMPLE_IP | PERF_SAMPLE_TID;
+ extern int perf_counter_overflow(struct perf_counter *counter, int nmi,
+ 				 struct perf_sample_data *data);
++extern void perf_counter_output(struct perf_counter *counter, int nmi,
++				struct perf_sample_data *data);
  
- 	if (freq) {
- 		attr->sample_type	|= PERF_SAMPLE_PERIOD;
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 4858d83..0441784 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -379,6 +379,7 @@ static int parse_tracepoint_event(const char **strp,
- 				    struct perf_counter_attr *attr)
+ /*
+  * Return 1 for a software counter, 0 for a hardware counter
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index b0b20a0..e26d2fc 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -88,6 +88,7 @@ void __weak hw_perf_disable(void)		{ barrier(); }
+ void __weak hw_perf_enable(void)		{ barrier(); }
+ 
+ void __weak hw_perf_counter_setup(int cpu)	{ barrier(); }
++void __weak hw_perf_counter_setup_online(int cpu)	{ barrier(); }
+ 
+ int __weak
+ hw_perf_group_sched_in(struct perf_counter *group_leader,
+@@ -2630,7 +2631,7 @@ static u32 perf_counter_tid(struct perf_counter *counter, struct task_struct *p)
+ 	return task_pid_nr_ns(p, counter->ns);
+ }
+ 
+-static void perf_counter_output(struct perf_counter *counter, int nmi,
++void perf_counter_output(struct perf_counter *counter, int nmi,
+ 				struct perf_sample_data *data)
  {
- 	const char *evt_name;
-+	char *flags;
- 	char sys_name[MAX_EVENT_LENGTH];
- 	char id_buf[4];
- 	int fd;
-@@ -400,6 +401,15 @@ static int parse_tracepoint_event(const char **strp,
- 	strncpy(sys_name, *strp, sys_length);
- 	sys_name[sys_length] = '\0';
- 	evt_name = evt_name + 1;
+ 	int ret;
+@@ -4592,6 +4593,11 @@ perf_cpu_notify(struct notifier_block *self, unsigned long action, void *hcpu)
+ 		perf_counter_init_cpu(cpu);
+ 		break;
+ 
++	case CPU_ONLINE:
++	case CPU_ONLINE_FROZEN:
++		hw_perf_counter_setup_online(cpu);
++		break;
 +
-+	flags = strchr(evt_name, ':');
-+	if (flags) {
-+		*flags = '\0';
-+		flags++;
-+		if (!strncmp(flags, "record", strlen(flags)))
-+			attr->sample_type |= PERF_SAMPLE_RAW;
-+	}
-+
- 	evt_length = strlen(evt_name);
- 	if (evt_length >= MAX_EVENT_LENGTH)
- 		return 0;
+ 	case CPU_DOWN_PREPARE:
+ 	case CPU_DOWN_PREPARE_FROZEN:
+ 		perf_counter_exit_cpu(cpu);
+@@ -4616,6 +4622,8 @@ void __init perf_counter_init(void)
+ {
+ 	perf_cpu_notify(&perf_cpu_nb, (unsigned long)CPU_UP_PREPARE,
+ 			(void *)(long)smp_processor_id());
++	perf_cpu_notify(&perf_cpu_nb, (unsigned long)CPU_ONLINE,
++			(void *)(long)smp_processor_id());
+ 	register_cpu_notifier(&perf_cpu_nb);
+ }
+ 
