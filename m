@@ -1,88 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbZHMTsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbZHMTrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755639AbZHMTsS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbZHMTsO
+	id S1755590AbZHMTrq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbZHMTro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:48:14 -0400
-Received: from kroah.org ([198.145.64.141]:36831 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:47:44 -0400
+Received: from kroah.org ([198.145.64.141]:36698 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755523AbZHMTsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:48:11 -0400
-Date: Thu, 13 Aug 2009 12:45:54 -0700
+	id S1755562AbZHMTrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:47:43 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:36 2009
+Message-Id: <20090813194336.011177297@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Thu, 13 Aug 2009 12:40:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/28] 2.6.27.30-stable review
-Message-ID: <20090813194554.GA13947@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Tom Peng <tom_peng@usish.com>, Jack Wang <jack_wang@usish.com>,
+       Lindar Liu <lindar_liu@usish.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 04/28] SCSI: libsas: reuse the original port when hotplugging phys in wide ports
+References: <20090813194021.446758568@mini.kroah.org>
+Content-Disposition: inline; filename=libsas-reuse-the-original-port-when-hotplugging-phys-in-wide-ports.patch
+In-Reply-To: <20090813194554.GA13947@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-This is the start of the stable review cycle for the 2.6.27.30 release.
-There are 28 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+------------------
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+From: Tom Peng <tom_peng@usish.com>
 
-Responses should be made by Saturday, August 15, 2009 19:00:00 UTC.
-Anything received after that time might be too late.
+commit 5381837f125cc62ad703fbcdfcd7566fc81fd404 upstream.
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.30-rc1.gz
-and the diffstat can be found below.
+There's a hotplug problem in the way libsas allocates ports: it loops over the
+available ports first trying to add to an existing for a wide port and
+otherwise allocating the next free port.  This scheme only works if the port
+array is packed from zero, which fails if a port gets hot unplugged and the
+array becomes sparse.  In that case, a new port is formed even if there's a
+wide port it should be part of.  Fix this by creating two loops over all the
+ports:  the first to see if the phy should be part of a wide port and the
+second to form a new port in an empty port slot.
+
+Signed-off-by: Tom Peng <tom_peng@usish.com>
+Signed-off-by: Jack Wang <jack_wang@usish.com>
+Signed-off-by: Lindar Liu <lindar_liu@usish.com>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/scsi/libsas/sas_port.c |   19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
+
+--- a/drivers/scsi/libsas/sas_port.c
++++ b/drivers/scsi/libsas/sas_port.c
+@@ -56,7 +56,7 @@ static void sas_form_port(struct asd_sas
+ 		}
+ 	}
+ 
+-	/* find a port */
++	/* see if the phy should be part of a wide port */
+ 	spin_lock_irqsave(&sas_ha->phy_port_lock, flags);
+ 	for (i = 0; i < sas_ha->num_phys; i++) {
+ 		port = sas_ha->sas_port[i];
+@@ -69,12 +69,23 @@ static void sas_form_port(struct asd_sas
+ 			SAS_DPRINTK("phy%d matched wide port%d\n", phy->id,
+ 				    port->id);
+ 			break;
+-		} else if (*(u64 *) port->sas_addr == 0 && port->num_phys==0) {
+-			memcpy(port->sas_addr, phy->sas_addr, SAS_ADDR_SIZE);
+-			break;
+ 		}
+ 		spin_unlock(&port->phy_list_lock);
+ 	}
++	/* The phy does not match any existing port, create a new one */
++	if (i == sas_ha->num_phys) {
++		for (i = 0; i < sas_ha->num_phys; i++) {
++			port = sas_ha->sas_port[i];
++			spin_lock(&port->phy_list_lock);
++			if (*(u64 *)port->sas_addr == 0
++				&& port->num_phys == 0) {
++				memcpy(port->sas_addr, phy->sas_addr,
++					SAS_ADDR_SIZE);
++				break;
++			}
++			spin_unlock(&port->phy_list_lock);
++		}
++	}
+ 
+ 	if (i >= sas_ha->num_phys) {
+ 		printk(KERN_NOTICE "%s: couldn't find a free port, bug?\n",
 
 
-thanks,
-
-greg k-h
-
-------------
-
- Makefile                           |    2 +-
- arch/parisc/kernel/cache.c         |   23 +++++++++++++++--------
- arch/parisc/kernel/pci-dma.c       |   12 ++++++++----
- arch/x86/kernel/pci-gart_64.c      |   10 ++++++++--
- block/Kconfig                      |   11 +++++++----
- drivers/firewire/fw-sbp2.c         |   10 +++++++++-
- drivers/hwmon/smsc47m1.c           |   11 +++++++++++
- drivers/i2c/chips/tsl2550.c        |   17 ++++++++++-------
- drivers/ieee1394/sbp2.c            |    1 +
- drivers/ieee1394/sbp2.h            |    8 +++++++-
- drivers/misc/Kconfig               |    4 +++-
- drivers/net/usb/asix.c             |    8 ++++++++
- drivers/scsi/libsas/sas_port.c     |   19 +++++++++++++++----
- drivers/usb/core/devio.c           |   10 ++++++----
- drivers/usb/serial/ftdi_sio.c      |    3 +++
- drivers/usb/serial/ftdi_sio.h      |   14 ++++++++++++++
- drivers/usb/storage/transport.c    |    2 +-
- drivers/usb/storage/unusual_devs.h |    7 +++++++
- fs/binfmt_flat.c                   |   17 ++++++++++++-----
- fs/compat_ioctl.c                  |    1 +
- fs/nfs/direct.c                    |   20 ++++++++++----------
- fs/nfs/read.c                      |    6 ++----
- fs/nfs/write.c                     |    6 ++----
- fs/proc/base.c                     |   27 ++++++++++++---------------
- fs/proc/task_mmu.c                 |    1 +
- fs/proc/task_nommu.c               |    1 +
- fs/sysfs/dir.c                     |    2 ++
- include/asm-parisc/tlbflush.h      |   13 ++++++-------
- include/asm-x86/irqflags.h         |    8 +++++++-
- include/linux/nfs_fs.h             |    5 ++---
- kernel/fork.c                      |   22 +++++++++++-----------
- mm/hugetlb.c                       |    2 +-
- mm/page_alloc.c                    |   13 +++++++++----
- net/socket.c                       |    2 +-
- sound/pci/hda/patch_realtek.c      |    2 ++
- 35 files changed, 216 insertions(+), 104 deletions(-)
