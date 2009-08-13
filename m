@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbZHMVvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbZHMVxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbZHMVvh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 17:51:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbZHMVvh
+	id S1754172AbZHMVxO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 17:53:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbZHMVxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 17:51:37 -0400
-Received: from mail-yw0-f193.google.com ([209.85.211.193]:33593 "EHLO
-	mail-yw0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753589AbZHMVve (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 17:51:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=d8Yj/i2Ed+5wLfY9VLiek6CP5TEghgWGvWsmBIscOM1jLgzA5KCUPS8HBQHGBE16N5
-         RrlrRtfNPIzBb/S3vK0kL44MkkYRI3x6wHDUtpUsKf6/eSQhK9rrwbGYpLu07kRj3off
-         X9QipwkgABfT62qogx5blyeh9jGfNdzggq9aw=
-Message-ID: <4A848AE2.5010600@gmail.com>
-Date: Thu, 13 Aug 2009 23:51:30 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-7.4 Thunderbird/3.0b3
+	Thu, 13 Aug 2009 17:53:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36591 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753412AbZHMVxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 17:53:13 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
+Date: Thu, 13 Aug 2009 23:53:54 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       "linux-acpi" <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+References: <Pine.LNX.4.44L0.0908121702520.23954-100000@iolanthe.rowland.org> <200908122343.20554.rjw@sisk.pl>
+In-Reply-To: <200908122343.20554.rjw@sisk.pl>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: "Brown, Len" <len.brown@intel.com>, linux-pm@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: hibernate causes nobody cared on acpi irq
-References: <4A833CAD.5050209@gmail.com> <200908130021.34378.rjw@sisk.pl> <4A846F04.9050005@gmail.com> <200908132220.01334.rjw@sisk.pl> <4A847BA1.9080805@gmail.com>
-In-Reply-To: <4A847BA1.9080805@gmail.com>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908132353.54902.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/13/2009 10:46 PM, Jiri Slaby wrote:
-> On 08/13/2009 10:20 PM, Rafael J. Wysocki wrote:
->> Well, nothing obvious comes to mind.
+On Wednesday 12 August 2009, Rafael J. Wysocki wrote:
+> On Wednesday 12 August 2009, Alan Stern wrote:
+> > On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
+> > 
+> > > Hi,
+> > > 
+> > > The following patches introduce a mechanism allowing us to execute device
+> > > drivers' suspend and resume callbacks asynchronously during system sleep
+> > > transitions, such as suspend to RAM.  The idea is explained in the [1/1] patch
+> > > message.
+> > > 
+> > > Comments welcome.
+> > 
+> > I get the idea.  Not bad.
 > 
-> Hmm, looks like a fresh qemu-kvm bug.
+> Thanks!
+> 
+> > Have you tried it in a serious way?  For example, turning on the
+> > async_suspend flag for every device?
+> 
+> No, I've only tested it with a few selected drivers.  I'm going to try the
+> "async everyone" scenario, though.
 
-FWIW downgrading from kvm userspace 88 to 78 fixed the issue.
+On HP nx6325 booted with init=/bin/bash it doesn't pass the
+'echo devices > /sys/power/pm_test && echo mem > /sys/power/state' test.
+
+The suspend part actually seems to work, but the resume part crashes
+miserably.
+
+Thanks,
+Rafael
