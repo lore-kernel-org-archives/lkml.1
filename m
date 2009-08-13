@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932305AbZHMUAI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932204AbZHMT7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932305AbZHMUAI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:00:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932288AbZHMUAF
+	id S932204AbZHMT7q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932189AbZHMT7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:00:05 -0400
-Received: from kroah.org ([198.145.64.141]:41910 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:59:43 -0400
+Received: from kroah.org ([198.145.64.141]:41778 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932246AbZHMUAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:00:01 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:33 2009
-Message-Id: <20090813195133.025035073@mini.kroah.org>
+	id S932140AbZHMT7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:42 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:30 2009
+Message-Id: <20090813195130.073928863@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:32 -0700
+Date: Thu, 13 Aug 2009 12:50:12 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Sandeen <sandeen@redhat.com>, <linux-ext4@vger.kernel.org>,
-       Mark Lord <lkml@rtr.ca>, Arnd Bergmann <arnd@arndb.de>,
-       Josef Bacik <josef@redhat.com>, Jan Kara <jack@suse.cz>
-Subject: [patch 57/74] compat_ioctl: hook up compat handler for FIEMAP ioctl
+       Eric Sandeen <sandeen@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       William Lee Irwin III <wli@holomorphy.com>
+Subject: [patch 37/74] hugetlbfs: fix i_blocks accounting
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=compat_ioctl-hook-up-compat-handler-for-fiemap-ioctl.patch
+Content-Disposition: inline; filename=hugetlbfs-fix-i_blocks-accounting.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,42 +31,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eric Sandeen <sandeen@redhat.com>
+From: Eric Sandeen <sandeen@sandeen.net>
 
-commit 69130c7cf96ea853dc5be599dd6a4b98907d39cc upstream.
+commit e4c6f8bed01f9f9a5c607bd689bf67e7b8a36bd8 upstream.
 
-The FIEMAP_IOC_FIEMAP mapping ioctl was missing a 32-bit compat handler,
-which means that 32-bit suerspace on 64-bit kernels cannot use this ioctl
-command.
+As reported in Red Hat bz #509671, i_blocks for files on hugetlbfs get
+accounting wrong when doing something like:
 
-The structure is nicely aligned, padded, and sized, so it is just this
-simple.
+   $ > foo
+   $ date  > foo
+   date: write error: Invalid argument
+   $ /usr/bin/stat foo
+     File: `foo'
+     Size: 0          Blocks: 18446744073709547520 IO Block: 2097152 regular
+...
 
-Tested w/ 32-bit ioctl tester (from Josef) on a 64-bit kernel on ext4.
+This is because hugetlb_unreserve_pages() is unconditionally removing
+blocks_per_huge_page(h) on each call rather than using the freed amount.
+If there were 0 blocks, it goes negative, resulting in the above.
+
+This is a regression from commit a5516438959d90b071ff0a484ce4f3f523dc3152
+("hugetlb: modular state for hugetlb page size")
+
+which did:
+
+-	inode->i_blocks -= BLOCKS_PER_HUGEPAGE * freed;
++	inode->i_blocks -= blocks_per_huge_page(h);
+
+so just put back the freed multiplier, and it's all happy again.
 
 Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-Cc: <linux-ext4@vger.kernel.org>
-Cc: Mark Lord <lkml@rtr.ca>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Josef Bacik <josef@redhat.com>
-Cc: Jan Kara <jack@suse.cz>
+Acked-by: Andi Kleen <andi@firstfloor.org>
+Cc: William Lee Irwin III <wli@holomorphy.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/compat_ioctl.c |    1 +
- 1 file changed, 1 insertion(+)
+ mm/hugetlb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -1915,6 +1915,7 @@ COMPATIBLE_IOCTL(FIONCLEX)
- COMPATIBLE_IOCTL(FIOASYNC)
- COMPATIBLE_IOCTL(FIONBIO)
- COMPATIBLE_IOCTL(FIONREAD)  /* This is also TIOCINQ */
-+COMPATIBLE_IOCTL(FS_IOC_FIEMAP)
- /* 0x00 */
- COMPATIBLE_IOCTL(FIBMAP)
- COMPATIBLE_IOCTL(FIGETBSZ)
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -2341,7 +2341,7 @@ void hugetlb_unreserve_pages(struct inod
+ 	long chg = region_truncate(&inode->i_mapping->private_list, offset);
+ 
+ 	spin_lock(&inode->i_lock);
+-	inode->i_blocks -= blocks_per_huge_page(h);
++	inode->i_blocks -= (blocks_per_huge_page(h) * freed);
+ 	spin_unlock(&inode->i_lock);
+ 
+ 	hugetlb_put_quota(inode->i_mapping, (chg - freed));
 
 
