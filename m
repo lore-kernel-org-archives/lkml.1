@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbZHMTrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbZHMTvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755590AbZHMTrq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbZHMTro
+	id S1755798AbZHMTvR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932122AbZHMTrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:47:44 -0400
-Received: from kroah.org ([198.145.64.141]:36698 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:47:55 -0400
+Received: from kroah.org ([198.145.64.141]:36751 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755562AbZHMTrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:47:43 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:36 2009
-Message-Id: <20090813194336.011177297@mini.kroah.org>
+	id S932095AbZHMTry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:47:54 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:38 2009
+Message-Id: <20090813194337.902555537@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:25 -0700
+Date: Thu, 13 Aug 2009 12:40:36 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tom Peng <tom_peng@usish.com>, Jack Wang <jack_wang@usish.com>,
-       Lindar Liu <lindar_liu@usish.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 04/28] SCSI: libsas: reuse the original port when hotplugging phys in wide ports
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 15/28] asix: new device ids
 References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=libsas-reuse-the-original-port-when-hotplugging-phys-in-wide-ports.patch
+Content-Disposition: inline; filename=asix-new-device-ids.patch
 In-Reply-To: <20090813194554.GA13947@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,66 +30,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tom Peng <tom_peng@usish.com>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-commit 5381837f125cc62ad703fbcdfcd7566fc81fd404 upstream.
+commit fef7cc0893146550b286b13c0e6e914556142730 upstream.
 
-There's a hotplug problem in the way libsas allocates ports: it loops over the
-available ports first trying to add to an existing for a wide port and
-otherwise allocating the next free port.  This scheme only works if the port
-array is packed from zero, which fails if a port gets hot unplugged and the
-array becomes sparse.  In that case, a new port is formed even if there's a
-wide port it should be part of.  Fix this by creating two loops over all the
-ports:  the first to see if the phy should be part of a wide port and the
-second to form a new port in an empty port slot.
+This patch adds two new device ids to the asix driver.
 
-Signed-off-by: Tom Peng <tom_peng@usish.com>
-Signed-off-by: Jack Wang <jack_wang@usish.com>
-Signed-off-by: Lindar Liu <lindar_liu@usish.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+One comes directly from the asix driver on their web site, the other was
+reported by Armani Liao as needed for the MSI X320 to get the driver to
+work properly for it.
+
+Reported-by: Armani Liao <aliao@novell.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
 ---
- drivers/scsi/libsas/sas_port.c |   19 +++++++++++++++----
- 1 file changed, 15 insertions(+), 4 deletions(-)
+ drivers/net/usb/asix.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
---- a/drivers/scsi/libsas/sas_port.c
-+++ b/drivers/scsi/libsas/sas_port.c
-@@ -56,7 +56,7 @@ static void sas_form_port(struct asd_sas
- 		}
- 	}
- 
--	/* find a port */
-+	/* see if the phy should be part of a wide port */
- 	spin_lock_irqsave(&sas_ha->phy_port_lock, flags);
- 	for (i = 0; i < sas_ha->num_phys; i++) {
- 		port = sas_ha->sas_port[i];
-@@ -69,12 +69,23 @@ static void sas_form_port(struct asd_sas
- 			SAS_DPRINTK("phy%d matched wide port%d\n", phy->id,
- 				    port->id);
- 			break;
--		} else if (*(u64 *) port->sas_addr == 0 && port->num_phys==0) {
--			memcpy(port->sas_addr, phy->sas_addr, SAS_ADDR_SIZE);
--			break;
- 		}
- 		spin_unlock(&port->phy_list_lock);
- 	}
-+	/* The phy does not match any existing port, create a new one */
-+	if (i == sas_ha->num_phys) {
-+		for (i = 0; i < sas_ha->num_phys; i++) {
-+			port = sas_ha->sas_port[i];
-+			spin_lock(&port->phy_list_lock);
-+			if (*(u64 *)port->sas_addr == 0
-+				&& port->num_phys == 0) {
-+				memcpy(port->sas_addr, phy->sas_addr,
-+					SAS_ADDR_SIZE);
-+				break;
-+			}
-+			spin_unlock(&port->phy_list_lock);
-+		}
-+	}
- 
- 	if (i >= sas_ha->num_phys) {
- 		printk(KERN_NOTICE "%s: couldn't find a free port, bug?\n",
+--- a/drivers/net/usb/asix.c
++++ b/drivers/net/usb/asix.c
+@@ -1456,6 +1456,14 @@ static const struct usb_device_id	produc
+ 	// ASIX 88772a
+ 	USB_DEVICE(0x0db0, 0xa877),
+ 	.driver_info = (unsigned long) &ax88772_info,
++}, {
++	// ABOCOM for pci
++	USB_DEVICE(0x14ea, 0xab11),
++	.driver_info = (unsigned long) &ax88178_info,
++}, {
++	// ASIX 88772a
++	USB_DEVICE(0x0db0, 0xa877),
++	.driver_info = (unsigned long) &ax88772_info,
+ },
+ 	{ },		// END
+ };
 
 
