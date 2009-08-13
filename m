@@ -1,78 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754089AbZHMOpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbZHMOqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754089AbZHMOpv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 10:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbZHMOpu
+	id S1754410AbZHMOqA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 10:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbZHMOqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 10:45:50 -0400
-Received: from mail.issp.bas.bg ([195.96.236.10]:41455 "EHLO mail.issp.bas.bg"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753817AbZHMOpt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 10:45:49 -0400
-X-Greylist: delayed 1600 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Aug 2009 10:45:49 EDT
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] arch-x86-pci-swiotlb-cleanup-patch
-Date: Thu, 13 Aug 2009 17:18:04 +0300
-User-Agent: KMail/1.9.10
-Cc: linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+	Thu, 13 Aug 2009 10:46:00 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:37332 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754109AbZHMOp7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 10:45:59 -0400
+Date: Thu, 13 Aug 2009 10:45:57 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
+In-Reply-To: <200908122343.20554.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0908131031060.2940-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908131718.04623.mitov@issp.bas.bg>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
 
-This is a simple cleanup patch for arch/x86/kernel/pci-swiotlb.c file.
+> I have an idea.
+> 
+> Every such dependency involves two devices, one of which is a "master"
+> and the second of which is a "slave", meaning that the "slave" have to be
+> suspended before the "master" and cannot be resumed before it.  In principle
+> we could give each device two lists of "dependency objects", one containing
+> "dependency objects" where the device is the "master" and the other containing
+> "dependency objects" where the device is the "slave".  Then, each "dependency
+> object" could be represented as
+> 
+> struct pm_connection {
+>     struct device *master;
+>     struct list_head master_hook;
+>     struct device *slave;
+>     struct list_head slave_hook;
+> };
+> 
+> Add some locking, helpers for adding / removing "dependency objects" etc.
+> and it should work.  Instead of checking the parent, walk the list of
+> "masters", instead of walking the list of children, walk the list of "slaves".
 
-Deleted functions are already in lib/swiotlb.c, so no need to be duplicated.
+If the set of pm_connection objects is reasonably small then the
+master_hook and slave_hook aren't needed; you can just read through the
+entire list.  Leaving out parent-child connections, which we already
+know, would help shrink the set.
 
-The patch is against linux-2.6.31-rc5, compile/run tested on x86_64.
+The layout of the pm_connection objects could then be improved
+slightly.  Each object could contain a variable-sized array of device
+pointers together with two integers, M and S.  The first M pointers
+would be masters and the remaining S pointers would be slaves.  This
+could be useful when, for example, a large number of devices all depend
+on one particular power device.
 
-Best regards,
+> The core could create those objects for parent-child relationships
+> automatically, the other ones would have to be added by platforms / bus types /
+> drivers etc.
+> 
+> This approach has a problem that it's prone to adding circular dependencies by
+> mistake, but then I think it would apply to any other approach just as well.
 
-Marin Mitov
+Yes.  In theory we could detect such cycles at runtime, but it's 
+probably not worth the effort.
 
-Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
+Alan Stern
 
-=====================================================
---- a/arch/x86/kernel/pci-swiotlb.c	2009-08-13 16:05:28.000000000 +0300
-+++ b/arch/x86/kernel/pci-swiotlb.c	2009-08-13 16:13:09.000000000 +0300
-@@ -13,31 +13,6 @@
- 
- int swiotlb __read_mostly;
- 
--void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
--{
--	return alloc_bootmem_low_pages(size);
--}
--
--void *swiotlb_alloc(unsigned order, unsigned long nslabs)
--{
--	return (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
--}
--
--dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
--{
--	return paddr;
--}
--
--phys_addr_t swiotlb_bus_to_phys(struct device *hwdev, dma_addr_t baddr)
--{
--	return baddr;
--}
--
--int __weak swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size)
--{
--	return 0;
--}
--
- static void *x86_swiotlb_alloc_coherent(struct device *hwdev, size_t size,
- 					dma_addr_t *dma_handle, gfp_t flags)
- {
