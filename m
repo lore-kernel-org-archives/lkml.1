@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932271AbZHMUEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932120AbZHMT7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932271AbZHMUEX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932268AbZHMT77
+	id S932120AbZHMT7k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932138AbZHMT7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:59:59 -0400
-Received: from kroah.org ([198.145.64.141]:41884 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:59:38 -0400
+Received: from kroah.org ([198.145.64.141]:41708 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932253AbZHMT75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:57 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:32 2009
-Message-Id: <20090813195132.410969736@mini.kroah.org>
+	id S1755941AbZHMT7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:30 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:28 2009
+Message-Id: <20090813195128.100947730@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:28 -0700
+Date: Thu, 13 Aug 2009 12:49:59 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Roel Kluin <roel.kluin@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 53/74] atl1c: misplaced parenthesis
+       John Stoffel <john@stoffel.org>, Jens Axboe <jens.axboe@oracle.com>
+Subject: [patch 24/74] Make SCSI SG v4 driver enabled by default and remove EXPERIMENTAL dependency, since udev depends on BSG
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=atl1c-misplaced-parenthesis.patch
+Content-Disposition: inline; filename=make-scsi-sg-v4-driver-enabled-by-default-and-remove-experimental-dependency-since-udev-depends-on-bsg.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,30 +30,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: roel kluin <roel.kluin@gmail.com>
+From: John Stoffel <john@stoffel.org>
 
-commit 37b76c697f4ac082e9923dfa8e8aecc8bc54a8e1 upstream.
+commit 14d9fa352592582e457cf75022202766baac1348 upstream.
 
-Fix misplaced parenthesis
+Make Block Layer SG support v4 the default, since recent udev versions
+depend on this to access serial numbers and other low level info properly.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+This should be backported to older kernels as well, since most distros have
+enabled this for a long time.
+
+Signed-off-by: John Stoffel <john@stoffel.org>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/atl1c/atl1c_main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ block/Kconfig |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
---- a/drivers/net/atl1c/atl1c_main.c
-+++ b/drivers/net/atl1c/atl1c_main.c
-@@ -1701,7 +1701,7 @@ static void atl1c_clean_rx_irq(struct at
- 		if (likely(RRS_RXD_IS_VALID(rrs->word3))) {
- 			rfd_num = (rrs->word0 >> RRS_RX_RFD_CNT_SHIFT) &
- 				RRS_RX_RFD_CNT_MASK;
--			if (unlikely(rfd_num) != 1)
-+			if (unlikely(rfd_num != 1))
- 				/* TODO support mul rfd*/
- 				if (netif_msg_rx_err(adapter))
- 					dev_warn(&pdev->dev,
+--- a/block/Kconfig
++++ b/block/Kconfig
+@@ -45,9 +45,9 @@ config LBD
+ 	  If unsure, say N.
+ 
+ config BLK_DEV_BSG
+-	bool "Block layer SG support v4 (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL
+-	---help---
++	bool "Block layer SG support v4"
++	default y
++	help
+ 	  Saying Y here will enable generic SG (SCSI generic) v4 support
+ 	  for any block device.
+ 
+@@ -57,7 +57,10 @@ config BLK_DEV_BSG
+ 	  protocols (e.g. Task Management Functions and SMP in Serial
+ 	  Attached SCSI).
+ 
+-	  If unsure, say N.
++	  This option is required by recent UDEV versions to properly
++	  access device serial numbers, etc.
++
++	  If unsure, say Y.
+ 
+ config BLK_DEV_INTEGRITY
+ 	bool "Block layer data integrity support"
 
 
