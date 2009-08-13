@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbZHMP36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbZHMPd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754805AbZHMP36 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 11:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbZHMP35
+	id S1754794AbZHMPd1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 11:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbZHMPd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 11:29:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33624 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752479AbZHMP34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 11:29:56 -0400
-Subject: Re: [PATCH 2/3] security: introducing security_request_module
-From: Eric Paris <eparis@redhat.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       sds@tycho.nsa.gov, davem@davemloft.net, shemminger@linux-foundation.org,
-       kees@ubuntu.com, morgan@kernel.org, casey@schaufler-ca.com,
-       dwalsh@redhat.com
-In-Reply-To: <20090813140306.GC30731@us.ibm.com>
-References: <20090813134451.29186.41664.stgit@paris.rdu.redhat.com>
-	 <20090813134457.29186.7182.stgit@paris.rdu.redhat.com>
-	 <20090813140306.GC30731@us.ibm.com>
-Content-Type: text/plain
-Date: Thu, 13 Aug 2009 11:28:54 -0400
-Message-Id: <1250177334.2182.88.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Aug 2009 11:33:26 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:52813 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752610AbZHMPd0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 11:33:26 -0400
+Date: Thu, 13 Aug 2009 17:33:26 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: state of the fastboot activities?
+Message-ID: <20090813153326.GR13320@pengutronix.de>
+References: <20090813064543.GC13320@pengutronix.de> <4A84194A.5050206@linux.intel.com> <20090813152506.GQ13320@pengutronix.de> <4A84311A.3030901@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <4A84311A.3030901@linux.intel.com>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 17:30:10 up 8 days,  2:49, 50 users,  load average: 0.31, 0.34,
+	0.97
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: rsc@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-13 at 09:03 -0500, Serge E. Hallyn wrote:
-> Quoting Eric Paris (eparis@redhat.com):
-> > Calling request_module() will trigger a userspace upcall which will load a
-> > new module into the kernel.  This can be a dangerous event if the process
-> > able to trigger request_module() is able to control either the modprobe
-> > binary or the module binary.  This patch adds a new security hook to
-> > request_module() which can be used by an LSM to control a processes ability
-> > to call request_module().
-> 
-> Is there a specific case in which you'd want to deny this ability
-> from a real task?
+On Thu, Aug 13, 2009 at 08:28:26AM -0700, Arjan van de Ven wrote:
+> > That's bad :-) So there is no room for improvement any more in our
+> > ARM boot sequences ...
+>
+> on x86 we're doing pretty well ;-)
 
-qemu and any network facing daemon are all programs I don't want to be
-able to even ask the kernel to load a module.  Clearly you are right,
-that the best protection is done by controlling access to modprobe and
-the modules on disk (which we are working to fix vs what happened in the
-xen fb exploit I showed earlier) but stopping it from the other
-direction is, I feel, a useful defense in depth.
+On i.MX27 (400 MHz ARM926EJ-S) we currently need 7 s, measured from
+power-on through the kernel up to "starting init". This is with
 
-If they can't get modprobe called, they can't take over the system
-directly, even if they did change a module or change modprobe.  I agree
-it's not strong security as if they can change modprobe or modules they
-might be able to just wait until something else calls modprobe (next
-reboot maybe?) to take over the system.  But I'd find it very
-interesting to know that a high threat target tried to do anything which
-attempted to load a module....
+- no delay in u-boot-v2
+- rootfs on NAND (UBIFS)
+- quiet
+- precalculated loops-per-jiffy
+- zImage kernel instead of uImage
 
--Eric
-
+rsc
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
