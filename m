@@ -1,94 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbZHMXAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbZHMXB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755775AbZHMXAP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 19:00:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbZHMXAL
+	id S1755736AbZHMXB6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 19:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbZHMXB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 19:00:11 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:35268 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755633AbZHMXAJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 19:00:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=jyKNr1omfp4fahKog7Vr1doFeogfEbigAEZ7lFP6zMb0pEM1dLOwIyKpT3BKzpem6s
-         s+uFS3eeW8A9yZsZ+rpdx7b6CT59m+MrgSkKCjdvPURXNew7wNqgX2X++HbgZh1FtH63
-         c9PGMvThGfOGb8bNCoe2HkYiLVxx89EJNzTDs=
+	Thu, 13 Aug 2009 19:01:57 -0400
+Received: from tundra.namei.org ([65.99.196.166]:56674 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753226AbZHMXB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 19:01:56 -0400
+Date: Fri, 14 Aug 2009 08:55:53 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: "David S. Miller" <davem@davemloft.net>
+cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>, shemminger@linux-foundation.org,
+       kees@ubuntu.com, morgan@kernel.org,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Daniel J Walsh <dwalsh@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH 1/3] Networking: use CAP_NET_ADMIN when deciding to call
+ request_module
+In-Reply-To: <200908131445.37263.paul.moore@hp.com>
+Message-ID: <alpine.LRH.2.00.0908140854410.11550@tundra.namei.org>
+References: <20090813134451.29186.41664.stgit@paris.rdu.redhat.com> <200908131445.37263.paul.moore@hp.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <1249637774-32419-1-git-send-email-dfeng@redhat.com>
-References: <1249637774-32419-1-git-send-email-dfeng@redhat.com>
-Date: Thu, 13 Aug 2009 16:00:08 -0700
-X-Google-Sender-Auth: c6f06c58aa21f563
-Message-ID: <9929d2390908131600y330e4014se4f5955515cfc84d@mail.gmail.com>
-Subject: Re: [PATCH] e1000e: fix use of pci_enable_pcie_error_reporting
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-To: Xiaotian Feng <dfeng@redhat.com>
-Cc: john.ronciak@intel.com, peter.p.waskiewicz.jr@intel.com,
-       bruce.w.allan@intel.com, jesse.brandeburg@intel.com,
-       davem@davemloft.net, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 7, 2009 at 02:36, Xiaotian Feng<dfeng@redhat.com> wrote:
-> commit 111b9dc5 introduces pcie aer support for e1000e, but it is not
-> reasonable to disable it in e1000_remove but enable it in e1000_resume.
-> This patch enables aer support in e1000_probe.
->
-> Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-> ---
->  drivers/net/e1000e/netdev.c |   16 ++++++++--------
->  1 files changed, 8 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-> index 63415bb..e2f0304 100644
-> --- a/drivers/net/e1000e/netdev.c
-> +++ b/drivers/net/e1000e/netdev.c
-> @@ -4670,14 +4670,6 @@ static int e1000_resume(struct pci_dev *pdev)
->                return err;
->        }
->
-> -       /* AER (Advanced Error Reporting) hooks */
-> -       err = pci_enable_pcie_error_reporting(pdev);
-> -       if (err) {
-> -               dev_err(&pdev->dev, "pci_enable_pcie_error_reporting failed "
-> -                                   "0x%x\n", err);
-> -               /* non-fatal, continue */
-> -       }
-> -
->        pci_set_master(pdev);
->
->        pci_enable_wake(pdev, PCI_D3hot, 0);
-> @@ -4990,6 +4982,14 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
->        if (err)
->                goto err_pci_reg;
->
-> +        /* AER (Advanced Error Reporting) hooks */
-> +        err = pci_enable_pcie_error_reporting(pdev);
-> +        if (err) {
-> +                dev_err(&pdev->dev, "pci_enable_pcie_error_reporting failed "
-> +                                    "0x%x\n", err);
-> +                /* non-fatal, continue */
-> +        }
-> +
->        pci_set_master(pdev);
->        /* PCI config space info */
->        err = pci_save_state(pdev);
-> --
-> 1.6.2.5
->
-> --
+Any nacks/acks from netdev folk?
 
-This patch passed testing, I have added it to my queue of patches and
-will push this out to Dave (with the whitespace corrected).
+It looks like the right thing to me.
+
+On Thu, 13 Aug 2009, Paul Moore wrote:
+
+> On Thursday 13 August 2009 09:44:51 am Eric Paris wrote:
+> > The networking code checks CAP_SYS_MODULE before using request_module() to
+> > try to load a kernel module.  While this seems reasonable it's actually
+> > weakening system security since we have to allow CAP_SYS_MODULE for things
+> > like /sbin/ip and bluetoothd which need to be able to trigger module loads.
+> > CAP_SYS_MODULE actually grants those binaries the ability to directly load
+> > any code into the kernel.  We should instead be protecting modprobe and the
+> > modules on disk, rather than granting random programs the ability to load
+> > code directly into the kernel.  Instead we are going to gate those
+> > networking checks on CAP_NET_ADMIN which still limits them to root but
+> > which does not grant those processes the ability to load arbitrary code
+> > into the kernel.
+> >
+> > Signed-off-by: Eric Paris <eparis@redhat.com>
+> 
+> Sounds and looks reasonable to me.
+> 
+> Acked-by: Paul Moore <paul.moore@hp.com>
+> 
+> > ---
+> >
+> >  drivers/staging/comedi/comedi_fops.c |    8 ++++----
+> >  net/core/dev.c                       |    2 +-
+> >  net/ipv4/tcp_cong.c                  |    4 ++--
+> >  3 files changed, 7 insertions(+), 7 deletions(-)
+> >
+> > diff --git a/drivers/staging/comedi/comedi_fops.c
+> > b/drivers/staging/comedi/comedi_fops.c index 42e4bc4..f54bb9b 100644
+> > --- a/drivers/staging/comedi/comedi_fops.c
+> > +++ b/drivers/staging/comedi/comedi_fops.c
+> > @@ -1772,12 +1772,12 @@ static int comedi_open(struct inode *inode, struct
+> > file *file) mutex_lock(&dev->mutex);
+> >  	if (dev->attached)
+> >  		goto ok;
+> > -	if (!capable(CAP_SYS_MODULE) && dev->in_request_module) {
+> > +	if (!capable(CAP_NET_ADMIN) && dev->in_request_module) {
+> >  		DPRINTK("in request module\n");
+> >  		mutex_unlock(&dev->mutex);
+> >  		return -ENODEV;
+> >  	}
+> > -	if (capable(CAP_SYS_MODULE) && dev->in_request_module)
+> > +	if (capable(CAP_NET_ADMIN) && dev->in_request_module)
+> >  		goto ok;
+> >
+> >  	dev->in_request_module = 1;
+> > @@ -1790,8 +1790,8 @@ static int comedi_open(struct inode *inode, struct
+> > file *file)
+> >
+> >  	dev->in_request_module = 0;
+> >
+> > -	if (!dev->attached && !capable(CAP_SYS_MODULE)) {
+> > -		DPRINTK("not attached and not CAP_SYS_MODULE\n");
+> > +	if (!dev->attached && !capable(CAP_NET_ADMIN)) {
+> > +		DPRINTK("not attached and not CAP_NET_ADMIN\n");
+> >  		mutex_unlock(&dev->mutex);
+> >  		return -ENODEV;
+> >  	}
+> > diff --git a/net/core/dev.c b/net/core/dev.c
+> > index 09fb03f..2604db9 100644
+> > --- a/net/core/dev.c
+> > +++ b/net/core/dev.c
+> > @@ -1031,7 +1031,7 @@ void dev_load(struct net *net, const char *name)
+> >  	dev = __dev_get_by_name(net, name);
+> >  	read_unlock(&dev_base_lock);
+> >
+> > -	if (!dev && capable(CAP_SYS_MODULE))
+> > +	if (!dev && capable(CAP_NET_ADMIN))
+> >  		request_module("%s", name);
+> >  }
+> >
+> > diff --git a/net/ipv4/tcp_cong.c b/net/ipv4/tcp_cong.c
+> > index e92beb9..6428b34 100644
+> > --- a/net/ipv4/tcp_cong.c
+> > +++ b/net/ipv4/tcp_cong.c
+> > @@ -116,7 +116,7 @@ int tcp_set_default_congestion_control(const char
+> > *name) spin_lock(&tcp_cong_list_lock);
+> >  	ca = tcp_ca_find(name);
+> >  #ifdef CONFIG_MODULES
+> > -	if (!ca && capable(CAP_SYS_MODULE)) {
+> > +	if (!ca && capable(CAP_NET_ADMIN)) {
+> >  		spin_unlock(&tcp_cong_list_lock);
+> >
+> >  		request_module("tcp_%s", name);
+> > @@ -246,7 +246,7 @@ int tcp_set_congestion_control(struct sock *sk, const
+> > char *name)
+> >
+> >  #ifdef CONFIG_MODULES
+> >  	/* not found attempt to autoload module */
+> > -	if (!ca && capable(CAP_SYS_MODULE)) {
+> > +	if (!ca && capable(CAP_NET_ADMIN)) {
+> >  		rcu_read_unlock();
+> >  		request_module("tcp_%s", name);
+> >  		rcu_read_lock();
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe
+> > linux-security-module" in the body of a message to
+> > majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> -- 
+> paul moore
+> linux @ hp
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
 -- 
-Cheers,
-Jeff
+James Morris
+<jmorris@namei.org>
