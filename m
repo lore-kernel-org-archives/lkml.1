@@ -1,67 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbZHMI0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbZHMI1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753184AbZHMI0i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 04:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbZHMI0g
+	id S1753139AbZHMI1Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 04:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbZHMI1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 04:26:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59195 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751974AbZHMI0f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 04:26:35 -0400
-From: Xiaotian Feng <dfeng@redhat.com>
-To: jmorris@namei.org, eparis@parisplace.org, sds@tycho.nsa.gov,
-       paul.moore@hp.com, serue@us.ibm.com,
-       linux-security-module@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Xiaotian Feng <dfeng@redhat.com>
-Subject: [PATCH] selinux: fix memory leak in sel_make_bools
-Date: Thu, 13 Aug 2009 16:26:16 +0800
-Message-Id: <1250151976-19399-1-git-send-email-dfeng@redhat.com>
+	Thu, 13 Aug 2009 04:27:23 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:35448 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752005AbZHMI1V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 04:27:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=VRKvY9hT5W5x20YYmfBcjdzeQuWrc7Q/idXK6OFHwEPqocl5lSn7UMuMVS14IF00Yg
+         gyXdGTMB9FVqMu9Kju7xfZHKbI6wf+ZvfZ/9l19OdnriqT91PlQu+SQLf5JnBWocT54/
+         eIQyNQU1VeyP/alOGmsNxJCCLrkeEDBY6iulQ=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>
+Subject: [PATCH 1/2] perf tools: Add a per tracepoint counter attribute to get raw sample
+Date: Thu, 13 Aug 2009 10:27:18 +0200
+Message-Id: <1250152039-7284-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In sel_make_bools, kernel allocates memory for bool_pending_names[i]
-with security_get_bools. So if we just free bool_pending_names, those
-memories for bool_pending_names[i] will be leaked.
+Add a new flag field while opening a tracepoint perf counter:
 
-This patch resolves dozens of following kmemleak report after resuming
-from suspend:
-unreferenced object 0xffff88022e4c7380 (size 32):
-  comm "init", pid 1, jiffies 4294677173
-  backtrace:
-    [<ffffffff810f76b5>] create_object+0x1a2/0x2a9
-    [<ffffffff810f78bb>] kmemleak_alloc+0x26/0x4b
-    [<ffffffff810ef3eb>] __kmalloc+0x18f/0x1b8
-    [<ffffffff811cd511>] security_get_bools+0xd7/0x16f
-    [<ffffffff811c48c0>] sel_write_load+0x12e/0x62b
-    [<ffffffff810f9a39>] vfs_write+0xae/0x10b
-    [<ffffffff810f9b56>] sys_write+0x4a/0x6e
-    [<ffffffff81011b82>] system_call_fastpath+0x16/0x1b
-    [<ffffffffffffffff>] 0xffffffffffffffff
+	-e tracepoint_subsystem:tracepoint_name:flags
 
-Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+This is intended to be generic although for now it only supports the
+r[e[c[o[r[d]]]]] flag:
+
+	./perf record -e workqueue:workqueue_insertion:record
+	./perf record -e workqueue:workqueue_insertion:r
+
+will have the same effect: enabling the raw samples record for the
+given tracepoint counter.
+
+In the future, we may want to support further flags, separated by
+commas.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
 ---
- security/selinux/selinuxfs.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+ tools/perf/builtin-record.c    |    2 +-
+ tools/perf/util/parse-events.c |   10 ++++++++++
+ 2 files changed, 11 insertions(+), 1 deletions(-)
 
-diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
-index b4fc506..ab93472 100644
---- a/security/selinux/selinuxfs.c
-+++ b/security/selinux/selinuxfs.c
-@@ -979,7 +979,11 @@ static int sel_make_bools(void)
- 	u32 sid;
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 5aeb632..3be0301 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -380,7 +380,7 @@ static void create_counter(int counter, int cpu, pid_t pid)
+ 				  PERF_FORMAT_TOTAL_TIME_RUNNING |
+ 				  PERF_FORMAT_ID;
  
- 	/* remove any existing files */
--	kfree(bool_pending_names);
-+	if (bool_pending_names) {
-+		for (i = 0; i < bool_num; i++)
-+			kfree(bool_pending_names[i]);
-+		kfree(bool_pending_names);
+-	attr->sample_type	= PERF_SAMPLE_IP | PERF_SAMPLE_TID;
++	attr->sample_type	|= PERF_SAMPLE_IP | PERF_SAMPLE_TID;
+ 
+ 	if (freq) {
+ 		attr->sample_type	|= PERF_SAMPLE_PERIOD;
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index a5d661b..4bab278 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -379,6 +379,7 @@ static int parse_tracepoint_event(const char **strp,
+ 				    struct perf_counter_attr *attr)
+ {
+ 	const char *evt_name;
++	char *flags;
+ 	char sys_name[MAX_EVENT_LENGTH];
+ 	char id_buf[4];
+ 	int fd;
+@@ -400,6 +401,15 @@ static int parse_tracepoint_event(const char **strp,
+ 	strncpy(sys_name, *strp, sys_length);
+ 	sys_name[sys_length] = '\0';
+ 	evt_name = evt_name + 1;
++
++	flags = strchr(evt_name, ':');
++	if (flags) {
++		*flags = '\0';
++		flags++;
++		if (!strncmp(flags, "record", strlen(flags)))
++			attr->sample_type |= PERF_SAMPLE_RAW;
 +	}
- 	kfree(bool_pending_values);
- 	bool_pending_names = NULL;
- 	bool_pending_values = NULL;
++
+ 	evt_length = strlen(evt_name);
+ 	if (evt_length >= MAX_EVENT_LENGTH)
+ 		return 0;
 -- 
-1.6.2.5
+1.6.2.3
 
