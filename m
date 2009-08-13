@@ -1,149 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbZHMT7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbZHMT7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755675AbZHMT7J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:59:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbZHMT7I
+	id S1755901AbZHMT7X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbZHMT7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:59:08 -0400
-Received: from kroah.org ([198.145.64.141]:41610 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:59:20 -0400
+Received: from kroah.org ([198.145.64.141]:41664 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754832AbZHMT7G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:06 -0400
-Date: Thu, 13 Aug 2009 12:57:05 -0700
+	id S1754889AbZHMT7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:18 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:26 2009
+Message-Id: <20090813195126.188943619@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Thu, 13 Aug 2009 12:49:46 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/74] 2.6.30.5-stable review
-Message-ID: <20090813195705.GA22393@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 11/74] net: Move rx skb_orphan call to where needed
+References: <20090813194935.985368088@mini.kroah.org>
+Content-Disposition: inline; filename=net-move-rx-skb_orphan-call-to-where-needed.patch
+In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.30.5 release.
-There are 74 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+------------------
 
-Responses should be made by Saturday, August 15, 2009 19:00:00 UTC.
-Anything received after that time might be too late.
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.30.5-rc1.gz
-and the diffstat can be found below.
+[ Upstream commit 329c44e3948473916bccd253a37ac2a66dad9862 ]
+
+In order to get the tun driver to account packets, we need to be
+able to receive packets with destructors set.  To be on the safe
+side, I added an skb_orphan call for all protocols by default since
+some of them (IP in particular) cannot handle receiving packets
+destructors properly.
+
+Now it seems that at least one protocol (CAN) expects to be able
+to pass skb->sk through the rx path without getting clobbered.
+
+So this patch attempts to fix this properly by moving the skb_orphan
+call to where it's actually needed.  In particular, I've added it
+to skb_set_owner_[rw] which is what most users of skb->destructor
+call.
+
+This is actually an improvement for tun too since it means that
+we only give back the amount charged to the socket when the skb
+is passed to another socket that will also be charged accordingly.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Tested-by: Oliver Hartkopp <olver@hartkopp.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ include/net/sctp/sctp.h      |    1 +
+ include/net/sock.h           |    2 ++
+ net/ax25/ax25_in.c           |    3 +--
+ net/core/dev.c               |    2 --
+ net/irda/af_irda.c           |    3 ---
+ net/irda/ircomm/ircomm_lmp.c |    1 +
+ 6 files changed, 5 insertions(+), 7 deletions(-)
+
+--- a/include/net/sctp/sctp.h
++++ b/include/net/sctp/sctp.h
+@@ -448,6 +448,7 @@ static inline void sctp_skb_set_owner_r(
+ {
+ 	struct sctp_ulpevent *event = sctp_skb2event(skb);
+ 
++	skb_orphan(skb);
+ 	skb->sk = sk;
+ 	skb->destructor = sctp_sock_rfree;
+ 	atomic_add(event->rmem_len, &sk->sk_rmem_alloc);
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -1231,6 +1231,8 @@ static inline void skb_set_owner_w(struc
+ 
+ static inline void skb_set_owner_r(struct sk_buff *skb, struct sock *sk)
+ {
++	skb_orphan(skb);
++	skb_orphan(skb);
+ 	skb->sk = sk;
+ 	skb->destructor = sock_rfree;
+ 	atomic_add(skb->truesize, &sk->sk_rmem_alloc);
+--- a/net/ax25/ax25_in.c
++++ b/net/ax25/ax25_in.c
+@@ -437,8 +437,7 @@ free:
+ int ax25_kiss_rcv(struct sk_buff *skb, struct net_device *dev,
+ 		  struct packet_type *ptype, struct net_device *orig_dev)
+ {
+-	skb->sk = NULL;		/* Initially we don't know who it's for */
+-	skb->destructor = NULL;	/* Who initializes this, dammit?! */
++	skb_orphan(skb);
+ 
+ 	if (!net_eq(dev_net(dev), &init_net)) {
+ 		kfree_skb(skb);
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2284,8 +2284,6 @@ ncls:
+ 	if (!skb)
+ 		goto out;
+ 
+-	skb_orphan(skb);
+-
+ 	type = skb->protocol;
+ 	list_for_each_entry_rcu(ptype,
+ 			&ptype_base[ntohs(type) & PTYPE_HASH_MASK], list) {
+--- a/net/irda/af_irda.c
++++ b/net/irda/af_irda.c
+@@ -913,9 +913,6 @@ static int irda_accept(struct socket *so
+ 	/* Clean up the original one to keep it in listen state */
+ 	irttp_listen(self->tsap);
+ 
+-	/* Wow ! What is that ? Jean II */
+-	skb->sk = NULL;
+-	skb->destructor = NULL;
+ 	kfree_skb(skb);
+ 	sk->sk_ack_backlog--;
+ 
+--- a/net/irda/ircomm/ircomm_lmp.c
++++ b/net/irda/ircomm/ircomm_lmp.c
+@@ -196,6 +196,7 @@ static int ircomm_lmp_data_request(struc
+ 	/* Don't forget to refcount it - see ircomm_tty_do_softint() */
+ 	skb_get(skb);
+ 
++	skb_orphan(skb);
+ 	skb->destructor = ircomm_lmp_flow_control;
+ 
+ 	if ((self->pkt_count++ > 7) && (self->flow_status == FLOW_START)) {
 
 
-thanks,
-
-greg k-h
-
-----------------
-
- Makefile                                       |    2 +-
- arch/powerpc/boot/dts/asp834x-redboot.dts      |    2 +-
- arch/powerpc/boot/dts/mpc8349emitx.dts         |    2 +-
- arch/powerpc/boot/dts/mpc834x_mds.dts          |    2 +-
- arch/powerpc/boot/dts/sbc8349.dts              |    2 +-
- arch/powerpc/platforms/83xx/mpc83xx.h          |    4 +-
- arch/powerpc/platforms/83xx/usb.c              |   10 ++--
- arch/x86/include/asm/irqflags.h                |    8 +++-
- arch/x86/kernel/vmi_32.c                       |    2 +-
- arch/x86/mm/pageattr.c                         |   39 ++++++++++----
- block/Kconfig                                  |   11 +++--
- drivers/acpi/sleep.c                           |    8 +++
- drivers/edac/x38_edac.c                        |    2 +-
- drivers/firewire/fw-sbp2.c                     |   10 +++-
- drivers/gpu/drm/i915/i915_dma.c                |    5 ++-
- drivers/gpu/drm/i915/i915_drv.h                |    8 +++
- drivers/gpu/drm/i915/i915_gem.c                |   13 +++++
- drivers/gpu/drm/i915/i915_irq.c                |    2 -
- drivers/gpu/drm/i915/i915_suspend.c            |   20 +++++++
- drivers/gpu/drm/i915/intel_bios.c              |   10 ++--
- drivers/gpu/drm/i915/intel_display.c           |    2 +
- drivers/gpu/drm/i915/intel_fb.c                |    8 +++-
- drivers/gpu/drm/i915/intel_lvds.c              |   17 +++++-
- drivers/hwmon/asus_atk0110.c                   |    6 ++-
- drivers/hwmon/smsc47m1.c                       |   11 ++++
- drivers/i2c/chips/tsl2550.c                    |   17 ++++---
- drivers/ide/ide-disk.c                         |    1 +
- drivers/ide/ide-dma.c                          |   21 -------
- drivers/ide/ide-iops.c                         |    3 -
- drivers/ide/ide-probe.c                        |   23 +++++++-
- drivers/ieee1394/sbp2.c                        |    1 +
- drivers/ieee1394/sbp2.h                        |    8 +++-
- drivers/md/md.c                                |   15 +++++-
- drivers/md/raid5.c                             |   26 ++++-----
- drivers/net/atl1c/atl1c.h                      |    8 ++--
- drivers/net/atl1c/atl1c_ethtool.c              |    2 +-
- drivers/net/atl1c/atl1c_main.c                 |    2 +-
- drivers/net/benet/be.h                         |    2 +-
- drivers/net/benet/be_ethtool.c                 |    4 +-
- drivers/net/benet/be_main.c                    |   45 +++++++++++-----
- drivers/net/e100.c                             |    3 +
- drivers/net/sky2.c                             |    2 +-
- drivers/net/usb/cdc_subset.c                   |    7 ++-
- drivers/net/wireless/iwlwifi/iwl-agn.c         |   19 +------
- drivers/net/wireless/iwlwifi/iwl3945-base.c    |   19 +------
- drivers/parisc/eisa_eeprom.c                   |    2 +-
- drivers/platform/x86/Kconfig                   |    4 +-
- drivers/platform/x86/thinkpad_acpi.c           |   61 +++++++++++++++++-----
- drivers/scsi/libsas/sas_port.c                 |   19 +++++--
- drivers/staging/rt2870/2870_main_dev.c         |   67 ++++++++++++++++--------
- drivers/staging/rt2870/common/2870_rtmp_init.c |   35 ++++++-------
- drivers/staging/rt2870/common/cmm_data.c       |    3 +
- drivers/staging/rt2870/common/rtmp_init.c      |    2 +-
- drivers/staging/rt2870/common/rtusb_io.c       |    3 +-
- drivers/staging/rt2870/rt2870.h                |    6 +--
- drivers/staging/rt2870/rt_linux.h              |   11 ++--
- drivers/usb/core/devio.c                       |   10 ++--
- drivers/usb/serial/ftdi_sio.c                  |    3 +
- drivers/usb/serial/ftdi_sio.h                  |   14 +++++
- drivers/usb/storage/transport.c                |    2 +-
- drivers/usb/storage/unusual_devs.h             |    7 +++
- fs/binfmt_flat.c                               |   17 ++++--
- fs/cifs/cifs_dfs_ref.c                         |   12 +++-
- fs/cifs/connect.c                              |   13 ++++-
- fs/compat_ioctl.c                              |    1 +
- fs/nfs/direct.c                                |   20 ++++----
- fs/nfs/read.c                                  |    6 +--
- fs/nfs/write.c                                 |    6 +--
- fs/nilfs2/segment.c                            |   16 +++++-
- fs/proc/base.c                                 |   27 ++++-----
- fs/proc/task_mmu.c                             |    1 +
- fs/proc/task_nommu.c                           |    1 +
- fs/sysfs/dir.c                                 |    2 +
- include/linux/ide.h                            |    2 -
- include/linux/netdevice.h                      |    5 +-
- include/linux/nfs_fs.h                         |    5 +-
- include/net/sctp/sctp.h                        |    1 +
- include/net/sock.h                             |   34 +++++++-----
- kernel/fork.c                                  |   22 ++++----
- kernel/posix-timers.c                          |    7 +++
- kernel/smp.c                                   |    2 +-
- kernel/trace/ring_buffer.c                     |   11 ++--
- kernel/trace/trace.c                           |   10 +++-
- kernel/trace/trace_functions_graph.c           |   11 +++-
- mm/hugetlb.c                                   |    2 +-
- mm/page_alloc.c                                |   13 +++--
- net/ax25/ax25_in.c                             |    3 +-
- net/core/dev.c                                 |   10 ++--
- net/core/sock.c                                |   39 ++++++++++++--
- net/ipv4/ip_input.c                            |    3 +
- net/ipv6/ip6_input.c                           |    3 +
- net/irda/af_irda.c                             |    3 -
- net/irda/ircomm/ircomm_lmp.c                   |    1 +
- net/socket.c                                   |    2 +-
- net/wireless/scan.c                            |    4 +-
- net/xfrm/xfrm_algo.c                           |    4 +-
- sound/pci/hda/patch_realtek.c                  |    2 +
- 97 files changed, 659 insertions(+), 345 deletions(-)
