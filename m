@@ -1,96 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164AbZHMPNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbZHMPRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754164AbZHMPNX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 11:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZHMPNV
+	id S1754640AbZHMPRH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 11:17:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbZHMPRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 11:13:21 -0400
-Received: from mga05.intel.com ([192.55.52.89]:30816 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750845AbZHMPNT (ORCPT
+	Thu, 13 Aug 2009 11:17:06 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:57006 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752852AbZHMPRF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 11:13:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,375,1246863600"; 
-   d="scan'208";a="716518995"
-Date: Thu, 13 Aug 2009 08:13:12 -0700
-From: Matthew Wilcox <willy@linux.intel.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Discard support (was Re: [PATCH] swap: send callback when swap
-	slot is freed)
-Message-ID: <20090813151312.GA13559@linux.intel.com>
-References: <200908122007.43522.ngupta@vflare.org> <Pine.LNX.4.64.0908122312380.25501@sister.anvils>
+	Thu, 13 Aug 2009 11:17:05 -0400
+Date: Thu, 13 Aug 2009 11:17:05 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       <linux-pci@vger.kernel.org>, <linux-usb@vger.kernel.org>
+Subject: Re: [RFC] PCI: Runtime power management
+In-Reply-To: <20090813002925.GA2532@srcf.ucam.org>
+Message-ID: <Pine.LNX.4.44L0.0908131100440.2940-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0908122312380.25501@sister.anvils>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 11:48:27PM +0100, Hugh Dickins wrote:
-> But fundamentally, though I can see how this cutdown communication
-> path is useful to compcache, I'd much rather deal with it by the more
-> general discard route if we can.  (I'm one of those still puzzled by
-> the way swap is mixed up with block device in compcache: probably
-> because I never found time to pay attention when you explained.)
-> 
-> You're right to question the utility of the current swap discard
-> placement.  That code is almost a year old, written from a position
-> of great ignorance, yet only now do we appear to be on the threshold
-> of having an SSD which really supports TRIM (ah, the Linux ATA TRIM
-> support seems to have gone missing now, but perhaps it's been
-> waiting for a reality to check against too - Willy?).
+On Thu, 13 Aug 2009, Matthew Garrett wrote:
 
-I am indeed waiting for hardware with TRIM support to appear on my
-desk before resubmitting the TRIM code.  It'd also be nice to be able to
-get some performance numbers.
+> --- a/drivers/pci/pci-driver.c
+> +++ b/drivers/pci/pci-driver.c
 
-> I won't be surprised if we find that we need to move swap discard
-> support much closer to swap_free (though I know from trying before
-> that it's much messier there): in which case, even if we decided to
-> keep your hotline to compcache (to avoid allocating bios etc.), it
-> would be better placed alongside.
+> +#ifdef CONFIG_PM_RUNTIME
+> +
+> +static int pci_pm_runtime_suspend(struct device *dev)
+> +{
+> +	struct pci_dev *pci_dev = to_pci_dev(dev);
+> +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	int error;
+> +
+> +	device_set_wakeup_enable(dev, 1);
 
-It turns out there are a lot of tradeoffs involved with discard, and
-they're different between TRIM and UNMAP.
+This is a userspace policy parameter.  Kernel code should not alter it.
+Instead you should test device_may_wakeup.
 
-Let's start with UNMAP.  This SCSI command is used by giant arrays.
-They want to do Thin Provisioning, so allocate physical storage to virtual
-LUNs on demand, and want to deallocate it when they get an UNMAP command.
-They allocate storage in large chunks (hundreds of kilobytes at a time).
-They only care about discards that enable them to free an entire chunk.
-The vast majority of users *do not care* about these arrays, because
-they don't have one, and will never be able to afford one.  We should
-ignore the desires of these vendors when designing our software.
+> +	error = pci_enable_runtime_wake(pci_dev, true);
+> +
+> +	if (error)
+> +		return -EBUSY;
+> +
+> +	if (pm && pm->runtime_suspend)
+> +		error = pm->runtime_suspend(dev);
+> +
+> +	if (error)
+> +		goto out;
+> +
+> +	error = pci_pm_suspend(dev);
+> +
+> +	if (error)
+> +		goto resume;
+> +
+> +	disable_irq(pci_dev->irq);
+> +	error = pci_pm_suspend_noirq(dev);
+> +	enable_irq(pci_dev->irq);
+> +
+> +	if (error)
+> +		goto resume_noirq;
+> +
+> +	return 0;
+> +
+> +resume_noirq:
+> +	disable_irq(pci_dev->irq);
+> +	pci_pm_resume_noirq(dev);
+> +	enable_irq(pci_dev->irq);
+> +resume:
+> +	pci_pm_resume(dev);
+> +out:
+> +	pci_enable_runtime_wake(pci_dev, false);
+> +	return error;
+> +}
 
-Solid State Drives are introducing an ATA command called TRIM.  SSDs
-generally have an intenal mapping layer, and due to their low, low seek
-penalty, will happily remap blocks anywhere on the flash.  They want
-to know when a block isn't in use any more, so they don't have to copy
-it around when they want to erase the chunk of storage that it's on.
-The unfortunate thing about the TRIM command is that it's not NCQ, so
-all NCQ commands have to finish, then we can send the TRIM command and
-wait for it to finish, then we can send NCQ commands again.
+The goto statements and unwinding code don't match up.
 
-So TRIM isn't free, and there's a better way for the drive to find
-out that the contents of a block no longer matter -- write some new
-data to it.  So if we just swapped a page in, and we're going to swap
-something else back out again soon, just write it to the same location
-instead of to a fresh location.  You've saved a command, and you've
-saved the drive some work, plus you've allowed other users to continue
-accessing the drive in the meantime.
+> +static int pci_pm_runtime_resume(struct device *dev)
+> +{
+> +	struct pci_dev *pci_dev = to_pci_dev(dev);
+> +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	int error = 0;
+> +
+> +	disable_irq(pci_dev->irq);
+> +	error = pci_pm_resume_noirq(dev);
+> +	enable_irq(pci_dev->irq);
+> +
+> +	if (error)
+> +		return error;
+> +
+> +	error = pci_pm_resume(dev);
+> +
+> +	if (error)
+> +		return error;
+> +
+> +	if (pm->runtime_resume)
+> +		error = pm->runtime_resume(dev);
+> +
+> +	if (error)
+> +		return error;
+> +
+> +	error = pci_enable_runtime_wake(pci_dev, false);
+> +
+> +	if (error)
+> +		return error;
+> +
+> +	return 0;
+> +}
 
-I am planning a complete overhaul of the discard work.  Users can send
-down discard requests as frequently as they like.  The block layer will
-cache them, and invalidate them if writes come through.  Periodically,
-the block layer will send down a TRIM or an UNMAP (depending on the
-underlying device) and get rid of the blocks that have remained unwanted
-in the interim.
+Log an error message when something goes wrong?
 
-Thoughts on that are welcome.
+> +static void pci_pm_runtime_idle(struct device *dev)
+> +{
+> +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +
+> +	if (pm && pm->runtime_idle)
+> +		pm->runtime_idle(dev);
+> +
+> +	pm_schedule_suspend(dev, 0);
+> +}
+
+This misses the point.  The whole idea of runtime_idle is to tell you 
+that the device is idle and might be ready to be suspended.  If you're 
+going to call pm_schedule_suspend anyway, there's no reason to invoke 
+pm->runtime_idle.
+
+Alan Stern
+
