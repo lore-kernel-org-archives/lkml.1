@@ -1,86 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbZHMTrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbZHMTzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755540AbZHMTrm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755486AbZHMTrl
+	id S1755571AbZHMTzz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbZHMTzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:47:41 -0400
-Received: from kroah.org ([198.145.64.141]:36677 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754795AbZHMTrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:47:40 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:35 2009
-Message-Id: <20090813194335.584926188@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:22 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Sandeen <sandeen@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       William Lee Irwin III <wli@holomorphy.com>
-Subject: [patch 01/28] hugetlbfs: fix i_blocks accounting
-References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=hugetlbfs-fix-i_blocks-accounting.patch
-In-Reply-To: <20090813194554.GA13947@kroah.com>
+	Thu, 13 Aug 2009 15:55:54 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:62856 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754861AbZHMTzx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:55:53 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAPYMhEqrR7O6/2dsb2JhbAC7HYgrkRsFhBk
+X-IronPort-AV: E=Sophos;i="4.43,375,1246838400"; 
+   d="scan'208";a="195356174"
+Date: Thu, 13 Aug 2009 12:55:54 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, greg@kroah.com, linux-usb@vger.kernel.org
+Subject: Re: [PATCH] Combine two one-character CR-LF writes into one
+	two-character write for O_ONLCR
+Message-ID: <20090813195554.GA22751@cuplxvomd02.corp.sa.net>
+References: <20090813175430.GA8769@cuplxvomd02.corp.sa.net> <20090813205018.4d781c74@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090813205018.4d781c74@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+On Thu, Aug 13, 2009 at 08:50:18PM +0100, Alan Cox wrote:
+> > do_output_char() function uses the struct tty_operations function write_room()
+> > to determine whether it is possible to write two characters. It uses
+> > tty_put_char() for each character which, for the USB generic serial driver,
+> > translates into a write() for each character. For the USB generic serial
+> > driver the value returned by write_room() only applies to the next write().
+> 
+> The USB serial driver is broken, fix it instead. It's not even hard to
+> fix.
+> 
+> > +			tty->ops->write(tty, crlf, ARRAY_SIZE(crlf));
+> > +			return ARRAY_SIZE(crlf);
+> 
+> Emphatic NAK. Someone needs to actually fix the broken USB drivers for
+> once. This is just one example of where the device will go kersplat if its
+> broken, others include things like losing flow control.
 
-------------------
+Works for me; please consider the patch withdrawn. I'll take a crack at fixing
+the generic serial driver the right way; if other drivers are doing mix-and-match
+with per-device code and generic code, they could get broken. I have no way to
+test for this, so I'm hoping others will help out.
 
-From: Eric Sandeen <sandeen@sandeen.net>
-
-commit e4c6f8bed01f9f9a5c607bd689bf67e7b8a36bd8 upstream.
-
-As reported in Red Hat bz #509671, i_blocks for files on hugetlbfs get
-accounting wrong when doing something like:
-
-   $ > foo
-   $ date  > foo
-   date: write error: Invalid argument
-   $ /usr/bin/stat foo
-     File: `foo'
-     Size: 0          Blocks: 18446744073709547520 IO Block: 2097152 regular
-...
-
-This is because hugetlb_unreserve_pages() is unconditionally removing
-blocks_per_huge_page(h) on each call rather than using the freed amount.
-If there were 0 blocks, it goes negative, resulting in the above.
-
-This is a regression from commit a5516438959d90b071ff0a484ce4f3f523dc3152
-("hugetlb: modular state for hugetlb page size")
-
-which did:
-
--	inode->i_blocks -= BLOCKS_PER_HUGEPAGE * freed;
-+	inode->i_blocks -= blocks_per_huge_page(h);
-
-so just put back the freed multiplier, and it's all happy again.
-
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-Acked-by: Andi Kleen <andi@firstfloor.org>
-Cc: William Lee Irwin III <wli@holomorphy.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- mm/hugetlb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -2257,7 +2257,7 @@ void hugetlb_unreserve_pages(struct inod
- 	long chg = region_truncate(&inode->i_mapping->private_list, offset);
- 
- 	spin_lock(&inode->i_lock);
--	inode->i_blocks -= blocks_per_huge_page(h);
-+	inode->i_blocks -= (blocks_per_huge_page(h) * freed);
- 	spin_unlock(&inode->i_lock);
- 
- 	hugetlb_put_quota(inode->i_mapping, (chg - freed));
-
-
+David VL
