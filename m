@@ -1,87 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbZHMTMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZHMTPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbZHMTMm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbZHMTMm
+	id S1755414AbZHMTPd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbZHMTPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:12:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34224 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753016AbZHMTMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:12:41 -0400
-Message-ID: <4A846581.2020304@redhat.com>
-Date: Thu, 13 Aug 2009 22:12:01 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 13 Aug 2009 15:15:32 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:59355 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754528AbZHMTPc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:15:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=OtrqnPvK8r23Yd/K9wftgx+eBnFJ4LNYIeLhXcAgPW4/Ts9oVGbY6Hlx1lxjuaFLzq
+         9CjwPLgDDLX1I2gkJBL/RHKgEKgS/8lgnL+7BkODv0iRZePz/18zQ7seegOb6Sk5iWLQ
+         /xSIQMD5bU602+natg+8QxuofZc0Ctu3EPVdw=
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Wu Fengguang <fengguang.wu@intel.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+Reply-To: eranian@gmail.com
+In-Reply-To: <20090813094635.GA26612@elte.hu>
+References: <7c86c4470908110841wca07382gf7487c0ed55909f2@mail.gmail.com>
+	 <1250006744.10001.29.camel@twins>
+	 <7c86c4470908111240s58385748wdb3c3e4a0d66a1ea@mail.gmail.com>
+	 <1250024143.7091.7.camel@laptop>
+	 <7c86c4470908111408x256e294i13ac90035fd8f5c8@mail.gmail.com>
+	 <1250065963.10001.30.camel@twins> <20090812090234.GB14114@elte.hu>
+	 <7c86c4470908120522m1eaf891bqb394df072dddc701@mail.gmail.com>
+	 <20090813094635.GA26612@elte.hu>
+Date: Thu, 13 Aug 2009 21:15:31 +0200
+Message-ID: <7c86c4470908131215se9b81d4v18d4d881a70f1aad@mail.gmail.com>
+Subject: Re: perf_counters issue with PERF_SAMPLE_GROUP
+From: stephane eranian <eranian@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-References: <20090806100824.GO23385@random.random> <4A7AD5DF.7090801@redhat.com> <20090807121443.5BE5.A69D9226@jp.fujitsu.com> <20090812074820.GA29631@localhost> <4A82D24D.6020402@redhat.com> <20090813010356.GA7619@localhost> <4A843565.3010104@redhat.com> <4A843B72.6030204@redhat.com> <4A843EAE.6070200@redhat.com>
-In-Reply-To: <4A843EAE.6070200@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/13/2009 07:26 PM, Rik van Riel wrote:
->> Why do we need to ignore the referenced bit in such cases?  To avoid 
->> overscanning?
+On Thu, Aug 13, 2009 at 11:46 AM, Ingo Molnar<mingo@elte.hu> wrote:
 >
+> * stephane eranian <eranian@googlemail.com> wrote:
 >
-> Because swapping out anonymous pages tends to be a relatively
-> rare operation, we'll have many gigabytes of anonymous pages
-> that all have the referenced bit set (because there was lots
-> of time between swapout bursts).
+>> On Wed, Aug 12, 2009 at 11:02 AM, Ingo Molnar<mingo@elte.hu> wrote:
+>>
+>> > Not sure we want to change it. Mixing PID and CPU into the same
+>> > space disallows the simultaneous application of both. I.e. right
+>> > now we allow 3 models:
+>> >
+>> >  - PID-ish
+>> >  - CPU-ish
+>> >  - PID and CPU [say measure CPU#2 component of an inherited workload.]
+>>
+>> How useful is that last model, especially why only one CPU?
 >
-> Ignoring the referenced bit on active anon pages makes no
-> difference on these systems, because all active anon pages
-> have the referenced bit set, anyway.
+> It's somewhat useful: say on an inherited workload one could 'cut
+> out' just a single CPU worth of samples.
 >
-> All we need to do is put the pages on the inactive list and
-> give them a chance to get referenced.
+> Or a tool could implement a more scalable sampling model: say on a
+> quad core CPU one could have four counters in an inherited workload:
 >
-> However, on smaller systems (and cgroups!), the speed at
-> which we can do pageout IO is larger, compared to the amount
-> of memory.  This means we can cycle through the pages more
-> quickly and we may want to count references on the active
-> list, too.
->
-> Yes, on smaller systems we'll also often end up with bursty
-> swapout loads and all pages referenced - but since we have
-> fewer pages to begin with, it won't hurt as much.
->
-> I suspect that an inactive_ratio of 3 or 4 might make a
-> good cutoff value.
+>  cycles:cpu0
+>  cycles:cpu1
+>  cycles:cpu2
+>  cycles:cpu3
 >
 
-Thanks for the explanation.  I think my earlier idea of
+What would you be able to do with that kind of information?
+How would you modify the program to improve performance?
 
-- do not ignore the referenced bit
-- if you see a run of N pages which all have the referenced bit set, do 
-swap one
+> ... and depending on which CPU a sub-process or sub-thread is
+> running on, would the according (nicely per cpu local) sampling
+> buffer be used.
+>
+>> > Also, i dont really see the use-cases for new targets. (i've
+>> > seen a few mentioned but none seemed valid) What new targets do
+>> > people have in mind?
+>>
+>> I seem to recall people mentioned:
+>>    1- CPU socket, e.g., uncore PMU
+>>    2- chipset
+>>    3- GPU
+>>
+>> I can see 1/ being indirectly achievable by specifying a CPU.
+>
+> Correct.
+>
+> ( Note, it's not just indirectly achievable as a side-effect - for
+>  example the Intel uncore PMU has a target CPU irq-mask, so it
+>  makes sense to allow the specification of the specific CPU we are
+>  measuring on as well. The physical socket maps from the CPU. )
+>
+I know that because I used it to support uncore on perfmon.
+Some people have argued, though, that it could be interesting to
+interrupt all cores at once on uncore overflow. That's one way to know
+where all cores are at the same point in time. I wonder how you could
+support that.
 
-has merit.  It means we cycle more quickly (by a factor of N) through 
-the list, looking for unreferenced pages.  If we don't find any we've 
-spent a some more cpu, but if we do find an unreferenced page, we win by 
-swapping a truly unneeded page.
 
-Cycling faster also means reducing the time between examinations of any 
-particular page, so it increases the meaningfulness of the check on 
-large systems (otherwise even rarely used pages will always show up as 
-referenced).
+>> [...] But the others are uncorrelated to either a CPU or thread. I
+>> have already seen requests for accessing chipsets, and seems GPU
+>> are around the corner now.
+>>
+>> Why do you think those would be invalid targets given the goal of
+>> this API?
+>
+> No.
+>
+> Chipset and GPU measurements are very much possible via perfcounters
+> as well - but that does not require the touching of the pid,cpu
+> target parameters to sys_perf_counter_open().
+>
+> I think the confusion in this discussion comes from the fact that
+> there are two different types of 'targets':
+>
+> The first type of target, the <pid,cpu> target is a _scheduling_,
+> task management abstraction. Adding a chipset ID or GPU ID to that
+> makes little sense! Tasks dont get scheduled on a 'chipset' - to
+> each task the chipset looks like an external entity.
+>
+> The second type of target is the 'event source itself'. (and it's
+> not really a target but a source.)
+>
+> A chipset or GPU should be abstracted via an _event source_
+> abstraction. We've got wide possibilities to do that, and we already
+> abstract a fair amount of non-CPU-sourced events that way: say we
+> have irq tracepoint counters:
+>
+>  aldebaran:~> perf list 2>&1 | grep irq
+>    irq:irq_handler_entry                      [Tracepoint event]
+>
+> irqs come from the chipset, so in an (unintended) way perfcounters
+> already instruments the chipset today.
+>
+> So yes, both chipset and GPU sampling is very much possible, and it
+> does not require the tweaking of the syscall target parameters -
+> each CPU has a typically symmetric view on it.
+>
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+Except there can be many GPUs, I/O devices and other pieces of
+hardware with PMU-like capabilities in a single system. In that case,
+you need to be able to name them: I want to measure GPUcycles on
+GPU0. When you are down at that level, you don't really care about
+the CPU or thread. So what would you pass for those in that case?
 
+> Note that there's overlap: a CPU can be an event source and a
+> scheduling target as well. I think some of the confusion in
+> terminology comes from that.
+>
+> To support chipset or GPU sampling, the perf_type_id and/or the
+> struct perf_counter_attr space can be extended.
+>
