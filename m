@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbZHMUNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbZHMUMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbZHMUNX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbZHMT7W
+	id S1755925AbZHMUMv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:12:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbZHMT7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:59:22 -0400
-Received: from kroah.org ([198.145.64.141]:41671 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:59:23 -0400
+Received: from kroah.org ([198.145.64.141]:41669 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754889AbZHMT7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:21 -0400
+	id S1755875AbZHMT7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:20 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:26 2009
-Message-Id: <20090813195126.652068054@mini.kroah.org>
+Message-Id: <20090813195126.482792691@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:49:49 -0700
+Date: Thu, 13 Aug 2009 12:49:48 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jarod Wilson <jarod@redhat.com>, Florian Demmer <florian@demmer.org>,
        Eric Anholt <eric@anholt.net>
-Subject: [patch 14/74] drm/i915: add ignore lvds quirk info for AOpen Mini PC
+Subject: [patch 13/74] drm/i915: Save/restore cursor state on suspend/resume.
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=0001-drm-i915-add-ignore-lvds-quirk-info-for-AOpen-Mini-P.patch
+Content-Disposition: inline; filename=drm-i915-save-restore-cursor-state-on-suspend-resume.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,40 +30,83 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jarod Wilson <jarod@redhat.com>
+From: Eric Anholt <eric@anholt.net>
 
-(cherry picked from commit 70aa96ca2d8d938fc036ef8fd189b0151f4fc3ba)
+(cherry picked from commit 1fd1c624362819ecc36db2458c6a972c48ae92d6)
 
-Fix a FIXME in the intel LVDS bring-up code, adding the appropriate
-blacklist entry for the AOpen Mini PC, courtesy of a dmidecode
-dump from Florian Demmer.
+This may fix cursor corruption in X on resume, which would persist until
+the cursor was hidden and then shown again.
 
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
-CC: Florian Demmer <florian@demmer.org>
+V2: Also include the cursor control regs.
+
 Signed-off-by: Eric Anholt <eric@anholt.net>
+Reviewed-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/gpu/drm/i915/intel_lvds.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
 
---- a/drivers/gpu/drm/i915/intel_lvds.c
-+++ b/drivers/gpu/drm/i915/intel_lvds.c
-@@ -420,8 +420,14 @@ static const struct dmi_system_id intel_
- 			DMI_MATCH(DMI_PRODUCT_NAME, "Studio Hybrid 140g"),
- 		},
- 	},
--
--	/* FIXME: add a check for the Aopen Mini PC */
-+	{
-+		.callback = intel_no_lvds_dmi_callback,
-+		.ident = "AOpen Mini PC",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "AOpen"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "i965GMx-IF"),
-+		},
-+	},
+---
+ drivers/gpu/drm/i915/i915_drv.h     |    8 ++++++++
+ drivers/gpu/drm/i915/i915_suspend.c |   20 ++++++++++++++++++++
+ 2 files changed, 28 insertions(+)
+
+--- a/drivers/gpu/drm/i915/i915_drv.h
++++ b/drivers/gpu/drm/i915/i915_drv.h
+@@ -285,6 +285,13 @@ typedef struct drm_i915_private {
+ 	u8 saveDACMASK;
+ 	u8 saveCR[37];
+ 	uint64_t saveFENCE[16];
++	u32 saveCURACNTR;
++	u32 saveCURAPOS;
++	u32 saveCURABASE;
++	u32 saveCURBCNTR;
++	u32 saveCURBPOS;
++	u32 saveCURBBASE;
++	u32 saveCURSIZE;
  
- 	{ }	/* terminating entry */
- };
+ 	struct {
+ 		struct drm_mm gtt_space;
+@@ -642,6 +649,7 @@ void i915_gem_detach_phys_object(struct 
+ void i915_gem_free_all_phys_object(struct drm_device *dev);
+ int i915_gem_object_get_pages(struct drm_gem_object *obj);
+ void i915_gem_object_put_pages(struct drm_gem_object *obj);
++void i915_gem_release(struct drm_device * dev, struct drm_file *file_priv);
+ 
+ /* i915_gem_tiling.c */
+ void i915_gem_detect_bit_6_swizzle(struct drm_device *dev);
+--- a/drivers/gpu/drm/i915/i915_suspend.c
++++ b/drivers/gpu/drm/i915/i915_suspend.c
+@@ -295,6 +295,16 @@ int i915_save_state(struct drm_device *d
+ 	i915_save_palette(dev, PIPE_B);
+ 	dev_priv->savePIPEBSTAT = I915_READ(PIPEBSTAT);
+ 
++	/* Cursor state */
++	dev_priv->saveCURACNTR = I915_READ(CURACNTR);
++	dev_priv->saveCURAPOS = I915_READ(CURAPOS);
++	dev_priv->saveCURABASE = I915_READ(CURABASE);
++	dev_priv->saveCURBCNTR = I915_READ(CURBCNTR);
++	dev_priv->saveCURBPOS = I915_READ(CURBPOS);
++	dev_priv->saveCURBBASE = I915_READ(CURBBASE);
++	if (!IS_I9XX(dev))
++		dev_priv->saveCURSIZE = I915_READ(CURSIZE);
++
+ 	/* CRT state */
+ 	dev_priv->saveADPA = I915_READ(ADPA);
+ 
+@@ -480,6 +490,16 @@ int i915_restore_state(struct drm_device
+ 	I915_WRITE(DSPBCNTR, dev_priv->saveDSPBCNTR);
+ 	I915_WRITE(DSPBADDR, I915_READ(DSPBADDR));
+ 
++	/* Cursor state */
++	I915_WRITE(CURAPOS, dev_priv->saveCURAPOS);
++	I915_WRITE(CURACNTR, dev_priv->saveCURACNTR);
++	I915_WRITE(CURABASE, dev_priv->saveCURABASE);
++	I915_WRITE(CURBPOS, dev_priv->saveCURBPOS);
++	I915_WRITE(CURBCNTR, dev_priv->saveCURBCNTR);
++	I915_WRITE(CURBBASE, dev_priv->saveCURBBASE);
++	if (!IS_I9XX(dev))
++		I915_WRITE(CURSIZE, dev_priv->saveCURSIZE);
++
+ 	/* CRT state */
+ 	I915_WRITE(ADPA, dev_priv->saveADPA);
+ 
 
 
