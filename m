@@ -1,53 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbZHMDdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbZHMDdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752729AbZHMDdJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 23:33:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbZHMDdJ
+	id S1752754AbZHMDdp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 23:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZHMDdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 23:33:09 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42580 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752663AbZHMDdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 23:33:08 -0400
-Subject: Re: linux-next: pci tree build warning
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Tiago Vignatti <tiago.vignatti@nokia.com>,
-       Dave Airlie <airlied@redhat.com>
-In-Reply-To: <20090813124732.f29fd5c3.sfr@canb.auug.org.au>
-References: <20090813124732.f29fd5c3.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Thu, 13 Aug 2009 13:32:40 +1000
-Message-Id: <1250134360.3587.77.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Aug 2009 23:33:45 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:51384 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752657AbZHMDdo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Aug 2009 23:33:44 -0400
+Date: Thu, 13 Aug 2009 09:03:35 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>, kamezawa.hiroyu@jp.fujitsu.com,
+       kosaki.motohiro@jp.fujitsu.com, menage@google.com, prarit@redhat.com,
+       andi.kleen@intel.com, xemul@openvz.org, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] Help Resource Counters Scale better (v4.1)
+Message-ID: <20090813033335.GF5087@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090811144405.GW7176@balbir.in.ibm.com> <20090811163159.ddc5f5fd.akpm@linux-foundation.org> <20090812045716.GH7176@balbir.in.ibm.com> <20090813100350.bc09c568.nishimura@mxp.nes.nec.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090813100350.bc09c568.nishimura@mxp.nes.nec.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-13 at 12:47 +1000, Stephen Rothwell wrote:
-> Hi Jesse,
+* nishimura@mxp.nes.nec.co.jp <nishimura@mxp.nes.nec.co.jp> [2009-08-13 10:03:50]:
+
+> > @@ -1855,9 +1883,14 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+> >  		break;
+> >  	}
+> >  
+> > -	res_counter_uncharge(&mem->res, PAGE_SIZE, &soft_limit_excess);
+> > -	if (do_swap_account && (ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
+> > -		res_counter_uncharge(&mem->memsw, PAGE_SIZE, NULL);
+> > +	if (!mem_cgroup_is_root(mem)) {
+> > +		res_counter_uncharge(&mem->res, PAGE_SIZE, &soft_limit_excess);
+> > +		if (do_swap_account &&
+> > +				(ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
+> > +			res_counter_uncharge(&mem->memsw, PAGE_SIZE, NULL);
+> > +	}
+> > +	if (ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT && mem_cgroup_is_root(mem))
+> > +		mem_cgroup_swap_statistics(mem, true);
+> I think mem_cgroup_is_root(mem) would be unnecessary here.
+> Otherwise, MEM_CGROUP_STAT_SWAPOUT of groups except root memcgroup wouldn't
+> be counted properly.
 > 
-> Today's linux-next build (x86_64 allmodconfig) produced these warnings:
+
+I think you have a valid point, but it will not impact us currently
+since we use SWAPOUT only for root accounting.
+
 > 
-> drivers/gpu/vga/vgaarb.c: In function 'vga_arb_write':
-> drivers/gpu/vga/vgaarb.c:834: warning: cast from pointer to integer of different size
-> drivers/gpu/vga/vgaarb.c:870: warning: cast from pointer to integer of different size
-> drivers/gpu/vga/vgaarb.c:920: warning: cast from pointer to integer of different size
-> drivers/gpu/vga/vgaarb.c:963: warning: cast from pointer to integer of different size
-> drivers/gpu/vga/vgaarb.c:1017: warning: cast from pointer to integer of different size
-> 
-> Introduced by commit a49c9c1b728fa8f50816d96a0f135e15a359e448 ("PCI/GPU:
-> implement VGA arbitration on Linux").
+> > @@ -2461,10 +2496,26 @@ static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
+> >  	name = MEMFILE_ATTR(cft->private);
+> >  	switch (type) {
+> >  	case _MEM:
+> > -		val = res_counter_read_u64(&mem->res, name);
+> > +		if (name == RES_USAGE && mem_cgroup_is_root(mem)) {
+> > +			val = mem_cgroup_read_stat(&mem->stat,
+> > +					MEM_CGROUP_STAT_CACHE);
+> > +			val += mem_cgroup_read_stat(&mem->stat,
+> > +					MEM_CGROUP_STAT_RSS);
+> > +			val <<= PAGE_SHIFT;
+> > +		} else
+> > +			val = res_counter_read_u64(&mem->res, name);
+> >  		break;
+> >  	case _MEMSWAP:
+> > -		val = res_counter_read_u64(&mem->memsw, name);
+> > +		if (name == RES_USAGE && mem_cgroup_is_root(mem)) {
+> > +			val = mem_cgroup_read_stat(&mem->stat,
+> > +					MEM_CGROUP_STAT_CACHE);
+> > +			val += mem_cgroup_read_stat(&mem->stat,
+> > +					MEM_CGROUP_STAT_RSS);
+> > +			val += mem_cgroup_read_stat(&mem->stat,
+> > +					MEM_CGROUP_STAT_SWAPOUT);
+> > +			val <<= PAGE_SHIFT;
+> > +		} else
+> > +			val = res_counter_read_u64(&mem->memsw, name);
+> >  		break;
+> >  	default:
+> >  		BUG();
+> Considering use_hierarchy==1 case in the root memcgroup, shouldn't we use
+> mem_cgroup_walk_tree() here to sum up all the children's usage ?
+> *.usage_in_bytes show sum of all the children's usage now if use_hierarchy==1.
 
-Right, somebody weirdly decided to cast pointers to int just to printk
-them with %X :-) I hope it wasn't me ... 
-
-Just remove the casts and use %p instead.
-
-Cheers,
-Ben.
+If memory.use_hiearchy=1, we should use total_stats..right. Let me
+send out a newer version for review.
 
 
+-- 
+	Balbir
