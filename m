@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932297AbZHMUJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932201AbZHMUKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932297AbZHMUJu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151AbZHMUJs
+	id S932201AbZHMUKQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:10:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932124AbZHMUKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:09:48 -0400
-Received: from kroah.org ([198.145.64.141]:41747 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 16:10:12 -0400
+Received: from vena.lwn.net ([206.168.112.25]:46266 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932109AbZHMT7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:37 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:29 2009
-Message-Id: <20090813195129.309168736@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:07 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Michael Buesch <mb@bu3sch.de>, Helge Deller <deller@gmx.de>
-Subject: [patch 32/74] parisc: isa-eeprom - Fix loff_t usage
-References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=parisc-isa-eeprom-fix-loff_t-usage.patch
-In-Reply-To: <20090813195705.GA22393@kroah.com>
+	id S932177AbZHMUKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 16:10:03 -0400
+Date: Thu, 13 Aug 2009 14:07:16 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Mark Gross <mgross@linux.intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 1/2] pm_qos: remove the BKL
+Message-ID: <20090813140716.4490ab37@bike.lwn.net>
+In-Reply-To: <20090813140554.014ce1e0@bike.lwn.net>
+References: <20090813140554.014ce1e0@bike.lwn.net>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.30-stable review patch.  If anyone has any objections, please let us know.
+pm_qos_power_open got its lock_kernel() calls from the open() pushdown.  A
+look at the code shows that the only global resources accessed are
+pm_qos_array and "name".  pm_qos_array doesn't change (things pointed to
+therein do change, but they are atomics and/or are protected by
+pm_qos_lock).  Accesses to "name" are totally unprotected with or without
+the BKL; that will be fixed shortly.  The BKL is not helpful here; take it
+out.
 
-------------------
-
-From: Michael Buesch <mb@bu3sch.de>
-
-commit 6b4dbcd86a9d464057fcc7abe4d0574093071fcc upstream.
-
-loff_t is a signed type. If userspace passes a negative ppos, the "count"
-range check is weakened. "count"s bigger than HPEE_MAX_LENGTH will pass the check.
-Also, if ppos is negative, the readb(eisa_eeprom_addr + *ppos) will poke in random
-memory.
-
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
-Signed-off-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+Cc: Mark Gross <mgross@linux.intel.com>
 ---
- drivers/parisc/eisa_eeprom.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/pm_qos_params.c |    8 +-------
+ 1 files changed, 1 insertions(+), 7 deletions(-)
 
---- a/drivers/parisc/eisa_eeprom.c
-+++ b/drivers/parisc/eisa_eeprom.c
-@@ -55,7 +55,7 @@ static ssize_t eisa_eeprom_read(struct f
- 	ssize_t ret;
- 	int i;
- 	
--	if (*ppos >= HPEE_MAX_LENGTH)
-+	if (*ppos < 0 || *ppos >= HPEE_MAX_LENGTH)
- 		return 0;
- 	
- 	count = *ppos + count < HPEE_MAX_LENGTH ? count : HPEE_MAX_LENGTH - *ppos;
-
+diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+index dfdec52..d96b83e 100644
+--- a/kernel/pm_qos_params.c
++++ b/kernel/pm_qos_params.c
+@@ -29,7 +29,6 @@
+ 
+ #include <linux/pm_qos_params.h>
+ #include <linux/sched.h>
+-#include <linux/smp_lock.h>
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
+ #include <linux/time.h>
+@@ -352,20 +351,15 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
+ 	int ret;
+ 	long pm_qos_class;
+ 
+-	lock_kernel();
+ 	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
+ 	if (pm_qos_class >= 0) {
+ 		filp->private_data = (void *)pm_qos_class;
+ 		sprintf(name, "process_%d", current->pid);
+ 		ret = pm_qos_add_requirement(pm_qos_class, name,
+ 					PM_QOS_DEFAULT_VALUE);
+-		if (ret >= 0) {
+-			unlock_kernel();
++		if (ret >= 0)
+ 			return 0;
+-		}
+ 	}
+-	unlock_kernel();
+-
+ 	return -EPERM;
+ }
+ 
+-- 
+1.6.2.5
 
