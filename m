@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbZHMJAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbZHMJCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbZHMJAs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 05:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbZHMJAr
+	id S1753828AbZHMJCw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 05:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbZHMJCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 05:00:47 -0400
-Received: from sh.osrg.net ([192.16.179.4]:37240 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753771AbZHMJAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 05:00:46 -0400
-Date: Thu, 13 Aug 2009 18:00:31 +0900
-To: dwmw2@infradead.org
-Cc: luming.yu@gmail.com, fujita.tomonori@lab.ntt.co.jp, fenghua.yu@intel.com,
-       tony.luck@intel.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [RFC patch] init default dma_ops to prepare intel_iommu_init 
- failure
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1250153373.29180.225.camel@macbook.infradead.org>
-References: <20090813170227V.fujita.tomonori@lab.ntt.co.jp>
-	<3877989d0908130111m1a7d8625ha84ed1732a7eae81@mail.gmail.com>
-	<1250153373.29180.225.camel@macbook.infradead.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090813175921J.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 13 Aug 2009 18:00:31 +0900 (JST)
+	Thu, 13 Aug 2009 05:02:52 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47177 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753315AbZHMJCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 05:02:51 -0400
+X-Authenticated: #2360897
+X-Provags-ID: V01U2FsdGVkX1+9PLM2YZG9AOcFeQDADZe0gxtM5Ot+rcdKXOJC2e
+	uV8bkCgf2e0ohG
+Date: Thu, 13 Aug 2009 11:03:35 +0200
+From: Bernhard Walle <bernhard.walle@gmx.de>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
+       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 0/8] V3 Implement crashkernel=auto
+Message-ID: <20090813090335.GA9502@mail1.bwalle.de>
+References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>
+ <20090812124659.GA4808@mail1.bwalle.de>
+ <4A837F49.9060003@redhat.com>
+ <20090813053952.GA9037@mail1.bwalle.de>
+ <4A83CCAA.1030302@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A83CCAA.1030302@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Aug 2009 09:49:33 +0100
-David Woodhouse <dwmw2@infradead.org> wrote:
-
-> On Thu, 2009-08-13 at 16:11 +0800, Luming Yu wrote:
-> > I treat this as -32 or -33 stuff, because I don't see a real system is blocking
-> > on the problem. I found this problem when I was trying to disable some drhd
-> > for debugging a real iommu issue...that one has priority.
+* Amerigo Wang <amwang@redhat.com> [2009-08-13 10:19]:
+> Sure.
 > 
-> (The real bug you were chasing is fixed, isn't it? Or worked around, at
-> least, since the BIOS in question is still closed source and broken.)
-> 
-> But by talking about disabling _some_ drhd units, you've just reminded
-> me that the problem is far more interesting -- we can have the IOMMU
-> active for _some_ devices but not others.
+> But if we disable CONFIG_KEXEC_AUTO_RESERVE, that means
+> crashkernel=auto will be invalid, this is the same as it is now.
 
-It's very common. X86, POWER, IA64 can handle it (I might overlook
-some).
+Ok, but since 'crashkernel=auto' is not used today, nobody has
+'crashkernel=auto' in the bootloader configuration. So I don't see any
+practial advantage of that config option.
 
-About X86, Calgary IOMMU uses both archdata.dma_ops and the global
-dma_ops.
+Eric, what's your opinion on that, do we need a config option
+CONFIG_KEXEC_AUTO_RESERVE or could we just implement that feature
+unconditionally (if CONFIG_KEXEC is enabled, of course).
 
 
-> I was toying with the idea of putting the intel_dma_ops into
-> dev->archdata for each pci device at boot or hotplug time, and leaving
-> the global variable alone. We can calculate the dev->iommu mapping at
-> that point too. And we can stop being quite so broken w.r.t. PCI
-> hotplug...
-> 
-> -- 
-> David Woodhouse                            Open Source Technology Centre
-> David.Woodhouse@intel.com                              Intel Corporation
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Regards,
+Bernhard
