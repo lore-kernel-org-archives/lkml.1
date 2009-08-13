@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbZHMT2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755515AbZHMTl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755443AbZHMT2e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbZHMT2d
+	id S1755515AbZHMTl1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbZHMTl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:28:33 -0400
-Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:51739 "EHLO
-	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753020AbZHMT2c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:28:32 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Regression] PCI resources allocation problem on HP nx6325
-Date: Thu, 13 Aug 2009 21:28:29 +0200
-User-Agent: KMail/1.9.9
-Cc: mano@roarinelk.homelinux.net, rjw@sisk.pl, willy@linux.intel.com,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       akpm@linux-foundation.org, andrew.patterson@hp.com
-References: <200908021619.48285.rjw@sisk.pl> <alpine.LFD.2.01.0908020927410.3352@localhost.localdomain> <20090803165909.GA12824@roarinelk.homelinux.net> <alpine.LFD.2.01.0908041555120.3270@localhost.localdomain> <20090805155102.GA31646@roarinelk.homelinux.net> <alpine.LFD.2.01.0908050902300.3390@localhost.localdomain> <alpine.LFD.2.01.0908050931390.3390@localhost.localdomain> <20090805170934.GA32274@roarinelk.homelinux.net> <alpine.LFD.2.01.0908071051300.3390@localhost.localdomain> <alpine.LFD.2.01.0908071116520.3390@localhost.localdomain> <20090811184740.49f52b57@scarran.roarinelk.net> <20090811184740.49f52b57@scarran.roarinelk.net> <alpine.LFD.2.01.0908131113580.28882@localhost.localdomain>
-In-reply-To: <alpine.LFD.2.01.0908131113580.28882@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908132128.31439.elendil@planet.nl>
-X-OriginalArrivalTime: 13 Aug 2009 19:28:32.0023 (UTC) FILETIME=[3E34F270:01CA1C4C]
+	Thu, 13 Aug 2009 15:41:26 -0400
+Received: from www.tglx.de ([62.245.132.106]:56307 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754792AbZHMTlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:41:25 -0400
+Message-Id: <20090813191535.945521006@linutronix.de>
+User-Agent: quilt/0.47-1
+Date: Thu, 13 Aug 2009 19:40:35 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Brian Swetland <swetland@google.com>,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       David Brownell <david-b@pacbell.net>, Daniel Ribeiro <drwyrm@gmail.com>,
+       arve@android.com, Barry Song <21cnbao@gmail.com>
+Subject: [RFC patch 0/3] Support for irq chips on slow busses (i2c, spi)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> I'm not going to do anything about it right now, since clearly we've
-> not changed any actual behavior from before. But if you remind me after
-> 2.6.31 is out, I'll look at perhaps making a better
-> "pci_claim_resource()" that actually iterates over the different parent
-> resources and doesn't just try to find one (and then fail if that
-> particular one doesn't work out).
+The support for irq chips on slow busses eg. i2c, spi has been
+discussed to great length several times. Most of the details can be
+found in this thread: http://lkml.org/lkml/2009/7/21/266
 
-Just for your information, this issue also affects my (old) Toshiba
-Satellite A40.
+The following patch series is a round up of the various patch snippets
+sent out during the discussion and the ideas we agreed on.
 
-With pre-2.6.31 kernels I always had the following in dmesg:
-pci 0000:00:1d.0: BAR 4: can't allocate resource
-pci 0000:00:1d.1: BAR 4: can't allocate resource
-[...]
-pnp 00:08: io resource (0x10-0x1f) overlaps 0000:00:1d.0 BAR 4 (0x0-0x1f), disabling
-pnp 00:08: io resource (0x10-0x1f) overlaps 0000:00:1d.1 BAR 4 (0x0-0x1f), disabling
+There are some subtle differences to the initial test patches:
 
-I was very happy to see that for 2.6.31-rc2 those messages were gone.
+1) Instead of using a separate flow handler we allow to request the
+one shot feature with a flag on request_irq and integrate the oneshot
+feature into the existing level/edge handlers.
 
-But with .31-rc5 they are back again, with added "address space collision":
-pci 0000:00:1d.0: BAR 4: address space collision on of device [0xcfe0-0xcfff]
-pci 0000:00:1d.0: BAR 4: can't allocate resource
-pci 0000:00:1d.1: BAR 4: address space collision on of device [0xcf80-0xcf9f]
-pci 0000:00:1d.1: BAR 4: can't allocate resource
-[...]
-pnp 00:08: io resource (0x10-0x1f) overlaps 0000:00:1d.0 BAR 4 (0x0-0x1f), disabling
-pnp 00:08: io resource (0x10-0x1f) overlaps 0000:00:1d.1 BAR 4 (0x0-0x1f), disabling
+2) Instead of conditional locking which makes the patch smaller but
+hides the already known fact that a device sits behind a slow irq chip
+I implemented a set of separate management functions (see patch
+2/3). The initial idea with the conditional locking can be found here:
+http://lkml.org/lkml/2009/7/22/163
 
-It's never resulted in things not working, but it would still be nice if
-it got solved. Please let me know if you'd like anything tested.
+3) patch 3/3 implements a helper function which allows the
+demultiplexing thread to call the demux handlers in its own thread
+context with out creating a separate thread for each subdevice
+interrupt. The device driver needs to request the interrupt via
+request_nested_slowbus_irq() to prevent the creation of the extra
+thread.
 
-Cheers,
-FJP
+Please have a thorough look and hopefully a test ride on your
+favourite slowbus irq chip implementation so we can get this into .32
+
+Thanks,
+
+	tglx
+
