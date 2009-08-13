@@ -1,109 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751549AbZHMApm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751724AbZHMAs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751549AbZHMApm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Aug 2009 20:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbZHMApl
+	id S1751724AbZHMAs1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Aug 2009 20:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbZHMAs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 20:45:41 -0400
-Received: from vms173009pub.verizon.net ([206.46.173.9]:27990 "EHLO
-	vms173009pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751054AbZHMApk (ORCPT
+	Wed, 12 Aug 2009 20:48:26 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:54353 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751217AbZHMAsZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 20:45:40 -0400
-Date: Wed, 12 Aug 2009 20:45:18 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Dipankar Sarma <dipankar@in.ibm.com>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "Li, Shaohua" <shaohua.li@intel.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
-       "Brown, Len" <len.brown@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>,
-       "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
-In-reply-to: <20090812195753.GA14649@in.ibm.com>
-Message-id: <alpine.LFD.2.00.0908122036580.22946@localhost.localdomain>
-References: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
- <20090806015855.GA20596@sli10-desk.sh.intel.com>
- <20090809120818.GA1338@ucw.cz> <200908091522.02898.rjw@sisk.pl>
- <20090810081941.GA18649@elf.ucw.cz>
- <1249950137.11545.38184.camel@localhost.localdomain>
- <20090812115806.GK24339@elf.ucw.cz> <20090812195753.GA14649@in.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 12 Aug 2009 20:48:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:references
+         :in-reply-to:mime-version:content-type:content-transfer-encoding
+         :message-id;
+        b=gEiIM5kx1YoSZp2kb4ZnZC3P3FB6MIRNPg9Dltpr9Ec5GsHsLsFtCk8Y1oDUggPRzl
+         V9aR38NdXJkyCBF3TSQ2yKTxjZbx/iEa22pz263fuUkQOMu60egUq7Tb4crHjrUHB6Pw
+         vlO14XIyfitbmTkugrGcr0Jb61ihhcNJZ5Egs=
+From: Marek Vasut <marek.vasut@gmail.com>
+Organization: Hack&Dev
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM sections
+Date: Thu, 13 Aug 2009 02:48:04 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.30-1-amd64; KDE/4.3.0; x86_64; ; )
+Cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
+       Joe Perches <joe@perches.com>, Ben Dooks <ben-linux@fluff.org>,
+       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
+References: <4A7ACC8D.7030706@xenontk.org> <1250118277.12423.7.camel@pc1117.cambridge.arm.com> <20090812232220.GE24667@n2100.arm.linux.org.uk>
+In-Reply-To: <20090812232220.GE24667@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200908130248.05104.marek.vasut@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Aug 2009, Dipankar Sarma wrote:
+Dne Čt 13. srpna 2009 01:22:20 Russell King - ARM Linux napsal(a):
+> On Thu, Aug 13, 2009 at 12:04:37AM +0100, Catalin Marinas wrote:
+> > For the other ARM MAINTAINERS entries (e.g. specific boards), it is up
+> > to the corresponding maintainers to add whatever lists they want, which
+> > may include linux-arm@vger.
+>
+> Just to be clear (and my final email tonight) I don't have a problem
+> with that, provided the corresponding maintainers do agree (and
+> therefore provide their ack).
+>
+> But to do it as a blanket "add linux-arm@vger to everything with
+> linux-arm-kernel" is wrong.
 
-> On Wed, Aug 12, 2009 at 01:58:06PM +0200, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > May be having (to pick a number) 3 possible offline states for all
-> > > platforms with one for halt equivalent and one for deepest possible that
-> > > CPU can handle and one for deepest possible that platform likes for
-> > > C-states may make sense. Will keeps things simpler in terms of usage
-> > > expectations and possibly reduce the misuse oppurtubity?
-> > 
-> > Maybe just going to the deepest offline state automatically is the
-> > easiest option?
+Hi,
 
-I agree with Pavel and PeterZ on this.
+what about setting this ML so it forwards all emails (or all that dont have 
+vger in CC/To) to vger ? And maybe then broadcasting the list of people 
+subscribed to this ML that they should subscribe to vger ?
 
-> In a native system, I think we should the platform-specific code
-> export what makes sense. That may be just the lowest possible
-> state only. Or may be more than one.
+Though it might be a lot of traffic.
 
-For x86, it is 1 state.
-
-> In a virtualized system, we would want to do at least the following -
-
-Are you talking about Linux as a para-virtualized guest here?
-
-> 1. An offline configuration state where the hypervisor can
-> take the cpu back and allocate it to another VM.
-
-The hypervisor gets control no matter what idle state
-the guest enters, yes?
-
-> 2. A low-power state where the guest indicates it doesn't need the
-> CPU (and can be put in low power state) but doesn't want to give up 
-> its allocated cpu share. IOW, no visible configuration changes.
-> 
-> So, in any case we would probably want more than one states.
-
-How are #1 and #2 different when the hypervisor
-gets control in all idle states?  I assert that
-they are the same, and thus 1 state will suffice.
-
-> > cpu hotplug/unplug should be rare-enough operation that the latencies
-> > do not really matter, right?
-> 
-> As of now, from the platform perspective, I don't think low-power
-> state latencies matter in this code path.
-
-Yay, something we all agree on.
-
-> The only thing that might
-> have any relevance is electrical power-off technology and whether
-> there may be any h/w specific issues restricting its use.
-> I don't know that there will be any, but it may not be a good idea to prevent
-> platforms from requiring the use of multiple "offline" states.
-
-Can you give an example of such restrictions? (I can't)
-
-I do not advocate integrating features into the kernel
-if they can not be tested and it is uncear that they are needed.
-Keep it simple.  Add complexity only when it is clear that you must.
-
-thanks,
-Len Brown, Intel Open Source Technology Center.
+Cheers!
+>
+> -------------------------------------------------------------------
+> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
