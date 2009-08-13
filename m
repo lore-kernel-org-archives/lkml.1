@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbZHMTvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbZHMTw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbZHMTvS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755699AbZHMTvO
+	id S1755840AbZHMTw3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbZHMTw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:51:14 -0400
-Received: from kroah.org ([198.145.64.141]:36761 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:52:28 -0400
+Received: from kroah.org ([198.145.64.141]:36716 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932123AbZHMTr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:47:56 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:38 2009
-Message-Id: <20090813194338.323854679@mini.kroah.org>
+	id S1755595AbZHMTrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:47:47 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:43:36 2009
+Message-Id: <20090813194336.600606763@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:40:38 -0700
+Date: Thu, 13 Aug 2009 12:40:29 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Dumazet <eric.dumazet@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, Sonny Rao <sonnyrao@us.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: [patch 17/28] execve: must clear current->clear_child_tid
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Len Brown <len.brown@intel.com>
+Subject: [patch 08/28] thinkpad-acpi: disable broken bay and dock subdrivers
 References: <20090813194021.446758568@mini.kroah.org>
-Content-Disposition: inline; filename=execve-must-clear-current-clear_child_tid.patch
+Content-Disposition: inline; filename=thinkpad-acpi-disable-broken-bay-and-dock-subdrivers.patch
 In-Reply-To: <20090813194554.GA13947@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,126 +31,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eric Dumazet <eric.dumazet@gmail.com>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-commit 9c8a8228d0827e0d91d28527209988f672f97d28 upstream.
+commit 550e7fd8afb7664ae7cedb398c407694e2bf7d3c upstream.
 
-While looking at Jens Rosenboom bug report
-(http://lkml.org/lkml/2009/7/27/35) about strange sys_futex call done from
-a dying "ps" program, we found following problem.
+Currently, the ThinkPad-ACPI bay and dock drivers are completely
+broken, and cause a NULL pointer derreference in kernel mode (and,
+therefore, an OOPS) when they try to issue events (i.e. on dock,
+undock, bay ejection, etc).
 
-clone() syscall has special support for TID of created threads.  This
-support includes two features.
+OTOH, the standard ACPI dock driver can handle the hotplug bays and
+docks of the ThinkPads just fine (including batteries) as of 2.6.27.
+In fact, it does a much better job of it than thinkpad-acpi ever did.
 
-One (CLONE_CHILD_SETTID) is to set an integer into user memory with the
-TID value.
+It is just not worth the hassle to find a way to fix this crap without
+breaking the (deprecated) thinkpad-acpi dock/bay ABI.  This is old,
+deprecated code that sees little testing or use.
 
-One (CLONE_CHILD_CLEARTID) is to clear this same integer once the created
-thread dies.
+As a quick fix suitable for -stable backports, mark the thinkpad-acpi
+bay and dock subdrivers as BROKEN in Kconfig.  The dead code will be
+removed by a later patch.
 
-The integer location is a user provided pointer, provided at clone()
-time.
+This fixes bugzilla #13669, and should be applied to 2.6.27 and later.
 
-kernel keeps this pointer value into current->clear_child_tid.
-
-At execve() time, we should make sure kernel doesnt keep this user
-provided pointer, as full user memory is replaced by a new one.
-
-As glibc fork() actually uses clone() syscall with CLONE_CHILD_SETTID and
-CLONE_CHILD_CLEARTID set, chances are high that we might corrupt user
-memory in forked processes.
-
-Following sequence could happen:
-
-1) bash (or any program) starts a new process, by a fork() call that
-   glibc maps to a clone( ...  CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID
-   ...) syscall
-
-2) When new process starts, its current->clear_child_tid is set to a
-   location that has a meaning only in bash (or initial program) context
-   (&THREAD_SELF->tid)
-
-3) This new process does the execve() syscall to start a new program.
-   current->clear_child_tid is left unchanged (a non NULL value)
-
-4) If this new program creates some threads, and initial thread exits,
-   kernel will attempt to clear the integer pointed by
-   current->clear_child_tid from mm_release() :
-
-        if (tsk->clear_child_tid
-            && !(tsk->flags & PF_SIGNALED)
-            && atomic_read(&mm->mm_users) > 1) {
-                u32 __user * tidptr = tsk->clear_child_tid;
-                tsk->clear_child_tid = NULL;
-
-                /*
-                 * We don't check the error code - if userspace has
-                 * not set up a proper pointer then tough luck.
-                 */
-<< here >>      put_user(0, tidptr);
-                sys_futex(tidptr, FUTEX_WAKE, 1, NULL, NULL, 0);
-        }
-
-5) OR : if new program is not multi-threaded, but spied by /proc/pid
-   users (ps command for example), mm_users > 1, and the exiting program
-   could corrupt 4 bytes in a persistent memory area (shm or memory mapped
-   file)
-
-If current->clear_child_tid points to a writeable portion of memory of the
-new program, kernel happily and silently corrupts 4 bytes of memory, with
-unexpected effects.
-
-Fix is straightforward and should not break any sane program.
-
-Reported-by: Jens Rosenboom <jens@mcbone.net>
-Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Sonny Rao <sonnyrao@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ulrich Drepper <drepper@redhat.com>
-Cc: Oleg Nesterov <oleg@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Reported-by: Joerg Platte <jplatte@naasa.net>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/fork.c |   22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ drivers/misc/Kconfig |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -536,18 +536,18 @@ void mm_release(struct task_struct *tsk,
- 	 * the value intact in a core dump, and to save the unnecessary
- 	 * trouble otherwise.  Userland only wants this done for a sys_exit.
- 	 */
--	if (tsk->clear_child_tid
--	    && !(tsk->flags & PF_SIGNALED)
--	    && atomic_read(&mm->mm_users) > 1) {
--		u32 __user * tidptr = tsk->clear_child_tid;
-+	if (tsk->clear_child_tid) {
-+		if (!(tsk->flags & PF_SIGNALED) &&
-+		    atomic_read(&mm->mm_users) > 1) {
-+			/*
-+			 * We don't check the error code - if userspace has
-+			 * not set up a proper pointer then tough luck.
-+			 */
-+			put_user(0, tsk->clear_child_tid);
-+			sys_futex(tsk->clear_child_tid, FUTEX_WAKE,
-+					1, NULL, NULL, 0);
-+		}
- 		tsk->clear_child_tid = NULL;
--
--		/*
--		 * We don't check the error code - if userspace has
--		 * not set up a proper pointer then tough luck.
--		 */
--		put_user(0, tidptr);
--		sys_futex(tidptr, FUTEX_WAKE, 1, NULL, NULL, 0);
- 	}
- }
- 
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -321,6 +321,7 @@ config THINKPAD_ACPI_DOCK
+ 	bool "Legacy Docking Station Support"
+ 	depends on THINKPAD_ACPI
+ 	depends on ACPI_DOCK=n
++	depends on BROKEN
+ 	default n
+ 	---help---
+ 	  Allows the thinkpad_acpi driver to handle docking station events.
+@@ -334,7 +335,8 @@ config THINKPAD_ACPI_DOCK
+ config THINKPAD_ACPI_BAY
+ 	bool "Legacy Removable Bay Support"
+ 	depends on THINKPAD_ACPI
+-	default y
++	depends on BROKEN
++	default n
+ 	---help---
+ 	  Allows the thinkpad_acpi driver to handle removable bays.  It will
+ 	  electrically disable the device in the bay, and also generate
 
 
