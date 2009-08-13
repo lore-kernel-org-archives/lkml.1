@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbZHMUFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbZHMUIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbZHMUFX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932254AbZHMT75
+	id S1756122AbZHMUIj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932153AbZHMT7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:59:57 -0400
-Received: from kroah.org ([198.145.64.141]:41879 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:59:40 -0400
+Received: from kroah.org ([198.145.64.141]:41750 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932229AbZHMT74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:56 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:32 2009
-Message-Id: <20090813195132.283752239@mini.kroah.org>
+	id S932120AbZHMT7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:38 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:29 2009
+Message-Id: <20090813195129.458122866@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:27 -0700
+Date: Thu, 13 Aug 2009 12:50:08 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Roel Kluin <roel.kluin@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 52/74] atl1c: add missing parentheses
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 33/74] cfg80211: add two missing NULL pointer checks
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=atl1c-add-missing-parentheses.patch
+Content-Disposition: inline; filename=cfg80211-add-two-missing-null-pointer-checks.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,48 +31,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: roel kluin <roel.kluin@gmail.com>
+From: Johannes Berg <johannes@sipsolutions.net>
 
-commit c5ad4f592e27d782faea0a787d9181f192a69ef0 upstream.
+commit cd3468bad96c00b5a512f551674f36776129520e upstream.
 
-Parentheses are required or the comparison occurs before the bitand.
+These pointers can be NULL, the is_mesh() case isn't
+ever hit in the current kernel, but cmp_ies() can be
+hit under certain conditions.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/atl1c/atl1c.h |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ net/wireless/scan.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/drivers/net/atl1c/atl1c.h
-+++ b/drivers/net/atl1c/atl1c.h
-@@ -188,14 +188,14 @@ struct atl1c_tpd_ext_desc {
- #define RRS_HDS_TYPE_DATA	2
+--- a/net/wireless/scan.c
++++ b/net/wireless/scan.c
+@@ -118,7 +118,7 @@ static int cmp_ies(u8 num, u8 *ies1, siz
  
- #define RRS_IS_NO_HDS_TYPE(flag) \
--	(((flag) >> (RRS_HDS_TYPE_SHIFT)) & RRS_HDS_TYPE_MASK == 0)
-+	((((flag) >> (RRS_HDS_TYPE_SHIFT)) & RRS_HDS_TYPE_MASK) == 0)
+ 	if (!ie1 && !ie2)
+ 		return 0;
+-	if (!ie1)
++	if (!ie1 || !ie2)
+ 		return -1;
  
- #define RRS_IS_HDS_HEAD(flag) \
--	(((flag) >> (RRS_HDS_TYPE_SHIFT)) & RRS_HDS_TYPE_MASK == \
-+	((((flag) >> (RRS_HDS_TYPE_SHIFT)) & RRS_HDS_TYPE_MASK) == \
- 			RRS_HDS_TYPE_HEAD)
+ 	r = memcmp(ie1 + 2, ie2 + 2, min(ie1[1], ie2[1]));
+@@ -171,6 +171,8 @@ static bool is_mesh(struct cfg80211_bss 
+ 	ie = find_ie(WLAN_EID_MESH_CONFIG,
+ 		     a->information_elements,
+ 		     a->len_information_elements);
++	if (!ie)
++		return false;
+ 	if (ie[1] != IEEE80211_MESH_CONFIG_LEN)
+ 		return false;
  
- #define RRS_IS_HDS_DATA(flag) \
--	(((flag) >> (RRS_HDS_TYPE_SHIFT)) & RRS_HDS_TYPE_MASK == \
-+	((((flag) >> (RRS_HDS_TYPE_SHIFT)) & RRS_HDS_TYPE_MASK) == \
- 			RRS_HDS_TYPE_DATA)
- 
- /* rrs word 3 bit 0:31 */
-@@ -245,7 +245,7 @@ struct atl1c_tpd_ext_desc {
- #define RRS_PACKET_TYPE_802_3  	1
- #define RRS_PACKET_TYPE_ETH	0
- #define RRS_PACKET_IS_ETH(word) \
--	(((word) >> RRS_PACKET_TYPE_SHIFT) & RRS_PACKET_TYPE_MASK == \
-+	((((word) >> RRS_PACKET_TYPE_SHIFT) & RRS_PACKET_TYPE_MASK) == \
- 			RRS_PACKET_TYPE_ETH)
- #define RRS_RXD_IS_VALID(word) \
- 	((((word) >> RRS_RXD_UPDATED_SHIFT) & RRS_RXD_UPDATED_MASK) == 1)
 
 
