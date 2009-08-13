@@ -1,79 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755142AbZHMRT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbZHMR0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755142AbZHMRT4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 13:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbZHMRTz
+	id S1755179AbZHMR0h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 13:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbZHMR0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 13:19:55 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:56523 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752515AbZHMRTz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 13:19:55 -0400
-X-Trace: 242964272/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.105.228/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.105.228
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqEEAKfng0pQKWnk/2dsb2JhbACBUtNMhBkF
-X-IronPort-AV: E=Sophos;i="4.43,375,1246834800"; 
-   d="scan'208";a="242964272"
-Date: Thu, 13 Aug 2009 18:19:32 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Matthew Wilcox <willy@linux.intel.com>
-cc: Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
- slot is freed)
-In-Reply-To: <20090813151312.GA13559@linux.intel.com>
-Message-ID: <Pine.LNX.4.64.0908131746350.8831@sister.anvils>
-References: <200908122007.43522.ngupta@vflare.org>
- <Pine.LNX.4.64.0908122312380.25501@sister.anvils> <20090813151312.GA13559@linux.intel.com>
+	Thu, 13 Aug 2009 13:26:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59559 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754956AbZHMR0f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 13:26:35 -0400
+Message-ID: <4A844ABB.3050001@redhat.com>
+Date: Thu, 13 Aug 2009 13:17:47 -0400
+From: Daniel J Walsh <dwalsh@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090806 Fedora/3.0-3.7.b3.fc12 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Eric Paris <eparis@redhat.com>
+CC: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       sds@tycho.nsa.gov, davem@davemloft.net, shemminger@linux-foundation.org,
+       kees@ubuntu.com, morgan@kernel.org, casey@schaufler-ca.com
+Subject: Re: [PATCH 2/3] security: introducing security_request_module
+References: <20090813033537.27287.18981.stgit@paris.rdu.redhat.com> <20090813033543.27287.95970.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20090813033543.27287.95970.stgit@paris.rdu.redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Aug 2009, Matthew Wilcox wrote:
+On 08/12/2009 11:35 PM, Eric Paris wrote:
+> Calling request_module() will trigger a userspace upcall which will load a
+> new module into the kernel.  This can be a dangerous event if the process
+> able to trigger request_module() is able to control either the modprobe
+> binary or the module binary.  This patch adds a new security hook to
+> request_module() which can be used by an LSM to control a processes ability
+> to call request_module().
 > 
-> So TRIM isn't free, and there's a better way for the drive to find
-> out that the contents of a block no longer matter -- write some new
-> data to it.  So if we just swapped a page in, and we're going to swap
-> something else back out again soon, just write it to the same location
-> instead of to a fresh location.  You've saved a command, and you've
-> saved the drive some work, plus you've allowed other users to continue
-> accessing the drive in the meantime.
+> Signed-off-by: Eric Paris <eparis@redhat.com>
+> ---
 > 
-> I am planning a complete overhaul of the discard work.  Users can send
-> down discard requests as frequently as they like.  The block layer will
-> cache them, and invalidate them if writes come through.  Periodically,
-> the block layer will send down a TRIM or an UNMAP (depending on the
-> underlying device) and get rid of the blocks that have remained unwanted
-> in the interim.
+>  include/linux/security.h |   10 ++++++++++
+>  kernel/kmod.c            |    4 ++++
+>  security/capability.c    |    6 ++++++
+>  security/security.c      |    5 +++++
+>  4 files changed, 25 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/security.h b/include/linux/security.h
+> index d5f6578..34c5465 100644
+> --- a/include/linux/security.h
+> +++ b/include/linux/security.h
+> @@ -678,6 +678,9 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
+>   *	@inode points to the inode to use as a reference.
+>   *	The current task must be the one that nominated @inode.
+>   *	Return 0 if successful.
+> + * @kernel_module_request:
+> + *	Ability to trigger the kernel to automatically upcall to userspace for
+> + *	userspace to load a kernel module with the given name.
+>   * @task_setuid:
+>   *	Check permission before setting one or more of the user identity
+>   *	attributes of the current process.  The @flags parameter indicates
+> @@ -1500,6 +1503,7 @@ struct security_operations {
+>  	void (*cred_commit)(struct cred *new, const struct cred *old);
+>  	int (*kernel_act_as)(struct cred *new, u32 secid);
+>  	int (*kernel_create_files_as)(struct cred *new, struct inode *inode);
+> +	int (*kernel_module_request)(void);
+>  	int (*task_setuid) (uid_t id0, uid_t id1, uid_t id2, int flags);
+>  	int (*task_fix_setuid) (struct cred *new, const struct cred *old,
+>  				int flags);
+> @@ -1755,6 +1759,7 @@ int security_prepare_creds(struct cred *new, const struct cred *old, gfp_t gfp);
+>  void security_commit_creds(struct cred *new, const struct cred *old);
+>  int security_kernel_act_as(struct cred *new, u32 secid);
+>  int security_kernel_create_files_as(struct cred *new, struct inode *inode);
+> +int security_kernel_module_request(void);
+>  int security_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags);
+>  int security_task_fix_setuid(struct cred *new, const struct cred *old,
+>  			     int flags);
+> @@ -2306,6 +2311,11 @@ static inline int security_kernel_create_files_as(struct cred *cred,
+>  	return 0;
+>  }
+>  
+> +static inline int security_kernel_module_request(void)
+> +{
+> +	return 0;
+> +}
+> +
+>  static inline int security_task_setuid(uid_t id0, uid_t id1, uid_t id2,
+>  				       int flags)
+>  {
+> diff --git a/kernel/kmod.c b/kernel/kmod.c
+> index 385c31a..5a7ae57 100644
+> --- a/kernel/kmod.c
+> +++ b/kernel/kmod.c
+> @@ -78,6 +78,10 @@ int __request_module(bool wait, const char *fmt, ...)
+>  #define MAX_KMOD_CONCURRENT 50	/* Completely arbitrary value - KAO */
+>  	static int kmod_loop_msg;
+>  
+> +	ret = security_kernel_module_request();
+> +	if (ret)
+> +		return ret;
+> +
+>  	va_start(args, fmt);
+>  	ret = vsnprintf(module_name, MODULE_NAME_LEN, fmt, args);
+>  	va_end(args);
+> diff --git a/security/capability.c b/security/capability.c
+> index 4f23f4f..06400cf 100644
+> --- a/security/capability.c
+> +++ b/security/capability.c
+> @@ -396,6 +396,11 @@ static int cap_kernel_create_files_as(struct cred *new, struct inode *inode)
+>  	return 0;
+>  }
+>  
+> +static int cap_kernel_module_request(void)
+> +{
+> +	return 0;
+> +}
+> +
+>  static int cap_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags)
+>  {
+>  	return 0;
+> @@ -961,6 +966,7 @@ void security_fixup_ops(struct security_operations *ops)
+>  	set_to_cap_if_null(ops, cred_commit);
+>  	set_to_cap_if_null(ops, kernel_act_as);
+>  	set_to_cap_if_null(ops, kernel_create_files_as);
+> +	set_to_cap_if_null(ops, kernel_module_request);
+>  	set_to_cap_if_null(ops, task_setuid);
+>  	set_to_cap_if_null(ops, task_fix_setuid);
+>  	set_to_cap_if_null(ops, task_setgid);
+> diff --git a/security/security.c b/security/security.c
+> index b98c684..f88eaf6 100644
+> --- a/security/security.c
+> +++ b/security/security.c
+> @@ -709,6 +709,11 @@ int security_kernel_create_files_as(struct cred *new, struct inode *inode)
+>  	return security_ops->kernel_create_files_as(new, inode);
+>  }
+>  
+> +int security_kernel_module_request(void)
+> +{
+> +	return security_ops->kernel_module_request();
+> +}
+> +
+>  int security_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags)
+>  {
+>  	return security_ops->task_setuid(id0, id1, id2, flags);
+> 
+Every domain that I know of that currently causes this sys_module has net_admin privs, so this will allow us to run a tighter policy.
 
-Very interesting report, thanks a lot for it.  Certainly your
-good point about writes should dictate some change at the swap end.
 
-I have assumed all along (even from just a block layer perspective)
-that discard would entail more overhead than I really want, just to
-say "forget about it": I never expected that discarding a page at a
-time would be a sensible way to proceed.
-
-So at present swap tends to be discarding a 1MB range at a time.
-And even if we have to move the point of discard much closer to
-freeing swap, it would still be trying for such amounts - when
-a process is exiting, even given the accumulation you propose,
-I would not want to be trying to allocate lots of bios to pass
-the info down to you.
-
-So it looks as if we'd be duplicating work.
-And won't filesystems be discarding extents too?
-
-Hugh
