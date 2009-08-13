@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932180AbZHMT7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbZHMUAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932180AbZHMT7m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:59:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932140AbZHMT7j
+	id S932275AbZHMUAA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932246AbZHMT74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:59:39 -0400
-Received: from kroah.org ([198.145.64.141]:41741 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:59:56 -0400
+Received: from kroah.org ([198.145.64.141]:41869 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932110AbZHMT7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:36 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:29 2009
-Message-Id: <20090813195129.165986932@mini.kroah.org>
+	id S932245AbZHMT7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:54 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:32 2009
+Message-Id: <20090813195131.992427366@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:06 -0700
+Date: Thu, 13 Aug 2009 12:50:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [patch 31/74] tracing: Fix missing function_graph events when we splice_read from trace_pipe
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 50/74] ieee1394: sbp2: add support for disks >2 TB (and 16 bytes long CDBs)
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=tracing-fix-missing-function_graph-events-when-we-splice_read-from-trace_pipe.patch
+Content-Disposition: inline; filename=ieee1394-sbp2-add-support-for-disks-2-tb.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,70 +30,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-commit 74e7ff8c50b6b022e6ffaa736b16a4dc161d3eaf upstream.
+Commit ebbb16bffa646f853899ef3fdc0ac7abab888703 upstream.
 
-About a half events are missing when we splice_read
-from trace_pipe. They are unexpectedly consumed because we ignore
-the TRACE_TYPE_NO_CONSUME return value used by the function graph
-tracer when it needs to consume the events by itself to walk on
-the ring buffer.
+Increase the command ORB data structure to transport up to 16 bytes long
+CDBs (instead of 12 bytes), and tell the SCSI mid layer about it.  This
+is notably necessary for READ CAPACITY(16) and friends, i.e. support of
+large disks.
 
-The same problem appears with ftrace_dump()
-
-Example of an output before this patch:
-
-1)               |      ktime_get_real() {
-1)   2.846 us    |          read_hpet();
-1)   4.558 us    |        }
-1)   6.195 us    |      }
-
-After this patch:
-
-0)               |      ktime_get_real() {
-0)               |        getnstimeofday() {
-0)   1.960 us    |          read_hpet();
-0)   3.597 us    |        }
-0)   5.196 us    |      }
-
-The fix also applies on 2.6.30
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <4A6EEC52.90704@cn.fujitsu.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- kernel/trace/trace.c |   10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ drivers/ieee1394/sbp2.c |    1 +
+ drivers/ieee1394/sbp2.h |    8 +++++++-
+ 2 files changed, 8 insertions(+), 1 deletion(-)
 
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2993,7 +2993,8 @@ tracing_fill_pipe_page(size_t rem, struc
- 			break;
- 		}
+--- a/drivers/ieee1394/sbp2.c
++++ b/drivers/ieee1394/sbp2.c
+@@ -880,6 +880,7 @@ static struct sbp2_lu *sbp2_alloc_device
+ 	}
  
--		trace_consume(iter);
-+		if (ret != TRACE_TYPE_NO_CONSUME)
-+			trace_consume(iter);
- 		rem -= count;
- 		if (!find_next_entry_inc(iter))	{
- 			rem = 0;
-@@ -4122,8 +4123,11 @@ static void __ftrace_dump(bool disable_t
- 		iter.pos = -1;
+ 	shost->hostdata[0] = (unsigned long)lu;
++	shost->max_cmd_len = SBP2_MAX_CDB_SIZE;
  
- 		if (find_next_entry_inc(&iter) != NULL) {
--			print_trace_line(&iter);
--			trace_consume(&iter);
-+			int ret;
+ 	if (!scsi_add_host(shost, &ud->device)) {
+ 		lu->shost = shost;
+--- a/drivers/ieee1394/sbp2.h
++++ b/drivers/ieee1394/sbp2.h
+@@ -25,6 +25,12 @@
+ #define SBP2_DEVICE_NAME		"sbp2"
+ 
+ /*
++ * There is no transport protocol limit to the CDB length,  but we implement
++ * a fixed length only.  16 bytes is enough for disks larger than 2 TB.
++ */
++#define SBP2_MAX_CDB_SIZE		16
 +
-+			ret = print_trace_line(&iter);
-+			if (ret != TRACE_TYPE_NO_CONSUME)
-+				trace_consume(&iter);
- 		}
++/*
+  * SBP-2 specific definitions
+  */
  
- 		trace_printk_seq(&iter.seq);
+@@ -51,7 +57,7 @@ struct sbp2_command_orb {
+ 	u32 data_descriptor_hi;
+ 	u32 data_descriptor_lo;
+ 	u32 misc;
+-	u8 cdb[12];
++	u8 cdb[SBP2_MAX_CDB_SIZE];
+ } __attribute__((packed));
+ 
+ #define SBP2_LOGIN_REQUEST		0x0
 
 
