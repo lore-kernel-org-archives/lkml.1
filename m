@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbZHMUJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932136AbZHMT7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932227AbZHMUJX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932170AbZHMUJR
+	id S932136AbZHMT7i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932111AbZHMT7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:09:17 -0400
-Received: from kroah.org ([198.145.64.141]:41756 "EHLO coco.kroah.org"
+	Thu, 13 Aug 2009 15:59:37 -0400
+Received: from kroah.org ([198.145.64.141]:41726 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932146AbZHMT7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:59:39 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:29 2009
-Message-Id: <20090813195129.603296702@mini.kroah.org>
+	id S932065AbZHMT7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 15:59:34 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Aug 13 12:51:28 2009
+Message-Id: <20090813195128.703325684@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 13 Aug 2009 12:50:09 -0700
+Date: Thu, 13 Aug 2009 12:50:03 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 34/74] posix-timers: Fix oops in clock_nanosleep() with CLOCK_MONOTONIC_RAW
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Len Brown <len.brown@intel.com>
+Subject: [patch 28/74] thinkpad-acpi: fix incorrect use of TPACPI_BRGHT_MODE_ECNVRAM
 References: <20090813194935.985368088@mini.kroah.org>
-Content-Disposition: inline; filename=posix-timers-fix-oops-in-clock_nanosleep-with-clock_monotonic_raw.patch
+Content-Disposition: inline; filename=thinkpad-acpi-fix-incorrect-use-of-tpacpi_brght_mode_ecnvram.patch
 In-Reply-To: <20090813195705.GA22393@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,48 +31,130 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-commit 70d715fd0597f18528f389b5ac59102263067744 upstream.
+commit 59fe4fe34d7afdf63208124f313be9056feaa2f4 upstream.
 
-Prevent calling do_nanosleep() with clockid
-CLOCK_MONOTONIC_RAW, it may cause oops, such as NULL pointer
-dereference.
+HBRV-based default selection of backlight control strategy didn't work
+well, at least the X41 defines it but doesn't use it and I don't think
+it will stop there.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: John Stultz <johnstul@us.ibm.com>
-LKML-Reference: <4A764FF3.50607@ct.jp.nec.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Switch to a white/blacklist.  All models that have HBRV defined have
+been included in the list, and initially all ATI GPUs will get
+ECNVRAM, and the Intel GPUs will get UCMS_STEP.
+
+Symptoms of incorrect backlight mode selection are:
+
+1. Non-working backlight control through sysfs;
+
+2. Backlight gets reset to the lowest level at every shutdown, reboot
+   and when thinkpad-acpi gets unloaded;
+
+This fixes a regression in 2.6.30, bugzilla #13826
+
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Reported-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/posix-timers.c |    7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/platform/x86/thinkpad_acpi.c |   61 ++++++++++++++++++++++++++---------
+ 1 file changed, 47 insertions(+), 14 deletions(-)
 
---- a/kernel/posix-timers.c
-+++ b/kernel/posix-timers.c
-@@ -202,6 +202,12 @@ static int no_timer_create(struct k_itim
- 	return -EOPNOTSUPP;
- }
+--- a/drivers/platform/x86/thinkpad_acpi.c
++++ b/drivers/platform/x86/thinkpad_acpi.c
+@@ -5757,14 +5757,48 @@ static struct backlight_ops ibm_backligh
  
-+static int no_nsleep(const clockid_t which_clock, int flags,
-+		     struct timespec *tsave, struct timespec __user *rmtp)
-+{
-+	return -EOPNOTSUPP;
-+}
+ /* --------------------------------------------------------------------- */
+ 
++/*
++ * These are only useful for models that have only one possibility
++ * of GPU.  If the BIOS model handles both ATI and Intel, don't use
++ * these quirks.
++ */
++#define TPACPI_BRGHT_Q_NOEC	0x0001	/* Must NOT use EC HBRV */
++#define TPACPI_BRGHT_Q_EC	0x0002  /* Should or must use EC HBRV */
++#define TPACPI_BRGHT_Q_ASK	0x8000	/* Ask for user report */
 +
- /*
-  * Return nonzero if we know a priori this clockid_t value is bogus.
-  */
-@@ -254,6 +260,7 @@ static __init int init_posix_timers(void
- 		.clock_get = posix_get_monotonic_raw,
- 		.clock_set = do_posix_clock_nosettime,
- 		.timer_create = no_timer_create,
-+		.nsleep = no_nsleep,
- 	};
++static const struct tpacpi_quirk brightness_quirk_table[] __initconst = {
++	/* Models with ATI GPUs known to require ECNVRAM mode */
++	TPACPI_Q_IBM('1', 'Y', TPACPI_BRGHT_Q_EC),	/* T43/p ATI */
++
++	/* Models with ATI GPUs (waiting confirmation) */
++	TPACPI_Q_IBM('1', 'R', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
++	TPACPI_Q_IBM('1', 'Q', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
++	TPACPI_Q_IBM('7', '6', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
++	TPACPI_Q_IBM('7', '8', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
++
++	/* Models with Intel Extreme Graphics 2 (waiting confirmation) */
++	TPACPI_Q_IBM('1', 'V', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
++	TPACPI_Q_IBM('1', 'W', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
++	TPACPI_Q_IBM('1', 'U', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
++
++	/* Models with Intel GMA900 */
++	TPACPI_Q_IBM('7', '0', TPACPI_BRGHT_Q_NOEC),	/* T43, R52 */
++	TPACPI_Q_IBM('7', '4', TPACPI_BRGHT_Q_NOEC),	/* X41 */
++	TPACPI_Q_IBM('7', '5', TPACPI_BRGHT_Q_NOEC),	/* X41 Tablet */
++};
++
+ static int __init brightness_init(struct ibm_init_struct *iibm)
+ {
+ 	int b;
++	unsigned long quirks;
  
- 	register_posix_clock(CLOCK_REALTIME, &clock_realtime);
+ 	vdbg_printk(TPACPI_DBG_INIT, "initializing brightness subdriver\n");
+ 
+ 	mutex_init(&brightness_mutex);
+ 
++	quirks = tpacpi_check_quirks(brightness_quirk_table,
++				ARRAY_SIZE(brightness_quirk_table));
++
+ 	/*
+ 	 * We always attempt to detect acpi support, so as to switch
+ 	 * Lenovo Vista BIOS to ACPI brightness mode even if we are not
+@@ -5821,23 +5855,13 @@ static int __init brightness_init(struct
+ 	/* TPACPI_BRGHT_MODE_AUTO not implemented yet, just use default */
+ 	if (brightness_mode == TPACPI_BRGHT_MODE_AUTO ||
+ 	    brightness_mode == TPACPI_BRGHT_MODE_MAX) {
+-		if (thinkpad_id.vendor == PCI_VENDOR_ID_IBM) {
+-			/*
+-			 * IBM models that define HBRV probably have
+-			 * EC-based backlight level control
+-			 */
+-			if (acpi_evalf(ec_handle, NULL, "HBRV", "qd"))
+-				/* T40-T43, R50-R52, R50e, R51e, X31-X41 */
+-				brightness_mode = TPACPI_BRGHT_MODE_ECNVRAM;
+-			else
+-				/* all other IBM ThinkPads */
+-				brightness_mode = TPACPI_BRGHT_MODE_UCMS_STEP;
+-		} else
+-			/* All Lenovo ThinkPads */
++		if (quirks & TPACPI_BRGHT_Q_EC)
++			brightness_mode = TPACPI_BRGHT_MODE_ECNVRAM;
++		else
+ 			brightness_mode = TPACPI_BRGHT_MODE_UCMS_STEP;
+ 
+ 		dbg_printk(TPACPI_DBG_BRGHT,
+-			   "selected brightness_mode=%d\n",
++			   "driver auto-selected brightness_mode=%d\n",
+ 			   brightness_mode);
+ 	}
+ 
+@@ -5858,6 +5882,15 @@ static int __init brightness_init(struct
+ 	vdbg_printk(TPACPI_DBG_INIT | TPACPI_DBG_BRGHT,
+ 			"brightness is supported\n");
+ 
++	if (quirks & TPACPI_BRGHT_Q_ASK) {
++		printk(TPACPI_NOTICE
++			"brightness: will use unverified default: "
++			"brightness_mode=%d\n", brightness_mode);
++		printk(TPACPI_NOTICE
++			"brightness: please report to %s whether it works well "
++			"or not on your ThinkPad\n", TPACPI_MAIL);
++	}
++
+ 	ibm_backlight_device->props.max_brightness =
+ 				(tp_features.bright_16levels)? 15 : 7;
+ 	ibm_backlight_device->props.brightness = b & TP_EC_BACKLIGHT_LVLMSK;
 
 
