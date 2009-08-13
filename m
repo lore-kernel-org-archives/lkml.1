@@ -1,81 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbZHMMbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbZHMMbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754449AbZHMMbn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 08:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZHMMbm
+	id S1754475AbZHMMbq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 08:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbZHMMbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 08:31:42 -0400
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:22056
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751498AbZHMMbm (ORCPT
+	Thu, 13 Aug 2009 08:31:45 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:58604 "EHLO
+	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754451AbZHMMbn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 08:31:42 -0400
-X-SpamScore: 11
-X-BigFish: VPS11(zza4b1ozz1202hzz5a6ciz32i203h43j62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KOBESJ-03-GL6-01
+	Thu, 13 Aug 2009 08:31:43 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i203h43j65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0KOBESH-03-GL4-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: kjwinchester@gmail.com
 CC: mikpe@it.uu.se, <mingo@elte.hu>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] x86: Clear incorrectly forced X86_FEATURE_LAHF_LM flag
-Date: Thu, 13 Aug 2009 14:31:27 +0200
-Message-ID: <1250166687-17673-2-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 1/2] x86, msr: Add an AMD wrmsr with exception handling
+Date: Thu, 13 Aug 2009 14:31:26 +0200
+Message-ID: <1250166687-17673-1-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <20090813122337.GB7029@aftab>
 References: <20090813122337.GB7029@aftab>
-X-OriginalArrivalTime: 13 Aug 2009 12:31:29.0082 (UTC) FILETIME=[FB5F29A0:01CA1C11]
+X-OriginalArrivalTime: 13 Aug 2009 12:31:28.0785 (UTC) FILETIME=[FB31D810:01CA1C11]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kevin Winchester <kjwinchester@gmail.com>
+While at it, convert native_read_msr_amd_safe to using named inline asm
+parameters as the rest of the functions.
 
-Due to an erratum with certain AMD Athlon 64 processors, the BIOS may
-need to force enable the LAHF_LM capability.  Unfortunately, in at
-least one case, the BIOS does this even for processors that do not
-support the functionality.
-
-Add a specific check that will clear the feature bit for processors
-known not to support the LAHF/SAHF instructions.
-
-Borislav: turn off cpuid bit.
-
-Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- arch/x86/kernel/cpu/amd.c |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/msr.h |   32 ++++++++++++++++++++++++++++----
+ 1 files changed, 28 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index e2485b0..9cd6fc7 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -400,6 +400,22 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- 		level = cpuid_eax(1);
- 		if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
- 			set_cpu_cap(c, X86_FEATURE_REP_GOOD);
+diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
+index 48ad9d2..3ea381b 100644
+--- a/arch/x86/include/asm/msr.h
++++ b/arch/x86/include/asm/msr.h
+@@ -76,14 +76,14 @@ static inline unsigned long long native_read_msr_amd_safe(unsigned int msr,
+ {
+ 	DECLARE_ARGS(val, low, high);
+ 
+-	asm volatile("2: rdmsr ; xor %0,%0\n"
++	asm volatile("2: rdmsr ; xor %[err],%[err]\n"
+ 		     "1:\n\t"
+ 		     ".section .fixup,\"ax\"\n\t"
+-		     "3:  mov %3,%0 ; jmp 1b\n\t"
++		     "3:  mov %[fault],%[err] ; jmp 1b\n\t"
+ 		     ".previous\n\t"
+ 		     _ASM_EXTABLE(2b, 3b)
+-		     : "=r" (*err), EAX_EDX_RET(val, low, high)
+-		     : "c" (msr), "D" (0x9c5a203a), "i" (-EFAULT));
++		     : [err] "=r" (*err), EAX_EDX_RET(val, low, high)
++		     : "c" (msr), "D" (0x9c5a203a), [fault] "i" (-EFAULT));
+ 	return EAX_EDX_VAL(val, low, high);
+ }
+ 
+@@ -111,6 +111,25 @@ notrace static inline int native_write_msr_safe(unsigned int msr,
+ 	return err;
+ }
+ 
++static inline unsigned long long native_write_msr_amd_safe(unsigned int msr,
++							   unsigned low,
++							   unsigned high)
++{
++	int err;
++	asm volatile("2: wrmsr ; xor %[err],%[err]\n"
++		     "1:\n\t"
++		     ".section .fixup,\"ax\"\n\t"
++		     "3:  mov %[fault],%[err] ; jmp 1b\n\t"
++		     ".previous\n\t"
++		     _ASM_EXTABLE(2b, 3b)
++		     : [err] "=a" (err)
++		     : "c" (msr), "0" (low), "d" (high), [fault] "i" (-EFAULT),
++		       "D" (0x9c5a203a)
++		     : "memory");
++	return err;
 +
-+		/*
-+		 * Some BIOSes incorrectly force this feature, but only K8
-+		 * revision D (model = 0x14) and later actually support it.
-+		 */
-+		if (c->x86_model < 0x14) {
-+			u64 val;
++}
 +
-+			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
-+			if (!rdmsrl_amd_safe(0xc001100d, &val)) {
-+				val &= ~(1ULL << 32);
-+				wrmsr_amd_safe(0xc001100d, (u32) val,
-+							   (u32)(val >> 32));
-+			}
-+		}
+ extern unsigned long long native_read_tsc(void);
+ 
+ static __always_inline unsigned long long __native_read_tsc(void)
+@@ -164,6 +183,11 @@ static inline int wrmsr_safe(unsigned msr, unsigned low, unsigned high)
+ 	return native_write_msr_safe(msr, low, high);
+ }
+ 
++static inline int wrmsr_amd_safe(unsigned msr, unsigned low, unsigned high)
++{
++	return native_write_msr_amd_safe(msr, low, high);
++}
 +
- 	}
- 	if (c->x86 == 0x10 || c->x86 == 0x11)
- 		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
+ /* rdmsr with exception handling */
+ #define rdmsr_safe(msr, p1, p2)					\
+ ({								\
 -- 
 1.6.3.3
 
