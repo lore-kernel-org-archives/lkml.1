@@ -1,126 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932373AbZHMUZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932397AbZHMUZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932373AbZHMUZn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 16:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755790AbZHMUZm
+	id S932397AbZHMUZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 16:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932378AbZHMUZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 16:25:42 -0400
-Received: from www.tglx.de ([62.245.132.106]:52846 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753169AbZHMUZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 16:25:41 -0400
-Date: Thu, 13 Aug 2009 22:24:56 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [GIT pull] genirq fixes for 2.6.31
-In-Reply-To: <alpine.LFD.2.01.0908131259340.28882@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0908132219070.1283@localhost.localdomain>
-References: <alpine.LFD.2.00.0908132100210.1283@localhost.localdomain> <alpine.LFD.2.01.0908131211550.28882@localhost.localdomain> <alpine.LFD.2.00.0908132145340.1283@localhost.localdomain> <alpine.LFD.2.01.0908131259340.28882@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 13 Aug 2009 16:25:55 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:55869 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932374AbZHMUZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 16:25:54 -0400
+Date: Thu, 13 Aug 2009 22:25:48 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Avi Kivity <avi@redhat.com>, Minchan Kim <minchan.kim@gmail.com>,
+       kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Wu Fengguang <fengguang.wu@intel.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, netdev@vger.kernel.org
+Subject: Re: Page allocation failures in guest
+Message-ID: <20090813222548.5e0743dd@mjolnir.ossman.eu>
+In-Reply-To: <200908121501.53167.rusty@rustcorp.com.au>
+References: <20090713115158.0a4892b0@mjolnir.ossman.eu>
+	<4A811545.5090209@redhat.com>
+	<200908121249.51973.rusty@rustcorp.com.au>
+	<200908121501.53167.rusty@rustcorp.com.au>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-22484-1250195153-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Aug 2009, Linus Torvalds wrote:
-> On Thu, 13 Aug 2009, Thomas Gleixner wrote:
-> > What guarantees that the compiler does not dereference action->thread
-> > twice and the action->thread = NULL; operation happens between the
-> > check and the wake_up_process() call? I might be paranoid, but ...
-> 
-> Aren't we holding the lock here?
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-No, we don't. The lock is dropped before handle_IRQ_event() is called.
- 
-> And if we are _not_ holding the lock, then it's racy anyway, and the right 
-> fix is the other one I suggested:
-> 
-> > > Or, alternatively, just move all the "clear action->thread" in free_irq() 
-> > > to after having done the "synchronize_irq()" thing, and then - afaik - 
-> > > you'll not need that test at all, because you're guaranteed that as long 
-> > > as you're in an interrupt handler, the thing shouldn't be cleared.
-> > 
-> > Right, I looked at that as well, but we need to do it different than
-> > just calling synchronize_irq(), as we need to keep desc->lock after we
-> > established that no interrupt is in progress. Otherwise we can run
-> > into the same problem which we have right now. Patch below.
-> 
-> But we already _do_ call synchronize_irq().
-> 
-> And no, we'd better not be running into the same problem, becaue dang it, 
-> if we do, then 'action' itself is unreliable (since we'll be doing a 
-> 'kfree()' in it in free_irq())
+--=_freyr.ossman.eu-22484-1250195153-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-action->thread is the thing which became unreliable due to setting it
-to NULL. Yes, I did not think about the fact that we can remove the
-action while the interrupt is in progress on another CPU. So setting
-action->thread to NULL _before_ calling synchronize_irq() is the cause
-for the oops which has been reported.
- 
-> IOW, why not just make the patch do something like the appended? 
-> 
-> NOTE! This is UNTESTED. And I also - on purpose - removed the "set 
-> action->thread to NULL", because we're going to free 'action', so if 
-> anything depends on it, it's already buggy.
+On Wed, 12 Aug 2009 15:01:52 +0930
+Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-Works fine with my test case.
+> On Wed, 12 Aug 2009 12:49:51 pm Rusty Russell wrote:
+> > On Tue, 11 Aug 2009 04:22:53 pm Avi Kivity wrote:
+> > > On 08/11/2009 09:32 AM, Pierre Ossman wrote:
+> > > > I doesn't get out of it though, or at least the virtio net driver
+> > > > wedges itself.
+> >=20
+> > There's a fixme to retry when this happens, but this is the first report
+> > I've received.  I'll check it out.
+>=20
+> Subject: virtio: net refill on out-of-memory
+>=20
+> If we run out of memory, use keventd to fill the buffer.  There's a
+> report of this happening: "Page allocation failures in guest",
+> Message-ID: <20090713115158.0a4892b0@mjolnir.ossman.eu>
+>=20
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+>=20
 
-> What am I missing?
+Patch applied. Now we wait. :)
 
-Nothing, as far as I can tell.
+--=20
+     -- Pierre Ossman
 
-Acked-by-me.
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
-	tglx
+--=_freyr.ossman.eu-22484-1250195153-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
-> 
-> ---
->  kernel/irq/manage.c |   17 ++++++++---------
->  1 files changed, 8 insertions(+), 9 deletions(-)
-> 
-> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> index 61c679d..0747f22 100644
-> --- a/kernel/irq/manage.c
-> +++ b/kernel/irq/manage.c
-> @@ -809,9 +809,6 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
->  			desc->chip->disable(irq);
->  	}
->  
-> -	irqthread = action->thread;
-> -	action->thread = NULL;
-> -
->  	spin_unlock_irqrestore(&desc->lock, flags);
->  
->  	unregister_handler_proc(irq, action);
-> @@ -819,12 +816,6 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
->  	/* Make sure it's not being used on another CPU: */
->  	synchronize_irq(irq);
->  
-> -	if (irqthread) {
-> -		if (!test_bit(IRQTF_DIED, &action->thread_flags))
-> -			kthread_stop(irqthread);
-> -		put_task_struct(irqthread);
-> -	}
-> -
->  #ifdef CONFIG_DEBUG_SHIRQ
->  	/*
->  	 * It's a shared IRQ -- the driver ought to be prepared for an IRQ
-> @@ -840,6 +831,14 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
->  		local_irq_restore(flags);
->  	}
->  #endif
-> +
-> +	irqthread = action->thread;
-> +	if (irqthread) {
-> +		if (!test_bit(IRQTF_DIED, &action->thread_flags))
-> +			kthread_stop(irqthread);
-> +		put_task_struct(irqthread);
-> +	}
-> +
->  	return action;
->  }
->  
-> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkqEdtAACgkQ7b8eESbyJLiSPwCgybA1a1vbQ+FPw6x+8eHmHU6c
+X8QAoNy9Ic7yQfwH5H6d8M+IFdO95W1M
+=j4TS
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-22484-1250195153-0001-2--
