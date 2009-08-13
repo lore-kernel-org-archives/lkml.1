@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbZHMSTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754114AbZHMSUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbZHMSTy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 14:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbZHMSTy
+	id S1754114AbZHMSUG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 14:20:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbZHMSUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 14:19:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49675 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751383AbZHMSTx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 14:19:53 -0400
-Date: Thu, 13 Aug 2009 11:16:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Wilcox <willy@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andrew Patterson <andrew.patterson@hp.com>
-Subject: Re: [Regression] PCI resources allocation problem on HP nx6325
-In-Reply-To: <20090811184740.49f52b57@scarran.roarinelk.net>
-Message-ID: <alpine.LFD.2.01.0908131113580.28882@localhost.localdomain>
-References: <200908021619.48285.rjw@sisk.pl> <alpine.LFD.2.01.0908020927410.3352@localhost.localdomain> <20090803165909.GA12824@roarinelk.homelinux.net> <alpine.LFD.2.01.0908041555120.3270@localhost.localdomain> <20090805155102.GA31646@roarinelk.homelinux.net>
- <alpine.LFD.2.01.0908050902300.3390@localhost.localdomain> <alpine.LFD.2.01.0908050931390.3390@localhost.localdomain> <20090805170934.GA32274@roarinelk.homelinux.net> <alpine.LFD.2.01.0908071051300.3390@localhost.localdomain> <alpine.LFD.2.01.0908071116520.3390@localhost.localdomain>
- <20090811184740.49f52b57@scarran.roarinelk.net>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 13 Aug 2009 14:20:04 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:50371 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754016AbZHMSUA (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 14:20:00 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Zhu Yi <yi.zhu@intel.com>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net
+Subject: Re: [ipw3945-devel] mmotm0812 - something in linux-next killed iwl-3945.c
+In-Reply-To: Your message of "Thu, 13 Aug 2009 13:28:19 EDT."
+             <20090813172819.GD2647@tuxdriver.com>
+From: Valdis.Kletnieks@vt.edu
+References: <19728.1250182794@turing-police.cc.vt.edu>
+            <20090813172819.GD2647@tuxdriver.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1250187563_3970P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 13 Aug 2009 14:19:23 -0400
+Message-ID: <28042.1250187563@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1250187563_3970P
+Content-Type: text/plain; charset=us-ascii
 
+On Thu, 13 Aug 2009 13:28:19 EDT, "John W. Linville" said:
+> On Thu, Aug 13, 2009 at 12:59:54PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> > Build bombs out:
+> > 
+> >   CC      drivers/net/wireless/iwlwifi/iwl-3945.o
+> > drivers/net/wireless/iwlwifi/iwl-3945.c: In function 'iwl3945_pass_packet_to_mac80211':
+> > drivers/net/wireless/iwlwifi/iwl-3945.c:580: error: 'hdr' undeclared (first use in this function)
+> > drivers/net/wireless/iwlwifi/iwl-3945.c:580: error: (Each undeclared identifier is reported only once
+> > drivers/net/wireless/iwlwifi/iwl-3945.c:580: error: for each function it appears in.)
+> > make[1]: *** [drivers/net/wireless/iwlwifi/iwl-3945.o] Error 1
 
-On Tue, 11 Aug 2009, Manuel Lauss wrote:
+> > Sorry, don't have a linux-next git tree, so no 'git blame' for what did it.
+> > Hopefully somebody recognizes their handiwork... ;)
 > 
-> > So this patch is not something that I'm going to apply to my tree, but 
-> > it's worth testing out to just verify that yes, I finally understand 
-> > exactly what's going on. Because if I'm right, your warning will now go 
-> > away (and it could be replaced by _other_ issues, of course ;).
-> 
-> The warning is gone, and /proc/iomem is identical to 2.6.30.
-> I'd say you've hit the nail on the head ;)
+> I think this is the LEDS-related build failure, which already has a patch.
 
-Ok, thanks.
+Found Kalle Valo's patch removing the #ifdef's in the linux-wireless
+archives, build is now proceeding thanks...
 
-I'm not going to do anything about it right now, since clearly we've not 
-changed any actual behavior from before. But if you remind me after 2.6.31 
-is out, I'll look at perhaps making a better "pci_claim_resource()" that 
-actually iterates over the different parent resources and doesn't just try 
-to find one (and then fail if that particular one doesn't work out).
+Now to figure out how I managed to trip over it, CONFIG_IWLWIFI_LEDS looks
+like a config option I would have selected...
 
-		Thanks,
-			Linus
+--==_Exmh_1250187563_3970P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKhFkrcC3lWbTT17ARAi0fAJ9OQyXD3P8XXIMNjVTHH5o9gBNhmgCdGi0l
+yBJWPe7t+Nsrkyrzrj7nzvQ=
+=695o
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1250187563_3970P--
