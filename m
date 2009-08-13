@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbZHMLwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbZHML4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753363AbZHMLwf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 07:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbZHMLwe
+	id S1754052AbZHML4X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 07:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbZHML4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 07:52:34 -0400
-Received: from mail.df.lth.se ([194.47.250.12]:57772 "EHLO df.lth.se"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751060AbZHMLwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 07:52:33 -0400
-From: Linus Walleij <linus.walleij@stericsson.com>
-To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul Mundt <lethal@linux-sh.org>,
-       Linus Walleij <linus.walleij@stericsson.com>
-Subject: [PATCH] U300 sched_clock implementation
-Date: Thu, 13 Aug 2009 13:49:38 +0200
-Message-Id: <1250164178-11076-1-git-send-email-linus.walleij@stericsson.com>
-X-Mailer: git-send-email 1.6.2.rc1
+	Thu, 13 Aug 2009 07:56:22 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:57962 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753608AbZHML4W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 07:56:22 -0400
+Date: Thu, 13 Aug 2009 13:56:23 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, heiko.carstens@de.ibm.com
+Subject: Re: inlined spinlocks on sparc64
+Message-ID: <20090813115623.GB12579@kernel.dk>
+References: <20090813082058.GX12579@kernel.dk> <20090813.020812.251047996.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090813.020812.251047996.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds the long debated sched_clock() override for the weak
-in-kernel jiffybased sched_clock(). The implementation is more or
-less identical to the one used in arch/arm/plat-omap/common.c
-and at last attempt to merge this the merge was postponed at the
-request of Peter Zijlstra due to pending discussions regarding
-generalized clocksource-based sched_clock() implementations by
-adding a flag to the clocksource. However that discussion ended
-up with the generic code needing to be rewritten and Paul Mundt
-see no reason not to proceed with this for the time being as it
-can be easily converted once the generic code is in place.
+On Thu, Aug 13 2009, David Miller wrote:
+> From: Jens Axboe <jens.axboe@oracle.com>
+> Date: Thu, 13 Aug 2009 10:20:58 +0200
+> 
+> > I deleted the original thread, so I can't reply there. Just a heads up
+> > on the spinlock inlining on sparc64. I decided to give your patches a
+> > shot, since one of my IO benchmarks here basically degenerates into a
+> > spinlock microbenchmark with > 50% time spent there (unlock part,
+> > according to perf). Some of that is surely caching effects, but still.
+> > 
+> > For this particular workload, I get a net improvement of about 3.5% with
+> > the inlined functions. Not bad.
+> 
+> Doesn't surprise me, any function call can result in a register
+> window spill onto the stack, and that's 128 bytes of writes.
+> 
+> Later when you leave the code path you have to refill that spilled
+> window and you get 128 bytes of reads for each one of those.
 
-Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Mundt <lethal@linux-sh.org>
----
- arch/arm/mach-u300/timer.c |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
+Good thing it's not register starved ;-)
 
-diff --git a/arch/arm/mach-u300/timer.c b/arch/arm/mach-u300/timer.c
-index cce5320..63b5186 100644
---- a/arch/arm/mach-u300/timer.c
-+++ b/arch/arm/mach-u300/timer.c
-@@ -346,6 +346,22 @@ static struct clocksource clocksource_u300_1mhz = {
- 	.flags          = CLOCK_SOURCE_IS_CONTINUOUS,
- };
- 
-+/*
-+ * Override the global weak sched_clock symbol with this
-+ * local implementation which uses the clocksource to get some
-+ * better resolution when scheduling the kernel. We accept that
-+ * this wraps around for now, since it is just a relative time
-+ * stamp. (Inspired by OMAP implementation.)
-+ */
-+unsigned long long notrace sched_clock(void)
-+{
-+	unsigned long long ret;
-+
-+	ret = (unsigned long long) u300_get_cycles(&clocksource_u300_1mhz);
-+	ret = (ret * clocksource_u300_1mhz.mult_orig) >>
-+		clocksource_u300_1mhz.shift;
-+	return ret;
-+}
- 
- /*
-  * This sets up the system timers, clock source and clock event.
+Forgot to mention that it grew my kernel image by exactly 80KB, total
+size is around 5.5MB.
+
 -- 
-1.6.2.1
+Jens Axboe
 
