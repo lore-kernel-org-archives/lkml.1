@@ -1,148 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbZHMR0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188AbZHMR2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755179AbZHMR0h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 13:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbZHMR0g
+	id S1755188AbZHMR2V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 13:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbZHMR2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 13:26:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59559 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754956AbZHMR0f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 13:26:35 -0400
-Message-ID: <4A844ABB.3050001@redhat.com>
-Date: Thu, 13 Aug 2009 13:17:47 -0400
-From: Daniel J Walsh <dwalsh@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090806 Fedora/3.0-3.7.b3.fc12 Thunderbird/3.0b3
+	Thu, 13 Aug 2009 13:28:21 -0400
+Received: from moutng.kundenserver.de ([212.227.17.9]:55461 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752424AbZHMR2U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 13:28:20 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Michael Schnell <mschnell@lumino.de>
+Subject: Re: implementing Futex
+Date: Thu, 13 Aug 2009 19:28:16 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <4A842B32.5030401@lumino.de> <200908131839.41803.arnd@arndb.de>
+In-Reply-To: <200908131839.41803.arnd@arndb.de>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Eric Paris <eparis@redhat.com>
-CC: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       sds@tycho.nsa.gov, davem@davemloft.net, shemminger@linux-foundation.org,
-       kees@ubuntu.com, morgan@kernel.org, casey@schaufler-ca.com
-Subject: Re: [PATCH 2/3] security: introducing security_request_module
-References: <20090813033537.27287.18981.stgit@paris.rdu.redhat.com> <20090813033543.27287.95970.stgit@paris.rdu.redhat.com>
-In-Reply-To: <20090813033543.27287.95970.stgit@paris.rdu.redhat.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908131928.16759.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19yINU5lYD8sdtCSqv7IEgwH9vIYv8+qBUaEaP
+ LLuTD4t1dENaE+pqvDCuk/z3m/5rah31naqqiMYrVy7gtvJUhV
+ lbR7G56ixILR9FFRQsMtg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/12/2009 11:35 PM, Eric Paris wrote:
-> Calling request_module() will trigger a userspace upcall which will load a
-> new module into the kernel.  This can be a dangerous event if the process
-> able to trigger request_module() is able to control either the modprobe
-> binary or the module binary.  This patch adds a new security hook to
-> request_module() which can be used by an LSM to control a processes ability
-> to call request_module().
+On Thursday 13 August 2009, Arnd Bergmann wrote:
+> On Thursday 13 August 2009, Michael Schnell wrote:
+> > I am planning to implement a Futex on the upcoming MMU-enabled NIOS
+> > architecture.
 > 
-> Signed-off-by: Eric Paris <eparis@redhat.com>
-> ---
-> 
->  include/linux/security.h |   10 ++++++++++
->  kernel/kmod.c            |    4 ++++
->  security/capability.c    |    6 ++++++
->  security/security.c      |    5 +++++
->  4 files changed, 25 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/security.h b/include/linux/security.h
-> index d5f6578..34c5465 100644
-> --- a/include/linux/security.h
-> +++ b/include/linux/security.h
-> @@ -678,6 +678,9 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
->   *	@inode points to the inode to use as a reference.
->   *	The current task must be the one that nominated @inode.
->   *	Return 0 if successful.
-> + * @kernel_module_request:
-> + *	Ability to trigger the kernel to automatically upcall to userspace for
-> + *	userspace to load a kernel module with the given name.
->   * @task_setuid:
->   *	Check permission before setting one or more of the user identity
->   *	attributes of the current process.  The @flags parameter indicates
-> @@ -1500,6 +1503,7 @@ struct security_operations {
->  	void (*cred_commit)(struct cred *new, const struct cred *old);
->  	int (*kernel_act_as)(struct cred *new, u32 secid);
->  	int (*kernel_create_files_as)(struct cred *new, struct inode *inode);
-> +	int (*kernel_module_request)(void);
->  	int (*task_setuid) (uid_t id0, uid_t id1, uid_t id2, int flags);
->  	int (*task_fix_setuid) (struct cred *new, const struct cred *old,
->  				int flags);
-> @@ -1755,6 +1759,7 @@ int security_prepare_creds(struct cred *new, const struct cred *old, gfp_t gfp);
->  void security_commit_creds(struct cred *new, const struct cred *old);
->  int security_kernel_act_as(struct cred *new, u32 secid);
->  int security_kernel_create_files_as(struct cred *new, struct inode *inode);
-> +int security_kernel_module_request(void);
->  int security_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags);
->  int security_task_fix_setuid(struct cred *new, const struct cred *old,
->  			     int flags);
-> @@ -2306,6 +2311,11 @@ static inline int security_kernel_create_files_as(struct cred *cred,
->  	return 0;
->  }
->  
-> +static inline int security_kernel_module_request(void)
-> +{
-> +	return 0;
-> +}
-> +
->  static inline int security_task_setuid(uid_t id0, uid_t id1, uid_t id2,
->  				       int flags)
->  {
-> diff --git a/kernel/kmod.c b/kernel/kmod.c
-> index 385c31a..5a7ae57 100644
-> --- a/kernel/kmod.c
-> +++ b/kernel/kmod.c
-> @@ -78,6 +78,10 @@ int __request_module(bool wait, const char *fmt, ...)
->  #define MAX_KMOD_CONCURRENT 50	/* Completely arbitrary value - KAO */
->  	static int kmod_loop_msg;
->  
-> +	ret = security_kernel_module_request();
-> +	if (ret)
-> +		return ret;
-> +
->  	va_start(args, fmt);
->  	ret = vsnprintf(module_name, MODULE_NAME_LEN, fmt, args);
->  	va_end(args);
-> diff --git a/security/capability.c b/security/capability.c
-> index 4f23f4f..06400cf 100644
-> --- a/security/capability.c
-> +++ b/security/capability.c
-> @@ -396,6 +396,11 @@ static int cap_kernel_create_files_as(struct cred *new, struct inode *inode)
->  	return 0;
->  }
->  
-> +static int cap_kernel_module_request(void)
-> +{
-> +	return 0;
-> +}
-> +
->  static int cap_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags)
->  {
->  	return 0;
-> @@ -961,6 +966,7 @@ void security_fixup_ops(struct security_operations *ops)
->  	set_to_cap_if_null(ops, cred_commit);
->  	set_to_cap_if_null(ops, kernel_act_as);
->  	set_to_cap_if_null(ops, kernel_create_files_as);
-> +	set_to_cap_if_null(ops, kernel_module_request);
->  	set_to_cap_if_null(ops, task_setuid);
->  	set_to_cap_if_null(ops, task_fix_setuid);
->  	set_to_cap_if_null(ops, task_setgid);
-> diff --git a/security/security.c b/security/security.c
-> index b98c684..f88eaf6 100644
-> --- a/security/security.c
-> +++ b/security/security.c
-> @@ -709,6 +709,11 @@ int security_kernel_create_files_as(struct cred *new, struct inode *inode)
->  	return security_ops->kernel_create_files_as(new, inode);
->  }
->  
-> +int security_kernel_module_request(void)
-> +{
-> +	return security_ops->kernel_module_request();
-> +}
-> +
->  int security_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags)
->  {
->  	return security_ops->task_setuid(id0, id1, id2, flags);
-> 
-Every domain that I know of that currently causes this sys_module has net_admin privs, so this will allow us to run a tighter policy.
+> Ah, I'm always interested in new architectures. Are you already using
+> all the asm-generic header files that we have in 2.6.31? Please tell
+> me if you find problems with those.
 
+FWIW, I just had a look at git://sopc.et.ntust.edu.tw/git/linux-2.6.
+Is that the one you are working on?
 
+The code there is still based on 2.6.30, which does not yet have
+all the new header file. When you (or someone else) do the port
+to 2.6.31, please go through each header file and see if you can
+change it to use the asm-generic version.
+
+For most of the exported files, that will mean a user space ABI
+change, so you need to rebuild your libc, but it will significantly
+reduce the amount of (duplicate) code in the architecture tree.
+
+	Arnd <><
