@@ -1,164 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZHMTPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbZHMTSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755414AbZHMTPd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 15:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbZHMTPc
+	id S1755425AbZHMTSV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 15:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbZHMTSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 15:15:32 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:59355 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754528AbZHMTPc convert rfc822-to-8bit (ORCPT
+	Thu, 13 Aug 2009 15:18:20 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:42101 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753107AbZHMTST (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 15:15:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=OtrqnPvK8r23Yd/K9wftgx+eBnFJ4LNYIeLhXcAgPW4/Ts9oVGbY6Hlx1lxjuaFLzq
-         9CjwPLgDDLX1I2gkJBL/RHKgEKgS/8lgnL+7BkODv0iRZePz/18zQ7seegOb6Sk5iWLQ
-         /xSIQMD5bU602+natg+8QxuofZc0Ctu3EPVdw=
-MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <20090813094635.GA26612@elte.hu>
-References: <7c86c4470908110841wca07382gf7487c0ed55909f2@mail.gmail.com>
-	 <1250006744.10001.29.camel@twins>
-	 <7c86c4470908111240s58385748wdb3c3e4a0d66a1ea@mail.gmail.com>
-	 <1250024143.7091.7.camel@laptop>
-	 <7c86c4470908111408x256e294i13ac90035fd8f5c8@mail.gmail.com>
-	 <1250065963.10001.30.camel@twins> <20090812090234.GB14114@elte.hu>
-	 <7c86c4470908120522m1eaf891bqb394df072dddc701@mail.gmail.com>
-	 <20090813094635.GA26612@elte.hu>
-Date: Thu, 13 Aug 2009 21:15:31 +0200
-Message-ID: <7c86c4470908131215se9b81d4v18d4d881a70f1aad@mail.gmail.com>
-Subject: Re: perf_counters issue with PERF_SAMPLE_GROUP
-From: stephane eranian <eranian@googlemail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 13 Aug 2009 15:18:19 -0400
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+  slot is freed)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Greg Freemyer <greg.freemyer@gmail.com>
+Cc: david@lang.hm, Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+In-Reply-To: <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>
+References: <200908122007.43522.ngupta@vflare.org>
+	 <Pine.LNX.4.64.0908122312380.25501@sister.anvils>
+	 <20090813151312.GA13559@linux.intel.com>
+	 <20090813162621.GB1915@phenom2.trippelsdorf.de>
+	 <alpine.DEB.1.10.0908130931400.28013@asgard.lang.hm>
+	 <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 13 Aug 2009 19:18:15 +0000
+Message-Id: <1250191095.3901.116.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 11:46 AM, Ingo Molnar<mingo@elte.hu> wrote:
->
-> * stephane eranian <eranian@googlemail.com> wrote:
->
->> On Wed, Aug 12, 2009 at 11:02 AM, Ingo Molnar<mingo@elte.hu> wrote:
->>
->> > Not sure we want to change it. Mixing PID and CPU into the same
->> > space disallows the simultaneous application of both. I.e. right
->> > now we allow 3 models:
->> >
->> >  - PID-ish
->> >  - CPU-ish
->> >  - PID and CPU [say measure CPU#2 component of an inherited workload.]
->>
->> How useful is that last model, especially why only one CPU?
->
-> It's somewhat useful: say on an inherited workload one could 'cut
-> out' just a single CPU worth of samples.
->
-> Or a tool could implement a more scalable sampling model: say on a
-> quad core CPU one could have four counters in an inherited workload:
->
->  cycles:cpu0
->  cycles:cpu1
->  cycles:cpu2
->  cycles:cpu3
->
+On Thu, 2009-08-13 at 14:15 -0400, Greg Freemyer wrote:
+> On Thu, Aug 13, 2009 at 12:33 PM, <david@lang.hm> wrote:
+> > On Thu, 13 Aug 2009, Markus Trippelsdorf wrote:
+> >
+> >> On Thu, Aug 13, 2009 at 08:13:12AM -0700, Matthew Wilcox wrote:
+> >>>
+> >>> I am planning a complete overhaul of the discard work.  Users can send
+> >>> down discard requests as frequently as they like.  The block layer will
+> >>> cache them, and invalidate them if writes come through.  Periodically,
+> >>> the block layer will send down a TRIM or an UNMAP (depending on the
+> >>> underlying device) and get rid of the blocks that have remained unwanted
+> >>> in the interim.
+> >>
+> >> That is a very good idea. I've tested your original TRIM implementation on
+> >> my Vertex yesterday and it was awful ;-). The SSD needs hundreds of
+> >> milliseconds to digest a single TRIM command. And since your
+> >> implementation
+> >> sends a TRIM for each extent of each deleted file, the whole system is
+> >> unusable after a short while.
+> >> An optimal solution would be to consolidate the discard requests, bundle
+> >> them and send them to the drive as infrequent as possible.
+> >
+> > or queue them up and send them when the drive is idle (you would need to
+> > keep track to make sure the space isn't re-used)
+> >
+> > as an example, if you would consider spinning down a drive you don't hurt
+> > performance by sending accumulated trim commands.
+> >
+> > David Lang
+> 
+> An alternate approach is the block layer maintain its own bitmap of
+> used unused sectors / blocks. Unmap commands from the filesystem just
+> cause the bitmap to be updated.  No other effect.
+> 
+> (Big unknown: Where will the bitmap live between reboots?  Require DM
+> volumes so we can have a dedicated bitmap volume in the mix to store
+> the bitmap to? Maybe on mount, the filesystem has to be scanned to
+> initially populate the bitmap?   Other options?)
 
-What would you be able to do with that kind of information?
-How would you modify the program to improve performance?
+I wouldn't really have it live anywhere.  Discard is best effort; it's
+not required for fs integrity.  As long as we don't discard an in-use
+block we're free to do anything else (including forget to discard,
+rediscard a discarded block etc).
 
-> ... and depending on which CPU a sub-process or sub-thread is
-> running on, would the according (nicely per cpu local) sampling
-> buffer be used.
->
->> > Also, i dont really see the use-cases for new targets. (i've
->> > seen a few mentioned but none seemed valid) What new targets do
->> > people have in mind?
->>
->> I seem to recall people mentioned:
->>    1- CPU socket, e.g., uncore PMU
->>    2- chipset
->>    3- GPU
->>
->> I can see 1/ being indirectly achievable by specifying a CPU.
->
-> Correct.
->
-> ( Note, it's not just indirectly achievable as a side-effect - for
->  example the Intel uncore PMU has a target CPU irq-mask, so it
->  makes sense to allow the specification of the specific CPU we are
->  measuring on as well. The physical socket maps from the CPU. )
->
-I know that because I used it to support uncore on perfmon.
-Some people have argued, though, that it could be interesting to
-interrupt all cores at once on uncore overflow. That's one way to know
-where all cores are at the same point in time. I wonder how you could
-support that.
+It is theoretically possible to run all of this from user space using
+the fs mappings, a bit like a defrag command.
+
+One other option would just be to scan on mount, discard everything
+empty and redo on next mount ... this might be just the thing for
+laptops.
+
+> Assuming we have a persistent bitmap in place, have a background
+> scanner that kicks in when the cpu / disk is idle.  It just
+> continuously scans the bitmap looking for contiguous blocks of unused
+> sectors.  Each time it finds one, it sends the largest possible unmap
+> down the block stack and eventually to the device.
+> 
+> When normal cpu / disk activity kicks in, this process goes to sleep.
+> 
+> That way much of the smarts are concentrated in the block layer, not
+> in the filesystem code.  And it is being done when the disk is
+> otherwise idle, so you don't have the ncq interference.
+> 
+> Even laptop users should have enough idle cpu available to manage
+> this.  Enterprise would get the large discards it wants, and
+> unmentioned in the previous discussion, mdraid gets the large discards
+> it also wants.
+> 
+> ie. If a mdraid raid5/raid6 volume is built of SSDs, it will only be
+> able to discard a full stripe at a time. Otherwise the P=D1 ^ D2 logic
+> is lost.
+> 
+> Another benefit of the above is the code should be extremely safe and testable.
+
+Actually, I think, if we go in-kernel, the discard might be better tied
+into the block plugging mechanism.  The real test might be no
+outstanding commands and queue plugged, keep plugged and begin
+discarding.
+
+James
 
 
->> [...] But the others are uncorrelated to either a CPU or thread. I
->> have already seen requests for accessing chipsets, and seems GPU
->> are around the corner now.
->>
->> Why do you think those would be invalid targets given the goal of
->> this API?
->
-> No.
->
-> Chipset and GPU measurements are very much possible via perfcounters
-> as well - but that does not require the touching of the pid,cpu
-> target parameters to sys_perf_counter_open().
->
-> I think the confusion in this discussion comes from the fact that
-> there are two different types of 'targets':
->
-> The first type of target, the <pid,cpu> target is a _scheduling_,
-> task management abstraction. Adding a chipset ID or GPU ID to that
-> makes little sense! Tasks dont get scheduled on a 'chipset' - to
-> each task the chipset looks like an external entity.
->
-> The second type of target is the 'event source itself'. (and it's
-> not really a target but a source.)
->
-> A chipset or GPU should be abstracted via an _event source_
-> abstraction. We've got wide possibilities to do that, and we already
-> abstract a fair amount of non-CPU-sourced events that way: say we
-> have irq tracepoint counters:
->
->  aldebaran:~> perf list 2>&1 | grep irq
->    irq:irq_handler_entry                      [Tracepoint event]
->
-> irqs come from the chipset, so in an (unintended) way perfcounters
-> already instruments the chipset today.
->
-> So yes, both chipset and GPU sampling is very much possible, and it
-> does not require the tweaking of the syscall target parameters -
-> each CPU has a typically symmetric view on it.
->
-
-Except there can be many GPUs, I/O devices and other pieces of
-hardware with PMU-like capabilities in a single system. In that case,
-you need to be able to name them: I want to measure GPUcycles on
-GPU0. When you are down at that level, you don't really care about
-the CPU or thread. So what would you pass for those in that case?
-
-> Note that there's overlap: a CPU can be an event source and a
-> scheduling target as well. I think some of the confusion in
-> terminology comes from that.
->
-> To support chipset or GPU sampling, the perf_type_id and/or the
-> struct perf_counter_attr space can be extended.
->
