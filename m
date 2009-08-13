@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbZHMIvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753776AbZHMIwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753739AbZHMIvZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 04:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbZHMIvZ
+	id S1753776AbZHMIwW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 04:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbZHMIwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 04:51:25 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:57652 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753638AbZHMIvY (ORCPT
+	Thu, 13 Aug 2009 04:52:21 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:33579 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753752AbZHMIwU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 04:51:24 -0400
+	Thu, 13 Aug 2009 04:52:20 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=uGr2LHstdojtg/TQLvA24ASaGDmgirKIHuWfi0mVwh5fW72yt+SJhwx1EtXqKQlrG4
-         RweEmBuvtaxxs8yyvZ9aqip3cTE4glUUgrih2/jw1nHJg4HBFQrMBLatozoQZQXCaNpa
-         2bOkLDSwH+Lv453ylfPev3slTlca1OdTmyAeE=
+        h=mime-version:sender:reply-to:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=dbJGo/oRK9TcbxJsNvSxXZG3VLCV5yVGTIHKRlkAfs5Ja9eDz1L/zMBkH1o3zGNohe
+         9PZpAO3cYKZHzNoOqwV+LXZSNxucO6Pc6rkcF5vUmu+wEK2At4dU4ocVCkyLnpW5oVvs
+         CvtEbuIiOg39P55luAPmaXT3PdS54oa7vwiGY=
 MIME-Version: 1.0
-In-Reply-To: <1250151801.29180.192.camel@macbook.infradead.org>
-References: <3877989d0908122011n27589ff8wfc6d6b50912496c6@mail.gmail.com>
-	 <1250151801.29180.192.camel@macbook.infradead.org>
-Date: Thu, 13 Aug 2009 16:51:25 +0800
-Message-ID: <3877989d0908130151l58a73c8cy77791e8e466280bf@mail.gmail.com>
-Subject: Re: [RFC patch] clean up swiotlb check in intel_iommu_init
-From: Luming Yu <luming.yu@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: "Yu, Fenghua" <fenghua.yu@intel.com>, "Luck, Tony" <tony.luck@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
+Reply-To: q-funk@iki.fi
+In-Reply-To: <u1L1PAbl8zG.A.UBD.ej1fKB@chimera>
+References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera>
+	 <u1L1PAbl8zG.A.UBD.ej1fKB@chimera>
+Date: Thu, 13 Aug 2009 11:52:20 +0300
+X-Google-Sender-Auth: 68057a848154d28a
+Message-ID: <11fae7c70908130152j21f9f183m4f1c49d91fc7a7f9@mail.gmail.com>
+Subject: Re: [Bug #13941] x86 Geode issue
+From: =?UTF-8?Q?Martin=2D=C3=89ric_Racine?= <q-funk@iki.fi>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 4:23 PM, David Woodhouse<dwmw2@infradead.org> wrote:
-> On Thu, 2009-08-13 at 11:11 +0800, Luming Yu wrote:
->>
->> Since swiotlb is an fall back option that might have
->> initialized. We don't need to stop intel_iommu_init
->> because of swiotlb..
->>
->> Please review. If make sense, please apply.
+Yes, this bug is still valid.
+
+Ubuntu kernel team member Leann Ogasawara and I are slowly bisecting
+our way through the changes that took place since 2.6.30 to find the
+commit that introduced this regression. Please stay tuned.
+
+On Mon, Aug 10, 2009 at 12:10 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 >
-> It doesn't apply to the iommu-2.6.git tree.
-
-The patch is against 31-rc5.
-
-If you were not using the attached patch, then I need to use another
-mail client to re-send the patch to you. But it is not as convenient
-as web gmail
-that I'm current using...
-
-If I must generate patch against iommu-2.6.git tree, please point out
-the url of that tree,
-I can refresh this patch later.
-
-Please let me know what I should do to push this patch in..
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13941
+> Subject         : x86 Geode issue
+> Submitter       : Martin-Éric Racine <q-funk@iki.fi>
+> Date            : 2009-08-03 12:58 (7 days old)
+> References      : http://marc.info/?l=linux-kernel&m=124930434732481&w=4
+>
+>
+>
