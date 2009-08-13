@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbZHMPd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbZHMPh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794AbZHMPd1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 11:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbZHMPd0
+	id S1753531AbZHMPh3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 11:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbZHMPh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 11:33:26 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:52813 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752610AbZHMPd0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 11:33:26 -0400
-Date: Thu, 13 Aug 2009 17:33:26 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: state of the fastboot activities?
-Message-ID: <20090813153326.GR13320@pengutronix.de>
-References: <20090813064543.GC13320@pengutronix.de> <4A84194A.5050206@linux.intel.com> <20090813152506.GQ13320@pengutronix.de> <4A84311A.3030901@linux.intel.com>
+	Thu, 13 Aug 2009 11:37:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36822 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751513AbZHMPh2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 11:37:28 -0400
+Message-ID: <4A843331.1020402@redhat.com>
+Date: Thu, 13 Aug 2009 18:37:21 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <4A84311A.3030901@linux.intel.com>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 17:30:10 up 8 days,  2:49, 50 users,  load average: 0.31, 0.34,
-	0.97
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: rsc@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
+References: <cover.1249930169.git.mst@redhat.com> <200908131548.35199.arnd@arndb.de> <20090813144129.GB5080@redhat.com> <200908131653.47029.arnd@arndb.de>
+In-Reply-To: <200908131653.47029.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 08:28:26AM -0700, Arjan van de Ven wrote:
-> > That's bad :-) So there is no room for improvement any more in our
-> > ARM boot sequences ...
+On 08/13/2009 05:53 PM, Arnd Bergmann wrote:
+> On Thursday 13 August 2009, Michael S. Tsirkin wrote:
+>    
+>> The best way to do this IMO would be to add zero copy support to raw
+>> sockets, vhost will then get it basically for free.
+>>      
 >
-> on x86 we're doing pretty well ;-)
+> Yes, that would be nice. I wonder if that could lead to security
+> problems on TX though. I guess It will only bring significant performance
+> improvements if we leave the data writable in the user space or guest
+> during the operation. If the user finds the right timing, it could
+> modify the frame headers after they have been checked using netfilter,
+> or while the frames are being consumed in the kernel (e.g. an NFS
+> server running in a guest).
+>    
 
-On i.MX27 (400 MHz ARM926EJ-S) we currently need 7 s, measured from
-power-on through the kernel up to "starting init". This is with
+IIRC when the kernel consumes data it linearizes the skb.  We just need 
+to make sure all the zerocopy data is in the nonlinear part, and the 
+kernel will copy if/when it needs to access packet data.
 
-- no delay in u-boot-v2
-- rootfs on NAND (UBIFS)
-- quiet
-- precalculated loops-per-jiffy
-- zImage kernel instead of uImage
-
-rsc
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+error compiling committee.c: too many arguments to function
+
