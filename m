@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbZHMJvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbZHMJwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753983AbZHMJvZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 05:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbZHMJvX
+	id S1754012AbZHMJwH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 05:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbZHMJwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 05:51:23 -0400
-Received: from mail.df.lth.se ([194.47.250.12]:55480 "EHLO df.lth.se"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751772AbZHMJvX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 05:51:23 -0400
-From: Linus Walleij <linus.walleij@stericsson.com>
-To: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, dann frazier <dannf@debian.org>,
-       Linus Walleij <linus.walleij@stericsson.com>
-Subject: [PATCH 5/5] MFD AB3100 fix build warning
-Date: Thu, 13 Aug 2009 11:51:04 +0200
-Message-Id: <1250157064-9917-1-git-send-email-linus.walleij@stericsson.com>
-X-Mailer: git-send-email 1.6.2.rc1
+	Thu, 13 Aug 2009 05:52:06 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36740 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753384AbZHMJwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 05:52:05 -0400
+Date: Thu, 13 Aug 2009 11:52:04 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Trevor Keith <tsrk@tsrk.net>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] kbuild: remove extraneous blank line after declaration
+ of usage()
+In-Reply-To: <1248460169.16421.2.camel@tsrk-ibm>
+Message-ID: <alpine.LNX.2.00.0908131151330.25797@wotan.suse.de>
+References: <1248460169.16421.2.camel@tsrk-ibm>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes a build warning in the AB3100 driver reported by
-Stephen Rothwell and Dann Frazier due to a mismatched prototype
-in the ab3100_get_set_reg() file operation callback.
+On Fri, 24 Jul 2009, Trevor Keith wrote:
 
-Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
----
- drivers/mfd/ab3100-core.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> Signed-off-by: Trevor Keith <tsrk@tsrk.net>
+> ---
+>  scripts/basic/fixdep.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> diff --git a/scripts/basic/fixdep.c b/scripts/basic/fixdep.c
+> index d7c1b04..27d0924 100644
+> --- a/scripts/basic/fixdep.c
+> +++ b/scripts/basic/fixdep.c
+> @@ -126,7 +126,6 @@ char *depfile;
+>  char *cmdline;
+>  
+>  static void usage(void)
+> -
+>  {
+>  	fprintf(stderr, "Usage: fixdep <depfile> <target> <cmdline>\n");
+>  	exit(1);
 
-diff --git a/drivers/mfd/ab3100-core.c b/drivers/mfd/ab3100-core.c
-index 16675f7..098e825 100644
---- a/drivers/mfd/ab3100-core.c
-+++ b/drivers/mfd/ab3100-core.c
-@@ -470,7 +470,7 @@ static int ab3100_get_set_reg_open_file(struct inode *inode, struct file *file)
- 	return 0;
- }
- 
--static int ab3100_get_set_reg(struct file *file,
-+static ssize_t ab3100_get_set_reg(struct file *file,
- 			      const char __user *user_buf,
- 			      size_t count, loff_t *ppos)
- {
+Haven't seen this in linux-next up to today, so I have applied it to 
+trivial queue.
+
 -- 
-1.6.2.1
-
+Jiri Kosina
+SUSE Labs
