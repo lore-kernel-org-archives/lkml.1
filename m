@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbZHMPZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbZHMP0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754774AbZHMPZH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 11:25:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbZHMPZG
+	id S1754771AbZHMP0h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 11:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbZHMP0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 11:25:06 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:46046 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751910AbZHMPZG (ORCPT
+	Thu, 13 Aug 2009 11:26:36 -0400
+Received: from mga06.intel.com ([134.134.136.21]:52950 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750845AbZHMP0f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 11:25:06 -0400
-Date: Thu, 13 Aug 2009 17:25:06 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: state of the fastboot activities?
-Message-ID: <20090813152506.GQ13320@pengutronix.de>
-References: <20090813064543.GC13320@pengutronix.de> <4A84194A.5050206@linux.intel.com>
+	Thu, 13 Aug 2009 11:26:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,375,1246863600"; 
+   d="scan'208";a="438696903"
+Date: Thu, 13 Aug 2009 08:26:36 -0700
+From: Matthew Wilcox <willy@linux.intel.com>
+To: david@lang.hm
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Nitin Gupta <ngupta@vflare.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+	slot is freed)
+Message-ID: <20090813152636.GB13559@linux.intel.com>
+References: <200908122007.43522.ngupta@vflare.org> <Pine.LNX.4.64.0908122312380.25501@sister.anvils> <20090813151312.GA13559@linux.intel.com> <alpine.DEB.2.00.0908130815450.30426@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A84194A.5050206@linux.intel.com>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 17:23:47 up 8 days,  2:42, 50 users,  load average: 0.40, 0.73,
-	1.40
+In-Reply-To: <alpine.DEB.2.00.0908130815450.30426@asgard.lang.hm>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: rsc@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 06:46:50AM -0700, Arjan van de Ven wrote:
-> there is no more option; the behavior is there by default.... so it's
-> all integrated and done..
+On Thu, Aug 13, 2009 at 08:17:34AM -0700, david@lang.hm wrote:
+> On Thu, 13 Aug 2009, Matthew Wilcox wrote:
+>
+>> So TRIM isn't free, and there's a better way for the drive to find
+>> out that the contents of a block no longer matter -- write some new
+>> data to it.  So if we just swapped a page in, and we're going to swap
+>> something else back out again soon, just write it to the same location
+>> instead of to a fresh location.  You've saved a command, and you've
+>> saved the drive some work, plus you've allowed other users to continue
+>> accessing the drive in the meantime.
+>
+> on the other hand, if you then end up swapping the page you read in out  
+> again and haven't dirtied it, you now have to actually write it as 
+> opposed to just throwing it away (knowing that you already have a copy of 
+> it stored on the swap device)
 
-That's bad :-) So there is no room for improvement any more in our ARM
-boot sequences ...
-
-Thanks,
-rsc
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+This is true, but at the point where you call discard, you will also
+have to write it again.  My point was about delaying calls to discard,
+rather than moving the point, or changing the circumstances under which
+one calls discard.
