@@ -1,91 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbZHMKit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbZHMKkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925AbZHMKit (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 06:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbZHMKir
+	id S1754108AbZHMKkr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 06:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbZHMKkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 06:38:47 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57856 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753091AbZHMKip (ORCPT
+	Thu, 13 Aug 2009 06:40:46 -0400
+Received: from mail-fx0-f228.google.com ([209.85.220.228]:50619 "EHLO
+	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752796AbZHMKkp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 06:38:45 -0400
-Date: Thu, 13 Aug 2009 11:35:13 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Joe Perches <joe@perches.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Pavel Machek <pavel@ucw.cz>, Ben Dooks <ben-linux@fluff.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
-	sections
-Message-ID: <20090813103513.GC6132@n2100.arm.linux.org.uk>
-References: <1249568614.10297.20.camel@Joe-Laptop.home> <20090806150322.GX2080@trinity.fluff.org> <1249948147.8895.96.camel@Joe-Laptop.home> <20090812115520.GI24339@elf.ucw.cz> <20090812194838.GB12117@n2100.arm.linux.org.uk> <84144f020908121317g64551a2cu1b960f44ed5d0d9@mail.gmail.com> <20090812212502.GA24667@n2100.arm.linux.org.uk> <20090813103511.2928a085@lxorguk.ukuu.org.uk> <20090813094736.GZ6132@n2100.arm.linux.org.uk> <1250158593.28285.23.camel@Joe-Laptop.home>
+	Thu, 13 Aug 2009 06:40:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:reply-to:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=VdBvB7SHsFlnSFn46NJp19F1ABNKiRrZUSZRzAS8HKbHvGHd1L82Z1PnC6ub8Y9lhK
+         g3yYCTrug0r/+jxysRPyh7eof7leIoHrL4/5zwjRaTi7MbUkF5zUq6azHmzceTizT7qB
+         zWydc8VpWhTEzCm1S8a68+wZABuKM69YdTIvg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250158593.28285.23.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Reply-To: q-funk@iki.fi
+In-Reply-To: <11fae7c70908130244k3f20954ewa23c5a57fbd60410@mail.gmail.com>
+References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera>
+	 <u1L1PAbl8zG.A.UBD.ej1fKB@chimera>
+	 <11fae7c70908130152j21f9f183m4f1c49d91fc7a7f9@mail.gmail.com>
+	 <20090813090743.GA14352@elte.hu>
+	 <11fae7c70908130244k3f20954ewa23c5a57fbd60410@mail.gmail.com>
+Date: Thu, 13 Aug 2009 13:40:45 +0300
+X-Google-Sender-Auth: b3b24db83d643c0f
+Message-ID: <11fae7c70908130340w37782c04m861d2f429d639a9e@mail.gmail.com>
+Subject: Re: [Bug #13941] x86 Geode issue
+From: =?UTF-8?Q?Martin=2D=C3=89ric_Racine?= <q-funk@iki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexander Viro <viro@ftp.linux.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 03:16:33AM -0700, Joe Perches wrote:
-> On Thu, 2009-08-13 at 10:47 +0100, Russell King - ARM Linux wrote:
-> > These lists have _TWO_ admins.  Fact: Everyone only talks to me
-> > about problems with these lists.  Fact: they do not copy Erik.
-> 
-> Erik isn't listed in MAINTAINERS.  You are.
-> Erik doesn't post much to lkml.  You do.
+2009/8/13 Martin-Éric Racine <q-funk@iki.fi>:
+> On Thu, Aug 13, 2009 at 12:07 PM, Ingo Molnar<mingo@elte.hu> wrote:
+>> * Martin-Éric Racine <q-funk@iki.fi> wrote:
+>>> Yes, this bug is still valid.
+>>>
+>>> Ubuntu kernel team member Leann Ogasawara and I are slowly
+>>> bisecting our way through the changes that took place since 2.6.30
+>>> to find the commit that introduced this regression. Please stay
+>>> tuned.
+>>
+>> hm, the only outright Geode related commit was:
+>>
+>>  d6c585a: x86: geode: Mark mfgpt irq IRQF_TIMER to prevent resume failure
+>>
+>> the jpg at:
+>>
+>>  http://launchpadlibrarian.net/28892781/00002.jpg
+>>
+>> is very out of focus - but what i could decypher suggests a
+>> pagefault crash in the VFS code, in generic_delete_inode().
 
-Is Matti, who also looks after vger, in MAINTAINERS ?
+This one might be a bit better:
 
-Given your position above, don't you think he should be, so that when
-people have a problem with LKML they can email him?
+http://launchpadlibrarian.net/30267494/2.6.31-5.24.jpg
 
-I think you're not understanding me (Alan seems to have made the same
-mistake).  Please note that I was talking about the _admin_ side not
-the actual useful ARM traffic side.
+>> Which could be a VFS bug, or a filesystem bug, or some unrelated
+>> memory corruption hitting the inode data structure.
+>
+> It could indeed be many things.
+>
+> I've been trying to boot this into a larger framebuffer to be able to
+> fit more data into my snapshots, but it appears that vga=795 doesn't
+> work anymore. Have we reverted to Hex values again or is this just an
+> issue of some kernel module missing from initrd?
 
-> > Humans are, at the end of the day, bone idle lazy creatures.
-> 
-> Which is why we invent tools to work for us.
-> 
-> Humans tend to reuse and improve the tools that work best.
-> Your ARM based mail tool has caused some to do more work
-> than they would like, so they would like to use a better
-> tool.
+Never mind. Seems that vesafb was blacklisted. Works now. See the
+image above. :)
 
-So instead you'd like me to do more work by having to service peoples
-requests about how to subscribe and unsubscribe from a mailing list
-which I don't run?
-
-I invented a tool for that.  It's called "running my own mailing list."
-
-> I believe very few care very much if vger.kernel.org or
-> arm.linux.org.uk is the list server.  I don't.  I just
-> want my email to get through.
-> 
-> And I still don't want to subscribe.
-
-And... have your emails been held for moderation recently?
-
-This one was:
-http://lists.arm.linux.org.uk/lurker/message/20090806.142334.73be8efd.en.html
-
-These (subsequent) ones weren't:
-http://lists.arm.linux.org.uk/lurker/message/20090806.151424.0228a1eb.en.html
-http://lists.arm.linux.org.uk/lurker/message/20090806.161848.fb390ccd.en.html
-http://lists.arm.linux.org.uk/lurker/message/20090806.165331.aeb0c29b.en.html
-http://lists.arm.linux.org.uk/lurker/message/20090810.234907.a080c816.en.html
-http://lists.arm.linux.org.uk/lurker/message/20090813.011852.5ebd9da5.en.html
-http://lists.arm.linux.org.uk/lurker/message/20090813.085937.87e2f189.en.html
-
-> Reduce the probability of forwarding spam, open the list,
-> remove "(subscribers-only)" from the ARM MAINTAINERS entries
-> and I'd be good-to-go.
-
-I feel we're covering old ground here (see the earlier bits of this thread.)
+Martin-Éric
