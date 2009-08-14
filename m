@@ -1,236 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbZHNVds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbZHNVd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756172AbZHNVds (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 17:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbZHNVds
+	id S1756631AbZHNVd5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 17:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbZHNVdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 17:33:48 -0400
-Received: from vms173007pub.verizon.net ([206.46.173.7]:22610 "EHLO
-	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755256AbZHNVdq (ORCPT
+	Fri, 14 Aug 2009 17:33:53 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:38311 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755883AbZHNVdt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 17:33:46 -0400
-From: Len Brown <lenb@kernel.org>
-To: x86@kernel.org, sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Cc: Feng Tang <feng.tang@intel.com>, Len Brown <len.brown@intel.com>
-Subject: [PATCH 10/11] x86: add arch-specific SFI support
-Date: Fri, 14 Aug 2009 16:38:14 -0400
-Message-id: <3c8fbc2e3a5e5930d1e88baf82b36b095f712445.1250281826.git.len.brown@intel.com>
-X-Mailer: git-send-email 1.6.4.122.g6ffd7
-In-reply-to: <1250282295-25216-1-git-send-email-lenb@kernel.org>
-References: <1250282295-25216-1-git-send-email-lenb@kernel.org>
-In-reply-to: <0763223ab0ef5c0016b7a179c1acccaabbefea02.1250281826.git.len.brown@intel.com>
-References: <0763223ab0ef5c0016b7a179c1acccaabbefea02.1250281826.git.len.brown@intel.com>
-X-Patchwork-Hint: ignore
+	Fri, 14 Aug 2009 17:33:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=qoTgr6tPGa/yTD09sgMB9uP3BQq1L5b+BCH548D3LYOohL53AkPPnQf/qRAdKLGyqb
+         2IdSi2U91b0AgoZXF97Jy4oHQFgQt2QOzYNHiPOGZJBDRf1ew1cHh80qyDfiQX/Q3Qmd
+         +DQrTPxY1AqI0OI2CVW+1tfoLHi2HXFA00yTc=
+MIME-Version: 1.0
+In-Reply-To: <46b8a8850908131758s781b07f6v2729483c0e50ae7a@mail.gmail.com>
+References: <200908122007.43522.ngupta@vflare.org>
+	 <20090813151312.GA13559@linux.intel.com>
+	 <20090813162621.GB1915@phenom2.trippelsdorf.de>
+	 <alpine.DEB.1.10.0908130931400.28013@asgard.lang.hm>
+	 <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>
+	 <alpine.DEB.1.10.0908131342460.28013@asgard.lang.hm>
+	 <87f94c370908131428u75dfe496x1b7d90b94833bf80@mail.gmail.com>
+	 <46b8a8850908131520s747e045cnd8db9493e072939d@mail.gmail.com>
+	 <87f94c370908131719l7d84c5d0x2157cfeeb2451bce@mail.gmail.com>
+	 <46b8a8850908131758s781b07f6v2729483c0e50ae7a@mail.gmail.com>
+Date: Fri, 14 Aug 2009 17:33:49 -0400
+Message-ID: <87f94c370908141433h111f819j550467bf31c60776@mail.gmail.com>
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap 
+	slot is freed)
+From: Greg Freemyer <greg.freemyer@gmail.com>
+To: Richard Sharpe <realrichardsharpe@gmail.com>, david@lang.hm,
+       Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Feng Tang <feng.tang@intel.com>
+This inadvertently went just to me, replying to all:
 
-arch/x86/kernel/sfi.c serves the dual-purpose of supporting the
-SFI core with arch specific code, as well as a home for the
-arch-specific code that uses SFI.
+On Thu, Aug 13, 2009 at 8:58 PM, Richard
+Sharpe<realrichardsharpe@gmail.com> wrote:
+> On Thu, Aug 13, 2009 at 5:19 PM, Greg Freemyer<greg.freemyer@gmail.com> wrote:
+>> On Thu, Aug 13, 2009 at 6:20 PM, Richard
+>> Sharpe<realrichardsharpe@gmail.com> wrote:
+>>> On Thu, Aug 13, 2009 at 2:28 PM, Greg Freemyer<greg.freemyer@gmail.com> wrote:
+>>>> On Thu, Aug 13, 2009 at 4:44 PM, <david@lang.hm> wrote:
+>>>>> On Thu, 13 Aug 2009, Greg Freemyer wrote:
+>>>>>
+>>>>>> On Thu, Aug 13, 2009 at 12:33 PM, <david@lang.hm> wrote:
+>>>>>>>
+>>>>>>> On Thu, 13 Aug 2009, Markus Trippelsdorf wrote:
+>>>>>>>
+>>>>>>>> On Thu, Aug 13, 2009 at 08:13:12AM -0700, Matthew Wilcox wrote:
+>>>>>>>>>
+>>>>>>>>> I am planning a complete overhaul of the discard work.  Users can send
+>>>>>>>>> down discard requests as frequently as they like.  The block layer will
+>>>>>>>>> cache them, and invalidate them if writes come through.  Periodically,
+>>>>>>>>> the block layer will send down a TRIM or an UNMAP (depending on the
+>>>>>>>>> underlying device) and get rid of the blocks that have remained
+>>>>>>>>> unwanted
+>>>>>>>>> in the interim.
+>>>>>>>>
+>>>>>>>> That is a very good idea. I've tested your original TRIM implementation
+>>>>>>>> on
+>>>>>>>> my Vertex yesterday and it was awful ;-). The SSD needs hundreds of
+>>>>>>>> milliseconds to digest a single TRIM command. And since your
+>>>>>>>> implementation
+>>>>>>>> sends a TRIM for each extent of each deleted file, the whole system is
+>>>>>>>> unusable after a short while.
+>>>>>>>> An optimal solution would be to consolidate the discard requests, bundle
+>>>>>>>> them and send them to the drive as infrequent as possible.
+>>>>>>>
+>>>>>>> or queue them up and send them when the drive is idle (you would need to
+>>>>>>> keep track to make sure the space isn't re-used)
+>>>>>>>
+>>>>>>> as an example, if you would consider spinning down a drive you don't hurt
+>>>>>>> performance by sending accumulated trim commands.
+>>>>>>>
+>>>>>>> David Lang
+>>>>>>
+>>>>>> An alternate approach is the block layer maintain its own bitmap of
+>>>>>> used unused sectors / blocks. Unmap commands from the filesystem just
+>>>>>> cause the bitmap to be updated.  No other effect.
+>>>>>
+>>>>> how does the block layer know what blocks are unused by the filesystem?
+>>>>>
+>>>>> or would it be a case of the filesystem generating discard/trim requests to
+>>>>> the block layer so that it can maintain it's bitmap, and then the block
+>>>>> layer generating the requests to the drive below it?
+>>>>>
+>>>>> David Lang
+>>>>
+>>>> Yes, my thought.was that block layer would consume the discard/trim
+>>>> requests from the filesystem in realtime to maintain the bitmap, then
+>>>> at some later point in time when the system has extra resources it
+>>>> would generate the calls down to the lower layers and eventually the
+>>>> drive.
+>>>
+>>> Why should the block layer be forced to maintain something that is
+>>> probably of use for only a limited number of cases? For example, the
+>>> devices I work on already maintain their own mapping of HOST-visible
+>>> LBAs to underlying storage, and I suspect that most such devices do.
+>>> So, you are duplicating something that we already do, and there is no
+>>> way that I am aware of to synchronise the two.
+>>>
+>>> All we really need, I believe is for the UNMAP requests to come down
+>>> to us with writes barriered until we respond, and it is a relatively
+>>> cheap operation, although writes that are already in the cache and
+>>> uncommitted to disk present some issues if an UNMAP request comes down
+>>> for recently written blocks.
+>>>
+>>
+>> Richard,
+>>
+>> Quoting the original email I saw in this thread:
+>>
+>>>
+>>>The unfortunate thing about the TRIM command is that it's not NCQ, so
+>>>all NCQ commands have to finish, then we can send the TRIM command and
+>>>wait for it to finish, then we can send NCQ commands again.
+>>>
+>>>So TRIM isn't free, and there's a better way for the drive to find
+>>>out that the contents of a block no longer matter -- write some new
+>>>data to it.  So if we just swapped a page in, and we're going to swap
+>>>something else back out again soon, just write it to the same location
+>>>instead of to a fresh location.  You've saved a command, and you've
+>>>saved the drive some work, plus you've allowed other users to continue
+>>>accessing the drive in the meantime.
+>>>
+>>>I am planning a complete overhaul of the discard work.  Users can send
+>>>down discard requests as frequently as they like.  The block layer will
+>>>cache them, and invalidate them if writes come through.  Periodically,
+>>>the block layer will send down a TRIM or an UNMAP (depending on the
+>>>underlying device) and get rid of the blocks that have remained unwanted
+>>>in the interim.
+>>>
+>>>Thoughts on that are welcome.
+>>>>
+>>
+>> My thought was that a bitmap was a better solution than a cache of
+>> discard commands.
+>>
+>> One of the biggest reasons is that a bitmap can coalesce the unused
+>> areas into much larger discard ranges than a queue that will only have
+>> a limited number of discards to coalesce.
+>
+> OK, I misunderstood. For the work I did with an SSD company the UNMAP
+> requests were coming down as 1024 LBA DISCARDs/UNMAPs. If someone
+> deleted a multi-GB file that results in thousands of DISCARDS coming
+> down, which is a problem.
 
-analogous to ACPI, drivers/sfi/Kconfig is pulled in by arch/x86/Kconfig
+I think the ext4 implementation is sending down discards way smaller
+than 1024 sectors.  Ted Tso posted something a few months ago that he
+did a test and was seeing a massive number of them being sent from
+ext4 to block.  The rest of the stack was not in place, so he did not
+know the real performance impact.
 
-Signed-off-by: Feng Tang <feng.tang@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: x86@kernel.org
----
- arch/x86/Kconfig         |    2 +
- arch/x86/kernel/Makefile |    1 +
- arch/x86/kernel/setup.c  |    3 +
- arch/x86/kernel/sfi.c    |  133 ++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 139 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/kernel/sfi.c
+> However, I wonder if we cannot make do with merging in the block
+> layer, especially with XFS or Ext4.
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 13ffa5d..d8ba424 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1683,6 +1683,8 @@ source "kernel/power/Kconfig"
- 
- source "drivers/acpi/Kconfig"
- 
-+source "drivers/sfi/Kconfig"
-+
- config X86_APM_BOOT
- 	bool
- 	default y
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 430d5b2..6321afa 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -55,6 +55,7 @@ obj-y				+= step.o
- obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
- obj-y				+= cpu/
- obj-y				+= acpi/
-+obj-$(CONFIG_SFI)		+= sfi.o
- obj-y				+= reboot.o
- obj-$(CONFIG_MCA)		+= mca_32.o
- obj-$(CONFIG_X86_MSR)		+= msr.o
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 63f32d2..d784ea2 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -27,6 +27,7 @@
- #include <linux/screen_info.h>
- #include <linux/ioport.h>
- #include <linux/acpi.h>
-+#include <linux/sfi.h>
- #include <linux/apm_bios.h>
- #include <linux/initrd.h>
- #include <linux/bootmem.h>
-@@ -990,6 +991,8 @@ void __init setup_arch(char **cmdline_p)
- 	 */
- 	acpi_boot_init();
- 
-+	sfi_init();
-+
- #if defined(CONFIG_X86_MPPARSE) || defined(CONFIG_X86_VISWS)
- 	/*
- 	 * get boot-time SMP configuration:
-diff --git a/arch/x86/kernel/sfi.c b/arch/x86/kernel/sfi.c
-new file mode 100644
-index 0000000..761df3f
---- /dev/null
-+++ b/arch/x86/kernel/sfi.c
-@@ -0,0 +1,133 @@
-+/*
-+ * sfi.c - x86 architecture SFI support.
-+ *
-+ * Copyright (c) 2009, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
-+ *
-+ */
-+
-+#define KMSG_COMPONENT "SFI"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
-+#include <linux/bootmem.h>
-+#include <linux/cpumask.h>
-+#include <linux/module.h>
-+#include <linux/acpi.h>
-+#include <linux/init.h>
-+#include <linux/efi.h>
-+#include <linux/irq.h>
-+#include <linux/sfi.h>
-+#include <linux/io.h>
-+
-+#include <asm/io_apic.h>
-+#include <asm/pgtable.h>
-+#include <asm/mpspec.h>
-+#include <asm/setup.h>
-+#include <asm/apic.h>
-+#include <asm/e820.h>
-+
-+#ifdef CONFIG_X86_LOCAL_APIC
-+static unsigned long sfi_lapic_addr __initdata = APIC_DEFAULT_PHYS_BASE;
-+
-+void __init mp_sfi_register_lapic_address(unsigned long address)
-+{
-+	mp_lapic_addr = address;
-+
-+	set_fixmap_nocache(FIX_APIC_BASE, mp_lapic_addr);
-+	if (boot_cpu_physical_apicid == -1U)
-+		boot_cpu_physical_apicid = read_apic_id();
-+
-+	pr_info("Boot CPU = %d\n", boot_cpu_physical_apicid);
-+}
-+
-+/* All CPUs enumerated by SFI must be present and enabled */
-+void __cpuinit mp_sfi_register_lapic(u8 id)
-+{
-+	int boot_cpu = 0;
-+
-+	if (MAX_APICS - id <= 0) {
-+		pr_warning("Processor #%d invalid (max %d)\n",
-+			id, MAX_APICS);
-+		return;
-+	}
-+
-+	if (id == boot_cpu_physical_apicid)
-+		boot_cpu = 1;
-+	pr_info("registering lapic[%d]\n", id);
-+
-+	generic_processor_info(id, GET_APIC_VERSION(apic_read(APIC_LVR)));
-+}
-+
-+static int __init sfi_parse_cpus(struct sfi_table_header *table)
-+{
-+	struct sfi_table_simple *sb;
-+	struct sfi_cpu_table_entry *pentry;
-+	int i;
-+	int cpu_num;
-+
-+	sb = (struct sfi_table_simple *)table;
-+	cpu_num = SFI_GET_NUM_ENTRIES(sb, struct sfi_cpu_table_entry);
-+	pentry = (struct sfi_cpu_table_entry *)sb->pentry;
-+
-+	for (i = 0; i < cpu_num; i++) {
-+		mp_sfi_register_lapic(pentry->apic_id);
-+		pentry++;
-+	}
-+
-+	smp_found_config = 1;
-+	return 0;
-+}
-+#endif /* CONFIG_X86_LOCAL_APIC */
-+
-+#ifdef CONFIG_X86_IO_APIC
-+static u32 gsi_base;
-+
-+static int __init sfi_parse_ioapic(struct sfi_table_header *table)
-+{
-+	struct sfi_table_simple *sb;
-+	struct sfi_apic_table_entry *pentry;
-+	int i, num;
-+
-+	sb = (struct sfi_table_simple *)table;
-+	num = SFI_GET_NUM_ENTRIES(sb, struct sfi_apic_table_entry);
-+	pentry = (struct sfi_apic_table_entry *)sb->pentry;
-+
-+	for (i = 0; i < num; i++) {
-+		mp_register_ioapic(i, pentry->phys_addr, gsi_base);
-+		gsi_base += io_apic_get_redir_entries(i);
-+		pentry++;
-+	}
-+
-+	WARN(pic_mode, KERN_WARNING
-+		"SFI: pic_mod shouldn't be 1 when IOAPIC table is present\n");
-+	pic_mode = 0;
-+	return 0;
-+}
-+#endif /* CONFIG_X86_IO_APIC */
-+
-+/*
-+ * sfi_platform_init(): register lapics & io-apics
-+ */
-+int __init sfi_platform_init(void)
-+{
-+#ifdef CONFIG_X86_LOCAL_APIC
-+	mp_sfi_register_lapic_address(sfi_lapic_addr);
-+	sfi_table_parse(SFI_SIG_CPUS, NULL, NULL, sfi_parse_cpus);
-+#endif
-+#ifdef CONFIG_X86_IO_APIC
-+	sfi_table_parse(SFI_SIG_APIC, NULL, NULL, sfi_parse_ioapic);
-+#endif
-+	return 0;
-+}
--- 
-1.6.0.6
+That's the cache and coalesce approach, right?  Just a personal thing,
+but we run
+things like defrag in the background during off hours.
 
+It seems to me that unmap is not all that different, why do we need to
+do it even close in time proximity to the deletes?  With a bitmap, we
+have total timing control of when the unmaps are forwarded down to the
+device.  I like that timing control much better than a cache and
+coalesce approach.
+
+>> And both Enterprise scsi and mdraid are desirous of larger discard ranges.
+>
+> I also would like large discard ranges ... metadata updates in the
+> platform I am thinking of are transactional, and I would like to
+> reduce the number of transactions pushed through the metadata journal.
+>
+> --
+> Regards,
+> Richard Sharpe
+
+Greg
