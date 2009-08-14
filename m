@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbZHNPsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932673AbZHNPvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932664AbZHNPsw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 11:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932603AbZHNPsv
+	id S932673AbZHNPvX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 11:51:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932603AbZHNPvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 11:48:51 -0400
-Received: from mailhost13.gawab.com ([66.220.20.13]:60445 "HELO
-	info15.gawab.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932601AbZHNPsv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 11:48:51 -0400
-X-Trusted: Whitelisted
-From: Al Boldi <a1426z@gawab.com>
-To: ngupta@vflare.org
-Subject: Re: compcache as a pre-swap area
-Date: Fri, 14 Aug 2009 18:49:19 +0300
-User-Agent: KMail/1.5
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Matthew Wilcox <willy@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-References: <200908122007.43522.ngupta@vflare.org> <200908140702.23947.a1426z@gawab.com> <4A84EDE4.1080605@vflare.org>
-In-Reply-To: <4A84EDE4.1080605@vflare.org>
+	Fri, 14 Aug 2009 11:51:22 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56174 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932184AbZHNPvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 11:51:22 -0400
+Date: Fri, 14 Aug 2009 08:50:04 -0700
+From: Greg KH <gregkh@suse.de>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] icom: bit and/or confusion?
+Message-ID: <20090814155004.GA10977@suse.de>
+References: <4A85525A.9030601@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908141849.19797.a1426z@gawab.com>
+In-Reply-To: <4A85525A.9030601@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nitin Gupta wrote:
-> On 08/14/2009 09:32 AM, Al Boldi wrote:
-> > So once compcache fills up, it will start to age its contents into normal
-> > swap?
->
-> This is desirable but not yet implemented. For now, if 'backing swap' is
-> used, compcache will forward incompressible pages to the backing swap
-> device. If compcache fills up, kernel will simply send further swap-outs to
-> swap device which comes next in priority.
+On Fri, Aug 14, 2009 at 02:02:34PM +0200, Roel Kluin wrote:
+> Previously, if any bit other than CMD_SND_BREAK was set, CMD_SND_BREAK
+> was not unset.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> I think meant was: If CMD_SND_BREAK is set, unset it. Correct?
+> 
+> // vi drivers/serial/icom.h +137
+> #define CMD_SND_BREAK                0x04
+> 
+> diff --git a/drivers/serial/icom.c b/drivers/serial/icom.c
+> index cd1b6a4..060f4e3 100644
+> --- a/drivers/serial/icom.c
+> +++ b/drivers/serial/icom.c
+> @@ -617,7 +617,7 @@ static void shutdown(struct icom_port *icom_port)
+>  	 * disable break condition
+>  	 */
+>  	cmdReg = readb(&icom_port->dram->CmdReg);
+> -	if ((cmdReg | CMD_SND_BREAK) == CMD_SND_BREAK) {
+> +	if (cmdReg & CMD_SND_BREAK) {
 
-Ok, this sounds acceptable for now.
+This change is the exact same thing, right?  How is the original
+incorrect here?
 
-The important thing now is to improve performance to a level comparable to a 
-system with normal ssd-swap.  Do you have such a comparisson?
+thanks,
 
-Another interresting benchmark would be to use compcache in a maximized 
-configuration, ie. on a system w/ 1024KB Ram assign 960KB for compcache and 
-leave 64KB for the system, and then see how it performs.  This may easily 
-pinpoint any bottlenecks compcache has, if any.
-
-Also, a link to the latest patch against .30 would be helpful.
-
-
-Thanks!
-
---
-Al
-
+greg k-h
