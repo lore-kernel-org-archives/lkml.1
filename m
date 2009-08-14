@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbZHNWWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbZHNWY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756953AbZHNWWD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 18:22:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbZHNWWC
+	id S1756832AbZHNWY4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 18:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbZHNWYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 18:22:02 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:49005 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755615AbZHNWWB (ORCPT
+	Fri, 14 Aug 2009 18:24:55 -0400
+Received: from ru.mvista.com ([213.79.90.228]:26602 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750827AbZHNWYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 18:22:01 -0400
-Date: Fri, 14 Aug 2009 23:21:57 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
-       linux-pci@vger.kernel.org, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
-Message-ID: <20090814222157.GA20015@srcf.ucam.org>
-References: <Pine.LNX.4.44L0.0908141032070.2987-100000@iolanthe.rowland.org> <200908142205.20093.rjw@sisk.pl>
+	Fri, 14 Aug 2009 18:24:54 -0400
+Date: Sat, 15 Aug 2009 02:24:53 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/8] spi_mpc8xxx: Add support for DMA transfers
+Message-ID: <20090814222453.GA9568@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200908142205.20093.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 14, 2009 at 10:05:19PM +0200, Rafael J. Wysocki wrote:
+Hi all,
 
-> Well, sometimes the user may want a device to be power managed at run time
-> and not to be able to wake up the system from sleep states.  For example,
-> I'd like the USB controller in my box to be suspended at run time whenever it's
-> not used, but surely I wouldn't like it to do system-wide wakeup, because it
-> does that when I move the mouse which is a cordless one.  Simply turning the
-> mouse on causes the system to wake up. :-)
+Here are some patches that add DMA support for spi_mpc8xxx driver,
+which means that we now support QE BD mode and SPI on CPM1 and CPM2
+chips.
 
-Right, so clearly my code is broken right now.
+QE BD mode and CPM2 SPI support were tested on real hardware, CPM1
+was only compile tested (though I belive it will work :-).
 
-> Why don't we add a flag indicating whether or not the device is allowed to
-> be power managed at run time, something like runtime_forbidden, that the
-> user space will be able to set through sysfs?
-
-I think even having a runtime_wakeup flag (which defaults to on) would 
-be sufficient. If the worst case is scenario is that we have to resume 
-devices in order to apply the correct policy when going into a 
-systemwide suspend state, I think that's acceptable.
+Thanks,
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
