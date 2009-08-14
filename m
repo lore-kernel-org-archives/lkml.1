@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbZHNKaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbZHNKez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754781AbZHNKaY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 06:30:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbZHNKaX
+	id S1754797AbZHNKez (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 06:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbZHNKey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 06:30:23 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47587 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753818AbZHNKaX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 06:30:23 -0400
-Date: Fri, 14 Aug 2009 12:30:13 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Trilok Soni <soni.trilok@gmail.com>,
-       Brian Swetland <swetland@google.com>,
-       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
-       t.fujak@samsung.com, kyungmin.park@samsung.com,
-       David Brownell <david-b@pacbell.net>, Daniel Ribeiro <drwyrm@gmail.com>,
-       arve@android.com, Barry Song <21cnbao@gmail.com>
-Subject: Re: [RFC patch 2/3] genirq: Add buslock support for irq chips on
-	slow busses
-Message-ID: <20090814103013.GC32418@elf.ucw.cz>
-References: <20090813191535.945521006@linutronix.de> <20090813193116.509070851@linutronix.de> <20090814101739.GA32418@elf.ucw.cz> <alpine.LFD.2.00.0908141220190.1283@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0908141220190.1283@localhost.localdomain>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 14 Aug 2009 06:34:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37509 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752663AbZHNKey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 06:34:54 -0400
+Subject: [PATCH V2] X86: Fix x86_cache_size value
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: x86 maintainers <x86@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1250245149.9062.3.camel@ht.satnam>
+References: <1250245149.9062.3.camel@ht.satnam>
+Content-Type: text/plain
+Date: Fri, 14 Aug 2009 16:03:56 +0530
+Message-Id: <1250246036.9062.5.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-08-14 12:20:49, Thomas Gleixner wrote:
-> On Fri, 14 Aug 2009, Pavel Machek wrote:
-> > > +extern void disable_slowbus_irq(unsigned int irq);
-> > > +extern void enable_slowbus_irq(unsigned int irq);
-> > > +
-> > 
-> > AFAICT this means that driver would need to know what kind of IRQ it
-> > is hooked to, right? That will lead to some ugly code in drivers that
-> > can handle both normal and slowbus irqs, right?
-> 
-> Are there such drivers in reality ?
+Currently x86_cache_size is showing partial value: L1 or L2 or L3.
+It should add all caches like L1 + L2 + L3 + Trace.
 
-I think so. Between Spitz and Akita, some gpios were moved to slow i2c
-extender. For stuff like buttons...
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/cpu/common.c          |    2 +-
+ arch/x86/kernel/cpu/intel_cacheinfo.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Now... it is probably already fixed somehow for Spitz/Akita, but I
-believe more hardware designers do such things....
-									Pavel
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 5ce60a8..581fe17 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -422,7 +422,7 @@ void __cpuinit display_cacheinfo(struct cpuinfo_x86 *c)
+ 		return;		/* Again, no L2 cache is possible */
+ #endif
+ 
+-	c->x86_cache_size = l2size;
++	c->x86_cache_size += l2size;
+ 
+ 	printk(KERN_INFO "CPU: L2 Cache: %dK (%d bytes/line)\n",
+ 			l2size, ecx & 0xFF);
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 789efe2..43da49e 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -503,7 +503,7 @@ unsigned int __cpuinit init_intel_cacheinfo(struct cpuinfo_x86 *c)
+ 	if (l3)
+ 		printk(KERN_INFO "CPU: L3 cache: %dK\n", l3);
+ 
+-	c->x86_cache_size = l3 ? l3 : (l2 ? l2 : (l1i+l1d));
++	c->x86_cache_size = l3 + l2 + l1i + l1d + trace;
+ 
+ 	return l2;
+ }
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.6.0.6
+
+
+
