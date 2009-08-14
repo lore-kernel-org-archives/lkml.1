@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932681AbZHNP7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932691AbZHNQHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932681AbZHNP7I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 11:59:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932603AbZHNP7H
+	id S932691AbZHNQHp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 12:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932512AbZHNQHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 11:59:07 -0400
-Received: from dakia2.marvell.com ([65.219.4.35]:41488 "EHLO
-	dakia2.marvell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932388AbZHNP7G (ORCPT
+	Fri, 14 Aug 2009 12:07:44 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:20011 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932486AbZHNQHo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 11:59:06 -0400
-X-ASG-Debug-ID: 1250265546-5cd500660000-xx1T2L
-X-Barracuda-URL: http://10.68.76.222:80/cgi-bin/mark.cgi
-Date: Fri, 14 Aug 2009 11:58:59 -0400 (EDT)
-From: Nicolas Pitre <nico@marvell.com>
-X-X-Sender: nico@xanadu.home
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       MinChan Kim <minchan.kim@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Li Zefan <lizf@cn.fujitsu.com>, Jens Axboe <jens.axboe@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-X-ASG-Orig-Subj: Re: [PATCH -rt] Fix kmap_high_get()
-Subject: Re: [PATCH -rt] Fix kmap_high_get()
-In-Reply-To: <1250258573.5241.1581.camel@twins>
-Message-ID: <alpine.LFD.2.00.0908141152290.10633@xanadu.home>
-References: <1249810600-21946-3-git-send-email-u.kleine-koenig@pengutronix.de>  <1250199243-18677-1-git-send-email-u.kleine-koenig@pengutronix.de> <1250258573.5241.1581.camel@twins>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 14 Aug 2009 12:07:44 -0400
+Message-ID: <4A858B4A.9000705@gmail.com>
+Date: Fri, 14 Aug 2009 19:05:30 +0300
+From: Artem Bityutskiy <dedekind1@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Barracuda-Connect: maili.marvell.com[10.68.76.51]
-X-Barracuda-Start-Time: 1250265546
-X-Barracuda-Virus-Scanned: by dakia2.marvell.com at marvell.com
-X-Barracuda-Spam-Score: -1002.00
-X-Barracuda-Spam-Status: No, SCORE=-1002.00 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=1000.0 
+To: JiSheng Zhang <jszhang3@gmail.com>
+CC: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Artem.Bityutskiy@nokia.com, adrian.hunter@nokia.com,
+       rmk@arm.linux.org.uk, dwmw2@infradead.org
+Subject: Re: [PATCH] UBI: Fix allocation of volume table
+References: <20090811094455.6f9cbbfe@ustc>
+In-Reply-To: <20090811094455.6f9cbbfe@ustc>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 14 Aug 2009 16:07:19.0421 (UTC) FILETIME=[4CC9D2D0:01CA1CF9]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Aug 2009, Peter Zijlstra wrote:
+On 08/11/2009 04:44 AM, JiSheng Zhang wrote:
+> We can't use vmalloc for the buffer used for volume table for some NAND
+> or NOR drivers may pass the buffer to DMA. And the volume table size
+> a.k.a vtbl_size is small so we can use kmalloc or kzalloc for it instead
+>
+> Signed-off-by: JiSheng Zhang<jszhang3@gmail.com>
 
-> As to the patch, its not quite right.
-> 
-> From what I understand kmap_high_get() is used to pin a page's kmap iff
-> it has one, whereas the result of your patch seems to be that it'll
-> actually create one if its not found.
+I do not have objections if this patch becomes a member of a series of
+patches which kick vmalloc from whole UBI. Applying just this patch does
+not make much sense.
 
-I don't have enough context to review this patch, but your understanding 
-of the kmap_high_get() purpose is right.
+You may go through UBI code and try to split large vmalloc-ed buffers on
+smaller kmalloc-ed ones.
 
-
-Nicolas
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
