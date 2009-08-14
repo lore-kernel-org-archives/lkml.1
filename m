@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756906AbZHNSq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbZHNS4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756906AbZHNSq4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 14:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756272AbZHNSqz
+	id S1756721AbZHNS4X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 14:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbZHNS4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 14:46:55 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:40128 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756144AbZHNSqv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 14:46:51 -0400
-Date: Fri, 14 Aug 2009 19:46:51 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Zan Lynx <zlynx@acm.org>
-Cc: Robert Schwebel <r.schwebel@pengutronix.de>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Tim Bird <tim.bird@am.sony.com>, kernel@pengutronix.de
-Subject: Re: New fast(?)-boot results on ARM
-Message-ID: <20090814184651.GA12021@shareable.org>
-References: <20090814170228.GM13320@pengutronix.de> <4A85AAC4.7050505@acm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A85AAC4.7050505@acm.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 14 Aug 2009 14:56:22 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:47548 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753213AbZHNS4W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 14:56:22 -0400
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: UV BAU destination subnode id
+Cc: mingo@elte.hu
+Message-Id: <E1Mc1x7-0005Ce-6t@eag09.americas.sgi.com>
+From: Cliff Wickman <cpw@sgi.com>
+Date: Fri, 14 Aug 2009 13:56:37 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zan Lynx wrote:
-> Or maybe its cheap and slow flash. In that case I think your only hope 
-> is to make all the code as small as possible and/or find a different 
-> flash filesystem that does not have to read so much of the device to 
-> mount. Perhaps use a read-only compressed filesystem for the system 
-> binaries and reflash it for software upgrades. Only init and mount the 
-> writable flash for user-storable data well after system boot has finished.
+From: Cliff Wickman <cpw@sgi.com>
 
-Fwiw, logfs claims to mount quickly, but I haven't heard much about it
-in recent months and http://logfs.org/logfs/ implies it's not really
-stable yet.  But maybe if you're working on a prototype that doesn't
-matter so much.
+The SGI UV Broadcast Assist Unit is used to send TLB shootdown messages
+to remote nodes of the system.  The header of the message must contain
+the subnode id of the block in the receiving hub that handles such
+messages.  It should always be 0x10, the id of the "LB" block.
 
--- Jamie
+It had previously been documented as a "must be zero" field.
+
+Diffed against 2.6.31-rc6
+
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
+Acked-by: Jack Steiner <steiner@sgi.com>
+---
+ arch/x86/include/asm/uv/uv_bau.h |    2 +-
+ arch/x86/kernel/tlb_uv.c         |    1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux/arch/x86/kernel/tlb_uv.c
+===================================================================
+--- linux.orig/arch/x86/kernel/tlb_uv.c
++++ linux/arch/x86/kernel/tlb_uv.c
+@@ -744,6 +744,7 @@ uv_activation_descriptor_init(int node, 
+ 		 * note that base_dest_nodeid is actually a nasid.
+ 		 */
+ 		ad2->header.base_dest_nodeid = uv_partition_base_pnode << 1;
++		ad2->header.dest_subnodeid = 0x10; /* the LB */
+ 		ad2->header.command = UV_NET_ENDPOINT_INTD;
+ 		ad2->header.int_both = 1;
+ 		/*
+Index: linux/arch/x86/include/asm/uv/uv_bau.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/uv/uv_bau.h
++++ linux/arch/x86/include/asm/uv/uv_bau.h
+@@ -133,7 +133,7 @@ struct bau_msg_payload {
+  * see table 4.2.3.0.1 in broacast_assist spec.
+  */
+ struct bau_msg_header {
+-	unsigned int dest_subnodeid:6;	/* must be zero */
++	unsigned int dest_subnodeid:6;	/* must be 0x10, for the LB */
+ 	/* bits 5:0 */
+ 	unsigned int base_dest_nodeid:15; /* nasid>>1 (pnode) of */
+ 	/* bits 20:6 */			  /* first bit in node_map */
