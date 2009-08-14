@@ -1,69 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZHNJfE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbZHNJlG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753392AbZHNJfE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 05:35:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZHNJfE
+	id S1753462AbZHNJlG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 05:41:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZHNJlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 05:35:04 -0400
-Received: from mail-yx0-f175.google.com ([209.85.210.175]:57473 "EHLO
-	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752315AbZHNJfB (ORCPT
+	Fri, 14 Aug 2009 05:41:05 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:45816 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752055AbZHNJlE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 05:35:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=T1oB+MQAjnWniuSiosHSEOPTUEZiS29SArnEDv9mwGrrM/Si03TYTqYqO8EfrQ5bOa
-         0L5i7LwMCpnCVkP4y8cqLlGUxf/yFmg/fcEVjrfZG8TPI1S5cI8/nF0rmMobmryKL3GB
-         KRu6aPEJ8roovOm0i8G1Lo8Ot8fsXOHWX6KsU=
-Date: Fri, 14 Aug 2009 12:38:18 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: Len Brown <lenb@kernel.org>, "Brown, Len" <len.brown@intel.com>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: acpi_ex_system_memory_space_handler oops
-Message-ID: <20090814093818.GD3545@localdomain.by>
-References: <20090812201034.GA2983@localdomain.by>
- <alpine.LFD.2.00.0908122009170.22946@localhost.localdomain>
- <20090813124647.GA19195@localdomain.by>
- <1250217283.2987.16.camel@minggr.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="BZaMRJmqxGScZ8Mx"
-Content-Disposition: inline
-In-Reply-To: <1250217283.2987.16.camel@minggr.sh.intel.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 14 Aug 2009 05:41:04 -0400
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
+       John Johansen <jjohansen@suse.de>, Matthew Wilcox <matthew@wil.cx>,
+       Andreas Gruenbacher <agruen@suse.de>
+Subject: [PATCH RESEND] vfs: fix d_path() for unreachable paths
+Message-Id: <E1MbtHL-0005zN-9B@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 14 Aug 2009 11:40:55 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+There were no comments at the last submission:
 
---BZaMRJmqxGScZ8Mx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+  http://lkml.org/lkml/2008/7/30/204
 
-I suspect we are dereferencing NULL pointer:
-mov    0x8(%ebx)
+Andrew, could you please put this into -mm so it doesn't get lost
+while Al is absent?  It really shoulnd't hurt.
 
-which is mem_info->mapped_physical_address.
+Thanks,
+Miklos
+----
 
-	Sergey
---BZaMRJmqxGScZ8Mx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+From: Miklos Szeredi <mszeredi@suse.cz>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+John Johansen pointed out, that getcwd(2) will give a garbled result
+if a bind mount of a non-filesystem-root directory is detached:
 
-iJwEAQECAAYFAkqFMIoACgkQfKHnntdSXjSI6AQAzzYtF5CbfCmcje1XEA+gy7P6
-DXxsXjAEVfp2bJijmveSIKoFtGsGU39h5o5Vd1GuVzxagG4QrLlAjwiP9zR6EXz7
-LjbDIlvrVFY6FTGwWWhhlge0IwZoLNEkgy22zSsCE/+blIXNJs24l90fsjsIZP9M
-ZpErppwGfPKXfn2kCA0=
-=Fqeo
------END PGP SIGNATURE-----
+   > mkdir /mnt/foo
+   > mount --bind /etc /mnt/foo
+   > cd /mnt/foo/skel
+   > umount -l /mnt/foo
+   > /bin/pwd
+   etcskel
 
---BZaMRJmqxGScZ8Mx--
+If it was the root of the filesystem which was detached, it will give
+a saner looking result, but it still won't be a valid absolute path by
+which the CWD can be reached (assuming the process's root is not also
+on the detached mount).
+
+A similar issue happens if the CWD is outside the process's root or in
+a different namespace.  These problems are relevant to symlinks under
+/proc/<pid>/ and /proc/<pid>/fd/ as well.
+
+This patch addresses all these issues, by prefixing such unreachable
+paths with "(unreachable)".  This isn't perfect since the returned
+path may still be a valid _relative_ path, and applications may not
+check the result of getcwd() for starting with a '/' before using it.
+
+For this reason Andreas Gruenbacher thinks getcwd(2) should return
+ENOENT in these cases, but that breaks /bin/pwd and bash in the above
+cases.
+
+Reported-by: John Johansen <jjohansen@suse.de>
+CC: Matthew Wilcox <matthew@wil.cx>
+CC: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+ fs/dcache.c |   20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/fs/dcache.c
+===================================================================
+--- linux-2.6.orig/fs/dcache.c	2009-07-03 13:12:06.000000000 +0200
++++ linux-2.6/fs/dcache.c	2009-08-14 11:30:43.000000000 +0200
+@@ -1882,6 +1882,12 @@ static int prepend_name(char **buffer, i
+ 	return prepend(buffer, buflen, name->name, name->len);
+ }
+ 
++static bool is_pseudo_root(struct dentry *dentry)
++{
++	return IS_ROOT(dentry) &&
++		(dentry->d_name.len != 1 || dentry->d_name.name[0] != '/');
++}
++
+ /**
+  * __d_path - return the path of a dentry
+  * @path: the dentry/vfsmount to report
+@@ -1949,8 +1955,18 @@ out:
+ 
+ global_root:
+ 	retval += 1;	/* hit the slash */
+-	if (prepend_name(&retval, &buflen, &dentry->d_name) != 0)
+-		goto Elong;
++
++	if (is_pseudo_root(dentry)) {
++		/* Pseudo filesystem with "foo:" prefix */
++		if (prepend_name(&retval, &buflen, &dentry->d_name) != 0)
++			goto Elong;
++	} else {
++		/*
++		 * Unreachable (detached or outside root or outside namespace)
++		 */
++		if (prepend(&retval, &buflen, "(unreachable)/", 14) != 0)
++			goto Elong;
++	}
+ 	root->mnt = vfsmnt;
+ 	root->dentry = dentry;
+ 	goto out;
