@@ -1,107 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757067AbZHNTuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932349AbZHNT5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757067AbZHNTuW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 15:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbZHNTuV
+	id S932349AbZHNT5e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 15:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757097AbZHNT5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 15:50:21 -0400
-Received: from mail-yx0-f175.google.com ([209.85.210.175]:51275 "EHLO
-	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757034AbZHNTuT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 15:50:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=uFNzTiOy2NQiJCKaermKjhw+qntejcAIrRAO/3DPo7RRKBo3ik4YcaOQtCRdghFmZv
-         p7L5QTzzSbql5rj0SQ40vgq11FOTut8wq56O+jXfokwCsf7cp2UcZfwbWZwUI/uRqqy2
-         NoDL7Q746pP8yisAAj/l1hOhQr168QRs4uF4s=
-Message-ID: <4A85BFF8.4050001@gmail.com>
-Date: Fri, 14 Aug 2009 15:50:16 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: alacrityvm-devel@lists.sourceforge.net,
-       alacrityvm-users@lists.sourceforge.net,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org
-Subject: Re: AlacrityVM numbers updated for 31-rc4
-References: <4A83296B.3080606@gmail.com> <4A834ABB.4010801@codemonkey.ws> <4A834E75.9060204@gmail.com>
-In-Reply-To: <4A834E75.9060204@gmail.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigB8A32634A7D2FE7E2865A6AD"
+	Fri, 14 Aug 2009 15:57:33 -0400
+Received: from mga09.intel.com ([134.134.136.24]:9291 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757099AbZHNT5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 15:57:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,381,1246863600"; 
+   d="scan'208";a="541461376"
+Subject: Re: [PATCH] x86: add /proc/cpuinfo/physical id quirks
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: "hpa@zytor.com" <hpa@zytor.com>, "mingo@redhat.com" <mingo@redhat.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090814192730.GA6431@ldl.fc.hp.com>
+References: <20090814163618.GQ7185@ldl.fc.hp.com>
+	 <1250276831.3077.17.camel@sbs-t61.sc.intel.com>
+	 <20090814192730.GA6431@ldl.fc.hp.com>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Fri, 14 Aug 2009 12:56:39 -0700
+Message-Id: <1250279799.3077.41.camel@sbs-t61.sc.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigB8A32634A7D2FE7E2865A6AD
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2009-08-14 at 12:27 -0700, Alex Chiang wrote:
+> Hm, I'm not entirely sure about that, for two reasons.
+> 
+> First (and this is the weaker reason), I'd prefer not to keep
+> adding new fields to /proc/cpuinfo if we can help it, as it just
+> makes for a continually more complicated ABI/API for userspace.
 
-Gregory Haskins wrote:
-> Anthony Liguori wrote:
->> Gregory Haskins wrote:
->>> I re-ran the numbers on 10GE against the actual alacrityvm v0.1 relea=
-se
->>> available in git on kernel.org.
->>>
->>> I tried to include the newly announced "vhost" driver (Michael Tsirki=
-n)
->>> for virtio acceleration, but ran into issues getting the patches to
->>> apply.
->>>
->>> For now, this includes native, virtio-u (virtio-userspace), and venet=
+Overriding same field with different values based on the system will be
+confusing. On some systems it will be derived from cpuid, some will be
+based on physical slots. This is too confusing.
 
->>> all running on 31-rc4.  If I can resolve the issue with Michaels
->>> patches, I will add "virtio-k" (virtio-kernel) to the mix as well.  F=
-or
->>> now, here are the results for 1500mtu:
->>>
->>> native:   7388Mb/s,   29.8us rtt (33505 tps udp-rr)
->>> venet:    3654Mb/s,   56.8us rtt (17600 tps udp-rr)
->>> virtio-u: 1955Mb/s, 4016.0us rtt (  249 tps udp-rr)
->>>  =20
+> Second, I guess I'm not sure what else 'physical id' /should/
+> represent. I'm willing to be corrected on this point, so if I'm
+> wrong, just call it simple ignorance. :)
 
-I re-ran the numbers now that I have the HRT issue straighted out.
-Native and virtio stayed level, venet recovered from the 3.6Gb/s
-quagmire it was in, back up to ~4.5Gb/s.
+As far as possible we kept these fields closer to what the cpuid
+instruction says, so that firmware won't mess up the topology detection
+etc by having wrong values in the bios tables.
 
-native (hw):        7388Mb/s,  29.8us rtt (33500 tps udp-rr)
-venet (alacrityvm): 4560Mb/s,  56.8us rtt (17600 tps udp-rr)
-virtio-u (kvm):	    2670Mb/s, 265.7us rtt ( 3764 tps udp-rr)
-virtio-k (kvm):     d-n-f
+> My quick grep earlier led me to believe that as long as the
+> phys_proc_ids were /consistent/ then it didn't seem to matter
+> what their /values/ were.
 
-(still having problems getting vhost to run).  Will try again next week.)=
+This is correct. But there are several assumptions in the patch that
+might break in the future and where ever possible we simply don't want
+to depend on what bios says and rather depend on what the cpu/hardware
+says.
 
+For example, we shouldn't assume that original phys proc id's calculated
+from cpuid etc need not be contiguous and start from 0 etc. This is
+platform dependent and may vary from one version to another version of
+processor etc.
 
-I have updated the graphs on the wiki:
+Also, you are selecting the fixup table based on number of present cpu
+etc. I am just nervous that how this all workout across cpu generations
+having different cores, sparsely populated sockets in the platform etc.
+We just can't afford to go and fix all the old kernels if we have any
+problem in the future config setups.
 
-http://developer.novell.com/wiki/index.php/AlacrityVM
+Easiest route will be to add a new entry in /proc/cpuinfo
 
-Have a nice weekend, all.
-
--Greg
+thanks,
+suresh
 
 
-
---------------enigB8A32634A7D2FE7E2865A6AD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqFv/gACgkQP5K2CMvXmqFcXgCfT52V4e1EbrAABQE+iEQ555Y2
-IyIAnjMN86tNj6Eg0A9R3nV/6mptq44o
-=s0Cf
------END PGP SIGNATURE-----
-
---------------enigB8A32634A7D2FE7E2865A6AD--
