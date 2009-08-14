@@ -1,287 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757102AbZHNUNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbZHNUNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757102AbZHNUNN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 16:13:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbZHNUNN
+	id S1757112AbZHNUNw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 16:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932504AbZHNUNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 16:13:13 -0400
-Received: from sing.entic.net ([208.64.63.147]:52783 "EHLO mail.q-ag.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756607AbZHNUNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 16:13:12 -0400
-X-Greylist: delayed 1587 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Aug 2009 16:13:12 EDT
-Message-Id: <200908141946.n7EJkh7B018160@mail.q-ag.de>
-From: Manfred Spraul <manfred@colorfullife.com>
-To: npiggin@suse.de
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Pierre Peiffer <peifferp@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Date: Fri, 14 Aug 2009 21:16:00 +0200
-Subject: [PATCH] [patch 4a/4] ipc: sem optimise simple operations
+	Fri, 14 Aug 2009 16:13:52 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44783 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757017AbZHNUNv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 16:13:51 -0400
+Date: Fri, 14 Aug 2009 22:13:11 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Nicolas Pitre <nico@marvell.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       rt-users <linux-rt-users@vger.kernel.org>,
+       MinChan Kim <minchan.kim@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Li Zefan <lizf@cn.fujitsu.com>, Jens Axboe <jens.axboe@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -rt] Fix kmap_high_get()
+Message-ID: <20090814201311.GA453@pengutronix.de>
+References: <1249810600-21946-3-git-send-email-u.kleine-koenig@pengutronix.de> <1250199243-18677-1-git-send-email-u.kleine-koenig@pengutronix.de> <1250258573.5241.1581.camel@twins> <alpine.LFD.2.00.0908141152290.10633@xanadu.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.2.00.0908141152290.10633@xanadu.home>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-An alternative patch to Nick's proposal:
-http://lkml.org/lkml/2009/8/11/11
-The patch is based on Nick's patch.
+Hello,
 
-The patch is ontop of the first three patches from Nick.
+On Fri, Aug 14, 2009 at 11:58:59AM -0400, Nicolas Pitre wrote:
+> On Fri, 14 Aug 2009, Peter Zijlstra wrote:
+> 
+> > As to the patch, its not quite right.
+... on irc Peter and me agreed it's not that wrong :-)  Anyhow, I merged
+the two patches to get the benefits from both.  See below.
 
-Identical with Nick's patch:
-- per semaphore list to optimize single sop semop calls:
-This avoids that the semaphore operations have to scan through all waiting
-tasks, even for the tasks that are waiting on a different semaphore from
-the same array.
+> > From what I understand kmap_high_get() is used to pin a page's kmap iff
+> > it has one, whereas the result of your patch seems to be that it'll
+> > actually create one if its not found.
+> 
+> I don't have enough context to review this patch, but your understanding 
+> of the kmap_high_get() purpose is right.
+The patch with all it's dependencies based on -rc6 is available on
 
-Differences:
-- same code for per-semaphore and global list.
-- one list for both wait-for-zero and decrement instead of two lists.
-- unlink_queue helper function
+	git://git.pengutronix.de/git/ukl/linux-2.6.git kmap-testing
 
-Open points:
-- further testing
-- understand all changes. e.g. why switch from "if (alter)" to
-	"if (alter & !error)" in update_queue
+Niko:  Your review would be very welcome because neither Peter nor me
+have a machine with highmem.
 
->From the diffstat, it's simpler: 50 new lines instead of 110 new lines.
+Best regards
+Uwe
 
-Nick: What do you think? Could you try your test app?
+>From fafb2e9964cd01535a61f20a45093ba053169f06 Mon Sep 17 00:00:00 2001
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Date: Fri, 14 Aug 2009 21:45:55 +0200
+Subject: [PATCH] Fix kmap_high_get() as kmap locking is gone
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 
-Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
+This has the pros of both Peter's and my patch:
+
+- It obsoletes ARCH_NEEDS_KMAP_HIGH_GET without introducing a big
+  overhead for the archs not having defined that symbol.
+- no code duplication between kmap_high_get and kmap_high
+- a nice kmap_high_put function that does the same as kunmap_high
+  without accounting
+- no compiler warning about mismatched declarations
+
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Nicolas Pitre <nico@marvell.com>
+Cc: MinChan Kim <minchan.kim@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org
 ---
- include/linux/sem.h |    5 ++-
- ipc/sem.c           |   83 ++++++++++++++++++++++++++++++++++++++++-----------
- 2 files changed, 69 insertions(+), 19 deletions(-)
+ arch/arm/include/asm/highmem.h |    3 +-
+ arch/arm/mm/dma-mapping.c      |    2 +-
+ mm/highmem.c                   |   98 +++++++++++++++++-----------------------
+ 3 files changed, 43 insertions(+), 60 deletions(-)
 
-diff --git a/include/linux/sem.h b/include/linux/sem.h
-index 1b191c1..ea03058 100644
---- a/include/linux/sem.h
-+++ b/include/linux/sem.h
-@@ -86,6 +86,7 @@ struct task_struct;
- struct sem {
- 	int	semval;		/* current value */
- 	int	sempid;		/* pid of last operation */
-+	struct list_head	sem_pending;	/* pending operations to be processed */
- };
+diff --git a/arch/arm/include/asm/highmem.h b/arch/arm/include/asm/highmem.h
+index 7f36d00..2082ed8 100644
+--- a/arch/arm/include/asm/highmem.h
++++ b/arch/arm/include/asm/highmem.h
+@@ -15,10 +15,9 @@
  
- /* One sem_array data structure for each set of semaphores in the system. */
-@@ -96,11 +97,13 @@ struct sem_array {
- 	struct sem		*sem_base;	/* ptr to first semaphore in array */
- 	struct list_head	sem_pending;	/* pending operations to be processed */
- 	struct list_head	list_id;	/* undo requests on this array */
--	unsigned long		sem_nsems;	/* no. of semaphores in array */
-+	int			sem_nsems;	/* no. of semaphores in array */
-+	int			complex_count;	/* pending complex operations */
- };
+ extern pte_t *pkmap_page_table;
  
- /* One queue for each sleeping process in the system. */
- struct sem_queue {
-+	struct list_head	simple_list; /* queue of pending operations */
- 	struct list_head	list;	 /* queue of pending operations */
- 	struct task_struct	*sleeper; /* this process */
- 	struct sem_undo		*undo;	 /* undo structure */
-diff --git a/ipc/sem.c b/ipc/sem.c
-index 3629ef8..495449e 100644
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -240,6 +240,7 @@ static int newary(struct ipc_namespace *ns, struct ipc_params *params)
- 	key_t key = params->key;
- 	int nsems = params->u.nsems;
- 	int semflg = params->flg;
-+	int i;
- 
- 	if (!nsems)
- 		return -EINVAL;
-@@ -272,6 +273,14 @@ static int newary(struct ipc_namespace *ns, struct ipc_params *params)
- 	ns->used_sems += nsems;
- 
- 	sma->sem_base = (struct sem *) &sma[1];
-+
-+	for (i = 0; i < nsems; i++) {
-+		struct sem *s = &sma->sem_base[i];
-+
-+		INIT_LIST_HEAD(&s->sem_pending);
-+	}
-+
-+	sma->complex_count = 0;
- 	INIT_LIST_HEAD(&sma->sem_pending);
- 	INIT_LIST_HEAD(&sma->list_id);
- 	sma->sem_nsems = nsems;
-@@ -335,7 +344,7 @@ SYSCALL_DEFINE3(semget, key_t, key, int, nsems, int, semflg)
-  * all at once. Return 0 if yes, 1 if need to sleep, else return error code.
-  */
- 
--static int try_atomic_semop (struct sem_array * sma, struct sembuf * sops,
-+static int try_atomic_semop(struct sem_array * sma, struct sembuf * sops,
- 			     int nsops, struct sem_undo *un, int pid)
- {
- 	int result, sem_op;
-@@ -418,15 +427,35 @@ static void wake_up_sem_queue(struct sem_queue *q, int error)
- 	preempt_enable();
- }
- 
-+static void unlink_queue(struct sem_array *sma, struct sem_queue *q)
-+{
-+	list_del(&q->list);
-+	if (q->nsops == 1) {
-+		BUG_ON(list_empty(&q->simple_list));
-+		list_del(&q->simple_list);
-+	} else {
-+		BUG_ON(!list_empty(&q->simple_list));
-+		sma->complex_count--;
-+	}
-+}
-+
-+
- /* Go through the pending queue for the indicated semaphore
-  * looking for tasks that can be completed.
-  */
--static void update_queue (struct sem_array * sma)
-+static void update_queue(struct sem_array *sma, int semnum)
- {
- 	struct sem_queue *q, *tq;
-+	struct list_head *pending_list;
- 
- again:
--	list_for_each_entry_safe(q, tq, &sma->sem_pending, list) {
-+	if (semnum == -1 || sma->complex_count) {
-+		pending_list = &sma->sem_pending;
-+	} else {
-+		pending_list = &sma->sem_base[semnum].sem_pending;
-+	}
-+
-+	list_for_each_entry_safe(q, tq, pending_list, list) {
- 		int error;
- 		int alter;
- 
-@@ -436,21 +465,21 @@ again:
- 		/* Does q->sleeper still need to sleep? */
- 		if (error > 0)
- 			continue;
-+		unlink_queue(sma, q);
- 
--		list_del(&q->list);
-+		alter = q->alter;
-+		wake_up_sem_queue(q, error);
- 
- 		/*
- 		 * The next operation that must be checked depends on the type
- 		 * of the completed operation:
- 		 * - if the operation modified the array, then restart from the
- 		 *   head of the queue and check for threads that might be
--		 *   waiting for semaphore values to become 0.
-+		 *   waiting for this particular semaphore value.
- 		 * - if the operation didn't modify the array, then just
- 		 *   continue.
- 		 */
--		alter = q->alter;
--		wake_up_sem_queue(q, error);
--		if (alter)
-+		if (alter && !error)
- 			goto again;
- 	}
- }
-@@ -531,8 +560,7 @@ static void freeary(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
- 
- 	/* Wake up all pending processes and let them fail with EIDRM. */
- 	list_for_each_entry_safe(q, tq, &sma->sem_pending, list) {
--		list_del(&q->list);
+-#define ARCH_NEEDS_KMAP_HIGH_GET
 -
-+		unlink_queue(sma, q);
- 		wake_up_sem_queue(q, -EIDRM);
- 	}
+ extern void *kmap_high(struct page *page);
+ extern void *kmap_high_get(struct page *page);
++extern void kmap_high_put(struct page *page);
+ extern void kunmap_high(struct page *page);
  
-@@ -754,7 +782,7 @@ static int semctl_main(struct ipc_namespace *ns, int semid, int semnum,
+ extern void *kmap(struct page *page);
+diff --git a/arch/arm/mm/dma-mapping.c b/arch/arm/mm/dma-mapping.c
+index 510c179..d71aff9 100644
+--- a/arch/arm/mm/dma-mapping.c
++++ b/arch/arm/mm/dma-mapping.c
+@@ -551,7 +551,7 @@ static void dma_cache_maint_contiguous(struct page *page, unsigned long offset,
+ 		if (vaddr) {
+ 			vaddr += offset;
+ 			inner_op(vaddr, vaddr + size);
+-			kunmap_high(page);
++			kmap_high_put(page);
  		}
- 		sma->sem_ctime = get_seconds();
- 		/* maybe some queued-up processes were waiting for this */
--		update_queue(sma);
-+		update_queue(sma, -1);
- 		err = 0;
- 		goto out_unlock;
- 	}
-@@ -796,7 +824,7 @@ static int semctl_main(struct ipc_namespace *ns, int semid, int semnum,
- 		curr->sempid = task_tgid_vnr(current);
- 		sma->sem_ctime = get_seconds();
- 		/* maybe some queued-up processes were waiting for this */
--		update_queue(sma);
-+		update_queue(sma, semnum);
- 		err = 0;
- 		goto out_unlock;
- 	}
-@@ -1169,10 +1197,14 @@ SYSCALL_DEFINE4(semtimedop, int, semid, struct sembuf __user *, tsops,
- 	if (error)
- 		goto out_unlock_free;
- 
--	error = try_atomic_semop (sma, sops, nsops, un, task_tgid_vnr(current));
-+	error = try_atomic_semop(sma, sops, nsops, un, task_tgid_vnr(current));
- 	if (error <= 0) {
--		if (alter && error == 0)
--			update_queue (sma);
-+		if (alter && !error) {
-+			if (nsops == 1)
-+				update_queue(sma, sops->sem_num);
-+			else
-+				update_queue(sma, -1);
-+		}
- 		goto out_unlock_free;
  	}
  
-@@ -1189,6 +1221,18 @@ SYSCALL_DEFINE4(semtimedop, int, semid, struct sembuf __user *, tsops,
- 		list_add_tail(&queue.list, &sma->sem_pending);
- 	else
- 		list_add(&queue.list, &sma->sem_pending);
-+	if (nsops == 1) {
-+		struct sem *curr;
-+		curr = &sma->sem_base[sops->sem_num];
+diff --git a/mm/highmem.c b/mm/highmem.c
+index 4aa9eea..1043938 100644
+--- a/mm/highmem.c
++++ b/mm/highmem.c
+@@ -75,26 +75,6 @@ pte_t * pkmap_page_table;
+ 
+ static DECLARE_WAIT_QUEUE_HEAD(pkmap_wait);
+ 
+-
+-/*
+- * Most architectures have no use for kmap_high_get(), so let's abstract
+- * the disabling of IRQ out of the locking in that case to save on a
+- * potential useless overhead.
+- */
+-#ifdef ARCH_NEEDS_KMAP_HIGH_GET
+-#define lock_kmap()             spin_lock_irq(&kmap_lock)
+-#define unlock_kmap()           spin_unlock_irq(&kmap_lock)
+-#define lock_kmap_any(flags)    spin_lock_irqsave(&kmap_lock, flags)
+-#define unlock_kmap_any(flags)  spin_unlock_irqrestore(&kmap_lock, flags)
+-#else
+-#define lock_kmap()             spin_lock(&kmap_lock)
+-#define unlock_kmap()           spin_unlock(&kmap_lock)
+-#define lock_kmap_any(flags)    \
+-		do { spin_lock(&kmap_lock); (void)(flags); } while (0)
+-#define unlock_kmap_any(flags)  \
+-		do { spin_unlock(&kmap_lock); (void)(flags); } while (0)
+-#endif
+-
+ /*
+  * Try to free a given kmap slot.
+  *
+@@ -313,22 +293,32 @@ static void kunmap_account(void)
+ 	wake_up(&pkmap_wait);
+ }
+ 
+-void *kmap_high(struct page *page)
++/**
++ * kmap_high_get - pin a highmem page into memory
++ * @page: &struct page to pin
++ *
++ * Returns the page's current virtual memory address, or NULL if no mapping
++ * exists.  When and only when a non null address is returned then a
++ * matching call to kmap_high_put() is necessary.
++ *
++ * This can be called from any context.
++ */
++void *kmap_high_get(struct page *page)
+ {
+ 	unsigned long vaddr;
+ 
+-
+-	kmap_account();
+ again:
+ 	vaddr = (unsigned long)page_address(page);
+ 	if (vaddr) {
+ 		atomic_t *counter = &pkmap_count[PKMAP_NR(vaddr)];
+ 		if (atomic_inc_not_zero(counter)) {
+ 			/*
+-			 * atomic_inc_not_zero implies a (memory) barrier on success
+-			 * so page address will be reloaded.
++			 * atomic_inc_not_zero implies a (memory) barrier on
++			 * success, so page address will be reloaded.
+ 			 */
+-			unsigned long vaddr2 = (unsigned long)page_address(page);
++			unsigned long vaddr2 =
++				(unsigned long)page_address(page);
 +
-+		if (alter)
-+			list_add_tail(&queue.list, &curr->sem_pending);
-+		else
-+			list_add(&queue.list, &curr->sem_pending);
-+	} else {
-+		INIT_LIST_HEAD(&queue.simple_list);
-+		sma->complex_count++;
-+	}
+ 			if (likely(vaddr == vaddr2))
+ 				return (void *)vaddr;
  
- 	queue.status = -EINTR;
- 	queue.sleeper = current;
-@@ -1231,7 +1275,7 @@ SYSCALL_DEFINE4(semtimedop, int, semid, struct sembuf __user *, tsops,
- 	 */
- 	if (timeout && jiffies_left == 0)
- 		error = -EAGAIN;
--	list_del(&queue.list);
-+	unlink_queue(sma, &queue);
- 
- out_unlock_free:
- 	sem_unlock(sma);
-@@ -1356,11 +1400,14 @@ void exit_sem(struct task_struct *tsk)
- 				if (semaphore->semval > SEMVMX)
- 					semaphore->semval = SEMVMX;
- 				semaphore->sempid = task_tgid_vnr(current);
-+				if (likely(!sma->complex_count))
-+					update_queue(sma, i);
- 			}
+@@ -345,46 +335,40 @@ again:
  		}
- 		sma->sem_otime = get_seconds();
- 		/* maybe some queued-up processes were waiting for this */
--		update_queue(sma);
-+		if (unlikely(sma->complex_count))
-+			update_queue(sma, -1);
- 		sem_unlock(sma);
+ 	}
  
- 		call_rcu(&un->rcu, free_un);
-@@ -1374,7 +1421,7 @@ static int sysvipc_sem_proc_show(struct seq_file *s, void *it)
- 	struct sem_array *sma = it;
++	return NULL;
++}
++EXPORT_SYMBOL(kmap_high_get);
++
++void kmap_high_put(struct page *page)
++{
++	unsigned long vaddr = (unsigned long)page_address(page);
++
++	BUG_ON(!vaddr);
++	pkmap_put(&pkmap_count[PKMAP_NR(vaddr)]);
++}
++EXPORT_SYMBOL(kmap_high_put);
++
++void *kmap_high(struct page *page)
++{
++	unsigned long vaddr;
++
++	kmap_account();
++again:
++	vaddr = (unsigned long)kmap_high_get(page);
++	if (vaddr)
++		return (void *)vaddr;
++
+ 	vaddr = pkmap_insert(page);
+ 	if (!vaddr)
+ 		goto again;
  
- 	return seq_printf(s,
--			  "%10d %10d  %4o %10lu %5u %5u %5u %5u %10lu %10lu\n",
-+			  "%10d %10d  %4o %10u %5u %5u %5u %5u %10lu %10lu\n",
- 			  sma->sem_perm.key,
- 			  sma->sem_perm.id,
- 			  sma->sem_perm.mode,
+ 	return (void *)vaddr;
+ }
+-
+ EXPORT_SYMBOL(kmap_high);
+ 
+-#ifdef ARCH_NEEDS_KMAP_HIGH_GET
+-/**
+- * kmap_high_get - pin a highmem page into memory
+- * @page: &struct page to pin
+- *
+- * Returns the page's current virtual memory address, or NULL if no mapping
+- * exists.  When and only when a non null address is returned then a
+- * matching call to kunmap_high() is necessary.
+- *
+- * This can be called from any context.
+- */
+-void *kmap_high_get(struct page *page)
+-{
+-	unsigned long vaddr, flags;
+-
+-	lock_kmap_any(flags);
+-	vaddr = (unsigned long)page_address(page);
+-	if (vaddr) {
+-		BUG_ON(atomic_read(&pkmap_count[PKMAP_NR(vaddr)]) < 1);
+-		atomic_add(1, pkmap_count[PKMAP_NR(vaddr)]);
+-	}
+-	unlock_kmap_any(flags);
+-	return (void*) vaddr;
+-}
+-#endif
+-
+- void kunmap_high(struct page *page)
++void kunmap_high(struct page *page)
+ {
+-	unsigned long vaddr = (unsigned long)page_address(page);
+-	BUG_ON(!vaddr);
+-	pkmap_put(&pkmap_count[PKMAP_NR(vaddr)]);
++	kmap_high_put(page);
+ 	kunmap_account();
+ }
+ 
 -- 
-1.6.2.5
+1.6.3.3
 
+
+
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
