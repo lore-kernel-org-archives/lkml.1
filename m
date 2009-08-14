@@ -1,61 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756445AbZHNTBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932151AbZHNTCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756445AbZHNTBc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 15:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbZHNTBc
+	id S932151AbZHNTCe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 15:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbZHNTCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 15:01:32 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:34699 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754045AbZHNTBb (ORCPT
+	Fri, 14 Aug 2009 15:02:33 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:43558 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754182AbZHNTCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 15:01:31 -0400
-Date: Fri, 14 Aug 2009 15:01:32 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Matthew Garrett <mjg59@srcf.ucam.org>, <linux-usb@vger.kernel.org>,
-       <linux-pci@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
-In-Reply-To: <200908141913.56884.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0908141500490.2659-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 14 Aug 2009 15:02:33 -0400
+Subject: Re: [RFC][PATCH] flexible array implementation v4
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       menage@google.com, vda.linux@googlemail.com, mikew@google.com,
+       lizf@cn.fujitsu.com, xiyou.wangcong@gmail.com,
+       kamezawa.hiroyu@jp.fujitsu.com, hpa@zytor.com, bblum@google.com
+In-Reply-To: <e9c3a7c20908141056o32ce1204k6751b43271aa88ab@mail.gmail.com>
+References: <20090723152647.D9391722@kernel>
+	 <20090724163814.08c7eee3.akpm@linux-foundation.org>
+	 <e9c3a7c20908141056o32ce1204k6751b43271aa88ab@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 14 Aug 2009 12:02:05 -0700
+Message-Id: <1250276525.10725.6749.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Aug 2009, Rafael J. Wysocki wrote:
-
-> On Friday 14 August 2009, Rafael J. Wysocki wrote:
-> > On Friday 14 August 2009, Alan Stern wrote:
-> > > On Thu, 13 Aug 2009, Matthew Garrett wrote:
-> > > 
-> > > > On Thu, Aug 13, 2009 at 11:22:44AM -0400, Alan Stern wrote:
-> ...
-> > > > Though perhaps the device level runtime_idle shouldn't be void - that 
-> > > > way the bus can ask the driver whether its suspend conditions have been 
-> > > > satisfied? Right now there doesn't seem to be any way for the bus to ask 
-> > > > that.
-> > > 
-> > > If you want to get the device-level runtime_idle involved, you can make
-> > > _it_ responsible for scheduling the suspend.  Then the bus-level code
-> > > simply has to check whether everything is okay at the bus level, and if
-> > > it is, call the device-level routine.
-> > > 
-> > > However changing the return type wouldn't hurt anything, and it would 
-> > > allow the pm_schedule_suspend call to be centralized in the bus code.  
-> > > You could ask Rafael about it, or just send him a patch.
-> > 
-> > Well, I'm not against that, but what should pm_runtime_idle() do with the
-> > result returned by it?  Just pass it to the caller?
+On Fri, 2009-08-14 at 10:56 -0700, Dan Williams wrote:
+> On Fri, Jul 24, 2009 at 4:38 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
+> > On Thu, 23 Jul 2009 08:26:47 -0700
+> > Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+> >
+> >>  linux-2.6.git-dave/include/linux/flex_array.h |   46 ++++
+> >>  linux-2.6.git-dave/lib/Makefile               |    2
+> >>  linux-2.6.git-dave/lib/flex_array.c           |  269 ++++++++++++++++++++++++++
+> >
+> > I haven't looked at this lately but I merged it.
+> >
+> > As it's obviously non-injurious, we could slip it into 2.6.31 for
+> > convenience's sake but without any callers that's just runtime bloat.
+> > So I guess we wait for some additional callers to come along and prove
+> > its worth.
 > 
-> Hm, perhaps its better to ignore it, though.
+> I am considering using this for managing the descriptor ring in a
+> device driver, but I am concerned with the overhead of the divides.
+> Would it be acceptable to round the element size to the next
+> power-of-2 value so we can replace all the divides with shifts?
 
-That's what I was going to say.  The return value is intended for use 
-by bus-level code when calling a driver-level routine.
+I think we have two options.  We can programatically determine and store
+the shift, like this (during allocation):
 
-Alan Stern
+	if (can_shift)
+		fa->element_size = -log2(element_size);
+	else
+		fa->element_size = element_size;
+
+Then, when dividing, we look for the "negative" offset size and do:
+
+	if (element_size < 0)
+		index = foo >> fa->element_size;
+	else
+		index = foo / fa->element_size;
+
+Or, we can do what I'm doing in this patch.  If you want to specify the
+index sizes to flex_array_put/get(), there's a flex_array_put_es()
+(element size) variant.  It should inline enough to let the compiler
+take care of this for us and turn the divides into shifts.
+
+I just hacked this up *REALLY* quickly.  Not even compile tested.  I'll
+look at it in some more detail early next week.  I'm not even positive
+this will work.  Just releasing early and often. :)
+
+diff --git a/include/linux/flex_array.h b/include/linux/flex_array.h
+index 23c1ec7..9052704 100644
+--- a/include/linux/flex_array.h
++++ b/include/linux/flex_array.h
+@@ -36,6 +36,47 @@ struct flex_array {
+ 	.total_nr_elements = (total),	\
+ } } }
+ 
++static inline int __elements_per_part(int element_size)
++{
++	return FLEX_ARRAY_PART_SIZE / element_size;
++}
++
++static int __fa_element_to_part_nr(struct flex_array *fa, int element_size
++		int element_nr)
++{
++	return element_nr / __elements_per_part(element_size);
++}
++
++static int __fa_index_inside_part(struct flex_array *fa, int element_size,
++		int element_nr)
++{
++	return element_nr % __elements_per_part(element_size);
++}
++
++void *flex_array_get_es(struct flex_array *fa, int element_nr, int element_size);
++{
++	int part_nr = __fa_element_to_part_nr(fa, element_nr, element_size);
++	int index_inside_part = index_inside_part(fa, element_nr);
++
++	if (element_nr >= fa->total_nr_elements)
++		return -ENOSPC;
++
++	return flex_array_get_precalc(fa, part_nr, index_inside_part);
++}
++
++int flex_array_put_es(struct flex_array *fa, int element_nr, int element_size,
++		      void *src, gfp_t flags);
++{
++	int part_nr = __fa_element_to_part_nr(fa, element_nr, element_size);
++	int index_inside = index_inside_part(fa, element_nr);
++
++	if (element_nr >= fa->total_nr_elements)
++		return NULL;
++
++	return flex_array_put_precalc(fa, part_nr, index_inside, src, flags);
++}
++
++
+ struct flex_array *flex_array_alloc(int element_size, int total, gfp_t flags);
+ int flex_array_prealloc(struct flex_array *fa, int start, int end, gfp_t flags);
+ void flex_array_free(struct flex_array *fa);
+diff --git a/lib/flex_array.c b/lib/flex_array.c
+index 08f1636..0b2030d 100644
+--- a/lib/flex_array.c
++++ b/lib/flex_array.c
+@@ -115,11 +115,6 @@ struct flex_array *flex_array_alloc(int element_size, int total, gfp_t flags)
+ 	return ret;
+ }
+ 
+-static int fa_element_to_part_nr(struct flex_array *fa, int element_nr)
+-{
+-	return element_nr / __elements_per_part(fa->element_size);
+-}
+-
+ /**
+  * flex_array_free_parts - just free the second-level pages
+  * @src:	address of data to copy into the array
+@@ -153,7 +148,7 @@ static int fa_index_inside_part(struct flex_array *fa, int element_nr)
+ 
+ static int index_inside_part(struct flex_array *fa, int element_nr)
+ {
+-	int part_offset = fa_index_inside_part(fa, element_nr);
++	int part_offset = fa_index_inside_part(fa, fa->element_size, element_nr);
+ 	return part_offset * fa->element_size;
+ }
+ 
+@@ -176,6 +171,17 @@ __fa_get_part(struct flex_array *fa, int part_nr, gfp_t flags)
+ 	return part;
+ }
+ 
++
++static int fa_element_to_part_nr(struct flex_array *fa, int element_nr)
++{
++	return __fa_element_to_part_nr(fa, fa->element_size, element_nr);
++}
++
++static int fa_index_inside_part(struct flex_array *fa, int element_nr)
++{
++	return __fa_index_inside_part(fa, fa->element_size, element_nr);
++}
++
+ /**
+  * flex_array_put - copy data into the array at @element_nr
+  * @src:	address of data to copy into the array
+@@ -188,9 +194,17 @@ __fa_get_part(struct flex_array *fa, int part_nr, gfp_t flags)
+  *
+  * Locking must be provided by the caller.
+  */
+-int flex_array_put(struct flex_array *fa, int element_nr, void *src, gfp_t flags)
++int flex_array_put(struct flex_array *fa, int element_nr, void *src,
++		   gfp_t flags)
+ {
+ 	int part_nr = fa_element_to_part_nr(fa, element_nr);
++	int index_inside = index_inside_part(fa, element_nr);
++
++	return flex_array_put_precalc(fa, part_nr, index_inside, src, flags);
++}
++int flex_array_put_precalc(struct flex_array *fa, int part_nr,
++			   int index_inside_part, void *src, gfp_t flags)
++{
+ 	struct flex_array_part *part;
+ 	void *dst;
+ 
+@@ -253,15 +267,23 @@ int flex_array_prealloc(struct flex_array *fa, int start, int end, gfp_t flags)
+ void *flex_array_get(struct flex_array *fa, int element_nr)
+ {
+ 	int part_nr = fa_element_to_part_nr(fa, element_nr);
+-	struct flex_array_part *part;
++	int index_inside_part = index_inside_part(fa, element_nr);
+ 
+ 	if (element_nr >= fa->total_nr_elements)
+ 		return NULL;
++
++	return flex_array_get_precalc(fa, part_nr, index_inside_part);
++}
++void *flex_array_get_precalc(struct flex_array *fa, int part_nr,
++			     int index_inside_part)
++{
++	struct flex_array_part *part;
++
+ 	if (!fa->parts[part_nr])
+ 		return NULL;
+ 	if (elements_fit_in_base(fa))
+ 		part = (struct flex_array_part *)&fa->parts[0];
+ 	else
+ 		part = fa->parts[part_nr];
+-	return &part->elements[index_inside_part(fa, element_nr)];
++	return &part->elements[index_inside_part];
+ }
+
+
+-- Dave
 
