@@ -1,127 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbZHNDFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbZHNDQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756086AbZHNDFQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 23:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbZHNDFO
+	id S1755831AbZHNDQm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 23:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbZHNDQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 23:05:14 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59262 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756016AbZHNDFK (ORCPT
+	Thu, 13 Aug 2009 23:16:42 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:29624 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753640AbZHNDQk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 23:05:10 -0400
-Message-ID: <4A84D432.2040704@zytor.com>
-Date: Thu, 13 Aug 2009 20:04:18 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 13 Aug 2009 23:16:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Tek4e61o8Pu2E9TnFSdewLq4mUeqc3P0EBEM7QCpEf+u7BT/9joSEIO2fHiC1xf76U
+         MXyJ5GK/YuOhkoYZgZ1MsB+LGIAKvYZLMjAnKm85KSfHdYIECBqXpTPVeM5JoTyiRJqg
+         UnkZY/IWkx3+lfxGTIKFkP8qvxq/br9Znqp/M=
 MIME-Version: 1.0
-To: "Wang, Shane" <shane.wang@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, "Cihula, Joseph" <joseph.cihula@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>,
-       "Wei, Gang" <gang.wei@intel.com>
-Subject: Re: [PATCH 1/1] intel_txt: to fix build errors of CONFIG_ACPI_SLEEP
-References: <4A4ACA60.1000209@intel.com> <20090807072752.GA12119@elte.hu> <20090812145321.GA11347@elte.hu> <037F493892196B458CD3E193E8EBAD4F01EAB64402@pdsmsx502.ccr.corp.intel.com> <20090813064634.GA12143@elte.hu> <4A842C5B.7050100@zytor.com> <037F493892196B458CD3E193E8EBAD4F01EAB6464E@pdsmsx502.ccr.corp.intel.com>
-In-Reply-To: <037F493892196B458CD3E193E8EBAD4F01EAB6464E@pdsmsx502.ccr.corp.intel.com>
-Content-Type: multipart/mixed;
- boundary="------------030405020100090206010705"
+In-Reply-To: <20090813.124838.210334778.davem@davemloft.net>
+References: <505766fa0908111853y7030399ewb07d4cec6829fd16@mail.gmail.com>
+	 <20090813.124838.210334778.davem@davemloft.net>
+Date: Fri, 14 Aug 2009 11:16:41 +0800
+Message-ID: <505766fa0908132016v1e705525r92e42c142897bc82@mail.gmail.com>
+Subject: Re: Sparc miss chance to fix recoverable fault in copy_from_user
+From: hyl <heyongli@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030405020100090206010705
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+2009/8/14 David Miller <davem@davemloft.net>:
+> From: hyl <heyongli@gmail.com>
+> Date: Wed, 12 Aug 2009 09:53:01 +0800
+>
+> Please post all Sparc patches and questions CC:'d to
+> sparclinux@vger.kernel.org otherwise no Sparc experts are going to see
+thank you.
+> it.
+>
+>> --- a/arch/sparc/kernel/sun4v_tlb_miss.S
+>> +++ b/arch/sparc/kernel/sun4v_tlb_miss.S
+>> @@ -124,7 +124,7 @@ sun4v_dtlb_load:
+>>       mov     %g3, %o2                ! PTE
+>>       mov     HV_MMU_DMMU, %o3        ! flags
+>>       ta      HV_MMU_MAP_ADDR_TRAP
+>> -     brnz,pn %o0, sun4v_dtlb_error
+>> +     brnz,pn %o0, sun4v_dtlb_prot
+>>        mov    %g2, %o1                ! restore %o1
+>>       mov     %g1, %o0                ! restore %o0
+>>       mov     %g5, %o2                ! restore %o2
+>>
+>>
+>>
+>> am i miss understanding the merged sparc/spar64?
+>>
+>> this problem found on sparc64, via a simple module just access address 0
+>> via copy_from_user. another simple test is kgdb, issue a cmd:
+>> x 0
+>
+> That condition should never trigger, the problem is caused
+> elsewhere.
+>
+> If the HV_MMU_MAP_ADDR_TRAP hypervisor call gives an error it means:
+>
+> 1) The PTE passed in is invalid
+>
+> 2) The PTE passed in translates to addresses outside of the
+>   range accessible to the guest
 
-On 08/13/2009 07:06 PM, Wang, Shane wrote:
-> I agree with hpa, considering TXT doesnot depends on acpi sleep.
-> 
-> takes effect but tboot->mac_regions[] will never be used without S3.
-> 
+the problem seem due to this reason. the test step and trigger flow is:
 
-Given that, I would create a function called tboot_setup_suspend() or
-something like that and localize the setting of mac_regions as well as
-s3_resume_vector there.
-
-Since it looks like s3_resume_vector is simply set up in tboot_sleep()
-before we'd call tboot_shutdown(), we can presumably simply do it all in
-tboot_shutdown().
-
-Ingo, Shane: how does the attached patch look?
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+1. connect the kgdb  (or simple modules just copy_from_user with
+address 0xffff fff0)
+    kddb  "x 0xfffffff0" command processed by probe_kernel_read() ->
+__copy_from_user_inatomic.
+2. then a tlb miss triggered
+3. then cpu go to entry: sun4v_dtlb_miss ( should be)
+4.  --> sun4v_dtlb_load  (very sure, verified)
+5.  --->halt in  sun4v_dtlb_error  (very sure, ) emit message in
+console is: (access the address 0xffff fff0 )
+    SUN4V-DTLB: Error at TPC[5f2cc8], tl 1
+    SUN4V-DTLB: TPC<memcpy_user_stub+0x8/0x40>
+    SUN4V-DTLB: O7[4af23c]
+    SUN4V-DTLB: O7<probe_kernel_read+0x3c/0xa0>
+    SUN4V-DTLB: vaddr[ffffffffffffe000] ctx[0] pte[800007ffffffe743] error[2]
 
 
---------------030405020100090206010705
-Content-Type: text/plain;
- name="diff.txt"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="diff.txt"
+the problem is :
+this DTLB fault can be fixed by search extable, by fall to the
+do_sparc64_fault, my draft proposal can verify this:  with this patch, this kind
+of fault is recovery, so enable copy_from_user  return error instead of halt.
 
-ZGlmZiAtLWdpdCBhL2FyY2gveDg2L2tlcm5lbC90Ym9vdC5jIGIvYXJjaC94ODYva2VybmVs
-L3Rib290LmMKaW5kZXggMWFiODAxMi4uYTE4M2JlZiAxMDA2NDQKLS0tIGEvYXJjaC94ODYv
-a2VybmVsL3Rib290LmMKKysrIGIvYXJjaC94ODYva2VybmVsL3Rib290LmMKQEAgLTM0LDYg
-KzM0LDcgQEAKICNpbmNsdWRlIDxhc20vcGd0YWJsZS5oPgogI2luY2x1ZGUgPGFzbS9wZ2Fs
-bG9jLmg+CiAjaW5jbHVkZSA8YXNtL2ZpeG1hcC5oPgorI2luY2x1ZGUgPGFzbS9wcm90by5o
-PgogI2luY2x1ZGUgPGFzbS9zZXR1cC5oPgogI2luY2x1ZGUgPGFzbS90Ym9vdC5oPgogI2lu
-Y2x1ZGUgPGFzbS9lODIwLmg+CkBAIC0xNjQsMjUgKzE2NSw1MSBAQCB2b2lkIHRib290X2Ny
-ZWF0ZV90cmFtcG9saW5lKHZvaWQpCiAJbWFwX2Jhc2UgPSBQRk5fRE9XTih0Ym9vdC0+dGJv
-b3RfYmFzZSk7CiAJbWFwX3NpemUgPSBQRk5fVVAodGJvb3QtPnRib290X3NpemUpOwogCWlm
-IChtYXBfdGJvb3RfcGFnZXMobWFwX2Jhc2UgPDwgUEFHRV9TSElGVCwgbWFwX2Jhc2UsIG1h
-cF9zaXplKSkKLQkJcGFuaWMoInRib290OiBFcnJvciBtYXBwaW5nIHRib290IHBhZ2VzICht
-Zm5zKSBAIDB4JXgsIDB4JXhcbiIsIG1hcF9iYXNlLCBtYXBfc2l6ZSk7CisJCXBhbmljKCJ0
-Ym9vdDogRXJyb3IgbWFwcGluZyB0Ym9vdCBwYWdlcyAobWZucykgQCAweCV4LCAweCV4XG4i
-LAorCQkgICAgICBtYXBfYmFzZSwgbWFwX3NpemUpOwogfQogCi1zdGF0aWMgdm9pZCBzZXRf
-bWFjX3JlZ2lvbnModm9pZCkKKyNpZmRlZiBDT05GSUdfQUNQSV9TTEVFUAorCitzdGF0aWMg
-dm9pZCBhZGRfbWFjX3JlZ2lvbihwaHlzX2FkZHJfdCBzdGFydCwgdW5zaWduZWQgbG9uZyBz
-aXplKQogewotCXRib290LT5udW1fbWFjX3JlZ2lvbnMgPSAzOworCXN0cnVjdCB0Ym9vdF9t
-YWNfcmVnaW9uICptcjsKKwlwaHlzX2FkZHJfdCBlbmQgPSBzdGFydCArIHNpemU7CisKKwlp
-ZiAoc3RhcnQgJiYgc2l6ZSkgeworCQltciA9ICZ0Ym9vdC0+bWFjX3JlZ2lvbnNbdGJvb3Qt
-Pm51bV9tYWNfcmVnaW9ucysrXTsKKwkJbXItPnN0YXJ0ID0gcm91bmRfZG93bihzdGFydCwg
-UEFHRV9TSVpFKTsKKwkJbXItPnNpemUgID0gcm91bmRfdXAoZW5kLCBQQUdFX1NJWkUpIC0g
-bXItPnN0YXJ0OworCX0KK30KKworc3RhdGljIGludCB0Ym9vdF9zZXR1cF9zbGVlcCh2b2lk
-KQoreworCXRib290LT5udW1fbWFjX3JlZ2lvbnMgPSAwOworCiAJLyogUzMgcmVzdW1lIGNv
-ZGUgKi8KLQl0Ym9vdC0+bWFjX3JlZ2lvbnNbMF0uc3RhcnQgPSBQRk5fUEhZUyhQRk5fRE9X
-TihhY3BpX3dha2V1cF9hZGRyZXNzKSk7Ci0JdGJvb3QtPm1hY19yZWdpb25zWzBdLnNpemUg
-PSBQRk5fVVAoV0FLRVVQX1NJWkUpIDw8IFBBR0VfU0hJRlQ7CisJYWRkX21hY19yZWdpb24o
-YWNwaV93YWtldXBfYWRkcmVzcywgV0FLRVVQX1NJWkUpOwogCS8qIEFQIHRyYW1wb2xpbmUg
-Y29kZSAqLwotCXRib290LT5tYWNfcmVnaW9uc1sxXS5zdGFydCA9Ci0JCQlQRk5fUEhZUyhQ
-Rk5fRE9XTih2aXJ0X3RvX3BoeXModHJhbXBvbGluZV9iYXNlKSkpOwotCXRib290LT5tYWNf
-cmVnaW9uc1sxXS5zaXplID0gUEZOX1VQKFRSQU1QT0xJTkVfU0laRSkgPDwgUEFHRV9TSElG
-VDsKKwlhZGRfbWFjX3JlZ2lvbih2aXJ0X3RvX3BoeXModHJhbXBvbGluZV9iYXNlKSwgVFJB
-TVBPTElORV9TSVpFKTsKIAkvKiBrZXJuZWwgY29kZSArIGRhdGEgKyBic3MgKi8KLQl0Ym9v
-dC0+bWFjX3JlZ2lvbnNbMl0uc3RhcnQgPSBQRk5fUEhZUyhQRk5fRE9XTih2aXJ0X3RvX3Bo
-eXMoJl90ZXh0KSkpOwotCXRib290LT5tYWNfcmVnaW9uc1syXS5zaXplID0gUEZOX1BIWVMo
-UEZOX1VQKHZpcnRfdG9fcGh5cygmX2VuZCkpKSAtCi0JCQkJICAgICBQRk5fUEhZUyhQRk5f
-RE9XTih2aXJ0X3RvX3BoeXMoJl90ZXh0KSkpOworCWFkZF9tYWNfcmVnaW9uKHZpcnRfdG9f
-cGh5cyhfdGV4dCksIF9lbmQgLSBfdGV4dCk7CisKKwl0Ym9vdC0+YWNwaV9zaW5mby5rZXJu
-ZWxfczNfcmVzdW1lX3ZlY3RvciA9IGFjcGlfd2FrZXVwX2FkZHJlc3M7CisKKwlyZXR1cm4g
-MDsKIH0KIAorI2Vsc2UgLyogbm8gQ09ORklHX0FDUElfU0xFRVAgKi8KKworc3RhdGljIGlu
-dCB0Ym9vdF9zZXR1cF9zbGVlcCh2b2lkKQoreworCS8qIFMzIHNodXRkb3duIHJlcXVlc3Rl
-ZCwgYnV0IFMzIG5vdCBzdXBwb3J0ZWQgYnkgdGhlIGtlcm5lbC4uLiAqLworCUJVRygpOwor
-CXJldHVybiAtMTsKK30KKworI2VuZGlmCisKIHZvaWQgdGJvb3Rfc2h1dGRvd24odTMyIHNo
-dXRkb3duX3R5cGUpCiB7CiAJdm9pZCAoKnNodXRkb3duKSh2b2lkKTsKQEAgLTIwMCw3ICsy
-MjcsOCBAQCB2b2lkIHRib290X3NodXRkb3duKHUzMiBzaHV0ZG93bl90eXBlKQogCiAJLyog
-aWYgdGhpcyBpcyBTMyB0aGVuIHNldCByZWdpb25zIHRvIE1BQyAqLwogCWlmIChzaHV0ZG93
-bl90eXBlID09IFRCX1NIVVRET1dOX1MzKQotCQlzZXRfbWFjX3JlZ2lvbnMoKTsKKwkJaWYg
-KHRib290X3NldHVwX3NsZWVwKCkpCisJCQlyZXR1cm47CiAKIAl0Ym9vdC0+c2h1dGRvd25f
-dHlwZSA9IHNodXRkb3duX3R5cGU7CiAKQEAgLTI1Myw3ICsyODEsNiBAQCB2b2lkIHRib290
-X3NsZWVwKHU4IHNsZWVwX3N0YXRlLCB1MzIgcG0xYV9jb250cm9sLCB1MzIgcG0xYl9jb250
-cm9sKQogCXRib290LT5hY3BpX3NpbmZvLnBtMWJfY250X3ZhbCA9IHBtMWJfY29udHJvbDsK
-IAkvKiB3ZSBhbHdheXMgdXNlIHRoZSAzMmIgd2FrZXVwIHZlY3RvciAqLwogCXRib290LT5h
-Y3BpX3NpbmZvLnZlY3Rvcl93aWR0aCA9IDMyOwotCXRib290LT5hY3BpX3NpbmZvLmtlcm5l
-bF9zM19yZXN1bWVfdmVjdG9yID0gYWNwaV93YWtldXBfYWRkcmVzczsKIAogCWlmIChzbGVl
-cF9zdGF0ZSA+PSBBQ1BJX1NfU1RBVEVfQ09VTlQgfHwKIAkgICAgYWNwaV9zaHV0ZG93bl9t
-YXBbc2xlZXBfc3RhdGVdID09IC0xKSB7Cg==
---------------030405020100090206010705--
+in addition, it is triggered in kernel space, search the extable is mandatory .
+
+fix me
+Pauli He
+
+>
+> 3) The virtual address is invalid
+>
+> And the kernel should never have such an illegal address or
+> PTE mapping here.
+>
+> You need to figure out how the bad mapping gets into the kernel page
+> tables and/or translations in the first place.
+>
