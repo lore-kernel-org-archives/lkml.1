@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbZHNRNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbZHNRQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755330AbZHNRNY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 13:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755244AbZHNRNY
+	id S1755839AbZHNRQM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 13:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbZHNRQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 13:13:24 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40307 "EHLO ogre.sisk.pl"
+	Fri, 14 Aug 2009 13:16:12 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:32821 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754746AbZHNRNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 13:13:23 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
-Date: Fri, 14 Aug 2009 19:13:56 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-usb@vger.kernel.org,
-       linux-pci@vger.kernel.org, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0908141032070.2987-100000@iolanthe.rowland.org> <200908141905.32766.rjw@sisk.pl>
-In-Reply-To: <200908141905.32766.rjw@sisk.pl>
+	id S1755300AbZHNRQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 13:16:11 -0400
+Date: Fri, 14 Aug 2009 10:14:53 -0700
+From: Greg KH <gregkh@suse.de>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       stable-review@kernel.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 27/28] ALSA: hda - Add missing vmaster initialization
+ for ALC269
+Message-ID: <20090814171453.GA21806@suse.de>
+References: <20090813194021.446758568@mini.kroah.org>
+ <20090813194339.809516126@mini.kroah.org>
+ <alpine.LFD.2.01.0908131258420.28882@localhost.localdomain>
+ <20090813201222.GA22916@suse.de>
+ <s5hk516nasj.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908141913.56884.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5hk516nasj.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 14 August 2009, Rafael J. Wysocki wrote:
-> On Friday 14 August 2009, Alan Stern wrote:
-> > On Thu, 13 Aug 2009, Matthew Garrett wrote:
+On Fri, Aug 14, 2009 at 08:56:28AM +0200, Takashi Iwai wrote:
+> At Thu, 13 Aug 2009 13:12:22 -0700,
+> Greg KH wrote:
 > > 
-> > > On Thu, Aug 13, 2009 at 11:22:44AM -0400, Alan Stern wrote:
-...
-> > > Though perhaps the device level runtime_idle shouldn't be void - that 
-> > > way the bus can ask the driver whether its suspend conditions have been 
-> > > satisfied? Right now there doesn't seem to be any way for the bus to ask 
-> > > that.
+> > On Thu, Aug 13, 2009 at 12:59:05PM -0700, Linus Torvalds wrote:
+> > > 
+> > > 
+> > > On Thu, 13 Aug 2009, Greg KH wrote:
+> > > > 
+> > > > From: Takashi Iwai <tiwai@suse.de>
+> > > > 
+> > > > commit 100d5eb36ba20dc0b99a17ea2b9800c567bfc3d1 upstream.
+> > > > 
+> > > > Without the initialization of vmaster NID, the dB information got
+> > > > confused for ALC269 codec.
+> > > > 
+> > > > Reference: Novell bnc#527361
+> > > > 	https://bugzilla.novell.com/show_bug.cgi?id=527361
+> > > > 
+> > > > Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> > > > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > > > 
+> > > > ---
+> > > >  sound/pci/hda/patch_realtek.c |    2 ++
+> > > >  1 file changed, 2 insertions(+)
+> > > > 
+> > > > --- a/sound/pci/hda/patch_realtek.c
+> > > > +++ b/sound/pci/hda/patch_realtek.c
+> > > > @@ -13767,6 +13767,8 @@ static int patch_alc861vd(struct hda_cod
+> > > >  
+> > > >  	spec->vmaster_nid = 0x02;
+> > > >  
+> > > > +	spec->vmaster_nid = 0x02;
+> > > > +
+> > > >  	codec->patch_ops = alc_patch_ops;
+> > > 
+> > > You seem to have already applied this one earlier ;)
 > > 
-> > If you want to get the device-level runtime_idle involved, you can make
-> > _it_ responsible for scheduling the suspend.  Then the bus-level code
-> > simply has to check whether everything is okay at the bus level, and if
-> > it is, call the device-level routine.
-> > 
-> > However changing the return type wouldn't hurt anything, and it would 
-> > allow the pm_schedule_suspend call to be centralized in the bus code.  
-> > You could ask Rafael about it, or just send him a patch.
+> > Heh, good catch, I've now removed this one from the queue.
 > 
-> Well, I'm not against that, but what should pm_runtime_idle() do with the
-> result returned by it?  Just pass it to the caller?
+> Well, the patch has to be applied to another place, namely in the
+> function patch_alc269(), but patch seems confused because the offset
+> is too big.
+> 
+> As I'm off today, I'm going to check it and resend the patch for
+> 2.6.27 tomorrow.
 
-Hm, perhaps its better to ignore it, though.
+Thanks, that would be great.
 
-Rafael
+greg k-h
