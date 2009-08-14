@@ -1,69 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756016AbZHNFPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbZHNF1K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756016AbZHNFPY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 01:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbZHNFPX
+	id S1755860AbZHNF1K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 01:27:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbZHNF1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 01:15:23 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:60338 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751640AbZHNFPW (ORCPT
+	Fri, 14 Aug 2009 01:27:09 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:36745 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753851AbZHNF1I convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 01:15:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=wRLk1EkvwxHeJW3b8nVYqOFNMCzvcEJWwhSxbe6mw7+83qWaHRbwu/boh+DqEAmoy3
-         vDqOx46XtmPYeHHn77Oj5xnEQWjEqQwAKjwfh+2I3V81b+0GNrWkTeVE+H2/KhsW5bJA
-         e9rjhg8I6Xw20p8U5h4Z+Ss9fXHPXheAftiH0=
-Date: Thu, 13 Aug 2009 22:15:18 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Joe Perches <joe@perches.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>,
-       Ben Dooks <ben-linux@fluff.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
-	sections
-References: <20090806133349.GF27773@flint.arm.linux.org.uk> <1249568614.10297.20.camel@Joe-Laptop.home> <20090806150322.GX2080@trinity.fluff.org> <1249948147.8895.96.camel@Joe-Laptop.home> <20090812115520.GI24339@elf.ucw.cz> <20090812194838.GB12117@n2100.arm.linux.org.uk> <84144f020908121317g64551a2cu1b960f44ed5d0d9@mail.gmail.com> <20090812212502.GA24667@n2100.arm.linux.org.uk> <1250126332.14728.3.camel@Joe-Laptop.home> <20090814005803.GB31297@shareable.org>
+	Fri, 14 Aug 2009 01:27:08 -0400
+From: Dhananjay Phadke <dhananjay.phadke@qlogic.com>
+To: David Miller <davem@davemloft.net>,
+       "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>
+CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Amit Salecha <amit.salecha@qlogic.com>
+Date: Thu, 13 Aug 2009 22:27:04 -0700
+Subject: RE: linux-next: manual merge of the net tree with the net-current
+ tree
+Thread-Topic: linux-next: manual merge of the net tree with the net-current
+ tree
+Thread-Index: AcocigAhpNO+9VZ3TpOposkCyXLsSgADpTsw
+Message-ID: <7608421F3572AB4292BB2532AE89D565859E617F37@AVEXMB1.qlogic.org>
+References: <20090814124040.534dd43c.sfr@canb.auug.org.au>
+ <20090813.195042.203385912.davem@davemloft.net>
+In-Reply-To: <20090813.195042.203385912.davem@davemloft.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090814005803.GB31297@shareable.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090814054606.A8982526EC9@mailhub.coreip.homeip.net>
+X-OriginalArrivalTime: 14 Aug 2009 05:26:54.0379 (UTC) FILETIME=[D5ADB7B0:01CA1C9F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 14, 2009 at 01:58:03AM +0100, Jamie Lokier wrote:
-> Joe Perches wrote:
-> > Your request to the Linux-arm-kernel mailing list
-> > 
-> >     Posting of your message titled "[PATCH] MAINTAINERS - arm
-> > patterns?"
-> > 
-> > has been rejected by the list moderator.  The moderator gave the
-> > following reason for rejecting your request:
-> > 
-> > "Non-members are not allowed to post messages to this list. You have
-> > to subscribe before you're allowed to post. "
-> 
-> Prior to subscribing, I receive those a couple of times after doing
-> group-reply to some cross-posted thread on another list, probably
-> uclinux or lkml.
-> 
+Well yeah, I had already confessed in the introductory mail.
 
-I used to get these quite often when replying to patches that were sent
-to me and cross-posted to the ARM list. Now I only get the 'held for
-moderation' mails - the fact I really don't give shit about - not my
-loss - but still annoying.
+http://article.gmane.org/gmane.linux.network/135134
 
--- 
-Dmitry
+I have verified my own cherry-picked version of net-next driver,
+will do that again once Dave fixes the tree.
+
+Thanks,
+Dhananjay 
+
+> -----Original Message-----
+> From: David Miller [mailto:davem@davemloft.net] 
+> Sent: Thursday, August 13, 2009 19:51
+> To: sfr@canb.auug.org.au
+> Cc: linux-next@vger.kernel.org; linux-kernel@vger.kernel.org; 
+> Dhananjay Phadke; Amit Salecha
+> Subject: Re: linux-next: manual merge of the net tree with 
+> the net-current tree
+> 
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Fri, 14 Aug 2009 12:40:40 +1000
+> 
+> > Hi David,
+> > 
+> > Today's linux-next merge of the net tree got a conflict in
+> > drivers/net/netxen/netxen_nic_main.c between commits
+> > e424fa9d6a0add1a9b812b07e3607daaa5b9e53d ("netxen: remove netxen
+> > workqueue") and 232e7d68d50c9ac3a55d716e5ae215ecd1e043b9 
+> ("netxen: free
+> > napi resources during detach") from the net-current tree and commits
+> > 6598b169b856793f8f9b80a3f3c5a48f5eaf40e3 ("netxen: enable ip addr
+> > hashing"), f17443f4b01659a5c44d5fc6f5c502c39c293959 
+> ("netxen: refactor
+> > net_device setup code") and 7042cd8f148345bfca6c336f009c96a416674f5e
+> > ("netxen: support for ethtool set ringparam") from the net tree.
+> > 
+> > I fixed it up (I hope) (see below) and can carry the fix as 
+> necessary.
+> 
+> Thanks for the note Stephen.
+> 
+> I'll do a merge of net-2.6 into net-next-2.6 to resolve this
+> and get it out of your hair.
+> 
+> No virus found in this incoming message.
+> Checked by AVG - www.avg.com 
+> Version: 8.5.392 / Virus Database: 270.13.54/2300 - Release 
+> Date: 08/13/09 18:16:00
+> 
