@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbZHNM0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbZHNMbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756651AbZHNM0J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 08:26:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbZHNM0I
+	id S1756673AbZHNMbE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 08:31:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbZHNMbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 08:26:08 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:60259 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755364AbZHNM0G (ORCPT
+	Fri, 14 Aug 2009 08:31:03 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:36730 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756641AbZHNMbB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 08:26:06 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Stefani Seibold <stefani@seibold.net>
-Subject: Re: [PATCH 5/6] new kfifo API v0.3 - add kfifo_skip, kfifo_from_user and kfifo_to_user
-Date: Fri, 14 Aug 2009 14:25:42 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>
-References: <1250250286.19690.96.camel@wall-e>
-In-Reply-To: <1250250286.19690.96.camel@wall-e>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 14 Aug 2009 08:31:01 -0400
+Date: Fri, 14 Aug 2009 13:30:59 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-usb@vger.kernel.org, linux-pci@vger.kernel.org,
+       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
+Message-ID: <20090814123059.GA27995@srcf.ucam.org>
+References: <20090813002925.GA2532@srcf.ucam.org> <Pine.LNX.4.44L0.0908131100440.2940-100000@iolanthe.rowland.org> <20090813214701.GC14532@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908141425.42220.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18d4aJb35QmIqBGFlotUqkj+ku6jVfX7BqYSYu
- Pvlv5TpcnE37e4l4g9t1aX8QLr84W3KylOkEUbelBYvyPvbOuq
- LklMQvPQs8Ccrg8SoxAOA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090813214701.GC14532@srcf.ucam.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 14 August 2009, Stefani Seibold wrote:
-> This is patch 5/6 of the new kfifo API:
->  kfifo_reset_out() to lockless save discard the fifo output
->  Add kfifo_skip() to skip a number of output bytes
->  Add kfifo_from_user() to copy user space data into the fifo
->  Add kfifo_to_user() to copy fifo data to user space
->  Do some code reorg
+On Thu, Aug 13, 2009 at 10:47:01PM +0100, Matthew Garrett wrote:
 
-kfifo_skip is missing a comment regarding what it does,
-and as with the other patches, the description should
-line out why this is done, not what you do.
+> Ugh. I'd really prefer us to assume that drivers are able to cope unless 
+> proven otherwise. Userspace policy makes sense where we don't have any 
+> idea whether something will work or not, but I'd really expect that most 
+> PCI drivers will either cope (in which case they'll have enabling code) 
+> or won't (in which case they won't). Why would we want userspace to 
+> influence this?
 
-> Signed-off-by: Stefani Seibold <stefani@seibold.net>
- 
-Otherwise,
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+Though, thinking about it, you're right that setting this does override 
+user policy. I think we need an additional flag to indicate that the 
+device supports runtime wakeup and test that as well when doing 
+device_may_wakeup().
+
+> > This misses the point.  The whole idea of runtime_idle is to tell you 
+> > that the device is idle and might be ready to be suspended.  If you're 
+> > going to call pm_schedule_suspend anyway, there's no reason to invoke 
+> > pm->runtime_idle.
+> 
+> My understanding of the API was that pm_device_put() invokes 
+> runtime_idle if the refcount hits 0. The bus layer has no idea of the 
+> refcount, and calling suspend directly from the driver would defeat the 
+> point of the system-wide recounting.
+
+>From the API docs:
+
+"The action performed by a bus type's ->runtime_idle() callback is 
+totally dependent on the bus type in question, but the expected and 
+recommended action is to check if the device can be suspended (i.e. if 
+all of the conditions necessary for suspending the device are satisfied) 
+and to queue up a suspend request for the device in that case."
+
+Though perhaps the device level runtime_idle shouldn't be void - that 
+way the bus can ask the driver whether its suspend conditions have been 
+satisfied? Right now there doesn't seem to be any way for the bus to ask 
+that.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
