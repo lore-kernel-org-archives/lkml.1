@@ -1,75 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbZHNW5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbZHNXVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757282AbZHNW5z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 18:57:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757257AbZHNW5z
+	id S1757017AbZHNXVe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 19:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756311AbZHNXVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 18:57:55 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:46066 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756149AbZHNW5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 18:57:54 -0400
-Subject: Re: [patch 00/15] clocksource / timekeeping rework V4 (resend V3 +
- bug fix)
-From: john stultz <johnstul@us.ibm.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20090814134717.859098725@de.ibm.com>
-References: <20090814134717.859098725@de.ibm.com>
-Content-Type: text/plain
-Date: Fri, 14 Aug 2009 15:56:51 -0700
-Message-Id: <1250290611.8269.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Aug 2009 19:21:33 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:65301 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753756AbZHNXVb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 19:21:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=YWlxevpUWZrgXgFp/xMQwsJQ4PVY7YNyaCSblsgua7M6VJVILH6zLELb6CX/vcKQTZ
+         qEqvXpahnxuBJYoLuaWcEohASSiq/fRAZR/Au27YwPiQlvB/JveGHa/zaZL6CuAYqep4
+         TyvkVy3/hZsut5o32AkRYKPXaaaIYF7UZCbn4=
+MIME-Version: 1.0
+In-Reply-To: <4A85E0DC.9040101@rtr.ca>
+References: <200908122007.43522.ngupta@vflare.org>
+	 <Pine.LNX.4.64.0908122312380.25501@sister.anvils>
+	 <20090813151312.GA13559@linux.intel.com>
+	 <20090813162621.GB1915@phenom2.trippelsdorf.de>
+	 <alpine.DEB.1.10.0908130931400.28013@asgard.lang.hm>
+	 <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>
+	 <alpine.DEB.1.10.0908131342460.28013@asgard.lang.hm>
+	 <3e8340490908131354q167840fcv124ec56c92bbb830@mail.gmail.com>
+	 <4A85E0DC.9040101@rtr.ca>
+Date: Fri, 14 Aug 2009 17:21:32 -0600
+Message-ID: <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com>
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap 
+	slot is freed)
+From: Chris Worley <worleys@gmail.com>
+To: Mark Lord <liml@rtr.ca>
+Cc: Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
+       Greg Freemyer <greg.freemyer@gmail.com>,
+       Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-14 at 15:47 +0200, Martin Schwidefsky wrote:
-> Greetings,
-> version 4 of the clocksource / timekeeping cleanup patches. If you
-> wonder why version 3 did not show up on the mailing list: I had a
-> hiccup with quilt which did strange things to the message ids and
-> the post to lkml got rejected. Sorry for the spamming of the people
-> on Cc.
-> 
-> John pointed out a subtle bug in v3 of the patch set with the reset of
-> the cycle_last value in timekeeping_resume. Fixed in v4.
-> 
-> The latest additions are:
-> 1) Change read_persistent_clock to return a struct timespec instead of
->    an unsigned long with the number of seconds.
-> 2) Introduce read_boot_clock to initialize wall_to_monotonic.
-> 3) Move the reset of cycle_last to zero from the timekeeping code to
->    the TSC code.
-> 
-> The patch set is based on todays upstream tree plus the patches from
-> the tip tree, if anyone wants to try them you need to pull from the
-> master branch of
->     git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip
-> 
-> Keeping the fingers crossed that this is now really done.
-> John already gave his thumbs up for the patch series, so the next
-> logical question is who is going to sit on the patches until the merge
-> window is opened? I can certainly create a git branch on git390 for
-> them, but the patches depend on some patches in the x86-tip tree.
-> Thomas, any thoughts?
+On Fri, Aug 14, 2009 at 4:10 PM, Mark Lord<liml@rtr.ca> wrote:
+> Bryan Donlan wrote:
+> ..
+>>
+>> Perhaps an interface (ioctl, etc) can be added to ask a filesystem to
+>> discard all unused blocks in a certain range? (That is, have the
+>> filesystem validate the request under any necessary locks before
+>> passing it to the block IO layer)
+>
+> ..
+>
+> While possibly TRIM-specific, this approach has the lowest overhead
+> and probably the greatest gain-for-pain ratio.
+>
+> But it may not be as nice for enterprise (?).
+>
+> On the Indilinx-based SSDs (eg. OCZ Vertex), TRIM seems to trigger an
+> internal garbage-collection/erase cycle.  As such, the drive really prefers
+> a few LARGE trim lists, rather than many smaller ones.
+>
+> Here's some information that a vendor has observed from the Win7 use of
+> TRIM:
+>
+>> TRIM command is sent:
+>> -       About 2/3 of partition is filled up, when file is deleted.
+>>        (I am not talking about send file to trash bin.)
+>> -       In the above case, when trash bin gets emptied.
+>> -       In the above case, when partition is deleted.
+>>
+>> TRIM command is not sent:-
+>> -       When file is moved to trash bin
+>> -       When partition is formatted. (Both quick and full format)
+>> -       When empty partition is deleted
+>> -       When file is deleted while there is big remaining free space
+>
+> ..
+>
+> His words, not mine.  But the idea seems to be to batch them in large
+> chunks.
 
-Just as a heads up to Thomas and Martin, I finally got a box with a few
-clocksources (TSC, HPET, ACPI PM) and tested switching between them with
-this patch set.
+Sooner is better than waiting to coalesce.  The longer an LBA is
+inactive, the better for any management scheme.  If you wait until
+it's reused, you might as well forgo the advantages of TRIM/UNMAP.  If
+a the controller wants to coalesce, let it coalesce.
 
-Unfortunately when I try to switch away form the TSC, the write to the
-sysfs entry seems to hang. The dmesg shows a switch message to hpet, but
-then immdiately follows with ah switch message to tsc. The box still
-runs, but the shells I ran the echo command from are hung.
-
-I'm bisecting down the issue and will get you some more info as soon as
-I can.
-
-thanks
--john
-
-
+Chris
+>
+> My wiper.sh "trim script" is packaged with the latest hdparm (currently
+> 9.24)
+> on sourceforge, for those who want to try this stuff for real.  No special
+> kernel support is required to use it.
+>
+> Cheers
+>
+> Mark
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
