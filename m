@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbZHNW0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbZHNW0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756981AbZHNW0I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 18:26:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757175AbZHNW0F
+	id S1757216AbZHNW0R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 18:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757198AbZHNW0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 18:26:05 -0400
-Received: from ru.mvista.com ([213.79.90.228]:26652 "EHLO
+	Fri, 14 Aug 2009 18:26:15 -0400
+Received: from ru.mvista.com ([213.79.90.228]:26658 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757160AbZHNW0C (ORCPT
+	by vger.kernel.org with ESMTP id S1757178AbZHNW0L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 18:26:02 -0400
-Date: Sat, 15 Aug 2009 02:26:03 +0400
+	Fri, 14 Aug 2009 18:26:11 -0400
+Date: Sat, 15 Aug 2009 02:26:11 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: David Brownell <dbrownell@users.sourceforge.net>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Kumar Gala <galak@kernel.crashing.org>,
        spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 6/8] spi_mpc8xxx: Factor out SPI mode change steps into a
- call
-Message-ID: <20090814222603.GF14458@oksana.dev.rtsoft.ru>
+Subject: [PATCH 7/8] spi_mpc8xxx: Turn qe_mode into flags
+Message-ID: <20090814222611.GG14458@oksana.dev.rtsoft.ru>
 References: <20090814222453.GA9568@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -30,106 +29,132 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We'll add more steps soon, so get rid of the duplication.
+Soon there will be more flags introduced in subsequent patches, so
+let's turn qe_mode into flags.
+
+Also introduce mpc8xxx_spi_strmode() and print current SPI mode.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/spi/spi_mpc8xxx.c |   56 +++++++++++++++++++-------------------------
- 1 files changed, 24 insertions(+), 32 deletions(-)
+ drivers/spi/spi_mpc8xxx.c   |   30 +++++++++++++++++++-----------
+ include/linux/fsl_devices.h |    2 +-
+ 2 files changed, 20 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/spi/spi_mpc8xxx.c b/drivers/spi/spi_mpc8xxx.c
-index 518671b..4b119ea 100644
+index 4b119ea..80374df 100644
 --- a/drivers/spi/spi_mpc8xxx.c
 +++ b/drivers/spi/spi_mpc8xxx.c
-@@ -155,6 +155,26 @@ MPC83XX_SPI_TX_BUF(u8)
- MPC83XX_SPI_TX_BUF(u16)
- MPC83XX_SPI_TX_BUF(u32)
+@@ -96,7 +96,8 @@ struct mpc8xxx_spi {
+ 	u32 rx_shift;		/* RX data reg shift when in qe mode */
+ 	u32 tx_shift;		/* TX data reg shift when in qe mode */
  
-+static void mpc8xxx_spi_change_mode(struct spi_device *spi)
-+{
-+	struct mpc8xxx_spi *mspi = spi_master_get_devdata(spi->master);
-+	struct spi_mpc8xxx_cs *cs = spi->controller_state;
-+	__be32 __iomem *mode = &mspi->base->mode;
-+	unsigned long flags;
-+
-+	if (cs->hw_mode == mpc8xxx_spi_read_reg(mode))
-+		return;
-+
-+	/* Turn off IRQs locally to minimize time that SPI is disabled. */
-+	local_irq_save(flags);
-+
-+	/* Turn off SPI unit prior changing mode */
-+	mpc8xxx_spi_write_reg(mode, cs->hw_mode & ~SPMODE_ENABLE);
-+	mpc8xxx_spi_write_reg(mode, cs->hw_mode);
-+
-+	local_irq_restore(flags);
-+}
-+
- static void mpc8xxx_spi_chipselect(struct spi_device *spi, int value)
- {
- 	struct mpc8xxx_spi *mpc8xxx_spi = spi_master_get_devdata(spi->master);
-@@ -168,27 +188,13 @@ static void mpc8xxx_spi_chipselect(struct spi_device *spi, int value)
- 	}
+-	bool qe_mode;
++	unsigned int flags;
++#define SPI_QE_CPU_MODE		(1 << 0) /* QE CPU ("PIO") mode */
  
- 	if (value == BITBANG_CS_ACTIVE) {
--		u32 regval = mpc8xxx_spi_read_reg(&mpc8xxx_spi->base->mode);
--
- 		mpc8xxx_spi->rx_shift = cs->rx_shift;
- 		mpc8xxx_spi->tx_shift = cs->tx_shift;
- 		mpc8xxx_spi->get_rx = cs->get_rx;
- 		mpc8xxx_spi->get_tx = cs->get_tx;
+ 	struct workqueue_struct *workqueue;
+ 	struct work_struct work;
+@@ -235,14 +236,14 @@ int mpc8xxx_spi_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
+ 	if (bits_per_word <= 8) {
+ 		cs->get_rx = mpc8xxx_spi_rx_buf_u8;
+ 		cs->get_tx = mpc8xxx_spi_tx_buf_u8;
+-		if (mpc8xxx_spi->qe_mode) {
++		if (mpc8xxx_spi->flags & SPI_QE_CPU_MODE) {
+ 			cs->rx_shift = 16;
+ 			cs->tx_shift = 24;
+ 		}
+ 	} else if (bits_per_word <= 16) {
+ 		cs->get_rx = mpc8xxx_spi_rx_buf_u16;
+ 		cs->get_tx = mpc8xxx_spi_tx_buf_u16;
+-		if (mpc8xxx_spi->qe_mode) {
++		if (mpc8xxx_spi->flags & SPI_QE_CPU_MODE) {
+ 			cs->rx_shift = 16;
+ 			cs->tx_shift = 16;
+ 		}
+@@ -252,7 +253,8 @@ int mpc8xxx_spi_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
+ 	} else
+ 		return -EINVAL;
  
--		if (cs->hw_mode != regval) {
--			unsigned long flags;
--			__be32 __iomem *mode = &mpc8xxx_spi->base->mode;
--
--			regval = cs->hw_mode;
--			/* Turn off IRQs locally to minimize time that
--			 * SPI is disabled
--			 */
--			local_irq_save(flags);
--			/* Turn off SPI unit prior changing mode */
--			mpc8xxx_spi_write_reg(mode, regval & ~SPMODE_ENABLE);
--			mpc8xxx_spi_write_reg(mode, regval);
--			local_irq_restore(flags);
--		}
-+		mpc8xxx_spi_change_mode(spi);
-+
- 		if (pdata->cs_control)
- 			pdata->cs_control(spi, pol);
- 	}
-@@ -198,7 +204,6 @@ static
- int mpc8xxx_spi_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
- {
- 	struct mpc8xxx_spi *mpc8xxx_spi;
--	u32 regval;
- 	u8 bits_per_word, pm;
- 	u32 hz;
- 	struct spi_mpc8xxx_cs	*cs = spi->controller_state;
-@@ -286,21 +291,8 @@ int mpc8xxx_spi_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
- 		pm--;
- 
- 	cs->hw_mode |= SPMODE_PM(pm);
--	regval =  mpc8xxx_spi_read_reg(&mpc8xxx_spi->base->mode);
--	if (cs->hw_mode != regval) {
--		unsigned long flags;
--		__be32 __iomem *mode = &mpc8xxx_spi->base->mode;
--
--		regval = cs->hw_mode;
--		/* Turn off IRQs locally to minimize time
--		 * that SPI is disabled
--		 */
--		local_irq_save(flags);
--		/* Turn off SPI unit prior changing mode */
--		mpc8xxx_spi_write_reg(mode, regval & ~SPMODE_ENABLE);
--		mpc8xxx_spi_write_reg(mode, regval);
--		local_irq_restore(flags);
--	}
-+
-+	mpc8xxx_spi_change_mode(spi);
- 	return 0;
+-	if (mpc8xxx_spi->qe_mode && spi->mode & SPI_LSB_FIRST) {
++	if (mpc8xxx_spi->flags & SPI_QE_CPU_MODE &&
++			spi->mode & SPI_LSB_FIRST) {
+ 		cs->tx_shift = 0;
+ 		if (bits_per_word <= 8)
+ 			cs->rx_shift = 8;
+@@ -518,6 +520,13 @@ static void mpc8xxx_spi_cleanup(struct spi_device *spi)
+ 	kfree(spi->controller_state);
  }
  
++static const char *mpc8xxx_spi_strmode(unsigned int flags)
++{
++	if (flags & SPI_QE_CPU_MODE)
++		return "QE CPU";
++	return "CPU";
++}
++
+ static struct spi_master * __devinit
+ mpc8xxx_spi_probe(struct device *dev, struct resource *mem, unsigned int irq)
+ {
+@@ -544,14 +553,14 @@ mpc8xxx_spi_probe(struct device *dev, struct resource *mem, unsigned int irq)
+ 	master->cleanup = mpc8xxx_spi_cleanup;
+ 
+ 	mpc8xxx_spi = spi_master_get_devdata(master);
+-	mpc8xxx_spi->qe_mode = pdata->qe_mode;
+ 	mpc8xxx_spi->get_rx = mpc8xxx_spi_rx_buf_u8;
+ 	mpc8xxx_spi->get_tx = mpc8xxx_spi_tx_buf_u8;
++	mpc8xxx_spi->flags = pdata->flags;
+ 	mpc8xxx_spi->spibrg = pdata->sysclk;
+ 
+ 	mpc8xxx_spi->rx_shift = 0;
+ 	mpc8xxx_spi->tx_shift = 0;
+-	if (mpc8xxx_spi->qe_mode) {
++	if (mpc8xxx_spi->flags & SPI_QE_CPU_MODE) {
+ 		mpc8xxx_spi->rx_shift = 16;
+ 		mpc8xxx_spi->tx_shift = 24;
+ 	}
+@@ -584,7 +593,7 @@ mpc8xxx_spi_probe(struct device *dev, struct resource *mem, unsigned int irq)
+ 
+ 	/* Enable SPI interface */
+ 	regval = pdata->initial_spmode | SPMODE_INIT_VAL | SPMODE_ENABLE;
+-	if (pdata->qe_mode)
++	if (mpc8xxx_spi->flags & SPI_QE_CPU_MODE)
+ 		regval |= SPMODE_OP;
+ 
+ 	mpc8xxx_spi_write_reg(&mpc8xxx_spi->base->mode, regval);
+@@ -604,9 +613,8 @@ mpc8xxx_spi_probe(struct device *dev, struct resource *mem, unsigned int irq)
+ 	if (ret < 0)
+ 		goto unreg_master;
+ 
+-	printk(KERN_INFO
+-	       "%s: MPC8xxx SPI Controller driver at 0x%p (irq = %d)\n",
+-	       dev_name(dev), mpc8xxx_spi->base, mpc8xxx_spi->irq);
++	dev_info(dev, "at 0x%p (irq = %d), %s mode\n", mpc8xxx_spi->base,
++		 mpc8xxx_spi->irq, mpc8xxx_spi_strmode(mpc8xxx_spi->flags));
+ 
+ 	return master;
+ 
+@@ -797,7 +805,7 @@ static int __devinit of_mpc8xxx_spi_probe(struct of_device *ofdev,
+ 
+ 	prop = of_get_property(np, "mode", NULL);
+ 	if (prop && !strcmp(prop, "cpu-qe"))
+-		pdata->qe_mode = 1;
++		pdata->flags = SPI_QE_CPU_MODE;
+ 
+ 	ret = of_mpc8xxx_spi_get_chipselects(dev);
+ 	if (ret)
+diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
+index 43fc95d..39fd946 100644
+--- a/include/linux/fsl_devices.h
++++ b/include/linux/fsl_devices.h
+@@ -74,7 +74,7 @@ struct spi_device;
+ struct fsl_spi_platform_data {
+ 	u32 	initial_spmode;	/* initial SPMODE value */
+ 	s16	bus_num;
+-	bool	qe_mode;
++	unsigned int flags;
+ 	/* board specific information */
+ 	u16	max_chipselect;
+ 	void	(*cs_control)(struct spi_device *spi, bool on);
 -- 
 1.6.3.3
 
