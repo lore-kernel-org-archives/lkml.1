@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbZHNMvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbZHNM4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756742AbZHNMvK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 08:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756721AbZHNMvJ
+	id S1756755AbZHNM4J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 08:56:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbZHNM4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 08:51:09 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:44710 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756700AbZHNMvH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 08:51:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=KtiRoq3bKLHb039hRGkqk3WV3SESoRfRUl4Y2K+VE01RcvP8L68SwulReFmfg5RS6H
-         TJQEss6zbVqQSv6SZJ64HLhuHQKXCcbdlAGaDfoAgkyv1XRaSTXm3Vf2pHbjZ8/+O8pz
-         mjXeRsC7WqkCYFsZ5gPVPApTSqDUqVoiMSfx4=
-Date: Fri, 14 Aug 2009 15:48:05 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: Len Brown <lenb@kernel.org>, "Brown, Len" <len.brown@intel.com>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: acpi_ex_system_memory_space_handler oops
-Message-ID: <20090814124805.GA3209@localdomain.by>
-References: <20090812201034.GA2983@localdomain.by>
- <alpine.LFD.2.00.0908122009170.22946@localhost.localdomain>
- <20090813124647.GA19195@localdomain.by>
- <1250217283.2987.16.camel@minggr.sh.intel.com>
+	Fri, 14 Aug 2009 08:56:08 -0400
+Received: from www.lumino.de ([85.159.12.10]:49861 "HELO imap.lumino.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756716AbZHNM4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 08:56:08 -0400
+Message-ID: <4A855EE5.9010105@lumino.de>
+Date: Fri, 14 Aug 2009 14:56:05 +0200
+From: Michael Schnell <mschnell@lumino.de>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="T4sUOijqQbZv57TR"
-Content-Disposition: inline
-In-Reply-To: <1250217283.2987.16.camel@minggr.sh.intel.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Arnd Bergmann <arnd@arndb.de>
+CC: linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Michael Kerrisk <mtk.manpages@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Jakub Jelinek <jakub@redhat.com>, Thomas Chou <thomas@wytron.com.tw>
+Subject: Re: implementing Futex
+References: <4A842B32.5030401@lumino.de> <200908131839.41803.arnd@arndb.de> <4A8550CF.8000003@lumino.de> <200908141438.01392.arnd@arndb.de>
+In-Reply-To: <200908141438.01392.arnd@arndb.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Arnd Bergmann wrote:
+> The man page says that the last parameter is ignored for op=FUTEX_WAKE,
+> which is correct. The code that you were looking at however is for
+> of=FUTEX_WAKE_OP, which is not documented as of manpages-3.22.
+> 
+> It was added by Jakub back in 2005, but if he wrote a documentation
+> for it, it never went into the man pages package. On a similar
+> note, Ingo also added other futex operations that are not documented
+> yet.
+> 
 
---T4sUOijqQbZv57TR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thus in any documented software, the quite complex stuff in
+"futex_atomic_op_inuser", which is provided in several different
+"futex.h" files for all those architectures *never* is used ?
 
-On (08/14/09 10:34), Lin Ming wrote:
-> Could you please help to locate the line of code that causes oops, as
-> below?
->=20
-Is it possible that we are dereferencing freed pointer?
+Weired !
 
-	Sergey
---T4sUOijqQbZv57TR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Is there any viable use for this ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Would it not be appropriate either to do a documentation or to remove it ?
 
-iJwEAQECAAYFAkqFXQUACgkQfKHnntdSXjRUbQP/WQg4YxwyY+8fHMWzsOV8hRcV
-Tz8O9ZoLWEFcAyjNTfU5MR3f2NSe41FfIpUhvyGBe/ND64/0ixGeVv0GB4gTKs/y
-aiftsrHwgWbEnN5XQd/t/XCehBUlvpEXO0y45f2YuDDy/QtUpOvqRrUrDw+vAQFR
-r0/oj3aax0NBi5KsfDE=
-=bSgb
------END PGP SIGNATURE-----
-
---T4sUOijqQbZv57TR--
+-Michael
