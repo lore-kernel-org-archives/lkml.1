@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbZHNAqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbZHNA6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756567AbZHNAqj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 20:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756535AbZHNAqi
+	id S1756212AbZHNA6b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 20:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbZHNA6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 20:46:38 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:62949 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753665AbZHNAqi (ORCPT
+	Thu, 13 Aug 2009 20:58:30 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:51672 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753663AbZHNA6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 20:46:38 -0400
-Message-ID: <4A84B3F0.80009@oracle.com>
-Date: Thu, 13 Aug 2009 17:46:40 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 13 Aug 2009 20:58:30 -0400
+Date: Fri, 14 Aug 2009 01:58:03 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Joe Perches <joe@perches.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>,
+       Ben Dooks <ben-linux@fluff.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM sections
+Message-ID: <20090814005803.GB31297@shareable.org>
+References: <1249563730.10297.13.camel@Joe-Laptop.home> <20090806133349.GF27773@flint.arm.linux.org.uk> <1249568614.10297.20.camel@Joe-Laptop.home> <20090806150322.GX2080@trinity.fluff.org> <1249948147.8895.96.camel@Joe-Laptop.home> <20090812115520.GI24339@elf.ucw.cz> <20090812194838.GB12117@n2100.arm.linux.org.uk> <84144f020908121317g64551a2cu1b960f44ed5d0d9@mail.gmail.com> <20090812212502.GA24667@n2100.arm.linux.org.uk> <1250126332.14728.3.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Eric B Munson <ebmunson@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-man@vger.kernel.org,
-       akpm@linux-foundation.org, mtk.manpages@gmail.com
-Subject: Re: [PATCH 3/3] Add MAP_HUGETLB example to vm/hugetlbpage.txt V2
-References: <cover.1250156841.git.ebmunson@us.ibm.com> <e9b02974a0cca308927ff3a4a0765b93faa6d12f.1250156841.git.ebmunson@us.ibm.com> <83949d066e2a7221a25dd74d12d6dcf7e8b4e9ba.1250156841.git.ebmunson@us.ibm.com> <617054c59f53f43f6fecfd6908cfb86ea1dd6f72.1250156841.git.ebmunson@us.ibm.com> <alpine.DEB.2.00.0908131449270.9805@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0908131449270.9805@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt016.oracle.com [141.146.116.25]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4A84B3C9.0121:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250126332.14728.3.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
-> On Thu, 13 Aug 2009, Eric B Munson wrote:
+Joe Perches wrote:
+> Your request to the Linux-arm-kernel mailing list
 > 
->> This patch adds an example of how to use the MAP_HUGETLB flag to
->> the vm documentation.
->>
->> Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
->> ---
->> Changes from V1:
->>  Rebase to newest linux-2.6 tree
->>  Change MAP_LARGEPAGE to MAP_HUGETLB to match flag name in huge page shm
->>
->>  Documentation/vm/hugetlbpage.txt |   80 ++++++++++++++++++++++++++++++++++++++
->>  1 files changed, 80 insertions(+), 0 deletions(-)
->>
->> diff --git a/Documentation/vm/hugetlbpage.txt b/Documentation/vm/hugetlbpage.txt
->> index ea8714f..d30fa1a 100644
->> --- a/Documentation/vm/hugetlbpage.txt
->> +++ b/Documentation/vm/hugetlbpage.txt
->> @@ -337,3 +337,83 @@ int main(void)
->>  
->>  	return 0;
->>  }
->> +
->> +*******************************************************************
->> +
->> +/*
->> + * Example of using hugepage memory in a user application using the mmap
->> + * system call with MAP_LARGEPAGE flag.  Before running this program make
+>     Posting of your message titled "[PATCH] MAINTAINERS - arm
+> patterns?"
 > 
-> s/MAP_LARGEPAGE/MAP_HUGETLB/
+> has been rejected by the list moderator.  The moderator gave the
+> following reason for rejecting your request:
+> 
+> "Non-members are not allowed to post messages to this list. You have
+> to subscribe before you're allowed to post. "
 
-I'm (slowly) making source code examples in Documentation/ buildable,
-as this one should be, please.
+Prior to subscribing, I receive those a couple of times after doing
+group-reply to some cross-posted thread on another list, probably
+uclinux or lkml.
 
-I.e., put it in a separate source file (hugetlbpage.txt can refer to the
-source file if you want it to) and add a Makefile similar to other
-Makefiles in the Documentation/ tree.
+I didn't bother tracking down who I should complain too, as the
+message makes it clear what the policy is, even though it turns out
+that isn't policy - how was I to know?
 
-~Randy
+Btw, I had no idea the ARM lists had two maintainers.
+
+- Jamie
