@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbZHNKRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZHNKUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbZHNKRu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 06:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbZHNKRt
+	id S1754560AbZHNKUT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 06:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZHNKUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 06:17:49 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55799 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752074AbZHNKRt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 06:17:49 -0400
-Date: Fri, 14 Aug 2009 12:17:39 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Trilok Soni <soni.trilok@gmail.com>,
-       Brian Swetland <swetland@google.com>,
-       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
-       t.fujak@samsung.com, kyungmin.park@samsung.com,
-       David Brownell <david-b@pacbell.net>, Daniel Ribeiro <drwyrm@gmail.com>,
-       arve@android.com, Barry Song <21cnbao@gmail.com>
-Subject: Re: [RFC patch 2/3] genirq: Add buslock support for irq chips on
-	slow busses
-Message-ID: <20090814101739.GA32418@elf.ucw.cz>
-References: <20090813191535.945521006@linutronix.de> <20090813193116.509070851@linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090813193116.509070851@linutronix.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 14 Aug 2009 06:20:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44867 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752074AbZHNKUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 06:20:18 -0400
+Subject: [PATCH] X86: Fix x86_cache_size value
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 14 Aug 2009 15:49:09 +0530
+Message-Id: <1250245149.9062.3.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Currently x86_cache_size is showing partial value: L1 or L2 or L3.
+It should add all caches like L1 + L2 + L3.
 
-> Index: linux-2.6-tip/include/linux/interrupt.h
-> ===================================================================
-> --- linux-2.6-tip.orig/include/linux/interrupt.h
-> +++ linux-2.6-tip/include/linux/interrupt.h
-> @@ -113,6 +113,11 @@ request_threaded_irq(unsigned int irq, i
->  		     irq_handler_t thread_fn,
->  		     unsigned long flags, const char *name, void *dev);
->  
-> +extern int __must_check
-> +request_threaded_slowbus_irq(unsigned int irq, irq_handler_t handler,
-> +			     irq_handler_t thread_fn,
-> +			     unsigned long flags, const char *name, void *dev);
-> +
->  static inline int __must_check
->  request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
->  	    const char *name, void *dev)
-> @@ -145,6 +150,7 @@ static inline void exit_irq_thread(void)
->  #endif
->  
->  extern void free_irq(unsigned int, void *);
-> +extern void free_slowbus_irq(unsigned int irq, void *dev_id);
->  
->  struct device;
->  
-> @@ -186,6 +192,9 @@ extern void disable_irq_nosync(unsigned 
->  extern void disable_irq(unsigned int irq);
->  extern void enable_irq(unsigned int irq);
->  
-> +extern void disable_slowbus_irq(unsigned int irq);
-> +extern void enable_slowbus_irq(unsigned int irq);
-> +
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/cpu/common.c          |    2 +-
+ arch/x86/kernel/cpu/intel_cacheinfo.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-AFAICT this means that driver would need to know what kind of IRQ it
-is hooked to, right? That will lead to some ugly code in drivers that
-can handle both normal and slowbus irqs, right?
-
-									Pavel
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 5ce60a8..581fe17 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -422,7 +422,7 @@ void __cpuinit display_cacheinfo(struct cpuinfo_x86 *c)
+ 		return;		/* Again, no L2 cache is possible */
+ #endif
+ 
+-	c->x86_cache_size = l2size;
++	c->x86_cache_size += l2size;
+ 
+ 	printk(KERN_INFO "CPU: L2 Cache: %dK (%d bytes/line)\n",
+ 			l2size, ecx & 0xFF);
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 789efe2..473c75e 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -503,7 +503,7 @@ unsigned int __cpuinit init_intel_cacheinfo(struct cpuinfo_x86 *c)
+ 	if (l3)
+ 		printk(KERN_INFO "CPU: L3 cache: %dK\n", l3);
+ 
+-	c->x86_cache_size = l3 ? l3 : (l2 ? l2 : (l1i+l1d));
++	c->x86_cache_size = l3 + l2 + l1i + l1d;
+ 
+ 	return l2;
+ }
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.6.0.6
+
+
