@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbZHNNUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755981AbZHNNUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755514AbZHNNUW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 09:20:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZHNNUW
+	id S1755981AbZHNNUa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 09:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598AbZHNNU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 09:20:22 -0400
-Received: from gvgeloven01.mjopr.nl ([212.83.231.34]:59468 "EHLO mjopr.nl"
+	Fri, 14 Aug 2009 09:20:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45533 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754326AbZHNNUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 09:20:21 -0400
-X-Greylist: delayed 1390 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Aug 2009 09:20:21 EDT
-Message-ID: <4A855F5D.1010502@users.sourceforge.net>
-Date: Fri, 14 Aug 2009 14:58:05 +0200
-From: Pander <pander@users.sourceforge.net>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	id S1755559AbZHNNU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 09:20:27 -0400
+Message-ID: <4A856467.6050102@redhat.com>
+Date: Fri, 14 Aug 2009 09:19:35 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [RFC] charger: Offer kernel build that disables disks, screen, etc.
- and lets laptop serve as charger for USB/FireWire devices
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Johannes Weiner <hannes@cmpxchg.org>, Avi Kivity <avi@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+References: <20090812074820.GA29631@localhost> <4A82D24D.6020402@redhat.com> <20090813010356.GA7619@localhost> <4A843565.3010104@redhat.com> <4A843B72.6030204@redhat.com> <4A843EAE.6070200@redhat.com> <4A846581.2020304@redhat.com> <20090813211626.GA28274@cmpxchg.org> <4A850F4A.9020507@redhat.com> <20090814091055.GA29338@cmpxchg.org> <20090814095106.GA3345@localhost>
+In-Reply-To: <20090814095106.GA3345@localhost>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Wu Fengguang wrote:
+> On Fri, Aug 14, 2009 at 05:10:55PM +0800, Johannes Weiner wrote:
 
-Consider situations where normal power outlets are not available, e.g.
-when travelling in remote areas or in an air plane or train, but you do
-need to charge USB/FireWire devices like a mobile telephone, camera,
-PDA, etc. It would be efficient to boot your laptop with a special
-kernel that turns it into a charger.
+>> So even with the active list being a FIFO, we keep usage information
+>> gathered from the inactive list.  If we deactivate pages in arbitrary
+>> list intervals, we throw this away.
+> 
+> We do have the danger of FIFO, if inactive list is small enough, so
+> that (unconditionally) deactivated pages quickly get reclaimed and
+> their life window in inactive list is too small to be useful.
 
-Some laptops already offer this feature, however the majority of laptops
-donot. A suspended laptop can offer this too, but please consider
-situation orplaces where power is so scarce that normally booting a
-laptop in order tocharge another device is undesirable in terms of being
-efficient with theenergy stored in the battery or that it is not allowed
-to activate RF devicesas is in an air plane.
+This one of the reasons why we unconditionally deactivate
+the active anon pages, and do background scanning of the
+active anon list when reclaiming page cache pages.
 
-Normal boot will cause that a lot of power will be consumed by the
-disks,screen, CPUs, RF devices, fans, all LEDs (except the one
-indicating the deviceis switched on), etc. while you are only interested
-in power being available at the USB/FireWire ports.
+We want to always move some pages to the inactive anon
+list, so it does not get too small.
 
-This can be achieved by building a special kernel that will shut down
-all hardware that is not needed for offering power on the before
-mentioned ports. Perhaps this can be achieved by kernel configuration
-alone or it might require a minimal of functionality to put a laptop
-into such a charging state.
-
-Normally, systems automatically shut down before the battery is drained
-100%. This kernel will allow you to drain all the entire battery.
-
-The resulting kernel can be installed and made available in a similar
-way as the memtest kernel and can be incorporated by installers of
-GNU/Linux distributions.
-
-Implementing this idea will allow for highly energy efficient recharging
-of devices like telephones, cameras and other mobile devices via your
-laptop.
-
-Regards,
-
-Pander
-
+-- 
+All rights reversed.
