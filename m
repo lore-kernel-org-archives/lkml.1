@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932273AbZHNL05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbZHNL0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932273AbZHNL05 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 07:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932169AbZHNL0y
+	id S1755584AbZHNL0X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 07:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbZHNL0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 07:26:54 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:42263 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932074AbZHNL0r (ORCPT
+	Fri, 14 Aug 2009 07:26:21 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:49883 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755434AbZHNL0R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 07:26:47 -0400
-Message-Id: <20090814112614.671701262@de.ibm.com>
+	Fri, 14 Aug 2009 07:26:17 -0400
+Message-Id: <20090814112616.769552700@de.ibm.com>
 References: <20090814112517.982007860@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 14 Aug 2009 13:25:26 +0200
+Date: Fri, 14 Aug 2009 13:25:35 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Stefan Weinhuber <wein@de.ibm.com>
-Subject: [patch 09/34] dasd: fail requests when device state is less then ready
-Content-Disposition: inline; filename=108-dasd-fail-request.diff
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 18/34] hibernation: remove dead file
+Content-Disposition: inline; filename=117-pm-dead-file.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stefan Weinhuber <wein@de.ibm.com>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-A DASD device that is not ready or online has no defined disk layout,
-so all requests that arrive in such a state need to be returned as
-failed.
+There is no caller of do_after_copyback() anywhere. Remove it.
 
-Signed-off-by: Stefan Weinhuber <wein@de.ibm.com>
-
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/s390/block/dasd.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/s390/power/Makefile    |    1 -
+ arch/s390/power/swsusp_64.c |   17 -----------------
+ 2 files changed, 18 deletions(-)
 
-Index: quilt-2.6/drivers/s390/block/dasd.c
+Index: quilt-2.6/arch/s390/power/Makefile
 ===================================================================
---- quilt-2.6.orig/drivers/s390/block/dasd.c
-+++ quilt-2.6/drivers/s390/block/dasd.c
-@@ -1699,8 +1699,11 @@ static void __dasd_process_request_queue
- 	 * for that. State DASD_STATE_ONLINE is normal block device
- 	 * operation.
- 	 */
--	if (basedev->state < DASD_STATE_READY)
-+	if (basedev->state < DASD_STATE_READY) {
-+		while ((req = blk_fetch_request(block->request_queue)))
-+			__blk_end_request_all(req, -EIO);
- 		return;
-+	}
- 	/* Now we try to fetch requests from the request queue */
- 	while (!blk_queue_plugged(queue) && (req = blk_peek_request(queue))) {
- 		if (basedev->features & DASD_FEATURE_READONLY &&
+--- quilt-2.6.orig/arch/s390/power/Makefile
++++ quilt-2.6/arch/s390/power/Makefile
+@@ -4,5 +4,4 @@
+ 
+ obj-$(CONFIG_HIBERNATION) += suspend.o
+ obj-$(CONFIG_HIBERNATION) += swsusp.o
+-obj-$(CONFIG_HIBERNATION) += swsusp_64.o
+ obj-$(CONFIG_HIBERNATION) += swsusp_asm64.o
+Index: quilt-2.6/arch/s390/power/swsusp_64.c
+===================================================================
+--- quilt-2.6.orig/arch/s390/power/swsusp_64.c
++++ /dev/null
+@@ -1,17 +0,0 @@
+-/*
+- * Support for suspend and resume on s390
+- *
+- * Copyright IBM Corp. 2009
+- *
+- * Author(s): Hans-Joachim Picht <hans@linux.vnet.ibm.com>
+- *
+- */
+-
+-#include <asm/system.h>
+-#include <linux/interrupt.h>
+-
+-void do_after_copyback(void)
+-{
+-	mb();
+-}
+-
 
 -- 
 blue skies,
