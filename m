@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZHNCgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbZHNCiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754025AbZHNCgp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 22:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbZHNCgo
+	id S1754290AbZHNCiR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 22:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbZHNCiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 22:36:44 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:50310 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752054AbZHNCgn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 22:36:43 -0400
-Date: Thu, 13 Aug 2009 21:36:40 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Xiaotian Feng <dfeng@redhat.com>
-Cc: jmorris@namei.org, eparis@parisplace.org, sds@tycho.nsa.gov,
-       paul.moore@hp.com, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V2] selinux: fix memory leak in sel_make_bools
-Message-ID: <20090814023640.GA21205@us.ibm.com>
-References: <1250151976-19399-1-git-send-email-dfeng@redhat.com> <1250215360-20871-1-git-send-email-dfeng@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250215360-20871-1-git-send-email-dfeng@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 13 Aug 2009 22:38:16 -0400
+Received: from mga09.intel.com ([134.134.136.24]:53144 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752556AbZHNCiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 22:38:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,378,1246863600"; 
+   d="scan'208";a="438871917"
+Subject: Re: acpi_ex_system_memory_space_handler oops
+From: Lin Ming <ming.m.lin@intel.com>
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Len Brown <lenb@kernel.org>, "Brown, Len" <len.brown@intel.com>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090813124647.GA19195@localdomain.by>
+References: <20090812201034.GA2983@localdomain.by>
+	 <alpine.LFD.2.00.0908122009170.22946@localhost.localdomain>
+	 <20090813124647.GA19195@localdomain.by>
+Content-Type: text/plain
+Date: Fri, 14 Aug 2009 10:34:43 +0800
+Message-Id: <1250217283.2987.16.camel@minggr.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Xiaotian Feng (dfeng@redhat.com):
-> In sel_make_bools, kernel allocates memory for bool_pending_names[i]
-> with security_get_bools. So if we just free bool_pending_names, those
-> memories for bool_pending_names[i] will be leaked.
+On Thu, 2009-08-13 at 20:46 +0800, Sergey Senozhatsky wrote:
+> > Looks like regression is in the current RC.
 > 
-> This patch resolves dozens of following kmemleak report after resuming
-> from suspend:
-> unreferenced object 0xffff88022e4c7380 (size 32):
->   comm "init", pid 1, jiffies 4294677173
->   backtrace:
->     [<ffffffff810f76b5>] create_object+0x1a2/0x2a9
->     [<ffffffff810f78bb>] kmemleak_alloc+0x26/0x4b
->     [<ffffffff810ef3eb>] __kmalloc+0x18f/0x1b8
->     [<ffffffff811cd511>] security_get_bools+0xd7/0x16f
->     [<ffffffff811c48c0>] sel_write_load+0x12e/0x62b
->     [<ffffffff810f9a39>] vfs_write+0xae/0x10b
->     [<ffffffff810f9b56>] sys_write+0x4a/0x6e
->     [<ffffffff81011b82>] system_call_fastpath+0x16/0x1b
->     [<ffffffffffffffff>] 0xffffffffffffffff
+> Looks like it isn't. On 17th reboot rc5-git0 crashed.
+> (I'll recompile and try more.)
+> I think bisecting here is kind of senseless. You never know how much reboots you need.
+> Simple delay (like vga=791) - and everything is ok. We need to come up with something 
+> more clever, I guess.
 > 
-> Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+> Any thougths?
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+Hi, Sergey
 
-> ---
->  security/selinux/selinuxfs.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+Could you please help to locate the line of code that causes oops, as
+below?
+
+1. Compile the kernel with debug info
+   Kernel menuconfig -> Kernel hacking -> Compile the kernel with debug info
+
+2. Retest until it oops, here you get the address of code that causes oops.
+   addr2line -e vmlinux <the address>
+
+Thanks,
+Lin Ming
+
 > 
-> diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
-> index b4fc506..1a8a1c2 100644
-> --- a/security/selinux/selinuxfs.c
-> +++ b/security/selinux/selinuxfs.c
-> @@ -979,6 +979,8 @@ static int sel_make_bools(void)
->  	u32 sid;
-> 
->  	/* remove any existing files */
-> +	for (i = 0; i < bool_num; i++)
-> +		kfree(bool_pending_names[i]);
->  	kfree(bool_pending_names);
->  	kfree(bool_pending_values);
->  	bool_pending_names = NULL;
-> -- 
-> 1.6.2.5
+> 	Sergey
+
