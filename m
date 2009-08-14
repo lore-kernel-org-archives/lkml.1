@@ -1,112 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbZHNNuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbZHNNwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbZHNNuw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 09:50:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756757AbZHNNut
+	id S1756767AbZHNNwT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 09:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756497AbZHNNwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 09:50:49 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:56669 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756444AbZHNNsJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 09:48:09 -0400
-Message-Id: <20090814134808.880925790@de.ibm.com>
-References: <20090814134717.859098725@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 14 Aug 2009 15:47:23 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+	Fri, 14 Aug 2009 09:52:18 -0400
+Received: from gvgeloven01.mjopr.nl ([212.83.231.34]:59525 "EHLO mjopr.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755626AbZHNNwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 09:52:17 -0400
+Message-ID: <4A856C45.40706@users.sourceforge.net>
+Date: Fri, 14 Aug 2009 15:53:09 +0200
+From: Pander <pander@users.sourceforge.net>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       john stultz <johnstul@us.ibm.com>, Daniel Walker <dwalker@fifo99.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 06/15] clocksource watchdog resume logic
-Content-Disposition: inline; filename=watchdog-resume.diff
+Subject: Re: [RFC] charger: Offer kernel build that disables disks, screen,
+ etc. and lets laptop serve as charger for USB/FireWire devices
+References: <4A855F5D.1010502@users.sourceforge.net>
+In-Reply-To: <4A855F5D.1010502@users.sourceforge.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Pander wrote:
+> Hi all,
+> 
+...
+> 
+> This can be achieved by building a special kernel that will shut down
+> all hardware that is not needed for offering power on the before
+> mentioned ports. Perhaps this can be achieved by kernel configuration
+> alone or it might require a minimal of functionality to put a laptop
+> into such a charging state.
 
-To resume the clocksource watchdog just remove the CLOCK_SOURCE_WATCHDOG
-bit from the watched clocksource.
+Alternative implementation could be that this functionality is present
+in a normal kernel and is only activated by boot time command argument
+'charger'.
 
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: john stultz <johnstul@us.ibm.com>
-Cc: Daniel Walker <dwalker@fifo99.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
- kernel/time/clocksource.c |   23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
+While being on the subject anyway, optionally, extra functionality could
+be implemented for turning the laptop into an emergency light. The boot
+time command argument 'light' could offer this.
 
-Index: linux-2.6/kernel/time/clocksource.c
-===================================================================
---- linux-2.6.orig/kernel/time/clocksource.c
-+++ linux-2.6/kernel/time/clocksource.c
-@@ -145,7 +145,6 @@ static struct clocksource *watchdog;
- static struct timer_list watchdog_timer;
- static DEFINE_SPINLOCK(watchdog_lock);
- static cycle_t watchdog_last;
--static unsigned long watchdog_resumed;
- 
- /*
-  * Interval: 0.5sec Threshold: 0.0625s
-@@ -167,12 +166,9 @@ static void clocksource_watchdog(unsigne
- 	struct clocksource *cs, *tmp;
- 	cycle_t csnow, wdnow;
- 	int64_t wd_nsec, cs_nsec;
--	int resumed;
- 
- 	spin_lock(&watchdog_lock);
- 
--	resumed = test_and_clear_bit(0, &watchdog_resumed);
--
- 	wdnow = watchdog->read(watchdog);
- 	wd_nsec = cyc2ns(watchdog, (wdnow - watchdog_last) & watchdog->mask);
- 	watchdog_last = wdnow;
-@@ -223,14 +219,26 @@ static void clocksource_watchdog(unsigne
- 	}
- 	spin_unlock(&watchdog_lock);
- }
-+
-+static inline void clocksource_reset_watchdog(void)
-+{
-+	struct clocksource *cs;
-+
-+	list_for_each_entry(cs, &watchdog_list, wd_list)
-+		cs->flags &= ~CLOCK_SOURCE_WATCHDOG;
-+}
-+
- static void clocksource_resume_watchdog(void)
- {
--	set_bit(0, &watchdog_resumed);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&watchdog_lock, flags);
-+	clocksource_reset_watchdog();
-+	spin_unlock_irqrestore(&watchdog_lock, flags);
- }
- 
- static void clocksource_check_watchdog(struct clocksource *cs)
- {
--	struct clocksource *cse;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&watchdog_lock, flags);
-@@ -256,8 +264,7 @@ static void clocksource_check_watchdog(s
- 			watchdog_timer.function = clocksource_watchdog;
- 
- 			/* Reset watchdog cycles */
--			list_for_each_entry(cse, &watchdog_list, wd_list)
--				cse->flags &= ~CLOCK_SOURCE_WATCHDOG;
-+			clocksource_reset_watchdog();
- 			/* Start if list is not empty */
- 			if (!list_empty(&watchdog_list)) {
- 				watchdog_last = watchdog->read(watchdog);
+The same functionality as with charger will be enabled and the screen
+and keyboard will powered up. Initially, the screen will be white. By
+means of the following keys: arrow op, arrow down, arrow left, arrow
+right, page up, page down, home, end, return, tab one is able to change
+the color of the screen in on of 16 basic colors: white, yellow,
+fuchsia, red, silver, gray, olive, purple, maroon, aqua, lime, teal,
+green, blue, navy and black (perhaps omit the latter). The space bar key
+would enable and disable the screen but still allow for the other keys
+to change the color. Also the brightness keys should be supported.
 
--- 
-blue skies,
-   Martin.
+Of course this is easily done by software on a fully booted system.
+However, due to the emergency situation, again power can be scarce and
+must be used as efficient as possible. Considering and discussing
+implementation of this greatly overlaps the aforementioned proposal.
 
-"Reality continues to ruin my life." - Calvin.
+Kind regards,
 
+Pander
