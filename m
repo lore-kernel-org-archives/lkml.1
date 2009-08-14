@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbZHNC7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbZHNDFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936AbZHNC7e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 22:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbZHNC7d
+	id S1755694AbZHNDFA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 23:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbZHNDFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 22:59:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42784 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753403AbZHNC7d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 22:59:33 -0400
-Message-ID: <4A84D2FD.1030909@redhat.com>
-Date: Fri, 14 Aug 2009 10:59:09 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Bernhard Walle <bernhard.walle@gmx.de>, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       akpm@linux-foundation.org, Fenghua Yu <fenghua.yu@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 0/8] V3 Implement crashkernel=auto
-References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>	<20090812124659.GA4808@mail1.bwalle.de> <4A837F49.9060003@redhat.com>	<20090813053952.GA9037@mail1.bwalle.de> <4A83CCAA.1030302@redhat.com>	<20090813090335.GA9502@mail1.bwalle.de> <m1k5182dl7.fsf@fess.ebiederm.org>
-In-Reply-To: <m1k5182dl7.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 13 Aug 2009 23:05:00 -0400
+Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:52290 "EHLO
+	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754351AbZHNDE7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 23:04:59 -0400
+Subject: Re: [PATCH] amd5536udc: fixed shared interrupt bug and warning oops
+From: Vadim Lobanov <vlobanov@speakeasy.net>
+To: Thomas Dahlmann <dahlmann.thomas@arcor.de>
+Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+In-Reply-To: <1250028056.14854.18.camel@pc>
+References: <1250028056.14854.18.camel@pc>
+Content-Type: text/plain
+Date: Thu, 13 Aug 2009 20:04:56 -0700
+Message-Id: <1250219096.2653.1.camel@leonidas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Bernhard Walle <bernhard.walle@gmx.de> writes:
->
->   
->> * Amerigo Wang <amwang@redhat.com> [2009-08-13 10:19]:
->>     
->>> Sure.
->>>
->>> But if we disable CONFIG_KEXEC_AUTO_RESERVE, that means
->>> crashkernel=auto will be invalid, this is the same as it is now.
->>>       
->> Ok, but since 'crashkernel=auto' is not used today, nobody has
->> 'crashkernel=auto' in the bootloader configuration. So I don't see any
->> practial advantage of that config option.
->>
->> Eric, what's your opinion on that, do we need a config option
->> CONFIG_KEXEC_AUTO_RESERVE or could we just implement that feature
->> unconditionally (if CONFIG_KEXEC is enabled, of course).
->>     
->
-> The only reason I can see the option going away would be
-> a dependency on CONFIG_HOTPLUG_MEM.
->   
+On Wed, 2009-08-12 at 00:00 +0200, Thomas Dahlmann wrote:
+> >From 9654f85cbeabec4b8652f9785bea317cd7068edb Mon Sep 17 00:00:00 2001
+> From: Thomas <dahlmann.thomas@arcor.de>
+> Date: Tue, 11 Aug 2009 22:09:55 +0200
+> Subject: [PATCH] amd5536udc: fixed shared interrupt bug and warning oops
+>   - fixed shared interrupt bug reported by Vadim Lobanov
+>   - fixed possible warning oops on driver unload when connected
+>   - prevent interrupt flood in PIO mode ("modprobe amd5536udc use_dma=0")
+>     when using gadget ether
+>   - applied patch "Drop NULL test on list_entry result" submitted by Julia Lawall
+> 
+> Signed-off-by: Thomas <dahlmann.thomas@arcor.de>
 
-I am not sure if I understand you correctly, but it doesn't and won't 
-depend on CONFIG_MEMORY_HOTPLUG.
+Looks good.
 
-Thanks.
+Tested-by: Vadim Lobanov <vlobanov@speakeasy.net>
+
 
