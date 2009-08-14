@@ -1,169 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbZHNLoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbZHNLoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756382AbZHNLoZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 07:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbZHNLoZ
+	id S1756544AbZHNLoe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 07:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756468AbZHNLod
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 07:44:25 -0400
-Received: from www84.your-server.de ([213.133.104.84]:58805 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755148AbZHNLoY (ORCPT
+	Fri, 14 Aug 2009 07:44:33 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50897 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756522AbZHNLob (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 07:44:24 -0400
-Subject: [PATCH 4/6] new kfifo API v0.3 - add DEFINE_KFIFO and friends, add
- very tiny functions
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>
+	Fri, 14 Aug 2009 07:44:31 -0400
+Subject: Re: drm / i915 performance problems
+From: Peter Zijlstra <peterz@infradead.org>
+To: Knut Petersen <Knut_Petersen@t-online.de>
+Cc: airlied@linux.ie, linux-kernel@vger.kernel.org
+In-Reply-To: <4A853ED8.9030800@t-online.de>
+References: <4A853ED8.9030800@t-online.de>
 Content-Type: text/plain
-Date: Fri, 14 Aug 2009 13:44:22 +0200
-Message-Id: <1250250262.19690.95.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Date: Fri, 14 Aug 2009 13:44:02 +0200
+Message-Id: <1250250242.5241.1395.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is patch 4/6 of the new kfifo API:
- Add KFIFO_INIT - macro to generate a kfifo initializer
- Add DECLARE_KFIFO - macro to declare a kfifo and the associated buffer inside a struct
- Add INIT_KFIFO - macro to initialize a with DECLARE_KFIFO declared kfifo 
- Add DEFINE_KFIFO - macro to define and initialize a kfifo as a global or local object
- Add kfifo_size() - returns the size of the fifo in bytes
- Add kfifo_is_empty() - returns true if the fifo is empty
- Add kfifo_is_full() - returns true if the fifo is full
- Add kfifo_avail() - returns the number of bytes available in the FIFO
- Do some code cleanup
+On Fri, 2009-08-14 at 12:39 +0200, Knut Petersen wrote:
+> Hi David!
+> 
+> My current system is based on openSuSE 10.2, kernel 2.6.22.6 is used.
+> As support for that distribution is discontinued, I had a look at
+> openSuSE 11.1
+> and tried some of the new kernels. I found serious  performance regressions
+> using the current kernels
+> 
+> First a short descrition of the relevant hardware:
+> 
+> mainboard: Aopen i915Gmm-hfs,
+> RAM: 2 GB
+> cpu: Pentium M  1.86GHz.
+> video: built in i915GM
+> 00:00.0 Host bridge: Intel Corporation Mobile 915GM/PM/GMS/910GML
+> Express Processor to DRAM Controller (rev 04)
+> 00:02.0 VGA compatible controller: Intel Corporation Mobile
+> 915GM/GMS/910GML Express Graphics Controller (rev 04) (prog-if 00 [VGA])
+> 00:02.1 Display controller: Intel Corporation Mobile 915GM/GMS/910GML
+> Express Graphics Controller (rev 04)
+> 
+> Test results:
+> 
+> glxgears: 1045 fps / 30% cpu usage (opensuse 10.2, kernel 2.6.22.6,
+> smooth desktop and glxgears operation)
+> glxgears: 925 fps / 35% cpu usage (opensuse 11.1, kernel 2.6.22.6,
+> smooth desktop and glxgears operation)
+> glxgears: 900 fps / 45% cpu usage (opensuse 11.1, kernel 2.6.27.29,
+> smooth desktop and glxgears operation)
+> 
+> glxgears: 210 fps / 8% cpu usage (opensuse 11.1, kernel 2.6.31-rc6,
+> Tiled buffers, jerky desktop and glxgears operation)
+> glxgears: 230 fps / 8% cpu usage (opensuse 11.1, kernel 2.6.31-rc6,
+> Tiling disabled, jerky desktop and glxgears operation)
+> 
+> glxgears: 280 fps / 100% cpu usage (opensuse 11.1, kernel 2.6.31-rc6,
+> DRI disabled in kernel, smooth desktop and glxgears operation)
+>  
+> With "jerky operation" in the table above I want to express, that
+> desktop and glxgears drawing operation seems to happen in
+> several bursts a second. Because of that the desktop performance is
+> annoying enough to be unusable.
+> 
+> Xorg.0.log tells me: "Failed to set tiling on [front|back|depth] buffer:
+> Invalid argument". As disabling tiling in the older kernels
+> results in similar performance drops, I believe that the inability to
+> use tiled buffers is responsible for the low glxgears fps numbers.
+> 
+> Any ideas how to solve that problem?
 
- kfifo.h |   90 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 88 insertions(+), 2 deletions(-)
+I bet some people'd love to know what X.org version and intel drv
+version you're using.
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
-
-diff -u -N -r linux-2.6.31-rc4-kfifo4/include/linux/kfifo.h linux-2.6.31-rc4-kfifo5/include/linux/kfifo.h
---- linux-2.6.31-rc4-kfifo4/include/linux/kfifo.h	2009-08-14 10:48:03.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo5/include/linux/kfifo.h	2009-08-14 11:53:52.000000000 +0200
-@@ -32,6 +32,56 @@
- 	unsigned int out;	/* data is extracted from off. (out % size) */
- };
- 
-+/*
-+ * Macros for declaration and initialization of the kfifo datatype
-+ */
-+
-+/**
-+ * KFIFO_INIT - macro to generate a kfifo initializer
-+ * @s: size of the fifo buffer
-+ * @b: address of the fifo buffer
-+ */
-+#define KFIFO_INIT(s, b) \
-+	(struct kfifo) { \
-+		.size	= s, \
-+		.in	= 0, \
-+		.out	= 0, \
-+		.buffer = b \
-+	}
-+
-+/**
-+ * DECLARE_KFIFO - macro to declare a kfifo and the associated buffer
-+ * @name: name of the declared kfifo datatype
-+ * @size: size of the fifo buffer
-+ *
-+ * Note: the macro can be used inside struct or union declaration
-+ */
-+#define DECLARE_KFIFO(name, size) \
-+union { \
-+	struct kfifo name; \
-+	unsigned char name##_buffer[size + sizeof(struct kfifo)]; \
-+}
-+
-+/**
-+ * INIT_KFIFO - macro to initialize a with DECLARE_KFIFO declared kfifo
-+ * @name: name of the declared kfifo datatype
-+ * @size: size of the fifo buffer
-+ */
-+#define INIT_KFIFO(name) \
-+	name = KFIFO_INIT(sizeof(name##_buffer) - sizeof(struct kfifo), \
-+				name##_buffer)
-+
-+/**
-+ * DEFINE_KFIFO - macro to define and initialize a kfifo
-+ * @name: name of the declared kfifo datatype
-+ * @size: size of the fifo buffer
-+ *
-+ * Note: the macro can be used for global and local kfifo data type variables
-+ */
-+#define DEFINE_KFIFO(name, size) \
-+	unsigned char name##_buffer[size]; \
-+	struct kfifo name = KFIFO_INIT(size, name##_buffer)
-+
- extern void kfifo_init(struct kfifo *fifo,
- 			unsigned char *buffer, unsigned int size);
- extern __must_check int kfifo_alloc(struct kfifo *fifo,
-@@ -52,6 +102,15 @@
- }
- 
- /**
-+ * kfifo_size - returns the size of the fifo in bytes
-+ * @fifo: the fifo to be used.
-+ */
-+static inline __must_check unsigned int kfifo_size(struct kfifo *fifo)
-+{
-+	return fifo->size;
-+}
-+
-+/**
-  * kfifo_len - returns the number of used bytes in the FIFO
-  * @fifo: the fifo to be used.
-  */
-@@ -65,6 +124,33 @@
- }
- 
- /**
-+ * kfifo_is_empty - returns true if the fifo is empty
-+ * @fifo: the fifo to be used.
-+ */
-+static inline __must_check int kfifo_is_empty(struct kfifo *fifo)
-+{
-+	return fifo->in == fifo->out;
-+}
-+
-+/**
-+ * kfifo_is_full - returns true if the fifo is full
-+ * @fifo: the fifo to be used.
-+ */
-+static inline __must_check int kfifo_is_full(struct kfifo *fifo)
-+{
-+	return kfifo_len(fifo) == kfifo_size(fifo);
-+}
-+
-+/**
-+ * kfifo_avail - returns the number of bytes available in the FIFO
-+ * @fifo: the fifo to be used.
-+ */
-+static inline __must_check unsigned int kfifo_avail(struct kfifo *fifo)
-+{
-+	return kfifo_size(fifo) - kfifo_len(fifo);
-+}
-+
-+/**
-  * kfifo_in_locked - puts some data into the FIFO using a spinlock for locking
-  * @fifo: the fifo to be used.
-  * @from: the data to be added.
-@@ -114,8 +200,8 @@
- 	 * optimization: if the FIFO is empty, set the indices to 0
- 	 * so we don't wrap the next time
- 	 */
--	if (fifo->in == fifo->out)
--		fifo->in = fifo->out = 0;
-+	if (kfifo_is_empty(fifo))
-+		kfifo_reset(fifo);
- 
- 	spin_unlock_irqrestore(lock, flags);
- 
-
-
+Also, if you're having KMS enabled or not.
