@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbZHNKWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbZHNKaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754764AbZHNKWw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 06:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753818AbZHNKWw
+	id S1754781AbZHNKaY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 06:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbZHNKaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 06:22:52 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:55338 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753484AbZHNKWu (ORCPT
+	Fri, 14 Aug 2009 06:30:23 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47587 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753818AbZHNKaX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 06:22:50 -0400
-Date: Fri, 14 Aug 2009 15:52:50 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, mark.a.allyn@intel.com
-Subject: [PATCH] next-20090813 DX SEP driver build breaks with CONFIG_PCI=n
-Message-ID: <20090814102250.GA4162@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20090813200559.6bf4f5d9.sfr@canb.auug.org.au>
+	Fri, 14 Aug 2009 06:30:23 -0400
+Date: Fri, 14 Aug 2009 12:30:13 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>,
+       Brian Swetland <swetland@google.com>,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       David Brownell <david-b@pacbell.net>, Daniel Ribeiro <drwyrm@gmail.com>,
+       arve@android.com, Barry Song <21cnbao@gmail.com>
+Subject: Re: [RFC patch 2/3] genirq: Add buslock support for irq chips on
+	slow busses
+Message-ID: <20090814103013.GC32418@elf.ucw.cz>
+References: <20090813191535.945521006@linutronix.de> <20090813193116.509070851@linutronix.de> <20090814101739.GA32418@elf.ucw.cz> <alpine.LFD.2.00.0908141220190.1283@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090813200559.6bf4f5d9.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.LFD.2.00.0908141220190.1283@localhost.localdomain>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+On Fri 2009-08-14 12:20:49, Thomas Gleixner wrote:
+> On Fri, 14 Aug 2009, Pavel Machek wrote:
+> > > +extern void disable_slowbus_irq(unsigned int irq);
+> > > +extern void enable_slowbus_irq(unsigned int irq);
+> > > +
+> > 
+> > AFAICT this means that driver would need to know what kind of IRQ it
+> > is hooked to, right? That will lead to some ugly code in drivers that
+> > can handle both normal and slowbus irqs, right?
+> 
+> Are there such drivers in reality ?
 
-	next-20090813 randconfig build breaks Discretix SEP driver when
-configured with CONFIG_PCI=n.
+I think so. Between Spitz and Akita, some gpios were moved to slow i2c
+extender. For stuff like buttons...
 
-drivers/staging/sep/sep_driver.c: In function 'sep_probe':
-drivers/staging/sep/sep_driver.c:2548: error: implicit declaration of function 'pci_dev_get'
-
-This patch adds the dependency on PCI for the DX SEP driver.
-
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
- drivers/staging/sep/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/staging/sep/Kconfig b/drivers/staging/sep/Kconfig
-index 6ef59f8..0a9c39c 100644
---- a/drivers/staging/sep/Kconfig
-+++ b/drivers/staging/sep/Kconfig
-@@ -1,7 +1,7 @@
- config DX_SEP
- 	tristate "Discretix SEP driver"
- #	depends on MRST
--	depends on RAR_REGISTER
-+	depends on RAR_REGISTER && PCI
- 	default y
- 	help
- 	  Discretix SEP driver
-			
-					Kamalesh
+Now... it is probably already fixed somehow for Spitz/Akita, but I
+believe more hardware designers do such things....
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
