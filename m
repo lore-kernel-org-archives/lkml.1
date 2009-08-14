@@ -1,69 +1,393 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbZHNL0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbZHNL00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755282AbZHNL0I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 07:26:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbZHNL0H
+	id S1755644AbZHNL00 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 07:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbZHNL0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 07:26:07 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53674 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755126AbZHNL0G (ORCPT
+	Fri, 14 Aug 2009 07:26:25 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:53814 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755344AbZHNL0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 07:26:06 -0400
-Date: Fri, 14 Aug 2009 13:25:56 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Daniel Mack <daniel@caiaq.de>, Joe Perches <joe@perches.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ben Dooks <ben-linux@fluff.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
-	sections
-Message-ID: <20090814112556.GK32418@elf.ucw.cz>
-References: <84144f020908121317g64551a2cu1b960f44ed5d0d9@mail.gmail.com> <20090812212502.GA24667@n2100.arm.linux.org.uk> <20090813103511.2928a085@lxorguk.ukuu.org.uk> <20090813094736.GZ6132@n2100.arm.linux.org.uk> <1250158593.28285.23.camel@Joe-Laptop.home> <20090813103513.GC6132@n2100.arm.linux.org.uk> <1250161714.28285.61.camel@Joe-Laptop.home> <20090813115444.GB10450@n2100.arm.linux.org.uk> <20090814075919.GG19257@buzzloop.caiaq.de> <20090814091808.GA2662@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090814091808.GA2662@n2100.arm.linux.org.uk>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 14 Aug 2009 07:26:14 -0400
+Message-Id: <20090814112614.922628278@de.ibm.com>
+References: <20090814112517.982007860@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 14 Aug 2009 13:25:27 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Stefan Haberland <stefan.haberland@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 10/34] dasd: optimize cpu usage in goodcase
+Content-Disposition: inline; filename=109-dasd-cpu-usage.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-08-14 10:18:08, Russell King - ARM Linux wrote:
-> On Fri, Aug 14, 2009 at 09:59:19AM +0200, Daniel Mack wrote:
-> > One common false positive to this rule is using 'git send-email' with a
-> > message ID as reference. There won't be a 'Re:' in that case.
-> 
-> Yes, and they are HELD FOR MODERATION so that a HUMAN can make a DECISION
-> on whether to let them through.  We could, alternatively, discard them
-> outright.  We think that discarding due to a rule matching is unacceptable
-> though.
-> 
-> These lists are getting close to me just pulling the plug on them.  The
-> amount of crap flying around about them is getting too great for me to
-> continue to provide such a service to this community.  When I pull them,
-> I'll pull *all* the linux-arm related lists.
-> 
-> Someone else can provide and run the mailing lists.
+From: Stefan Haberland <stefan.haberland@de.ibm.com>
 
-davem indicated that he's happy to run the mailing lists.
+remove unnecessary dbf call, remove string operations for magic
 
-Now, I don't know why you are pulling non-kernel arm-related maillists
-into the picture. Those are not normally cced by kernel people, so
-they not cause problems. Blackmail?
+Signed-off-by: Stefan Haberland <stefan.haberland@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-> I estimate that this will happen this evening.  Really.  Because I don't
-> see this thread settling down.
+ drivers/s390/block/dasd.c       |   21 +++++++-----------
+ drivers/s390/block/dasd_alias.c |    3 --
+ drivers/s390/block/dasd_diag.c  |    3 --
+ drivers/s390/block/dasd_eckd.c  |   45 ++++++++++++++++------------------------
+ drivers/s390/block/dasd_eer.c   |    2 -
+ drivers/s390/block/dasd_fba.c   |    7 ++----
+ drivers/s390/block/dasd_int.h   |   11 +++++++--
+ 7 files changed, 41 insertions(+), 51 deletions(-)
 
-If pulling the plug on them is the only way to get useful mailing list
-for linux-arm-kernel, go ahead!
-									Pavel
+Index: quilt-2.6/drivers/s390/block/dasd_alias.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/block/dasd_alias.c
++++ quilt-2.6/drivers/s390/block/dasd_alias.c
+@@ -379,8 +379,7 @@ static int read_unit_address_configurati
+ 	int rc;
+ 	unsigned long flags;
+ 
+-	cqr = dasd_kmalloc_request("ECKD",
+-				   1 /* PSF */	+ 1 /* RSSD */ ,
++	cqr = dasd_kmalloc_request(DASD_ECKD_MAGIC, 1 /* PSF */	+ 1 /* RSSD */,
+ 				   (sizeof(struct dasd_psf_prssd_data)),
+ 				   device);
+ 	if (IS_ERR(cqr))
+Index: quilt-2.6/drivers/s390/block/dasd.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/block/dasd.c
++++ quilt-2.6/drivers/s390/block/dasd.c
+@@ -669,14 +669,14 @@ static void dasd_profile_end(struct dasd
+  * memory and 2) dasd_smalloc_request uses the static ccw memory
+  * that gets allocated for each device.
+  */
+-struct dasd_ccw_req *dasd_kmalloc_request(char *magic, int cplength,
++struct dasd_ccw_req *dasd_kmalloc_request(int magic, int cplength,
+ 					  int datasize,
+ 					  struct dasd_device *device)
+ {
+ 	struct dasd_ccw_req *cqr;
+ 
+ 	/* Sanity checks */
+-	BUG_ON( magic == NULL || datasize > PAGE_SIZE ||
++	BUG_ON(datasize > PAGE_SIZE ||
+ 	     (cplength*sizeof(struct ccw1)) > PAGE_SIZE);
+ 
+ 	cqr = kzalloc(sizeof(struct dasd_ccw_req), GFP_ATOMIC);
+@@ -700,14 +700,13 @@ struct dasd_ccw_req *dasd_kmalloc_reques
+ 			return ERR_PTR(-ENOMEM);
+ 		}
+ 	}
+-	strncpy((char *) &cqr->magic, magic, 4);
+-	ASCEBC((char *) &cqr->magic, 4);
++	cqr->magic =  magic;
+ 	set_bit(DASD_CQR_FLAGS_USE_ERP, &cqr->flags);
+ 	dasd_get_device(device);
+ 	return cqr;
+ }
+ 
+-struct dasd_ccw_req *dasd_smalloc_request(char *magic, int cplength,
++struct dasd_ccw_req *dasd_smalloc_request(int magic, int cplength,
+ 					  int datasize,
+ 					  struct dasd_device *device)
+ {
+@@ -717,7 +716,7 @@ struct dasd_ccw_req *dasd_smalloc_reques
+ 	int size;
+ 
+ 	/* Sanity checks */
+-	BUG_ON( magic == NULL || datasize > PAGE_SIZE ||
++	BUG_ON(datasize > PAGE_SIZE ||
+ 	     (cplength*sizeof(struct ccw1)) > PAGE_SIZE);
+ 
+ 	size = (sizeof(struct dasd_ccw_req) + 7L) & -8L;
+@@ -744,8 +743,7 @@ struct dasd_ccw_req *dasd_smalloc_reques
+ 		cqr->data = data;
+  		memset(cqr->data, 0, datasize);
+ 	}
+-	strncpy((char *) &cqr->magic, magic, 4);
+-	ASCEBC((char *) &cqr->magic, 4);
++	cqr->magic = magic;
+ 	set_bit(DASD_CQR_FLAGS_USE_ERP, &cqr->flags);
+ 	dasd_get_device(device);
+ 	return cqr;
+@@ -899,9 +897,6 @@ int dasd_start_IO(struct dasd_ccw_req *c
+ 	switch (rc) {
+ 	case 0:
+ 		cqr->status = DASD_CQR_IN_IO;
+-		DBF_DEV_EVENT(DBF_DEBUG, device,
+-			      "start_IO: request %p started successful",
+-			      cqr);
+ 		break;
+ 	case -EBUSY:
+ 		DBF_DEV_EVENT(DBF_DEBUG, device, "%s",
+@@ -2533,7 +2528,7 @@ EXPORT_SYMBOL_GPL(dasd_generic_restore_d
+ static struct dasd_ccw_req *dasd_generic_build_rdc(struct dasd_device *device,
+ 						   void *rdc_buffer,
+ 						   int rdc_buffer_size,
+-						   char *magic)
++						   int magic)
+ {
+ 	struct dasd_ccw_req *cqr;
+ 	struct ccw1 *ccw;
+@@ -2564,7 +2559,7 @@ static struct dasd_ccw_req *dasd_generic
+ }
+ 
+ 
+-int dasd_generic_read_dev_chars(struct dasd_device *device, char *magic,
++int dasd_generic_read_dev_chars(struct dasd_device *device, int magic,
+ 				void *rdc_buffer, int rdc_buffer_size)
+ {
+ 	int ret;
+Index: quilt-2.6/drivers/s390/block/dasd_diag.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/block/dasd_diag.c
++++ quilt-2.6/drivers/s390/block/dasd_diag.c
+@@ -523,8 +523,7 @@ static struct dasd_ccw_req *dasd_diag_bu
+ 	/* Build the request */
+ 	datasize = sizeof(struct dasd_diag_req) +
+ 		count*sizeof(struct dasd_diag_bio);
+-	cqr = dasd_smalloc_request(dasd_diag_discipline.name, 0,
+-				   datasize, memdev);
++	cqr = dasd_smalloc_request(DASD_DIAG_MAGIC, 0, datasize, memdev);
+ 	if (IS_ERR(cqr))
+ 		return cqr;
+ 
+Index: quilt-2.6/drivers/s390/block/dasd_eckd.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/block/dasd_eckd.c
++++ quilt-2.6/drivers/s390/block/dasd_eckd.c
+@@ -730,7 +730,8 @@ static struct dasd_ccw_req *dasd_eckd_bu
+ 	struct dasd_ccw_req *cqr;
+ 	struct ccw1 *ccw;
+ 
+-	cqr = dasd_smalloc_request("ECKD", 1 /* RCD */, ciw->count, device);
++	cqr = dasd_smalloc_request(DASD_ECKD_MAGIC, 1 /* RCD */, ciw->count,
++				   device);
+ 
+ 	if (IS_ERR(cqr)) {
+ 		DBF_DEV_EVENT(DBF_WARNING, device, "%s",
+@@ -934,8 +935,7 @@ static int dasd_eckd_read_features(struc
+ 	struct dasd_eckd_private *private;
+ 
+ 	private = (struct dasd_eckd_private *) device->private;
+-	cqr = dasd_smalloc_request(dasd_eckd_discipline.name,
+-				   1 /* PSF */	+ 1 /* RSSD */ ,
++	cqr = dasd_smalloc_request(DASD_ECKD_MAGIC, 1 /* PSF */	+ 1 /* RSSD */,
+ 				   (sizeof(struct dasd_psf_prssd_data) +
+ 				    sizeof(struct dasd_rssd_features)),
+ 				   device);
+@@ -998,7 +998,7 @@ static struct dasd_ccw_req *dasd_eckd_bu
+ 	struct dasd_psf_ssc_data *psf_ssc_data;
+ 	struct ccw1 *ccw;
+ 
+-	cqr = dasd_smalloc_request("ECKD", 1 /* PSF */ ,
++	cqr = dasd_smalloc_request(DASD_ECKD_MAGIC, 1 /* PSF */ ,
+ 				  sizeof(struct dasd_psf_ssc_data),
+ 				  device);
+ 
+@@ -1149,8 +1149,8 @@ dasd_eckd_check_characteristics(struct d
+ 		goto out_err3;
+ 
+ 	/* Read Device Characteristics */
+-	rc = dasd_generic_read_dev_chars(device, "ECKD", &private->rdc_data,
+-					 64);
++	rc = dasd_generic_read_dev_chars(device, DASD_ECKD_MAGIC,
++					 &private->rdc_data, 64);
+ 	if (rc) {
+ 		DBF_EVENT(DBF_WARNING,
+ 			  "Read device characteristics failed, rc=%d for "
+@@ -1217,8 +1217,7 @@ dasd_eckd_analysis_ccw(struct dasd_devic
+ 
+ 	cplength = 8;
+ 	datasize = sizeof(struct DE_eckd_data) + 2*sizeof(struct LO_eckd_data);
+-	cqr = dasd_smalloc_request(dasd_eckd_discipline.name,
+-				   cplength, datasize, device);
++	cqr = dasd_smalloc_request(DASD_ECKD_MAGIC, cplength, datasize, device);
+ 	if (IS_ERR(cqr))
+ 		return cqr;
+ 	ccw = cqr->cpaddr;
+@@ -1499,8 +1498,7 @@ dasd_eckd_format_device(struct dasd_devi
+ 		return ERR_PTR(-EINVAL);
+ 	}
+ 	/* Allocate the format ccw request. */
+-	fcp = dasd_smalloc_request(dasd_eckd_discipline.name,
+-				   cplength, datasize, device);
++	fcp = dasd_smalloc_request(DASD_ECKD_MAGIC, cplength, datasize, device);
+ 	if (IS_ERR(fcp))
+ 		return fcp;
+ 
+@@ -1783,8 +1781,8 @@ static struct dasd_ccw_req *dasd_eckd_bu
+ 		datasize += count*sizeof(struct LO_eckd_data);
+ 	}
+ 	/* Allocate the ccw request. */
+-	cqr = dasd_smalloc_request(dasd_eckd_discipline.name,
+-				   cplength, datasize, startdev);
++	cqr = dasd_smalloc_request(DASD_ECKD_MAGIC, cplength, datasize,
++				   startdev);
+ 	if (IS_ERR(cqr))
+ 		return cqr;
+ 	ccw = cqr->cpaddr;
+@@ -1948,8 +1946,8 @@ static struct dasd_ccw_req *dasd_eckd_bu
+ 		cidaw * sizeof(unsigned long long);
+ 
+ 	/* Allocate the ccw request. */
+-	cqr = dasd_smalloc_request(dasd_eckd_discipline.name,
+-				   cplength, datasize, startdev);
++	cqr = dasd_smalloc_request(DASD_ECKD_MAGIC, cplength, datasize,
++				   startdev);
+ 	if (IS_ERR(cqr))
+ 		return cqr;
+ 	ccw = cqr->cpaddr;
+@@ -2249,8 +2247,7 @@ static struct dasd_ccw_req *dasd_eckd_bu
+ 
+ 	/* Allocate the ccw request. */
+ 	itcw_size = itcw_calc_size(0, ctidaw, 0);
+-	cqr = dasd_smalloc_request(dasd_eckd_discipline.name,
+-				   0, itcw_size, startdev);
++	cqr = dasd_smalloc_request(DASD_ECKD_MAGIC, 0, itcw_size, startdev);
+ 	if (IS_ERR(cqr))
+ 		return cqr;
+ 
+@@ -2557,8 +2554,7 @@ dasd_eckd_release(struct dasd_device *de
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EACCES;
+ 
+-	cqr = dasd_smalloc_request(dasd_eckd_discipline.name,
+-				   1, 32, device);
++	cqr = dasd_smalloc_request(DASD_ECKD_MAGIC, 1, 32, device);
+ 	if (IS_ERR(cqr)) {
+ 		DBF_DEV_EVENT(DBF_WARNING, device, "%s",
+ 			    "Could not allocate initialization request");
+@@ -2600,8 +2596,7 @@ dasd_eckd_reserve(struct dasd_device *de
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EACCES;
+ 
+-	cqr = dasd_smalloc_request(dasd_eckd_discipline.name,
+-				   1, 32, device);
++	cqr = dasd_smalloc_request(DASD_ECKD_MAGIC, 1, 32, device);
+ 	if (IS_ERR(cqr)) {
+ 		DBF_DEV_EVENT(DBF_WARNING, device, "%s",
+ 			    "Could not allocate initialization request");
+@@ -2642,8 +2637,7 @@ dasd_eckd_steal_lock(struct dasd_device 
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EACCES;
+ 
+-	cqr = dasd_smalloc_request(dasd_eckd_discipline.name,
+-				   1, 32, device);
++	cqr = dasd_smalloc_request(DASD_ECKD_MAGIC, 1, 32, device);
+ 	if (IS_ERR(cqr)) {
+ 		DBF_DEV_EVENT(DBF_WARNING, device, "%s",
+ 			    "Could not allocate initialization request");
+@@ -2681,8 +2675,7 @@ dasd_eckd_performance(struct dasd_device
+ 	struct ccw1 *ccw;
+ 	int rc;
+ 
+-	cqr = dasd_smalloc_request(dasd_eckd_discipline.name,
+-				   1 /* PSF */  + 1 /* RSSD */ ,
++	cqr = dasd_smalloc_request(DASD_ECKD_MAGIC, 1 /* PSF */  + 1 /* RSSD */,
+ 				   (sizeof(struct dasd_psf_prssd_data) +
+ 				    sizeof(struct dasd_rssd_perf_stats_t)),
+ 				   device);
+@@ -2828,7 +2821,7 @@ static int dasd_symm_io(struct dasd_devi
+ 	}
+ 
+ 	/* setup CCWs for PSF + RSSD */
+-	cqr = dasd_smalloc_request("ECKD", 2 , 0, device);
++	cqr = dasd_smalloc_request(DASD_ECKD_MAGIC, 2 , 0, device);
+ 	if (IS_ERR(cqr)) {
+ 		DBF_DEV_EVENT(DBF_WARNING, device, "%s",
+ 			"Could not allocate initialization request");
+@@ -3254,7 +3247,7 @@ int dasd_eckd_restore_device(struct dasd
+ 
+ 	/* Read Device Characteristics */
+ 	memset(&private->rdc_data, 0, sizeof(private->rdc_data));
+-	rc = dasd_generic_read_dev_chars(device, "ECKD",
++	rc = dasd_generic_read_dev_chars(device, DASD_ECKD_MAGIC,
+ 					 &private->rdc_data, 64);
+ 	if (rc) {
+ 		DBF_EVENT(DBF_WARNING,
+Index: quilt-2.6/drivers/s390/block/dasd_eer.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/block/dasd_eer.c
++++ quilt-2.6/drivers/s390/block/dasd_eer.c
+@@ -464,7 +464,7 @@ int dasd_eer_enable(struct dasd_device *
+ 	if (!device->discipline || strcmp(device->discipline->name, "ECKD"))
+ 		return -EPERM;	/* FIXME: -EMEDIUMTYPE ? */
+ 
+-	cqr = dasd_kmalloc_request("ECKD", 1 /* SNSS */,
++	cqr = dasd_kmalloc_request(DASD_ECKD_MAGIC, 1 /* SNSS */,
+ 				   SNSS_DATA_SIZE, device);
+ 	if (IS_ERR(cqr))
+ 		return -ENOMEM;
+Index: quilt-2.6/drivers/s390/block/dasd_fba.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/block/dasd_fba.c
++++ quilt-2.6/drivers/s390/block/dasd_fba.c
+@@ -152,8 +152,8 @@ dasd_fba_check_characteristics(struct da
+ 	block->base = device;
+ 
+ 	/* Read Device Characteristics */
+-	rc = dasd_generic_read_dev_chars(device, "FBA ", &private->rdc_data,
+-					 32);
++	rc = dasd_generic_read_dev_chars(device, DASD_FBA_MAGIC,
++					 &private->rdc_data, 32);
+ 	if (rc) {
+ 		DBF_EVENT(DBF_WARNING, "Read device characteristics returned "
+ 			  "error %d for device: %s",
+@@ -305,8 +305,7 @@ static struct dasd_ccw_req *dasd_fba_bui
+ 		datasize += (count - 1)*sizeof(struct LO_fba_data);
+ 	}
+ 	/* Allocate the ccw request. */
+-	cqr = dasd_smalloc_request(dasd_fba_discipline.name,
+-				   cplength, datasize, memdev);
++	cqr = dasd_smalloc_request(DASD_FBA_MAGIC, cplength, datasize, memdev);
+ 	if (IS_ERR(cqr))
+ 		return cqr;
+ 	ccw = cqr->cpaddr;
+Index: quilt-2.6/drivers/s390/block/dasd_int.h
+===================================================================
+--- quilt-2.6.orig/drivers/s390/block/dasd_int.h
++++ quilt-2.6/drivers/s390/block/dasd_int.h
+@@ -59,6 +59,11 @@
+ #include <asm/dasd.h>
+ #include <asm/idals.h>
+ 
++/* DASD discipline magic */
++#define DASD_ECKD_MAGIC 0xC5C3D2C4
++#define DASD_DIAG_MAGIC 0xC4C9C1C7
++#define DASD_FBA_MAGIC 0xC6C2C140
++
+ /*
+  * SECTION: Type definitions
+  */
+@@ -540,9 +545,9 @@ extern struct block_device_operations da
+ extern struct kmem_cache *dasd_page_cache;
+ 
+ struct dasd_ccw_req *
+-dasd_kmalloc_request(char *, int, int, struct dasd_device *);
++dasd_kmalloc_request(int , int, int, struct dasd_device *);
+ struct dasd_ccw_req *
+-dasd_smalloc_request(char *, int, int, struct dasd_device *);
++dasd_smalloc_request(int , int, int, struct dasd_device *);
+ void dasd_kfree_request(struct dasd_ccw_req *, struct dasd_device *);
+ void dasd_sfree_request(struct dasd_ccw_req *, struct dasd_device *);
+ 
+@@ -587,7 +592,7 @@ void dasd_generic_handle_state_change(st
+ int dasd_generic_pm_freeze(struct ccw_device *);
+ int dasd_generic_restore_device(struct ccw_device *);
+ 
+-int dasd_generic_read_dev_chars(struct dasd_device *, char *, void *, int);
++int dasd_generic_read_dev_chars(struct dasd_device *, int, void *, int);
+ char *dasd_get_sense(struct irb *);
+ 
+ /* externals in dasd_devmap.c */
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
