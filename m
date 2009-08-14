@@ -1,189 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbZHNWlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbZHNWne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbZHNWlu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 18:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbZHNWlt
+	id S1757233AbZHNWne (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 18:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757189AbZHNWne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 18:41:49 -0400
-Received: from exprod6og105.obsmtp.com ([64.18.1.189]:42769 "HELO
-	exprod6og105.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756620AbZHNWlt convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 18:41:49 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 14 Aug 2009 18:43:34 -0400
+Received: from kroah.org ([198.145.64.141]:46487 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757223AbZHNWnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 18:43:33 -0400
+Date: Fri, 14 Aug 2009 15:18:30 -0700
+From: Greg KH <greg@kroah.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Samsung backlight driver
+Message-ID: <20090814221830.GA13114@kroah.com>
+References: <20090814194815.GA31474@kroah.com>
+ <20090814222533.26D94526EC9@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] dc395x.h: use bitops.h BIT macro
-Date: Fri, 14 Aug 2009 18:41:46 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901BE9F54@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] dc395x.h: use bitops.h BIT macro
-Thread-Index: AcodMGfBznN3QeuCTWOGMhdlqZ4PcQ==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "kernel list" <linux-kernel@vger.kernel.org>
-Cc: <oliver@neukum.name>, <aliakc@web.de>, <lenehan@twibble.org>
-X-OriginalArrivalTime: 14 Aug 2009 22:41:48.0376 (UTC) FILETIME=[6895BD80:01CA1D30]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090814222533.26D94526EC9@mailhub.coreip.homeip.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use BIT macro from linux/bitops.h instead of custom defines.
+On Fri, Aug 14, 2009 at 02:54:40PM -0700, Dmitry Torokhov wrote:
+> Hi Greg,
+> 
+> On Fri, Aug 14, 2009 at 12:48:15PM -0700, Greg KH wrote:
+> > +
+> > +static int update_status(struct backlight_device *bd)
+> > +{
+> > +	if (!pci_device)
+> > +		return -ENODEV;
+> > +	if (!backlight_device)
+> 
+> How is this possible?
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: Oliver Neukum <oliver@neukum.name>
-Cc: Ali Akcaagac <aliakc@web.de>
-Cc: Jamie Lenehan <lenehan@twibble.org>
+It's probably not, I was just being paranoid.  You're right, I can drop
+all of these checks and rework the find logic a bit.
 
----
+> > +		return -ENODEV;
+> > +
+> > +	current_brightness = bd->props.brightness;
+> > +	set_brightness();
+> > +	return 0;
+> > +}
+> > +
+> > +static struct backlight_ops backlight_ops = {
+> > +	.get_brightness	= get_brightness,
+> > +	.update_status	= update_status,
+> > +};
+> > +
+> > +static int find_video_card(void)
+> > +{
+> > +	struct pci_dev *dev = NULL;
+> > +
+> > +	while ((dev = pci_get_device(0x8086, 0x27ae, dev)) != NULL) {
+> > +		/* Found one, so let's save it off */
+> > +		if (!pci_device)
+> > +			pci_device = pci_dev_get(dev);
+> 
+> If you need to iterate all matching devices you need to save them all or
+> release references to "extras" right here... Or, better yet, just break
+> after you find the first one.
 
-diff --git a/drivers/scsi/dc395x.h b/drivers/scsi/dc395x.h
-index b38360e..a448f5d 100644
---- a/drivers/scsi/dc395x.h
-+++ b/drivers/scsi/dc395x.h
-@@ -41,49 +41,17 @@
- /*	Various definitions						*/
- /*									*/
- /************************************************************************/
--#define BIT31				0x80000000
--#define BIT30				0x40000000
--#define BIT29				0x20000000
--#define BIT28				0x10000000
--#define BIT27				0x08000000
--#define BIT26				0x04000000
--#define BIT25				0x02000000
--#define BIT24				0x01000000
--#define BIT23				0x00800000
--#define BIT22				0x00400000
--#define BIT21				0x00200000
--#define BIT20				0x00100000
--#define BIT19				0x00080000
--#define BIT18				0x00040000
--#define BIT17				0x00020000
--#define BIT16				0x00010000
--#define BIT15				0x00008000
--#define BIT14				0x00004000
--#define BIT13				0x00002000
--#define BIT12				0x00001000
--#define BIT11				0x00000800
--#define BIT10				0x00000400
--#define BIT9				0x00000200
--#define BIT8				0x00000100
--#define BIT7				0x00000080
--#define BIT6				0x00000040
--#define BIT5				0x00000020
--#define BIT4				0x00000010
--#define BIT3				0x00000008
--#define BIT2				0x00000004
--#define BIT1				0x00000002
--#define BIT0				0x00000001
- 
- /* UnitCtrlFlag */
--#define UNIT_ALLOCATED			BIT0
--#define UNIT_INFO_CHANGED		BIT1
--#define FORMATING_MEDIA			BIT2
--#define UNIT_RETRY			BIT3
-+#define UNIT_ALLOCATED			BIT(0)
-+#define UNIT_INFO_CHANGED		BIT(1)
-+#define FORMATING_MEDIA			BIT(2)
-+#define UNIT_RETRY			BIT(3)
- 
- /* UnitFlags */
--#define DASD_SUPPORT			BIT0
--#define SCSI_SUPPORT			BIT1
--#define ASPI_SUPPORT			BIT2
-+#define DASD_SUPPORT			BIT(0)
-+#define SCSI_SUPPORT			BIT(1)
-+#define ASPI_SUPPORT			BIT(2)
- 
- /* SRBState machine definition */
- #define SRB_FREE			0x0000
-@@ -117,29 +85,29 @@
- #define HCC_UP8TERM			0x01
- 
- /* ACBFlag */
--#define RESET_DEV			BIT0
--#define RESET_DETECT			BIT1
--#define RESET_DONE			BIT2
-+#define RESET_DEV			BIT(0)
-+#define RESET_DETECT			BIT(1)
-+#define RESET_DONE			BIT(2)
- 
- /* DCBFlag */
--#define ABORT_DEV_			BIT0
-+#define ABORT_DEV_			BIT(0)
- 
- /* SRBstatus */
--#define SRB_OK				BIT0
--#define ABORTION			BIT1
--#define OVER_RUN			BIT2
--#define UNDER_RUN			BIT3
--#define PARITY_ERROR			BIT4
--#define SRB_ERROR			BIT5
-+#define SRB_OK				BIT(0)
-+#define ABORTION			BIT(1)
-+#define OVER_RUN			BIT(2)
-+#define UNDER_RUN			BIT(3)
-+#define PARITY_ERROR			BIT(4)
-+#define SRB_ERROR			BIT(5)
- 
- /* SRBFlag */
--#define DATAOUT				BIT7
--#define DATAIN				BIT6
--#define RESIDUAL_VALID			BIT5
--#define ENABLE_TIMER			BIT4
--#define RESET_DEV0			BIT2
--#define ABORT_DEV			BIT1
--#define AUTO_REQSENSE			BIT0
-+#define DATAOUT				BIT(7)
-+#define DATAIN				BIT(6)
-+#define RESIDUAL_VALID			BIT(5)
-+#define ENABLE_TIMER			BIT(4)
-+#define RESET_DEV0			BIT(2)
-+#define ABORT_DEV			BIT(1)
-+#define AUTO_REQSENSE			BIT(0)
- 
- /* Adapter status */
- #define H_STATUS_GOOD			0
-@@ -170,13 +138,13 @@
- 
- /* Sync_Mode */
- #define SYNC_WIDE_TAG_ATNT_DISABLE	0
--#define SYNC_NEGO_ENABLE		BIT0
--#define SYNC_NEGO_DONE			BIT1
--#define WIDE_NEGO_ENABLE		BIT2
--#define WIDE_NEGO_DONE			BIT3
--#define WIDE_NEGO_STATE			BIT4
--#define EN_TAG_QUEUEING			BIT5
--#define EN_ATN_STOP			BIT6
-+#define SYNC_NEGO_ENABLE		BIT(0)
-+#define SYNC_NEGO_DONE			BIT(1)
-+#define WIDE_NEGO_ENABLE		BIT(2)
-+#define WIDE_NEGO_DONE			BIT(3)
-+#define WIDE_NEGO_STATE			BIT(4)
-+#define EN_TAG_QUEUEING			BIT(5)
-+#define EN_ATN_STOP			BIT(6)
- 
- #define SYNC_NEGO_OFFSET		15
- 
-@@ -626,12 +594,12 @@ struct ScsiInqData
- /*									*/
- /************************************************************************/
- #if 0
--#define MORE2_DRV			BIT0
--#define GREATER_1G			BIT1
--#define RST_SCSI_BUS			BIT2
--#define ACTIVE_NEGATION			BIT3
--#define NO_SEEK				BIT4
--#define LUN_CHECK			BIT5
-+#define MORE2_DRV			BIT(0)
-+#define GREATER_1G			BIT(1)
-+#define RST_SCSI_BUS			BIT(2)
-+#define ACTIVE_NEGATION			BIT(3)
-+#define NO_SEEK				BIT(4)
-+#define LUN_CHECK			BIT(5)
- #endif
- 
- /************************************************************************/ 
+It's a trivially small loop, this way I get the "hm, do I need to drop
+the reference or not" logic correct :)
+
+> > +	}
+> > +
+> > +	if (!pci_device)
+> > +		return 0;
+> 
+> Why not -ENODEV? What is the point of having this driver loaded if the
+> device is not available? Then you could drop all silly "if (!pci_device)"
+> checks.
+
+Ah, you are right, thanks, I'll go fix that.
+
+thanks for the review, I appreciate it.
+
+greg k-h
