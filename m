@@ -1,170 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932183AbZHNDZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932212AbZHND3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932183AbZHNDZS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 23:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbZHNDZR
+	id S932212AbZHND3Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 23:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbZHND3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 23:25:17 -0400
-Received: from mga01.intel.com ([192.55.52.88]:41485 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754139AbZHNDZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 23:25:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,378,1246863600"; 
-   d="scan'208";a="716722564"
-Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
-From: Zhang Rui <rui.zhang@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>
-In-Reply-To: <200908132008.26508.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0908121702520.23954-100000@iolanthe.rowland.org>
-	 <200908122343.20554.rjw@sisk.pl> <1250151509.2906.61.camel@rzhang-dt>
-	 <200908132008.26508.rjw@sisk.pl>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 14 Aug 2009 11:24:04 +0800
-Message-Id: <1250220244.1804.9.camel@rzhang-dt>
+	Thu, 13 Aug 2009 23:29:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38143
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754442AbZHND3P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Aug 2009 23:29:15 -0400
+Date: Thu, 13 Aug 2009 20:29:25 -0700 (PDT)
+Message-Id: <20090813.202925.84343745.davem@davemloft.net>
+To: heyongli@gmail.com
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: Sparc miss chance to fix recoverable fault in copy_from_user
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <505766fa0908132016v1e705525r92e42c142897bc82@mail.gmail.com>
+References: <505766fa0908111853y7030399ewb07d4cec6829fd16@mail.gmail.com>
+	<20090813.124838.210334778.davem@davemloft.net>
+	<505766fa0908132016v1e705525r92e42c142897bc82@mail.gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-14 at 02:08 +0800, Rafael J. Wysocki wrote:
-> On Thursday 13 August 2009, Zhang Rui wrote:
-> > On Thu, 2009-08-13 at 05:43 +0800, Rafael J. Wysocki wrote:
-> > > On Wednesday 12 August 2009, Alan Stern wrote:
-> > > > On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
-> > > > 
-> > > > > Hi,
-> > > > > 
-> > > > > The following patches introduce a mechanism allowing us to execute device
-> > > > > drivers' suspend and resume callbacks asynchronously during system sleep
-> > > > > transitions, such as suspend to RAM.  The idea is explained in the [1/1] patch
-> > > > > message.
-> > > > > 
-> > > > > Comments welcome.
-> > > > 
-> > > > I get the idea.  Not bad.
-> > > 
-> > > Thanks!
-> > > 
-> > > > Have you tried it in a serious way?  For example, turning on the
-> > > > async_suspend flag for every device?
-> > > 
-> > > No, I've only tested it with a few selected drivers.  I'm going to try the
-> > > "async everyone" scenario, though.
-> > > 
-> > > > In one way it isn't as efficient as it could be.  You fire off a bunch
-> > > > of async threads and then make many of them wait for parent or child
-> > > > devices.  They could be doing useful work instead.
-> > > 
-> > ﻿﻿are you talking about this scenario, or I find another problem of this
-> > approach:
-> > there is a part of dpm_list, dev1->dev_aaa->...->dev_bbb->dev2
-> > 
-> > dev2 is dev1's first child.
-> > dev1 resume takes 1s
-> > dev_aaa~dev_bbb resume takes 0.1s.
-> > 
-> > if we call ﻿device_enable_async_suspend(dev1, true) in order to resume
-> > device1 asynchronously, the real asynchronous resume only happens
-> > between dev1 and dev_aaa to dev_bbb because dev2 needs to wait until
-> > dev1 resume finished.
-> 
-> Yes, that's how it works, but I would call it a limitation rather than a
-> problem.  It partially stems from the fact that __async_schedule() executes
-> ptr() synchronously in some circumstances (e.g. async_enabled unset), so the
-> suspend and resume callbacks have to be scheduled in the same order, in which
-> they would have been called synchronously.
-> 
-> > so kernel schedules dev1 resume in an async thread first, and then takes
-> > 0.1s to finish the dev_aaa to dev_bbb resume, and then sleep 0.9s
-> > 
-> > > I kind of agree, but then the patches would be more complicated.
-> > > 
-> > The problem is that we need to invoke device_resume for every device
-> > synchronously.
-> 
-> Yes, we do.
-> 
-> > I wonder if we can make the child devices inherit the
-> > parent's ﻿dev->power.async_suspend flag, so that devices that need to
-> > wait are resumed asynchronously, i.e. we never wait/sleep when parsing
-> > the dpm_list.
-> > 
-> > this doesn't bring too much benefit in suspend case but it can speed up
-> > the resume process a lot.
-> 
-> We can do that at the core level,
+From: hyl <heyongli@gmail.com>
+Date: Fri, 14 Aug 2009 11:16:41 +0800
 
-I think you mean we can't do that at the core level.
-
->  because there may be dependencies between
-> the children the core doesn't know about.  Subsystems are free to set
-> async_suspend for the entire branches of device hierarchy if they are known
-> not to contain any off-tree dependencies, but the core has no information
-> about that.
+> console is: (access the address 0xffff fff0 )
+>     SUN4V-DTLB: Error at TPC[5f2cc8], tl 1
+>     SUN4V-DTLB: TPC<memcpy_user_stub+0x8/0x40>
+>     SUN4V-DTLB: O7[4af23c]
+>     SUN4V-DTLB: O7<probe_kernel_read+0x3c/0xa0>
+>     SUN4V-DTLB: vaddr[ffffffffffffe000] ctx[0] pte[800007ffffffe743] error[2]
 > 
-hmm, but the current patch doesn't handle the off-tree dependencies
-neither.
-e.g.
-dev1, dev2, dev3
-dev2 depends on dev1, dev3 is dev1's first child,
-we only promise that dev1 has been resumed before resuming dev3 in the
-current proposal.
-
-anyway, this is not a problem after the pm_connection stuff is
-implemented. :)
-
-thanks,
-rui
-> > Of cause, this is not a problem if we turn on the async_suspend flag for
-> > every device.
 > 
-> Yes, but we cannot do that at this point.
+> the problem is :
+> this DTLB fault can be fixed by search extable, by fall to the
+> do_sparc64_fault, my draft proposal can verify this:  with this patch, this kind
+> of fault is recovery, so enable copy_from_user  return error instead of halt.
 > 
-> > > > It would be interesting to invent a way of representing explicitly the 
-> > > > non-tree dependencies -- assuming there aren't too many of them!  (I 
-> > > > can just hear the TI guys hollering about power and timer domains...)
-> > > 
-> > > I have an idea.
-> > > 
-> > > Every such dependency involves two devices, one of which is a "master"
-> > > and the second of which is a "slave", meaning that the "slave" have to be
-> > > suspended before the "master" and cannot be resumed before it.  In principle
-> > > we could give each device two lists of "dependency objects", one containing
-> > > "dependency objects" where the device is the "master" and the other containing
-> > > "dependency objects" where the device is the "slave".  Then, each "dependency
-> > > object" could be represented as
-> > > 
-> > > struct pm_connection {
-> > >     struct device *master;
-> > >     struct list_head master_hook;
-> > >     struct device *slave;
-> > >     struct list_head slave_hook;
-> > > };
-> > > 
-> > > Add some locking, helpers for adding / removing "dependency objects" etc.
-> > > and it should work.  Instead of checking the parent, walk the list of
-> > > "masters", instead of walking the list of children, walk the list of "slaves".
-> > > 
-> > > The core could create those objects for parent-child relationships
-> > > automatically, the other ones would have to be added by platforms / bus types /
-> > > drivers etc.
-> > > 
-> > ﻿this sounds great. :)
-> 
-> It can only be the next step, though, because it will affect the runtime PM as
-> well,  among other things.
-> 
+> in addition, it is triggered in kernel space, search the extable is mandatory .
 
+No, that's not the problem.
 
+The problem is that the virtual address validation done in the TLB
+miss path accepts the address printed in:
 
-> Thanks,
-> Rafael
+>     SUN4V-DTLB: vaddr[ffffffffffffe000] ctx[0] pte[800007ffffffe743] error[2]
 
+That's the real bug, not any of the other things you are talking
+about.
+
+Your "fix" would only paper over this problem.
