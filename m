@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbZHNNMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbZHNNUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755419AbZHNNMX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 09:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbZHNNMX
+	id S1755514AbZHNNUW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 09:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZHNNUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 09:12:23 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:33994 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754345AbZHNNMW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 09:12:22 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 02/11] fat: cleanup fat_put_super()
-References: <20090814122657.114987508@linutronix.de>
-	<20090814123548.213452171@linutronix.de>
-Date: Fri, 14 Aug 2009 22:12:18 +0900
-In-Reply-To: <20090814123548.213452171@linutronix.de> (Thomas Gleixner's
-	message of "Fri, 14 Aug 2009 12:42:44 -0000")
-Message-ID: <87tz0ao7yl.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Fri, 14 Aug 2009 09:20:22 -0400
+Received: from gvgeloven01.mjopr.nl ([212.83.231.34]:59468 "EHLO mjopr.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754326AbZHNNUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 09:20:21 -0400
+X-Greylist: delayed 1390 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Aug 2009 09:20:21 EDT
+Message-ID: <4A855F5D.1010502@users.sourceforge.net>
+Date: Fri, 14 Aug 2009 14:58:05 +0200
+From: Pander <pander@users.sourceforge.net>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+To: linux-kernel@vger.kernel.org
+Subject: [RFC] charger: Offer kernel build that disables disks, screen, etc.
+ and lets laptop serve as charger for USB/FireWire devices
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner <tglx@linutronix.de> writes:
+Hi all,
 
-> unload_nls() can be called with a NULL pointer now. Remove the pointer
-> checks and the NULLification of the pointers as the data structure
-> which contains the pointers is kfree'd right away.
->
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-> ---
->  fs/fat/inode.c |   16 ++++------------
->  1 file changed, 4 insertions(+), 12 deletions(-)
->
-> Index: linux-2.6-tip/fs/fat/inode.c
-> ===================================================================
-> --- linux-2.6-tip.orig/fs/fat/inode.c
-> +++ linux-2.6-tip/fs/fat/inode.c
-> @@ -470,19 +470,11 @@ static void fat_put_super(struct super_b
->  
->  	iput(sbi->fat_inode);
->  
-> -	if (sbi->nls_disk) {
-> -		unload_nls(sbi->nls_disk);
-> -		sbi->nls_disk = NULL;
-> -		sbi->options.codepage = fat_default_codepage;
-> -	}
-> -	if (sbi->nls_io) {
-> -		unload_nls(sbi->nls_io);
-> -		sbi->nls_io = NULL;
-> -	}
-> -	if (sbi->options.iocharset != fat_default_iocharset) {
-> +	unload_nls(sbi->nls_disk);
-> +	unload_nls(sbi->nls_io);
+Consider situations where normal power outlets are not available, e.g.
+when travelling in remote areas or in an air plane or train, but you do
+need to charge USB/FireWire devices like a mobile telephone, camera,
+PDA, etc. It would be efficient to boot your laptop with a special
+kernel that turns it into a charger.
 
-I don't object to this, however, personally I'd prefer to check NULL
-explicitly, including brelse().
+Some laptops already offer this feature, however the majority of laptops
+donot. A suspended laptop can offer this too, but please consider
+situation orplaces where power is so scarce that normally booting a
+laptop in order tocharge another device is undesirable in terms of being
+efficient with theenergy stored in the battery or that it is not allowed
+to activate RF devicesas is in an air plane.
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Normal boot will cause that a lot of power will be consumed by the
+disks,screen, CPUs, RF devices, fans, all LEDs (except the one
+indicating the deviceis switched on), etc. while you are only interested
+in power being available at the USB/FireWire ports.
+
+This can be achieved by building a special kernel that will shut down
+all hardware that is not needed for offering power on the before
+mentioned ports. Perhaps this can be achieved by kernel configuration
+alone or it might require a minimal of functionality to put a laptop
+into such a charging state.
+
+Normally, systems automatically shut down before the battery is drained
+100%. This kernel will allow you to drain all the entire battery.
+
+The resulting kernel can be installed and made available in a similar
+way as the memtest kernel and can be incorporated by installers of
+GNU/Linux distributions.
+
+Implementing this idea will allow for highly energy efficient recharging
+of devices like telephones, cameras and other mobile devices via your
+laptop.
+
+Regards,
+
+Pander
+
