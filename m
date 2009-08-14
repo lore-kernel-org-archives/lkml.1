@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbZHNUkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbZHNUlH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752621AbZHNUkl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 16:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZHNUkk
+	id S1753790AbZHNUlH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 16:41:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbZHNUkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 16:40:40 -0400
-Received: from vms173017pub.verizon.net ([206.46.173.17]:56084 "EHLO
-	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752173AbZHNUkg (ORCPT
+	Fri, 14 Aug 2009 16:40:52 -0400
+Received: from vms173013pub.verizon.net ([206.46.173.13]:40525 "EHLO
+	vms173013pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753215AbZHNUkt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 16:40:36 -0400
+	Fri, 14 Aug 2009 16:40:49 -0400
 From: Len Brown <lenb@kernel.org>
 To: x86@kernel.org, sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org,
        linux-acpi@vger.kernel.org
 Cc: Feng Tang <feng.tang@intel.com>, Len Brown <len.brown@intel.com>
-Subject: [PATCH 05/11] ACPI,
- x86: expose some IO-APIC routines when CONFIG_ACPI=n
-Date: Fri, 14 Aug 2009 16:38:09 -0400
-Message-id: <2a98e7573b83bac1a79292a428090ee352626216.1250281826.git.len.brown@intel.com>
+Subject: [PATCH 07/11] SFI: create linux/sfi.h
+Date: Fri, 14 Aug 2009 16:38:11 -0400
+Message-id: <4a07603b5073c06f55fe6db7966c820c9082c6ea.1250281826.git.len.brown@intel.com>
 X-Mailer: git-send-email 1.6.4.122.g6ffd7
 In-reply-to: <1250282295-25216-1-git-send-email-lenb@kernel.org>
 References: <1250282295-25216-1-git-send-email-lenb@kernel.org>
@@ -30,326 +29,234 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Feng Tang <feng.tang@intel.com>
 
-Some IO-APIC routines are ACPI specific now, but need to
-be exposed when CONFIG_ACPI=n for the benefit of SFI.
+include/linux/include/sfi.h defines everything that customers
+of SFI need to know in order to use the SFI suport in the kernel.
 
-Remove #ifdef ACPI around these routines:
+The primary API is sfi_table_parse(), where a driver or another part
+of the kernel can supply a handler to parse the named table.
 
-io_apic_get_unique_id(int ioapic, int apic_id);
-io_apic_get_version(int ioapic);
-io_apic_get_redir_entries(int ioapic);
-
-Move these routines from ACPI-specific boot.c to io_apic.c:
-
-uniq_ioapic_id(u8 id)
-mp_find_ioapic()
-mp_find_ioapic_pin()
-mp_register_ioapic()
-
-Also, since uniq_ioapic_id() is now no longer static,
-re-name it to io_apic_unique_id() for consistency
-with the other public io_apic routines.
-
-For simplicity, do not #ifdef the resulting code ACPI || SFI,
-thought that could be done in the future if it is important
-to optimize the !ACPI !SFI IO-APIC x86 kernel for size.
+sfi.h also includes the currently defined table signatures and table
+formats.
 
 Signed-off-by: Feng Tang <feng.tang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: x86@kernel.org
 ---
- arch/x86/include/asm/io_apic.h |   13 ++++-
- arch/x86/kernel/acpi/boot.c    |  102 +---------------------------------------
- arch/x86/kernel/apic/io_apic.c |  103 +++++++++++++++++++++++++++++++++++++--
- 3 files changed, 109 insertions(+), 109 deletions(-)
+ include/linux/sfi.h |  206 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 206 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/sfi.h
 
-diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-index 330ee80..85232d3 100644
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -150,11 +150,10 @@ extern int timer_through_8259;
- #define io_apic_assign_pci_irqs \
- 	(mp_irq_entries && !skip_ioapic_setup && io_apic_irqs)
- 
--#ifdef CONFIG_ACPI
-+extern u8 io_apic_unique_id(u8 id);
- extern int io_apic_get_unique_id(int ioapic, int apic_id);
- extern int io_apic_get_version(int ioapic);
- extern int io_apic_get_redir_entries(int ioapic);
--#endif /* CONFIG_ACPI */
- 
- struct io_apic_irq_attr;
- extern int io_apic_set_pci_routing(struct device *dev, int irq,
-@@ -177,6 +176,16 @@ extern int setup_ioapic_entry(int apic, int irq,
- 			      int polarity, int vector, int pin);
- extern void ioapic_write_entry(int apic, int pin,
- 			       struct IO_APIC_route_entry e);
+diff --git a/include/linux/sfi.h b/include/linux/sfi.h
+new file mode 100644
+index 0000000..9a6f760
+--- /dev/null
++++ b/include/linux/sfi.h
+@@ -0,0 +1,206 @@
++/* sfi.h Simple Firmware Interface */
 +
-+struct mp_ioapic_gsi{
-+	int gsi_base;
-+	int gsi_end;
-+};
-+extern struct mp_ioapic_gsi  mp_gsi_routing[];
-+int mp_find_ioapic(int gsi);
-+int mp_find_ioapic_pin(int ioapic, int gsi);
-+void __init mp_register_ioapic(int id, u32 address, u32 gsi_base);
++/*
 +
- #else  /* !CONFIG_X86_IO_APIC */
- #define io_apic_assign_pci_irqs 0
- static const int timer_through_8259 = 0;
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 6b8ca3a..7e62d1e 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -833,106 +833,6 @@ static int __init acpi_parse_madt_lapic_entries(void)
- extern int es7000_plat;
- #endif
- 
--static struct {
--	int gsi_base;
--	int gsi_end;
--} mp_ioapic_routing[MAX_IO_APICS];
--
--int mp_find_ioapic(int gsi)
--{
--	int i = 0;
--
--	/* Find the IOAPIC that manages this GSI. */
--	for (i = 0; i < nr_ioapics; i++) {
--		if ((gsi >= mp_ioapic_routing[i].gsi_base)
--		    && (gsi <= mp_ioapic_routing[i].gsi_end))
--			return i;
--	}
--
--	printk(KERN_ERR "ERROR: Unable to locate IOAPIC for GSI %d\n", gsi);
--	return -1;
--}
--
--int mp_find_ioapic_pin(int ioapic, int gsi)
--{
--	if (WARN_ON(ioapic == -1))
--		return -1;
--	if (WARN_ON(gsi > mp_ioapic_routing[ioapic].gsi_end))
--		return -1;
--
--	return gsi - mp_ioapic_routing[ioapic].gsi_base;
--}
--
--static u8 __init uniq_ioapic_id(u8 id)
--{
--#ifdef CONFIG_X86_32
--	if ((boot_cpu_data.x86_vendor == X86_VENDOR_INTEL) &&
--	    !APIC_XAPIC(apic_version[boot_cpu_physical_apicid]))
--		return io_apic_get_unique_id(nr_ioapics, id);
--	else
--		return id;
--#else
--	int i;
--	DECLARE_BITMAP(used, 256);
--	bitmap_zero(used, 256);
--	for (i = 0; i < nr_ioapics; i++) {
--		struct mpc_ioapic *ia = &mp_ioapics[i];
--		__set_bit(ia->apicid, used);
--	}
--	if (!test_bit(id, used))
--		return id;
--	return find_first_zero_bit(used, 256);
--#endif
--}
--
--static int bad_ioapic(unsigned long address)
--{
--	if (nr_ioapics >= MAX_IO_APICS) {
--		printk(KERN_ERR "ERROR: Max # of I/O APICs (%d) exceeded "
--		       "(found %d)\n", MAX_IO_APICS, nr_ioapics);
--		panic("Recompile kernel with bigger MAX_IO_APICS!\n");
--	}
--	if (!address) {
--		printk(KERN_ERR "WARNING: Bogus (zero) I/O APIC address"
--		       " found in table, skipping!\n");
--		return 1;
--	}
--	return 0;
--}
--
--void __init mp_register_ioapic(int id, u32 address, u32 gsi_base)
--{
--	int idx = 0;
--
--	if (bad_ioapic(address))
--		return;
--
--	idx = nr_ioapics;
--
--	mp_ioapics[idx].type = MP_IOAPIC;
--	mp_ioapics[idx].flags = MPC_APIC_USABLE;
--	mp_ioapics[idx].apicaddr = address;
--
--	set_fixmap_nocache(FIX_IO_APIC_BASE_0 + idx, address);
--	mp_ioapics[idx].apicid = uniq_ioapic_id(id);
--	mp_ioapics[idx].apicver = io_apic_get_version(idx);
--
--	/*
--	 * Build basic GSI lookup table to facilitate gsi->io_apic lookups
--	 * and to prevent reprogramming of IOAPIC pins (PCI GSIs).
--	 */
--	mp_ioapic_routing[idx].gsi_base = gsi_base;
--	mp_ioapic_routing[idx].gsi_end = gsi_base +
--	    io_apic_get_redir_entries(idx);
--
--	printk(KERN_INFO "IOAPIC[%d]: apic_id %d, version %d, address 0x%x, "
--	       "GSI %d-%d\n", idx, mp_ioapics[idx].apicid,
--	       mp_ioapics[idx].apicver, mp_ioapics[idx].apicaddr,
--	       mp_ioapic_routing[idx].gsi_base, mp_ioapic_routing[idx].gsi_end);
--
--	nr_ioapics++;
--}
--
- int __init acpi_probe_gsi(void)
- {
- 	int idx;
-@@ -947,7 +847,7 @@ int __init acpi_probe_gsi(void)
- 
- 	max_gsi = 0;
- 	for (idx = 0; idx < nr_ioapics; idx++) {
--		gsi = mp_ioapic_routing[idx].gsi_end;
-+		gsi = mp_gsi_routing[idx].gsi_end;
- 
- 		if (gsi > max_gsi)
- 			max_gsi = gsi;
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index d2ed6c5..a8c0232 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -85,6 +85,9 @@ int nr_ioapic_registers[MAX_IO_APICS];
- struct mpc_ioapic mp_ioapics[MAX_IO_APICS];
- int nr_ioapics;
- 
-+/* IO APIC gsi routing info */
-+struct mp_ioapic_gsi  mp_gsi_routing[MAX_IO_APICS];
++  This file is provided under a dual BSD/GPLv2 license.  When using or
++  redistributing this file, you may do so under either license.
 +
- /* MP IRQ source entries */
- struct mpc_intsrc mp_irqs[MAX_IRQ_SOURCES];
- 
-@@ -3941,11 +3944,28 @@ int io_apic_set_pci_routing(struct device *dev, int irq,
- 	return __io_apic_set_pci_routing(dev, irq, irq_attr);
- }
- 
--/* --------------------------------------------------------------------------
--                          ACPI-based IOAPIC Configuration
--   -------------------------------------------------------------------------- */
-+u8 __init io_apic_unique_id(u8 id)
++  GPL LICENSE SUMMARY
++
++  Copyright(c) 2009 Intel Corporation. All rights reserved.
++
++  This program is free software; you can redistribute it and/or modify
++  it under the terms of version 2 of the GNU General Public License as
++  published by the Free Software Foundation.
++
++  This program is distributed in the hope that it will be useful, but
++  WITHOUT ANY WARRANTY; without even the implied warranty of
++  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++  General Public License for more details.
++
++  You should have received a copy of the GNU General Public License
++  along with this program; if not, write to the Free Software
++  Foundation, Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
++  The full GNU General Public License is included in this distribution
++  in the file called LICENSE.GPL.
++
++  BSD LICENSE
++
++  Copyright(c) 2009 Intel Corporation. All rights reserved.
++
++  Redistribution and use in source and binary forms, with or without
++  modification, are permitted provided that the following conditions
++  are met:
++
++    * Redistributions of source code must retain the above copyright
++      notice, this list of conditions and the following disclaimer.
++    * Redistributions in binary form must reproduce the above copyright
++      notice, this list of conditions and the following disclaimer in
++      the documentation and/or other materials provided with the
++      distribution.
++    * Neither the name of Intel Corporation nor the names of its
++      contributors may be used to endorse or promote products derived
++      from this software without specific prior written permission.
++
++  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
++  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
++  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++*/
++
++#ifndef _LINUX_SFI_H
++#define _LINUX_SFI_H
++
++/* Table signatures reserved by the SFI specification */
++#define SFI_SIG_SYST		"SYST"
++#define SFI_SIG_FREQ		"FREQ"
++#define SFI_SIG_IDLE		"IDLE"
++#define SFI_SIG_CPUS		"CPUS"
++#define SFI_SIG_MTMR		"MTMR"
++#define SFI_SIG_MRTC		"MRTC"
++#define SFI_SIG_MMAP		"MMAP"
++#define SFI_SIG_APIC		"APIC"
++#define SFI_SIG_XSDT		"XSDT"
++#define SFI_SIG_WAKE		"WAKE"
++#define SFI_SIG_SPIB		"SPIB"
++#define SFI_SIG_I2CB		"I2CB"
++#define SFI_SIG_GPEM		"GPEM"
++
++#define SFI_SIGNATURE_SIZE	4
++#define SFI_OEM_ID_SIZE		6
++#define SFI_OEM_TABLE_ID_SIZE	8
++
++#define SFI_SYST_SEARCH_BEGIN		0x000E0000
++#define SFI_SYST_SEARCH_END		0x000FFFFF
++
++#define SFI_GET_NUM_ENTRIES(ptable, entry_type) \
++	((ptable->header.len - sizeof(struct sfi_table_header)) / \
++	(sizeof(entry_type)))
++/*
++ * Table structures must be byte-packed to match the SFI specification,
++ * as they are provided by the BIOS.
++ */
++struct sfi_table_header {
++	char	sig[SFI_SIGNATURE_SIZE];
++	u32	len;
++	u8	rev;
++	u8	csum;
++	char	oem_id[SFI_OEM_ID_SIZE];
++	char	oem_table_id[SFI_OEM_TABLE_ID_SIZE];
++} __packed;
++
++struct sfi_table_simple {
++	struct sfi_table_header		header;
++	u64				pentry[1];
++} __packed;
++
++/* Comply with UEFI spec 2.1 */
++struct sfi_mem_entry {
++	u32	type;
++	u64	phys_start;
++	u64	virt_start;
++	u64	pages;
++	u64	attrib;
++} __packed;
++
++struct sfi_cpu_table_entry {
++	u32	apic_id;
++} __packed;
++
++struct sfi_cstate_table_entry {
++	u32	hint;		/* MWAIT hint */
++	u32	latency;	/* latency in ms */
++} __packed;
++
++struct sfi_apic_table_entry {
++	u64	phys_addr;	/* phy base addr for APIC reg */
++} __packed;
++
++struct sfi_freq_table_entry {
++	u32	freq_mhz;	/* in MHZ */
++	u32	latency;	/* transition latency in ms */
++	u32	ctrl_val;	/* value to write to PERF_CTL */
++} __packed;
++
++struct sfi_wake_table_entry {
++	u64	phys_addr;	/* pointer to where the wake vector locates */
++} __packed;
++
++struct sfi_timer_table_entry {
++	u64	phys_addr;	/* phy base addr for the timer */
++	u32	freq_hz;	/* in HZ */
++	u32	irq;
++} __packed;
++
++struct sfi_rtc_table_entry {
++	u64	phys_addr;	/* phy base addr for the RTC */
++	u32	irq;
++} __packed;
++
++struct sfi_spi_table_entry {
++	u16	host_num;	/* attached to host 0, 1...*/
++	u16	cs;		/* chip select */
++	u16	irq_info;
++	char	name[16];
++	u8	dev_info[10];
++} __packed;
++
++struct sfi_i2c_table_entry {
++	u16	host_num;
++	u16	addr;		/* slave addr */
++	u16	irq_info;
++	char	name[16];
++	u8	dev_info[10];
++} __packed;
++
++struct sfi_gpe_table_entry {
++	u16	logical_id;	/* logical id */
++	u16	phys_id;	/* physical GPE id */
++} __packed;
++
++
++typedef int (*sfi_table_handler) (struct sfi_table_header *table);
++
++#ifdef CONFIG_SFI
++extern void __init sfi_init(void);
++extern int __init sfi_platform_init(void);
++extern void __init sfi_init_late(void);
++extern int sfi_table_parse(char *signature, char *oem_id, char *oem_table_id,
++				sfi_table_handler handler);
++
++extern int sfi_disabled;
++static inline void disable_sfi(void)
 +{
-+#ifdef CONFIG_X86_32
-+	if ((boot_cpu_data.x86_vendor == X86_VENDOR_INTEL) &&
-+	    !APIC_XAPIC(apic_version[boot_cpu_physical_apicid]))
-+		return io_apic_get_unique_id(nr_ioapics, id);
-+	else
-+		return id;
-+#else
-+	int i;
-+	DECLARE_BITMAP(used, 256);
- 
--#ifdef CONFIG_ACPI
-+	bitmap_zero(used, 256);
-+	for (i = 0; i < nr_ioapics; i++) {
-+		struct mpc_ioapic *ia = &mp_ioapics[i];
-+		__set_bit(ia->apicid, used);
-+	}
-+	if (!test_bit(id, used))
-+		return id;
-+	return find_first_zero_bit(used, 256);
-+#endif
++	sfi_disabled = 1;
 +}
- 
- #ifdef CONFIG_X86_32
- int __init io_apic_get_unique_id(int ioapic, int apic_id)
-@@ -4054,8 +4074,6 @@ int acpi_get_override_irq(int bus_irq, int *trigger, int *polarity)
- 	return 0;
- }
- 
--#endif /* CONFIG_ACPI */
--
- /*
-  * This function currently is only a helper for the i386 smp boot process where
-  * we need to reprogram the ioredtbls to cater for the cpus which have come online
-@@ -4201,3 +4219,76 @@ void __init ioapic_insert_resources(void)
- 		r++;
- 	}
- }
 +
-+int mp_find_ioapic(int gsi)
++#else /* !CONFIG_SFI */
++
++static inline void sfi_init(void)
 +{
-+	int i = 0;
++}
 +
-+	/* Find the IOAPIC that manages this GSI. */
-+	for (i = 0; i < nr_ioapics; i++) {
-+		if ((gsi >= mp_gsi_routing[i].gsi_base)
-+		    && (gsi <= mp_gsi_routing[i].gsi_end))
-+			return i;
-+	}
++static inline void sfi_init_late(void)
++{
++}
 +
-+	printk(KERN_ERR "ERROR: Unable to locate IOAPIC for GSI %d\n", gsi);
++#define sfi_disabled	0
++
++static inline int sfi_table_parse(char *signature, char *oem_id,
++					char *oem_table_id,
++					sfi_table_handler handler)
++{
 +	return -1;
 +}
 +
-+int mp_find_ioapic_pin(int ioapic, int gsi)
-+{
-+	if (WARN_ON(ioapic == -1))
-+		return -1;
-+	if (WARN_ON(gsi > mp_gsi_routing[ioapic].gsi_end))
-+		return -1;
++#endif /* !CONFIG_SFI */
 +
-+	return gsi - mp_gsi_routing[ioapic].gsi_base;
-+}
-+
-+static int bad_ioapic(unsigned long address)
-+{
-+	if (nr_ioapics >= MAX_IO_APICS) {
-+		printk(KERN_WARNING "WARING: Max # of I/O APICs (%d) exceeded "
-+		       "(found %d), skipping\n", MAX_IO_APICS, nr_ioapics);
-+		return 1;
-+	}
-+	if (!address) {
-+		printk(KERN_WARNING "WARNING: Bogus (zero) I/O APIC address"
-+		       " found in table, skipping!\n");
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+void __init mp_register_ioapic(int id, u32 address, u32 gsi_base)
-+{
-+	int idx = 0;
-+
-+	if (bad_ioapic(address))
-+		return;
-+
-+	idx = nr_ioapics;
-+
-+	mp_ioapics[idx].type = MP_IOAPIC;
-+	mp_ioapics[idx].flags = MPC_APIC_USABLE;
-+	mp_ioapics[idx].apicaddr = address;
-+
-+	set_fixmap_nocache(FIX_IO_APIC_BASE_0 + idx, address);
-+	mp_ioapics[idx].apicid = io_apic_unique_id(id);
-+	mp_ioapics[idx].apicver = io_apic_get_version(idx);
-+
-+	/*
-+	 * Build basic GSI lookup table to facilitate gsi->io_apic lookups
-+	 * and to prevent reprogramming of IOAPIC pins (PCI GSIs).
-+	 */
-+	mp_gsi_routing[idx].gsi_base = gsi_base;
-+	mp_gsi_routing[idx].gsi_end = gsi_base +
-+	    io_apic_get_redir_entries(idx);
-+
-+	printk(KERN_INFO "IOAPIC[%d]: apic_id %d, version %d, address 0x%x, "
-+	       "GSI %d-%d\n", idx, mp_ioapics[idx].apicid,
-+	       mp_ioapics[idx].apicver, mp_ioapics[idx].apicaddr,
-+	       mp_gsi_routing[idx].gsi_base, mp_gsi_routing[idx].gsi_end);
-+
-+	nr_ioapics++;
-+}
++#endif /*_LINUX_SFI_H*/
 -- 
 1.6.0.6
 
