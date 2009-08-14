@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbZHNLb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbZHNLag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755902AbZHNLb0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 07:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524AbZHNL0W
+	id S1756041AbZHNLag (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 07:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbZHNLae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 07:26:22 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:53868 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755447AbZHNL0R (ORCPT
+	Fri, 14 Aug 2009 07:30:34 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38740 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755825AbZHNLab (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 07:26:17 -0400
-Message-Id: <20090814112617.470784614@de.ibm.com>
-References: <20090814112517.982007860@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 14 Aug 2009 13:25:38 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Frank Munzert <munzert@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 21/34] tape: use init_timer_on_stack() rather than init_timer()
-Content-Disposition: inline; filename=120-tape-timer-on-stack.diff
+	Fri, 14 Aug 2009 07:30:31 -0400
+Date: Fri, 14 Aug 2009 13:30:21 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Dipankar Sarma <dipankar@in.ibm.com>
+Cc: Len Brown <lenb@kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Li, Shaohua" <shaohua.li@intel.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
+       "Brown, Len" <len.brown@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>,
+       "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+Message-ID: <20090814113021.GL32418@elf.ucw.cz>
+References: <20090805142311.553.78286.stgit@sofia.in.ibm.com> <20090806015855.GA20596@sli10-desk.sh.intel.com> <20090809120818.GA1338@ucw.cz> <200908091522.02898.rjw@sisk.pl> <20090810081941.GA18649@elf.ucw.cz> <1249950137.11545.38184.camel@localhost.localdomain> <20090812115806.GK24339@elf.ucw.cz> <20090812195753.GA14649@in.ibm.com> <alpine.LFD.2.00.0908122036580.22946@localhost.localdomain> <20090813045931.GB14649@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090813045931.GB14649@in.ibm.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frank Munzert <munzert@de.ibm.com>
+> > > 2. A low-power state where the guest indicates it doesn't need the
+> > > CPU (and can be put in low power state) but doesn't want to give up 
+> > > its allocated cpu share. IOW, no visible configuration changes.
+> > > 
+> > > So, in any case we would probably want more than one states.
+> > 
+> > How are #1 and #2 different when the hypervisor
+> > gets control in all idle states?  I assert that
+> > they are the same, and thus 1 state will suffice.
+> 
+> It depends on the hypervisor implementation. On pseries (powerpc)
+> hypervisor, for example, they are different. By offlining a vcpu
+> (and in turn shutting a cpu), you will actually create a configuration
+> change in the VM that is visible to other systems management tools
+> which may not be what the system administrator wanted. Ideally,
+> we would like to distinguish between these two states.
+> 
+> Hope that suffices as an example.
 
-With CONFIG_DEBUG_OBJECTS_TIMERS=y "chccwdev --online" for a tape device
-will fail with message "ODEBUG: object is on stack, but not annotated".
-We now use init_timer_on_stack.
+So... you have something like "physically pulling out hotplug cpu" on
+powerpc.
 
-Signed-off-by: Frank Munzert <munzert@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+But maybe it is useful to take already offline cpus (from linux side),
+and make that visible to hypervisor, too.
 
- drivers/s390/char/tape_std.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: quilt-2.6/drivers/s390/char/tape_std.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/char/tape_std.c
-+++ quilt-2.6/drivers/s390/char/tape_std.c
-@@ -68,7 +68,7 @@ tape_std_assign(struct tape_device *devi
- 	 * to another host (actually this shouldn't happen but it does).
- 	 * So we set up a timeout for this call.
- 	 */
--	init_timer(&timeout);
-+	init_timer_on_stack(&timeout);
- 	timeout.function = tape_std_assign_timeout;
- 	timeout.data     = (unsigned long) request;
- 	timeout.expires  = jiffies + 2 * HZ;
+So maybe something like "echo 1 > /sys/devices/system/cpu/cpu1/unplug"
+would be more useful for hypervisor case?
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
