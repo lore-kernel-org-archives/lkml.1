@@ -1,49 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932691AbZHNQHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932705AbZHNQHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932691AbZHNQHp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 12:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932512AbZHNQHo
+	id S932705AbZHNQHt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 12:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932696AbZHNQHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 12:07:44 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:20011 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932486AbZHNQHo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 12:07:44 -0400
-Message-ID: <4A858B4A.9000705@gmail.com>
-Date: Fri, 14 Aug 2009 19:05:30 +0300
-From: Artem Bityutskiy <dedekind1@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: JiSheng Zhang <jszhang3@gmail.com>
-CC: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Artem.Bityutskiy@nokia.com, adrian.hunter@nokia.com,
-       rmk@arm.linux.org.uk, dwmw2@infradead.org
-Subject: Re: [PATCH] UBI: Fix allocation of volume table
-References: <20090811094455.6f9cbbfe@ustc>
-In-Reply-To: <20090811094455.6f9cbbfe@ustc>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 14 Aug 2009 16:07:19.0421 (UTC) FILETIME=[4CC9D2D0:01CA1CF9]
-X-Nokia-AV: Clean
+	Fri, 14 Aug 2009 12:07:49 -0400
+Received: from mga03.intel.com ([143.182.124.21]:4499 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932512AbZHNQHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 12:07:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,381,1246863600"; 
+   d="scan'208";a="175879842"
+Subject: Re: iwlwifi (4965) regression since 2.6.30
+From: reinette chatre <reinette.chatre@intel.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090814021031.GB4555@khazad-dum.debian.net>
+References: <1249336021.30019.4304.camel@rc-desk>
+	 <20090804084903.GV3382@ics.muni.cz> <1249426183.30019.4581.camel@rc-desk>
+	 <20090804225626.GZ3382@ics.muni.cz> <1249429081.30019.4588.camel@rc-desk>
+	 <20090806132244.GC15867@khazad-dum.debian.net>
+	 <20090806224110.GJ3382@ics.muni.cz>
+	 <20090806230704.GA14381@khazad-dum.debian.net>
+	 <20090807213508.GN3382@ics.muni.cz> <1250204399.30019.6344.camel@rc-desk>
+	 <20090814021031.GB4555@khazad-dum.debian.net>
+Content-Type: text/plain
+Date: Fri, 14 Aug 2009 09:07:47 -0700
+Message-Id: <1250266067.30019.6376.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/11/2009 04:44 AM, JiSheng Zhang wrote:
-> We can't use vmalloc for the buffer used for volume table for some NAND
-> or NOR drivers may pass the buffer to DMA. And the volume table size
-> a.k.a vtbl_size is small so we can use kmalloc or kzalloc for it instead
->
-> Signed-off-by: JiSheng Zhang<jszhang3@gmail.com>
+On Thu, 2009-08-13 at 19:10 -0700, Henrique de Moraes Holschuh wrote:
+> On Thu, 13 Aug 2009, reinette chatre wrote:
+> > On Fri, 2009-08-07 at 14:35 -0700, Lukas Hejtmanek wrote:
+> > > On Thu, Aug 06, 2009 at 08:07:04PM -0300, Henrique de Moraes Holschuh wrote:
+> > > > On Fri, 07 Aug 2009, Lukas Hejtmanek wrote:
+> > > > > 0x0004 = 238  # KEY_WLAN
+> > > > 
+> > > > This means any rfkill input handler (be it in kernel or userspace) will
+> > > > toggle your WLAN cards when fn+f5 is pressed.  You can just assign a
+> > > > different keycode to it (use KEY_RESERVED or KEY_UNKNOWN if you don't want
+> > > > the key to do anything).
+> > > 
+> > > Could you give me some hints how to do the mapping?
+> > 
+> > On my system this key is mapped to 385 (KEY_RADIO) - so that can explain
+> 
+> And KEY_RADIO is the key to select the radio tuner... heh.  The
+> bogosity never ends.  At least it is unlikely that anything would care
+> for KEY_RADIO.
 
-I do not have objections if this patch becomes a member of a series of
-patches which kick vmalloc from whole UBI. Applying just this patch does
-not make much sense.
+On my system this key toggles bluetooth rfkill and does not touch wifi.
+I think this is what Lukas wants it to do. I thus hope when he sets his
+key mapping to KEY_RADIO he will get the same behavior.
 
-You may go through UBI code and try to split large vmalloc-ed buffers on
-smaller kmalloc-ed ones.
+> > >From what I understand you can use input-kbd to change the key mappings.
+> > The map file you can provide to it is in same format as the one it
+> > prints for you.
+> 
+> You can also add a HAL fdi file.  I will attach one I found on my
+> system, modify to your taste and find out where you should drop it on
+> /etc for HAL to use...
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Thanks!
+
+Reinette
+
