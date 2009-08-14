@@ -1,125 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbZHNFjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbZHNFoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbZHNFjp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 01:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbZHNFjp
+	id S1756048AbZHNFoY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 01:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbZHNFoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 01:39:45 -0400
-Received: from mail.atheros.com ([12.36.123.2]:18162 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751193AbZHNFjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 01:39:44 -0400
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: <akpm@linux-foundation.org>
-CC: <linux-kernel@vger.kernel.org>, <devel@driverdev.osuosl.org>,
-       <mcgrof@gmail.com>, "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Julia Lawall <julia@diku.dk>, Joe Perches <joe@perches.com>,
-       Nicolas Palix <npalix@diku.dk>,
-       Yoann Padioleau <yoann.padioleau@gmail.com>
-Subject: [PATCH v2] scripts: add typdef removal tool
-Date: Thu, 13 Aug 2009 22:39:44 -0700
-Message-ID: <1250228384-19823-1-git-send-email-lrodriguez@atheros.com>
-X-Mailer: git-send-email 1.6.3.3
+	Fri, 14 Aug 2009 01:44:23 -0400
+Received: from mail-pz0-f196.google.com ([209.85.222.196]:58176 "EHLO
+	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751950AbZHNFoW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 01:44:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=tYuJyyLFhyViYtCc5cCDkMIridfEZm9Pkjrhw5lMX4LT24ObFCzfejJL7VMRgW3Qv6
+         K4UJiFPDpeMk1zAtIw4hQ5hTb6S/fRi+mXQoSKMTqI5KEvSQwIh3kxkxn1eb/PA8gYyx
+         uOI57B0lvJGV7LGNL1D7dD7xXuPVeOpDqNmCc=
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB8B3B2F7CB@orsmsx505.amr.corp.intel.com>
+References: <3877989d0908130003i295cc7f2q343ad2446d0d51ff@mail.gmail.com>
+	 <20090813161407A.fujita.tomonori@lab.ntt.co.jp>
+	 <3877989d0908130037j5f9b1594q61e51c544a254b68@mail.gmail.com>
+	 <20090813170227V.fujita.tomonori@lab.ntt.co.jp>
+	 <3877989d0908130111m1a7d8625ha84ed1732a7eae81@mail.gmail.com>
+	 <1250153373.29180.225.camel@macbook.infradead.org>
+	 <3877989d0908130200k6d016a74w1947dc6bcd368a7f@mail.gmail.com>
+	 <1250183298.29180.853.camel@macbook.infradead.org>
+	 <A6AD88C3F2289247BE726C37303E1EB8B3B2F7CB@orsmsx505.amr.corp.intel.com>
+Date: Fri, 14 Aug 2009 13:44:23 +0800
+Message-ID: <3877989d0908132244r74020669ldb119a17ff12d442@mail.gmail.com>
+Subject: Re: [RFC patch] init default dma_ops to prepare intel_iommu_init 
+	failure
+From: Luming Yu <luming.yu@gmail.com>
+To: "Yu, Fenghua" <fenghua.yu@intel.com>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If you are porting drivers and need to remove tydpefs you can use
-this to help you port the driver faster. Until we don't have a fully
-correct and complete way to do this through Coccinelle spatch we
-might as well help developers porting drivers with something. spatch
-also has a learning curve, people working on staging may not end
-up using it for a while.
+On Fri, Aug 14, 2009 at 1:30 AM, Yu, Fenghua<fenghua.yu@intel.com> wrote:
+>>-----Original Message-----
+>>From: David Woodhouse [mailto:dwmw2@infradead.org]
+>>Sent: Thursday, August 13, 2009 10:08 AM
+>>To: Luming Yu
+>>Cc: FUJITA Tomonori; Yu, Fenghua; Luck, Tony; linux-kernel@vger.kernel.org;
+>>akpm@linux-foundation.org
+>>Subject: Re: [RFC patch] init default dma_ops to prepare intel_iommu_init
+>>failure
+>>
+>>On Thu, 2009-08-13 at 17:00 +0800, Luming Yu wrote:
+>>> Yes the flood of dmar_fault on my HP compaq Dc7800u (my x86_64 linux
+>>> desktop) has been fixed. But I still have an iommu casued boot problem
+>>> on a ia64 box.
+>>
+>>Really? Even after http://git.kernel.org/linus/51b89f7a6615 ?]
+>>
+>>Fenghua will be very interested if that's true. I'm not -- I just hate
+>>you for having the hardware. :)
 
-Cc: Julia Lawall <julia@diku.dk>
-Cc: Joe Perches <joe@perches.com>
-Cc: Nicolas Palix <npalix@diku.dk>
-Cc: Yoann Padioleau <yoann.padioleau@gmail.com>
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
----
 
- scripts/remove-typedef |   70 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 70 insertions(+), 0 deletions(-)
- create mode 100755 scripts/remove-typedef
+-rc5 can't boot.
 
-diff --git a/scripts/remove-typedef b/scripts/remove-typedef
-new file mode 100755
-index 0000000..17b8034
---- /dev/null
-+++ b/scripts/remove-typedef
-@@ -0,0 +1,70 @@
-+#!/bin/bash
-+#
-+# Copyright 2009 Joe Perches <joe@perches.com>
-+# Copyright 2009 Luis R. Rodriguez <mcgrof@gmail.com>
-+#
-+# Lets you remove typedefs from C/header files.
-+#
-+# We do simple sed substituation for logical places where you would
-+# use the typedef, and also replace the typedef declaration to a simple
-+# struct declaration.
-+
-+function usage()
-+{
-+	echo "Usage $0 <typedef-name> <struct-name> <paths>"
-+	exit 1
-+}
-+
-+function remove_typedef()
-+{
-+	if [ ! -f $1 ]; then
-+		return;
-+	fi
-+
-+	# This replaces the typedef usages with simple structs
-+	sed -r -i -e "s/\b$from\b/struct $to/g" $1
-+	sed -r -i -e "s/\bP$from\b/struct $to \*/g" $1
-+	sed -r -i -e "s/struct $to\s*\*\s*\b/struct $to \*/g" $1
-+	sed -r -i -e "s/\(struct $to\s*\*\)\s*/\(struct $to \*\)/g" $1
-+
-+	# This replaces the typedef declaration for a simple struct declaration - style 0
-+	perl -i -e "local $/; while(<>) { s/\btypedef\s+struct\s+([\d\D]+?)\s*\{([\d\D]+?)\}\s*struct\s+$to\b[^;]*;/struct $to \{\2\};/g; print; }" $1
-+
-+	# This replaces the typedef declaration for a simple struct declaration - style 1
-+	perl -i -e "local $/; while(<>) { s/\btypedef\s+struct\s+_$from\s*\{([\d\D]+?)\}\s*struct\s+$to\b[^;]*;/struct $to \{\1\};/g; print; }" $1
-+
-+	# This replaces the typedef declaration for a simple struct declaration - style 2
-+	perl -i -e "local $/; while(<>) { s/\btypedef\s+struct\s+$to\s*\{([\d\D]+?)\}\s*$from\b[^;]*;/struct $to \{\1\};/g; print; }" $1
-+
-+}
-+
-+if [[ $# -lt 3 ]]; then
-+	usage
-+fi
-+
-+from=$1
-+to=$2
-+shift
-+
-+echo "Converting typedef $from to struct $to"
-+
-+while shift; do
-+	REM_PATH=$1
-+
-+	if [ -z $REM_PATH ]; then
-+		continue;
-+	fi
-+
-+	if [ ! -d $REM_PATH ]; then
-+		echo "No directory $REM_PATH";
-+		continue;
-+	fi
-+
-+	for i in $(find $REM_PATH -type f -name *.c); do
-+		remove_typedef $i
-+	done
-+
-+	for i in $(find $REM_PATH -type f -name *.h); do
-+		remove_typedef $i
-+	done
-+done
--- 
-1.6.3.3
 
+>>
+>
+> The latest upstream tree has three patches to fix the iommu boot issue on ia64. Except the above one, the other two patches are:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=33041ec049d39a6e0463c7edc7b6f631d24559e3
+>
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=f532959b77e5e567c84c914cb7c7b07d2582448b
+>
+> Please checkout the latest upstream tree and have a try.
+
+
+-rc6 can boot. Thanks all for help. I'm satisfied so far. :-)
