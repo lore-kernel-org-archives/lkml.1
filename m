@@ -1,58 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932176AbZHNGXD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754448AbZHNGny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932176AbZHNGXD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 02:23:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755788AbZHNGXC
+	id S1754448AbZHNGny (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 02:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbZHNGny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 02:23:02 -0400
-Received: from lider.pardus.org.tr ([193.140.100.216]:40517 "EHLO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754691AbZHNGXB (ORCPT
+	Fri, 14 Aug 2009 02:43:54 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:62797 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752323AbZHNGnx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 02:23:01 -0400
-Message-ID: <4A850395.4050204@pardus.org.tr>
-Date: Fri, 14 Aug 2009 09:26:29 +0300
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.22 (X11/20071115)
+	Fri, 14 Aug 2009 02:43:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:mime-version:content-type
+         :content-disposition:user-agent:message-id;
+        b=iJkuT/8KU0Q8zeAl46uKF9uJF59iTrR0ptjqa7SZU4vEY8S44oWWOPVEvO9DsB/LU+
+         bwlJ+jYcUG4C5bws5V5ssXs3Pt25Iu4wbU8rXaqPaUyD29KBXP3juYgIWvMaR+UJbDi+
+         476fn/ss6QyQ4RCjsqctksPx7jPFQ0oq7idNQ=
+Date: Thu, 13 Aug 2009 23:43:49 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linux Input <linux-input@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC] i8042 - bypass AUX IRQ delivery test on laptops
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/74] 2.6.30.5-stable review
-References: <20090813195705.GA22393@kroah.com>
-In-Reply-To: <20090813195705.GA22393@kroah.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <20090814071438.6C860526EC9@mailhub.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote On 13-08-2009 22:57:
-> This is the start of the stable review cycle for the 2.6.30.5 release.
-> There are 74 patches in this series, all will be posted as a response to
-> this one.  If anyone has any issues with these being applied, please let
-> us know.  If anyone is a maintainer of the proper subsystem, and wants
-> to add a Signed-off-by: line to the patch, please respond with it.
->
-> These patches are sent out with a number of different people on the Cc:
-> line.  If you wish to be a reviewer, please email stable@kernel.org to
-> add your name to the list.  If you want to be off the reviewer list,
-> also email us.
->
-> Responses should be made by Saturday, August 15, 2009 19:00:00 UTC.
-> Anything received after that time might be too late.
->   
+It seems that many laptops do not fully implement AUX LOOP command
+in their keyboard controllers, causing issues with touchpad detection.
+Hovewer we know that almost every laptop/portable uses PS/2 pointing
+device and even if user disables it in favor of external mouse the
+system will not use IRQ 12 for anything else. Therefore we may bypass
+AUX IRQ delivery test when running on a laptop and assume that it is
+routed properly.
 
-Hi,
+Just to be safe we require the box to have good PNP data in order to
+bypass the test.
 
-According to the stable_kernel_rules document, new device IDs and quirks
-should also be accepted. I wonder if it's possible to cherry-pick new
-device additions to usb-serial modem drivers (HSDPA stuff) for further
-releases?
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
 
-And also there was this one that may be included in .5:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=0083fc2c50e6c5127c2802ad323adf8143ab7856
+ drivers/input/serio/i8042-x86ia64io.h |   34 +++++++++++++++++++++++++++++++++
+ drivers/input/serio/i8042.c           |    4 +++-
+ 2 files changed, 37 insertions(+), 1 deletions(-)
 
-Regards,
-Ozan Caglayan
+
+diff --git a/drivers/input/serio/i8042-x86ia64io.h b/drivers/input/serio/i8042-x86ia64io.h
+index ae04d8a..6747b9d 100644
+--- a/drivers/input/serio/i8042-x86ia64io.h
++++ b/drivers/input/serio/i8042-x86ia64io.h
+@@ -449,6 +449,34 @@ static struct dmi_system_id __initdata i8042_dmi_nopnp_table[] = {
+ 	},
+ 	{ }
+ };
++
++static struct dmi_system_id __initdata i8042_dmi_laptop_table[] = {
++	{
++		.ident = "Portable",
++		.matches = {
++			DMI_MATCH(DMI_CHASSIS_TYPE, "8"), /* Portable */
++		},
++	},
++	{
++		.ident = "Laptop",
++		.matches = {
++			DMI_MATCH(DMI_CHASSIS_TYPE, "9"), /* Laptop */
++		},
++	},
++	{
++		.ident = "Notebook",
++		.matches = {
++			DMI_MATCH(DMI_CHASSIS_TYPE, "10"), /* Notebook */
++		},
++	},
++	{
++		.ident = "Sub-Notebook",
++		.matches = {
++			DMI_MATCH(DMI_CHASSIS_TYPE, "14"), /* Sub-Notebook */
++		},
++	},
++
++};
+ #endif
+ 
+ /*
+@@ -727,6 +755,12 @@ static int __init i8042_pnp_init(void)
+ 	i8042_kbd_irq = i8042_pnp_kbd_irq;
+ 	i8042_aux_irq = i8042_pnp_aux_irq;
+ 
++#ifdef CONFIG_X86
++	i8042_bypass_aux_irq_test = !i8042_noaux &&
++				    !pnp_data_busted &&
++				    dmi_check_system(i8042_dmi_laptop_table);
++#endif
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
+index 9f5c050..b53a015 100644
+--- a/drivers/input/serio/i8042.c
++++ b/drivers/input/serio/i8042.c
+@@ -83,6 +83,8 @@ module_param_named(debug, i8042_debug, bool, 0600);
+ MODULE_PARM_DESC(debug, "Turn i8042 debugging mode on and off");
+ #endif
+ 
++static bool i8042_bypass_aux_irq_test;
++
+ #include "i8042.h"
+ 
+ static DEFINE_SPINLOCK(i8042_lock);
+@@ -641,7 +643,7 @@ static int __devinit i8042_check_aux(void)
+  * used it for a PCI card or somethig else.
+  */
+ 
+-	if (i8042_noloop || aux_loop_broken) {
++	if (i8042_noloop || i8042_bypass_aux_irq_test || aux_loop_broken) {
+ /*
+  * Without LOOP command we can't test AUX IRQ delivery. Assume the port
+  * is working and hope we are right.
