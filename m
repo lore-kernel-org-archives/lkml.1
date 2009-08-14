@@ -1,81 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932590AbZHNPVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755797AbZHNPdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932590AbZHNPVc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 11:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932581AbZHNPVc
+	id S1755797AbZHNPdt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 11:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbZHNPds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 11:21:32 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1642 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932579AbZHNPVb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 11:21:31 -0400
-Subject: Re: [PATCH 4/6] new kfifo API v0.3 - add DEFINE_KFIFO and friends,
- add very tiny functions
-From: Joe Perches <joe@perches.com>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>
-In-Reply-To: <1250250262.19690.95.camel@wall-e>
-References: <1250250262.19690.95.camel@wall-e>
+	Fri, 14 Aug 2009 11:33:48 -0400
+Received: from waste.org ([173.11.57.241]:55391 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753484AbZHNPds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 11:33:48 -0400
+Subject: Re: [PATCH] drivers/net: fixed drivers that support netpoll use
+ ndo_start_xmit()
+From: Matt Mackall <mpm@selenic.com>
+To: DDD <Dongdong.deng@windriver.com>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Ashfield, Bruce" <Bruce.Ashfield@windriver.com>,
+       jason.wessel@windriver.com
+In-Reply-To: <1250226751.29401.82.camel@dengdd-desktop>
+References: <1250226751.29401.82.camel@dengdd-desktop>
 Content-Type: text/plain
-Date: Fri, 14 Aug 2009 08:20:54 -0700
-Message-Id: <1250263254.15269.456.camel@Joe-Laptop.home>
+Date: Fri, 14 Aug 2009 10:33:39 -0500
+Message-Id: <1250264019.3807.1301.camel@calx>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-14 at 13:44 +0200, Stefani Seibold wrote:
+On Fri, 2009-08-14 at 13:12 +0800, DDD wrote:
+> The NETPOLL API requires that interrupts remain disabled in
+> netpoll_send_skb(). The use of spin_lock_irq() and spin_unlock_irq()
+> in the NETPOLL API callbacks causes the interrupts to get enabled and
+> can lead to kernel instability.
+> 
+> The solution is to use spin_lock_irqsave() and spin_unlock_restore()
+> to prevent the irqs from getting enabled while in netpoll_send_skb().
+> 
+> Call trace:
+> netpoll_send_skb()
+> {
+>    -> local_irq_save(flags)
+>      ---> dev->ndo_start_xmit(skb, dev)
+>          ---> spin_lock_irq()
+>          ---> spin_unlock_irq() *******here would enable the interrupt.
+>               ...
+>    -> local_irq_restore(flags)
+> }
+> 
+> Signed-off-by: Dongdong Deng <dongdong.deng@windriver.com>
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+> Acked-by: Bruce Ashfield <bruce.ashfield@windriver.com>
 
-Couple of trivial comments
+Acked-by: Matt Mackall <mpm@selenic.com>
 
-> This is patch 4/6 of the new kfifo API:
->  Add KFIFO_INIT - macro to generate a kfifo initializer
+Perhaps we should also have a WARN_ONCE if start_xmit returns with
+interrupts enabled?
 
-Is it really necessary to use KFIFO_INIT and INIT_KFIFO?
-I think it'll cause confusion and misuse.
-
-> Add INIT_KFIFO - macro to initialize a with DECLARE_KFIFO declared kfifo 
-
-What does the description mean?
-
-> Add DEFINE_KFIFO - macro to define and initialize a kfifo as a global or local object
-
-What does this mean?  Is scope relevant to the macro?
-
-I think you should mention somewhere that these macros
-actually define 2 objects.  "name##_buffer" might have
-unexpected clashes and be prefixed with kfifo.
-maybe something like "kfifo_##name##_buffer"?
-
-> + * KFIFO_INIT - macro to generate a kfifo initializer
-> + * @s: size of the fifo buffer
-> + * @b: address of the fifo buffer
-> + */
-> +#define KFIFO_INIT(s, b) \
-> +	(struct kfifo) { \
-> +		.size	= s, \
-> +		.in	= 0, \
-> +		.out	= 0, \
-> +		.buffer = b \
-> +	}
-
-> +/**
-> + * INIT_KFIFO - macro to initialize a with DECLARE_KFIFO declared kfifo
-> + * @name: name of the declared kfifo datatype
-> + * @size: size of the fifo buffer
-> + */
-> +#define INIT_KFIFO(name) \
-> +	name = KFIFO_INIT(sizeof(name##_buffer) - sizeof(struct kfifo), \
-> +				name##_buffer)
-
-Perhaps
-
-#define __kfifo_initializer ?
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
 
