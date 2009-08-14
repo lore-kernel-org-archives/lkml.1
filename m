@@ -1,109 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbZHNREO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbZHNREy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755067AbZHNREO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 13:04:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbZHNREN
+	id S1755153AbZHNREy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 13:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZHNREx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 13:04:13 -0400
-Received: from www84.your-server.de ([213.133.104.84]:52137 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752533AbZHNREN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 13:04:13 -0400
-Subject: Re: [PATCH 4/6] new kfifo API v0.3 - add DEFINE_KFIFO and friends,
- add very tiny functions
-From: Stefani Seibold <stefani@seibold.net>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>
-In-Reply-To: <1250263254.15269.456.camel@Joe-Laptop.home>
-References: <1250250262.19690.95.camel@wall-e>
-	 <1250263254.15269.456.camel@Joe-Laptop.home>
-Content-Type: text/plain
-Date: Fri, 14 Aug 2009 19:03:54 +0200
-Message-Id: <1250269434.5644.15.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Fri, 14 Aug 2009 13:04:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40269 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752826AbZHNREw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 13:04:52 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
+Date: Fri, 14 Aug 2009 19:05:32 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-usb@vger.kernel.org,
+       linux-pci@vger.kernel.org, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0908141032070.2987-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908141032070.2987-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Message-Id: <200908141905.32766.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, den 14.08.2009, 08:20 -0700 schrieb Joe Perches:
-> On Fri, 2009-08-14 at 13:44 +0200, Stefani Seibold wrote:
+On Friday 14 August 2009, Alan Stern wrote:
+> On Thu, 13 Aug 2009, Matthew Garrett wrote:
 > 
-> Couple of trivial comments
-> 
-> > This is patch 4/6 of the new kfifo API:
-> >  Add KFIFO_INIT - macro to generate a kfifo initializer
-> 
-> Is it really necessary to use KFIFO_INIT and INIT_KFIFO?
-> I think it'll cause confusion and misuse.
-
-You are right.
-
-> > + * KFIFO_INIT - macro to generate a kfifo initializer
-> > + * @s: size of the fifo buffer
-> > + * @b: address of the fifo buffer
-> > + */
-> > +#define KFIFO_INIT(s, b) \
-> > +	(struct kfifo) { \
-> > +		.size	= s, \
-> > +		.in	= 0, \
-> > +		.out	= 0, \
-> > +		.buffer = b \
-> > +	}
+> > On Thu, Aug 13, 2009 at 11:22:44AM -0400, Alan Stern wrote:
 > >
-> > +/**
-> > + * INIT_KFIFO - macro to initialize a with DECLARE_KFIFO declared kfifo
-> > + * @name: name of the declared kfifo datatype
-> > + * @size: size of the fifo buffer
-> > + */
-> > +#define INIT_KFIFO(name) \
-> > +	name = KFIFO_INIT(sizeof(name##_buffer) - sizeof(struct kfifo), \
-> > +				name##_buffer)
+> > > You have to call the HCD's pci_suspend method!  Not to mention calling
+> > > synchronize_irq and all the other stuff in hcd_pci_suspend and
+> > > hcd_pci_suspend_noirq.
+> >
+> > The bus level code does this, assuming that the driver-level code
+> > doesn't return an error.
 > 
-> Perhaps
+> So it does; my mistake.
 > 
-> #define __kfifo_initializer ?
 > 
-
-I like your idea to rename into __kfifo_initializer. It is only for internal use.
-
->  
+> On Fri, 14 Aug 2009, Matthew Garrett wrote:
 > 
-> > Add INIT_KFIFO - macro to initialize a with DECLARE_KFIFO declared kfifo 
+> > On Thu, Aug 13, 2009 at 10:47:01PM +0100, Matthew Garrett wrote:
+> > 
+> > > Ugh. I'd really prefer us to assume that drivers are able to cope unless 
+> > > proven otherwise. Userspace policy makes sense where we don't have any 
+> > > idea whether something will work or not, but I'd really expect that most 
+> > > PCI drivers will either cope (in which case they'll have enabling code) 
+> > > or won't (in which case they won't). Why would we want userspace to 
+> > > influence this?
+> > 
+> > Though, thinking about it, you're right that setting this does override 
+> > user policy. I think we need an additional flag to indicate that the 
+> > device supports runtime wakeup and test that as well when doing 
+> > device_may_wakeup().
 > 
-> What does the description mean?
-
-Exactly what it meas. If you declare a kfifo with DECLARE_KIFO than you
-must initialize this fifo which INIT_KFIFO.
-  
+> You are suggesting separate flag sets for system-wide wakeup and
+> runtime wakeup?  I don't disagree, but implementing them will be
+> problematical.
 > 
-> > Add DEFINE_KFIFO - macro to define and initialize a kfifo as a global or local object
+> That's because it's not always possible to change a device's wakeup 
+> setting while it is suspended.  Thus if a device was runtime suspended 
+> with wakeup enabled, and then we want to do a system sleep and change 
+> the device's wakeup setting to disabled, we would have to wake the 
+> device back up in order to do it.
 > 
-> What does this mean?  Is scope relevant to the macro?
 > 
-
-Yes, the scope is relevant, because i found no way to use unnamed unions
-for global or local declarations in a way i need it.
- 
-> I think you should mention somewhere that these macros
-> actually define 2 objects.  "name##_buffer" might have
-> unexpected clashes and be prefixed with kfifo.
-> maybe something like "kfifo_##name##_buffer"?
+> > > > This misses the point.  The whole idea of runtime_idle is to tell you 
+> > > > that the device is idle and might be ready to be suspended.  If you're 
+> > > > going to call pm_schedule_suspend anyway, there's no reason to invoke 
+> > > > pm->runtime_idle.
+> > > 
+> > > My understanding of the API was that pm_device_put() invokes 
+> > > runtime_idle if the refcount hits 0. The bus layer has no idea of the 
+> > > refcount, and calling suspend directly from the driver would defeat the 
+> > > point of the system-wide recounting.
+> > 
+> > From the API docs:
+> > 
+> > "The action performed by a bus type's ->runtime_idle() callback is 
+> > totally dependent on the bus type in question, but the expected and 
+> > recommended action is to check if the device can be suspended (i.e. if 
+> > all of the conditions necessary for suspending the device are satisfied) 
+> > and to queue up a suspend request for the device in that case."
+> > 
+> > Though perhaps the device level runtime_idle shouldn't be void - that 
+> > way the bus can ask the driver whether its suspend conditions have been 
+> > satisfied? Right now there doesn't seem to be any way for the bus to ask 
+> > that.
 > 
+> If you want to get the device-level runtime_idle involved, you can make
+> _it_ responsible for scheduling the suspend.  Then the bus-level code
+> simply has to check whether everything is okay at the bus level, and if
+> it is, call the device-level routine.
+> 
+> However changing the return type wouldn't hurt anything, and it would 
+> allow the pm_schedule_suspend call to be centralized in the bus code.  
+> You could ask Rafael about it, or just send him a patch.
 
-Maybe name it name##_kfifo_buffer?
+Well, I'm not against that, but what should pm_runtime_idle() do with the
+result returned by it?  Just pass it to the caller?
 
-But before doing this i will wait for more response and for inclusion
-into -mm. If i get an okay i will do a maintainance patch. It is to much
-work to handle this splitted patches.
-
-Grettings,
-Stefani
-
-
+Rafael
