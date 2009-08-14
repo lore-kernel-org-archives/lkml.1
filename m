@@ -1,234 +1,539 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbZHNNsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbZHNNtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbZHNNsM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 09:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745AbZHNNsL
+	id S1756846AbZHNNtU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 09:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbZHNNtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 09:48:11 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:48618 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755621AbZHNNsI (ORCPT
+	Fri, 14 Aug 2009 09:49:16 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:64215 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756757AbZHNNsM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 09:48:08 -0400
-Message-Id: <20090814134807.903108946@de.ibm.com>
+	Fri, 14 Aug 2009 09:48:12 -0400
+Message-Id: <20090814134811.013873340@de.ibm.com>
 References: <20090814134717.859098725@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 14 Aug 2009 15:47:19 +0200
+Date: Fri, 14 Aug 2009 15:47:31 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        john stultz <johnstul@us.ibm.com>, Daniel Walker <dwalker@fifo99.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 02/15] remove clocksource inline functions
-Content-Disposition: inline; filename=clocksource-inline.diff
+Subject: [patch 14/15] read_persistent_clock should return a timespec
+Content-Disposition: inline; filename=persistent_time.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-The three inline functions clocksource_read, clocksource_enable
-and clocksource_disable are simple wrappers of an indirect call
-plus the copy from and to the mult_orig value. The functions
-are exclusively used by the timekeeping code which has intimate
-knowledge of the clocksource anyway. Therefore remove the inline
-functions. No functional change.
+The persistent clock of some architectures (e.g. s390) have a
+better granularity than seconds. To reduce the delta between the
+host clock and the guest clock in a virtualized system change the 
+read_persistent_clock function to return a struct timespec.
 
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: john stultz <johnstul@us.ibm.com>
 Cc: Daniel Walker <dwalker@fifo99.com>
-Acked-by: John Stultz <johnstul@us.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
- include/linux/clocksource.h |   58 --------------------------------------------
- kernel/time/timekeeping.c   |   41 +++++++++++++++++++++----------
- 2 files changed, 28 insertions(+), 71 deletions(-)
+ arch/m68knommu/kernel/time.c          |    5 +--
+ arch/mips/dec/time.c                  |    5 +--
+ arch/mips/lasat/ds1603.c              |    5 +--
+ arch/mips/lasat/sysctl.c              |    8 +++--
+ arch/mips/lemote/lm2e/setup.c         |    5 +--
+ arch/mips/mti-malta/malta-time.c      |    5 +--
+ arch/mips/pmc-sierra/yosemite/setup.c |    5 +--
+ arch/mips/sibyte/swarm/setup.c        |   15 +++++++--
+ arch/mips/sni/time.c                  |    5 +--
+ arch/powerpc/kernel/time.c            |    7 ++--
+ arch/s390/kernel/time.c               |   22 ++------------
+ arch/sh/kernel/time.c                 |    6 +--
+ arch/x86/kernel/rtc.c                 |    5 +--
+ arch/xtensa/kernel/time.c             |    5 +--
+ include/linux/time.h                  |    2 -
+ kernel/time/timekeeping.c             |   52 ++++++++++++++++++----------------
+ 16 files changed, 83 insertions(+), 74 deletions(-)
 
+Index: linux-2.6/arch/m68knommu/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/m68knommu/kernel/time.c
++++ linux-2.6/arch/m68knommu/kernel/time.c
+@@ -72,9 +72,10 @@ static unsigned long read_rtc_mmss(void)
+ 	return  mktime(year, mon, day, hour, min, sec);;
+ }
+ 
+-unsigned long read_persistent_clock(void)
++void read_persistent_clock(struct timespec *ts)
+ {
+-	return read_rtc_mmss();
++	ts->tv_sec = read_rtc_mmss();
++	ts->tv_nsec = 0;
+ }
+ 
+ int update_persistent_clock(struct timespec now)
+Index: linux-2.6/arch/mips/dec/time.c
+===================================================================
+--- linux-2.6.orig/arch/mips/dec/time.c
++++ linux-2.6/arch/mips/dec/time.c
+@@ -18,7 +18,7 @@
+ #include <asm/dec/ioasic.h>
+ #include <asm/dec/machtype.h>
+ 
+-unsigned long read_persistent_clock(void)
++void read_persistent_clock(struct timespec *ts)
+ {
+ 	unsigned int year, mon, day, hour, min, sec, real_year;
+ 	unsigned long flags;
+@@ -53,7 +53,8 @@ unsigned long read_persistent_clock(void
+ 
+ 	year += real_year - 72 + 2000;
+ 
+-	return mktime(year, mon, day, hour, min, sec);
++	ts->tv_sec = mktime(year, mon, day, hour, min, sec);
++	ts->tv_nsec = 0;
+ }
+ 
+ /*
+Index: linux-2.6/arch/mips/lasat/ds1603.c
+===================================================================
+--- linux-2.6.orig/arch/mips/lasat/ds1603.c
++++ linux-2.6/arch/mips/lasat/ds1603.c
+@@ -135,7 +135,7 @@ static void rtc_end_op(void)
+ 	lasat_ndelay(1000);
+ }
+ 
+-unsigned long read_persistent_clock(void)
++void read_persistent_clock(struct timespec *ts)
+ {
+ 	unsigned long word;
+ 	unsigned long flags;
+@@ -147,7 +147,8 @@ unsigned long read_persistent_clock(void
+ 	rtc_end_op();
+ 	spin_unlock_irqrestore(&rtc_lock, flags);
+ 
+-	return word;
++	ts->tv_sec = word;
++	ts->tv_nsec = 0;
+ }
+ 
+ int rtc_mips_set_mmss(unsigned long time)
+Index: linux-2.6/arch/mips/lasat/sysctl.c
+===================================================================
+--- linux-2.6.orig/arch/mips/lasat/sysctl.c
++++ linux-2.6/arch/mips/lasat/sysctl.c
+@@ -92,10 +92,12 @@ static int rtctmp;
+ int proc_dolasatrtc(ctl_table *table, int write, struct file *filp,
+ 		       void *buffer, size_t *lenp, loff_t *ppos)
+ {
++	struct timespec ts;
+ 	int r;
+ 
+ 	if (!write) {
+-		rtctmp = read_persistent_clock();
++		read_persistent_clock(&ts);
++		rtctmp = ts.tv_sec;
+ 		/* check for time < 0 and set to 0 */
+ 		if (rtctmp < 0)
+ 			rtctmp = 0;
+@@ -134,9 +136,11 @@ int sysctl_lasat_rtc(ctl_table *table,
+ 		    void *oldval, size_t *oldlenp,
+ 		    void *newval, size_t newlen)
+ {
++	struct timespec ts;
+ 	int r;
+ 
+-	rtctmp = read_persistent_clock();
++	read_persistent_clock(&ts);
++	rtctmp = ts.tv_sec;
+ 	if (rtctmp < 0)
+ 		rtctmp = 0;
+ 	r = sysctl_intvec(table, oldval, oldlenp, newval, newlen);
+Index: linux-2.6/arch/mips/lemote/lm2e/setup.c
+===================================================================
+--- linux-2.6.orig/arch/mips/lemote/lm2e/setup.c
++++ linux-2.6/arch/mips/lemote/lm2e/setup.c
+@@ -54,9 +54,10 @@ void __init plat_time_init(void)
+ 	mips_hpt_frequency = cpu_clock_freq / 2;
+ }
+ 
+-unsigned long read_persistent_clock(void)
++void read_persistent_clock(struct timespec *ts)
+ {
+-	return mc146818_get_cmos_time();
++	ts->tv_sec = mc146818_get_cmos_time();
++	ts->tv_nsec = 0;
+ }
+ 
+ void (*__wbflush)(void);
+Index: linux-2.6/arch/mips/mti-malta/malta-time.c
+===================================================================
+--- linux-2.6.orig/arch/mips/mti-malta/malta-time.c
++++ linux-2.6/arch/mips/mti-malta/malta-time.c
+@@ -100,9 +100,10 @@ static unsigned int __init estimate_cpu_
+ 	return count;
+ }
+ 
+-unsigned long read_persistent_clock(void)
++void read_persistent_clock(struct timespec *ts)
+ {
+-	return mc146818_get_cmos_time();
++	ts->tv_sec = mc146818_get_cmos_time();
++	ts->tv_nsec = 0;
+ }
+ 
+ static void __init plat_perf_setup(void)
+Index: linux-2.6/arch/mips/pmc-sierra/yosemite/setup.c
+===================================================================
+--- linux-2.6.orig/arch/mips/pmc-sierra/yosemite/setup.c
++++ linux-2.6/arch/mips/pmc-sierra/yosemite/setup.c
+@@ -70,7 +70,7 @@ void __init bus_error_init(void)
+ }
+ 
+ 
+-unsigned long read_persistent_clock(void)
++void read_persistent_clock(struct timespec *ts)
+ {
+ 	unsigned int year, month, day, hour, min, sec;
+ 	unsigned long flags;
+@@ -92,7 +92,8 @@ unsigned long read_persistent_clock(void
+ 	m48t37_base->control = 0x00;
+ 	spin_unlock_irqrestore(&rtc_lock, flags);
+ 
+-	return mktime(year, month, day, hour, min, sec);
++	ts->tv_sec = mktime(year, month, day, hour, min, sec);
++	ts->tv_nsec = 0;
+ }
+ 
+ int rtc_mips_set_time(unsigned long tim)
+Index: linux-2.6/arch/mips/sibyte/swarm/setup.c
+===================================================================
+--- linux-2.6.orig/arch/mips/sibyte/swarm/setup.c
++++ linux-2.6/arch/mips/sibyte/swarm/setup.c
+@@ -87,19 +87,26 @@ enum swarm_rtc_type {
+ 
+ enum swarm_rtc_type swarm_rtc_type;
+ 
+-unsigned long read_persistent_clock(void)
++void read_persistent_clock(struct timespec *ts)
+ {
++	unsigned long sec;
++
+ 	switch (swarm_rtc_type) {
+ 	case RTC_XICOR:
+-		return xicor_get_time();
++		sec = xicor_get_time();
++		break;
+ 
+ 	case RTC_M4LT81:
+-		return m41t81_get_time();
++		sec = m41t81_get_time();
++		break;
+ 
+ 	case RTC_NONE:
+ 	default:
+-		return mktime(2000, 1, 1, 0, 0, 0);
++		sec = mktime(2000, 1, 1, 0, 0, 0);
++		break;
+ 	}
++	ts->tv_sec = sec;
++	tv->tv_nsec = 0;
+ }
+ 
+ int rtc_mips_set_time(unsigned long sec)
+Index: linux-2.6/arch/mips/sni/time.c
+===================================================================
+--- linux-2.6.orig/arch/mips/sni/time.c
++++ linux-2.6/arch/mips/sni/time.c
+@@ -182,7 +182,8 @@ void __init plat_time_init(void)
+ 	setup_pit_timer();
+ }
+ 
+-unsigned long read_persistent_clock(void)
++void read_persistent_clock(struct timespec *ts)
+ {
+-	return -1;
++	ts->tv_sec = -1;
++	ts->tv_nsec = 0;
+ }
+Index: linux-2.6/arch/powerpc/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/time.c
++++ linux-2.6/arch/powerpc/kernel/time.c
+@@ -772,7 +772,7 @@ int update_persistent_clock(struct times
+ 	return ppc_md.set_rtc_time(&tm);
+ }
+ 
+-unsigned long read_persistent_clock(void)
++void read_persistent_clock(struct timespec *ts)
+ {
+ 	struct rtc_time tm;
+ 	static int first = 1;
+@@ -790,8 +790,9 @@ unsigned long read_persistent_clock(void
+ 	if (!ppc_md.get_rtc_time)
+ 		return 0;
+ 	ppc_md.get_rtc_time(&tm);
+-	return mktime(tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,
+-		      tm.tm_hour, tm.tm_min, tm.tm_sec);
++	ts->tv_sec = mktime(tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,
++			    tm.tm_hour, tm.tm_min, tm.tm_sec);
++	ts->tv_nsec = 0;
+ }
+ 
+ /* clocksource code */
+Index: linux-2.6/arch/s390/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/s390/kernel/time.c
++++ linux-2.6/arch/s390/kernel/time.c
+@@ -182,12 +182,9 @@ static void timing_alert_interrupt(__u16
+ static void etr_reset(void);
+ static void stp_reset(void);
+ 
+-unsigned long read_persistent_clock(void)
++void read_persistent_clock(struct timespec *ts)
+ {
+-	struct timespec ts;
+-
+-	tod_to_timeval(get_clock() - TOD_UNIX_EPOCH, &ts);
+-	return ts.tv_sec;
++	tod_to_timeval(get_clock() - TOD_UNIX_EPOCH, ts);
+ }
+ 
+ static cycle_t read_tod_clock(struct clocksource *cs)
+@@ -248,7 +245,6 @@ void __init time_init(void)
+ {
+ 	struct timespec ts;
+ 	unsigned long flags;
+-	cycle_t now;
+ 
+ 	/* Reset time synchronization interfaces. */
+ 	etr_reset();
+@@ -266,20 +262,10 @@ void __init time_init(void)
+ 		panic("Could not register TOD clock source");
+ 
+ 	/*
+-	 * The TOD clock is an accurate clock. The xtime should be
+-	 * initialized in a way that the difference between TOD and
+-	 * xtime is reasonably small. Too bad that timekeeping_init
+-	 * sets xtime.tv_nsec to zero. In addition the clock source
+-	 * change from the jiffies clock source to the TOD clock
+-	 * source add another error of up to 1/HZ second. The same
+-	 * function sets wall_to_monotonic to a value that is too
+-	 * small for /proc/uptime to be accurate.
+-	 * Reset xtime and wall_to_monotonic to sane values.
++	 * Reset wall_to_monotonic to the initial timestamp created
++	 * in head.S to get a precise value in /proc/uptime.
+ 	 */
+ 	write_seqlock_irqsave(&xtime_lock, flags);
+-	now = get_clock();
+-	tod_to_timeval(now - TOD_UNIX_EPOCH, &xtime);
+-	clocksource_tod.cycle_last = now;
+ 	tod_to_timeval(sched_clock_base_cc - TOD_UNIX_EPOCH, &ts);
+ 	set_normalized_timespec(&wall_to_monotonic, -ts.tv_sec, -ts.tv_nsec);
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+Index: linux-2.6/arch/sh/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/sh/kernel/time.c
++++ linux-2.6/arch/sh/kernel/time.c
+@@ -39,11 +39,9 @@ void (*rtc_sh_get_time)(struct timespec 
+ int (*rtc_sh_set_time)(const time_t) = null_rtc_set_time;
+ 
+ #ifdef CONFIG_GENERIC_CMOS_UPDATE
+-unsigned long read_persistent_clock(void)
++void read_persistent_clock(struct timespec *ts)
+ {
+-	struct timespec tv;
+-	rtc_sh_get_time(&tv);
+-	return tv.tv_sec;
++	rtc_sh_get_time(&ts);
+ }
+ 
+ int update_persistent_clock(struct timespec now)
+Index: linux-2.6/arch/x86/kernel/rtc.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/rtc.c
++++ linux-2.6/arch/x86/kernel/rtc.c
+@@ -178,7 +178,7 @@ static int set_rtc_mmss(unsigned long no
+ }
+ 
+ /* not static: needed by APM */
+-unsigned long read_persistent_clock(void)
++void read_persistent_clock(struct timespec *ts)
+ {
+ 	unsigned long retval, flags;
+ 
+@@ -186,7 +186,8 @@ unsigned long read_persistent_clock(void
+ 	retval = get_wallclock();
+ 	spin_unlock_irqrestore(&rtc_lock, flags);
+ 
+-	return retval;
++	ts->tv_sec = retval;
++	ts->tv_nsec = 0;
+ }
+ 
+ int update_persistent_clock(struct timespec now)
+Index: linux-2.6/arch/xtensa/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/xtensa/kernel/time.c
++++ linux-2.6/arch/xtensa/kernel/time.c
+@@ -59,9 +59,8 @@ static struct irqaction timer_irqaction 
+ 
+ void __init time_init(void)
+ {
+-	xtime.tv_nsec = 0;
+-	xtime.tv_sec = read_persistent_clock();
+-
++	/* FIXME: xtime&wall_to_monotonic are set in timekeeping_init. */
++	read_persistent_clock(&xtime);
+ 	set_normalized_timespec(&wall_to_monotonic,
+ 		-xtime.tv_sec, -xtime.tv_nsec);
+ 
+Index: linux-2.6/include/linux/time.h
+===================================================================
+--- linux-2.6.orig/include/linux/time.h
++++ linux-2.6/include/linux/time.h
+@@ -101,7 +101,7 @@ extern struct timespec xtime;
+ extern struct timespec wall_to_monotonic;
+ extern seqlock_t xtime_lock;
+ 
+-extern unsigned long read_persistent_clock(void);
++extern void read_persistent_clock(struct timespec *ts);
+ extern int update_persistent_clock(struct timespec now);
+ extern int no_sync_cmos_clock __read_mostly;
+ void timekeeping_init(void);
 Index: linux-2.6/kernel/time/timekeeping.c
 ===================================================================
 --- linux-2.6.orig/kernel/time/timekeeping.c
 +++ linux-2.6/kernel/time/timekeeping.c
-@@ -79,7 +79,7 @@ static void clocksource_forward_now(void
- 	cycle_t cycle_now, cycle_delta;
- 	s64 nsec;
+@@ -154,7 +154,7 @@ __cacheline_aligned_in_smp DEFINE_SEQLOC
+  */
+ struct timespec xtime __attribute__ ((aligned (16)));
+ struct timespec wall_to_monotonic __attribute__ ((aligned (16)));
+-static unsigned long total_sleep_time;		/* seconds */
++static struct timespec total_sleep_time;
  
--	cycle_now = clocksource_read(clock);
-+	cycle_now = clock->read(clock);
- 	cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
- 	clock->cycle_last = cycle_now;
- 
-@@ -114,7 +114,7 @@ void getnstimeofday(struct timespec *ts)
- 		*ts = xtime;
- 
- 		/* read clocksource: */
--		cycle_now = clocksource_read(clock);
-+		cycle_now = clock->read(clock);
- 
- 		/* calculate the delta since the last update_wall_time: */
- 		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
-@@ -146,7 +146,7 @@ ktime_t ktime_get(void)
- 		nsecs = xtime.tv_nsec + wall_to_monotonic.tv_nsec;
- 
- 		/* read clocksource: */
--		cycle_now = clocksource_read(clock);
-+		cycle_now = clock->read(clock);
- 
- 		/* calculate the delta since the last update_wall_time: */
- 		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
-@@ -186,7 +186,7 @@ void ktime_get_ts(struct timespec *ts)
- 		tomono = wall_to_monotonic;
- 
- 		/* read clocksource: */
--		cycle_now = clocksource_read(clock);
-+		cycle_now = clock->read(clock);
- 
- 		/* calculate the delta since the last update_wall_time: */
- 		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
-@@ -274,16 +274,29 @@ static void change_clocksource(void)
- 
- 	clocksource_forward_now();
- 
--	if (clocksource_enable(new))
-+	if (new->enable && ! new->enable(new))
- 		return;
-+	/*
-+	 * The frequency may have changed while the clocksource
-+	 * was disabled. If so the code in ->enable() must update
-+	 * the mult value to reflect the new frequency. Make sure
-+	 * mult_orig follows this change.
-+	 */
-+	new->mult_orig = new->mult;
- 
- 	new->raw_time = clock->raw_time;
- 	old = clock;
- 	clock = new;
--	clocksource_disable(old);
-+	/*
-+	 * Save mult_orig in mult so that the value can be restored
-+	 * regardless if ->enable() updates the value of mult or not.
-+	 */
-+	old->mult = old->mult_orig;
-+	if (old->disable)
-+		old->disable(old);
- 
- 	clock->cycle_last = 0;
--	clock->cycle_last = clocksource_read(clock);
-+	clock->cycle_last = clock->read(clock);
- 	clock->error = 0;
- 	clock->xtime_nsec = 0;
- 	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
-@@ -373,7 +386,7 @@ void getrawmonotonic(struct timespec *ts
- 		seq = read_seqbegin(&xtime_lock);
- 
- 		/* read clocksource: */
--		cycle_now = clocksource_read(clock);
-+		cycle_now = clock->read(clock);
- 
- 		/* calculate the delta since the last update_wall_time: */
- 		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
-@@ -435,9 +448,12 @@ void __init timekeeping_init(void)
- 	ntp_init();
- 
- 	clock = clocksource_get_next();
--	clocksource_enable(clock);
-+	if (clock->enable)
-+		clock->enable(clock);
-+	/* set mult_orig on enable */
-+	clock->mult_orig = clock->mult;
- 	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
--	clock->cycle_last = clocksource_read(clock);
-+	clock->cycle_last = clock->read(clock);
- 
- 	xtime.tv_sec = sec;
- 	xtime.tv_nsec = 0;
-@@ -477,8 +493,7 @@ static int timekeeping_resume(struct sys
- 	}
- 	update_xtime_cache(0);
- 	/* re-base the last cycle value */
--	clock->cycle_last = 0;
--	clock->cycle_last = clocksource_read(clock);
-+	clock->cycle_last = clock->read(clock);
- 	clock->error = 0;
- 	timekeeping_suspended = 0;
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
-@@ -630,7 +645,7 @@ void update_wall_time(void)
- 		return;
- 
- #ifdef CONFIG_GENERIC_TIME
--	offset = (clocksource_read(clock) - clock->cycle_last) & clock->mask;
-+	offset = (clock->read(clock) - clock->cycle_last) & clock->mask;
- #else
- 	offset = clock->cycle_interval;
- #endif
-Index: linux-2.6/include/linux/clocksource.h
-===================================================================
---- linux-2.6.orig/include/linux/clocksource.h
-+++ linux-2.6/include/linux/clocksource.h
-@@ -268,64 +268,6 @@ static inline u32 clocksource_hz2mult(u3
+ /*
+  * The raw monotonic time for the CLOCK_MONOTONIC_RAW posix clock.
+@@ -487,17 +487,18 @@ int timekeeping_valid_for_hres(void)
  }
  
  /**
-- * clocksource_read: - Access the clocksource's current cycle value
-- * @cs:		pointer to clocksource being read
-- *
-- * Uses the clocksource to return the current cycle_t value
-- */
--static inline cycle_t clocksource_read(struct clocksource *cs)
--{
--	return cs->read(cs);
--}
+- * read_persistent_clock -  Return time in seconds from the persistent clock.
++ * read_persistent_clock -  Return time from the persistent clock.
+  *
+  * Weak dummy function for arches that do not yet support it.
+- * Returns seconds from epoch using the battery backed persistent clock.
+- * Returns zero if unsupported.
++ * Reads the time from the battery backed persistent clock.
++ * Returns a timespec with tv_sec=0 and tv_nsec=0 if unsupported.
+  *
+  *  XXX - Do be sure to remove it once all arches implement it.
+  */
+-unsigned long __attribute__((weak)) read_persistent_clock(void)
++void __attribute__((weak)) read_persistent_clock(struct timespec *ts)
+ {
+-	return 0;
++	ts->tv_sec = 0;
++	ts->tv_nsec = 0;
+ }
+ 
+ /*
+@@ -507,7 +508,9 @@ void __init timekeeping_init(void)
+ {
+ 	struct clocksource *clock;
+ 	unsigned long flags;
+-	unsigned long sec = read_persistent_clock();
++	struct timespec now;
++
++	read_persistent_clock(&now);
+ 
+ 	write_seqlock_irqsave(&xtime_lock, flags);
+ 
+@@ -518,19 +521,20 @@ void __init timekeeping_init(void)
+ 		clock->enable(clock);
+ 	timekeeper_setup_internals(clock);
+ 
+-	xtime.tv_sec = sec;
+-	xtime.tv_nsec = 0;
++	xtime.tv_sec = now.tv_sec;
++	xtime.tv_nsec = now.tv_nsec;
+ 	raw_time.tv_sec = 0;
+ 	raw_time.tv_nsec = 0;
+ 	set_normalized_timespec(&wall_to_monotonic,
+ 		-xtime.tv_sec, -xtime.tv_nsec);
+ 	update_xtime_cache(0);
+-	total_sleep_time = 0;
++	total_sleep_time.tv_sec = 0;
++	total_sleep_time.tv_nsec = 0;
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+ }
+ 
+ /* time in seconds when suspend began */
+-static unsigned long timekeeping_suspend_time;
++static struct timespec timekeeping_suspend_time;
+ 
+ /**
+  * timekeeping_resume - Resumes the generic timekeeping subsystem.
+@@ -543,18 +547,19 @@ static unsigned long timekeeping_suspend
+ static int timekeeping_resume(struct sys_device *dev)
+ {
+ 	unsigned long flags;
+-	unsigned long now = read_persistent_clock();
++	struct timespec ts;
++
++	read_persistent_clock(&ts);
+ 
+ 	clocksource_resume();
+ 
+ 	write_seqlock_irqsave(&xtime_lock, flags);
+ 
+-	if (now && (now > timekeeping_suspend_time)) {
+-		unsigned long sleep_length = now - timekeeping_suspend_time;
 -
--/**
-- * clocksource_enable: - enable clocksource
-- * @cs:		pointer to clocksource
-- *
-- * Enables the specified clocksource. The clocksource callback
-- * function should start up the hardware and setup mult and field
-- * members of struct clocksource to reflect hardware capabilities.
-- */
--static inline int clocksource_enable(struct clocksource *cs)
--{
--	int ret = 0;
--
--	if (cs->enable)
--		ret = cs->enable(cs);
--
--	/*
--	 * The frequency may have changed while the clocksource
--	 * was disabled. If so the code in ->enable() must update
--	 * the mult value to reflect the new frequency. Make sure
--	 * mult_orig follows this change.
--	 */
--	cs->mult_orig = cs->mult;
--
--	return ret;
--}
--
--/**
-- * clocksource_disable: - disable clocksource
-- * @cs:		pointer to clocksource
-- *
-- * Disables the specified clocksource. The clocksource callback
-- * function should power down the now unused hardware block to
-- * save power.
-- */
--static inline void clocksource_disable(struct clocksource *cs)
--{
--	/*
--	 * Save mult_orig in mult so clocksource_enable() can
--	 * restore the value regardless if ->enable() updates
--	 * the value of mult or not.
--	 */
--	cs->mult = cs->mult_orig;
--
--	if (cs->disable)
--		cs->disable(cs);
--}
--
--/**
-  * cyc2ns - converts clocksource cycles to nanoseconds
-  * @cs:		Pointer to clocksource
-  * @cycles:	Cycles
+-		xtime.tv_sec += sleep_length;
+-		wall_to_monotonic.tv_sec -= sleep_length;
+-		total_sleep_time += sleep_length;
++	if (timespec_compare(&ts, &timekeeping_suspend_time) > 0) {
++		ts = timespec_sub(ts, timekeeping_suspend_time);
++		xtime = timespec_add_safe(xtime, ts);
++		wall_to_monotonic = timespec_sub(wall_to_monotonic, ts);
++		total_sleep_time = timespec_add_safe(total_sleep_time, ts);
+ 	}
+ 	update_xtime_cache(0);
+ 	/* re-base the last cycle value */
+@@ -577,7 +582,7 @@ static int timekeeping_suspend(struct sy
+ {
+ 	unsigned long flags;
+ 
+-	timekeeping_suspend_time = read_persistent_clock();
++	read_persistent_clock(&timekeeping_suspend_time);
+ 
+ 	write_seqlock_irqsave(&xtime_lock, flags);
+ 	timekeeping_forward_now();
+@@ -800,9 +805,10 @@ void update_wall_time(void)
+  */
+ void getboottime(struct timespec *ts)
+ {
+-	set_normalized_timespec(ts,
+-		- (wall_to_monotonic.tv_sec + total_sleep_time),
+-		- wall_to_monotonic.tv_nsec);
++	struct timespec boottime;
++
++	boottime = timespec_add_safe(wall_to_monotonic, total_sleep_time);
++	set_normalized_timespec(ts, -boottime.tv_sec, -boottime.tv_nsec);
+ }
+ 
+ /**
+@@ -811,7 +817,7 @@ void getboottime(struct timespec *ts)
+  */
+ void monotonic_to_bootbased(struct timespec *ts)
+ {
+-	ts->tv_sec += total_sleep_time;
++	*ts = timespec_add_safe(*ts, total_sleep_time);
+ }
+ 
+ unsigned long get_seconds(void)
 
 -- 
 blue skies,
