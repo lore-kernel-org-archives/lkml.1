@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932645AbZHNPri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbZHNPsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932645AbZHNPri (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 11:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932601AbZHNPrh
+	id S932664AbZHNPsw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 11:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932603AbZHNPsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 11:47:37 -0400
-Received: from mail-pz0-f196.google.com ([209.85.222.196]:35401 "EHLO
-	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932586AbZHNPrg (ORCPT
+	Fri, 14 Aug 2009 11:48:51 -0400
+Received: from mailhost13.gawab.com ([66.220.20.13]:60445 "HELO
+	info15.gawab.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932601AbZHNPsv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 11:47:36 -0400
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Daniel Mack <daniel@caiaq.de>, Joe Perches <joe@perches.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>,
-       Ben Dooks <ben-linux@fluff.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM sections
-References: <20090812194838.GB12117@n2100.arm.linux.org.uk>
-	<84144f020908121317g64551a2cu1b960f44ed5d0d9@mail.gmail.com>
-	<20090812212502.GA24667@n2100.arm.linux.org.uk>
-	<20090813103511.2928a085@lxorguk.ukuu.org.uk>
-	<20090813094736.GZ6132@n2100.arm.linux.org.uk>
-	<1250158593.28285.23.camel@Joe-Laptop.home>
-	<20090813103513.GC6132@n2100.arm.linux.org.uk>
-	<1250161714.28285.61.camel@Joe-Laptop.home>
-	<20090813115444.GB10450@n2100.arm.linux.org.uk>
-	<20090814075919.GG19257@buzzloop.caiaq.de>
-	<20090814091808.GA2662@n2100.arm.linux.org.uk>
-	<1250244102.10609.29.camel@pc1117.cambridge.arm.com>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Fri, 14 Aug 2009 08:47:35 -0700
-In-Reply-To: <1250244102.10609.29.camel@pc1117.cambridge.arm.com> (Catalin Marinas's message of "Fri\, 14 Aug 2009 11\:01\:42 +0100")
-Message-ID: <87ljlm8kiw.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 14 Aug 2009 11:48:51 -0400
+X-Trusted: Whitelisted
+From: Al Boldi <a1426z@gawab.com>
+To: ngupta@vflare.org
+Subject: Re: compcache as a pre-swap area
+Date: Fri, 14 Aug 2009 18:49:19 +0300
+User-Agent: KMail/1.5
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Matthew Wilcox <willy@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+References: <200908122007.43522.ngupta@vflare.org> <200908140702.23947.a1426z@gawab.com> <4A84EDE4.1080605@vflare.org>
+In-Reply-To: <4A84EDE4.1080605@vflare.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908141849.19797.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Catalin Marinas <catalin.marinas@arm.com> writes:
-
-> On Fri, 2009-08-14 at 10:18 +0100, Russell King - ARM Linux wrote:
->> These lists are getting close to me just pulling the plug on them.  The
->> amount of crap flying around about them is getting too great for me to
->> continue to provide such a service to this community.  When I pull them,
->> I'll pull *all* the linux-arm related lists.
+Nitin Gupta wrote:
+> On 08/14/2009 09:32 AM, Al Boldi wrote:
+> > So once compcache fills up, it will start to age its contents into normal
+> > swap?
 >
-> Since there weren't many comments in this thread from the core ARM Linux
-> developers, I find it a bit silly to get upset like this. But, well, in
-> the end it's your decision and some people may find that moving to a
-> non-subscribers list is a good thing (and may also save you and Erik
-> some time). Others may find it was a bad decision, it's hard to say.
+> This is desirable but not yet implemented. For now, if 'backing swap' is
+> used, compcache will forward incompressible pages to the backing swap
+> device. If compcache fills up, kernel will simply send further swap-outs to
+> swap device which comes next in priority.
 
-$0.02 from an ARM developer/subarch maintainer.
+Ok, this sounds acceptable for now.
 
-I for one will be happy to see the list move to vger.
+The important thing now is to improve performance to a level comparable to a 
+system with normal ssd-swap.  Do you have such a comparisson?
 
-Over the years, I have had numerous headaches with the filters causing
-delays or rejects in postings, particularily when using automated
-tools like 'quilt mail' or 'git send-email.'  While things have
-improved, it has still caused headaches that I have never had with
-other lists.
+Another interresting benchmark would be to use compcache in a maximized 
+configuration, ie. on a system w/ 1024KB Ram assign 960KB for compcache and 
+leave 64KB for the system, and then see how it performs.  This may easily 
+pinpoint any bottlenecks compcache has, if any.
 
-Kevin
+Also, a link to the latest patch against .30 would be helpful.
+
+
+Thanks!
+
+--
+Al
+
