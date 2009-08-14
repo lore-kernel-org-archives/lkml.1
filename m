@@ -1,83 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752581AbZHNJED@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbZHNJIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752581AbZHNJED (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 05:04:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbZHNJEC
+	id S1752260AbZHNJIa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 05:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZHNJIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 05:04:02 -0400
-Received: from www.tglx.de ([62.245.132.106]:35680 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752073AbZHNJEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 05:04:01 -0400
-Date: Fri, 14 Aug 2009 11:03:18 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Peter Zijlstra <peterz@infradead.org>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Brian Swetland <swetland@google.com>,
-       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
-       t.fujak@samsung.com, kyungmin.park@samsung.com,
-       David Brownell <david-b@pacbell.net>, Daniel Ribeiro <drwyrm@gmail.com>,
-       arve@android.com, Barry Song <21cnbao@gmail.com>
-Subject: Re: [RFC patch 2/3] genirq: Add buslock support for irq chips on
- slow busses
-In-Reply-To: <1250239811.5241.1198.camel@twins>
-Message-ID: <alpine.LFD.2.00.0908141101540.1283@localhost.localdomain>
-References: <20090813191535.945521006@linutronix.de>  <20090813193116.509070851@linutronix.de> <1250239811.5241.1198.camel@twins>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 14 Aug 2009 05:08:30 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:58874 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbZHNJI3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 05:08:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Up425oMdH5reyjhaj4zN/gt4ZniQDPhz79DeGCXMRPtqUOnHJfA42Smdqt4YFIF5Zq
+         m7QIYqYthID1Sp1UbfUs3RyXqL7XT6ciKZYueNBkLCIKg6tS0hqbRfX8+GfMMzWu8NQB
+         sKF0t4wzx9C0uXOfklP3uI7WlBCB4vIJlhDQQ=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <200908132256.42941.rjw@sisk.pl>
+References: <200908081625.57333.rjw@sisk.pl> <200908092313.05541.rjw@sisk.pl>
+	 <200908132256.42941.rjw@sisk.pl>
+Date: Fri, 14 Aug 2009 18:08:29 +0900
+Message-ID: <aec7e5c30908140208j1498c134j46bef043f60f6c55@mail.gmail.com>
+Subject: Re: [PATCH update 2x] PM: Introduce core framework for run-time PM of 
+	I/O devices (rev. 16)
+From: Magnus Damm <magnus.damm@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
+       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Aug 2009, Peter Zijlstra wrote:
-> On Thu, 2009-08-13 at 19:40 +0000, Thomas Gleixner wrote:
-> >  
-> > +/**
-> > + *	disable_slowbus_irq - disable an slowbus irq and wait for completion
-> > + *	@irq: Interrupt to disable
-> > + *
-> > + *	Disable the selected interrupt line.  Enables and Disables are
-> > + *	nested.
-> > + *	This function waits for any pending IRQ handlers for this interrupt
-> > + *	to complete before returning. If you use this function while
-> > + *	holding a resource the IRQ handler may need you will deadlock.
-> > + *
-> > + *	This function must not be called from IRQ context.
-> > + */
-> > +void disable_slowbus_irq(unsigned int irq)
-> > +{
-> > +	struct irq_desc *desc = irq_to_desc(irq);
-> > +
-> > +	if (!desc || !desc->chip || !desc->chip->bus_lock)
-> > +		return;
-> > +
-> > +	desc->chip->bus_lock(irq);
-> > +	disable_irq_nosync(irq);
-> > +	if (desc->action)
-> > +		synchronize_irq(irq);
-> > +	desc->chip->bus_sync_unlock(irq);
-> > +}
-> > +EXPORT_SYMBOL(disable_slowbus_irq);
-> 
-> Should we also not check that desc->chip->bus_lock is not set for the
-> regular function disable_irq()?
-> 
-> It seems to me mixing disable_irq() and disable_slowbus_irq() is a
-> recipe for disaster.
-> 
-> Same for the other slowbus functions of course.
+On Fri, Aug 14, 2009 at 5:56 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM: Introduce core framework for run-time PM of I/O devices (rev. 16)
+>
+> Introduce a core framework for run-time power management of I/O
+> devices.  Add device run-time PM fields to 'struct dev_pm_info'
+> and device run-time PM callbacks to 'struct dev_pm_ops'.  Introduce
+> a run-time PM workqueue and define some device run-time PM helper
+> functions at the core level.  Document all these things.
+>
+> Special thanks to Alan Stern for his help with the design and
+> multiple detailed reviews of the pereceding versions of this patch
+> and to Magnus Damm for testing feedback.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Yeah, that's what I wanted to avoid with the first version, which did
-the conditional locking and did not require a separate API, but Ingo
-frowned upon the conditional lock.
+I've now tested v16 with my SuperH Mobile platform device Runtime PM
+implementation. All seems fine and my patches for patches for drivers
+such as i2c master, fbdev, v4l2 and uio behave as expected.
 
-Thanks,
+Acked-by: Magnus Damm <damm@igel.co.jp>
 
-	tglx
+The patch "PM: Runtime PM v15 - Platform Device Bus Support" works
+well with v16 and does not need any update.
 
+Cheers,
+
+/ magnus
