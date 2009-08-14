@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbZHNWne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbZHNWp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757233AbZHNWne (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 18:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757189AbZHNWne
+	id S1757249AbZHNWp1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 18:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbZHNWp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 18:43:34 -0400
-Received: from kroah.org ([198.145.64.141]:46487 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757223AbZHNWnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 18:43:33 -0400
-Date: Fri, 14 Aug 2009 15:18:30 -0700
-From: Greg KH <greg@kroah.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Samsung backlight driver
-Message-ID: <20090814221830.GA13114@kroah.com>
-References: <20090814194815.GA31474@kroah.com>
- <20090814222533.26D94526EC9@mailhub.coreip.homeip.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090814222533.26D94526EC9@mailhub.coreip.homeip.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 14 Aug 2009 18:45:26 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:50706 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756778AbZHNWp0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 18:45:26 -0400
+Subject: Re: kmemleak: Protect the seq start/next/stop sequence
+	byrcu_read_lock()
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090812205215.GA21451@elte.hu>
+References: <20090812205215.GA21451@elte.hu>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Fri, 14 Aug 2009 23:45:13 +0100
+Message-Id: <1250289913.5085.17.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Aug 2009 22:45:14.0858 (UTC) FILETIME=[E3A864A0:01CA1D30]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 14, 2009 at 02:54:40PM -0700, Dmitry Torokhov wrote:
-> Hi Greg,
+Hi Ingo,
+
+On Wed, 2009-08-12 at 21:52 +0100, Ingo Molnar wrote:
+> * Catalin Marinas <catalin.marinas@arm.com> wrote:
 > 
-> On Fri, Aug 14, 2009 at 12:48:15PM -0700, Greg KH wrote:
-> > +
-> > +static int update_status(struct backlight_device *bd)
-> > +{
-> > +	if (!pci_device)
-> > +		return -ENODEV;
-> > +	if (!backlight_device)
+> > kmemleak: Allow rescheduling during an object scanning
 > 
-> How is this possible?
-
-It's probably not, I was just being paranoid.  You're right, I can drop
-all of these checks and rework the find logic a bit.
-
-> > +		return -ENODEV;
-> > +
-> > +	current_brightness = bd->props.brightness;
-> > +	set_brightness();
-> > +	return 0;
-> > +}
-> > +
-> > +static struct backlight_ops backlight_ops = {
-> > +	.get_brightness	= get_brightness,
-> > +	.update_status	= update_status,
-> > +};
-> > +
-> > +static int find_video_card(void)
-> > +{
-> > +	struct pci_dev *dev = NULL;
-> > +
-> > +	while ((dev = pci_get_device(0x8086, 0x27ae, dev)) != NULL) {
-> > +		/* Found one, so let's save it off */
-> > +		if (!pci_device)
-> > +			pci_device = pci_dev_get(dev);
+> i tried this in -tip testing, and it crashes quickly:
 > 
-> If you need to iterate all matching devices you need to save them all or
-> release references to "extras" right here... Or, better yet, just break
-> after you find the first one.
+> [   81.900051] BUG: unable to handle kernel paging request at ffff880020000000
+> [   81.901382] IP: [<ffffffff8112ae7e>] scan_block+0xee/0x190
 
-It's a trivially small loop, this way I get the "hm, do I need to drop
-the reference or not" logic correct :)
+I updated the original patch for cond_resched() slightly (to check for
+objects they may be annotated during a scan_block loop). I also added a
+patch with an annotation for the memory hole at 0x20000000 on your
+x86_64 platform. I don't have such hardware to be able to check, so I
+would be grateful if you can acknowledge them.
 
-> > +	}
-> > +
-> > +	if (!pci_device)
-> > +		return 0;
-> 
-> Why not -ENODEV? What is the point of having this driver loaded if the
-> device is not available? Then you could drop all silly "if (!pci_device)"
-> checks.
+I'll post the patches as replies to this e-mail.
 
-Ah, you are right, thanks, I'll go fix that.
+Thanks.
 
-thanks for the review, I appreciate it.
+-- 
+Catalin
 
-greg k-h
