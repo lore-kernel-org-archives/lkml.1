@@ -1,93 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZHNF3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932127AbZHNFjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754858AbZHNF3Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 01:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbZHNF3P
+	id S932127AbZHNFjV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 01:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbZHNFjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 01:29:15 -0400
-Received: from mail.atheros.com ([12.36.123.2]:18069 "EHLO mail.atheros.com"
+	Fri, 14 Aug 2009 01:39:20 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:50369 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750805AbZHNF3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 01:29:15 -0400
-Date: Thu, 13 Aug 2009 22:29:15 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: Joe Perches <joe@perches.com>
-CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>
-Subject: Re: [PATCH] scripts: add typdef removal tool
-Message-ID: <20090814052915.GD28524@mosca>
-References: <1250031061-16327-1-git-send-email-lrodriguez@atheros.com>
- <1250033655.8895.631.camel@Joe-Laptop.home>
+	id S1751193AbZHNFjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 01:39:20 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <1250033655.8895.631.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19076.63614.277861.368125@drongo.ozlabs.ibm.com>
+Date: Fri, 14 Aug 2009 15:39:10 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: [PATCH] perf_counter: Check task on counter read IPI
+X-Mailer: VM 8.0.12 under 22.3.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 04:34:15PM -0700, Joe Perches wrote:
-> On Tue, 2009-08-11 at 15:51 -0700, Luis R. Rodriguez wrote:
-> > If you are porting drivers and need to remove tydpefs you can use
-> > this to help you port the driver quicker.
-> 
-> > +     # This replaces the typdef declaration for a simple struct declaration - style 1
-> > +     perl -i -e "local $/; while(<>) { s/\btypedef\s+struct\s+_$from\s*\{([\d\D]+?)\}\s*struct\s+$to\b[^;]*;/struct $to \{\1\};/g; print; }" $1
-> > +
-> > +     # This replaces the typdef declaration for a simple struct declaration - style 2
-> > +     perl -i -e "local $/; while(<>) { s/\btypedef\s+struct\s+$to\s*\{([\d\D]+?)\}\s*$from\b[^;]*;/struct $to \{\1\};/g; print; }" $1
-> > +
-> > +     # This replaces the typdef usages with simple structs
-> > +     sed -r -i -e "s/\b$from\b/struct $to/g" $1
-> > +     sed -r -i -e "s/\bP$from\b/struct $to \*/g" $1
-> > +     sed -r -i -e "s/struct $to\s*\*\s*\b/struct $to \*/g" $1
-> > +     sed -r -i -e "s/\(struct $to\s*\*\)\s*/\(struct $to \*\)/g" $1
-> 
-> Hi Luis.
-> 
-> A couple of comments:
-> 
-> In the comments "typdef" should be "typedef".
+In general, code in perf_counter.c that is called through an IPI
+checks, for per-task counters, that the counter's task is still the
+current task.  This is to handle the race condition where the cpu
+switches from the task we want to another task in the interval between
+sending the IPI and the IPI arriving and being handled on the target
+CPU.
 
-Fixed.
+For some reason, __perf_counter_read is missing this check, yet there
+is no reason why the race condition can't occur.  This adds a check
+that the current task is the one we want.  If it isn't, we just
+return.  In that case the counter->count value should be up to date,
+since it will have been updated when the counter was scheduled out,
+which must have happened since the IPI was sent.
 
-> I believe the sed statements need to be run before the perl statements.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+I don't have an example of an actual failure due to this race, but it
+seems obvious that it could occur and we need to guard against it, so
+I think this should go in .31.
 
-OK, swapped it around.
+ kernel/perf_counter.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-> Another common microsoft form is
-> 
->         typedef struct tagFOO {
->                 members
->         } FOO [, *PFOO [, **PPFOO ];
-> 
-> So maybe perl statement 1 could be:
-> 
-> s/\btypedef\s+struct\s+$to\s*(_{0,1}|tag)$from etc
-> 
-> and another sed statement might be:
-> 
-> sed -r -i -e "s/\(struct $to\s*\*\s*\*\s*\)\s*/\(struct $to \*\*\)/g" $1
-
-Yeah I just spotted another form:
-
-typedef struct whatever {
-	members
-} FOO;
-
-So we need to ignore 'whatever', I've tested this. I'll send a v2 with this and
-addressing the other comments you've made.
-
-Mind sending these as a patch on top of the script?
-
-> Maybe you could test this against next:drivers/staging/hv/ to see
-> how well this works.
-
-I'm testing against some ar9271 driver I'm porting but I get a chance
-I'll test it hv, not sure if I will though. Feel free to do so though
-and let me know how it goes.
-
-  Luis
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 534e20d..b8fe739 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -1503,10 +1503,21 @@ static void perf_counter_enable_on_exec(struct task_struct *task)
+  */
+ static void __perf_counter_read(void *info)
+ {
++	struct perf_cpu_context *cpuctx = &__get_cpu_var(perf_cpu_context);
+ 	struct perf_counter *counter = info;
+ 	struct perf_counter_context *ctx = counter->ctx;
+ 	unsigned long flags;
+ 
++	/*
++	 * If this is a task context, we need to check whether it is
++	 * the current task context of this cpu.  If not it has been
++	 * scheduled out before the smp call arrived.  In that case
++	 * counter->count would have been updated to a recent sample
++	 * when the counter was scheduled out.
++	 */
++	if (ctx->task && cpuctx->task_ctx != ctx)
++		return;
++
+ 	local_irq_save(flags);
+ 	if (ctx->is_active)
+ 		update_context_time(ctx);
