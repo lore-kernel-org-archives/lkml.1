@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751759AbZHNUk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbZHNUkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751759AbZHNUk3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 16:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZHNUk3
+	id S1752056AbZHNUkc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 16:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbZHNUkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 16:40:29 -0400
+	Fri, 14 Aug 2009 16:40:31 -0400
 Received: from vms173007pub.verizon.net ([206.46.173.7]:60781 "EHLO
 	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751053AbZHNUk2 (ORCPT
+	with ESMTP id S1751066AbZHNUk2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 14 Aug 2009 16:40:28 -0400
 From: Len Brown <lenb@kernel.org>
 To: x86@kernel.org, sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org,
        linux-acpi@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
-Subject: [PATCH 06/11] SFI: Simple Firmware Interface - MAINTAINERS, Kconfig
-Date: Fri, 14 Aug 2009 16:38:10 -0400
-Message-id: <792b9487f859c9fa3756adafa7ad1778c0c46e99.1250281826.git.len.brown@intel.com>
+Cc: Feng Tang <feng.tang@intel.com>, Len Brown <len.brown@intel.com>
+Subject: [PATCH 08/11] SFI: add platform-independent core support
+Date: Fri, 14 Aug 2009 16:38:12 -0400
+Message-id: <b226d775fa1121abb4e270c1cd90ab2b2c82d6dc.1250281826.git.len.brown@intel.com>
 X-Mailer: git-send-email 1.6.4.122.g6ffd7
 In-reply-to: <1250282295-25216-1-git-send-email-lenb@kernel.org>
 References: <1250282295-25216-1-git-send-email-lenb@kernel.org>
@@ -27,70 +27,560 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+From: Feng Tang <feng.tang@intel.com>
 
-CONFIG_SFI=y enables the kernel to boot and run optimally
-on platforms that support the Simple Firmware Interface.
+drivers/sfi/sfi_core.c contains the generic SFI implementation.
+It has a private header, sfi_core.h, for its own use and the
+private use of future files in drivers/sfi/
 
-Thanks to Jacob Pan for prototyping the initial Linux SFI support,
-and to Feng Tang for Linux bring-up and debug both in emulation
-and on Moorestown hardware.
-
-See http://simplefirmware.org for more information on SFI.
-
+Signed-off-by: Feng Tang <feng.tang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- MAINTAINERS         |   12 ++++++++++++
- drivers/sfi/Kconfig |   17 +++++++++++++++++
- 2 files changed, 29 insertions(+), 0 deletions(-)
- create mode 100644 drivers/sfi/Kconfig
+ drivers/Makefile       |    1 +
+ drivers/sfi/Makefile   |    3 +
+ drivers/sfi/sfi_core.c |  412 ++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/sfi/sfi_core.h |   70 ++++++++
+ init/main.c            |    2 +
+ 5 files changed, 488 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/sfi/Makefile
+ create mode 100644 drivers/sfi/sfi_core.c
+ create mode 100644 drivers/sfi/sfi_core.h
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index b1114cf..d6d6fc8 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4561,6 +4561,18 @@ L:	linux-pci@vger.kernel.org
- S:	Supported
- F:	drivers/pci/hotplug/shpchp*
- 
-+SIMPLE FIRMWARE INTERFACE (SFI)
-+P:	Len Brown
-+M:	lenb@kernel.org
-+L:	sfi-devel@simplefirmware.org
-+W:	http://simplefirmware.org/
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-sfi-2.6.git
-+S:	Supported
-+F:	arch/x86/kernel/*sfi*
-+F:	drivers/sfi/
-+F:	include/linux/sfi*.h
-+
-+
- SIMTEC EB110ATX (Chalice CATS)
- P:	Ben Dooks
- M:	Vincent Sanders <support@simtec.co.uk>
-diff --git a/drivers/sfi/Kconfig b/drivers/sfi/Kconfig
+diff --git a/drivers/Makefile b/drivers/Makefile
+index bc4205d..ccfa259 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -11,6 +11,7 @@ obj-$(CONFIG_PARISC)		+= parisc/
+ obj-$(CONFIG_RAPIDIO)		+= rapidio/
+ obj-y				+= video/
+ obj-$(CONFIG_ACPI)		+= acpi/
++obj-$(CONFIG_SFI)		+= sfi/
+ # PnP must come after ACPI since it will eventually need to check if acpi
+ # was used and do nothing if so
+ obj-$(CONFIG_PNP)		+= pnp/
+diff --git a/drivers/sfi/Makefile b/drivers/sfi/Makefile
 new file mode 100644
-index 0000000..dd11512
+index 0000000..2343732
 --- /dev/null
-+++ b/drivers/sfi/Kconfig
-@@ -0,0 +1,17 @@
-+#
-+# SFI Configuration
-+#
++++ b/drivers/sfi/Makefile
+@@ -0,0 +1,3 @@
++obj-y	+= sfi_acpi.o
++obj-y	+= sfi_core.o
 +
-+menuconfig SFI
-+	bool "SFI (Simple Firmware Interface) Support"
-+	---help---
-+	The Simple Firmware Interface (SFI) provides a lightweight method
-+	for platform firmware to pass information to the operating system
-+	via static tables in memory.  Kernel SFI support is required to
-+	boot on SFI-only platforms.  Currently, all SFI-only platforms are
-+	based on the 2nd generation Intel Atom processor platform,
-+	code-named Moorestown.
+diff --git a/drivers/sfi/sfi_core.c b/drivers/sfi/sfi_core.c
+new file mode 100644
+index 0000000..7bd6b18
+--- /dev/null
++++ b/drivers/sfi/sfi_core.c
+@@ -0,0 +1,412 @@
++/* sfi_core.c Simple Firmware Interface - core internals */
 +
-+	For more information, see http://simplefirmware.org
++/*
 +
-+	Say 'Y' here to enable the kernel to boot on SFI-only platforms.
++  This file is provided under a dual BSD/GPLv2 license.  When using or
++  redistributing this file, you may do so under either license.
++
++  GPL LICENSE SUMMARY
++
++  Copyright(c) 2009 Intel Corporation. All rights reserved.
++
++  This program is free software; you can redistribute it and/or modify
++  it under the terms of version 2 of the GNU General Public License as
++  published by the Free Software Foundation.
++
++  This program is distributed in the hope that it will be useful, but
++  WITHOUT ANY WARRANTY; without even the implied warranty of
++  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++  General Public License for more details.
++
++  You should have received a copy of the GNU General Public License
++  along with this program; if not, write to the Free Software
++  Foundation, Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
++  The full GNU General Public License is included in this distribution
++  in the file called LICENSE.GPL.
++
++  BSD LICENSE
++
++  Copyright(c) 2009 Intel Corporation. All rights reserved.
++
++  Redistribution and use in source and binary forms, with or without
++  modification, are permitted provided that the following conditions
++  are met:
++
++    * Redistributions of source code must retain the above copyright
++      notice, this list of conditions and the following disclaimer.
++    * Redistributions in binary form must reproduce the above copyright
++      notice, this list of conditions and the following disclaimer in
++      the documentation and/or other materials provided with the
++      distribution.
++    * Neither the name of Intel Corporation nor the names of its
++      contributors may be used to endorse or promote products derived
++      from this software without specific prior written permission.
++
++  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
++  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
++  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++*/
++
++#define KMSG_COMPONENT "SFI"
++#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
++
++#include <linux/bootmem.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/string.h>
++#include <linux/errno.h>
++#include <linux/types.h>
++#include <linux/acpi.h>
++#include <linux/init.h>
++#include <linux/irq.h>
++#include <linux/sfi.h>
++#include <linux/smp.h>
++
++#include <asm/pgtable.h>
++
++#include "sfi_core.h"
++
++#define ON_SAME_PAGE(addr1, addr2) \
++	(((unsigned long)(addr1) & PAGE_MASK) == \
++	((unsigned long)(addr2) & PAGE_MASK))
++#define TABLE_ON_PAGE(page, table, size) (ON_SAME_PAGE(page, table) && \
++				ON_SAME_PAGE(page, table + size))
++
++int sfi_disabled __read_mostly;
++EXPORT_SYMBOL(sfi_disabled);
++
++static u64 syst_pa __read_mostly;
++static struct sfi_table_simple *syst_va __read_mostly;
++
++/*
++ * FW creates and saves the SFI tables in memory. When these tables get
++ * used, they may need to be mapped to virtual address space, and the mapping
++ * can happen before or after the ioremap() is ready, so a flag is needed
++ * to indicating this
++ */
++static u32 sfi_use_ioremap __read_mostly;
++
++static void __iomem *sfi_map_memory(u64 phys, u32 size)
++{
++	if (!phys || !size)
++		return NULL;
++
++	if (sfi_use_ioremap)
++		return ioremap(phys, size);
++	else
++		return early_ioremap(phys, size);
++}
++
++static void sfi_unmap_memory(void __iomem *virt, u32 size)
++{
++	if (!virt || !size)
++		return;
++
++	if (sfi_use_ioremap)
++		iounmap(virt);
++	else
++		early_iounmap(virt, size);
++}
++
++static void sfi_print_table_header(unsigned long long pa,
++				struct sfi_table_header *header)
++{
++	pr_info("%4.4s %llX, %04X (v%d %6.6s %8.8s)\n",
++		header->sig, pa,
++		header->len, header->rev, header->oem_id,
++		header->oem_table_id);
++}
++
++/*
++ * sfi_verify_table()
++ * Sanity check table lengh, calculate checksum
++ */
++static __init int sfi_verify_table(struct sfi_table_header *table)
++{
++
++	u8 checksum = 0;
++	u8 *puchar = (u8 *)table;
++	u32 length = table->len;
++
++	/* Sanity check table length against arbitrary 1MB limit */
++	if (length > 0x100000) {
++		pr_err("Invalid table length 0x%x\n", length);
++		return -1;
++	}
++
++	while (length--)
++		checksum += *puchar++;
++
++	if (checksum) {
++		pr_err("Checksum %2.2X should be %2.2X\n",
++			table->csum, table->csum - checksum);
++		return -1;
++	}
++	return 0;
++}
++
++/*
++ * sfi_map_table()
++ *
++ * Return address of mapped table
++ * Check for common case that we can re-use mapping to SYST,
++ * which requires syst_pa, syst_va to be initialized.
++ */
++struct sfi_table_header *sfi_map_table(u64 pa)
++{
++	struct sfi_table_header *th;
++	u32 length;
++
++	if (!TABLE_ON_PAGE(syst_pa, pa, sizeof(struct sfi_table_header)))
++		th = sfi_map_memory(pa, sizeof(struct sfi_table_header));
++	else
++		th = (void *)syst_va + (pa - syst_pa);
++
++	 /* If table fits on same page as its header, we are done */
++	if (TABLE_ON_PAGE(th, th, th->len))
++		return th;
++
++	/* Entire table does not fit on same page as SYST */
++	length = th->len;
++	if (!TABLE_ON_PAGE(syst_pa, pa, sizeof(struct sfi_table_header)))
++		sfi_unmap_memory(th, sizeof(struct sfi_table_header));
++
++	return sfi_map_memory(pa, length);
++}
++
++/*
++ * sfi_unmap_table()
++ *
++ * Undoes effect of sfi_map_table() by unmapping table
++ * if it did not completely fit on same page as SYST.
++ */
++void sfi_unmap_table(struct sfi_table_header *th)
++{
++	if (!TABLE_ON_PAGE(syst_va, th, th->len))
++		sfi_unmap_memory(th, TABLE_ON_PAGE(th, th, th->len) ?
++					sizeof(*th) : th->len);
++}
++
++static int sfi_table_check_key(struct sfi_table_header *th,
++				struct sfi_table_key *key)
++{
++
++	if (strncmp(th->sig, key->sig, SFI_SIGNATURE_SIZE)
++		|| (key->oem_id && strncmp(th->oem_id,
++				key->oem_id, SFI_OEM_ID_SIZE))
++		|| (key->oem_table_id && strncmp(th->oem_table_id,
++				key->oem_table_id, SFI_OEM_TABLE_ID_SIZE)))
++		return -1;
++
++	return 0;
++}
++
++/*
++ * This function will be used in 2 cases:
++ * 1. used to enumerate and verify the tables addressed by SYST/XSDT,
++ *    thus no signature will be given (in kernel boot phase)
++ * 2. used to parse one specific table, signature must exist, and
++ *    the mapped virt address will be returned, and the virt space
++ *    will be released by call sfi_put_table() later
++ *
++ * Return value:
++ *	NULL:			when can't find a table matching the key
++ *	ERR_PTR(error):		error value
++ *	virt table address:	when a matched table is found
++ */
++struct sfi_table_header *sfi_check_table(u64 pa, struct sfi_table_key *key)
++{
++	struct sfi_table_header *th;
++	void *ret = NULL;
++
++	th = sfi_map_table(pa);
++	if (!th)
++		return ERR_PTR(-ENOMEM);
++
++	if (!key->sig) {
++		sfi_print_table_header(pa, th);
++		if (sfi_verify_table(th))
++			ret = ERR_PTR(-EINVAL);
++	} else {
++		if (!sfi_table_check_key(th, key))
++			return th;	/* Success */
++	}
++
++	sfi_unmap_table(th);
++	return ret;
++}
++
++/*
++ * sfi_get_table()
++ *
++ * Search SYST for the specified table with the signature in
++ * the key, and return the mapped table
++ */
++struct sfi_table_header *sfi_get_table(struct sfi_table_key *key)
++{
++	struct sfi_table_header *th;
++	u32 tbl_cnt, i;
++
++	tbl_cnt = SFI_GET_NUM_ENTRIES(syst_va, u64);
++	for (i = 0; i < tbl_cnt; i++) {
++		th = sfi_check_table(syst_va->pentry[i], key);
++		if (!IS_ERR(th) && th)
++			return th;
++	}
++
++	return NULL;
++}
++
++void sfi_put_table(struct sfi_table_header *th)
++{
++	sfi_unmap_table(th);
++}
++
++/* Find table with signature, run handler on it */
++int sfi_table_parse(char *signature, char *oem_id, char *oem_table_id,
++			sfi_table_handler handler)
++{
++	struct sfi_table_header *table = NULL;
++	struct sfi_table_key key;
++	int ret = -EINVAL;
++
++	if (sfi_disabled || !handler || !signature)
++		goto exit;
++
++	key.sig = signature;
++	key.oem_id = oem_id;
++	key.oem_table_id = oem_table_id;
++
++	table = sfi_get_table(&key);
++	if (!table)
++		goto exit;
++
++	ret = handler(table);
++	sfi_put_table(table);
++exit:
++	return ret;
++}
++EXPORT_SYMBOL_GPL(sfi_table_parse);
++
++/*
++ * sfi_parse_syst()
++ * Checksum all the tables in SYST and print their headers
++ *
++ * success: set syst_va, return 0
++ */
++static int __init sfi_parse_syst(void)
++{
++	struct sfi_table_key key = SFI_ANY_KEY;
++	int tbl_cnt, i;
++	void *ret;
++
++	syst_va = sfi_map_memory(syst_pa, sizeof(struct sfi_table_simple));
++	if (!syst_va)
++		return -ENOMEM;
++
++	tbl_cnt = SFI_GET_NUM_ENTRIES(syst_va, u64);
++	for (i = 0; i < tbl_cnt; i++) {
++		ret = sfi_check_table(syst_va->pentry[i], &key);
++		if (IS_ERR(ret))
++			return PTR_ERR(ret);
++	}
++
++	return 0;
++}
++
++/*
++ * The OS finds the System Table by searching 16-byte boundaries between
++ * physical address 0x000E0000 and 0x000FFFFF. The OS shall search this region
++ * starting at the low address and shall stop searching when the 1st valid SFI
++ * System Table is found.
++ *
++ * success: set syst_pa, return 0
++ * fail: return -1
++ */
++static __init int sfi_find_syst(void)
++{
++	unsigned long offset, len;
++	void *start;
++
++	len = SFI_SYST_SEARCH_END - SFI_SYST_SEARCH_BEGIN;
++	start = sfi_map_memory(SFI_SYST_SEARCH_BEGIN, len);
++	if (!start)
++		return -1;
++
++	for (offset = 0; offset < len; offset += 16) {
++		struct sfi_table_header *syst_hdr;
++
++		syst_hdr = start + offset;
++		if (strncmp(syst_hdr->sig, SFI_SIG_SYST,
++				SFI_SIGNATURE_SIZE))
++			continue;
++
++		if (syst_hdr->len > PAGE_SIZE)
++			continue;
++
++		sfi_print_table_header(SFI_SYST_SEARCH_BEGIN + offset,
++					syst_hdr);
++
++		if (sfi_verify_table(syst_hdr))
++			continue;
++
++		/*
++		 * Enforce SFI spec mandate that SYST reside within a page.
++		 */
++		if (!ON_SAME_PAGE(syst_pa, syst_pa + syst_hdr->len)) {
++			pr_info("SYST 0x%llx + 0x%x crosses page\n",
++					syst_pa, syst_hdr->len);
++			continue;
++		}
++
++		/* Success */
++		syst_pa = SFI_SYST_SEARCH_BEGIN + offset;
++		sfi_unmap_memory(start, len);
++		return 0;
++	}
++
++	sfi_unmap_memory(start, len);
++	return -1;
++}
++
++void __init sfi_init(void)
++{
++	if (!acpi_disabled)
++		disable_sfi();
++
++	if (sfi_disabled)
++		return;
++
++	pr_info("Simple Firmware Interface v0.7 http://simplefirmware.org\n");
++
++	if (sfi_find_syst() || sfi_parse_syst() || sfi_platform_init())
++		disable_sfi();
++
++	return;
++}
++
++void __init sfi_init_late(void)
++{
++	int length;
++
++	if (sfi_disabled)
++		return;
++
++	length = syst_va->header.len;
++	sfi_unmap_memory(syst_va, sizeof(struct sfi_table_simple));
++
++	/* Use ioremap now after it is ready */
++	sfi_use_ioremap = 1;
++	syst_va = sfi_map_memory(syst_pa, length);
++
++	sfi_acpi_init();
++}
+diff --git a/drivers/sfi/sfi_core.h b/drivers/sfi/sfi_core.h
+new file mode 100644
+index 0000000..da82d39
+--- /dev/null
++++ b/drivers/sfi/sfi_core.h
+@@ -0,0 +1,70 @@
++/* sfi_core.h Simple Firmware Interface, internal header */
++
++/*
++
++  This file is provided under a dual BSD/GPLv2 license.  When using or
++  redistributing this file, you may do so under either license.
++
++  GPL LICENSE SUMMARY
++
++  Copyright(c) 2009 Intel Corporation. All rights reserved.
++
++  This program is free software; you can redistribute it and/or modify
++  it under the terms of version 2 of the GNU General Public License as
++  published by the Free Software Foundation.
++
++  This program is distributed in the hope that it will be useful, but
++  WITHOUT ANY WARRANTY; without even the implied warranty of
++  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++  General Public License for more details.
++
++  You should have received a copy of the GNU General Public License
++  along with this program; if not, write to the Free Software
++  Foundation, Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
++  The full GNU General Public License is included in this distribution
++  in the file called LICENSE.GPL.
++
++  BSD LICENSE
++
++  Copyright(c) 2009 Intel Corporation. All rights reserved.
++
++  Redistribution and use in source and binary forms, with or without
++  modification, are permitted provided that the following conditions
++  are met:
++
++    * Redistributions of source code must retain the above copyright
++      notice, this list of conditions and the following disclaimer.
++    * Redistributions in binary form must reproduce the above copyright
++      notice, this list of conditions and the following disclaimer in
++      the documentation and/or other materials provided with the
++      distribution.
++    * Neither the name of Intel Corporation nor the names of its
++      contributors may be used to endorse or promote products derived
++      from this software without specific prior written permission.
++
++  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
++  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
++  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++*/
++struct sfi_table_key{
++	char	*sig;
++	char	*oem_id;
++	char	*oem_table_id;
++};
++
++#define SFI_ANY_KEY { .sig = NULL, .oem_id = NULL, .oem_table_id = NULL }
++
++extern int __init sfi_acpi_init(void);
++extern  struct sfi_table_header *sfi_check_table(u64 paddr,
++					struct sfi_table_key *key);
++struct sfi_table_header *sfi_get_table(struct sfi_table_key *key);
++extern void sfi_put_table(struct sfi_table_header *table);
+diff --git a/init/main.c b/init/main.c
+index 2c5ade7..d32a1ff 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -68,6 +68,7 @@
+ #include <linux/async.h>
+ #include <linux/kmemcheck.h>
+ #include <linux/kmemtrace.h>
++#include <linux/sfi.h>
+ #include <trace/boot.h>
+ 
+ #include <asm/io.h>
+@@ -712,6 +713,7 @@ asmlinkage void __init start_kernel(void)
+ 	check_bugs();
+ 
+ 	acpi_early_init(); /* before LAPIC and SMP init */
++	sfi_init_late();
+ 
+ 	ftrace_init();
+ 
 -- 
 1.6.0.6
 
