@@ -1,159 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932714AbZHNQgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932723AbZHNQjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932714AbZHNQgU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 12:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932386AbZHNQgT
+	id S932723AbZHNQjP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 12:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932710AbZHNQjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 12:36:19 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:5866 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932324AbZHNQgT (ORCPT
+	Fri, 14 Aug 2009 12:39:14 -0400
+Received: from exprod6ob111.obsmtp.com ([64.18.1.26]:57244 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S932697AbZHNQjO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 12:36:19 -0400
-Date: Fri, 14 Aug 2009 10:36:18 -0600
-From: Alex Chiang <achiang@hp.com>
-To: hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de
-Cc: andi@firstfloor.org, x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: add /proc/cpuinfo/physical id quirks
-Message-ID: <20090814163618.GQ7185@ldl.fc.hp.com>
+	Fri, 14 Aug 2009 12:39:14 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARMsections
+Date: Fri, 14 Aug 2009 12:39:12 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901BE9EBD@mi8nycmail19.Mi8.com>
+In-Reply-To: <20090814100100.GA25584@digital-scurf.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARMsections
+Thread-Index: AcocxutR5kp+vybOTq+7uF9jD7Xj+gANSQiw
+References: <84144f020908121317g64551a2cu1b960f44ed5d0d9@mail.gmail.com><20090812212502.GA24667@n2100.arm.linux.org.uk><20090813103511.2928a085@lxorguk.ukuu.org.uk><20090813094736.GZ6132@n2100.arm.linux.org.uk><1250158593.28285.23.camel@Joe-Laptop.home><20090813103513.GC6132@n2100.arm.linux.org.uk><1250161714.28285.61.camel@Joe-Laptop.home><20090813115444.GB10450@n2100.arm.linux.org.uk><20090814075919.GG19257@buzzloop.caiaq.de><20090814091808.GA2662@n2100.arm.linux.org.uk> <20090814100100.GA25584@digital-scurf.org>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Daniel Silverstone" <dsilvers@simtec.co.uk>,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+Cc: "Daniel Mack" <daniel@caiaq.de>, "Joe Perches" <joe@perches.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>, "Pavel Machek" <pavel@ucw.cz>,
+       "Ben Dooks" <ben-linux@fluff.org>,
+       <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "David John" <davidjon@xenontk.org>, "Erik Mouw" <mouw@nl.linux.org>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "David Miller" <davem@davemloft.net>,
+       "Krzysztof Halasa" <khc@pm.waw.pl>
+X-OriginalArrivalTime: 14 Aug 2009 16:39:13.0502 (UTC) FILETIME=[C1AB67E0:01CA1CFD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As systems become larger and more complex, it is not always possible
-to assume that an APIC ID maps directly to a given physical slot.
+On Friday, August 14, 2009 3:01 AM, Daniel Silverstone wrote:
+> On Fri, Aug 14, 2009 at 10:18:08AM +0100, Russell King - ARM Linux wrote:
+>> These lists are getting close to me just pulling the plug on them.  The
+>> amount of crap flying around about them is getting too great for me to
+>> continue to provide such a service to this community.  When I pull them,
+>> I'll pull *all* the linux-arm related lists.
+>> Someone else can provide and run the mailing lists.
+>> I estimate that this will happen this evening.  Really.  Because I don't
+>> see this thread settling down.
+>
+> While I appreciate that this is possibly too little too late, for what it's
+> worth I personally appreciate all the effort you put into the ARM-Linux lists,
+> and I think it would be a great shame to let them turn into the free-for-all
+> bunfight which we know will happen if you relinquish the control you hold.
+> 
+> Linux-ARM-Kernel is the only Linux-related mailing list I have left which isn't
+> running on a host I have to whitelist through all of my spam-checking because
+> the lists are so spam-friendly that if I try and spam-check them, I get kicked
+> off for rejecting too much of the mail.
+> 
+> I dread to think what will happen to the quality of the code if the vendors are
+> left to push whatever they like into the core.  Heck, even the long-term
+> subsystem or arch/mach maintainers sometimes need a push in the right
+> direction, and I doubt that such information and impetus would make it to them
+> if the lists were not well managed.
+> 
+> For my $0.02, I hope you find it in you to be able to continue managing the
+> lists as they are, and I am sorry for not piping up a bit earlier.
 
->From a UI point-of-view, it's nice if the 'physical id' field in
-/proc/cpuinfo matches the silk-screening or labelling on the system
-chassis.
+For what it's worth I agree with Daniel's comments.
 
-Add a quirk that allows oddball platforms to ensure that what the kernel
-displays in /proc/cpuinfo matches the physical reality.
+There may be people that disagree with Russell's comments/attitude sometimes
+but he provides a great resource for the ARM community.  I personally have no
+problems with the linux-arm lists.  It's one of the few I am on that I "know"
+all mail will be relevant and useful.
 
-Cc: Andi Kleen <andi@firstfloor.org>
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
- Makefile        |    2 +-
- common.c        |    5 +++++
- cpu.h           |    8 ++++++++
- physid_quirks.c |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 68 insertions(+), 1 deletion(-)
-
----
-diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
-index 3efcb2b..95d54cf 100644
---- a/arch/x86/kernel/cpu/Makefile
-+++ b/arch/x86/kernel/cpu/Makefile
-@@ -9,7 +9,7 @@ endif
- 
- obj-y			:= intel_cacheinfo.o addon_cpuid_features.o
- obj-y			+= proc.o capflags.o powerflags.o common.o
--obj-y			+= vmware.o hypervisor.o
-+obj-y			+= vmware.o hypervisor.o physid_quirks.o
- 
- obj-$(CONFIG_X86_32)	+= bugs.o cmpxchg.o
- obj-$(CONFIG_X86_64)	+= bugs_64.o
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 54a3ead..714c56f 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -815,6 +815,11 @@ static void __cpuinit identify_cpu(struct cpuinfo_x86 *c)
- 	detect_ht(c);
- #endif
- 
-+	physid_fixup_table = NULL;
-+	dmi_check_system(physid_need_fixups_table);
-+	if (physid_fixup_table)
-+		c->phys_proc_id = physid_fixup_table[c->phys_proc_id];
-+
- 	init_hypervisor(c);
- 
- 	/*
-diff --git a/arch/x86/kernel/cpu/cpu.h b/arch/x86/kernel/cpu/cpu.h
-index 6de9a90..5ae221e 100644
---- a/arch/x86/kernel/cpu/cpu.h
-+++ b/arch/x86/kernel/cpu/cpu.h
-@@ -8,6 +8,8 @@ struct cpu_model_info {
- 	const char	*model_names[16];
- };
- 
-+struct cpuinfo_x86;
-+
- /* attempt to consolidate cpu attributes */
- struct cpu_dev {
- 	const char	*c_vendor;
-@@ -34,4 +36,10 @@ extern const struct cpu_dev *const __x86_cpu_dev_start[],
- 
- extern void display_cacheinfo(struct cpuinfo_x86 *c);
- 
-+/* defined in physid_quirks.c */
-+#include <linux/dmi.h>
-+extern int (*physid_fixup_table);
-+extern int hp_check_fixup_physids(const struct dmi_system_id *);
-+extern struct dmi_system_id physid_need_fixups_table[];
-+
- #endif
-diff --git a/arch/x86/kernel/cpu/physid_quirks.c b/arch/x86/kernel/cpu/physid_quirks.c
-new file mode 100644
-index 0000000..40cf429
---- /dev/null
-+++ b/arch/x86/kernel/cpu/physid_quirks.c
-@@ -0,0 +1,54 @@
-+/*
-+ *  physid_quirks.c - quirks for the 'physical id' field in /proc/cpuinfo
-+ *
-+ *  Copyright (C) 2009 Hewlett-Packard Development Company, L.P.
-+ *	Alex Chiang <achiang@hp.com>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify it
-+ *  under the terms and conditions of the GNU General Public License,
-+ *  version 2, as published by the Free Software Foundation.
-+ *
-+ *  This program is distributed in the hope that it will be useful, but
-+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License along
-+ *  with this program; if not, write to the Free Software Foundation, Inc.,
-+ *  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#include "cpu.h"
-+
-+int (*physid_fixup_table);
-+
-+struct dmi_system_id __initdata physid_need_fixups_table[] = {
-+	{
-+		.callback = hp_check_fixup_physids,
-+		.ident = "HP ProLiant DL785 G5/G6",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL785"),
-+		},
-+	},
-+	{}
-+};
-+
-+/*
-+ * The mapping from node to physical socket id is described
-+ * in the (HP internal) DL785 system specification.
-+ */
-+static int hp_dl785_physids_4p[8] = { 8, 2, 7, 1, 0, 0, 0, 0 };
-+static int hp_dl785_physids_8p[8] = { 8, 6, 7, 4, 3, 5, 2, 1 };
-+int __cpuinit hp_check_fixup_physids(const struct dmi_system_id *d)
-+{
-+	int present = num_present_cpus();
-+
-+	/* DL785 only supports 4-socket and 8-socket configs */
-+	if (present == 16 || present == 24)
-+		physid_fixup_table = hp_dl785_physids_4p;
-+	else
-+		physid_fixup_table = hp_dl785_physids_8p;
-+
-+	return 1;
-+}
+Regards,
+Hartley
