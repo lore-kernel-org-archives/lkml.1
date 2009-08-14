@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbZHNVCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbZHNVFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754826AbZHNVCA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 17:02:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZHNVB7
+	id S1754913AbZHNVFR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 17:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbZHNVFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 17:01:59 -0400
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:34992 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754663AbZHNVB6 (ORCPT
+	Fri, 14 Aug 2009 17:05:17 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:58071 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754722AbZHNVFQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 17:01:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kckObkZ6zdkLL/t+RC05jr/XeIIvngK72ZvbWOSJEONtN0/+3p37LgfN99OfqjoIxw
-         NVHtFxaYFio9AXMe+qGf2NZDe3mDRcPpklP6xvHPEKwoNutfBrX8kk3rZjeplFJMLQCP
-         rvOAUqwhNKyLHDBqXFsTErT81gdh8FISGTTnE=
+	Fri, 14 Aug 2009 17:05:16 -0400
+Date: Fri, 14 Aug 2009 17:05:17 -0400
+To: Pander <pander@users.sourceforge.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] charger: Offer kernel build that disables disks, screen,
+	etc. and lets laptop serve as charger for USB/FireWire devices
+Message-ID: <20090814210517.GA3445@csclub.uwaterloo.ca>
+References: <4A855F5D.1010502@users.sourceforge.net>
 MIME-Version: 1.0
-In-Reply-To: <20090814185731.GN13320@pengutronix.de>
-References: <20090814170228.GM13320@pengutronix.de> <4A85AAC4.7050505@acm.org>
-	 <20090814185731.GN13320@pengutronix.de>
-Date: Fri, 14 Aug 2009 23:01:58 +0200
-Message-ID: <63386a3d0908141401t6050f39ey8d85213aeccf748a@mail.gmail.com>
-Subject: Re: New fast(?)-boot results on ARM
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-Cc: Zan Lynx <zlynx@acm.org>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Tim Bird <tim.bird@am.sony.com>, kernel@pengutronix.de
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A855F5D.1010502@users.sourceforge.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/14 Robert Schwebel <r.schwebel@pengutronix.de>:
-> On Fri, Aug 14, 2009 at 12:19:48PM -0600, Zan Lynx wrote:
+On Fri, Aug 14, 2009 at 02:58:05PM +0200, Pander wrote:
+> Consider situations where normal power outlets are not available, e.g.
+> when travelling in remote areas or in an air plane or train, but you do
+> need to charge USB/FireWire devices like a mobile telephone, camera,
+> PDA, etc. It would be efficient to boot your laptop with a special
+> kernel that turns it into a charger.
+> 
+> Some laptops already offer this feature, however the majority of laptops
+> donot. A suspended laptop can offer this too, but please consider
+> situation orplaces where power is so scarce that normally booting a
+> laptop in order tocharge another device is undesirable in terms of being
+> efficient with theenergy stored in the battery or that it is not allowed
+> to activate RF devicesas is in an air plane.
+> 
+> Normal boot will cause that a lot of power will be consumed by the
+> disks,screen, CPUs, RF devices, fans, all LEDs (except the one
+> indicating the deviceis switched on), etc. while you are only interested
+> in power being available at the USB/FireWire ports.
+> 
+> This can be achieved by building a special kernel that will shut down
+> all hardware that is not needed for offering power on the before
+> mentioned ports. Perhaps this can be achieved by kernel configuration
+> alone or it might require a minimal of functionality to put a laptop
+> into such a charging state.
+> 
+> Normally, systems automatically shut down before the battery is drained
+> 100%. This kernel will allow you to drain all the entire battery.
+> 
+> The resulting kernel can be installed and made available in a similar
+> way as the memtest kernel and can be incorporated by installers of
+> GNU/Linux distributions.
+> 
+> Implementing this idea will allow for highly energy efficient recharging
+> of devices like telephones, cameras and other mobile devices via your
+> laptop.
 
->> > That's factor 70 away from the 110 ms boot time Tim has talked about
->> > some days ago (and he measured on an ARM cpu which had almost half
->> > the speed of this one), and I'm wondering what we can do to improve
->> > the boot time.
->>
->> 2.4s in uncompression? That seems like an obvious target for
->> improvement.
->
-> Indeed, we'll check that.
+Perhaps using your laptop is a charger is simply inefficient and no
+matter how simple the system is it is likely to use way more power than
+any dedicated usb charger would, and certainly more than the laptops
+that actually support this in hardware.
 
-We got rid of uncompression on a flash-based system vastly improving
-boot time. The reason is that compressed kernels are faster only when
-the throughput to the persistent storage is lower than the decompression
-throughput, and on typical embedded systems with DMA the throughput to
-memory outperforms the CPU-based decompression.
-
-Of course it depends on a lot of stuff like performance of flash controller,
-kernel storage filesystem performance, DMA controller performance,
-cache architecture etc so it's individual per-system.
-
-Linus Walleij
+-- 
+Len Sorensen
