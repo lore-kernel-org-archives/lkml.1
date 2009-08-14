@@ -1,73 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbZHNLbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbZHNLbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275AbZHNLbp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 07:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755719AbZHNLbj
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1756170AbZHNLbj (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 14 Aug 2009 07:31:39 -0400
-Received: from flounder.pepperfish.net ([87.237.62.181]:58716 "EHLO
-	flounder.pepperfish.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754065AbZHNLbi (ORCPT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbZHNLb2
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 14 Aug 2009 07:31:28 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:46846 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755522AbZHNL0W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 07:31:38 -0400
-X-Greylist: delayed 5371 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Aug 2009 07:31:37 EDT
-Date: Fri, 14 Aug 2009 11:01:00 +0100
-From: Daniel Silverstone <dsilvers@simtec.co.uk>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Daniel Mack <daniel@caiaq.de>, Joe Perches <joe@perches.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>,
-       Ben Dooks <ben-linux@fluff.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
-	sections
-Message-ID: <20090814100100.GA25584@digital-scurf.org>
-References: <84144f020908121317g64551a2cu1b960f44ed5d0d9@mail.gmail.com> <20090812212502.GA24667@n2100.arm.linux.org.uk> <20090813103511.2928a085@lxorguk.ukuu.org.uk> <20090813094736.GZ6132@n2100.arm.linux.org.uk> <1250158593.28285.23.camel@Joe-Laptop.home> <20090813103513.GC6132@n2100.arm.linux.org.uk> <1250161714.28285.61.camel@Joe-Laptop.home> <20090813115444.GB10450@n2100.arm.linux.org.uk> <20090814075919.GG19257@buzzloop.caiaq.de> <20090814091808.GA2662@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090814091808.GA2662@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 14 Aug 2009 07:26:22 -0400
+Message-Id: <20090814112619.838652300@de.ibm.com>
+References: <20090814112517.982007860@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 14 Aug 2009 13:25:48 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Michael Holzheu <holzheu@linux.vnet.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 31/34] vmur: Invalid allocation sequence for vmur class
+Content-Disposition: inline; filename=130-vmur-alloc-sequence.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 14, 2009 at 10:18:08AM +0100, Russell King - ARM Linux wrote:
-> These lists are getting close to me just pulling the plug on them.  The
-> amount of crap flying around about them is getting too great for me to
-> continue to provide such a service to this community.  When I pull them,
-> I'll pull *all* the linux-arm related lists.
-> Someone else can provide and run the mailing lists.
-> I estimate that this will happen this evening.  Really.  Because I don't
-> see this thread settling down.
+From: Michael Holzheu <holzheu@linux.vnet.ibm.com>
 
-While I appreciate that this is possibly too little too late, for what it's
-worth I personally appreciate all the effort you put into the ARM-Linux lists,
-and I think it would be a great shame to let them turn into the free-for-all
-bunfight which we know will happen if you relinquish the control you hold.
+The vmur class is allocated after the CCW driver is registered
+and it is destroyed before the CCW driver is unregistered.
+This is not the correct sequence, because the vmur class can be used
+via driver core callbacks that are triggered during the CCW driver
+deregistration. For Example:
 
-Linux-ARM-Kernel is the only Linux-related mailing list I have left which isn't
-running on a host I have to whitelist through all of my spam-checking because
-the lists are so spam-friendly that if I try and spam-check them, I get kicked
-off for rejecting too much of the mail.
+1. vmur device is online
+2. vmur module is unloaded
 
-I dread to think what will happen to the quality of the code if the vendors are
-left to push whatever they like into the core.  Heck, even the long-term
-subsystem or arch/mach maintainers sometimes need a push in the right
-direction, and I doubt that such information and impetus would make it to them
-if the lists were not well managed.
+This leads to the following function call stack:
 
-For my $0.02, I hope you find it in you to be able to continue managing the
-lists as they are, and I am sorry for not piping up a bit earlier.
+    <4> [<0000000000387286>] device_destroy+0x36/0x5c
+    <4> [<000003e000209714>] ur_set_offline_force+0x9c/0x10c [vmur]
+    <4> [<000003e00020a928>] ur_remove+0x64/0xbc [vmur]
+    <4> [<00000000003e4d2e>] ccw_device_remove+0x42/0x1ac
+    <4> [<000000000038a1aa>] __device_release_driver+0x9a/0xe4
+    <4> [<000000000038a2da>] driver_detach+0xe6/0xec
+    <4> [<0000000000388ee4>] bus_remove_driver+0xc0/0x108
+    <4> [<000003e00020ad5a>] ur_exit+0x52/0x84 [vmur]
 
-Regards,
+In device_destroy() the vmur class is used. Since it is already freed,
+this can lead to a kernel panic.
 
-Daniel.
+To fix the problem, the vmur class has to be allocated before the CCW
+driver is registered and destroyed after the CCW driver has ben unregistered.
+
+Signed-off-by: Michael Holzheu <holzheu@linux.vnet.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ drivers/s390/char/vmur.c |   19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
+
+Index: quilt-2.6/drivers/s390/char/vmur.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/char/vmur.c
++++ quilt-2.6/drivers/s390/char/vmur.c
+@@ -1026,9 +1026,15 @@ static int __init ur_init(void)
+ 
+ 	debug_set_level(vmur_dbf, 6);
+ 
++	vmur_class = class_create(THIS_MODULE, "vmur");
++	if (IS_ERR(vmur_class)) {
++		rc = PTR_ERR(vmur_class);
++		goto fail_free_dbf;
++	}
++
+ 	rc = ccw_driver_register(&ur_driver);
+ 	if (rc)
+-		goto fail_free_dbf;
++		goto fail_class_destroy;
+ 
+ 	rc = alloc_chrdev_region(&dev, 0, NUM_MINORS, "vmur");
+ 	if (rc) {
+@@ -1038,18 +1044,13 @@ static int __init ur_init(void)
+ 	}
+ 	ur_first_dev_maj_min = MKDEV(MAJOR(dev), 0);
+ 
+-	vmur_class = class_create(THIS_MODULE, "vmur");
+-	if (IS_ERR(vmur_class)) {
+-		rc = PTR_ERR(vmur_class);
+-		goto fail_unregister_region;
+-	}
+ 	pr_info("%s loaded.\n", ur_banner);
+ 	return 0;
+ 
+-fail_unregister_region:
+-	unregister_chrdev_region(ur_first_dev_maj_min, NUM_MINORS);
+ fail_unregister_driver:
+ 	ccw_driver_unregister(&ur_driver);
++fail_class_destroy:
++	class_destroy(vmur_class);
+ fail_free_dbf:
+ 	debug_unregister(vmur_dbf);
+ 	return rc;
+@@ -1057,9 +1058,9 @@ fail_free_dbf:
+ 
+ static void __exit ur_exit(void)
+ {
+-	class_destroy(vmur_class);
+ 	unregister_chrdev_region(ur_first_dev_maj_min, NUM_MINORS);
+ 	ccw_driver_unregister(&ur_driver);
++	class_destroy(vmur_class);
+ 	debug_unregister(vmur_dbf);
+ 	pr_info("%s unloaded.\n", ur_banner);
+ }
 
 -- 
-Daniel Silverstone                              http://www.simtec.co.uk/
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
