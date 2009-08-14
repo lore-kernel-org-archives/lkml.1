@@ -1,66 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756852AbZHNOJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbZHNOPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756852AbZHNOJY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 10:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbZHNOJY
+	id S1756867AbZHNOPN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 10:15:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbZHNOPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 10:09:24 -0400
-Received: from www.tglx.de ([62.245.132.106]:49229 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751730AbZHNOJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 10:09:23 -0400
-Date: Fri, 14 Aug 2009 16:08:57 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       john stultz <johnstul@us.ibm.com>
-Subject: Re: [patch 00/15] clocksource / timekeeping rework V4 (resend V3 +
- bug fix)
-In-Reply-To: <20090814134717.859098725@de.ibm.com>
-Message-ID: <alpine.LFD.2.00.0908141608120.1283@localhost.localdomain>
-References: <20090814134717.859098725@de.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 14 Aug 2009 10:15:12 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:55196 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751772AbZHNOPK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 10:15:10 -0400
+Date: Fri, 14 Aug 2009 10:12:24 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+Subject: pull request: wireless-2.6 2009-08-14
+Message-ID: <20090814141224.GH2650@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin,
+Dave,
 
-On Fri, 14 Aug 2009, Martin Schwidefsky wrote:
+A couple more squeakers for 2.6.31...one avoids a panic related to
+802.11n, the other avoids some memory corruption with rt2x00 devices.
 
-> Greetings,
-> version 4 of the clocksource / timekeeping cleanup patches. If you
-> wonder why version 3 did not show up on the mailing list: I had a
-> hiccup with quilt which did strange things to the message ids and
-> the post to lkml got rejected. Sorry for the spamming of the people
-> on Cc.
-> 
-> John pointed out a subtle bug in v3 of the patch set with the reset of
-> the cycle_last value in timekeeping_resume. Fixed in v4.
-> 
-> The latest additions are:
-> 1) Change read_persistent_clock to return a struct timespec instead of
->    an unsigned long with the number of seconds.
-> 2) Introduce read_boot_clock to initialize wall_to_monotonic.
-> 3) Move the reset of cycle_last to zero from the timekeeping code to
->    the TSC code.
-> 
-> The patch set is based on todays upstream tree plus the patches from
-> the tip tree, if anyone wants to try them you need to pull from the
-> master branch of
->     git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip
-> 
-> Keeping the fingers crossed that this is now really done.
-> John already gave his thumbs up for the patch series, so the next
-> logical question is who is going to sit on the patches until the merge
-> window is opened? I can certainly create a git branch on git390 for
-> them, but the patches depend on some patches in the x86-tip tree.
-> Thomas, any thoughts?
+Please let me know if there are problems!
 
-I'm going through them and pick them up into -tip.
+John
 
-Thanks,
+---
 
-	tglx
+Individual patches are available here:
+
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+
+---
+
+The following changes since commit 839d1624b9dcf31fdc02e47359043bb7bd71d6ca:
+  Francois Romieu (1):
+        8139cp: balance dma_map_single vs dma_unmap_single pair
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+Luis R. Rodriguez (1):
+      mac80211: fix panic when splicing unprepared TIDs
+
+Pavel Roskin (1):
+      rt2x00: fix memory corruption in rf cache, add a sanity check
+
+ drivers/net/wireless/rt2x00/rt2x00.h |    6 ++++--
+ net/mac80211/agg-tx.c                |    8 ++++++++
+ 2 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/wireless/rt2x00/rt2x00.h b/drivers/net/wireless/rt2x00/rt2x00.h
+index a498dde..49c9e2c 100644
+--- a/drivers/net/wireless/rt2x00/rt2x00.h
++++ b/drivers/net/wireless/rt2x00/rt2x00.h
+@@ -849,13 +849,15 @@ struct rt2x00_dev {
+ static inline void rt2x00_rf_read(struct rt2x00_dev *rt2x00dev,
+ 				  const unsigned int word, u32 *data)
+ {
+-	*data = rt2x00dev->rf[word];
++	BUG_ON(word < 1 || word > rt2x00dev->ops->rf_size / sizeof(u32));
++	*data = rt2x00dev->rf[word - 1];
+ }
+ 
+ static inline void rt2x00_rf_write(struct rt2x00_dev *rt2x00dev,
+ 				   const unsigned int word, u32 data)
+ {
+-	rt2x00dev->rf[word] = data;
++	BUG_ON(word < 1 || word > rt2x00dev->ops->rf_size / sizeof(u32));
++	rt2x00dev->rf[word - 1] = data;
+ }
+ 
+ /*
+diff --git a/net/mac80211/agg-tx.c b/net/mac80211/agg-tx.c
+index 9e5762a..a24e598 100644
+--- a/net/mac80211/agg-tx.c
++++ b/net/mac80211/agg-tx.c
+@@ -381,6 +381,14 @@ static void ieee80211_agg_splice_packets(struct ieee80211_local *local,
+ 		&local->hw, queue,
+ 		IEEE80211_QUEUE_STOP_REASON_AGGREGATION);
+ 
++	if (!(sta->ampdu_mlme.tid_state_tx[tid] & HT_ADDBA_REQUESTED_MSK))
++		return;
++
++	if (WARN(!sta->ampdu_mlme.tid_tx[tid],
++		 "TID %d gone but expected when splicing aggregates from"
++		 "the pending queue\n", tid))
++		return;
++
+ 	if (!skb_queue_empty(&sta->ampdu_mlme.tid_tx[tid]->pending)) {
+ 		spin_lock_irqsave(&local->queue_stop_reason_lock, flags);
+ 		/* mark queue as pending, it is stopped already */
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
