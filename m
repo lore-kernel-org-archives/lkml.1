@@ -1,34 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932222AbZHNNtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbZHNNti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932222AbZHNNtu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 09:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756820AbZHNNts
+	id S1756814AbZHNNti (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 09:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509AbZHNNth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 09:49:48 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:49464 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756830AbZHNNtq (ORCPT
+	Fri, 14 Aug 2009 09:49:37 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:48695 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756759AbZHNNsM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 09:49:46 -0400
-Message-Id: <20090814134810.435105711@de.ibm.com>
+	Fri, 14 Aug 2009 09:48:12 -0400
+Message-Id: <20090814134811.296703241@de.ibm.com>
 References: <20090814134717.859098725@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 14 Aug 2009 15:47:29 +0200
+Date: Fri, 14 Aug 2009 15:47:32 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        john stultz <johnstul@us.ibm.com>, Daniel Walker <dwalker@fifo99.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 12/15] timekeeper read clock helper functions
-Content-Disposition: inline; filename=timekeeper-helper.diff
+Subject: [patch 15/15] introduce read_boot_clock
+Content-Disposition: inline; filename=init_monotonic.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-Add timekeeper_read_clock_ntp and timekeeper_read_clock_raw and use
-them for getnstimeofday, ktime_get, ktime_get_ts and getrawmonotonic.
+Add the new function read_boot_clock to get the exact time the
+system has been started. For architectures without support for
+exact boot time a new weak function is added that returns 0.
+Use the exact boot time to initialize wall_to_monotonic, or
+xtime if the read_boot_clock returned 0.
 
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>
@@ -36,163 +39,117 @@ Cc: john stultz <johnstul@us.ibm.com>
 Cc: Daniel Walker <dwalker@fifo99.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
- kernel/time/timekeeping.c |   91 +++++++++++++++++++---------------------------
- 1 file changed, 38 insertions(+), 53 deletions(-)
+ arch/s390/kernel/time.c   |   17 +++++------------
+ include/linux/time.h      |    1 +
+ kernel/time/timekeeping.c |   24 ++++++++++++++++++++++--
+ 3 files changed, 28 insertions(+), 14 deletions(-)
 
 Index: linux-2.6/kernel/time/timekeeping.c
 ===================================================================
 --- linux-2.6.orig/kernel/time/timekeeping.c
 +++ linux-2.6/kernel/time/timekeeping.c
-@@ -95,6 +95,40 @@ static void timekeeper_setup_internals(s
- 	timekeeper.mult = clock->mult;
+@@ -501,6 +501,21 @@ void __attribute__((weak)) read_persiste
+ 	ts->tv_nsec = 0;
  }
  
-+/* Timekeeper helper functions. */
-+static inline s64 timekeeping_get_ns(void)
++/**
++ * read_boot_clock -  Return time of the system start.
++ *
++ * Weak dummy function for arches that do not yet support it.
++ * Function to read the exact time the system has been started.
++ * Returns a timespec with tv_sec=0 and tv_nsec=0 if unsupported.
++ *
++ *  XXX - Do be sure to remove it once all arches implement it.
++ */
++void __attribute__((weak)) read_boot_clock(struct timespec *ts)
 +{
-+	cycle_t cycle_now, cycle_delta;
-+	struct clocksource *clock;
-+
-+	/* read clocksource: */
-+	clock = timekeeper.clock;
-+	cycle_now = clock->read(clock);
-+
-+	/* calculate the delta since the last update_wall_time: */
-+	cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
-+
-+	/* return delta convert to nanoseconds using ntp adjusted mult. */
-+	return clocksource_cyc2ns(cycle_delta, timekeeper.mult,
-+				  timekeeper.shift);
-+}
-+
-+static inline s64 timekeeping_get_ns_raw(void)
-+{
-+	cycle_t cycle_now, cycle_delta;
-+	struct clocksource *clock;
-+
-+	/* read clocksource: */
-+	clock = timekeeper.clock;
-+	cycle_now = clock->read(clock);
-+
-+	/* calculate the delta since the last update_wall_time: */
-+	cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
-+
-+	/* return delta convert to nanoseconds using ntp adjusted mult. */
-+	return clocksource_cyc2ns(cycle_delta, clock->mult, clock->shift);
++	ts->tv_sec = 0;
++	ts->tv_nsec = 0;
 +}
 +
  /*
-  * This read-write spinlock protects us from races in SMP while
-  * playing with xtime.
-@@ -183,8 +217,6 @@ static void timekeeping_forward_now(void
+  * timekeeping_init - Initializes the clocksource and common timekeeping values
   */
- void getnstimeofday(struct timespec *ts)
+@@ -508,9 +523,10 @@ void __init timekeeping_init(void)
  {
--	cycle_t cycle_now, cycle_delta;
--	struct clocksource *clock;
- 	unsigned long seq;
- 	s64 nsecs;
+ 	struct clocksource *clock;
+ 	unsigned long flags;
+-	struct timespec now;
++	struct timespec now, boot;
  
-@@ -194,17 +226,7 @@ void getnstimeofday(struct timespec *ts)
- 		seq = read_seqbegin(&xtime_lock);
+ 	read_persistent_clock(&now);
++	read_boot_clock(&boot);
  
- 		*ts = xtime;
--
--		/* read clocksource: */
--		clock = timekeeper.clock;
--		cycle_now = clock->read(clock);
--
--		/* calculate the delta since the last update_wall_time: */
--		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
--
--		/* convert to nanoseconds: */
--		nsecs = clocksource_cyc2ns(cycle_delta, timekeeper.mult,
--					   timekeeper.shift);
-+		nsecs = timekeeping_get_ns();
+ 	write_seqlock_irqsave(&xtime_lock, flags);
  
- 		/* If arch requires, add in gettimeoffset() */
- 		nsecs += arch_gettimeoffset();
-@@ -218,8 +240,6 @@ EXPORT_SYMBOL(getnstimeofday);
+@@ -525,8 +541,12 @@ void __init timekeeping_init(void)
+ 	xtime.tv_nsec = now.tv_nsec;
+ 	raw_time.tv_sec = 0;
+ 	raw_time.tv_nsec = 0;
++	if (boot.tv_sec == 0 && boot.tv_nsec == 0) {
++		boot.tv_sec = xtime.tv_sec;
++		boot.tv_nsec = xtime.tv_nsec;
++	}
+ 	set_normalized_timespec(&wall_to_monotonic,
+-		-xtime.tv_sec, -xtime.tv_nsec);
++				-boot.tv_sec, -boot.tv_nsec);
+ 	update_xtime_cache(0);
+ 	total_sleep_time.tv_sec = 0;
+ 	total_sleep_time.tv_nsec = 0;
+Index: linux-2.6/arch/s390/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/s390/kernel/time.c
++++ linux-2.6/arch/s390/kernel/time.c
+@@ -187,6 +187,11 @@ void read_persistent_clock(struct timesp
+ 	tod_to_timeval(get_clock() - TOD_UNIX_EPOCH, ts);
+ }
  
- ktime_t ktime_get(void)
++void read_boot_clock(struct timespec *ts)
++{
++	tod_to_timeval(sched_clock_base_cc - TOD_UNIX_EPOCH, ts);
++}
++
+ static cycle_t read_tod_clock(struct clocksource *cs)
  {
--	cycle_t cycle_now, cycle_delta;
--	struct clocksource *clock;
- 	unsigned int seq;
- 	s64 secs, nsecs;
- 
-@@ -229,17 +249,7 @@ ktime_t ktime_get(void)
- 		seq = read_seqbegin(&xtime_lock);
- 		secs = xtime.tv_sec + wall_to_monotonic.tv_sec;
- 		nsecs = xtime.tv_nsec + wall_to_monotonic.tv_nsec;
--
--		/* read clocksource: */
--		clock = timekeeper.clock;
--		cycle_now = clock->read(clock);
--
--		/* calculate the delta since the last update_wall_time: */
--		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
--
--		/* convert to nanoseconds: */
--		nsecs += clocksource_cyc2ns(cycle_delta, timekeeper.mult,
--					    timekeeper.shift);
-+		nsecs += timekeeping_get_ns();
- 
- 	} while (read_seqretry(&xtime_lock, seq));
- 	/*
-@@ -260,8 +270,6 @@ EXPORT_SYMBOL_GPL(ktime_get);
+ 	return get_clock();
+@@ -243,9 +248,6 @@ void update_vsyscall_tz(void)
   */
- void ktime_get_ts(struct timespec *ts)
+ void __init time_init(void)
  {
--	cycle_t cycle_now, cycle_delta;
--	struct clocksource *clock;
- 	struct timespec tomono;
- 	unsigned int seq;
- 	s64 nsecs;
-@@ -272,17 +280,7 @@ void ktime_get_ts(struct timespec *ts)
- 		seq = read_seqbegin(&xtime_lock);
- 		*ts = xtime;
- 		tomono = wall_to_monotonic;
+-	struct timespec ts;
+-	unsigned long flags;
 -
--		/* read clocksource: */
--		clock = timekeeper.clock;
--		cycle_now = clock->read(clock);
--
--		/* calculate the delta since the last update_wall_time: */
--		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
--
--		/* convert to nanoseconds: */
--		nsecs = clocksource_cyc2ns(cycle_delta, timekeeper.mult,
--					   timekeeper.shift);
-+		nsecs = timekeeping_get_ns();
+ 	/* Reset time synchronization interfaces. */
+ 	etr_reset();
+ 	stp_reset();
+@@ -261,15 +263,6 @@ void __init time_init(void)
+ 	if (clocksource_register(&clocksource_tod) != 0)
+ 		panic("Could not register TOD clock source");
  
- 	} while (read_seqretry(&xtime_lock, seq));
+-	/*
+-	 * Reset wall_to_monotonic to the initial timestamp created
+-	 * in head.S to get a precise value in /proc/uptime.
+-	 */
+-	write_seqlock_irqsave(&xtime_lock, flags);
+-	tod_to_timeval(sched_clock_base_cc - TOD_UNIX_EPOCH, &ts);
+-	set_normalized_timespec(&wall_to_monotonic, -ts.tv_sec, -ts.tv_nsec);
+-	write_sequnlock_irqrestore(&xtime_lock, flags);
+-
+ 	/* Enable TOD clock interrupts on the boot cpu. */
+ 	init_cpu_timer();
  
-@@ -445,23 +443,10 @@ void getrawmonotonic(struct timespec *ts
- {
- 	unsigned long seq;
- 	s64 nsecs;
--	cycle_t cycle_now, cycle_delta;
--	struct clocksource *clock;
+Index: linux-2.6/include/linux/time.h
+===================================================================
+--- linux-2.6.orig/include/linux/time.h
++++ linux-2.6/include/linux/time.h
+@@ -102,6 +102,7 @@ extern struct timespec wall_to_monotonic
+ extern seqlock_t xtime_lock;
  
- 	do {
- 		seq = read_seqbegin(&xtime_lock);
--
--		/* read clocksource: */
--		clock = timekeeper.clock;
--		cycle_now = clock->read(clock);
--
--		/* calculate the delta since the last update_wall_time: */
--		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
--
--		/* convert to nanoseconds: */
--		nsecs = clocksource_cyc2ns(cycle_delta, clock->mult,
--					   clock->shift);
--
-+		nsecs = timekeeping_get_ns_raw();
- 		*ts = raw_time;
- 
- 	} while (read_seqretry(&xtime_lock, seq));
+ extern void read_persistent_clock(struct timespec *ts);
++extern void read_boot_clock(struct timespec *ts);
+ extern int update_persistent_clock(struct timespec now);
+ extern int no_sync_cmos_clock __read_mostly;
+ void timekeeping_init(void);
 
 -- 
 blue skies,
