@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbZHNL3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbZHNL0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755964AbZHNL3x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 07:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbZHNL3v
+	id S1755503AbZHNL0U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 07:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755349AbZHNL0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 07:29:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39402 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755876AbZHNL3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 07:29:49 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] NOMMU: Check fd read permission in validate_mmap_request()
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Graff Yang <graff.yang@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
-       David Howells <dhowells@redhat.com>
-Date: Fri, 14 Aug 2009 12:29:32 +0100
-Message-ID: <20090814112932.16091.15120.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Aug 2009 07:26:15 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:49664 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755343AbZHNL0N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 07:26:13 -0400
+Message-Id: <20090814112613.471582384@de.ibm.com>
+References: <20090814112517.982007860@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 14 Aug 2009 13:25:21 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Sebastian Ott <sebott@linux.vnet.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 04/34] cio: fix not oper handling after failed line processing
+Content-Disposition: inline; filename=103-cio-not-oper-handling.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Graff Yang <graff.yang@gmail.com>
+From: Sebastian Ott <sebott@linux.vnet.ibm.com>
 
-According to the POSIX (1003.1-2008), the file descriptor shall have been
-opened with read permission, regardless of the protection options specified to
-mmap().  The ltp test cases mmap06/07 need this.
+If online/offline processing of a ccw device fails, resulting in not
+operational state, notify the driver and unregister the device in case
+the driver dosn't want to keep it.
 
-Signed-off-by: Graff Yang <graff.yang@gmail.com>
-Acked-by: Paul Mundt <lethal@linux-sh.org>
-Signed-off-by: David Howells <dhowells@redhat.com>
+Signed-off-by: Sebastian Ott <sebott@linux.vnet.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- mm/nommu.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ drivers/s390/cio/device_fsm.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-
-diff --git a/mm/nommu.c b/mm/nommu.c
-index 1b2b59b..fd1e2b5 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -919,6 +919,10 @@ static int validate_mmap_request(struct file *file,
- 		if (!file->f_op->read)
- 			capabilities &= ~BDI_CAP_MAP_COPY;
+Index: quilt-2.6/drivers/s390/cio/device_fsm.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/cio/device_fsm.c
++++ quilt-2.6/drivers/s390/cio/device_fsm.c
+@@ -394,6 +394,13 @@ ccw_device_done(struct ccw_device *cdev,
+ 			ccw_device_schedule_sch_unregister(cdev);
+ 		cdev->private->flags.donotify = 0;
+ 	}
++	if (state == DEV_STATE_NOT_OPER) {
++		CIO_MSG_EVENT(0, "Device %04x gone on subchannel %04x\n",
++			      cdev->private->dev_id.devno, sch->schid.sch_no);
++		if (!ccw_device_notify(cdev, CIO_GONE))
++			ccw_device_schedule_sch_unregister(cdev);
++		cdev->private->flags.donotify = 0;
++	}
  
-+		/* The file shall have been opened with read permission. */
-+		if (!(file->f_mode & FMODE_READ))
-+			return -EACCES;
-+
- 		if (flags & MAP_SHARED) {
- 			/* do checks for writing, appending and locking */
- 			if ((prot & PROT_WRITE) &&
+ 	if (cdev->private->flags.donotify) {
+ 		cdev->private->flags.donotify = 0;
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
