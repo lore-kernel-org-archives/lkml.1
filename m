@@ -1,63 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753613AbZHNETl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbZHNE0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753613AbZHNETl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 00:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZHNETk
+	id S1753919AbZHNE0p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 00:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbZHNE0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 00:19:40 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36023 "EHLO smtps.tip.net.au"
+	Fri, 14 Aug 2009 00:26:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33275 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753385AbZHNETj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 00:19:39 -0400
-Date: Fri, 14 Aug 2009 14:19:32 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+	id S1750962AbZHNE0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 00:26:43 -0400
+Message-ID: <4A84E766.3070904@kernel.org>
+Date: Fri, 14 Aug 2009 13:26:14 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
 To: David Miller <davem@davemloft.net>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dhananjay@netxen.com, amit@netxen.com
-Subject: Re: linux-next: manual merge of the net tree with the net-current
- tree
-Message-Id: <20090814141932.b6abac5c.sfr@canb.auug.org.au>
-In-Reply-To: <20090813.195042.203385912.davem@davemloft.net>
-References: <20090814124040.534dd43c.sfr@canb.auug.org.au>
-	<20090813.195042.203385912.davem@davemloft.net>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__14_Aug_2009_14_19_32_+1000_2PrFH.HAo981FduY"
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: [PATCH 2/2 2.6.31-rc5 REPOST] percpu, sparc64: fix sparse possible
+ cpu map handling
+References: <20090806115705.GB10734@elte.hu>	<4A7B01B8.8000902@kernel.org>	<4A825CD5.3060209@kernel.org> <20090812.162517.13032565.davem@davemloft.net>
+In-Reply-To: <20090812.162517.13032565.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 14 Aug 2009 04:26:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__14_Aug_2009_14_19_32_+1000_2PrFH.HAo981FduY
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+David Miller wrote:
+> From: Tejun Heo <tj@kernel.org>
+> Date: Wed, 12 Aug 2009 15:10:29 +0900
+> 
+>> Tejun Heo wrote:
+>>> Ingo Molnar wrote:
+>>>> for the x86 bits:
+>>>>
+>>>>  Acked-by: Ingo Molnar <mingo@elte.hu>
+>>>>
+>>>> Once Dave acks it i suspect you can send it to Linus directly?
+>> Aieeeee, no response.
+> 
+> These patches look fine, and I've tested them also on my
+> Niagara-2 box.
+> 
+> Acked-by: David S. Miller <davem@davemloft.net>
+> 
+> Sorry for the delay :)
 
-Hi Dave,
+Great.  Oops, last review pass revealed a bug in the following chunk.
 
-On Thu, 13 Aug 2009 19:50:42 -0700 (PDT) David Miller <davem@davemloft.net>=
- wrote:
->
-> I'll do a merge of net-2.6 into net-next-2.6 to resolve this
-> and get it out of your hair.
+@@ -1259,9 +1259,16 @@ ssize_t __init pcpu_embed_first_chunk(size_t static_size, size_t reserved_size,
+ 	}
+
+ 	/* return the leftover and copy */
+-	for_each_possible_cpu(cpu) {
++	for (cpu = 0; cpu < nr_cpu_ids; cpu++) {
+ 		void *ptr = pcpue_ptr + cpu * pcpue_unit_size;
+
++		if (cpu_possible(cpu)) {
++			free_bootmem(__pa(ptr + pcpue_size),
++				     pcpue_unit_size - pcpue_size);
++			memcpy(ptr, __per_cpu_load, static_size);
++		} else
++			free_bootmem(__pa(ptr), pcpue_unit_size);
++
+ 		free_bootmem(__pa(ptr + pcpue_size),
+ 			     pcpue_unit_size - pcpue_size);
+ 		memcpy(ptr, __per_cpu_load, static_size);
+
+The if-else block should replace the original free_bootmem()/memcpy()
+not added in front of it.  Fixed.  Will reply with updated patch.
 
 Thanks.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__14_Aug_2009_14_19_32_+1000_2PrFH.HAo981FduY
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqE5dQACgkQjjKRsyhoI8xMpgCgvorCsneCYtGkBzgWFhYPhYjv
-ClMAoJmem81xJ6boVW7aIuu4uMSFDXK2
-=cplB
------END PGP SIGNATURE-----
-
---Signature=_Fri__14_Aug_2009_14_19_32_+1000_2PrFH.HAo981FduY--
+-- 
+tejun
