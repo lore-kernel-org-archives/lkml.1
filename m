@@ -1,109 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbZHNREy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbZHNRGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755153AbZHNREy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 13:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZHNREx
+	id S1755163AbZHNRGR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 13:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbZHNRGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 13:04:53 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40269 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752826AbZHNREw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 13:04:52 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
-Date: Fri, 14 Aug 2009 19:05:32 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-usb@vger.kernel.org,
-       linux-pci@vger.kernel.org, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0908141032070.2987-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908141032070.2987-100000@iolanthe.rowland.org>
+	Fri, 14 Aug 2009 13:06:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51788 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754160AbZHNRGP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 13:06:15 -0400
+Date: Fri, 14 Aug 2009 10:04:07 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Frans Pop <elendil@planet.nl>
+cc: mano@roarinelk.homelinux.net, rjw@sisk.pl, willy@linux.intel.com,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       akpm@linux-foundation.org, andrew.patterson@hp.com
+Subject: Re: PCI resources allocation problem on Toshiba Satellite A40
+In-Reply-To: <200908141850.44736.elendil@planet.nl>
+Message-ID: <alpine.LFD.2.01.0908140957050.3162@localhost.localdomain>
+References: <200908021619.48285.rjw@sisk.pl> <200908140341.02210.elendil@planet.nl> <alpine.LFD.2.01.0908131843200.3162@localhost.localdomain> <200908141850.44736.elendil@planet.nl>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908141905.32766.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 14 August 2009, Alan Stern wrote:
-> On Thu, 13 Aug 2009, Matthew Garrett wrote:
-> 
-> > On Thu, Aug 13, 2009 at 11:22:44AM -0400, Alan Stern wrote:
-> >
-> > > You have to call the HCD's pci_suspend method!  Not to mention calling
-> > > synchronize_irq and all the other stuff in hcd_pci_suspend and
-> > > hcd_pci_suspend_noirq.
-> >
-> > The bus level code does this, assuming that the driver-level code
-> > doesn't return an error.
-> 
-> So it does; my mistake.
-> 
-> 
-> On Fri, 14 Aug 2009, Matthew Garrett wrote:
-> 
-> > On Thu, Aug 13, 2009 at 10:47:01PM +0100, Matthew Garrett wrote:
-> > 
-> > > Ugh. I'd really prefer us to assume that drivers are able to cope unless 
-> > > proven otherwise. Userspace policy makes sense where we don't have any 
-> > > idea whether something will work or not, but I'd really expect that most 
-> > > PCI drivers will either cope (in which case they'll have enabling code) 
-> > > or won't (in which case they won't). Why would we want userspace to 
-> > > influence this?
-> > 
-> > Though, thinking about it, you're right that setting this does override 
-> > user policy. I think we need an additional flag to indicate that the 
-> > device supports runtime wakeup and test that as well when doing 
-> > device_may_wakeup().
-> 
-> You are suggesting separate flag sets for system-wide wakeup and
-> runtime wakeup?  I don't disagree, but implementing them will be
-> problematical.
-> 
-> That's because it's not always possible to change a device's wakeup 
-> setting while it is suspended.  Thus if a device was runtime suspended 
-> with wakeup enabled, and then we want to do a system sleep and change 
-> the device's wakeup setting to disabled, we would have to wake the 
-> device back up in order to do it.
-> 
-> 
-> > > > This misses the point.  The whole idea of runtime_idle is to tell you 
-> > > > that the device is idle and might be ready to be suspended.  If you're 
-> > > > going to call pm_schedule_suspend anyway, there's no reason to invoke 
-> > > > pm->runtime_idle.
-> > > 
-> > > My understanding of the API was that pm_device_put() invokes 
-> > > runtime_idle if the refcount hits 0. The bus layer has no idea of the 
-> > > refcount, and calling suspend directly from the driver would defeat the 
-> > > point of the system-wide recounting.
-> > 
-> > From the API docs:
-> > 
-> > "The action performed by a bus type's ->runtime_idle() callback is 
-> > totally dependent on the bus type in question, but the expected and 
-> > recommended action is to check if the device can be suspended (i.e. if 
-> > all of the conditions necessary for suspending the device are satisfied) 
-> > and to queue up a suspend request for the device in that case."
-> > 
-> > Though perhaps the device level runtime_idle shouldn't be void - that 
-> > way the bus can ask the driver whether its suspend conditions have been 
-> > satisfied? Right now there doesn't seem to be any way for the bus to ask 
-> > that.
-> 
-> If you want to get the device-level runtime_idle involved, you can make
-> _it_ responsible for scheduling the suspend.  Then the bus-level code
-> simply has to check whether everything is okay at the bus level, and if
-> it is, call the device-level routine.
-> 
-> However changing the return type wouldn't hurt anything, and it would 
-> allow the pm_schedule_suspend call to be centralized in the bus code.  
-> You could ask Rafael about it, or just send him a patch.
 
-Well, I'm not against that, but what should pm_runtime_idle() do with the
-result returned by it?  Just pass it to the caller?
 
-Rafael
+On Fri, 14 Aug 2009, Frans Pop wrote:
+
+> On Friday 14 August 2009, Linus Torvalds wrote:
+> > Can you send
+> >  - output of /proc/ioports both with the current kernel (or the 2.6.30
+> >    kernel - they should be identical) and with one of the kernels in
+> >    between that didn't warn
+> >  - send the full bootup dmesg with CONFIG_PCI_DEBUG enabled
+> >
+> > and we can probably figure it out.
+> 
+> Attached.
+
+Ok, this one actually looks obvious from just the ioports thing:
+
+	--- ioports.a76117d     2009-08-14 18:44:42.000000000 +0200
+	+++ ioports.current-git 2009-08-14 18:44:42.000000000 +0200
+	...
+	+18c0-18df : 0000:00:1d.0
+	+  18c0-18df : uhci_hcd
+	+18e0-18ff : 0000:00:1d.1
+	+  18e0-18ff : uhci_hcd
+	 bfa0-bfaf : 0000:00:1f.1
+	   bfa0-bfaf : piix
+	 c000-cfff : PCI Bus 0000:01
+	   c000-c0ff : PCI CardBus 0000:02
+	   c400-c4ff : PCI CardBus 0000:02
+	   cf40-cf7f : 0000:01:08.0
+	     cf40-cf7f : e100
+	-  cf80-cf9f : 0000:00:1d.1
+	-    cf80-cf9f : uhci_hcd
+	-  cfe0-cfff : 0000:00:1d.0
+	-    cfe0-cfff : uhci_hcd
+
+That old cf80-cf9f/cfe0-cfff location is just totally invalid. Your UHCI 
+device is (as it shows) PCI device 0000:00:1d, functions 0/1. In other 
+words, they are on PCI bus 0.
+
+But the c000-cfff area is a window that has been set up for PCI bus 1.
+
+The ioports.a76117d version is simply wrong. The Linux PCI layer did the 
+right thing, and moved the silly device away from that PCI bus 1 window.
+
+Now, it so happens that I bet it does _work_ in there, but that's likely 
+because that 0000:00:1d.x device is on the southbridge chip itself, and it 
+probably simply gets decoded before it any access is even sent out on the 
+PCI bus and hits the bridge for bus#1. But the fact is, your BIOS has 
+simply set up the devices in a totally insane way, and I think the kernel 
+did everything right.
+
+So the fact that it "worked" for a few kernels was simply due to a kernel 
+bug, where "pci_claim_resource()" incorrectly allowed the resource to be 
+inserted into a resource window that wasn't actually its parent, and a 
+crazy BIOS that did crazy things, together with a chipset where those 
+crazy things just _happened_ to work because of how decoding was done.
+
+			Linus
+
