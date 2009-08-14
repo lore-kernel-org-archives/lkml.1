@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbZHNBuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbZHNByh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754174AbZHNBuE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Aug 2009 21:50:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbZHNBuD
+	id S1754235AbZHNByh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Aug 2009 21:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbZHNByg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Aug 2009 21:50:03 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54847 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753257AbZHNBuC (ORCPT
+	Thu, 13 Aug 2009 21:54:36 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:50347 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752135AbZHNByf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Aug 2009 21:50:02 -0400
-Date: Thu, 13 Aug 2009 18:47:40 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Frans Pop <elendil@planet.nl>
-cc: mano@roarinelk.homelinux.net, rjw@sisk.pl, willy@linux.intel.com,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       akpm@linux-foundation.org, andrew.patterson@hp.com
-Subject: Re: PCI resources allocation problem on Toshiba Satellite A40
-In-Reply-To: <200908140341.02210.elendil@planet.nl>
-Message-ID: <alpine.LFD.2.01.0908131843200.3162@localhost.localdomain>
-References: <200908021619.48285.rjw@sisk.pl> <alpine.LFD.2.01.0908020927410.3352@localhost.localdomain> <20090803165909.GA12824@roarinelk.homelinux.net> <alpine.LFD.2.01.0908041555120.3270@localhost.localdomain> <20090805155102.GA31646@roarinelk.homelinux.net>
- <alpine.LFD.2.01.0908050902300.3390@localhost.localdomain> <alpine.LFD.2.01.0908050931390.3390@localhost.localdomain> <20090805170934.GA32274@roarinelk.homelinux.net> <alpine.LFD.2.01.0908071051300.3390@localhost.localdomain> <alpine.LFD.2.01.0908071116520.3390@localhost.localdomain>
- <20090811184740.49f52b57@scarran.roarinelk.net> <20090811184740.49f52b57@scarran.roarinelk.net> <alpine.LFD.2.01.0908131113580.28882@localhost.localdomain> <alpine.LFD.2.01.0908131113580.28882@localhost.localdomain> <200908132128.31439.elendil@planet.nl>
- <200908140341.02210.elendil@planet.nl>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 13 Aug 2009 21:54:35 -0400
+X-Sasl-enc: A98r5G55Bo/0mD+S3NsPJiMOPjR+ycl5TmcjH0wX88q2 1250214876
+Date: Thu, 13 Aug 2009 22:54:34 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Greg KH <greg@kroah.com>
+Cc: Stefan Lippers-Hollmann <s.L-H@gmx.de>, len.brown@intel.com,
+       stable@kernel.org, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       ranma+kernel@tdiedrich.de
+Subject: Re: [stable] patch
+	thinkpad-acpi-fix-incorrect-use-of-tpacpi_brght_mode_ecnvram.patch
+	added to 2.6.30-stable tree
+Message-ID: <20090814015434.GA4555@khazad-dum.debian.net>
+References: <20090805205011.57FB548DF1@coco.kroah.org> <200908070108.15095.s.L-H@gmx.de> <20090806233111.GB14381@khazad-dum.debian.net> <20090813222801.GA9102@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090813222801.GA9102@kroah.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 14 Aug 2009, Frans Pop wrote:
+On Thu, 13 Aug 2009, Greg KH wrote:
+> On Thu, Aug 06, 2009 at 08:31:11PM -0300, Henrique de Moraes Holschuh wrote:
+> > On Fri, 07 Aug 2009, Stefan Lippers-Hollmann wrote:
+> > > This patch fails to compile if applied to 2.6.30 + current stable queue.
+> > [...]
+> > > It seems to depend on the new quirk handling, introduced in:
+> > > commit 7d95a3d564901e88ed42810f054e579874151999
+> > 
+> > Good catch.  And I _will_ need that quirk handling stuff to keep 2.6.30 in
+> > shape :-(
 > 
-> The commit that resulted in the messages disappearing was:
-> commit a76117dfd687ec4be0a9a05214f3009cc5f73a42
-> Author: Matthew Wilcox <willy@linux.intel.com>
-> Date:   Wed Jun 17 16:33:35 2009 -0400
->     x86: Use pci_claim_resource
+> Oops, sorry for missing this.
 > 
-> The commit that caused the messages to return is:
-> commit 79896cf42f6a96d7e14f2dc3473443d68d74031d
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Sun Aug 2 14:04:19 2009 -0700
->     Make pci_claim_resource() use request_resource() rather than insert_resource()
+> > The dependencies for the "thinkpad-acpi: fix incorrect use of
+> > TPACPI_BRGHT_MODE_ECNVRAM" patch are:
 > 
-> The affected devices are the two USB UHCI controllers.
+> Due to the need to add a new feature just to get these quirks to work,
+> I'll just drop this single patch, which should keep everything building
+> properly, right?
 
-Ok, it's the same behavior that mano had, but since the warning didn't go 
-away with the trial patch, it's not exactly the same situation.
+Right.  I will hack something and submit it to the next stable.
 
-Can you send
-
- - output of /proc/ioports both with the current kernel (or the 2.6.30 
-   kernel - they should be identical) and with one of the kernels in 
-   between that didn't warn
-
- - send the full bootup dmesg with CONFIG_PCI_DEBUG enabled
-
-and we can probably figure it out.
-
-That said, since it's not a regression, I'm not going to _do_ anything 
-about it until after 2.6.31, but I might have a test-patch for you to try 
-ot something.
-
-		Linus
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
