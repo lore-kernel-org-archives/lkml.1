@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757003AbZHNWZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757169AbZHNWZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757003AbZHNWZb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 18:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756693AbZHNWZa
+	id S1757169AbZHNWZg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 18:25:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757057AbZHNWZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 18:25:30 -0400
-Received: from ru.mvista.com ([213.79.90.228]:26620 "EHLO
+	Fri, 14 Aug 2009 18:25:35 -0400
+Received: from ru.mvista.com ([213.79.90.228]:26626 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750962AbZHNWZ3 (ORCPT
+	by vger.kernel.org with ESMTP id S1757016AbZHNWZc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 18:25:29 -0400
-Date: Sat, 15 Aug 2009 02:25:30 +0400
+	Fri, 14 Aug 2009 18:25:32 -0400
+Date: Sat, 15 Aug 2009 02:25:33 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: David Brownell <dbrownell@users.sourceforge.net>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Kumar Gala <galak@kernel.crashing.org>,
        spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/8] powerpc/cpm: Remove SPI defines and spi structs
-Message-ID: <20090814222530.GA14458@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/8] powerpc/qe&cpm2: Avoid redefinitions in CPM2 and QE
+ headers
+Message-ID: <20090814222533.GB14458@oksana.dev.rtsoft.ru>
 References: <20090814222453.GA9568@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -29,124 +30,110 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When cpm2.h included into spi_mpc8xxx driver, the SPI defines
-in the header conflict with defines in the driver.
+struct mcc defined in both immap_qe.h and immap_cpm2.h, so they will
+conflic when included in a single file. The mcc struct is easy to deal
+with, since it isn't used in any driver (yet), so let's just rename QE
+version to qe_mcc.
 
-We don't need them in the header file, so remove them. Plus
-remove "struct spi", we'll use a better version in the driver.
+The ucb_ctlr is a bit trickier, since it is used by fsl_qe_udc driver,
+and the driver supports both CPM and QE UDCs, plus the QE version is
+used to form a bigger immap struct.
+
+I don't want to touch USB code in this series, so for now let's just
+copy most generic version into the common cpm.h header, later we'll
+create cpm_usb.h where we'll place common USB structs that are used
+by QE/CPM UDC and QE Host drivers (FHCI).
+
+And as for the structs in qe.h and cpm2.h, just prefix them with qe_
+and cpm_.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/include/asm/cpm1.h |   45 ---------------------------------------
- arch/powerpc/include/asm/cpm2.h |   39 ---------------------------------
- 2 files changed, 0 insertions(+), 84 deletions(-)
+ arch/powerpc/include/asm/cpm.h        |   22 ++++++++++++++++++++++
+ arch/powerpc/include/asm/immap_cpm2.h |    2 +-
+ arch/powerpc/include/asm/immap_qe.h   |    8 ++++----
+ 3 files changed, 27 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cpm1.h b/arch/powerpc/include/asm/cpm1.h
-index 7685ffd..81b0119 100644
---- a/arch/powerpc/include/asm/cpm1.h
-+++ b/arch/powerpc/include/asm/cpm1.h
-@@ -478,51 +478,6 @@ typedef struct iic {
- 	char	res2[2];	/* Reserved */
- } iic_t;
+diff --git a/arch/powerpc/include/asm/cpm.h b/arch/powerpc/include/asm/cpm.h
+index 24d79e3..b5f1534 100644
+--- a/arch/powerpc/include/asm/cpm.h
++++ b/arch/powerpc/include/asm/cpm.h
+@@ -5,6 +5,28 @@
+ #include <linux/types.h>
+ #include <linux/of.h>
  
--/* SPI parameter RAM.
--*/
--typedef struct spi {
--	ushort	spi_rbase;	/* Rx Buffer descriptor base address */
--	ushort	spi_tbase;	/* Tx Buffer descriptor base address */
--	u_char	spi_rfcr;	/* Rx function code */
--	u_char	spi_tfcr;	/* Tx function code */
--	ushort	spi_mrblr;	/* Max receive buffer length */
--	uint	spi_rstate;	/* Internal */
--	uint	spi_rdp;	/* Internal */
--	ushort	spi_rbptr;	/* Internal */
--	ushort	spi_rbc;	/* Internal */
--	uint	spi_rxtmp;	/* Internal */
--	uint	spi_tstate;	/* Internal */
--	uint	spi_tdp;	/* Internal */
--	ushort	spi_tbptr;	/* Internal */
--	ushort	spi_tbc;	/* Internal */
--	uint	spi_txtmp;	/* Internal */
--	uint	spi_res;
--	ushort	spi_rpbase;	/* Relocation pointer */
--	ushort	spi_res2;
--} spi_t;
--
--/* SPI Mode register.
--*/
--#define SPMODE_LOOP	((ushort)0x4000)	/* Loopback */
--#define SPMODE_CI	((ushort)0x2000)	/* Clock Invert */
--#define SPMODE_CP	((ushort)0x1000)	/* Clock Phase */
--#define SPMODE_DIV16	((ushort)0x0800)	/* BRG/16 mode */
--#define SPMODE_REV	((ushort)0x0400)	/* Reversed Data */
--#define SPMODE_MSTR	((ushort)0x0200)	/* SPI Master */
--#define SPMODE_EN	((ushort)0x0100)	/* Enable */
--#define SPMODE_LENMSK	((ushort)0x00f0)	/* character length */
--#define SPMODE_LEN4	((ushort)0x0030)	/*  4 bits per char */
--#define SPMODE_LEN8	((ushort)0x0070)	/*  8 bits per char */
--#define SPMODE_LEN16	((ushort)0x00f0)	/* 16 bits per char */
--#define SPMODE_PMMSK	((ushort)0x000f)	/* prescale modulus */
--
--/* SPIE fields */
--#define SPIE_MME	0x20
--#define SPIE_TXE	0x10
--#define SPIE_BSY	0x04
--#define SPIE_TXB	0x02
--#define SPIE_RXB	0x01
--
- /*
-  * RISC Controller Configuration Register definitons
-  */
-diff --git a/arch/powerpc/include/asm/cpm2.h b/arch/powerpc/include/asm/cpm2.h
-index 990ff19..236cfa3 100644
---- a/arch/powerpc/include/asm/cpm2.h
-+++ b/arch/powerpc/include/asm/cpm2.h
-@@ -654,45 +654,6 @@ typedef struct iic {
- 	uint	iic_txtmp;	/* Internal */
- } iic_t;
- 
--/* SPI parameter RAM.
--*/
--typedef struct spi {
--	ushort	spi_rbase;	/* Rx Buffer descriptor base address */
--	ushort	spi_tbase;	/* Tx Buffer descriptor base address */
--	u_char	spi_rfcr;	/* Rx function code */
--	u_char	spi_tfcr;	/* Tx function code */
--	ushort	spi_mrblr;	/* Max receive buffer length */
--	uint	spi_rstate;	/* Internal */
--	uint	spi_rdp;	/* Internal */
--	ushort	spi_rbptr;	/* Internal */
--	ushort	spi_rbc;	/* Internal */
--	uint	spi_rxtmp;	/* Internal */
--	uint	spi_tstate;	/* Internal */
--	uint	spi_tdp;	/* Internal */
--	ushort	spi_tbptr;	/* Internal */
--	ushort	spi_tbc;	/* Internal */
--	uint	spi_txtmp;	/* Internal */
--	uint	spi_res;	/* Tx temp. */
--	uint	spi_res1[4];	/* SDMA temp. */
--} spi_t;
--
--/* SPI Mode register.
--*/
--#define SPMODE_LOOP	((ushort)0x4000)	/* Loopback */
--#define SPMODE_CI	((ushort)0x2000)	/* Clock Invert */
--#define SPMODE_CP	((ushort)0x1000)	/* Clock Phase */
--#define SPMODE_DIV16	((ushort)0x0800)	/* BRG/16 mode */
--#define SPMODE_REV	((ushort)0x0400)	/* Reversed Data */
--#define SPMODE_MSTR	((ushort)0x0200)	/* SPI Master */
--#define SPMODE_EN	((ushort)0x0100)	/* Enable */
--#define SPMODE_LENMSK	((ushort)0x00f0)	/* character length */
--#define SPMODE_PMMSK	((ushort)0x000f)	/* prescale modulus */
--
--#define SPMODE_LEN(x)	((((x)-1)&0xF)<<4)
--#define SPMODE_PM(x)	((x) &0xF)
--
--#define SPI_EB		((u_char)0x10)		/* big endian byte order */
--
- /* IDMA parameter RAM
++/*
++ * USB Controller pram common to QE and CPM.
++ */
++struct usb_ctlr {
++	u8	usb_usmod;
++	u8	usb_usadr;
++	u8	usb_uscom;
++	u8	res1[1];
++	__be16	usb_usep[4];
++	u8	res2[4];
++	__be16	usb_usber;
++	u8	res3[2];
++	__be16	usb_usbmr;
++	u8	res4[1];
++	u8	usb_usbs;
++	/* Fields down below are QE-only */
++	__be16	usb_ussft;
++	u8	res5[2];
++	__be16	usb_usfrn;
++	u8	res6[0x22];
++} __attribute__ ((packed));
++
+ /* Opcodes common to CPM1 and CPM2
  */
- typedef struct idma {
+ #define CPM_CR_INIT_TRX		((ushort)0x0000)
+diff --git a/arch/powerpc/include/asm/immap_cpm2.h b/arch/powerpc/include/asm/immap_cpm2.h
+index d4f069b..7c64fda 100644
+--- a/arch/powerpc/include/asm/immap_cpm2.h
++++ b/arch/powerpc/include/asm/immap_cpm2.h
+@@ -549,7 +549,7 @@ typedef struct comm_proc {
+ 
+ /* USB Controller.
+ */
+-typedef struct usb_ctlr {
++typedef struct cpm_usb_ctlr {
+ 	u8	usb_usmod;
+ 	u8	usb_usadr;
+ 	u8	usb_uscom;
+diff --git a/arch/powerpc/include/asm/immap_qe.h b/arch/powerpc/include/asm/immap_qe.h
+index c346d0b..4e10f50 100644
+--- a/arch/powerpc/include/asm/immap_qe.h
++++ b/arch/powerpc/include/asm/immap_qe.h
+@@ -210,7 +210,7 @@ struct sir {
+ } __attribute__ ((packed));
+ 
+ /* USB Controller */
+-struct usb_ctlr {
++struct qe_usb_ctlr {
+ 	u8	usb_usmod;
+ 	u8	usb_usadr;
+ 	u8	usb_uscom;
+@@ -229,7 +229,7 @@ struct usb_ctlr {
+ } __attribute__ ((packed));
+ 
+ /* MCC */
+-struct mcc {
++struct qe_mcc {
+ 	__be32	mcce;		/* MCC event register */
+ 	__be32	mccm;		/* MCC mask register */
+ 	__be32	mccf;		/* MCC configuration register */
+@@ -431,9 +431,9 @@ struct qe_immap {
+ 	struct qe_mux		qmx;		/* QE Multiplexer */
+ 	struct qe_timers	qet;		/* QE Timers */
+ 	struct spi		spi[0x2];	/* spi */
+-	struct mcc		mcc;		/* mcc */
++	struct qe_mcc		mcc;		/* mcc */
+ 	struct qe_brg		brg;		/* brg */
+-	struct usb_ctlr		usb;		/* USB */
++	struct qe_usb_ctlr	usb;		/* USB */
+ 	struct si1		si1;		/* SI */
+ 	u8			res11[0x800];
+ 	struct sir		sir;		/* SI Routing Tables */
 -- 
 1.6.3.3
 
