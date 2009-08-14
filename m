@@ -1,90 +1,360 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616AbZHNKH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbZHNKIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754616AbZHNKH0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 06:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbZHNKHZ
+	id S1754710AbZHNKIf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 06:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZHNKIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 06:07:25 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:53397 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754509AbZHNKHX (ORCPT
+	Fri, 14 Aug 2009 06:08:34 -0400
+Received: from mail.free-electrons.com ([88.191.76.200]:51488 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754334AbZHNKIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 06:07:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JdhfTNG4/sVAkqM4lfH5PMnkxKAihlK96tsVCpbKlZDl8/YPlkuHN0i/0JZRODaWKY
-         xHwDB0cbIJNBVl/em3p+gUKKWde+qnrCNz7WExCKA0+J3AX4SEgiuLMqY7XPVtyGXaRV
-         Ja8e0elPGIycO3I3xtfANQxP8SySkKVSNgnuI=
-Date: Fri, 14 Aug 2009 12:07:22 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH 2/2] perf tools: Add a general option to enable raw
-	sample records
-Message-ID: <20090814100721.GB5992@nowhere>
-References: <1250244300-6343-1-git-send-email-fweisbec@gmail.com> <1250244300-6343-3-git-send-email-fweisbec@gmail.com>
+	Fri, 14 Aug 2009 06:08:31 -0400
+Date: Fri, 14 Aug 2009 12:08:28 +0200
+From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: sam@ravnborg.org, hpa@zytor.com, alain@knaff.lu,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH 4/6 v2] Add support for LZO-compressed kernels for ARM
+Message-ID: <20090814100828.GD5985@pc-ras4041.res.insa>
+References: <20090731093107.GA29704@merkur.ravnborg.org> <1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-2-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-3-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-4-git-send-email-albin.tonnerre@free-electrons.com> <20090806224055.GH31579@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1250244300-6343-3-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <20090806224055.GH31579@n2100.arm.linux.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, please ignore this one, it has been resent by mistake :-(
+This is the second part of patch. This part includes:
+ - changes to ach/arch/boot/Makefile to make it easier to add new
+   compression types
+ - new piggy.lzo.S necessary for lzo compression
+ - changes in arch/arm/boot/compressed/misc.c to allow the use of lzo or
+   gzip, depending on the config
+ - Kconfig support
 
-On Fri, Aug 14, 2009 at 12:05:00PM +0200, Frederic Weisbecker wrote:
-> While we can enable the perf sample records per tracepoint counter,
-> we may also want to enable this option for every tracepoint
-> counters to open, so that we don't need to add a :record flag
-> for all of them.
-> 
-> Add the -R, --raw-samples options for this purpose.
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> Cc: Mike Galbraith <efault@gmx.de>
-> ---
->  tools/perf/builtin-record.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-> index 3be0301..e67c4fa 100644
-> --- a/tools/perf/builtin-record.c
-> +++ b/tools/perf/builtin-record.c
-> @@ -35,6 +35,7 @@ static int			output;
->  static const char		*output_name			= "perf.data";
->  static int			group				= 0;
->  static unsigned int		realtime_prio			= 0;
-> +static int			raw_samples			= 0;
->  static int			system_wide			= 0;
->  static int			profile_cpu			= -1;
->  static pid_t			target_pid			= -1;
-> @@ -400,6 +401,8 @@ static void create_counter(int counter, int cpu, pid_t pid)
->  	if (call_graph)
->  		attr->sample_type	|= PERF_SAMPLE_CALLCHAIN;
->  
-> +	if (raw_samples)
-> +		attr->sample_type	|= PERF_SAMPLE_RAW;
->  
->  	attr->mmap		= track;
->  	attr->comm		= track;
-> @@ -632,6 +635,8 @@ static const struct option options[] = {
->  		    "record events on existing pid"),
->  	OPT_INTEGER('r', "realtime", &realtime_prio,
->  		    "collect data with this RT SCHED_FIFO priority"),
-> +	OPT_BOOLEAN('R', "raw-samples", &raw_samples,
-> +		    "collect raw sample records from all opened counters"),
->  	OPT_BOOLEAN('a', "all-cpus", &system_wide,
->  			    "system-wide collection from all CPUs"),
->  	OPT_BOOLEAN('A', "append", &append_file,
-> -- 
-> 1.6.2.3
-> 
+Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+---
+Changes:
+ Compiling with -Os failed due to missing __aeabi_uidivmod.
+ Link using arch/arm/lib/lib1funcs.o which provides this symbol, and
+ define a dummy __div0 function in arch/arm/boot/compressed/misc.c, as
+ this symbol is required by lib1funcs.
 
+ arch/arm/Kconfig                      |    2 +
+ arch/arm/boot/compressed/Makefile     |   31 ++++++---
+ arch/arm/boot/compressed/misc.c       |  116 ++++++++++-----------------------
+ arch/arm/boot/compressed/piggy.S      |    6 --
+ arch/arm/boot/compressed/piggy.gzip.S |    6 ++
+ arch/arm/boot/compressed/piggy.lzo.S  |    6 ++
+ 6 files changed, 70 insertions(+), 97 deletions(-)
+ delete mode 100644 arch/arm/boot/compressed/piggy.S
+ create mode 100644 arch/arm/boot/compressed/piggy.gzip.S
+ create mode 100644 arch/arm/boot/compressed/piggy.lzo.S
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index aef63c8..ea71c0c 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -18,6 +18,8 @@ config ARM
+ 	select HAVE_KRETPROBES if (HAVE_KPROBES)
+ 	select HAVE_FUNCTION_TRACER if (!XIP_KERNEL)
+ 	select HAVE_GENERIC_DMA_COHERENT
++	select HAVE_KERNEL_GZIP
++	select HAVE_KERNEL_LZO
+ 	help
+ 	  The ARM series is a line of low-power-consumption RISC chip designs
+ 	  licensed by ARM Ltd and targeted at embedded applications and
+diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
+index ce39dc5..5b4629b 100644
+--- a/arch/arm/boot/compressed/Makefile
++++ b/arch/arm/boot/compressed/Makefile
+@@ -63,8 +63,12 @@ endif
+ 
+ SEDFLAGS	= s/TEXT_START/$(ZTEXTADDR)/;s/BSS_START/$(ZBSSADDR)/
+ 
+-targets       := vmlinux vmlinux.lds piggy.gz piggy.o font.o font.c \
+-		 head.o misc.o $(OBJS)
++suffix_$(CONFIG_KERNEL_GZIP) = gzip
++suffix_$(CONFIG_KERNEL_LZO)  = lzo
++
++targets       := vmlinux vmlinux.lds \
++		 piggy.$(suffix_y) piggy.$(suffix_y).o \
++		 font.o font.c head.o misc.o $(OBJS)
+ 
+ ifeq ($(CONFIG_FUNCTION_TRACER),y)
+ ORIG_CFLAGS := $(KBUILD_CFLAGS)
+@@ -87,22 +91,31 @@ endif
+ ifneq ($(PARAMS_PHYS),)
+ LDFLAGS_vmlinux += --defsym params_phys=$(PARAMS_PHYS)
+ endif
+-LDFLAGS_vmlinux += -p --no-undefined -X \
+-	$(shell $(CC) $(KBUILD_CFLAGS) --print-libgcc-file-name) -T
++# ?
++LDFLAGS_vmlinux += -p
++# Report unresolved symbol references
++LDFLAGS_vmlinux += --no-undefined
++# Delete all temporary local symbols
++LDFLAGS_vmlinux += -X
++# Next argument is a linker script
++LDFLAGS_vmlinux += -T
++
++# For __aeabi_uidivmod
++lib1funcs = $(srctree)/arch/$(SRCARCH)/lib/lib1funcs.o
+ 
+ # Don't allow any static data in misc.o, which
+ # would otherwise mess up our GOT table
+ CFLAGS_misc.o := -Dstatic=
+ 
+-$(obj)/vmlinux: $(obj)/vmlinux.lds $(obj)/$(HEAD) $(obj)/piggy.o \
+-	 	$(addprefix $(obj)/, $(OBJS)) FORCE
++$(obj)/vmlinux: $(obj)/vmlinux.lds $(obj)/$(HEAD) $(obj)/piggy.$(suffix_y).o \
++	 	$(addprefix $(obj)/, $(OBJS)) $(lib1funcs) FORCE
+ 	$(call if_changed,ld)
+ 	@:
+ 
+-$(obj)/piggy.gz: $(obj)/../Image FORCE
+-	$(call if_changed,gzip)
++$(obj)/piggy.$(suffix_y): $(obj)/../Image FORCE
++	$(call if_changed,$(suffix_y))
+ 
+-$(obj)/piggy.o:  $(obj)/piggy.gz FORCE
++$(obj)/piggy.$(suffix_y).o:  $(obj)/piggy.$(suffix_y) FORCE
+ 
+ CFLAGS_font.o := -Dstatic=
+ 
+diff --git a/arch/arm/boot/compressed/misc.c b/arch/arm/boot/compressed/misc.c
+index 17153b5..57077c8 100644
+--- a/arch/arm/boot/compressed/misc.c
++++ b/arch/arm/boot/compressed/misc.c
+@@ -18,10 +18,15 @@
+ 
+ unsigned int __machine_arch_type;
+ 
++#define _LINUX_STRING_H_
++
+ #include <linux/compiler.h>	/* for inline */
+ #include <linux/types.h>	/* for size_t */
+ #include <linux/stddef.h>	/* for NULL */
+ #include <asm/string.h>
++#include <linux/linkage.h>
++
++#include <asm/unaligned.h>
+ 
+ #ifdef STANDALONE_DEBUG
+ #define putstr printf
+@@ -188,34 +193,8 @@ static inline __ptr_t memcpy(__ptr_t __dest, __const __ptr_t __src,
+ /*
+  * gzip delarations
+  */
+-#define OF(args)  args
+ #define STATIC static
+ 
+-typedef unsigned char  uch;
+-typedef unsigned short ush;
+-typedef unsigned long  ulg;
+-
+-#define WSIZE 0x8000		/* Window size must be at least 32k, */
+-				/* and a power of two */
+-
+-static uch *inbuf;		/* input buffer */
+-static uch window[WSIZE];	/* Sliding window buffer */
+-
+-static unsigned insize;		/* valid bytes in inbuf */
+-static unsigned inptr;		/* index of next byte to be processed in inbuf */
+-static unsigned outcnt;		/* bytes in output buffer */
+-
+-/* gzip flag byte */
+-#define ASCII_FLAG   0x01 /* bit 0 set: file probably ascii text */
+-#define CONTINUATION 0x02 /* bit 1 set: continuation of multi-part gzip file */
+-#define EXTRA_FIELD  0x04 /* bit 2 set: extra field present */
+-#define ORIG_NAME    0x08 /* bit 3 set: original file name present */
+-#define COMMENT      0x10 /* bit 4 set: file comment present */
+-#define ENCRYPTED    0x20 /* bit 5 set: file is encrypted */
+-#define RESERVED     0xC0 /* bit 6,7:   reserved */
+-
+-#define get_byte()  (inptr < insize ? inbuf[inptr++] : fill_inbuf())
+-
+ /* Diagnostic functions */
+ #ifdef DEBUG
+ #  define Assert(cond,msg) {if(!(cond)) error(msg);}
+@@ -233,24 +212,20 @@ static unsigned outcnt;		/* bytes in output buffer */
+ #  define Tracecv(c,x)
+ #endif
+ 
+-static int  fill_inbuf(void);
+-static void flush_window(void);
+ static void error(char *m);
+ 
+ extern char input_data[];
+ extern char input_data_end[];
+ 
+-static uch *output_data;
+-static ulg output_ptr;
+-static ulg bytes_out;
++static unsigned char *output_data;
++static unsigned long output_ptr;
+ 
+ static void error(char *m);
+ 
+ static void putstr(const char *);
+ 
+-extern int end;
+-static ulg free_mem_ptr;
+-static ulg free_mem_end_ptr;
++static unsigned long free_mem_ptr;
++static unsigned long free_mem_end_ptr;
+ 
+ #ifdef STANDALONE_DEBUG
+ #define NO_INFLATE_MALLOC
+@@ -258,46 +233,13 @@ static ulg free_mem_end_ptr;
+ 
+ #define ARCH_HAS_DECOMP_WDOG
+ 
+-#include "../../../../lib/inflate.c"
+-
+-/* ===========================================================================
+- * Fill the input buffer. This is called only when the buffer is empty
+- * and at least one byte is really needed.
+- */
+-int fill_inbuf(void)
+-{
+-	if (insize != 0)
+-		error("ran out of input data");
+-
+-	inbuf = input_data;
+-	insize = &input_data_end[0] - &input_data[0];
+-
+-	inptr = 1;
+-	return inbuf[0];
+-}
++#ifdef CONFIG_KERNEL_GZIP
++#include "../../../../lib/decompress_inflate.c"
++#endif
+ 
+-/* ===========================================================================
+- * Write the output window window[0..outcnt-1] and update crc and bytes_out.
+- * (Used for the decompressed data only.)
+- */
+-void flush_window(void)
+-{
+-	ulg c = crc;
+-	unsigned n;
+-	uch *in, *out, ch;
+-
+-	in = window;
+-	out = &output_data[output_ptr];
+-	for (n = 0; n < outcnt; n++) {
+-		ch = *out++ = *in++;
+-		c = crc_32_tab[((int)c ^ ch) & 0xff] ^ (c >> 8);
+-	}
+-	crc = c;
+-	bytes_out += (ulg)outcnt;
+-	output_ptr += (ulg)outcnt;
+-	outcnt = 0;
+-	putstr(".");
+-}
++#ifdef CONFIG_KERNEL_LZO
++#include "../../../../lib/decompress_unlzo.c"
++#endif
+ 
+ #ifndef arch_error
+ #define arch_error(x)
+@@ -314,22 +256,33 @@ static void error(char *x)
+ 	while(1);	/* Halt */
+ }
+ 
++asmlinkage void __div0(void)
++{
++	error("Attempting division by 0!");
++}
++
+ #ifndef STANDALONE_DEBUG
+ 
+-ulg
+-decompress_kernel(ulg output_start, ulg free_mem_ptr_p, ulg free_mem_ptr_end_p,
+-		  int arch_id)
++unsigned long
++decompress_kernel(unsigned long output_start, unsigned long free_mem_ptr_p,
++                  unsigned long free_mem_ptr_end_p,
++                  int arch_id)
+ {
+-	output_data		= (uch *)output_start;	/* Points to kernel start */
++	unsigned char *tmp;
++
++	output_data		= (unsigned char *)output_start;
+ 	free_mem_ptr		= free_mem_ptr_p;
+ 	free_mem_end_ptr	= free_mem_ptr_end_p;
+ 	__machine_arch_type	= arch_id;
+ 
+ 	arch_decomp_setup();
+ 
+-	makecrc();
++	tmp = (unsigned char *) (((unsigned long)input_data_end) - 4);
++	output_ptr = get_unaligned_le32(tmp);
++
+ 	putstr("Uncompressing Linux...");
+-	gunzip();
++	decompress(input_data, input_data_end - input_data,
++	           NULL, NULL, output_data, NULL, error);
+ 	putstr(" done, booting the kernel.\n");
+ 	return output_ptr;
+ }
+@@ -341,11 +294,10 @@ int main()
+ {
+ 	output_data = output_buffer;
+ 
+-	makecrc();
+ 	putstr("Uncompressing Linux...");
+-	gunzip();
++	decompress(input_data, input_data_end - input_data,
++	           NULL, NULL, output_data, NULL, error);
+ 	putstr("done.\n");
+ 	return 0;
+ }
+ #endif
+-	
+diff --git a/arch/arm/boot/compressed/piggy.S b/arch/arm/boot/compressed/piggy.S
+deleted file mode 100644
+index 54c9518..0000000
+--- a/arch/arm/boot/compressed/piggy.S
++++ /dev/null
+@@ -1,6 +0,0 @@
+-	.section .piggydata,#alloc
+-	.globl	input_data
+-input_data:
+-	.incbin	"arch/arm/boot/compressed/piggy.gz"
+-	.globl	input_data_end
+-input_data_end:
+diff --git a/arch/arm/boot/compressed/piggy.gzip.S b/arch/arm/boot/compressed/piggy.gzip.S
+new file mode 100644
+index 0000000..a68adf9
+--- /dev/null
++++ b/arch/arm/boot/compressed/piggy.gzip.S
+@@ -0,0 +1,6 @@
++	.section .piggydata,#alloc
++	.globl	input_data
++input_data:
++	.incbin	"arch/arm/boot/compressed/piggy.gzip"
++	.globl	input_data_end
++input_data_end:
+diff --git a/arch/arm/boot/compressed/piggy.lzo.S b/arch/arm/boot/compressed/piggy.lzo.S
+new file mode 100644
+index 0000000..a425ad9
+--- /dev/null
++++ b/arch/arm/boot/compressed/piggy.lzo.S
+@@ -0,0 +1,6 @@
++	.section .piggydata,#alloc
++	.globl	input_data
++input_data:
++	.incbin	"arch/arm/boot/compressed/piggy.lzo"
++	.globl	input_data_end
++input_data_end:
+-- 
+Albin Tonnerre, Free Electrons
+Kernel, drivers and embedded Linux development,
+consulting, training and support.
+http://free-electrons.com
