@@ -1,101 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbZHNIdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753600AbZHNIgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752411AbZHNIdu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 04:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbZHNIdt
+	id S1753600AbZHNIgg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 04:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZHNIgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 04:33:49 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:34988 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750728AbZHNIds (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 04:33:48 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: Does perf_counter need to make mmap pages uptodate?
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <19076.64899.915246.955189@drongo.ozlabs.ibm.com>
-References: <19076.64899.915246.955189@drongo.ozlabs.ibm.com>
+	Fri, 14 Aug 2009 04:36:35 -0400
+Received: from leia.mcbone.net ([194.97.104.42]:60714 "EHLO leia.mcbone.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752590AbZHNIge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 04:36:34 -0400
+Subject: Re: 32-bit sys/times.h incorrect return value (fwd)
+From: Jens Rosenboom <jens@mcbone.net>
+To: Jan Wagner <jwagner@kurp.hut.fi>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0908131831580.28962@orbit.lan>
+References: <alpine.DEB.2.00.0908131831580.28962@orbit.lan>
 Content-Type: text/plain
-Date: Fri, 14 Aug 2009 10:33:19 +0200
-Message-Id: <1250238799.5241.1167.camel@twins>
+Date: Fri, 14 Aug 2009 10:36:27 +0200
+Message-Id: <1250238987.16632.34.camel@fnki-nb00130>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-14 at 16:00 +1000, Paul Mackerras wrote:
-> At a colleague's request, I did a backport of the perf_counter code to
-> 2.6.30.3.  When I tried "perf record ls" I hit the WARN_ON_ONCE in
-> __set_page_dirty (fs/buffer.c line 669):
+On Thu, 2009-08-13 at 18:32 +0300, Jan Wagner wrote: 
+> Hi,
 > 
->                 WARN_ON_ONCE(warn && !PageUptodate(page));
+> we see times() return a really large positive value like 0x66693CF1 i.e. 
+> signed int32 +1718172913 just a few minutes after booting.
 > 
-> and indeed we never mark the pages that we let userspace mmap as being
-> uptodate.  To get around the problem I added
+> Note that clock_gettime(CLOCK_MONOTONIC) works correctly and returns the 
+> uptime. While times() +1718172913/100Hz time is in no relation to uptime.
 > 
-> 	SetPageUptodate(vmf->page);
+> Checking 'man 2 times': "Since Linux 2.6, this point is (2^32/HZ) - 300 (i.e., 
+> about 429 million) seconds before system boot time. [...] the returned value 
+> may overflow the range of clock_t [...]"
 > 
-> after the get_page call in perf_mmap_fault, but I can't see any
-> relevant changes between 2.6.30 and current upstream that would cause
-> this to be necessary for 2.6.30 but not for current upstream.
+> Hence in theory on a 32-bit platform where clock_t is signed 32-bit, at first 
+> times() should return negative values.
 > 
-> Should we in fact be marking the pages uptodate, or is there some
-> reason why we should never get to that WARN_ON_ONCE?
+> Then 300 seconds later they should become positive. Correct?
+> 
+> This should also happen via glibc times() call. There the times()
+>    ./sysdeps/unix/sysv/linux/times.c
+> simply does
+>    clock_t ret = INTERNAL_SYSCALL (times, err, 1, buf);
+> with no extra "+- some constant".
+> 
+> In the kernel all jiffies and times syscall related handling is 64-bit:
+> 
+> ---------
+> amn@multics:/home/etu/Desktop/linux-2.6.30.3/include$ fgrep INITIAL_JIFFIES
+> linux/jiffies.h:#define INITIAL_JIFFIES ((unsigned long)(unsigned int) 
+> (-300*HZ))
+> 
+> kernel/sys.c:   return (long) jiffies_64_to_clock_t(get_jiffies_64());
+> 
+> kernel/time.c:u64 get_jiffies_64(void)
+> kernel/time.c:          ret = jiffies_64;
+> ---------
+> 
+> On 32-bit platforms and signed int32 clock_t it should take at least
+> 
+> octave:1>  2^31/(24*60*60 * 100)
+> ans =  248.55
+> octave:2>  (2^31/100 - 300)/(24*60*60)
+> ans =  248.55
+> 
+> days until the positive times() return value wraps back to smallest negative 
+> signed 32-bit int.
+> 
+> However, two bugs(?) :
+> 
+> 1) times() return value after 1080 'uptime' seconds is 0x66693CF1, why?
+> 
+> Expected value would be (1080-300)*100Hz = 78000 = 0x000130B0 !
+> 
+> 2) the times() wraps to negative only after 50 days uptime. Following the 
+> intention of INITIAL_JIFFIES, how is this 50-day warp supposed to reveal 
+> wrapping bugs right at 300 seconds after boot?
+> 
+> 2) on 64-bit platforms, clock_t is 64-bit. There times() does not wrap after 50 
+> days, however it still starts at 0x000000006669**** !?
 
-commit d3a9262e59f7fb83c6d44df3b2b1460ed57d3ea1
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Thu Jun 18 12:54:00 2009 +0200
-
-    fs: Provide empty .set_page_dirty() aop for anon inodes
-    
-    .set_page_dirty() is one of those a_ops that defaults to the
-    buffer implementation when not set. Therefore provide a dummy
-    function to make it do nothing.
-    
-    (Uncovered by perfcounters fd's which can now be writable-mmap-ed.)
-    
-    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-    Cc: Al Viro <viro@zeniv.linux.org.uk>
-    Cc: Davide Libenzi <davidel@xmailserver.org>
-    LKML-Reference: <new-submission>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/fs/anon_inodes.c b/fs/anon_inodes.c
-index 1dd96d4..47d4a01 100644
---- a/fs/anon_inodes.c
-+++ b/fs/anon_inodes.c
-@@ -52,6 +52,19 @@ static const struct dentry_operations anon_inodefs_dentry_operations = {
- 	.d_delete	= anon_inodefs_delete_dentry,
- };
- 
-+/*
-+ * nop .set_page_dirty method so that people can use .page_mkwrite on
-+ * anon inodes.
-+ */
-+static int anon_set_page_dirty(struct page *page)
-+{
-+	return 0;
-+};
-+
-+static const struct address_space_operations anon_aops = {
-+	.set_page_dirty = anon_set_page_dirty,
-+};
-+
- /**
-  * anon_inode_getfd - creates a new file instance by hooking it up to an
-  *                    anonymous inode, and a dentry that describe the "class"
-@@ -151,6 +164,8 @@ static struct inode *anon_inode_mkinode(void)
- 
- 	inode->i_fop = &anon_inode_fops;
- 
-+	inode->i_mapping->a_ops = &anon_aops;
-+
- 	/*
- 	 * Mark the inode dirty from the very beginning,
- 	 * that way it will never be moved to the dirty
-
+1718172913 * 2.5 is pretty close to 2^32, so I assume that you have
+CONFIG_HZ=250. With CONFIG_HZ=300 I am getting something like 1431542881
+instead which is close to 2^32/3. I'm not sure though where the wrong
+initial value comes from, maybe the INITIAL_JIFFIES definition uses the
+wrong HZ value.
 
