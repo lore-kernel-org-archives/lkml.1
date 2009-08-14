@@ -1,214 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbZHNTta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757067AbZHNTuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757050AbZHNTta (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 15:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756999AbZHNTt3
+	id S1757067AbZHNTuW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 15:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbZHNTuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 15:49:29 -0400
-Received: from kroah.org ([198.145.64.141]:48065 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756594AbZHNTt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 15:49:29 -0400
-Date: Fri, 14 Aug 2009 12:48:15 -0700
-From: Greg KH <greg@kroah.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Samsung backlight driver
-Message-ID: <20090814194815.GA31474@kroah.com>
+	Fri, 14 Aug 2009 15:50:21 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:51275 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757034AbZHNTuT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 15:50:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=uFNzTiOy2NQiJCKaermKjhw+qntejcAIrRAO/3DPo7RRKBo3ik4YcaOQtCRdghFmZv
+         p7L5QTzzSbql5rj0SQ40vgq11FOTut8wq56O+jXfokwCsf7cp2UcZfwbWZwUI/uRqqy2
+         NoDL7Q746pP8yisAAj/l1hOhQr168QRs4uF4s=
+Message-ID: <4A85BFF8.4050001@gmail.com>
+Date: Fri, 14 Aug 2009 15:50:16 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: alacrityvm-devel@lists.sourceforge.net,
+       alacrityvm-users@lists.sourceforge.net,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org
+Subject: Re: AlacrityVM numbers updated for 31-rc4
+References: <4A83296B.3080606@gmail.com> <4A834ABB.4010801@codemonkey.ws> <4A834E75.9060204@gmail.com>
+In-Reply-To: <4A834E75.9060204@gmail.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigB8A32634A7D2FE7E2865A6AD"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigB8A32634A7D2FE7E2865A6AD
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-This driver implements backlight controls for Samsung laptops that
-currently do not have ACPI support for this control.
+Gregory Haskins wrote:
+> Anthony Liguori wrote:
+>> Gregory Haskins wrote:
+>>> I re-ran the numbers on 10GE against the actual alacrityvm v0.1 relea=
+se
+>>> available in git on kernel.org.
+>>>
+>>> I tried to include the newly announced "vhost" driver (Michael Tsirki=
+n)
+>>> for virtio acceleration, but ran into issues getting the patches to
+>>> apply.
+>>>
+>>> For now, this includes native, virtio-u (virtio-userspace), and venet=
 
-It has been tested on the N130 laptop and properly works there.
+>>> all running on 31-rc4.  If I can resolve the issue with Michaels
+>>> patches, I will add "virtio-k" (virtio-kernel) to the mix as well.  F=
+or
+>>> now, here are the results for 1500mtu:
+>>>
+>>> native:   7388Mb/s,   29.8us rtt (33505 tps udp-rr)
+>>> venet:    3654Mb/s,   56.8us rtt (17600 tps udp-rr)
+>>> virtio-u: 1955Mb/s, 4016.0us rtt (  249 tps udp-rr)
+>>>  =20
 
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+I re-ran the numbers now that I have the HRT issue straighted out.
+Native and virtio stayed level, venet recovered from the 3.6Gb/s
+quagmire it was in, back up to ~4.5Gb/s.
 
----
- drivers/platform/x86/Kconfig             |   12 ++
- drivers/platform/x86/Makefile            |    1 
- drivers/platform/x86/samsung-backlight.c |  146 +++++++++++++++++++++++++++++++
- 3 files changed, 159 insertions(+)
+native (hw):        7388Mb/s,  29.8us rtt (33500 tps udp-rr)
+venet (alacrityvm): 4560Mb/s,  56.8us rtt (17600 tps udp-rr)
+virtio-u (kvm):	    2670Mb/s, 265.7us rtt ( 3764 tps udp-rr)
+virtio-k (kvm):     d-n-f
 
---- a/drivers/platform/x86/Kconfig
-+++ b/drivers/platform/x86/Kconfig
-@@ -425,4 +425,16 @@ config ACPI_TOSHIBA
- 
- 	  If you have a legacy free Toshiba laptop (such as the Libretto L1
- 	  series), say Y.
-+
-+config SAMSUNG_BACKLIGHT
-+	tristate "Samsung Backlight driver"
-+	depends on BACKLIGHT_CLASS_DEVICE
-+	depends on DMI
-+	---help---
-+	  This driver adds support to control the backlight on a number of
-+	  Samsung laptops, like the N130.
-+
-+	  It will only be loaded on laptops that properly need it, so it is
-+	  safe to say Y here.
-+
- endif # X86_PLATFORM_DEVICES
---- a/drivers/platform/x86/Makefile
-+++ b/drivers/platform/x86/Makefile
-@@ -20,3 +20,4 @@ obj-$(CONFIG_INTEL_MENLOW)	+= intel_menl
- obj-$(CONFIG_ACPI_WMI)		+= wmi.o
- obj-$(CONFIG_ACPI_ASUS)		+= asus_acpi.o
- obj-$(CONFIG_ACPI_TOSHIBA)	+= toshiba_acpi.o
-+obj-$(CONFIG_SAMSUNG_BACKLIGHT)	+= samsung-backlight.o
---- /dev/null
-+++ b/drivers/platform/x86/samsung-backlight.c
-@@ -0,0 +1,146 @@
-+/*
-+ * Samsung N130 Laptop Backlight driver
-+ *
-+ * Copyright (C) 2009 Greg Kroah-Hartman (gregkh@suse.de)
-+ * Copyright (C) 2009 Novell Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/backlight.h>
-+#include <linux/fb.h>
-+#include <linux/dmi.h>
-+
-+#define MAX_BRIGHT	0xff
-+#define OFFSET		0xf4
-+
-+static struct pci_dev *pci_device;
-+static struct backlight_device *backlight_device;
-+static int offset = OFFSET;
-+static u8 current_brightness;
-+
-+static void read_brightness(void)
-+{
-+	if (!pci_device)
-+		return;
-+	pci_read_config_byte(pci_device, offset, &current_brightness);
-+}
-+
-+static void set_brightness(void)
-+{
-+	if (!pci_device)
-+		return;
-+	pci_write_config_byte(pci_device, offset, current_brightness);
-+}
-+
-+static int get_brightness(struct backlight_device *bd)
-+{
-+	return bd->props.brightness;
-+}
-+
-+static int update_status(struct backlight_device *bd)
-+{
-+	if (!pci_device)
-+		return -ENODEV;
-+	if (!backlight_device)
-+		return -ENODEV;
-+
-+	current_brightness = bd->props.brightness;
-+	set_brightness();
-+	return 0;
-+}
-+
-+static struct backlight_ops backlight_ops = {
-+	.get_brightness	= get_brightness,
-+	.update_status	= update_status,
-+};
-+
-+static int find_video_card(void)
-+{
-+	struct pci_dev *dev = NULL;
-+
-+	while ((dev = pci_get_device(0x8086, 0x27ae, dev)) != NULL) {
-+		/* Found one, so let's save it off */
-+		if (!pci_device)
-+			pci_device = pci_dev_get(dev);
-+	}
-+
-+	if (!pci_device)
-+		return 0;
-+
-+	/* create a backlight device to talk to this one */
-+	backlight_device = backlight_device_register("samsung",
-+						     &pci_device->dev,
-+						     NULL, &backlight_ops);
-+	if (IS_ERR(backlight_device))
-+		return PTR_ERR(backlight_device);
-+	read_brightness();
-+	backlight_device->props.max_brightness = MAX_BRIGHT;
-+	backlight_device->props.brightness = current_brightness;
-+	backlight_device->props.power = FB_BLANK_UNBLANK;
-+	backlight_update_status(backlight_device);
-+	return 0;
-+}
-+
-+static void remove_video_card(void)
-+{
-+	if (!pci_device)
-+		return;
-+
-+	backlight_device_unregister(backlight_device);
-+	backlight_device = NULL;
-+
-+	/* we are done with the PCI device, put it back */
-+	pci_dev_put(pci_device);
-+	pci_device = NULL;
-+}
-+
-+static int dmi_check_cb(const struct dmi_system_id *id)
-+{
-+	printk(KERN_INFO KBUILD_MODNAME ": found laptop model '%s'\n",
-+		id->ident);
-+	return 0;
-+}
-+
-+static struct dmi_system_id __initdata samsung_dmi_table[] = {
-+	{
-+		.ident = "N130",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "N130"),
-+			DMI_MATCH(DMI_BOARD_NAME, "N130"),
-+		},
-+		.callback = dmi_check_cb,
-+	},
-+	{ },
-+};
-+
-+static int __init samsung_init(void)
-+{
-+	if (!dmi_check_system(samsung_dmi_table))
-+		return -ENODEV;
-+
-+	return find_video_card();
-+}
-+
-+static void __exit samsung_exit(void)
-+{
-+	remove_video_card();
-+}
-+
-+module_init(samsung_init);
-+module_exit(samsung_exit);
-+
-+MODULE_AUTHOR("Greg Kroah-Hartman <gregkh@suse.de>");
-+MODULE_DESCRIPTION("Samsung N130 Backlight driver");
-+MODULE_LICENSE("GPL");
-+module_param(offset, int, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(offset, "The offset into the PCI device for the brightness control");
-+MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnN130:*:rnN130:*");
+(still having problems getting vhost to run).  Will try again next week.)=
+
+
+I have updated the graphs on the wiki:
+
+http://developer.novell.com/wiki/index.php/AlacrityVM
+
+Have a nice weekend, all.
+
+-Greg
+
+
+
+--------------enigB8A32634A7D2FE7E2865A6AD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkqFv/gACgkQP5K2CMvXmqFcXgCfT52V4e1EbrAABQE+iEQ555Y2
+IyIAnjMN86tNj6Eg0A9R3nV/6mptq44o
+=s0Cf
+-----END PGP SIGNATURE-----
+
+--------------enigB8A32634A7D2FE7E2865A6AD--
