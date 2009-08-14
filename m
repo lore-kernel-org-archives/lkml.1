@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbZHNLZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbZHNL0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbZHNLZm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 07:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755148AbZHNLZl
+	id S1755282AbZHNL0I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 07:26:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbZHNL0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 07:25:41 -0400
-Received: from mailout07.t-online.de ([194.25.134.83]:34374 "EHLO
-	mailout07.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755082AbZHNLZl (ORCPT
+	Fri, 14 Aug 2009 07:26:07 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53674 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755126AbZHNL0G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 07:25:41 -0400
-X-Greylist: delayed 2771 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Aug 2009 07:25:40 EDT
-Message-ID: <4A853ED8.9030800@t-online.de>
-Date: Fri, 14 Aug 2009 12:39:20 +0200
-From: Knut Petersen <Knut_Petersen@t-online.de>
-User-Agent: Thunderbird 1.5.0.14 (X11/20060911)
+	Fri, 14 Aug 2009 07:26:06 -0400
+Date: Fri, 14 Aug 2009 13:25:56 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Daniel Mack <daniel@caiaq.de>, Joe Perches <joe@perches.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ben Dooks <ben-linux@fluff.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       David John <davidjon@xenontk.org>, Erik Mouw <mouw@nl.linux.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: [PATCH] MAINTAINERS: Add "L: linux-arm@vger.kernel.org" to ARM
+	sections
+Message-ID: <20090814112556.GK32418@elf.ucw.cz>
+References: <84144f020908121317g64551a2cu1b960f44ed5d0d9@mail.gmail.com> <20090812212502.GA24667@n2100.arm.linux.org.uk> <20090813103511.2928a085@lxorguk.ukuu.org.uk> <20090813094736.GZ6132@n2100.arm.linux.org.uk> <1250158593.28285.23.camel@Joe-Laptop.home> <20090813103513.GC6132@n2100.arm.linux.org.uk> <1250161714.28285.61.camel@Joe-Laptop.home> <20090813115444.GB10450@n2100.arm.linux.org.uk> <20090814075919.GG19257@buzzloop.caiaq.de> <20090814091808.GA2662@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-To: airlied@linux.ie
-CC: linux-kernel@vger.kernel.org
-Subject: drm / i915 performance problems
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-ID: GE1g9sZrohtppRKQnWDBGUswpxazpLQ9Hp9WNFg-8Ed5z4VvR7eHGy1d2H8F-QUQuG
-X-TOI-MSGID: 9f396770-4a50-4e9d-ac5b-9c32ae22f081
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090814091808.GA2662@n2100.arm.linux.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David!
+On Fri 2009-08-14 10:18:08, Russell King - ARM Linux wrote:
+> On Fri, Aug 14, 2009 at 09:59:19AM +0200, Daniel Mack wrote:
+> > One common false positive to this rule is using 'git send-email' with a
+> > message ID as reference. There won't be a 'Re:' in that case.
+> 
+> Yes, and they are HELD FOR MODERATION so that a HUMAN can make a DECISION
+> on whether to let them through.  We could, alternatively, discard them
+> outright.  We think that discarding due to a rule matching is unacceptable
+> though.
+> 
+> These lists are getting close to me just pulling the plug on them.  The
+> amount of crap flying around about them is getting too great for me to
+> continue to provide such a service to this community.  When I pull them,
+> I'll pull *all* the linux-arm related lists.
+> 
+> Someone else can provide and run the mailing lists.
 
-My current system is based on openSuSE 10.2, kernel 2.6.22.6 is used.
-As support for that distribution is discontinued, I had a look at
-openSuSE 11.1
-and tried some of the new kernels. I found serious  performance regressions
-using the current kernels
+davem indicated that he's happy to run the mailing lists.
 
-First a short descrition of the relevant hardware:
+Now, I don't know why you are pulling non-kernel arm-related maillists
+into the picture. Those are not normally cced by kernel people, so
+they not cause problems. Blackmail?
 
-mainboard: Aopen i915Gmm-hfs,
-RAM: 2 GB
-cpu: Pentium M  1.86GHz.
-video: built in i915GM
-00:00.0 Host bridge: Intel Corporation Mobile 915GM/PM/GMS/910GML
-Express Processor to DRAM Controller (rev 04)
-00:02.0 VGA compatible controller: Intel Corporation Mobile
-915GM/GMS/910GML Express Graphics Controller (rev 04) (prog-if 00 [VGA])
-00:02.1 Display controller: Intel Corporation Mobile 915GM/GMS/910GML
-Express Graphics Controller (rev 04)
+> I estimate that this will happen this evening.  Really.  Because I don't
+> see this thread settling down.
 
-Test results:
-
-glxgears: 1045 fps / 30% cpu usage (opensuse 10.2, kernel 2.6.22.6,
-smooth desktop and glxgears operation)
-glxgears: 925 fps / 35% cpu usage (opensuse 11.1, kernel 2.6.22.6,
-smooth desktop and glxgears operation)
-glxgears: 900 fps / 45% cpu usage (opensuse 11.1, kernel 2.6.27.29,
-smooth desktop and glxgears operation)
-
-glxgears: 210 fps / 8% cpu usage (opensuse 11.1, kernel 2.6.31-rc6,
-Tiled buffers, jerky desktop and glxgears operation)
-glxgears: 230 fps / 8% cpu usage (opensuse 11.1, kernel 2.6.31-rc6,
-Tiling disabled, jerky desktop and glxgears operation)
-
-glxgears: 280 fps / 100% cpu usage (opensuse 11.1, kernel 2.6.31-rc6,
-DRI disabled in kernel, smooth desktop and glxgears operation)
- 
-With "jerky operation" in the table above I want to express, that
-desktop and glxgears drawing operation seems to happen in
-several bursts a second. Because of that the desktop performance is
-annoying enough to be unusable.
-
-Xorg.0.log tells me: "Failed to set tiling on [front|back|depth] buffer:
-Invalid argument". As disabling tiling in the older kernels
-results in similar performance drops, I believe that the inability to
-use tiled buffers is responsible for the low glxgears fps numbers.
-
-Any ideas how to solve that problem?
-
-cu,
- Knut
+If pulling the plug on them is the only way to get useful mailing list
+for linux-arm-kernel, go ahead!
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
