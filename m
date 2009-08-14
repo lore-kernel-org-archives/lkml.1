@@ -1,189 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932250AbZHNHBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbZHNHRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932250AbZHNHBm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 03:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932214AbZHNHBl
+	id S1755549AbZHNHRN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 03:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbZHNHRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 03:01:41 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:44010 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932198AbZHNHBl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 03:01:41 -0400
-Message-ID: <4A850BB3.3070703@ct.jp.nec.com>
-Date: Fri, 14 Aug 2009 16:01:07 +0900
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 14 Aug 2009 03:17:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60259 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754813AbZHNHRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 03:17:12 -0400
+Message-ID: <4A850F4A.9020507@redhat.com>
+Date: Fri, 14 Aug 2009 10:16:26 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Nikanth Karthikesan <knikanth@suse.de>
-CC: Alasdair G Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org, Hannes Reinecke <hare@suse.de>
-Subject: Re: [PATCH-v2 2/2] Initialize mempool and elevator only for request-based
- dm devices
-References: <200908081026.01097.knikanth@suse.de> <200908111435.12020.knikanth@suse.de> <4A8225DC.1060200@ct.jp.nec.com> <200908121417.28760.knikanth@suse.de>
-In-Reply-To: <200908121417.28760.knikanth@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Johannes Weiner <hannes@cmpxchg.org>
+CC: Rik van Riel <riel@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+References: <20090806100824.GO23385@random.random> <4A7AD5DF.7090801@redhat.com> <20090807121443.5BE5.A69D9226@jp.fujitsu.com> <20090812074820.GA29631@localhost> <4A82D24D.6020402@redhat.com> <20090813010356.GA7619@localhost> <4A843565.3010104@redhat.com> <4A843B72.6030204@redhat.com> <4A843EAE.6070200@redhat.com> <4A846581.2020304@redhat.com> <20090813211626.GA28274@cmpxchg.org>
+In-Reply-To: <20090813211626.GA28274@cmpxchg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nikanth,
-
-On 08/12/2009 05:47 PM +0900, Nikanth Karthikesan wrote:
-> Hi Kiyoshi Ueda,
-> 
-> On Wednesday 12 August 2009 07:45:56 Kiyoshi Ueda wrote:
->> Hi Nikanth,
+On 08/14/2009 12:16 AM, Johannes Weiner wrote:
+>
+>> - do not ignore the referenced bit
+>> - if you see a run of N pages which all have the referenced bit set, do
+>> swap one
 >>
->> On 08/11/2009 06:05 PM +0900, Nikanth Karthikesan wrote:
->>> On Tuesday 11 August 2009 13:36:24 Kiyoshi Ueda wrote:
->>>> On 08/10/2009 07:48 PM +0900, Nikanth Karthikesan wrote:
->>>>> +
->>>>> +		/*
->>>>> +		 * reinitialize make_request_fn as it was reset to the
->>>>> +		 * default __make_request by blk_init_allocate_queue
->>>>> +		 */
->>>>> +		md->saved_make_request_fn = md->queue->make_request_fn;
->>>>> +		blk_queue_make_request(md->queue, dm_request);
->>>>> +
->>>>> +		blk_queue_softirq_done(md->queue, dm_softirq_done);
->>>>> +		blk_queue_prep_rq(md->queue, dm_prep_fn);
->>>>> +		blk_queue_lld_busy(md->queue, dm_lld_busy);
->>>>> +	}
->>>>> +
->>>>>  	__unbind(md);
->>>>>  	r = __bind(md, table, &limits);
->>>> The queue has been registered at the device creation time by
->>>> add_disk() in alloc_dev().
->>>> Since the queue is reconfigured (elevator is attached), you have to
->>>> update the queue registration (e.g. unregister, then re-register).
->>>> But it may not be easy.  At least, there is no exported interface to
->>>> unregister/re-register queue.
->>> Ah, yes. The scheduler attributes will not be exported in
->>> /sys/block/dm*/queue/iosched. Exporting elv_register_queue() and calling
->>> it here solves it. Something like..
->>>
->>> @@ -2203,6 +2199,29 @@ int dm_swap_table(struct mapped_device *md, struct
->>> dm_table *table)
->>>  		goto out;
->>>  	}
->>>
->>> +	/* new device is being marked as request-based */
->>> +	if (!md->map && dm_table_request_based(table)) {
->>> +		/* initialize queue for request-based dm */
->>> +		r = blk_init_allocated_queue(md->queue, dm_request_fn, NULL);
->>> +		if (r)
->>> +			goto out;
->>> +
->>> +		r = elv_register_queue(md->queue);
->>> +		/* if (r)
->>> +		 *	 goto out; Better to ignore, just like add_disk does ;-)
->>> +		 */
->>> +		/*
->>> +		 * reinitialize make_request_fn as it was reset to the
->>> +		 * default __make_request by blk_init_allocate_queue
->>> +		 */
->>> +		md->saved_make_request_fn = md->queue->make_request_fn;
->>> +		blk_queue_make_request(md->queue, dm_request);
->>> +
->>> +		blk_queue_softirq_done(md->queue, dm_softirq_done);
->>> +		blk_queue_prep_rq(md->queue, dm_prep_fn);
->>> +		blk_queue_lld_busy(md->queue, dm_lld_busy);
->>> +	}
->>> +
->>>  	__unbind(md);
->>>  	r = __bind(md, table, &limits);
->>>
->>> I would post the v3 of the patches with this change. Do you see any
->>> problems in this?
->> Humm, it might work for now, but I disagree with that.
->>
->> Since elevator is block internal and dm doesn't really care
->> (its initialization is actually hidden in blk_init_allocated_queue()),
->> directly calling elv_register_queue() from dm seems not right.
->> It will likely introduce a bug by future changes in block layer.
->>
->> I think the right approach is to define a proper block layer interface
->> to reflect the queue configuration change.
->> That's why I said "Updating the queue registration may not be easy".
-> 
-> I do not see too much of overhead in the future with this approach,
-> atleast no more than "proper block layer interface".
+>>      
+>
+> But it also means destroying the LRU order.
+>
+>    
 
-I don't think so.
-Just exporting elv_register_queue() will cause some maintenance costs
-to request-based dm developers as below.
+True, it would, but if we ignore the referenced bit, LRU order is really 
+FIFO.
 
-Although currently only elevator is the queue's feature which is
-needed for only request-based dm, such other features may be added
-to queue in the future.
-Then, the developer who added the feature may not notice that
-request-based dm needs to register the feature here, if there
-is no critical problem (e.g. compile error or panic) without it.
-That causes the lack of such features only in request-based dm.
-Therefore, request-based dm developers always have to watch
-the change of the block-layer and make the registration related code.
-I think it's a sort of big maintenance cost.
-
-So we should make the code as the change of the block-layer becomes
-effective automatically in request-based dm, too, as mush as possible.
-In this case, you should make/call an interface for the whole queue,
-not only for the elevator, since dm can't/shouldn't know how
-blk_init_allocated_queue() initializes the queue.
-(And the interface should be used in other generic paths (e.g. add_disk()))
-That's a proper block-layer interface which I mentioned, and this
-approach should have less overhead than your approach from view point
-of longer period.
-
-
-> IMHO, unregistering the queue and registering the queue again with
-> the elevator, is basically wasting CPU cycles and possibly would
-> confuse the user-space, which may be watching the sysfs... 
-
-Right, so I said "Updating may not be easy."
-(By the way, wasting CPU cycles doesn't matter here, since it happens
- only when we initialize the device and it shouldn't too much.)
-
-
-> Or asking block layer to recheck and find what we have changed
-> in the request_queue. It does not sound like the best solution.
-
-I think this is a better solution than exposing a part of queue
-internals as I described above.
-
-
-> It is better to tell the block-layer that we have added a q->request_fn 
-> function, so initialize the elevator.
-
-I don't think it's better as I described above.
-(dm can't/shouldn't know how blk_init_allocated_queue() initializes
- the queue.)
-
-
-
-By the way, another approach to optimizing the memory usage would be
-to determine whether the dm device is bio-based or request-based
-at the device creation time, instead of the table binding time.
-We want the delayed allocation, since kernel can't decide the device
-type until the first table is bound because of the auto-detection
-mechanism.  The auto-detection is good for keeping compatibility with
-existing user-space tools.  But once user-space tools are changed to
-specify device type at the device creation time, we can eventually
-remove the auto-detection.
-Then, kernel can decide device type in alloc_dev(), so
-the initialization code in kernel will become very simple.
-
-FYI, actually, I had this approach in a very early stage of
-request-based dm development:
-    [kernel]     http://marc.info/?l=dm-devel&m=116656637419846&w=2
-    [kernel]     http://marc.info/?l=dm-devel&m=116656689701459&w=2
-    [kernel]     http://marc.info/?l=dm-devel&m=116656689707043&w=2
-    [user-space] http://marc.info/?l=dm-devel&m=116656689906056&w=2
-Now, you can change user-space first before kernel, since
-request-based dm is already available.
-
-Thanks,
-Kiyoshi Ueda
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
