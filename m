@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbZHNTII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756919AbZHNTIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755491AbZHNTII (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 15:08:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbZHNTIH
+	id S1756919AbZHNTIc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 15:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756910AbZHNTIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 15:08:07 -0400
-Received: from mga03.intel.com ([143.182.124.21]:54710 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751453AbZHNTIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 15:08:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,381,1246863600"; 
-   d="scan'208";a="175946001"
-Subject: Re: [PATCH] x86: add /proc/cpuinfo/physical id quirks
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: Alex Chiang <achiang@hp.com>
-Cc: "hpa@zytor.com" <hpa@zytor.com>, "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090814163618.GQ7185@ldl.fc.hp.com>
-References: <20090814163618.GQ7185@ldl.fc.hp.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Fri, 14 Aug 2009 12:07:11 -0700
-Message-Id: <1250276831.3077.17.camel@sbs-t61.sc.intel.com>
+	Fri, 14 Aug 2009 15:08:31 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:43106 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755786AbZHNTIb (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 15:08:31 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip 1/1] perf record: Fix typo in pid_synthesize_comm_event
+In-Reply-To: Your message of "Fri, 14 Aug 2009 15:26:32 -0300."
+             <20090814182632.GF3490@ghostprotocols.net>
+From: Valdis.Kletnieks@vt.edu
+References: <20090814182632.GF3490@ghostprotocols.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
+Content-Type: multipart/signed; boundary="==_Exmh_1250276831_9206P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Fri, 14 Aug 2009 15:07:11 -0400
+Message-ID: <28379.1250276831@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-14 at 09:36 -0700, Alex Chiang wrote:
-> As systems become larger and more complex, it is not always possible
-> to assume that an APIC ID maps directly to a given physical slot.
-> 
-> From a UI point-of-view, it's nice if the 'physical id' field in
-> /proc/cpuinfo matches the silk-screening or labelling on the system
-> chassis.
-> 
-> Add a quirk that allows oddball platforms to ensure that what the kernel
-> displays in /proc/cpuinfo matches the physical reality.
+--==_Exmh_1250276831_9206P
+Content-Type: text/plain; charset=us-ascii
 
-Alex, Does it makes sense to add a new entry in /proc/cpuinfo rather
-than overloading the 'physical id' by modifying phys_proc_id.
+On Fri, 14 Aug 2009 15:26:32 -0300, Arnaldo Carvalho de Melo said:
+> We were using 'fd' locally, but there was a global 'fd' too, so when
+> converting from open to fopen the test made against fd should be made
+> against 'fp', but since we have that global...
 
-That way, even if there is a mis-match between the bios and the OS fixup
-tables, we won't screw up other topology setup etc in the kernel that
-are dependent on the phys_proc_id.
+If the kernel was -Wshadow safe by default, this sort of thing would happen
+less often... :)
 
-thanks,
-suresh
+--==_Exmh_1250276831_9206P
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFKhbXfcC3lWbTT17ARAu58AKCYEW2m/W08zrf09B9ZZoeS37VJ7ACcCyHU
+04wEoxo5q8ioPGmGubgx/c0=
+=x8qc
+-----END PGP SIGNATURE-----
 
+--==_Exmh_1250276831_9206P--
