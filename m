@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbZHNVho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757036AbZHNVh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756683AbZHNVho (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 17:37:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756592AbZHNVho
+	id S1757036AbZHNVh6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 17:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbZHNVh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 17:37:44 -0400
-Received: from mail.candelatech.com ([208.74.158.172]:44109 "EHLO
-	ns3.lanforge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756080AbZHNVhn (ORCPT
+	Fri, 14 Aug 2009 17:37:58 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:49531 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756697AbZHNVh5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 17:37:43 -0400
-Message-ID: <4A85D921.3050604@candelatech.com>
-Date: Fri, 14 Aug 2009 14:37:37 -0700
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Fri, 14 Aug 2009 17:37:57 -0400
+Date: Fri, 14 Aug 2009 17:37:57 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
+In-Reply-To: <200908142331.26855.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0908141735410.2922-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: How to disable DMA for compact-flash disk?
-References: <4A81BDA6.4080804@candelatech.com>	<20090811201206.14556624@lxorguk.ukuu.org.uk>	<4A85CDCF.3060802@candelatech.com>	<20090814221038.19e868a0@lxorguk.ukuu.org.uk>	<4A85D490.6000701@candelatech.com> <20090814223237.1ef61ff1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090814223237.1ef61ff1@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/14/2009 02:32 PM, Alan Cox wrote:
->> Can you give me a clue as to what code needs poking?  I'm working
->> on the latest 31-rc5 tree, btw.
->>
->>
->> PS.  Can't get an ide based 2.6.31-rc5 kernel to boot in F11, though it doesn't seem
->> to be related to ide.  I probably have something wrong in my .config.
->
-> Tejun made it all very class based so you have inheriting operations
-> structures thus in pata_via.c find
->
-> static struct ata_port_operations via_port_ops = {
->          .inherits       =&ata_bmdma_port_ops,
->
-> and change it to
->
-> static struct ata_port_operations via_port_ops = {
->          .inherits       =&ata_bmdma32_port_ops,
+On Fri, 14 Aug 2009, Rafael J. Wysocki wrote:
 
-Ok, I notice that my system has sata_via loaded as well,
-and it is also not using the 32-bit port ops.  Should I
-change it as well?
+> > I think it would be worthwhile to track down these unknown problems and 
+> > dependencies.  It won't be easy, though...
+> 
+> Agreed.
+> 
+> Hm.  Perhaps it's a good idea to get this code in, so that people can play
+> with it.  The more people will look into this, the greater the chance to
+> identify problematic drivers.
 
-Thanks,
-Ben
+We don't know if the final form will resemble this at all.  So yes, it 
+should be made available for testing purposes (especially if there's 
+some mechanism for listing dependencies), but it shouldn't go into 
+linux-next or anything like that.
 
--- 
-Ben Greear <greearb@candelatech.com>
-Candela Technologies Inc  http://www.candelatech.com
+Alan Stern
 
