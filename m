@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbZHNFoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbZHNF5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048AbZHNFoY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 01:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbZHNFoX
+	id S1756131AbZHNF5U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 01:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756063AbZHNF5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 01:44:23 -0400
-Received: from mail-pz0-f196.google.com ([209.85.222.196]:58176 "EHLO
-	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751950AbZHNFoW (ORCPT
+	Fri, 14 Aug 2009 01:57:20 -0400
+Received: from moutng.kundenserver.de ([212.227.17.9]:54316 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754614AbZHNF5T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 01:44:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=tYuJyyLFhyViYtCc5cCDkMIridfEZm9Pkjrhw5lMX4LT24ObFCzfejJL7VMRgW3Qv6
-         K4UJiFPDpeMk1zAtIw4hQ5hTb6S/fRi+mXQoSKMTqI5KEvSQwIh3kxkxn1eb/PA8gYyx
-         uOI57B0lvJGV7LGNL1D7dD7xXuPVeOpDqNmCc=
+	Fri, 14 Aug 2009 01:57:19 -0400
+Date: Thu, 13 Aug 2009 22:57:17 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: torvalds@linux-foundation.org
+Subject: [PATCH] scripts/ver_linux
+Message-ID: <alpine.DEB.2.01.0908132251000.30417@bogon.housecafe.de>
+User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
 MIME-Version: 1.0
-In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB8B3B2F7CB@orsmsx505.amr.corp.intel.com>
-References: <3877989d0908130003i295cc7f2q343ad2446d0d51ff@mail.gmail.com>
-	 <20090813161407A.fujita.tomonori@lab.ntt.co.jp>
-	 <3877989d0908130037j5f9b1594q61e51c544a254b68@mail.gmail.com>
-	 <20090813170227V.fujita.tomonori@lab.ntt.co.jp>
-	 <3877989d0908130111m1a7d8625ha84ed1732a7eae81@mail.gmail.com>
-	 <1250153373.29180.225.camel@macbook.infradead.org>
-	 <3877989d0908130200k6d016a74w1947dc6bcd368a7f@mail.gmail.com>
-	 <1250183298.29180.853.camel@macbook.infradead.org>
-	 <A6AD88C3F2289247BE726C37303E1EB8B3B2F7CB@orsmsx505.amr.corp.intel.com>
-Date: Fri, 14 Aug 2009 13:44:23 +0800
-Message-ID: <3877989d0908132244r74020669ldb119a17ff12d442@mail.gmail.com>
-Subject: Re: [RFC patch] init default dma_ops to prepare intel_iommu_init 
-	failure
-From: Luming Yu <luming.yu@gmail.com>
-To: "Yu, Fenghua" <fenghua.yu@intel.com>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX19jjoAzSN7lhyhLPwVnCSUiS3GcVLsSHuriIbv
+ 2QjEzmrSABXtRnsx8H//7JNFCfD1s8liibQBAfNMjdnm/vtxFZ
+ LQrlFVcaClaMRsx/8gbOQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 14, 2009 at 1:30 AM, Yu, Fenghua<fenghua.yu@intel.com> wrote:
->>-----Original Message-----
->>From: David Woodhouse [mailto:dwmw2@infradead.org]
->>Sent: Thursday, August 13, 2009 10:08 AM
->>To: Luming Yu
->>Cc: FUJITA Tomonori; Yu, Fenghua; Luck, Tony; linux-kernel@vger.kernel.org;
->>akpm@linux-foundation.org
->>Subject: Re: [RFC patch] init default dma_ops to prepare intel_iommu_init
->>failure
->>
->>On Thu, 2009-08-13 at 17:00 +0800, Luming Yu wrote:
->>> Yes the flood of dmar_fault on my HP compaq Dc7800u (my x86_64 linux
->>> desktop) has been fixed. But I still have an iommu casued boot problem
->>> on a ia64 box.
->>
->>Really? Even after http://git.kernel.org/linus/51b89f7a6615 ?]
->>
->>Fenghua will be very interested if that's true. I'm not -- I just hate
->>you for having the hardware. :)
+Hi there,
 
+sometimes I'm using scripts/ver_linux to quickly have an overview of my 
+(build-)environment. The output is usually a bit off, since I don't have 
+"kbd" or "console-tools" installed and don't have /sbin:/usr/sbin in my 
+PATH. The patch below makes scripts/ver_linux print a better result, 
+compared to its original output:
 
--rc5 can't boot.
+-module-init-tools      found
++module-init-tools      3.4
++e2fsprogs              1.41.3
++jfsutils               1.1.12
++reiserfsprogs          3.6.19
++reiser4progs           1.0.6
++xfsprogs               2.9.8
+ Linux C Library        2.7
+ Procps                 3.2.7
+-Kbd                    loadkeys:
++Net-tools              1.60
+ Sh-utils               6.10
 
+Signed-off-by: Christian Kujau <lists@nerdbynature.de>
 
->>
->
-> The latest upstream tree has three patches to fix the iommu boot issue on ia64. Except the above one, the other two patches are:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=33041ec049d39a6e0463c7edc7b6f631d24559e3
->
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=f532959b77e5e567c84c914cb7c7b07d2582448b
->
-> Please checkout the latest upstream tree and have a try.
+--- linux-2.6-git/scripts/ver_linux.orig	2009-08-14 07:47:12.185695350 +0200
++++ linux-2.6-git/scripts/ver_linux	2009-08-14 07:47:23.642348227 +0200
+@@ -4,6 +4,7 @@
+ # /bin /sbin /usr/bin /usr/sbin /usr/local/bin, but it may
+ # differ on your system.
+ #
++PATH="$PATH":/sbin:/usr/sbin
+ echo 'If some fields are empty or look unusual you may have an old version.'
+ echo 'Compare to the current minimal requirements in Documentation/Changes.'
+ echo ' '
+@@ -76,7 +77,7 @@ ifconfig --version 2>&1 | grep tools | a
+ 
+ # Kbd needs 'loadkeys -h',
+ loadkeys -h 2>&1 | awk \
+-'(NR==1 && ($3 !~ /option/)) {print "Kbd                   ", $3}'
++'(NR==1 && ($1 = /^loadkeys/)) {print "Kbd                   ", $3}'
+ 
+ # while console-tools needs 'loadkeys -V'.
+ loadkeys -V 2>&1 | awk \
 
+-- 
+BOFH excuse #17:
 
--rc6 can boot. Thanks all for help. I'm satisfied so far. :-)
+fat electrons in the lines
