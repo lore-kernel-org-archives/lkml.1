@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932729AbZHNUBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932743AbZHNUCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932729AbZHNUBt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 16:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932218AbZHNUBs
+	id S932743AbZHNUCu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 16:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932237AbZHNUCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 16:01:48 -0400
-Received: from www.tglx.de ([62.245.132.106]:59061 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932199AbZHNUBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 16:01:48 -0400
-Date: Fri, 14 Aug 2009 22:01:39 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-cc: "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Brown, Len" <len.brown@intel.com>
-Subject: Re: [patch] clockevents_notify() need to be called with irq's
- enabled
-In-Reply-To: <1250271593.3077.8.camel@sbs-t61.sc.intel.com>
-Message-ID: <alpine.LFD.2.00.0908142159480.1283@localhost.localdomain>
-References: <1250203681.27006.10842.camel@localhost.localdomain>  <alpine.LFD.2.00.0908140753370.1283@localhost.localdomain>  <1250234778.2965.8.camel@sbs-t61>  <alpine.LFD.2.00.0908141025290.1283@localhost.localdomain>
- <1250271593.3077.8.camel@sbs-t61.sc.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 14 Aug 2009 16:02:49 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52913
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932218AbZHNUCt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 16:02:49 -0400
+Date: Fri, 14 Aug 2009 13:02:59 -0700 (PDT)
+Message-Id: <20090814.130259.122634755.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: joerg.roedel@amd.com, mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dma-debug: Allow archs to override
+ check_for_illegal_area
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090812085440.GA14114@elte.hu>
+References: <1250005381-17903-1-git-send-email-joerg.roedel@amd.com>
+	<20090812085440.GA14114@elte.hu>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Aug 2009, Suresh Siddha wrote:
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed, 12 Aug 2009 10:54:40 +0200
 
-> On Fri, 2009-08-14 at 01:28 -0700, Thomas Gleixner wrote:
-> > On Fri, 14 Aug 2009, Suresh Siddha wrote:
-> > 
-> > > We didn't go that route because of the smp_call_function() in the cpu
-> > > hotplug code. So we can't disable interrupts in that path.
-> > 
-> > Hmm, that's the tick_broadcast_on_off() stuff, right ?
 > 
-> Yes Thomas.
+> * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+>> For some architectures (like sparc32) the default 
+>> check_for_illegal_area function does not work reliable. This patch 
+>> makes this function a weak symbol allowing architectures to 
+>> override it if necessary.
+>> 
+>> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+>> ---
+>>  lib/dma-debug.c |    9 ++++++---
+>>  1 files changed, 6 insertions(+), 3 deletions(-)
+> 
+> Dave, you indicated that sparc32 would address this problem 
+> differently. Do we still need this patch (for .31 for example)?
 
-What would it take to move the smp_call_function into the calling code ?
+Don't worry about this purely for sparc32's sake.
 
-Thanks,
+We can revisit this patch if I can't sort out the sparc32 issue
+locally.
 
-	tglx
-
-
+Thanks.
