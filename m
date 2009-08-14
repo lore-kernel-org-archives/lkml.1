@@ -1,38 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932211AbZHNNtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932321AbZHNNuD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932211AbZHNNtl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 09:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509AbZHNNti
+	id S932321AbZHNNuD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 09:50:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756822AbZHNNtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 09:49:38 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:47804 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756758AbZHNNsL (ORCPT
+	Fri, 14 Aug 2009 09:49:40 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:56987 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756735AbZHNNsL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 14 Aug 2009 09:48:11 -0400
-Message-Id: <20090814134810.149047645@de.ibm.com>
+Message-Id: <20090814134810.711836357@de.ibm.com>
 References: <20090814134717.859098725@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 14 Aug 2009 15:47:28 +0200
+Date: Fri, 14 Aug 2009 15:47:30 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        john stultz <johnstul@us.ibm.com>, Daniel Walker <dwalker@fifo99.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 11/15] move NTP adjusted clock multiplier to struct timekeeper
-Content-Disposition: inline; filename=timekeeper-mult.diff
+Subject: [patch 13/15] update clocksource with stop_machine
+Content-Disposition: inline; filename=timekeeper-stop-machine.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-The clocksource structure has two multipliers, the unmodified multiplier
-clock->mult_orig and the NTP corrected multiplier clock->mult. The NTP
-multiplier is misplaced in the struct clocksource, this is private
-information of the timekeeping code. Add the mult field to the struct
-timekeeper to contain the NTP corrected value, keep the unmodifed
-multiplier in clock->mult and remove clock->mult_orig.
+update_wall_time calls change_clocksource HZ times per second to check
+if a new clock source is available. In close to 100% of all calls there
+is no new clock. Replace the tick based check by an update done with
+stop_machine.
 
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>
@@ -40,208 +38,363 @@ Cc: john stultz <johnstul@us.ibm.com>
 Cc: Daniel Walker <dwalker@fifo99.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
- arch/arm/plat-omap/common.c |    7 +----
- include/linux/clocksource.h |    4 ---
- kernel/time/timekeeping.c   |   53 +++++++++++++++++++-------------------------
- 3 files changed, 27 insertions(+), 37 deletions(-)
+ include/linux/clocksource.h |    2 
+ kernel/time/clocksource.c   |  112 +++++++++++++++++---------------------------
+ kernel/time/timekeeping.c   |   41 ++++++++++------
+ 3 files changed, 72 insertions(+), 83 deletions(-)
 
 Index: linux-2.6/include/linux/clocksource.h
 ===================================================================
 --- linux-2.6.orig/include/linux/clocksource.h
 +++ linux-2.6/include/linux/clocksource.h
-@@ -149,8 +149,7 @@ extern u64 timecounter_cyc2time(struct t
-  * @disable:		optional function to disable the clocksource
-  * @mask:		bitmask for two's complement
-  *			subtraction of non 64 bit counters
-- * @mult:		cycle to nanosecond multiplier (adjusted by NTP)
-- * @mult_orig:		cycle to nanosecond multiplier (unadjusted by NTP)
-+ * @mult:		cycle to nanosecond multiplier
-  * @shift:		cycle to nanosecond divisor (power of two)
-  * @flags:		flags describing special properties
-  * @vread:		vsyscall based read
-@@ -168,7 +167,6 @@ struct clocksource {
- 	void (*disable)(struct clocksource *cs);
- 	cycle_t mask;
- 	u32 mult;
--	u32 mult_orig;
- 	u32 shift;
- 	unsigned long flags;
- 	cycle_t (*vread)(void);
+@@ -291,4 +291,6 @@ static inline void update_vsyscall_tz(vo
+ }
+ #endif
+ 
++extern void timekeeping_notify(struct clocksource *clock);
++
+ #endif /* _LINUX_CLOCKSOURCE_H */
+Index: linux-2.6/kernel/time/clocksource.c
+===================================================================
+--- linux-2.6.orig/kernel/time/clocksource.c
++++ linux-2.6/kernel/time/clocksource.c
+@@ -109,35 +109,17 @@ EXPORT_SYMBOL(timecounter_cyc2time);
+ /*[Clocksource internal variables]---------
+  * curr_clocksource:
+  *	currently selected clocksource.
+- * next_clocksource:
+- *	pending next selected clocksource.
+  * clocksource_list:
+  *	linked list with the registered clocksources
+- * clocksource_lock:
+- *	protects manipulations to curr_clocksource and next_clocksource
+- *	and the clocksource_list
++ * clocksource_mutex:
++ *	protects manipulations to curr_clocksource and the clocksource_list
+  * override_name:
+  *	Name of the user-specified clocksource.
+  */
+ static struct clocksource *curr_clocksource;
+-static struct clocksource *next_clocksource;
+ static LIST_HEAD(clocksource_list);
+-static DEFINE_SPINLOCK(clocksource_lock);
++static DEFINE_MUTEX(clocksource_mutex);
+ static char override_name[32];
+-static int finished_booting;
+-
+-/* clocksource_done_booting - Called near the end of core bootup
+- *
+- * Hack to avoid lots of clocksource churn at boot time.
+- * We use fs_initcall because we want this to start before
+- * device_initcall but after subsys_initcall.
+- */
+-static int __init clocksource_done_booting(void)
+-{
+-	finished_booting = 1;
+-	return 0;
+-}
+-fs_initcall(clocksource_done_booting);
+ 
+ #ifdef CONFIG_CLOCKSOURCE_WATCHDOG
+ static LIST_HEAD(watchdog_list);
+@@ -356,18 +338,16 @@ static inline void clocksource_resume_wa
+ void clocksource_resume(void)
+ {
+ 	struct clocksource *cs;
+-	unsigned long flags;
+ 
+-	spin_lock_irqsave(&clocksource_lock, flags);
++	mutex_lock(&clocksource_mutex);
+ 
+-	list_for_each_entry(cs, &clocksource_list, list) {
++	list_for_each_entry(cs, &clocksource_list, list)
+ 		if (cs->resume)
+ 			cs->resume();
+-	}
+ 
+ 	clocksource_resume_watchdog();
+ 
+-	spin_unlock_irqrestore(&clocksource_lock, flags);
++	mutex_unlock(&clocksource_mutex);
+ }
+ 
+ /**
+@@ -383,28 +363,13 @@ void clocksource_touch_watchdog(void)
+ }
+ 
+ #ifdef CONFIG_GENERIC_TIME
+-/**
+- * clocksource_get_next - Returns the selected clocksource
+- *
+- */
+-struct clocksource *clocksource_get_next(void)
+-{
+-	unsigned long flags;
+ 
+-	spin_lock_irqsave(&clocksource_lock, flags);
+-	if (next_clocksource && finished_booting) {
+-		curr_clocksource = next_clocksource;
+-		next_clocksource = NULL;
+-	}
+-	spin_unlock_irqrestore(&clocksource_lock, flags);
+-
+-	return curr_clocksource;
+-}
++static int finished_booting;
+ 
+ /**
+  * clocksource_select - Select the best clocksource available
+  *
+- * Private function. Must hold clocksource_lock when called.
++ * Private function. Must hold clocksource_mutex when called.
+  *
+  * Select the clocksource with the best rating, or the clocksource,
+  * which is selected by userspace override.
+@@ -413,7 +378,7 @@ static void clocksource_select(void)
+ {
+ 	struct clocksource *best, *cs;
+ 
+-	if (list_empty(&clocksource_list))
++	if (!finished_booting || list_empty(&clocksource_list))
+ 		return;
+ 	/* First clocksource on the list has the best rating. */
+ 	best = list_first_entry(&clocksource_list, struct clocksource, list);
+@@ -438,13 +403,31 @@ static void clocksource_select(void)
+ 			best = cs;
+ 		break;
+ 	}
+-	if (curr_clocksource != best)
+-		next_clocksource = best;
++	if (curr_clocksource != best) {
++		printk(KERN_INFO "Switching to clocksource %s\n", best->name);
++		curr_clocksource = best;
++		timekeeping_notify(curr_clocksource);
++	}
+ }
+ 
++/*
++ * clocksource_done_booting - Called near the end of core bootup
++ *
++ * Hack to avoid lots of clocksource churn at boot time.
++ * We use fs_initcall because we want this to start before
++ * device_initcall but after subsys_initcall.
++ */
++static int __init clocksource_done_booting(void)
++{
++	finished_booting = 1;
++	clocksource_select();
++	return 0;
++}
++fs_initcall(clocksource_done_booting);
++
+ #else /* CONFIG_GENERIC_TIME */
+ 
+-static void clocksource_select(void) { }
++static inline void clocksource_select(void) { }
+ 
+ #endif
+ 
+@@ -471,13 +454,11 @@ static void clocksource_enqueue(struct c
+  */
+ int clocksource_register(struct clocksource *cs)
+ {
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&clocksource_lock, flags);
++	mutex_lock(&clocksource_mutex);
+ 	clocksource_enqueue(cs);
+ 	clocksource_select();
+-	spin_unlock_irqrestore(&clocksource_lock, flags);
+ 	clocksource_enqueue_watchdog(cs);
++	mutex_unlock(&clocksource_mutex);
+ 	return 0;
+ }
+ EXPORT_SYMBOL(clocksource_register);
+@@ -487,14 +468,12 @@ EXPORT_SYMBOL(clocksource_register);
+  */
+ void clocksource_change_rating(struct clocksource *cs, int rating)
+ {
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&clocksource_lock, flags);
++	mutex_lock(&clocksource_mutex);
+ 	list_del(&cs->list);
+ 	cs->rating = rating;
+ 	clocksource_enqueue(cs);
+ 	clocksource_select();
+-	spin_unlock_irqrestore(&clocksource_lock, flags);
++	mutex_unlock(&clocksource_mutex);
+ }
+ EXPORT_SYMBOL(clocksource_change_rating);
+ 
+@@ -503,13 +482,11 @@ EXPORT_SYMBOL(clocksource_change_rating)
+  */
+ void clocksource_unregister(struct clocksource *cs)
+ {
+-	unsigned long flags;
+-
++	mutex_lock(&clocksource_mutex);
+ 	clocksource_dequeue_watchdog(cs);
+-	spin_lock_irqsave(&clocksource_lock, flags);
+ 	list_del(&cs->list);
+ 	clocksource_select();
+-	spin_unlock_irqrestore(&clocksource_lock, flags);
++	mutex_unlock(&clocksource_mutex);
+ }
+ EXPORT_SYMBOL(clocksource_unregister);
+ 
+@@ -527,9 +504,9 @@ sysfs_show_current_clocksources(struct s
+ {
+ 	ssize_t count = 0;
+ 
+-	spin_lock_irq(&clocksource_lock);
++	mutex_lock(&clocksource_mutex);
+ 	count = snprintf(buf, PAGE_SIZE, "%s\n", curr_clocksource->name);
+-	spin_unlock_irq(&clocksource_lock);
++	mutex_unlock(&clocksource_mutex);
+ 
+ 	return count;
+ }
+@@ -555,14 +532,14 @@ static ssize_t sysfs_override_clocksourc
+ 	if (buf[count-1] == '\n')
+ 		count--;
+ 
+-	spin_lock_irq(&clocksource_lock);
++	mutex_lock(&clocksource_mutex);
+ 
+ 	if (count > 0)
+ 		memcpy(override_name, buf, count);
+ 	override_name[count] = 0;
+ 	clocksource_select();
+ 
+-	spin_unlock_irq(&clocksource_lock);
++	mutex_unlock(&clocksource_mutex);
+ 
+ 	return count;
+ }
+@@ -582,7 +559,7 @@ sysfs_show_available_clocksources(struct
+ 	struct clocksource *src;
+ 	ssize_t count = 0;
+ 
+-	spin_lock_irq(&clocksource_lock);
++	mutex_lock(&clocksource_mutex);
+ 	list_for_each_entry(src, &clocksource_list, list) {
+ 		/*
+ 		 * Don't show non-HRES clocksource if the tick code is
+@@ -594,7 +571,7 @@ sysfs_show_available_clocksources(struct
+ 				  max((ssize_t)PAGE_SIZE - count, (ssize_t)0),
+ 				  "%s ", src->name);
+ 	}
+-	spin_unlock_irq(&clocksource_lock);
++	mutex_unlock(&clocksource_mutex);
+ 
+ 	count += snprintf(buf + count,
+ 			  max((ssize_t)PAGE_SIZE - count, (ssize_t)0), "\n");
+@@ -649,11 +626,10 @@ device_initcall(init_clocksource_sysfs);
+  */
+ static int __init boot_override_clocksource(char* str)
+ {
+-	unsigned long flags;
+-	spin_lock_irqsave(&clocksource_lock, flags);
++	mutex_lock(&clocksource_mutex);
+ 	if (str)
+ 		strlcpy(override_name, str, sizeof(override_name));
+-	spin_unlock_irqrestore(&clocksource_lock, flags);
++	mutex_unlock(&clocksource_mutex);
+ 	return 1;
+ }
+ 
 Index: linux-2.6/kernel/time/timekeeping.c
 ===================================================================
 --- linux-2.6.orig/kernel/time/timekeeping.c
 +++ linux-2.6/kernel/time/timekeeping.c
-@@ -41,6 +41,8 @@ struct timekeeper {
- 	/* Shift conversion between clock shifted nano seconds and
- 	 * ntp shifted nano seconds. */
- 	int	ntp_error_shift;
-+	/* NTP adjusted clock multiplier */
-+	u32	mult;
- };
+@@ -18,6 +18,7 @@
+ #include <linux/jiffies.h>
+ #include <linux/time.h>
+ #include <linux/tick.h>
++#include <linux/stop_machine.h>
  
- struct timekeeper timekeeper;
-@@ -66,8 +68,8 @@ static void timekeeper_setup_internals(s
- 	/* Do the ns -> cycle conversion first, using original mult */
- 	tmp = NTP_INTERVAL_LENGTH;
- 	tmp <<= clock->shift;
--	tmp += clock->mult_orig/2;
--	do_div(tmp, clock->mult_orig);
-+	tmp += clock->mult/2;
-+	do_div(tmp, clock->mult);
- 	if (tmp == 0)
- 		tmp = 1;
+ /* Structure holding internal timekeeping values. */
+ struct timekeeper {
+@@ -179,6 +180,7 @@ void timekeeping_leap_insert(int leapsec
+ }
  
-@@ -77,13 +79,20 @@ static void timekeeper_setup_internals(s
- 	/* Go back from cycles -> shifted ns */
- 	timekeeper.xtime_interval = (u64) interval * clock->mult;
- 	timekeeper.raw_interval =
--		((u64) interval * clock->mult_orig) >> clock->shift;
-+		((u64) interval * clock->mult) >> clock->shift;
- 
- 	timekeeper.xtime_nsec = 0;
- 	timekeeper.shift = clock->shift;
- 
- 	timekeeper.ntp_error = 0;
- 	timekeeper.ntp_error_shift = NTP_SCALE_SHIFT - clock->shift;
+ #ifdef CONFIG_GENERIC_TIME
 +
-+	/*
-+	 * The timekeeper keeps its own mult values for the currently
-+	 * active clocksource. These value will be adjusted via NTP
-+	 * to counteract clock drifting.
-+	 */
-+	timekeeper.mult = clock->mult;
- }
+ /**
+  * timekeeping_forward_now - update clock to the current time
+  *
+@@ -351,31 +353,40 @@ EXPORT_SYMBOL(do_settimeofday);
+  *
+  * Accumulates current time interval and initializes new clocksource
+  */
+-static void change_clocksource(void)
++static int change_clocksource(void *data)
+ {
+ 	struct clocksource *new, *old;
  
- /*
-@@ -154,14 +163,15 @@ static void timekeeping_forward_now(void
- 	cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
- 	clock->cycle_last = cycle_now;
- 
--	nsec = clocksource_cyc2ns(cycle_delta, clock->mult, clock->shift);
-+	nsec = clocksource_cyc2ns(cycle_delta, timekeeper.mult,
-+				  timekeeper.shift);
- 
- 	/* If arch requires, add in gettimeoffset() */
- 	nsec += arch_gettimeoffset();
- 
- 	timespec_add_ns(&xtime, nsec);
- 
--	nsec = clocksource_cyc2ns(cycle_delta, clock->mult_orig, clock->shift);
-+	nsec = clocksource_cyc2ns(cycle_delta, clock->mult, clock->shift);
- 	timespec_add_ns(&raw_time, nsec);
- }
- 
-@@ -193,8 +203,8 @@ void getnstimeofday(struct timespec *ts)
- 		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
- 
- 		/* convert to nanoseconds: */
--		nsecs = clocksource_cyc2ns(cycle_delta, clock->mult,
--					   clock->shift);
-+		nsecs = clocksource_cyc2ns(cycle_delta, timekeeper.mult,
-+					   timekeeper.shift);
- 
- 		/* If arch requires, add in gettimeoffset() */
- 		nsecs += arch_gettimeoffset();
-@@ -228,8 +238,8 @@ ktime_t ktime_get(void)
- 		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
- 
- 		/* convert to nanoseconds: */
--		nsecs += clocksource_cyc2ns(cycle_delta, clock->mult,
--					    clock->shift);
-+		nsecs += clocksource_cyc2ns(cycle_delta, timekeeper.mult,
-+					    timekeeper.shift);
- 
- 	} while (read_seqretry(&xtime_lock, seq));
- 	/*
-@@ -271,8 +281,8 @@ void ktime_get_ts(struct timespec *ts)
- 		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
- 
- 		/* convert to nanoseconds: */
--		nsecs = clocksource_cyc2ns(cycle_delta, clock->mult,
--					   clock->shift);
-+		nsecs = clocksource_cyc2ns(cycle_delta, timekeeper.mult,
-+					   timekeeper.shift);
- 
- 	} while (read_seqretry(&xtime_lock, seq));
- 
-@@ -356,22 +366,10 @@ static void change_clocksource(void)
- 
- 	if (new->enable && ! new->enable(new))
- 		return;
--	/*
--	 * The frequency may have changed while the clocksource
--	 * was disabled. If so the code in ->enable() must update
--	 * the mult value to reflect the new frequency. Make sure
--	 * mult_orig follows this change.
--	 */
--	new->mult_orig = new->mult;
- 
- 	old = timekeeper.clock;
- 	timekeeper_setup_internals(new);
- 
--	/*
--	 * Save mult_orig in mult so that the value can be restored
--	 * regardless if ->enable() updates the value of mult or not.
--	 */
--	old->mult = old->mult_orig;
- 	if (old->disable)
- 		old->disable(old);
- 
-@@ -461,7 +459,7 @@ void getrawmonotonic(struct timespec *ts
- 		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
- 
- 		/* convert to nanoseconds: */
--		nsecs = clocksource_cyc2ns(cycle_delta, clock->mult_orig,
-+		nsecs = clocksource_cyc2ns(cycle_delta, clock->mult,
- 					   clock->shift);
- 
- 		*ts = raw_time;
-@@ -521,9 +519,6 @@ void __init timekeeping_init(void)
- 	clock = clocksource_default_clock();
- 	if (clock->enable)
- 		clock->enable(clock);
--	/* set mult_orig on enable */
--	clock->mult_orig = clock->mult;
+-	new = clocksource_get_next();
 -
- 	timekeeper_setup_internals(clock);
+-	if (!new || timekeeper.clock == new)
+-		return;
++	new = (struct clocksource *) data;
  
- 	xtime.tv_sec = sec;
-@@ -697,7 +692,7 @@ static void timekeeping_adjust(s64 offse
- 	} else
+ 	timekeeping_forward_now();
++	if (!new->enable || new->enable(new) == 0) {
++		old = timekeeper.clock;
++		timekeeper_setup_internals(new);
++		if (old->disable)
++			old->disable(old);
++	}
++	return 0;
++}
+ 
+-	if (new->enable && ! new->enable(new))
++/**
++ * timekeeping_notify - Install a new clock source
++ * @clock:		pointer to the clock source
++ *
++ * This function is called from clocksource.c after a new, better clock
++ * source has been registered. The caller holds the clocksource_mutex.
++ */
++void timekeeping_notify(struct clocksource *clock)
++{
++	if (timekeeper.clock == clock)
  		return;
+-
+-	old = timekeeper.clock;
+-	timekeeper_setup_internals(new);
+-
+-	if (old->disable)
+-		old->disable(old);
+-
++	stop_machine(change_clocksource, clock, NULL);
+ 	tick_clock_notify();
+ }
++
+ #else /* GENERIC_TIME */
++
+ static inline void timekeeping_forward_now(void) { }
+-static inline void change_clocksource(void) { }
  
--	timekeeper.clock->mult += adj;
-+	timekeeper.mult += adj;
- 	timekeeper.xtime_interval += interval;
- 	timekeeper.xtime_nsec -= offset;
- 	timekeeper.ntp_error -= (interval - offset) <<
-@@ -788,7 +783,7 @@ void update_wall_time(void)
- 	timekeeper.ntp_error +=	timekeeper.xtime_nsec <<
- 				timekeeper.ntp_error_shift;
+ /**
+  * ktime_get - get the monotonic time in ktime_t format
+@@ -416,6 +427,7 @@ void ktime_get_ts(struct timespec *ts)
+ 				ts->tv_nsec + tomono.tv_nsec);
+ }
+ EXPORT_SYMBOL_GPL(ktime_get_ts);
++
+ #endif /* !GENERIC_TIME */
  
--	nsecs = clocksource_cyc2ns(offset, clock->mult, clock->shift);
-+	nsecs = clocksource_cyc2ns(offset, timekeeper.mult, timekeeper.shift);
+ /**
+@@ -772,7 +784,6 @@ void update_wall_time(void)
  	update_xtime_cache(nsecs);
  
  	/* check to see if there is a new clocksource to use */
-Index: linux-2.6/arch/arm/plat-omap/common.c
-===================================================================
---- linux-2.6.orig/arch/arm/plat-omap/common.c
-+++ linux-2.6/arch/arm/plat-omap/common.c
-@@ -253,11 +253,8 @@ static struct clocksource clocksource_32
-  */
- unsigned long long sched_clock(void)
- {
--	unsigned long long ret;
--
--	ret = (unsigned long long)clocksource_32k.read(&clocksource_32k);
--	ret = (ret * clocksource_32k.mult_orig) >> clocksource_32k.shift;
--	return ret;
-+	return clocksource_cyc2ns(clocksource_32k.read(&clocksource_32k),
-+				  clocksource_32k.mult, clocksource_32k.shift);
+-	change_clocksource();
+ 	update_vsyscall(&xtime, timekeeper.clock);
  }
  
- static int __init omap_init_clocksource_32k(void)
 
 -- 
 blue skies,
