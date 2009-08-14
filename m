@@ -1,90 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbZHNF1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZHNF3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755860AbZHNF1K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 01:27:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbZHNF1J
+	id S1754858AbZHNF3Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 01:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbZHNF3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 01:27:09 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:36745 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753851AbZHNF1I convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 01:27:08 -0400
-From: Dhananjay Phadke <dhananjay.phadke@qlogic.com>
-To: David Miller <davem@davemloft.net>,
-       "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>
-CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+	Fri, 14 Aug 2009 01:29:15 -0400
+Received: from mail.atheros.com ([12.36.123.2]:18069 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750805AbZHNF3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 01:29:15 -0400
+Date: Thu, 13 Aug 2009 22:29:15 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: Joe Perches <joe@perches.com>
+CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Amit Salecha <amit.salecha@qlogic.com>
-Date: Thu, 13 Aug 2009 22:27:04 -0700
-Subject: RE: linux-next: manual merge of the net tree with the net-current
- tree
-Thread-Topic: linux-next: manual merge of the net tree with the net-current
- tree
-Thread-Index: AcocigAhpNO+9VZ3TpOposkCyXLsSgADpTsw
-Message-ID: <7608421F3572AB4292BB2532AE89D565859E617F37@AVEXMB1.qlogic.org>
-References: <20090814124040.534dd43c.sfr@canb.auug.org.au>
- <20090813.195042.203385912.davem@davemloft.net>
-In-Reply-To: <20090813.195042.203385912.davem@davemloft.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>
+Subject: Re: [PATCH] scripts: add typdef removal tool
+Message-ID: <20090814052915.GD28524@mosca>
+References: <1250031061-16327-1-git-send-email-lrodriguez@atheros.com>
+ <1250033655.8895.631.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-X-OriginalArrivalTime: 14 Aug 2009 05:26:54.0379 (UTC) FILETIME=[D5ADB7B0:01CA1C9F]
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <1250033655.8895.631.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well yeah, I had already confessed in the introductory mail.
+On Tue, Aug 11, 2009 at 04:34:15PM -0700, Joe Perches wrote:
+> On Tue, 2009-08-11 at 15:51 -0700, Luis R. Rodriguez wrote:
+> > If you are porting drivers and need to remove tydpefs you can use
+> > this to help you port the driver quicker.
+> 
+> > +     # This replaces the typdef declaration for a simple struct declaration - style 1
+> > +     perl -i -e "local $/; while(<>) { s/\btypedef\s+struct\s+_$from\s*\{([\d\D]+?)\}\s*struct\s+$to\b[^;]*;/struct $to \{\1\};/g; print; }" $1
+> > +
+> > +     # This replaces the typdef declaration for a simple struct declaration - style 2
+> > +     perl -i -e "local $/; while(<>) { s/\btypedef\s+struct\s+$to\s*\{([\d\D]+?)\}\s*$from\b[^;]*;/struct $to \{\1\};/g; print; }" $1
+> > +
+> > +     # This replaces the typdef usages with simple structs
+> > +     sed -r -i -e "s/\b$from\b/struct $to/g" $1
+> > +     sed -r -i -e "s/\bP$from\b/struct $to \*/g" $1
+> > +     sed -r -i -e "s/struct $to\s*\*\s*\b/struct $to \*/g" $1
+> > +     sed -r -i -e "s/\(struct $to\s*\*\)\s*/\(struct $to \*\)/g" $1
+> 
+> Hi Luis.
+> 
+> A couple of comments:
+> 
+> In the comments "typdef" should be "typedef".
 
-http://article.gmane.org/gmane.linux.network/135134
+Fixed.
 
-I have verified my own cherry-picked version of net-next driver,
-will do that again once Dave fixes the tree.
+> I believe the sed statements need to be run before the perl statements.
 
-Thanks,
-Dhananjay 
+OK, swapped it around.
 
-> -----Original Message-----
-> From: David Miller [mailto:davem@davemloft.net] 
-> Sent: Thursday, August 13, 2009 19:51
-> To: sfr@canb.auug.org.au
-> Cc: linux-next@vger.kernel.org; linux-kernel@vger.kernel.org; 
-> Dhananjay Phadke; Amit Salecha
-> Subject: Re: linux-next: manual merge of the net tree with 
-> the net-current tree
+> Another common microsoft form is
 > 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Fri, 14 Aug 2009 12:40:40 +1000
+>         typedef struct tagFOO {
+>                 members
+>         } FOO [, *PFOO [, **PPFOO ];
 > 
-> > Hi David,
-> > 
-> > Today's linux-next merge of the net tree got a conflict in
-> > drivers/net/netxen/netxen_nic_main.c between commits
-> > e424fa9d6a0add1a9b812b07e3607daaa5b9e53d ("netxen: remove netxen
-> > workqueue") and 232e7d68d50c9ac3a55d716e5ae215ecd1e043b9 
-> ("netxen: free
-> > napi resources during detach") from the net-current tree and commits
-> > 6598b169b856793f8f9b80a3f3c5a48f5eaf40e3 ("netxen: enable ip addr
-> > hashing"), f17443f4b01659a5c44d5fc6f5c502c39c293959 
-> ("netxen: refactor
-> > net_device setup code") and 7042cd8f148345bfca6c336f009c96a416674f5e
-> > ("netxen: support for ethtool set ringparam") from the net tree.
-> > 
-> > I fixed it up (I hope) (see below) and can carry the fix as 
-> necessary.
+> So maybe perl statement 1 could be:
 > 
-> Thanks for the note Stephen.
+> s/\btypedef\s+struct\s+$to\s*(_{0,1}|tag)$from etc
 > 
-> I'll do a merge of net-2.6 into net-next-2.6 to resolve this
-> and get it out of your hair.
+> and another sed statement might be:
 > 
-> No virus found in this incoming message.
-> Checked by AVG - www.avg.com 
-> Version: 8.5.392 / Virus Database: 270.13.54/2300 - Release 
-> Date: 08/13/09 18:16:00
-> 
+> sed -r -i -e "s/\(struct $to\s*\*\s*\*\s*\)\s*/\(struct $to \*\*\)/g" $1
+
+Yeah I just spotted another form:
+
+typedef struct whatever {
+	members
+} FOO;
+
+So we need to ignore 'whatever', I've tested this. I'll send a v2 with this and
+addressing the other comments you've made.
+
+Mind sending these as a patch on top of the script?
+
+> Maybe you could test this against next:drivers/staging/hv/ to see
+> how well this works.
+
+I'm testing against some ar9271 driver I'm porting but I get a chance
+I'll test it hv, not sure if I will though. Feel free to do so though
+and let me know how it goes.
+
+  Luis
