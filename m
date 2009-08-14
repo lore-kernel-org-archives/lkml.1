@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbZHNJIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752645AbZHNJIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752260AbZHNJIa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 05:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZHNJIa
+	id S1752645AbZHNJIr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 05:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbZHNJIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 05:08:30 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:58874 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbZHNJI3 convert rfc822-to-8bit (ORCPT
+	Fri, 14 Aug 2009 05:08:46 -0400
+Received: from mail-fx0-f228.google.com ([209.85.220.228]:51465 "EHLO
+	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752129AbZHNJIp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 05:08:29 -0400
+	Fri, 14 Aug 2009 05:08:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Up425oMdH5reyjhaj4zN/gt4ZniQDPhz79DeGCXMRPtqUOnHJfA42Smdqt4YFIF5Zq
-         m7QIYqYthID1Sp1UbfUs3RyXqL7XT6ciKZYueNBkLCIKg6tS0hqbRfX8+GfMMzWu8NQB
-         sKF0t4wzx9C0uXOfklP3uI7WlBCB4vIJlhDQQ=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=vzU32wxYlVA5qFdRrqPuXKQDMzjkAJvcBsM0nnR6A0chtBOlNoUcTXpIzG5RGmdoCX
+         hJXZONXmLtl5kWW+LagSg/Zn6riF2s4tScZy7SauotFhcmYzW2CFd+dM9/HejAtZElgq
+         s5sG2FqCETWa3QA04jByhN5B012iYs/9gwXYI=
+Date: Fri, 14 Aug 2009 12:12:02 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: Len Brown <lenb@kernel.org>, "Brown, Len" <len.brown@intel.com>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: acpi_ex_system_memory_space_handler oops
+Message-ID: <20090814091202.GB3545@localdomain.by>
+References: <20090812201034.GA2983@localdomain.by>
+ <alpine.LFD.2.00.0908122009170.22946@localhost.localdomain>
+ <20090813124647.GA19195@localdomain.by>
+ <1250217283.2987.16.camel@minggr.sh.intel.com>
 MIME-Version: 1.0
-In-Reply-To: <200908132256.42941.rjw@sisk.pl>
-References: <200908081625.57333.rjw@sisk.pl> <200908092313.05541.rjw@sisk.pl>
-	 <200908132256.42941.rjw@sisk.pl>
-Date: Fri, 14 Aug 2009 18:08:29 +0900
-Message-ID: <aec7e5c30908140208j1498c134j46bef043f60f6c55@mail.gmail.com>
-Subject: Re: [PATCH update 2x] PM: Introduce core framework for run-time PM of 
-	I/O devices (rev. 16)
-From: Magnus Damm <magnus.damm@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
-       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="6sX45UoQRIJXqkqR"
+Content-Disposition: inline
+In-Reply-To: <1250217283.2987.16.camel@minggr.sh.intel.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 14, 2009 at 5:56 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: PM: Introduce core framework for run-time PM of I/O devices (rev. 16)
+
+--6sX45UoQRIJXqkqR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+>which I belive is (marked with __):
+>        /*
+>         * Does the request fit into the cached memory mapping?
+>         * Is 1) Address below the current mapping? OR
+>         *    2) Address beyond the current mapping?
+>         */
+>        if ((__ address __ < mem_info->mapped_physical_address) ||
+>            (((acpi_integer) address + length) > ((acpi_integer)
 >
-> Introduce a core framework for run-time power management of I/O
-> devices.  Add device run-time PM fields to 'struct dev_pm_info'
-> and device run-time PM callbacks to 'struct dev_pm_ops'.  Introduce
-> a run-time PM workqueue and define some device run-time PM helper
-> functions at the core level.  Document all these things.
->
-> Special thanks to Alan Stern for his help with the design and
-> multiple detailed reviews of the pereceding versions of this patch
-> and to Magnus Damm for testing feedback.
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-I've now tested v16 with my SuperH Mobile platform device Runtime PM
-implementation. All seems fine and my patches for patches for drivers
-such as i2c master, fbdev, v4l2 and uio behave as expected.
+I was wrong. Sorry.
 
-Acked-by: Magnus Damm <damm@igel.co.jp>
+	Sergey
 
-The patch "PM: Runtime PM v15 - Platform Device Bus Support" works
-well with v16 and does not need any update.
+--6sX45UoQRIJXqkqR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Cheers,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-/ magnus
+iJwEAQECAAYFAkqFKmIACgkQfKHnntdSXjT7OwP+Mp308FS3KFmfIOfYdXL12Kze
+nHgVGZrTkc7aOUQtzxWNL6pmJiCHINACvh4MVKVOJpqIiKBRLNboZ5fu/+6tQWoR
+rSToH8KbQNeMtquXfAwlwMcR1tuwX0cxUBaCZTAXBaAPWRZ2gejf6RUmRvXqM8jj
+utSR6B7HUKKhD1Gc3U0=
+=5IU9
+-----END PGP SIGNATURE-----
+
+--6sX45UoQRIJXqkqR--
