@@ -1,67 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbZHNTqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbZHNTta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757040AbZHNTqS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 15:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756525AbZHNTqR
+	id S1757050AbZHNTta (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 15:49:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756999AbZHNTt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 15:46:17 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48260 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756072AbZHNTqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 15:46:16 -0400
-X-Authenticated: #10250065
-X-Provags-ID: V01U2FsdGVkX1/GymI1hxjG1rFITrrFgrTmIwJYNNbcsXSeTETplu
-	ItHo8ainXP1CoE
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-To: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, JosephChan@via.com.tw,
-       ScottFang@viatech.com.cn,
-       Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: [PATCH] viafb: fix ioremap_nocache error handling
-Date: Fri, 14 Aug 2009 19:47:56 +0000
-Message-Id: <1250279276-3936-1-git-send-email-FlorianSchandinat@gmx.de>
-X-Mailer: git-send-email 1.6.3.2
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.52
+	Fri, 14 Aug 2009 15:49:29 -0400
+Received: from kroah.org ([198.145.64.141]:48065 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756594AbZHNTt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 15:49:29 -0400
+Date: Fri, 14 Aug 2009 12:48:15 -0700
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Samsung backlight driver
+Message-ID: <20090814194815.GA31474@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-viafb: fix ioremap_nocache error handling
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-Correct the returned error code for remapping the video framebuffer.
-Introduce error handling for remapping MMIO register address space to
-avoid a NULL pointer dereference. Disable hardware acceleration if
-remapping MMIO register address space failed as those registers are only
-used for hardware acceleration.
+This driver implements backlight controls for Samsung laptops that
+currently do not have ACPI support for this control.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+It has been tested on the N130 laptop and properly works there.
+
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- viafbdev.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+ drivers/platform/x86/Kconfig             |   12 ++
+ drivers/platform/x86/Makefile            |    1 
+ drivers/platform/x86/samsung-backlight.c |  146 +++++++++++++++++++++++++++++++
+ 3 files changed, 159 insertions(+)
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 743eed4..72759b6 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -2134,12 +2134,16 @@ static int __devinit via_pci_probe(void)
+--- a/drivers/platform/x86/Kconfig
++++ b/drivers/platform/x86/Kconfig
+@@ -425,4 +425,16 @@ config ACPI_TOSHIBA
  
- 	if (!viaparinfo->fbmem_virt) {
- 		printk(KERN_INFO "ioremap failed\n");
--		return -1;
-+		return -ENOMEM;
- 	}
- 
- 	viafb_get_mmio_info(&viaparinfo->mmio_base, &viaparinfo->mmio_len);
- 	viaparinfo->io_virt = ioremap_nocache(viaparinfo->mmio_base,
- 		viaparinfo->mmio_len);
-+	if (!viaparinfo->io_virt) {
-+		printk(KERN_WARNING "ioremap failed: hardware acceleration disabled\n");
-+		viafb_accel = 0;
+ 	  If you have a legacy free Toshiba laptop (such as the Libretto L1
+ 	  series), say Y.
++
++config SAMSUNG_BACKLIGHT
++	tristate "Samsung Backlight driver"
++	depends on BACKLIGHT_CLASS_DEVICE
++	depends on DMI
++	---help---
++	  This driver adds support to control the backlight on a number of
++	  Samsung laptops, like the N130.
++
++	  It will only be loaded on laptops that properly need it, so it is
++	  safe to say Y here.
++
+ endif # X86_PLATFORM_DEVICES
+--- a/drivers/platform/x86/Makefile
++++ b/drivers/platform/x86/Makefile
+@@ -20,3 +20,4 @@ obj-$(CONFIG_INTEL_MENLOW)	+= intel_menl
+ obj-$(CONFIG_ACPI_WMI)		+= wmi.o
+ obj-$(CONFIG_ACPI_ASUS)		+= asus_acpi.o
+ obj-$(CONFIG_ACPI_TOSHIBA)	+= toshiba_acpi.o
++obj-$(CONFIG_SAMSUNG_BACKLIGHT)	+= samsung-backlight.o
+--- /dev/null
++++ b/drivers/platform/x86/samsung-backlight.c
+@@ -0,0 +1,146 @@
++/*
++ * Samsung N130 Laptop Backlight driver
++ *
++ * Copyright (C) 2009 Greg Kroah-Hartman (gregkh@suse.de)
++ * Copyright (C) 2009 Novell Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/backlight.h>
++#include <linux/fb.h>
++#include <linux/dmi.h>
++
++#define MAX_BRIGHT	0xff
++#define OFFSET		0xf4
++
++static struct pci_dev *pci_device;
++static struct backlight_device *backlight_device;
++static int offset = OFFSET;
++static u8 current_brightness;
++
++static void read_brightness(void)
++{
++	if (!pci_device)
++		return;
++	pci_read_config_byte(pci_device, offset, &current_brightness);
++}
++
++static void set_brightness(void)
++{
++	if (!pci_device)
++		return;
++	pci_write_config_byte(pci_device, offset, current_brightness);
++}
++
++static int get_brightness(struct backlight_device *bd)
++{
++	return bd->props.brightness;
++}
++
++static int update_status(struct backlight_device *bd)
++{
++	if (!pci_device)
++		return -ENODEV;
++	if (!backlight_device)
++		return -ENODEV;
++
++	current_brightness = bd->props.brightness;
++	set_brightness();
++	return 0;
++}
++
++static struct backlight_ops backlight_ops = {
++	.get_brightness	= get_brightness,
++	.update_status	= update_status,
++};
++
++static int find_video_card(void)
++{
++	struct pci_dev *dev = NULL;
++
++	while ((dev = pci_get_device(0x8086, 0x27ae, dev)) != NULL) {
++		/* Found one, so let's save it off */
++		if (!pci_device)
++			pci_device = pci_dev_get(dev);
 +	}
- 
- 	viafbinfo->node = 0;
- 	viafbinfo->fbops = &viafb_ops;
--- 
-1.6.3.2
-
++
++	if (!pci_device)
++		return 0;
++
++	/* create a backlight device to talk to this one */
++	backlight_device = backlight_device_register("samsung",
++						     &pci_device->dev,
++						     NULL, &backlight_ops);
++	if (IS_ERR(backlight_device))
++		return PTR_ERR(backlight_device);
++	read_brightness();
++	backlight_device->props.max_brightness = MAX_BRIGHT;
++	backlight_device->props.brightness = current_brightness;
++	backlight_device->props.power = FB_BLANK_UNBLANK;
++	backlight_update_status(backlight_device);
++	return 0;
++}
++
++static void remove_video_card(void)
++{
++	if (!pci_device)
++		return;
++
++	backlight_device_unregister(backlight_device);
++	backlight_device = NULL;
++
++	/* we are done with the PCI device, put it back */
++	pci_dev_put(pci_device);
++	pci_device = NULL;
++}
++
++static int dmi_check_cb(const struct dmi_system_id *id)
++{
++	printk(KERN_INFO KBUILD_MODNAME ": found laptop model '%s'\n",
++		id->ident);
++	return 0;
++}
++
++static struct dmi_system_id __initdata samsung_dmi_table[] = {
++	{
++		.ident = "N130",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "N130"),
++			DMI_MATCH(DMI_BOARD_NAME, "N130"),
++		},
++		.callback = dmi_check_cb,
++	},
++	{ },
++};
++
++static int __init samsung_init(void)
++{
++	if (!dmi_check_system(samsung_dmi_table))
++		return -ENODEV;
++
++	return find_video_card();
++}
++
++static void __exit samsung_exit(void)
++{
++	remove_video_card();
++}
++
++module_init(samsung_init);
++module_exit(samsung_exit);
++
++MODULE_AUTHOR("Greg Kroah-Hartman <gregkh@suse.de>");
++MODULE_DESCRIPTION("Samsung N130 Backlight driver");
++MODULE_LICENSE("GPL");
++module_param(offset, int, S_IRUGO | S_IWUSR);
++MODULE_PARM_DESC(offset, "The offset into the PCI device for the brightness control");
++MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnN130:*:rnN130:*");
