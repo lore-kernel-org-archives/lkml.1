@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932613AbZHNPnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932649AbZHNPn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932613AbZHNPnI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 11:43:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932230AbZHNPnH
+	id S932649AbZHNPn3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 11:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932619AbZHNPn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 11:43:07 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:38748 "EHLO
+	Fri, 14 Aug 2009 11:43:28 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:60374 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754388AbZHNPnE (ORCPT
+	with ESMTP id S932622AbZHNPnR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 11:43:04 -0400
+	Fri, 14 Aug 2009 11:43:17 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH v3 1/6] shm-signal: shared-memory signals
+Subject: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
+	objects
 To: alacrityvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Date: Fri, 14 Aug 2009 11:42:57 -0400
-Message-ID: <20090814154257.26116.64434.stgit@dev.haskins.net>
+Date: Fri, 14 Aug 2009 11:43:08 -0400
+Message-ID: <20090814154308.26116.46980.stgit@dev.haskins.net>
 In-Reply-To: <20090814154125.26116.70709.stgit@dev.haskins.net>
 References: <20090814154125.26116.70709.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -26,295 +27,103 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-shm-signal provides a generic shared-memory based bidirectional
-signaling mechanism.  It is used in conjunction with an existing
-signal transport (such as posix-signals, interrupts, pipes, etc) to
-increase the efficiency of the transport since the state information
-is directly accessible to both sides of the link.  The shared-memory
-design provides very cheap access to features such as event-masking
-and spurious delivery mititgation, and is useful implementing higher
-level shared-memory constructs such as rings.
-
-We will use this mechanism as the basis for a shared-memory interface
-later in the series.
+This will generally be used for hypervisors to publish any host-side
+virtual devices up to a guest.  The guest will have the opportunity
+to consume any devices present on the vbus-proxy as if they were
+platform devices, similar to existing buses like PCI.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- MAINTAINERS                |    6 +
- include/linux/Kbuild       |    1 
- include/linux/shm_signal.h |  189 +++++++++++++++++++++++++++++++++++++++++++
- lib/Kconfig                |    9 ++
- lib/Makefile               |    1 
- lib/shm_signal.c           |  192 ++++++++++++++++++++++++++++++++++++++++++++
- 6 files changed, 398 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/shm_signal.h
- create mode 100644 lib/shm_signal.c
+ MAINTAINERS                 |    6 ++
+ arch/x86/Kconfig            |    2 +
+ drivers/Makefile            |    1 
+ drivers/vbus/Kconfig        |   14 ++++
+ drivers/vbus/Makefile       |    3 +
+ drivers/vbus/bus-proxy.c    |  152 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/vbus_driver.h |   73 +++++++++++++++++++++
+ 7 files changed, 251 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/vbus/Kconfig
+ create mode 100644 drivers/vbus/Makefile
+ create mode 100644 drivers/vbus/bus-proxy.c
+ create mode 100644 include/linux/vbus_driver.h
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index b1114cf..3e736fe 100644
+index d0ea25c..83624e7 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4555,6 +4555,12 @@ F:	drivers/serial/serial_lh7a40x.c
- F:	drivers/usb/gadget/lh7a40*
- F:	drivers/usb/host/ohci-lh7a40*
+@@ -5437,6 +5437,12 @@ S:	Maintained
+ F:	Documentation/fb/uvesafb.txt
+ F:	drivers/video/uvesafb.*
  
-+SHM-SIGNAL LIBRARY
++VBUS
 +M:	Gregory Haskins <ghaskins@novell.com>
 +S:	Maintained
-+F:	include/linux/shm_signal.h
-+F:	lib/shm_signal.c
++F:	include/linux/vbus*
++F:	drivers/vbus/*
 +
- SHPC HOTPLUG DRIVER
- M:	Kristen Carlson Accardi <kristen.c.accardi@intel.com>
- L:	linux-pci@vger.kernel.org
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index 334a359..01d67b6 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -331,6 +331,7 @@ unifdef-y += serial_core.h
- unifdef-y += serial.h
- unifdef-y += serio.h
- unifdef-y += shm.h
-+unifdef-y += shm_signal.h
- unifdef-y += signal.h
- unifdef-y += smb_fs.h
- unifdef-y += smb.h
-diff --git a/include/linux/shm_signal.h b/include/linux/shm_signal.h
-new file mode 100644
-index 0000000..21cf750
---- /dev/null
-+++ b/include/linux/shm_signal.h
-@@ -0,0 +1,189 @@
-+/*
-+ * Copyright 2009 Novell.  All Rights Reserved.
-+ *
-+ * Author:
-+ *      Gregory Haskins <ghaskins@novell.com>
-+ *
-+ * This file is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-+ */
-+
-+#ifndef _LINUX_SHM_SIGNAL_H
-+#define _LINUX_SHM_SIGNAL_H
-+
-+#include <linux/types.h>
-+
-+/*
-+ *---------
-+ * The following structures represent data that is shared across boundaries
-+ * which may be quite disparate from one another (e.g. Windows vs Linux,
-+ * 32 vs 64 bit, etc).  Therefore, care has been taken to make sure they
-+ * present data in a manner that is independent of the environment.
-+ *-----------
-+ */
-+
-+#define SHM_SIGNAL_MAGIC 0x58fa39df
-+#define SHM_SIGNAL_VER   1
-+
-+struct shm_signal_irq {
-+	__u8                  enabled;
-+	__u8                  pending;
-+	__u8                  dirty;
-+};
-+
-+enum shm_signal_locality {
-+	shm_locality_north,
-+	shm_locality_south,
-+};
-+
-+struct shm_signal_desc {
-+	__u32                 magic;
-+	__u32                 ver;
-+	struct shm_signal_irq irq[2];
-+};
-+
-+/* --- END SHARED STRUCTURES --- */
-+
-+#ifdef __KERNEL__
-+
-+#include <linux/kref.h>
-+#include <linux/interrupt.h>
-+
-+struct shm_signal_notifier {
-+	void (*signal)(struct shm_signal_notifier *);
-+};
-+
-+struct shm_signal;
-+
-+struct shm_signal_ops {
-+	int      (*inject)(struct shm_signal *s);
-+	void     (*fault)(struct shm_signal *s, const char *fmt, ...);
-+	void     (*release)(struct shm_signal *s);
-+};
-+
-+enum {
-+	shm_signal_in_wakeup,
-+};
-+
-+struct shm_signal {
-+	struct kref                 kref;
-+	spinlock_t                  lock;
-+	enum shm_signal_locality    locale;
-+	unsigned long               flags;
-+	struct shm_signal_ops      *ops;
-+	struct shm_signal_desc     *desc;
-+	struct shm_signal_notifier *notifier;
-+	struct tasklet_struct       deferred_notify;
-+};
-+
-+#define SHM_SIGNAL_FAULT(s, fmt, args...)  \
-+  ((s)->ops->fault ? (s)->ops->fault((s), fmt, ## args) : panic(fmt, ## args))
-+
-+ /*
-+  * These functions should only be used internally
-+  */
-+void _shm_signal_release(struct kref *kref);
-+void _shm_signal_wakeup(struct shm_signal *s);
-+
-+/**
-+ * shm_signal_init() - initialize an SHM_SIGNAL
-+ * @s:        SHM_SIGNAL context
-+ *
-+ * Initializes SHM_SIGNAL context before first use
-+ *
-+ **/
-+void shm_signal_init(struct shm_signal *s, enum shm_signal_locality locale,
-+		     struct shm_signal_ops *ops, struct shm_signal_desc *desc);
-+
-+/**
-+ * shm_signal_get() - acquire an SHM_SIGNAL context reference
-+ * @s:        SHM_SIGNAL context
-+ *
-+ **/
-+static inline struct shm_signal *shm_signal_get(struct shm_signal *s)
-+{
-+	kref_get(&s->kref);
-+
-+	return s;
-+}
-+
-+/**
-+ * shm_signal_put() - release an SHM_SIGNAL context reference
-+ * @s:        SHM_SIGNAL context
-+ *
-+ **/
-+static inline void shm_signal_put(struct shm_signal *s)
-+{
-+	kref_put(&s->kref, _shm_signal_release);
-+}
-+
-+/**
-+ * shm_signal_enable() - enables local notifications on an SHM_SIGNAL
-+ * @s:        SHM_SIGNAL context
-+ * @flags:      Reserved for future use, must be 0
-+ *
-+ * Enables/unmasks the registered notifier (if applicable) to receive wakeups
-+ * whenever the remote side performs an shm_signal() operation. A notification
-+ * will be dispatched immediately if any pending signals have already been
-+ * issued prior to invoking this call.
-+ *
-+ * This is synonymous with unmasking an interrupt.
-+ *
-+ * Returns: success = 0, <0 = ERRNO
-+ *
-+ **/
-+int shm_signal_enable(struct shm_signal *s, int flags);
-+
-+/**
-+ * shm_signal_disable() - disable local notifications on an SHM_SIGNAL
-+ * @s:        SHM_SIGNAL context
-+ * @flags:      Reserved for future use, must be 0
-+ *
-+ * Disables/masks the registered shm_signal_notifier (if applicable) from
-+ * receiving any further notifications.  Any subsequent calls to shm_signal()
-+ * by the remote side will update the shm as dirty, but will not traverse the
-+ * locale boundary and will not invoke the notifier callback.  Signals
-+ * delivered while masked will be deferred until shm_signal_enable() is
-+ * invoked.
-+ *
-+ * This is synonymous with masking an interrupt
-+ *
-+ * Returns: success = 0, <0 = ERRNO
-+ *
-+ **/
-+int shm_signal_disable(struct shm_signal *s, int flags);
-+
-+/**
-+ * shm_signal_inject() - notify the remote side about shm changes
-+ * @s:        SHM_SIGNAL context
-+ * @flags:      Reserved for future use, must be 0
-+ *
-+ * Marks the shm state as "dirty" and, if enabled, will traverse
-+ * a locale boundary to inject a remote notification.  The remote
-+ * side controls whether the notification should be delivered via
-+ * the shm_signal_enable/disable() interface.
-+ *
-+ * The specifics of how to traverse a locale boundary are abstracted
-+ * by the shm_signal_ops->signal() interface and provided by a particular
-+ * implementation.  However, typically going north to south would be
-+ * something like a syscall/hypercall, and going south to north would be
-+ * something like a posix-signal/guest-interrupt.
-+ *
-+ * Returns: success = 0, <0 = ERRNO
-+ *
-+ **/
-+int shm_signal_inject(struct shm_signal *s, int flags);
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _LINUX_SHM_SIGNAL_H */
-diff --git a/lib/Kconfig b/lib/Kconfig
-index bb1326d..136da19 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -200,4 +200,13 @@ config NLATTR
- config GENERIC_ATOMIC64
-        bool
+ VFAT/FAT/MSDOS FILESYSTEM
+ M:	OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+ S:	Maintained
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 13ffa5d..12f8fb3 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -2037,6 +2037,8 @@ source "drivers/pcmcia/Kconfig"
  
-+config SHM_SIGNAL
-+	tristate "SHM Signal - Generic shared-memory signaling mechanism"
-+	default n
-+	help
-+	 Provides a shared-memory based signaling mechansim to indicate
-+         memory-dirty notifications between two end-points.
-+
-+	 If unsure, say N
+ source "drivers/pci/hotplug/Kconfig"
+ 
++source "drivers/vbus/Kconfig"
 +
  endmenu
-diff --git a/lib/Makefile b/lib/Makefile
-index 2e78277..503bf7b 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -76,6 +76,7 @@ obj-$(CONFIG_TEXTSEARCH_BM) += ts_bm.o
- obj-$(CONFIG_TEXTSEARCH_FSM) += ts_fsm.o
- obj-$(CONFIG_SMP) += percpu_counter.o
- obj-$(CONFIG_AUDIT_GENERIC) += audit.o
-+obj-$(CONFIG_SHM_SIGNAL) += shm_signal.o
  
- obj-$(CONFIG_SWIOTLB) += swiotlb.o
- obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o
-diff --git a/lib/shm_signal.c b/lib/shm_signal.c
+ 
+diff --git a/drivers/Makefile b/drivers/Makefile
+index bc4205d..d5bedb1 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -110,3 +110,4 @@ obj-$(CONFIG_VLYNQ)		+= vlynq/
+ obj-$(CONFIG_STAGING)		+= staging/
+ obj-y				+= platform/
+ obj-y				+= ieee802154/
++obj-y				+= vbus/
+diff --git a/drivers/vbus/Kconfig b/drivers/vbus/Kconfig
 new file mode 100644
-index 0000000..fbba74f
+index 0000000..e1939f5
 --- /dev/null
-+++ b/lib/shm_signal.c
-@@ -0,0 +1,192 @@
++++ b/drivers/vbus/Kconfig
+@@ -0,0 +1,14 @@
++#
++# Virtual-Bus (VBus) driver configuration
++#
++
++config VBUS_PROXY
++       tristate "Virtual-Bus support"
++       select SHM_SIGNAL
++       default n
++       help
++       Adds support for a virtual-bus model drivers in a guest to connect
++	to host side virtual-bus resources.  If you are using this kernel
++	in a virtualization solution which implements virtual-bus devices
++	on the backend, say Y.  If unsure, say N.
++
+diff --git a/drivers/vbus/Makefile b/drivers/vbus/Makefile
+new file mode 100644
+index 0000000..a29a1e0
+--- /dev/null
++++ b/drivers/vbus/Makefile
+@@ -0,0 +1,3 @@
++
++vbus-proxy-objs += bus-proxy.o
++obj-$(CONFIG_VBUS_PROXY) += vbus-proxy.o
+diff --git a/drivers/vbus/bus-proxy.c b/drivers/vbus/bus-proxy.c
+new file mode 100644
+index 0000000..3177f9f
+--- /dev/null
++++ b/drivers/vbus/bus-proxy.c
+@@ -0,0 +1,152 @@
 +/*
 + * Copyright 2009 Novell.  All Rights Reserved.
-+ *
-+ * See include/linux/shm_signal.h for documentation
 + *
 + * Author:
 + *      Gregory Haskins <ghaskins@novell.com>
@@ -334,173 +143,214 @@ index 0000000..fbba74f
 + */
 +
 +#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/shm_signal.h>
++#include <linux/vbus_driver.h>
 +
-+int shm_signal_enable(struct shm_signal *s, int flags)
++MODULE_AUTHOR("Gregory Haskins");
++MODULE_LICENSE("GPL");
++
++#define VBUS_PROXY_NAME "vbus-proxy"
++
++static struct vbus_device_proxy *to_dev(struct device *_dev)
 +{
-+	struct shm_signal_irq *irq = &s->desc->irq[s->locale];
-+	unsigned long iflags;
-+
-+	spin_lock_irqsave(&s->lock, iflags);
-+
-+	irq->enabled = 1;
-+	wmb();
-+
-+	if ((irq->dirty || irq->pending)
-+	    && !test_bit(shm_signal_in_wakeup, &s->flags)) {
-+		rmb();
-+		tasklet_schedule(&s->deferred_notify);
-+	}
-+
-+	spin_unlock_irqrestore(&s->lock, iflags);
-+
-+	return 0;
++	return _dev ? container_of(_dev, struct vbus_device_proxy, dev) : NULL;
 +}
-+EXPORT_SYMBOL_GPL(shm_signal_enable);
 +
-+int shm_signal_disable(struct shm_signal *s, int flags)
++static struct vbus_driver *to_drv(struct device_driver *_drv)
 +{
-+	struct shm_signal_irq *irq = &s->desc->irq[s->locale];
-+
-+	irq->enabled = 0;
-+	wmb();
-+
-+	return 0;
++	return container_of(_drv, struct vbus_driver, drv);
 +}
-+EXPORT_SYMBOL_GPL(shm_signal_disable);
 +
 +/*
-+ * signaling protocol:
-+ *
-+ * each side of the shm_signal has an "irq" structure with the following
-+ * fields:
-+ *
-+ *    - enabled: controlled by shm_signal_enable/disable() to mask/unmask
-+ *               the notification locally
-+ *    - dirty:   indicates if the shared-memory is dirty or clean.  This
-+ *               is updated regardless of the enabled/pending state so that
-+ *               the state is always accurately tracked.
-+ *    - pending: indicates if a signal is pending to the remote locale.
-+ *               This allows us to determine if a remote-notification is
-+ *               already in flight to optimize spurious notifications away.
++ * This function is invoked whenever a new driver and/or device is added
++ * to check if there is a match
 + */
-+int shm_signal_inject(struct shm_signal *s, int flags)
++static int vbus_dev_proxy_match(struct device *_dev, struct device_driver *_drv)
 +{
-+	/* Load the irq structure from the other locale */
-+	struct shm_signal_irq *irq = &s->desc->irq[!s->locale];
++	struct vbus_device_proxy *dev = to_dev(_dev);
++	struct vbus_driver *drv = to_drv(_drv);
 +
-+	/*
-+	 * We always mark the remote side as dirty regardless of whether
-+	 * they need to be notified.
-+	 */
-+	irq->dirty = 1;
-+	wmb();   /* dirty must be visible before we test the pending state */
++	return !strcmp(dev->type, drv->type);
++}
 +
-+	if (irq->enabled && !irq->pending) {
-+		rmb();
++/*
++ * This function is invoked after the bus infrastructure has already made a
++ * match.  The device will contain a reference to the paired driver which
++ * we will extract.
++ */
++static int vbus_dev_proxy_probe(struct device *_dev)
++{
++	int ret = 0;
++	struct vbus_device_proxy *dev = to_dev(_dev);
++	struct vbus_driver *drv = to_drv(_dev->driver);
 +
-+		/*
-+		 * If the remote side has enabled notifications, and we do
-+		 * not see a notification pending, we must inject a new one.
-+		 */
-+		irq->pending = 1;
-+		wmb(); /* make it visible before we do the injection */
++	if (drv->ops->probe)
++		ret = drv->ops->probe(dev);
 +
-+		s->ops->inject(s);
-+	}
++	return ret;
++}
++
++static struct bus_type vbus_proxy = {
++	.name   = VBUS_PROXY_NAME,
++	.match  = vbus_dev_proxy_match,
++};
++
++static struct device vbus_proxy_rootdev = {
++	.parent    = NULL,
++	.init_name = VBUS_PROXY_NAME,
++};
++
++static int __init vbus_init(void)
++{
++	int ret;
++
++	ret = bus_register(&vbus_proxy);
++	BUG_ON(ret < 0);
++
++	ret = device_register(&vbus_proxy_rootdev);
++	BUG_ON(ret < 0);
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL_GPL(shm_signal_inject);
 +
-+void _shm_signal_wakeup(struct shm_signal *s)
++postcore_initcall(vbus_init);
++
++static void device_release(struct device *dev)
 +{
-+	struct shm_signal_irq *irq = &s->desc->irq[s->locale];
-+	int dirty;
-+	unsigned long flags;
++	struct vbus_device_proxy *_dev;
 +
-+	spin_lock_irqsave(&s->lock, flags);
++	_dev = container_of(dev, struct vbus_device_proxy, dev);
 +
-+	__set_bit(shm_signal_in_wakeup, &s->flags);
-+
-+	/*
-+	 * The outer loop protects against race conditions between
-+	 * irq->dirty and irq->pending updates
-+	 */
-+	while (irq->enabled && (irq->dirty || irq->pending)) {
-+
-+		/*
-+		 * Run until we completely exhaust irq->dirty (it may
-+		 * be re-dirtied by the remote side while we are in the
-+		 * callback).  We let "pending" remain untouched until we have
-+		 * processed them all so that the remote side knows we do not
-+		 * need a new notification (yet).
-+		 */
-+		do {
-+			irq->dirty = 0;
-+			/* the unlock is an implicit wmb() for dirty = 0 */
-+			spin_unlock_irqrestore(&s->lock, flags);
-+
-+			if (s->notifier)
-+				s->notifier->signal(s->notifier);
-+
-+			spin_lock_irqsave(&s->lock, flags);
-+			dirty = irq->dirty;
-+			rmb();
-+
-+		} while (irq->enabled && dirty);
-+
-+		barrier();
-+
-+		/*
-+		 * We can finally acknowledge the notification by clearing
-+		 * "pending" after all of the dirty memory has been processed
-+		 * Races against this clearing are handled by the outer loop.
-+		 * Subsequent iterations of this loop will execute with
-+		 * pending=0 potentially leading to future spurious
-+		 * notifications, but this is an acceptable tradeoff as this
-+		 * will be rare and harmless.
-+		 */
-+		irq->pending = 0;
-+		wmb();
-+
-+	}
-+
-+	__clear_bit(shm_signal_in_wakeup, &s->flags);
-+	spin_unlock_irqrestore(&s->lock, flags);
-+
-+}
-+EXPORT_SYMBOL_GPL(_shm_signal_wakeup);
-+
-+void _shm_signal_release(struct kref *kref)
-+{
-+	struct shm_signal *s = container_of(kref, struct shm_signal, kref);
-+
-+	s->ops->release(s);
-+}
-+EXPORT_SYMBOL_GPL(_shm_signal_release);
-+
-+static void
-+deferred_notify(unsigned long data)
-+{
-+	struct shm_signal *s = (struct shm_signal *)data;
-+
-+	_shm_signal_wakeup(s);
++	_dev->ops->release(_dev);
 +}
 +
-+void shm_signal_init(struct shm_signal *s, enum shm_signal_locality locale,
-+		     struct shm_signal_ops *ops, struct shm_signal_desc *desc)
++int vbus_device_proxy_register(struct vbus_device_proxy *new)
 +{
-+	memset(s, 0, sizeof(*s));
-+	kref_init(&s->kref);
-+	spin_lock_init(&s->lock);
-+	tasklet_init(&s->deferred_notify,
-+		     deferred_notify,
-+		     (unsigned long)s);
-+	s->locale   = locale;
-+	s->ops      = ops;
-+	s->desc     = desc;
++	new->dev.parent  = &vbus_proxy_rootdev;
++	new->dev.bus     = &vbus_proxy;
++	new->dev.release = &device_release;
++
++	return device_register(&new->dev);
 +}
-+EXPORT_SYMBOL_GPL(shm_signal_init);
++EXPORT_SYMBOL_GPL(vbus_device_proxy_register);
++
++void vbus_device_proxy_unregister(struct vbus_device_proxy *dev)
++{
++	device_unregister(&dev->dev);
++}
++EXPORT_SYMBOL_GPL(vbus_device_proxy_unregister);
++
++static int match_device_id(struct device *_dev, void *data)
++{
++	struct vbus_device_proxy *dev = to_dev(_dev);
++	u64 id = *(u64 *)data;
++
++	return dev->id == id;
++}
++
++struct vbus_device_proxy *vbus_device_proxy_find(u64 id)
++{
++	struct device *dev;
++
++	dev = bus_find_device(&vbus_proxy, NULL, &id, &match_device_id);
++
++	return to_dev(dev);
++}
++EXPORT_SYMBOL_GPL(vbus_device_proxy_find);
++
++int vbus_driver_register(struct vbus_driver *new)
++{
++	new->drv.bus   = &vbus_proxy;
++	new->drv.name  = new->type;
++	new->drv.owner = new->owner;
++	new->drv.probe = vbus_dev_proxy_probe;
++
++	return driver_register(&new->drv);
++}
++EXPORT_SYMBOL_GPL(vbus_driver_register);
++
++void vbus_driver_unregister(struct vbus_driver *drv)
++{
++	driver_unregister(&drv->drv);
++}
++EXPORT_SYMBOL_GPL(vbus_driver_unregister);
++
+diff --git a/include/linux/vbus_driver.h b/include/linux/vbus_driver.h
+new file mode 100644
+index 0000000..c53e13f
+--- /dev/null
++++ b/include/linux/vbus_driver.h
+@@ -0,0 +1,73 @@
++/*
++ * Copyright 2009 Novell.  All Rights Reserved.
++ *
++ * Mediates access to a host VBUS from a guest kernel by providing a
++ * global view of all VBUS devices
++ *
++ * Author:
++ *      Gregory Haskins <ghaskins@novell.com>
++ *
++ * This file is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
++ */
++
++#ifndef _LINUX_VBUS_DRIVER_H
++#define _LINUX_VBUS_DRIVER_H
++
++#include <linux/device.h>
++#include <linux/shm_signal.h>
++
++struct vbus_device_proxy;
++struct vbus_driver;
++
++struct vbus_device_proxy_ops {
++	int (*open)(struct vbus_device_proxy *dev, int version, int flags);
++	int (*close)(struct vbus_device_proxy *dev, int flags);
++	int (*shm)(struct vbus_device_proxy *dev, int id, int prio,
++		   void *ptr, size_t len,
++		   struct shm_signal_desc *sigdesc, struct shm_signal **signal,
++		   int flags);
++	int (*call)(struct vbus_device_proxy *dev, u32 func,
++		    void *data, size_t len, int flags);
++	void (*release)(struct vbus_device_proxy *dev);
++};
++
++struct vbus_device_proxy {
++	char                          *type;
++	u64                            id;
++	void                          *priv; /* Used by drivers */
++	struct vbus_device_proxy_ops  *ops;
++	struct device                  dev;
++};
++
++int vbus_device_proxy_register(struct vbus_device_proxy *dev);
++void vbus_device_proxy_unregister(struct vbus_device_proxy *dev);
++
++struct vbus_device_proxy *vbus_device_proxy_find(u64 id);
++
++struct vbus_driver_ops {
++	int (*probe)(struct vbus_device_proxy *dev);
++	int (*remove)(struct vbus_device_proxy *dev);
++};
++
++struct vbus_driver {
++	char                          *type;
++	struct module                 *owner;
++	struct vbus_driver_ops        *ops;
++	struct device_driver           drv;
++};
++
++int vbus_driver_register(struct vbus_driver *drv);
++void vbus_driver_unregister(struct vbus_driver *drv);
++
++#endif /* _LINUX_VBUS_DRIVER_H */
 
