@@ -1,195 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756973AbZHNTUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756987AbZHNT1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756973AbZHNTUR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 15:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbZHNTUQ
+	id S1756987AbZHNT1b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 15:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962AbZHNT1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 15:20:16 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:15461 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756077AbZHNTUO (ORCPT
+	Fri, 14 Aug 2009 15:27:31 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:27984 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754285AbZHNT1a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 15:20:14 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=jIQBgRVkBhpq4f3W0ux3P3wgCvk+hpt/lmvliq0aD/nRNHDixFkvyKp+CKrt9/VrS
-	lPjDwy5ewrPMdUMjsOCbw==
-Date: Fri, 14 Aug 2009 12:20:08 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Eric B Munson <ebmunson@us.ibm.com>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-man@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mtk.manpages@gmail.com, Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 3/3] Add MAP_HUGETLB example V3
-In-Reply-To: <b3a3235077fb708c541463042f41c33c834a204f.1250258125.git.ebmunson@us.ibm.com>
-Message-ID: <alpine.DEB.2.00.0908141219200.12472@chino.kir.corp.google.com>
-References: <cover.1250258125.git.ebmunson@us.ibm.com> <d2e4f6625a147c1ef6cb26de66849875f57a8155.1250258125.git.ebmunson@us.ibm.com> <cf4bcaaa502168605af7b556bb4e8110033c44e6.1250258125.git.ebmunson@us.ibm.com>
- <b3a3235077fb708c541463042f41c33c834a204f.1250258125.git.ebmunson@us.ibm.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 14 Aug 2009 15:27:30 -0400
+Date: Fri, 14 Aug 2009 13:27:30 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "hpa@zytor.com" <hpa@zytor.com>, "mingo@redhat.com" <mingo@redhat.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: add /proc/cpuinfo/physical id quirks
+Message-ID: <20090814192730.GA6431@ldl.fc.hp.com>
+References: <20090814163618.GQ7185@ldl.fc.hp.com> <1250276831.3077.17.camel@sbs-t61.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250276831.3077.17.camel@sbs-t61.sc.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Aug 2009, Eric B Munson wrote:
+* Suresh Siddha <suresh.b.siddha@intel.com>:
+> On Fri, 2009-08-14 at 09:36 -0700, Alex Chiang wrote:
+> > As systems become larger and more complex, it is not always possible
+> > to assume that an APIC ID maps directly to a given physical slot.
+> > 
+> > From a UI point-of-view, it's nice if the 'physical id' field in
+> > /proc/cpuinfo matches the silk-screening or labelling on the system
+> > chassis.
+> > 
+> > Add a quirk that allows oddball platforms to ensure that what the kernel
+> > displays in /proc/cpuinfo matches the physical reality.
+> 
+> Alex, Does it makes sense to add a new entry in /proc/cpuinfo rather
+> than overloading the 'physical id' by modifying phys_proc_id.
 
-> This patch adds an example of how to use the MAP_HUGETLB flag to the
-> vm documentation directory and a reference to the example in
-> hugetlbpage.txt.
-> 
-> Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
+Hm, I'm not entirely sure about that, for two reasons.
 
-Acked-by: David Rientjes <rientjes@google.com>
+First (and this is the weaker reason), I'd prefer not to keep
+adding new fields to /proc/cpuinfo if we can help it, as it just
+makes for a continually more complicated ABI/API for userspace.
 
-Adding Randy Dunlap to the cc.
+Second, I guess I'm not sure what else 'physical id' /should/
+represent. I'm willing to be corrected on this point, so if I'm
+wrong, just call it simple ignorance. :)
 
+> That way, even if there is a mis-match between the bios and the
+> OS fixup tables, we won't screw up other topology setup etc in
+> the kernel that are dependent on the phys_proc_id.
 
-> ---
-> Changes from V2:
->  Rebase to newest linux-2.6 tree
->  Fix comment in example referencing MAP_LARGEPAGE
->  Move example code to its own file
->  Update hugetlbpage.txt with MAP_HUGETLB information and example reference
->  Add map_hugetlb.c to 00-INDEX
-> 
-> Changes from V1:
->  Rebase to newest linux-2.6 tree
->  Change MAP_LARGEPAGE to MAP_HUGETLB to match flag name in huge page shm
-> 
->  Documentation/vm/00-INDEX        |    2 +
->  Documentation/vm/hugetlbpage.txt |   14 ++++---
->  Documentation/vm/map_hugetlb.c   |   77 ++++++++++++++++++++++++++++++++++++++
->  3 files changed, 87 insertions(+), 6 deletions(-)
->  create mode 100644 Documentation/vm/map_hugetlb.c
-> 
-> diff --git a/Documentation/vm/00-INDEX b/Documentation/vm/00-INDEX
-> index 2f77ced..aabd973 100644
-> --- a/Documentation/vm/00-INDEX
-> +++ b/Documentation/vm/00-INDEX
-> @@ -20,3 +20,5 @@ slabinfo.c
->  	- source code for a tool to get reports about slabs.
->  slub.txt
->  	- a short users guide for SLUB.
-> +map_hugetlb.c
-> +	- an example program that uses the MAP_HUGETLB mmap flag.
-> diff --git a/Documentation/vm/hugetlbpage.txt b/Documentation/vm/hugetlbpage.txt
-> index ea8714f..6a8feab 100644
-> --- a/Documentation/vm/hugetlbpage.txt
-> +++ b/Documentation/vm/hugetlbpage.txt
-> @@ -146,12 +146,14 @@ Regular chown, chgrp, and chmod commands (with right permissions) could be
->  used to change the file attributes on hugetlbfs.
->  
->  Also, it is important to note that no such mount command is required if the
-> -applications are going to use only shmat/shmget system calls.  Users who
-> -wish to use hugetlb page via shared memory segment should be a member of
-> -a supplementary group and system admin needs to configure that gid into
-> -/proc/sys/vm/hugetlb_shm_group.  It is possible for same or different
-> -applications to use any combination of mmaps and shm* calls, though the
-> -mount of filesystem will be required for using mmap calls.
-> +applications are going to use only shmat/shmget system calls or mmap with
-> +MAP_HUGETLB.  Users who wish to use hugetlb page via shared memory segment
-> +should be a member of a supplementary group and system admin needs to
-> +configure that gid into /proc/sys/vm/hugetlb_shm_group.  It is possible for
-> +same or different applications to use any combination of mmaps and shm*
-> +calls, though the mount of filesystem will be required for using mmap calls
-> +without MAP_HUGETLB.  For an example of how to use mmap with MAP_HUGETLB see
-> +map_hugetlb.c.
->  
->  *******************************************************************
->  
-> diff --git a/Documentation/vm/map_hugetlb.c b/Documentation/vm/map_hugetlb.c
-> new file mode 100644
-> index 0000000..e2bdae3
-> --- /dev/null
-> +++ b/Documentation/vm/map_hugetlb.c
-> @@ -0,0 +1,77 @@
-> +/*
-> + * Example of using hugepage memory in a user application using the mmap
-> + * system call with MAP_HUGETLB flag.  Before running this program make
-> + * sure the administrator has allocated enough default sized huge pages
-> + * to cover the 256 MB allocation.
-> + *
-> + * For ia64 architecture, Linux kernel reserves Region number 4 for hugepages.
-> + * That means the addresses starting with 0x800000... will need to be
-> + * specified.  Specifying a fixed address is not required on ppc64, i386
-> + * or x86_64.
-> + */
-> +#include <stdlib.h>
-> +#include <stdio.h>
-> +#include <unistd.h>
-> +#include <sys/mman.h>
-> +#include <fcntl.h>
-> +
-> +#define LENGTH (256UL*1024*1024)
-> +#define PROTECTION (PROT_READ | PROT_WRITE)
-> +
-> +#ifndef MAP_HUGETLB
-> +#define MAP_HUGETLB 0x40
-> +#endif
-> +
-> +/* Only ia64 requires this */
-> +#ifdef __ia64__
-> +#define ADDR (void *)(0x8000000000000000UL)
-> +#define FLAGS (MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB | MAP_FIXED)
-> +#else
-> +#define ADDR (void *)(0x0UL)
-> +#define FLAGS (MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB)
-> +#endif
-> +
-> +void check_bytes(char *addr)
-> +{
-> +	printf("First hex is %x\n", *((unsigned int *)addr));
-> +}
-> +
-> +void write_bytes(char *addr)
-> +{
-> +	unsigned long i;
-> +
-> +	for (i = 0; i < LENGTH; i++)
-> +		*(addr + i) = (char)i;
-> +}
-> +
-> +void read_bytes(char *addr)
-> +{
-> +	unsigned long i;
-> +
-> +	check_bytes(addr);
-> +	for (i = 0; i < LENGTH; i++)
-> +		if (*(addr + i) != (char)i) {
-> +			printf("Mismatch at %lu\n", i);
-> +			break;
-> +		}
-> +}
-> +
-> +int main(void)
-> +{
-> +	void *addr;
-> +
-> +	addr = mmap(ADDR, LENGTH, PROTECTION, FLAGS, 0, 0);
-> +	if (addr == MAP_FAILED) {
-> +		perror("mmap");
-> +		exit(1);
-> +	}
-> +
-> +	printf("Returned address is %p\n", addr);
-> +	check_bytes(addr);
-> +	write_bytes(addr);
-> +	read_bytes(addr);
-> +
-> +	munmap(addr, LENGTH);
-> +
-> +	return 0;
-> +}
-> -- 
-> 1.6.3.2
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+My quick grep earlier led me to believe that as long as the
+phys_proc_ids were /consistent/ then it didn't seem to matter
+what their /values/ were.
+
+In other words, my patch simply says, "all cores that had
+phys_proc_id X now have phys_proc_id Y". All the cores on a
+physical package have identical phys_proc_ids, and cores on a
+different physical package do /not/ collide.
+
+But again, that just might be my ignorance again. If we do indeed
+care about the values of phys_proc_ids, please let me know and
+I'd be happy to rework the patch.
+
+Thanks.
+
+/ac
+
