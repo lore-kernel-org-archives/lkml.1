@@ -1,147 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641AbZHNIv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbZHNIxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753641AbZHNIv4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 04:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbZHNIvz
+	id S1753980AbZHNIxv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 04:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbZHNIxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 04:51:55 -0400
-Received: from mx1.melware.net ([78.47.171.162]:39809 "EHLO mx1.melware.net"
+	Fri, 14 Aug 2009 04:53:50 -0400
+Received: from mga01.intel.com ([192.55.52.88]:46580 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751193AbZHNIvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 04:51:54 -0400
-X-Greylist: delayed 1226 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Aug 2009 04:51:54 EDT
-Date: Fri, 14 Aug 2009 10:31:29 +0200 (CEST)
-From: Armin Schindler <armin@melware.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ISDN: use offetof in eicon/message.c
-In-Reply-To: <20090814160458.eb43b410.sfr@canb.auug.org.au>
-Message-ID: <alpine.DEB.0.99.0908141029310.32619@k10.melware.de>
-References: <20090814160458.eb43b410.sfr@canb.auug.org.au>
-Organization: Cytronics & Melware
+	id S1752323AbZHNIxu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 04:53:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,379,1246863600"; 
+   d="scan'208";a="483528079"
+From: "Wang, Shane" <shane.wang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, "Cihula, Joseph" <joseph.cihula@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>,
+       "Wei, Gang" <gang.wei@intel.com>
+Date: Fri, 14 Aug 2009 16:52:36 +0800
+Subject: RE: [PATCH 1/1] intel_txt: to fix build errors of CONFIG_ACPI_SLEEP
+Thread-Topic: [PATCH 1/1] intel_txt: to fix build errors of CONFIG_ACPI_SLEEP
+Thread-Index: Acoci/7HgMwoUPCLQz+cOYXb9Tu2MQAMI2Aw
+Message-ID: <037F493892196B458CD3E193E8EBAD4F01EAB6484A@pdsmsx502.ccr.corp.intel.com>
+References: <4A4ACA60.1000209@intel.com> <20090807072752.GA12119@elte.hu>
+ <20090812145321.GA11347@elte.hu>
+ <037F493892196B458CD3E193E8EBAD4F01EAB64402@pdsmsx502.ccr.corp.intel.com>
+ <20090813064634.GA12143@elte.hu> <4A842C5B.7050100@zytor.com>
+ <037F493892196B458CD3E193E8EBAD4F01EAB6464E@pdsmsx502.ccr.corp.intel.com>
+ <4A84D432.2040704@zytor.com>
+In-Reply-To: <4A84D432.2040704@zytor.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Aug 2009, Stephen Rothwell wrote:
+H. Peter Anvin wrote:
+> On 08/13/2009 07:06 PM, Wang, Shane wrote:
+>> I agree with hpa, considering TXT doesnot depends on acpi sleep.
+>> 
+>> takes effect but tboot->mac_regions[] will never be used without S3.
+>> 
+> 
+> Given that, I would create a function called tboot_setup_suspend() or
+> something like that and localize the setting of mac_regions as well as
+> s3_resume_vector there.
+> 
+> Since it looks like s3_resume_vector is simply set up in tboot_sleep()
+> before we'd call tboot_shutdown(), we can presumably simply do it all
+> in tboot_shutdown().
+> 
+> Ingo, Shane: how does the attached patch look?
+> 
+> 	-hpa
 
-Eliminate these compiler warnings:
+ACK.
 
-drivers/isdn/hardware/eicon/message.c: In function 'connect_b3_req':
-drivers/isdn/hardware/eicon/message.c:2695: warning: cast from pointer to integer of different size
-drivers/isdn/hardware/eicon/message.c:2757: warning: cast from pointer to integer of different size
-drivers/isdn/hardware/eicon/message.c:2791: warning: cast from pointer to integer of different size
-drivers/isdn/hardware/eicon/message.c: In function 'connect_b3_res':
-drivers/isdn/hardware/eicon/message.c:2895: warning: cast from pointer to integer of different size
-drivers/isdn/hardware/eicon/message.c: In function 'manufacturer_res':
-drivers/isdn/hardware/eicon/message.c:3805: warning: cast from pointer to integer of different size
-drivers/isdn/hardware/eicon/message.c: In function 'nl_ind':
-drivers/isdn/hardware/eicon/message.c:6847: warning: cast from pointer to integer of different size
-drivers/isdn/hardware/eicon/message.c: In function 'add_b23':
-drivers/isdn/hardware/eicon/message.c:8476: warning: cast from pointer to integer of different size
-drivers/isdn/hardware/eicon/message.c:8528: warning: cast from pointer to integer of different size
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Acked-by: Armin Schindler <armin@melware.de>
----
-drivers/isdn/hardware/eicon/message.c |   17 +++++++++--------
-1 files changed, 9 insertions(+), 8 deletions(-)
-
-I have finally got sick of these in linux-next :-)
-The resulting object files (from and x86_64 allmodconfig) are identical
-except for the places that line numbers are being used.
-
-This patch is relative to the current net-next-2.6 tree.
-
-diff --git a/drivers/isdn/hardware/eicon/message.c b/drivers/isdn/hardware/eicon/message.c
-index 27d5dd6..89af308 100644
---- a/drivers/isdn/hardware/eicon/message.c
-+++ b/drivers/isdn/hardware/eicon/message.c
-@@ -24,6 +24,7 @@
-  */
-
-
-+#include <linux/stddef.h>	/* for offsetof */
-
-
-
-@@ -2692,7 +2693,7 @@ static byte connect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
-           if (!(fax_control_bits & T30_CONTROL_BIT_MORE_DOCUMENTS)
-            || (fax_feature_bits & T30_FEATURE_BIT_MORE_DOCUMENTS))
-           {
--            len = (byte)(&(((T30_INFO *) 0)->universal_6));
-+            len = (byte)offsetof(T30_INFO, universal_6);
-             fax_info_change = false;
-             if (ncpi->length >= 4)
-             {
-@@ -2754,7 +2755,7 @@ static byte connect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
-                     for (i = 0; i < w; i++)
-                       ((T30_INFO   *)(plci->fax_connect_info_buffer))->station_id[i] = fax_parms[4].info[1+i];
-                     ((T30_INFO   *)(plci->fax_connect_info_buffer))->head_line_len = 0;
--                    len = (byte)(((T30_INFO *) 0)->station_id + 20);
-+                    len = (byte)(offsetof(T30_INFO, station_id[0]) + 20);
-                     w = fax_parms[5].length;
-                     if (w > 20)
-                       w = 20;
-@@ -2788,7 +2789,7 @@ static byte connect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
-                 }
-                 else
-                 {
--                  len = (byte)(&(((T30_INFO *) 0)->universal_6));
-+                  len = (byte)offsetof(T30_INFO, universal_6);
-                 }
-                 fax_info_change = true;
-
-@@ -2892,7 +2893,7 @@ static byte connect_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
-     && (plci->nsf_control_bits & T30_NSF_CONTROL_BIT_ENABLE_NSF)
-     && (plci->nsf_control_bits & T30_NSF_CONTROL_BIT_NEGOTIATE_RESP))
-    {
--            len = ((byte)(((T30_INFO *) 0)->station_id + 20));
-+            len = ((byte)(offsetof(T30_INFO, station_id[0]) + 20));
-             if (plci->fax_connect_info_length < len)
-             {
-               ((T30_INFO *)(plci->fax_connect_info_buffer))->station_id_len = 0;
-@@ -3802,7 +3803,7 @@ static byte manufacturer_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
-       break;
-     }
-     ncpi = &m_parms[1];
--    len = ((byte)(((T30_INFO *) 0)->station_id + 20));
-+    len = ((byte)(offsetof(T30_INFO, station_id[0]) + 20));
-     if (plci->fax_connect_info_length < len)
-     {
-       ((T30_INFO *)(plci->fax_connect_info_buffer))->station_id_len = 0;
-@@ -6844,7 +6845,7 @@ static void nl_ind(PLCI *plci)
-         if ((plci->requested_options_conn | plci->requested_options | a->requested_options_table[plci->appl->Id-1])
-           & ((1L << PRIVATE_FAX_SUB_SEP_PWD) | (1L << PRIVATE_FAX_NONSTANDARD)))
-         {
--          i = ((word)(((T30_INFO *) 0)->station_id + 20)) + ((T30_INFO   *)plci->NL.RBuffer->P)->head_line_len;
-+          i = ((word)(offsetof(T30_INFO, station_id[0]) + 20)) + ((T30_INFO   *)plci->NL.RBuffer->P)->head_line_len;
-           while (i < plci->NL.RBuffer->length)
-             plci->ncpi_buffer[++len] = plci->NL.RBuffer->P[i++];
-         }
-@@ -8473,7 +8474,7 @@ static word add_b23(PLCI *plci, API_PARSE *bp)
-             fax_control_bits |= T30_CONTROL_BIT_ACCEPT_SEL_POLLING;
-           }
-             len = nlc[0];
--          pos = ((byte)(((T30_INFO *) 0)->station_id + 20));
-+          pos = ((byte)(offsetof(T30_INFO, station_id[0]) + 20));
-    if (pos < plci->fax_connect_info_length)
-    {
-      for (i = 1 + plci->fax_connect_info_buffer[pos]; i != 0; i--)
-@@ -8525,7 +8526,7 @@ static word add_b23(PLCI *plci, API_PARSE *bp)
-       }
-
-       PUT_WORD(&(((T30_INFO *)&nlc[1])->control_bits_low), fax_control_bits);
--      len = ((byte)(((T30_INFO *) 0)->station_id + 20));
-+      len = ((byte)(offsetof(T30_INFO, station_id[0]) + 20));
-       for (i = 0; i < len; i++)
-         plci->fax_connect_info_buffer[i] = nlc[1+i];
-       ((T30_INFO   *) plci->fax_connect_info_buffer)->head_line_len = 0;
---
-1.6.3.3
-
+Thanks.
+Shane
