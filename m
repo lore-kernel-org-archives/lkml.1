@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbZHONwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbZHONza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754504AbZHONwH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 09:52:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbZHONwH
+	id S1754549AbZHONza (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 09:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbZHONz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 09:52:07 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:58657 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753598AbZHONwG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 09:52:06 -0400
-Date: Sat, 15 Aug 2009 09:49:15 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make shr to divide by power of 2 (resend)
-In-Reply-To: <4A86BC96.9040702@gmail.com>
-Message-ID: <alpine.LFD.2.00.0908150947260.14440@localhost>
-References: <20090815134312.GA7533@localdomain.by> <4A86BC96.9040702@gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Sat, 15 Aug 2009 09:55:29 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49027 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751597AbZHONz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 09:55:28 -0400
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+ slot is freed)
+From: James Bottomley <James.Bottomley@suse.de>
+To: Mark Lord <liml@rtr.ca>
+Cc: Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
+       Greg Freemyer <greg.freemyer@gmail.com>,
+       Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+In-Reply-To: <4A86B69C.7090001@rtr.ca>
+References: <200908122007.43522.ngupta@vflare.org>
+	 <20090813151312.GA13559@linux.intel.com>
+	 <20090813162621.GB1915@phenom2.trippelsdorf.de>
+	 <alpine.DEB.1.10.0908130931400.28013@asgard.lang.hm>
+	 <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>
+	 <alpine.DEB.1.10.0908131342460.28013@asgard.lang.hm>
+	 <3e8340490908131354q167840fcv124ec56c92bbb830@mail.gmail.com>
+	 <4A85E0DC.9040101@rtr.ca>
+	 <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com>
+	 <20090814234539.GE27148@parisc-linux.org>
+	 <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com>
+	 <1250341176.4159.2.camel@mulgrave.site>  <4A86B69C.7090001@rtr.ca>
+Content-Type: text/plain
+Date: Sat, 15 Aug 2009 08:55:17 -0500
+Message-Id: <1250344518.4159.4.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Aug 2009, Jiri Slaby wrote:
+On Sat, 2009-08-15 at 09:22 -0400, Mark Lord wrote:
+> James Bottomley wrote:
+> >
+> > This means you have to drain the outstanding NCQ commands (stalling the
+> > device) before you can send a TRIM.   If we do this for every discard,
+> > the performance impact will be pretty devastating, hence the need to
+> > coalesce.  It's nothing really to do with device characteristics, it's
+> > an ATA protocol problem.
+> ..
+> 
+> I don't think that's really much of an issue -- we already have to do
+> that for cache-flushes whenever barriers are enabled.  Yes it costs,
+> but not too much.
 
-> On 08/15/2009 03:43 PM, Sergey Senozhatsky wrote:
-> > Make an arithmetic right shift to divide by power of 2.
->
-> Why? Is out there a compiler not doing that?
->
-> Seems like it should be rather converted to DIV_ROUND_UP.
->
-> > Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-> > ---
-> > diff --git a/drivers/video/console/bitblit.c b/drivers/video/console/bitblit.c
-> > index 69864b1..b816151 100644
-> > --- a/drivers/video/console/bitblit.c
-> > +++ b/drivers/video/console/bitblit.c
-> > @@ -144,7 +144,7 @@ static void bit_putcs(struct vc_data *vc, struct fb_info *info,
-> >  		      int fg, int bg)
-> >  {
-> >  	struct fb_image image;
-> > -	u32 width = (vc->vc_font.width + 7)/8;
-> > +	u32 width = (vc->vc_font.width + 7) >> 3;
-> >  	u32 cellsize = width * vc->vc_font.height;
-> >  	u32 maxcnt = info->pixmap.size/cellsize;
-> >  	u32 scan_align = info->pixmap.scan_align - 1;
+That's not really what the enterprise is saying about flush barriers.
+True, not all the performance problems are NCQ queue drain, but for a
+steady workload they are significant.
 
-  it does seem like a DIV_ROUND_UP would be better but perhaps another
-solution would be to define a meaningful macro name for that
-operation.  if that conversion is going to be done regularly, a macro
-with an informative name might be in order.  if it's a one-shot
-operation, though, not much point.
+James
 
-rday
---
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
