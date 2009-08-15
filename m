@@ -1,357 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752924AbZHPArK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbZHPAtH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752924AbZHPArK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 20:47:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZHPArJ
+	id S1752966AbZHPAtH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 20:49:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZHPAtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 20:47:09 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36533 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752842AbZHPArH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 20:47:07 -0400
-Date: Sat, 15 Aug 2009 20:47:05 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: xfs@oss.sgi.com, linux-fsdevel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, liml@rtr.ca, jens.axboe@oracle.com
-Subject: [PATCH, RFC] xfs: batched discard support
-Message-ID: <20090816004705.GA7347@infradead.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="0OAP2g/MAC+5xKAE"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 15 Aug 2009 20:49:06 -0400
+Received: from sing.entic.net ([208.64.63.147]:34171 "EHLO mail.q-ag.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750899AbZHPAtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 20:49:05 -0400
+Message-Id: <200908160048.n7G0mtO1023800@mail.q-ag.de>
+From: Manfred Spraul <manfred@colorfullife.com>
+To: linux-kernel@vger.kernel.org
+Cc: npiggin@suse.de
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nadia Derbey <Nadia.Derbey@bull.net>
+Cc: Pierre Peiffer <peifferp@gmail.com>
+Date: Sat, 15 Aug 2009 23:57:12 +0200
+Subject: [PATCH 0/4] ipc/sem.c: Alternative to Nick's patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following series of 4 patches are an alternative to Nick's 4th
+patch. They are intended to be applied after the first 3 patches from
+Nick.
 
---0OAP2g/MAC+5xKAE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The advantages are simple:
+- Lower number of new code lines.
+- Lower total code size increase.
+- Lower runtime memory consumption.
+- 4 simple patches with the individual changes, each one can be
+  reviewed individually.
+- Lower number of seperate codepaths.
 
-Given that everyone is so big in the discard discussion I'd like to
-present what I had started to prepare for XFS.  I didn't plan to send it
-out until I get my hands onto a TRIM capable device (or at least get
-time to add support to qemu), and so far it's only been tested in
-dry-run mode.
+The disadvantage is also clear:
+My patch doesn't optimize wait-for-zero as good as Nick's patch.
+For example:
+* n wait-for-zero entries and one decrement by 2 to be woken up,
+  semval at 1, an increment by 2 arrives:
+    Nick's patch is O(1) and my patch is O(n).
 
-The basic idea is to add an ioctl which walks the free space btrees in
-each allocation group and simply discard everythin that is free.  Given
-that XFS doesn't gragment freespace very much that's a very efficient
-way to do it.  In addition we also already support setting a threshold
-under which we don't bother to discard an extent, it's currently
-hardcoded in the helper tool.  In the future we could also add things
-like a sequence number in the AG headers if anything has changed at all,
-but let's leave those optimizations until we need them.
+Neither of us knows if anyone uses that scenario and there are other
+codepaths that are O(n^2), too. Thus I don't think this is a big issue.
 
-XFS locks the allocation btree using the btree buffers, so we do not
-block allocations from any extent which we're not currenly discarding.
+Below is the test app/benchmark app I used:
+The present kernel breaks down if lots of tasks are sleeping on the same
+semaphore array, with the patch, the breakdown disappears.
 
-Now the caveat for that is that we really do want to do the discard
-synchronously, that is wait for the request to finish.  That's what
-I've implemented in this patch, but it's the part I haven't been
-able to test so far.  (and yes, this should be separate patch, but it's
-really just an RFC for now)
+With my test app, the performance of Nick's and my patch are comparable.
 
-Mark, any chance to try it?  Just create an XFS filesystem, age it a
-bit and then call the attached little trim.c program on the mountmoint
-(or any file inside the filesystem for that matter)
+--
+	Manfred
+----
 
+/*
+ * Copyright (C) 2009 by Manfred Spraul.
+ * 
+ * Redistribution of this file is permitted under the terms of the GNU 
+ * General Public License (GPL)
+ */
 
-Index: linux-2.6/fs/xfs/linux-2.6/xfs_ioctl.c
-===================================================================
---- linux-2.6.orig/fs/xfs/linux-2.6/xfs_ioctl.c	2009-08-15 20:15:14.379163976 -0300
-+++ linux-2.6/fs/xfs/linux-2.6/xfs_ioctl.c	2009-08-15 21:19:19.342664224 -0300
-@@ -1275,6 +1275,31 @@ xfs_ioc_getbmapx(
- 	return 0;
- }
- 
-+STATIC int
-+xfs_ioc_trim(
-+	struct xfs_mount	*mp,
-+	__uint32_t		*argp)
-+{
-+	xfs_agnumber_t		agno;
-+	int			error = 0;
-+	__uint32_t		minlen;
-+
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+	if (get_user(minlen, argp))
-+		return -EFAULT;
-+
-+	down_read(&mp->m_peraglock);
-+	for (agno = 0; agno < mp->m_sb.sb_agcount; agno++) {
-+		error = -xfs_trim_extents(mp, agno, minlen);
-+		if (error)
-+			break;
-+	}
-+	up_read(&mp->m_peraglock);
-+
-+	return error;
-+}
-+
- /*
-  * Note: some of the ioctl's return positive numbers as a
-  * byte count indicating success, such as readlink_by_handle.
-@@ -1524,6 +1549,9 @@ xfs_file_ioctl(
- 		error = xfs_errortag_clearall(mp, 1);
- 		return -error;
- 
-+	case XFS_IOC_TRIM:
-+		return xfs_ioc_trim(mp, arg);
-+
- 	default:
- 		return -ENOTTY;
- 	}
-Index: linux-2.6/fs/xfs/xfs_alloc.c
-===================================================================
---- linux-2.6.orig/fs/xfs/xfs_alloc.c	2009-08-15 20:11:00.791163409 -0300
-+++ linux-2.6/fs/xfs/xfs_alloc.c	2009-08-15 21:40:16.226666638 -0300
-@@ -2470,6 +2470,96 @@ error0:
- 	return error;
- }
- 
-+STATIC int
-+xfs_trim_extent(
-+	struct xfs_mount	*mp,
-+	xfs_agnumber_t		agno,
-+	xfs_agblock_t		fbno,
-+	xfs_extlen_t		flen)
-+{
-+	xfs_daddr_t		blkno = XFS_AGB_TO_DADDR(mp, agno, fbno);
-+	sector_t		nblks = XFS_FSB_TO_BB(mp, flen);
-+	int			error;
-+
-+	xfs_fs_cmn_err(CE_NOTE, mp, "discarding sectors [0x%llx-0x%llx]",
-+			blkno, nblks);
-+
-+	error = -__blkdev_issue_discard(mp->m_ddev_targp->bt_bdev,
-+				        blkno, nblks, GFP_NOFS, 1);
-+	if (error && error != EOPNOTSUPP)
-+		xfs_fs_cmn_err(CE_NOTE, mp, "discard failed, error %d", error);
-+	return error;
-+}
-+
-+/*
-+ * Notify the underlying block device about our free extent map.
-+ *
-+ * This walks all free extents above a minimum threshold and notifies the
-+ * underlying device that these blocks are unused.  That information is
-+ * useful for SSDs or thinly provisioned storage in high end arrays or
-+ * virtualization scenarios.
-+ */
-+int
-+xfs_trim_extents(
-+	struct xfs_mount	*mp,
-+	xfs_agnumber_t		agno,
-+	xfs_extlen_t		minlen)	/* minimum extent size to bother */
-+{
-+	struct xfs_btree_cur	*cur;	/* cursor for the by-block btree */
-+	struct xfs_buf		*agbp;	/* AGF buffer pointer */
-+	xfs_agblock_t		bno;	/* block the for next search */
-+	xfs_agblock_t		fbno;	/* start block of found extent */
-+	xfs_extlen_t		flen;	/* length of found extent */
-+	int			error;
-+	int			i;
-+
-+	error = xfs_alloc_read_agf(mp, NULL, agno, 0, &agbp);
-+	if (error)
-+		return error;
-+
-+	bno = 0;
-+	for (;;) {
-+		cur = xfs_allocbt_init_cursor(mp, NULL, agbp, agno,
-+					      XFS_BTNUM_BNO);
-+
-+		error = xfs_alloc_lookup_ge(cur, bno, minlen, &i);
-+		if (error)
-+			goto error0;
-+		if (!i) {
-+			/*
-+			 * No more free extents found: done.
-+			 */
-+			xfs_btree_del_cursor(cur, XFS_BTREE_NOERROR);
-+			break;
-+		}
-+
-+		error = xfs_alloc_get_rec(cur, &fbno, &flen, &i);
-+		if (error)
-+			goto error0;
-+		XFS_WANT_CORRUPTED_GOTO(i == 1, error0);
-+
-+		/*
-+		 * Pass if the freespace extent isn't long enough to bother.
-+		 */
-+		if (flen >= minlen) {
-+			error = xfs_trim_extent(mp, agno, fbno, flen);
-+			if (error) {
-+				xfs_btree_del_cursor(cur, XFS_BTREE_NOERROR);
-+				break;
-+			}
-+		}
-+
-+		xfs_btree_del_cursor(cur, XFS_BTREE_NOERROR);
-+		bno = fbno + flen;
-+	}
-+
-+out:
-+	xfs_buf_relse(agbp);
-+	return error;
-+error0:
-+	xfs_btree_del_cursor(cur, XFS_BTREE_ERROR);
-+	goto out;
-+}
- 
- /*
-  * AG Busy list management
-Index: linux-2.6/fs/xfs/xfs_alloc.h
-===================================================================
---- linux-2.6.orig/fs/xfs/xfs_alloc.h	2009-08-15 20:12:51.762661386 -0300
-+++ linux-2.6/fs/xfs/xfs_alloc.h	2009-08-15 20:15:07.334667592 -0300
-@@ -217,4 +217,7 @@ xfs_free_extent(
- 	xfs_fsblock_t	bno,	/* starting block number of extent */
- 	xfs_extlen_t	len);	/* length of extent */
- 
-+int xfs_trim_extents(struct xfs_mount *mp, xfs_agnumber_t agno,
-+	xfs_extlen_t minlen);
-+
- #endif	/* __XFS_ALLOC_H__ */
-Index: linux-2.6/fs/xfs/xfs_fs.h
-===================================================================
---- linux-2.6.orig/fs/xfs/xfs_fs.h	2009-08-15 20:22:03.735200427 -0300
-+++ linux-2.6/fs/xfs/xfs_fs.h	2009-08-15 20:24:18.677996430 -0300
-@@ -475,6 +475,7 @@ typedef struct xfs_handle {
- #define XFS_IOC_ATTRMULTI_BY_HANDLE  _IOW ('X', 123, struct xfs_fsop_attrmulti_handlereq)
- #define XFS_IOC_FSGEOMETRY	     _IOR ('X', 124, struct xfs_fsop_geom)
- #define XFS_IOC_GOINGDOWN	     _IOR ('X', 125, __uint32_t)
-+#define XFS_IOC_TRIM		     _IOR ('X', 126, __uint32_t)
- /*	XFS_IOC_GETFSUUID ---------- deprecated 140	 */
- 
- 
-Index: linux-2.6/block/blk-barrier.c
-===================================================================
---- linux-2.6.orig/block/blk-barrier.c	2009-08-15 21:36:30.426696824 -0300
-+++ linux-2.6/block/blk-barrier.c	2009-08-15 21:41:11.490664659 -0300
-@@ -348,22 +348,27 @@ static void blkdev_discard_end_io(struct
- 		clear_bit(BIO_UPTODATE, &bio->bi_flags);
- 	}
- 
-+	if (bio->bi_private)
-+		complete(bio->bi_private);
- 	bio_put(bio);
- }
- 
- /**
-- * blkdev_issue_discard - queue a discard
-+ * __blkdev_issue_discard - queue a discard
-  * @bdev:	blockdev to issue discard for
-  * @sector:	start sector
-  * @nr_sects:	number of sectors to discard
-  * @gfp_mask:	memory allocation flags (for bio_alloc)
-+ * @wait:	if %1 wait for the discard to finish
-  *
-  * Description:
-- *    Issue a discard request for the sectors in question. Does not wait.
-+ *    Issue a discard request for the sectors in question.
-  */
--int blkdev_issue_discard(struct block_device *bdev,
--			 sector_t sector, sector_t nr_sects, gfp_t gfp_mask)
-+int __blkdev_issue_discard(struct block_device *bdev,
-+			 sector_t sector, sector_t nr_sects, gfp_t gfp_mask,
-+			 int wait)
- {
-+	DECLARE_COMPLETION_ONSTACK(done);
- 	struct request_queue *q;
- 	struct bio *bio;
- 	int ret = 0;
-@@ -385,6 +390,7 @@ int blkdev_issue_discard(struct block_de
- 
- 		bio->bi_end_io = blkdev_discard_end_io;
- 		bio->bi_bdev = bdev;
-+		bio->bi_private = wait ? &done : NULL;
- 
- 		bio->bi_sector = sector;
- 
-@@ -399,6 +405,9 @@ int blkdev_issue_discard(struct block_de
- 		bio_get(bio);
- 		submit_bio(DISCARD_BARRIER, bio);
- 
-+		if (wait)
-+			wait_for_completion(&done);
-+
- 		/* Check if it failed immediately */
- 		if (bio_flagged(bio, BIO_EOPNOTSUPP))
- 			ret = -EOPNOTSUPP;
-@@ -408,4 +417,4 @@ int blkdev_issue_discard(struct block_de
- 	}
- 	return ret;
- }
--EXPORT_SYMBOL(blkdev_issue_discard);
-+EXPORT_SYMBOL(__blkdev_issue_discard);
-Index: linux-2.6/include/linux/blkdev.h
-===================================================================
---- linux-2.6.orig/include/linux/blkdev.h	2009-08-15 21:40:20.507164178 -0300
-+++ linux-2.6/include/linux/blkdev.h	2009-08-15 21:42:15.734715355 -0300
-@@ -977,8 +977,14 @@ static inline struct request *blk_map_qu
- }
- 
- extern int blkdev_issue_flush(struct block_device *, sector_t *);
--extern int blkdev_issue_discard(struct block_device *,
--				sector_t sector, sector_t nr_sects, gfp_t);
-+extern int __blkdev_issue_discard(struct block_device *, sector_t sector,
-+		sector_t nr_sects, gfp_t, int wait);
-+
-+static inline int blkdev_issue_discard(struct block_device *bdev,
-+		sector_t sector, sector_t nr_sects, gfp_t gfp_mask)
-+{
-+	return __blkdev_issue_discard(bdev, sector, nr_sects, gfp_mask, 0);
-+}
- 
- static inline int sb_issue_discard(struct super_block *sb,
- 				   sector_t block, sector_t nr_blocks)
-
---0OAP2g/MAC+5xKAE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="trim.c"
-
-
-#include <errno.h>
-#include <fcntl.h>
+#include <sys/sem.h>
+#include <sys/time.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <pthread.h>
+#include <stdlib.h>
 #include <stdio.h>
-#include <stdint.h>
-#include <sys/ioctl.h>
+#include <errno.h>
+#include <string.h>
+#include <assert.h>
+#include <signal.h>
+#include <unistd.h>
 
-#define XFS_IOC_TRIM                 _IOR ('X', 126, uint32_t)
+#define TRUE	1
+#define FALSE	0
 
+union semun {
+	int val;
+	struct semid_ds *buf;
+	unsigned short int *array;
+	struct seminfo* __buf;
+};
 
-int main(int argc, char **argv)
+#define barrier()	__asm__ __volatile__("": : : "memory")
+
+int g_loops;
+int g_busy_in;
+int g_busy_out;
+int g_sem;
+int g_completedsem;
+
+static void thread_fnc(int id)
 {
-	int minsize = 4096;
-	int fd;
+	int i;
+	volatile int j;
+	int res;
+	struct sembuf sop[1];
 
-	if (argc != 2) {
-		fprintf(stderr, "usage: %s mountpoint\n", argv[0]);
-		return 1;
+	for (i=0;i<g_loops;i++) {
+
+		sop[0].sem_num=id;
+		sop[0].sem_op=-1;
+		sop[0].sem_flg=0;
+		res = semop(g_sem,sop,1);
+		if(res==-1) {
+			printf("semop -1 failed, errno %d.\n", errno);
+			return;
+		}
+		for(j=0;j<g_busy_in;j++);
+			barrier();
+		sop[0].sem_num=id;
+		sop[0].sem_op=1;
+		sop[0].sem_flg=0;
+		res = semop(g_sem,sop,1);
+		if(res==-1) {
+			printf("semop +1 failed, errno %d.\n", errno);
+			return;
+		}
+		for(j=0;j<g_busy_out;j++);
+			barrier();
 	}
 
-	fd = open(argv[1], O_RDONLY);
-	if (fd < 0) {
-		perror("open");
-		return 1;
+	sop[0].sem_num=g_completedsem;
+	sop[0].sem_op=-1;
+	sop[0].sem_flg=IPC_NOWAIT;
+	res = semop(g_sem,sop,1);
+	if(res==-1) {
+		printf("semop -1 on completedsem returned %d, errno %d.\n", res, errno);
+		return;
 	}
-
-	if (ioctl(fd, XFS_IOC_TRIM, &minsize)) {
-		if (errno == EOPNOTSUPP)
-			fprintf(stderr, "TRIM not supported\n");
-		else
-			perror("XFS_IOC_TRIM");
-		return 1;
-	}
-
-	return 0;
+	return;
 }
 
---0OAP2g/MAC+5xKAE--
+int main(int argc,char** argv)
+{
+	int nsems;
+	int tasks;
+	int res;
+	pid_t *pids;
+	unsigned short *psems;
+	struct timeval t_before, t_after;
+	unsigned long long delta;
+	union semun arg;
+	int i;
+
+	printf("osim <sems> <tasks> <loops> <busy-in> <busy-out>\n");
+	if(argc != 6) {
+		printf("Invalid parameters.\n");
+		return 1;
+	}
+	nsems=atoi(argv[1]);
+	tasks=atoi(argv[2]);
+	g_loops=atoi(argv[3]);
+	g_loops = (g_loops+tasks-1)/tasks;
+	g_busy_in=atoi(argv[4]);
+	g_busy_out=atoi(argv[5]);
+	g_completedsem = nsems;
+
+	res = semget(IPC_PRIVATE, nsems+1, 0777 | IPC_CREAT);
+	if(res == -1) {
+		printf(" create failed.\n");
+		return 1;
+	}
+	g_sem = res;
+	fflush(stdout);
+
+	pids = malloc(sizeof(pid_t)*tasks);
+	for (i=0;i<tasks;i++) {
+		res = fork();
+		if (res == 0) {
+			thread_fnc(i%nsems);
+			exit(0);
+		} 
+		if (res == -1) {
+			printf("fork() failed, errno now %d.\n", errno);
+			return 1;
+		}
+		pids[i] = res;
+	}
+
+	printf("osim: using a semaphore array with %d semaphores.\n", nsems);
+	printf("osim: using %d tasks.\n", tasks);
+	printf("osim: each thread loops %d times\n", g_loops);
+	printf("osim: each thread busyloops %d loops outside and %d loops inside.\n", g_busy_out, g_busy_in);
+	fflush(stdout);
+
+	psems = malloc(sizeof(unsigned short)*nsems);
+	for (i=0;i<nsems;i++)
+		psems[i] = 1;
+	psems[i] = tasks;
+
+	{
+		struct sembuf sop[1];
+
+		gettimeofday(&t_before, NULL);
+		arg.array = psems;
+		semctl(g_sem, 0, SETALL, arg);
+
+		sop[0].sem_num=g_completedsem;
+		sop[0].sem_op=0;
+		sop[0].sem_flg=0;
+		res = semop(g_sem,sop,1);
+		if(res==-1) {
+			printf("semop 0 failed, errno %d.\n", errno);
+			return;
+		}
+		gettimeofday(&t_after, NULL);
+	}
+	for (i=0;i<tasks;i++) {
+		res = waitpid(pids[i], NULL, 0);
+		if (res != pids[i]) {
+			printf("waitpid() failed, errno now %d.\n", errno);
+			return 1;
+		}
+	}
+
+	delta = t_after.tv_sec - t_before.tv_sec;
+	delta = delta*1000000L;
+	delta += t_after.tv_usec - t_before.tv_usec;
+
+	printf("total execution time: %Ld.%03Ld%03Ld seconds for %d loops\n",
+		(delta/1000000),
+		(delta/1000)%1000,
+		(delta)%1000,
+		tasks*g_loops);
+
+	delta = delta*1000;
+	delta = delta/(tasks*g_loops);
+
+	printf("per loop execution time: %Ld.%03Ld usec\n",
+		(delta/1000),
+		(delta)%1000);
+
+	res = semctl(g_sem, 1, IPC_RMID, arg);
+	if(res == -1) {
+		printf(" semctl failed.\n");
+		return 1;
+	}
+	return 0;
+}
