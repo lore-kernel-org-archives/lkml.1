@@ -1,88 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbZHORHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbZHORHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755517AbZHORHa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 13:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755486AbZHORH3
+	id S1755593AbZHORHh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 13:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755462AbZHORHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 13:07:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33707 "EHLO hera.kernel.org"
+	Sat, 15 Aug 2009 13:07:36 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33714 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755480AbZHORH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 13:07:26 -0400
-Date: Sat, 15 Aug 2009 17:06:52 GMT
-From: tip-bot for Borislav Petkov <borislav.petkov@amd.com>
+	id S1755527AbZHORHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 13:07:33 -0400
+Date: Sat, 15 Aug 2009 17:07:05 GMT
+From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       kjwinchester@gmail.com, tglx@linutronix.de, mingo@elte.hu,
-       borislav.petkov@amd.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       kjwinchester@gmail.com, tglx@linutronix.de, borislav.petkov@amd.com,
-       mingo@elte.hu
-In-Reply-To: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com>
-References: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com>
-Subject: [tip:x86/urgent] x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM CPUID bit
-Message-ID: <tip-c74cb13b94118ec89e48849806356b67caa5ff86@git.kernel.org>
-Git-Commit-ID: c74cb13b94118ec89e48849806356b67caa5ff86
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1250355231152-git-send-email->
+References: <1250355231152-git-send-email->
+Subject: [tip:core/rcu] rcu: Split hierarchical RCU initialization into boot-time and CPU-online pieces
+Message-ID: <tip-27569620c748ec13f801b4683b448a2ac2adaae4@git.kernel.org>
+Git-Commit-ID: 27569620c748ec13f801b4683b448a2ac2adaae4
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 15 Aug 2009 17:06:53 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 15 Aug 2009 17:07:06 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c74cb13b94118ec89e48849806356b67caa5ff86
-Gitweb:     http://git.kernel.org/tip/c74cb13b94118ec89e48849806356b67caa5ff86
-Author:     Borislav Petkov <borislav.petkov@amd.com>
-AuthorDate: Fri, 14 Aug 2009 14:06:34 +0200
+Commit-ID:  27569620c748ec13f801b4683b448a2ac2adaae4
+Gitweb:     http://git.kernel.org/tip/27569620c748ec13f801b4683b448a2ac2adaae4
+Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+AuthorDate: Sat, 15 Aug 2009 09:53:46 -0700
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 15 Aug 2009 18:43:59 +0200
+CommitDate: Sat, 15 Aug 2009 19:02:07 +0200
 
-x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM CPUID bit
+rcu: Split hierarchical RCU initialization into boot-time and CPU-online pieces
 
-fbd8b1819e80ac5a176d085fdddc3a34d1499318 turns off the bit for
-/proc/cpuinfo. However, a proper/full fix would be to additionally
-turn off the bit in the CPUID output so that future callers get
-correct CPU features info.
+This patch divides the rcutree initialization into boot-time
+and hotplug-time components, so that the tree data structures
+are guaranteed to be fully linked at boot time regardless of
+what might happen in CPU hotplug operations.
 
-Do that by basically reversing what the BIOS wrongfully does at boot.
+This makes RCU more resilient against CPU hotplug misbehavior
+(and vice versa), but more importantly, does a better job of
+compartmentalizing the code.
 
-Tested-by: Kevin Winchester <kjwinchester@gmail.com>
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-Cc: kjwinchester@gmail.com
-Cc: mikpe@it.uu.se
-Cc: brgerst@gmail.com
-LKML-Reference: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com>
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: laijs@cn.fujitsu.com
+Cc: dipankar@in.ibm.com
+Cc: josht@linux.vnet.ibm.com
+Cc: akpm@linux-foundation.org
+Cc: mathieu.desnoyers@polymtl.ca
+Cc: dvhltc@us.ibm.com
+Cc: niv@us.ibm.com
+Cc: peterz@infradead.org
+Cc: rostedt@goodmis.org
+Cc: hugh.dickins@tiscali.co.uk
+Cc: benh@kernel.crashing.org
+LKML-Reference: <1250355231152-git-send-email->
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/cpu/amd.c |   12 +++++++++++-
- 1 files changed, 11 insertions(+), 1 deletions(-)
+ kernel/rcutree.c |   53 +++++++++++++++++++++++++++++++++--------------------
+ 1 files changed, 33 insertions(+), 20 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index 63fddcd..0ee63dd 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -404,9 +404,19 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- 		/*
- 		 * Some BIOSes incorrectly force this feature, but only K8
- 		 * revision D (model = 0x14) and later actually support it.
-+		 * (AMD Erratum #110, docId: 25759).
- 		 */
--		if (c->x86_model < 0x14)
-+		if (c->x86_model < 0x14 && cpu_has(c, X86_FEATURE_LAHF_LM)) {
-+			u64 val;
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index 7717b95..f3e4327 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -1325,22 +1325,40 @@ int rcu_needs_cpu(int cpu)
+ }
+ 
+ /*
+- * Initialize a CPU's per-CPU RCU data.  We take this "scorched earth"
+- * approach so that we don't have to worry about how long the CPU has
+- * been gone, or whether it ever was online previously.  We do trust the
+- * ->mynode field, as it is constant for a given struct rcu_data and
+- * initialized during early boot.
+- *
+- * Note that only one online or offline event can be happening at a given
+- * time.  Note also that we can accept some slop in the rsp->completed
+- * access due to the fact that this CPU cannot possibly have any RCU
+- * callbacks in flight yet.
++ * Do boot-time initialization of a CPU's per-CPU RCU data.
++ */
++static void __init
++rcu_boot_init_percpu_data(int cpu, struct rcu_state *rsp)
++{
++	unsigned long flags;
++	int i;
++	struct rcu_data *rdp = rsp->rda[cpu];
++	struct rcu_node *rnp = rcu_get_root(rsp);
 +
- 			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
-+			if (!rdmsrl_amd_safe(0xc001100d, &val)) {
-+				val &= ~(1ULL << 32);
-+				wrmsr_amd_safe(0xc001100d, (u32) val,
-+							   (u32)(val >> 32));
-+			}
-+		}
++	/* Set up local state, ensuring consistent view of global state. */
++	spin_lock_irqsave(&rnp->lock, flags);
++	rdp->grpmask = 1UL << (cpu - rdp->mynode->grplo);
++	rdp->nxtlist = NULL;
++	for (i = 0; i < RCU_NEXT_SIZE; i++)
++		rdp->nxttail[i] = &rdp->nxtlist;
++	rdp->qlen = 0;
++#ifdef CONFIG_NO_HZ
++	rdp->dynticks = &per_cpu(rcu_dynticks, cpu);
++#endif /* #ifdef CONFIG_NO_HZ */
++	rdp->cpu = cpu;
++	spin_unlock_irqrestore(&rnp->lock, flags);
++}
 +
- 	}
- 	if (c->x86 == 0x10 || c->x86 == 0x11)
- 		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
++/*
++ * Initialize a CPU's per-CPU RCU data.  Note that only one online or
++ * offline event can be happening at a given time.  Note also that we
++ * can accept some slop in the rsp->completed access due to the fact
++ * that this CPU cannot possibly have any RCU callbacks in flight yet.
+  */
+ static void __cpuinit
+ rcu_init_percpu_data(int cpu, struct rcu_state *rsp)
+ {
+ 	unsigned long flags;
+-	int i;
+ 	long lastcomp;
+ 	unsigned long mask;
+ 	struct rcu_data *rdp = rsp->rda[cpu];
+@@ -1355,16 +1373,7 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp)
+ 	rdp->qs_pending = 1;	 /*  so set up to respond to current GP. */
+ 	rdp->beenonline = 1;	 /* We have now been online. */
+ 	rdp->passed_quiesc_completed = lastcomp - 1;
+-	rdp->grpmask = 1UL << (cpu - rdp->mynode->grplo);
+-	rdp->nxtlist = NULL;
+-	for (i = 0; i < RCU_NEXT_SIZE; i++)
+-		rdp->nxttail[i] = &rdp->nxtlist;
+-	rdp->qlen = 0;
+ 	rdp->blimit = blimit;
+-#ifdef CONFIG_NO_HZ
+-	rdp->dynticks = &per_cpu(rcu_dynticks, cpu);
+-#endif /* #ifdef CONFIG_NO_HZ */
+-	rdp->cpu = cpu;
+ 	spin_unlock(&rnp->lock);		/* irqs remain disabled. */
+ 
+ 	/*
+@@ -1539,8 +1548,12 @@ void __init __rcu_init(void)
+ #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
+ 	rcu_init_one(&rcu_state);
+ 	RCU_DATA_PTR_INIT(&rcu_state, rcu_data);
++	for_each_possible_cpu(i)
++		rcu_boot_init_percpu_data(i, &rcu_state);
+ 	rcu_init_one(&rcu_bh_state);
+ 	RCU_DATA_PTR_INIT(&rcu_bh_state, rcu_bh_data);
++	for_each_possible_cpu(i)
++		rcu_boot_init_percpu_data(i, &rcu_bh_state);
+ 
+ 	for_each_online_cpu(i)
+ 		rcu_cpu_notify(&rcu_nb, CPU_UP_PREPARE, (void *)(long)i);
