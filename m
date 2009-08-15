@@ -1,37 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbZHOJzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbZHOJ45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752638AbZHOJzv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 05:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZHOJzv
+	id S1752712AbZHOJ45 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 05:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbZHOJ45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 05:55:51 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47956 "EHLO mx3.mail.elte.hu"
+	Sat, 15 Aug 2009 05:56:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34446 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751303AbZHOJzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 05:55:50 -0400
-Date: Sat, 15 Aug 2009 11:55:03 +0200
+	id S1752191AbZHOJ44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 05:56:56 -0400
+Date: Sat, 15 Aug 2009 11:56:38 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Trilok Soni <soni.trilok@gmail.com>,
-       Brian Swetland <swetland@google.com>,
-       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
-       t.fujak@samsung.com, kyungmin.park@samsung.com,
-       David Brownell <david-b@pacbell.net>, Daniel Ribeiro <drwyrm@gmail.com>,
-       arve@android.com, Barry Song <21cnbao@gmail.com>
-Subject: Re: [RFC patch 2/3] genirq: Add buslock support for irq chips on
-	slow busses
-Message-ID: <20090815095503.GB15831@elte.hu>
-References: <20090813191535.945521006@linutronix.de> <20090813193116.509070851@linutronix.de> <20090814101739.GA32418@elf.ucw.cz> <alpine.LFD.2.00.0908141220190.1283@localhost.localdomain> <20090814112059.GB17755@rakim.wolfsonmicro.main>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Valdis.Kletnieks@vt.edu, Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip 1/1] perf record: Fix typo in
+	pid_synthesize_comm_event
+Message-ID: <20090815095638.GC15831@elte.hu>
+References: <20090814182632.GF3490@ghostprotocols.net> <28379.1250276831@turing-police.cc.vt.edu> <20090814201048.GG3490@ghostprotocols.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090814112059.GB17755@rakim.wolfsonmicro.main>
+In-Reply-To: <20090814201048.GG3490@ghostprotocols.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -45,31 +35,26 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
+* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
 
-> On Fri, Aug 14, 2009 at 12:20:49PM +0200, Thomas Gleixner wrote:
-> > On Fri, 14 Aug 2009, Pavel Machek wrote:
+> Em Fri, Aug 14, 2009 at 03:07:11PM -0400, Valdis.Kletnieks@vt.edu escreveu:
+> > On Fri, 14 Aug 2009 15:26:32 -0300, Arnaldo Carvalho de Melo said:
+> > > We were using 'fd' locally, but there was a global 'fd' too, so when
+> > > converting from open to fopen the test made against fd should be made
+> > > against 'fp', but since we have that global...
+> > 
+> > If the kernel was -Wshadow safe by default, this sort of thing 
+> > would happen less often... :)
 > 
-> > > AFAICT this means that driver would need to know what kind of IRQ it
-> > > is hooked to, right? That will lead to some ugly code in drivers that
-> > > can handle both normal and slowbus irqs, right?
-> 
-> > Are there such drivers in reality ?
-> 
-> Yes.  The GPIO based stuff is the prime example but there's other 
-> examples - one is the WM831x touchscreen (no driver in mainline 
-> yet) which can use interrupts via the main interrupt controller on 
-> the CPU but also has the option of bringing the interrupt signals 
-> out to dedicated pins on the chip for direct connection to the CPU 
-> precisely to avoid the overheads of these slow interrupt 
-> controllers.
+> I would love to have that kind of problem spotted by the compiler, 
+> but this is no kernel code, the CFLAGS we use is different than 
+> the kernel ones, I guess a patch for tools/perf/ would be gladly 
+> accepted by Ingo, but let him say so :-)
 
-This would call for Thomas's first version of the patch, that is 
-transparent to drivers - the IRQ subsystem will know how to lock 
-access to the line.
+Yeah. We are using -Wall and -Wextra right now - but -Wshadow is not 
+turned on by them.
 
-How about implementing that first patch in a cleaner way - can we 
-somehow express the slow-bus property purely via the irqchip? Or is 
-that too lowlevel?
+Does gcc ignore non-existent warnings or do we have to probe them in 
+the Makefile, to support older versions of GCC?
 
 	Ingo
