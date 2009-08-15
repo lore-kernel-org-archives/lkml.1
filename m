@@ -1,76 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbZHOHRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZHOIAB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753539AbZHOHRU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 03:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbZHOHRU
+	id S1753838AbZHOIAB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 04:00:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbZHOIAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 03:17:20 -0400
-Received: from claw.goop.org ([74.207.240.146]:33185 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752191AbZHOHRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 03:17:19 -0400
-Message-ID: <4A8660FB.20102@goop.org>
-Date: Sat, 15 Aug 2009 00:17:15 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
-MIME-Version: 1.0
-To: iceberg <strakh@ispras.ru>
-CC: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>
-Subject: Re: BUG memory leakage at ./security/selinux/hooks.c
-References: <200908101253.40317.strakh@ispras.ru>
-In-Reply-To: <200908101253.40317.strakh@ispras.ru>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 15 Aug 2009 04:00:00 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:35865 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753016AbZHOH77 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 03:59:59 -0400
+Subject: Re: [PATCH v4 34/34] wireless: mark prism54.ko as deprecated and
+ mark for removal
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
+       Larry.Finger@lwfinger.net, aquilaver@yahoo.com,
+       linux-kernel@vger.kernel.org, Dan Williams <dcbw@redhat.com>,
+       Kai Engert <kengert@redhat.com>, Jean Tourrilhes <jt@hpl.hp.com>,
+       Tim de Waal <tim.dewaal@yahoo.com>, Roy Marples <uberlord@gentoo.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Christian Lamparter <chunkeey@web.de>,
+       =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       Tim Gardner <tim.gardner@canonical.com>
+In-Reply-To: <1250281559-13041-35-git-send-email-lrodriguez@atheros.com>
+References: <1250281559-13041-1-git-send-email-lrodriguez@atheros.com>
+	 <1250281559-13041-35-git-send-email-lrodriguez@atheros.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-tv9P+t3g7Muy8KHLHc/m"
+Date: Sat, 15 Aug 2009 09:59:42 +0200
+Message-Id: <1250323182.15069.0.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.27.90 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added cc:
 
-On 08/10/09 01:53, iceberg wrote:
-> ????????KERNEL_VERSION: 2.6.30.4??
->   
+--=-tv9P+t3g7Muy8KHLHc/m
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Looks like you got some kind of charset conversion problem going on.
+On Fri, 2009-08-14 at 16:25 -0400, Luis R. Rodriguez wrote:
+> The preferred modules is p54.ko, which also supports FullMAC
+> PCI / Cardbus devices. We schedule removal for 2.6.34. Reason
+> to remove this is no one really is testing prism54.ko anymore,
+> and while it works p54.ko provides support for the same hardware.
+> It should be noted I have been told some FullMAC devices may not
+> have worked with the SoftMAC driver but to date we have yet to
+> recieve a single bug report regarding this. If there are users
+> out there please let us know!
 
-> ????????SUBJECT: ?in function inode_doinit_with_dentry memory is not released 
-> on error  path (if rc<0).
-> ????????DESCRIBE:
-> ????????In ./security/selinux/hooks.c in function inode_doinit_with_dentry:??
-> 1. If in the line 1278 we successfully allocate memory and assign it to 
-> context variablehen 
-> 2. if in the line 1284 getxattr returns -ERANGE and 
-> 3. if in the line 1288 getxattr returns rc<0 
-> then we go to out_unlock without releasing memory pointed to by context 
-> variable.
->
-> 1278 ????????????????context?=?kmalloc(len,?GFP_NOFS);
-> 1279 ????????????????if?(!context)?{
-> 1280 ????????????????????????rc?=?-ENOMEM;
-> 1281 ????????????????????????dput(dentry);
-> 1282 ????????????????????????goto?out_unlock;
-> 1283 ????????????????}
-> 1284 ????????????????rc?=?inode->i_op->getxattr(dentry,?XATTR_NAME_SELINUX,
-> 1285 ???????????????????????????????????????????context,?len);
-> 1286 ????????????????if?(rc?==?-ERANGE)?{
-> 1287 ????????????????????????/*?Need?a?larger?buffer.??Query?for?the
-> right?size.?*/
-> 1288 ????????????????????????rc?=?inode->i_op->getxattr(dentry,
-> XATTR_NAME_SELINUX,
-> 1289 ???????????????????????????????????????????????????NULL,?0);
-> 1290 ????????????????????????if?(rc?<?0)?{
-> 1291 ????????????????????????????????dput(dentry);
-> 1292 ????????????????????????????????goto?out_unlock;
-> 1293 ????????????????????????}
-> 1294 ????????????????????????kfree(context);
-> 1295 ????????????????????????len?=?rc;
-> 1296 ????????????????????????context?=?kmalloc(len,?GFP_NOFS);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->   
+Not that I care about the changelog, but I do find it illogical to refer
+to modules w/o .ko everywhere and then with .ko in the changelog. Of
+course you were consistent ;)
+
+> -	  The module will be called prism54.
+> +	  When built as module you get prism54.ko
+
+NAK this change.
+
+johannes
+
+--=-tv9P+t3g7Muy8KHLHc/m
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKhmrqAAoJEODzc/N7+QmafhgQAI17nxRmHFThE0ajfM/SGrir
+rWISfI+9Pi/dqtIXdKlR8fsT34mzd8NkJ+9dn9pGNren+r4fUTwhr6SiSRzqmwcg
+e7qNC6XUSW8Kh3sByc73upexIthLoNnqvuVQVRRvJA3ghNd4KuBklilGqxe7FtL/
+igVintQkCrlAiX/d/16ci91QvbC9Po+dWfd/cZ/FM6yeTtTVfqLvKCl86ZVA+w6l
+dmJtqYznSiWdl1KHOu9FNw7FC2vgKfShrGGqVmK4ZKTHDHSx3+BqYywfC4FukaLc
+f14nUvTB+hdjr93USlXAqgbF7P4dTMOilVa6pHubur4s6mHbP3INaQoeVGGDX8l/
+1uPSu2KbTY+KI72d0brGKT5bdRdXh8qZxqKRDQekNVDST0AuSx3uqVGF9XYNdMe9
+7In56uXHiPPoKXMNN3hGoHjumKTf78E6Cma/PqZ6oDNEF2N7XSAJXkeVbzld8U81
+h5fnC0uL6oPQndnZNwipS/5HPxoN3nWc2Chxd8xrJ3/ac6fYfUJ0Tbdl+9wioPMQ
+lZUqRn4zaWaPr/JjuhUl1L4NvOY4JUsnZ5faDEFj3cJs4fTXPt1tmzrokjRxFxqv
+nD0bqgUtVZp/aFq79VUYdYRgGKzK83TZPDPL1+asOic21awmWhZQtK9kxAX8PTC1
+8JSpL19aZsThN+YHRU+C
+=Vze7
+-----END PGP SIGNATURE-----
+
+--=-tv9P+t3g7Muy8KHLHc/m--
 
