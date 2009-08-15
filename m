@@ -1,50 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbZHOAcD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757317AbZHOAdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbZHOAcD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 20:32:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756396AbZHOAcD
+	id S1757317AbZHOAdk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 20:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756845AbZHOAdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 20:32:03 -0400
-Received: from claw.goop.org ([74.207.240.146]:38803 "EHLO claw.goop.org"
+	Fri, 14 Aug 2009 20:33:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45337 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754095AbZHOAcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 20:32:02 -0400
-Message-ID: <4A860200.5020407@goop.org>
-Date: Fri, 14 Aug 2009 17:32:00 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Chris Mason <chris.mason@oracle.com>
-CC: linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Integrity problem when cloning git tree onto new btrfs filesystem
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1756810AbZHOAdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Aug 2009 20:33:39 -0400
+From: Roland McGrath <roland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] inline __fatal_signal_pending
+X-Fcc: ~/Mail/linus
+X-Windows: the first fully modular software disaster.
+Message-Id: <20090815003250.8101E40595@magilla.sf.frob.com>
+Date: Fri, 14 Aug 2009 17:32:50 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I created a shiny new 10G btrfs filesystem on a 2.6.31-rc5 (x86-64
-running as Xen domU), and tried cloning a fresh copy of linux-2.6 onto it:
+__fatal_signal_pending inlines to one instruction on x86, probably two
+instructions on other machines.  It takes two longer x86 instructions
+just to call it and test its return value, not to mention the function
+itself.
 
-    [jeremy@f11-64 git]$ git clone
-    git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-    Initialized empty Git repository in /mnt/jeremy/git/linux-2.6/.git/
-    remote: Counting objects: 1270263, done.
-    remote: Compressing objects: 100% (204288/204288), done.
-    Receiving objects: 100% (1270263/1270263), 313.23 MiB | 4485 KiB/s,
-    done.
-    remote: Total 1270263 (delta 1060042), reused 1268033 (delta 1057934)
-    error: inflate: data stream error (incorrect header check)
-    fatal: serious inflate inconsistency
-    fatal: index-pack failed
+On my random x86_64 config, this saved 70 bytes of text (59 of those
+being __fatal_signal_pending itself).
 
-Running the same command a second time on the same filesystem completed
-successfully, as did the same command on an ext3 filesystem.  There were
-no unexpected messages on the console (well, I was a bit surprised it
-decided to go into SSD mode, but I guess virtual disks are marked as
-being non-seeking as well).
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ include/linux/sched.h |    5 ++++-
+ kernel/signal.c       |    6 ------
+ 2 files changed, 4 insertions(+), 7 deletions(-)
 
-    J
-
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 3ab08e4..fabe715 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -2250,7 +2250,10 @@ static inline int signal_pending(struct task_struct *p)
+ 	return unlikely(test_tsk_thread_flag(p,TIF_SIGPENDING));
+ }
+ 
+-extern int __fatal_signal_pending(struct task_struct *p);
++static inline int __fatal_signal_pending(struct task_struct *p)
++{
++	return unlikely(sigismember(&p->pending.signal, SIGKILL));
++}
+ 
+ static inline int fatal_signal_pending(struct task_struct *p)
+ {
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 64c5dee..d441e3d 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -1036,12 +1036,6 @@ void zap_other_threads(struct task_struct *p)
+ 	}
+ }
+ 
+-int __fatal_signal_pending(struct task_struct *tsk)
+-{
+-	return sigismember(&tsk->pending.signal, SIGKILL);
+-}
+-EXPORT_SYMBOL(__fatal_signal_pending);
+-
+ struct sighand_struct *lock_task_sighand(struct task_struct *tsk, unsigned long *flags)
+ {
+ 	struct sighand_struct *sighand;
