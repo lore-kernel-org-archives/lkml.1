@@ -1,100 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756863AbZHOBzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbZHOCPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756863AbZHOBzj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 21:55:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756407AbZHOBzi
+	id S1756869AbZHOCPK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 22:15:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414AbZHOCPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 21:55:38 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:59567 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756391AbZHOBzg convert rfc822-to-8bit (ORCPT
+	Fri, 14 Aug 2009 22:15:09 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:54691 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755846AbZHOCPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 21:55:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=OZ47z8DJb6DWuuPZrmYiH+7hMskZoWbQ7jaPn9575uf71VDpT9JbBv7+hyXEaSnR4M
-         6Z88sO8sIGn0FWttPJixFEkwtWvunNDL88RRDJ8KjNl6u5zO5x16/QCir9KdcDy9lwyG
-         /Rbus1wJssigo0OXuQYgUP1f8fVGJJ3R2jGGY=
+	Fri, 14 Aug 2009 22:15:07 -0400
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: "David P. Quigley" <dpquigl@tycho.nsa.gov>, jmorris@namei.org,
+       Stephen Smalley <sds@tycho.nsa.gov>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       selinux@tycho.nsa.gov
+References: <1247665721-2619-1-git-send-email-dpquigl@tycho.nsa.gov>
+	<4A84EF1D.8060408@schaufler-ca.com> <m1my62xde6.fsf@fess.ebiederm.org>
+	<4A861291.1030404@schaufler-ca.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 14 Aug 2009 19:15:01 -0700
+In-Reply-To: <4A861291.1030404@schaufler-ca.com> (Casey Schaufler's message of "Fri\, 14 Aug 2009 18\:42\:41 -0700")
+Message-ID: <m1tz09j00q.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <f3177b9e0908141738n5f99b85dx3de0f620180a4b46@mail.gmail.com>
-References: <200908122007.43522.ngupta@vflare.org>
-	 <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>
-	 <alpine.DEB.1.10.0908131342460.28013@asgard.lang.hm>
-	 <3e8340490908131354q167840fcv124ec56c92bbb830@mail.gmail.com>
-	 <4A85E0DC.9040101@rtr.ca>
-	 <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com>
-	 <20090814234539.GE27148@parisc-linux.org>
-	 <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com>
-	 <87f94c370908141730y3ddcb7bbj65d24b612fc0e96d@mail.gmail.com>
-	 <f3177b9e0908141738n5f99b85dx3de0f620180a4b46@mail.gmail.com>
-Date: Fri, 14 Aug 2009 21:55:36 -0400
-Message-ID: <87f94c370908141855y44fe3c46xbfa155644a283ccb@mail.gmail.com>
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap 
-	slot is freed)
-From: Greg Freemyer <greg.freemyer@gmail.com>
-To: Chris Worley <worleys@gmail.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Mark Lord <liml@rtr.ca>,
-       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
-       Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: casey@schaufler-ca.com, selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@suse.de, sds@tycho.nsa.gov, jmorris@namei.org, dpquigl@tycho.nsa.gov
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Casey Schaufler <casey@schaufler-ca.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.0 T_TooManySym_02 5+ unique symbols in subject
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on sysfs files, directories, and symlinks.
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 14, 2009 at 8:38 PM, Chris Worley<worleys@gmail.com> wrote:
-> On Fri, Aug 14, 2009 at 6:30 PM, Greg Freemyer<greg.freemyer@gmail.com> wrote:
->> On Fri, Aug 14, 2009 at 8:19 PM, Chris Worley<worleys@gmail.com> wrote:
->>> On Fri, Aug 14, 2009 at 5:45 PM, Matthew Wilcox<matthew@wil.cx> wrote:
->>>> On Fri, Aug 14, 2009 at 05:21:32PM -0600, Chris Worley wrote:
->>>>> Sooner is better than waiting to coalesce.  The longer an LBA is
->>>>> inactive, the better for any management scheme.  If you wait until
->>>>> it's reused, you might as well forgo the advantages of TRIM/UNMAP.  If
->>>>> a the controller wants to coalesce, let it coalesce.
->>>>
->>>> I'm sorry, you're wrong.  There is a tradeoff point, and it's different
->>>> for each drive model.  Sending down a steady stream of tiny TRIMs is
->>>> going to give terrible performance.
->>>
->>> Sounds like you might be using junk for a device?
->>>
->>> For junk, a little coalescing may be warranted... like in the I/O
->>> schedular, but no more than 100usecs wait before posting, or then you
->>> effect high performing devices too.
->>>
->>> Chris
->>
->> Why?
->>
->> AIUI, on every write a high performing device allocates a new erase
->> block from its free lists, writes to it, and puts the now unused erase
->> block on the free list.
->
-> So erase blocks are 512 bytes (if I write 512 bytes, an erase block is
-> now freed)?  Not true.
+Casey Schaufler <casey@schaufler-ca.com> writes:
 
-Seriously, how do you  know?  Are you under NDA?
+> Actually, I see that as a justification for the special purpose
+> scheme rather than a real issue. The real attribute data is going
+> to take up the same amount of space regardless of how it gets
+> managed. And Stephen is correct in thinking that is most cases
+> where there are xattrs there will be only one. I don't see that
+> a mechanism more elaborate than a list is going to gain much in
+> real life. On the other hand, if you wanted to take the ball and
+> run with it, I have a window manager to deal with.
 
-The write paper I read about typical SSD design described a partial
-erase block write as:
+If you look at things from the point of view of a single inode I would
+have to agree that the storage costs are roughly the same however they
+get managed.
 
-Internal logic/micro-controller performs:
+My understanding is that in most inodes all get a label from
+a very small set of possible labels.
 
-Read erase block, modify erase block, allocate new erase block, write
-new erase block, free now unused old erase block, old erase block
-added to a hardware erase queue the performs the actual erase in the
-background at the relatively slow speed of multiple milliseconds..
+If that is true.  It makes sense to store the set of used labels
+separately from the inodes.  Then on the inode just store a pointer
+to the label.
 
-The purpose of the trim/discard command being to allow the ssd to have
-enough free erase blocks ready to go that the writes don't have to
-stall while they wait for a erase block to pop out of the erase queue.
+Saying this in lisp parlance we should be able to use atoms instead of
+strings.
 
-Greg
+At which point we have (I believe) an implementation that is as practically
+as efficient as what was originally proposed but as general and as maintainable
+as your version.
+
+What I don't know is if the set of labels applied to a filesystem is actually
+small, despite having a large number of labels applied.
+
+Eric
