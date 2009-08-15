@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbZHOGPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbZHOGPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752075AbZHOGPN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 02:15:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbZHOGPI
+	id S1752593AbZHOGPe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 02:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbZHOGPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 02:15:08 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:55421 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750744AbZHOGPH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 02:15:07 -0400
-Message-ID: <4A865258.5090903@gmail.com>
-Date: Sat, 15 Aug 2009 09:14:48 +0300
-From: Artem Bityutskiy <dedekind1@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Sat, 15 Aug 2009 02:15:34 -0400
+Received: from mga03.intel.com ([143.182.124.21]:42913 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751237AbZHOGPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 02:15:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,385,1246863600"; 
+   d="scan'208";a="176078058"
+Date: Sat, 15 Aug 2009 13:32:08 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Avi Kivity <avi@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+Message-ID: <20090815053208.GA11387@localhost>
+References: <4A843565.3010104@redhat.com> <4A843B72.6030204@redhat.com> <4A843EAE.6070200@redhat.com> <4A846581.2020304@redhat.com> <20090813211626.GA28274@cmpxchg.org> <4A850F4A.9020507@redhat.com> <20090814091055.GA29338@cmpxchg.org> <20090814095106.GA3345@localhost> <9EECC02A4CC333418C00A85D21E89326B6611AC5@azsmsx502.amr.corp.intel.com> <4A85E722.8030706@redhat.com>
 MIME-Version: 1.0
-To: Denys Vlasenko <vda.linux@googlemail.com>
-CC: Robert Schwebel <r.schwebel@pengutronix.de>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Tim Bird <tim.bird@am.sony.com>, kernel@pengutronix.de
-Subject: Re: New fast(?)-boot results on ARM
-References: <20090814170228.GM13320@pengutronix.de> <1158166a0908141304y70300ab3p899b0d4609efded9@mail.gmail.com>
-In-Reply-To: <1158166a0908141304y70300ab3p899b0d4609efded9@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 15 Aug 2009 06:14:50.0907 (UTC) FILETIME=[B2A2CEB0:01CA1D6F]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A85E722.8030706@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/14/2009 11:04 PM, Denys Vlasenko wrote:
->> [  2.742628]<    0.016050>  0x000000360000-0x000004000000 : "root"
->> [  3.058610]<    0.315982>  UBI: attaching mtd7 to ubi0
->> [  3.062878]<    0.004268>  UBI: physical eraseblock size:   16384 bytes (16 KiB)
->> [  3.070601]<    0.007723>  UBI: logical eraseblock size:    15360 bytes
->> [  3.070665]<    0.000064>  UBI: smallest flash I/O unit:    512
->> [  3.078564]<    0.007899>  UBI: VID header offset:          512 (aligned 512)
->> [  3.078609]<    0.000045>  UBI: data offset:                1024
->> [  5.006609]<    1.928000>  UBI: attached mtd7 to ubi0
->> [  5.013157]<    0.006548>  UBI: MTD device name:            "root"
->
-> As others commented, ubi looks slow and you probably need to find out why.
+On Sat, Aug 15, 2009 at 06:37:22AM +0800, Rik van Riel wrote:
+> Dike, Jeffrey G wrote:
+> > A side note - I've been doing some tracing and shrink_active_list
+> > is called a humongous number of times (25000-ish during a ~90 kvm
+> > run), with a net result of zero pages moved nearly all the time.
 
-Right. UBI is rather slow in attaching MTD devices. Everything is explained
-here:
+Your mean "no pages get deactivated at all in most invocations"?
+This is possible in the steady (thrashing) state of a memory tight
+system(the working set is bigger than memory size). 
 
-http://www.linux-mtd.infradead.org/doc/ubi.html#L_scalability
-http://www.linux-mtd.infradead.org/doc/ubifs.html#L_scalability
+> > Your test is rescuing essentially all candidate pages from the
+> > inactive list.  Right now, I have the VM_EXEC || PageAnon version
+> > of your test.
+> 
+> That is exactly why the the split LRU VM does an unconditional
+> deactivation of active anon pages :)
 
-There is not very much you can do to speed it up but implement UBI2. UBIFS
-would stay intact. There were discussions about this and it does not seem
-to be impossibly difficult to do UBI2. Here are few ideas:
+In general it is :)  However in Jeff's small memory case, there
+will be many refaults without the "PageAnon" protection. But the
+patch does not imply that I'm happy with the "PageAnon" test ;)
 
-http://www.linux-mtd.infradead.org/faq/ubi.html#L_attach_faster
-
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Thanks,
+Fengguang
