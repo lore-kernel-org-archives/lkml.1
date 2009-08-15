@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbZHORko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751310AbZHORtH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751399AbZHORko (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 13:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbZHORko
+	id S1751310AbZHORtH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 13:49:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbZHORtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 13:40:44 -0400
-Received: from gon.proformatique.com ([91.194.178.5]:58475 "EHLO
-	mx1.corp.proformatique.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750806AbZHORkn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 13:40:43 -0400
-X-Greylist: delayed 615 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Aug 2009 13:40:42 EDT
-Date: Sat, 15 Aug 2009 19:30:24 +0200
-From: Guillaume Knispel <gknispel@proformatique.com>
-To: linux-kernel@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>, Miklos Szeredi <mszeredi@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-fsdevel@vger.kernel.org
-Subject: [PATCH] poll/select: initialize triggered field of struct
- poll_wqueues
-Message-ID: <20090815193024.121926e6@xilun.lan.proformatique.com>
-Organization: Proformatique
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 15 Aug 2009 13:49:07 -0400
+Received: from www.tglx.de ([62.245.132.106]:49826 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750845AbZHORtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 13:49:06 -0400
+Message-Id: <20090815174512.491425246@linutronix.de>
+User-Agent: quilt/0.47-1
+Date: Sat, 15 Aug 2009 17:48:26 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Brian Swetland <swetland@google.com>,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       David Brownell <david-b@pacbell.net>, Daniel Ribeiro <drwyrm@gmail.com>,
+       arve@android.com, Barry Song <21cnbao@gmail.com>
+Subject: [RFC patch 0/3] Support for irq chips on slow busses (i2c, spi) - V2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+The support for irq chips on slow busses eg. i2c, spi has been
+discussed to great length several times. Most of the details can be
+found in this thread: http://lkml.org/lkml/2009/7/21/266
 
-That's only the second time I read fs/select.c so this has to be
-reviewed carefully.
-It has been quickly tested on my Debian Lenny x86_32 box and everything
-seems to works fine on the surface.
+The following patch series is a round up of the various patch snippets
+sent out during the discussion and the ideas we agreed on.
 
-Cheers,
-Guillaume Knispel
+This is version 2 of the patch series. The main changes vs. V1
+(http://lkml.org/lkml/2009/8/13/348)
+
+ - patch 1/3: Provide a generic primary handler function which just
+   	      returns IRQ_WAKE_THREAD as this is all what oneshot
+   	      threaded handlers need to avoid useless copies of that
+   	      all over the place.
+
+ - patch 2/3: Reverted to the initial idea of conditional locking to
+   	      allow drivers to be used for both slowbus and standard
+   	      interrupts without any magic in the driver code
+
+ - patch 3/3: To avoid different driver code for nested or separate
+   	      thread handling a new function is provided which allows
+   	      to mark the interrupt nested. request_threaded_irq()
+   	      creates a separate thread only when the flag is not set.
+
+Please have a thorough look and hopefully a test ride on your
+favourite slowbus irq chip implementation so we can get this into .32
+
+Thanks,
+
+	tglx
 
 
 
-poll/select: initialize triggered field of struct poll_wqueues
 
-The triggered field of struct poll_wqueues introduced in commit
-5f820f648c92a5ecc771a96b3c29aa6e90013bba "poll: allow f_op->poll to
-sleep" was set to 1 in pollwake() (now __pollwake() ), tested and
-later set to 0 in poll_schedule_timeout(), but not initialized before.
-As a result when the process needs to sleep, triggered was likely to be
-non-zero even if pollwake() is not called before the first
-poll_schedule_timeout(), meaning schedule_hrtimeout_range() would not
-be called and an extra loop calling all ->poll() would be done.
-
-This patch initialize triggered to 0 in poll_initwait() so the ->poll()
-are not called twice before the process goes to sleep when it needs to.
-
-Signed-off-by: Guillaume Knispel <gknispel@proformatique.com>
----
- fs/select.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/fs/select.c b/fs/select.c
-index d870237..8084834 100644
---- a/fs/select.c
-+++ b/fs/select.c
-@@ -110,6 +110,7 @@ void poll_initwait(struct poll_wqueues *pwq)
- {
-        init_poll_funcptr(&pwq->pt, __pollwait);
-        pwq->polling_task = current;
-+       pwq->triggered = 0;
-        pwq->error = 0;
-        pwq->table = NULL;
-        pwq->inline_index = 0;
