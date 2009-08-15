@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbZHONOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbZHONUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135AbZHONOT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 09:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZHONOS
+	id S1754201AbZHONUI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 09:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbZHONUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 09:14:18 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:46212 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751597AbZHONOS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 09:14:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Opw0CLTPfsk9xEeZjArc3shTTfr4DwFozxu65pNgRSm4k5JWITw6teIiFUq1BA7Ip+
-         t64BgWpD2mnnP4dFfNdsEJAU8GARVNyKCc82jphWMCsdbTBJNgEQNY5nCad/g+h4yi7I
-         YGCim8o0jYGt92y9VczOIcJS4D++Zj4zcSEIc=
-Message-ID: <4A86B4A8.9040407@gmail.com>
-Date: Sat, 15 Aug 2009 15:14:16 +0200
-From: Niel Lambrechts <niel.lambrechts@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Sat, 15 Aug 2009 09:20:07 -0400
+Received: from rtr.ca ([76.10.145.34]:50180 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753088AbZHONUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 09:20:05 -0400
+Message-ID: <4A86B605.5060701@rtr.ca>
+Date: Sat, 15 Aug 2009 09:20:05 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-To: Knut Petersen <Knut_Petersen@t-online.de>
-CC: "linux.kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: drm / i915 performance problems
-References: <d938Z-60e-13@gated-at.bofh.it> <d93st-6q2-39@gated-at.bofh.it> <d95kz-13U-33@gated-at.bofh.it> <d95DT-1K5-17@gated-at.bofh.it> <d9cch-3A1-13@gated-at.bofh.it>
-In-Reply-To: <d9cch-3A1-13@gated-at.bofh.it>
+To: Chris Worley <worleys@gmail.com>
+Cc: Greg Freemyer <greg.freemyer@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
+       Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+ 	slot is freed)
+References: <200908122007.43522.ngupta@vflare.org>	 <alpine.DEB.1.10.0908130931400.28013@asgard.lang.hm>	 <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>	 <alpine.DEB.1.10.0908131342460.28013@asgard.lang.hm>	 <3e8340490908131354q167840fcv124ec56c92bbb830@mail.gmail.com>	 <4A85E0DC.9040101@rtr.ca>	 <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com>	 <20090814234539.GE27148@parisc-linux.org>	 <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com>	 <87f94c370908141730y3ddcb7bbj65d24b612fc0e96d@mail.gmail.com> <f3177b9e0908141738n5f99b85dx3de0f620180a4b46@mail.gmail.com>
+In-Reply-To: <f3177b9e0908141738n5f99b85dx3de0f620180a4b46@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/14/2009 11:10 PM, Knut Petersen wrote:
-> Fabio Comolli schrieb:
->> If I remember correctly the solution was to add this repository:
->>
->>      http://download.opensuse.org/repositories/X11:/XOrg/openSUSE_11.1/
->>
->> to the repository list and then perform an update. Sorry but I left
->> Opensuse some months ago and my memory isn't helping a lot...
->>
->> Hope this helps. Regards,
->> Fabio
->>
->>
-> No, it does not help too much. I  updated to the  software provided there
-> and the result is a X  server that crashes during startup ... :-(
+Chris Worley wrote:
+..
+> So erase blocks are 512 bytes (if I write 512 bytes, an erase block is
+> now freed)?  Not true.
+..
 
-I'm also a former OPENSUSE user and I also used the repository above, and had best success when I updated the packages by going into the view for the repository itself.
+No, erase blocks are typically 512 KILO-bytes, or 1024 sectors.
+Logical write blocks are only 512 bytes, but most drives out there
+now actually use 4096 bytes as the native internal write size.
 
-Perhaps try selecting the packages like that and also make sure you update all the DRM and Mesa packages.
+Lots of issues there.
 
-Hope this helps.
+The only existing "in the wild" TRIM-capable SSDs today all incur
+large overheads from TRIM --> they seem to run a garbage-collection
+and erase cycle for each TRIM command, typically taking 100s of milliseconds
+regardless of the amount being trimmed.
 
-Niel
+So it makes send to gather small TRIMs into single larger TRIMs.
+
+But I think, even better, is to just not bother with the bookkeeping,
+and instead have the filesystem periodically just issue a TRIM for all
+free blocks within a block group, cycling through the block groups
+one by one over time.
+
+That's how I'd like it to work on my own machine here.
+Server/enterprise users very likely want something different.
+
+Pluggable architecture, anyone?  :)
