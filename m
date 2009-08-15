@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752400AbZHOVoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752558AbZHOVqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752400AbZHOVoO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 17:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbZHOVoN
+	id S1752558AbZHOVqv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 17:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbZHOVqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 17:44:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43386 "EHLO ogre.sisk.pl"
+	Sat, 15 Aug 2009 17:46:51 -0400
+Received: from www.tglx.de ([62.245.132.106]:56907 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751318AbZHOVoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 17:44:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
-Date: Sat, 15 Aug 2009 23:44:46 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
-       linux-pci@vger.kernel.org, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0908151143560.18415-100000@netrider.rowland.org> <200908152321.53283.rjw@sisk.pl> <20090815212756.GA31784@srcf.ucam.org>
-In-Reply-To: <20090815212756.GA31784@srcf.ucam.org>
+	id S1751780AbZHOVqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 17:46:50 -0400
+Date: Sat, 15 Aug 2009 23:41:08 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Guillaume Knispel <gknispel@proformatique.com>
+cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Miklos Szeredi <mszeredi@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] poll/select: initialize triggered field of struct
+ poll_wqueues
+In-Reply-To: <20090815193024.121926e6@xilun.lan.proformatique.com>
+Message-ID: <alpine.LFD.2.00.0908152338290.1283@localhost.localdomain>
+References: <20090815193024.121926e6@xilun.lan.proformatique.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908152344.46898.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 15 August 2009, Matthew Garrett wrote:
-> On Sat, Aug 15, 2009 at 11:21:53PM +0200, Rafael J. Wysocki wrote:
+Guillaume,
+
+On Sat, 15 Aug 2009, Guillaume Knispel wrote:
+> poll/select: initialize triggered field of struct poll_wqueues
 > 
-> > I can even imagine a scenario where this setting might be useful, like when
-> > we don't want a network adapter to be woken up from the outside.
+> The triggered field of struct poll_wqueues introduced in commit
+> 5f820f648c92a5ecc771a96b3c29aa6e90013bba "poll: allow f_op->poll to
+> sleep" was set to 1 in pollwake() (now __pollwake() ), tested and
+> later set to 0 in poll_schedule_timeout(), but not initialized before.
+> As a result when the process needs to sleep, triggered was likely to be
+> non-zero even if pollwake() is not called before the first
+> poll_schedule_timeout(), meaning schedule_hrtimeout_range() would not
+> be called and an extra loop calling all ->poll() would be done.
 > 
-> I think in that case we'd probably just want the interface to be downed? 
-> Some of this is going to require device-specific policy, I think - for 
-> the network case we probably want something in between IF_RUNNING and 
-> IF_DOWN (IF_CARRIER, perhaps) that indicates that we want the PHY to be 
-> powered. Pushing this out to sysfs would mean we'd have a consistent 
-> interface but varying semantics, and I'm not convinced that's an 
-> especially helpful interface.
+> This patch initialize triggered to 0 in poll_initwait() so the ->poll()
+> are not called twice before the process goes to sleep when it needs to.
 
-I'm not disagreeing with that.
+Indeed, triggered is random stack content, so it needs to be initialized.
+ 
+> Signed-off-by: Guillaume Knispel <gknispel@proformatique.com>
 
-At this point I'd like to know the Alan's opinion.  I would gladly use the
-'runtime_forbidden' flag only, but if we overlook something now, it's going
-to be difficult to fix later.
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
 
-Thanks,
-Rafael
+> ---
+>  fs/select.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/select.c b/fs/select.c
+> index d870237..8084834 100644
+> --- a/fs/select.c
+> +++ b/fs/select.c
+> @@ -110,6 +110,7 @@ void poll_initwait(struct poll_wqueues *pwq)
+>  {
+>         init_poll_funcptr(&pwq->pt, __pollwait);
+>         pwq->polling_task = current;
+> +       pwq->triggered = 0;
+>         pwq->error = 0;
+>         pwq->table = NULL;
+>         pwq->inline_index = 0;
+> 
