@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbZHOWfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbZHOWxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752649AbZHOWfA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 18:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbZHOWe7
+	id S1752754AbZHOWxf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 18:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZHOWxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 18:34:59 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:57681 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752334AbZHOWe7 (ORCPT
+	Sat, 15 Aug 2009 18:53:35 -0400
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:52334 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751060AbZHOWxe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 18:34:59 -0400
-Subject: Re: [PATCH] kmemleak: Ignore the aperture memory hole on x86_64
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090815141716.GA15941@elte.hu>
-References: <20090815141716.GA15941@elte.hu>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Sat, 15 Aug 2009 23:34:41 +0100
-Message-Id: <1250375681.6889.25.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 15 Aug 2009 18:53:34 -0400
+X-Greylist: delayed 1929 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Aug 2009 18:53:34 EDT
+From: David Wagner <daw@cs.berkeley.edu>
+Message-Id: <200908152221.n7FMLRuw005799@taverner.cs.berkeley.edu>
+Subject: Security: information leaks in /proc enable keystroke recovery
+To: linux-kernel@vger.kernel.org
+Date: Sat, 15 Aug 2009 15:21:27 -0700 (PDT)
+Secret-Bounce-Tag: 9a029cbee41caf2ca77a77efa3c13981
+X-Mailer: ELM [version 2.5 PL6]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Aug 2009 22:34:42.0481 (UTC) FILETIME=[95251210:01CA1DF8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-08-15 at 15:17 +0100, Ingo Molnar wrote:
-> * Catalin Marinas <catalin.marinas@arm.com> wrote:
-> > +     /*
-> > +      * Kmemleak should not scan this block as it may not be mapped via the
-> > +      * kernel direct mapping.
-> > +      */
-> > +     kmemleak_ignore(p);
-> 
-> More importantly, kmemleak should _never_ do the garbage collection
-> scan for device memory (such as the agp aperture above). All the
-> aperture areas are in that category - PCI aperture, IOMMU areas,
-> etc. etc.
-> 
-> Please double check that kmemleak does not check those - there are
-> devices where pure reading of that address space can have
-> side-effects.
+At Usenix Security 2009, two researchers announced last week a new
+security vulnerability in multi-user Linux systems.  They demonstrated
+that one user can, in many cases, recover partial information about
+the keystrokes that another user types into applications running on
+that system.  For instance, they demonstrate how a malicious user can
+recover partial information about SSH passwords typed by other users,
+reducing the password search space by a factor of 250-2000x in
+their experiments.  Thus, this could facilitate password recovery.
 
-I'll do a grep. But would such memory still be mapped in the kernel
-direct mapping? In this particular case, it was alloc_bootmem() memory
-which seems to have been unmapped (and cause an oops), otherwise, at
-least on some architectures, may have problems with speculative fetches.
+Question: Are there any plans to modify the Linux kernel to defend
+against this kind of attack?
 
-Kmemleak doesn't track other mappings like ioremap, so it should not
-scan device memory.
+The paper is here:
 
-Since you raised this, I realised there is a class of kmalloc'ed memory
-blocks that may have some issues on non-coherent architectures. If such
-blocks are used for DMA and cache invalidation is only done in
-dma_map_single(FROM_DEVICE) (the ARM case), kmemleak scanning before
-dma_unmap_single() may pollute the cache. One solution is to invalidate
-the caches again in dma_unmap_single(). I'm not sure ignoring GFP_DMA
-blocks would be feasible if this flag is used for other blocks
-containing pointers. I need to do some tests but I don't think x86 is
-affected.
+http://www.usenix.org/events/sec09/tech/full_papers/zhang.pdf 
 
-Thanks.
+In a nutshell, they exploit the fact that many files in /proc are
+world-readable yet contain sensitive information that can leak information
+about inter-keystroke timings.  For instance, /proc/$PID/stat reveals the
+ESP and EIP registers of the associated process, and is world-readable.
+/proc/pid/status is also mentioned as revealing information that could
+be exploited in these attacks.
 
--- 
-Catalin
+Based on my understanding of their work, it sounds like some of
+the information on those files should perhaps not be world-readable.
+It's not clear to me that it's reasonable for the kernel to reveal ESP,
+EIP, and other sensitive information about process behavior to everyone
+on the same system.
 
+Are folks already aware of these vulnerabilities?  Is there any work
+underway to try to address the issues identified in the Usenix Security
+paper?
