@@ -1,124 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755440AbZHOBfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932174AbZHOBnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755440AbZHOBfM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 21:35:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbZHOBfL
+	id S932174AbZHOBnc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 21:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755517AbZHOBnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 21:35:11 -0400
-Received: from smtp101.prem.mail.sp1.yahoo.com ([98.136.44.56]:36688 "HELO
-	smtp101.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755279AbZHOBfK (ORCPT
+	Fri, 14 Aug 2009 21:43:32 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:46855 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755494AbZHOBnb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 21:35:10 -0400
-X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
-X-YMail-OSG: noJMRXYVM1lcbEYDGIILSYeoVwyfSO7c_iYYlMMzvgtdDupRob2K91t_A.6AgrUB2q4acFEKX2EAycQYP7PXttaDorx3mxlqi_AZyYyghb0jCvjCz4n9fuzFsnKif.r2dgd08YzPcZADxLBvwV094C32uY9zwVRcwTmH2GXExT67ivqDzC7z0sKQKwGsb2P8S5vILy3dGGSYs3FT1.d0T9KFJ.2HBUYC.S54USPIno.0phu78r.wrITTdWzJ_wTtk9CZKEz4N_En3pgTvUXitG0DIw2e.kRrApbHyhtgKuhRyfK6j6dZe0.qohDU9Xne5zcA
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4A86105C.4070806@schaufler-ca.com>
-Date: Fri, 14 Aug 2009 18:33:16 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Stephen Smalley <sds@tycho.nsa.gov>
-CC: "David P. Quigley" <dpquigl@tycho.nsa.gov>, jmorris@namei.org,
-       Greg Kroah-Hartman <greg@kroah.com>, ebiederm@xmission.com,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       selinux@tycho.nsa.gov
-Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on sysfs
- files, directories, and symlinks.
-References: <1247665721-2619-1-git-send-email-dpquigl@tycho.nsa.gov>	 <4A84EF1D.8060408@schaufler-ca.com>	 <1250252411.2422.177.camel@moss-pluto.epoch.ncsc.mil> <1250253651.2422.183.camel@moss-pluto.epoch.ncsc.mil>
-In-Reply-To: <1250253651.2422.183.camel@moss-pluto.epoch.ncsc.mil>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 14 Aug 2009 21:43:31 -0400
+Subject: Re: [patch 04/15] cleanup clocksource selection
+From: john stultz <johnstul@us.ibm.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Daniel Walker <dwalker@fifo99.com>
+In-Reply-To: <20090814134808.388024160@de.ibm.com>
+References: <20090814134717.859098725@de.ibm.com>
+	 <20090814134808.388024160@de.ibm.com>
+Content-Type: text/plain
+Date: Fri, 14 Aug 2009 18:42:20 -0700
+Message-Id: <1250300540.8269.26.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Smalley wrote:
-> On Fri, 2009-08-14 at 08:20 -0400, Stephen Smalley wrote:
->   
->> ...
->>> + */
->>> +static DEFINE_MUTEX(sysfs_xattr_lock);
->>> +
->>> +static struct sysfs_xattr *new_xattr(const char *name, const void *value,
->>> +					size_t size)
->>> +{
->>> +	struct sysfs_xattr *nxattr;
->>> +	void *nvalue;
->>> +	char *nname;
->>> +
->>> +	nxattr = kzalloc(sizeof(*nxattr), GFP_KERNEL);
->>> +	if (!nxattr)
->>> +		return NULL;
->>> +	nvalue = kzalloc(size, GFP_KERNEL);
->>> +	if (!nvalue) {
->>> +		kfree(nxattr);
->>> +		return NULL;
->>> +	}
->>> +	nname = kzalloc(strlen(name) + 1, GFP_KERNEL);
->>> +	if (!nname) {
->>> +		kfree(nxattr);
->>> +		kfree(nvalue);
->>> +		return NULL;
->>> +	}
->>> +	memcpy(nvalue, value, size);
->>> +	strcpy(nname, name);
->>> +	nxattr->sx_name = nname;
->>> +	nxattr->sx_value = nvalue;
->>> +	nxattr->sx_size = size;
->>>       
->> Storing the name/value pairs here is redundant - the security module
->> already has to store the value in some form (potentially smaller, like a
->> secid + struct in the SELinux case).  This wastes memory.
->>     
->
-> Sorry - to clarify, I understand that we have to store a representation
-> of the security attribute in the backing data structure so that it can
-> be restored later, but that representation should come from the security
-> module rather than being the original (name, value, size) triple.  Which
-> is what David's patch does - he obtains a secid from the security module
-> for storage in the wrapped iattr structure.
->   
+On Fri, 2009-08-14 at 15:47 +0200, Martin Schwidefsky wrote:
+> plain text document attachment (clocksource-select.diff)
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> 
+> If a non high-resolution clocksource is first set as override clock
+> and then registered it becomes active even if the system is in
+> on-shot mode. Move the override check from sysfs_override_clocksource
+> to the clocksource selection. That fixes the bug and simplifies the
+> code. The check in clocksource_register for double registration of
+> the same clocksource is removed without replacement.
+> 
+> To find the initial clocksource a new weak function in jiffies.c is
+> defined that returns the jiffies clocksource. The architecture code
+> can then override the weak function with a more suitable clocksource,
+> e.g. the TOD clock on s390.
 
-Sorry, but I disagree with your assertion. An LSM can do what
-it likes with the xattr, but the value sent from userland is
-what should be stored.
 
->>> +
->>> +	return nxattr;
->>> +}
->>> +
->>> +int sysfs_setxattr(struct dentry *dentry, const char *name,
->>> +			const void *value, size_t size, int flags)
->>> +{
->>> +	struct sysfs_dirent *sd = dentry->d_fsdata;
->>> +	struct list_head *xlist;
->>> +	struct sysfs_xattr *nxattr;
->>> +	void *nvalue;
->>> +	int rc = 0;
->>> +
->>> +	/*
->>> +	 * Only support the security namespace.
->>> +	 * Only allow privileged processes to set them.
->>> +	 * It has to be OK with the LSM, if any, as well.
->>> +	 */
->>> +	if (strncmp(name, XATTR_SECURITY_PREFIX,
->>> +			sizeof XATTR_SECURITY_PREFIX - 1))
->>> +		return -ENOTSUPP;
->>> +
->>> +	if (!capable(CAP_SYS_ADMIN))
->>> +		return -EPERM;
->>>       
->> SELinux does not require CAP_SYS_ADMIN to set its attributes, so this
->> breaks its security model.
->>     
->
-> And you don't need to apply any permission check here, as it gets
-> covered by the security_inode_setxattr() hook in vfs_setxattr() prior to
-> invoking i_op->setxattr.
->   
+Hey Martin, 
 
-David seemed to think it necessary in an earlier review. I will
-have another look.
+So I found the issue I sent mail about earlier, this is patch breaks
+sysfs clocksource overrides. The suggested fix is below:
+
+
+> @@ -478,10 +478,6 @@ static ssize_t sysfs_override_clocksourc
+>  					  struct sysdev_attribute *attr,
+>  					  const char *buf, size_t count)
+>  {
+> -	struct clocksource *ovr = NULL;
+> -	size_t ret = count;
+> -	int len;
+> -
+>  	/* strings from sysfs write are not 0 terminated! */
+>  	if (count >= sizeof(override_name))
+>  		return -EINVAL;
+> @@ -495,41 +491,11 @@ static ssize_t sysfs_override_clocksourc
+>  	if (count > 0)
+>  		memcpy(override_name, buf, count);
+>  	override_name[count] = 0;
+> -
+> -	len = strlen(override_name);
+> -	if (len) {
+> -		struct clocksource *cs;
+> -
+> -		ovr = clocksource_override;
+> -		/* try to select it: */
+> -		list_for_each_entry(cs, &clocksource_list, list) {
+> -			if (strlen(cs->name) == len &&
+> -			    !strcmp(cs->name, override_name))
+> -				ovr = cs;
+> -		}
+> -	}
+> -
+> -	/*
+> -	 * Check to make sure we don't switch to a non-highres capable
+> -	 * clocksource if the tick code is in oneshot mode (highres or nohz)
+> -	 */
+> -	if (tick_oneshot_mode_active() && ovr &&
+> -	    !(ovr->flags & CLOCK_SOURCE_VALID_FOR_HRES)) {
+> -		printk(KERN_WARNING "%s clocksource is not HRT compatible. "
+> -			"Cannot switch while in HRT/NOHZ mode\n", ovr->name);
+> -		ovr = NULL;
+> -		override_name[0] = 0;
+> -	}
+> -
+> -	/* Reselect, when the override name has changed */
+> -	if (ovr != clocksource_override) {
+> -		clocksource_override = ovr;
+> -		next_clocksource = select_clocksource();
+> -	}
+> +	clocksource_select();
+> 
+>  	spin_unlock_irq(&clocksource_lock);
+> 
+> -	return ret;
+> +	return count;
+>  }
+
+Here when you return count, count may have been decremented in the code
+above, which causes the writer to get back fewer bytes then what they
+passed in, causing the last char to be repeatedly sent. This is what
+causes the immediate switch back to the default clocksource (override
+gets set to null), and the hang of the command writing to the sysfs
+file.
+
+The fix is simply keeping the initial "size_t ret = count;" and the
+final "return ret;"
+
+
+Index: linux-2.6-tip/kernel/time/clocksource.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/time/clocksource.c	2009-08-14 17:29:50.000000000 -0400
++++ linux-2.6-tip/kernel/time/clocksource.c	2009-08-14 17:30:36.000000000 -0400
+@@ -478,6 +478,8 @@
+ 					  struct sysdev_attribute *attr,
+ 					  const char *buf, size_t count)
+ {
++	size_t ret = count;
++
+ 	/* strings from sysfs write are not 0 terminated! */
+ 	if (count >= sizeof(override_name))
+ 		return -EINVAL;
+@@ -495,7 +497,7 @@
+ 
+ 	spin_unlock_irq(&clocksource_lock);
+ 
+-	return count;
++	return ret;
+ }
+ 
+ /**
+
+
+thanks
+-john
 
 
