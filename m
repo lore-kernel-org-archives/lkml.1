@@ -1,90 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbZHOOgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbZHOOlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754697AbZHOOgw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 10:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbZHOOgv
+	id S1754776AbZHOOlb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 10:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbZHOOla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 10:36:51 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41782 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753794AbZHOOgv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 10:36:51 -0400
-Date: Sat, 15 Aug 2009 23:36:41 +0900 (JST)
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] proc: let task status file print utime and stime.
-Cc: kosaki.motohiro@jp.fujitsu.com, Tatsuhiro Aoshima <tatsu.pc@gmail.com>,
-       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
-Message-Id: <20090815233629.A067.A69D9226@jp.fujitsu.com>
+	Sat, 15 Aug 2009 10:41:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42489 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753662AbZHOOl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 10:41:29 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [RFC] PCI: Runtime power management
+Date: Sat, 15 Aug 2009 16:41:56 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       linux-pci@vger.kernel.org, linux-usb@vger.kernel.org
+References: <200908081625.57333.rjw@sisk.pl> <200908142322.27544.rjw@sisk.pl> <20090814223013.GB20015@srcf.ucam.org>
+In-Reply-To: <20090814223013.GB20015@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
+Message-Id: <200908151641.56571.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tatsuhiro Aoshima <tatsu.pc@gmail.com>
-Subject: [PATCH] proc: let task status file print utime and stime.
+On Saturday 15 August 2009, Matthew Garrett wrote:
+> On Fri, Aug 14, 2009 at 11:22:27PM +0200, Rafael J. Wysocki wrote:
+> 
+> > Do you have any prototypes for that?  I started working on it some time ago,
+> > but then I focused on the core runtime PM framework.
+> 
+> The native PCIe PME code?
 
-The task status file in proc file system did not contain
-user-time and system-time. Thus, users could not get
-those information of running task easily. I think
-these values should be provived in human readable format.
-By this patch, users can get stime and utime very easily.
+Yes.
 
-Signed-off-by: Tatsuhiro Aoshima <tatsu.pc@gmail.com>
-Signed-off-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- fs/proc/array.c |   11 +++++++++--
- 1 files changed, 9 insertions(+), 2 deletions(-)
+> There's some in the final patchset at 
+> http://bugzilla.kernel.org/show_bug.cgi?id=6892
 
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index 725a650..29afa68 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -162,6 +162,7 @@ static inline void task_state(struct seq_file *m, struct pid_namespace *ns,
- 	struct fdtable *fdt = NULL;
- 	const struct cred *cred;
- 	pid_t ppid, tpid;
-+	struct timeval utime, stime;
- 
- 	rcu_read_lock();
- 	ppid = pid_alive(p) ?
-@@ -173,6 +174,8 @@ static inline void task_state(struct seq_file *m, struct pid_namespace *ns,
- 			tpid = task_pid_nr_ns(tracer, ns);
- 	}
- 	cred = get_cred((struct cred *) __task_cred(p));
-+	cputime_to_timeval(task_utime(p), &utime);
-+	cputime_to_timeval(task_stime(p), &stime);
- 	seq_printf(m,
- 		"State:\t%s\n"
- 		"Tgid:\t%d\n"
-@@ -180,13 +183,17 @@ static inline void task_state(struct seq_file *m, struct pid_namespace *ns,
- 		"PPid:\t%d\n"
- 		"TracerPid:\t%d\n"
- 		"Uid:\t%d\t%d\t%d\t%d\n"
--		"Gid:\t%d\t%d\t%d\t%d\n",
-+		"Gid:\t%d\t%d\t%d\t%d\n"
-+		"Utime:\t%lu.%06lu\n"
-+		"Stime:\t%lu.%06lu\n",
- 		get_task_state(p),
- 		task_tgid_nr_ns(p, ns),
- 		pid_nr_ns(pid, ns),
- 		ppid, tpid,
- 		cred->uid, cred->euid, cred->suid, cred->fsuid,
--		cred->gid, cred->egid, cred->sgid, cred->fsgid);
-+		cred->gid, cred->egid, cred->sgid, cred->fsgid,
-+		(unsigned long) utime.tv_sec, (unsigned long) utime.tv_usec,
-+		(unsigned long) stime.tv_sec, (unsigned long) stime.tv_usec);
- 
- 	task_lock(p);
- 	if (p->files)
--- 
-1.4.4.4
+Well, I don't like that very much.
 
+> but I haven't had time to look into merging that into the current kernel.
+> I also don't have anything to test against, which makes life more awkward.
 
+One of my AMD-based boxes should be suitable for that.
 
+> > > +static int acpi_pci_runtime_wake(struct pci_dev *dev, bool enable)
+> > > +{
+> > > +	acpi_status status;
+> > > +	acpi_handle handle = DEVICE_ACPI_HANDLE(&dev->dev);
+> > > +	struct acpi_device *acpi_dev;
+> > > +
+> > 
+> > Hm, I'd move that into ACPI as
+> > 
+> > int acp_runtime_wake_enable(acpi_handle handle, bool enable)
+> > 
+> > in which form it could also be useful to non-PCI devices.
+> 
+> Hm. Yeah, that's not too bad an idea.
+> 
+> > > +		acpi_disable_gpe(acpi_dev->wakeup.gpe_device,
+> > > +				 acpi_dev->wakeup.gpe_number);
+> > > +	}
+> > > +	return 0;
+> > > +}
+> > 
+> > Ah, that's the part I've always been missing!
+> > 
+> > How exactly do we figure out which GPE is a wake-up one for given device?
+> > IOW, how are the wakeup.gpe_device and wakeup.gpe_number fields populated?
+> 
+> There's a field in the ACPI device definition in the DSDT that defines 
+> the needed GPE and which runlevels it can resume from.
+> 
+> > > +	error = pci_pm_suspend(dev);
+> > 
+> > This has a chance to be confusing IMO.  pci_pm_suspend() calls the driver's
+> > ->suspend() routine, which is specific to suspend to RAM.  So, this means
+> > that drivers are supposed to implement ->runtime_suspend() only if they
+> > want to do something _in_ _addition_ to the things done by
+> > ->suspend() and ->suspend_noirq().
+> 
+> Yes, that was how I'd planned it. An alternative would be for 
+> runtime_suspend to return a negative value if there's an error, 0 if the 
+> bus code should continue or a positive value if the runtime_suspend() 
+> call handles all of it and the bus code should just return immediately?
+
+I just don't think that the existing suspend-resume callbacks are suitable for
+runtime PM.
+
+For example, in the majority of cases the existing suspend callbacks put
+devices into D3_hot (or into the deepest low power state allowed by the
+platform and hardware), but that means 10 ms latency, also for the resume
+part.  Do we want that for runtime PM for all drivers?
+
+Perhaps a more suitable model would be to put devices into D1 first, if
+available, and then put them into D2 and D3 after specific delays?  Currently
+the core framework doesn't provide any tools for that, but it may be worth
+extending it for this purpose.
+
+Also, I think it should be impossible to use the "legacy" callbacks for runtime
+PM.  They surely are not designed with that in mind.
+
+> > > +	disable_irq(pci_dev->irq);
+> > 
+> > I don't really think it's necessary to disable the interrupt here.  We prevent
+> > drivers from receiving interrupts while pci_pm_suspend_noirq() is being run
+> > during system-wide power transitions to protect them from receiving "alien"
+> > interrupts they might be unable to handle, but in the runtime case I think the
+> > driver should take care of protecting itself from that.
+> 
+> That sounds fine. I didn't want to take a risk in that respect, but if 
+> we should be safe here I can just drop that.
+
+As far as the PCI PM core is concerned, we should.
+
+> > > +	if (!enable || pci_pme_capable(dev, PCI_D3hot)) {
+> > > +		pci_pme_active(dev, enable);
+> > > +		pme_done = true;
+> > > +	}
+> > 
+> > I don't really follow your intention here.  The condition means that PME is
+> > going to be enabled unless 'enable' is set and the device is not capable
+> > of generating PMEs.  However, if 'enable' is unset, we're still going to try
+> > to enable the PME, even if the device can't generate it.  Shouldn't that
+> > be
+> 
+> Hmm. That was copied from pci_enable_wake() just above, but it does seem 
+> a little bit odd. I suspect that that needs some clarification as well.
+
+Ah, OK.  If 'enabled' is unset, we want to disable the PME for all states, so
+we call pci_pm_active(dev, false) unconditionally in that case.  If 'enable' is
+set, we only want to enable the PME if it's supported in given state.  Sorry
+for the noise.
+
+> > Also, that assumes the device is going to be put into D3_hot, but do we know
+> > that for sure?
+> 
+> I'd be surprised if there's any hardware that supports wakeups from D2 
+> but not D3hot, so I just kept the code simple for now.
+
+OK
+
+Thanks,
+Rafael
