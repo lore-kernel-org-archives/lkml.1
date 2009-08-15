@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbZHOVgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752400AbZHOVoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752280AbZHOVgL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 17:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZHOVgK
+	id S1752400AbZHOVoO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 17:44:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbZHOVoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 17:36:10 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:56860 "EHLO aun.it.uu.se"
+	Sat, 15 Aug 2009 17:44:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43386 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750709AbZHOVgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 17:36:10 -0400
+	id S1751318AbZHOVoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 17:44:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
+Date: Sat, 15 Aug 2009 23:44:46 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
+       linux-pci@vger.kernel.org, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0908151143560.18415-100000@netrider.rowland.org> <200908152321.53283.rjw@sisk.pl> <20090815212756.GA31784@srcf.ucam.org>
+In-Reply-To: <20090815212756.GA31784@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-ID: <19079.10822.924132.738479@pilspetsen.it.uu.se>
-Date: Sat, 15 Aug 2009 23:36:06 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.31-rc6: pty regressed again, breaking expect and gcc's testsuite
-In-Reply-To: <19077.63001.363319.810332@pilspetsen.it.uu.se>
-References: <19077.63001.363319.810332@pilspetsen.it.uu.se>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Message-Id: <200908152344.46898.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson writes:
- > I previously reported that 2.6.31-rcN (1 <= N < 5) broke expect
- > and gcc's testsuite, resulting in bogus gcc testsuite failures.
- > That got fixed in -rc5.
+On Saturday 15 August 2009, Matthew Garrett wrote:
+> On Sat, Aug 15, 2009 at 11:21:53PM +0200, Rafael J. Wysocki wrote:
+> 
+> > I can even imagine a scenario where this setting might be useful, like when
+> > we don't want a network adapter to be woken up from the outside.
+> 
+> I think in that case we'd probably just want the interface to be downed? 
+> Some of this is going to require device-specific policy, I think - for 
+> the network case we probably want something in between IF_RUNNING and 
+> IF_DOWN (IF_CARRIER, perhaps) that indicates that we want the PHY to be 
+> powered. Pushing this out to sysfs would mean we'd have a consistent 
+> interface but varying semantics, and I'm not convinced that's an 
+> especially helpful interface.
 
-Correction. That got fixed in -rc5 on my main workstation,
-which has a fairly old userspace. On another machine with
-a newer userspace, expect still breaks with -rc5.
+I'm not disagreeing with that.
 
- > However, on -rc6 I'm now seeing a similar problem: one specific
- > test (gcc.dg/c99-typespec-1.c) works on 2.6.30 and 2.6.31-rc5,
- > but signals a failure on 2.6.31-rc6.
- > 
- > (Not bisected, I've just spent a lot of time reverting gcc patches
- > and regression testing the result to make sure they weren't at fault.)
+At this point I'd like to know the Alan's opinion.  I would gladly use the
+'runtime_forbidden' flag only, but if we overlook something now, it's going
+to be difficult to fix later.
+
+Thanks,
+Rafael
