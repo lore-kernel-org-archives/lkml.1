@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751606AbZHORtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751716AbZHORtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751606AbZHORtS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 13:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZHORtR
+	id S1751716AbZHORtY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 13:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbZHORtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 13:49:17 -0400
-Received: from www.tglx.de ([62.245.132.106]:49835 "EHLO www.tglx.de"
+	Sat, 15 Aug 2009 13:49:23 -0400
+Received: from www.tglx.de ([62.245.132.106]:49840 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751318AbZHORtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 13:49:14 -0400
-Message-Id: <20090815174537.934668714@linutronix.de>
+	id S1751318AbZHORtU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 13:49:20 -0400
+Message-Id: <20090815174537.983573932@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Sat, 15 Aug 2009 17:48:38 -0000
+Date: Sat, 15 Aug 2009 17:48:43 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
@@ -24,90 +24,40 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        t.fujak@samsung.com, kyungmin.park@samsung.com,
        David Brownell <david-b@pacbell.net>, Daniel Ribeiro <drwyrm@gmail.com>,
        arve@android.com, Barry Song <21cnbao@gmail.com>
-Subject: [RFC patch 2/3] genirq: Add buslock support
+Subject: [RFC patch 3/3] genirq: Support nested threaded irq handling
 References: <20090815174512.491425246@linutronix.de>
-Content-Disposition: inline; filename=genirq-add-buslock-support.patch
+Content-Disposition: inline;
+	filename=genirq-support-nested-threaded-irq-handling.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some interrupt chips are connected to a "slow" bus (i2c, spi ...). The
-bus access needs to sleep and therefor cannot be called in atomic
-contexts.
+Interrupt chips which are behind a slow bus (i2c, spi ...) and
+demultiplex other interrupt sources need to run their interrupt
+handler in a thread. 
 
-Some of the generic interrupt management functions like disable_irq(),
-enable_irq() ... call interrupt chip functions with the irq_desc->lock
-held and interrupts disabled. This does not work for such devices.
+The demultiplexed interrupt handlers need to run in thread context as
+well and need to finish before the demux handler thread can reenable
+the interrupt line. So the easiest way is to run the sub device
+handlers in the context of the demultiplexing handler thread.
 
-Provide a separate synchronization mechanism for such interrupt
-chips. The irq_chip structure is extended by two optional functions
-(bus_lock and bus_sync_and_unlock).
+To avoid that a separate thread is created for the subdevices the
+function set_nested_irq_thread() is provided which sets the
+IRQ_NESTED_THREAD flag in the interrupt descriptor.
 
-The idea is to serialize the bus access for those operations in the
-core code so that drivers which are behind that bus operated interrupt
-controller do not have to worry about it and just can use the normal
-interfaces. To achieve this we add two function pointers to the
-irq_chip: bus_lock and bus_sync_unlock.
+A driver which calls request_threaded_irq() must not be aware of the
+fact that the threaded handler is called in the context of the
+demultiplexing handler thread. The setup code checks the
+IRQ_NESTED_THREAD flag which was set from the irq chip setup code and
+does not setup a separate thread for the interrupt. The primary
+function which is provided by the device driver is replaced by an
+internal dummy function which warns when it is called.
 
-bus_lock() is called to serialize access to the interrupt controller
-bus.
-
-Now the core code can issue chip->mask/unmask ... commands without
-changing the fast path code at all. The chip implementation merily
-stores that information in a chip private data structure and
-returns. No bus interaction as these functions are called from atomic
-context.
-
-After that bus_sync_unlock() is called outside the atomic context. Now
-the chip implementation issues the bus commands, waits for completion
-and unlocks the interrupt controller bus.
-
-The irq_chip implementation as pseudo code:
-
-struct irq_chip_data {
-       struct mutex   mutex;
-       unsigned int   irq_offset;
-       unsigned long  mask;
-       unsigned long  mask_status;
-}
-
-static void bus_lock(unsigned int irq)
-{
-        struct irq_chip_data *data = get_irq_desc_chip_data(irq);
-
-        mutex_lock(&data->mutex);
-}
-
-static void mask(unsigned int irq)
-{
-        struct irq_chip_data *data = get_irq_desc_chip_data(irq);
-
-        irq -= data->irq_offset;
-        data->mask |= (1 << irq);
-}
-
-static void unmask(unsigned int irq)
-{
-        struct irq_chip_data *data = get_irq_desc_chip_data(irq);
-
-        irq -= data->irq_offset;
-        data->mask &= ~(1 << irq);
-}
-
-static void bus_sync_unlock(unsigned int irq)
-{
-        struct irq_chip_data *data = get_irq_desc_chip_data(irq);
-
-        if (data->mask != data->mask_status) {
-                do_bus_magic_to_set_mask(data->mask);
-                data->mask_status = data->mask;
-        }
-        mutex_unlock(&data->mutex);
-}
-
-The device drivers can use request_threaded_irq, free_irq, disable_irq
-and enable_irq as usual with the only restriction that the calls need
-to come from non atomic context.
+For the demultiplexing handler a helper function handle_nested_irq()
+is provided which calls the demux interrupt thread function in the
+context of the caller and does the proper interrupt accounting and
+takes the interrupt disabled status of the demultiplexed subdevice
+into account.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
@@ -125,76 +75,133 @@ Cc: arve@android.com
 Cc: Barry Song <21cnbao@gmail.com>
 
 ---
- include/linux/irq.h    |    6 ++++++
- kernel/irq/chip.c      |    2 ++
- kernel/irq/internals.h |   13 +++++++++++++
- kernel/irq/manage.c    |   19 ++++++++++++++++++-
- 4 files changed, 39 insertions(+), 1 deletion(-)
+ include/linux/irq.h    |    3 ++
+ kernel/irq/chip.c      |   73 +++++++++++++++++++++++++++++++++++++++++++++++++
+ kernel/irq/internals.h |    2 +
+ kernel/irq/manage.c    |   24 ++++++++++++++--
+ 4 files changed, 99 insertions(+), 3 deletions(-)
 
 Index: linux-2.6-tip/include/linux/irq.h
 ===================================================================
 --- linux-2.6-tip.orig/include/linux/irq.h
 +++ linux-2.6-tip/include/linux/irq.h
-@@ -101,6 +101,9 @@ struct msi_desc;
-  * @set_type:		set the flow type (IRQ_TYPE_LEVEL/etc.) of an IRQ
-  * @set_wake:		enable/disable power-management wake-on of an IRQ
-  *
-+ * @bus_lock:		function to lock access to slow bus (i2c) chips
-+ * @bus_sync_unlock:	function to sync and unlock slow bus (i2c) chips
-+ *
-  * @release:		release function solely used by UML
-  * @typename:		obsoleted by name, kept as migration helper
-  */
-@@ -124,6 +127,9 @@ struct irq_chip {
- 	int		(*set_type)(unsigned int irq, unsigned int flow_type);
- 	int		(*set_wake)(unsigned int irq, unsigned int on);
+@@ -70,6 +70,7 @@ typedef	void (*irq_flow_handler_t)(unsig
+ #define IRQ_AFFINITY_SET	0x02000000	/* IRQ affinity was set from userspace*/
+ #define IRQ_SUSPENDED		0x04000000	/* IRQ has gone through suspend sequence */
+ #define IRQ_ONESHOT		0x08000000	/* IRQ is not unmasked after hardirq */
++#define IRQ_NESTED_THREAD	0x10000000	/* IRQ is nested into another, no own handler thread */
  
-+	void		(*bus_lock)(unsigned int irq);
-+	void		(*bus_sync_unlock)(unsigned int irq);
+ #ifdef CONFIG_IRQ_PER_CPU
+ # define CHECK_IRQ_PER_CPU(var) ((var) & IRQ_PER_CPU)
+@@ -379,6 +380,8 @@ set_irq_chained_handler(unsigned int irq
+ 	__set_irq_handler(irq, handle, 1, NULL);
+ }
+ 
++extern void set_irq_nested_thread(unsigned int irq, int nest);
 +
- 	/* Currently used only by UML, might disappear one day.*/
- #ifdef CONFIG_IRQ_RELEASE_METHOD
- 	void		(*release)(unsigned int irq, void *dev_id);
+ extern void set_irq_noprobe(unsigned int irq);
+ extern void set_irq_probe(unsigned int irq);
+ 
 Index: linux-2.6-tip/kernel/irq/chip.c
 ===================================================================
 --- linux-2.6-tip.orig/kernel/irq/chip.c
 +++ linux-2.6-tip/kernel/irq/chip.c
-@@ -597,6 +597,7 @@ __set_irq_handler(unsigned int irq, irq_
- 		desc->chip = &dummy_irq_chip;
- 	}
- 
-+	chip_bus_lock(irq, desc);
- 	spin_lock_irqsave(&desc->lock, flags);
- 
- 	/* Uninstall? */
-@@ -616,6 +617,7 @@ __set_irq_handler(unsigned int irq, irq_
- 		desc->chip->startup(irq);
- 	}
- 	spin_unlock_irqrestore(&desc->lock, flags);
-+	chip_bus_sync_unlock(irq, desc);
+@@ -222,6 +222,34 @@ int set_irq_chip_data(unsigned int irq, 
  }
- EXPORT_SYMBOL_GPL(__set_irq_handler);
+ EXPORT_SYMBOL(set_irq_chip_data);
  
++/**
++ *	set_irq_nested_thread - Set/Reset the IRQ_NESTED_THREAD flag of an irq
++ *
++ *	@irq:	Interrupt number
++ *	@nest:	0 to clear / 1 to set the IRQ_NESTED_THREAD flag
++ *
++ *	The IRQ_NESTED_THREAD flag indicates that on
++ *	request_threaded_irq() no separate interrupt thread should be
++ *	created for the irq as the handler are called nested in the
++ *	context of a demultiplexing interrupt handler thread.
++ */
++void set_irq_nested_thread(unsigned int irq, int nest)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++	unsigned long flags;
++
++	if (!desc)
++		return;
++
++	spin_lock_irqsave(&desc->lock, flags);
++	if (nest)
++		desc->status |= IRQ_NESTED_THREAD;
++	else
++		desc->status &= ~IRQ_NESTED_THREAD;
++	spin_unlock_irqrestore(&desc->lock, flags);
++}
++EXPORT_SYMBOL_GPL(set_irq_nested_thread);
++
+ /*
+  * default enable function
+  */
+@@ -316,6 +344,51 @@ irqreturn_t irq_oneshot_primary_handler(
+ }
+ EXPORT_SYMBOL_GPL(irq_oneshot_primary_handler);
+ 
++/*
++ *	handle_nested_irq - Handle a nested irq from a irq thread
++ *	@irq:	the interrupt number
++ *
++ *	Handle interrupts which are nested into a threaded interrupt
++ *	handler. The handler function is called inside the calling
++ *	threads context.
++ */
++void handle_nested_irq(unsigned int irq)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++	struct irqaction *action;
++	irqreturn_t action_ret;
++
++	might_sleep();
++
++	spin_lock_irq(&desc->lock);
++
++	kstat_incr_irqs_this_cpu(irq, desc);
++
++	action = desc->action;
++	if (unlikely(!action || (desc->status & IRQ_DISABLED)))
++		goto out_unlock;
++
++	desc->status |= IRQ_INPROGRESS;
++	spin_unlock_irq(&desc->lock);
++
++	action_ret = action->thread_fn(action->irq, action->dev_id);
++	if (!noirqdebug)
++		note_interrupt(irq, desc, action_ret);
++
++	spin_lock_irq(&desc->lock);
++	desc->status &= ~IRQ_INPROGRESS;
++
++out_unlock:
++	spin_unlock_irq(&desc->lock);
++}
++EXPORT_SYMBOL_GPL(handle_nested_irq);
++
++irqreturn_t handle_nested_irq_primary(int irq, void *dev_id)
++{
++	WARN(1, "Primary handler called for nested irq %d\n", irq);
++	return IRQ_NONE;
++}
++
+ /**
+  *	handle_simple_irq - Simple and software-decoded IRQs.
+  *	@irq:	the interrupt number
 Index: linux-2.6-tip/kernel/irq/internals.h
 ===================================================================
 --- linux-2.6-tip.orig/kernel/irq/internals.h
 +++ linux-2.6-tip/kernel/irq/internals.h
-@@ -45,6 +45,19 @@ extern int irq_select_affinity_usr(unsig
- extern void
- irq_set_thread_affinity(struct irq_desc *desc, const struct cpumask *cpumask);
+@@ -58,6 +58,8 @@ static inline void chip_bus_sync_unlock(
+ 		desc->chip->bus_sync_unlock(irq);
+ }
  
-+/* Inline functions for support of irq chips on slow busses */
-+static inline void chip_bus_lock(unsigned int irq, struct irq_desc *desc)
-+{
-+	if (unlikely(desc->chip->bus_lock))
-+		desc->chip->bus_lock(irq);
-+}
-+
-+static inline void chip_bus_sync_unlock(unsigned int irq, struct irq_desc *desc)
-+{
-+	if (unlikely(desc->chip->bus_sync_unlock))
-+		desc->chip->bus_sync_unlock(irq);
-+}
++extern irqreturn_t handle_nested_irq_primary(int irq, void *dev_id);
 +
  /*
   * Debugging printout:
@@ -203,80 +210,44 @@ Index: linux-2.6-tip/kernel/irq/manage.c
 ===================================================================
 --- linux-2.6-tip.orig/kernel/irq/manage.c
 +++ linux-2.6-tip/kernel/irq/manage.c
-@@ -222,9 +222,11 @@ void disable_irq_nosync(unsigned int irq
+@@ -547,7 +547,7 @@ __setup_irq(unsigned int irq, struct irq
+ 	struct irqaction *old, **old_ptr;
+ 	const char *old_name = NULL;
+ 	unsigned long flags;
+-	int shared = 0;
++	int nested, shared = 0;
+ 	int ret;
+ 
  	if (!desc)
- 		return;
+@@ -577,9 +577,27 @@ __setup_irq(unsigned int irq, struct irq
+ 		return -EINVAL;
  
-+	chip_bus_lock(irq, desc);
- 	spin_lock_irqsave(&desc->lock, flags);
- 	__disable_irq(desc, irq, false);
- 	spin_unlock_irqrestore(&desc->lock, flags);
-+	chip_bus_sync_unlock(irq, desc);
- }
- EXPORT_SYMBOL(disable_irq_nosync);
- 
-@@ -286,7 +288,8 @@ void __enable_irq(struct irq_desc *desc,
-  *	matches the last disable, processing of interrupts on this
-  *	IRQ line is re-enabled.
-  *
-- *	This function may be called from IRQ context.
-+ *	This function may be called from IRQ context only when
-+ *	desc->chip->bus_lock and desc->chip->bus_sync_unlock are NULL !
-  */
- void enable_irq(unsigned int irq)
- {
-@@ -296,9 +299,11 @@ void enable_irq(unsigned int irq)
- 	if (!desc)
- 		return;
- 
-+	chip_bus_lock(irq, desc);
- 	spin_lock_irqsave(&desc->lock, flags);
- 	__enable_irq(desc, irq, false);
- 	spin_unlock_irqrestore(&desc->lock, flags);
-+	chip_bus_sync_unlock(irq, desc);
- }
- EXPORT_SYMBOL(enable_irq);
- 
-@@ -450,12 +455,14 @@ static int irq_wait_for_interrupt(struct
-  */
- static void irq_finalize_oneshot(unsigned int irq, struct irq_desc *desc)
- {
-+	chip_bus_lock(irq, desc);
- 	spin_lock_irq(&desc->lock);
- 	if (!(desc->status & IRQ_DISABLED) && (desc->status & IRQ_MASKED)) {
- 		desc->status &= ~IRQ_MASKED;
- 		desc->chip->unmask(irq);
- 	}
- 	spin_unlock_irq(&desc->lock);
-+	chip_bus_sync_unlock(irq, desc);
- }
- 
- /*
-@@ -854,7 +861,14 @@ EXPORT_SYMBOL_GPL(remove_irq);
-  */
- void free_irq(unsigned int irq, void *dev_id)
- {
-+	struct irq_desc *desc = irq_to_desc(irq);
+ 	/*
+-	 * Threaded handler ?
++	 * Check whether the interrupt nests into another interrupt
++	 * thread.
+ 	 */
+-	if (new->thread_fn) {
++	nested = desc->status & IRQ_NESTED_THREAD;
++	if (nested) {
++		if (!new->thread_fn)
++			return -EINVAL;
++		/*
++		 * Replace the primary handler which was provided from
++		 * the driver for non nested interrupt handling by the
++		 * dummy function which warns when called.
++		 */
++		new->handler = handle_nested_irq_primary;
++	}
 +
-+	if (!desc)
-+		return;
-+
-+	chip_bus_lock(irq, desc);
- 	kfree(__free_irq(irq, dev_id));
-+	chip_bus_sync_unlock(irq, desc);
- }
- EXPORT_SYMBOL(free_irq);
++	/*
++	 * Create a handler thread when a thread function is supplied
++	 * and the interrupt does not nest into another interrupt
++	 * thread.
++	 */
++	if (new->thread_fn && !nested) {
+ 		struct task_struct *t;
  
-@@ -955,7 +969,10 @@ int request_threaded_irq(unsigned int ir
- 	action->name = devname;
- 	action->dev_id = dev_id;
- 
-+	chip_bus_lock(irq, desc);
- 	retval = __setup_irq(irq, desc, action);
-+	chip_bus_sync_unlock(irq, desc);
-+
- 	if (retval)
- 		kfree(action);
- 
+ 		t = kthread_create(irq_thread, new, "irq/%d-%s", irq,
 
 
