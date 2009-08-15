@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535AbZHOVHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752548AbZHOVV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752535AbZHOVHW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 17:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbZHOVHV
+	id S1752548AbZHOVV2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 17:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZHOVV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 17:07:21 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53141 "EHLO mail.dvmed.net"
+	Sat, 15 Aug 2009 17:21:27 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43337 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752462AbZHOVHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 17:07:21 -0400
-Message-ID: <4A872386.4080908@pobox.com>
-Date: Sat, 15 Aug 2009 17:07:18 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1752280AbZHOVV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 17:21:26 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
+Date: Sat, 15 Aug 2009 23:21:53 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
+       linux-pci@vger.kernel.org, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0908151143560.18415-100000@netrider.rowland.org> <200908152254.23227.rjw@sisk.pl> <20090815205817.GA30254@srcf.ucam.org>
+In-Reply-To: <20090815205817.GA30254@srcf.ucam.org>
 MIME-Version: 1.0
-To: Matthew Garrett <mjg@redhat.com>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH] libata: Export AHCI capabilities
-References: <1247854427-3315-1-git-send-email-mjg@redhat.com>
-In-Reply-To: <1247854427-3315-1-git-send-email-mjg@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Message-Id: <200908152321.53283.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> AHCI exports various capability bits that may be of interest to userspace
-> such as whether the BIOS claims a port is hotpluggable or eSATA. Providing
-> these via sysfs along with the version of the AHCI spec implemented by
-> the host allows userspace to make policy decisions for things like ALPM.
+On Saturday 15 August 2009, Matthew Garrett wrote:
+> On Sat, Aug 15, 2009 at 10:54:23PM +0200, Rafael J. Wysocki wrote:
 > 
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> > runtime_wakeup - if set, the device is allowed to do remote wakeup at run time
+> >   That could be represented as 'runtime_wakeup' under 'power' with the
+> >   following values:
+> >   * no value (empty file) is 'runtime' is 'disabled'
+> >   * 'enabled'
+> >   * 'disabled'
+> >   To set/unset the user space writes 'enabled'/'disabled' to it, respectively.
+> >   The default is set.
+> 
+> Why would you ever want runtime_wakeup to be false unless 
+> runtime_forbidden is true? Surely the point of runtime power management 
+> is to be transparent to the user, in which case remote wakeup is 
+> required?
 
-I would prefer a better-yet-more-general interface, but I don't think 
-one will appear anytime soon, so...
+Well, this was exactly my point previously. :-)
 
-applied
+Still, although for the majority of devices 'runtime_wakeup' disabled would
+mean no runtime PM at all IMO, there may be devices that actually work without
+remote wakeup, although they support it in general.
 
+I can even imagine a scenario where this setting might be useful, like when
+we don't want a network adapter to be woken up from the outside.
 
-
+Thanks,
+Rafael
