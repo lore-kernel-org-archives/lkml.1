@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbZHORHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbZHORIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbZHORHh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 13:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755462AbZHORHg
+	id S1755544AbZHORIO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 13:08:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755480AbZHORIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 13:07:36 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33714 "EHLO hera.kernel.org"
+	Sat, 15 Aug 2009 13:08:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33750 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755527AbZHORHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 13:07:33 -0400
-Date: Sat, 15 Aug 2009 17:07:05 GMT
+	id S1755410AbZHORIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 13:08:11 -0400
+Date: Sat, 15 Aug 2009 17:07:30 GMT
 From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
        mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
        linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1250355231152-git-send-email->
-References: <1250355231152-git-send-email->
-Subject: [tip:core/rcu] rcu: Split hierarchical RCU initialization into boot-time and CPU-online pieces
-Message-ID: <tip-27569620c748ec13f801b4683b448a2ac2adaae4@git.kernel.org>
-Git-Commit-ID: 27569620c748ec13f801b4683b448a2ac2adaae4
+In-Reply-To: <12503552312510-git-send-email->
+References: <12503552312510-git-send-email->
+Subject: [tip:core/rcu] rcu: Simplify RCU CPU-hotplug notification
+Message-ID: <tip-2e597558086dec36d5c33521a36e0f6b1bc3f3a7@git.kernel.org>
+Git-Commit-ID: 2e597558086dec36d5c33521a36e0f6b1bc3f3a7
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 15 Aug 2009 17:07:06 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 15 Aug 2009 17:07:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  27569620c748ec13f801b4683b448a2ac2adaae4
-Gitweb:     http://git.kernel.org/tip/27569620c748ec13f801b4683b448a2ac2adaae4
+Commit-ID:  2e597558086dec36d5c33521a36e0f6b1bc3f3a7
+Gitweb:     http://git.kernel.org/tip/2e597558086dec36d5c33521a36e0f6b1bc3f3a7
 Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Sat, 15 Aug 2009 09:53:46 -0700
+AuthorDate: Sat, 15 Aug 2009 09:53:48 -0700
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 15 Aug 2009 19:02:07 +0200
+CommitDate: Sat, 15 Aug 2009 19:02:08 +0200
 
-rcu: Split hierarchical RCU initialization into boot-time and CPU-online pieces
+rcu: Simplify RCU CPU-hotplug notification
 
-This patch divides the rcutree initialization into boot-time
-and hotplug-time components, so that the tree data structures
-are guaranteed to be fully linked at boot time regardless of
-what might happen in CPU hotplug operations.
+Use the new cpu_notifier() API to simplify RCU's CPU-hotplug
+notifiers, collapsing down to a single such notifier.
 
-This makes RCU more resilient against CPU hotplug misbehavior
-(and vice versa), but more importantly, does a better job of
-compartmentalizing the code.
+This makes it trivial to provide the notifier-ordering
+guarantee that rcu_barrier() depends on.
 
-Reported-by: Ingo Molnar <mingo@elte.hu>
+Also remove redundant open_softirq() calls from Hierarchical
+RCU notifier.
+
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 Cc: laijs@cn.fujitsu.com
 Cc: dipankar@in.ibm.com
@@ -61,97 +60,155 @@ Cc: peterz@infradead.org
 Cc: rostedt@goodmis.org
 Cc: hugh.dickins@tiscali.co.uk
 Cc: benh@kernel.crashing.org
-LKML-Reference: <1250355231152-git-send-email->
+LKML-Reference: <12503552312510-git-send-email->
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/rcutree.c |   53 +++++++++++++++++++++++++++++++++--------------------
- 1 files changed, 33 insertions(+), 20 deletions(-)
+ kernel/rcupdate.c   |   16 +++++++++++++++-
+ kernel/rcupreempt.c |   25 ++-----------------------
+ kernel/rcutree.c    |   17 +++++------------
+ 3 files changed, 22 insertions(+), 36 deletions(-)
 
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index eae29c2..8df1156 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -217,9 +217,13 @@ static void rcu_migrate_callback(struct rcu_head *notused)
+ 		wake_up(&rcu_migrate_wq);
+ }
+ 
++extern int rcu_cpu_notify(struct notifier_block *self,
++			  unsigned long action, void *hcpu);
++
+ static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
+ 		unsigned long action, void *hcpu)
+ {
++	rcu_cpu_notify(self, action, hcpu);
+ 	if (action == CPU_DYING) {
+ 		/*
+ 		 * preempt_disable() in on_each_cpu() prevents stop_machine(),
+@@ -244,8 +248,18 @@ static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
+ 
+ void __init rcu_init(void)
+ {
++	int i;
++
+ 	__rcu_init();
+-	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
++	cpu_notifier(rcu_barrier_cpu_hotplug, 0);
++
++	/*
++	 * We don't need protection against CPU-hotplug here because
++	 * this is called early in boot, before either interrupts
++	 * or the scheduler are operational.
++	 */
++	for_each_online_cpu(i)
++		rcu_barrier_cpu_hotplug(NULL, CPU_UP_PREPARE, (void *)(long)i);
+ }
+ 
+ void rcu_scheduler_starting(void)
+diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
+index beb0e65..9b87f51 100644
+--- a/kernel/rcupreempt.c
++++ b/kernel/rcupreempt.c
+@@ -1417,8 +1417,8 @@ int rcu_pending(int cpu)
+ 	return 0;
+ }
+ 
+-static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
+-				unsigned long action, void *hcpu)
++int __cpuinit rcu_cpu_notify(struct notifier_block *self,
++			     unsigned long action, void *hcpu)
+ {
+ 	long cpu = (long)hcpu;
+ 
+@@ -1439,10 +1439,6 @@ static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
+ 	return NOTIFY_OK;
+ }
+ 
+-static struct notifier_block __cpuinitdata rcu_nb = {
+-	.notifier_call = rcu_cpu_notify,
+-};
+-
+ void __init __rcu_init(void)
+ {
+ 	int cpu;
+@@ -1471,23 +1467,6 @@ void __init __rcu_init(void)
+ 		rdp->waitschedtail = &rdp->waitschedlist;
+ 		rdp->rcu_sched_sleeping = 0;
+ 	}
+-	register_cpu_notifier(&rcu_nb);
+-
+-	/*
+-	 * We don't need protection against CPU-Hotplug here
+-	 * since
+-	 * a) If a CPU comes online while we are iterating over the
+-	 *    cpu_online_mask below, we would only end up making a
+-	 *    duplicate call to rcu_online_cpu() which sets the corresponding
+-	 *    CPU's mask in the rcu_cpu_online_map.
+-	 *
+-	 * b) A CPU cannot go offline at this point in time since the user
+-	 *    does not have access to the sysfs interface, nor do we
+-	 *    suspend the system.
+-	 */
+-	for_each_online_cpu(cpu)
+-		rcu_cpu_notify(&rcu_nb, CPU_UP_PREPARE,	(void *)(long) cpu);
+-
+ 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+ }
+ 
 diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 7717b95..f3e4327 100644
+index f3e4327..75762cd 100644
 --- a/kernel/rcutree.c
 +++ b/kernel/rcutree.c
-@@ -1325,22 +1325,40 @@ int rcu_needs_cpu(int cpu)
+@@ -1132,6 +1132,8 @@ __rcu_process_callbacks(struct rcu_state *rsp, struct rcu_data *rdp)
+ {
+ 	unsigned long flags;
+ 
++	WARN_ON_ONCE(rdp->beenonline == 0);
++
+ 	/*
+ 	 * If an RCU GP has gone long enough, go check for dyntick
+ 	 * idle CPUs and, if needed, send resched IPIs.
+@@ -1416,14 +1418,13 @@ static void __cpuinit rcu_online_cpu(int cpu)
+ {
+ 	rcu_init_percpu_data(cpu, &rcu_state);
+ 	rcu_init_percpu_data(cpu, &rcu_bh_state);
+-	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
  }
  
  /*
-- * Initialize a CPU's per-CPU RCU data.  We take this "scorched earth"
-- * approach so that we don't have to worry about how long the CPU has
-- * been gone, or whether it ever was online previously.  We do trust the
-- * ->mynode field, as it is constant for a given struct rcu_data and
-- * initialized during early boot.
-- *
-- * Note that only one online or offline event can be happening at a given
-- * time.  Note also that we can accept some slop in the rsp->completed
-- * access due to the fact that this CPU cannot possibly have any RCU
-- * callbacks in flight yet.
-+ * Do boot-time initialization of a CPU's per-CPU RCU data.
-+ */
-+static void __init
-+rcu_boot_init_percpu_data(int cpu, struct rcu_state *rsp)
-+{
-+	unsigned long flags;
-+	int i;
-+	struct rcu_data *rdp = rsp->rda[cpu];
-+	struct rcu_node *rnp = rcu_get_root(rsp);
-+
-+	/* Set up local state, ensuring consistent view of global state. */
-+	spin_lock_irqsave(&rnp->lock, flags);
-+	rdp->grpmask = 1UL << (cpu - rdp->mynode->grplo);
-+	rdp->nxtlist = NULL;
-+	for (i = 0; i < RCU_NEXT_SIZE; i++)
-+		rdp->nxttail[i] = &rdp->nxtlist;
-+	rdp->qlen = 0;
-+#ifdef CONFIG_NO_HZ
-+	rdp->dynticks = &per_cpu(rcu_dynticks, cpu);
-+#endif /* #ifdef CONFIG_NO_HZ */
-+	rdp->cpu = cpu;
-+	spin_unlock_irqrestore(&rnp->lock, flags);
-+}
-+
-+/*
-+ * Initialize a CPU's per-CPU RCU data.  Note that only one online or
-+ * offline event can be happening at a given time.  Note also that we
-+ * can accept some slop in the rsp->completed access due to the fact
-+ * that this CPU cannot possibly have any RCU callbacks in flight yet.
+  * Handle CPU online/offline notifcation events.
   */
- static void __cpuinit
- rcu_init_percpu_data(int cpu, struct rcu_state *rsp)
+-static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
+-				unsigned long action, void *hcpu)
++int __cpuinit rcu_cpu_notify(struct notifier_block *self,
++			     unsigned long action, void *hcpu)
  {
- 	unsigned long flags;
--	int i;
- 	long lastcomp;
- 	unsigned long mask;
- 	struct rcu_data *rdp = rsp->rda[cpu];
-@@ -1355,16 +1373,7 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp)
- 	rdp->qs_pending = 1;	 /*  so set up to respond to current GP. */
- 	rdp->beenonline = 1;	 /* We have now been online. */
- 	rdp->passed_quiesc_completed = lastcomp - 1;
--	rdp->grpmask = 1UL << (cpu - rdp->mynode->grplo);
--	rdp->nxtlist = NULL;
--	for (i = 0; i < RCU_NEXT_SIZE; i++)
--		rdp->nxttail[i] = &rdp->nxtlist;
--	rdp->qlen = 0;
- 	rdp->blimit = blimit;
--#ifdef CONFIG_NO_HZ
--	rdp->dynticks = &per_cpu(rcu_dynticks, cpu);
--#endif /* #ifdef CONFIG_NO_HZ */
--	rdp->cpu = cpu;
- 	spin_unlock(&rnp->lock);		/* irqs remain disabled. */
+ 	long cpu = (long)hcpu;
  
- 	/*
-@@ -1539,8 +1548,12 @@ void __init __rcu_init(void)
- #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
- 	rcu_init_one(&rcu_state);
- 	RCU_DATA_PTR_INIT(&rcu_state, rcu_data);
-+	for_each_possible_cpu(i)
-+		rcu_boot_init_percpu_data(i, &rcu_state);
- 	rcu_init_one(&rcu_bh_state);
+@@ -1532,10 +1533,6 @@ do { \
+ 	} \
+ } while (0)
+ 
+-static struct notifier_block __cpuinitdata rcu_nb = {
+-	.notifier_call	= rcu_cpu_notify,
+-};
+-
+ void __init __rcu_init(void)
+ {
+ 	int i;			/* All used by RCU_DATA_PTR_INIT(). */
+@@ -1554,11 +1551,7 @@ void __init __rcu_init(void)
  	RCU_DATA_PTR_INIT(&rcu_bh_state, rcu_bh_data);
-+	for_each_possible_cpu(i)
-+		rcu_boot_init_percpu_data(i, &rcu_bh_state);
+ 	for_each_possible_cpu(i)
+ 		rcu_boot_init_percpu_data(i, &rcu_bh_state);
+-
+-	for_each_online_cpu(i)
+-		rcu_cpu_notify(&rcu_nb, CPU_UP_PREPARE, (void *)(long)i);
+-	/* Register notifier for non-boot CPUs */
+-	register_cpu_notifier(&rcu_nb);
++	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+ }
  
- 	for_each_online_cpu(i)
- 		rcu_cpu_notify(&rcu_nb, CPU_UP_PREPARE, (void *)(long)i);
+ module_param(blimit, int, 0);
