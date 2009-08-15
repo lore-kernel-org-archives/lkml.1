@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbZHOKHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752898AbZHOKH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752850AbZHOKHW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 06:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbZHOKHU
+	id S1752898AbZHOKH3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 06:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbZHOKHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 06:07:20 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52684 "EHLO hera.kernel.org"
+	Sat, 15 Aug 2009 06:07:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52686 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751185AbZHOKHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 06:07:19 -0400
-Date: Sat, 15 Aug 2009 10:06:37 GMT
-From: tip-bot for Cliff Wickman <cpw@sgi.com>
+	id S1752500AbZHOKHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 06:07:20 -0400
+Date: Sat, 15 Aug 2009 10:06:52 GMT
+From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       steiner@sgi.com, cpw@sgi.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       steiner@sgi.com, cpw@sgi.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <E1Mc1x7-0005Ce-6t@eag09.americas.sgi.com>
-References: <E1Mc1x7-0005Ce-6t@eag09.americas.sgi.com>
-Subject: [tip:x86/urgent] x86: Fix UV BAU destination subnode id
-Message-ID: <tip-3ef12c3c97603bad405d30c989718cc9405e2759@git.kernel.org>
-Git-Commit-ID: 3ef12c3c97603bad405d30c989718cc9405e2759
+Cc: linux-kernel@vger.kernel.org, drepper@redhat.com, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, peterz@infradead.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, drepper@redhat.com,
+       linux-kernel@vger.kernel.org, peterz@infradead.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090814182632.GF3490@ghostprotocols.net>
+References: <20090814182632.GF3490@ghostprotocols.net>
+Subject: [tip:perfcounters/urgent] perf record: Fix typo in pid_synthesize_comm_event
+Message-ID: <tip-39e6dd73502f64e2ae3236b304e160ae30de9384@git.kernel.org>
+Git-Commit-ID: 39e6dd73502f64e2ae3236b304e160ae30de9384
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 15 Aug 2009 10:06:40 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 15 Aug 2009 10:06:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3ef12c3c97603bad405d30c989718cc9405e2759
-Gitweb:     http://git.kernel.org/tip/3ef12c3c97603bad405d30c989718cc9405e2759
-Author:     Cliff Wickman <cpw@sgi.com>
-AuthorDate: Fri, 14 Aug 2009 13:56:37 -0500
+Commit-ID:  39e6dd73502f64e2ae3236b304e160ae30de9384
+Gitweb:     http://git.kernel.org/tip/39e6dd73502f64e2ae3236b304e160ae30de9384
+Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
+AuthorDate: Fri, 14 Aug 2009 15:26:32 -0300
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 15 Aug 2009 11:58:02 +0200
+CommitDate: Sat, 15 Aug 2009 11:59:06 +0200
 
-x86: Fix UV BAU destination subnode id
+perf record: Fix typo in pid_synthesize_comm_event
 
-The SGI UV Broadcast Assist Unit is used to send TLB shootdown
-messages to remote nodes of the system.  The header of the
-message must contain the subnode id of the block in the
-receiving hub that handles such messages.  It should always be
-0x10, the id of the "LB" block.
+We were using 'fd' locally, but there was a global 'fd' too, so
+when converting from open to fopen the test made against fd
+should be made against 'fp', but since we have that global
+it didnt get discovered ...
 
-It had previously been documented as a "must be zero" field.
-
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
-Acked-by: Jack Steiner <steiner@sgi.com>
-LKML-Reference: <E1Mc1x7-0005Ce-6t@eag09.americas.sgi.com>
+Reported-by: Ulrich Drepper <drepper@redhat.com>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <20090814182632.GF3490@ghostprotocols.net>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/include/asm/uv/uv_bau.h |    2 +-
- arch/x86/kernel/tlb_uv.c         |    1 +
- 2 files changed, 2 insertions(+), 1 deletions(-)
+ tools/perf/builtin-record.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/uv/uv_bau.h b/arch/x86/include/asm/uv/uv_bau.h
-index bddd44f..80e2984 100644
---- a/arch/x86/include/asm/uv/uv_bau.h
-+++ b/arch/x86/include/asm/uv/uv_bau.h
-@@ -133,7 +133,7 @@ struct bau_msg_payload {
-  * see table 4.2.3.0.1 in broacast_assist spec.
-  */
- struct bau_msg_header {
--	unsigned int dest_subnodeid:6;	/* must be zero */
-+	unsigned int dest_subnodeid:6;	/* must be 0x10, for the LB */
- 	/* bits 5:0 */
- 	unsigned int base_dest_nodeid:15; /* nasid>>1 (pnode) of */
- 	/* bits 20:6 */			  /* first bit in node_map */
-diff --git a/arch/x86/kernel/tlb_uv.c b/arch/x86/kernel/tlb_uv.c
-index 8ccabb8..77b9689 100644
---- a/arch/x86/kernel/tlb_uv.c
-+++ b/arch/x86/kernel/tlb_uv.c
-@@ -744,6 +744,7 @@ uv_activation_descriptor_init(int node, int pnode)
- 		 * note that base_dest_nodeid is actually a nasid.
- 		 */
- 		ad2->header.base_dest_nodeid = uv_partition_base_pnode << 1;
-+		ad2->header.dest_subnodeid = 0x10; /* the LB */
- 		ad2->header.command = UV_NET_ENDPOINT_INTD;
- 		ad2->header.int_both = 1;
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 3d051b9..89a5ddc 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -219,7 +219,7 @@ static pid_t pid_synthesize_comm_event(pid_t pid, int full)
+ 	snprintf(filename, sizeof(filename), "/proc/%d/status", pid);
+ 
+ 	fp = fopen(filename, "r");
+-	if (fd == NULL) {
++	if (fp == NULL) {
  		/*
+ 		 * We raced with a task exiting - just return:
+ 		 */
