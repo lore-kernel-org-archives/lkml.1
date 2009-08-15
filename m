@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751132AbZHOI7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751263AbZHOJBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751132AbZHOI7H (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 04:59:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbZHOI7G
+	id S1751263AbZHOJBl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 05:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbZHOJBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 04:59:06 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:51384 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850AbZHOI7G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 04:59:06 -0400
-Message-ID: <4A8678C4.4060309@cs.helsinki.fi>
-Date: Sat, 15 Aug 2009 11:58:44 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Sat, 15 Aug 2009 05:01:41 -0400
+Received: from www.tglx.de ([62.245.132.106]:47821 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750875AbZHOJBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 05:01:40 -0400
+Date: Sat, 15 Aug 2009 11:01:14 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: john stultz <johnstul@us.ibm.com>
+cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 00/15] clocksource / timekeeping rework V4 (resend V3 +
+ bug fix)
+In-Reply-To: <1250300765.8269.29.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0908151057500.1283@localhost.localdomain>
+References: <20090814134717.859098725@de.ibm.com> <1250300765.8269.29.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: mingo@elte.hu, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       paulus@samba.org, linux-kernel@vger.kernel.org,
-       Anton Blanchard <anton@samba.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] perf_counter: Report the cloning task as parent on perf_counter_fork()
-References: <1250155708.6052.2.camel@penberg-laptop> <1250172882.5241.62.camel@twins>
-In-Reply-To: <1250172882.5241.62.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> A bug in (9f498cc: perf_counter: Full task tracing) makes profiling
-> multi-threaded apps it go belly up.
+On Fri, 14 Aug 2009, john stultz wrote:
+> > Keeping the fingers crossed that this is now really done.
+> > John already gave his thumbs up for the patch series, so the next
+> > logical question is who is going to sit on the patches until the merge
+> > window is opened? I can certainly create a git branch on git390 for
+> > them, but the patches depend on some patches in the x86-tip tree.
+> > Thomas, any thoughts?
+> 
+> So with the fix I sent out to patch #4, this set looks good to me.
+> 
+> So for all of them, including the fixup:
+> 
+> Acked-by: John Stultz <johnstul@us.ibm.com>
 
-Thanks!
+Thanks John for the fix. I picked up everything and pushed it into
+tip/timers/core.
 
-Tested-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Martin, thanks for the nice work. FYI, I massaged the commit messages
+a bit as they were missing subsystem identifiers and I added some more
+explanation to some of them.
 
-I hope the fix makes it to 2.6.31 final as perf is unusable for 
-multi-threaded applications.
+Thanks,
 
-			Pekka
+	tglx
