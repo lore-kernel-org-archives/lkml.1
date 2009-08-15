@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbZHOPg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbZHOPx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754960AbZHOPg7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 11:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZHOPg6
+	id S1754997AbZHOPx3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 11:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbZHOPx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 11:36:58 -0400
-Received: from cantor.suse.de ([195.135.220.2]:50489 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753283AbZHOPg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 11:36:58 -0400
-Date: Sat, 15 Aug 2009 17:36:56 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [rfc][patch 1/3] fs: new truncate sequence
-Message-ID: <20090815153656.GC30951@wotan.suse.de>
-References: <20090706165438.GQ2714@wotan.suse.de> <20090815145131.GA25509@infradead.org> <20090815151412.GB30951@wotan.suse.de> <20090815151824.GA16697@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090815151824.GA16697@infradead.org>
-User-Agent: Mutt/1.5.9i
+	Sat, 15 Aug 2009 11:53:28 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:45327 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753441AbZHOPx1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 11:53:27 -0400
+Date: Sat, 15 Aug 2009 11:53:27 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Matthew Garrett <mjg59@srcf.ucam.org>, <linux-usb@vger.kernel.org>,
+       <linux-pci@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
+In-Reply-To: <200908151618.10169.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0908151143560.18415-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 15, 2009 at 11:18:24AM -0400, Christoph Hellwig wrote:
-> On Sat, Aug 15, 2009 at 05:14:12PM +0200, Nick Piggin wrote:
-> > On Sat, Aug 15, 2009 at 10:51:31AM -0400, Christoph Hellwig wrote:
-> > > Nick, what's the plan with moving forward on this?  We're badly waiting
-> > > for it on the XFS side.  
+On Sat, 15 Aug 2009, Rafael J. Wysocki wrote:
+
+> > > Why don't we add a flag indicating whether or not the device is allowed to
+> > > be power managed at run time, something like runtime_forbidden, that the
+> > > user space will be able to set through sysfs?
 > > 
-> > I was hoping Al would take it but no reply... Any other git tree you
-> > suggest, or -mm?
+> > I think even having a runtime_wakeup flag (which defaults to on) would 
+> > be sufficient.
 > 
-> If we can get it into -mm until Al reappear that would be good.  What
+> Perhaps it would, but then unsetting runtime_wakeup would effectively disable
+> runtime PM for devices that need it to be power managed at run time (probably
+> all input devices).  Also there may be situations in which user space may
+> really want to disable runtime PM for some devices (think of broken hardware
+> for one example).
 
-OK, if that helps, I'll resubmit them.
+It sounds like there are really three choices here, and the decision 
+should largely be left up to the user:
 
+	1. don't use runtime PM,
 
-> are your plans to convert other filesystems?  I'd like to have at least
-> all that use O_DIRECT converted ASAP.
+	2. allow runtime PM but disable remote wakeup,
 
-I was going to start going through some of them and at least try to get
-patches out for maintainers to review. I was putting it off until at
-least they got merged into a tree... but they do look pretty good after
-your reviews now so I don't think there should be major objections.
+	3. allow runtime PM with remote wakeup enabled.
 
-I will send them to Andrew then tonight or tomorrow.
+Now, a driver may say "I can't do my job without remote wakeup".  Such
+a driver would refuse to do runtime_suspend in case 2.  But otherwise
+we should follow the preference of the user.
+
+The only remaining question is how to expose this in sysfs in a way 
+that won't be confusing and that won't be confused with the "wakeup" 
+attribute.  One possibility is to use the "level" attribute introduced 
+in USB; possible levels are "on" (no runtime PM) and "auto" (runtime 
+PM allowed).  Then a new "runtime_wakeup" attribute could contain 
+nothing (if wakeup is not available), "enabled", or "disabled".
+
+Alan Stern
 
