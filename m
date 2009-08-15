@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbZHOWek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbZHOWfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752600AbZHOWek (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 18:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbZHOWek
+	id S1752649AbZHOWfA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 18:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbZHOWe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 18:34:40 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60965 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751684AbZHOWej (ORCPT
+	Sat, 15 Aug 2009 18:34:59 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:57681 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752334AbZHOWe7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 18:34:39 -0400
-Date: Sun, 16 Aug 2009 00:34:34 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Mark Brown <broonie@sirena.org.uk>
-Cc: Felipe Balbi <me@felipebalbi.com>, Liam Girdwood <lrg@slimlogic.co.uk>,
-       Mike Rapoport <mike@compulab.co.il>, linux-kernel@vger.kernel.org
-Subject: Re: Smart Battery System Design (was: Re: Question about
-	userspace-consumer)
-Message-ID: <20090815223434.GB27637@elf.ucw.cz>
-References: <20090810200553.GB4652@gandalf> <20090810215800.GB4528@sirena.org.uk> <20090811054438.GA7176@gandalf> <20090811094020.GA6762@rakim.wolfsonmicro.main> <1249986616.5807.28.camel@odin> <20090811204914.GB13969@gandalf> <20090811223645.GA4691@sirena.org.uk> <20090814163201.GB1626@ucw.cz> <20090815164324.GA4252@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090815164324.GA4252@sirena.org.uk>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 15 Aug 2009 18:34:59 -0400
+Subject: Re: [PATCH] kmemleak: Ignore the aperture memory hole on x86_64
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090815141716.GA15941@elte.hu>
+References: <20090815141716.GA15941@elte.hu>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Sat, 15 Aug 2009 23:34:41 +0100
+Message-Id: <1250375681.6889.25.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Aug 2009 22:34:42.0481 (UTC) FILETIME=[95251210:01CA1DF8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2009-08-15 17:43:24, Mark Brown wrote:
-> On Fri, Aug 14, 2009 at 06:32:01PM +0200, Pavel Machek wrote:
+On Sat, 2009-08-15 at 15:17 +0100, Ingo Molnar wrote:
+> * Catalin Marinas <catalin.marinas@arm.com> wrote:
+> > +     /*
+> > +      * Kmemleak should not scan this block as it may not be mapped via the
+> > +      * kernel direct mapping.
+> > +      */
+> > +     kmemleak_ignore(p);
 > 
-> > Please don't put basic fastcharge logic to userspace:
+> More importantly, kmemleak should _never_ do the garbage collection
+> scan for device memory (such as the agp aperture above). All the
+> aperture areas are in that category - PCI aperture, IOMMU areas,
+> etc. etc.
 > 
-> > * you still want to fastcharge at init=/bin/bash boot
-> 
-> > * you want to fastcharge while machine is in s2ram. See spitz. Doing
-> >   that with userspace would be quite tricky.
-> 
-> Depending on the technologies involved and how well integrated the power
-> path management is with the battery charger fast charge during suspend
-> may not actually be desirable.  Some systems need or desire active
-> thermal management of the system from the CPU during fast charge.
+> Please double check that kmemleak does not check those - there are
+> devices where pure reading of that address space can have
+> side-effects.
 
-Do you have example of some system?
+I'll do a grep. But would such memory still be mapped in the kernel
+direct mapping? In this particular case, it was alloc_bootmem() memory
+which seems to have been unmapped (and cause an oops), otherwise, at
+least on some architectures, may have problems with speculative fetches.
 
-Ok, well... anyway many machines _want_ fastcharge while suspended,
-and putting charging into userland would break them (or make that
-fairly difficult).
-									Pavel
+Kmemleak doesn't track other mappings like ioremap, so it should not
+scan device memory.
+
+Since you raised this, I realised there is a class of kmalloc'ed memory
+blocks that may have some issues on non-coherent architectures. If such
+blocks are used for DMA and cache invalidation is only done in
+dma_map_single(FROM_DEVICE) (the ARM case), kmemleak scanning before
+dma_unmap_single() may pollute the cache. One solution is to invalidate
+the caches again in dma_unmap_single(). I'm not sure ignoring GFP_DMA
+blocks would be feasible if this flag is used for other blocks
+containing pointers. I need to do some tests but I don't think x86 is
+affected.
+
+Thanks.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Catalin
+
