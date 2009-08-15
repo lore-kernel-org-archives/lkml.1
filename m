@@ -1,151 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbZHOOlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbZHOOvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776AbZHOOlb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 10:41:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbZHOOla
+	id S1754888AbZHOOvc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 10:51:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbZHOOvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 10:41:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42489 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753662AbZHOOl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 10:41:29 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [RFC] PCI: Runtime power management
-Date: Sat, 15 Aug 2009 16:41:56 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       linux-pci@vger.kernel.org, linux-usb@vger.kernel.org
-References: <200908081625.57333.rjw@sisk.pl> <200908142322.27544.rjw@sisk.pl> <20090814223013.GB20015@srcf.ucam.org>
-In-Reply-To: <20090814223013.GB20015@srcf.ucam.org>
+	Sat, 15 Aug 2009 10:51:31 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51408 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754814AbZHOOvb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 10:51:31 -0400
+Date: Sat, 15 Aug 2009 10:51:31 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: [rfc][patch 1/3] fs: new truncate sequence
+Message-ID: <20090815145131.GA25509@infradead.org>
+References: <20090706165438.GQ2714@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908151641.56571.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090706165438.GQ2714@wotan.suse.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 15 August 2009, Matthew Garrett wrote:
-> On Fri, Aug 14, 2009 at 11:22:27PM +0200, Rafael J. Wysocki wrote:
-> 
-> > Do you have any prototypes for that?  I started working on it some time ago,
-> > but then I focused on the core runtime PM framework.
-> 
-> The native PCIe PME code?
+Nick, what's the plan with moving forward on this?  We're badly waiting
+for it on the XFS side.  
 
-Yes.
-
-> There's some in the final patchset at 
-> http://bugzilla.kernel.org/show_bug.cgi?id=6892
-
-Well, I don't like that very much.
-
-> but I haven't had time to look into merging that into the current kernel.
-> I also don't have anything to test against, which makes life more awkward.
-
-One of my AMD-based boxes should be suitable for that.
-
-> > > +static int acpi_pci_runtime_wake(struct pci_dev *dev, bool enable)
-> > > +{
-> > > +	acpi_status status;
-> > > +	acpi_handle handle = DEVICE_ACPI_HANDLE(&dev->dev);
-> > > +	struct acpi_device *acpi_dev;
-> > > +
-> > 
-> > Hm, I'd move that into ACPI as
-> > 
-> > int acp_runtime_wake_enable(acpi_handle handle, bool enable)
-> > 
-> > in which form it could also be useful to non-PCI devices.
-> 
-> Hm. Yeah, that's not too bad an idea.
-> 
-> > > +		acpi_disable_gpe(acpi_dev->wakeup.gpe_device,
-> > > +				 acpi_dev->wakeup.gpe_number);
-> > > +	}
-> > > +	return 0;
-> > > +}
-> > 
-> > Ah, that's the part I've always been missing!
-> > 
-> > How exactly do we figure out which GPE is a wake-up one for given device?
-> > IOW, how are the wakeup.gpe_device and wakeup.gpe_number fields populated?
-> 
-> There's a field in the ACPI device definition in the DSDT that defines 
-> the needed GPE and which runlevels it can resume from.
-> 
-> > > +	error = pci_pm_suspend(dev);
-> > 
-> > This has a chance to be confusing IMO.  pci_pm_suspend() calls the driver's
-> > ->suspend() routine, which is specific to suspend to RAM.  So, this means
-> > that drivers are supposed to implement ->runtime_suspend() only if they
-> > want to do something _in_ _addition_ to the things done by
-> > ->suspend() and ->suspend_noirq().
-> 
-> Yes, that was how I'd planned it. An alternative would be for 
-> runtime_suspend to return a negative value if there's an error, 0 if the 
-> bus code should continue or a positive value if the runtime_suspend() 
-> call handles all of it and the bus code should just return immediately?
-
-I just don't think that the existing suspend-resume callbacks are suitable for
-runtime PM.
-
-For example, in the majority of cases the existing suspend callbacks put
-devices into D3_hot (or into the deepest low power state allowed by the
-platform and hardware), but that means 10 ms latency, also for the resume
-part.  Do we want that for runtime PM for all drivers?
-
-Perhaps a more suitable model would be to put devices into D1 first, if
-available, and then put them into D2 and D3 after specific delays?  Currently
-the core framework doesn't provide any tools for that, but it may be worth
-extending it for this purpose.
-
-Also, I think it should be impossible to use the "legacy" callbacks for runtime
-PM.  They surely are not designed with that in mind.
-
-> > > +	disable_irq(pci_dev->irq);
-> > 
-> > I don't really think it's necessary to disable the interrupt here.  We prevent
-> > drivers from receiving interrupts while pci_pm_suspend_noirq() is being run
-> > during system-wide power transitions to protect them from receiving "alien"
-> > interrupts they might be unable to handle, but in the runtime case I think the
-> > driver should take care of protecting itself from that.
-> 
-> That sounds fine. I didn't want to take a risk in that respect, but if 
-> we should be safe here I can just drop that.
-
-As far as the PCI PM core is concerned, we should.
-
-> > > +	if (!enable || pci_pme_capable(dev, PCI_D3hot)) {
-> > > +		pci_pme_active(dev, enable);
-> > > +		pme_done = true;
-> > > +	}
-> > 
-> > I don't really follow your intention here.  The condition means that PME is
-> > going to be enabled unless 'enable' is set and the device is not capable
-> > of generating PMEs.  However, if 'enable' is unset, we're still going to try
-> > to enable the PME, even if the device can't generate it.  Shouldn't that
-> > be
-> 
-> Hmm. That was copied from pci_enable_wake() just above, but it does seem 
-> a little bit odd. I suspect that that needs some clarification as well.
-
-Ah, OK.  If 'enabled' is unset, we want to disable the PME for all states, so
-we call pci_pm_active(dev, false) unconditionally in that case.  If 'enable' is
-set, we only want to enable the PME if it's supported in given state.  Sorry
-for the noise.
-
-> > Also, that assumes the device is going to be put into D3_hot, but do we know
-> > that for sure?
-> 
-> I'd be surprised if there's any hardware that supports wakeups from D2 
-> but not D3hot, so I just kept the code simple for now.
-
-OK
-
-Thanks,
-Rafael
