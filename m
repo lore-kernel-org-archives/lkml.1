@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751890AbZHOJDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751665AbZHOJDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751890AbZHOJDb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 05:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbZHOJDa
+	id S1751665AbZHOJDR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 05:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZHOJDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 05:03:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55277 "EHLO hera.kernel.org"
+	Sat, 15 Aug 2009 05:03:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55273 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751785AbZHOJDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 05:03:15 -0400
-Date: Sat, 15 Aug 2009 09:02:48 GMT
+	id S1751665AbZHOJDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 05:03:14 -0400
+Date: Sat, 15 Aug 2009 09:02:22 GMT
 From: tip-bot for Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -18,229 +18,113 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: dwalker@fifo99.com, mingo@redhat.com, hpa@zytor.com,
        linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
        schwidefsky@de.ibm.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090814134809.110881699@de.ibm.com>
-References: <20090814134809.110881699@de.ibm.com>
-Subject: [tip:timers/core] clocksource: Refactor clocksource watchdog
-Message-ID: <tip-fb63a0ebe615fba9de8c75ea44ded999d1e24c65@git.kernel.org>
-Git-Commit-ID: fb63a0ebe615fba9de8c75ea44ded999d1e24c65
+In-Reply-To: <20090814134808.627795883@de.ibm.com>
+References: <20090814134808.627795883@de.ibm.com>
+Subject: [tip:timers/core] clocksource: Delay clocksource watchdog highres enablement
+Message-ID: <tip-8cf4e750f8459d51c2e8a035a201da4bf7aa996a@git.kernel.org>
+Git-Commit-ID: 8cf4e750f8459d51c2e8a035a201da4bf7aa996a
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 15 Aug 2009 09:02:49 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 15 Aug 2009 09:02:23 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  fb63a0ebe615fba9de8c75ea44ded999d1e24c65
-Gitweb:     http://git.kernel.org/tip/fb63a0ebe615fba9de8c75ea44ded999d1e24c65
+Commit-ID:  8cf4e750f8459d51c2e8a035a201da4bf7aa996a
+Gitweb:     http://git.kernel.org/tip/8cf4e750f8459d51c2e8a035a201da4bf7aa996a
 Author:     Martin Schwidefsky <schwidefsky@de.ibm.com>
-AuthorDate: Fri, 14 Aug 2009 15:47:24 +0200
+AuthorDate: Fri, 14 Aug 2009 15:47:22 +0200
 Committer:  Thomas Gleixner <tglx@linutronix.de>
 CommitDate: Sat, 15 Aug 2009 10:55:46 +0200
 
-clocksource: Refactor clocksource watchdog
+clocksource: Delay clocksource watchdog highres enablement
 
-Refactor clocksource watchdog code to make it more readable. Add
-clocksource_dequeue_watchdog to remove a clocksource from the watchdog
-list when it is unregistered.
+The clocksource watchdog marks a clock as highres capable before it
+checked the deviation from the watchdog clocksource even for a single
+time. Make sure that the deviation is at least checked once before
+doing the switch to highres mode.
 
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Acked-by: John Stultz <johnstul@us.ibm.com>
 Cc: Daniel Walker <dwalker@fifo99.com>
-LKML-Reference: <20090814134809.110881699@de.ibm.com>
+LKML-Reference: <20090814134808.627795883@de.ibm.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 
 ---
- kernel/time/clocksource.c |   97 ++++++++++++++++++++++++++++++++-------------
- 1 files changed, 69 insertions(+), 28 deletions(-)
+ kernel/time/clocksource.c |   47 +++++++++++++++++++++-----------------------
+ 1 files changed, 22 insertions(+), 25 deletions(-)
 
 diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index 89a7b91..56aaa74 100644
+index e91662e..76256c5 100644
 --- a/kernel/time/clocksource.c
 +++ b/kernel/time/clocksource.c
-@@ -145,6 +145,7 @@ static struct clocksource *watchdog;
- static struct timer_list watchdog_timer;
- static DEFINE_SPINLOCK(watchdog_lock);
- static cycle_t watchdog_last;
-+static int watchdog_running;
+@@ -153,11 +153,8 @@ static unsigned long watchdog_resumed;
+ #define WATCHDOG_INTERVAL (HZ >> 1)
+ #define WATCHDOG_THRESHOLD (NSEC_PER_SEC >> 4)
  
- /*
-  * Interval: 0.5sec Threshold: 0.0625s
-@@ -168,6 +169,8 @@ static void clocksource_watchdog(unsigned long data)
- 	int64_t wd_nsec, cs_nsec;
- 
- 	spin_lock(&watchdog_lock);
-+	if (!watchdog_running)
-+		goto out;
- 
- 	wdnow = watchdog->read(watchdog);
- 	wd_nsec = cyc2ns(watchdog, (wdnow - watchdog_last) & watchdog->mask);
-@@ -217,9 +220,30 @@ static void clocksource_watchdog(unsigned long data)
- 		watchdog_timer.expires += WATCHDOG_INTERVAL;
- 		add_timer_on(&watchdog_timer, next_cpu);
- 	}
-+out:
- 	spin_unlock(&watchdog_lock);
- }
- 
-+static inline void clocksource_start_watchdog(void)
-+{
-+	if (watchdog_running || !watchdog || list_empty(&watchdog_list))
-+		return;
-+	init_timer(&watchdog_timer);
-+	watchdog_timer.function = clocksource_watchdog;
-+	watchdog_last = watchdog->read(watchdog);
-+	watchdog_timer.expires = jiffies + WATCHDOG_INTERVAL;
-+	add_timer_on(&watchdog_timer, cpumask_first(cpu_online_mask));
-+	watchdog_running = 1;
-+}
-+
-+static inline void clocksource_stop_watchdog(void)
-+{
-+	if (!watchdog_running || (watchdog && !list_empty(&watchdog_list)))
-+		return;
-+	del_timer(&watchdog_timer);
-+	watchdog_running = 0;
-+}
-+
- static inline void clocksource_reset_watchdog(void)
+-static void clocksource_ratewd(struct clocksource *cs, int64_t delta)
++static void clocksource_unstable(struct clocksource *cs, int64_t delta)
  {
- 	struct clocksource *cs;
-@@ -237,55 +261,70 @@ static void clocksource_resume_watchdog(void)
- 	spin_unlock_irqrestore(&watchdog_lock, flags);
- }
+-	if (delta > -WATCHDOG_THRESHOLD && delta < WATCHDOG_THRESHOLD)
+-		return;
+-
+ 	printk(KERN_WARNING "Clocksource %s unstable (delta = %Ld ns)\n",
+ 	       cs->name, delta);
+ 	cs->flags &= ~(CLOCK_SOURCE_VALID_FOR_HRES | CLOCK_SOURCE_WATCHDOG);
+@@ -183,31 +180,31 @@ static void clocksource_watchdog(unsigned long data)
+ 	list_for_each_entry_safe(cs, tmp, &watchdog_list, wd_list) {
+ 		csnow = cs->read(cs);
  
--static void clocksource_check_watchdog(struct clocksource *cs)
-+static void clocksource_enqueue_watchdog(struct clocksource *cs)
- {
- 	unsigned long flags;
+-		if (unlikely(resumed)) {
++		/* Clocksource initialized ? */
++		if (!(cs->flags & CLOCK_SOURCE_WATCHDOG)) {
++			cs->flags |= CLOCK_SOURCE_WATCHDOG;
+ 			cs->wd_last = csnow;
+ 			continue;
+ 		}
  
- 	spin_lock_irqsave(&watchdog_lock, flags);
- 	if (cs->flags & CLOCK_SOURCE_MUST_VERIFY) {
--		int started = !list_empty(&watchdog_list);
--
-+		/* cs is a clocksource to be watched. */
- 		list_add(&cs->wd_list, &watchdog_list);
--		if (!started && watchdog) {
--			watchdog_last = watchdog->read(watchdog);
--			watchdog_timer.expires = jiffies + WATCHDOG_INTERVAL;
--			add_timer_on(&watchdog_timer,
--				     cpumask_first(cpu_online_mask));
--		}
-+		cs->flags &= ~CLOCK_SOURCE_WATCHDOG;
- 	} else {
-+		/* cs is a watchdog. */
- 		if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
- 			cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
--
-+		/* Pick the best watchdog. */
- 		if (!watchdog || cs->rating > watchdog->rating) {
--			if (watchdog)
--				del_timer(&watchdog_timer);
- 			watchdog = cs;
--			init_timer(&watchdog_timer);
--			watchdog_timer.function = clocksource_watchdog;
--
- 			/* Reset watchdog cycles */
- 			clocksource_reset_watchdog();
--			/* Start if list is not empty */
--			if (!list_empty(&watchdog_list)) {
--				watchdog_last = watchdog->read(watchdog);
--				watchdog_timer.expires =
--					jiffies + WATCHDOG_INTERVAL;
--				add_timer_on(&watchdog_timer,
--					     cpumask_first(cpu_online_mask));
+-		/* Initialized ? */
+-		if (!(cs->flags & CLOCK_SOURCE_WATCHDOG)) {
+-			if ((cs->flags & CLOCK_SOURCE_IS_CONTINUOUS) &&
+-			    (watchdog->flags & CLOCK_SOURCE_IS_CONTINUOUS)) {
+-				cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
+-				/*
+-				 * We just marked the clocksource as
+-				 * highres-capable, notify the rest of the
+-				 * system as well so that we transition
+-				 * into high-res mode:
+-				 */
+-				tick_clock_notify();
 -			}
+-			cs->flags |= CLOCK_SOURCE_WATCHDOG;
+-			cs->wd_last = csnow;
+-		} else {
+-			cs_nsec = cyc2ns(cs, (csnow - cs->wd_last) & cs->mask);
+-			cs->wd_last = csnow;
+-			/* Check the delta. Might remove from the list ! */
+-			clocksource_ratewd(cs, cs_nsec - wd_nsec);
++		/* Check the deviation from the watchdog clocksource. */
++		cs_nsec = cyc2ns(cs, (csnow - cs->wd_last) & cs->mask);
++		cs->wd_last = csnow;
++		if (abs(cs_nsec - wd_nsec) > WATCHDOG_THRESHOLD) {
++			clocksource_unstable(cs, cs_nsec - wd_nsec);
++			continue;
++		}
++
++		if (!(cs->flags & CLOCK_SOURCE_VALID_FOR_HRES) &&
++		    (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS) &&
++		    (watchdog->flags & CLOCK_SOURCE_IS_CONTINUOUS)) {
++			cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
++			/*
++			 * We just marked the clocksource as highres-capable,
++			 * notify the rest of the system as well so that we
++			 * transition into high-res mode:
++			 */
++			tick_clock_notify();
  		}
  	}
-+	/* Check if the watchdog timer needs to be started. */
-+	clocksource_start_watchdog();
- 	spin_unlock_irqrestore(&watchdog_lock, flags);
- }
--#else
--static void clocksource_check_watchdog(struct clocksource *cs)
-+
-+static void clocksource_dequeue_watchdog(struct clocksource *cs)
-+{
-+	struct clocksource *tmp;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&watchdog_lock, flags);
-+	if (cs->flags & CLOCK_SOURCE_MUST_VERIFY) {
-+		/* cs is a watched clocksource. */
-+		list_del_init(&cs->wd_list);
-+	} else if (cs == watchdog) {
-+		/* Reset watchdog cycles */
-+		clocksource_reset_watchdog();
-+		/* Current watchdog is removed. Find an alternative. */
-+		watchdog = NULL;
-+		list_for_each_entry(tmp, &clocksource_list, list) {
-+			if (tmp == cs || tmp->flags & CLOCK_SOURCE_MUST_VERIFY)
-+				continue;
-+			if (!watchdog || tmp->rating > watchdog->rating)
-+				watchdog = tmp;
-+		}
-+	}
-+	cs->flags &= ~CLOCK_SOURCE_WATCHDOG;
-+	/* Check if the watchdog timer needs to be stopped. */
-+	clocksource_stop_watchdog();
-+	spin_unlock_irqrestore(&watchdog_lock, flags);
-+}
-+
-+#else /* CONFIG_CLOCKSOURCE_WATCHDOG */
-+
-+static void clocksource_enqueue_watchdog(struct clocksource *cs)
- {
- 	if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
- 		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
- }
  
-+static inline void clocksource_dequeue_watchdog(struct clocksource *cs) { }
- static inline void clocksource_resume_watchdog(void) { }
--#endif
-+
-+#endif /* CONFIG_CLOCKSOURCE_WATCHDOG */
- 
- /**
-  * clocksource_resume - resume the clocksource(s)
-@@ -414,14 +453,13 @@ int clocksource_register(struct clocksource *cs)
- 	clocksource_enqueue(cs);
- 	clocksource_select();
- 	spin_unlock_irqrestore(&clocksource_lock, flags);
--	clocksource_check_watchdog(cs);
-+	clocksource_enqueue_watchdog(cs);
- 	return 0;
- }
- EXPORT_SYMBOL(clocksource_register);
- 
- /**
-  * clocksource_change_rating - Change the rating of a registered clocksource
-- *
-  */
- void clocksource_change_rating(struct clocksource *cs, int rating)
- {
-@@ -434,6 +472,7 @@ void clocksource_change_rating(struct clocksource *cs, int rating)
- 	clocksource_select();
- 	spin_unlock_irqrestore(&clocksource_lock, flags);
- }
-+EXPORT_SYMBOL(clocksource_change_rating);
- 
- /**
-  * clocksource_unregister - remove a registered clocksource
-@@ -442,11 +481,13 @@ void clocksource_unregister(struct clocksource *cs)
- {
- 	unsigned long flags;
- 
-+	clocksource_dequeue_watchdog(cs);
- 	spin_lock_irqsave(&clocksource_lock, flags);
- 	list_del(&cs->list);
- 	clocksource_select();
- 	spin_unlock_irqrestore(&clocksource_lock, flags);
- }
-+EXPORT_SYMBOL(clocksource_unregister);
- 
- #ifdef CONFIG_SYSFS
- /**
