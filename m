@@ -1,86 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZHOIAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbZHOIWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbZHOIAB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 04:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbZHOIAA
+	id S1753981AbZHOIWW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 04:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbZHOIWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 04:00:00 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:35865 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753016AbZHOH77 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 03:59:59 -0400
-Subject: Re: [PATCH v4 34/34] wireless: mark prism54.ko as deprecated and
- mark for removal
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
-       Larry.Finger@lwfinger.net, aquilaver@yahoo.com,
-       linux-kernel@vger.kernel.org, Dan Williams <dcbw@redhat.com>,
-       Kai Engert <kengert@redhat.com>, Jean Tourrilhes <jt@hpl.hp.com>,
-       Tim de Waal <tim.dewaal@yahoo.com>, Roy Marples <uberlord@gentoo.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Christian Lamparter <chunkeey@web.de>,
-       =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-       Tim Gardner <tim.gardner@canonical.com>
-In-Reply-To: <1250281559-13041-35-git-send-email-lrodriguez@atheros.com>
-References: <1250281559-13041-1-git-send-email-lrodriguez@atheros.com>
-	 <1250281559-13041-35-git-send-email-lrodriguez@atheros.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-tv9P+t3g7Muy8KHLHc/m"
-Date: Sat, 15 Aug 2009 09:59:42 +0200
-Message-Id: <1250323182.15069.0.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.90 
+	Sat, 15 Aug 2009 04:22:21 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:43011 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752150AbZHOIWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 04:22:20 -0400
+Date: Sat, 15 Aug 2009 10:22:20 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net, Tejun Heo <tj@kernel.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Joe Eykholt <jeykholt@cisco.com>
+Subject: Re: [PATCH]: Implementation of blk_rq_map_kern_sg() (aka New
+	implementation  of scsi_execute_async() v3)
+Message-ID: <20090815082220.GJ12579@kernel.dk>
+References: <4A563368.5040407@vlnb.net> <4A830016.5020304@vlnb.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A830016.5020304@vlnb.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Aug 12 2009, Vladislav Bolkhovitin wrote:
+> This patch implements function blk_rq_map_kern_sg(), which allows to map
+> a kernel-originated SG vector to a block request. It is necessary to execute
+> SCSI commands with from kernel going SG buffer. At the moment SCST is the only
+> user of this functionality. It needs it, because its target drivers, which
+> are, basically, SCSI drivers, can deal only with SGs, not with BIOs. But,
+> according to the latest discussions, there can be other potential users for of
+> this functionality, so I'm sending this patch in a hope that it will be
+> also useful for them and eventually will be merged in the mainline kernel.
+> 
+> In the previous submissions this patch was called "New implementation of
+> scsi_execute_async()", but since in this version scsi_execute_async() was
+> removed from it by request of Boaz Harrosh the name was changed accordingly.
 
---=-tv9P+t3g7Muy8KHLHc/m
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Generally this patch looks great, I just have one little thing I'd like
+to point out:
 
-On Fri, 2009-08-14 at 16:25 -0400, Luis R. Rodriguez wrote:
-> The preferred modules is p54.ko, which also supports FullMAC
-> PCI / Cardbus devices. We schedule removal for 2.6.34. Reason
-> to remove this is no one really is testing prism54.ko anymore,
-> and while it works p54.ko provides support for the same hardware.
-> It should be noted I have been told some FullMAC devices may not
-> have worked with the SoftMAC driver but to date we have yet to
-> recieve a single bug report regarding this. If there are users
-> out there please let us know!
+> +	while (hbio != NULL) {
+> +		bio = hbio;
+> +		hbio = hbio->bi_next;
+> +		bio->bi_next = NULL;
+> +
+> +		blk_queue_bounce(q, &bio);
+> +
+> +		res = blk_rq_append_bio(q, rq, bio);
+> +		if (unlikely(res != 0)) {
+> +			bio->bi_next = hbio;
+> +			hbio = bio;
+> +			/* We can have one or more bios bounced */
+> +			goto out_unmap_bios;
+> +		}
+> +	}
 
-Not that I care about the changelog, but I do find it illogical to refer
-to modules w/o .ko everywhere and then with .ko in the changelog. Of
-course you were consistent ;)
+Constructs like this are always dangerous, because of how mempools work.
+__blk_queue_bounce() will internally do:
 
-> -	  The module will be called prism54.
-> +	  When built as module you get prism54.ko
+        bio = bio_alloc(GFP_NOIO, cnt);
 
-NAK this change.
+so you could potentially enter a deadlock if a) you are the only one
+allocating a bio currently, and b) the alloc fails and we wait for a bio
+to be returned to the pool. This is highly unlikely and requires other
+conditions to be dire, but it is a problem. This is not restricted to
+the swap out path, the problem is purely lack of progress. So the golden
+rule is always that you either allocate these units from a private pool
+(which is hard for bouncing, since it does both page and bio allocations
+from a mempool), or that you always ensure that a previously allocated
+bio is in flight before attempting a new alloc.
 
-johannes
-
---=-tv9P+t3g7Muy8KHLHc/m
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKhmrqAAoJEODzc/N7+QmafhgQAI17nxRmHFThE0ajfM/SGrir
-rWISfI+9Pi/dqtIXdKlR8fsT34mzd8NkJ+9dn9pGNren+r4fUTwhr6SiSRzqmwcg
-e7qNC6XUSW8Kh3sByc73upexIthLoNnqvuVQVRRvJA3ghNd4KuBklilGqxe7FtL/
-igVintQkCrlAiX/d/16ci91QvbC9Po+dWfd/cZ/FM6yeTtTVfqLvKCl86ZVA+w6l
-dmJtqYznSiWdl1KHOu9FNw7FC2vgKfShrGGqVmK4ZKTHDHSx3+BqYywfC4FukaLc
-f14nUvTB+hdjr93USlXAqgbF7P4dTMOilVa6pHubur4s6mHbP3INaQoeVGGDX8l/
-1uPSu2KbTY+KI72d0brGKT5bdRdXh8qZxqKRDQekNVDST0AuSx3uqVGF9XYNdMe9
-7In56uXHiPPoKXMNN3hGoHjumKTf78E6Cma/PqZ6oDNEF2N7XSAJXkeVbzld8U81
-h5fnC0uL6oPQndnZNwipS/5HPxoN3nWc2Chxd8xrJ3/ac6fYfUJ0Tbdl+9wioPMQ
-lZUqRn4zaWaPr/JjuhUl1L4NvOY4JUsnZ5faDEFj3cJs4fTXPt1tmzrokjRxFxqv
-nD0bqgUtVZp/aFq79VUYdYRgGKzK83TZPDPL1+asOic21awmWhZQtK9kxAX8PTC1
-8JSpL19aZsThN+YHRU+C
-=Vze7
------END PGP SIGNATURE-----
-
---=-tv9P+t3g7Muy8KHLHc/m--
+-- 
+Jens Axboe
 
