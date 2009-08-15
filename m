@@ -1,57 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754269AbZHONWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754304AbZHON1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754269AbZHONWi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 09:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbZHONWh
+	id S1754304AbZHON1s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 09:27:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbZHON1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 09:22:37 -0400
-Received: from rtr.ca ([76.10.145.34]:50196 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753631AbZHONWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 09:22:36 -0400
-Message-ID: <4A86B69C.7090001@rtr.ca>
-Date: Sat, 15 Aug 2009 09:22:36 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
-       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
-       Greg Freemyer <greg.freemyer@gmail.com>,
-       Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
-  slot is freed)
-References: <200908122007.43522.ngupta@vflare.org>	 <20090813151312.GA13559@linux.intel.com>	 <20090813162621.GB1915@phenom2.trippelsdorf.de>	 <alpine.DEB.1.10.0908130931400.28013@asgard.lang.hm>	 <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>	 <alpine.DEB.1.10.0908131342460.28013@asgard.lang.hm>	 <3e8340490908131354q167840fcv124ec56c92bbb830@mail.gmail.com>	 <4A85E0DC.9040101@rtr.ca>	 <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com>	 <20090814234539.GE27148@parisc-linux.org>	 <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com> <1250341176.4159.2.camel@mulgrave.site>
-In-Reply-To: <1250341176.4159.2.camel@mulgrave.site>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 15 Aug 2009 09:27:48 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:51872 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751296AbZHON1r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 09:27:47 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 8BIT
+Content-disposition: inline
+Content-type: Text/Plain; charset=utf-8
+From: Gene Heskett <gene.heskett@verizon.net>
+Organization: Organization? Not detectable
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.31-rc6
+Date: Sat, 15 Aug 2009 09:27:24 -0400
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc6; KDE/4.2.4; i686; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.01.0908131601100.3162@localhost.localdomain>
+In-reply-to: <alpine.LFD.2.01.0908131601100.3162@localhost.localdomain>
+Message-id: <200908150927.25005.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
->
-> This means you have to drain the outstanding NCQ commands (stalling the
-> device) before you can send a TRIM.   If we do this for every discard,
-> the performance impact will be pretty devastating, hence the need to
-> coalesce.  It's nothing really to do with device characteristics, it's
-> an ATA protocol problem.
-..
+On Thursday 13 August 2009, Linus Torvalds wrote:
+>Hmm. Lots of small fixes all over, spread out fairly evenly (50% drivers,
+>and roughly 10% each in arch, fs, kernel, tools/perf, "rest"). And things
+>do seem to be calming down, because outside of some further i915
+>displayport patches and a couple of perf-counter patches, almost all of
+>them are pretty dang small.
 
-I don't think that's really much of an issue -- we already have to do
-that for cache-flushes whenever barriers are enabled.  Yes it costs,
-but not too much.
+[...]
 
-The current problem is that the only existing SSDs in the wild with TRIM,
-take 100s of milliseconds per TRIM, mostly regardless of the amount being
-TRIMmed.  Sure, some TRIMs take only 10-20ms, and very large ones (millions
-of sectors) can take 1-2 seconds, but most are in the 100ms range.
+The Netgear WG311NA (marvel 88somethng) pci cards are still on the missing 
+list.  I was hoping that flurry of patches to libertas would all get in.
 
-Cheers
+Various snippets from a rebuild:
+
+  MODPOST vmlinux.o                                                                                          
+WARNING: modpost: Found 5 section mismatch(es).                                                              
+To see full details build your kernel with:                                                                  
+'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+
+That has been there forever.
+
+drivers/net/wireless/mwl8k.c: In function ‘mwl8k_config_wt’:                                  
+drivers/net/wireless/mwl8k.c:3031: warning: ‘radio_enabled’ is deprecated 
+(declared at include/net/mac80211.h:599)
+
+I did see a warning about a type miss-match go by during the build:
+
+drivers/net/wireless/libertas/if_spi.c: In function ‘if_spi_c2h_data’:                                            
+drivers/net/wireless/libertas/if_spi.c:739: warning: format ‘%lu’ expects type 
+‘long unsigned int’, but argument 4 has type ‘unsigned int’
+
+And later:
+
+net/mac80211/main.c: In function ‘ieee80211_bss_info_change_notify’:                                                                   
+net/mac80211/main.c:293: warning: ‘beacon_int’ is deprecated (declared at 
+include/net/mac80211.h:593)                                  
+net/mac80211/main.c: In function ‘ieee80211_alloc_hw’:                                                                                 
+net/mac80211/main.c:714: warning: ‘radio_enabled’ is deprecated (declared at 
+include/net/mac80211.h:599)
+
+Other than that the build was fairly clean, and I'm running it.  But still no 
+wireless. :(
+
+Thanks.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+The NRA is offering FREE Associate memberships to anyone who wants them.
+<https://www.nrahq.org/nrabonus/accept-membership.asp>
+
+Politics are almost as exciting as war, and quite as dangerous.  In war,
+you can only be killed once.
+		-- Winston Churchill
+
