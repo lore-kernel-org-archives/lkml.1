@@ -1,66 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbZHOPx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbZHOQQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754997AbZHOPx3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 11:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbZHOPx2
+	id S1754584AbZHOQQH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 12:16:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbZHOQQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 11:53:28 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:45327 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753441AbZHOPx1 (ORCPT
+	Sat, 15 Aug 2009 12:16:06 -0400
+Received: from 94.43.138.210.xn.2iij.net ([210.138.43.94]:35260 "EHLO
+	mail.st-paulia.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751283AbZHOQQG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 11:53:27 -0400
-Date: Sat, 15 Aug 2009 11:53:27 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Matthew Garrett <mjg59@srcf.ucam.org>, <linux-usb@vger.kernel.org>,
-       <linux-pci@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
-In-Reply-To: <200908151618.10169.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0908151143560.18415-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 15 Aug 2009 12:16:06 -0400
+X-Greylist: delayed 541 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Aug 2009 12:16:05 EDT
+Date: Sun, 16 Aug 2009 00:54:41 +0900
+From: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+To: linux-nfs@vger.kernel.org, neilb@suse.de
+Cc: mandel59@gmail.com, yamahata@valinux.co.jp, yoshfuji@linux-ipv6.org
+Message-Id: <20090816005441.2c923280.yoshfuji@linux-ipv6.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.12; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Subject: [PATCH] knfsd: Replace lock_kernel with a mutex in nfsd pool stats.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Aug 2009, Rafael J. Wysocki wrote:
+From: Ryusei Yamaguchi <mandel59@gmail.com>
+Subject: [PATCH] knfsd: Replace lock_kernel with a mutex in nfsd pool stats.
 
-> > > Why don't we add a flag indicating whether or not the device is allowed to
-> > > be power managed at run time, something like runtime_forbidden, that the
-> > > user space will be able to set through sysfs?
-> > 
-> > I think even having a runtime_wakeup flag (which defaults to on) would 
-> > be sufficient.
-> 
-> Perhaps it would, but then unsetting runtime_wakeup would effectively disable
-> runtime PM for devices that need it to be power managed at run time (probably
-> all input devices).  Also there may be situations in which user space may
-> really want to disable runtime PM for some devices (think of broken hardware
-> for one example).
+lock_kernel() in knfsd was replaced with a mutex. The later
+commit 03cf6c9f49a8fea953d38648d016e3f46e814991 ("knfsd:
+add file to export stats about nfsd pools") did not follow
+that change. This patch fixes the issue.
 
-It sounds like there are really three choices here, and the decision 
-should largely be left up to the user:
+Signed-off-by: Ryusei Yamaguchi <mandel59@gmail.com>
+Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
+Signed-off-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
 
-	1. don't use runtime PM,
+---
+ fs/nfsd/nfsctl.c      |    3 ++-
+ fs/nfsd/nfssvc.c      |   23 +++++++++++++++++++++--
+ net/sunrpc/svc_xprt.c |   11 -----------
+ 3 files changed, 23 insertions(+), 14 deletions(-)
 
-	2. allow runtime PM but disable remote wakeup,
+diff --git a/fs/nfsd/nfsctl.c b/fs/nfsd/nfsctl.c
+index 6d08475..6b1b917 100644
+--- a/fs/nfsd/nfsctl.c
++++ b/fs/nfsd/nfsctl.c
+@@ -173,12 +173,13 @@ static const struct file_operations exports_operations = {
+ };
+ 
+ extern int nfsd_pool_stats_open(struct inode *inode, struct file *file);
++extern int nfsd_pool_stats_release(struct inode *inode, struct file *file);
+ 
+ static struct file_operations pool_stats_operations = {
+ 	.open		= nfsd_pool_stats_open,
+ 	.read		= seq_read,
+ 	.llseek		= seq_lseek,
+-	.release	= seq_release,
++	.release	= nfsd_pool_stats_release,
+ 	.owner		= THIS_MODULE,
+ };
+ 
+diff --git a/fs/nfsd/nfssvc.c b/fs/nfsd/nfssvc.c
+index 492c79b..32e64fc 100644
+--- a/fs/nfsd/nfssvc.c
++++ b/fs/nfsd/nfssvc.c
+@@ -34,6 +34,7 @@
+ #include <linux/nfsd/syscall.h>
+ #include <linux/lockd/bind.h>
+ #include <linux/nfsacl.h>
++#include <linux/seq_file.h>
+ 
+ #define NFSDDBG_FACILITY	NFSDDBG_SVC
+ 
+@@ -605,7 +606,25 @@ nfsd_dispatch(struct svc_rqst *rqstp, __be32 *statp)
+ 
+ int nfsd_pool_stats_open(struct inode *inode, struct file *file)
+ {
+-	if (nfsd_serv == NULL)
++	int ret;
++	mutex_lock(&nfsd_mutex);
++	if (nfsd_serv == NULL) {
++		mutex_unlock(&nfsd_mutex);
+ 		return -ENODEV;
+-	return svc_pool_stats_open(nfsd_serv, file);
++	}
++	/* bump up the psudo refcount while traversing */
++	svc_get(nfsd_serv);
++	ret = svc_pool_stats_open(nfsd_serv, file);
++	mutex_unlock(&nfsd_mutex);
++	return ret;
++}
++
++int nfsd_pool_stats_release(struct inode *inode, struct file *file)
++{
++	int ret = seq_release(inode, file);
++	mutex_lock(&nfsd_mutex);
++	/* this function really, really should have been called svc_put() */
++	svc_destroy(nfsd_serv);
++	mutex_unlock(&nfsd_mutex);
++	return ret;
+ }
+diff --git a/net/sunrpc/svc_xprt.c b/net/sunrpc/svc_xprt.c
+index 27d4433..dcd2d1e 100644
+--- a/net/sunrpc/svc_xprt.c
++++ b/net/sunrpc/svc_xprt.c
+@@ -1166,11 +1166,6 @@ static void *svc_pool_stats_start(struct seq_file *m, loff_t *pos)
+ 
+ 	dprintk("svc_pool_stats_start, *pidx=%u\n", pidx);
+ 
+-	lock_kernel();
+-	/* bump up the pseudo refcount while traversing */
+-	svc_get(serv);
+-	unlock_kernel();
+-
+ 	if (!pidx)
+ 		return SEQ_START_TOKEN;
+ 	return (pidx > serv->sv_nrpools ? NULL : &serv->sv_pools[pidx-1]);
+@@ -1198,12 +1193,6 @@ static void *svc_pool_stats_next(struct seq_file *m, void *p, loff_t *pos)
+ 
+ static void svc_pool_stats_stop(struct seq_file *m, void *p)
+ {
+-	struct svc_serv *serv = m->private;
+-
+-	lock_kernel();
+-	/* this function really, really should have been called svc_put() */
+-	svc_destroy(serv);
+-	unlock_kernel();
+ }
+ 
+ static int svc_pool_stats_show(struct seq_file *m, void *p)
+-- 
+1.4.4.4
 
-	3. allow runtime PM with remote wakeup enabled.
 
-Now, a driver may say "I can't do my job without remote wakeup".  Such
-a driver would refuse to do runtime_suspend in case 2.  But otherwise
-we should follow the preference of the user.
-
-The only remaining question is how to expose this in sysfs in a way 
-that won't be confusing and that won't be confused with the "wakeup" 
-attribute.  One possibility is to use the "level" attribute introduced 
-in USB; possible levels are "on" (no runtime PM) and "auto" (runtime 
-PM allowed).  Then a new "runtime_wakeup" attribute could contain 
-nothing (if wakeup is not available), "enabled", or "disabled".
-
-Alan Stern
-
+--yoshfuji
