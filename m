@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbZHOJ45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbZHOKHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752712AbZHOJ45 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 05:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbZHOJ45
+	id S1752850AbZHOKHW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 06:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbZHOKHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 05:56:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34446 "EHLO mx2.mail.elte.hu"
+	Sat, 15 Aug 2009 06:07:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52684 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752191AbZHOJ44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 05:56:56 -0400
-Date: Sat, 15 Aug 2009 11:56:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Valdis.Kletnieks@vt.edu, Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH tip 1/1] perf record: Fix typo in
-	pid_synthesize_comm_event
-Message-ID: <20090815095638.GC15831@elte.hu>
-References: <20090814182632.GF3490@ghostprotocols.net> <28379.1250276831@turing-police.cc.vt.edu> <20090814201048.GG3490@ghostprotocols.net>
+	id S1751185AbZHOKHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 06:07:19 -0400
+Date: Sat, 15 Aug 2009 10:06:37 GMT
+From: tip-bot for Cliff Wickman <cpw@sgi.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       steiner@sgi.com, cpw@sgi.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       steiner@sgi.com, cpw@sgi.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <E1Mc1x7-0005Ce-6t@eag09.americas.sgi.com>
+References: <E1Mc1x7-0005Ce-6t@eag09.americas.sgi.com>
+Subject: [tip:x86/urgent] x86: Fix UV BAU destination subnode id
+Message-ID: <tip-3ef12c3c97603bad405d30c989718cc9405e2759@git.kernel.org>
+Git-Commit-ID: 3ef12c3c97603bad405d30c989718cc9405e2759
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090814201048.GG3490@ghostprotocols.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 15 Aug 2009 10:06:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  3ef12c3c97603bad405d30c989718cc9405e2759
+Gitweb:     http://git.kernel.org/tip/3ef12c3c97603bad405d30c989718cc9405e2759
+Author:     Cliff Wickman <cpw@sgi.com>
+AuthorDate: Fri, 14 Aug 2009 13:56:37 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 15 Aug 2009 11:58:02 +0200
 
-* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+x86: Fix UV BAU destination subnode id
 
-> Em Fri, Aug 14, 2009 at 03:07:11PM -0400, Valdis.Kletnieks@vt.edu escreveu:
-> > On Fri, 14 Aug 2009 15:26:32 -0300, Arnaldo Carvalho de Melo said:
-> > > We were using 'fd' locally, but there was a global 'fd' too, so when
-> > > converting from open to fopen the test made against fd should be made
-> > > against 'fp', but since we have that global...
-> > 
-> > If the kernel was -Wshadow safe by default, this sort of thing 
-> > would happen less often... :)
-> 
-> I would love to have that kind of problem spotted by the compiler, 
-> but this is no kernel code, the CFLAGS we use is different than 
-> the kernel ones, I guess a patch for tools/perf/ would be gladly 
-> accepted by Ingo, but let him say so :-)
+The SGI UV Broadcast Assist Unit is used to send TLB shootdown
+messages to remote nodes of the system.  The header of the
+message must contain the subnode id of the block in the
+receiving hub that handles such messages.  It should always be
+0x10, the id of the "LB" block.
 
-Yeah. We are using -Wall and -Wextra right now - but -Wshadow is not 
-turned on by them.
+It had previously been documented as a "must be zero" field.
 
-Does gcc ignore non-existent warnings or do we have to probe them in 
-the Makefile, to support older versions of GCC?
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
+Acked-by: Jack Steiner <steiner@sgi.com>
+LKML-Reference: <E1Mc1x7-0005Ce-6t@eag09.americas.sgi.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-	Ingo
+
+---
+ arch/x86/include/asm/uv/uv_bau.h |    2 +-
+ arch/x86/kernel/tlb_uv.c         |    1 +
+ 2 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/include/asm/uv/uv_bau.h b/arch/x86/include/asm/uv/uv_bau.h
+index bddd44f..80e2984 100644
+--- a/arch/x86/include/asm/uv/uv_bau.h
++++ b/arch/x86/include/asm/uv/uv_bau.h
+@@ -133,7 +133,7 @@ struct bau_msg_payload {
+  * see table 4.2.3.0.1 in broacast_assist spec.
+  */
+ struct bau_msg_header {
+-	unsigned int dest_subnodeid:6;	/* must be zero */
++	unsigned int dest_subnodeid:6;	/* must be 0x10, for the LB */
+ 	/* bits 5:0 */
+ 	unsigned int base_dest_nodeid:15; /* nasid>>1 (pnode) of */
+ 	/* bits 20:6 */			  /* first bit in node_map */
+diff --git a/arch/x86/kernel/tlb_uv.c b/arch/x86/kernel/tlb_uv.c
+index 8ccabb8..77b9689 100644
+--- a/arch/x86/kernel/tlb_uv.c
++++ b/arch/x86/kernel/tlb_uv.c
+@@ -744,6 +744,7 @@ uv_activation_descriptor_init(int node, int pnode)
+ 		 * note that base_dest_nodeid is actually a nasid.
+ 		 */
+ 		ad2->header.base_dest_nodeid = uv_partition_base_pnode << 1;
++		ad2->header.dest_subnodeid = 0x10; /* the LB */
+ 		ad2->header.command = UV_NET_ENDPOINT_INTD;
+ 		ad2->header.int_both = 1;
+ 		/*
