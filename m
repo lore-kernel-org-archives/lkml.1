@@ -1,95 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751186AbZHOE6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751931AbZHOGAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751186AbZHOE6h (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 00:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbZHOE6g
+	id S1751931AbZHOGAP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 02:00:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbZHOGAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 00:58:36 -0400
-Received: from smtp109.prem.mail.sp1.yahoo.com ([98.136.44.54]:20145 "HELO
-	smtp109.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750764AbZHOE6f (ORCPT
+	Sat, 15 Aug 2009 02:00:14 -0400
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:34658 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751375AbZHOGAN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 00:58:35 -0400
-X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
-X-YMail-OSG: lP8pFLcVM1lTBvtVfdJUsWPSb2t5VRIaBUw4lc75u4u_0bzTDjwEjuN_woXxLwPeKeaI1z9SiIEHAM8EdaFSO1oRNSxOAI1PrbUlnZZx.U5NrcdrHkwC1.4vURkLeQY9FQPyR0me9gb.0gEcp6sF4_pfRAcIHd.uaxttdV1t16Qh9ChE7FH8VzBet87YX60I0ajprreGF6pnhxXj7FptiY6Bz1uZuJtQGtBKeYmIHtsg9MBlBGTFh34r5ai3fWrRqluomR_kRG5kuCeBZMggHdC3wVvK8_HlunB0dltM1dXyQfNv_5_XqLvNrfijCyE0MeYN_ZGi2_lBc5sv4ztv5y1aX5xdxe4Jt6ueD48bwIa1xFOTO75Z5n2LP.ltxBY-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4A864008.50907@schaufler-ca.com>
-Date: Fri, 14 Aug 2009 21:56:40 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Sat, 15 Aug 2009 02:00:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=YNXWMfVJWsUFNo/geRqUg37Q1XNbcTJncZQ+Vi3Vyx2kavkjnMvOBBwT7+koLKiU0+
+         wQrokjLQ3VpfVwPHN1ETtSwmdgZrxz6ejpoUd7Dmk6Rh8IAXD4SSRVv/PtqINR211Mte
+         zGBRdNgoO0UPnz/ff3gjV+popgrRn/TXHoVpQ=
+Message-ID: <4A864EC4.7070907@googlemail.com>
+Date: Sat, 15 Aug 2009 07:59:32 +0200
+From: Dirk Behme <dirk.behme@googlemail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: "David P. Quigley" <dpquigl@tycho.nsa.gov>, jmorris@namei.org,
-       Stephen Smalley <sds@tycho.nsa.gov>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       selinux@tycho.nsa.gov
-Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on sysfs
- files, directories, and symlinks.
-References: <1247665721-2619-1-git-send-email-dpquigl@tycho.nsa.gov>	<4A84EF1D.8060408@schaufler-ca.com> <m1my62xde6.fsf@fess.ebiederm.org>	<4A861291.1030404@schaufler-ca.com> <m1tz09j00q.fsf@fess.ebiederm.org>
-In-Reply-To: <m1tz09j00q.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+CC: Denys Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Tim Bird <tim.bird@am.sony.com>, kernel@pengutronix.de
+Subject: Re: New fast(?)-boot results on ARM
+References: <20090814170228.GM13320@pengutronix.de> <1158166a0908141304y70300ab3p899b0d4609efded9@mail.gmail.com> <20090814204305.GA31727@pengutronix.de>
+In-Reply-To: <20090814204305.GA31727@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Casey Schaufler <casey@schaufler-ca.com> writes:
->
->   
->> Actually, I see that as a justification for the special purpose
->> scheme rather than a real issue. The real attribute data is going
->> to take up the same amount of space regardless of how it gets
->> managed. And Stephen is correct in thinking that is most cases
->> where there are xattrs there will be only one. I don't see that
->> a mechanism more elaborate than a list is going to gain much in
->> real life. On the other hand, if you wanted to take the ball and
->> run with it, I have a window manager to deal with.
->>     
->
-> If you look at things from the point of view of a single inode I would
-> have to agree that the storage costs are roughly the same however they
-> get managed.
->
-> My understanding is that in most inodes all get a label from
-> a very small set of possible labels.
->   
+Robert Schwebel wrote:
+> On Fri, Aug 14, 2009 at 10:04:57PM +0200, Denys Vlasenko wrote:
+>>> rsc@thebe:~$ microcom | ptx_ts "U-Boot 2.0.0-rc9"
+>>> [  2.395740] <  2.395740>
+>>> [  2.395860] <  0.000120>
+>>> [  0.000011] <  0.000011> U-Boot 2.0.0-rc9 (Aug  5 2009 - 10:05:58)
+>>> [  0.000059] <  0.000048>
+>>> [  0.003823] <  0.003764> Board: Phytec phyCORE-i.MX27
+>>> [  0.010753] <  0.006930> cfi_probe: cfi_flash base: 0xc0000000 size: 0x02000000
+>>> [  0.018711] <  0.007958> NAND device: Manufacturer ID: 0x20, Chip ID: 0x36 (ST Micro NAND 64MiB 1,8V 8-bit)
+>>> [  0.026592] <  0.007881> imxfb@imxfb0: i.MX Framebuffer driver
+>>> [  0.178655] <  0.152063> dev_protect: currently broken
+>>> [  0.178736] <  0.000081> Using environment in NOR Flash
+>>> [  0.182577] <  0.003841> initialising PLLs
+>>> [  0.367142] <  0.184565> Malloc space: 0xa3f00000 -> 0xa7f00000 (size 64 MB)
+>>> [  0.370568] <  0.003426> Stack space : 0xa3ef8000 -> 0xa3f00000 (size 32 kB)
+>>> [  0.445993] <  0.075425> running /env/bin/init...
+>>> [  0.870592] <  0.424599>
+>>> [  0.874559] <  0.003967> Hit any key to stop autoboot:  0
+>> boot loader is not fast. considering its simple task, it can be made
+>> faster.
+> 
+> Yup, will check. Almost 1 s seems really long.
 
-Actually, my point is that most files that get xattrs get one xattr.
-The set of labels will be small for a Smack system or a real world
-MLS system. This is not true for SELinux, where the number of labels
-in flight at any given time can be .... large.
+Some things to check regarding this and kernel uncompression (copy):
 
-> If that is true.  It makes sense to store the set of used labels
-> separately from the inodes.  Then on the inode just store a pointer
-> to the label.
->   
+- How often is (compressed/uncompressed) kernel data copied? Once the 
+compressed one from storage (NOR/NAND?) to RAM by boot loader? Then by 
+kernel's uncompression from RAM to it's final location in RAM?
 
-You have been reading the Smack code, haven't you?
+- For boot loader and uncompression, is D-Cache enabled?
 
-> Saying this in lisp parlance we should be able to use atoms instead of
-> strings.
->   
+- Is data (image) copy done by optimized functions? Using (a) DMA or 
+at least (b) some optimized memcpy using ARM's ldmia/stmia?
 
-Sorry, but you're not old enough to be slinging lisp at me. (smiley)
-But yes, that is an apt comparison.
+Best regards
 
-> At which point we have (I believe) an implementation that is as practically
-> as efficient as what was originally proposed but as general and as maintainable
-> as your version.
->
-> What I don't know is if the set of labels applied to a filesystem is actually
-> small, despite having a large number of labels applied.
->   
-
-The question is whether you're more concerned with the xattr behavior
-or the LSM behavior. This is where the difference shows itself. If you
-look at the LSM, there is one value. If you look at xattrs, there may
-be many.
-
-I personally think that the Right Thing(tm) is the xattr view. My
-experience is the LSM view. I hope that we don't shut off the Right
-Thing in preference to the issue of the day. I have been on both sides
-on this one.
-
-
+Dirk
