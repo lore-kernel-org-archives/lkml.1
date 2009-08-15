@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbZHOCPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbZHODCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756869AbZHOCPK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 22:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414AbZHOCPJ
+	id S1756488AbZHODCe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 23:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756087AbZHODCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 22:15:09 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:54691 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755846AbZHOCPH (ORCPT
+	Fri, 14 Aug 2009 23:02:34 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:2413 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755673AbZHODCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 22:15:07 -0400
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: "David P. Quigley" <dpquigl@tycho.nsa.gov>, jmorris@namei.org,
-       Stephen Smalley <sds@tycho.nsa.gov>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       selinux@tycho.nsa.gov
-References: <1247665721-2619-1-git-send-email-dpquigl@tycho.nsa.gov>
-	<4A84EF1D.8060408@schaufler-ca.com> <m1my62xde6.fsf@fess.ebiederm.org>
-	<4A861291.1030404@schaufler-ca.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 14 Aug 2009 19:15:01 -0700
-In-Reply-To: <4A861291.1030404@schaufler-ca.com> (Casey Schaufler's message of "Fri\, 14 Aug 2009 18\:42\:41 -0700")
-Message-ID: <m1tz09j00q.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: casey@schaufler-ca.com, selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@suse.de, sds@tycho.nsa.gov, jmorris@namei.org, dpquigl@tycho.nsa.gov
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Casey Schaufler <casey@schaufler-ca.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.0 T_TooManySym_02 5+ unique symbols in subject
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on sysfs files, directories, and symlinks.
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+	Fri, 14 Aug 2009 23:02:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Rrh1JE418/j1MbYNXZbKZYIMePKENUUvOlJ4SSYlJQFz+G541k/cpNyvg1R062HjWu
+         e98fBdbdQS6lAgpebmXJ1qo8N0Oes7JFWeTnCJjQGtn1JVbF/Zbmb4drV9siYnx5VsMa
+         Rq+tcRgDqj2shWPJRw84n03LmiX/7o00DEsmg=
+Subject: Re: [patch 0/2] Winbond IR Driver - v2
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: david@hardeman.nu
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       jbarnes@virtuousgeek.org, akpm@linux-foundation.org,
+       bjorn.helgaas@hp.com, randy.dunlap@oracle.com
+In-Reply-To: <20090809095645.198777507@hardeman.nu>
+References: <20090809095645.198777507@hardeman.nu>
+Content-Type: text/plain
+Date: Sat, 15 Aug 2009 06:02:27 +0300
+Message-Id: <1250305347.18122.4.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler <casey@schaufler-ca.com> writes:
+On Sun, 2009-08-09 at 11:56 +0200, david@hardeman.nu wrote:
+> Here's a new patch set which should replace all the patches currently in the
+> -mm tree for the winbond cir driver. The new series incorporate feedback from
+> Bjorn Helgaas (convert the driver from ACPI to PNP) and Randy Dunlap (Kconfig
+> fixes).
+> 
+> The IR decoding can still be improved but the driver works for in daily use
+> decoding RC6 commands, so I believe it is ready to go upstream.
+> 
 
-> Actually, I see that as a justification for the special purpose
-> scheme rather than a real issue. The real attribute data is going
-> to take up the same amount of space regardless of how it gets
-> managed. And Stephen is correct in thinking that is most cases
-> where there are xattrs there will be only one. I don't see that
-> a mechanism more elaborate than a list is going to gain much in
-> real life. On the other hand, if you wanted to take the ball and
-> run with it, I have a window manager to deal with.
+Hi.
 
-If you look at things from the point of view of a single inode I would
-have to agree that the storage costs are roughly the same however they
-get managed.
+As I understand, this hardware returns sampled IR signal, so it can be
+used with any remote, right?
 
-My understanding is that in most inodes all get a label from
-a very small set of possible labels.
+Then why not to implement lirc driver?
 
-If that is true.  It makes sense to store the set of used labels
-separately from the inodes.  Then on the inode just store a pointer
-to the label.
+This driver as I understand is a driver for single remote shipped with
+the notebook.
 
-Saying this in lisp parlance we should be able to use atoms instead of
-strings.
+I have recently wrote a lirc driver for  my receiver, a lirc driver. Now
+I can use all my remotes.
 
-At which point we have (I believe) an implementation that is as practically
-as efficient as what was originally proposed but as general and as maintainable
-as your version.
+And no, I don't need any software support for that. LIRC happily
+forwards all events via uinput to kernel, so I use it a an ordinary
+keyboard.
 
-What I don't know is if the set of labels applied to a filesystem is actually
-small, despite having a large number of labels applied.
+Best regards,
+	Maxim Levitsky
 
-Eric
