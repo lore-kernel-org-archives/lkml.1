@@ -1,127 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbZHOBoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932218AbZHOBom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756090AbZHOBoR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Aug 2009 21:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbZHOBoQ
+	id S932218AbZHOBom (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Aug 2009 21:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbZHOBoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Aug 2009 21:44:16 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:47097 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755601AbZHOBoP (ORCPT
+	Fri, 14 Aug 2009 21:44:39 -0400
+Received: from smtp110.prem.mail.ac4.yahoo.com ([76.13.13.93]:41027 "HELO
+	smtp110.prem.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755517AbZHOBoj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Aug 2009 21:44:15 -0400
-Subject: Re: [patch 04/15] cleanup clocksource selection
-From: john stultz <johnstul@us.ibm.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Daniel Walker <dwalker@fifo99.com>
-In-Reply-To: <1250300540.8269.26.camel@localhost.localdomain>
-References: <20090814134717.859098725@de.ibm.com>
-	 <20090814134808.388024160@de.ibm.com>
-	 <1250300540.8269.26.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 14 Aug 2009 18:43:12 -0700
-Message-Id: <1250300592.8269.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Fri, 14 Aug 2009 21:44:39 -0400
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: 1r4w4wAVM1kVMthRnp3e5kqEwyICpgBFNiqsquANT5EsVJNWCFKk.XX6aa5gUzrFz_DmiLa1BX2Rgg8SHCoYNVWgfq_YIlQROdfHtW7mowfef253HKkBi55TCMxbjKYW3HLZwNVf0tW7ea10MUjEgkdprLRb3WTvQCe.k3llt_7tIx1db8237yfj3ok1H5vRZumict07fdqeuFtxnPcTypBJHJf6cStr9sq7kGq0eUJBgd_SjAg9wj7epphu8BOj7fv_lsI6IYvd2BVN7vCR9OfId2XMoRdRxu_qIvrp
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4A861291.1030404@schaufler-ca.com>
+Date: Fri, 14 Aug 2009 18:42:41 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "David P. Quigley" <dpquigl@tycho.nsa.gov>, jmorris@namei.org,
+       Stephen Smalley <sds@tycho.nsa.gov>, gregkh@susa.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       selinux@tycho.nsa.gov
+Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on sysfs
+ files, directories, and symlinks.
+References: <1247665721-2619-1-git-send-email-dpquigl@tycho.nsa.gov>	<4A84EF1D.8060408@schaufler-ca.com> <m1my62xde6.fsf@fess.ebiederm.org>
+In-Reply-To: <m1my62xde6.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-14 at 18:42 -0700, john stultz wrote:
-> On Fri, 2009-08-14 at 15:47 +0200, Martin Schwidefsky wrote:
-> > plain text document attachment (clocksource-select.diff)
-> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > 
-> > If a non high-resolution clocksource is first set as override clock
-> > and then registered it becomes active even if the system is in
-> > on-shot mode. Move the override check from sysfs_override_clocksource
-> > to the clocksource selection. That fixes the bug and simplifies the
-> > code. The check in clocksource_register for double registration of
-> > the same clocksource is removed without replacement.
-> > 
-> > To find the initial clocksource a new weak function in jiffies.c is
-> > defined that returns the jiffies clocksource. The architecture code
-> > can then override the weak function with a more suitable clocksource,
-> > e.g. the TOD clock on s390.
-> 
-> 
-> Hey Martin, 
-> 
-> So I found the issue I sent mail about earlier, this is patch breaks
-> sysfs clocksource overrides. The suggested fix is below:
-> 
-> 
-> > @@ -478,10 +478,6 @@ static ssize_t sysfs_override_clocksourc
-> >  					  struct sysdev_attribute *attr,
-> >  					  const char *buf, size_t count)
-> >  {
-> > -	struct clocksource *ovr = NULL;
-> > -	size_t ret = count;
-> > -	int len;
-> > -
-> >  	/* strings from sysfs write are not 0 terminated! */
-> >  	if (count >= sizeof(override_name))
-> >  		return -EINVAL;
-> > @@ -495,41 +491,11 @@ static ssize_t sysfs_override_clocksourc
-> >  	if (count > 0)
-> >  		memcpy(override_name, buf, count);
-> >  	override_name[count] = 0;
-> > -
-> > -	len = strlen(override_name);
-> > -	if (len) {
-> > -		struct clocksource *cs;
-> > -
-> > -		ovr = clocksource_override;
-> > -		/* try to select it: */
-> > -		list_for_each_entry(cs, &clocksource_list, list) {
-> > -			if (strlen(cs->name) == len &&
-> > -			    !strcmp(cs->name, override_name))
-> > -				ovr = cs;
-> > -		}
-> > -	}
-> > -
-> > -	/*
-> > -	 * Check to make sure we don't switch to a non-highres capable
-> > -	 * clocksource if the tick code is in oneshot mode (highres or nohz)
-> > -	 */
-> > -	if (tick_oneshot_mode_active() && ovr &&
-> > -	    !(ovr->flags & CLOCK_SOURCE_VALID_FOR_HRES)) {
-> > -		printk(KERN_WARNING "%s clocksource is not HRT compatible. "
-> > -			"Cannot switch while in HRT/NOHZ mode\n", ovr->name);
-> > -		ovr = NULL;
-> > -		override_name[0] = 0;
-> > -	}
-> > -
-> > -	/* Reselect, when the override name has changed */
-> > -	if (ovr != clocksource_override) {
-> > -		clocksource_override = ovr;
-> > -		next_clocksource = select_clocksource();
-> > -	}
-> > +	clocksource_select();
-> > 
-> >  	spin_unlock_irq(&clocksource_lock);
-> > 
-> > -	return ret;
-> > +	return count;
-> >  }
-> 
-> Here when you return count, count may have been decremented in the code
-> above, which causes the writer to get back fewer bytes then what they
-> passed in, causing the last char to be repeatedly sent. This is what
-> causes the immediate switch back to the default clocksource (override
-> gets set to null), and the hang of the command writing to the sysfs
-> file.
-> 
-> The fix is simply keeping the initial "size_t ret = count;" and the
-> final "return ret;"
-> 
+Eric W. Biederman wrote:
+> >From a long term maintenance perspective I have to say I like Casey's
+> version that doesn't require any magic security module compression
+> hooks to implement this.
+>   
 
-Oh, and with this small fixup the entire stack seems to be working
-properly.
+Thank you.
 
-thanks
--john
+> >From an implementation point of view Stephen's comments seem accurate.
+>   
+
+They usually are.
+
+> Is there any debate that Casey's version will get the job done?
+>   
+
+There may be from the SELinux side because they have a specific
+behavior that they want for sysfs that is not strictly in touch
+with the usual xattr behavior.
+
+> If not the only real question is how do we store xattrs efficiently for
+> in memory filesystems.  
+>   
+
+Actually, I see that as a justification for the special purpose
+scheme rather than a real issue. The real attribute data is going
+to take up the same amount of space regardless of how it gets
+managed. And Stephen is correct in thinking that is most cases
+where there are xattrs there will be only one. I don't see that
+a mechanism more elaborate than a list is going to gain much in
+real life. On the other hand, if you wanted to take the ball and
+run with it, I have a window manager to deal with.
+
+> Let me propose a different xattr compression scheme instead of making
+> the security module responsible for compression.
+>
+> How about we have:
+> struct sysfs_xattr *sysfs_store_xattr(const char *name, const void *value, size_t size);
+> void sysfs_release_xattr(struct sysfs_xattr *xattr);
+>
+> Where sysfs_xattr looks something like:
+> struct sysfs_xattr {
+>        struct hlist_node list;
+>        atomic_t count;
+>        const char *name;
+>        const void *value;
+>        size_t size;
+> }
+>
+> And then at the end of of what is today s_iattr we have something like:
+> struct sysfs_xattr *xattrs[2];
+>
+>
+> The key point here is that sysfs_store_xattr will look to see in a
+> hash table to see if another inode/dentry has already stored the
+> specified xattr and if so increment the count of sysfs_xattr count
+> and return it.
+>
+> My design assumption is that the set of xattrs that people want to
+> apply to filesystems is small.
+>
+> By optimizing for a small number of distinct xattrs we keep the
+> storage size small (even for those filesystems who want to label
+> everything), and we keep the generality by not making storage of
+> xattrs a security module responsibility.
+>
+> Does that sound like it will work?
+>
+> Eric
+>
+>
+>   
 
