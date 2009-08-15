@@ -1,33 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbZHOO1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZHOO3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754655AbZHOO1N (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 10:27:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbZHOO1M
+	id S1754695AbZHOO3x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 10:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbZHOO3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 10:27:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60896 "EHLO mx2.mail.elte.hu"
+	Sat, 15 Aug 2009 10:29:53 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36891 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753662AbZHOO1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 10:27:11 -0400
-Date: Sat, 15 Aug 2009 16:26:44 +0200
+	id S1754279AbZHOO3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 10:29:52 -0400
+Date: Sat, 15 Aug 2009 16:29:25 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "menage@google.com" <menage@google.com>, xemul@openvz.org,
-       prarit@redhat.com, andi.kleen@intel.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [UPDATED][PATCH][mmotm] Help Root Memory Cgroup Resource
-	Counters Scale Better (v5)
-Message-ID: <20090815142644.GC15941@elte.hu>
-References: <20090813065504.GG5087@balbir.in.ibm.com> <20090813162640.fe2349e9.nishimura@mxp.nes.nec.co.jp> <20090813080206.GH5087@balbir.in.ibm.com> <20090813083524.GC21389@elte.hu> <20090814020122.GL5087@balbir.in.ibm.com>
+       Peter Zijlstra <peterz@infradead.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>,
+       Brian Swetland <swetland@google.com>,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       David Brownell <david-b@pacbell.net>, Daniel Ribeiro <drwyrm@gmail.com>,
+       arve@android.com, Barry Song <21cnbao@gmail.com>
+Subject: Re: [RFC patch 2/3] genirq: Add buslock support for irq chips on
+	slow busses
+Message-ID: <20090815142925.GA12298@elte.hu>
+References: <20090813191535.945521006@linutronix.de> <20090813193116.509070851@linutronix.de> <20090814101739.GA32418@elf.ucw.cz> <alpine.LFD.2.00.0908141220190.1283@localhost.localdomain> <20090814112059.GB17755@rakim.wolfsonmicro.main> <20090815095503.GB15831@elte.hu> <alpine.LFD.2.00.0908151213350.1283@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090814020122.GL5087@balbir.in.ibm.com>
+In-Reply-To: <alpine.LFD.2.00.0908151213350.1283@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -41,55 +45,78 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> * Ingo Molnar <mingo@elte.hu> [2009-08-13 10:35:24]:
-> 
+> On Sat, 15 Aug 2009, Ingo Molnar wrote:
+> > * Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 > > 
-> > * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > Without Patch
+> > > On Fri, Aug 14, 2009 at 12:20:49PM +0200, Thomas Gleixner wrote:
+> > > > On Fri, 14 Aug 2009, Pavel Machek wrote:
 > > > 
-> > >  Performance counter stats for '/home/balbir/parallel_pagefault':
+> > > > > AFAICT this means that driver would need to know what kind of IRQ it
+> > > > > is hooked to, right? That will lead to some ugly code in drivers that
+> > > > > can handle both normal and slowbus irqs, right?
 > > > 
-> > >   5826093739340  cycles                   #    809.989 M/sec
-> > >    408883496292  instructions             #      0.070 IPC
-> > >      7057079452  cache-references         #      0.981 M/sec
-> > >      3036086243  cache-misses             #      0.422 M/sec
-> > 
-> > > With this patch applied
+> > > > Are there such drivers in reality ?
 > > > 
-> > >  Performance counter stats for '/home/balbir/parallel_pagefault':
-> > > 
-> > >   5957054385619  cycles                   #    828.333 M/sec
-> > >   1058117350365  instructions             #      0.178 IPC
-> > >      9161776218  cache-references         #      1.274 M/sec
-> > >      1920494280  cache-misses             #      0.267 M/sec
+> > > Yes.  The GPIO based stuff is the prime example but there's other 
+> > > examples - one is the WM831x touchscreen (no driver in mainline 
+> > > yet) which can use interrupts via the main interrupt controller on 
+> > > the CPU but also has the option of bringing the interrupt signals 
+> > > out to dedicated pins on the chip for direct connection to the CPU 
+> > > precisely to avoid the overheads of these slow interrupt 
+> > > controllers.
 > > 
-> > Nice how the instruction count and the IPC value incraesed, and the 
-> > cache-miss count decreased.
+> > This would call for Thomas's first version of the patch, that is 
+> > transparent to drivers - the IRQ subsystem will know how to lock 
+> > access to the line.
 > > 
-> > Btw., a 'perf stat' suggestion: you can also make use of built-in 
-> > error bars via repeating parallel_pagefault N times:
-> > 
-> >   aldebaran:~> perf stat --repeat 3 /bin/ls
+> > How about implementing that first patch in a cleaner way - can we 
+> > somehow express the slow-bus property purely via the irqchip? Or is 
+> > that too lowlevel?
 > 
-> Ingo, with the repeat experiements I see
+> The problem here is that the management functions serialize via 
+> irqdesc->lock and call the chip level function with the lock held 
+> (preemption and interrupts disabled). So we can not access the 
+> slow bus chips from these low level functions.
 > 
-> 7192354.545647  task-clock-msecs         #     23.955 CPUs    ( +- 0.002% )
->          425627  context-switches         #      0.000 M/sec  ( +- 0.333% )
->             155  CPU-migrations           #      0.000 M/sec  ( +- 10.897% )
->        95336481  page-faults              #      0.013 M/sec  ( +- 0.085% )
->   5951929070187  cycles                   #    827.536 M/sec  ( +- 0.009% )
->   1058312583796  instructions             #      0.178 IPC    ( +- 0.076% )
->      9616609083  cache-references         #      1.337 M/sec  ( +- 2.536% )
->      1952367514  cache-misses             #      0.271 M/sec  ( +- 0.156% )
+> If the low level functions just store the information and schedule 
+> it for bus access then there is no serialization anymore. Lets 
+> look at disable_irq():
 > 
->   300.246532761  seconds time elapsed   ( +-   0.002% )
+> 	spin_lock_irqsave(&desc->lock);
+> 	....
+> 	desc->chip->mask();
+> 		schedule bus access;
+> 	...
+> 	spin_lock_irqsave(&desc->lock);
 > 
-> Except for the CPU migrations and the cache references, all the 
-> other parameters seem to be well within an acceptable error range.
+> So now we return, but the mask has not reached the chip.
+> 
+> The idea of bus_lock/bus_sync_unlock() was to provide well defined
+> synchronization points for the chip level implementation to do the bus
+> update and have this serialized against other management functions.
+> 
+> 	desc->chip->bus_lock();
+> 		Take the chip->bus mutex
+> 
+> 	spin_lock_irqsave(&desc->lock);
+> 	....
+> 	desc->chip->mask();
+> 		store mask information
+> 	...
+> 	spin_lock_irqsave(&desc->lock);
+> 
+> 	desc->chip->bus_sync_unlock();
+> 		Update the mask via the slow bus
+> 		Release chip->bus mutex
+> 
+> That way we have made sure that the change to the chip actually 
+> hits the hardware before we allow further management operations 
+> and it simplifies the code for the chip implementation as the bus 
+> access can be done in the context of the caller w/o the need of an 
+> extra thread/workqueue ...
 
-Yeah, nice!
+Given the alternatives i'd prefer this one now ...
 
 	Ingo
