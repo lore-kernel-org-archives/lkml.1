@@ -1,58 +1,30 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752108AbZHLEmk (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Wed, 12 Aug 2009 00:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZHLEmj
+	id S1757322AbZHOCQi (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 14 Aug 2009 22:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756432AbZHOCQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Aug 2009 00:42:39 -0400
-Received: from idmailgate1.uzh.ch ([130.60.127.100]:5293 "EHLO
-	idmailgate1.uzh.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbZHLEmi (ORCPT
+	Fri, 14 Aug 2009 22:16:38 -0400
+Received: from naig.caltech.edu ([131.215.239.125]:58479 "EHLO
+	naig.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756414AbZHOCQh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Aug 2009 00:42:38 -0400
-X-Greylist: delayed 5158 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Aug 2009 00:42:37 EDT
-From: "Webmail Center Administrator" <accountaccess14@9.cn>
-Subject: Dear Webmail/E-mail user
-X-Mailer: CommuniGate Pro WebUser v5.1.11
-Date: Wed, 12 Aug 2009 05:12:44 +0200
-Message-ID: <web-19716787@idmailbe1b.unizh.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	format=flowed
-Content-Transfer-Encoding: 7BIT
-To: undisclosed-recipients:;
+	Fri, 14 Aug 2009 22:16:37 -0400
+Subject: Start your new life with a Rolex on your arm
+Date: Fri, 14 Aug 2009 22:16:18 -0500
+To: "Boyd Blackwell" <lawson@manx-telecom.co.uk>
+From: "Damien Ferrell" <lawson@manx-telecom.co.uk>
+Message-ID: <Rgi7ucJPuVqZxySNCafolawson@manx-telecom.co.uk>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I know you need it
+show everyone who is who
+just order your new perfect rep watch
+or order two or more and get discount
+http://oiilukea.cn/
 
 
-Dear Webmail/E-mail user,
 
-This message is from our Webmail Messaging Center to all our account 
-owners.We
-are currently upgrading our data base and e-mail center.
-
-We are deleting all unused webmail account to Create more space for new 
-accounts.
-
-In order to ensure you do not experience service interruption during this 
-period;
-
-you will have to confirm your webmail account details by providing the 
-following:
-1.Username:....................................
-2.Password:...................................
-3.Date of Birth:...............................
-
-You will be sent a new confirmation alphanumerical password that will only 
-be
-valid during this period and can be changed after this process.
-
-We are very sorry for the inconvenience this may cost you.
-
-Please respond to this notice to enable us provide you better online 
-services
-with our newly improved webmail features and enhancements.
-
-Thanks,
-Webmail Administrator.
