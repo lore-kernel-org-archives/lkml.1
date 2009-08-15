@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753657AbZHOLdG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbZHOLdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753657AbZHOLdG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 07:33:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbZHOLdF
+	id S1753729AbZHOLdz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 07:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbZHOLdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 07:33:05 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:57990 "EHLO
+	Sat, 15 Aug 2009 07:33:55 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:56645 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753534AbZHOLdD (ORCPT
+	with ESMTP id S1753534AbZHOLdy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 07:33:03 -0400
+	Sat, 15 Aug 2009 07:33:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:subject
          :content-type:content-transfer-encoding;
-        b=qbb61l+BiXGaHGXAQge6VNnajWvbnsY3krstR+48mug9ZLgrFyoB+Nzv0flz3yIwix
-         qRt3OlpWTU9LbphXKd/VEQXeHxk52HyPWAseb21DZSGKHwHiG1OjZXxJtA8piza/0q/z
-         Gz8nEGeKIMXlqitLlL49ADD50XPWh7vTHXrrE=
-Message-ID: <4A869CEA.2080103@gmail.com>
-Date: Sat, 15 Aug 2009 19:32:58 +0800
+        b=vwcEjP6Lqjk3pRa9OCyJQCkWPiHf1WUz+d41y0vgVb6RZnoCmf9GBXqONF69oBx8Nc
+         s6QtObEa/dpoSMOAtVDjDhl5cmnCTcUJEEUSJE8ZGechjoJvpabPiMvJmzTYlR1b8vrQ
+         D2jzTtr0DZ18D25PrPRRdFJWgXb8UscDM+kXY=
+Message-ID: <4A869D1D.6040901@gmail.com>
+Date: Sat, 15 Aug 2009 19:33:49 +0800
 From: Wan ZongShun <mcuos.com@gmail.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
 To: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
        linux-kernel <linux-kernel@vger.kernel.org>,
        Russell King <linux@arm.linux.org.uk>
-Subject: [PATCH 2/9] ARM: modify mach-w90p910.c file for w90p910
+Subject: [PATCH 3/9] ARM: modify w90p910.c and add header file
 Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,390 +34,312 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Dear Russell,
 
-To change mach-w90p910.c file for w90p910 platform.
-
-At present, I re-arranged my w90x900 series platform architectures, adding 'dev.c' which was used to define the common platform device struct and adding  the 'cpu.c' file to implement the common CPU function API, and for the function of specific CPU that were implemented in other file, such as nuc950.c, w90p910.c, due to there are six CPU patches will added to the mach-w90x900, so I think it was distinct to do above.
-
-For above reasons, I modify the 'mach-w90p910.c' file.
+To change w90p910.c and add nuc910 header file.
 
 Signed-off-by: Wan ZongShun <mcuos.com@gmail.com>
 
 ---
- arch/arm/mach-w90x900/mach-w90p910evb.c |  354 +------------------------------
- 1 files changed, 4 insertions(+), 350 deletions(-)
+ arch/arm/mach-w90x900/nuc910.h  |   28 +++++
+ arch/arm/mach-w90x900/w90p910.c |  220 +++++++++++----------------------------
+ 2 files changed, 87 insertions(+), 161 deletions(-)
+ create mode 100644 arch/arm/mach-w90x900/nuc910.h
 
-diff --git a/arch/arm/mach-w90x900/mach-w90p910evb.c b/arch/arm/mach-w90x900/mach-w90p910evb.c
-index 117578a..91ceb52 100644
---- a/arch/arm/mach-w90x900/mach-w90p910evb.c
-+++ b/arch/arm/mach-w90x900/mach-w90p910evb.c
-@@ -36,363 +36,17 @@
- #include <mach/regs-serial.h>
- #include <mach/map.h>
+diff --git a/arch/arm/mach-w90x900/nuc910.h b/arch/arm/mach-w90x900/nuc910.h
+new file mode 100644
+index 0000000..1774fe1
+--- /dev/null
++++ b/arch/arm/mach-w90x900/nuc910.h
+@@ -0,0 +1,28 @@
++/*
++ * arch/arm/mach-w90x900/nuc910.h
++ *
++ * Copyright (c) 2008 Nuvoton corporation
++ *
++ * Header file for NUC900 CPU support
++ *
++ * Wan ZongShun <mcuos.com@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++struct map_desc;
++struct sys_timer;
++
++/* core initialisation functions */
++
++extern void w90x900_init_irq(void);
++extern struct sys_timer w90x900_timer;
++
++/* extern file from nuc910.c */
++
++extern void nuc910_board_init(void);
++extern void nuc910_init_clocks(void);
++extern void nuc910_map_io(void);
+diff --git a/arch/arm/mach-w90x900/w90p910.c b/arch/arm/mach-w90x900/w90p910.c
+index d33723b..fc94af1 100644
+--- a/arch/arm/mach-w90x900/w90p910.c
++++ b/arch/arm/mach-w90x900/w90p910.c
+@@ -3,11 +3,11 @@
+  *
+  * Based on linux/arch/arm/plat-s3c24xx/s3c244x.c by Ben Dooks
+  *
+- * Copyright (c) 2008 Nuvoton technology corporation.
++ * Copyright (c) 2009 Nuvoton corporation.
+  *
+  * Wan ZongShun <mcuos.com@gmail.com>
+  *
+- * W90P910 cpu support
++ * NUC910 cpu support
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -39,186 +39,84 @@
+ #include "cpu.h"
+ #include "clock.h"
  
--#include "cpu.h"
--/*w90p910 evb norflash driver data */
--
--#define W90P910_FLASH_BASE	0xA0000000
--#define W90P910_FLASH_SIZE	0x400000
--#define SPIOFFSET		0x200
--#define SPIOREG_SIZE		0x100
--
--static struct mtd_partition w90p910_flash_partitions[] = {
--	{
--		.name	=	"NOR Partition 1 for kernel (960K)",
--		.size	=	0xF0000,
--		.offset	=	0x10000,
--	},
--	{
--		.name	=	"NOR Partition 2 for image (1M)",
--		.size	=	0x100000,
--		.offset	=	0x100000,
--	},
--	{
--		.name	=	"NOR Partition 3 for user (2M)",
--		.size	=	0x200000,
--		.offset	=	0x00200000,
--	}
--};
--
--static struct physmap_flash_data w90p910_flash_data = {
--	.width		=	2,
--	.parts		=	w90p910_flash_partitions,
--	.nr_parts	=	ARRAY_SIZE(w90p910_flash_partitions),
--};
--
--static struct resource w90p910_flash_resources[] = {
--	{
--		.start	=	W90P910_FLASH_BASE,
--		.end	=	W90P910_FLASH_BASE + W90P910_FLASH_SIZE - 1,
--		.flags	=	IORESOURCE_MEM,
--	}
--};
--
--static struct platform_device w90p910_flash_device = {
--	.name		=	"physmap-flash",
--	.id		=	0,
--	.dev		= {
--				.platform_data = &w90p910_flash_data,
--			},
--	.resource	=	w90p910_flash_resources,
--	.num_resources	=	ARRAY_SIZE(w90p910_flash_resources),
--};
--
--/* USB EHCI Host Controller */
--
--static struct resource w90x900_usb_ehci_resource[] = {
--	[0] = {
--		.start = W90X900_PA_USBEHCIHOST,
--		.end   = W90X900_PA_USBEHCIHOST + W90X900_SZ_USBEHCIHOST - 1,
--		.flags = IORESOURCE_MEM,
--	},
--	[1] = {
--		.start = IRQ_USBH,
--		.end   = IRQ_USBH,
--		.flags = IORESOURCE_IRQ,
--	}
--};
--
--static u64 w90x900_device_usb_ehci_dmamask = 0xffffffffUL;
--
--struct platform_device w90x900_device_usb_ehci = {
--	.name		  = "w90x900-ehci",
--	.id		  = -1,
--	.num_resources	  = ARRAY_SIZE(w90x900_usb_ehci_resource),
--	.resource	  = w90x900_usb_ehci_resource,
--	.dev              = {
--		.dma_mask = &w90x900_device_usb_ehci_dmamask,
--		.coherent_dma_mask = 0xffffffffUL
--	}
--};
--EXPORT_SYMBOL(w90x900_device_usb_ehci);
--
--/* USB OHCI Host Controller */
--
--static struct resource w90x900_usb_ohci_resource[] = {
--	[0] = {
--		.start = W90X900_PA_USBOHCIHOST,
--		.end   = W90X900_PA_USBOHCIHOST + W90X900_SZ_USBOHCIHOST - 1,
--		.flags = IORESOURCE_MEM,
--	},
--	[1] = {
--		.start = IRQ_USBH,
--		.end   = IRQ_USBH,
--		.flags = IORESOURCE_IRQ,
--	}
--};
--
--static u64 w90x900_device_usb_ohci_dmamask = 0xffffffffUL;
--struct platform_device w90x900_device_usb_ohci = {
--	.name		  = "w90x900-ohci",
--	.id		  = -1,
--	.num_resources	  = ARRAY_SIZE(w90x900_usb_ohci_resource),
--	.resource	  = w90x900_usb_ohci_resource,
--	.dev              = {
--		.dma_mask = &w90x900_device_usb_ohci_dmamask,
--		.coherent_dma_mask = 0xffffffffUL
--	}
--};
--EXPORT_SYMBOL(w90x900_device_usb_ohci);
--
--/*TouchScreen controller*/
--
--static struct resource w90x900_ts_resource[] = {
--	[0] = {
--		.start = W90X900_PA_ADC,
--		.end   = W90X900_PA_ADC + W90X900_SZ_ADC-1,
--		.flags = IORESOURCE_MEM,
--	},
--	[1] = {
--		.start = IRQ_ADC,
--		.end   = IRQ_ADC,
--		.flags = IORESOURCE_IRQ,
--	},
--};
--
--struct platform_device w90x900_device_ts = {
--	.name		= "w90x900-ts",
--	.id		= -1,
--	.resource	= w90x900_ts_resource,
--	.num_resources	= ARRAY_SIZE(w90x900_ts_resource),
--};
--EXPORT_SYMBOL(w90x900_device_ts);
--
--/* RTC controller*/
--
--static struct resource w90x900_rtc_resource[] = {
--	[0] = {
--		.start = W90X900_PA_RTC,
--		.end   = W90X900_PA_RTC + 0xff,
--		.flags = IORESOURCE_MEM,
--	},
--	[1] = {
--		.start = IRQ_RTC,
--		.end   = IRQ_RTC,
--		.flags = IORESOURCE_IRQ,
--	},
--};
--
--struct platform_device w90x900_device_rtc = {
--	.name		= "w90x900-rtc",
--	.id		= -1,
--	.num_resources	= ARRAY_SIZE(w90x900_rtc_resource),
--	.resource	= w90x900_rtc_resource,
--};
--EXPORT_SYMBOL(w90x900_device_rtc);
--
--/* KPI controller*/
--
--static struct resource w90x900_kpi_resource[] = {
--	[0] = {
--		.start = W90X900_PA_KPI,
--		.end   = W90X900_PA_KPI + W90X900_SZ_KPI - 1,
--		.flags = IORESOURCE_MEM,
--	},
--	[1] = {
--		.start = IRQ_KPI,
--		.end   = IRQ_KPI,
--		.flags = IORESOURCE_IRQ,
--	}
--
--};
--
--struct platform_device w90x900_device_kpi = {
--	.name		= "w90x900-kpi",
--	.id		= -1,
--	.num_resources	= ARRAY_SIZE(w90x900_kpi_resource),
--	.resource	= w90x900_kpi_resource,
--};
--EXPORT_SYMBOL(w90x900_device_kpi);
--
--/* USB Device (Gadget)*/
--
--static struct resource w90x900_usbgadget_resource[] = {
--	[0] = {
--		.start = W90X900_PA_USBDEV,
--		.end   = W90X900_PA_USBDEV + W90X900_SZ_USBDEV - 1,
--		.flags = IORESOURCE_MEM,
--	},
--	[1] = {
--		.start = IRQ_USBD,
--		.end   = IRQ_USBD,
--		.flags = IORESOURCE_IRQ,
--	}
--};
--
--struct platform_device w90x900_device_usbgadget = {
--	.name		= "w90x900-usbgadget",
--	.id		= -1,
--	.num_resources	= ARRAY_SIZE(w90x900_usbgadget_resource),
--	.resource	= w90x900_usbgadget_resource,
--};
--EXPORT_SYMBOL(w90x900_device_usbgadget);
--
--/* FMI Device */
--
--static struct resource w90p910_fmi_resource[] = {
--	[0] = {
--		.start = W90X900_PA_FMI,
--		.end   = W90X900_PA_FMI + W90X900_SZ_FMI - 1,
--		.flags = IORESOURCE_MEM,
--	},
--	[1] = {
--		.start = IRQ_FMI,
--		.end   = IRQ_FMI,
--		.flags = IORESOURCE_IRQ,
--	}
--};
--
--static struct platform_device w90p910_device_fmi = {
--	.name		= "w90p910-fmi",
--	.id		= -1,
--	.num_resources	= ARRAY_SIZE(w90p910_fmi_resource),
--	.resource	= w90p910_fmi_resource,
--};
--
--/* MAC device */
--
--static struct resource w90x900_emc_resource[] = {
--	[0] = {
--		.start = W90X900_PA_EMC,
--		.end   = W90X900_PA_EMC + W90X900_SZ_EMC - 1,
--		.flags = IORESOURCE_MEM,
--	},
--	[1] = {
--		.start = IRQ_EMCTX,
--		.end   = IRQ_EMCTX,
--		.flags = IORESOURCE_IRQ,
--	},
--	[2] = {
--		.start = IRQ_EMCRX,
--		.end   = IRQ_EMCRX,
--		.flags = IORESOURCE_IRQ,
--	}
--};
--
--static u64 w90x900_device_emc_dmamask = 0xffffffffUL;
--static struct platform_device w90p910_device_emc = {
--	.name		= "w90p910-emc",
--	.id		= -1,
--	.num_resources	= ARRAY_SIZE(w90x900_emc_resource),
--	.resource	= w90x900_emc_resource,
--	.dev              = {
--		.dma_mask = &w90x900_device_emc_dmamask,
--		.coherent_dma_mask = 0xffffffffUL
--	}
--};
--
--/* SPI device */
--
--static struct resource w90p910_spi_resource[] = {
--	[0] = {
--		.start = W90X900_PA_I2C + SPIOFFSET,
--		.end   = W90X900_PA_I2C + SPIOFFSET + SPIOREG_SIZE - 1,
--		.flags = IORESOURCE_MEM,
--	},
--	[1] = {
--		.start = IRQ_SSP,
--		.end   = IRQ_SSP,
--		.flags = IORESOURCE_IRQ,
--	}
--};
--
--static struct platform_device w90p910_device_spi = {
--	.name		= "w90p910-spi",
--	.id		= -1,
--	.num_resources	= ARRAY_SIZE(w90p910_spi_resource),
--	.resource	= w90p910_spi_resource,
--};
--
--/* spi device, spi flash info */
--
--static struct mtd_partition w90p910_spi_flash_partitions[] = {
--	{
--		.name = "bootloader(spi)",
--		.size = 0x0100000,
--		.offset = 0,
--	},
--};
--
--static struct flash_platform_data w90p910_spi_flash_data = {
--	.name = "m25p80",
--	.parts =  w90p910_spi_flash_partitions,
--	.nr_parts = ARRAY_SIZE(w90p910_spi_flash_partitions),
--	.type = "w25x16",
--};
--
--static struct spi_board_info w90p910_spi_board_info[] __initdata = {
--	{
--		.modalias = "m25p80",
--		.max_speed_hz = 20000000,
--		.bus_num = 0,
--		.chip_select = 1,
--		.platform_data = &w90p910_spi_flash_data,
--		.mode = SPI_MODE_0,
--	},
--};
--
--/* WDT Device */
--
--static struct resource w90p910_wdt_resource[] = {
--	[0] = {
--		.start = W90X900_PA_TIMER,
--		.end   = W90X900_PA_TIMER + W90X900_SZ_TIMER - 1,
--		.flags = IORESOURCE_MEM,
--	},
--	[1] = {
--		.start = IRQ_WDT,
--		.end   = IRQ_WDT,
--		.flags = IORESOURCE_IRQ,
--	}
--};
--
--static struct platform_device w90p910_device_wdt = {
--	.name		= "w90p910-wdt",
--	.id		= -1,
--	.num_resources	= ARRAY_SIZE(w90p910_wdt_resource),
--	.resource	= w90p910_wdt_resource,
--};
--
+-/* Initial IO mappings */
++/* RTC controller*/
+ 
 -static struct map_desc w90p910_iodesc[] __initdata = {
--};
--
--/*Here should be your evb resourse,such as LCD*/
--
--static struct platform_device *w90p910evb_dev[] __initdata = {
--	&w90p910_serial_device,
--	&w90p910_flash_device,
--	&w90x900_device_usb_ehci,
--	&w90x900_device_usb_ohci,
--	&w90x900_device_ts,
--	&w90x900_device_rtc,
--	&w90x900_device_kpi,
--	&w90x900_device_usbgadget,
--	&w90p910_device_fmi,
--	&w90p910_device_emc,
--	&w90p910_device_spi,
--	&w90p910_device_wdt,
--};
-+#include "nuc910.h"
+-	IODESC_ENT(IRQ),
+-	IODESC_ENT(GCR),
+-	IODESC_ENT(UART),
+-	IODESC_ENT(TIMER),
+-	IODESC_ENT(EBI),
+-	IODESC_ENT(USBEHCIHOST),
+-	IODESC_ENT(USBOHCIHOST),
+-	IODESC_ENT(ADC),
+-	IODESC_ENT(RTC),
+-	IODESC_ENT(KPI),
+-	IODESC_ENT(USBDEV),
+-	/*IODESC_ENT(LCD),*/
++static struct resource nuc910_rtc_resource[] = {
++	[0] = {
++		.start = W90X900_PA_RTC,
++		.end   = W90X900_PA_RTC + 0xff,
++		.flags = IORESOURCE_MEM,
++	},
++	[1] = {
++		.start = IRQ_RTC,
++		.end   = IRQ_RTC,
++		.flags = IORESOURCE_IRQ,
++	},
+ };
  
- static void __init w90p910evb_map_io(void)
- {
--	w90p910_map_io(w90p910_iodesc, ARRAY_SIZE(w90p910_iodesc));
--	w90p910_init_clocks();
-+	nuc910_map_io();
-+	nuc910_init_clocks();
+-/* Initial clock declarations. */
+-static DEFINE_CLK(lcd, 0);
+-static DEFINE_CLK(audio, 1);
+-static DEFINE_CLK(fmi, 4);
+-static DEFINE_SUBCLK(ms, 0);
+-static DEFINE_SUBCLK(sd, 1);
+-static DEFINE_CLK(dmac, 5);
+-static DEFINE_CLK(atapi, 6);
+-static DEFINE_CLK(emc, 7);
+-static DEFINE_SUBCLK(rmii, 2);
+-static DEFINE_CLK(usbd, 8);
+-static DEFINE_CLK(usbh, 9);
+-static DEFINE_CLK(g2d, 10);;
+-static DEFINE_CLK(pwm, 18);
+-static DEFINE_CLK(ps2, 24);
+-static DEFINE_CLK(kpi, 25);
+-static DEFINE_CLK(wdt, 26);
+-static DEFINE_CLK(gdma, 27);
+-static DEFINE_CLK(adc, 28);
+-static DEFINE_CLK(usi, 29);
+-static DEFINE_CLK(ext, 0);
+-
+-static struct clk_lookup w90p910_clkregs[] = {
+-	DEF_CLKLOOK(&clk_lcd, "w90p910-lcd", NULL),
+-	DEF_CLKLOOK(&clk_audio, "w90p910-audio", NULL),
+-	DEF_CLKLOOK(&clk_fmi, "w90p910-fmi", NULL),
+-	DEF_CLKLOOK(&clk_ms, "w90p910-fmi", "MS"),
+-	DEF_CLKLOOK(&clk_sd, "w90p910-fmi", "SD"),
+-	DEF_CLKLOOK(&clk_dmac, "w90p910-dmac", NULL),
+-	DEF_CLKLOOK(&clk_atapi, "w90p910-atapi", NULL),
+-	DEF_CLKLOOK(&clk_emc, "w90p910-emc", NULL),
+-	DEF_CLKLOOK(&clk_rmii, "w90p910-emc", "RMII"),
+-	DEF_CLKLOOK(&clk_usbd, "w90p910-usbd", NULL),
+-	DEF_CLKLOOK(&clk_usbh, "w90p910-usbh", NULL),
+-	DEF_CLKLOOK(&clk_g2d, "w90p910-g2d", NULL),
+-	DEF_CLKLOOK(&clk_pwm, "w90p910-pwm", NULL),
+-	DEF_CLKLOOK(&clk_ps2, "w90p910-ps2", NULL),
+-	DEF_CLKLOOK(&clk_kpi, "w90p910-kpi", NULL),
+-	DEF_CLKLOOK(&clk_wdt, "w90p910-wdt", NULL),
+-	DEF_CLKLOOK(&clk_gdma, "w90p910-gdma", NULL),
+-	DEF_CLKLOOK(&clk_adc, "w90p910-adc", NULL),
+-	DEF_CLKLOOK(&clk_usi, "w90p910-spi", NULL),
+-	DEF_CLKLOOK(&clk_ext, NULL, "ext"),
++static struct platform_device nuc910_device_rtc = {
++	.name		= "nuc910-rtc",
++	.id		= -1,
++	.num_resources	= ARRAY_SIZE(nuc910_rtc_resource),
++	.resource	= nuc910_rtc_resource,
+ };
+ 
+-/* Initial serial platform data */
+-
+-struct plat_serial8250_port w90p910_uart_data[] = {
+-	W90X900_8250PORT(UART0),
+-};
++/*TouchScreen controller*/
+ 
+-struct platform_device w90p910_serial_device = {
+-	.name			= "serial8250",
+-	.id			= PLAT8250_DEV_PLATFORM,
+-	.dev			= {
+-		.platform_data	= w90p910_uart_data,
++static struct resource nuc910_ts_resource[] = {
++	[0] = {
++		.start = W90X900_PA_ADC,
++		.end   = W90X900_PA_ADC + W90X900_SZ_ADC-1,
++		.flags = IORESOURCE_MEM,
++	},
++	[1] = {
++		.start = IRQ_ADC,
++		.end   = IRQ_ADC,
++		.flags = IORESOURCE_IRQ,
+ 	},
+ };
+ 
+-/*Init W90P910 evb io*/
+-
+-void __init w90p910_map_io(struct map_desc *mach_desc, int mach_size)
+-{
+-	unsigned long idcode = 0x0;
+-
+-	iotable_init(w90p910_iodesc, ARRAY_SIZE(w90p910_iodesc));
+-
+-	idcode = __raw_readl(W90X900PDID);
+-	if (idcode != W90P910_CPUID)
+-		printk(KERN_ERR "CPU type 0x%08lx is not W90P910\n", idcode);
+-}
+-
+-/*Set W90P910 cpu frequence*/
+-static int __init w90p910_set_clkval(unsigned int cpufreq)
+-{
+-	unsigned int pllclk, ahbclk, apbclk, val;
+-
+-	pllclk = 0;
+-	ahbclk = 0;
+-	apbclk = 0;
+-
+-	switch (cpufreq) {
+-	case 66:
+-		pllclk = PLL_66MHZ;
+-		ahbclk = AHB_CPUCLK_1_1;
+-		apbclk = APB_AHB_1_2;
+-		break;
+-
+-	case 100:
+-		pllclk = PLL_100MHZ;
+-		ahbclk = AHB_CPUCLK_1_1;
+-		apbclk = APB_AHB_1_2;
+-		break;
+-
+-	case 120:
+-		pllclk = PLL_120MHZ;
+-		ahbclk = AHB_CPUCLK_1_2;
+-		apbclk = APB_AHB_1_2;
+-		break;
+-
+-	case 166:
+-		pllclk = PLL_166MHZ;
+-		ahbclk = AHB_CPUCLK_1_2;
+-		apbclk = APB_AHB_1_2;
+-		break;
+-
+-	case 200:
+-		pllclk = PLL_200MHZ;
+-		ahbclk = AHB_CPUCLK_1_2;
+-		apbclk = APB_AHB_1_2;
+-		break;
+-	}
+-
+-	__raw_writel(pllclk, REG_PLLCON0);
+-
+-	val = __raw_readl(REG_CLKDIV);
+-	val &= ~(0x03 << 24 | 0x03 << 26);
+-	val |= (ahbclk << 24 | apbclk << 26);
+-	__raw_writel(val, REG_CLKDIV);
+-
+-	return 	0;
+-}
+-static int __init w90p910_set_cpufreq(char *str)
+-{
+-	unsigned long cpufreq, val;
+-
+-	if (!*str)
+-		return 0;
+-
+-	strict_strtoul(str, 0, &cpufreq);
++static struct platform_device nuc910_device_ts = {
++	.name		= "nuc910-ts",
++	.id		= -1,
++	.resource	= nuc910_ts_resource,
++	.num_resources	= ARRAY_SIZE(nuc910_ts_resource),
++};
+ 
+-	w90p910_clock_source(NULL, "ext");
++/* define specific CPU platform device */
+ 
+-	w90p910_set_clkval(cpufreq);
++static struct platform_device *nuc910_dev[] __initdata = {
++	&nuc910_device_ts,
++	&nuc910_device_rtc,
++};
+ 
+-	mdelay(1);
++/* define specific CPU platform io map */
+ 
+-	val = __raw_readl(REG_CKSKEW);
+-	val &= ~0xff;
+-	val |= DEFAULTSKEW;
+-	__raw_writel(val, REG_CKSKEW);
++static struct map_desc nuc910evb_iodesc[] __initdata = {
++	IODESC_ENT(USBEHCIHOST),
++	IODESC_ENT(USBOHCIHOST),
++	IODESC_ENT(KPI),
++	IODESC_ENT(USBDEV),
++	IODESC_ENT(ADC),
++};
+ 
+-	w90p910_clock_source(NULL, "pll0");
++/*Init NUC910 evb io*/
+ 
+-	return 1;
++void __init nuc910_map_io(void)
++{
++	nuc900_map_io(nuc910evb_iodesc, ARRAY_SIZE(nuc910evb_iodesc));
  }
  
- static void __init w90p910evb_init(void)
+-__setup("cpufreq=", w90p910_set_cpufreq);
+-
+-/*Init W90P910 clock*/
++/*Init NUC910 clock*/
+ 
+-void __init w90p910_init_clocks(void)
++void __init nuc910_init_clocks(void)
  {
--	platform_add_devices(w90p910evb_dev, ARRAY_SIZE(w90p910evb_dev));
--	spi_register_board_info(w90p910_spi_board_info,
--					ARRAY_SIZE(w90p910_spi_board_info));
-+	nuc910_board_init();
+-	clks_register(w90p910_clkregs, ARRAY_SIZE(w90p910_clkregs));
++	nuc900_init_clocks();
  }
  
- MACHINE_START(W90P910EVB, "W90P910EVB")
+-static int __init w90p910_init_cpu(void)
+-{
+-	return 0;
+-}
++/*Init NUC910 board info*/
+ 
+-static int __init w90x900_arch_init(void)
++void __init nuc910_board_init(void)
+ {
+-	return w90p910_init_cpu();
++	nuc900_board_init(nuc910_dev, ARRAY_SIZE(nuc910_dev));
+ }
+-arch_initcall(w90x900_arch_init);
 -- 
 1.5.6.3
 
