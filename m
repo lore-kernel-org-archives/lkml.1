@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753609AbZHPCXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbZHPCZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753609AbZHPCXd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 22:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbZHPCXd
+	id S1753659AbZHPCZB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 22:25:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZHPCZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 22:23:33 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54668 "EHLO
+	Sat, 15 Aug 2009 22:25:00 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39536 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753485AbZHPCXc (ORCPT
+	with ESMTP id S1753499AbZHPCY7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 22:23:32 -0400
-Date: Sat, 15 Aug 2009 22:23:31 -0400
+	Sat, 15 Aug 2009 22:24:59 -0400
+Date: Sat, 15 Aug 2009 22:25:00 -0400
 From: Christoph Hellwig <hch@infradead.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: Felix Blyakher <felixb@sgi.com>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: Kernel 2.6.30.4 XFS(..?) regression (happened again)
-Message-ID: <20090816022331.GA2309@infradead.org>
-References: <alpine.DEB.2.00.0908080422440.12329@p34.internal.lan> <00980BBF-1206-4BEF-A8AE-B4A8DAE7EC27@sgi.com> <alpine.DEB.2.00.0908090605080.16485@p34.internal.lan> <alpine.DEB.2.00.0908110624420.22426@p34.internal.lan>
+To: Mark Lord <liml@rtr.ca>
+Cc: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+       linux-fsdevel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [PATCH, RFC] xfs: batched discard support
+Message-ID: <20090816022500.GA12392@infradead.org>
+References: <20090816004705.GA7347@infradead.org> <4A876255.10606@rtr.ca> <4A876CA9.20906@rtr.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908110624420.22426@p34.internal.lan>
+In-Reply-To: <4A876CA9.20906@rtr.ca>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -29,12 +30,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All your traces seem to have in common that you're block on locks hold
-by processed doing I/O.  Especially a lot of page locks which are
-controlled by the VM and not the filesystem.  Can you try with commit
-8aa7e847d834ed937a9ad37a0f2ad5b8584c1ab0 from 2.6.31-rc applied, or
-better directly 2.6.3-rc6?
+On Sat, Aug 15, 2009 at 10:19:21PM -0400, Mark Lord wrote:
+> Mark Lord wrote:
+>> Christoph Hellwig wrote:
+> ..
+>>> Mark, any chance to try it?  Just create an XFS filesystem, age it a
+>>> bit and then call the attached little trim.c program on the mountmoint
+>>> (or any file inside the filesystem for that matter)
+>> ..
+>>
+>> Looking at it now.  Thanks, Christoph!
+> ..
+>
+> Fails to work on 64-bit kernel w/ 32-bit userspace (no compat ioctl).
+> Rebuilding with 32-bit kernel now..
 
-I would be surprised if this is something inside XFS, but running with
-CONFIG_XFS_DEBUG never hurts.
+The actual ioctl is compatible, just add the
+
+	case XFS_IOC_TRIM:
+		return xfs_ioc_trim(mp, arg);
+
+to xfs_file_compat_ioctl().  I'll add this to the next spin of the
+patch.
 
