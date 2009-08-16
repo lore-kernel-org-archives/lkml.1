@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbZHPRAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbZHPRCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753363AbZHPRAJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 13:00:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbZHPRAI
+	id S1753226AbZHPRCy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 13:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbZHPRCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 13:00:08 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41478 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752779AbZHPRAG (ORCPT
+	Sun, 16 Aug 2009 13:02:53 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:53326 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751967AbZHPRCx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 13:00:06 -0400
-Date: Sun, 16 Aug 2009 12:59:43 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
-       Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
-       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
-       Greg Freemyer <greg.freemyer@gmail.com>,
-       Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
-	slot is freed)
-Message-ID: <20090816165943.GA26983@infradead.org>
-References: <4A85E0DC.9040101@rtr.ca> <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com> <20090814234539.GE27148@parisc-linux.org> <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com> <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca> <1250344518.4159.4.camel@mulgrave.site> <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk> <20090816083434.2ce69859@infradead.org> <1250437927.3856.119.camel@mulgrave.site>
+	Sun, 16 Aug 2009 13:02:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=nwMVOZHixLKMzUyMyzciRMemtNSIwaj0KWhdhG0jjaZ6pG+whEc/P5DcjQomuKdA55
+         FCvIywaNAZod6SUtLKdbnCz51FG0+prlDXPYGUuM8O1ow+9vD8OUegZNkC9EuSsnYOsl
+         bRrSNz8QosAosdclcxheaSS3hIcEgvZbGfCJY=
+Message-ID: <4A883A1A.9040009@gmail.com>
+Date: Sun, 16 Aug 2009 10:55:54 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250437927.3856.119.camel@mulgrave.site>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Jeff Garzik <jeff@garzik.org>
+CC: "Subbrathnam, Swaminathan" <swami.iyer@ti.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: sata AHCI controller over non-PCI bus
+References: <FCCFB4CDC6E5564B9182F639FC35608702F5989152@dbde02.ent.ti.com> <4A7FE245.8020002@ru.mvista.com> <FCCFB4CDC6E5564B9182F639FC35608702F59891CB@dbde02.ent.ti.com> <4A88014D.9060309@garzik.org>
+In-Reply-To: <4A88014D.9060309@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 16, 2009 at 10:52:07AM -0500, James Bottomley wrote:
-> However, the enterprise has been doing UNMAP for a while, so we can draw
-> inferences from them since the SSD FTL will operate similarly.  For
-> them, UNMAP is the same cost in terms of time regardless of the number
-> of extents.  The reason is that it's moving the blocks from the global
-> in use list to the global free list.  Part of the problem is that this
-> involves locking and quiescing, so UNMAP ends up being quite expensive
-> to the array but constant in terms of cost (hence they want as few
-> unmaps for as many sectors as possible).
+On 08/16/2009 06:53 AM, Jeff Garzik wrote:
+> Subbrathnam, Swaminathan wrote:
+>> Jeff,
+>> From the below link (from Sergei) it seems that you have already
+>> re-factored the AHCI implementation dependency on PCI. I would like to
+>> add support for the OMAPL138 SATA on top of your changes. That would
+>> be the ideal way forward for me.
+>>
+>> Have the ahci re-factoring changes queued for mainline merge already?
+>> I just joined the list and hence do not know the status.
+>>
+>> Sergei,
+>> Appreciate the response.
+>
+> I store the refactoring in git, on the "libahci" branch of
+> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+>
+> Unfortunately, I am having second thoughts about an element of the
+> current design. With current Linux distributions, they do not appear to
+> deal well with the multi-module dependency libata -> libahci -> ahci. If
+> I had to guess, I would say that mkinitrd creation tools only look at
+> one tree level's worth of kernel module dependencies.
+>
+> Thus, ahci would wind up -not- in initrd, in a libahci solution.
+>
+> I am thinking that I will just add Marvell and ATP support to ahci.c,
+> and let someone else deal with libahci separation -- which is still needed.
+>
+> At this point, I would rather get Marvell/ATP support into users' hands,
+> rather than wait for distros to catch up to modern technology.
 
-How are they doing the unmaps?  Using something similar to Mark's wiper
-script and using SG_IO?  Because right now we do not actually implement
-UNMAP support in the kernel.  I'd really love to test the XFS batched
-discard support with a real UNMAP implementation.
-
+If that's the case it seems clearly a mkinitrd bug. What distribution 
+were you seeing this behavior on?
