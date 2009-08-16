@@ -1,38 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbZHPPED@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbZHPPKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbZHPPED (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 11:04:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbZHPPEC
+	id S1754819AbZHPPKG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 11:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbZHPPKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 11:04:02 -0400
-Received: from khc.piap.pl ([195.187.100.11]:39151 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752746AbZHPPEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 11:04:01 -0400
-To: <linux-kernel@vger.kernel.org>
-Subject: Reservation of resources shared by two PCI devices
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sun, 16 Aug 2009 17:04:00 +0200
-Message-ID: <m3bpmfhkbj.fsf@intrepid.localdomain>
+	Sun, 16 Aug 2009 11:10:05 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:51486 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750905AbZHPPKD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 11:10:03 -0400
+Date: Sun, 16 Aug 2009 18:09:36 +0300
+From: Tiago Vignatti <tiago.vignatti@nokia.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Dave Airlie <airlied@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "dri-devel@lists.sf.net" <dri-devel@lists.sf.net>
+Subject: Re: [PATCH] vga: implements VGA arbitration on Linux
+Message-ID: <20090816150936.GA18896@cachaca>
+Reply-To: tiago.vignatti@nokia.com
+References: <1249969927-884-1-git-send-email-airlied@gmail.com> <20090811161746.7b8878aa@jbarnes-g45> <20090811162103.1b2a65c9@jbarnes-g45> <20090812073516.GB6453@cachaca> <20090812090214.2f5d3c4a@jbarnes-g45>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="PEIAKu/WMn1b1Hv9"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090812090214.2f5d3c4a@jbarnes-g45>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 16 Aug 2009 15:09:37.0266 (UTC) FILETIME=[92026520:01CA1E83]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I have a PCI card with a bridge and two devices behind it.
-There is a custom circuitry connected to the first PCI device,
-controlling operation of both devices.
+--PEIAKu/WMn1b1Hv9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The IO and possibly MMIO resources used for controlling the custom
-circuitry (part of device #0 registers) are not used for other purposes.
-Access is controlled by a spin lock.
+On Wed, Aug 12, 2009 at 06:02:14PM +0200, Jesse Barnes wrote:
+> On Wed, 12 Aug 2009 10:35:16 +0300
+> "Vignatti Tiago (Nokia-D/Helsinki)" <tiago.vignatti@nokia.com> wrote:
+> > Okay, I can handle this documentation pretty easy. 
+> > 
+> > But honestly I'm not sure we (or some future developer) will use it.
+> > The header (include/linux/vgaarb.h) is already very nice documented.
+> > So, tell me what do you think Jesse.
+> 
+> As long as it's still accurate we may as well include it.
 
-What's the best way to handle IO/MMIO resource reservations of this
-shared part of device #0?
+Here it comes attached. Please review, Jesse.
 
-Should I switch away from pci_register_driver()?
+
+Thank you,
+
+            Tiago
+
+--PEIAKu/WMn1b1Hv9
+Content-Type: text/x-diff; charset=iso-8859-1
+Content-Disposition: attachment; filename="0001-vga-drops-VGA-arbitration-documentation.patch"
+Content-Transfer-Encoding: 8bit
+
+>From f65764e41e37c9a4848bb39505e40ea55e01ddfb Mon Sep 17 00:00:00 2001
+From: Tiago Vignatti <tiago.vignatti@nokia.com>
+Date: Sun, 16 Aug 2009 17:59:01 +0300
+Subject: [PATCH] vga: drops VGA arbitration documentation
+
+Signed-off-by: Tiago Vignatti <tiago.vignatti@nokia.com>
+---
+ Documentation/vgaarbiter.txt |  194 ++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 194 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/vgaarbiter.txt
+
+diff --git a/Documentation/vgaarbiter.txt b/Documentation/vgaarbiter.txt
+new file mode 100644
+index 0000000..675119b
+--- /dev/null
++++ b/Documentation/vgaarbiter.txt
+@@ -0,0 +1,194 @@
++
++VGA Arbiter
++===========
++
++Graphic devices are accessed through ranges in I/O or memory space. While most
++modern devices allow relocation of such ranges, some "Legacy" VGA devices
++implemented on PCI will typically have the same "hard-decoded" addresses as
++they did on ISA. For more details see "PCI Bus Binding to IEEE Std 1275-1994
++Standard for Boot (Initialization Configuration) Firmware Revision 2.1"
++Section 7, Legacy Devices.
++
++The Resource Access Control (RAC) module inside the X server [0] existed for
++the legacy VGA arbitration task (besides other bus management tasks) when more
++than one legacy device co-exists on the same machine. But the problem happens
++when these devices are trying to be accessed by different userspace clients
++(e.g. two server in parallel). Their address assignments conflict. Moreover,
++ideally, being an userspace application, it is not the role of the the X
++server to control bus resources. Therefore an arbitration scheme outside of
++the X server is needed to control the sharing of these resources. This
++document introduces the operation of the VGA arbiter implemented for Linux
++kernel.
++
++----------------------------------------------------------------------------
++
++I.  Details and Theory of Operation
++        I.1 vgaarb
++        I.2 libpciaccess
++        I.3 xf86VGAArbiter (X server implementation)
++II. Credits
++III.References
++
++
++I. Details and Theory of Operation
++==================================
++
++I.1 vgaarb
++----------
++
++The vgaarb is a module of the Linux Kernel. When it is initially loaded, it
++scans all PCI devices and adds the VGA ones inside the arbitration. The
++arbiter then enables/disables the decoding on different devices of the VGA
++legacy instructions. Device which do not want/need to use the arbiter may
++explicitly tell it by calling vga_set_legacy_decoding().
++
++The kernel exports a char device interface (/dev/vga_arbiter) to the clients,
++which has the following semantics:
++
++ open       : open user instance of the arbiter. By default, it's attached to
++              the default VGA device of the system.
++
++ close      : close user instance. Release locks made by the user
++
++ read       : return a string indicating the status of the target like:
++
++              "<card_ID>,decodes=<io_state>,owns=<io_state>,locks=<io_state> (ic,mc)"
++
++              An IO state string is of the form {io,mem,io+mem,none}, mc and
++              ic are respectively mem and io lock counts (for debugging/
++              diagnostic only). "decodes" indicate what the card currently
++              decodes, "owns" indicates what is currently enabled on it, and
++              "locks" indicates what is locked by this card. If the card is
++              unplugged, we get "invalid" then for card_ID and an -ENODEV
++              error is returned for any command until a new card is targeted.
++
++
++ write       : write a command to the arbiter. List of commands:
++
++  target <card_ID>   : switch target to card <card_ID> (see below)
++  lock <io_state>    : acquires locks on target ("none" is an invalid io_state)
++  trylock <io_state> : non-blocking acquire locks on target (returns EBUSY if
++                       unsuccessful)
++  unlock <io_state>  : release locks on target
++  unlock all         : release all locks on target held by this user (not
++                       implemented yet)
++  decodes <io_state> : set the legacy decoding attributes for the card
++
++  poll               : event if something changes on any card (not just the
++                       target)
++
++  card_ID is of the form "PCI:domain:bus:dev.fn". It can be set to "default"
++  to go back to the system default card (TODO: not implemented yet). Currently,
++  only PCI is supported as a prefix, but the userland API may support other bus
++  types in the future, even if the current kernel implementation doesn't.
++
++Note about locks:
++
++The driver keeps track of which user has which locks on which card. It
++supports stacking, like the kernel one. This complexifies the implementation
++a bit, but makes the arbiter more tolerant to user space problems and able
++to properly cleanup in all cases when a process dies.
++Currently, a max of 16 cards can have locks simultaneously issued from
++user space for a given user (file descriptor instance) of the arbiter.
++
++In the case of devices hot-{un,}plugged, there is a hook - pci_notify() - to
++notify them being added/removed in the system and automatically added/removed
++in the arbiter.
++
++There's also a in-kernel API of the arbiter in the case of DRM, vgacon and
++others which may use the arbiter.
++
++
++I.2 libpciaccess
++----------------
++
++To use the vga arbiter char device it was implemented an API inside the
++libpciaccess library. One fieldd was added to struct pci_device (each device
++on the system):
++
++    /* the type of resource decoded by the device */
++    int vgaarb_rsrc;
++
++Besides it, in pci_system were added:
++
++    int vgaarb_fd;
++    int vga_count;
++    struct pci_device *vga_target;
++    struct pci_device *vga_default_dev;
++
++
++The vga_count is usually need to keep informed how many cards are being
++arbitrated, so for instance if there's only one then it can totally escape the
++scheme.
++
++
++These functions below acquire VGA resources for the given card and mark those
++resources as locked. If the resources requested are "normal" (and not legacy)
++resources, the arbiter will first check whether the card is doing legacy
++decoding for that type of resource. If yes, the lock is "converted" into a
++legacy resource lock. The arbiter will first look for all VGA cards that
++might conflict and disable their IOs and/or Memory access, including VGA
++forwarding on P2P bridges if necessary, so that the requested resources can
++be used. Then, the card is marked as locking these resources and the IO and/or
++Memory access is enabled on the card (including VGA forwarding on parent
++P2P bridges if any). In the case of vga_arb_lock(), the function will block
++if some conflicting card is already locking one of the required resources (or
++any resource on a different bus segment, since P2P bridges don't differentiate
++VGA memory and IO afaik). If the card already owns the resources, the function
++succeeds.  vga_arb_trylock() will return (-EBUSY) instead of blocking. Nested
++calls are supported (a per-resource counter is maintained).
++
++
++Set the target device of this client.
++    int  pci_device_vgaarb_set_target   (struct pci_device *dev);
++
++
++For instance, in x86 if two devices on the same bus want to lock different
++resources, both will succeed (lock). If devices are in different buses and
++trying to lock different resources, only the first who tried succeeds.
++    int  pci_device_vgaarb_lock         (void);
++    int  pci_device_vgaarb_trylock      (void);
++
++Unlock resources of device.
++    int  pci_device_vgaarb_unlock       (void);
++
++Indicates to the arbiter if the card decodes legacy VGA IOs, legacy VGA
++Memory, both, or none. All cards default to both, the card driver (fbdev for
++example) should tell the arbiter if it has disabled legacy decoding, so the
++card can be left out of the arbitration process (and can be safe to take
++interrupts at any time.
++    int  pci_device_vgaarb_decodes      (int new_vgaarb_rsrc);
++
++Connects to the arbiter device, allocates the struct
++    int  pci_device_vgaarb_init         (void);
++
++Close the connection
++    void pci_device_vgaarb_fini         (void);
++
++
++I.3 xf86VGAArbiter (X server implementation)
++--------------------------------------------
++
++(TODO)
++
++X server basically wraps all the functions that touch VGA registers somehow.
++
++
++II. Credits
++===========
++
++Benjamin Herrenschmidt (IBM?) started this work when he discussed such design
++with the Xorg community in 2005 [1, 2]. In the end of 2007, Paulo Zanoni and
++Tiago Vignatti (both of C3SL/Federal University of Paraná) proceeded his work
++enhancing the kernel code to adapt as a kernel module and also did the
++implementation of the user space side [3]. Now (2009) Tiago Vignatti and Dave
++Airlie finally put this work in shape and queued to Jesse Barnes' PCI tree.
++
++
++III. References
++==============
++
++[0] http://cgit.freedesktop.org/xorg/xserver/commit/?id=4b42448a2388d40f257774fbffdccaea87bd0347
++[1] http://lists.freedesktop.org/archives/xorg/2005-March/006663.html
++[2] http://lists.freedesktop.org/archives/xorg/2005-March/006745.html
++[3] http://lists.freedesktop.org/archives/xorg/2007-October/029507.html
 -- 
-Krzysztof Halasa
+1.5.6.3
+
+
+--PEIAKu/WMn1b1Hv9--
