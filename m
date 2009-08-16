@@ -1,364 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbZHPJbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbZHPJab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754349AbZHPJbh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 05:31:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbZHPJbe
+	id S1754244AbZHPJab (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 05:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZHPJa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 05:31:34 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45382 "EHLO mx2.redhat.com"
+	Sun, 16 Aug 2009 05:30:28 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45377 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754123AbZHPJaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754111AbZHPJaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 16 Aug 2009 05:30:15 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 48/48] KVM: Use macro to iterate over vcpus.
-Date: Sun, 16 Aug 2009 12:30:08 +0300
-Message-Id: <1250415008-17175-49-git-send-email-avi@redhat.com>
+Subject: [PATCH 43/48] KVM: MMU: Adjust pte accessors to explicitly indicate guest or shadow pte
+Date: Sun, 16 Aug 2009 12:30:03 +0300
+Message-Id: <1250415008-17175-44-git-send-email-avi@redhat.com>
 In-Reply-To: <1250415008-17175-1-git-send-email-avi@redhat.com>
 References: <1250415008-17175-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gleb Natapov <gleb@redhat.com>
+Since the guest and host ptes can have wildly different format, adjust
+the pte accessor names to indicate on which type of pte they operate on.
 
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
+No functional changes.
+
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/ia64/kvm/kvm-ia64.c   |   29 ++++++++++++++---------------
- arch/powerpc/kvm/powerpc.c |   16 ++++++++++------
- arch/s390/kvm/kvm-s390.c   |   33 ++++++++++++++++-----------------
- arch/x86/kvm/i8254.c       |    7 ++-----
- arch/x86/kvm/mmu.c         |    6 +++---
- arch/x86/kvm/x86.c         |   25 ++++++++++++-------------
- include/linux/kvm_host.h   |   11 +++++++++++
- virt/kvm/irq_comm.c        |    6 ++----
- virt/kvm/kvm_main.c        |   19 +++++++------------
- 9 files changed, 77 insertions(+), 75 deletions(-)
+ arch/x86/kvm/mmu.c         |   16 ++++++++--------
+ arch/x86/kvm/mmu.h         |    2 +-
+ arch/x86/kvm/paging_tmpl.h |   22 +++++++++++-----------
+ arch/x86/kvm/x86.c         |    2 +-
+ 4 files changed, 21 insertions(+), 21 deletions(-)
 
-diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
-index d1f7bcd..5c766bd 100644
---- a/arch/ia64/kvm/kvm-ia64.c
-+++ b/arch/ia64/kvm/kvm-ia64.c
-@@ -337,13 +337,12 @@ static struct kvm_vcpu *lid_to_vcpu(struct kvm *kvm, unsigned long id,
- {
- 	union ia64_lid lid;
- 	int i;
-+	struct kvm_vcpu *vcpu;
- 
--	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++) {
--		if (kvm->vcpus[i]) {
--			lid.val = VCPU_LID(kvm->vcpus[i]);
--			if (lid.id == id && lid.eid == eid)
--				return kvm->vcpus[i];
--		}
-+	kvm_for_each_vcpu(i, vcpu, kvm) {
-+		lid.val = VCPU_LID(vcpu);
-+		if (lid.id == id && lid.eid == eid)
-+			return vcpu;
- 	}
- 
- 	return NULL;
-@@ -409,21 +408,21 @@ static int handle_global_purge(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 	struct kvm *kvm = vcpu->kvm;
- 	struct call_data call_data;
- 	int i;
-+	struct kvm_vcpu *vcpui;
- 
- 	call_data.ptc_g_data = p->u.ptc_g_data;
- 
--	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++) {
--		if (!kvm->vcpus[i] || kvm->vcpus[i]->arch.mp_state ==
--						KVM_MP_STATE_UNINITIALIZED ||
--					vcpu == kvm->vcpus[i])
-+	kvm_for_each_vcpu(i, vcpui, kvm) {
-+		if (vcpui->arch.mp_state == KVM_MP_STATE_UNINITIALIZED ||
-+				vcpu == vcpui)
- 			continue;
- 
--		if (waitqueue_active(&kvm->vcpus[i]->wq))
--			wake_up_interruptible(&kvm->vcpus[i]->wq);
-+		if (waitqueue_active(&vcpui->wq))
-+			wake_up_interruptible(&vcpui->wq);
- 
--		if (kvm->vcpus[i]->cpu != -1) {
--			call_data.vcpu = kvm->vcpus[i];
--			smp_call_function_single(kvm->vcpus[i]->cpu,
-+		if (vcpui->cpu != -1) {
-+			call_data.vcpu = vcpui;
-+			smp_call_function_single(vcpui->cpu,
- 					vcpu_global_purge, &call_data, 1);
- 		} else
- 			printk(KERN_WARNING"kvm: Uninit vcpu received ipi!\n");
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 2cf915e..7ad30e0 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -122,13 +122,17 @@ struct kvm *kvm_arch_create_vm(void)
- static void kvmppc_free_vcpus(struct kvm *kvm)
- {
- 	unsigned int i;
-+	struct kvm_vcpu *vcpu;
- 
--	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
--		if (kvm->vcpus[i]) {
--			kvm_arch_vcpu_free(kvm->vcpus[i]);
--			kvm->vcpus[i] = NULL;
--		}
--	}
-+	kvm_for_each_vcpu(i, vcpu, kvm)
-+		kvm_arch_vcpu_free(vcpu);
-+
-+	mutex_lock(&kvm->lock);
-+	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++)
-+		kvm->vcpus[i] = NULL;
-+
-+	atomic_set(&kvm->online_vcpus, 0);
-+	mutex_unlock(&kvm->lock);
- }
- 
- void kvm_arch_sync_events(struct kvm *kvm)
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 098bfa6..36ad2b4 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -211,13 +211,17 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
- static void kvm_free_vcpus(struct kvm *kvm)
- {
- 	unsigned int i;
-+	struct kvm_vcpu *vcpu;
- 
--	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
--		if (kvm->vcpus[i]) {
--			kvm_arch_vcpu_destroy(kvm->vcpus[i]);
--			kvm->vcpus[i] = NULL;
--		}
--	}
-+	kvm_for_each_vcpu(i, vcpu, kvm)
-+		kvm_arch_vcpu_destroy(vcpu);
-+
-+	mutex_lock(&kvm->lock);
-+	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++)
-+		kvm->vcpus[i] = NULL;
-+
-+	atomic_set(&kvm->online_vcpus, 0);
-+	mutex_unlock(&kvm->lock);
- }
- 
- void kvm_arch_sync_events(struct kvm *kvm)
-@@ -314,8 +318,6 @@ struct kvm_vcpu *kvm_arch_vcpu_create(struct kvm *kvm,
- 	BUG_ON(!kvm->arch.sca);
- 	if (!kvm->arch.sca->cpu[id].sda)
- 		kvm->arch.sca->cpu[id].sda = (__u64) vcpu->arch.sie_block;
--	else
--		BUG_ON(!kvm->vcpus[id]); /* vcpu does already exist */
- 	vcpu->arch.sie_block->scaoh = (__u32)(((__u64)kvm->arch.sca) >> 32);
- 	vcpu->arch.sie_block->scaol = (__u32)(__u64)kvm->arch.sca;
- 
-@@ -682,7 +684,8 @@ int kvm_arch_set_memory_region(struct kvm *kvm,
- 				struct kvm_memory_slot old,
- 				int user_alloc)
- {
--	int i;
-+	int i, j = 0, r = -EINVAL;
-+	struct kvm_vcpu *vcpu;
- 
- 	/* A few sanity checks. We can have exactly one memory slot which has
- 	   to start at guest virtual zero and which has to be located at a
-@@ -707,14 +710,10 @@ int kvm_arch_set_memory_region(struct kvm *kvm,
- 		return -EINVAL;
- 
- 	/* request update of sie control block for all available vcpus */
--	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
--		if (kvm->vcpus[i]) {
--			if (test_and_set_bit(KVM_REQ_MMU_RELOAD,
--						&kvm->vcpus[i]->requests))
--				continue;
--			kvm_s390_inject_sigp_stop(kvm->vcpus[i],
--						  ACTION_RELOADVCPU_ON_STOP);
--		}
-+	kvm_for_each_vcpu(i, vcpu, kvm) {
-+		if (test_and_set_bit(KVM_REQ_MMU_RELOAD, &vcpu->requests))
-+			continue;
-+		kvm_s390_inject_sigp_stop(vcpu, ACTION_RELOADVCPU_ON_STOP);
- 	}
- 
- 	return 0;
-diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
-index 06d8f84..15fc95b 100644
---- a/arch/x86/kvm/i8254.c
-+++ b/arch/x86/kvm/i8254.c
-@@ -669,11 +669,8 @@ static void __inject_pit_timer_intr(struct kvm *kvm)
- 	 * VCPU0, and only if its LVT0 is in EXTINT mode.
- 	 */
- 	if (kvm->arch.vapics_in_nmi_mode > 0)
--		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
--			vcpu = kvm->vcpus[i];
--			if (vcpu)
--				kvm_apic_nmi_wd_deliver(vcpu);
--		}
-+		kvm_for_each_vcpu(i, vcpu, kvm)
-+			kvm_apic_nmi_wd_deliver(vcpu);
- }
- 
- void kvm_inject_pit_timer_irqs(struct kvm_vcpu *vcpu)
 diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index d443a42..5f97dbd 100644
+index 8f2cb29..a039e6b 100644
 --- a/arch/x86/kvm/mmu.c
 +++ b/arch/x86/kvm/mmu.c
-@@ -1347,10 +1347,10 @@ static void kvm_mmu_put_page(struct kvm_mmu_page *sp, u64 *parent_pte)
- static void kvm_mmu_reset_last_pte_updated(struct kvm *kvm)
+@@ -240,12 +240,12 @@ static int is_writeble_pte(unsigned long pte)
+ 	return pte & PT_WRITABLE_MASK;
+ }
+ 
+-static int is_dirty_pte(unsigned long pte)
++static int is_dirty_gpte(unsigned long pte)
  {
+ 	return pte & PT_DIRTY_MASK;
+ }
+ 
+-static int is_rmap_pte(u64 pte)
++static int is_rmap_spte(u64 pte)
+ {
+ 	return is_shadow_present_pte(pte);
+ }
+@@ -502,7 +502,7 @@ static int rmap_add(struct kvm_vcpu *vcpu, u64 *spte, gfn_t gfn, int lpage)
+ 	unsigned long *rmapp;
+ 	int i, count = 0;
+ 
+-	if (!is_rmap_pte(*spte))
++	if (!is_rmap_spte(*spte))
+ 		return count;
+ 	gfn = unalias_gfn(vcpu->kvm, gfn);
+ 	sp = page_header(__pa(spte));
+@@ -567,7 +567,7 @@ static void rmap_remove(struct kvm *kvm, u64 *spte)
+ 	unsigned long *rmapp;
  	int i;
-+	struct kvm_vcpu *vcpu;
  
--	for (i = 0; i < KVM_MAX_VCPUS; ++i)
--		if (kvm->vcpus[i])
--			kvm->vcpus[i]->arch.last_pte_updated = NULL;
-+	kvm_for_each_vcpu(i, vcpu, kvm)
-+		vcpu->arch.last_pte_updated = NULL;
- }
+-	if (!is_rmap_pte(*spte))
++	if (!is_rmap_spte(*spte))
+ 		return;
+ 	sp = page_header(__pa(spte));
+ 	pfn = spte_to_pfn(*spte);
+@@ -1769,7 +1769,7 @@ static void mmu_set_spte(struct kvm_vcpu *vcpu, u64 *shadow_pte,
+ 		 __func__, *shadow_pte, pt_access,
+ 		 write_fault, user_fault, gfn);
  
- static void kvm_mmu_unlink_parents(struct kvm *kvm, struct kvm_mmu_page *sp)
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index d8adc1d..89862a8 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2946,10 +2946,7 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
- 
- 	spin_lock(&kvm_lock);
- 	list_for_each_entry(kvm, &vm_list, vm_list) {
--		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
--			vcpu = kvm->vcpus[i];
--			if (!vcpu)
--				continue;
-+		kvm_for_each_vcpu(i, vcpu, kvm) {
- 			if (vcpu->cpu != freq->cpu)
+-	if (is_rmap_pte(*shadow_pte)) {
++	if (is_rmap_spte(*shadow_pte)) {
+ 		/*
+ 		 * If we overwrite a PTE page pointer with a 2MB PMD, unlink
+ 		 * the parent of the now unreachable PTE.
+@@ -1805,7 +1805,7 @@ static void mmu_set_spte(struct kvm_vcpu *vcpu, u64 *shadow_pte,
+ 	page_header_update_slot(vcpu->kvm, shadow_pte, gfn);
+ 	if (!was_rmapped) {
+ 		rmap_count = rmap_add(vcpu, shadow_pte, gfn, largepage);
+-		if (!is_rmap_pte(*shadow_pte))
++		if (!is_rmap_spte(*shadow_pte))
+ 			kvm_release_pfn_clean(pfn);
+ 		if (rmap_count > RMAP_RECYCLE_THRESHOLD)
+ 			rmap_recycle(vcpu, gfn, largepage);
+@@ -1984,7 +1984,7 @@ static int mmu_alloc_roots(struct kvm_vcpu *vcpu)
+ 		ASSERT(!VALID_PAGE(root));
+ 		if (vcpu->arch.mmu.root_level == PT32E_ROOT_LEVEL) {
+ 			pdptr = kvm_pdptr_read(vcpu, i);
+-			if (!is_present_pte(pdptr)) {
++			if (!is_present_gpte(pdptr)) {
+ 				vcpu->arch.mmu.pae_root[i] = 0;
  				continue;
- 			if (!kvm_request_guest_time_update(vcpu))
-@@ -4678,20 +4675,22 @@ static void kvm_unload_vcpu_mmu(struct kvm_vcpu *vcpu)
- static void kvm_free_vcpus(struct kvm *kvm)
- {
- 	unsigned int i;
-+	struct kvm_vcpu *vcpu;
+ 			}
+@@ -2475,7 +2475,7 @@ static void mmu_guess_page_from_pte_write(struct kvm_vcpu *vcpu, gpa_t gpa,
+ 		if ((bytes == 4) && (gpa % 4 == 0))
+ 			memcpy((void *)&gpte, new, 4);
+ 	}
+-	if (!is_present_pte(gpte))
++	if (!is_present_gpte(gpte))
+ 		return;
+ 	gfn = (gpte & PT64_BASE_ADDR_MASK) >> PAGE_SHIFT;
  
- 	/*
- 	 * Unpin any mmu pages first.
- 	 */
--	for (i = 0; i < KVM_MAX_VCPUS; ++i)
--		if (kvm->vcpus[i])
--			kvm_unload_vcpu_mmu(kvm->vcpus[i]);
--	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
--		if (kvm->vcpus[i]) {
--			kvm_arch_vcpu_free(kvm->vcpus[i]);
--			kvm->vcpus[i] = NULL;
--		}
--	}
-+	kvm_for_each_vcpu(i, vcpu, kvm)
-+		kvm_unload_vcpu_mmu(vcpu);
-+	kvm_for_each_vcpu(i, vcpu, kvm)
-+		kvm_arch_vcpu_free(vcpu);
-+
-+	mutex_lock(&kvm->lock);
-+	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++)
-+		kvm->vcpus[i] = NULL;
- 
-+	atomic_set(&kvm->online_vcpus, 0);
-+	mutex_unlock(&kvm->lock);
+diff --git a/arch/x86/kvm/mmu.h b/arch/x86/kvm/mmu.h
+index 3494a2f..016bf71 100644
+--- a/arch/x86/kvm/mmu.h
++++ b/arch/x86/kvm/mmu.h
+@@ -75,7 +75,7 @@ static inline int is_paging(struct kvm_vcpu *vcpu)
+ 	return vcpu->arch.cr0 & X86_CR0_PG;
  }
  
- void kvm_arch_sync_events(struct kvm *kvm)
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index d3fdf1a..c6e4d02 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -179,6 +179,17 @@ struct kvm {
- #define kvm_printf(kvm, fmt ...) printk(KERN_DEBUG fmt)
- #define vcpu_printf(vcpu, fmt...) kvm_printf(vcpu->kvm, fmt)
- 
-+static inline struct kvm_vcpu *kvm_get_vcpu(struct kvm *kvm, int i)
-+{
-+	smp_rmb();
-+	return kvm->vcpus[i];
-+}
-+
-+#define kvm_for_each_vcpu(idx, vcpup, kvm) \
-+	for (idx = 0, vcpup = kvm_get_vcpu(kvm, idx); \
-+	     idx < atomic_read(&kvm->online_vcpus) && vcpup; \
-+	     vcpup = kvm_get_vcpu(kvm, ++idx))
-+
- int kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id);
- void kvm_vcpu_uninit(struct kvm_vcpu *vcpu);
- 
-diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
-index 08a9a49..bb8a1b5 100644
---- a/virt/kvm/irq_comm.c
-+++ b/virt/kvm/irq_comm.c
-@@ -68,10 +68,8 @@ int kvm_irq_delivery_to_apic(struct kvm *kvm, struct kvm_lapic *src,
- 			kvm_is_dm_lowest_prio(irq))
- 		printk(KERN_INFO "kvm: apic: phys broadcast and lowest prio\n");
- 
--	for (i = 0; i < KVM_MAX_VCPUS; i++) {
--		vcpu = kvm->vcpus[i];
--
--		if (!vcpu || !kvm_apic_present(vcpu))
-+	kvm_for_each_vcpu(i, vcpu, kvm) {
-+		if (!kvm_apic_present(vcpu))
- 			continue;
- 
- 		if (!kvm_apic_match_dest(vcpu, src, irq->shorthand,
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 25e1f9c..777fe53 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -738,10 +738,7 @@ static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
- 
- 	me = get_cpu();
- 	spin_lock(&kvm->requests_lock);
--	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
--		vcpu = kvm->vcpus[i];
--		if (!vcpu)
--			continue;
-+	kvm_for_each_vcpu(i, vcpu, kvm) {
- 		if (test_and_set_bit(req, &vcpu->requests))
- 			continue;
- 		cpu = vcpu->cpu;
-@@ -1718,7 +1715,7 @@ static int create_vcpu_fd(struct kvm_vcpu *vcpu)
- static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
+-static inline int is_present_pte(unsigned long pte)
++static inline int is_present_gpte(unsigned long pte)
  {
- 	int r;
--	struct kvm_vcpu *vcpu;
-+	struct kvm_vcpu *vcpu, *v;
+ 	return pte & PT_PRESENT_MASK;
+ }
+diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
+index 4cb1dbf..238a193 100644
+--- a/arch/x86/kvm/paging_tmpl.h
++++ b/arch/x86/kvm/paging_tmpl.h
+@@ -132,7 +132,7 @@ walk:
+ #if PTTYPE == 64
+ 	if (!is_long_mode(vcpu)) {
+ 		pte = kvm_pdptr_read(vcpu, (addr >> 30) & 3);
+-		if (!is_present_pte(pte))
++		if (!is_present_gpte(pte))
+ 			goto not_present;
+ 		--walker->level;
+ 	}
+@@ -155,7 +155,7 @@ walk:
  
- 	vcpu = kvm_arch_vcpu_create(kvm, id);
- 	if (IS_ERR(vcpu))
-@@ -1736,8 +1733,8 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
- 		goto vcpu_destroy;
+ 		kvm_read_guest(vcpu->kvm, pte_gpa, &pte, sizeof(pte));
+ 
+-		if (!is_present_pte(pte))
++		if (!is_present_gpte(pte))
+ 			goto not_present;
+ 
+ 		rsvd_fault = is_rsvd_bits_set(vcpu, pte, walker->level);
+@@ -205,7 +205,7 @@ walk:
+ 		--walker->level;
  	}
  
--	for (r = 0; r < atomic_read(&kvm->online_vcpus); r++)
--		if (kvm->vcpus[r]->vcpu_id == id) {
-+	kvm_for_each_vcpu(r, v, kvm)
-+		if (v->vcpu_id == id) {
- 			r = -EEXIST;
- 			goto vcpu_destroy;
- 		}
-@@ -2526,11 +2523,9 @@ static int vcpu_stat_get(void *_offset, u64 *val)
- 	*val = 0;
- 	spin_lock(&kvm_lock);
- 	list_for_each_entry(kvm, &vm_list, vm_list)
--		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
--			vcpu = kvm->vcpus[i];
--			if (vcpu)
--				*val += *(u32 *)((void *)vcpu + offset);
--		}
-+		kvm_for_each_vcpu(i, vcpu, kvm)
-+			*val += *(u32 *)((void *)vcpu + offset);
-+
- 	spin_unlock(&kvm_lock);
- 	return 0;
- }
+-	if (write_fault && !is_dirty_pte(pte)) {
++	if (write_fault && !is_dirty_gpte(pte)) {
+ 		bool ret;
+ 
+ 		mark_page_dirty(vcpu->kvm, table_gfn);
+@@ -252,7 +252,7 @@ static void FNAME(update_pte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *page,
+ 
+ 	gpte = *(const pt_element_t *)pte;
+ 	if (~gpte & (PT_PRESENT_MASK | PT_ACCESSED_MASK)) {
+-		if (!is_present_pte(gpte))
++		if (!is_present_gpte(gpte))
+ 			set_shadow_pte(spte, shadow_notrap_nonpresent_pte);
+ 		return;
+ 	}
+@@ -289,7 +289,7 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
+ 	pt_element_t curr_pte;
+ 	struct kvm_shadow_walk_iterator iterator;
+ 
+-	if (!is_present_pte(gw->ptes[gw->level - 1]))
++	if (!is_present_gpte(gw->ptes[gw->level - 1]))
+ 		return NULL;
+ 
+ 	for_each_shadow_entry(vcpu, addr, iterator) {
+@@ -318,7 +318,7 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
+ 		if (level == PT_DIRECTORY_LEVEL
+ 		    && gw->level == PT_DIRECTORY_LEVEL) {
+ 			direct = 1;
+-			if (!is_dirty_pte(gw->ptes[level - 1]))
++			if (!is_dirty_gpte(gw->ptes[level - 1]))
+ 				access &= ~ACC_WRITE_MASK;
+ 			table_gfn = gpte_to_gfn(gw->ptes[level - 1]);
+ 		} else {
+@@ -489,7 +489,7 @@ static void FNAME(invlpg)(struct kvm_vcpu *vcpu, gva_t gva)
+ 	if (kvm_read_guest_atomic(vcpu->kvm, pte_gpa, &gpte,
+ 				  sizeof(pt_element_t)))
+ 		return;
+-	if (is_present_pte(gpte) && (gpte & PT_ACCESSED_MASK)) {
++	if (is_present_gpte(gpte) && (gpte & PT_ACCESSED_MASK)) {
+ 		if (mmu_topup_memory_caches(vcpu))
+ 			return;
+ 		kvm_mmu_pte_write(vcpu, pte_gpa, (const u8 *)&gpte,
+@@ -536,7 +536,7 @@ static void FNAME(prefetch_page)(struct kvm_vcpu *vcpu,
+ 		r = kvm_read_guest_atomic(vcpu->kvm, pte_gpa, pt, sizeof pt);
+ 		pte_gpa += ARRAY_SIZE(pt) * sizeof(pt_element_t);
+ 		for (j = 0; j < ARRAY_SIZE(pt); ++j)
+-			if (r || is_present_pte(pt[j]))
++			if (r || is_present_gpte(pt[j]))
+ 				sp->spt[i+j] = shadow_trap_nonpresent_pte;
+ 			else
+ 				sp->spt[i+j] = shadow_notrap_nonpresent_pte;
+@@ -574,12 +574,12 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
+ 					  sizeof(pt_element_t)))
+ 			return -EINVAL;
+ 
+-		if (gpte_to_gfn(gpte) != gfn || !is_present_pte(gpte) ||
++		if (gpte_to_gfn(gpte) != gfn || !is_present_gpte(gpte) ||
+ 		    !(gpte & PT_ACCESSED_MASK)) {
+ 			u64 nonpresent;
+ 
+ 			rmap_remove(vcpu->kvm, &sp->spt[i]);
+-			if (is_present_pte(gpte))
++			if (is_present_gpte(gpte))
+ 				nonpresent = shadow_trap_nonpresent_pte;
+ 			else
+ 				nonpresent = shadow_notrap_nonpresent_pte;
+@@ -590,7 +590,7 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
+ 		nr_present++;
+ 		pte_access = sp->role.access & FNAME(gpte_access)(vcpu, gpte);
+ 		set_spte(vcpu, &sp->spt[i], pte_access, 0, 0,
+-			 is_dirty_pte(gpte), 0, gfn,
++			 is_dirty_gpte(gpte), 0, gfn,
+ 			 spte_to_pfn(sp->spt[i]), true, false);
+ 	}
+ 
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 05cbe83..e877efa 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -237,7 +237,7 @@ int load_pdptrs(struct kvm_vcpu *vcpu, unsigned long cr3)
+ 		goto out;
+ 	}
+ 	for (i = 0; i < ARRAY_SIZE(pdpte); ++i) {
+-		if (is_present_pte(pdpte[i]) &&
++		if (is_present_gpte(pdpte[i]) &&
+ 		    (pdpte[i] & vcpu->arch.mmu.rsvd_bits_mask[0][2])) {
+ 			ret = 0;
+ 			goto out;
 -- 
 1.6.3.3
 
