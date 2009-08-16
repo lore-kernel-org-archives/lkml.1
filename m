@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932418AbZHPTcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932387AbZHPTci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932418AbZHPTcq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 15:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932338AbZHPTcm
+	id S932387AbZHPTci (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 15:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932359AbZHPTcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 15:32:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35853 "EHLO mx2.redhat.com"
+	Sun, 16 Aug 2009 15:32:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35850 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932357AbZHPTc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 15:32:29 -0400
+	id S932350AbZHPTc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 15:32:26 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        dm-devel@redhat.com, jens.axboe@oracle.com, ryov@valinux.co.jp,
@@ -20,429 +20,137 @@ Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
        dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
        vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
        jmarchan@redhat.com
-Subject: [PATCH 22/24] io-controller: Support per cgroup per device weights and io class
-Date: Sun, 16 Aug 2009 15:30:44 -0400
-Message-Id: <1250451046-9966-23-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 23/24] io-controller: map sync requests to group using bio tracking info
+Date: Sun, 16 Aug 2009 15:30:45 -0400
+Message-Id: <1250451046-9966-24-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1250451046-9966-1-git-send-email-vgoyal@redhat.com>
 References: <1250451046-9966-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch enables per-cgroup per-device weight and ioprio_class handling.
-A new cgroup interface "policy" is introduced. You can make use of this
-file to configure weight and ioprio_class for each device in a given cgroup.
-The original "weight" and "ioprio_class" files are still available. If you
-don't do special configuration for a particular device, "weight" and
-"ioprio_class" are used as default values in this device.
+o sync requests are mapped to the cgroup submitting tasks belongs to. This
+  is an experimental patch where sync requets can be mapped to the group
+  using bio tracking information and not submitting task's context.
 
-You can use the following format to play with the new interface.
-#echo dev_major:dev_minor weight ioprio_class > /patch/to/cgroup/policy
-weight=0 means removing the policy for device.
+o This patch implements this functionality only for noop, deadline and AS.
 
-Examples:
-Configure weight=300 ioprio_class=2 on /dev/hdb (8:16) in this cgroup
-# echo "8:16 300 2" > io.policy
-# cat io.policy
-dev	weight	class
-8:16	300	2
+o Introducing this patch for experimental purposes to see if it is really
+  meaningful or not.
 
-Configure weight=500 ioprio_class=1 on /dev/hda (8:0) in this cgroup
-# echo "8:0 500 1" > io.policy
-# cat io.policy
-dev	weight	class
-8:0	500	1
-8:16	300	2
+o This behavior is turned on by setting /sys/block/<disk>/queue/iosched/map_sync  varibale.
 
-Remove the policy for /dev/hda in this cgroup
-# echo 8:0 0 1 > io.policy
-# cat io.policy
-dev	weight	class
-8:16	300	2
-
-Changelog (v1 -> v2)
-- Rename some structures
-- Use spin_lock_irqsave() and spin_lock_irqrestore() version to prevent
-  from enabling the interrupts unconditionally.
-- Fix policy setup bug when switching to another io scheduler.
-- If a policy is available for a specific device, don't update weight and
-  io class when writing "weight" and "iprio_class".
-- Fix a bug when parsing policy string.
-
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- block/elevator-fq.c |  263 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- block/elevator-fq.h |   10 ++
- 2 files changed, 269 insertions(+), 4 deletions(-)
+ block/as-iosched.c       |    1 +
+ block/deadline-iosched.c |    1 +
+ block/elevator-fq.c      |    7 ++++++-
+ block/elevator-fq.h      |    9 +++++++++
+ block/noop-iosched.c     |    1 +
+ 5 files changed, 18 insertions(+), 1 deletions(-)
 
+diff --git a/block/as-iosched.c b/block/as-iosched.c
+index 8ea9398..2a72da1 100644
+--- a/block/as-iosched.c
++++ b/block/as-iosched.c
+@@ -1769,6 +1769,7 @@ static struct elv_fs_entry as_attrs[] = {
+ 	ELV_ATTR(fairness),
+ 	ELV_ATTR(slice_sync),
+ 	ELV_ATTR(group_idle),
++	ELV_ATTR(map_sync),
+ #endif
+ 	__ATTR_NULL
+ };
+diff --git a/block/deadline-iosched.c b/block/deadline-iosched.c
+index cc9c8c3..80377a9 100644
+--- a/block/deadline-iosched.c
++++ b/block/deadline-iosched.c
+@@ -466,6 +466,7 @@ static struct elv_fs_entry deadline_attrs[] = {
+ 	ELV_ATTR(fairness),
+ 	ELV_ATTR(slice_sync),
+ 	ELV_ATTR(group_idle),
++	ELV_ATTR(map_sync),
+ #endif
+ 	__ATTR_NULL
+ };
 diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index e2600a5..70d0ecf 100644
+index 70d0ecf..2f7a419 100644
 --- a/block/elevator-fq.c
 +++ b/block/elevator-fq.c
-@@ -15,6 +15,7 @@
- #include <linux/blktrace_api.h>
- #include <linux/seq_file.h>
- #include <linux/biotrack.h>
-+#include <linux/genhd.h>
- #include "elevator-fq.h"
+@@ -681,6 +681,8 @@ SHOW_FUNCTION(elv_slice_async_show, efqd->elv_slice[0], 1);
+ EXPORT_SYMBOL(elv_slice_async_show);
+ SHOW_FUNCTION(elv_fairness_show, efqd->fairness, 0);
+ EXPORT_SYMBOL(elv_fairness_show);
++SHOW_FUNCTION(elv_map_sync_show, efqd->map_sync, 0);
++EXPORT_SYMBOL(elv_map_sync_show);
+ #undef SHOW_FUNCTION
  
- const int elv_slice_sync = HZ / 10;
-@@ -862,12 +863,26 @@ EXPORT_SYMBOL(elv_io_group_set_async_queue);
- #ifdef CONFIG_GROUP_IOSCHED
- static void iocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup);
+ #define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV)			\
+@@ -707,6 +709,8 @@ STORE_FUNCTION(elv_slice_async_store, &efqd->elv_slice[0], 1, UINT_MAX, 1);
+ EXPORT_SYMBOL(elv_slice_async_store);
+ STORE_FUNCTION(elv_fairness_store, &efqd->fairness, 0, 1, 0);
+ EXPORT_SYMBOL(elv_fairness_store);
++STORE_FUNCTION(elv_map_sync_store, &efqd->map_sync, 0, 1, 0);
++EXPORT_SYMBOL(elv_map_sync_store);
+ #undef STORE_FUNCTION
  
--static void io_group_init_entity(struct io_cgroup *iocg, struct io_group *iog)
-+static struct io_policy_node *policy_search_node(const struct io_cgroup *iocg,
-+							dev_t dev);
-+static void
-+io_group_init_entity(struct io_cgroup *iocg, struct io_group *iog, dev_t dev)
+ void elv_schedule_dispatch(struct request_queue *q)
+@@ -1713,6 +1717,7 @@ struct io_group *elv_io_get_io_group_bio(struct request_queue *q,
+ 						struct bio *bio, int create)
  {
- 	struct io_entity *entity = &iog->entity;
-+	struct io_policy_node *pn;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&iocg->lock, flags);
-+	pn = policy_search_node(iocg, dev);
-+	if (pn) {
-+		entity->weight = pn->weight;
-+		entity->ioprio_class = pn->ioprio_class;
-+	} else {
-+		entity->weight = iocg->weight;
-+		entity->ioprio_class = iocg->ioprio_class;
-+	}
-+	spin_unlock_irqrestore(&iocg->lock, flags);
- 
--	entity->weight = iocg->weight;
--	entity->ioprio_class = iocg->ioprio_class;
- 	entity->ioprio_changed = 1;
- 	entity->my_sd = &iog->sched_data;
- }
-@@ -1007,6 +1022,229 @@ io_cgroup_lookup_group(struct io_cgroup *iocg, void *key)
- 	return NULL;
- }
- 
-+static int io_cgroup_policy_read(struct cgroup *cgrp, struct cftype *cft,
-+				  struct seq_file *m)
-+{
-+	struct io_cgroup *iocg;
-+	struct io_policy_node *pn;
-+
-+	iocg = cgroup_to_io_cgroup(cgrp);
-+
-+	if (list_empty(&iocg->policy_list))
-+		goto out;
-+
-+	seq_printf(m, "dev\tweight\tclass\n");
-+
-+	spin_lock_irq(&iocg->lock);
-+	list_for_each_entry(pn, &iocg->policy_list, node) {
-+		seq_printf(m, "%u:%u\t%u\t%hu\n", MAJOR(pn->dev),
-+			   MINOR(pn->dev), pn->weight, pn->ioprio_class);
-+	}
-+	spin_unlock_irq(&iocg->lock);
-+out:
-+	return 0;
-+}
-+
-+static inline void policy_insert_node(struct io_cgroup *iocg,
-+					  struct io_policy_node *pn)
-+{
-+	list_add(&pn->node, &iocg->policy_list);
-+}
-+
-+/* Must be called with iocg->lock held */
-+static inline void policy_delete_node(struct io_policy_node *pn)
-+{
-+	list_del(&pn->node);
-+}
-+
-+/* Must be called with iocg->lock held */
-+static struct io_policy_node *policy_search_node(const struct io_cgroup *iocg,
-+						 dev_t dev)
-+{
-+	struct io_policy_node *pn;
-+
-+	if (list_empty(&iocg->policy_list))
-+		return NULL;
-+
-+	list_for_each_entry(pn, &iocg->policy_list, node) {
-+		if (pn->dev == dev)
-+			return pn;
-+	}
-+
-+	return NULL;
-+}
-+
-+static int check_dev_num(dev_t dev)
-+{
-+	int part = 0;
-+	struct gendisk *disk;
-+
-+	disk = get_gendisk(dev, &part);
-+	if (!disk || part)
-+		return -ENODEV;
-+
-+	return 0;
-+}
-+
-+static int policy_parse_and_set(char *buf, struct io_policy_node *newpn)
-+{
-+	char *s[4], *p, *major_s = NULL, *minor_s = NULL;
-+	int ret;
-+	unsigned long major, minor, temp;
-+	int i = 0;
-+	dev_t dev;
-+
-+	memset(s, 0, sizeof(s));
-+	while ((p = strsep(&buf, " ")) != NULL) {
-+		if (!*p)
-+			continue;
-+		s[i++] = p;
-+
-+		/* Prevent from inputing too many things */
-+		if (i == 4)
-+			break;
-+	}
-+
-+	if (i != 3)
-+		return -EINVAL;
-+
-+	p = strsep(&s[0], ":");
-+	if (p != NULL)
-+		major_s = p;
-+	else
-+		return -EINVAL;
-+
-+	minor_s = s[0];
-+	if (!minor_s)
-+		return -EINVAL;
-+
-+	ret = strict_strtoul(major_s, 10, &major);
-+	if (ret)
-+		return -EINVAL;
-+
-+	ret = strict_strtoul(minor_s, 10, &minor);
-+	if (ret)
-+		return -EINVAL;
-+
-+	dev = MKDEV(major, minor);
-+
-+	ret = check_dev_num(dev);
-+	if (ret)
-+		return ret;
-+
-+	newpn->dev = dev;
-+
-+	if (s[1] == NULL)
-+		return -EINVAL;
-+
-+	ret = strict_strtoul(s[1], 10, &temp);
-+	if (ret || temp > IO_WEIGHT_MAX)
-+		return -EINVAL;
-+
-+	newpn->weight =  temp;
-+
-+	if (s[2] == NULL)
-+		return -EINVAL;
-+
-+	ret = strict_strtoul(s[2], 10, &temp);
-+	if (ret || temp < IOPRIO_CLASS_RT || temp > IOPRIO_CLASS_IDLE)
-+		return -EINVAL;
-+	newpn->ioprio_class = temp;
-+
-+	return 0;
-+}
-+
-+static void update_iog_weight_prio(struct io_group *iog, struct io_cgroup *iocg,
-+					struct io_policy_node *pn)
-+{
-+	if (pn->weight) {
-+		iog->entity.weight = pn->weight;
-+		iog->entity.ioprio_class = pn->ioprio_class;
-+		/*
-+		 * iog weight and ioprio_class updating actually happens if
-+		 * ioprio_changed is set. So ensure ioprio_changed is not set
-+		 * until new weight and new ioprio_class are updated.
-+		 */
-+		smp_wmb();
-+		iog->entity.ioprio_changed = 1;
-+	} else {
-+		iog->entity.weight = iocg->weight;
-+		iog->entity.ioprio_class = iocg->ioprio_class;
-+
-+		/* The same as above */
-+		smp_wmb();
-+		iog->entity.ioprio_changed = 1;
-+	}
-+}
-+
-+static int io_cgroup_policy_write(struct cgroup *cgrp, struct cftype *cft,
-+			    const char *buffer)
-+{
-+	struct io_cgroup *iocg;
-+	struct io_policy_node *newpn, *pn;
-+	char *buf;
-+	int ret = 0;
-+	int keep_newpn = 0;
-+	struct hlist_node *n;
-+	struct io_group *iog;
-+
-+	buf = kstrdup(buffer, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	newpn = kzalloc(sizeof(*newpn), GFP_KERNEL);
-+	if (!newpn) {
-+		ret = -ENOMEM;
-+		goto free_buf;
-+	}
-+
-+	ret = policy_parse_and_set(buf, newpn);
-+	if (ret)
-+		goto free_newpn;
-+
-+	if (!cgroup_lock_live_group(cgrp)) {
-+		ret = -ENODEV;
-+		goto free_newpn;
-+	}
-+
-+	iocg = cgroup_to_io_cgroup(cgrp);
-+	spin_lock_irq(&iocg->lock);
-+
-+	pn = policy_search_node(iocg, newpn->dev);
-+	if (!pn) {
-+		if (newpn->weight != 0) {
-+			policy_insert_node(iocg, newpn);
-+			keep_newpn = 1;
-+		}
-+		goto update_io_group;
-+	}
-+
-+	if (newpn->weight == 0) {
-+		/* weight == 0 means deleteing a policy */
-+		policy_delete_node(pn);
-+		goto update_io_group;
-+	}
-+
-+	pn->weight = newpn->weight;
-+	pn->ioprio_class = newpn->ioprio_class;
-+
-+update_io_group:
-+	hlist_for_each_entry(iog, n, &iocg->group_data, group_node) {
-+		if (iog->dev == newpn->dev)
-+			update_iog_weight_prio(iog, iocg, newpn);
-+	}
-+	spin_unlock_irq(&iocg->lock);
-+
-+	cgroup_unlock();
-+
-+free_newpn:
-+	if (!keep_newpn)
-+		kfree(newpn);
-+free_buf:
-+	kfree(buf);
-+	return ret;
-+}
-+
- #define SHOW_FUNCTION(__VAR)						\
- static u64 io_cgroup_##__VAR##_read(struct cgroup *cgroup,		\
- 				       struct cftype *cftype)		\
-@@ -1039,6 +1277,7 @@ static int io_cgroup_##__VAR##_write(struct cgroup *cgroup,		\
- 	struct io_cgroup *iocg;					\
- 	struct io_group *iog;						\
- 	struct hlist_node *n;						\
-+	struct io_policy_node *pn;					\
- 									\
- 	if (val < (__MIN) || val > (__MAX))				\
- 		return -EINVAL;						\
-@@ -1051,6 +1290,9 @@ static int io_cgroup_##__VAR##_write(struct cgroup *cgroup,		\
- 	spin_lock_irq(&iocg->lock);					\
- 	iocg->__VAR = (unsigned long)val;				\
- 	hlist_for_each_entry(iog, n, &iocg->group_data, group_node) {	\
-+		pn = policy_search_node(iocg, iog->dev);		\
-+		if (pn)							\
-+			continue;					\
- 		iog->entity.__VAR = (unsigned long)val;		\
- 		smp_wmb();						\
- 		iog->entity.ioprio_changed = 1;				\
-@@ -1186,6 +1428,12 @@ static int io_cgroup_disk_dequeue_read(struct cgroup *cgroup,
- 
- struct cftype io_files[] = {
- 	{
-+		.name = "policy",
-+		.read_seq_string = io_cgroup_policy_read,
-+		.write_string = io_cgroup_policy_write,
-+		.max_write_len = 256,
-+	},
-+	{
- 		.name = "weight",
- 		.read_u64 = io_cgroup_weight_read,
- 		.write_u64 = io_cgroup_weight_write,
-@@ -1236,6 +1484,7 @@ static struct cgroup_subsys_state *iocg_create(struct cgroup_subsys *subsys,
- 	INIT_HLIST_HEAD(&iocg->group_data);
- 	iocg->weight = IO_WEIGHT_DEFAULT;
- 	iocg->ioprio_class = IOPRIO_CLASS_BE;
-+	INIT_LIST_HEAD(&iocg->policy_list);
- 
- 	return &iocg->css;
- }
-@@ -1329,7 +1578,7 @@ io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
- 		sscanf(dev_name(bdi->dev), "%u:%u", &major, &minor);
- 		iog->dev = MKDEV(major, minor);
- 
--		io_group_init_entity(iocg, iog);
-+		io_group_init_entity(iocg, iog, iog->dev);
- 
- 		atomic_set(&iog->ref, 0);
- 
-@@ -1675,6 +1924,7 @@ static void iocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
- 	struct io_group *iog;
- 	struct elv_fq_data *efqd;
- 	unsigned long uninitialized_var(flags);
-+	struct io_policy_node *pn, *pntmp;
+ 	struct page *page = NULL;
++	struct elv_fq_data *efqd = q->elevator->efqd;
  
  	/*
- 	 * io groups are linked in two lists. One list is maintained
-@@ -1714,6 +1964,11 @@ remove_entry:
- 	goto remove_entry;
+ 	 * Determine the group from task context. Even calls from
+@@ -1731,7 +1736,7 @@ struct io_group *elv_io_get_io_group_bio(struct request_queue *q,
+ 	}
  
- done:
-+	list_for_each_entry_safe(pn, pntmp, &iocg->policy_list, node) {
-+		policy_delete_node(pn);
-+		kfree(pn);
-+	}
-+
- 	free_css_id(&io_subsys, &iocg->css);
- 	rcu_read_unlock();
- 	BUG_ON(!hlist_empty(&iocg->group_data));
+ 	/* Map the sync bio to the right group using task context */
+-	if (elv_bio_sync(bio))
++	if (elv_bio_sync(bio) && !efqd->map_sync)
+ 		goto sync;
+ 
+ #ifdef CONFIG_TRACK_ASYNC_CONTEXT
 diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-index f8e46f7..53e5a03 100644
+index 53e5a03..57ff85f 100644
 --- a/block/elevator-fq.h
 +++ b/block/elevator-fq.h
-@@ -136,12 +136,22 @@ struct io_group {
- 	struct request_list rl;
+@@ -205,6 +205,12 @@ struct elv_fq_data {
+ 	 * queue before new queue is scheduled in
+ 	 */
+ 	unsigned int fairness;
++
++	/*
++	 * Get io group bio belongs to from bio and not from submitting task
++	 * context
++	 */
++	unsigned int map_sync;
  };
  
-+struct io_policy_node {
-+	struct list_head node;
-+	dev_t dev;
-+	unsigned int weight;
-+	unsigned short ioprio_class;
-+};
-+
- struct io_cgroup {
- 	struct cgroup_subsys_state css;
- 
- 	unsigned int weight;
- 	unsigned short ioprio_class;
- 
-+	/* list of io_policy_node */
-+	struct list_head policy_list;
-+
- 	spinlock_t lock;
- 	struct hlist_head group_data;
+ /* Logging facilities. */
+@@ -436,6 +442,9 @@ extern struct io_group *elv_io_get_io_group_bio(struct request_queue *q,
+ extern ssize_t elv_group_idle_show(struct elevator_queue *q, char *name);
+ extern ssize_t elv_group_idle_store(struct elevator_queue *q, const char *name,
+ 					size_t count);
++extern ssize_t elv_map_sync_show(struct elevator_queue *q, char *name);
++extern ssize_t elv_map_sync_store(struct elevator_queue *q, const char *name,
++					size_t count);
+ extern void elv_io_group_congestion_threshold(struct request_queue *q,
+ 						struct io_group *iog);
+ static inline void elv_get_iog(struct io_group *iog)
+diff --git a/block/noop-iosched.c b/block/noop-iosched.c
+index 4ba496f..887bba1 100644
+--- a/block/noop-iosched.c
++++ b/block/noop-iosched.c
+@@ -88,6 +88,7 @@ static struct elv_fs_entry noop_attrs[] = {
+ 	ELV_ATTR(fairness),
+ 	ELV_ATTR(slice_sync),
+ 	ELV_ATTR(group_idle),
++	ELV_ATTR(map_sync),
+ 	__ATTR_NULL
  };
+ #endif
 -- 
 1.6.0.6
 
