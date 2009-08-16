@@ -1,198 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbZHPTNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755749AbZHPTRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755728AbZHPTNn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 15:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbZHPTNm
+	id S1755749AbZHPTRH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 15:17:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbZHPTRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 15:13:42 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:37962 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754958AbZHPTNl (ORCPT
+	Sun, 16 Aug 2009 15:17:06 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:60845 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751836AbZHPTRE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 15:13:41 -0400
-Message-ID: <4A885A45.6010108@oracle.com>
-Date: Sun, 16 Aug 2009 12:13:09 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sun, 16 Aug 2009 15:17:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:reply-to:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=LwXhNXSkB5GRVvDAmMyePDm5oZcWMaolPhP5PnMBfkQu0B0iMdJ/V/7blonZBML3Sj
+         nMQ89hGy8Gi+rbEBr0kozzoPrKHrX6k1ecX2glQOIu9vOin0S2QPIHFk+ef7QySoOQ3S
+         +ikQW3Eyi27lx8EKTcZlf7KiTMPty9fp5X9l0=
 MIME-Version: 1.0
-To: Johannes Weiner <hannes@cmpxchg.org>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       stern@rowland.harvard.edu, akpm@linux-foundation.org, apw@canonical.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, peterz@infradead.org
-Subject: [PATCH] scsi: fix func names in kernel-doc
-References: <13a78aa7-dd27-49d9-8164-d6e802bd4796@default> <20090813145106.GA25333@cmpxchg.org> <1250175853.3901.34.camel@mulgrave.site> <4A843D66.1060407@xenotime.net> <20090813180856.GB26020@cmpxchg.org> <4A85ABBB.5060806@oracle.com>
-In-Reply-To: <4A85ABBB.5060806@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt012.oracle.com [141.146.116.21]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4A885A20.00A6:SCFSTAT5015188,ss=1,fgs=0
+Reply-To: q-funk@iki.fi
+In-Reply-To: <200908132034.34951.rjw@sisk.pl>
+References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera> <200908131654.45227.rjw@sisk.pl>
+	 <11fae7c70908130800q7b4a5293t5c373613d736d74@mail.gmail.com>
+	 <200908132034.34951.rjw@sisk.pl>
+Date: Sun, 16 Aug 2009 22:17:04 +0300
+X-Google-Sender-Auth: 91fbdb45deb8d966
+Message-ID: <11fae7c70908161217p33830075p783880315a31b2e5@mail.gmail.com>
+Subject: Re: [Bug #13941] x86 Geode issue
+From: =?UTF-8?Q?Martin=2D=C3=89ric_Racine?= <q-funk@iki.fi>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, Alexander Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> Johannes Weiner wrote:
->> On Thu, Aug 13, 2009 at 09:20:54AM -0700, Randy Dunlap wrote:
->>> James Bottomley wrote:
->>>> On Thu, 2009-08-13 at 16:51 +0200, Johannes Weiner wrote:
->>>>> Okay, I came up with a syntax to allow continued lines in short
->>>>> descriptions and parameter descriptons.
->>>>>
->>>>> I can successfully parse
->>>>>
->>>>> ---
->>>>> /**
->>>>>  *	get_tty_driver		-	find device of a tty
->>>>>  *					...and everything
->>>> I'm not so keen on the ... syntax ... suggestions below
->>> I like this even less than James does.
->> Fair enough.
->>
->>>>> diff --git a/scripts/kernel-doc b/scripts/kernel-doc
->>>>> index b52d340..e427b0a 100755
->>>>> --- a/scripts/kernel-doc
->>>>> +++ b/scripts/kernel-doc
->>>>> @@ -279,6 +279,7 @@ my $doc_special = "\@\%\$\&";
->>>>>  my $doc_start = '^/\*\*\s*$'; # Allow whitespace at end of comment start.
->>>>>  my $doc_end = '\*/';
->>>>>  my $doc_com = '\s*\*\s*';
->>>>> +my $doc_cont = $doc_com . '\.\.\.\s*(.+)';
->>>> how about making this
->>>>
->>>> $doc_cont = $doc_com.'\s*([^@].*)';
->>>>
->>>> That way anything that doesn't begin with a variable declaration would
->>>> be treated as comment continuation.  Might need a \s is the brackets to
->>>> ensure blank lines are OK and not treated as continuations.
->> The \s comes from $doc_com already.  We need the [^\s] as you said to
->> skip empty lines but also the slash for this one:
->>
->> 	* @foo: yada
->> 	*/
->>
->>> The goal should be to accept what is currently in the kernel source tree IMO,
->>> and this suggestion looks like it would support that.
->> Yeah.  I also noticed that multi-line blocks starting with @foo: are
->> already handled, making the indirect referencing unnecessary.  The
->> result is a bit simpler and more straight-forward, I think.
->>
->> 	Hannes
->>
->> --
->> From: Johannes Weiner <hannes@cmpxchg.org>
->> Subject: kernel-doc: allow multi-line declaration purpose descriptions
->>
->> Allow the short description after symbol name and dash in a kernel-doc
->> comment to span multiple lines, like this:
->>
->> 	/**
->> 	 * unmap_mapping_range - unmap the portion of all mmaps in the
->> 	 *	specified address_space corresponding to the specified
->> 	 *	page range in the underlying file.
->> 	 * @mapping: the address space containing mmaps to be unmapped.
->> 	 * ...
->> 	 */
->>
->> The short description ends with a newline, a parameter description or
->> the end of the comment block.
->>
->> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
->> ---
->>
->> diff --git a/scripts/kernel-doc b/scripts/kernel-doc
->> index b52d340..2921aab 100755
->> --- a/scripts/kernel-doc
->> +++ b/scripts/kernel-doc
->> @@ -281,6 +281,7 @@ my $doc_end = '\*/';
->>  my $doc_com = '\s*\*\s*';
->>  my $doc_decl = $doc_com . '(\w+)';
->>  my $doc_sect = $doc_com . '([' . $doc_special . ']?[\w\s]+):(.*)';
->> +my $doc_cont = $doc_com . '([^@/\s].*)';
->>  my $doc_content = $doc_com . '(.*)';
->>  my $doc_block = $doc_com . 'DOC:\s*(.*)?';
->>  
->> @@ -1995,6 +1996,7 @@ sub process_file($) {
->>      my $identifier;
->>      my $func;
->>      my $descr;
->> +    my $in_purpose = 0;
->>      my $initial_section_counter = $section_counter;
->>  
->>      if (defined($ENV{'SRCTREE'})) {
->> @@ -2044,6 +2046,7 @@ sub process_file($) {
->>  		    $descr =~ s/\s*$//;
->>  		    $descr =~ s/\s+/ /;
->>  		    $declaration_purpose = xml_escape($descr);
->> +		    $in_purpose = 1;
->>  		} else {
->>  		    $declaration_purpose = "";
->>  		}
->> @@ -2075,7 +2078,12 @@ sub process_file($) {
->>  		++$warnings;
->>  		$state = 0;
->>  	    }
->> +	} elsif ($in_purpose == 1 && /$doc_cont/o) {
->> +	    # continued description
->> +	    chomp($declaration_purpose);
->> +	    $declaration_purpose .= " " . $1;
->>  	} elsif ($state == 2) {	# look for head: lines, and include content
->> +	    $in_purpose = 0;
->>  	    if (/$doc_sect/o) {
->>  		$newsection = $1;
->>  		$newcontents = $2;
-> 
-> Hi Hannes,
-> 
-> This looks good in theory, but it doesn't survive a "make htmldocs"
-> after the patch is applied.
-> 
-> It could be the ending kernel-doc comment characters:
->  **/
-> 
-> The problem is in drivers/scsi/scsi_devinfo.c:
-> /**
->  * scsi_dev_info_list_delete - called from scsi.c:exit_scsi to remove the scsi_dev_info_list.
->  **/
-> void scsi_exit_devinfo(void)
-> {
-> 
-> 
-> I'm currently on vacation, but I'll look into it more if you can't
-> do so.
+On Thu, Aug 13, 2009 at 9:34 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> On Thursday 13 August 2009, Martin-Éric Racine wrote:
+>> On Thu, Aug 13, 2009 at 5:54 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+>> > On Thursday 13 August 2009, Martin-Éric Racine wrote:
+>> >> 2009/8/13 Martin-Éric Racine <q-funk@iki.fi>:
+>> >> > On Thu, Aug 13, 2009 at 12:07 PM, Ingo Molnar<mingo@elte.hu> wrote:
+>> >> >> * Martin-Éric Racine <q-funk@iki.fi> wrote:
+>> >> >>> Yes, this bug is still valid.
+>> >> >>>
+>> >> >>> Ubuntu kernel team member Leann Ogasawara and I are slowly
+>> >> >>> bisecting our way through the changes that took place since 2.6.30
+>> >> >>> to find the commit that introduced this regression. Please stay
+>> >> >>> tuned.
+>> >> >>
+>> >> >> hm, the only outright Geode related commit was:
+>> >> >>
+>> >> >>  d6c585a: x86: geode: Mark mfgpt irq IRQF_TIMER to prevent resume failure
+>> >> >>
+>> >> >> the jpg at:
+>> >> >>
+>> >> >>  http://launchpadlibrarian.net/28892781/00002.jpg
+>> >> >>
+>> >> >> is very out of focus - but what i could decypher suggests a
+>> >> >> pagefault crash in the VFS code, in generic_delete_inode().
+>> >>
+>> >> This one might be a bit better:
+>> >>
+>> >> http://launchpadlibrarian.net/30267494/2.6.31-5.24.jpg
+>
+> Hmm.  This looks like a sysfs oops to my untrained eye.
 
-Duh.  James, the kernel-doc func name and actual func name don't match.
-Here's a patch for that and one other mismatched func name.
+The bisect I did with Leann Ogasawara has narrowed the kernel panic
+down to the following:
 
+commit f19d4a8fa6f9b6ccf54df0971c97ffcaa390b7b0
+Author: Al Viro <viro@zeniv.linux.org.uk>
+Date: Mon Jun 8 19:50:45 2009 -0400
 
------
-From: Randy Dunlap <randy.dunlap@oracle.com>
+    add caching of ACLs in struct inode
 
-Fix scsi_devinfo.c kernel-doc function names to match
-actual function names.
+    No helpers, no conversions yet.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/scsi/scsi_devinfo.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+    Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
---- lnx-2631-rc6.orig/drivers/scsi/scsi_devinfo.c
-+++ lnx-2631-rc6/drivers/scsi/scsi_devinfo.c
-@@ -454,7 +454,7 @@ int scsi_get_device_flags(struct scsi_de
- 
- 
- /**
-- * get_device_flags_keyed - get device specific flags from the dynamic device list.
-+ * scsi_get_device_flags_keyed - get device specific flags from the dynamic device list
-  * @sdev:       &scsi_device to get flags for
-  * @vendor:	vendor name
-  * @model:	model name
-@@ -685,7 +685,7 @@ MODULE_PARM_DESC(default_dev_flags,
- 		 "scsi default device flag integer value");
- 
- /**
-- * scsi_dev_info_list_delete - called from scsi.c:exit_scsi to remove the scsi_dev_info_list.
-+ * scsi_exit_devinfo - remove /proc/scsi/device_info & the scsi_dev_info_list
-  **/
- void scsi_exit_devinfo(void)
- {
+Best Regards,
+Martin-Éric
