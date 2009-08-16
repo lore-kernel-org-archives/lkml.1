@@ -1,64 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbZHPUSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbZHPU3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756014AbZHPUSu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 16:18:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbZHPUSt
+	id S1756010AbZHPU3W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 16:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZHPU3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 16:18:49 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60566 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754753AbZHPUSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 16:18:49 -0400
-Message-ID: <4A8869A3.7020504@garzik.org>
-Date: Sun, 16 Aug 2009 16:18:43 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: "Subbrathnam, Swaminathan" <swami.iyer@ti.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: sata AHCI controller over non-PCI bus
-References: <FCCFB4CDC6E5564B9182F639FC35608702F5989152@dbde02.ent.ti.com>	 <4A7FE245.8020002@ru.mvista.com>	 <FCCFB4CDC6E5564B9182F639FC35608702F59891CB@dbde02.ent.ti.com>	 <4A88014D.9060309@garzik.org> <1250436892.3856.87.camel@mulgrave.site>
-In-Reply-To: <1250436892.3856.87.camel@mulgrave.site>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 16 Aug 2009 16:29:21 -0400
+Received: from gon.proformatique.com ([91.194.178.5]:47828 "EHLO
+	mx1.corp.proformatique.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751710AbZHPU3U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 16:29:20 -0400
+Date: Sun, 16 Aug 2009 22:29:21 +0200
+From: Guillaume Knispel <gknispel@proformatique.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <tj@kernel.org>
+Subject: [PATCH] poll/select: avoid arithmetic overflow in
+ __estimate_accuracy()
+Message-ID: <20090816222921.26c92ccd@xilun.lan.proformatique.com>
+Organization: Proformatique
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/16/2009 11:34 AM, James Bottomley wrote:
-> Can't you get the best of both worlds?  Do the separation but
-> artificially glue them together again as a module at link time.  This
-> solves the current distro problem and you can remove the linker hack as
-> soon as the distros get their act together.
->
-> James
->
-> ---
->
-> diff --git a/drivers/ata/Makefile b/drivers/ata/Makefile
-> index 9f7b500..10101d7 100644
-> --- a/drivers/ata/Makefile
-> +++ b/drivers/ata/Makefile
-> @@ -1,8 +1,10 @@
->
->   obj-$(CONFIG_ATA)		+= libata.o
->
-> -obj-$(CONFIG_SATA_AHCI)		+= libahci.o ahci.o
-> -obj-$(CONFIG_SATA_ACARD_AHCI)	+= libahci.o acard-ahci.o
-> +obj-$(CONFIG_SATA_AHCI)		+= ahci_mod.o
-> +obj-ahci_mod-y			+= libahci.o ahci.o
-> +obj-ahci_mod-$(CONFIG_SATA_ACARD_AHCI)	+= acard-ahci.o
-> +obj-ahci_mod-$(CONFIG_SATA_MV_AHCI)	+= mv-ahci.o
+__estimate_accuracy() was prone to integer overflow, for example
+if *tv == {2147, 483648000} on a 32 bit computer (or even for delays
+as small as {429, 500000000} if the task is niced).
 
+Because the result was already forced between 0 and 100ms, the effect
+of the overflow was not too problematic, but the use of the hrtimer
+range feature was not optimal in overflow cases.
 
-Yeah, that could definitely be an option...
+This patch ensures that there can not be an integer overflow in this
+function.
 
-	Jeff
+Signed-off-by: Guillaume Knispel <gknispel@proformatique.com>
+---
+ fs/select.c |   14 ++++++++++----
+ 1 files changed, 10 insertions(+), 4 deletions(-)
 
-
+diff --git a/fs/select.c b/fs/select.c
+index 8084834..a201fc3 100644
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -41,22 +41,28 @@
+  * better solutions..
+  */
+ 
++#define MAX_SLACK	(100 * NSEC_PER_MSEC)
++
+ static long __estimate_accuracy(struct timespec *tv)
+ {
+ 	long slack;
+ 	int divfactor = 1000;
+ 
++	if (tv->tv_sec < 0)
++		return 0;
++
+ 	if (task_nice(current) > 0)
+ 		divfactor = divfactor / 5;
+ 
++	if (tv->tv_sec > MAX_SLACK / (NSEC_PER_SEC/divfactor))
++		return MAX_SLACK;
++
+ 	slack = tv->tv_nsec / divfactor;
+ 	slack += tv->tv_sec * (NSEC_PER_SEC/divfactor);
+ 
+-	if (slack > 100 * NSEC_PER_MSEC)
+-		slack =  100 * NSEC_PER_MSEC;
++	if (slack > MAX_SLACK)
++		return MAX_SLACK;
+ 
+-	if (slack < 0)
+-		slack = 0;
+ 	return slack;
+ }
+ 
