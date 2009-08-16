@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbZHPFSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405AbZHPFhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753424AbZHPFSq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 01:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZHPFSp
+	id S1753405AbZHPFhj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 01:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbZHPFhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 01:18:45 -0400
-Received: from mga14.intel.com ([143.182.124.37]:30646 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753391AbZHPFSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 01:18:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,389,1246863600"; 
-   d="scan'208";a="176242841"
-Date: Sun, 16 Aug 2009 12:55:22 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-Message-ID: <20090816045522.GA13740@localhost>
-References: <20090805155805.GC23385@random.random> <20090806100824.GO23385@random.random> <4A7AAE07.1010202@redhat.com> <20090806102057.GQ23385@random.random> <20090806105932.GA1569@localhost> <4A7AC201.4010202@redhat.com> <20090806130631.GB6162@localhost> <4A7AD79E.4020604@redhat.com> <20090816032822.GB6888@localhost> <4A878377.70502@redhat.com>
+	Sun, 16 Aug 2009 01:37:38 -0400
+Received: from smtp-out-092.synserver.de ([212.40.180.92]:1031 "HELO
+	smtp-out-092.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750825AbZHPFhh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 01:37:37 -0400
+X-SynServer-TrustedSrc: 1
+X-SynServer-AuthUser: markus@trippelsdorf.de
+X-SynServer-PPID: 15145
+Date: Sun, 16 Aug 2009 07:37:35 +0200
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Zeev Tarantov <zeev.tarantov@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] [hwmon] linux 2.6.31-rc6 regression
+Message-ID: <20090816053735.GB1998@phenom2.trippelsdorf.de>
+References: <12d7e64c0908150329k1bf123der18e74112c5b9cd97@mail.gmail.com>
+ <20090816010303.GA9588@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4A878377.70502@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090816010303.GA9588@srcf.ucam.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 16, 2009 at 11:56:39AM +0800, Rik van Riel wrote:
-> Wu Fengguang wrote:
+On Sun, Aug 16, 2009 at 02:03:03AM +0100, Matthew Garrett wrote:
+> On Sat, Aug 15, 2009 at 01:29:48PM +0300, Zeev Tarantov wrote:
 > 
-> > Right, but I meant busty page allocations and accesses on them, which
-> > can make a large continuous segment of referenced pages in LRU list,
-> > say 50MB.  They may or may not be valuable as a whole, however a local
-> > algorithm may keep the first 4MB and drop the remaining 46MB.
+> > [    3.276720] w83627ehf: Found W83627DHG chip at 0x290
+> > [    3.276894] ACPI: I/O resource w83627ehf [0x295-0x296] conflicts
+> > with ACPI region HWRE [0x290-0x299]
+> > [    3.277171] ACPI: Device needs an ACPI driver
 > 
-> I wonder if the problem is that we simply do not keep a large
-> enough inactive list in Jeff's test.  If we do not, pages do
-> not have a chance to be referenced again before the reclaim
-> code comes in.
+> The hwmon driver is attempting to allocate a region that's also used by 
+> your ACPI firmware. There's no way to synchronise access between the 
+> kernel and the firmware, so allowing both is potentially racy - we've 
+> seen numerous cases where the combination results in the system 
+> incorrectly generating critical temperatuer shutdowns, for instance, 
+> when some other indexed access gets interpreted as the temperature or 
+> when the hwmon chip's state machine is confused. The failure of hwmon to 
+> bind is a feature here, not a bug. You can override it with 
+> acpi_enforce_resources=no on the kernel command line.
 
-Exactly, that's the case I call the list FIFO.
-
-> The cgroup stats should show how many active anon and inactive
-> anon pages there are in the cgroup.
-
-Jeff, can you have a look at these stats? Thanks!
+But we don't introduce »features« that break hardware monitoring on
+numerous machines in rc6 normally, IIRC.
+If this so important and critical to you, than just add a »hyperstrict«
+parameter to acpi_enforce_resources or make »lax« the default.
+-- 
+Markus
