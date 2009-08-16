@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752906AbZHPHFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbZHPHQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752906AbZHPHFH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 03:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbZHPHFG
+	id S1753077AbZHPHQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 03:16:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbZHPHQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 03:05:06 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41370 "EHLO mx2.mail.elte.hu"
+	Sun, 16 Aug 2009 03:16:27 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50569 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750722AbZHPHFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 03:05:04 -0400
-Date: Sun, 16 Aug 2009 09:04:51 +0200
+	id S1750765AbZHPHQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 03:16:26 -0400
+Date: Sun, 16 Aug 2009 09:16:07 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kmemleak: Ignore the aperture memory hole on x86_64
-Message-ID: <20090816070451.GA29537@elte.hu>
-References: <20090815141716.GA15941@elte.hu> <1250375681.6889.25.camel@pc1117.cambridge.arm.com>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       Avi Kivity <avi@redhat.com>, alacrityvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
+	vbus_driver objects
+Message-ID: <20090816071607.GB29537@elte.hu>
+References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1250375681.6889.25.camel@pc1117.cambridge.arm.com>
+In-Reply-To: <4A870964.9090408@codemonkey.ws>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -34,53 +37,74 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Catalin Marinas <catalin.marinas@arm.com> wrote:
+* Anthony Liguori <anthony@codemonkey.ws> wrote:
 
-> On Sat, 2009-08-15 at 15:17 +0100, Ingo Molnar wrote:
-> > * Catalin Marinas <catalin.marinas@arm.com> wrote:
-> > > +     /*
-> > > +      * Kmemleak should not scan this block as it may not be mapped via the
-> > > +      * kernel direct mapping.
-> > > +      */
-> > > +     kmemleak_ignore(p);
-> > 
-> > More importantly, kmemleak should _never_ do the garbage collection
-> > scan for device memory (such as the agp aperture above). All the
-> > aperture areas are in that category - PCI aperture, IOMMU areas,
-> > etc. etc.
-> > 
-> > Please double check that kmemleak does not check those - there are
-> > devices where pure reading of that address space can have
-> > side-effects.
-> 
-> I'll do a grep. But would such memory still be mapped in the 
-> kernel direct mapping? [...]
+> Ingo Molnar wrote:
+>> * Gregory Haskins <ghaskins@novell.com> wrote:
+>>
+>>   
+>>> This will generally be used for hypervisors to publish any host-side
+>>> virtual devices up to a guest.  The guest will have the opportunity
+>>> to consume any devices present on the vbus-proxy as if they were
+>>> platform devices, similar to existing buses like PCI.
+>>>
+>>> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+>>> ---
+>>>
+>>>  MAINTAINERS                 |    6 ++
+>>>  arch/x86/Kconfig            |    2 +
+>>>  drivers/Makefile            |    1  drivers/vbus/Kconfig        |   
+>>> 14 ++++
+>>>  drivers/vbus/Makefile       |    3 +
+>>>  drivers/vbus/bus-proxy.c    |  152 +++++++++++++++++++++++++++++++++++++++++++
+>>>  include/linux/vbus_driver.h |   73 +++++++++++++++++++++
+>>>  7 files changed, 251 insertions(+), 0 deletions(-)
+>>>  create mode 100644 drivers/vbus/Kconfig
+>>>  create mode 100644 drivers/vbus/Makefile
+>>>  create mode 100644 drivers/vbus/bus-proxy.c
+>>>  create mode 100644 include/linux/vbus_driver.h
+>>>     
+>>
+>> Is there a consensus on this with the KVM folks? (i've added the KVM  
+>> list to the Cc:)
+>   
+> I'll let Avi comment about it from a KVM perspective but from a 
+> QEMU perspective, I don't think we want to support two paravirtual 
+> IO frameworks.  I'd like to see them converge.  Since there's an 
+> install base of guests today with virtio drivers, there really 
+> ought to be a compelling reason to change the virtio ABI in a 
+> non-backwards compatible way.  This means convergence really ought 
+> to be adding features to virtio.
 
-It should not be mapped directly - we try to map all kinds of 
-resources 'precisely', so that there can be no cache aliasing 
-complications due to over-mapping - but still, there are 
-compatibility ranges that are always mapped (the BIOS area for 
-example).
+I agree.
 
-> [...] In this particular case, it was alloc_bootmem() memory which 
-> seems to have been unmapped (and cause an oops), otherwise, at 
-> least on some architectures, may have problems with speculative 
-> fetches.
-> 
-> Kmemleak doesn't track other mappings like ioremap, so it should 
-> not scan device memory.
-> 
-> Since you raised this, I realised there is a class of kmalloc'ed 
-> memory blocks that may have some issues on non-coherent 
-> architectures. If such blocks are used for DMA and cache 
-> invalidation is only done in dma_map_single(FROM_DEVICE) (the ARM 
-> case), kmemleak scanning before dma_unmap_single() may pollute the 
-> cache. One solution is to invalidate the caches again in 
-> dma_unmap_single(). I'm not sure ignoring GFP_DMA blocks would be 
-> feasible if this flag is used for other blocks containing 
-> pointers. I need to do some tests but I don't think x86 is 
-> affected.
+While different paravirt drivers are inevitable for things that are 
+externally constrained (say support different hypervisors), doing 
+different _Linux internal_ paravirt drivers looks plain stupid and 
+counter-productive. It splits testing and development.
 
-Yeah, x86 shouldnt be affected.
+So either the vbus code replaces virtio (for technical merits such 
+as performance and other details), or virtio is enhanced with the 
+vbus performance enhancements.
+
+> On paper, I don't think vbus really has any features over virtio.  
+> vbus does things in different ways (paravirtual bus vs. pci for 
+> discovery) but I think we're happy with how virtio does things 
+> today.
+>
+> I think the reason vbus gets better performance for networking 
+> today is that vbus' backends are in the kernel while virtio's 
+> backends are currently in userspace.  Since Michael has a 
+> functioning in-kernel backend for virtio-net now, I suspect we're 
+> weeks (maybe days) away from performance results.  My expectation 
+> is that vhost + virtio-net will be as good as venet + vbus.  If 
+> that's the case, then I don't see any reason to adopt vbus unless 
+> Greg things there are other compelling features over virtio.
+
+Keeping virtio's backend in user-space was rather stupid IMHO. 
+
+Having the _option_ to piggyback to user-space (for flexibility, 
+extensibility, etc.) is OK, but not having kernel acceleration is 
+bad.
 
 	Ingo
