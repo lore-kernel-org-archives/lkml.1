@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbZHPUGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbZHPUKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936AbZHPUGE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 16:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755882AbZHPUGD
+	id S1755925AbZHPUKO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 16:10:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523AbZHPUKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 16:06:03 -0400
-Received: from www.tglx.de ([62.245.132.106]:34745 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755880AbZHPUGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 16:06:02 -0400
-Date: Sun, 16 Aug 2009 22:05:59 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Michael Buesch <mb@bu3sch.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Threaded interrupt handlers broken?
-In-Reply-To: <200908161951.13988.mb@bu3sch.de>
-Message-ID: <alpine.LFD.2.00.0908162201220.2782@localhost.localdomain>
-References: <200908161153.14081.mb@bu3sch.de> <200908161546.46328.mb@bu3sch.de> <alpine.LFD.2.00.0908161601570.2782@localhost.localdomain> <200908161951.13988.mb@bu3sch.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 16 Aug 2009 16:10:13 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:47122 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754753AbZHPUKM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 16:10:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=AY7elF20qOxujFlEILalMdGUIob7gA50mE2YpW9AXyj9cKrF7yaOCKytgdGC4mbNeN
+         vpUUe/xwRsvST9lagdHDTqOnZVhZO7WRlloLPk3amxXtplkZwCipiJSkEETajWhI3uvm
+         LxiEcOlu2Tu6Ln2uoXko1TsrF5J4xXymtFnPc=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <4A885FD1.4030105@gmail.com>
+References: <1250002683-28554-1-git-send-email-mspang@csclub.uwaterloo.ca>
+	 <4A87FCAC.5070705@gmail.com>
+	 <118a63b80908160642j73568637n2f3fa97fc33d8e57@mail.gmail.com>
+	 <4A885FD1.4030105@gmail.com>
+Date: Sun, 16 Aug 2009 16:10:12 -0400
+X-Google-Sender-Auth: fd11b7e03532dba4
+Message-ID: <118a63b80908161310r69c0810fg247341f09ced8932@mail.gmail.com>
+Subject: Re: [PATCH] Revert netlink ABI change to gnet_stats_basic
+From: Michael Spang <mspang@csclub.uwaterloo.ca>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Aug 2009, Michael Buesch wrote:
-> On Sunday 16 August 2009 16:25:13 Thomas Gleixner wrote:
-> > On Sun, 16 Aug 2009, Michael Buesch wrote:
-> > > On Sunday 16 August 2009 15:22:29 Thomas Gleixner wrote:
-> > >
-> > > > > +		if (0&&unlikely(desc->status & IRQ_DISABLED)) {
-> > > > 
-> > > > So the interrupt is marked disabled. How do you setup the handler
-> > > > ?  And what does the primary handler do ? Can you post your driver
-> > > > code please?
-> > > 
-> > > This patch converts the b43 driver to threaded interrupts:
-> > > http://bu3sch.de/patches/wireless-testing/20090816-1535/patches/002-b43-threaded-irq-handler.patch
-> > 
-> > On the first glance this looks not too bad. the unlocked access to the
-> > irq status registers looks a bit scary, but that is not relevant for
-> > the problem at hand.
-> 
-> Yeah it does ;)
-> 
-> > > It kind of works with this hack applied to kernel/irq/manage.c
-> > 
-> > Hmm. Is the interrupt of the device shared ?
-> 
-> It's registered as shared, but on my machine it is not shared with anything else.
-> 
-> > If yes, what's the other 
-> > device on that interrupt line ? what puzzles me is the fact that the
-> > IRQ_DISABLED flag is set. Is there anything unusual in dmesg ?
-> 
-> Here's my current kernel log with the two patches applied:
-> http://bu3sch.de/misc/dmesg
+On Sun, Aug 16, 2009 at 3:36 PM, Eric Dumazet<eric.dumazet@gmail.com> wrote:
+> Michael Spang a écrit :
+>
+> OK, then we are stuck to use a separate definition for user land
+> and kernel land, or risk various side effects, like performance hit
+> and security risk.
+>
+> Thanks a lot Michael
+>
+> [PATCH] net: restore gnet_stats_basic to previous definition
 
-Hmm. Nothing interesting AFAICT, but it would be really interesting to
-find out why the IRQ_DISABLED flag is set.
+Applied it and it works for me, thanks.
 
-Can you add some debug into disable_irq() e.g. WARN_ON(irq ==
-BC43_IRQ_NR); so we can see what disables that interrupt.
-
-Thanks,
-
-	tglx
-
-
+Michael
