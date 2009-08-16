@@ -1,113 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbZHPUKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbZHPUOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbZHPUKc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 16:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbZHPUKc
+	id S1755973AbZHPUOM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 16:14:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755882AbZHPUOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 16:10:32 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:16268 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755955AbZHPUKb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 16:10:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=WQqtERYjLwUSa/xAfjDPjsFZTMWMnUhAwTkLgD93l16or6iH9ZCY5ygAGdKBgsoSGQ
-         PcptXECu3Y1rrUEeuQQdurHXuHGoS534kkuLmkfPsxgQ0sxHdgjWY7RwQi7JjmrP8C0R
-         gMLy9CB7NsJN0xDtQ+WM5SIWmL/s76nPEQ+wo=
-Message-ID: <4A8867B3.6020504@gmail.com>
-Date: Sun, 16 Aug 2009 17:10:27 -0300
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090725)
+	Sun, 16 Aug 2009 16:14:11 -0400
+Received: from cyrus.watson.org ([65.122.17.42]:60941 "EHLO cyrus.watson.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755790AbZHPUOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 16:14:10 -0400
+X-Greylist: delayed 450 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Aug 2009 16:14:10 EDT
+Date: Sun, 16 Aug 2009 21:06:41 +0100 (BST)
+From: Robert Watson <rwatson@FreeBSD.org>
+X-X-Sender: robert@fledge.watson.org
+To: Oliver Pinter <oliver.pntr@gmail.com>
+cc: David Wagner <daw@cs.berkeley.edu>, freebsd-hackers@FreeBSD.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Security: information leaks in /proc enable keystroke recovery
+In-Reply-To: <6101e8c40908151625s52ad9b83ue061de3fab97fbf8@mail.gmail.com>
+Message-ID: <alpine.BSF.2.00.0908162014030.1901@fledge.watson.org>
+References: <200908152221.n7FMLRuw005799@taverner.cs.berkeley.edu> <6101e8c40908151625s52ad9b83ue061de3fab97fbf8@mail.gmail.com>
+User-Agent: Alpine 2.00 (BSF 1167 2008-08-23)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, borislav.petkov@amd.com,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM
- CPUID bit
-References: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com> <tip-c74cb13b94118ec89e48849806356b67caa5ff86@git.kernel.org> <20090816064132.GA16278@elte.hu>
-In-Reply-To: <20090816064132.GA16278@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="621616949-1749418058-1250453201=:1901"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * tip-bot for Borislav Petkov <borislav.petkov@amd.com> wrote:
-> 
->> Commit-ID:  c74cb13b94118ec89e48849806356b67caa5ff86
->> Gitweb:     http://git.kernel.org/tip/c74cb13b94118ec89e48849806356b67caa5ff86
->> Author:     Borislav Petkov <borislav.petkov@amd.com>
->> AuthorDate: Fri, 14 Aug 2009 14:06:34 +0200
->> Committer:  Ingo Molnar <mingo@elte.hu>
->> CommitDate: Sat, 15 Aug 2009 18:43:59 +0200
->>
->> x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM CPUID bit
->>
->> fbd8b1819e80ac5a176d085fdddc3a34d1499318 turns off the bit for
->> /proc/cpuinfo. However, a proper/full fix would be to additionally
->> turn off the bit in the CPUID output so that future callers get
->> correct CPU features info.
->>
->> Do that by basically reversing what the BIOS wrongfully does at boot.
->>
->> Tested-by: Kevin Winchester <kjwinchester@gmail.com>
->> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
->> Cc: kjwinchester@gmail.com
->> Cc: mikpe@it.uu.se
->> Cc: brgerst@gmail.com
->> LKML-Reference: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com>
->> Signed-off-by: Ingo Molnar <mingo@elte.hu>
->>
->>
->> ---
->>  arch/x86/kernel/cpu/amd.c |   12 +++++++++++-
->>  1 files changed, 11 insertions(+), 1 deletions(-)
->>
->> diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
->> index 63fddcd..0ee63dd 100644
->> --- a/arch/x86/kernel/cpu/amd.c
->> +++ b/arch/x86/kernel/cpu/amd.c
->> @@ -404,9 +404,19 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
->>  		/*
->>  		 * Some BIOSes incorrectly force this feature, but only K8
->>  		 * revision D (model = 0x14) and later actually support it.
->> +		 * (AMD Erratum #110, docId: 25759).
->>  		 */
->> -		if (c->x86_model < 0x14)
->> +		if (c->x86_model < 0x14 && cpu_has(c, X86_FEATURE_LAHF_LM)) {
->> +			u64 val;
->> +
->>  			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
->> +			if (!rdmsrl_amd_safe(0xc001100d, &val)) {
->> +				val &= ~(1ULL << 32);
->> +				wrmsr_amd_safe(0xc001100d, (u32) val,
->> +							   (u32)(val >> 32));
->> +			}
->> +		}
->> +
->>  	}
->>  	if (c->x86 == 0x10 || c->x86 == 0x11)
->>  		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
-> 
-> -tip testing found this build bug caused by this patch:
-> 
-> arch/x86/kernel/cpu/amd.c: In function ‘init_amd’:
-> arch/x86/kernel/cpu/amd.c:417: error: implicit declaration of function ‘wrmsr_amd_safe’
-> 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I didn't see a notification that patch 1/2:
+--621616949-1749418058-1250453201=:1901
+Content-Type: TEXT/PLAIN; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 
- x86, msr: Add a AMD wrmsr with exception handling
 
-got applied before this patch.  That could be the cause of this failure.
+On Sun, 16 Aug 2009, Oliver Pinter wrote:
 
--- 
-Kevin Winchester
+> FreeBSD manages its process ﬁles more cautiously than Linux12 : it puts all 
+> register values into the ﬁle /proc/pid/regs that can only be read by the 
+> owner of a process, which blocks the information used by
 
+This is inaccurate, but largely in an academic sense.  The FreeBSD kernels 
+computes debug permissions between two processes from a number of factors, 
+including:
+
+- Comparison of uids (effective, real, saved)
+- Comparison of gids (effective, real, saved)
+- Subset check on the additional group set
+- Jail information
+- Mandatory access control policies
+
+There are some other checks that fit the pattern of credential comparison less 
+well:
+
+- We deny debugger activity during execve(2) as a robustness protection
+   against possible race conditions.
+
+- We have global policy controls, security.bsd.see_other_gids and
+   security.bsd.see_other_uids, which allow administrators to scope not just
+   debugging facilities, but also monitoring facilities.
+
+- We have a global policy control, security.bsd.unprivileged_proc_debug, to
+   disable debugging facilities for unprivileged users, on the grounds that (a)
+   this is sometimes a desirable system policy, and (b) all UNIX systems have
+   historically suffered from significant debugger security vulnerabilities and
+   this provides an easy work-around to use if that happens in the future.
+
+Which is to say: the UNIX file system permissions appearing in procfs are 
+purely decorative -- they roughly summarize, but do not implement, the above 
+checks.
+
+procfs is also deprecated in FreeBSD, and has not been mounted by default for 
+several major releases.  Instead, the system call interfaces ktrace(2), 
+ptrace(2), and sysctl(2) provide access to trace data, process debugging, and 
+process state (such as address space layout and file descriptor information). 
+Some legacy setgid kvm tools exist that use libkvm and /dev/kmem, but we are 
+eliminating these as quickly as we can; they may not follow the same policies 
+as those implemented in the kernel.
+
+The see_other_uids and see_other_gids policy sysctls narrow the policy on 
+inter-process visibility via monitoring controls -- however, 
+additional hardening is required to enforce this policy universally.  For 
+example, administrators will also need to limit access to logs, accounting 
+data, and so on, for this to be fully effective.
+
+Beyond this, and assuming the correct implementation of the above, we're into 
+the grounds of classic trusted OS covert channel analysis, against which no 
+COTS UNIX OSes I'm aware of are hardened.  This isn't to dismiss these attacks 
+as purely hypothetical -- we've seen some rather compelling examples of covert 
+channels being exploited in unexpected and remarkably practical ways in the 
+last few years (Steven Murdoch's "Hot or Not" paper takes the cake in that 
+regard, I think).
+
+However, this next step up from "the kernel doesn't reveal information on 
+processes from other users" involves scheduler hardening, consideration of 
+inter-CPU/core/thread cache interactions, and so on -- things that we don't 
+have a good research, let alone production, OS understanding of.  There are 
+tools in FreeBSD that can help with some of these issues -- for example, you 
+can use login classes to pin different users to different CPU threads, cores, 
+or packages.  However, this leaves the implementation of policy up to the 
+administrator, rather than simply allowing the administator to specify the 
+policy that mutually untrusting processes can't share CPUs with each other in 
+some window.
+
+Robert N M Watson
+Computer Laboratory
+University of Cambridge
+--621616949-1749418058-1250453201=:1901--
