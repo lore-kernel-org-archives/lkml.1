@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZHPDZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbZHPDl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbZHPDZb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 23:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbZHPDZb
+	id S1753811AbZHPDl2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 23:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbZHPDl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 23:25:31 -0400
-Received: from rtr.ca ([76.10.145.34]:52282 "EHLO mail.rtr.ca"
+	Sat, 15 Aug 2009 23:41:27 -0400
+Received: from mga03.intel.com ([143.182.124.21]:1778 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753559AbZHPDZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 23:25:30 -0400
-Message-ID: <4A877C29.1070706@rtr.ca>
-Date: Sat, 15 Aug 2009 23:25:29 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	id S1752242AbZHPDl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 23:41:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,388,1246863600"; 
+   d="scan'208";a="176232554"
+Date: Sun, 16 Aug 2009 11:28:22 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+Message-ID: <20090816032822.GB6888@localhost>
+References: <20090805024058.GA8886@localhost> <20090805155805.GC23385@random.random> <20090806100824.GO23385@random.random> <4A7AAE07.1010202@redhat.com> <20090806102057.GQ23385@random.random> <20090806105932.GA1569@localhost> <4A7AC201.4010202@redhat.com> <20090806130631.GB6162@localhost> <4A7AD79E.4020604@redhat.com>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-Cc: xfs@oss.sgi.com, linux-fsdevel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH, RFC] xfs: batched discard support
-References: <20090816004705.GA7347@infradead.org> <4A876255.10606@rtr.ca> <4A876CA9.20906@rtr.ca> <20090816022500.GA12392@infradead.org> <4A8773C4.6030409@rtr.ca>
-In-Reply-To: <4A8773C4.6030409@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A7AD79E.4020604@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Christoph Hellwig wrote:
->> On Sat, Aug 15, 2009 at 10:19:21PM -0400, Mark Lord wrote:
->>> Mark Lord wrote:
->>>> Christoph Hellwig wrote:
->>> ..
->>>>> Mark, any chance to try it?  Just create an XFS filesystem, age it a
->>>>> bit and then call the attached little trim.c program on the mountmoint
->>>>> (or any file inside the filesystem for that matter)
->>>> ..
->>>>
->>>> Looking at it now.  Thanks, Christoph!
->>> ..
->>>
->>> Fails to work on 64-bit kernel w/ 32-bit userspace (no compat ioctl).
->>> Rebuilding with 32-bit kernel now..
->>
->> The actual ioctl is compatible, just add the
->>
->>     case XFS_IOC_TRIM:
->>         return xfs_ioc_trim(mp, arg);
->>
->> to xfs_file_compat_ioctl().  I'll add this to the next spin of the patch.
-> ..
+On Thu, Aug 06, 2009 at 09:16:14PM +0800, Rik van Riel wrote:
+> Wu Fengguang wrote:
 > 
-> Peachy.  Rebuilding again now..
+> > I guess both schemes have unacceptable flaws.
+> > 
+> > For JVM/BIGMEM workload, most pages would be found referenced _all the time_.
+> > So the KEEP_MOST scheme could increase reclaim overheads by N=250 times;
+> > while the DROP_CONTINUOUS scheme is effectively zero cost.
 > 
-> Don't wait up for this .. I'll finish it on Sunday.  Bedtime.  :)
-..
+> The higher overhead may not be an issue on smaller systems,
+> or inside smaller cgroups inside large systems, when doing
+> cgroup reclaim.
 
-Mmm.. doesn't work on stock 2.6.31-rc6.
-It must also require Matthew's patches for discard/trim support.
+Right.
 
-Later.
+> > However, the DROP_CONTINUOUS scheme does bring more _indeterminacy_.
+> > It can behave vastly different on single active task and multi ones.
+> > It is short sighted and can be cheated by bursty activities.
+> 
+> The split LRU VM tries to avoid the bursty page aging as
+> much as possible, by doing background deactivating of
+> anonymous pages whenever we reclaim page cache pages and
+> the number of anonymous pages in the zone (or cgroup) is
+> low.
 
+Right, but I meant busty page allocations and accesses on them, which
+can make a large continuous segment of referenced pages in LRU list,
+say 50MB.  They may or may not be valuable as a whole, however a local
+algorithm may keep the first 4MB and drop the remaining 46MB.
+
+Thanks,
+Fengguang
