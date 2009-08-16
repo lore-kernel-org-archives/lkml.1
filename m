@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753063AbZHPAx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbZHPAxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753063AbZHPAx3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 20:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZHPAx2
+	id S1753181AbZHPAxh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 20:53:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbZHPAxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 20:53:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41188 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751441AbZHPAx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 20:53:28 -0400
-Message-ID: <4A875874.20401@kernel.org>
-Date: Sun, 16 Aug 2009 09:53:08 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Guillaume Knispel <gknispel@proformatique.com>
-CC: linux-kernel@vger.kernel.org, Miklos Szeredi <mszeredi@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] poll/select: initialize triggered field of struct poll_wqueues
-References: <20090815193024.121926e6@xilun.lan.proformatique.com>
-In-Reply-To: <20090815193024.121926e6@xilun.lan.proformatique.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 16 Aug 2009 00:53:08 +0000 (UTC)
+	Sat, 15 Aug 2009 20:53:36 -0400
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:51599 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753099AbZHPAxe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 20:53:34 -0400
+X-Greylist: delayed 562 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Aug 2009 20:53:34 EDT
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: Security: information leaks in /proc enable keystroke recovery
+Date: Sun, 16 Aug 2009 00:44:14 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <h67kou$ahr$1@taverner.cs.berkeley.edu>
+References: <200908152221.n7FMLRuw005799@taverner.cs.berkeley.edu> <20090816003326.GC7554@mit.edu>
+Reply-To: daw-news@cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1250383454 10811 128.32.168.222 (16 Aug 2009 00:44:14 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Sun, 16 Aug 2009 00:44:14 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guillaume Knispel wrote:
-> poll/select: initialize triggered field of struct poll_wqueues
-> 
-> The triggered field of struct poll_wqueues introduced in commit
-> 5f820f648c92a5ecc771a96b3c29aa6e90013bba "poll: allow f_op->poll to
-> sleep" was set to 1 in pollwake() (now __pollwake() ), tested and
-> later set to 0 in poll_schedule_timeout(), but not initialized before.
-> As a result when the process needs to sleep, triggered was likely to be
-> non-zero even if pollwake() is not called before the first
-> poll_schedule_timeout(), meaning schedule_hrtimeout_range() would not
-> be called and an extra loop calling all ->poll() would be done.
-> 
-> This patch initialize triggered to 0 in poll_initwait() so the ->poll()
-> are not called twice before the process goes to sleep when it needs to.
-> 
-> Signed-off-by: Guillaume Knispel <gknispel@proformatique.com>
+Theodore Tso  wrote:
+> A configuration option which defaults to disabling ESP and EIP would
+> be a simple way to prevent this specific instance of information
+> leakage.  The problem is there are other files that might reveal
+> timing information, but which are very useful for a system
+> administrator.  A key example of this is /proc/$pid/wchan, which is
+> responsible for the WCHAN column is a ps listing.
 
-Ah... nice spotting.
-
-Acked-by: Tejun Heo <tj@kernel.org>
-
-Thanks.
-
--- 
-tejun
+If they're useful for system administrators, would making them
+readable to root (but not everyone) be enough?
