@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbZHPCBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbZHPCPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbZHPCBV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 22:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZHPCBV
+	id S1753549AbZHPCPg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 22:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbZHPCPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 22:01:21 -0400
-Received: from ns.ariel-networks.com ([122.216.114.210]:46876 "EHLO
-	ns.ariel-networks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753480AbZHPCBU (ORCPT
+	Sat, 15 Aug 2009 22:15:35 -0400
+Received: from mail-px0-f196.google.com ([209.85.216.196]:59287 "EHLO
+	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753485AbZHPCPe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 22:01:20 -0400
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86 : omit duplicate processing at pte_pgprot()
-Message-Id: <20090816020122.0E8C637813C@ns.ariel-networks.com>
-Date: Sun, 16 Aug 2009 11:01:22 +0900 (JST)
-From: ohyama_sec@ariel-networks.com
+	Sat, 15 Aug 2009 22:15:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=scyMmkMC5YE42VxIzRu8d11z6RzsdCqb/Nr3EC6P2tHCEnJZt02ga8doVKyLGl09lD
+         n31VnGXN+fZQaPxSrRmMekwVtzbk+PDNcn0rn6OA2Cxko1EgFWfOsJCmZf1PdPTUSTCq
+         kH+kYmNKNbiclA+SqJfunElBk66Z//CnFKclU=
+Message-ID: <4A876BC3.3020407@gmail.com>
+Date: Sun, 16 Aug 2009 11:15:31 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+CC: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: ata_tf_read_block() question
+References: <20090815.224843.240484147.anemo@mba.ocn.ne.jp>
+In-Reply-To: <20090815.224843.240484147.anemo@mba.ocn.ne.jp>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for your genial response, and I'm sorry that I neglected to read Documentation/SubmittingPatches carefully.
-And I understood DCO.
+Hello, Atsushi.
 
->> I suggest following PATCH that omit duplicate processing of mask.
->>
->> pte_pgprot() macro [arch/x86/include/asm/pgtable.h] call pte_flags() [arch/x86/include/asm/pgtable_types.h] that return value is masked by PTE_FLAGS_MASK in pte_flags() function, and this macro also masks the returned value by PTE_FLAGS_MASK.
->> 
->
->It probably won't make any difference in practice, because gcc will do a
->common subexpression elimination for the "& PTE_FLAGS_MASK" between the
->inline function and its caller.  But it does tidy things up a bit.
->
->> I guess that we don't have to do the mask processing at pte_pgprot() macro because it has already been masked at pte_flags().
->> So, how about the following PATCH ?
->>
->> 	<Hiroyasu OHYAMA>
->> 
->
->Please add a proper Signed-off-by: line.
->
->Acked-by: Jeremy Fitzhardinge <jeremy@goop.org>
->
->J
+Atsushi Nemoto wrote:
+> I have a question on CHS calculation in ata_tf_read_block().
+> 
+> The calculation in ata_tf_read_block() is:
+> 	block = (cyl * dev->heads + head) * dev->sectors + sect;
+> 
+> but ata_build_rw_tf() does:
+> 	track = (u32)block / dev->sectors;
+> 	cyl   = track / dev->heads;
+> 	head  = track % dev->heads;
+> 	sect  = (u32)block % dev->sectors + 1;
+> 
+> It seems inconsistent.  The correct calculation is:
+> 	block = (cyl * dev->heads + head) * dev->sectors + sect - 1;
+> isn't it?
 
-Signed-off-by : Hiroyasu OHYAMA <hiroyasu.ohyama@gmail.com>
+Yes, indeed.
 
->> diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
->> index 3cc06e3..a0b454c 100644
->> --- a/arch/x86/include/asm/pgtable.h
->> +++ b/arch/x86/include/asm/pgtable.h
->> @@ -265,7 +265,7 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
->>         return __pgprot(preservebits | addbits);
->>          }
->>
->>          -#define pte_pgprot(x) __pgprot(pte_flags(x) & PTE_FLAGS_MASK)
->>          +#define pte_pgprot(x) __pgprot(pte_flags(x))
->>
->>           #define canon_pgprot(p) __pgprot(massage_pgprot(p))
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->> 
->
+> I don't have any real problem.  Just noticed by code reading.
+
+ata_tf_read_block() currently is used only when reporting failed block
+address to upper layer so off-by-one bug there wouldn't be too
+visible, especially for the venerable CHS addressing.
+
+Care to submit a patch w/ warning message and capping for sect == 0
+case?
+
+Thanks.
+
+-- 
+tejun
