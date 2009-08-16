@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932545AbZHPThp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932490AbZHPTfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932545AbZHPThp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 15:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932312AbZHPThn
+	id S932490AbZHPTfF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 15:35:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932346AbZHPTfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 15:37:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35753 "EHLO mx2.redhat.com"
+	Sun, 16 Aug 2009 15:35:01 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35820 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932230AbZHPTcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 15:32:02 -0400
+	id S932329AbZHPTcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 15:32:17 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        dm-devel@redhat.com, jens.axboe@oracle.com, ryov@valinux.co.jp,
@@ -20,370 +20,361 @@ Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
        dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
        vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
        jmarchan@redhat.com
-Subject: [RFC] IO scheduler based IO controller V8
-Date: Sun, 16 Aug 2009 15:30:22 -0400
-Message-Id: <1250451046-9966-1-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 10/24] io-controller: Debug hierarchical IO scheduling
+Date: Sun, 16 Aug 2009 15:30:32 -0400
+Message-Id: <1250451046-9966-11-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1250451046-9966-1-git-send-email-vgoyal@redhat.com>
+References: <1250451046-9966-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+o Littile debugging aid for hierarchical IO scheduling.
 
-Hi All,
+o Enabled under CONFIG_DEBUG_GROUP_IOSCHED
 
-Here is the V8 of the IO controller patches generated on top of 2.6.31-rc6.
+o Currently it outputs more debug messages in blktrace output which helps
+  a great deal in debugging in hierarchical setup. It also creates additional
+  cgroup interfaces io.disk_queue and io.disk_dequeue to output some more
+  debugging data.
 
-Previous versions of the patches was posted here.
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ block/Kconfig.iosched |    8 +++
+ block/elevator-fq.c   |  168 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ block/elevator-fq.h   |   29 +++++++++
+ 3 files changed, 202 insertions(+), 3 deletions(-)
 
-(V1) http://lkml.org/lkml/2009/3/11/486
-(V2) http://lkml.org/lkml/2009/5/5/275
-(V3) http://lkml.org/lkml/2009/5/26/472
-(V4) http://lkml.org/lkml/2009/6/8/580
-(V5) http://lkml.org/lkml/2009/6/19/279
-(V6) http://lkml.org/lkml/2009/7/2/369
-(V7) http://lkml.org/lkml/2009/7/24/253
-
-Changes from V7
-===============
-- Replaced BFQ with CFS+CFQ like hierarchical scheduler.
-
-  Moving to time domain as service parameter had broken BFQ's assumptions
-  about how long a queue runs (queue can run more than budget) and that in
-  turn has potential to break the O(1) gurantees of BFQ.
-
-  In addition, BFQ was relatively complex and not sure if benefits were
-  proportionate in time domain setup. Hence for the time being trying to
-  replace BFQ with a simpler scheduler and see how well does it perform.
-
-  This scheduler borrows the ideas from CFS and CFQ. Time slices to queues are
-  allocated based on their priority (like CFQ). These disk times are converted
-  to virtual disk time and we keep track of each queue's vdisktime and each
-  service tree's min_vdisktime to determine who has consumed how much disk
-  time and who should run next (like CFS).
-
-- Fixed few issues reported by Jerome Marchand.
-
-  Apart from this there are miscellaneous cleaups like getting rid of not so
-  necessary comments, function renames, debug code re-organization etc.
+diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
+index a91a807..a7d0bf8 100644
+--- a/block/Kconfig.iosched
++++ b/block/Kconfig.iosched
+@@ -90,6 +90,14 @@ config DEFAULT_IOSCHED
+ 	default "cfq" if DEFAULT_CFQ
+ 	default "noop" if DEFAULT_NOOP
  
-Limitations
-===========
-
-- This IO controller provides the bandwidth control at the IO scheduler
-  level (leaf node in stacked hiearchy of logical devices). So there can
-  be cases (depending on configuration) where application does not see
-  proportional BW division at higher logical level device.
-
-  LWN has written an article about the issue here.
-
-	http://lwn.net/Articles/332839/
-
-How to solve the issue of fairness at higher level logical devices
-==================================================================
-(Do we really need it? That's not where the contention for resources is.)
-
-Couple of suggestions have come forward.
-
-- Implement IO control at IO scheduler layer and then with the help of
-  some daemon, adjust the weight on underlying devices dynamiclly, depending
-  on what kind of BW gurantees are to be achieved at higher level logical
-  block devices.
-
-- Also implement a higher level IO controller along with IO scheduler
-  based controller and let user choose one depending on his needs.
-
-  A higher level controller does not know about the assumptions/policies
-  of unerldying IO scheduler, hence it has the potential to break down
-  the IO scheduler's policy with-in cgroup. A lower level controller
-  can work with IO scheduler much more closely and efficiently.
++config DEBUG_GROUP_IOSCHED
++	bool "Debug Hierarchical Scheduling support"
++	depends on CGROUPS && GROUP_IOSCHED
++	default n
++	---help---
++	  Enable some debugging hooks for hierarchical scheduling support.
++	  Currently it just outputs more information in blktrace output.
++
+ endmenu
  
-Other active IO controller developments
-=======================================
+ endif
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index de13d30..051a8c9 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -251,6 +251,91 @@ init_io_entity_service_tree(struct io_entity *entity, struct io_entity *parent)
+ 	entity->st = &parent_iog->sched_data.service_tree[idx];
+ }
+ 
++#ifdef CONFIG_DEBUG_GROUP_IOSCHED
++static void io_group_path(struct io_group *iog)
++{
++	unsigned short id = iog->iocg_id;
++	struct cgroup_subsys_state *css;
++
++	rcu_read_lock();
++
++	if (!id)
++		goto out;
++
++	css = css_lookup(&io_subsys, id);
++	if (!css)
++		goto out;
++
++	if (!css_tryget(css))
++		goto out;
++
++	cgroup_path(css->cgroup, iog->path, sizeof(iog->path));
++
++	css_put(css);
++
++	rcu_read_unlock();
++	return;
++out:
++	rcu_read_unlock();
++	iog->path[0] = '\0';
++	return;
++}
++
++static inline void debug_update_stats_enqueue(struct io_entity *entity)
++{
++	struct io_group *iog = iog_of(entity);
++
++	if (iog) {
++		struct elv_fq_data *efqd;
++
++		/*
++		 * Keep track of how many times a group has been added
++		 * to active tree.
++		 */
++		iog->queue++;
++
++		rcu_read_lock();
++		efqd = rcu_dereference(iog->key);
++		if (efqd)
++			elv_log_iog(efqd, iog, "add group weight=%u",
++					iog->entity.weight);
++		rcu_read_unlock();
++	}
++}
++
++static inline void debug_update_stats_dequeue(struct io_entity *entity)
++{
++	struct io_group *iog = iog_of(entity);
++
++	if (iog) {
++		struct elv_fq_data *efqd;
++
++		iog->dequeue++;
++		rcu_read_lock();
++		efqd = rcu_dereference(iog->key);
++		if (efqd)
++			elv_log_iog(efqd, iog, "del group weight=%u",
++					iog->entity.weight);
++		rcu_read_unlock();
++	}
++}
++
++static inline void print_ioq_service_stats(struct io_queue *ioq)
++{
++	struct io_group *iog = ioq_to_io_group(ioq);
++
++	elv_log_ioq(ioq->efqd, ioq, "service: QTt=0x%lx QTs=0x%lx GTt=0x%lx"
++		" GTs=0x%lx", ioq->entity.total_time, ioq->entity.total_sectors,
++		iog->entity.total_time, iog->entity.total_sectors);
++}
++
++#else /* DEBUG_GROUP_IOSCHED */
++static inline void io_group_path(struct io_group *iog) {}
++static inline void print_ioq_service_stats(struct io_queue *ioq) {}
++static inline void debug_update_stats_enqueue(struct io_entity *entity) {}
++static inline void debug_update_stats_dequeue(struct io_entity *entity) {}
++#endif /* DEBUG_GROUP_IOSCHED */
++
+ static void
+ entity_served(struct io_entity *entity, unsigned long served,
+ 				unsigned long nr_sectors)
+@@ -338,6 +423,7 @@ static void dequeue_io_entity(struct io_entity *entity)
+ 	entity->on_st = 0;
+ 	st->nr_active--;
+ 	sd->nr_active--;
++	debug_update_stats_dequeue(entity);
+ }
+ 
+ static void
+@@ -384,6 +470,7 @@ static void enqueue_io_entity(struct io_entity *entity)
+ 	entity->on_st = 1;
+ 	place_entity(st, entity, 0);
+ 	__enqueue_io_entity(st, entity);
++	debug_update_stats_enqueue(entity);
+ }
+ 
+ static struct io_entity *__lookup_next_io_entity(struct io_service_tree *st)
+@@ -540,6 +627,9 @@ EXPORT_SYMBOL(elv_put_ioq);
+ static void elv_ioq_served(struct io_queue *ioq, unsigned long served)
+ {
+ 	entity_served(&ioq->entity, served, ioq->nr_sectors);
++	elv_log_ioq(ioq->efqd, ioq, "ioq served: QSt=0x%lx QSs=0x%lx qued=%d",
++			served, ioq->nr_sectors, ioq->nr_queued);
++	print_ioq_service_stats(ioq);
+ }
+ 
+ /*
+@@ -793,7 +883,6 @@ io_cgroup_lookup_group(struct io_cgroup *iocg, void *key)
+ 	return NULL;
+ }
+ 
+-
+ #define SHOW_FUNCTION(__VAR)						\
+ static u64 io_cgroup_##__VAR##_read(struct cgroup *cgroup,		\
+ 				       struct cftype *cftype)		\
+@@ -913,6 +1002,64 @@ static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_DEBUG_GROUP_IOSCHED
++static int io_cgroup_disk_queue_read(struct cgroup *cgroup,
++			struct cftype *cftype, struct seq_file *m)
++{
++	struct io_cgroup *iocg = NULL;
++	struct io_group *iog = NULL;
++	struct hlist_node *n;
++
++	if (!cgroup_lock_live_group(cgroup))
++		return -ENODEV;
++
++	iocg = cgroup_to_io_cgroup(cgroup);
++	rcu_read_lock();
++	/* Loop through all the io groups and print statistics */
++	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
++		/*
++		 * There might be groups which are not functional and
++		 * waiting to be reclaimed upon cgoup deletion.
++		 */
++		if (iog->key)
++			seq_printf(m, "%u:%u %lu\n", MAJOR(iog->dev),
++					MINOR(iog->dev), iog->queue);
++	}
++	rcu_read_unlock();
++	cgroup_unlock();
++
++	return 0;
++}
++
++static int io_cgroup_disk_dequeue_read(struct cgroup *cgroup,
++			struct cftype *cftype, struct seq_file *m)
++{
++	struct io_cgroup *iocg = NULL;
++	struct io_group *iog = NULL;
++	struct hlist_node *n;
++
++	if (!cgroup_lock_live_group(cgroup))
++		return -ENODEV;
++
++	iocg = cgroup_to_io_cgroup(cgroup);
++	spin_lock_irq(&iocg->lock);
++	/* Loop through all the io groups and print statistics */
++	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
++		/*
++		 * There might be groups which are not functional and
++		 * waiting to be reclaimed upon cgoup deletion.
++		 */
++		if (iog->key)
++			seq_printf(m, "%u:%u %lu\n", MAJOR(iog->dev),
++					MINOR(iog->dev), iog->dequeue);
++	}
++	spin_unlock_irq(&iocg->lock);
++	cgroup_unlock();
++
++	return 0;
++}
++#endif
++
+ struct cftype io_files[] = {
+ 	{
+ 		.name = "weight",
+@@ -932,6 +1079,16 @@ struct cftype io_files[] = {
+ 		.name = "disk_sectors",
+ 		.read_seq_string = io_cgroup_disk_sectors_read,
+ 	},
++#ifdef CONFIG_DEBUG_GROUP_IOSCHED
++	{
++		.name = "disk_queue",
++		.read_seq_string = io_cgroup_disk_queue_read,
++	},
++	{
++		.name = "disk_dequeue",
++		.read_seq_string = io_cgroup_disk_dequeue_read,
++	},
++#endif
+ };
+ 
+ static int iocg_populate(struct cgroup_subsys *subsys, struct cgroup *cgroup)
+@@ -1059,6 +1216,7 @@ io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
+ 		 * or cgroup deletion path depending on who is exiting first.
+ 		 */
+ 		elv_get_iog(iog);
++		io_group_path(iog);
+ 
+ 		if (leaf == NULL) {
+ 			leaf = iog;
+@@ -1233,6 +1391,7 @@ static struct io_group *io_alloc_root_group(struct request_queue *q,
+ 	hlist_add_head_rcu(&iog->group_node, &iocg->group_data);
+ 	iog->iocg_id = css_id(&iocg->css);
+ 	spin_unlock_irq(&iocg->lock);
++	io_group_path(iog);
+ 
+ 	return iog;
+ }
+@@ -1519,6 +1678,7 @@ __elv_set_active_ioq(struct elv_fq_data *efqd, struct io_queue *ioq, int coop)
+ 				efqd->busy_queues, ioq->entity.ioprio_class,
+ 				ioq->entity.ioprio, ioq->entity.weight,
+ 				iog_weight(iog), ioq->nr_queued);
++		print_ioq_service_stats(ioq);
+ 
+ 		ioq->slice_start = ioq->slice_end = 0;
+ 		ioq->dispatch_start = jiffies;
+@@ -1577,10 +1737,11 @@ static void elv_add_ioq_busy(struct elv_fq_data *efqd, struct io_queue *ioq)
+ {
+ 	BUG_ON(elv_ioq_busy(ioq));
+ 	BUG_ON(ioq == efqd->active_queue);
+-	elv_log_ioq(efqd, ioq, "add to busy");
+ 	enqueue_ioq(ioq);
+ 	elv_mark_ioq_busy(ioq);
+ 	efqd->busy_queues++;
++	elv_log_ioq(efqd, ioq, "add to busy: qued=%d", ioq->nr_queued);
++	print_ioq_service_stats(ioq);
+ }
+ 
+ static void elv_del_ioq_busy(struct elevator_queue *e, struct io_queue *ioq)
+@@ -1589,7 +1750,8 @@ static void elv_del_ioq_busy(struct elevator_queue *e, struct io_queue *ioq)
+ 
+ 	BUG_ON(!elv_ioq_busy(ioq));
+ 	BUG_ON(ioq->nr_queued);
+-	elv_log_ioq(efqd, ioq, "del from busy");
++	elv_log_ioq(efqd, ioq, "del from busy: qued=%d", ioq->nr_queued);
++	print_ioq_service_stats(ioq);
+ 	elv_clear_ioq_busy(ioq);
+ 	BUG_ON(efqd->busy_queues == 0);
+ 	efqd->busy_queues--;
+diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+index e1d5bdd..0b6ecf5 100644
+--- a/block/elevator-fq.h
++++ b/block/elevator-fq.h
+@@ -113,6 +113,16 @@ struct io_group {
+ 
+ 	/* The device MKDEV(major, minor), this group has been created for */
+ 	dev_t	dev;
++#ifdef CONFIG_DEBUG_GROUP_IOSCHED
++	/* How many times this group has been added to active tree */
++	unsigned long queue;
++
++	/* How many times this group has been removed from active tree */
++	unsigned long dequeue;
++
++	/* Store cgroup path */
++	char path[128];
++#endif
+ };
+ 
+ struct io_cgroup {
+@@ -169,10 +179,29 @@ struct elv_fq_data {
+ };
+ 
+ /* Logging facilities. */
++#ifdef CONFIG_DEBUG_GROUP_IOSCHED
++#define elv_log_ioq(efqd, ioq, fmt, args...) \
++{								\
++	blk_add_trace_msg((efqd)->queue, "elv%d%c %s " fmt, (ioq)->pid,	\
++			elv_ioq_sync(ioq) ? 'S' : 'A', \
++			ioq_to_io_group(ioq)->path, ##args); \
++}
++
++#define elv_log_iog(efqd, iog, fmt, args...) \
++{                                                                      \
++	blk_add_trace_msg((efqd)->queue, "elv %s " fmt, (iog)->path, ##args); \
++}
++
++#else
+ #define elv_log_ioq(efqd, ioq, fmt, args...) \
+ 	blk_add_trace_msg((efqd)->queue, "elv%d%c " fmt, (ioq)->pid,	\
+ 				elv_ioq_sync(ioq) ? 'S' : 'A', ##args)
+ 
++#define elv_log_iog(efqd, iog, fmt, args...) \
++	blk_add_trace_msg((efqd)->queue, "elv " fmt, ##args)
++
++#endif
++
+ #define elv_log(efqd, fmt, args...) \
+ 	blk_add_trace_msg((efqd)->queue, "elv " fmt, ##args)
+ 
+-- 
+1.6.0.6
 
-IO throttling
--------------
-
-  This is a max bandwidth controller and not the proportional one. Secondly
-  it is a second level controller which can break the IO scheduler's
-  policy/assumtions with-in cgroup. 
-
-dm-ioband
----------
-
- This is a proportional bandwidth controller implemented as device mapper
- driver. It is also a second level controller which can break the
- IO scheduler's policy/assumptions with-in cgroup.
-
-TODO
-====
-- code cleanups, testing, bug fixing, optimizations, benchmarking etc...
-
-Testing
-=======
-
-I have been able to do some testing as follows. All my testing is with ext3
-file system with a SATA drive which supports queue depth of 31.
-
-Test1 (Isolation between two KVM virtual machines)
-==================================================
-Created two KVM virtual machines. Partitioned a disk on host in two partitions
-and gave one partition to each virtual machine. Put both the virtual machines
-in two different cgroup of weight 1000 and 500 each. Virtual machines created
-ext3 file system on the partitions exported from host and did buffered writes.
-Host seems writes as synchronous and virtual machine with higher weight gets
-double the disk time of virtual machine of lower weight. Used deadline
-scheduler in this test case.
-
-Some more details about configuration are in documentation patch.
-
-Test2 (Fairness for synchronous reads)
-======================================
-- Two dd in two cgroups with cgrop weights 1000 and 500. Ran two "dd" in those
-  cgroups (With CFQ scheduler and /sys/block/<device>/queue/fairness = 1)
-
-  Higher weight dd finishes first and at that point of time my script takes
-  care of reading cgroup files io.disk_time and io.disk_sectors for both the
-  groups and display the results.
-
-  dd if=/mnt/$BLOCKDEV/zerofile1 of=/dev/null &
-  dd if=/mnt/$BLOCKDEV/zerofile2 of=/dev/null &
-
-  group1 time=8:16 2452 group1 sectors=8:16 457856
-  group2 time=8:16 1317 group2 sectors=8:16 247008
-
-  234179072 bytes (234 MB) copied, 3.90912 s, 59.9 MB/s
-  234179072 bytes (234 MB) copied, 5.15548 s, 45.4 MB/s
-
-First two fields in time and sectors statistics represent major and minor
-number of the device. Third field represents disk time in milliseconds and
-number of sectors transferred respectively.
-
-This patchset tries to provide fairness in terms of disk time received. group1
-got almost double of group2 disk time (At the time of first dd finish). These
-time and sectors statistics can be read using io.disk_time and io.disk_sector
-files in cgroup. More about it in documentation file.
-
-Test3 (Reader Vs Buffered Writes)
-================================
-Buffered writes can be problematic and can overwhelm readers, especially with
-noop and deadline. IO controller can provide isolation between readers and
-buffered (async) writers.
-
-First I ran the test without io controller to see the severity of the issue.
-Ran a hostile writer and then after 10 seconds started a reader and then
-monitored the completion time of reader. Reader reads a 256 MB file. Tested
-this with noop scheduler.
-
-sample script
-------------
-sync
-echo 3 > /proc/sys/vm/drop_caches
-time dd if=/dev/zero of=/mnt/sdb/reader-writer-zerofile bs=4K count=2097152
-conv=fdatasync &
-sleep 10
-time dd if=/mnt/sdb/256M-file of=/dev/null &
-
-Results
--------
-8589934592 bytes (8.6 GB) copied, 106.045 s, 81.0 MB/s (Writer)
-268435456 bytes (268 MB) copied, 96.5237 s, 2.8 MB/s (Reader)
-
-Now it was time to test io controller whether it can provide isolation between
-readers and writers with noop. I created two cgroups of weight 1000 each and
-put reader in group1 and writer in group 2 and ran the test again. Upon
-comletion of reader, my scripts read io.disk_time and io.disk_sectors cgroup
-files to get an estimate how much disk time each group got and how many
-sectors each group did IO for. 
-
-For more accurate accounting of disk time for buffered writes with queuing
-hardware I had to set /sys/block/<disk>/queue/iosched/fairness to "1".
-
-sample script
--------------
-echo $$ > /cgroup/bfqio/test2/tasks
-dd if=/dev/zero of=/mnt/$BLOCKDEV/testzerofile bs=4K count=2097152 &
-sleep 10
-echo noop > /sys/block/$BLOCKDEV/queue/scheduler
-echo  1 > /sys/block/$BLOCKDEV/queue/iosched/fairness
-echo $$ > /cgroup/bfqio/test1/tasks
-dd if=/mnt/$BLOCKDEV/256M-file of=/dev/null &
-wait $!
-# Some code for reading cgroup files upon completion of reader.
--------------------------
-
-Results
-=======
-68435456 bytes (268 MB) copied, 6.87668 s, 39.0 MB/s
-
-group1 time=8:16 3719 group1 sectors=8:16 524816
-group2 time=8:16 3659 group2 sectors=8:16 638712
-
-Note, reader finishes now much lesser time and both group1 and group2
-got almost 3 seconds of disk time. Hence io-controller provides isolation
-from buffered writes.
-
-Test4 (AIO)
-===========
-
-AIO reads
------------
-Set up two fio, AIO read jobs in two cgroup with weight 1000 and 500
-respectively. I am using cfq scheduler. Following are some lines from my test
-script.
-
----------------------------------------------------------------
-echo 1000 > /cgroup/bfqio/test1/io.weight
-echo 500 > /cgroup/bfqio/test2/io.weight
-
-fio_args="--ioengine=libaio --rw=read --size=512M --direct=1"
-echo 1 > /sys/block/$BLOCKDEV/queue/iosched/fairness
-
-echo $$ > /cgroup/bfqio/test1/tasks
-fio $fio_args --name=test1 --directory=/mnt/$BLOCKDEV/fio1/
---output=/mnt/$BLOCKDEV/fio1/test1.log
---exec_postrun="../read-and-display-group-stats.sh $maj_dev $minor_dev" &
-
-echo $$ > /cgroup/bfqio/test2/tasks
-fio $fio_args --name=test2 --directory=/mnt/$BLOCKDEV/fio2/
---output=/mnt/$BLOCKDEV/fio2/test2.log &
-----------------------------------------------------------------
-
-test1 and test2 are two groups with weight 1000 and 500 respectively.
-"read-and-display-group-stats.sh" is one small script which reads the
-test1 and test2 cgroup files to determine how much disk time each group
-got till first fio job finished.
-
-Results
-------
-test1 statistics: time=8:16 17686   sectors=8:16 1049664
-test2 statistics: time=8:16 9036   sectors=8:16 585152
-
-Above shows that by the time first fio (higher weight), finished, group
-test1 got 17686 ms of disk time and group test2 got 9036 ms of disk time.
-similarly the statistics for number of sectors transferred are also shown.
-
-Note that disk time given to group test1 is almost double of group2 disk
-time.
-
-AIO writes
-----------
-Set up two fio, AIO direct write jobs in two cgroup with weight 1000 and 500
-respectively. I am using cfq scheduler. Following are some lines from my test
-script.
-
-------------------------------------------------
-echo 1000 > /cgroup/bfqio/test1/io.weight
-echo 500 > /cgroup/bfqio/test2/io.weight
-fio_args="--ioengine=libaio --rw=write --size=512M --direct=1"
-
-echo 1 > /sys/block/$BLOCKDEV/queue/iosched/fairness
-
-echo $$ > /cgroup/bfqio/test1/tasks
-fio $fio_args --name=test1 --directory=/mnt/$BLOCKDEV/fio1/
---output=/mnt/$BLOCKDEV/fio1/test1.log
---exec_postrun="../read-and-display-group-stats.sh $maj_dev $minor_dev" &
-
-echo $$ > /cgroup/bfqio/test2/tasks
-fio $fio_args --name=test2 --directory=/mnt/$BLOCKDEV/fio2/
---output=/mnt/$BLOCKDEV/fio2/test2.log &
--------------------------------------------------
-
-test1 and test2 are two groups with weight 1000 and 500 respectively.
-"read-and-display-group-stats.sh" is one small script which reads the
-test1 and test2 cgroup files to determine how much disk time each group
-got till first fio job finished.
-
-Following are the results.
-
-test1 statistics: time=8:16 25509   sectors=8:16 1049688
-test2 statistics: time=8:16 12863   sectors=8:16 527104
-
-Above shows that by the time first fio (higher weight), finished, group
-test1 got almost double the disk time of group test2.
-
-Test5 (Fairness for async writes, Buffered Write Vs Buffered Write)
-===================================================================
-Fairness for async writes is tricky and biggest reason is that async writes
-are cached in higher layers (page cahe) as well as possibly in file system
-layer also (btrfs, xfs etc), and are dispatched to lower layers not necessarily
-in proportional manner.
-
-For example, consider two dd threads reading /dev/zero as input file and doing
-writes of huge files. Very soon we will cross vm_dirty_ratio and dd thread will
-be forced to write out some pages to disk before more pages can be dirtied. But
-not necessarily dirty pages of same thread are picked. It can very well pick
-the inode of lesser priority dd thread and do some writeout. So effectively
-higher weight dd is doing writeouts of lower weight dd pages and we don't see
-service differentation.
-
-IOW, the core problem with async write fairness is that higher weight thread
-does not throw enought IO traffic at IO controller to keep the queue
-continuously backlogged. In my testing, there are many .2 to .8 second
-intervals where higher weight queue is empty and in that duration lower weight
-queue get lots of job done giving the impression that there was no service
-differentiation.
-
-In summary, from IO controller point of view async writes support is there.
-Because page cache has not been designed in such a manner that higher 
-prio/weight writer can do more write out as compared to lower prio/weight
-writer, gettting service differentiation is hard and it is visible in some
-cases and not visible in some cases.
-
-Do we really care that much for fairness among two writer cgroups? One can
-choose to do direct writes or sync writes if fairness for writes really
-matters for him.
-
-Following is the only case where it is hard to ensure fairness between cgroups.
-
-- Buffered writes Vs Buffered Writes.
-
-So to test async writes I created two partitions on a disk and created ext3
-file systems on both the partitions.  Also created two cgroups and generated
-lots of write traffic in two cgroups (50 fio threads) and watched the disk
-time statistics in respective cgroups at the interval of 2 seconds. Thanks to
-ryo tsuruta for the test case.
-
-*****************************************************************
-sync
-echo 3 > /proc/sys/vm/drop_caches
-
-fio_args="--size=64m --rw=write --numjobs=50 --group_reporting"
-
-echo $$ > /cgroup/bfqio/test1/tasks
-fio $fio_args --name=test1 --directory=/mnt/sdd1/fio/ --output=/mnt/sdd1/fio/test1.log &
-
-echo $$ > /cgroup/bfqio/test2/tasks
-fio $fio_args --name=test2 --directory=/mnt/sdd2/fio/ --output=/mnt/sdd2/fio/test2.log &
-*********************************************************************** 
-
-And watched the disk time and sector statistics for the both the cgroups
-every 2 seconds using a script. How is snippet from output.
-
-test1 statistics: time=8:16 1631   sectors=8:16 1680 dq=8:16 2
-test2 statistics: time=8:16 896   sectors=8:16 976 dq=8:16 1
-
-test1 statistics: time=8:16 6031   sectors=8:16 88536 dq=8:16 5
-test2 statistics: time=8:16 3192   sectors=8:16 4080 dq=8:16 1
-
-test1 statistics: time=8:16 10425   sectors=8:16 390496 dq=8:16 5
-test2 statistics: time=8:16 5272   sectors=8:16 77896 dq=8:16 4
-
-test1 statistics: time=8:16 15396   sectors=8:16 747256 dq=8:16 5
-test2 statistics: time=8:16 7852   sectors=8:16 235648 dq=8:16 4
-
-test1 statistics: time=8:16 20302   sectors=8:16 1180168 dq=8:16 5
-test2 statistics: time=8:16 10297   sectors=8:16 391208 dq=8:16 4
-
-test1 statistics: time=8:16 25244   sectors=8:16 1579928 dq=8:16 6
-test2 statistics: time=8:16 12748   sectors=8:16 613096 dq=8:16 4
-
-test1 statistics: time=8:16 30095   sectors=8:16 1927848 dq=8:16 6
-test2 statistics: time=8:16 15135   sectors=8:16 806112 dq=8:16 4
-
-First two fields in time and sectors statistics represent major and minor
-number of the device. Third field represents disk time in milliseconds and
-number of sectors transferred respectively.
-
-So disk time consumed by group1 is almost double of group2 in this case.
-
-Thanks
-Vivek
