@@ -1,537 +1,1331 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932200AbZHPTbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932292AbZHPTcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932200AbZHPTbk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 15:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755973AbZHPTbb
+	id S932292AbZHPTcH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 15:32:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932264AbZHPTcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 15:31:31 -0400
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:55539 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755897AbZHPTbR (ORCPT
+	Sun, 16 Aug 2009 15:32:04 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:45385 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932227AbZHPTb6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 15:31:17 -0400
+	Sun, 16 Aug 2009 15:31:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=qmA1QXFNrJQkmoxM199fxHpdsLhUVFwkg+WLQWDSWOBSlLnz8KcnZsVcqdBcvit/92
-         UqA5c5/KflSLSLwCX8T4uXty890mnGyt8QMxbSklqiW+K5cqQBDjDtMvQuzrjpbUUV3F
-         CxFXHEiww/N7ROo7IpX1UugWNnw5PpMBRgRoU=
+        b=eB6kiFost+3dg8YQhJh2utVGsEMudxoFqTSg4cVQRlRYD2ofo0yk8K3+6Zh0f5mMcF
+         xuDcNvOtc4s3G3S+7WPb4clgwSxPyJGHJOfLbKelPWw5igO5wU1knbYlQSsyIACAf9YT
+         lf3EP3jNzc6R5A8Afgy5lQnDKQhqf/o83q5FI=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: devel@driverdev.osuosl.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 16 Aug 2009 21:31:30 +0200
-Message-Id: <20090816193130.3789.20875.sendpatchset@localhost.localdomain>
+Date: Sun, 16 Aug 2009 21:32:09 +0200
+Message-Id: <20090816193209.3789.40153.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
 References: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
-Subject: [PATCH 16/22] Staging: rtxxx0: remove dead virtual adapter support
+Subject: [PATCH 22/22] Staging: rtxxx0: remove unused code
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtxxx0: remove dead virtual adapter support
-
-* remove dead virtual adapter support
-* remove needless rt28xx_ioctl() wrapper
-* remove superfluous NULL checks
+Subject: [PATCH] Staging: rtxxx0: remove unused code
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rt2860/rt_linux.h    |    6 
- drivers/staging/rt2860/rt_main_dev.c |   33 ---
- drivers/staging/rt2860/rtmp.h        |    5 
- drivers/staging/rt2860/sta_ioctl.c   |  293 -----------------------------------
- 4 files changed, 9 insertions(+), 328 deletions(-)
+ drivers/staging/rt2860/common/cmm_data.c   |  113 ----
+ drivers/staging/rt2860/common/cmm_sanity.c |  184 ------
+ drivers/staging/rt2860/common/cmm_wpa.c    |  794 -----------------------------
+ drivers/staging/rt2860/common/mlme.c       |    4 
+ drivers/staging/rt2860/rtmp.h              |   84 ---
+ drivers/staging/rt2860/rtmp_def.h          |    3 
+ 6 files changed, 1182 deletions(-)
 
-Index: b/drivers/staging/rt2860/rt_linux.h
+Index: b/drivers/staging/rt2860/common/cmm_data.c
 ===================================================================
---- a/drivers/staging/rt2860/rt_linux.h
-+++ b/drivers/staging/rt2860/rt_linux.h
-@@ -198,12 +198,6 @@ struct os_cookie {
- 	INT 					ioctl_if;
- };
+--- a/drivers/staging/rt2860/common/cmm_data.c
++++ b/drivers/staging/rt2860/common/cmm_data.c
+@@ -2017,119 +2017,6 @@ VOID	RTMPHandleRxCoherentInterrupt(
  
--typedef struct _VIRTUAL_ADAPTER
--{
--	struct net_device		*RtmpDev;
--	struct net_device		*VirtualDev;
--} VIRTUAL_ADAPTER, PVIRTUAL_ADAPTER;
+ 	DBGPRINT(RT_DEBUG_TRACE, ("<== RTMPHandleRxCoherentInterrupt \n"));
+ }
 -
- #undef  ASSERT
- #define ASSERT(x)
+-
+-VOID DBGPRINT_TX_RING(
+-	IN PRTMP_ADAPTER  pAd,
+-	IN UCHAR          QueIdx)
+-{
+-	UINT32		Ac0Base;
+-	UINT32		Ac0HwIdx = 0, Ac0SwIdx = 0, AC0freeIdx;
+-	int			i;
+-	PULONG	ptemp;
+-
+-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("=====================================================\n "  ));
+-	switch (QueIdx)
+-	{
+-		case QID_AC_BE:
+-			RTMP_IO_READ32(pAd, TX_BASE_PTR0, &Ac0Base);
+-			RTMP_IO_READ32(pAd, TX_CTX_IDX0, &Ac0SwIdx);
+-			RTMP_IO_READ32(pAd, TX_DTX_IDX0, &Ac0HwIdx);
+-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("All QID_AC_BE DESCRIPTOR  \n "  ));
+-			for (i=0;i<TX_RING_SIZE;i++)
+-			{
+-				ptemp= (PULONG)pAd->TxRing[QID_AC_BE].Cell[i].AllocVa;
+-				DBGPRINT_RAW(RT_DEBUG_TRACE, ("[%02d]  %08lx: %08lx: %08lx: %08lx\n " , i, *ptemp,*(ptemp+1),*(ptemp+2),*(ptemp+3)));
+-			}
+-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("  \n "  ));
+-			break;
+-		case QID_AC_BK:
+-			RTMP_IO_READ32(pAd, TX_BASE_PTR1, &Ac0Base);
+-			RTMP_IO_READ32(pAd, TX_CTX_IDX1, &Ac0SwIdx);
+-			RTMP_IO_READ32(pAd, TX_DTX_IDX1, &Ac0HwIdx);
+-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("All QID_AC_BK DESCRIPTOR  \n "  ));
+-			for (i=0;i<TX_RING_SIZE;i++)
+-			{
+-				ptemp= (PULONG)pAd->TxRing[QID_AC_BK].Cell[i].AllocVa;
+-				DBGPRINT_RAW(RT_DEBUG_TRACE, ("[%02d]  %08lx: %08lx: %08lx: %08lx\n " , i, *ptemp,*(ptemp+1),*(ptemp+2),*(ptemp+3)));
+-			}
+-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("  \n "  ));
+-			break;
+-		case QID_AC_VI:
+-			RTMP_IO_READ32(pAd, TX_BASE_PTR2, &Ac0Base);
+-			RTMP_IO_READ32(pAd, TX_CTX_IDX2, &Ac0SwIdx);
+-			RTMP_IO_READ32(pAd, TX_DTX_IDX2, &Ac0HwIdx);
+-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("All QID_AC_VI DESCRIPTOR \n "  ));
+-			for (i=0;i<TX_RING_SIZE;i++)
+-			{
+-				ptemp= (PULONG)pAd->TxRing[QID_AC_VI].Cell[i].AllocVa;
+-				DBGPRINT_RAW(RT_DEBUG_TRACE, ("[%02d]  %08lx: %08lx: %08lx: %08lx\n " , i, *ptemp,*(ptemp+1),*(ptemp+2),*(ptemp+3)));
+-			}
+-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("  \n "  ));
+-			break;
+-		case QID_AC_VO:
+-			RTMP_IO_READ32(pAd, TX_BASE_PTR3, &Ac0Base);
+-			RTMP_IO_READ32(pAd, TX_CTX_IDX3, &Ac0SwIdx);
+-			RTMP_IO_READ32(pAd, TX_DTX_IDX3, &Ac0HwIdx);
+-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("All QID_AC_VO DESCRIPTOR \n "  ));
+-			for (i=0;i<TX_RING_SIZE;i++)
+-			{
+-				ptemp= (PULONG)pAd->TxRing[QID_AC_VO].Cell[i].AllocVa;
+-				DBGPRINT_RAW(RT_DEBUG_TRACE, ("[%02d]  %08lx: %08lx: %08lx: %08lx\n " , i, *ptemp,*(ptemp+1),*(ptemp+2),*(ptemp+3)));
+-			}
+-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("  \n "  ));
+-			break;
+-		case QID_MGMT:
+-			RTMP_IO_READ32(pAd, TX_BASE_PTR5, &Ac0Base);
+-			RTMP_IO_READ32(pAd, TX_CTX_IDX5, &Ac0SwIdx);
+-			RTMP_IO_READ32(pAd, TX_DTX_IDX5, &Ac0HwIdx);
+-			DBGPRINT_RAW(RT_DEBUG_TRACE, (" All QID_MGMT  DESCRIPTOR \n "  ));
+-			for (i=0;i<MGMT_RING_SIZE;i++)
+-			{
+-				ptemp= (PULONG)pAd->MgmtRing.Cell[i].AllocVa;
+-				DBGPRINT_RAW(RT_DEBUG_TRACE, ("[%02d]  %08lx: %08lx: %08lx: %08lx\n " , i, *ptemp,*(ptemp+1),*(ptemp+2),*(ptemp+3)));
+-			}
+-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("  \n "  ));
+-			break;
+-
+-		default:
+-			DBGPRINT_ERR(("DBGPRINT_TX_RING(Ring %d) not supported\n", QueIdx));
+-			break;
+-	}
+-	AC0freeIdx = pAd->TxRing[QueIdx].TxSwFreeIdx;
+-
+-	DBGPRINT(RT_DEBUG_TRACE,("TxRing%d, TX_DTX_IDX=%d, TX_CTX_IDX=%d\n", QueIdx, Ac0HwIdx, Ac0SwIdx));
+-	DBGPRINT_RAW(RT_DEBUG_TRACE,(" 	TxSwFreeIdx[%d]", AC0freeIdx));
+-	DBGPRINT_RAW(RT_DEBUG_TRACE,("	pending-NDIS=%ld\n", pAd->RalinkCounters.PendingNdisPacketCount));
+-
+-
+-}
+-
+-
+-VOID DBGPRINT_RX_RING(
+-	IN PRTMP_ADAPTER  pAd)
+-{
+-	UINT32		Ac0Base;
+-	UINT32		Ac0HwIdx = 0, Ac0SwIdx = 0, AC0freeIdx;
+-	int			i;
+-	UINT32	*ptemp;
+-
+-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("=====================================================\n "  ));
+-	RTMP_IO_READ32(pAd, RX_BASE_PTR, &Ac0Base);
+-	RTMP_IO_READ32(pAd, RX_CRX_IDX, &Ac0SwIdx);
+-	RTMP_IO_READ32(pAd, RX_DRX_IDX, &Ac0HwIdx);
+-	AC0freeIdx = pAd->RxRing.RxSwReadIdx;
+-
+-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("All RX DSP  \n "  ));
+-	for (i=0;i<RX_RING_SIZE;i++)
+-	{
+-		ptemp = (UINT32 *)pAd->RxRing.Cell[i].AllocVa;
+-		DBGPRINT_RAW(RT_DEBUG_TRACE, ("[%02d]  %08x: %08x: %08x: %08x\n " , i, *ptemp,*(ptemp+1),*(ptemp+2),*(ptemp+3)));
+-	}
+-	DBGPRINT(RT_DEBUG_TRACE,("RxRing, RX_DRX_IDX=%d, RX_CRX_IDX=%d \n", Ac0HwIdx, Ac0SwIdx));
+-	DBGPRINT_RAW(RT_DEBUG_TRACE,(" 	RxSwReadIdx [%d]=", AC0freeIdx));
+-	DBGPRINT_RAW(RT_DEBUG_TRACE,("	pending-NDIS=%ld\n", pAd->RalinkCounters.PendingNdisPacketCount));
+-}
+ #endif /* RT2860 */
  
-Index: b/drivers/staging/rt2860/rt_main_dev.c
+ /*
+Index: b/drivers/staging/rt2860/common/cmm_sanity.c
 ===================================================================
---- a/drivers/staging/rt2860/rt_main_dev.c
-+++ b/drivers/staging/rt2860/rt_main_dev.c
-@@ -670,7 +670,7 @@ err:
- static const struct net_device_ops rt2860_netdev_ops = {
- 	.ndo_open		= MainVirtualIF_open,
- 	.ndo_stop		= MainVirtualIF_close,
--	.ndo_do_ioctl		= rt28xx_ioctl,
-+	.ndo_do_ioctl		= rt28xx_sta_ioctl,
- 	.ndo_get_stats		= RT28xx_get_ether_stats,
- 	.ndo_validate_addr	= NULL,
- 	.ndo_set_mac_address	= eth_mac_addr,
-@@ -970,37 +970,6 @@ void tbtt_tasklet(unsigned long data)
+--- a/drivers/staging/rt2860/common/cmm_sanity.c
++++ b/drivers/staging/rt2860/common/cmm_sanity.c
+@@ -1052,187 +1052,3 @@ NDIS_802_11_NETWORK_TYPE NetworkTypeInUs
  
+ 	return NetWorkType;
+ }
+-
+-/*
+-    ==========================================================================
+-    Description:
+-        WPA message sanity check
+-    Return:
+-        TRUE if all parameters are OK, FALSE otherwise
+-    ==========================================================================
+- */
+-BOOLEAN PeerWpaMessageSanity(
+-    IN 	PRTMP_ADAPTER 		pAd,
+-    IN 	PEAPOL_PACKET 		pMsg,
+-    IN 	ULONG 				MsgLen,
+-    IN 	UCHAR				MsgType,
+-    IN 	MAC_TABLE_ENTRY  	*pEntry)
+-{
+-	UCHAR			mic[LEN_KEY_DESC_MIC], digest[80], KEYDATA[MAX_LEN_OF_RSNIE];
+-	BOOLEAN			bReplayDiff = FALSE;
+-	BOOLEAN			bWPA2 = FALSE;
+-	KEY_INFO		EapolKeyInfo;
+-	UCHAR			GroupKeyIndex = 0;
+-
+-
+-	NdisZeroMemory(mic, sizeof(mic));
+-	NdisZeroMemory(digest, sizeof(digest));
+-	NdisZeroMemory(KEYDATA, sizeof(KEYDATA));
+-	NdisZeroMemory((PUCHAR)&EapolKeyInfo, sizeof(EapolKeyInfo));
+-
+-	NdisMoveMemory((PUCHAR)&EapolKeyInfo, (PUCHAR)&pMsg->KeyDesc.KeyInfo, sizeof(KEY_INFO));
+-
+-	*((USHORT *)&EapolKeyInfo) = cpu2le16(*((USHORT *)&EapolKeyInfo));
+-
+-	// Choose WPA2 or not
+-	if ((pEntry->AuthMode == Ndis802_11AuthModeWPA2) || (pEntry->AuthMode == Ndis802_11AuthModeWPA2PSK))
+-		bWPA2 = TRUE;
+-
+-	// 0. Check MsgType
+-	if ((MsgType > EAPOL_GROUP_MSG_2) || (MsgType < EAPOL_PAIR_MSG_1))
+-	{
+-		DBGPRINT(RT_DEBUG_ERROR, ("The message type is invalid(%d)! \n", MsgType));
+-		return FALSE;
+-	}
+-
+-	// 1. Replay counter check
+- 	if (MsgType == EAPOL_PAIR_MSG_1 || MsgType == EAPOL_PAIR_MSG_3 || MsgType == EAPOL_GROUP_MSG_1)	// For supplicant
+-    {
+-    	// First validate replay counter, only accept message with larger replay counter.
+-		// Let equal pass, some AP start with all zero replay counter
+-		UCHAR	ZeroReplay[LEN_KEY_DESC_REPLAY];
+-
+-        NdisZeroMemory(ZeroReplay, LEN_KEY_DESC_REPLAY);
+-		if ((RTMPCompareMemory(pMsg->KeyDesc.ReplayCounter, pEntry->R_Counter, LEN_KEY_DESC_REPLAY) != 1) &&
+-			(RTMPCompareMemory(pMsg->KeyDesc.ReplayCounter, ZeroReplay, LEN_KEY_DESC_REPLAY) != 0))
+-    	{
+-			bReplayDiff = TRUE;
+-    	}
+- 	}
+-	else if (MsgType == EAPOL_PAIR_MSG_2 || MsgType == EAPOL_PAIR_MSG_4 || MsgType == EAPOL_GROUP_MSG_2)	// For authenticator
+-	{
+-		// check Replay Counter coresponds to MSG from authenticator, otherwise discard
+-    	if (!NdisEqualMemory(pMsg->KeyDesc.ReplayCounter, pEntry->R_Counter, LEN_KEY_DESC_REPLAY))
+-    	{
+-			bReplayDiff = TRUE;
+-    	}
+-	}
+-
+-	// Replay Counter different condition
+-	if (bReplayDiff)
+-	{
+-		// send wireless event - for replay counter different
+-		if (pAd->CommonCfg.bWirelessEvent)
+-			RTMPSendWirelessEvent(pAd, IW_REPLAY_COUNTER_DIFF_EVENT_FLAG, pEntry->Addr, pEntry->apidx, 0);
+-
+-		if (MsgType < EAPOL_GROUP_MSG_1)
+-		{
+-           	DBGPRINT(RT_DEBUG_ERROR, ("Replay Counter Different in pairwise msg %d of 4-way handshake!\n", MsgType));
+-		}
+-		else
+-		{
+-			DBGPRINT(RT_DEBUG_ERROR, ("Replay Counter Different in group msg %d of 2-way handshake!\n", (MsgType - EAPOL_PAIR_MSG_4)));
+-		}
+-
+-		hex_dump("Receive replay counter ", pMsg->KeyDesc.ReplayCounter, LEN_KEY_DESC_REPLAY);
+-		hex_dump("Current replay counter ", pEntry->R_Counter, LEN_KEY_DESC_REPLAY);
+-        return FALSE;
+-	}
+-
+-	// 2. Verify MIC except Pairwise Msg1
+-	if (MsgType != EAPOL_PAIR_MSG_1)
+-	{
+-		UCHAR			rcvd_mic[LEN_KEY_DESC_MIC];
+-
+-		// Record the received MIC for check later
+-		NdisMoveMemory(rcvd_mic, pMsg->KeyDesc.KeyMic, LEN_KEY_DESC_MIC);
+-		NdisZeroMemory(pMsg->KeyDesc.KeyMic, LEN_KEY_DESC_MIC);
+-
+-        if (pEntry->WepStatus == Ndis802_11Encryption2Enabled)	// TKIP
+-        {
+-            hmac_md5(pEntry->PTK, LEN_EAP_MICK, (PUCHAR)pMsg, MsgLen, mic);
+-        }
+-        else if (pEntry->WepStatus == Ndis802_11Encryption3Enabled)	// AES
+-        {
+-            HMAC_SHA1((PUCHAR)pMsg, MsgLen, pEntry->PTK, LEN_EAP_MICK, digest);
+-            NdisMoveMemory(mic, digest, LEN_KEY_DESC_MIC);
+-        }
+-
+-        if (!NdisEqualMemory(rcvd_mic, mic, LEN_KEY_DESC_MIC))
+-        {
+-			// send wireless event - for MIC different
+-			if (pAd->CommonCfg.bWirelessEvent)
+-				RTMPSendWirelessEvent(pAd, IW_MIC_DIFF_EVENT_FLAG, pEntry->Addr, pEntry->apidx, 0);
+-
+-			if (MsgType < EAPOL_GROUP_MSG_1)
+-			{
+-            	DBGPRINT(RT_DEBUG_ERROR, ("MIC Different in pairwise msg %d of 4-way handshake!\n", MsgType));
+-			}
+-			else
+-			{
+-				DBGPRINT(RT_DEBUG_ERROR, ("MIC Different in group msg %d of 2-way handshake!\n", (MsgType - EAPOL_PAIR_MSG_4)));
+-			}
+-
+-			hex_dump("Received MIC", rcvd_mic, LEN_KEY_DESC_MIC);
+-			hex_dump("Desired  MIC", mic, LEN_KEY_DESC_MIC);
+-
+-			return FALSE;
+-        }
+-	}
+-
+-	// Extract the context of the Key Data field if it exist
+-	// The field in pairwise_msg_2_WPA1(WPA2) & pairwise_msg_3_WPA1 is un-encrypted.
+-	// The field in group_msg_1_WPA1(WPA2) & pairwise_msg_3_WPA2 is encrypted.
+-	if (pMsg->KeyDesc.KeyDataLen[1] > 0)
+-	{
+-		// Decrypt this field
+-		if ((MsgType == EAPOL_PAIR_MSG_3 && bWPA2) || (MsgType == EAPOL_GROUP_MSG_1))
+-		{
+-			if(pEntry->WepStatus == Ndis802_11Encryption3Enabled)
+-			{
+-				// AES
+-				AES_GTK_KEY_UNWRAP(&pEntry->PTK[16], KEYDATA, pMsg->KeyDesc.KeyDataLen[1],pMsg->KeyDesc.KeyData);
+-			}
+-			else
+-			{
+-				INT 	i;
+-				UCHAR   Key[32];
+-				// Decrypt TKIP GTK
+-				// Construct 32 bytes RC4 Key
+-				NdisMoveMemory(Key, pMsg->KeyDesc.KeyIv, 16);
+-				NdisMoveMemory(&Key[16], &pEntry->PTK[16], 16);
+-				ARCFOUR_INIT(&pAd->PrivateInfo.WEPCONTEXT, Key, 32);
+-				//discard first 256 bytes
+-				for(i = 0; i < 256; i++)
+-					ARCFOUR_BYTE(&pAd->PrivateInfo.WEPCONTEXT);
+-				// Decrypt GTK. Becareful, there is no ICV to check the result is correct or not
+-				ARCFOUR_DECRYPT(&pAd->PrivateInfo.WEPCONTEXT, KEYDATA, pMsg->KeyDesc.KeyData, pMsg->KeyDesc.KeyDataLen[1]);
+-			}
+-
+-			if (!bWPA2 && (MsgType == EAPOL_GROUP_MSG_1))
+-				GroupKeyIndex = EapolKeyInfo.KeyIndex;
+-
+-		}
+-		else if ((MsgType == EAPOL_PAIR_MSG_2) || (MsgType == EAPOL_PAIR_MSG_3 && !bWPA2))
+-		{
+-			NdisMoveMemory(KEYDATA, pMsg->KeyDesc.KeyData, pMsg->KeyDesc.KeyDataLen[1]);
+-		}
+-		else
+-		{
+-
+-			return TRUE;
+-		}
+-
+-		// Parse Key Data field to
+-		// 1. verify RSN IE for pairwise_msg_2_WPA1(WPA2) ,pairwise_msg_3_WPA1(WPA2)
+-		// 2. verify KDE format for pairwise_msg_3_WPA2, group_msg_1_WPA2
+-		// 3. update shared key for pairwise_msg_3_WPA2, group_msg_1_WPA1(WPA2)
+-		if (!RTMPParseEapolKeyData(pAd, KEYDATA, pMsg->KeyDesc.KeyDataLen[1], GroupKeyIndex, MsgType, bWPA2, pEntry))
+-		{
+-			return FALSE;
+-		}
+-	}
+-
+-	return TRUE;
+-
+-}
+Index: b/drivers/staging/rt2860/common/cmm_wpa.c
+===================================================================
+--- a/drivers/staging/rt2860/common/cmm_wpa.c
++++ b/drivers/staging/rt2860/common/cmm_wpa.c
+@@ -771,70 +771,6 @@ BOOLEAN RTMPCheckWPAframe(
+     return TRUE;
  }
  
--INT rt28xx_ioctl(
--	IN	struct net_device	*net_dev,
--	IN	OUT	struct ifreq	*rq,
--	IN	INT					cmd)
--{
--	VIRTUAL_ADAPTER	*pVirtualAd = NULL;
--	RTMP_ADAPTER	*pAd = NULL;
--	INT				ret = 0;
 -
--	if (net_dev->priv_flags == INT_MAIN)
+-/*
+-    ==========================================================================
+-    Description:
+-        ENCRYPT AES GTK before sending in EAPOL frame.
+-        AES GTK length = 128 bit,  so fix blocks for aes-key-wrap as 2 in this function.
+-        This function references to RFC 3394 for aes key wrap algorithm.
+-    Return:
+-    ==========================================================================
+-*/
+-VOID AES_GTK_KEY_WRAP(
+-    IN UCHAR    *key,
+-    IN UCHAR    *plaintext,
+-    IN UCHAR    p_len,
+-    OUT UCHAR   *ciphertext)
+-{
+-    UCHAR       A[8], BIN[16], BOUT[16];
+-    UCHAR       R[512];
+-    INT         num_blocks = p_len/8;   // unit:64bits
+-    INT         i, j;
+-    aes_context aesctx;
+-    UCHAR       xor;
+-
+-    rtmp_aes_set_key(&aesctx, key, 128);
+-
+-    // Init IA
+-    for (i = 0; i < 8; i++)
+-        A[i] = 0xa6;
+-
+-    //Input plaintext
+-    for (i = 0; i < num_blocks; i++)
+-    {
+-        for (j = 0 ; j < 8; j++)
+-            R[8 * (i + 1) + j] = plaintext[8 * i + j];
+-    }
+-
+-    // Key Mix
+-    for (j = 0; j < 6; j++)
+-    {
+-        for(i = 1; i <= num_blocks; i++)
+-        {
+-            //phase 1
+-            NdisMoveMemory(BIN, A, 8);
+-            NdisMoveMemory(&BIN[8], &R[8 * i], 8);
+-            rtmp_aes_encrypt(&aesctx, BIN, BOUT);
+-
+-            NdisMoveMemory(A, &BOUT[0], 8);
+-            xor = num_blocks * j + i;
+-            A[7] = BOUT[7] ^ xor;
+-            NdisMoveMemory(&R[8 * i], &BOUT[8], 8);
+-        }
+-    }
+-
+-    // Output ciphertext
+-    NdisMoveMemory(ciphertext, A, 8);
+-
+-    for (i = 1; i <= num_blocks; i++)
+-    {
+-        for (j = 0 ; j < 8; j++)
+-            ciphertext[8 * i + j] = R[8 * i + j];
+-    }
+-}
+-
+-
+ /*
+ 	========================================================================
+ 
+@@ -906,733 +842,3 @@ VOID	AES_GTK_KEY_UNWRAP(
+ 
+ 	os_free_mem(NULL, R);
+ }
+-
+-/*
+-    ==========================================================================
+-    Description:
+-		Report the EAP message type
+-
+-	Arguments:
+-		msg		-	EAPOL_PAIR_MSG_1
+-					EAPOL_PAIR_MSG_2
+-					EAPOL_PAIR_MSG_3
+-					EAPOL_PAIR_MSG_4
+-					EAPOL_GROUP_MSG_1
+-					EAPOL_GROUP_MSG_2
+-
+-    Return:
+-         message type string
+-
+-    ==========================================================================
+-*/
+-CHAR *GetEapolMsgType(CHAR msg)
+-{
+-    if(msg == EAPOL_PAIR_MSG_1)
+-        return "Pairwise Message 1";
+-    else if(msg == EAPOL_PAIR_MSG_2)
+-        return "Pairwise Message 2";
+-	else if(msg == EAPOL_PAIR_MSG_3)
+-        return "Pairwise Message 3";
+-	else if(msg == EAPOL_PAIR_MSG_4)
+-        return "Pairwise Message 4";
+-	else if(msg == EAPOL_GROUP_MSG_1)
+-        return "Group Message 1";
+-	else if(msg == EAPOL_GROUP_MSG_2)
+-        return "Group Message 2";
+-    else
+-    	return "Invalid Message";
+-}
+-
+-
+-/*
+-    ========================================================================
+-
+-    Routine Description:
+-    Check Sanity RSN IE of EAPoL message
+-
+-    Arguments:
+-
+-    Return Value:
+-
+-
+-    ========================================================================
+-*/
+-BOOLEAN RTMPCheckRSNIE(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  PUCHAR          pData,
+-	IN  UCHAR           DataLen,
+-	IN  MAC_TABLE_ENTRY *pEntry,
+-	OUT	UCHAR			*Offset)
+-{
+-	PUCHAR              pVIE;
+-	UCHAR               len;
+-	PEID_STRUCT         pEid;
+-	BOOLEAN				result = FALSE;
+-
+-	pVIE = pData;
+-	len	 = DataLen;
+-	*Offset = 0;
+-
+-	while (len > sizeof(RSNIE2))
 -	{
--		pAd = net_dev->ml_priv;
+-		pEid = (PEID_STRUCT) pVIE;
+-		// WPA RSN IE
+-		if ((pEid->Eid == IE_WPA) && (NdisEqualMemory(pEid->Octet, WPA_OUI, 4)))
+-		{
+-			if ((pEntry->AuthMode == Ndis802_11AuthModeWPA || pEntry->AuthMode == Ndis802_11AuthModeWPAPSK) &&
+-				(NdisEqualMemory(pVIE, pEntry->RSN_IE, pEntry->RSNIE_Len)) &&
+-				(pEntry->RSNIE_Len == (pEid->Len + 2)))
+-			{
+-					result = TRUE;
+-			}
+-
+-			*Offset += (pEid->Len + 2);
+-		}
+-		// WPA2 RSN IE
+-		else if ((pEid->Eid == IE_RSN) && (NdisEqualMemory(pEid->Octet + 2, RSN_OUI, 3)))
+-		{
+-			if ((pEntry->AuthMode == Ndis802_11AuthModeWPA2 || pEntry->AuthMode == Ndis802_11AuthModeWPA2PSK) &&
+-				(NdisEqualMemory(pVIE, pEntry->RSN_IE, pEntry->RSNIE_Len)) &&
+-				(pEntry->RSNIE_Len == (pEid->Len + 2))/* ToDo-AlbertY for mesh*/)
+-			{
+-					result = TRUE;
+-			}
+-
+-			*Offset += (pEid->Len + 2);
+-		}
+-		else
+-		{
+-			break;
+-		}
+-
+-		pVIE += (pEid->Len + 2);
+-		len  -= (pEid->Len + 2);
+-	}
+-
+-
+-	return result;
+-
+-}
+-
+-
+-/*
+-    ========================================================================
+-
+-    Routine Description:
+-    Parse KEYDATA field.  KEYDATA[] May contain 2 RSN IE and optionally GTK.
+-    GTK  is encaptulated in KDE format at  p.83 802.11i D10
+-
+-    Arguments:
+-
+-    Return Value:
+-
+-    Note:
+-        802.11i D10
+-
+-    ========================================================================
+-*/
+-BOOLEAN RTMPParseEapolKeyData(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  PUCHAR          pKeyData,
+-	IN  UCHAR           KeyDataLen,
+-	IN	UCHAR			GroupKeyIndex,
+-	IN	UCHAR			MsgType,
+-	IN	BOOLEAN			bWPA2,
+-	IN  MAC_TABLE_ENTRY *pEntry)
+-{
+-    PKDE_ENCAP          pKDE = NULL;
+-    PUCHAR              pMyKeyData = pKeyData;
+-    UCHAR               KeyDataLength = KeyDataLen;
+-    UCHAR               GTKLEN = 0;
+-	UCHAR				DefaultIdx = 0;
+-	UCHAR				skip_offset;
+-
+-	// Verify The RSN IE contained in pairewise_msg_2 && pairewise_msg_3 and skip it
+-	if (MsgType == EAPOL_PAIR_MSG_2 || MsgType == EAPOL_PAIR_MSG_3)
+-    {
+-		// Check RSN IE whether it is WPA2/WPA2PSK
+-		if (!RTMPCheckRSNIE(pAd, pKeyData, KeyDataLen, pEntry, &skip_offset))
+-		{
+-			// send wireless event - for RSN IE different
+-			if (pAd->CommonCfg.bWirelessEvent)
+-				RTMPSendWirelessEvent(pAd, IW_RSNIE_DIFF_EVENT_FLAG, pEntry->Addr, pEntry->apidx, 0);
+-
+-        	DBGPRINT(RT_DEBUG_ERROR, ("RSN_IE Different in msg %d of 4-way handshake!\n", MsgType));
+-			hex_dump("Receive RSN_IE ", pKeyData, KeyDataLen);
+-			hex_dump("Desired RSN_IE ", pEntry->RSN_IE, pEntry->RSNIE_Len);
+-
+-			return FALSE;
+-    	}
+-    	else
+-		{
+-			if (bWPA2 && MsgType == EAPOL_PAIR_MSG_3)
+-			{
+-				// skip RSN IE
+-				pMyKeyData += skip_offset;
+-				KeyDataLength -= skip_offset;
+-				DBGPRINT(RT_DEBUG_TRACE, ("RTMPParseEapolKeyData ==> WPA2/WPA2PSK RSN IE matched in Msg 3, Length(%d) \n", skip_offset));
+-			}
+-			else
+-				return TRUE;
+-		}
+-	}
+-
+-	DBGPRINT(RT_DEBUG_TRACE,("RTMPParseEapolKeyData ==> KeyDataLength %d without RSN_IE \n", KeyDataLength));
+-
+-	// Parse EKD format in pairwise_msg_3_WPA2 && group_msg_1_WPA2
+-	if (bWPA2 && (MsgType == EAPOL_PAIR_MSG_3 || MsgType == EAPOL_GROUP_MSG_1))
+-	{
+-		if (KeyDataLength >= 8)	// KDE format exclude GTK length
+-    	{
+-        	pKDE = (PKDE_ENCAP) pMyKeyData;
+-
+-
+-			DefaultIdx = pKDE->GTKEncap.Kid;
+-
+-			// Sanity check - KED length
+-			if (KeyDataLength < (pKDE->Len + 2))
+-    		{
+-        		DBGPRINT(RT_DEBUG_ERROR, ("ERROR: The len from KDE is too short \n"));
+-        		return FALSE;
+-    		}
+-
+-			// Get GTK length - refer to IEEE 802.11i-2004 p.82
+-			GTKLEN = pKDE->Len -6;
+-			if (GTKLEN < LEN_AES_KEY)
+-			{
+-				DBGPRINT(RT_DEBUG_ERROR, ("ERROR: GTK Key length is too short (%d) \n", GTKLEN));
+-        		return FALSE;
+-			}
+-
+-    	}
+-		else
+-    	{
+-			DBGPRINT(RT_DEBUG_ERROR, ("ERROR: KDE format length is too short \n"));
+-	        return FALSE;
+-    	}
+-
+-		DBGPRINT(RT_DEBUG_TRACE, ("GTK in KDE format ,DefaultKeyID=%d, KeyLen=%d \n", DefaultIdx, GTKLEN));
+-		// skip it
+-		pMyKeyData += 8;
+-		KeyDataLength -= 8;
+-
+-	}
+-	else if (!bWPA2 && MsgType == EAPOL_GROUP_MSG_1)
+-	{
+-		DefaultIdx = GroupKeyIndex;
+-		DBGPRINT(RT_DEBUG_TRACE, ("GTK DefaultKeyID=%d \n", DefaultIdx));
+-	}
+-
+-	// Sanity check - shared key index must be 1 ~ 3
+-	if (DefaultIdx < 1 || DefaultIdx > 3)
+-    {
+-     	DBGPRINT(RT_DEBUG_ERROR, ("ERROR: GTK Key index(%d) is invalid in %s %s \n", DefaultIdx, ((bWPA2) ? "WPA2" : "WPA"), GetEapolMsgType(MsgType)));
+-        return FALSE;
+-    }
+-
+-	return TRUE;
+-
+-}
+-
+-
+-/*
+-	========================================================================
+-
+-	Routine Description:
+-		Construct EAPoL message for WPA handshaking
+-		Its format is below,
+-
+-		+--------------------+
+-		| Protocol Version	 |  1 octet
+-		+--------------------+
+-		| Protocol Type		 |	1 octet
+-		+--------------------+
+-		| Body Length		 |  2 octets
+-		+--------------------+
+-		| Descriptor Type	 |	1 octet
+-		+--------------------+
+-		| Key Information    |	2 octets
+-		+--------------------+
+-		| Key Length	     |  1 octet
+-		+--------------------+
+-		| Key Repaly Counter |	8 octets
+-		+--------------------+
+-		| Key Nonce		     |  32 octets
+-		+--------------------+
+-		| Key IV			 |  16 octets
+-		+--------------------+
+-		| Key RSC			 |  8 octets
+-		+--------------------+
+-		| Key ID or Reserved |	8 octets
+-		+--------------------+
+-		| Key MIC			 |	16 octets
+-		+--------------------+
+-		| Key Data Length	 |	2 octets
+-		+--------------------+
+-		| Key Data			 |	n octets
+-		+--------------------+
+-
+-
+-	Arguments:
+-		pAd			Pointer	to our adapter
+-
+-	Return Value:
+-		None
+-
+-	Note:
+-
+-	========================================================================
+-*/
+-VOID	ConstructEapolMsg(
+-	IN 	PRTMP_ADAPTER    	pAd,
+-    IN 	UCHAR				AuthMode,
+-    IN 	UCHAR				WepStatus,
+-    IN 	UCHAR				GroupKeyWepStatus,
+-    IN 	UCHAR				MsgType,
+-    IN	UCHAR				DefaultKeyIdx,
+-    IN 	UCHAR				*ReplayCounter,
+-	IN 	UCHAR				*KeyNonce,
+-	IN	UCHAR				*TxRSC,
+-	IN	UCHAR				*PTK,
+-	IN	UCHAR				*GTK,
+-	IN	UCHAR				*RSNIE,
+-	IN	UCHAR				RSNIE_Len,
+-    OUT PEAPOL_PACKET       pMsg)
+-{
+-	BOOLEAN	bWPA2 = FALSE;
+-
+-	// Choose WPA2 or not
+-	if ((AuthMode == Ndis802_11AuthModeWPA2) || (AuthMode == Ndis802_11AuthModeWPA2PSK))
+-		bWPA2 = TRUE;
+-
+-    // Init Packet and Fill header
+-    pMsg->ProVer = EAPOL_VER;
+-    pMsg->ProType = EAPOLKey;
+-
+-	// Default 95 bytes, the EAPoL-Key descriptor exclude Key-data field
+-	pMsg->Body_Len[1] = LEN_EAPOL_KEY_MSG;
+-
+-	// Fill in EAPoL descriptor
+-	if (bWPA2)
+-		pMsg->KeyDesc.Type = WPA2_KEY_DESC;
+-	else
+-		pMsg->KeyDesc.Type = WPA1_KEY_DESC;
+-
+-	// Fill in Key information, refer to IEEE Std 802.11i-2004 page 78
+-	// When either the pairwise or the group cipher is AES, the DESC_TYPE_AES(2) shall be used.
+-	pMsg->KeyDesc.KeyInfo.KeyDescVer =
+-        	(((WepStatus == Ndis802_11Encryption3Enabled) || (GroupKeyWepStatus == Ndis802_11Encryption3Enabled)) ? (DESC_TYPE_AES) : (DESC_TYPE_TKIP));
+-
+-	// Specify Key Type as Group(0) or Pairwise(1)
+-	if (MsgType >= EAPOL_GROUP_MSG_1)
+-		pMsg->KeyDesc.KeyInfo.KeyType = GROUPKEY;
+-	else
+-		pMsg->KeyDesc.KeyInfo.KeyType = PAIRWISEKEY;
+-
+-	// Specify Key Index, only group_msg1_WPA1
+-	if (!bWPA2 && (MsgType >= EAPOL_GROUP_MSG_1))
+-		pMsg->KeyDesc.KeyInfo.KeyIndex = DefaultKeyIdx;
+-
+-	if (MsgType == EAPOL_PAIR_MSG_3)
+-		pMsg->KeyDesc.KeyInfo.Install = 1;
+-
+-	if ((MsgType == EAPOL_PAIR_MSG_1) || (MsgType == EAPOL_PAIR_MSG_3) || (MsgType == EAPOL_GROUP_MSG_1))
+-		pMsg->KeyDesc.KeyInfo.KeyAck = 1;
+-
+-	if (MsgType != EAPOL_PAIR_MSG_1)
+-		pMsg->KeyDesc.KeyInfo.KeyMic = 1;
+-
+-	if ((bWPA2 && (MsgType >= EAPOL_PAIR_MSG_3)) || (!bWPA2 && (MsgType >= EAPOL_GROUP_MSG_1)))
+-    {
+-       	pMsg->KeyDesc.KeyInfo.Secure = 1;
+-    }
+-
+-	if (bWPA2 && ((MsgType == EAPOL_PAIR_MSG_3) || (MsgType == EAPOL_GROUP_MSG_1)))
+-    {
+-        pMsg->KeyDesc.KeyInfo.EKD_DL = 1;
+-    }
+-
+-	// key Information element has done.
+-	*(USHORT *)(&pMsg->KeyDesc.KeyInfo) = cpu2le16(*(USHORT *)(&pMsg->KeyDesc.KeyInfo));
+-
+-	// Fill in Key Length
+-	{
+-		if (MsgType >= EAPOL_GROUP_MSG_1)
+-		{
+-			// the length of group key cipher
+-			pMsg->KeyDesc.KeyLength[1] = ((GroupKeyWepStatus == Ndis802_11Encryption2Enabled) ? TKIP_GTK_LENGTH : LEN_AES_KEY);
+-		}
+-		else
+-		{
+-			// the length of pairwise key cipher
+-			pMsg->KeyDesc.KeyLength[1] = ((WepStatus == Ndis802_11Encryption2Enabled) ? LEN_TKIP_KEY : LEN_AES_KEY);
+-		}
+-	}
+-
+- 	// Fill in replay counter
+-    NdisMoveMemory(pMsg->KeyDesc.ReplayCounter, ReplayCounter, LEN_KEY_DESC_REPLAY);
+-
+-	// Fill Key Nonce field
+-	// ANonce : pairwise_msg1 & pairwise_msg3
+-	// SNonce : pairwise_msg2
+-	// GNonce : group_msg1_wpa1
+-	if ((MsgType <= EAPOL_PAIR_MSG_3) || ((!bWPA2 && (MsgType == EAPOL_GROUP_MSG_1))))
+-    	NdisMoveMemory(pMsg->KeyDesc.KeyNonce, KeyNonce, LEN_KEY_DESC_NONCE);
+-
+-	// Fill key IV - WPA2 as 0, WPA1 as random
+-	if (!bWPA2 && (MsgType == EAPOL_GROUP_MSG_1))
+-	{
+-		// Suggest IV be random number plus some number,
+-		NdisMoveMemory(pMsg->KeyDesc.KeyIv, &KeyNonce[16], LEN_KEY_DESC_IV);
+-        pMsg->KeyDesc.KeyIv[15] += 2;
+-	}
+-
+-    // Fill Key RSC field
+-    // It contains the RSC for the GTK being installed.
+-	if ((MsgType == EAPOL_PAIR_MSG_3 && bWPA2) || (MsgType == EAPOL_GROUP_MSG_1))
+-	{
+-        NdisMoveMemory(pMsg->KeyDesc.KeyRsc, TxRSC, 6);
+-	}
+-
+-	// Clear Key MIC field for MIC calculation later
+-    NdisZeroMemory(pMsg->KeyDesc.KeyMic, LEN_KEY_DESC_MIC);
+-
+-	ConstructEapolKeyData(pAd,
+-						  AuthMode,
+-						  WepStatus,
+-						  GroupKeyWepStatus,
+-						  MsgType,
+-						  DefaultKeyIdx,
+-						  bWPA2,
+-						  PTK,
+-						  GTK,
+-						  RSNIE,
+-						  RSNIE_Len,
+-						  pMsg);
+-
+-	// Calculate MIC and fill in KeyMic Field except Pairwise Msg 1.
+-	if (MsgType != EAPOL_PAIR_MSG_1)
+-	{
+-		CalculateMIC(pAd, WepStatus, PTK, pMsg);
+-	}
+-
+-	DBGPRINT(RT_DEBUG_TRACE, ("===> ConstructEapolMsg for %s %s\n", ((bWPA2) ? "WPA2" : "WPA"), GetEapolMsgType(MsgType)));
+-	DBGPRINT(RT_DEBUG_TRACE, ("	     Body length = %d \n", pMsg->Body_Len[1]));
+-	DBGPRINT(RT_DEBUG_TRACE, ("	     Key length  = %d \n", pMsg->KeyDesc.KeyLength[1]));
+-
+-
+-}
+-
+-/*
+-	========================================================================
+-
+-	Routine Description:
+-		Construct the Key Data field of EAPoL message
+-
+-	Arguments:
+-		pAd			Pointer	to our adapter
+-		Elem		Message body
+-
+-	Return Value:
+-		None
+-
+-	Note:
+-
+-	========================================================================
+-*/
+-VOID	ConstructEapolKeyData(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	UCHAR			AuthMode,
+-	IN	UCHAR			WepStatus,
+-	IN	UCHAR			GroupKeyWepStatus,
+-	IN 	UCHAR			MsgType,
+-	IN	UCHAR			DefaultKeyIdx,
+-	IN	BOOLEAN			bWPA2Capable,
+-	IN	UCHAR			*PTK,
+-	IN	UCHAR			*GTK,
+-	IN	UCHAR			*RSNIE,
+-	IN	UCHAR			RSNIE_LEN,
+-	OUT PEAPOL_PACKET   pMsg)
+-{
+-	UCHAR		*mpool, *Key_Data, *Rc4GTK;
+-	UCHAR       ekey[(LEN_KEY_DESC_IV+LEN_EAP_EK)];
+-	UCHAR		data_offset;
+-
+-
+-	if (MsgType == EAPOL_PAIR_MSG_1 || MsgType == EAPOL_PAIR_MSG_4 || MsgType == EAPOL_GROUP_MSG_2)
+-		return;
+-
+-	// allocate memory pool
+-	os_alloc_mem(pAd, (PUCHAR *)&mpool, 1500);
+-
+-    if (mpool == NULL)
+-		return;
+-
+-	/* Rc4GTK Len = 512 */
+-	Rc4GTK = (UCHAR *) ROUND_UP(mpool, 4);
+-	/* Key_Data Len = 512 */
+-	Key_Data = (UCHAR *) ROUND_UP(Rc4GTK + 512, 4);
+-
+-	NdisZeroMemory(Key_Data, 512);
+-	pMsg->KeyDesc.KeyDataLen[1] = 0;
+-	data_offset = 0;
+-
+-	// Encapsulate RSNIE in pairwise_msg2 & pairwise_msg3
+-	if (RSNIE_LEN && ((MsgType == EAPOL_PAIR_MSG_2) || (MsgType == EAPOL_PAIR_MSG_3)))
+-	{
+-		if (bWPA2Capable)
+-			Key_Data[data_offset + 0] = IE_WPA2;
+-		else
+-			Key_Data[data_offset + 0] = IE_WPA;
+-
+-        Key_Data[data_offset + 1] = RSNIE_LEN;
+-		NdisMoveMemory(&Key_Data[data_offset + 2], RSNIE, RSNIE_LEN);
+-		data_offset += (2 + RSNIE_LEN);
+-	}
+-
+-	// Encapsulate KDE format in pairwise_msg3_WPA2 & group_msg1_WPA2
+-	if (bWPA2Capable && ((MsgType == EAPOL_PAIR_MSG_3) || (MsgType == EAPOL_GROUP_MSG_1)))
+-	{
+-		// Key Data Encapsulation (KDE) format - 802.11i-2004  Figure-43w and Table-20h
+-        Key_Data[data_offset + 0] = 0xDD;
+-
+-		if (GroupKeyWepStatus == Ndis802_11Encryption3Enabled)
+-		{
+-			Key_Data[data_offset + 1] = 0x16;// 4+2+16(OUI+DataType+DataField)
+-		}
+-		else
+-		{
+-			Key_Data[data_offset + 1] = 0x26;// 4+2+32(OUI+DataType+DataField)
+-		}
+-
+-        Key_Data[data_offset + 2] = 0x00;
+-        Key_Data[data_offset + 3] = 0x0F;
+-        Key_Data[data_offset + 4] = 0xAC;
+-        Key_Data[data_offset + 5] = 0x01;
+-
+-		// GTK KDE format - 802.11i-2004  Figure-43x
+-        Key_Data[data_offset + 6] = (DefaultKeyIdx & 0x03);
+-        Key_Data[data_offset + 7] = 0x00;	// Reserved Byte
+-
+-		data_offset += 8;
+-	}
+-
+-
+-	// Encapsulate GTK and encrypt the key-data field with KEK.
+-	// Only for pairwise_msg3_WPA2 and group_msg1
+-	if ((MsgType == EAPOL_PAIR_MSG_3 && bWPA2Capable) || (MsgType == EAPOL_GROUP_MSG_1))
+-	{
+-		// Fill in GTK
+-		if (GroupKeyWepStatus == Ndis802_11Encryption3Enabled)
+-		{
+-			NdisMoveMemory(&Key_Data[data_offset], GTK, LEN_AES_KEY);
+-			data_offset += LEN_AES_KEY;
+-		}
+-		else
+-		{
+-			NdisMoveMemory(&Key_Data[data_offset], GTK, TKIP_GTK_LENGTH);
+-			data_offset += TKIP_GTK_LENGTH;
+-		}
+-
+-		// Still dont know why, but if not append will occur "GTK not include in MSG3"
+-		// Patch for compatibility between zero config and funk
+-		if (MsgType == EAPOL_PAIR_MSG_3 && bWPA2Capable)
+-		{
+-			if (GroupKeyWepStatus == Ndis802_11Encryption3Enabled)
+-			{
+-				Key_Data[data_offset + 0] = 0xDD;
+-				Key_Data[data_offset + 1] = 0;
+-				data_offset += 2;
+-			}
+-			else
+-			{
+-				Key_Data[data_offset + 0] = 0xDD;
+-				Key_Data[data_offset + 1] = 0;
+-				Key_Data[data_offset + 2] = 0;
+-				Key_Data[data_offset + 3] = 0;
+-				Key_Data[data_offset + 4] = 0;
+-				Key_Data[data_offset + 5] = 0;
+-				data_offset += 6;
+-			}
+-		}
+-
+-		// Encrypt the data material in key data field
+-		if (WepStatus == Ndis802_11Encryption3Enabled)
+-		{
+-			AES_GTK_KEY_WRAP(&PTK[16], Key_Data, data_offset, Rc4GTK);
+-            // AES wrap function will grow 8 bytes in length
+-            data_offset += 8;
+-		}
+-		else
+-		{
+-			// PREPARE Encrypted  "Key DATA" field.  (Encrypt GTK with RC4, usinf PTK[16]->[31] as Key, IV-field as IV)
+-			// put TxTsc in Key RSC field
+-			pAd->PrivateInfo.FCSCRC32 = PPPINITFCS32;   //Init crc32.
+-
+-			// ekey is the contanetion of IV-field, and PTK[16]->PTK[31]
+-			NdisMoveMemory(ekey, pMsg->KeyDesc.KeyIv, LEN_KEY_DESC_IV);
+-			NdisMoveMemory(&ekey[LEN_KEY_DESC_IV], &PTK[16], LEN_EAP_EK);
+-			ARCFOUR_INIT(&pAd->PrivateInfo.WEPCONTEXT, ekey, sizeof(ekey));  //INIT SBOX, KEYLEN+3(IV)
+-			pAd->PrivateInfo.FCSCRC32 = RTMP_CALC_FCS32(pAd->PrivateInfo.FCSCRC32, Key_Data, data_offset);
+-			WPAARCFOUR_ENCRYPT(&pAd->PrivateInfo.WEPCONTEXT, Rc4GTK, Key_Data, data_offset);
+-		}
+-
+-		NdisMoveMemory(pMsg->KeyDesc.KeyData, Rc4GTK, data_offset);
 -	}
 -	else
 -	{
--		pVirtualAd = net_dev->ml_priv;
--		pAd = pVirtualAd->RtmpDev->ml_priv;
+-		NdisMoveMemory(pMsg->KeyDesc.KeyData, Key_Data, data_offset);
 -	}
 -
--	if (pAd == NULL)
--	{
--		/* if 1st open fail, pAd will be free;
--		   So the net_dev->ml_priv will be NULL in 2rd open */
--		return -ENETDOWN;
--	}
+-	// set key data length field and total length
+-	pMsg->KeyDesc.KeyDataLen[1] = data_offset;
+-    pMsg->Body_Len[1] += data_offset;
 -
--	ret = rt28xx_sta_ioctl(net_dev, rq, cmd);
+-	os_free_mem(pAd, mpool);
 -
--	return ret;
 -}
 -
- /*
-     ========================================================================
+-/*
+-	========================================================================
+-
+-	Routine Description:
+-		Calcaulate MIC. It is used during 4-ways handsharking.
+-
+-	Arguments:
+-		pAd				-	pointer to our pAdapter context
+-    	PeerWepStatus	-	indicate the encryption type
+-
+-	Return Value:
+-
+-	Note:
+-
+-	========================================================================
+-*/
+-VOID	CalculateMIC(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	UCHAR			PeerWepStatus,
+-	IN	UCHAR			*PTK,
+-	OUT PEAPOL_PACKET   pMsg)
+-{
+-    UCHAR   *OutBuffer;
+-	ULONG	FrameLen = 0;
+-	UCHAR	mic[LEN_KEY_DESC_MIC];
+-	UCHAR	digest[80];
+-
+-	// allocate memory for MIC calculation
+-	os_alloc_mem(pAd, (PUCHAR *)&OutBuffer, 512);
+-
+-    if (OutBuffer == NULL)
+-    {
+-		DBGPRINT(RT_DEBUG_ERROR, ("!!!CalculateMIC: no memory!!!\n"));
+-		return;
+-    }
+-
+-	// make a frame for calculating MIC.
+-    MakeOutgoingFrame(OutBuffer,            	&FrameLen,
+-                      pMsg->Body_Len[1] + 4,  	pMsg,
+-                      END_OF_ARGS);
+-
+-	NdisZeroMemory(mic, sizeof(mic));
+-
+-	// Calculate MIC
+-    if (PeerWepStatus == Ndis802_11Encryption3Enabled)
+- 	{
+-		HMAC_SHA1(OutBuffer,  FrameLen, PTK, LEN_EAP_MICK, digest);
+-		NdisMoveMemory(mic, digest, LEN_KEY_DESC_MIC);
+-	}
+-	else
+-	{
+-		hmac_md5(PTK,  LEN_EAP_MICK, OutBuffer, FrameLen, mic);
+-	}
+-
+-	// store the calculated MIC
+-	NdisMoveMemory(pMsg->KeyDesc.KeyMic, mic, LEN_KEY_DESC_MIC);
+-
+-	os_free_mem(pAd, OutBuffer);
+-}
+-
+-/*
+-	========================================================================
+-
+-	Routine Description:
+-		Some received frames can't decrypt by Asic, so decrypt them by software.
+-
+-	Arguments:
+-		pAd				-	pointer to our pAdapter context
+-    	PeerWepStatus	-	indicate the encryption type
+-
+-	Return Value:
+-		NDIS_STATUS_SUCCESS		-	decryption successful
+-		NDIS_STATUS_FAILURE		-	decryption failure
+-
+-	========================================================================
+-*/
+-NDIS_STATUS	RTMPSoftDecryptBroadCastData(
+-	IN	PRTMP_ADAPTER					pAd,
+-	IN	RX_BLK							*pRxBlk,
+-	IN  NDIS_802_11_ENCRYPTION_STATUS 	GroupCipher,
+-	IN  PCIPHER_KEY						pShard_key)
+-{
+-	PRXWI_STRUC			pRxWI = pRxBlk->pRxWI;
+-
+-
+-
+-	// handle WEP decryption
+-	if (GroupCipher == Ndis802_11Encryption1Enabled)
+-    {
+-		if (RTMPSoftDecryptWEP(pAd, pRxBlk->pData, pRxWI->MPDUtotalByteCount, pShard_key))
+-		{
+-
+-			//Minus IV[4] & ICV[4]
+-			pRxWI->MPDUtotalByteCount -= 8;
+-		}
+-		else
+-		{
+-			DBGPRINT(RT_DEBUG_ERROR, ("ERROR : Software decrypt WEP data fails.\n"));
+-			// give up this frame
+-			return NDIS_STATUS_FAILURE;
+-		}
+-	}
+-	// handle TKIP decryption
+-	else if (GroupCipher == Ndis802_11Encryption2Enabled)
+-	{
+-		if (RTMPSoftDecryptTKIP(pAd, pRxBlk->pData, pRxWI->MPDUtotalByteCount, 0, pShard_key))
+-		{
+-
+-			//Minus 8 bytes MIC, 8 bytes IV/EIV, 4 bytes ICV
+-			pRxWI->MPDUtotalByteCount -= 20;
+-		}
+-        else
+-		{
+-			DBGPRINT(RT_DEBUG_ERROR, ("ERROR : RTMPSoftDecryptTKIP Failed\n"));
+-			// give up this frame
+-			return NDIS_STATUS_FAILURE;
+-        }
+-	}
+-	// handle AES decryption
+-	else if (GroupCipher == Ndis802_11Encryption3Enabled)
+-	{
+-		if (RTMPSoftDecryptAES(pAd, pRxBlk->pData, pRxWI->MPDUtotalByteCount , pShard_key))
+-		{
+-
+-			//8 bytes MIC, 8 bytes IV/EIV (CCMP Header)
+-			pRxWI->MPDUtotalByteCount -= 16;
+-		}
+-		else
+-		{
+-			DBGPRINT(RT_DEBUG_ERROR, ("ERROR : RTMPSoftDecryptAES Failed\n"));
+-			// give up this frame
+-			return NDIS_STATUS_FAILURE;
+-		}
+-	}
+-	else
+-	{
+-		// give up this frame
+-		return NDIS_STATUS_FAILURE;
+-	}
+-
+-	return NDIS_STATUS_SUCCESS;
+-
+-}
+-
+Index: b/drivers/staging/rt2860/common/mlme.c
+===================================================================
+--- a/drivers/staging/rt2860/common/mlme.c
++++ b/drivers/staging/rt2860/common/mlme.c
+@@ -43,7 +43,6 @@ UCHAR	CISCO_OUI[] = {0x00, 0x40, 0x96};
+ 
+ UCHAR	WPA_OUI[] = {0x00, 0x50, 0xf2, 0x01};
+ UCHAR	RSN_OUI[] = {0x00, 0x0f, 0xac};
+-UCHAR	WAPI_OUI[] = {0x00, 0x14, 0x72};
+ UCHAR   WME_INFO_ELEM[]  = {0x00, 0x50, 0xf2, 0x02, 0x00, 0x01};
+ UCHAR   WME_PARM_ELEM[] = {0x00, 0x50, 0xf2, 0x02, 0x01, 0x01};
+ UCHAR	Ccx2QosInfo[] = {0x00, 0x40, 0x96, 0x04};
+@@ -338,9 +337,6 @@ UCHAR  WpaIe	 = IE_WPA;
+ UCHAR  Wpa2Ie	 = IE_WPA2;
+ UCHAR  IbssIe	 = IE_IBSS_PARM;
+ UCHAR  Ccx2Ie	 = IE_CCX_V2;
+-#ifdef RT2870
+-UCHAR  WapiIe	 = IE_WAPI;
+-#endif
+ 
+ extern UCHAR	WPA_OUI[];
  
 Index: b/drivers/staging/rt2860/rtmp.h
 ===================================================================
 --- a/drivers/staging/rt2860/rtmp.h
 +++ b/drivers/staging/rt2860/rtmp.h
-@@ -6331,11 +6331,6 @@ VOID RT28xx_UpdateBeaconToAsic(
- 	IN ULONG BeaconLen,
- 	IN ULONG UpdatePos);
+@@ -231,15 +231,9 @@ extern UCHAR  WpaIe;
+ extern UCHAR  Wpa2Ie;
+ extern UCHAR  IbssIe;
+ extern UCHAR  Ccx2Ie;
+-#ifdef RT30xx
+-extern UCHAR  WapiIe;
+-#endif
  
--INT rt28xx_ioctl(
--	IN	struct net_device	*net_dev,
--	IN	OUT	struct ifreq	*rq,
--	IN	INT			cmd);
+ extern UCHAR  WPA_OUI[];
+ extern UCHAR  RSN_OUI[];
+-#ifdef RT30xx
+-extern UCHAR  WAPI_OUI[];
+-#endif
+ extern UCHAR  WME_INFO_ELEM[];
+ extern UCHAR  WME_PARM_ELEM[];
+ extern UCHAR  Ccx2QosInfo[];
+@@ -4554,13 +4548,6 @@ BOOLEAN PeerDisassocSanity(
+ 	OUT PUCHAR pAddr2,
+ 	OUT USHORT *Reason);
+ 
+-BOOLEAN PeerWpaMessageSanity(
+-    IN 	PRTMP_ADAPTER 		pAd,
+-    IN 	PEAPOL_PACKET 		pMsg,
+-    IN 	ULONG 				MsgLen,
+-    IN 	UCHAR				MsgType,
+-    IN 	MAC_TABLE_ENTRY  	*pEntry);
 -
- INT rt28xx_sta_ioctl(
- 	IN	struct net_device	*net_dev,
- 	IN	OUT	struct ifreq	*rq,
-Index: b/drivers/staging/rt2860/sta_ioctl.c
+ BOOLEAN PeerDeauthSanity(
+ 	IN  PRTMP_ADAPTER   pAd,
+ 	IN  VOID *Msg,
+@@ -5107,13 +5094,6 @@ VOID    AironetAddBeaconReport(
+ VOID    AironetCreateBeaconReportFromBssTable(
+ 	IN  PRTMP_ADAPTER       pAd);
+ 
+-VOID    DBGPRINT_TX_RING(
+-	IN PRTMP_ADAPTER  pAd,
+-	IN UCHAR          QueIdx);
+-
+-VOID DBGPRINT_RX_RING(
+-	IN PRTMP_ADAPTER  pAd);
+-
+ CHAR    ConvertToRssi(
+ 	IN PRTMP_ADAPTER  pAd,
+ 	IN CHAR				Rssi,
+@@ -5135,64 +5115,6 @@ VOID AES_GTK_KEY_UNWRAP(
+ 	IN	UCHAR	c_len,
+ 	IN  UCHAR   *ciphertext);
+ 
+-BOOLEAN RTMPCheckRSNIE(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  PUCHAR          pData,
+-	IN  UCHAR           DataLen,
+-	IN  MAC_TABLE_ENTRY *pEntry,
+-	OUT	UCHAR			*Offset);
+-
+-BOOLEAN RTMPParseEapolKeyData(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  PUCHAR          pKeyData,
+-	IN  UCHAR           KeyDataLen,
+-	IN	UCHAR			GroupKeyIndex,
+-	IN	UCHAR			MsgType,
+-	IN	BOOLEAN			bWPA2,
+-	IN  MAC_TABLE_ENTRY *pEntry);
+-
+-VOID	ConstructEapolMsg(
+-	IN 	PRTMP_ADAPTER    	pAd,
+-    IN 	UCHAR				PeerAuthMode,
+-    IN 	UCHAR				PeerWepStatus,
+-    IN 	UCHAR				MyGroupKeyWepStatus,
+-    IN 	UCHAR				MsgType,
+-    IN	UCHAR				DefaultKeyIdx,
+-    IN 	UCHAR				*ReplayCounter,
+-	IN 	UCHAR				*KeyNonce,
+-	IN	UCHAR				*TxRSC,
+-	IN	UCHAR				*PTK,
+-	IN	UCHAR				*GTK,
+-	IN	UCHAR				*RSNIE,
+-	IN	UCHAR				RSNIE_Len,
+-    OUT PEAPOL_PACKET       pMsg);
+-
+-VOID	CalculateMIC(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	UCHAR			PeerWepStatus,
+-	IN	UCHAR			*PTK,
+-	OUT PEAPOL_PACKET   pMsg);
+-
+-NDIS_STATUS	RTMPSoftDecryptBroadCastData(
+-	IN	PRTMP_ADAPTER					pAd,
+-	IN	RX_BLK							*pRxBlk,
+-	IN  NDIS_802_11_ENCRYPTION_STATUS 	GroupCipher,
+-	IN  PCIPHER_KEY						pShard_key);
+-
+-VOID	ConstructEapolKeyData(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	UCHAR			PeerAuthMode,
+-	IN	UCHAR			PeerWepStatus,
+-	IN	UCHAR			GroupKeyWepStatus,
+-	IN 	UCHAR			MsgType,
+-	IN	UCHAR			DefaultKeyIdx,
+-	IN	BOOLEAN			bWPA2Capable,
+-	IN	UCHAR			*PTK,
+-	IN	UCHAR			*GTK,
+-	IN	UCHAR			*RSNIE,
+-	IN	UCHAR			RSNIE_LEN,
+-	OUT PEAPOL_PACKET   pMsg);
+-
+ VOID RTMPMakeRSNIE(
+ 	IN  PRTMP_ADAPTER   pAd,
+ 	IN  UINT            AuthMode,
+@@ -5207,12 +5129,6 @@ VOID HandleCounterMeasure(
+ 	IN PRTMP_ADAPTER pAd,
+ 	IN MAC_TABLE_ENTRY  *pEntry);
+ 
+-VOID AES_GTK_KEY_WRAP(
+-	IN UCHAR *key,
+-	IN UCHAR *plaintext,
+-	IN UCHAR p_len,
+-	OUT UCHAR *ciphertext);
+-
+ /* timeout -- ms */
+ VOID RTMP_SetPeriodicTimer(
+ 	IN	NDIS_MINIPORT_TIMER *pTimer,
+Index: b/drivers/staging/rt2860/rtmp_def.h
 ===================================================================
---- a/drivers/staging/rt2860/sta_ioctl.c
-+++ b/drivers/staging/rt2860/sta_ioctl.c
-@@ -577,38 +577,10 @@ int rt_ioctl_giwfreq(struct net_device *
- 		   struct iw_request_info *info,
- 		   struct iw_freq *freq, char *extra)
- {
--    VIRTUAL_ADAPTER *pVirtualAd = NULL;
--#ifndef RT30xx
--	PRTMP_ADAPTER pAdapter = NULL;
+--- a/drivers/staging/rt2860/rtmp_def.h
++++ b/drivers/staging/rt2860/rtmp_def.h
+@@ -569,9 +569,6 @@
+ // For 802.11n D3.03
+ //#define IE_NEW_EXT_CHA_OFFSET             62    // 802.11n d1. New extension channel offset elemet
+ #define IE_SECONDARY_CH_OFFSET		62	// 802.11n D3.03	Secondary Channel Offset element
+-#ifdef RT2870
+-#define IE_WAPI							68		// WAPI information element
 -#endif
--#ifdef RT30xx
--	PRTMP_ADAPTER pAdapter;
--#endif
--	UCHAR ch;
-+	PRTMP_ADAPTER pAdapter = dev->ml_priv;
-+	UCHAR ch = pAdapter->CommonCfg.Channel;
- 	ULONG	m;
- 
--	if (dev->priv_flags == INT_MAIN)
--	{
--		pAdapter = dev->ml_priv;
--	}
--	else
--	{
--		pVirtualAd = dev->ml_priv;
--#ifndef RT30xx
--		if (pVirtualAd && pVirtualAd->RtmpDev)
--#endif
--			pAdapter = pVirtualAd->RtmpDev->ml_priv;
--	}
--
--	if (pAdapter == NULL)
--	{
--		/* if 1st open fail, pAd will be free;
--		   So the net_dev->ml_priv will be NULL in 2rd open */
--		return -ENETDOWN;
--	}
--
--		ch = pAdapter->CommonCfg.Channel;
--
- 	DBGPRINT(RT_DEBUG_TRACE,("==>rt_ioctl_giwfreq  %d\n", ch));
- 
-     MAP_CHANNEL_ID_TO_KHZ(ch, m);
-@@ -656,31 +628,7 @@ int rt_ioctl_giwmode(struct net_device *
- 		   struct iw_request_info *info,
- 		   __u32 *mode, char *extra)
- {
--#ifndef RT30xx
--	PRTMP_ADAPTER 	pAdapter = NULL;
--	VIRTUAL_ADAPTER *pVirtualAd = NULL;
--
--	if (dev->priv_flags == INT_MAIN)
--	{
--		pAdapter = dev->ml_priv;
--	}
--	else
--	{
--		pVirtualAd = dev->ml_priv;
--		if (pVirtualAd && pVirtualAd->RtmpDev)
--			pAdapter = pVirtualAd->RtmpDev->ml_priv;
--	}
--
--	if (pAdapter == NULL)
--	{
--		/* if 1st open fail, pAd will be free;
--		   So the net_dev->ml_priv will be NULL in 2rd open */
--		return -ENETDOWN;
--	}
--#endif
--#ifdef RT30xx
- 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
--#endif
- 
- 	if (ADHOC_ON(pAdapter))
- 		*mode = IW_MODE_ADHOC;
-@@ -724,37 +672,11 @@ int rt_ioctl_giwrange(struct net_device 
- 		   struct iw_request_info *info,
- 		   struct iw_point *data, char *extra)
- {
--#ifndef RT30xx
--	PRTMP_ADAPTER 	pAdapter = NULL;
--	VIRTUAL_ADAPTER *pVirtualAd = NULL;
--#endif
--#ifdef RT30xx
- 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
--#endif
- 	struct iw_range *range = (struct iw_range *) extra;
- 	u16 val;
- 	int i;
- 
--#ifndef RT30xx
--	if (dev->priv_flags == INT_MAIN)
--	{
--		pAdapter = dev->ml_priv;
--	}
--	else
--	{
--		pVirtualAd = dev->ml_priv;
--		if (pVirtualAd && pVirtualAd->RtmpDev)
--			pAdapter = pVirtualAd->RtmpDev->ml_priv;
--	}
--
--	if (pAdapter == NULL)
--	{
--		/* if 1st open fail, pAd will be free;
--		   So the net_dev->ml_priv will be NULL in 2rd open */
--		return -ENETDOWN;
--	}
--#endif
--
- 	DBGPRINT(RT_DEBUG_TRACE ,("===>rt_ioctl_giwrange\n"));
- 	data->length = sizeof(struct iw_range);
- 	memset(range, 0, sizeof(struct iw_range));
-@@ -871,31 +793,7 @@ int rt_ioctl_giwap(struct net_device *de
- 		      struct iw_request_info *info,
- 		      struct sockaddr *ap_addr, char *extra)
- {
--#ifndef RT30xx
--	PRTMP_ADAPTER 	pAdapter = NULL;
--	VIRTUAL_ADAPTER *pVirtualAd = NULL;
--
--	if (dev->priv_flags == INT_MAIN)
--	{
--		pAdapter = dev->ml_priv;
--	}
--	else
--	{
--		pVirtualAd = dev->ml_priv;
--		if (pVirtualAd && pVirtualAd->RtmpDev)
--			pAdapter = pVirtualAd->RtmpDev->ml_priv;
--	}
--
--	if (pAdapter == NULL)
--	{
--		/* if 1st open fail, pAd will be free;
--		   So the net_dev->ml_priv will be NULL in 2rd open */
--		return -ENETDOWN;
--	}
--#endif
--#ifdef RT30xx
- 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
--#endif
- 
- 	if (INFRA_ON(pAdapter) || ADHOC_ON(pAdapter))
- 	{
-@@ -1398,31 +1296,7 @@ int rt_ioctl_giwessid(struct net_device 
- 			 struct iw_request_info *info,
- 			 struct iw_point *data, char *essid)
- {
--#ifndef RT30xx
--	PRTMP_ADAPTER 	pAdapter = NULL;
--	VIRTUAL_ADAPTER *pVirtualAd = NULL;
--
--	if (dev->priv_flags == INT_MAIN)
--	{
--		pAdapter = dev->ml_priv;
--	}
--	else
--	{
--		pVirtualAd = dev->ml_priv;
--		if (pVirtualAd && pVirtualAd->RtmpDev)
--			pAdapter = pVirtualAd->RtmpDev->ml_priv;
--	}
--
--	if (pAdapter == NULL)
--	{
--		/* if 1st open fail, pAd will be free;
--		   So the net_dev->ml_priv will be NULL in 2rd open */
--		return -ENETDOWN;
--	}
--#endif
--#ifdef RT30xx
- 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
--#endif
- 
- 	data->flags = 1;
-     if (MONITOR_ON(pAdapter))
-@@ -1482,31 +1356,7 @@ int rt_ioctl_giwnickn(struct net_device 
- 			 struct iw_request_info *info,
- 			 struct iw_point *data, char *nickname)
- {
--#ifndef RT30xx
--	PRTMP_ADAPTER 	pAdapter = NULL;
--	VIRTUAL_ADAPTER *pVirtualAd = NULL;
--
--	if (dev->priv_flags == INT_MAIN)
--	{
--		pAdapter = dev->ml_priv;
--	}
--	else
--	{
--		pVirtualAd = dev->ml_priv;
--		if (pVirtualAd && pVirtualAd->RtmpDev)
--			pAdapter = pVirtualAd->RtmpDev->ml_priv;
--	}
--
--	if (pAdapter == NULL)
--	{
--		/* if 1st open fail, pAd will be free;
--		   So the net_dev->ml_priv will be NULL in 2rd open */
--		return -ENETDOWN;
--	}
--#endif
--#ifdef RT30xx
- 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
--#endif
- 
- 	if (data->length > strlen(pAdapter->nickname) + 1)
- 		data->length = strlen(pAdapter->nickname) + 1;
-@@ -1550,31 +1400,7 @@ int rt_ioctl_giwrts(struct net_device *d
- 		       struct iw_request_info *info,
- 		       struct iw_param *rts, char *extra)
- {
--#ifndef RT30xx
--	PRTMP_ADAPTER 	pAdapter = NULL;
--	VIRTUAL_ADAPTER *pVirtualAd = NULL;
--
--	if (dev->priv_flags == INT_MAIN)
--	{
--		pAdapter = dev->ml_priv;
--	}
--	else
--	{
--		pVirtualAd = dev->ml_priv;
--		if (pVirtualAd && pVirtualAd->RtmpDev)
--			pAdapter = pVirtualAd->RtmpDev->ml_priv;
--	}
--
--	if (pAdapter == NULL)
--	{
--		/* if 1st open fail, pAd will be free;
--		   So the net_dev->ml_priv will be NULL in 2rd open */
--		return -ENETDOWN;
--	}
--#endif
--#ifdef RT30xx
- 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
--#endif
- 
- 	//check if the interface is down
-     	if(!RTMP_TEST_FLAG(pAdapter, fRTMP_ADAPTER_INTERRUPT_IN_USE))
-@@ -1621,31 +1447,7 @@ int rt_ioctl_giwfrag(struct net_device *
- 			struct iw_request_info *info,
- 			struct iw_param *frag, char *extra)
- {
--#ifndef RT30xx
--	PRTMP_ADAPTER 	pAdapter = NULL;
--	VIRTUAL_ADAPTER *pVirtualAd = NULL;
--
--	if (dev->priv_flags == INT_MAIN)
--	{
--		pAdapter = dev->ml_priv;
--	}
--	else
--	{
--		pVirtualAd = dev->ml_priv;
--		if (pVirtualAd && pVirtualAd->RtmpDev)
--			pAdapter = pVirtualAd->RtmpDev->ml_priv;
--	}
--
--	if (pAdapter == NULL)
--	{
--		/* if 1st open fail, pAd will be free;
--		   So the net_dev->ml_priv will be NULL in 2rd open */
--		return -ENETDOWN;
--	}
--#endif
--#ifdef RT30xx
- 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
--#endif
- 
- 	//check if the interface is down
-     	if(!RTMP_TEST_FLAG(pAdapter, fRTMP_ADAPTER_INTERRUPT_IN_USE))
-@@ -1781,32 +1583,8 @@ rt_ioctl_giwencode(struct net_device *de
- 			  struct iw_request_info *info,
- 			  struct iw_point *erq, char *key)
- {
--#ifdef RT30xx
- 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
--#endif
- 	int kid;
--#ifndef RT30xx
--	PRTMP_ADAPTER 	pAdapter = NULL;
--	VIRTUAL_ADAPTER *pVirtualAd = NULL;
--
--	if (dev->priv_flags == INT_MAIN)
--	{
--		pAdapter = dev->ml_priv;
--	}
--	else
--	{
--		pVirtualAd = dev->ml_priv;
--		if (pVirtualAd && pVirtualAd->RtmpDev)
--			pAdapter = pVirtualAd->RtmpDev->ml_priv;
--	}
--
--	if (pAdapter == NULL)
--	{
--		/* if 1st open fail, pAd will be free;
--		   So the net_dev->ml_priv will be NULL in 2rd open */
--		return -ENETDOWN;
--	}
--#endif
- 
- 	//check if the interface is down
- 	if(!RTMP_TEST_FLAG(pAdapter, fRTMP_ADAPTER_INTERRUPT_IN_USE))
-@@ -1863,31 +1641,12 @@ static int
- rt_ioctl_setparam(struct net_device *dev, struct iw_request_info *info,
- 			 void *w, char *extra)
- {
--    VIRTUAL_ADAPTER	*pVirtualAd = NULL;
--	PRTMP_ADAPTER pAdapter;
--	POS_COOKIE pObj;
-+	PRTMP_ADAPTER pAdapter = dev->ml_priv;
-+	POS_COOKIE pObj = (POS_COOKIE)pAdapter->OS_Cookie;
- 	char *this_char = extra;
- 	char *value;
- 	int  Status=0;
- 
--	if (dev->priv_flags == INT_MAIN)
--	{
--		pAdapter = dev->ml_priv;
--	}
--	else
--	{
--		pVirtualAd = dev->ml_priv;
--		pAdapter = pVirtualAd->RtmpDev->ml_priv;
--	}
--	pObj = (POS_COOKIE) pAdapter->OS_Cookie;
--
--	if (pAdapter == NULL)
--	{
--		/* if 1st open fail, pAd will be free;
--		   So the net_dev->ml_priv will be NULL in 2rd open */
--		return -ENETDOWN;
--	}
--
- 	{
- 		pObj->ioctl_if_type = INT_MAIN;
-         pObj->ioctl_if = MAIN_MBSSID;
-@@ -2031,27 +1790,10 @@ rt_private_show(struct net_device *dev, 
- 		struct iw_point *wrq, char *extra)
- {
-     INT				Status = 0;
--    VIRTUAL_ADAPTER	*pVirtualAd = NULL;
--    PRTMP_ADAPTER   pAd;
--	POS_COOKIE		pObj;
-+    PRTMP_ADAPTER pAd = dev->ml_priv;
-+    POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;
-     u32             subcmd = wrq->flags;
- 
--	if (dev->priv_flags == INT_MAIN)
--		pAd = dev->ml_priv;
--	else
--	{
--		pVirtualAd = dev->ml_priv;
--		pAd = pVirtualAd->RtmpDev->ml_priv;
--	}
--	pObj = (POS_COOKIE) pAd->OS_Cookie;
--
--	if (pAd == NULL)
--	{
--		/* if 1st open fail, pAd will be free;
--		   So the net_dev->ml_priv will be NULL in 2rd open */
--		return -ENETDOWN;
--	}
--
-     if (extra == NULL)
-     {
-         wrq->length = 0;
-@@ -5017,32 +4759,13 @@ INT rt28xx_sta_ioctl(
- 	IN	OUT	struct ifreq	*rq,
- 	IN	INT					cmd)
- {
--	POS_COOKIE			pObj;
--	VIRTUAL_ADAPTER		*pVirtualAd = NULL;
--	RTMP_ADAPTER        *pAd = NULL;
-+	RTMP_ADAPTER *pAd = net_dev->ml_priv;
-+	POS_COOKIE pObj = (POS_COOKIE)pAd->OS_Cookie;
- 	struct iwreq        *wrq = (struct iwreq *) rq;
- 	BOOLEAN				StateMachineTouched = FALSE;
- 	INT					Status = NDIS_STATUS_SUCCESS;
- 	USHORT				subcmd;
- 
--	if (net_dev->priv_flags == INT_MAIN)
--	{
--		pAd = net_dev->ml_priv;
--	}
--	else
--	{
--		pVirtualAd = net_dev->ml_priv;
--		pAd = pVirtualAd->RtmpDev->ml_priv;
--	}
--	pObj = (POS_COOKIE) pAd->OS_Cookie;
--
--	if (pAd == NULL)
--	{
--		/* if 1st open fail, pAd will be free;
--		   So the net_dev->ml_priv will be NULL in 2rd open */
--		return -ENETDOWN;
--	}
--
-     //check if the interface is down
-     if(!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_IN_USE))
-     {
+ #define IE_2040_BSS_COEXIST               72    // 802.11n D3.0.3
+ #define IE_2040_BSS_INTOLERANT_REPORT     73    // 802.11n D3.03
+ #define IE_OVERLAPBSS_SCAN_PARM           74    // 802.11n D3.03
