@@ -1,169 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbZHPT3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbZHPT3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755795AbZHPT3j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 15:29:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbZHPT3h
+	id S1755840AbZHPT3p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 15:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbZHPT3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 15:29:37 -0400
+	Sun, 16 Aug 2009 15:29:43 -0400
 Received: from mail-fx0-f215.google.com ([209.85.220.215]:49711 "EHLO
 	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932137AbZHPT3e (ORCPT
+	with ESMTP id S1753387AbZHPT3m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 15:29:34 -0400
+	Sun, 16 Aug 2009 15:29:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=sncRziMXO/J4oUBlt5gG7VVaVZTo4qx8OSWGBQsc03veq8XsmHa+RmqDHAeKqfGRvF
-         Kxfn3iu5a4fyjEn9cbiRVebF3184BgOlmT1QNi6KMTurh3qHHYygy6i/0gvhkG8cZM5v
-         Z7xRit3EQkvUsxVwDFTb4IeojgpfHPVylXKSQ=
+        b=DdfDahqXyCvXn7EbkBtfrnlo8PiTjOtpH20ltWHBOELd2bd3ozjuizj23P0ur1+yvq
+         sMBAZOrYwBCMWgtvH/io1no4+dBP9Zv7+A3t3+eAr2YQuKNLO/BQEPDOai6h7oyjnawo
+         N6SJUjtKrXP8dxUBwoSExVJnC8pnISiF+LqqY=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: devel@driverdev.osuosl.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 16 Aug 2009 21:29:47 +0200
-Message-Id: <20090816192947.3789.78773.sendpatchset@localhost.localdomain>
+Date: Sun, 16 Aug 2009 21:29:53 +0200
+Message-Id: <20090816192953.3789.7370.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
 References: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
-Subject: [PATCH 02/22] Staging: rt3070: fix build warnings
+Subject: [PATCH 03/22] Staging: rtxxx0: remove support for older wireless extensions
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rt3070: fix build warnings
-
-In file included from drivers/staging/rt3070/common/../../rt2870/common/cmm_data.c:2,
-                 from drivers/staging/rt3070/common/cmm_data.c:2:
-drivers/staging/rt3070/common/../../rt2870/common/../../rt2860/common/cmm_data.c: In function ‘RTMP_FillTxBlkInfo’:
-drivers/staging/rt3070/common/../../rt2870/common/../../rt2860/common/cmm_data.c:1018: warning: label ‘FillTxBlkErr’ defined but not used
-
-In file included from drivers/staging/rt3070/common/../../rt2870/common/eeprom.c:2,
-                 from drivers/staging/rt3070/common/eeprom.c:2:
-drivers/staging/rt3070/common/../../rt2870/common/../../rt2860/common/eeprom.c: In function ‘set_eFuseLoadFromBin_Proc’:
-drivers/staging/rt3070/common/../../rt2870/common/../../rt2860/common/eeprom.c:1041: warning: unused variable ‘orgfsgid’
-drivers/staging/rt3070/common/../../rt2870/common/../../rt2860/common/eeprom.c:1041: warning: unused variable ‘orgfsuid’
-
-In file included from drivers/staging/rt3070/../rt2870/rt_profile.c:2,
-                 from drivers/staging/rt3070/rt_profile.c:2:
-drivers/staging/rt3070/../rt2870/../rt2860/rt_profile.c: In function ‘RTMPReadParametersHook’:
-drivers/staging/rt3070/../rt2870/../rt2860/rt_profile.c:863: warning: unused variable ‘orgfsgid’
-drivers/staging/rt3070/../rt2870/../rt2860/rt_profile.c:863: warning: unused variable ‘orgfsuid’
-
-In file included from drivers/staging/rt3070/common/rtusb_io.c:2:
-drivers/staging/rt3070/common/../../rt2870/common/rtusb_io.c: In function ‘CMDHandler’:
-drivers/staging/rt3070/common/../../rt2870/common/rtusb_io.c:1763: warning: ‘CipherAlg’ may be used uninitialized in this function
-drivers/staging/rt3070/common/../../rt2870/common/rtusb_io.c:1758: note: ‘CipherAlg’ was declared here
-drivers/staging/rt3070/common/../../rt2870/common/rtusb_io.c:1763: warning: ‘KeyIdx’ may be used uninitialized in this function
-drivers/staging/rt3070/common/../../rt2870/common/rtusb_io.c:1757: note: ‘KeyIdx’ was declared here
-drivers/staging/rt3070/common/../../rt2870/common/rtusb_io.c:1763: warning: ‘ApIdx’ may be used uninitialized in this function
-drivers/staging/rt3070/common/../../rt2870/common/rtusb_io.c:1759: note: ‘ApIdx’ was declared here
+Subject: [PATCH] Staging: rtxxx0: remove support for older wireless extensions
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rt2860/common/cmm_data.c |    5 -----
- drivers/staging/rt2860/common/eeprom.c   |   14 +++-----------
- drivers/staging/rt2860/rt_profile.c      |   11 +----------
- drivers/staging/rt2870/common/rtusb_io.c |    6 +++---
- 4 files changed, 7 insertions(+), 29 deletions(-)
+ drivers/staging/rt2860/sta/assoc.c |    6 ----
+ drivers/staging/rt2860/sta_ioctl.c |   55 -------------------------------------
+ 2 files changed, 61 deletions(-)
 
-Index: b/drivers/staging/rt2860/common/cmm_data.c
+Index: b/drivers/staging/rt2860/sta/assoc.c
 ===================================================================
---- a/drivers/staging/rt2860/common/cmm_data.c
-+++ b/drivers/staging/rt2860/common/cmm_data.c
-@@ -1013,11 +1013,6 @@ BOOLEAN RTMP_FillTxBlkInfo(
- 	}
+--- a/drivers/staging/rt2860/sta/assoc.c
++++ b/drivers/staging/rt2860/sta/assoc.c
+@@ -455,9 +455,7 @@ VOID MlmeAssocReqAction(
+ 			}
  
- 	return TRUE;
--
--#ifdef RT30xx
--FillTxBlkErr:
--	return FALSE;
+ #ifdef RT30xx
+-#ifdef SIOCSIWGENIE
+ 			if (pAd->StaCfg.WpaSupplicantUP != 1)
+-#endif // SIOCSIWGENIE //
+ #endif
+             RTMPMakeRSNIE(pAd, pAd->StaCfg.AuthMode, pAd->StaCfg.WepStatus, BSS0);
+ 
+@@ -486,7 +484,6 @@ VOID MlmeAssocReqAction(
+ 			}
+ 
+ #ifdef RT30xx
+-#ifdef SIOCSIWGENIE
+ 			if (pAd->StaCfg.WpaSupplicantUP == 1)
+ 			{
+ 				MakeOutgoingFrame(pOutBuffer + FrameLen,    		&tmp,
+@@ -495,7 +492,6 @@ VOID MlmeAssocReqAction(
+ 			}
+ 			else
+ #endif
 -#endif
+ 			{
+ 				MakeOutgoingFrame(pOutBuffer + FrameLen,    		&tmp,
+ 				              		1,                              &RSNIe,
+@@ -507,10 +503,8 @@ VOID MlmeAssocReqAction(
+ 			FrameLen += tmp;
+ 
+ #ifdef RT30xx
+-#ifdef SIOCSIWGENIE
+ 			if (pAd->StaCfg.WpaSupplicantUP != 1)
+ #endif
+-#endif
+ 			{
+ 	            // Append Variable IE
+ 	            NdisMoveMemory(pAd->StaCfg.ReqVarIEs + VarIesOffset, &RSNIe, 1);
+Index: b/drivers/staging/rt2860/sta_ioctl.c
+===================================================================
+--- a/drivers/staging/rt2860/sta_ioctl.c
++++ b/drivers/staging/rt2860/sta_ioctl.c
+@@ -987,7 +987,6 @@ int rt_ioctl_iwaplist(struct net_device 
+ 	return 0;
  }
  
+-#ifdef SIOCGIWSCAN
+ int rt_ioctl_siwscan(struct net_device *dev,
+ 			struct iw_request_info *info,
+ 			struct iw_point *data, char *extra)
+@@ -1084,9 +1083,6 @@ int rt_ioctl_giwscan(struct net_device *
+ 	char *current_ev = extra, *previous_ev = extra;
+ 	char *end_buf;
+ 	char *current_val, custom[MAX_CUSTOM_LEN] = {0};
+-#ifndef IWEVGENIE
+-	char idx;
+-#endif // IWEVGENIE //
+ 	struct iw_event iwe;
  
-Index: b/drivers/staging/rt2860/common/eeprom.c
-===================================================================
---- a/drivers/staging/rt2860/common/eeprom.c
-+++ b/drivers/staging/rt2860/common/eeprom.c
-@@ -1038,7 +1038,7 @@ INT	set_eFuseLoadFromBin_Proc(
- {
- 	CHAR					*src;
- 	struct file				*srcf;
--	INT 					retval, orgfsuid, orgfsgid;
-+	INT 					retval;
-    	mm_segment_t			orgfs;
- 	UCHAR					*buffer;
- 	UCHAR					BinFileSize=0;
-@@ -1078,12 +1078,7 @@ INT	set_eFuseLoadFromBin_Proc(
- 		kfree(buffer);
- 		return FALSE;
- 	}
--	/* Don't change to uid 0, let the file be opened as the "normal" user */
--#if 0
--	orgfsuid = current->fsuid;
--	orgfsgid = current->fsgid;
--	current->fsuid=current->fsgid = 0;
--#endif
-+
-     	orgfs = get_fs();
-    	 set_fs(KERNEL_DS);
+ 	if (RTMP_TEST_FLAG(pAdapter, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS))
+@@ -1313,7 +1309,6 @@ int rt_ioctl_giwscan(struct net_device *
+ 			return -E2BIG;
+         }
  
-@@ -1146,10 +1141,7 @@ INT	set_eFuseLoadFromBin_Proc(
- 		DBGPRINT(RT_DEBUG_TRACE, ("--> Error %d closing %s\n", -retval, src));
+-#ifdef IWEVGENIE
+ 		//WPA IE
+ 		if (pAdapter->ScanTab.BssEntry[i].WpaIE.IELen > 0)
+ 		{
+@@ -1341,40 +1336,6 @@ int rt_ioctl_giwscan(struct net_device *
+ 			if (current_ev == previous_ev)
+ 				return -E2BIG;
+         }
+-#else
+-        //WPA IE
+-		//================================
+-        if (pAdapter->ScanTab.BssEntry[i].WpaIE.IELen > 0)
+-        {
+-    		NdisZeroMemory(&iwe, sizeof(iwe));
+-			memset(&custom[0], 0, MAX_CUSTOM_LEN);
+-    		iwe.cmd = IWEVCUSTOM;
+-            iwe.u.data.length = (pAdapter->ScanTab.BssEntry[i].WpaIE.IELen * 2) + 7;
+-            NdisMoveMemory(custom, "wpa_ie=", 7);
+-            for (idx = 0; idx < pAdapter->ScanTab.BssEntry[i].WpaIE.IELen; idx++)
+-                sprintf(custom + strlen(custom), "%02x", pAdapter->ScanTab.BssEntry[i].WpaIE.IE[idx]);
+-            previous_ev = current_ev;
+-    		current_ev = iwe_stream_add_point(current_ev, end_buf, &iwe,  custom);
+-            if (current_ev == previous_ev)
+-		return -E2BIG;
+-        }
+-
+-        //WPA2 IE
+-        if (pAdapter->ScanTab.BssEntry[i].RsnIE.IELen > 0)
+-        {
+-    		NdisZeroMemory(&iwe, sizeof(iwe));
+-			memset(&custom[0], 0, MAX_CUSTOM_LEN);
+-    		iwe.cmd = IWEVCUSTOM;
+-            iwe.u.data.length = (pAdapter->ScanTab.BssEntry[i].RsnIE.IELen * 2) + 7;
+-            NdisMoveMemory(custom, "rsn_ie=", 7);
+-			for (idx = 0; idx < pAdapter->ScanTab.BssEntry[i].RsnIE.IELen; idx++)
+-                sprintf(custom + strlen(custom), "%02x", pAdapter->ScanTab.BssEntry[i].RsnIE.IE[idx]);
+-            previous_ev = current_ev;
+-    		current_ev = iwe_stream_add_point(current_ev, end_buf, &iwe,  custom);
+-            if (current_ev == previous_ev)
+-		return -E2BIG;
+-        }
+-#endif // IWEVGENIE //
  	}
- 	set_fs(orgfs);
--#if 0
--	current->fsuid = orgfsuid;
--	current->fsgid = orgfsgid;
+ 
+ 	data->length = current_ev - extra;
+@@ -1382,7 +1343,6 @@ int rt_ioctl_giwscan(struct net_device *
+ 	DBGPRINT(RT_DEBUG_ERROR ,("===>rt_ioctl_giwscan. %d(%d) BSS returned, data->length = %d\n",i , pAdapter->ScanTab.BssNr, data->length));
+ 	return 0;
+ }
 -#endif
-+
- 	for(j=0;j<i;j++)
+ 
+ int rt_ioctl_siwessid(struct net_device *dev,
+ 			 struct iw_request_info *info,
+@@ -2214,7 +2174,6 @@ rt_private_show(struct net_device *dev, 
+     return Status;
+ }
+ 
+-#ifdef SIOCSIWMLME
+ int rt_ioctl_siwmlme(struct net_device *dev,
+ 			   struct iw_request_info *info,
+ 			   union iwreq_data *wrqu,
+@@ -2270,7 +2229,6 @@ int rt_ioctl_siwmlme(struct net_device *
+ 
+ 	return 0;
+ }
+-#endif // SIOCSIWMLME //
+ 
+ int rt_ioctl_siwauth(struct net_device *dev,
+ 			  struct iw_request_info *info,
+@@ -2707,7 +2665,6 @@ rt_ioctl_giwencodeext(struct net_device 
+ 	return 0;
+ }
+ 
+-#ifdef SIOCSIWGENIE
+ int rt_ioctl_siwgenie(struct net_device *dev,
+ 			  struct iw_request_info *info,
+ 			  union iwreq_data *wrqu, char *extra)
+@@ -2731,7 +2688,6 @@ int rt_ioctl_siwgenie(struct net_device 
+ 
+ 	return 0;
+ }
+-#endif // SIOCSIWGENIE //
+ 
+ int rt_ioctl_giwgenie(struct net_device *dev,
+ 			       struct iw_request_info *info,
+@@ -2746,7 +2702,6 @@ int rt_ioctl_giwgenie(struct net_device 
+ 		return 0;
+ 	}
+ 
+-#ifdef SIOCSIWGENIE
+ 	if (pAd->StaCfg.WpaSupplicantUP == WPA_SUPPLICANT_ENABLE)
  	{
- 		DBGPRINT(RT_DEBUG_TRACE, ("%02X ",buffer[j]));
-Index: b/drivers/staging/rt2860/rt_profile.c
-===================================================================
---- a/drivers/staging/rt2860/rt_profile.c
-+++ b/drivers/staging/rt2860/rt_profile.c
-@@ -860,7 +860,7 @@ NDIS_STATUS	RTMPReadParametersHook(
- {
- 	PUCHAR					src = NULL;
- 	struct file				*srcf;
--	INT 					retval, orgfsuid, orgfsgid;
-+	INT 					retval;
-    	mm_segment_t			orgfs;
- 	CHAR					*buffer;
- 	CHAR					*tmpbuf;
-@@ -884,15 +884,6 @@ NDIS_STATUS	RTMPReadParametersHook(
+ 	if (wrqu->data.length < pAd->StaCfg.RSNIE_Len)
+@@ -2756,7 +2711,6 @@ int rt_ioctl_giwgenie(struct net_device 
+ 	memcpy(extra, &pAd->StaCfg.RSN_IE[0], pAd->StaCfg.RSNIE_Len);
+ 	}
+ 	else
+-#endif // SIOCSIWGENIE //
+ 	{
+ 		UCHAR RSNIe = IE_WPA;
  
- 	src = STA_PROFILE_PATH;
- 
--	// Save uid and gid used for filesystem access.
--	// Set user and group to 0 (root)
--#ifndef RT30xx
--	orgfsuid = current_fsuid();
--	orgfsgid = current_fsgid();
--	/* Hm, can't really do this nicely anymore, so rely on these files
--	 * being set to the proper permission to read them... */
--	/* current->cred->fsuid = current->cred->fsgid = 0; */
--#endif
-     orgfs = get_fs();
-     set_fs(KERNEL_DS);
- 
-Index: b/drivers/staging/rt2870/common/rtusb_io.c
-===================================================================
---- a/drivers/staging/rt2870/common/rtusb_io.c
-+++ b/drivers/staging/rt2870/common/rtusb_io.c
-@@ -1754,9 +1754,9 @@ VOID CMDHandler(
- 				case RT_CMD_SET_RX_WCID_TABLE: //General call for RTMPAddWcidAttributeEntry()
- 				{
- 					PMAC_TABLE_ENTRY pEntry;
--					UCHAR KeyIdx;
--					UCHAR CipherAlg;
--					UCHAR ApIdx;
-+					UCHAR KeyIdx = 0;
-+					UCHAR CipherAlg = 0;
-+					UCHAR ApIdx = 0;
- 
- 					pEntry = (PMAC_TABLE_ENTRY)(pData);
- 
+@@ -3117,19 +3071,10 @@ static const iw_handler rt_handler[] =
+ 	(iw_handler) NULL,				        /* SIOCGIWTHRSPY */
+ 	(iw_handler) rt_ioctl_siwap,            /* SIOCSIWAP     */
+ 	(iw_handler) rt_ioctl_giwap,		    /* SIOCGIWAP     */
+-#ifdef SIOCSIWMLME
+ 	(iw_handler) rt_ioctl_siwmlme,	        /* SIOCSIWMLME   */
+-#else
+-	(iw_handler) NULL,				        /* SIOCSIWMLME */
+-#endif // SIOCSIWMLME //
+ 	(iw_handler) rt_ioctl_iwaplist,		    /* SIOCGIWAPLIST */
+-#ifdef SIOCGIWSCAN
+ 	(iw_handler) rt_ioctl_siwscan,		    /* SIOCSIWSCAN   */
+ 	(iw_handler) rt_ioctl_giwscan,		    /* SIOCGIWSCAN   */
+-#else
+-	(iw_handler) NULL,				        /* SIOCSIWSCAN   */
+-	(iw_handler) NULL,				        /* SIOCGIWSCAN   */
+-#endif /* SIOCGIWSCAN */
+ 	(iw_handler) rt_ioctl_siwessid,		    /* SIOCSIWESSID  */
+ 	(iw_handler) rt_ioctl_giwessid,		    /* SIOCGIWESSID  */
+ 	(iw_handler) rt_ioctl_siwnickn,		    /* SIOCSIWNICKN  */
