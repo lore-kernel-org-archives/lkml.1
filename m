@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbZHPBds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbZHPBfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753230AbZHPBds (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 21:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZHPBds
+	id S1753274AbZHPBfV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 21:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZHPBfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 21:33:48 -0400
-Received: from thunk.org ([69.25.196.29]:35818 "EHLO thunker.thunk.org"
+	Sat, 15 Aug 2009 21:35:20 -0400
+Received: from rtr.ca ([76.10.145.34]:50006 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751738AbZHPBdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 21:33:47 -0400
-Date: Sat, 15 Aug 2009 21:33:46 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: David Wagner <daw-news@cs.berkeley.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Security: information leaks in /proc enable keystroke recovery
-Message-ID: <20090816013346.GA17958@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	David Wagner <daw-news@cs.berkeley.edu>,
-	linux-kernel@vger.kernel.org
-References: <200908152221.n7FMLRuw005799@taverner.cs.berkeley.edu> <20090816003326.GC7554@mit.edu> <h67kou$ahr$1@taverner.cs.berkeley.edu>
+	id S1751910AbZHPBfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 21:35:19 -0400
+Message-ID: <4A876255.10606@rtr.ca>
+Date: Sat, 15 Aug 2009 21:35:17 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <h67kou$ahr$1@taverner.cs.berkeley.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Christoph Hellwig <hch@infradead.org>
+Cc: xfs@oss.sgi.com, linux-fsdevel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [PATCH, RFC] xfs: batched discard support
+References: <20090816004705.GA7347@infradead.org>
+In-Reply-To: <20090816004705.GA7347@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 16, 2009 at 12:44:14AM +0000, David Wagner wrote:
-> Theodore Tso  wrote:
-> > A configuration option which defaults to disabling ESP and EIP would
-> > be a simple way to prevent this specific instance of information
-> > leakage.  The problem is there are other files that might reveal
-> > timing information, but which are very useful for a system
-> > administrator.  A key example of this is /proc/$pid/wchan, which is
-> > responsible for the WCHAN column is a ps listing.
+Christoph Hellwig wrote:
+> Given that everyone is so big in the discard discussion I'd like to
+> present what I had started to prepare for XFS.  I didn't plan to send it
+> out until I get my hands onto a TRIM capable device (or at least get
+> time to add support to qemu), and so far it's only been tested in
+> dry-run mode.
 > 
-> If they're useful for system administrators, would making them
-> readable to root (but not everyone) be enough?
+> The basic idea is to add an ioctl which walks the free space btrees in
+> each allocation group and simply discard everythin that is free.  Given
+> that XFS doesn't gragment freespace very much that's a very efficient
+> way to do it.  In addition we also already support setting a threshold
+> under which we don't bother to discard an extent, it's currently
+> hardcoded in the helper tool.  In the future we could also add things
+> like a sequence number in the AG headers if anything has changed at all,
+> but let's leave those optimizations until we need them.
+> 
+> XFS locks the allocation btree using the btree buffers, so we do not
+> block allocations from any extent which we're not currenly discarding.
+> 
+> Now the caveat for that is that we really do want to do the discard
+> synchronously, that is wait for the request to finish.  That's what
+> I've implemented in this patch, but it's the part I haven't been
+> able to test so far.  (and yes, this should be separate patch, but it's
+> really just an RFC for now)
+> 
+> Mark, any chance to try it?  Just create an XFS filesystem, age it a
+> bit and then call the attached little trim.c program on the mountmoint
+> (or any file inside the filesystem for that matter)
+..
 
-I suppose sysadmins use "sudo ps" instead of "ps", but that would be a
-bit inconvenient and would certainly clutter the sudo logs.  It might
-also cause people to decide it's more trouble than it's worth, and
-configure their system not restrict the various proc files.
-
-That's why I think it would be useful to restrict the number of times
-any process in the system can sample the files before the system
-starts inserting random delays, thus destroying the usefulness of
-using wchan for mounting timing attacks, without removing system
-functionality.
-
-						- Ted
-
+Looking at it now.  Thanks, Christoph!
