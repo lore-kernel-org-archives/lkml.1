@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbZHPSYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbZHPS0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755604AbZHPSYY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 14:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbZHPSYX
+	id S1755630AbZHPS0m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 14:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbZHPS0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 14:24:23 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47489 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751573AbZHPSYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 14:24:22 -0400
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
- slot is freed)
-From: James Bottomley <James.Bottomley@suse.de>
-To: Mark Lord <liml@rtr.ca>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Worley <worleys@gmail.com>,
-       Matthew Wilcox <matthew@wil.cx>, Bryan Donlan <bdonlan@gmail.com>,
-       david@lang.hm, Greg Freemyer <greg.freemyer@gmail.com>,
-       Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-In-Reply-To: <4A884D9C.3060603@rtr.ca>
-References: <200908122007.43522.ngupta@vflare.org>
-	 <20090813151312.GA13559@linux.intel.com>
-	 <20090813162621.GB1915@phenom2.trippelsdorf.de>
-	 <alpine.DEB.1.10.0908130931400.28013@asgard.lang.hm>
-	 <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>
-	 <alpine.DEB.1.10.0908131342460.28013@asgard.lang.hm>
-	 <3e8340490908131354q167840fcv124ec56c92bbb830@mail.gmail.com>
-	 <4A85E0DC.9040101@rtr.ca>
-	 <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com>
-	 <20090814234539.GE27148@parisc-linux.org>
-	 <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com>
-	 <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca>
-	 <1250344518.4159.4.camel@mulgrave.site>
-	 <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk>
-	 <20090816083434.2ce69859@infradead.org>
-	 <1250437927.3856.119.camel@mulgrave.site>  <4A8834B6.2070104@rtr.ca>
-	 <1250446047.3856.273.camel@mulgrave.site>  <4A884D9C.3060603@rtr.ca>
-Content-Type: text/plain
-Date: Sun, 16 Aug 2009 13:24:12 -0500
-Message-Id: <1250447052.3856.294.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 16 Aug 2009 14:26:41 -0400
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:51717 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753054AbZHPS0k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 14:26:40 -0400
+Date: Sun, 16 Aug 2009 23:56:29 +0530
+From: Dipankar Sarma <dipankar@in.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <lenb@kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Li, Shaohua" <shaohua.li@intel.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
+       "Brown, Len" <len.brown@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>,
+       "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+Message-ID: <20090816182629.GA31027@in.ibm.com>
+Reply-To: dipankar@in.ibm.com
+References: <20090806015855.GA20596@sli10-desk.sh.intel.com> <20090809120818.GA1338@ucw.cz> <200908091522.02898.rjw@sisk.pl> <20090810081941.GA18649@elf.ucw.cz> <1249950137.11545.38184.camel@localhost.localdomain> <20090812115806.GK24339@elf.ucw.cz> <20090812195753.GA14649@in.ibm.com> <alpine.LFD.2.00.0908122036580.22946@localhost.localdomain> <20090813045931.GB14649@in.ibm.com> <20090814113021.GL32418@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090814113021.GL32418@elf.ucw.cz>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-08-16 at 14:19 -0400, Mark Lord wrote:
-> James Bottomley wrote:
-> >
-> > Heh, OS writers not having access to the devices is about par for the
-> > current course.
-> ..
+On Fri, Aug 14, 2009 at 01:30:21PM +0200, Pavel Machek wrote:
+> > 
+> > It depends on the hypervisor implementation. On pseries (powerpc)
+> > hypervisor, for example, they are different. By offlining a vcpu
+> > (and in turn shutting a cpu), you will actually create a configuration
+> > change in the VM that is visible to other systems management tools
+> > which may not be what the system administrator wanted. Ideally,
+> > we would like to distinguish between these two states.
+> > 
+> > Hope that suffices as an example.
 > 
-> Pity the Linux Foundation doesn't simply step in and supply hardware
-> to us for new tech like this.  Cheap for them, expensive for folks like me.
+> So... you have something like "physically pulling out hotplug cpu" on
+> powerpc.
 
-Um, to give a developer a selection of manufacturers' SSDs at retail
-prices, you're talking several thousand dollars  ... in these lean
-times, that would be two or three developers not getting travel
-sponsorship per chosen SSD recipient.  It's not a worthwhile tradeoff.
+If any system can do physical unplug, then it should do "offline"
+with configuration changes reflected in the hypervisor and
+other system configuration software.
 
-The best the LF can likely do is try to explain to the manufacturers
-that handing out samples at linux conferences (like plumbers) is in
-their own interests.  It can also manage the handout if necessary
-through its HW lending library.
+> But maybe it is useful to take already offline cpus (from linux side),
+> and make that visible to hypervisor, too.
+> 
+> So maybe something like "echo 1 > /sys/devices/system/cpu/cpu1/unplug"
+> would be more useful for hypervisor case?
 
-James
+On pseries, we do an RTAS call ("stop-cpu") which effectively permantently
+de-allocates it from the VM hands over the control to hypervisor. The
+hypervisors may do whatever it wants including allocating it to
+another VM. Once gone, the original VM may not get it back depending
+on the situation.
 
+The point I am making is that we may not always want to *release*
+the CPU to hypervisor and induce a configuration change. That needs
+to be reflected by extending the existing user interface - hence
+the proposal for - /sys/devices/system/cpu/cpu<#>/state and
+/sys/devices/system/cpu/cpu<#>/available_states. It allows
+ceding to hypervisor without de-allocating. It is a minor
+extension of the existing interface keeping backwards compatibility
+and platforms can allow what make sense.
 
+Thanks
+Dipankar
