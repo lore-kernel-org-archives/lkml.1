@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbZHPKSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbZHPK33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbZHPKSL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 06:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbZHPKSL
+	id S1753964AbZHPK33 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 06:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbZHPK32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 06:18:11 -0400
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:57064 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751887AbZHPKSJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 06:18:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=QzvXtJIzDOExq7bbu4vwGcSzOlst+PryJXT1UWMJCk1itb6S4YbehhYZq8AccPKRQX
-         y+d2kgoKKjK9s8hORlsC6yDLgD6wUpZD/NLAANT2SehHK1LyAQjDnjL/p/0iGJRAqGfg
-         vZQypq8B8/IxU5ZdGS49LKq/LA8COEdGaB7wA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: mm/ipw2200 regression (was: Re: linux-next: Tree for August 6)
-Date: Sun, 16 Aug 2009 12:17:12 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc1; KDE/4.2.4; i686; ; )
-Cc: linux-mm@kvack.org, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-References: <20090806192209.513abec7.sfr@canb.auug.org.au> <200908151856.48596.bzolnier@gmail.com> <20090816173101.6e47b702.sfr@canb.auug.org.au>
-In-Reply-To: <20090816173101.6e47b702.sfr@canb.auug.org.au>
+	Sun, 16 Aug 2009 06:29:28 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44311 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751698AbZHPK31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 06:29:27 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
+Date: Sun, 16 Aug 2009 12:29:56 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-acpi" <linux-acpi@vger.kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0908141717350.2922-100000@iolanthe.rowland.org> <200908142331.26855.rjw@sisk.pl>
+In-Reply-To: <200908142331.26855.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200908161217.12963.bzolnier@gmail.com>
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908161229.56362.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-On Sunday 16 August 2009 09:31:01 Stephen Rothwell wrote:
-> Hi Bart,
-> 
-> On Sat, 15 Aug 2009 18:56:48 +0200 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> >
-> > The bug managed to slip into Linus' tree..
+On Friday 14 August 2009, Rafael J. Wysocki wrote:
+> On Friday 14 August 2009, Alan Stern wrote:
+> > On Fri, 14 Aug 2009, Rafael J. Wysocki wrote:
 > > 
-> > ipw2200: Firmware error detected.  Restarting.
-> > ipw2200/0: page allocation failure. order:6, mode:0x8020
-> > Pid: 945, comm: ipw2200/0 Not tainted 2.6.31-rc6-dirty #69
->                                                    ^^^^^
-> So, this is rc6 plus what?  (just in case it is relevant).
+> > > On Friday 14 August 2009, Alan Stern wrote:
+> > > > On Thu, 13 Aug 2009, Rafael J. Wysocki wrote:
+> > > > 
+> > > > > > No, I've only tested it with a few selected drivers.  I'm going to try the
+> > > > > > "async everyone" scenario, though.
+> > > > > 
+> > > > > On HP nx6325 booted with init=/bin/bash it doesn't pass the
+> > > > > 'echo devices > /sys/power/pm_test && echo mem > /sys/power/state' test.
+> > > > > 
+> > > > > The suspend part actually seems to work, but the resume part crashes
+> > > > > miserably.
+> > > > 
+> > > > Any details?  Can you tell where it crashes?
+> > > 
+> > > Unfortunately it ends up in a continuous flood of backtraces, so I can't
+> > > say much.
+> > 
+> > Same sort of thing happened with me, but it appeared to happen during 
+> > suspend.  (I say "appeared" because the system froze for a while at the 
+> > start of the suspend until I hit a key.  This may be related to all the 
+> > recent churn in the TTY layer, combined with the fact that I was using 
+> > a serial console.  It didn't help -- none of the backtraces got sent 
+> > out the serial port.)
+> > 
+> > > However, if I set async_suspend for all PCI devices, as well as for ACPI battery
+> > > and i8042, everything apparently works, even with real suspend-resume.
+> > 
+> > I think it would be worthwhile to track down these unknown problems and 
+> > dependencies.  It won't be easy, though...
+> 
+> Agreed.
 
-In this case plus upcoming staging/rt{286,287,307}0 patches (irrelevant,
-they are not used on this machine and the problem happened many times
-with vanilla -next kernels in the past)..
+One data point: I set async_syspend for all ACPI devices in addition to PCI
+devices and that broke things.
 
-After going through mm commits in Linus' tree I think that the bug came
-the other way around, from akpm's tree to Linus' tree and then to -next
-(page allocator changes seem to match "the suspect's profile")..
+Which isn't really strange given that PCI devices generally have ACPI
+counterparts linked to them that I guess should be suspended later.
+
+Thanks,
+Rafael
