@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752020AbZHPQJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751210AbZHPQ2D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752020AbZHPQJN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 12:09:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZHPQJM
+	id S1751210AbZHPQ2D (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 12:28:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbZHPQ2C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 12:09:12 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:34689 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751201AbZHPQJL (ORCPT
+	Sun, 16 Aug 2009 12:28:02 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:38407 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824AbZHPQ2B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 12:09:11 -0400
-Date: Sun, 16 Aug 2009 12:09:12 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Matthew Garrett <mjg59@srcf.ucam.org>, <linux-usb@vger.kernel.org>,
-       <linux-pci@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
-In-Reply-To: <200908152344.46898.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0908161158210.6522-100000@netrider.rowland.org>
+	Sun, 16 Aug 2009 12:28:01 -0400
+Date: Sun, 16 Aug 2009 17:27:55 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Wim Van Sebroeck <wim@iguana.be>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
+Message-ID: <20090816162755.GA14971@sirena.org.uk>
+References: <1249922635-31864-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1249922635-31864-5-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <20090816132812.GO4302@infomag.iguana.be>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090816132812.GO4302@infomag.iguana.be>
+X-Cookie: Long life is in store for you.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [PATCH 5/5] [WATCHDOG] Add support for WM831x watchdog
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Aug 2009, Rafael J. Wysocki wrote:
+On Sun, Aug 16, 2009 at 03:28:12PM +0200, Wim Van Sebroeck wrote:
 
-> On Saturday 15 August 2009, Matthew Garrett wrote:
-> > On Sat, Aug 15, 2009 at 11:21:53PM +0200, Rafael J. Wysocki wrote:
-> > 
-> > > I can even imagine a scenario where this setting might be useful, like when
-> > > we don't want a network adapter to be woken up from the outside.
-> > 
-> > I think in that case we'd probably just want the interface to be downed? 
-> > Some of this is going to require device-specific policy, I think - for 
-> > the network case we probably want something in between IF_RUNNING and 
-> > IF_DOWN (IF_CARRIER, perhaps) that indicates that we want the PHY to be 
-> > powered. Pushing this out to sysfs would mean we'd have a consistent 
-> > interface but varying semantics, and I'm not convinced that's an 
-> > especially helpful interface.
-> 
-> I'm not disagreeing with that.
-> 
-> At this point I'd like to know the Alan's opinion.  I would gladly use the
-> 'runtime_forbidden' flag only, but if we overlook something now, it's going
-> to be difficult to fix later.
+> > +#define WM831X_WDOG_PRIMACT_WIDTH                    2  /* WDOG_PRIMACT - [5:4] */
 
-The notion of "remote wakeup" is more or less the same for all devices,
-and it can effectively be abstracted into the core.  Other notions,
-like IF_CARRIER, are more device-dependent.  They must be handled at
-the bus or driver level, not in the core.
+> These lines exceed 80 characters. Is there any reason why we can't reduce the spacing between the name and the value?
 
-The real question is whether we should export a "may_runtime_wakeup"  
-flag.  If we don't then we prevent the use of a degraded
-power-management mode in devices with broken wakeup support.  Perhaps 
-that's okay, I don't know.
+> Just let me know how we will proceed on my second question. I can then add this to the linux-2.6-watchdog-next tree.
 
-Which reminds me...  In addition to these flags controlling what
-settings should be enabled, maybe we should add a flag to record
-whether or not remote wakeup was turned on when the device was last
-suspended.  Although the core wouldn't use it, such a flag might be
-very convenient for drivers.
-
-Alan Stern
-
+The register definitions are automatically generated using the chip
+design information using a tool which I'm not the only user for.  It
+simplifies maintinance to keep the output code as-is since it allows
+easier comparison with future devices with the same or similar IP in
+them.  If anything were done I'd remove the comments.
