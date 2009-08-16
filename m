@@ -1,46 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbZHPPAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbZHPPED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754799AbZHPPAZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 11:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZHPPAY
+	id S1754833AbZHPPED (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 11:04:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbZHPPEC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 11:00:24 -0400
-Received: from www.tglx.de ([62.245.132.106]:59260 "EHLO www.tglx.de"
+	Sun, 16 Aug 2009 11:04:02 -0400
+Received: from khc.piap.pl ([195.187.100.11]:39151 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752744AbZHPPAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 11:00:24 -0400
-Date: Sun, 16 Aug 2009 17:00:11 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Christoph Hellwig <hch@infradead.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [patch 00/11] Cleanup unload_nls() calls
-In-Reply-To: <20090816144657.GA9549@infradead.org>
-Message-ID: <alpine.LFD.2.00.0908161659450.2782@localhost.localdomain>
-References: <20090814122657.114987508@linutronix.de> <20090816144657.GA9549@infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752746AbZHPPEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 11:04:01 -0400
+To: <linux-kernel@vger.kernel.org>
+Subject: Reservation of resources shared by two PCI devices
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sun, 16 Aug 2009 17:04:00 +0200
+Message-ID: <m3bpmfhkbj.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Aug 2009, Christoph Hellwig wrote:
+Hi,
 
-> On Fri, Aug 14, 2009 at 12:42:36PM -0000, Thomas Gleixner wrote:
-> > While looking through the BKL call sites in fs/* I noticed that most
-> > callsites of unload_nls() do 
-> > 
-> > 	  if (nls) 
-> > 	     	   unload_nls(nls);
-> > 
-> > The patch series moves the NULL pointer check into unload_nls() and
-> > cleans up the various users.
-> 
-> This looks all good to me.  But I'd just make it a single patch..
+I have a PCI card with a bridge and two devices behind it.
+There is a custom circuitry connected to the first PCI device,
+controlling operation of both devices.
 
-Sure, should go via Al, right ?
+The IO and possibly MMIO resources used for controlling the custom
+circuitry (part of device #0 registers) are not used for other purposes.
+Access is controlled by a spin lock.
 
-Thanks,
+What's the best way to handle IO/MMIO resource reservations of this
+shared part of device #0?
 
-	tglx
- 
+Should I switch away from pci_register_driver()?
+-- 
+Krzysztof Halasa
