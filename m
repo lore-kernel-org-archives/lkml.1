@@ -1,139 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbZHPSn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbZHPS4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755656AbZHPSn6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 14:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbZHPSn5
+	id S1755683AbZHPS4l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 14:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbZHPS4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 14:43:57 -0400
-Received: from 1-1-12-13a.han.sth.bostream.se ([82.182.30.168]:33667 "EHLO
-	palpatine.hardeman.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbZHPSn4 (ORCPT
+	Sun, 16 Aug 2009 14:56:40 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:43425 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754208AbZHPS4j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 14:43:56 -0400
-Date: Sun, 16 Aug 2009 20:43:50 +0200
-From: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       jbarnes@virtuousgeek.org, akpm@linux-foundation.org,
-       dmitry.torokhov@gmail.com
-Subject: Re: [patch 0/2] Winbond IR Driver - v2
-Message-ID: <20090816184350.GA28497@hardeman.nu>
-Mail-Followup-To: Maxim Levitsky <maximlevitsky@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-	jbarnes@virtuousgeek.org, akpm@linux-foundation.org,
-	dmitry.torokhov@gmail.com
-References: <20090809095645.198777507@hardeman.nu>
- <1250305347.18122.4.camel@maxim-laptop>
- <20090815201019.GB27484@hardeman.nu>
- <1250374211.1928.27.camel@maxim-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1250374211.1928.27.camel@maxim-laptop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sun, 16 Aug 2009 14:56:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=dKLMke73CfcxJB+uep6kL43T3PJoxPZr4DffizPTTuy5g/u2Y3GG7k/JKXWP5T07qk
+         pS25G8+aOIomCej6+PNGmOI/Le9eTjYTeCUrNG45w02onmwWMSZ7ewglN6HyLiwkKHDZ
+         FLKUqru4TnT6ersnlQ45gHShADlIw5tkggfas=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>
+Subject: [PATCH] perf tools: Librarize sample type and attr finding from headers
+Date: Sun, 16 Aug 2009 20:56:37 +0200
+Message-Id: <1250448997-30715-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1250443461-28130-1-git-send-email-fweisbec@gmail.com>
+References: <1250443461-28130-1-git-send-email-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 16, 2009 at 01:10:11AM +0300, Maxim Levitsky wrote:
->On Sat, 2009-08-15 at 22:10 +0200, David Härdeman wrote:
->> On Sat, Aug 15, 2009 at 06:02:27AM +0300, Maxim Levitsky wrote:
->>>
->>> Then why not to implement lirc driver?
->>
->> That's a fair question, but I'm afraid you're putting the cart before
->> the horse.
->
->No, I just want to write the driver that fully exposes the hardware. I
->don't care if it has to be outside or not.
+Librarize the sample type and attr fetching from perf data file
+headers so that we can also use it from perf trace.
 
-That's not a very user-friendly sentiment. The entire idea is to extend 
-the input subsystem so that it fully exposes the hardware *and* gives 
-users the benefit of in-kernel drivers.
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+---
+ tools/perf/builtin-report.c |   44 +++++-------------------------------------
+ tools/perf/util/header.c    |   35 ++++++++++++++++++++++++++++++++++
+ tools/perf/util/header.h    |    4 +++
+ 3 files changed, 45 insertions(+), 38 deletions(-)
 
->> The question is not why anyone would want to write an in-kernel driver
->> but rather why anyone would want to write an out-of-kernel driver.
->>
->> There have been repeated attempts to get LIRC merged with the kernel,
->> and the feedback has been pretty consistent - make it part of the input
->> subsystem.
->>
->> I have written the driver for theo input system and it limits the driver
->> somewhat. I am working on extending the input system to accomodate IR
->> drivers (see the discussion of EV_IR on the linux-input list).
->
->The EV_IR thing is that he attempts to put all IR decoding in kernel,
->and on top of that create a configfs config system.
-
-I never proposed a configfs system. I only proposed a part of Jon 
-Smirl's EV_IR functionality. I think the configfs system as well as the 
-in-kernel protocol _en_coders are overengineering.
-
->I first thought it would be nice, but then realized that this is really
->bad idea.
->Currently LIRC has very oiled system for decoding pretty much every
->remote that exist. It can cope with all kind of troubles, including not
->very accurate receivers.
-
-I think you've misunderstood my EV_IR suggestion on the linux-input 
-list. Part of that proposal is to allow drivers to generate IR_RAW 
-timing events (if asked to do so via an ioctl), then you could continue 
-to use lirc with some minimal changes to the lirc daemon while still 
-getting the benefits of in-kernel drivers. I have a hard time seeing 
-what would be wrong with that? Whether the input subsystem *also* 
-includes (optional) IR decoding or not should not matter to lirc fans as 
-long as it includes some kind of IR_RAW support (which it does both in 
-Jon's proposal and in mine).
-
->On top of that there are pure userspace devices, like a IR diode
->connected to soundcard. It would be nice to do all the raw signal
->decoding in one place. Once signal is decoded, lirc forwards the input
->signal to the kernel via uinput, so it is a part of input system.
-
-That's a red herring, there is always going to be esoteric DIY hardware, 
-and no matter which API is used in the kernel, that hardware can always 
-use user-space drivers.
-
->The way kernel hands in the raw IR data to lirc doesn't matter much. It
->is really just a queue of numbers. It can be forced into input system,
->but there is really no need for that.
-
-There really is a need if you want in-kernel drivers.
-
->> Feel free to help me out in implementing that API, and porting LIRC
->> drivers, and all the benefits of in-kernel drivers will flow from that
->> work.
->
->This isn't a bad idea.
-
-Good, we agree on this point, which is the most important one. IR_RAW 
-should be enough for the lirc daemon, right? So let's make sure 
-something like that gets added to the input subsystem and we can take it 
-from there...
-
->>>This driver as I understand is a driver for single remote shipped with
->>>the notebook.
->>
->> It's a driver for a winbond chipset shipped with many Intel desktop
->> "media" motherboards (DP35DP, DG33TL, DX388T, DX488T2, DP455G, DG45ID
->> and DG45FC are the ones I'm aware of).
->
->But it won't work with my JVC remote?....
-
-Not sure what you JVC remote has to do with the Intel mainboards that 
-include the WPCD376I chipset.
-
-Anyway, based on past experience of JVC remotes I'm guessing that your 
-remote uses some version of the NEC protocol, in that case it will be 
-supported...and IR_RAW (or something similar) will be supported if it is 
-accepted by the input subsystem maintainers so you will additionally be 
-able to use that air conditioning remote which implements a completely 
-wonky IR protocol together with lirc - if you want to...
-
-Regards,
-David Härdeman
-
-(trimmed some people of the CC list which are unlikely to be interested 
-in this discussion, I hope Dmitry will speak up soon).
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index 05d52ff..c6326de 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -70,6 +70,8 @@ static int		cwdlen;
+ static struct rb_root	threads;
+ static struct thread	*last_match;
+ 
++static struct perf_header *header;
++
+ static
+ struct callchain_param	callchain_param = {
+ 	.mode	= CHAIN_GRAPH_REL,
+@@ -1319,29 +1321,12 @@ static void trace_event(event_t *event)
+ 	dump_printf(".\n");
+ }
+ 
+-static struct perf_header	*header;
+-
+-static struct perf_counter_attr *perf_header__find_attr(u64 id)
+-{
+-	int i;
+-
+-	for (i = 0; i < header->attrs; i++) {
+-		struct perf_header_attr *attr = header->attr[i];
+-		int j;
+-
+-		for (j = 0; j < attr->ids; j++) {
+-			if (attr->id[j] == id)
+-				return &attr->attr;
+-		}
+-	}
+-
+-	return NULL;
+-}
+-
+ static int
+ process_read_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+-	struct perf_counter_attr *attr = perf_header__find_attr(event->read.id);
++	struct perf_counter_attr *attr;
++
++	attr = perf_header__find_attr(event->read.id, header);
+ 
+ 	if (show_threads) {
+ 		const char *name = attr ? __event_name(attr->type, attr->config)
+@@ -1405,23 +1390,6 @@ process_event(event_t *event, unsigned long offset, unsigned long head)
+ 	return 0;
+ }
+ 
+-static u64 perf_header__sample_type(void)
+-{
+-	u64 type = 0;
+-	int i;
+-
+-	for (i = 0; i < header->attrs; i++) {
+-		struct perf_header_attr *attr = header->attr[i];
+-
+-		if (!type)
+-			type = attr->attr.sample_type;
+-		else if (type != attr->attr.sample_type)
+-			die("non matching sample_type");
+-	}
+-
+-	return type;
+-}
+-
+ static int __cmd_report(void)
+ {
+ 	int ret, rc = EXIT_FAILURE;
+@@ -1460,7 +1428,7 @@ static int __cmd_report(void)
+ 	header = perf_header__read(input);
+ 	head = header->data_offset;
+ 
+-	sample_type = perf_header__sample_type();
++	sample_type = perf_header__sample_type(header);
+ 
+ 	if (!(sample_type & PERF_SAMPLE_CALLCHAIN)) {
+ 		if (sort__has_parent) {
+diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+index b92a457..a37a222 100644
+--- a/tools/perf/util/header.c
++++ b/tools/perf/util/header.c
+@@ -243,3 +243,38 @@ struct perf_header *perf_header__read(int fd)
+ 
+ 	return self;
+ }
++
++u64 perf_header__sample_type(struct perf_header *header)
++{
++	u64 type = 0;
++	int i;
++
++	for (i = 0; i < header->attrs; i++) {
++		struct perf_header_attr *attr = header->attr[i];
++
++		if (!type)
++			type = attr->attr.sample_type;
++		else if (type != attr->attr.sample_type)
++			die("non matching sample_type");
++	}
++
++	return type;
++}
++
++struct perf_counter_attr *
++perf_header__find_attr(u64 id, struct perf_header *header)
++{
++	int i;
++
++	for (i = 0; i < header->attrs; i++) {
++		struct perf_header_attr *attr = header->attr[i];
++		int j;
++
++		for (j = 0; j < attr->ids; j++) {
++			if (attr->id[j] == id)
++				return &attr->attr;
++		}
++	}
++
++	return NULL;
++}
+diff --git a/tools/perf/util/header.h b/tools/perf/util/header.h
+index bf28044..5d0a72e 100644
+--- a/tools/perf/util/header.h
++++ b/tools/perf/util/header.h
+@@ -31,6 +31,10 @@ struct perf_header_attr *
+ perf_header_attr__new(struct perf_counter_attr *attr);
+ void perf_header_attr__add_id(struct perf_header_attr *self, u64 id);
+ 
++u64 perf_header__sample_type(struct perf_header *header);
++struct perf_counter_attr *
++perf_header__find_attr(u64 id, struct perf_header *header);
++
+ 
+ struct perf_header *perf_header__new(void);
+ 
+-- 
+1.6.2.3
 
