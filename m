@@ -1,332 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbZHPT36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbZHPTaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755877AbZHPT36 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 15:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755802AbZHPT34
+	id S1755828AbZHPTaE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 15:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbZHPTaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 15:29:56 -0400
+	Sun, 16 Aug 2009 15:30:01 -0400
 Received: from mail-fx0-f215.google.com ([209.85.220.215]:49711 "EHLO
 	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755772AbZHPT3x (ORCPT
+	with ESMTP id S1755880AbZHPT37 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 15:29:53 -0400
+	Sun, 16 Aug 2009 15:29:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=VSxtiQ6ed+cCvfvAQhygURCrFhT10aMVMjWjkzObH8OWlA4bUqqQK9OAqYLnnthtrC
-         IHg+j68QMQb4WLfRMi38wF/Np/7r5hhAJkE7pT7rZPh0lRmpXlE2sPeDTVnQNUwNC2Im
-         8AbJH0uQApqCS05hwf0R7OW4UYT8jExUl9YY8=
+        b=NwQuOn9tO59a7EqZoUVVeUVHqJOrfJlYnucifHOdfJaot9AiN06YhcWx/8mIuvSrMk
+         bGeg0vN5K9jY/rhfXEY+3SC8hTdxzMf494XwU4GOeukFiZduAjMdyFZwYMrEfQks1D9S
+         kGu935h9Yafbabklh4xgQ8gganLXUzMEpuDys=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: devel@driverdev.osuosl.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 16 Aug 2009 21:30:06 +0200
-Message-Id: <20090816193006.3789.39458.sendpatchset@localhost.localdomain>
+Date: Sun, 16 Aug 2009 21:30:12 +0200
+Message-Id: <20090816193012.3789.83965.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
 References: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
-Subject: [PATCH 05/22] Staging: rtxxx0: kill RT8270_USB_DEVICES() macro
+Subject: [PATCH 06/22] Staging: rtxxx0: PID checking fixes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtxxx0: kill RT8270_USB_DEVICES() macro
+Subject: [PATCH] Staging: rtxxx0: PID checking fixes
+
+* rt3070:
+  - add missing pid_nr() invocations
+
+* rt{28,30}70:
+  - do not treat PID 0 as valid
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rt2870/2870_main_dev.c |  118 +++++++++++++++++++++++++
- drivers/staging/rt2870/rt2870.h        |  151 ---------------------------------
- 2 files changed, 116 insertions(+), 153 deletions(-)
+ drivers/staging/rt2860/rt_linux.h      |    2 +-
+ drivers/staging/rt2870/2870_main_dev.c |    6 +++---
+ drivers/staging/rt2870/rt2870.h        |    4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
+Index: b/drivers/staging/rt2860/rt_linux.h
+===================================================================
+--- a/drivers/staging/rt2860/rt_linux.h
++++ b/drivers/staging/rt2860/rt_linux.h
+@@ -166,7 +166,7 @@ typedef	struct pid *	THREAD_PID;
+ #define	THREAD_PID_INIT_VALUE	NULL
+ #define	GET_PID(_v)	find_get_pid(_v)
+ #define	GET_PID_NUMBER(_v)	pid_nr(_v)
+-#define CHECK_PID_LEGALITY(_pid)	if (pid_nr(_pid) >= 0)
++#define CHECK_PID_LEGALITY(_pid)	if (pid_nr(_pid) > 0)
+ #define KILL_THREAD_PID(_A, _B, _C)	kill_pid(_A, _B, _C)
+ #endif
+ 
 Index: b/drivers/staging/rt2870/2870_main_dev.c
 ===================================================================
 --- a/drivers/staging/rt2870/2870_main_dev.c
 +++ b/drivers/staging/rt2870/2870_main_dev.c
-@@ -59,9 +59,123 @@ MODULE_VERSION(STA_DRIVER_VERSION);
- extern INT __devinit rt28xx_probe(IN void *_dev_p, IN void *_dev_id_p,
- 									IN UINT argc, OUT PRTMP_ADAPTER *ppAd);
+@@ -1061,7 +1061,7 @@ VOID RT28xxThreadTerminate(
+ 	}
+ #endif
+ #ifdef RT30xx
+-	if (pObj->MLMEThr_pid)
++	if (pid_nr(pObj->MLMEThr_pid) > 0)
+ 	{
+ 		printk("Terminate the MLMEThr_pid=%d!\n", pid_nr(pObj->MLMEThr_pid));
+ 		mb();
+@@ -1082,7 +1082,7 @@ VOID RT28xxThreadTerminate(
+ 		}
+ 	}
  
-+struct usb_device_id rtusb_usb_id[] = {
-+	{ USB_DEVICE(0x148F, 0x2770) }, /* Ralink */
-+#ifndef RT30xx
-+	{ USB_DEVICE(0x1737, 0x0071) }, /* Linksys WUSB600N */
-+	{ USB_DEVICE(0x1737, 0x0070) }, /* Linksys */
-+#endif
-+	{ USB_DEVICE(0x148F, 0x2870) }, /* Ralink */
-+	{ USB_DEVICE(0x148F, 0x3070) }, /* Ralink 3070 */
-+#ifdef RT30xx
-+	{ USB_DEVICE(0x148F, 0x3071) }, /* Ralink 3071 */
-+	{ USB_DEVICE(0x148F, 0x3072) }, /* Ralink 3072 */
-+#endif
-+	{ USB_DEVICE(0x0B05, 0x1731) }, /* Asus */
-+	{ USB_DEVICE(0x0B05, 0x1732) }, /* Asus */
-+	{ USB_DEVICE(0x0B05, 0x1742) }, /* Asus */
-+	{ USB_DEVICE(0x0DF6, 0x0017) }, /* Sitecom */
-+	{ USB_DEVICE(0x0DF6, 0x002B) }, /* Sitecom */
-+	{ USB_DEVICE(0x0DF6, 0x002C) }, /* Sitecom */
-+#ifdef RT30xx
-+	{ USB_DEVICE(0x0DF6, 0x003E) }, /* Sitecom 3070 */
-+#endif
-+	{ USB_DEVICE(0x0DF6, 0x002D) }, /* Sitecom */
-+	{ USB_DEVICE(0x0DF6, 0x0039) }, /* Sitecom 2770 */
-+#ifndef RT30xx
-+	{ USB_DEVICE(0x0DF6, 0x003F) }, /* Sitecom WL-608 */
-+#endif
-+	{ USB_DEVICE(0x14B2, 0x3C06) }, /* Conceptronic */
-+	{ USB_DEVICE(0x14B2, 0x3C28) }, /* Conceptronic */
-+	{ USB_DEVICE(0x2019, 0xED06) }, /* Planex Communications, Inc. */
-+#ifndef RT30xx
-+	{ USB_DEVICE(0x2019, 0xED14) }, /* Planex Communications, Inc. */
-+#endif
-+	{ USB_DEVICE(0x2019, 0xAB25) }, /* Planex Communications, Inc. RT3070 */
-+	{ USB_DEVICE(0x07D1, 0x3C09) }, /* D-Link */
-+	{ USB_DEVICE(0x07D1, 0x3C11) }, /* D-Link */
-+#ifdef RT30xx
-+	{ USB_DEVICE(0x2001, 0x3C09) }, /* D-Link */
-+	{ USB_DEVICE(0x2001, 0x3C0A) }, /* D-Link 3072*/
-+#endif
-+	{ USB_DEVICE(0x14B2, 0x3C07) }, /* AL */
-+	{ USB_DEVICE(0x14B2, 0x3C12) }, /* AL 3070 */
-+	{ USB_DEVICE(0x050D, 0x8053) }, /* Belkin */
-+#ifndef RT30xx
-+	{ USB_DEVICE(0x050D, 0x815C) }, /* Belkin */
-+	{ USB_DEVICE(0x050D, 0x825a) }, /* Belkin */
-+#endif
-+	{ USB_DEVICE(0x14B2, 0x3C23) }, /* Airlink */
-+	{ USB_DEVICE(0x14B2, 0x3C27) }, /* Airlink */
-+	{ USB_DEVICE(0x07AA, 0x002F) }, /* Corega */
-+	{ USB_DEVICE(0x07AA, 0x003C) }, /* Corega */
-+	{ USB_DEVICE(0x07AA, 0x003F) }, /* Corega */
-+	{ USB_DEVICE(0x18C5, 0x0012) }, /* Corega 3070 */
-+	{ USB_DEVICE(0x1044, 0x800B) }, /* Gigabyte */
-+#ifdef RT30xx
-+	{ USB_DEVICE(0x1044, 0x800D) }, /* Gigabyte GN-WB32L 3070 */
-+#endif
-+	{ USB_DEVICE(0x15A9, 0x0006) }, /* Sparklan */
-+	{ USB_DEVICE(0x083A, 0xB522) }, /* SMC */
-+	{ USB_DEVICE(0x083A, 0xA618) }, /* SMC */
-+#ifdef RT30xx
-+	{ USB_DEVICE(0x083A, 0x8522) }, /* Arcadyan */
-+	{ USB_DEVICE(0x083A, 0x7512) }, /* Arcadyan 2770 */
-+#endif
-+	{ USB_DEVICE(0x083A, 0x7522) }, /* Arcadyan */
-+#ifdef RT30xx
-+	{ USB_DEVICE(0x083A, 0x7511) }, /* Arcadyan 3070 */
-+#endif
-+	{ USB_DEVICE(0x0CDE, 0x0022) }, /* ZCOM */
-+	{ USB_DEVICE(0x0586, 0x3416) }, /* Zyxel */
-+	{ USB_DEVICE(0x0CDE, 0x0025) }, /* Zyxel */
-+	{ USB_DEVICE(0x1740, 0x9701) }, /* EnGenius */
-+	{ USB_DEVICE(0x1740, 0x9702) }, /* EnGenius */
-+#ifdef RT30xx
-+	{ USB_DEVICE(0x1740, 0x9703) }, /* EnGenius 3070 */
-+#endif
-+	{ USB_DEVICE(0x0471, 0x200f) }, /* Philips */
-+	{ USB_DEVICE(0x14B2, 0x3C25) }, /* Draytek */
-+	{ USB_DEVICE(0x13D3, 0x3247) }, /* AzureWave */
-+#ifdef RT30xx
-+	{ USB_DEVICE(0x13D3, 0x3273) }, /* AzureWave 3070*/
-+#endif
-+	{ USB_DEVICE(0x083A, 0x6618) }, /* Accton */
-+	{ USB_DEVICE(0x15c5, 0x0008) }, /* Amit */
-+	{ USB_DEVICE(0x0E66, 0x0001) }, /* Hawking */
-+	{ USB_DEVICE(0x0E66, 0x0003) }, /* Hawking */
-+	{ USB_DEVICE(0x129B, 0x1828) }, /* Siemens */
-+	{ USB_DEVICE(0x157E, 0x300E) }, /* U-Media */
-+	{ USB_DEVICE(0x050d, 0x805c) },
-+	{ USB_DEVICE(0x1482, 0x3C09) }, /* Abocom*/
-+	{ USB_DEVICE(0x14B2, 0x3C09) }, /* Alpha */
-+	{ USB_DEVICE(0x04E8, 0x2018) }, /* samsung */
-+	{ USB_DEVICE(0x07B8, 0x3070) }, /* AboCom 3070 */
-+	{ USB_DEVICE(0x07B8, 0x3071) }, /* AboCom 3071 */
-+#ifndef RT30xx
-+	{ USB_DEVICE(0x07B8, 0x2870) }, /* AboCom */
-+	{ USB_DEVICE(0x07B8, 0x2770) }, /* AboCom */
-+#else
-+	{ USB_DEVICE(0x07B8, 0x3072) }, /* Abocom 3072 */
-+#endif
-+	{ USB_DEVICE(0x7392, 0x7711) }, /* Edimax 3070 */
-+	{ USB_DEVICE(0x5A57, 0x0280) }, /* Zinwell */
-+	{ USB_DEVICE(0x5A57, 0x0282) }, /* Zinwell */
-+#ifdef RT30xx
-+	{ USB_DEVICE(0x1A32, 0x0304) }, /* Quanta 3070 */
-+#endif
-+	{ USB_DEVICE(0x0789, 0x0162) }, /* Logitec 2870 */
-+	{ USB_DEVICE(0x0789, 0x0163) }, /* Logitec 2870 */
-+	{ USB_DEVICE(0x0789, 0x0164) }, /* Logitec 2870 */
-+#ifndef RT30xx
-+	{ USB_DEVICE(0x7392, 0x7717) }, /* Edimax */
-+#else
-+	{ USB_DEVICE(0x1EDA, 0x2310) }, /* AirTies 3070 */
-+	{ USB_DEVICE(0x1737, 0x0077) }, /* Linksys WUSB54GC-EU v3 */
-+#endif
-+	{ } /* Terminating entry */
-+};
- 
--/* module table */
--struct usb_device_id    rtusb_usb_id[] = RT2870_USB_DEVICES;
- INT const               rtusb_usb_id_len = sizeof(rtusb_usb_id) / sizeof(struct usb_device_id);
- MODULE_DEVICE_TABLE(usb, rtusb_usb_id);
- 
+-	if (pObj->RTUSBCmdThr_pid >= 0)
++	if (pid_nr(pObj->RTUSBCmdThr_pid) > 0)
+ 	{
+ 		printk("Terminate the RTUSBCmdThr_pid=%d!\n", pid_nr(pObj->RTUSBCmdThr_pid));
+ 		mb();
+@@ -1104,7 +1104,7 @@ VOID RT28xxThreadTerminate(
+ 			pObj->RTUSBCmdThr_pid = NULL;
+ 		}
+ 	}
+-	if (pObj->TimerQThr_pid >= 0)
++	if (pid_nr(pObj->TimerQThr_pid) > 0)
+ 	{
+ 		POS_COOKIE pObj = (POS_COOKIE)pAd->OS_Cookie;
+ 		printk("Terminate the TimerQThr_pid=%d!\n", pid_nr(pObj->TimerQThr_pid));
 Index: b/drivers/staging/rt2870/rt2870.h
 ===================================================================
 --- a/drivers/staging/rt2870/rt2870.h
 +++ b/drivers/staging/rt2870/rt2870.h
-@@ -74,157 +74,6 @@
- #define	fRTUSB_BULK_OUT_DATA_FRAG_3				0x00000100
- #define	fRTUSB_BULK_OUT_DATA_FRAG_4				0x00000200
+@@ -456,14 +456,14 @@ VOID RTUSBBulkRxComplete(purbb_t pUrb, s
+ #define RTUSBMlmeUp(pAd)	        \
+ {								    \
+ 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;	\
+-	if(pObj->MLMEThr_pid>0)		    \
++	if (pid_nr(pObj->MLMEThr_pid) > 0) \
+         up(&(pAd->mlme_semaphore)); \
+ }
  
--#ifndef RT30xx
--#define RT2870_USB_DEVICES	\
--{	\
--	{USB_DEVICE(0x148F,0x2770)}, /* Ralink */		\
--	{USB_DEVICE(0x1737,0x0071)}, /* Linksys WUSB600N */	\
--	{USB_DEVICE(0x1737,0x0070)}, /* Linksys */	\
--	{USB_DEVICE(0x148F,0x2870)}, /* Ralink */		\
--	{USB_DEVICE(0x148F,0x3070)}, /* Ralink */		\
--	{USB_DEVICE(0x0B05,0x1731)}, /* Asus */			\
--	{USB_DEVICE(0x0B05,0x1732)}, /* Asus */			\
--	{USB_DEVICE(0x0B05,0x1742)}, /* Asus */			\
--	{USB_DEVICE(0x0DF6,0x0017)}, /* Sitecom */		\
--	{USB_DEVICE(0x0DF6,0x002B)}, /* Sitecom */		\
--	{USB_DEVICE(0x0DF6,0x002C)}, /* Sitecom */		\
--	{USB_DEVICE(0x0DF6,0x002D)}, /* Sitecom */		\
--	{USB_DEVICE(0x0DF6,0x0039)}, /* Sitecom */		\
--	{USB_DEVICE(0x0DF6,0x003F)}, /* Sitecom WL-608 */	\
--	{USB_DEVICE(0x14B2,0x3C06)}, /* Conceptronic */		\
--	{USB_DEVICE(0x14B2,0x3C28)}, /* Conceptronic */		\
--	{USB_DEVICE(0x2019,0xED06)}, /* Planex Communications, Inc. */		\
--	{USB_DEVICE(0x2019,0xED14)}, /* Planex Communications, Inc. */		\
--	{USB_DEVICE(0x2019,0xAB25)}, /* Planex Communications, Inc. RT3070 */		\
--	{USB_DEVICE(0x07D1,0x3C09)}, /* D-Link */		\
--	{USB_DEVICE(0x07D1,0x3C11)}, /* D-Link */		\
--	{USB_DEVICE(0x14B2,0x3C07)}, /* AL */			\
--	{USB_DEVICE(0x14B2,0x3C12)}, /* AL */           \
--	{USB_DEVICE(0x050D,0x8053)}, /* Belkin */		\
--	{USB_DEVICE(0x050D,0x815C)}, /* Belkin */		\
--	{USB_DEVICE(0x050D,0x825a)}, /* Belkin */		\
--	{USB_DEVICE(0x14B2,0x3C23)}, /* Airlink */		\
--	{USB_DEVICE(0x14B2,0x3C27)}, /* Airlink */		\
--	{USB_DEVICE(0x07AA,0x002F)}, /* Corega */		\
--	{USB_DEVICE(0x07AA,0x003C)}, /* Corega */		\
--	{USB_DEVICE(0x07AA,0x003F)}, /* Corega */		\
--	{USB_DEVICE(0x18C5,0x0012)}, /* Corega */		\
--	{USB_DEVICE(0x1044,0x800B)}, /* Gigabyte */		\
--	{USB_DEVICE(0x15A9,0x0006)}, /* Sparklan */		\
--	{USB_DEVICE(0x083A,0xB522)}, /* SMC */			\
--	{USB_DEVICE(0x083A,0xA618)}, /* SMC */			\
--	{USB_DEVICE(0x083A,0x7522)}, /* Arcadyan */		\
--	{USB_DEVICE(0x0CDE,0x0022)}, /* ZCOM */			\
--	{USB_DEVICE(0x0586,0x3416)}, /* Zyxel */		\
--	{USB_DEVICE(0x0CDE,0x0025)}, /* Zyxel */		\
--	{USB_DEVICE(0x1740,0x9701)}, /* EnGenius */		\
--	{USB_DEVICE(0x1740,0x9702)}, /* EnGenius */		\
--	{USB_DEVICE(0x0471,0x200f)}, /* Philips */		\
--	{USB_DEVICE(0x14B2,0x3C25)}, /* Draytek */		\
--	{USB_DEVICE(0x13D3,0x3247)}, /* AzureWave */	\
--	{USB_DEVICE(0x083A,0x6618)}, /* Accton */		\
--	{USB_DEVICE(0x15c5,0x0008)}, /* Amit */			\
--	{USB_DEVICE(0x0E66,0x0001)}, /* Hawking */		\
--	{USB_DEVICE(0x0E66,0x0003)}, /* Hawking */		\
--	{USB_DEVICE(0x129B,0x1828)}, /* Siemens */		\
--	{USB_DEVICE(0x157E,0x300E)},	/* U-Media */	\
--	{USB_DEVICE(0x050d,0x805c)},					\
--	{USB_DEVICE(0x1482,0x3C09)}, /* Abocom*/		\
--	{USB_DEVICE(0x14B2,0x3C09)}, /* Alpha */		\
--	{USB_DEVICE(0x04E8,0x2018)}, /* samsung */  	\
--	{USB_DEVICE(0x07B8,0x3070)}, /* AboCom */		\
--	{USB_DEVICE(0x07B8,0x3071)}, /* AboCom */		\
--	{USB_DEVICE(0x07B8,0x2870)}, /* AboCom */		\
--	{USB_DEVICE(0x07B8,0x2770)}, /* AboCom */		\
--	{USB_DEVICE(0x7392,0x7711)}, /* Edimax */		\
--	{USB_DEVICE(0x5A57,0x0280)}, /* Zinwell */		\
--	{USB_DEVICE(0x5A57,0x0282)}, /* Zinwell */		\
--	{USB_DEVICE(0x0789,0x0162)}, /* Logitec */		\
--	{USB_DEVICE(0x0789,0x0163)}, /* Logitec */		\
--	{USB_DEVICE(0x0789,0x0164)}, /* Logitec */		\
--	{USB_DEVICE(0x7392,0x7717)}, /* Edimax */		\
--	{ }/* Terminating entry */                      \
--}
--#endif
--#ifdef RT30xx
--#define RT2870_USB_DEVICES	\
--{	\
--	{USB_DEVICE(0x148F,0x2770)}, /* Ralink */		\
--	{USB_DEVICE(0x148F,0x2870)}, /* Ralink */		\
--	{USB_DEVICE(0x148F,0x3070)}, /* Ralink 3070 */	\
--	{USB_DEVICE(0x148F,0x3071)}, /* Ralink 3071 */	\
--	{USB_DEVICE(0x148F,0x3072)}, /* Ralink 3072 */	\
--	{USB_DEVICE(0x0B05,0x1731)}, /* Asus */			\
--	{USB_DEVICE(0x0B05,0x1732)}, /* Asus */			\
--	{USB_DEVICE(0x0B05,0x1742)}, /* Asus */			\
--	{USB_DEVICE(0x0DF6,0x0017)}, /* Sitecom */		\
--	{USB_DEVICE(0x0DF6,0x002B)}, /* Sitecom */		\
--	{USB_DEVICE(0x0DF6,0x002C)}, /* Sitecom */		\
--	{USB_DEVICE(0x0DF6,0x003E)}, /* Sitecom 3070 */	\
--	{USB_DEVICE(0x0DF6,0x002D)}, /* Sitecom */		\
--	{USB_DEVICE(0x0DF6,0x0039)}, /* Sitecom 2770 */	\
--	{USB_DEVICE(0x14B2,0x3C06)}, /* Conceptronic */		\
--	{USB_DEVICE(0x14B2,0x3C28)}, /* Conceptronic */		\
--	{USB_DEVICE(0x2019,0xED06)}, /* Planex Communications, Inc. */		\
--	{USB_DEVICE(0x2019,0xAB25)}, /* Planex Communications, Inc. RT3070 */		\
--	{USB_DEVICE(0x07D1,0x3C09)}, /* D-Link */		\
--	{USB_DEVICE(0x07D1,0x3C11)}, /* D-Link */		\
--	{USB_DEVICE(0x2001,0x3C09)}, /* D-Link */		\
--	{USB_DEVICE(0x2001,0x3C0A)}, /* D-Link 3072*/	\
--	{USB_DEVICE(0x14B2,0x3C07)}, /* AL */			\
--	{USB_DEVICE(0x14B2,0x3C12)}, /* AL 3070 */		\
--	{USB_DEVICE(0x050D,0x8053)}, /* Belkin */		\
--	{USB_DEVICE(0x14B2,0x3C23)}, /* Airlink */		\
--	{USB_DEVICE(0x14B2,0x3C27)}, /* Airlink */		\
--	{USB_DEVICE(0x07AA,0x002F)}, /* Corega */		\
--	{USB_DEVICE(0x07AA,0x003C)}, /* Corega */		\
--	{USB_DEVICE(0x07AA,0x003F)}, /* Corega */		\
--	{USB_DEVICE(0x18C5,0x0012)}, /* Corega 3070 */	\
--	{USB_DEVICE(0x1044,0x800B)}, /* Gigabyte */		\
--	{USB_DEVICE(0x1044,0x800D)}, /* Gigabyte GN-WB32L 3070 */		\
--	{USB_DEVICE(0x15A9,0x0006)}, /* Sparklan */		\
--	{USB_DEVICE(0x083A,0xB522)}, /* SMC */			\
--	{USB_DEVICE(0x083A,0xA618)}, /* SMC */			\
--	{USB_DEVICE(0x083A,0x8522)}, /* Arcadyan */		\
--	{USB_DEVICE(0x083A,0x7512)}, /* Arcadyan 2770 */		\
--	{USB_DEVICE(0x083A,0x7522)}, /* Arcadyan */		\
--	{USB_DEVICE(0x083A,0x7511)}, /* Arcadyan 3070 */ \
--	{USB_DEVICE(0x0CDE,0x0022)}, /* ZCOM */			\
--	{USB_DEVICE(0x0586,0x3416)}, /* Zyxel */		\
--	{USB_DEVICE(0x0CDE,0x0025)}, /* Zyxel */		\
--	{USB_DEVICE(0x1740,0x9701)}, /* EnGenius */		\
--	{USB_DEVICE(0x1740,0x9702)}, /* EnGenius */		\
--	{USB_DEVICE(0x1740,0x9703)}, /* EnGenius 3070 */		\
--	{USB_DEVICE(0x0471,0x200f)}, /* Philips */		\
--	{USB_DEVICE(0x14B2,0x3C25)}, /* Draytek */		\
--	{USB_DEVICE(0x13D3,0x3247)}, /* AzureWave */	\
--	{USB_DEVICE(0x13D3,0x3273)}, /* AzureWave 3070*/	\
--	{USB_DEVICE(0x083A,0x6618)}, /* Accton */		\
--	{USB_DEVICE(0x15c5,0x0008)}, /* Amit */			\
--	{USB_DEVICE(0x0E66,0x0001)}, /* Hawking */		\
--	{USB_DEVICE(0x0E66,0x0003)}, /* Hawking */		\
--	{USB_DEVICE(0x129B,0x1828)}, /* Siemens */		\
--	{USB_DEVICE(0x157E,0x300E)},	/* U-Media */	\
--	{USB_DEVICE(0x050d,0x805c)},					\
--	{USB_DEVICE(0x1482,0x3C09)}, /* Abocom*/		\
--	{USB_DEVICE(0x14B2,0x3C09)}, /* Alpha */		\
--	{USB_DEVICE(0x04E8,0x2018)}, /* samsung */  	\
--	{USB_DEVICE(0x07B8,0x3070)}, /* AboCom 3070 */	\
--	{USB_DEVICE(0x07B8,0x3071)}, /* AboCom 3071 */	\
--	{USB_DEVICE(0x07B8,0x3072)}, /* Abocom 3072 */	\
--	{USB_DEVICE(0x7392,0x7711)}, /* Edimax 3070 */	\
--	{USB_DEVICE(0x5A57,0x0280)}, /* Zinwell */		\
--	{USB_DEVICE(0x5A57,0x0282)}, /* Zinwell */		\
--	{USB_DEVICE(0x1A32,0x0304)}, /* Quanta 3070 */		\
--	{USB_DEVICE(0x0789,0x0162)}, /* Logitec 2870 */		\
--	{USB_DEVICE(0x0789,0x0163)}, /* Logitec 2870 */		\
--	{USB_DEVICE(0x0789,0x0164)}, /* Logitec 2870 */		\
--	{USB_DEVICE(0x1EDA,0x2310)}, /* AirTies 3070 */		\
--	{USB_DEVICE(0x1737,0x0077)}, /* Linksys WUSB54GC-EU v3 */	\
--	{ }/* Terminating entry */                      \
--}
--#endif
--
- #define	FREE_HTTX_RING(_p, _b, _t)			\
- {										\
- 	if ((_t)->ENextBulkOutPosition == (_t)->CurWritePosition)				\
+ #define RTUSBCMDUp(pAd)	                \
+ {									    \
+ 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;	\
+-	if(pObj->RTUSBCmdThr_pid>0)		    \
++	if (pid_nr(pObj->RTUSBCmdThr_pid) > 0) \
+ 	    up(&(pAd->RTUSBCmd_semaphore)); \
+ }
+ #endif
