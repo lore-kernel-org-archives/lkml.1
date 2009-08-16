@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752334AbZHPHbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbZHPHqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752334AbZHPHbI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 03:31:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbZHPHbI
+	id S1753391AbZHPHqN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 03:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbZHPHqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 03:31:08 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53996 "EHLO smtps.tip.net.au"
+	Sun, 16 Aug 2009 03:46:13 -0400
+Received: from 1wt.eu ([62.212.114.60]:44368 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750795AbZHPHbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 03:31:07 -0400
-Date: Sun, 16 Aug 2009 17:31:01 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-mm@kvack.org, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: mm/ipw2200 regression (was: Re: linux-next: Tree for August 6)
-Message-Id: <20090816173101.6e47b702.sfr@canb.auug.org.au>
-In-Reply-To: <200908151856.48596.bzolnier@gmail.com>
-References: <20090806192209.513abec7.sfr@canb.auug.org.au>
-	<200908062250.51498.bzolnier@gmail.com>
-	<200908071515.45169.bzolnier@gmail.com>
-	<200908151856.48596.bzolnier@gmail.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	id S1750899AbZHPHqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 03:46:12 -0400
+Date: Sun, 16 Aug 2009 09:40:08 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       "Tippett, Matthew" <Matthew.Tippett@amd.com>,
+       "Langsdorf, Mark" <mark.langsdorf@amd.com>, lenb@kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Li, Samuel" <Samuel.Li@amd.com>
+Subject: Re: [PATCH][ACPI] AC/DC notifier
+Message-ID: <20090816074008.GA11624@1wt.eu>
+References: <FFAE0590FF35E441901B67BD8BA62E950245ABD9@storexmb3.amd.com> <20090812005532.GA31003@srcf.ucam.org> <20090814163233.GC1626@ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__16_Aug_2009_17_31_01_+1000_+6c3MUXKSgOxtZ7o"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090814163233.GC1626@ucw.cz>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__16_Aug_2009_17_31_01_+1000_+6c3MUXKSgOxtZ7o
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Aug 14, 2009 at 06:32:33PM +0200, Pavel Machek wrote:
+> On Wed 2009-08-12 01:55:32, Matthew Garrett wrote:
+> > On Tue, Aug 11, 2009 at 08:51:49PM -0400, Tippett, Matthew wrote:
+> > 
+> > >    From a graphics perspective (your area of expertise), this will allow KMS
+> > >    drivers to do some more intelligent actions based on the ac/dc state. 
+> > >    Some examples of this could be improving the power consumption of the
+> > >    graphics hardware through adapting clock memory/engine settings for
+> > >    reduced power consumption, reducing refresh rate of the display to reduce
+> > >    scanout memory access, adjusting backlight brightness, etc.
+> > 
+> > Right. As you say, my concern is that most of this should belong in 
+> > userspace. Where we risk hardware damage there's an obvious argument for 
+> > doing this in kernel, but we should ensure that that's limited to 
+> > whatever coarse-grain handling is absolutely required rather than doing 
+> > things like touching display brightness.
+> 
+> Yep... Some may want to save power even when AC is online -- like when
+> running on UPS. Some may want max performmance even on battery. 
 
-Hi Bart,
+Wholeheartly agreed. IMHO, there's absolutely no relation between power
+source and the expected performance. It's really frustrating when your
+laptop becomes a snail on battery, as well as it's annoying to hear it
+sound like a hairdryer when plugged to mains. This should only be the
+user's choice. Mine automatically adjusts its frequency on demand,
+regardless of the power source, which provides me with the best
+experience. I think that all the tricks used to save power when running
+on battery were invented by laptop makers to artificially show longer
+lasting eventhough the machine sometimes becomes barely usable. For
+instance, some of them dim the backlight so that you can't read anything
+in full light, so you need a power prolongator to use them outside !
 
-On Sat, 15 Aug 2009 18:56:48 +0200 Bartlomiej Zolnierkiewicz <bzolnier@gmai=
-l.com> wrote:
->
-> The bug managed to slip into Linus' tree..
->=20
-> ipw2200: Firmware error detected.  Restarting.
-> ipw2200/0: page allocation failure. order:6, mode:0x8020
-> Pid: 945, comm: ipw2200/0 Not tainted 2.6.31-rc6-dirty #69
-                                                   ^^^^^
-So, this is rc6 plus what?  (just in case it is relevant).
+Also, with the new trend of laptops making use of huge power-hungry 3D
+graphic chips which suck all the juice out of your battery in less than
+two hours doing nothing, you'd better run at full speed when on battery
+to save energy for CPU-bound tasks, because eventhough the CPU eats more
+power, you significantly reduce the run time, thus the static consumption
+(GPU, backlight, hard disk, ...).
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Willy
 
---Signature=_Sun__16_Aug_2009_17_31_01_+1000_+6c3MUXKSgOxtZ7o
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqHtbUACgkQjjKRsyhoI8zhbQCZAVTfcWmZU0Dghmfh3ADZ2kL2
-LyQAoLsN7Zd63GWHW1AZKHxsu/q5K43T
-=UIR2
------END PGP SIGNATURE-----
-
---Signature=_Sun__16_Aug_2009_17_31_01_+1000_+6c3MUXKSgOxtZ7o--
