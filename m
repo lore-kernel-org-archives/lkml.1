@@ -1,41 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbZHPKfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbZHPL15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754108AbZHPKfF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 06:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZHPKfE
+	id S1754050AbZHPL15 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 07:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbZHPL15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 06:35:04 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:36176 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753164AbZHPKfD (ORCPT
+	Sun, 16 Aug 2009 07:27:57 -0400
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:46902 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753705AbZHPL14 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 06:35:03 -0400
-Date: Sun, 16 Aug 2009 11:35:03 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-Subject: Re: [2.6.31-rc6] ACPI region conflict regression...
-Message-ID: <20090816103503.GA3073@srcf.ucam.org>
-References: <6278d2220908160259v38c34c4ck6db2853ae886492@mail.gmail.com>
+	Sun, 16 Aug 2009 07:27:56 -0400
+Message-ID: <4A87ED93.5060104@colorfullife.com>
+Date: Sun, 16 Aug 2009 13:29:23 +0200
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6278d2220908160259v38c34c4ck6db2853ae886492@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+To: Nick Piggin <npiggin@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Nadia Derbey <Nadia.Derbey@bull.net>,
+       Pierre Peiffer <peifferp@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [patch 4a/4] ipc: sem optimise simple operations
+References: <200908141946.n7EJkh7B018160@mail.q-ag.de> <20090815045237.GC19195@wotan.suse.de> <4A86899A.6050502@colorfullife.com> <20090815103820.GC8954@wotan.suse.de> <4A86ABF0.2070207@colorfullife.com> <20090815144908.GA30951@wotan.suse.de> <4A86E30E.8030208@colorfullife.com> <20090816103127.GB8644@wotan.suse.de>
+In-Reply-To: <20090816103127.GB8644@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 16, 2009 at 10:59:38AM +0100, Daniel J Blueman wrote:
+On 08/16/2009 12:31 PM, Nick Piggin wrote:
+> On Sat, Aug 15, 2009 at 06:32:14PM +0200, Manfred Spraul wrote:
+>    
+>> It depends. After disabling inlining, including all helper functions
+>> that differ:
+>>
+>> My proposal: 301 bytes for update_queue.
+>>
+>> "simple", only negv: 226 bytes
+>> "simple, negv+zero: 354 bytes
+>> simple+complex: 526 bytes.
+>>
+>> Thus with only +-1 simple ops, your version uses less icache. If both
+>> +-1 and 0 ops are used, your version uses more icache.
+>>      
+> Don't forget that in that case, your version is badly suboptimal
+> due to the algorithmic complexity.
+>    
+I know, I mentioned it in the change log:
+Waking up one "decrement by one" task is O(1) with your code and 
+O(1+<number of waiting-for-zero tasks>) with my code.
 
-> Is there a way to relax this, or does it require adding
-> acpi_bus_register_driver(struct acpi_driver) and the needed code this
-> late in the game?
+This is the price paid for saving memory:
+Your version keeps three pointers per semaphore (waiting-for-zero, 
+oldest decrement, newest decrement)
+My version keeps only two pointers (newest decrement, waiting-for-zero). 
+The "oldest decrement" is reconstructed on the fly, and that operation 
+is O(<number of waiting-for-zero tasks>).
 
-acpi_enforce_resources=lax
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+--
+     Manfred
