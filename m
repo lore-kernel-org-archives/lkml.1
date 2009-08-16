@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751336AbZHPNqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751691AbZHPNqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751336AbZHPNqa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 09:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbZHPNqa
+	id S1751691AbZHPNqr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 09:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbZHPNqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 09:46:30 -0400
-Received: from mga03.intel.com ([143.182.124.21]:9453 "EHLO mga03.intel.com"
+	Sun, 16 Aug 2009 09:46:46 -0400
+Received: from bu3sch.de ([62.75.166.246]:39510 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750908AbZHPNq3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 09:46:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,389,1246863600"; 
-   d="scan'208";a="176311387"
-Date: Sun, 16 Aug 2009 21:46:10 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "pavel@ucw.cz" <pavel@ucw.cz>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release preallocated memory
-	unnecessarily (rev. 2)
-Message-ID: <20090816134610.GA6266@localhost>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905040222.39062.rjw@sisk.pl> <20090505022427.GA10880@localhost> <200905060105.10800.rjw@sisk.pl>
+	id S1750907AbZHPNqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 09:46:46 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Threaded interrupt handlers broken?
+Date: Sun, 16 Aug 2009 15:46:46 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200908161153.14081.mb@bu3sch.de> <200908161445.53147.mb@bu3sch.de> <alpine.LFD.2.00.0908161519280.2782@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0908161519280.2782@localhost.localdomain>
+X-Move-Along: Nothing to see here. No, really... Nothing.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200905060105.10800.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200908161546.46328.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 07:05:09AM +0800, Rafael J. Wysocki wrote:
-> On Tuesday 05 May 2009, Wu Fengguang wrote:
-> > On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > Since the hibernation code is now going to use allocations of memory
-> > > to create enough room for the image, it can also use the page frames
-> > > allocated at this stage as image page frames.  The low-level
-> > > hibernation code needs to be rearranged for this purpose, but it
-> > > allows us to avoid freeing a great number of pages and allocating
-> > > these same pages once again later, so it generally is worth doing.
-> > > 
-> > > [rev. 2: Change the strategy of preallocating memory to allocate as
-> > >  many pages as needed to get the right image size in one shot (the
-> > >  excessive allocated pages are released afterwards).]
+On Sunday 16 August 2009 15:22:29 Thomas Gleixner wrote:
+> On Sun, 16 Aug 2009, Michael Buesch wrote:
+> > On Sunday 16 August 2009 12:14:36 Michael Buesch wrote:
+> > I need the following patch for threaded IRQs to work.
+> > The first hunk obviously is incorrect. But without it the thread_fn is
+> > never called.
 > > 
-> > Rafael, I tried out your patches and found doubled memory shrink speed!
-> >
-> > [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
-> > [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
+> > Index: wireless-testing/kernel/irq/manage.c
+> > ===================================================================
+> > --- wireless-testing.orig/kernel/irq/manage.c	2009-08-15 22:22:07.000000000 +0200
+> > +++ wireless-testing/kernel/irq/manage.c	2009-08-16 14:05:23.000000000 +0200
+> > @@ -504,7 +504,7 @@ static int irq_thread(void *data)
+> >  		atomic_inc(&desc->threads_active);
+> >  
+> >  		spin_lock_irq(&desc->lock);
+> > -		if (unlikely(desc->status & IRQ_DISABLED)) {
+> > +		if (0&&unlikely(desc->status & IRQ_DISABLED)) {
 > 
-> Unfortunately, I'm observing a regression and a huge one.
+> So the interrupt is marked disabled. How do you setup the handler ?
+> And what does the primary handler do ? Can you post your driver code please?
+
+This patch converts the b43 driver to threaded interrupts:
+http://bu3sch.de/patches/wireless-testing/20090816-1535/patches/002-b43-threaded-irq-handler.patch
+
+It kind of works with this hack applied to kernel/irq/manage.c
+
+> >  			/*
+> >  			 * CHECKME: We might need a dedicated
+> >  			 * IRQ_THREAD_PENDING flag here, which
+> > @@ -520,7 +520,7 @@ static int irq_thread(void *data)
+> >  			action->thread_fn(action->irq, action->dev_id);
+> >  		}
+> >  
+> > -		wake = atomic_dec_and_test(&desc->threads_active);
+> > +		wake = !atomic_dec_and_test(&desc->threads_active);
 > 
-> On my Atom-based test box with 1 GB of RAM after a fresh boot and starting X
-> with KDE 4 there are ~256 MB free.  To create an image we need to free ~300 MB
-> and that takes ~2 s with the old code and ~15 s with the new one.
+> So you wake when the thread counter is != 0 after the decrement.
 > 
-> It helps to call shrink_all_memory() once with a sufficiently large argument
-> before the preallocation.
+>  #define atomic_dec_and_test(v) (atomic_sub_return(1, (v)) == 0)
 
-The 10 fold slowdown may be related to swapping IO:
-shrink_all_memory() tends to be reclaiming less anon pages.
+Yeah, isn't that what we want to do? I read the test as "wake other threads,
+if there are other threads" or something like that.
 
-Is this box running on SSD? (Which can be slow on random writes.)
-
-Thanks,
-Fengguang
+-- 
+Greetings, Michael.
