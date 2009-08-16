@@ -1,88 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbZHPWOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbZHPWdB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756271AbZHPWOH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 18:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbZHPWOG
+	id S1755897AbZHPWdB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 18:33:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbZHPWdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 18:14:06 -0400
-Received: from THUNK.ORG ([69.25.196.29]:60094 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755435AbZHPWOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 18:14:04 -0400
-Date: Sun, 16 Aug 2009 18:13:25 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
-       Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
-       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
-       Greg Freemyer <greg.freemyer@gmail.com>,
-       Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-Subject: Re: Discard support
-Message-ID: <20090816221325.GF17958@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Roland Dreier <rdreier@cisco.com>,
-	James Bottomley <James.Bottomley@suse.de>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
-	Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
-	Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
-	Greg Freemyer <greg.freemyer@gmail.com>,
-	Markus Trippelsdorf <markus@trippelsdorf.de>,
-	Matthew Wilcox <willy@linux.intel.com>,
-	Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-	Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-	Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-	linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-References: <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com> <20090814234539.GE27148@parisc-linux.org> <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com> <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca> <1250344518.4159.4.camel@mulgrave.site> <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk> <20090816083434.2ce69859@infradead.org> <1250437927.3856.119.camel@mulgrave.site> <adavdkn2ztb.fsf@cisco.com>
+	Sun, 16 Aug 2009 18:33:00 -0400
+Received: from mga10.intel.com ([192.55.52.92]:63250 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751789AbZHPWc7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 18:32:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,391,1246863600"; 
+   d="scan'208";a="717306722"
+Date: Mon, 17 Aug 2009 00:35:08 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com, broonie@opensource.wolfsonmicro.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [rtc-linux] Re: [PATCH 4/5] RTC: Add support for RTCs on
+	Wolfson WM831x devices
+Message-ID: <20090816223506.GA4266@sortiz.org>
+References: <1249922635-31864-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1249922635-31864-4-git-send-email-broonie@opensource.wolfsonmicro.com> <20090810205535.4fb160af@i1501.lan.towertech.it> <20090810205712.GA4528@sirena.org.uk> <20090810230824.6d90d176@i1501.lan.towertech.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <adavdkn2ztb.fsf@cisco.com>
+In-Reply-To: <20090810230824.6d90d176@i1501.lan.towertech.it>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 16, 2009 at 02:50:40PM -0700, Roland Dreier wrote:
+Hi Alessandro,
+
+On Mon, Aug 10, 2009 at 11:08:24PM +0200, Alessandro Zummo wrote:
+> On Mon, 10 Aug 2009 21:57:13 +0100
+> Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 > 
->  > Well, yes and no ... a lot of SSDs don't actually implement NCQ, so the
->  > impact to them will be less ... although I think enterprise class SSDs
->  > do implement NCQ.
+> > 
+> > >  given you have your own include directory undef mfd/
+> > >  you might want to move those #defines there
+> > 
+> > Unlike the others these registers can't really be used outside of this
+> > driver - for the other drivers there's potential for at least platform
+> > specific code if not multiple drivers to use some or all of the register
+> > definitions.
 > 
-> Really?  Which SSDs don't implement NCQ?
+>  ack.
+>  
+> > > > +struct wm831x_rtc {
+> > > > +	struct wm831x *wm831x;
+> > > > +	struct rtc_device *rtc;
+> > > > +	int alarm_enabled;
+> > > > +	int per_irq;
+> > 
+> > >  are those tows int or unsigned int? 
+> > 
+> > I've just dropped per_irq, it's not needed anyway.
+> > 
+> > >  or maybe alarm_enabled could be :1 ?
+> > 
+> > Done, but it doesn't really buy us much given that there's nothing
+> > else to pack it with.
+> 
+>  ack.
+> 
+> > > > +/*
+> > > > + * Set current time and date in RTC
+> > > > + */
+> > > > +static int wm831x_rtc_settime(struct device *dev, struct rtc_time *tm)
+> > 
+> > >  isn't rtc_set_mmss more appropriate?
+> > 
+> > Hrm, I think so so I've made the change.  It's not a particularly
+> > discoverable API - the fact that there's no readback equivalent hides
+> > the fact that it's supposed to be an equivalent for settime.  Some
+> > documentation would really help here.
+> 
+>  you're right. there's one but it's still in my tree. will push it
+>  one day.
+> 
+> > 
+> > > > +	ret = wm831x_set_bits(wm831x_rtc->wm831x, WM831X_RTC_CONTROL,
+> > > > +			      WM831X_RTC_ALM_ENA, enable);
+> > > > +	if (ret != 0)
+> > > > +		dev_err(&pdev->dev, "Failed to update RTC alarm: %d\n", ret);
+> > > > +
+> > > > +	return 0;
+> > 
+> > >  always 0 ? (also below..)
+> > 
+> > Failing suspend and resume due to failure to disable the RTC alarm
+> > would be excessive - indeed, I'd expect the overwhelming majority of
+> > systems to function perfectly well with no suspend/resume support in the
+> > driver at all.  RTC alarms are infrequent relative to other
+> > suspend/resume events in typical systems but suspend is normally used
+> > fairly heavily to preserve battery (typical applications include things
+> > like MP3 players or phones).  Typically the error handling would at best
+> > cause more serious consequences than the original error and there's
+> > little chance the user will be able to even report the error.
+> 
+>  ack.
+> 
+> > > > +static int __init wm831x_rtc_init(void)
+> > > > +{
+> > > > +	return platform_driver_register(&wm831x_rtc_driver);
+> > 
+> > >  can you use platform_driver_probe() ?
+> > 
+> > No, this is a MFD accessed over slow buses and we can't guarantee that
+> > the device will be registered.
+> > 
+> > Fixed everything else, will repost tomorrow.
+> 
+>  here's my acked-by in advance, feel free to push the patch
+>  with the series.
+> 
+>  Acked-by: Alessandro Zummo <a.zummo@towertech.it>
+Thanks, patch applied.
 
-The Intel X25-M was the first SSD to implement NCQ.  The OCZ Core V2
-advertised NCQ with a queue depth of 1, but even that was buggy, so
-Linux has a black list for the that SSD:
+Cheers,
+Samuel.
 
-      http://markmail.org/message/jvjpmcdqjwrmyl4w
+ 
+>  
+> 
+> -- 
+> 
+>  Best regards,
+> 
+>  Alessandro Zummo,
+>   Tower Technologies - Torino, Italy
+> 
+>   http://www.towertech.it
+> 
 
-As far as I know, all of the SSD's using the crappy JMicron JMF602
-controllers don't support NCQ in any real way, which would includes
-most of the reasonably priced SSD's up until first half of this year.
-(The OCZ Summit SSD, which uses the Indilnx controller is an exception
-to this statement, but it's more expensive that the JMF602 based
-SSD's, although less expensive than the Intel SSD.)
-
-JMicron is trying to seek redemption with their JMF612 controllers,
-which were announced at the end of May of this year, and those
-controllers do support NCQ, and are claimed to not to have the
-disatrous small write latency problem of their '602 bretheren.  I'm
-not aware of any products using the JMF612 yet, though.  (According to
-reports the '612 controllers weren't going to hit mass production
-until July, so hopefully later this fall we'll start seeing products
-using the new JMicron controller.)
-
-      	  				- Ted
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
