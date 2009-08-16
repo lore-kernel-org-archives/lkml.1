@@ -1,205 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbZHPTin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbZHPTiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755966AbZHPTin (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 15:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932193AbZHPTik
+	id S1756004AbZHPTiz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 15:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbZHPTbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 15:38:40 -0400
+	Sun, 16 Aug 2009 15:31:09 -0400
 Received: from mail-bw0-f222.google.com ([209.85.218.222]:45385 "EHLO
 	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755966AbZHPTba (ORCPT
+	with ESMTP id S932200AbZHPTa6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 15:31:30 -0400
+	Sun, 16 Aug 2009 15:30:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=dVoWgITGNv79skWrgg5T9NrWAlM0sn7h+SYXZi9Ann3IUhDWusTE0mmxhlooOeFcVq
-         OXkuTckhm+BqfhkoHXmR6Hkpy76uY/Iw5Yc7IK5HXOqbonzesMKzTkWsk228a0aGl20e
-         ult+f/JGV6AewoGpEeqTw/2iHD9lDWTWmV3yE=
+        b=Hr/eiCh1eWtBKLCkCU3oQNt1RaNUVHriFZCQCFBZcitZHGcwNxXeOu3adw8oHJ3zBC
+         3knJJrqHpNtAdMthWYNEbkOkS/dFffTjEuoYuvaQLr+UWJihDJ+FxzgD40vjybmKbXLq
+         9pKI/1/3PxpOJ9EH/YQingDp+Kf8Y2X7Y2tQs=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: devel@driverdev.osuosl.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 16 Aug 2009 21:31:43 +0200
-Message-Id: <20090816193143.3789.39439.sendpatchset@localhost.localdomain>
+Date: Sun, 16 Aug 2009 21:31:11 +0200
+Message-Id: <20090816193111.3789.9342.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
 References: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
-Subject: [PATCH 18/22] Staging: rtxxx0: remove unused link_list.h
+Subject: [PATCH 13/22] Staging: rtxxx0: unify MlmeCheckPsmChange()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtxxx0: remove unused link_list.h
+Subject: [PATCH] Staging: rtxxx0: unify MlmeCheckPsmChange()
+
+Unify RT30xx and !RT30xx code in MlmeCheckPsmChange().
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rt2860/link_list.h |  134 -------------------------------------
- drivers/staging/rt2860/rtmp.h      |    1 
- drivers/staging/rt2870/link_list.h |    1 
- drivers/staging/rt3070/link_list.h |    1 
- 4 files changed, 137 deletions(-)
+ drivers/staging/rt2860/common/mlme.c |   30 ++----------------------------
+ 1 file changed, 2 insertions(+), 28 deletions(-)
 
-Index: b/drivers/staging/rt2860/link_list.h
+Index: b/drivers/staging/rt2860/common/mlme.c
 ===================================================================
---- a/drivers/staging/rt2860/link_list.h
-+++ /dev/null
-@@ -1,134 +0,0 @@
--/*
-- *************************************************************************
-- * Ralink Tech Inc.
-- * 5F., No.36, Taiyuan St., Jhubei City,
-- * Hsinchu County 302,
-- * Taiwan, R.O.C.
-- *
-- * (c) Copyright 2002-2007, Ralink Technology, Inc.
-- *
-- * This program is free software; you can redistribute it and/or modify  *
-- * it under the terms of the GNU General Public License as published by  *
-- * the Free Software Foundation; either version 2 of the License, or     *
-- * (at your option) any later version.                                   *
-- *                                                                       *
-- * This program is distributed in the hope that it will be useful,       *
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of        *
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
-- * GNU General Public License for more details.                          *
-- *                                                                       *
-- * You should have received a copy of the GNU General Public License     *
-- * along with this program; if not, write to the                         *
-- * Free Software Foundation, Inc.,                                       *
-- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
-- *                                                                       *
-- *************************************************************************
-- */
--
--#ifndef __LINK_LIST_H__
--#define __LINK_LIST_H__
--
--typedef struct _LIST_ENTRY
--{
--	struct _LIST_ENTRY *pNext;
--} LIST_ENTRY, *PLIST_ENTRY;
--
--typedef struct _LIST_HEADR
--{
--	PLIST_ENTRY pHead;
--	PLIST_ENTRY pTail;
--	UCHAR size;
--} LIST_HEADER, *PLIST_HEADER;
--
--static inline VOID initList(
--	IN PLIST_HEADER pList)
--{
--	pList->pHead = pList->pTail = NULL;
--	pList->size = 0;
--	return;
--}
--
--static inline VOID insertTailList(
--	IN PLIST_HEADER pList,
--	IN PLIST_ENTRY pEntry)
--{
--	pEntry->pNext = NULL;
--	if (pList->pTail)
--		pList->pTail->pNext = pEntry;
--	else
--		pList->pHead = pEntry;
--	pList->pTail = pEntry;
--	pList->size++;
--
--	return;
--}
--
--static inline PLIST_ENTRY removeHeadList(
--	IN PLIST_HEADER pList)
--{
--	PLIST_ENTRY pNext;
--	PLIST_ENTRY pEntry;
--
--	pEntry = pList->pHead;
--	if (pList->pHead != NULL)
--	{
--		pNext = pList->pHead->pNext;
--		pList->pHead = pNext;
--		if (pNext == NULL)
--			pList->pTail = NULL;
--		pList->size--;
--	}
--	return pEntry;
--}
--
--static inline int getListSize(
--	IN PLIST_HEADER pList)
--{
--	return pList->size;
--}
--
--static inline PLIST_ENTRY delEntryList(
--	IN PLIST_HEADER pList,
--	IN PLIST_ENTRY pEntry)
--{
--	PLIST_ENTRY pCurEntry;
--	PLIST_ENTRY pPrvEntry;
--
--	if(pList->pHead == NULL)
--		return NULL;
--
--	if(pEntry == pList->pHead)
--	{
--		pCurEntry = pList->pHead;
--		pList->pHead = pCurEntry->pNext;
--
--		if(pList->pHead == NULL)
--			pList->pTail = NULL;
--
--		pList->size--;
--		return pCurEntry;
--	}
--
--	pPrvEntry = pList->pHead;
--	pCurEntry = pPrvEntry->pNext;
--	while(pCurEntry != NULL)
--	{
--		if (pEntry == pCurEntry)
+--- a/drivers/staging/rt2860/common/mlme.c
++++ b/drivers/staging/rt2860/common/mlme.c
+@@ -2771,44 +2771,19 @@ VOID MlmeCheckPsmChange(
+ 		(pAd->StaCfg.Psm == PWR_ACTIVE) &&
+ #ifdef RT2860
+ 		RTMP_TEST_PSFLAG(pAd, fRTMP_PS_CAN_GO_SLEEP))
+-#endif
+-#if !defined(RT2860) && !defined(RT30xx)
++#else
+ 		(pAd->Mlme.CntlMachine.CurrState == CNTL_IDLE))
+ #endif
+-#ifndef RT30xx
+ 	{
+-		NdisGetSystemUpTime(&pAd->Mlme.LastSendNULLpsmTime);
+-		pAd->RalinkCounters.RxCountSinceLastNULL = 0;
+-		MlmeSetPsmBit(pAd, PWR_SAVE);
+-		if (!(pAd->CommonCfg.bAPSDCapable && pAd->CommonCfg.APEdcaParm.bAPSDCapable))
 -		{
--			pPrvEntry->pNext = pCurEntry->pNext;
--
--			if(pEntry == pList->pTail)
--				pList->pTail = pPrvEntry;
--
--			pList->size--;
--			break;
+-			RTMPSendNullFrame(pAd, pAd->CommonCfg.TxRate, FALSE);
 -		}
--		pPrvEntry = pCurEntry;
--		pCurEntry = pPrvEntry->pNext;
+-		else
+-		{
+-			RTMPSendNullFrame(pAd, pAd->CommonCfg.TxRate, TRUE);
+-		}
 -	}
--
--	return pCurEntry;
--}
--
--#endif // ___LINK_LIST_H__ //
--
-Index: b/drivers/staging/rt2860/rtmp.h
-===================================================================
---- a/drivers/staging/rt2860/rtmp.h
-+++ b/drivers/staging/rt2860/rtmp.h
-@@ -40,7 +40,6 @@
- #ifndef __RTMP_H__
- #define __RTMP_H__
+-#endif
+ #ifdef RT30xx
+-//		(! RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS))
+-		(pAd->Mlme.CntlMachine.CurrState == CNTL_IDLE) /*&&
+-		(pAd->RalinkCounters.OneSecTxNoRetryOkCount == 0) &&
+-		(pAd->RalinkCounters.OneSecTxRetryOkCount == 0)*/)
+-	{
+ 		// add by johnli, use Rx OK data count per second to calculate throughput
+ 		// If Ttraffic is too high ( > 400 Rx per second), don't go to sleep mode. If tx rate is low, use low criteria
+ 		// Mode=CCK/MCS=3 => 11 Mbps, Mode=OFDM/MCS=3 => 18 Mbps
+ 		if (((pAd->StaCfg.HTPhyMode.field.MCS <= 3) &&
+-/* Iverson mark
+-				(pAd->StaCfg.HTPhyMode.field.MODE <= MODE_OFDM) &&
+-*/
+ 				(pAd->RalinkCounters.OneSecRxOkDataCnt < (ULONG)100)) ||
+ 			((pAd->StaCfg.HTPhyMode.field.MCS > 3) &&
+-/* Iverson mark
+-			(pAd->StaCfg.HTPhyMode.field.MODE > MODE_OFDM) &&
+-*/
+ 			(pAd->RalinkCounters.OneSecRxOkDataCnt < (ULONG)400)))
++#endif
+ 		{
+ 				// Get this time
+ 			NdisGetSystemUpTime(&pAd->Mlme.LastSendNULLpsmTime);
+@@ -2824,7 +2799,6 @@ VOID MlmeCheckPsmChange(
+ 			}
+ 		}
+ 	}
+-#endif
+ }
  
--#include "link_list.h"
- #include "spectrum_def.h"
- 
- #include "aironet.h"
-Index: b/drivers/staging/rt2870/link_list.h
-===================================================================
---- a/drivers/staging/rt2870/link_list.h
-+++ /dev/null
-@@ -1 +0,0 @@
--#include "../rt2860/link_list.h"
-Index: b/drivers/staging/rt3070/link_list.h
-===================================================================
---- a/drivers/staging/rt3070/link_list.h
-+++ /dev/null
-@@ -1 +0,0 @@
--#include "../rt2870/link_list.h"
+ // IRQL = PASSIVE_LEVEL
