@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbZHPNWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbZHPN2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754223AbZHPNWd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 09:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbZHPNWd
+	id S1754293AbZHPN2O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 09:28:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbZHPN2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 09:22:33 -0400
-Received: from www.tglx.de ([62.245.132.106]:35397 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751214AbZHPNWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 09:22:32 -0400
-Date: Sun, 16 Aug 2009 15:22:29 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Michael Buesch <mb@bu3sch.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Threaded interrupt handlers broken?
-In-Reply-To: <200908161445.53147.mb@bu3sch.de>
-Message-ID: <alpine.LFD.2.00.0908161519280.2782@localhost.localdomain>
-References: <200908161153.14081.mb@bu3sch.de> <200908161214.37008.mb@bu3sch.de> <200908161445.53147.mb@bu3sch.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 16 Aug 2009 09:28:13 -0400
+Received: from mailrelay010.isp.belgacom.be ([195.238.6.177]:58429 "EHLO
+	mailrelay010.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752748AbZHPN2N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 09:28:13 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsAEAIulh0pR9cbZ/2dsb2JhbACbfbU+CYIqgWYFgik
+Date: Sun, 16 Aug 2009 15:28:12 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] [WATCHDOG] Add support for WM831x watchdog
+Message-ID: <20090816132812.GO4302@infomag.iguana.be>
+References: <1249922635-31864-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1249922635-31864-5-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249922635-31864-5-git-send-email-broonie@opensource.wolfsonmicro.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Aug 2009, Michael Buesch wrote:
-> On Sunday 16 August 2009 12:14:36 Michael Buesch wrote:
-> I need the following patch for threaded IRQs to work.
-> The first hunk obviously is incorrect. But without it the thread_fn is
-> never called.
+Hi Mark,
+
+> The WM831x series of devices provide a watchdog with configurable
+> behaviour on timer expiry.
 > 
-> Index: wireless-testing/kernel/irq/manage.c
-> ===================================================================
-> --- wireless-testing.orig/kernel/irq/manage.c	2009-08-15 22:22:07.000000000 +0200
-> +++ wireless-testing/kernel/irq/manage.c	2009-08-16 14:05:23.000000000 +0200
-> @@ -504,7 +504,7 @@ static int irq_thread(void *data)
->  		atomic_inc(&desc->threads_active);
->  
->  		spin_lock_irq(&desc->lock);
-> -		if (unlikely(desc->status & IRQ_DISABLED)) {
-> +		if (0&&unlikely(desc->status & IRQ_DISABLED)) {
+> Currently this driver support refreshes via a register or GPIO line and
+> autonomous refreshes from a hardware source (eg, a clock).
+> 
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Cc: Wim Van Sebroeck <wim@iguana.be>
 
-So the interrupt is marked disabled. How do you setup the handler ?
-And what does the primary handler do ? Can you post your driver code please?
->  			/*
->  			 * CHECKME: We might need a dedicated
->  			 * IRQ_THREAD_PENDING flag here, which
-> @@ -520,7 +520,7 @@ static int irq_thread(void *data)
->  			action->thread_fn(action->irq, action->dev_id);
->  		}
->  
-> -		wake = atomic_dec_and_test(&desc->threads_active);
-> +		wake = !atomic_dec_and_test(&desc->threads_active);
+the driver is OK. Just 2 small remarks:
+> +static struct watchdog_info ident = {
+> +	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE,
+> +	.identity = "WM831x Watchdog",
+> +};
 
-So you wake when the thread counter is != 0 after the decrement.
+this can be static const struct in the future (need to do a clean-up on that).
 
- #define atomic_dec_and_test(v) (atomic_sub_return(1, (v)) == 0)
+> +#define WM831X_WDOG_SECACT_MASK                 0x0300  /* WDOG_SECACT - [9:8] */
+> +#define WM831X_WDOG_SECACT_SHIFT                     8  /* WDOG_SECACT - [9:8] */
+> +#define WM831X_WDOG_SECACT_WIDTH                     2  /* WDOG_SECACT - [9:8] */
+> +#define WM831X_WDOG_PRIMACT_MASK                0x0030  /* WDOG_PRIMACT - [5:4] */
+> +#define WM831X_WDOG_PRIMACT_SHIFT                    4  /* WDOG_PRIMACT - [5:4] */
+> +#define WM831X_WDOG_PRIMACT_WIDTH                    2  /* WDOG_PRIMACT - [5:4] */
 
-Thanks,
+These lines exceed 80 characters. Is there any reason why we can't reduce the spacing between the name and the value?
 
-	tglx
+Just let me know how we will proceed on my second question. I can then add this to the linux-2.6-watchdog-next tree.
+
+Kind regards,
+Wim.
+
