@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755265AbZHPPus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbZHPPwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755265AbZHPPus (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 11:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbZHPPur
+	id S1755281AbZHPPwM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 11:52:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbZHPPwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 11:50:47 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:48192 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752018AbZHPPuq (ORCPT
+	Sun, 16 Aug 2009 11:52:11 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:64577 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751781AbZHPPwK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 11:50:46 -0400
-Date: Sun, 16 Aug 2009 11:50:46 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Matthew Garrett <mjg59@srcf.ucam.org>, <linux-usb@vger.kernel.org>,
-       <linux-pci@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
-In-Reply-To: <200908152254.23227.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0908161130590.6522-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 16 Aug 2009 11:52:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=vW7mtcov+Vpuv3m+ysCODQBMf9F87CCxzkjKl0CANYN5hOwRTZpSZmlVsU731/2aMD
+         3/YBR8XVgtO6lUdhXEq68S810o9OEWN8L1qG3OYumRccxsdApwrNWeO8eQhjkOZL30QY
+         G2PYVjZ5oDLm0UTbJ7GY2w7LPz2YzuEYuKp8E=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>
+Subject: [PATCH] perf tools: Substract -Wformat-nonliteral from Wformat=2 in extra flags
+Date: Sun, 16 Aug 2009 17:52:07 +0200
+Message-Id: <1250437927-25490-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <20090816151829.GA8116@elte.hu>
+References: <20090816151829.GA8116@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Aug 2009, Rafael J. Wysocki wrote:
+The soon coming perf trace needs to use printf with dynamically built
+formats.
 
-> > The only remaining question is how to expose this in sysfs in a way 
-> > that won't be confusing and that won't be confused with the "wakeup" 
-> > attribute.  One possibility is to use the "level" attribute introduced 
-> > in USB; possible levels are "on" (no runtime PM) and "auto" (runtime 
-> > PM allowed).  Then a new "runtime_wakeup" attribute could contain 
-> > nothing (if wakeup is not available), "enabled", or "disabled".
-> 
-> That seems to require two flags.
-> 
-> runtime_forbidden - if unset, the driver decides whether or not to use runtime
->   PM; that could be exposed through sysfs as 'runtime' under the 'power'
->   subdirectory with the following values:
->   * 'disabled' - runtime_forbidden is set by the user space
->   * 'on' - runtime_forbidden is unset, runtime PM is used (disable_depth == 0)
->   * 'off' - runtime_forbidden is unset, runtime PM is not used
->   To set/unset the user space writes 'enabled'/'disabled' to it, respectively.
->   The default is unset.
+But we are using -Wformat=2 which is a shortcut for the following set:
+-Wformat -Wformat-security -Wformat-y2k -Wformat-nonliteral
 
-Too confusing.  The difference between "disabled" and "off" is so
-subtle that even I don't understand it!
+-Wformat-nonliteral warns when it can't check formats because they are
+not builtin constant strings, but we want to feature dynamic formats.
+What we want instead is Wformat=2 minus -Wformat-nonliteral, which is
+what this patch does.
 
-All we need for this is a simple on/off switch.  Or to be consistent
-with the terms that are already exposed to userspace for USB devices:  
-"auto"/"on", where "auto" means the system automatically changes power
-levels (runtime PM is enabled) and "on" means the device is always on
-(runtime PM is disabled).
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+---
+ tools/perf/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-And I don't like the "runtime_forbidden" name either.  It's long and
-it's a negative, making it harder to understand.  ("off" means that the
-device is permanently on!)  What's wrong with "level", as in
-"power/level"?  That seems very intuitive.
-
-> runtime_wakeup - if set, the device is allowed to do remote wakeup at run time
->   That could be represented as 'runtime_wakeup' under 'power' with the
->   following values:
->   * no value (empty file) is 'runtime' is 'disabled'
->   * 'enabled'
->   * 'disabled'
->   To set/unset the user space writes 'enabled'/'disabled' to it, respectively.
->   The default is set.
-
-This is okay except for your definition of empty file.  This makes it
-dependent on the power/level setting.  The two should be independent.  
-Thus, empty file should mean that the device doesn't support remote
-wakeup, in which case writes are ignored.
-
-This scheme, like yours, requires two new bitflags.  We could call them
-something like "may_runtime_suspend" and "may_runtime_wakeup".
-
-Alan Stern
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index d637aea..5d54ddb 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -169,7 +169,7 @@ endif
+ #
+ # Include saner warnings here, which can catch bugs:
+ #
+-EXTRA_WARNINGS = -Wcast-align -Wformat=2 -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
++EXTRA_WARNINGS = -Wcast-align -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
+ 
+ CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
+ LDFLAGS = -lpthread -lrt -lelf -lm
+-- 
+1.6.2.3
 
