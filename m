@@ -1,38 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbZHPFMD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbZHPFSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbZHPFMD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 01:12:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbZHPFMC
+	id S1753389AbZHPFSc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 01:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbZHPFSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 01:12:02 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36073 "EHLO mx2.suse.de"
+	Sun, 16 Aug 2009 01:18:32 -0400
+Received: from mga14.intel.com ([143.182.124.37]:6306 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753211AbZHPFMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 01:12:01 -0400
-Date: Sun, 16 Aug 2009 07:12:01 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nadia Derbey <Nadia.Derbey@bull.net>,
-       Pierre Peiffer <peifferp@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [patch 4a/4] ipc: sem optimise simple operations
-Message-ID: <20090816051201.GA17920@wotan.suse.de>
-References: <200908141946.n7EJkh7B018160@mail.q-ag.de> <20090815045237.GC19195@wotan.suse.de> <4A86899A.6050502@colorfullife.com> <20090815103820.GC8954@wotan.suse.de> <4A86ABF0.2070207@colorfullife.com> <20090815144908.GA30951@wotan.suse.de> <4A86E30E.8030208@colorfullife.com> <20090816045316.GA11115@wotan.suse.de>
-Mime-Version: 1.0
+	id S1751644AbZHPFSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 01:18:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,389,1246863600"; 
+   d="scan'208";a="176242819"
+Date: Sun, 16 Aug 2009 13:15:02 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Jeff Dike <jdike@addtoit.com>, Avi Kivity <avi@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+Message-ID: <20090816051502.GB13740@localhost>
+References: <20090805155805.GC23385@random.random> <20090806100824.GO23385@random.random> <4A7AAE07.1010202@redhat.com> <20090806102057.GQ23385@random.random> <20090806105932.GA1569@localhost> <4A7AC201.4010202@redhat.com> <20090806130631.GB6162@localhost> <20090806210955.GA14201@c2.user-mode-linux.org> <20090816031827.GA6888@localhost> <4A87829C.4090908@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090816045316.GA11115@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <4A87829C.4090908@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 16, 2009 at 06:53:16AM +0200, Nick Piggin wrote:
-> On Sat, Aug 15, 2009 at 06:32:14PM +0200, Manfred Spraul wrote:
-> > Lower runtime memory consumption.
+On Sun, Aug 16, 2009 at 11:53:00AM +0800, Rik van Riel wrote:
+> Wu Fengguang wrote:
+> > On Fri, Aug 07, 2009 at 05:09:55AM +0800, Jeff Dike wrote:
+> >> Side question -
+> >> 	Is there a good reason for this to be in shrink_active_list()
+> >> as opposed to __isolate_lru_page?
+> >>
+> >> 		if (unlikely(!page_evictable(page, NULL))) {
+> >> 			putback_lru_page(page);
+> >> 			continue;
+> >> 		}
+> >>
+> >> Maybe we want to minimize the amount of code under the lru lock or
+> >> avoid duplicate logic in the isolate_page functions.
+> > 
+> > I guess the quick test means to avoid the expensive page_referenced()
+> > call that follows it. But that should be mostly one shot cost - the
+> > unevictable pages are unlikely to cycle in active/inactive list again
+> > and again.
 > 
-> I'll fix this with hlists.
+> Please read what putback_lru_page does.
+> 
+> It moves the page onto the unevictable list, so that
+> it will not end up in this scan again.
 
-Oh right no the negv list can't easily be made an hlist. So
-yes yours can save a bit of memory there.
+Yes it does. I said 'mostly' because there is a small hole that an
+unevictable page may be scanned but still not moved to unevictable
+list: when a page is mapped in two places, the first pte has the
+referenced bit set, the _second_ VMA has VM_LOCKED bit set, then
+page_referenced() will return 1 and shrink_page_list() will move it
+into active list instead of unevictable list. Shall we fix this rare
+case?
 
+> >> But if there are important mlock-heavy workloads, this could make the
+> >> scan come up empty, or at least emptier than we might like.
+> > 
+> > Yes, if the above 'if' block is removed, the inactive lists might get
+> > more expensive to reclaim.
+> 
+> Why?
+
+Without the 'if' block, an unevictable page may well be deactivated into
+inactive list (and some time later be moved to unevictable list
+from there), increasing the inactive list's scanned:reclaimed ratio.
+
+Thanks,
+Fengguang
