@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbZHPJd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZHPJfO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbZHPJd7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 05:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbZHPJd5
+	id S1754737AbZHPJfO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 05:35:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbZHPJcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 05:33:57 -0400
-Received: from mba.ocn.ne.jp ([122.28.14.163]:54917 "EHLO smtp.mba.ocn.ne.jp"
+	Sun, 16 Aug 2009 05:32:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45374 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754094AbZHPJdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 05:33:55 -0400
-Date: Sun, 16 Aug 2009 18:33:55 +0900 (JST)
-Message-Id: <20090816.183355.89035427.anemo@mba.ocn.ne.jp>
-To: htejun@gmail.com
-Cc: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: ata_tf_read_block() question
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <4A876BC3.3020407@gmail.com>
-References: <20090815.224843.240484147.anemo@mba.ocn.ne.jp>
-	<4A876BC3.3020407@gmail.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1754089AbZHPJaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 05:30:14 -0400
+From: Avi Kivity <avi@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 46/48] KVM: Use pointer to vcpu instead of vcpu_id in timer code.
+Date: Sun, 16 Aug 2009 12:30:06 +0300
+Message-Id: <1250415008-17175-47-git-send-email-avi@redhat.com>
+In-Reply-To: <1250415008-17175-1-git-send-email-avi@redhat.com>
+References: <1250415008-17175-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Aug 2009 11:15:31 +0900, Tejun Heo <htejun@gmail.com> wrote:
-> > It seems inconsistent.  The correct calculation is:
-> > 	block = (cyl * dev->heads + head) * dev->sectors + sect - 1;
-> > isn't it?
-> 
-> Yes, indeed.
-> 
-> > I don't have any real problem.  Just noticed by code reading.
-> 
-> ata_tf_read_block() currently is used only when reporting failed block
-> address to upper layer so off-by-one bug there wouldn't be too
-> visible, especially for the venerable CHS addressing.
+From: Gleb Natapov <gleb@redhat.com>
 
-Thank you for checking.
-
-> Care to submit a patch w/ warning message and capping for sect == 0
-> case?
-
-Well, I expect fix by you (or other libata hackers) since I think you
-can write better warning message and changelog than me ;)
-
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
-Atsushi Nemoto
+ arch/x86/kvm/i8254.c     |    2 +-
+ arch/x86/kvm/kvm_timer.h |    2 +-
+ arch/x86/kvm/lapic.c     |    2 +-
+ arch/x86/kvm/timer.c     |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
+index 008a831..06d8f84 100644
+--- a/arch/x86/kvm/i8254.c
++++ b/arch/x86/kvm/i8254.c
+@@ -294,7 +294,7 @@ static void create_pit_timer(struct kvm_kpit_state *ps, u32 val, int is_period)
+ 	pt->timer.function = kvm_timer_fn;
+ 	pt->t_ops = &kpit_ops;
+ 	pt->kvm = ps->pit->kvm;
+-	pt->vcpu_id = 0;
++	pt->vcpu = pt->kvm->bsp_vcpu;
+ 
+ 	atomic_set(&pt->pending, 0);
+ 	ps->irq_ack = 1;
+diff --git a/arch/x86/kvm/kvm_timer.h b/arch/x86/kvm/kvm_timer.h
+index 26bd6ba..55c7524 100644
+--- a/arch/x86/kvm/kvm_timer.h
++++ b/arch/x86/kvm/kvm_timer.h
+@@ -6,7 +6,7 @@ struct kvm_timer {
+ 	bool reinject;
+ 	struct kvm_timer_ops *t_ops;
+ 	struct kvm *kvm;
+-	int vcpu_id;
++	struct kvm_vcpu *vcpu;
+ };
+ 
+ struct kvm_timer_ops {
+diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+index b066130..b1694dc 100644
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -950,7 +950,7 @@ int kvm_create_lapic(struct kvm_vcpu *vcpu)
+ 	apic->lapic_timer.timer.function = kvm_timer_fn;
+ 	apic->lapic_timer.t_ops = &lapic_timer_ops;
+ 	apic->lapic_timer.kvm = vcpu->kvm;
+-	apic->lapic_timer.vcpu_id = vcpu->vcpu_id;
++	apic->lapic_timer.vcpu = vcpu;
+ 
+ 	apic->base_address = APIC_DEFAULT_PHYS_BASE;
+ 	vcpu->arch.apic_base = APIC_DEFAULT_PHYS_BASE;
+diff --git a/arch/x86/kvm/timer.c b/arch/x86/kvm/timer.c
+index 86dbac0..85cc743 100644
+--- a/arch/x86/kvm/timer.c
++++ b/arch/x86/kvm/timer.c
+@@ -33,7 +33,7 @@ enum hrtimer_restart kvm_timer_fn(struct hrtimer *data)
+ 	struct kvm_vcpu *vcpu;
+ 	struct kvm_timer *ktimer = container_of(data, struct kvm_timer, timer);
+ 
+-	vcpu = ktimer->kvm->vcpus[ktimer->vcpu_id];
++	vcpu = ktimer->vcpu;
+ 	if (!vcpu)
+ 		return HRTIMER_NORESTART;
+ 
+-- 
+1.6.3.3
+
