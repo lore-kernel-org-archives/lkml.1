@@ -1,56 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbZHPQc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752271AbZHPQ4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751353AbZHPQc4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 12:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750857AbZHPQc4
+	id S1752271AbZHPQ4U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 12:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbZHPQ4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 12:32:56 -0400
-Received: from rtr.ca ([76.10.145.34]:47415 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750803AbZHPQcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 12:32:54 -0400
-Message-ID: <4A8834B6.2070104@rtr.ca>
-Date: Sun, 16 Aug 2009 12:32:54 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Sun, 16 Aug 2009 12:56:19 -0400
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:43961 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751258AbZHPQ4S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 12:56:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:subject:date:user-agent:cc
+         :disposition-notification-to:mime-version:content-type
+         :content-transfer-encoding:message-id;
+        b=Ti76O7hEx6Pyrj/qQXjWNumN0qnvBjvKJmIYDvQqu8MZoN2dR8mJ7Q7dT7VNs4kl9m
+         6Wkw82rz7An0cWA07jIJRyoVLRLlkBQTNSOP2S/0mpwZ3X/RZNcHcin8tO+gQzFutaSu
+         uRMZHkZa7Qthnuf/On/sGu0TZzIn/GDq7NLx0=
+From: Leonardo Potenza <lpotenza@inwind.it>
+To: kernel-janitors@vger.kernel.org
+Subject: [PATCH] x86: fix section mismatch warnings in kernel/apic/x2apic_uv_x.c
+Date: Sun, 16 Aug 2009 18:55:48 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.30-smp1; KDE/4.3.0; x86_64; ; )
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Worley <worleys@gmail.com>,
-       Matthew Wilcox <matthew@wil.cx>, Bryan Donlan <bdonlan@gmail.com>,
-       david@lang.hm, Greg Freemyer <greg.freemyer@gmail.com>,
-       Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
- slot is freed)
-References: <200908122007.43522.ngupta@vflare.org>	 <20090813151312.GA13559@linux.intel.com>	 <20090813162621.GB1915@phenom2.trippelsdorf.de>	 <alpine.DEB.1.10.0908130931400.28013@asgard.lang.hm>	 <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>	 <alpine.DEB.1.10.0908131342460.28013@asgard.lang.hm>	 <3e8340490908131354q167840fcv124ec56c92bbb830@mail.gmail.com>	 <4A85E0DC.9040101@rtr.ca>	 <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com>	 <20090814234539.GE27148@parisc-linux.org>	 <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com>	 <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca>	 <1250344518.4159.4.camel@mulgrave.site>	 <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk>	 <20090816083434.2ce69859@infradead.org> <1250437927.3856.119.camel@mulgrave.site>
-In-Reply-To: <1250437927.3856.119.camel@mulgrave.site>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908161855.48302.lpotenza@inwind.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
->
-> For SSDs, the FTL has to have a separate operation: erase.  Now, one
-> could see the correct implementation simply moving the sectors from the
-> in-use list to the to be cleaned list and still do the cleaning in the
-> background: that would be constant cost (but, again, likely expensive).
-> Of course, if SSD vendors decided to erase on the spot when seeing TRIM,
-> this wouldn't be true ...
-..
+From: Leonardo Potenza <lpotenza@inwind.it>
 
-The SSDs based upon the Indilinx Barefoot controller appear to do
-the erase on the spot, along with a fair amount of garbage collection.
-The overhead does vary by size of the TRIM operation (number of sectors
-and extents), but even a single-sector TRIM has very high overhead.
+The function uv_acpi_madt_oem_check() has been marked __init, the struct apic_x2apic_uv_x has been marked __refdata.
+The aim is to remove the following section mismatch messages:
 
-Samsung also now has SSDs at retail with TRIM.
-I don't have one of those here.
+WARNING: arch/x86/kernel/apic/built-in.o(.data+0x1368): Section mismatch in reference from the variable apic_x2apic_uv_x to the function .cpuinit.text:uv_wakeup_secondary()
+The variable apic_x2apic_uv_x references
+the function __cpuinit uv_wakeup_secondary()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/kernel/built-in.o(.data+0x68e8): Section mismatch in reference from the variable apic_x2apic_uv_x to the function .cpuinit.text:uv_wakeup_secondary()
+The variable apic_x2apic_uv_x references
+the function __cpuinit uv_wakeup_secondary()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+
+WARNING: arch/x86/built-in.o(.text+0x7b36f): Section mismatch in reference from the function uv_acpi_madt_oem_check() to the function .init.text:early_ioremap()
+The function uv_acpi_madt_oem_check() references
+the function __init early_ioremap().
+This is often because uv_acpi_madt_oem_check lacks a __init 
+annotation or the annotation of early_ioremap is wrong.
+
+WARNING: arch/x86/built-in.o(.text+0x7b38d): Section mismatch in reference from the function uv_acpi_madt_oem_check() to the function .init.text:early_iounmap()
+The function uv_acpi_madt_oem_check() references
+the function __init early_iounmap().
+This is often because uv_acpi_madt_oem_check lacks a __init 
+annotation or the annotation of early_iounmap is wrong.
+
+WARNING: arch/x86/built-in.o(.data+0x8668): Section mismatch in reference from the variable apic_x2apic_uv_x to the function .cpuinit.text:uv_wakeup_secondary()
+The variable apic_x2apic_uv_x references
+the function __cpuinit uv_wakeup_secondary()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+
+Signed-off-by: Leonardo Potenza <lpotenza@inwind.it>
+---
+Index: linux-2.6/arch/x86/kernel/apic/x2apic_uv_x.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/x2apic_uv_x.c	2009-08-16 17:48:15.000000000 +0200
++++ linux-2.6/arch/x86/kernel/apic/x2apic_uv_x.c	2009-08-16 17:52:05.000000000 +0200
+@@ -46,7 +46,7 @@ static int early_get_nodeid(void)
+ 	return node_id.s.node_id;
+ }
+ 
+-static int uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
++static int __init uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ {
+ 	if (!strcmp(oem_id, "SGI")) {
+ 		if (!strcmp(oem_table_id, "UVL"))
+@@ -253,7 +253,7 @@ static void uv_send_IPI_self(int vector)
+ 	apic_write(APIC_SELF_IPI, vector);
+ }
+ 
+-struct apic apic_x2apic_uv_x = {
++struct apic __refdata apic_x2apic_uv_x = {
+ 
+ 	.name				= "UV large system",
+ 	.probe				= NULL,
