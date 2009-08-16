@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756151AbZHPVKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbZHPVKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756151AbZHPVKn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 17:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756080AbZHPVKm
+	id S1756176AbZHPVKu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 17:10:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756158AbZHPVKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 17:10:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60507 "EHLO hera.kernel.org"
+	Sun, 16 Aug 2009 17:10:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60510 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755743AbZHPVKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 17:10:41 -0400
-Date: Sun, 16 Aug 2009 21:10:02 GMT
+	id S1756080AbZHPVKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 17:10:45 -0400
+Date: Sun, 16 Aug 2009 21:10:16 GMT
 From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
@@ -18,180 +18,335 @@ Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
        linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
        efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1250448997-30715-1-git-send-email-fweisbec@gmail.com>
-References: <1250448997-30715-1-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/core] perf tools: Librarize sample type and attr finding from headers
-Message-ID: <tip-0d3a5c885971de1e3124d85bfadf818abac9ba12@git.kernel.org>
-Git-Commit-ID: 0d3a5c885971de1e3124d85bfadf818abac9ba12
+In-Reply-To: <1250453149-664-1-git-send-email-fweisbec@gmail.com>
+References: <1250453149-664-1-git-send-email-fweisbec@gmail.com>
+Subject: [tip:perfcounters/core] perf tools: Librarize trace_event() helper
+Message-ID: <tip-8f28827a162fd1e8da4e96bed69b06d2606e8322@git.kernel.org>
+Git-Commit-ID: 8f28827a162fd1e8da4e96bed69b06d2606e8322
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 16 Aug 2009 21:10:03 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 16 Aug 2009 21:10:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0d3a5c885971de1e3124d85bfadf818abac9ba12
-Gitweb:     http://git.kernel.org/tip/0d3a5c885971de1e3124d85bfadf818abac9ba12
+Commit-ID:  8f28827a162fd1e8da4e96bed69b06d2606e8322
+Gitweb:     http://git.kernel.org/tip/8f28827a162fd1e8da4e96bed69b06d2606e8322
 Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Sun, 16 Aug 2009 20:56:37 +0200
+AuthorDate: Sun, 16 Aug 2009 22:05:48 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 16 Aug 2009 23:06:44 +0200
+CommitDate: Sun, 16 Aug 2009 23:06:45 +0200
 
-perf tools: Librarize sample type and attr finding from headers
+perf tools: Librarize trace_event() helper
 
-Librarize the sample type and attr fetching from perf data file
-headers so that we can also use it from perf trace.
+Librarize trace_event() helper so that perf trace can use it
+too. Also clean up the debug.h includes a bit.
+
+It's not good to have it included in perf.h because it doesn't
+make it flexible against other headers it may need (headers
+that can also depend on perf.h and then create a recursive
+header dependency).
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Mike Galbraith <efault@gmx.de>
-LKML-Reference: <1250448997-30715-1-git-send-email-fweisbec@gmail.com>
+LKML-Reference: <1250453149-664-1-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-report.c |   44 +++++-------------------------------------
- tools/perf/util/header.c    |   35 ++++++++++++++++++++++++++++++++++
- tools/perf/util/header.h    |    4 +++
- 3 files changed, 45 insertions(+), 38 deletions(-)
+ tools/perf/builtin-annotate.c |    1 +
+ tools/perf/builtin-record.c   |    1 +
+ tools/perf/builtin-report.c   |   39 +--------------------------
+ tools/perf/builtin-stat.c     |    2 +
+ tools/perf/builtin-top.c      |    2 +
+ tools/perf/perf.h             |    1 -
+ tools/perf/util/color.c       |   10 +++++--
+ tools/perf/util/color.h       |    1 +
+ tools/perf/util/debug.c       |   58 +++++++++++++++++++++++++++++++++++++++++
+ tools/perf/util/debug.h       |    1 +
+ tools/perf/util/symbol.c      |    2 +
+ 11 files changed, 76 insertions(+), 42 deletions(-)
 
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 6d75151..96d421f 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -17,6 +17,7 @@
+ #include "util/string.h"
+ 
+ #include "perf.h"
++#include "util/debug.h"
+ 
+ #include "util/parse-options.h"
+ #include "util/parse-events.h"
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 65b4115..6a5db67 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -16,6 +16,7 @@
+ 
+ #include "util/header.h"
+ #include "util/event.h"
++#include "util/debug.h"
+ 
+ #include <unistd.h>
+ #include <sched.h>
 diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 05d52ff..c6326de 100644
+index c6326de..1e3ad22 100644
 --- a/tools/perf/builtin-report.c
 +++ b/tools/perf/builtin-report.c
-@@ -70,6 +70,8 @@ static int		cwdlen;
- static struct rb_root	threads;
- static struct thread	*last_match;
+@@ -20,6 +20,7 @@
+ #include "util/values.h"
  
-+static struct perf_header *header;
-+
- static
- struct callchain_param	callchain_param = {
- 	.mode	= CHAIN_GRAPH_REL,
-@@ -1319,29 +1321,12 @@ static void trace_event(event_t *event)
- 	dump_printf(".\n");
+ #include "perf.h"
++#include "util/debug.h"
+ #include "util/header.h"
+ 
+ #include "util/parse-options.h"
+@@ -39,8 +40,6 @@ static char		*field_sep;
+ static int		input;
+ static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
+ 
+-#define cdprintf(x...)	do { if (dump_trace) color_fprintf(stdout, color, x); } while (0)
+-
+ static int		full_paths;
+ static int		show_nr_samples;
+ 
+@@ -1285,42 +1284,6 @@ process_lost_event(event_t *event, unsigned long offset, unsigned long head)
+ 	return 0;
  }
  
--static struct perf_header	*header;
--
--static struct perf_counter_attr *perf_header__find_attr(u64 id)
+-static void trace_event(event_t *event)
 -{
--	int i;
+-	unsigned char *raw_event = (void *)event;
+-	const char *color = PERF_COLOR_BLUE;
+-	int i, j;
 -
--	for (i = 0; i < header->attrs; i++) {
--		struct perf_header_attr *attr = header->attr[i];
--		int j;
+-	if (!dump_trace)
+-		return;
 -
--		for (j = 0; j < attr->ids; j++) {
--			if (attr->id[j] == id)
--				return &attr->attr;
+-	dump_printf(".");
+-	cdprintf("\n. ... raw event: size %d bytes\n", event->header.size);
+-
+-	for (i = 0; i < event->header.size; i++) {
+-		if ((i & 15) == 0) {
+-			dump_printf(".");
+-			cdprintf("  %04x: ", i);
+-		}
+-
+-		cdprintf(" %02x", raw_event[i]);
+-
+-		if (((i & 15) == 15) || i == event->header.size-1) {
+-			cdprintf("  ");
+-			for (j = 0; j < 15-(i & 15); j++)
+-				cdprintf("   ");
+-			for (j = 0; j < (i & 15); j++) {
+-				if (isprint(raw_event[i-15+j]))
+-					cdprintf("%c", raw_event[i-15+j]);
+-				else
+-					cdprintf(".");
+-			}
+-			cdprintf("\n");
 -		}
 -	}
--
--	return NULL;
+-	dump_printf(".\n");
 -}
 -
  static int
  process_read_event(event_t *event, unsigned long offset, unsigned long head)
  {
--	struct perf_counter_attr *attr = perf_header__find_attr(event->read.id);
-+	struct perf_counter_attr *attr;
-+
-+	attr = perf_header__find_attr(event->read.id, header);
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index 4b9dd4a..1a26262 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -42,6 +42,8 @@
+ #include "util/util.h"
+ #include "util/parse-options.h"
+ #include "util/parse-events.h"
++#include "util/event.h"
++#include "util/debug.h"
  
- 	if (show_threads) {
- 		const char *name = attr ? __event_name(attr->type, attr->config)
-@@ -1405,23 +1390,6 @@ process_event(event_t *event, unsigned long offset, unsigned long head)
- 	return 0;
+ #include <sys/prctl.h>
+ #include <math.h>
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index 06f763e..62b55ec 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -27,6 +27,8 @@
+ #include "util/parse-options.h"
+ #include "util/parse-events.h"
+ 
++#include "util/debug.h"
++
+ #include <assert.h>
+ #include <fcntl.h>
+ 
+diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+index f550921..e5148e2 100644
+--- a/tools/perf/perf.h
++++ b/tools/perf/perf.h
+@@ -48,7 +48,6 @@
+ 
+ #include "../../include/linux/perf_counter.h"
+ #include "util/types.h"
+-#include "util/debug.h"
+ 
+ /*
+  * prctl(PR_TASK_PERF_COUNTERS_DISABLE) will (cheaply) disable all
+diff --git a/tools/perf/util/color.c b/tools/perf/util/color.c
+index e47fdeb..e88bca5 100644
+--- a/tools/perf/util/color.c
++++ b/tools/perf/util/color.c
+@@ -166,7 +166,7 @@ int perf_color_default_config(const char *var, const char *value, void *cb)
+ 	return perf_default_config(var, value, cb);
  }
  
--static u64 perf_header__sample_type(void)
--{
--	u64 type = 0;
--	int i;
--
--	for (i = 0; i < header->attrs; i++) {
--		struct perf_header_attr *attr = header->attr[i];
--
--		if (!type)
--			type = attr->attr.sample_type;
--		else if (type != attr->attr.sample_type)
--			die("non matching sample_type");
--	}
--
--	return type;
--}
--
- static int __cmd_report(void)
+-static int color_vfprintf(FILE *fp, const char *color, const char *fmt,
++static int __color_vfprintf(FILE *fp, const char *color, const char *fmt,
+ 		va_list args, const char *trail)
  {
- 	int ret, rc = EXIT_FAILURE;
-@@ -1460,7 +1428,7 @@ static int __cmd_report(void)
- 	header = perf_header__read(input);
- 	head = header->data_offset;
+ 	int r = 0;
+@@ -191,6 +191,10 @@ static int color_vfprintf(FILE *fp, const char *color, const char *fmt,
+ 	return r;
+ }
  
--	sample_type = perf_header__sample_type();
-+	sample_type = perf_header__sample_type(header);
++int color_vfprintf(FILE *fp, const char *color, const char *fmt, va_list args)
++{
++	return __color_vfprintf(fp, color, fmt, args, NULL);
++}
  
- 	if (!(sample_type & PERF_SAMPLE_CALLCHAIN)) {
- 		if (sort__has_parent) {
-diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index b92a457..a37a222 100644
---- a/tools/perf/util/header.c
-+++ b/tools/perf/util/header.c
-@@ -243,3 +243,38 @@ struct perf_header *perf_header__read(int fd)
  
- 	return self;
+ int color_fprintf(FILE *fp, const char *color, const char *fmt, ...)
+@@ -199,7 +203,7 @@ int color_fprintf(FILE *fp, const char *color, const char *fmt, ...)
+ 	int r;
+ 
+ 	va_start(args, fmt);
+-	r = color_vfprintf(fp, color, fmt, args, NULL);
++	r = color_vfprintf(fp, color, fmt, args);
+ 	va_end(args);
+ 	return r;
+ }
+@@ -209,7 +213,7 @@ int color_fprintf_ln(FILE *fp, const char *color, const char *fmt, ...)
+ 	va_list args;
+ 	int r;
+ 	va_start(args, fmt);
+-	r = color_vfprintf(fp, color, fmt, args, "\n");
++	r = __color_vfprintf(fp, color, fmt, args, "\n");
+ 	va_end(args);
+ 	return r;
+ }
+diff --git a/tools/perf/util/color.h b/tools/perf/util/color.h
+index 43d0d1b..58d5975 100644
+--- a/tools/perf/util/color.h
++++ b/tools/perf/util/color.h
+@@ -32,6 +32,7 @@ int perf_color_default_config(const char *var, const char *value, void *cb);
+ int perf_config_colorbool(const char *var, const char *value, int stdout_is_tty);
+ void color_parse(const char *value, const char *var, char *dst);
+ void color_parse_mem(const char *value, int len, const char *var, char *dst);
++int color_vfprintf(FILE *fp, const char *color, const char *fmt, va_list args);
+ int color_fprintf(FILE *fp, const char *color, const char *fmt, ...);
+ int color_fprintf_ln(FILE *fp, const char *color, const char *fmt, ...);
+ int color_fwrite_lines(FILE *fp, const char *color, size_t count, const char *buf);
+diff --git a/tools/perf/util/debug.c b/tools/perf/util/debug.c
+index 8318fde..e8ca98f 100644
+--- a/tools/perf/util/debug.c
++++ b/tools/perf/util/debug.c
+@@ -1,10 +1,15 @@
+ /* For general debugging purposes */
+ 
+ #include "../perf.h"
++
+ #include <string.h>
+ #include <stdarg.h>
+ #include <stdio.h>
+ 
++#include "color.h"
++#include "event.h"
++#include "debug.h"
++
+ int verbose = 0;
+ int dump_trace = 0;
+ 
+@@ -35,3 +40,56 @@ int dump_printf(const char *fmt, ...)
+ 
+ 	return ret;
  }
 +
-+u64 perf_header__sample_type(struct perf_header *header)
++static int dump_printf_color(const char *fmt, const char *color, ...)
 +{
-+	u64 type = 0;
-+	int i;
++	va_list args;
++	int ret = 0;
 +
-+	for (i = 0; i < header->attrs; i++) {
-+		struct perf_header_attr *attr = header->attr[i];
-+
-+		if (!type)
-+			type = attr->attr.sample_type;
-+		else if (type != attr->attr.sample_type)
-+			die("non matching sample_type");
++	if (dump_trace) {
++		va_start(args, color);
++		ret = color_vfprintf(stdout, color, fmt, args);
++		va_end(args);
 +	}
 +
-+	return type;
++	return ret;
 +}
 +
-+struct perf_counter_attr *
-+perf_header__find_attr(u64 id, struct perf_header *header)
++
++void trace_event(event_t *event)
 +{
-+	int i;
++	unsigned char *raw_event = (void *)event;
++	const char *color = PERF_COLOR_BLUE;
++	int i, j;
 +
-+	for (i = 0; i < header->attrs; i++) {
-+		struct perf_header_attr *attr = header->attr[i];
-+		int j;
++	if (!dump_trace)
++		return;
 +
-+		for (j = 0; j < attr->ids; j++) {
-+			if (attr->id[j] == id)
-+				return &attr->attr;
++	dump_printf(".");
++	dump_printf_color("\n. ... raw event: size %d bytes\n", color,
++			  event->header.size);
++
++	for (i = 0; i < event->header.size; i++) {
++		if ((i & 15) == 0) {
++			dump_printf(".");
++			dump_printf_color("  %04x: ", color, i);
++		}
++
++		dump_printf_color(" %02x", color, raw_event[i]);
++
++		if (((i & 15) == 15) || i == event->header.size-1) {
++			dump_printf_color("  ", color);
++			for (j = 0; j < 15-(i & 15); j++)
++				dump_printf_color("   ", color);
++			for (j = 0; j < (i & 15); j++) {
++				if (isprint(raw_event[i-15+j]))
++					dump_printf_color("%c", color,
++							  raw_event[i-15+j]);
++				else
++					dump_printf_color(".", color);
++			}
++			dump_printf_color("\n", color);
 +		}
 +	}
-+
-+	return NULL;
++	dump_printf(".\n");
 +}
-diff --git a/tools/perf/util/header.h b/tools/perf/util/header.h
-index bf28044..5d0a72e 100644
---- a/tools/perf/util/header.h
-+++ b/tools/perf/util/header.h
-@@ -31,6 +31,10 @@ struct perf_header_attr *
- perf_header_attr__new(struct perf_counter_attr *attr);
- void perf_header_attr__add_id(struct perf_header_attr *self, u64 id);
+diff --git a/tools/perf/util/debug.h b/tools/perf/util/debug.h
+index a683bd5..437eea5 100644
+--- a/tools/perf/util/debug.h
++++ b/tools/perf/util/debug.h
+@@ -5,3 +5,4 @@ extern int dump_trace;
  
-+u64 perf_header__sample_type(struct perf_header *header);
-+struct perf_counter_attr *
-+perf_header__find_attr(u64 id, struct perf_header *header);
+ int eprintf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+ int dump_printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
++void trace_event(event_t *event);
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index 3159d47..fd3d9c8 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -3,6 +3,8 @@
+ #include "string.h"
+ #include "symbol.h"
+ 
++#include "debug.h"
 +
- 
- struct perf_header *perf_header__new(void);
- 
+ #include <libelf.h>
+ #include <gelf.h>
+ #include <elf.h>
