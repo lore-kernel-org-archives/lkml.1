@@ -1,306 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbZHPVAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbZHPVBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbZHPVAo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 17:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbZHPVAo
+	id S1756058AbZHPVBY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 17:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbZHPVBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 17:00:44 -0400
-Received: from www84.your-server.de ([213.133.104.84]:51375 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753870AbZHPVAn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 17:00:43 -0400
-Subject: Re: [PATCH 6/7] kfifo: add kfifo_skip, kfifo_from_user and
- kfifo_to_user
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
-In-Reply-To: <1250455161.28540.4.camel@wall-e>
-References: <1250455161.28540.4.camel@wall-e>
-Content-Type: text/plain
-Date: Sun, 16 Aug 2009 23:00:14 +0200
-Message-Id: <1250456414.28540.25.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Sun, 16 Aug 2009 17:01:24 -0400
+Received: from bu3sch.de ([62.75.166.246]:59967 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753948AbZHPVBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 17:01:23 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Threaded interrupt handlers broken?
+Date: Sun, 16 Aug 2009 23:01:21 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200908161153.14081.mb@bu3sch.de> <200908161951.13988.mb@bu3sch.de> <alpine.LFD.2.00.0908162201220.2782@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0908162201220.2782@localhost.localdomain>
+X-Move-Along: Nothing to see here. No, really... Nothing.
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200908162301.21775.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Add kfifo_reset_out() to lockless save discard the fifo output
- Add kfifo_skip() to skip a number of output bytes
- Add kfifo_from_user() to copy user space data into the fifo
- Add kfifo_to_user() to copy fifo data to user space
+On Sunday 16 August 2009 22:05:59 Thomas Gleixner wrote:
+> On Sun, 16 Aug 2009, Michael Buesch wrote:
+> > On Sunday 16 August 2009 16:25:13 Thomas Gleixner wrote:
+> > > On Sun, 16 Aug 2009, Michael Buesch wrote:
+> > > > On Sunday 16 August 2009 15:22:29 Thomas Gleixner wrote:
+> > > >
+> > > > > > +		if (0&&unlikely(desc->status & IRQ_DISABLED)) {
+> > > > > 
+> > > > > So the interrupt is marked disabled. How do you setup the handler
+> > > > > ?  And what does the primary handler do ? Can you post your driver
+> > > > > code please?
+> > > > 
+> > > > This patch converts the b43 driver to threaded interrupts:
+> > > > http://bu3sch.de/patches/wireless-testing/20090816-1535/patches/002-b43-threaded-irq-handler.patch
+> > > 
+> > > On the first glance this looks not too bad. the unlocked access to the
+> > > irq status registers looks a bit scary, but that is not relevant for
+> > > the problem at hand.
+> > 
+> > Yeah it does ;)
+> > 
+> > > > It kind of works with this hack applied to kernel/irq/manage.c
+> > > 
+> > > Hmm. Is the interrupt of the device shared ?
+> > 
+> > It's registered as shared, but on my machine it is not shared with anything else.
+> > 
+> > > If yes, what's the other 
+> > > device on that interrupt line ? what puzzles me is the fact that the
+> > > IRQ_DISABLED flag is set. Is there anything unusual in dmesg ?
+> > 
+> > Here's my current kernel log with the two patches applied:
+> > http://bu3sch.de/misc/dmesg
+> 
+> Hmm. Nothing interesting AFAICT, but it would be really interesting to
+> find out why the IRQ_DISABLED flag is set.
+> 
+> Can you add some debug into disable_irq() e.g. WARN_ON(irq ==
+> BC43_IRQ_NR); so we can see what disables that interrupt.
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
----
- include/linux/kfifo.h |   47 ++++++++++++++++
- kernel/kfifo.c        |  139 ++++++++++++++++++++++++++++++++++++++++++++------
- 2 files changed, 170 insertions(+), 16 deletions(-)
+I do not see a warning, if I put this into __disable_irq():
+WARN_ON(irq == 52);
+/proc/interrupts shows 52 as IRQ number for b43.
+And dmesg shows "... irq 52 on host ... mapped to virtual irq 52".
+So I guess the test is OK and the flag is added by some other means.
+Maybe by some weird powerpc architecture code?
 
-diff -u -N -r linux-2.6.31-rc4-kfifo5/include/linux/kfifo.h linux-2.6.31-rc4-kfifo6/include/linux/kfifo.h
---- linux-2.6.31-rc4-kfifo5/include/linux/kfifo.h	2009-08-16 22:16:43.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo6/include/linux/kfifo.h	2009-08-16 22:17:08.000000000 +0200
-@@ -97,6 +97,16 @@
- }
- 
- /**
-+ * kfifo_reset_out - skip FIFO contents
-+ * @fifo: the fifo to be emptied.
-+ */
-+static inline void kfifo_reset_out(struct kfifo *fifo)
-+{
-+	smp_mb();
-+	fifo->out = fifo->in;
-+}
-+
-+/**
-  * kfifo_size - returns the size of the fifo in bytes
-  * @fifo: the fifo to be used.
-  */
-@@ -203,4 +213,41 @@
- 	return ret;
- }
- 
-+extern void kfifo_skip(struct kfifo *fifo, unsigned int len);
-+
-+extern __must_check unsigned int kfifo_from_user(struct kfifo *fifo,
-+	const void __user *from, unsigned int n);
-+
-+extern __must_check unsigned int kfifo_to_user(struct kfifo *fifo,
-+	void __user *to, unsigned int n);
-+
-+/**
-+ * __kfifo_add_out internal helper function for updating the out offset
-+ */
-+static inline void __kfifo_add_out(struct kfifo *fifo,
-+				unsigned int off)
-+{
-+	smp_mb();
-+	fifo->out += off;
-+}
-+
-+/**
-+ * __kfifo_add_in internal helper function for updating the in offset
-+ */
-+static inline void __kfifo_add_in(struct kfifo *fifo,
-+				unsigned int off)
-+{
-+	smp_wmb();
-+	fifo->in += off;
-+}
-+
-+/**
-+ * __kfifo_off internal helper function for calculating the index of a
-+ * given offeset
-+ */
-+static inline unsigned int __kfifo_off(struct kfifo *fifo, unsigned int off)
-+{
-+	return off & (fifo->size - 1);
-+}
-+
- #endif
-diff -u -N -r linux-2.6.31-rc4-kfifo5/kernel/kfifo.c linux-2.6.31-rc4-kfifo6/kernel/kfifo.c
---- linux-2.6.31-rc4-kfifo5/kernel/kfifo.c	2009-08-16 22:09:05.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo6/kernel/kfifo.c	2009-08-16 22:09:13.000000000 +0200
-@@ -26,6 +26,7 @@
- #include <linux/err.h>
- #include <linux/kfifo.h>
- #include <linux/log2.h>
-+#include <linux/uaccess.h>
- 
- static void _kfifo_init(struct kfifo *fifo, unsigned char *buffer,
- 		unsigned int size)
-@@ -100,6 +101,21 @@
- EXPORT_SYMBOL(kfifo_free);
- 
- /**
-+ * kfifo_skip - skip output data
-+ * @fifo: the fifo to be used.
-+ * @len: number of bytes to skip
-+ */
-+void kfifo_skip(struct kfifo *fifo, unsigned int len)
-+{
-+	if (len < kfifo_len(fifo)) {
-+		__kfifo_add_out(fifo, len);
-+		return;
-+	}
-+	kfifo_reset_out(fifo);
-+}
-+EXPORT_SYMBOL(kfifo_skip);
-+
-+/**
-  * kfifo_in - puts some data into the FIFO
-  * @fifo: the fifo to be used.
-  * @from: the data to be added.
-@@ -115,6 +131,7 @@
- unsigned int kfifo_in(struct kfifo *fifo,
- 			const unsigned char *from, unsigned int len)
- {
-+	unsigned int off;
- 	unsigned int l;
- 
- 	len = min(len, fifo->size - fifo->in + fifo->out);
-@@ -126,21 +143,16 @@
- 
- 	smp_mb();
- 
-+	off = __kfifo_off(fifo, fifo->in);
-+
- 	/* first put the data starting from fifo->in to buffer end */
--	l = min(len, fifo->size - (fifo->in & (fifo->size - 1)));
--	memcpy(fifo->buffer + (fifo->in & (fifo->size - 1)), from, l);
-+	l = min(len, fifo->size - off);
-+	memcpy(fifo->buffer + off, from, l);
- 
- 	/* then put the rest (if any) at the beginning of the buffer */
- 	memcpy(fifo->buffer, from + l, len - l);
- 
--	/*
--	 * Ensure that we add the bytes to the kfifo -before-
--	 * we update the fifo->in index.
--	 */
--
--	smp_wmb();
--
--	fifo->in += len;
-+	__kfifo_add_in(fifo, len);
- 
- 	return len;
- }
-@@ -161,6 +173,7 @@
- unsigned int kfifo_out(struct kfifo *fifo,
- 			 unsigned char *to, unsigned int len)
- {
-+	unsigned int off;
- 	unsigned int l;
- 
- 	len = min(len, fifo->in - fifo->out);
-@@ -172,22 +185,116 @@
- 
- 	smp_rmb();
- 
-+	off = __kfifo_off(fifo, fifo->out);
-+
- 	/* first get the data from fifo->out until the end of the buffer */
--	l = min(len, fifo->size - (fifo->out & (fifo->size - 1)));
--	memcpy(to, fifo->buffer + (fifo->out & (fifo->size - 1)), l);
-+	l = min(len, fifo->size - off);
-+	memcpy(to, fifo->buffer + off, l);
- 
- 	/* then get the rest (if any) from the beginning of the buffer */
- 	memcpy(to + l, fifo->buffer, len - l);
- 
-+	__kfifo_add_out(fifo, len);
-+
-+	return len;
-+}
-+EXPORT_SYMBOL(kfifo_out);
-+
-+/**
-+ * kfifo_from_user - puts some data from user space into the FIFO
-+ * @fifo: the fifo to be used.
-+ * @from: pointer to the data to be added.
-+ * @len: the length of the data to be added.
-+ *
-+ * This function copies at most @len bytes from the @from into the
-+ * FIFO depending and returns the number of copied bytes.
-+ *
-+ * Note that with only one concurrent reader and one concurrent
-+ * writer, you don't need extra locking to use these functions.
-+ */
-+unsigned int kfifo_from_user(struct kfifo *fifo,
-+	const void __user *from, unsigned int len)
-+{
-+	unsigned int off;
-+	unsigned int l;
-+	int ret;
-+
-+	len = min(len, fifo->size - fifo->in + fifo->out);
-+
- 	/*
--	 * Ensure that we remove the bytes from the kfifo -before-
--	 * we update the fifo->out index.
-+	 * Ensure that we sample the fifo->out index -before- we
-+	 * start putting bytes into the kfifo.
- 	 */
- 
- 	smp_mb();
- 
--	fifo->out += len;
-+	off = __kfifo_off(fifo, fifo->in);
-+
-+	/* first put the data starting from fifo->in to buffer end */
-+	l = min(len, fifo->size - off);
-+	ret = copy_from_user(fifo->buffer + off, from, l);
-+
-+	if (unlikely(ret))
-+		return l - ret;
-+
-+	/* then put the rest (if any) at the beginning of the buffer */
-+	ret = copy_from_user(fifo->buffer, from + l, len - l);
-+
-+	if (unlikely(ret))
-+		return len - ret;
-+
-+	__kfifo_add_in(fifo, len);
- 
- 	return len;
- }
--EXPORT_SYMBOL(kfifo_out);
-+EXPORT_SYMBOL(kfifo_from_user);
-+
-+/**
-+ * kfifo_to_user - gets data from the FIFO and write it to user space
-+ * @fifo: the fifo to be used.
-+ * @to: where the data must be copied.
-+ * @len: the size of the destination buffer.
-+ *
-+ * This function copies at most @len bytes from the FIFO into the
-+ * @to buffer and returns the number of copied bytes.
-+ *
-+ * Note that with only one concurrent reader and one concurrent
-+ * writer, you don't need extra locking to use these functions.
-+ */
-+unsigned int kfifo_to_user(struct kfifo *fifo,
-+	void __user *to, unsigned int len)
-+{
-+	unsigned int off;
-+	unsigned int l;
-+	int ret;
-+
-+	len = min(len, fifo->in - fifo->out);
-+
-+	/*
-+	 * Ensure that we sample the fifo->in index -before- we
-+	 * start removing bytes from the kfifo.
-+	 */
-+
-+	smp_rmb();
-+
-+	off = __kfifo_off(fifo, fifo->out);
-+
-+	/* first get the data from fifo->out until the end of the buffer */
-+	l = min(len, fifo->size - off);
-+	ret = copy_to_user(to, fifo->buffer + off, l);
-+
-+	if (unlikely(ret))
-+		return l - ret;
-+
-+	/* then get the rest (if any) from the beginning of the buffer */
-+	ret = copy_to_user(to + l, fifo->buffer, len - l);
-+
-+	if (unlikely(ret))
-+		return len - ret;
-+
-+	__kfifo_add_out(fifo, len);
-+
-+	return len;
-+}
-+EXPORT_SYMBOL(kfifo_to_user);
-+
+It seems a little bit weird, however, that the WARN_ON does not even trigger
+on module unload, which as far as I can tell should disable the IRQ line
+in the free_irq() call (no other shared devices on this IRQ).
 
-
+-- 
+Greetings, Michael.
