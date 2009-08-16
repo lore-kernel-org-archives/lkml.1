@@ -1,68 +1,428 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbZHPJaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbZHPJaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161AbZHPJaQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 05:30:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbZHPJaO
+	id S1754276AbZHPJaf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 05:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZHPJac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 05:30:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45331 "EHLO mx2.redhat.com"
+	Sun, 16 Aug 2009 05:30:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45376 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752506AbZHPJaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 05:30:10 -0400
+	id S1752506AbZHPJaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 05:30:15 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 01/48] KVM: VMX: Properly handle software interrupt re-injection in real mode
-Date: Sun, 16 Aug 2009 12:29:21 +0300
-Message-Id: <1250415008-17175-2-git-send-email-avi@redhat.com>
+Subject: [PATCH 38/48] KVM: switch irq injection/acking data structures to irq_lock
+Date: Sun, 16 Aug 2009 12:29:58 +0300
+Message-Id: <1250415008-17175-39-git-send-email-avi@redhat.com>
 In-Reply-To: <1250415008-17175-1-git-send-email-avi@redhat.com>
 References: <1250415008-17175-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gleb Natapov <gleb@redhat.com>
+From: Marcelo Tosatti <mtosatti@redhat.com>
 
-When reinjecting a software interrupt or exception, use the correct
-instruction length provided by the hardware instead of a hardcoded 1.
+Protect irq injection/acking data structures with a separate irq_lock
+mutex. This fixes the following deadlock:
 
-Fixes problems running the suse 9.1 livecd boot loader.
+CPU A                               CPU B
+kvm_vm_ioctl_deassign_dev_irq()
+  mutex_lock(&kvm->lock);            worker_thread()
+  -> kvm_deassign_irq()                -> kvm_assigned_dev_interrupt_work_handler()
+    -> deassign_host_irq()               mutex_lock(&kvm->lock);
+      -> cancel_work_sync() [blocked]
 
-Problem introduced by commit f0a3602c20 ("KVM: Move interrupt injection
-logic to x86.c").
+[gleb: fix ia64 path]
 
+Reported-by: Alex Williamson <alex.williamson@hp.com>
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/vmx.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+ arch/ia64/kvm/kvm-ia64.c |    4 ++--
+ arch/x86/kvm/i8254.c     |    4 ++--
+ arch/x86/kvm/lapic.c     |    4 ++++
+ arch/x86/kvm/x86.c       |   19 +++++++++----------
+ include/linux/kvm_host.h |    3 ++-
+ virt/kvm/eventfd.c       |    4 ++--
+ virt/kvm/irq_comm.c      |   34 ++++++++++++++++++++++++++++------
+ virt/kvm/kvm_main.c      |   16 +++++++++-------
+ 8 files changed, 58 insertions(+), 30 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 29f9129..db0b8b6 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -801,8 +801,9 @@ static void vmx_queue_exception(struct kvm_vcpu *vcpu, unsigned nr,
- 		vmx->rmode.irq.pending = true;
- 		vmx->rmode.irq.vector = nr;
- 		vmx->rmode.irq.rip = kvm_rip_read(vcpu);
--		if (nr == BP_VECTOR || nr == OF_VECTOR)
--			vmx->rmode.irq.rip++;
-+		if (kvm_exception_is_soft(nr))
-+			vmx->rmode.irq.rip +=
-+				vmx->vcpu.arch.event_exit_inst_len;
- 		intr_info |= INTR_TYPE_SOFT_INTR;
- 		vmcs_write32(VM_ENTRY_INTR_INFO_FIELD, intr_info);
- 		vmcs_write32(VM_ENTRY_INSTRUCTION_LEN, 1);
-@@ -2468,6 +2469,9 @@ static void vmx_inject_irq(struct kvm_vcpu *vcpu)
- 		vmx->rmode.irq.pending = true;
- 		vmx->rmode.irq.vector = irq;
- 		vmx->rmode.irq.rip = kvm_rip_read(vcpu);
-+		if (vcpu->arch.interrupt.soft)
-+			vmx->rmode.irq.rip +=
-+				vmx->vcpu.arch.event_exit_inst_len;
- 		vmcs_write32(VM_ENTRY_INTR_INFO_FIELD,
- 			     irq | INTR_TYPE_SOFT_INTR | INTR_INFO_VALID_MASK);
- 		vmcs_write32(VM_ENTRY_INSTRUCTION_LEN, 1);
+diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
+index 3199221..8dde369 100644
+--- a/arch/ia64/kvm/kvm-ia64.c
++++ b/arch/ia64/kvm/kvm-ia64.c
+@@ -1000,10 +1000,10 @@ long kvm_arch_vm_ioctl(struct file *filp,
+ 			goto out;
+ 		if (irqchip_in_kernel(kvm)) {
+ 			__s32 status;
+-			mutex_lock(&kvm->lock);
++			mutex_lock(&kvm->irq_lock);
+ 			status = kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID,
+ 				    irq_event.irq, irq_event.level);
+-			mutex_unlock(&kvm->lock);
++			mutex_unlock(&kvm->irq_lock);
+ 			if (ioctl == KVM_IRQ_LINE_STATUS) {
+ 				irq_event.status = status;
+ 				if (copy_to_user(argp, &irq_event,
+diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
+index 977af7a..3837db6 100644
+--- a/arch/x86/kvm/i8254.c
++++ b/arch/x86/kvm/i8254.c
+@@ -654,10 +654,10 @@ static void __inject_pit_timer_intr(struct kvm *kvm)
+ 	struct kvm_vcpu *vcpu;
+ 	int i;
+ 
+-	mutex_lock(&kvm->lock);
++	mutex_lock(&kvm->irq_lock);
+ 	kvm_set_irq(kvm, kvm->arch.vpit->irq_source_id, 0, 1);
+ 	kvm_set_irq(kvm, kvm->arch.vpit->irq_source_id, 0, 0);
+-	mutex_unlock(&kvm->lock);
++	mutex_unlock(&kvm->irq_lock);
+ 
+ 	/*
+ 	 * Provides NMI watchdog support via Virtual Wire mode.
+diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+index a23f42e..44f20cd 100644
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -424,7 +424,9 @@ static void apic_set_eoi(struct kvm_lapic *apic)
+ 		trigger_mode = IOAPIC_LEVEL_TRIG;
+ 	else
+ 		trigger_mode = IOAPIC_EDGE_TRIG;
++	mutex_lock(&apic->vcpu->kvm->irq_lock);
+ 	kvm_ioapic_update_eoi(apic->vcpu->kvm, vector, trigger_mode);
++	mutex_unlock(&apic->vcpu->kvm->irq_lock);
+ }
+ 
+ static void apic_send_ipi(struct kvm_lapic *apic)
+@@ -448,7 +450,9 @@ static void apic_send_ipi(struct kvm_lapic *apic)
+ 		   irq.trig_mode, irq.level, irq.dest_mode, irq.delivery_mode,
+ 		   irq.vector);
+ 
++	mutex_lock(&apic->vcpu->kvm->irq_lock);
+ 	kvm_irq_delivery_to_apic(apic->vcpu->kvm, apic, &irq);
++	mutex_unlock(&apic->vcpu->kvm->irq_lock);
+ }
+ 
+ static u32 apic_get_tmcct(struct kvm_lapic *apic)
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 2ad8c97..05cbe83 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2136,10 +2136,10 @@ long kvm_arch_vm_ioctl(struct file *filp,
+ 			goto out;
+ 		if (irqchip_in_kernel(kvm)) {
+ 			__s32 status;
+-			mutex_lock(&kvm->lock);
++			mutex_lock(&kvm->irq_lock);
+ 			status = kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID,
+ 					irq_event.irq, irq_event.level);
+-			mutex_unlock(&kvm->lock);
++			mutex_unlock(&kvm->irq_lock);
+ 			if (ioctl == KVM_IRQ_LINE_STATUS) {
+ 				irq_event.status = status;
+ 				if (copy_to_user(argp, &irq_event,
+@@ -2385,12 +2385,11 @@ mmio:
+ 	 */
+ 	mutex_lock(&vcpu->kvm->lock);
+ 	mmio_dev = vcpu_find_mmio_dev(vcpu, gpa, bytes, 0);
++	mutex_unlock(&vcpu->kvm->lock);
+ 	if (mmio_dev) {
+ 		kvm_iodevice_read(mmio_dev, gpa, bytes, val);
+-		mutex_unlock(&vcpu->kvm->lock);
+ 		return X86EMUL_CONTINUE;
+ 	}
+-	mutex_unlock(&vcpu->kvm->lock);
+ 
+ 	vcpu->mmio_needed = 1;
+ 	vcpu->mmio_phys_addr = gpa;
+@@ -2440,12 +2439,11 @@ mmio:
+ 	 */
+ 	mutex_lock(&vcpu->kvm->lock);
+ 	mmio_dev = vcpu_find_mmio_dev(vcpu, gpa, bytes, 1);
++	mutex_unlock(&vcpu->kvm->lock);
+ 	if (mmio_dev) {
+ 		kvm_iodevice_write(mmio_dev, gpa, bytes, val);
+-		mutex_unlock(&vcpu->kvm->lock);
+ 		return X86EMUL_CONTINUE;
+ 	}
+-	mutex_unlock(&vcpu->kvm->lock);
+ 
+ 	vcpu->mmio_needed = 1;
+ 	vcpu->mmio_phys_addr = gpa;
+@@ -2768,7 +2766,6 @@ static void kernel_pio(struct kvm_io_device *pio_dev,
+ {
+ 	/* TODO: String I/O for in kernel device */
+ 
+-	mutex_lock(&vcpu->kvm->lock);
+ 	if (vcpu->arch.pio.in)
+ 		kvm_iodevice_read(pio_dev, vcpu->arch.pio.port,
+ 				  vcpu->arch.pio.size,
+@@ -2777,7 +2774,6 @@ static void kernel_pio(struct kvm_io_device *pio_dev,
+ 		kvm_iodevice_write(pio_dev, vcpu->arch.pio.port,
+ 				   vcpu->arch.pio.size,
+ 				   pd);
+-	mutex_unlock(&vcpu->kvm->lock);
+ }
+ 
+ static void pio_string_write(struct kvm_io_device *pio_dev,
+@@ -2787,14 +2783,12 @@ static void pio_string_write(struct kvm_io_device *pio_dev,
+ 	void *pd = vcpu->arch.pio_data;
+ 	int i;
+ 
+-	mutex_lock(&vcpu->kvm->lock);
+ 	for (i = 0; i < io->cur_count; i++) {
+ 		kvm_iodevice_write(pio_dev, io->port,
+ 				   io->size,
+ 				   pd);
+ 		pd += io->size;
+ 	}
+-	mutex_unlock(&vcpu->kvm->lock);
+ }
+ 
+ static struct kvm_io_device *vcpu_find_pio_dev(struct kvm_vcpu *vcpu,
+@@ -2831,7 +2825,9 @@ int kvm_emulate_pio(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
+ 	val = kvm_register_read(vcpu, VCPU_REGS_RAX);
+ 	memcpy(vcpu->arch.pio_data, &val, 4);
+ 
++	mutex_lock(&vcpu->kvm->lock);
+ 	pio_dev = vcpu_find_pio_dev(vcpu, port, size, !in);
++	mutex_unlock(&vcpu->kvm->lock);
+ 	if (pio_dev) {
+ 		kernel_pio(pio_dev, vcpu, vcpu->arch.pio_data);
+ 		complete_pio(vcpu);
+@@ -2895,9 +2891,12 @@ int kvm_emulate_pio_string(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
+ 
+ 	vcpu->arch.pio.guest_gva = address;
+ 
++	mutex_lock(&vcpu->kvm->lock);
+ 	pio_dev = vcpu_find_pio_dev(vcpu, port,
+ 				    vcpu->arch.pio.cur_count,
+ 				    !vcpu->arch.pio.in);
++	mutex_unlock(&vcpu->kvm->lock);
++
+ 	if (!vcpu->arch.pio.in) {
+ 		/* string PIO write */
+ 		ret = pio_copy_data(vcpu);
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 0c71688..a29ea03 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -371,7 +371,8 @@ int kvm_set_irq(struct kvm *kvm, int irq_source_id, int irq, int level);
+ void kvm_notify_acked_irq(struct kvm *kvm, unsigned irqchip, unsigned pin);
+ void kvm_register_irq_ack_notifier(struct kvm *kvm,
+ 				   struct kvm_irq_ack_notifier *kian);
+-void kvm_unregister_irq_ack_notifier(struct kvm_irq_ack_notifier *kian);
++void kvm_unregister_irq_ack_notifier(struct kvm *kvm,
++				   struct kvm_irq_ack_notifier *kian);
+ int kvm_request_irq_source_id(struct kvm *kvm);
+ void kvm_free_irq_source_id(struct kvm *kvm, int irq_source_id);
+ 
+diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
+index 3140123..4092b8d 100644
+--- a/virt/kvm/eventfd.c
++++ b/virt/kvm/eventfd.c
+@@ -57,10 +57,10 @@ irqfd_inject(struct work_struct *work)
+ 	struct _irqfd *irqfd = container_of(work, struct _irqfd, inject);
+ 	struct kvm *kvm = irqfd->kvm;
+ 
+-	mutex_lock(&kvm->lock);
++	mutex_lock(&kvm->irq_lock);
+ 	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
+ 	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
+-	mutex_unlock(&kvm->lock);
++	mutex_unlock(&kvm->irq_lock);
+ }
+ 
+ /*
+diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
+index ddc17f0..08a9a49 100644
+--- a/virt/kvm/irq_comm.c
++++ b/virt/kvm/irq_comm.c
+@@ -62,6 +62,8 @@ int kvm_irq_delivery_to_apic(struct kvm *kvm, struct kvm_lapic *src,
+ 	int i, r = -1;
+ 	struct kvm_vcpu *vcpu, *lowest = NULL;
+ 
++	WARN_ON(!mutex_is_locked(&kvm->irq_lock));
++
+ 	if (irq->dest_mode == 0 && irq->dest_id == 0xff &&
+ 			kvm_is_dm_lowest_prio(irq))
+ 		printk(KERN_INFO "kvm: apic: phys broadcast and lowest prio\n");
+@@ -113,7 +115,7 @@ static int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
+ 	return kvm_irq_delivery_to_apic(kvm, NULL, &irq);
+ }
+ 
+-/* This should be called with the kvm->lock mutex held
++/* This should be called with the kvm->irq_lock mutex held
+  * Return value:
+  *  < 0   Interrupt was ignored (masked or not delivered for other reasons)
+  *  = 0   Interrupt was coalesced (previous irq is still pending)
+@@ -125,6 +127,8 @@ int kvm_set_irq(struct kvm *kvm, int irq_source_id, int irq, int level)
+ 	unsigned long *irq_state, sig_level;
+ 	int ret = -1;
+ 
++	WARN_ON(!mutex_is_locked(&kvm->irq_lock));
++
+ 	if (irq < KVM_IOAPIC_NUM_PINS) {
+ 		irq_state = (unsigned long *)&kvm->arch.irq_states[irq];
+ 
+@@ -175,19 +179,26 @@ void kvm_notify_acked_irq(struct kvm *kvm, unsigned irqchip, unsigned pin)
+ void kvm_register_irq_ack_notifier(struct kvm *kvm,
+ 				   struct kvm_irq_ack_notifier *kian)
+ {
++	mutex_lock(&kvm->irq_lock);
+ 	hlist_add_head(&kian->link, &kvm->arch.irq_ack_notifier_list);
++	mutex_unlock(&kvm->irq_lock);
+ }
+ 
+-void kvm_unregister_irq_ack_notifier(struct kvm_irq_ack_notifier *kian)
++void kvm_unregister_irq_ack_notifier(struct kvm *kvm,
++				    struct kvm_irq_ack_notifier *kian)
+ {
++	mutex_lock(&kvm->irq_lock);
+ 	hlist_del_init(&kian->link);
++	mutex_unlock(&kvm->irq_lock);
+ }
+ 
+-/* The caller must hold kvm->lock mutex */
+ int kvm_request_irq_source_id(struct kvm *kvm)
+ {
+ 	unsigned long *bitmap = &kvm->arch.irq_sources_bitmap;
+-	int irq_source_id = find_first_zero_bit(bitmap,
++	int irq_source_id;
++
++	mutex_lock(&kvm->irq_lock);
++	irq_source_id = find_first_zero_bit(bitmap,
+ 				sizeof(kvm->arch.irq_sources_bitmap));
+ 
+ 	if (irq_source_id >= sizeof(kvm->arch.irq_sources_bitmap)) {
+@@ -197,6 +208,7 @@ int kvm_request_irq_source_id(struct kvm *kvm)
+ 
+ 	ASSERT(irq_source_id != KVM_USERSPACE_IRQ_SOURCE_ID);
+ 	set_bit(irq_source_id, bitmap);
++	mutex_unlock(&kvm->irq_lock);
+ 
+ 	return irq_source_id;
+ }
+@@ -207,6 +219,7 @@ void kvm_free_irq_source_id(struct kvm *kvm, int irq_source_id)
+ 
+ 	ASSERT(irq_source_id != KVM_USERSPACE_IRQ_SOURCE_ID);
+ 
++	mutex_lock(&kvm->irq_lock);
+ 	if (irq_source_id < 0 ||
+ 	    irq_source_id >= sizeof(kvm->arch.irq_sources_bitmap)) {
+ 		printk(KERN_ERR "kvm: IRQ source ID out of range!\n");
+@@ -215,19 +228,24 @@ void kvm_free_irq_source_id(struct kvm *kvm, int irq_source_id)
+ 	for (i = 0; i < KVM_IOAPIC_NUM_PINS; i++)
+ 		clear_bit(irq_source_id, &kvm->arch.irq_states[i]);
+ 	clear_bit(irq_source_id, &kvm->arch.irq_sources_bitmap);
++	mutex_unlock(&kvm->irq_lock);
+ }
+ 
+ void kvm_register_irq_mask_notifier(struct kvm *kvm, int irq,
+ 				    struct kvm_irq_mask_notifier *kimn)
+ {
++	mutex_lock(&kvm->irq_lock);
+ 	kimn->irq = irq;
+ 	hlist_add_head(&kimn->link, &kvm->mask_notifier_list);
++	mutex_unlock(&kvm->irq_lock);
+ }
+ 
+ void kvm_unregister_irq_mask_notifier(struct kvm *kvm, int irq,
+ 				      struct kvm_irq_mask_notifier *kimn)
+ {
++	mutex_lock(&kvm->irq_lock);
+ 	hlist_del(&kimn->link);
++	mutex_unlock(&kvm->irq_lock);
+ }
+ 
+ void kvm_fire_mask_notifiers(struct kvm *kvm, int irq, bool mask)
+@@ -235,6 +253,8 @@ void kvm_fire_mask_notifiers(struct kvm *kvm, int irq, bool mask)
+ 	struct kvm_irq_mask_notifier *kimn;
+ 	struct hlist_node *n;
+ 
++	WARN_ON(!mutex_is_locked(&kvm->irq_lock));
++
+ 	hlist_for_each_entry(kimn, n, &kvm->mask_notifier_list, link)
+ 		if (kimn->irq == irq)
+ 			kimn->func(kimn, mask);
+@@ -250,7 +270,9 @@ static void __kvm_free_irq_routing(struct list_head *irq_routing)
+ 
+ void kvm_free_irq_routing(struct kvm *kvm)
+ {
++	mutex_lock(&kvm->irq_lock);
+ 	__kvm_free_irq_routing(&kvm->irq_routing);
++	mutex_unlock(&kvm->irq_lock);
+ }
+ 
+ static int setup_routing_entry(struct kvm_kernel_irq_routing_entry *e,
+@@ -325,13 +347,13 @@ int kvm_set_irq_routing(struct kvm *kvm,
+ 		e = NULL;
+ 	}
+ 
+-	mutex_lock(&kvm->lock);
++	mutex_lock(&kvm->irq_lock);
+ 	list_splice(&kvm->irq_routing, &tmp);
+ 	INIT_LIST_HEAD(&kvm->irq_routing);
+ 	list_splice(&irq_list, &kvm->irq_routing);
+ 	INIT_LIST_HEAD(&irq_list);
+ 	list_splice(&tmp, &irq_list);
+-	mutex_unlock(&kvm->lock);
++	mutex_unlock(&kvm->irq_lock);
+ 
+ 	r = 0;
+ 
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index d47e660..0d481b2 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -62,6 +62,12 @@
+ MODULE_AUTHOR("Qumranet");
+ MODULE_LICENSE("GPL");
+ 
++/*
++ * Ordering of locks:
++ *
++ * 		kvm->lock --> kvm->irq_lock
++ */
++
+ DEFINE_SPINLOCK(kvm_lock);
+ LIST_HEAD(vm_list);
+ 
+@@ -126,11 +132,7 @@ static void kvm_assigned_dev_interrupt_work_handler(struct work_struct *work)
+ 				    interrupt_work);
+ 	kvm = assigned_dev->kvm;
+ 
+-	/* This is taken to safely inject irq inside the guest. When
+-	 * the interrupt injection (or the ioapic code) uses a
+-	 * finer-grained lock, update this
+-	 */
+-	mutex_lock(&kvm->lock);
++	mutex_lock(&kvm->irq_lock);
+ 	spin_lock_irq(&assigned_dev->assigned_dev_lock);
+ 	if (assigned_dev->irq_requested_type & KVM_DEV_IRQ_HOST_MSIX) {
+ 		struct kvm_guest_msix_entry *guest_entries =
+@@ -149,7 +151,7 @@ static void kvm_assigned_dev_interrupt_work_handler(struct work_struct *work)
+ 			    assigned_dev->guest_irq, 1);
+ 
+ 	spin_unlock_irq(&assigned_dev->assigned_dev_lock);
+-	mutex_unlock(&assigned_dev->kvm->lock);
++	mutex_unlock(&assigned_dev->kvm->irq_lock);
+ }
+ 
+ static irqreturn_t kvm_assigned_dev_intr(int irq, void *dev_id)
+@@ -207,7 +209,7 @@ static void kvm_assigned_dev_ack_irq(struct kvm_irq_ack_notifier *kian)
+ static void deassign_guest_irq(struct kvm *kvm,
+ 			       struct kvm_assigned_dev_kernel *assigned_dev)
+ {
+-	kvm_unregister_irq_ack_notifier(&assigned_dev->ack_notifier);
++	kvm_unregister_irq_ack_notifier(kvm, &assigned_dev->ack_notifier);
+ 	assigned_dev->ack_notifier.gsi = -1;
+ 
+ 	if (assigned_dev->irq_source_id != -1)
 -- 
 1.6.3.3
 
