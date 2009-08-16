@@ -1,239 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbZHPPqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755265AbZHPPus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755146AbZHPPqb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 11:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZHPPqa
+	id S1755265AbZHPPus (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 11:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbZHPPur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 11:46:30 -0400
-Received: from www.outitgoes.com ([79.170.40.67]:36742 "EHLO
-	webmail1.extendcp.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751219AbZHPPqa convert rfc822-to-8bit (ORCPT
+	Sun, 16 Aug 2009 11:50:47 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:48192 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752018AbZHPPuq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 11:46:30 -0400
+	Sun, 16 Aug 2009 11:50:46 -0400
+Date: Sun, 16 Aug 2009 11:50:46 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Matthew Garrett <mjg59@srcf.ucam.org>, <linux-usb@vger.kernel.org>,
+       <linux-pci@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
+In-Reply-To: <200908152254.23227.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0908161130590.6522-100000@netrider.rowland.org>
 MIME-Version: 1.0
-X-Mailer: AtMail PHP 5.6
-Message-ID: <58001.1250437590@bifferos.com>
-To: <linux-kernel@vger.kernel.org>
-Reply-To: mark@bifferos.com
-Content-Type: text/plain; charset="utf-8"
-X-Origin: 92.12.134.11
-X-Atmail-Account: mark@bifferos.com
-Date: Sun, 16 Aug 2009 16:46:30 +0100
-Subject: [patch] x86 CPU detection for RDC
-From: Mark Kelly <mark@bifferos.com>
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 15 Aug 2009, Rafael J. Wysocki wrote:
 
->From about 2.6.29, CPU detection appears to have changed such that a 
-patch is required for RDC x86-compatible CPUs (possibly other undetected 
-x86 CPUs as well).  A work-around was to add a couple of null checks to 
-arch/x86/kernel/cpu/common.c, e.g.:
+> > The only remaining question is how to expose this in sysfs in a way 
+> > that won't be confusing and that won't be confused with the "wakeup" 
+> > attribute.  One possibility is to use the "level" attribute introduced 
+> > in USB; possible levels are "on" (no runtime PM) and "auto" (runtime 
+> > PM allowed).  Then a new "runtime_wakeup" attribute could contain 
+> > nothing (if wakeup is not available), "enabled", or "disabled".
+> 
+> That seems to require two flags.
+> 
+> runtime_forbidden - if unset, the driver decides whether or not to use runtime
+>   PM; that could be exposed through sysfs as 'runtime' under the 'power'
+>   subdirectory with the following values:
+>   * 'disabled' - runtime_forbidden is set by the user space
+>   * 'on' - runtime_forbidden is unset, runtime PM is used (disable_depth == 0)
+>   * 'off' - runtime_forbidden is unset, runtime PM is not used
+>   To set/unset the user space writes 'enabled'/'disabled' to it, respectively.
+>   The default is unset.
 
-if (this_cpu && this_cpu->c_identify)
-             ~~~~~~~~~~~~~~~~~~~~~~~
-    this_cpu->c_identify(c);
+Too confusing.  The difference between "disabled" and "off" is so
+subtle that even I don't understand it!
 
-However the patch below attempts to do this detection properly, and also
-detect all variants of RDC CPUs. I have also added some documentation 
-for this platform.
+All we need for this is a simple on/off switch.  Or to be consistent
+with the terms that are already exposed to userspace for USB devices:  
+"auto"/"on", where "auto" means the system automatically changes power
+levels (runtime PM is enabled) and "on" means the device is always on
+(runtime PM is disabled).
 
-See also:
-http://sites.google.com/site/bifferboard/Home/s3282-kernel-issues
+And I don't like the "runtime_forbidden" name either.  It's long and
+it's a negative, making it harder to understand.  ("off" means that the
+device is permanently on!)  What's wrong with "level", as in
+"power/level"?  That seems very intuitive.
 
-kind regards,
-Mark.
+> runtime_wakeup - if set, the device is allowed to do remote wakeup at run time
+>   That could be represented as 'runtime_wakeup' under 'power' with the
+>   following values:
+>   * no value (empty file) is 'runtime' is 'disabled'
+>   * 'enabled'
+>   * 'disabled'
+>   To set/unset the user space writes 'enabled'/'disabled' to it, respectively.
+>   The default is set.
 
+This is okay except for your definition of empty file.  This makes it
+dependent on the power/level setting.  The two should be independent.  
+Thus, empty file should mean that the device doesn't support remote
+wakeup, in which case writes are ignored.
 
+This scheme, like yours, requires two new bitflags.  We could call them
+something like "may_runtime_suspend" and "may_runtime_wakeup".
 
-
-Signed-off-by: Mark Kelly <mark@bifferos.com>
-
-
-diff --git a/Documentation/x86/rdc.txt b/Documentation/x86/rdc.txt
-new file mode 100644
-index 0000000..9c6baaa
---- /dev/null
-+++ b/Documentation/x86/rdc.txt
-@@ -0,0 +1,69 @@
-+
-+Introduction
-+============
-+
-+RDC (http://www.rdc.com.tw) have been manufacturing x86-compatible SoC
-+(system-on-chips) for a number of years.  They are not the fastest of 
-+CPUs (clock speeds ranging from 133-150MHz) but 486SX compatibility 
-+coupled with very low power consumption[1] and low cost make them ideal 
-+for embedded applications.
-+
-+
-+Where to find
-+=============
-+
-+RDC chips show up in numerous embedded devices, but be careful since
-+many of them will not run Linux 2.6 without significant expertise.
-+
-+There are several variants of what the linux kernel refers to generically 
-+as RDC321X:  R8610, R321x, S3282 and AMRISC20000.
-+
-+R321x: Found in various routers, see the OpenWrt project for details,
-+   http://wiki.openwrt.org/oldwiki/rdcport
-+
-+R8610: Found on the RDC evaluation board
-+   http://www.ivankuten.com/system-on-chip-soc/rdc-r8610/
-+
-+AMRISC20000: Found in the MGB-100 wireless hard disk
-+   http://tintuc.no-ip.com/linux/tipps/mgb100/
-+
-+S3282: Found in various NAS devices, including the Bifferboard
-+   http://www.bifferos.com   
-+
-+
-+Kernel Configuration
-+====================
-+
-+Add support for this CPU with CONFIG_X86_RDC321X.  Ensure that maths
-+emulation is included (CONFIG_MATH_EMULATION selected) and avoid MCE
-+(CONFIG_X86_MCE not selected).
-+
-+
-+CPU detection
-+=============
-+
-+None of these chips support the cpuid instruction, so as with some
-+other x86 compatible SoCs, we must check the north bridge and look 
-+for specific 'signature' PCI device config.
-+
-+The current detection code has been tested only on the Bifferboard
-+(S3282 CPU), please send bug reports or success stories with
-+other devices to bifferos@yahoo.co.uk.
-+
-+
-+Refs
-+====
-+
-+[1] S3282 in certain NAS solutions consumes less than 1W
-+
-+
-+Credits
-+=======
-+
-+Many thanks to RDC for providing the customer codes to allow
-+detection of all known variants, without which this detection code
-+would have been very hard to ascertain.
-+
-+
-+mark@bifferos.com 2009
-+
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index c2cceae..6f9f853 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -121,7 +121,8 @@ struct cpuinfo_x86 {
- #define X86_VENDOR_CENTAUR	5
- #define X86_VENDOR_TRANSMETA	7
- #define X86_VENDOR_NSC		8
--#define X86_VENDOR_NUM		9
-+#define X86_VENDOR_RDC		9
-+#define X86_VENDOR_NUM		10
- 
- #define X86_VENDOR_UNKNOWN	0xff
- 
-diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
-index 4e242f9..9906064 100644
---- a/arch/x86/kernel/cpu/Makefile
-+++ b/arch/x86/kernel/cpu/Makefile
-@@ -22,6 +22,7 @@ obj-$(CONFIG_CPU_SUP_CYRIX_32)		+= cyrix.o
- obj-$(CONFIG_CPU_SUP_CENTAUR)		+= centaur.o
- obj-$(CONFIG_CPU_SUP_TRANSMETA_32)	+= transmeta.o
- obj-$(CONFIG_CPU_SUP_UMC_32)		+= umc.o
-+obj-$(CONFIG_X86_RDC321X)		+= rdc.o
- 
- obj-$(CONFIG_X86_MCE)	+= mcheck/
- obj-$(CONFIG_MTRR)	+= mtrr/
-diff --git a/arch/x86/kernel/cpu/rdc.c b/arch/x86/kernel/cpu/rdc.c
-new file mode 100644
-index 0000000..5a6aea7
---- /dev/null
-+++ b/arch/x86/kernel/cpu/rdc.c
-@@ -0,0 +1,72 @@
-+/*
-+   See Documentation/x86/rdc.txt
-+
-+   mark@bifferos.com
-+*/
-+
-+#include <linux/pci.h>
-+#include <asm/pci-direct.h>
-+#include "cpu.h"
-+
-+
-+static void __cpuinit rdc_identify(struct cpuinfo_x86 *c)
-+{
-+	u16 vendor, device;
-+	
-+	/* RDC CPU is SoC (system-on-chip), Northbridge is always present. */
-+	vendor = read_pci_config_16(0, 0, 0, PCI_VENDOR_ID);
-+	device = read_pci_config_16(0, 0, 0, PCI_DEVICE_ID);
-+
-+	/* We could go on and check other devices, e.g. r6040 NIC, but that's probably
-overkill */
-+	if (vendor == PCI_VENDOR_ID_RDC && device == PCI_DEVICE_ID_RDC_R6020) 
-+	{
-+		u32 customer_id;
-+
-+		strcpy(c->x86_vendor_id, "RDC");
-+		c->x86_vendor = X86_VENDOR_RDC;
-+
-+		customer_id = read_pci_config(0, 0, 0, 0x90);
-+		
-+		switch (customer_id)
-+		{
-+			// id names are from RDC.
-+			case 0x00321000 :
-+				strcpy(c->x86_model_id, "R3210/R3211");
-+				break;
-+			case 0x00321001 :
-+				strcpy(c->x86_model_id, "AMITRISC20000/20010");
-+				break;
-+			case 0x00321002 :
-+				strcpy(c->x86_model_id, "R3210X/Edimax");
-+				break;
-+			case 0x00321003 :
-+				strcpy(c->x86_model_id, "R3210/Kcodes");
-+				break;
-+			case 0x00321004 :  // tested
-+				strcpy(c->x86_model_id, "S3282/CodeTek");
-+				break;
-+			case 0x00321007 :
-+				strcpy(c->x86_model_id, "R8610");
-+				break;
-+			default :
-+				printk(KERN_INFO "Unrecognised Customer ID (0x%x) please report to
-bifferos@yahoo.co.uk\n", customer_id);
-+
-+				/* We'll default to the R321x since that's mentioned elsewhere in the 
-+				   kernel sources. */
-+				strcpy(c->x86_model_id, "R321x");
-+				
-+				/* blank the vendor_id, so we get a warning that this is unsupported, your 
-+				   system may be unstable etc...  Is there a better way? */
-+				strcpy(c->x86_vendor_id, "");
-+		}
-+	}
-+}
-+
-+static const struct cpu_dev __cpuinitconst rdc_cpu_dev = {
-+	.c_vendor	= "RDC",
-+	.c_ident	= { "RDC" },
-+	.c_identify	= rdc_identify,
-+	.c_x86_vendor	= X86_VENDOR_RDC,
-+};
-+
-+cpu_dev_register(rdc_cpu_dev);
-
-
-
+Alan Stern
 
