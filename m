@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbZHPJha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbZHPJjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755169AbZHPJha (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 05:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141AbZHPJh2
+	id S1755439AbZHPJjq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 05:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbZHPJix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 05:37:28 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45346 "EHLO mx2.redhat.com"
+	Sun, 16 Aug 2009 05:38:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45337 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753990AbZHPJaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 05:30:12 -0400
+	id S1753966AbZHPJaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 05:30:11 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 15/48] KVM: s390: fix signal handling
-Date: Sun, 16 Aug 2009 12:29:35 +0300
-Message-Id: <1250415008-17175-16-git-send-email-avi@redhat.com>
+Subject: [PATCH 06/48] KVM: x86 emulator: Implement zero-extended immediate decoding
+Date: Sun, 16 Aug 2009 12:29:26 +0300
+Message-Id: <1250415008-17175-7-git-send-email-avi@redhat.com>
 In-Reply-To: <1250415008-17175-1-git-send-email-avi@redhat.com>
 References: <1250415008-17175-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Absolute jumps use zero extended immediate operands.
 
-If signal pending is true we exit without updating kvm_run, userspace
-currently just does nothing and jumps to kvm_run again.
-Since we did not set an exit_reason we might end up with a random one
-(whatever was the last exit). Therefore it was possible to e.g. jump to
-the psw position the last real interruption set.
-Setting the INTR exit reason ensures that no old psw data is swapped
-in on reentry.
-
-Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/s390/kvm/kvm-s390.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ arch/x86/kvm/x86_emulate.c |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 1d65f62..5c1c302 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -527,8 +527,10 @@ rerun_vcpu:
- 	if (rc == SIE_INTERCEPT_RERUNVCPU)
- 		goto rerun_vcpu;
- 
--	if (signal_pending(current) && !rc)
-+	if (signal_pending(current) && !rc) {
-+		kvm_run->exit_reason = KVM_EXIT_INTR;
- 		rc = -EINTR;
-+	}
- 
- 	if (rc == -ENOTSUPP) {
- 		/* intercept cannot be handled in-kernel, prepare kvm-run */
+diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
+index 616de46..a30d5fc 100644
+--- a/arch/x86/kvm/x86_emulate.c
++++ b/arch/x86/kvm/x86_emulate.c
+@@ -60,6 +60,7 @@
+ #define SrcImmByte  (6<<4)	/* 8-bit sign-extended immediate operand. */
+ #define SrcOne      (7<<4)	/* Implied '1' */
+ #define SrcImmUByte (8<<4)      /* 8-bit unsigned immediate operand. */
++#define SrcImmU     (9<<4)      /* Immediate operand, unsigned */
+ #define SrcMask     (0xf<<4)
+ /* Generic ModRM decode. */
+ #define ModRM       (1<<8)
+@@ -1027,6 +1028,7 @@ done_prefixes:
+ 		c->src.type = OP_MEM;
+ 		break;
+ 	case SrcImm:
++	case SrcImmU:
+ 		c->src.type = OP_IMM;
+ 		c->src.ptr = (unsigned long *)c->eip;
+ 		c->src.bytes = (c->d & ByteOp) ? 1 : c->op_bytes;
+@@ -1044,6 +1046,19 @@ done_prefixes:
+ 			c->src.val = insn_fetch(s32, 4, c->eip);
+ 			break;
+ 		}
++		if ((c->d & SrcMask) == SrcImmU) {
++			switch (c->src.bytes) {
++			case 1:
++				c->src.val &= 0xff;
++				break;
++			case 2:
++				c->src.val &= 0xffff;
++				break;
++			case 4:
++				c->src.val &= 0xffffffff;
++				break;
++			}
++		}
+ 		break;
+ 	case SrcImmByte:
+ 	case SrcImmUByte:
 -- 
 1.6.3.3
 
