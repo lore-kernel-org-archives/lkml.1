@@ -1,1703 +1,1387 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932471AbZHPTc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbZHPTbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932471AbZHPTc6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 15:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932425AbZHPTcy
+	id S1755993AbZHPTbp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 15:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932089AbZHPTbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 15:32:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35872 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932366AbZHPTct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 15:32:49 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com
-Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
-       jmarchan@redhat.com
-Subject: [PATCH 04/24] io-controller: Modify cfq to make use of flat elevator fair queuing
-Date: Sun, 16 Aug 2009 15:30:26 -0400
-Message-Id: <1250451046-9966-5-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1250451046-9966-1-git-send-email-vgoyal@redhat.com>
-References: <1250451046-9966-1-git-send-email-vgoyal@redhat.com>
+	Sun, 16 Aug 2009 15:31:42 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:45385 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755900AbZHPTbh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 15:31:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=TRWuuwmHuwkwPQ2AXaWQKFmLmbY7JYoBfcawR+46IaP3qBrn5BpjlVHPQo3tpbOa4V
+         uIwnn3ii1NTmL6PCI7vr/wrBN2y/7DEucjZ0llLFsrjFmXixtGeHv8a30cYKJA1KjxWP
+         wUW6mNLjaas5zG3S4VkhCMi2c75zWuXWHuKdY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Greg Kroah-Hartman" <gregkh@suse.de>
+Cc: devel@driverdev.osuosl.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Sun, 16 Aug 2009 21:31:49 +0200
+Message-Id: <20090816193149.3789.27420.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
+References: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
+Subject: [PATCH 19/22] Staging: rtxxx0: remove superfluous function prototypes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes cfq to use fair queuing code from elevator layer.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] Staging: rtxxx0: remove superfluous function prototypes
 
-Signed-off-by: Nauman Rafique <nauman@google.com>
-Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
-Signed-off-by: Paolo Valente <paolo.valente@unimore.it>
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- block/Kconfig.iosched |    3 +-
- block/cfq-iosched.c   |  980 +++++++++++--------------------------------------
- 2 files changed, 217 insertions(+), 766 deletions(-)
+ drivers/staging/rt2860/ap.h           |  453 ------------------------------
+ drivers/staging/rt2860/dfs.h          |   12 
+ drivers/staging/rt2860/rtmp.h         |  503 ----------------------------------
+ drivers/staging/rt2860/rtmp_ckipmic.h |   35 --
+ 4 files changed, 1003 deletions(-)
 
-diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-index 3398134..dd5224d 100644
---- a/block/Kconfig.iosched
-+++ b/block/Kconfig.iosched
-@@ -3,7 +3,7 @@ if BLOCK
- menu "IO Schedulers"
+Index: b/drivers/staging/rt2860/ap.h
+===================================================================
+--- a/drivers/staging/rt2860/ap.h
++++ b/drivers/staging/rt2860/ap.h
+@@ -40,290 +40,8 @@
+ #ifndef __AP_H__
+ #define __AP_H__
  
- config ELV_FAIR_QUEUING
--	bool "Elevator Fair Queuing Support"
-+	bool
- 	default n
- 	---help---
- 	  Traditionally only cfq had notion of multiple queues and it did
-@@ -46,6 +46,7 @@ config IOSCHED_DEADLINE
- 
- config IOSCHED_CFQ
- 	tristate "CFQ I/O scheduler"
-+	select ELV_FAIR_QUEUING
- 	default y
- 	---help---
- 	  The CFQ I/O scheduler tries to distribute bandwidth equally
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 5a67ec0..4bde1c8 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -12,6 +12,7 @@
- #include <linux/rbtree.h>
- #include <linux/ioprio.h>
- #include <linux/blktrace_api.h>
-+#include "elevator-fq.h"
- 
- /*
-  * tunables
-@@ -23,17 +24,10 @@ static const int cfq_fifo_expire[2] = { HZ / 4, HZ / 8 };
- static const int cfq_back_max = 16 * 1024;
- /* penalty of a backwards seek */
- static const int cfq_back_penalty = 2;
--static const int cfq_slice_sync = HZ / 10;
--static int cfq_slice_async = HZ / 25;
- static const int cfq_slice_async_rq = 2;
- static int cfq_slice_idle = HZ / 125;
- 
- /*
-- * offset from end of service tree
-- */
--#define CFQ_IDLE_DELAY		(HZ / 5)
 -
--/*
-  * below this threshold, we consider thinktime immediate
-  */
- #define CFQ_MIN_TT		(2)
-@@ -43,7 +37,7 @@ static int cfq_slice_idle = HZ / 125;
- 
- #define RQ_CIC(rq)		\
- 	((struct cfq_io_context *) (rq)->elevator_private)
--#define RQ_CFQQ(rq)		(struct cfq_queue *) ((rq)->elevator_private2)
-+#define RQ_CFQQ(rq)	(struct cfq_queue *) (elv_ioq_sched_queue((rq)->ioq))
- 
- static struct kmem_cache *cfq_pool;
- static struct kmem_cache *cfq_ioc_pool;
-@@ -53,8 +47,6 @@ static struct completion *ioc_gone;
- static DEFINE_SPINLOCK(ioc_gone_lock);
- 
- #define CFQ_PRIO_LISTS		IOPRIO_BE_NR
--#define cfq_class_idle(cfqq)	((cfqq)->ioprio_class == IOPRIO_CLASS_IDLE)
--#define cfq_class_rt(cfqq)	((cfqq)->ioprio_class == IOPRIO_CLASS_RT)
- 
- #define sample_valid(samples)	((samples) > 80)
- 
-@@ -74,16 +66,11 @@ struct cfq_rb_root {
-  * Per process-grouping structure
-  */
- struct cfq_queue {
--	/* reference count */
--	atomic_t ref;
-+	struct io_queue *ioq;
- 	/* various state flags, see below */
- 	unsigned int flags;
- 	/* parent cfq_data */
- 	struct cfq_data *cfqd;
--	/* service_tree member */
--	struct rb_node rb_node;
--	/* service_tree key */
--	unsigned long rb_key;
- 	/* prio tree member */
- 	struct rb_node p_node;
- 	/* prio tree root we belong to, if any */
-@@ -99,18 +86,13 @@ struct cfq_queue {
- 	/* fifo list of requests in sort_list */
- 	struct list_head fifo;
- 
--	unsigned long slice_end;
--	long slice_resid;
- 	unsigned int slice_dispatch;
- 
- 	/* pending metadata requests */
- 	int meta_pending;
--	/* number of requests that are on the dispatch list or inside driver */
--	int dispatched;
- 
- 	/* io prio of this group */
--	unsigned short ioprio, org_ioprio;
--	unsigned short ioprio_class, org_ioprio_class;
-+	unsigned short org_ioprio, org_ioprio_class;
- 
- 	pid_t pid;
- };
-@@ -120,12 +102,6 @@ struct cfq_queue {
-  */
- struct cfq_data {
- 	struct request_queue *queue;
 -
--	/*
--	 * rr list of queues with requests and the count of them
--	 */
--	struct cfq_rb_root service_tree;
+-// ========================= AP RTMP.h ================================
 -
- 	/*
- 	 * Each priority tree is sorted by next_request position.  These
- 	 * trees are used when determining if two or more queues are
-@@ -133,14 +109,6 @@ struct cfq_data {
- 	 */
- 	struct rb_root prio_trees[CFQ_PRIO_LISTS];
- 
--	unsigned int busy_queues;
--	/*
--	 * Used to track any pending rt requests so we can pre-empt current
--	 * non-RT cfqq in service when this value is non-zero.
--	 */
--	unsigned int busy_rt_queues;
 -
--	int rq_in_driver;
- 	int sync_flight;
- 
- 	/*
-@@ -151,21 +119,8 @@ struct cfq_data {
- 	int hw_tag_samples;
- 	int rq_in_driver_peak;
- 
--	/*
--	 * idle window management
--	 */
--	struct timer_list idle_slice_timer;
--	struct work_struct unplug_work;
 -
--	struct cfq_queue *active_queue;
- 	struct cfq_io_context *active_cic;
- 
--	/*
--	 * async queue for each priority case
--	 */
--	struct cfq_queue *async_cfqq[2][IOPRIO_BE_NR];
--	struct cfq_queue *async_idle_cfqq;
+-// =============================================================
+-//      Function Prototypes
+-// =============================================================
 -
- 	sector_t last_position;
+-// ap_data.c
+-
+-BOOLEAN APBridgeToWirelessSta(
+-    IN  PRTMP_ADAPTER   pAd,
+-    IN  PUCHAR          pHeader,
+-    IN  UINT            HdrLen,
+-    IN  PUCHAR          pData,
+-    IN  UINT            DataLen,
+-    IN  ULONG           fromwdsidx);
+-
+-BOOLEAN APHandleRxDoneInterrupt(
+-    IN  PRTMP_ADAPTER   pAd);
+-
+-VOID	APSendPackets(
+-	IN	NDIS_HANDLE		MiniportAdapterContext,
+-	IN	PPNDIS_PACKET	ppPacketArray,
+-	IN	UINT			NumberOfPackets);
+-
+-NDIS_STATUS APSendPacket(
+-    IN  PRTMP_ADAPTER   pAd,
+-    IN  PNDIS_PACKET    pPacket);
+-
+-
+-NDIS_STATUS APHardTransmit(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	TX_BLK			*pTxBlk,
+-	IN	UCHAR			QueIdx);
+-
+-VOID APRxEAPOLFrameIndicate(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	MAC_TABLE_ENTRY	*pEntry,
+-	IN	RX_BLK			*pRxBlk,
+-	IN	UCHAR			FromWhichBSSID);
+-
+-NDIS_STATUS APCheckRxError(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PRT28XX_RXD_STRUC		pRxD,
+-	IN	UCHAR			Wcid);
+-
+-BOOLEAN APCheckClass2Class3Error(
+-    IN  PRTMP_ADAPTER   pAd,
+-	IN ULONG Wcid,
+-	IN  PHEADER_802_11  pHeader);
+-
+-VOID APHandleRxPsPoll(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PUCHAR			pAddr,
+-	IN	USHORT			Aid,
+-    IN	BOOLEAN			isActive);
+-
+-VOID    RTMPDescriptorEndianChange(
+-    IN  PUCHAR          pData,
+-    IN  ULONG           DescriptorType);
+-
+-VOID    RTMPFrameEndianChange(
+-    IN  PRTMP_ADAPTER   pAd,
+-    IN  PUCHAR          pData,
+-    IN  ULONG           Dir,
+-    IN  BOOLEAN         FromRxDoneInt);
+-
+-// ap_assoc.c
+-
+-VOID APAssocStateMachineInit(
+-    IN  PRTMP_ADAPTER   pAd,
+-    IN  STATE_MACHINE *S,
+-    OUT STATE_MACHINE_FUNC Trans[]);
+-
+-VOID  APPeerAssocReqAction(
+-    IN  PRTMP_ADAPTER   pAd,
+-    IN  MLME_QUEUE_ELEM *Elem);
+-
+-VOID  APPeerReassocReqAction(
+-    IN  PRTMP_ADAPTER   pAd,
+-    IN  MLME_QUEUE_ELEM *Elem);
+-
+-VOID  APPeerDisassocReqAction(
+-    IN  PRTMP_ADAPTER   pAd,
+-    IN  MLME_QUEUE_ELEM *Elem);
+-
+-VOID MbssKickOutStas(
+-	IN PRTMP_ADAPTER pAd,
+-	IN INT apidx,
+-	IN USHORT Reason);
+-
+-VOID APMlmeKickOutSta(
+-    IN PRTMP_ADAPTER pAd,
+-	IN PUCHAR pStaAddr,
+-	IN UCHAR Wcid,
+-	IN USHORT Reason);
+-
+-VOID APMlmeDisassocReqAction(
+-    IN PRTMP_ADAPTER pAd,
+-    IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID  APCls3errAction(
+-    IN  PRTMP_ADAPTER   pAd,
+-	IN 	ULONG Wcid,
+-    IN	PHEADER_802_11	pHeader);
+-
+-
+-USHORT APBuildAssociation(
+-    IN PRTMP_ADAPTER pAd,
+-    IN MAC_TABLE_ENTRY *pEntry,
+-    IN USHORT CapabilityInfo,
+-    IN UCHAR  MaxSupportedRateIn500Kbps,
+-    IN UCHAR  *RSN,
+-    IN UCHAR  *pRSNLen,
+-    IN BOOLEAN bWmmCapable,
+-    IN ULONG  RalinkIe,
+-	IN HT_CAPABILITY_IE		*pHtCapability,
+-	IN UCHAR		 HtCapabilityLen,
+-    OUT USHORT *pAid);
+-
+-// ap_auth.c
+-
+-void APAuthStateMachineInit(
+-    IN PRTMP_ADAPTER pAd,
+-    IN STATE_MACHINE *Sm,
+-    OUT STATE_MACHINE_FUNC Trans[]);
+-
+-VOID APMlmeDeauthReqAction(
+-    IN PRTMP_ADAPTER pAd,
+-    IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID APCls2errAction(
+-    IN PRTMP_ADAPTER pAd,
+-	IN 	ULONG Wcid,
+-    IN	PHEADER_802_11	pHeader);
+-
+-// ap_authrsp.c
+-
+-VOID APAuthRspStateMachineInit(
+-    IN PRTMP_ADAPTER pAd,
+-    IN PSTATE_MACHINE Sm,
+-    IN STATE_MACHINE_FUNC Trans[]);
+-
+-VOID APPeerAuthAtAuthRspIdleAction(
+-    IN  PRTMP_ADAPTER   pAd,
+-    IN  MLME_QUEUE_ELEM *Elem);
+-
+-VOID APPeerDeauthReqAction(
+-    IN PRTMP_ADAPTER	pAd,
+-    IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID APPeerAuthSimpleRspGenAndSend(
+-    IN  PRTMP_ADAPTER   pAd,
+-    IN  PHEADER_802_11 pHdr80211,
+-    IN  USHORT Alg,
+-    IN  USHORT Seq,
+-    IN  USHORT StatusCode);
+-
+-// ap_connect.c
+-
+-BOOLEAN BeaconTransmitRequired(
+-	IN PRTMP_ADAPTER	pAd,
+-	IN INT				apidx);
+-
+-VOID APMakeBssBeacon(
+-    IN  PRTMP_ADAPTER   pAd,
+-	IN	INT				apidx);
+-
+-VOID  APUpdateBeaconFrame(
+-    IN  PRTMP_ADAPTER   pAd,
+-	IN	INT				apidx);
+-
+-VOID APMakeAllBssBeacon(
+-    IN  PRTMP_ADAPTER   pAd);
+-
+-VOID  APUpdateAllBeaconFrame(
+-    IN  PRTMP_ADAPTER   pAd);
+-
+-
+-// ap_sync.c
+-
+-VOID APSyncStateMachineInit(
+-    IN PRTMP_ADAPTER pAd,
+-    IN STATE_MACHINE *Sm,
+-    OUT STATE_MACHINE_FUNC Trans[]);
+-
+-VOID APScanTimeout(
+-	IN PVOID SystemSpecific1,
+-	IN PVOID FunctionContext,
+-	IN PVOID SystemSpecific2,
+-	IN PVOID SystemSpecific3);
+-
+-VOID APInvalidStateWhenScan(
+-	IN PRTMP_ADAPTER pAd,
+-	IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID APScanTimeoutAction(
+-	IN PRTMP_ADAPTER pAd,
+-	IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID APPeerProbeReqAction(
+-    IN  PRTMP_ADAPTER pAd,
+-    IN  MLME_QUEUE_ELEM *Elem);
+-
+-VOID APPeerBeaconAction(
+-    IN PRTMP_ADAPTER pAd,
+-    IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID APMlmeScanReqAction(
+-	IN PRTMP_ADAPTER pAd,
+-	IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID APPeerBeaconAtScanAction(
+-	IN PRTMP_ADAPTER pAd,
+-	IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID APScanCnclAction(
+-	IN PRTMP_ADAPTER pAd,
+-	IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID ApSiteSurvey(
+-	IN PRTMP_ADAPTER pAd);
+-
+-VOID SupportRate(
+-	IN PUCHAR SupRate,
+-	IN UCHAR SupRateLen,
+-	IN PUCHAR ExtRate,
+-	IN UCHAR ExtRateLen,
+-	OUT PUCHAR *Rates,
+-	OUT PUCHAR RatesLen,
+-	OUT PUCHAR pMaxSupportRate);
+-
+-
+-BOOLEAN ApScanRunning(
+-	IN PRTMP_ADAPTER pAd);
+-
+-// ap_wpa.c
+-
+-VOID APWpaStateMachineInit(
+-    IN  PRTMP_ADAPTER   pAd,
+-    IN  STATE_MACHINE *Sm,
+-    OUT STATE_MACHINE_FUNC Trans[]);
+-
+ // ap_mlme.c
  
- 	/*
-@@ -175,7 +130,6 @@ struct cfq_data {
- 	unsigned int cfq_fifo_expire[2];
- 	unsigned int cfq_back_penalty;
- 	unsigned int cfq_back_max;
--	unsigned int cfq_slice[2];
- 	unsigned int cfq_slice_async_rq;
- 	unsigned int cfq_slice_idle;
+-VOID APMlmePeriodicExec(
+-    IN  PRTMP_ADAPTER   pAd);
+-
+-VOID APMlmeSelectTxRateTable(
+-	IN PRTMP_ADAPTER		pAd,
+-	IN PMAC_TABLE_ENTRY		pEntry,
+-	IN PUCHAR				*ppTable,
+-	IN PUCHAR				pTableSize,
+-	IN PUCHAR				pInitTxRateIdx);
+-
+-VOID APMlmeSetTxRate(
+-	IN PRTMP_ADAPTER		pAd,
+-	IN PMAC_TABLE_ENTRY		pEntry,
+-	IN PRTMP_TX_RATE_SWITCH	pTxRate);
+-
+-VOID APMlmeDynamicTxRateSwitching(
+-    IN PRTMP_ADAPTER pAd);
+-
+-VOID APQuickResponeForRateUpExec(
+-    IN PVOID SystemSpecific1,
+-    IN PVOID FunctionContext,
+-    IN PVOID SystemSpecific2,
+-    IN PVOID SystemSpecific3);
+-
+-BOOLEAN APMsgTypeSubst(
+-    IN PRTMP_ADAPTER pAd,
+-    IN PFRAME_802_11 pFrame,
+-    OUT INT *Machine,
+-    OUT INT *MsgType);
+-
+-VOID APQuickResponeForRateUpExec(
+-    IN PVOID SystemSpecific1,
+-    IN PVOID FunctionContext,
+-    IN PVOID SystemSpecific2,
+-    IN PVOID SystemSpecific3);
+-
+ #ifdef RT2870
+ VOID BeaconUpdateExec(
+     IN PVOID SystemSpecific1,
+@@ -336,34 +54,8 @@ VOID RTMPSetPiggyBack(
+ 	IN PRTMP_ADAPTER	pAd,
+ 	IN BOOLEAN			bPiggyBack);
  
-@@ -188,16 +142,10 @@ struct cfq_data {
- };
+-VOID APAsicEvaluateRxAnt(
+-	IN PRTMP_ADAPTER	pAd);
+-
+-VOID APAsicRxAntEvalTimeout(
+-	IN PRTMP_ADAPTER	pAd);
+-
+ // ap.c
  
- enum cfqq_state_flags {
--	CFQ_CFQQ_FLAG_on_rr = 0,	/* on round-robin busy list */
--	CFQ_CFQQ_FLAG_wait_request,	/* waiting for a request */
--	CFQ_CFQQ_FLAG_must_dispatch,	/* must be allowed a dispatch */
- 	CFQ_CFQQ_FLAG_must_alloc,	/* must be allowed rq alloc */
- 	CFQ_CFQQ_FLAG_must_alloc_slice,	/* per-slice must_alloc flag */
- 	CFQ_CFQQ_FLAG_fifo_expire,	/* FIFO checked in this slice */
--	CFQ_CFQQ_FLAG_idle_window,	/* slice idling enabled */
- 	CFQ_CFQQ_FLAG_prio_changed,	/* task priority has changed */
--	CFQ_CFQQ_FLAG_slice_new,	/* no requests dispatched in slice */
--	CFQ_CFQQ_FLAG_sync,		/* synchronous queue */
- 	CFQ_CFQQ_FLAG_coop,		/* has done a coop jump of the queue */
- };
+-VOID APSwitchChannel(
+-	IN PRTMP_ADAPTER pAd,
+-	IN INT Channel);
+-
+-NDIS_STATUS APInitialize(
+-    IN  PRTMP_ADAPTER   pAd);
+-
+-VOID APShutdown(
+-    IN PRTMP_ADAPTER    pAd);
+-
+-VOID APStartUp(
+-    IN  PRTMP_ADAPTER   pAd);
+-
+-VOID APStop(
+-    IN  PRTMP_ADAPTER   pAd);
+-
+-VOID APCleanupPsQueue(
+-    IN  PRTMP_ADAPTER   pAd,
+-    IN  PQUEUE_HEADER   pQueue);
+-
+ VOID MacTableReset(
+     IN  PRTMP_ADAPTER   pAd);
  
-@@ -215,16 +163,10 @@ static inline int cfq_cfqq_##name(const struct cfq_queue *cfqq)		\
- 	return ((cfqq)->flags & (1 << CFQ_CFQQ_FLAG_##name)) != 0;	\
+@@ -382,150 +74,5 @@ MAC_TABLE_ENTRY *MacTableLookup(
+     IN  PRTMP_ADAPTER   pAd,
+     IN  PUCHAR          pAddr);
+ 
+-VOID MacTableMaintenance(
+-    IN PRTMP_ADAPTER pAd);
+-
+-UINT32 MacTableAssocStaNumGet(
+-	IN PRTMP_ADAPTER pAd);
+-
+-MAC_TABLE_ENTRY *APSsPsInquiry(
+-    IN  PRTMP_ADAPTER   pAd,
+-    IN  PUCHAR          pAddr,
+-    OUT SST             *Sst,
+-    OUT USHORT          *Aid,
+-    OUT UCHAR           *PsMode,
+-    OUT UCHAR           *Rate);
+-
+-BOOLEAN APPsIndicate(
+-    IN  PRTMP_ADAPTER   pAd,
+-    IN  PUCHAR          pAddr,
+-	IN ULONG Wcid,
+-    IN  UCHAR           Psm);
+-
+-VOID ApLogEvent(
+-    IN PRTMP_ADAPTER    pAd,
+-    IN PUCHAR           pAddr,
+-    IN USHORT           Event);
+-
+-VOID APUpdateOperationMode(
+-    IN PRTMP_ADAPTER pAd);
+-
+-VOID APUpdateCapabilityAndErpIe(
+-	IN PRTMP_ADAPTER pAd);
+-
+-BOOLEAN ApCheckAccessControlList(
+-	IN PRTMP_ADAPTER pAd,
+-	IN PUCHAR        pAddr,
+-	IN UCHAR         Apidx);
+-
+-VOID ApUpdateAccessControlList(
+-    IN PRTMP_ADAPTER pAd,
+-    IN UCHAR         Apidx);
+-
+-VOID ApEnqueueNullFrame(
+-	IN PRTMP_ADAPTER pAd,
+-	IN PUCHAR        pAddr,
+-	IN UCHAR         TxRate,
+-	IN UCHAR         PID,
+-	IN UCHAR         apidx,
+-    IN BOOLEAN       bQosNull,
+-    IN BOOLEAN       bEOSP,
+-    IN UCHAR         OldUP);
+-
+-VOID ApSendFrame(
+-    IN  PRTMP_ADAPTER   pAd,
+-    IN  PVOID           pBuffer,
+-    IN  ULONG           Length,
+-    IN  UCHAR           TxRate,
+-    IN  UCHAR           PID);
+-
+-VOID ApEnqueueAckFrame(
+-    IN PRTMP_ADAPTER pAd,
+-    IN PUCHAR        pAddr,
+-    IN UCHAR         TxRate,
+-	IN UCHAR         apidx);
+-
+-UCHAR APAutoSelectChannel(
+-	IN PRTMP_ADAPTER pAd,
+-	IN BOOLEAN Optimal);
+-
+-// ap_sanity.c
+-
+-
+-BOOLEAN PeerAssocReqCmmSanity(
+-    IN PRTMP_ADAPTER pAd,
+-	IN BOOLEAN isRessoc,
+-    IN VOID *Msg,
+-    IN ULONG MsgLen,
+-    OUT PUCHAR pAddr2,
+-    OUT USHORT *pCapabilityInfo,
+-    OUT USHORT *pListenInterval,
+-    OUT PUCHAR pApAddr,
+-    OUT UCHAR *pSsidLen,
+-    OUT char *Ssid,
+-    OUT UCHAR *pRatesLen,
+-    OUT UCHAR Rates[],
+-    OUT UCHAR *RSN,
+-    OUT UCHAR *pRSNLen,
+-    OUT BOOLEAN *pbWmmCapable,
+-    OUT ULONG  *pRalinkIe,
+-    OUT UCHAR		 *pHtCapabilityLen,
+-    OUT HT_CAPABILITY_IE *pHtCapability);
+-
+-BOOLEAN PeerDisassocReqSanity(
+-    IN PRTMP_ADAPTER pAd,
+-    IN VOID *Msg,
+-    IN ULONG MsgLen,
+-    OUT PUCHAR pAddr2,
+-    OUT USHORT *Reason);
+-
+-BOOLEAN PeerDeauthReqSanity(
+-    IN PRTMP_ADAPTER pAd,
+-    IN VOID *Msg,
+-    IN ULONG MsgLen,
+-    OUT PUCHAR pAddr2,
+-    OUT USHORT *Reason);
+-
+-BOOLEAN APPeerAuthSanity(
+-    IN PRTMP_ADAPTER pAd,
+-    IN VOID *Msg,
+-    IN ULONG MsgLen,
+-	OUT PUCHAR pAddr1,
+-    OUT PUCHAR pAddr2,
+-    OUT USHORT *Alg,
+-    OUT USHORT *Seq,
+-    OUT USHORT *Status,
+-    CHAR *ChlgText);
+-
+-BOOLEAN APPeerProbeReqSanity(
+-    IN PRTMP_ADAPTER pAd,
+-    IN VOID *Msg,
+-    IN ULONG MsgLen,
+-    OUT PUCHAR pAddr2,
+-    OUT CHAR Ssid[],
+-    OUT UCHAR *SsidLen);
+-
+-BOOLEAN APPeerBeaconAndProbeRspSanity(
+-    IN PRTMP_ADAPTER pAd,
+-    IN VOID *Msg,
+-    IN ULONG MsgLen,
+-    OUT PUCHAR pAddr2,
+-    OUT PUCHAR pBssid,
+-    OUT CHAR Ssid[],
+-    OUT UCHAR *SsidLen,
+-    OUT UCHAR *BssType,
+-    OUT USHORT *BeaconPeriod,
+-    OUT UCHAR *Channel,
+-    OUT LARGE_INTEGER *Timestamp,
+-    OUT USHORT *CapabilityInfo,
+-    OUT UCHAR Rate[],
+-    OUT UCHAR *RateLen,
+-    OUT BOOLEAN *ExtendedRateIeExist,
+-    OUT UCHAR *Erp);
+-
+-
+-// ================== end of AP RTMP.h ========================
+-
+-
+ #endif  // __AP_H__
+ 
+Index: b/drivers/staging/rt2860/dfs.h
+===================================================================
+--- a/drivers/staging/rt2860/dfs.h
++++ b/drivers/staging/rt2860/dfs.h
+@@ -77,18 +77,6 @@ ULONG RTMPReadRadarDuration(
+ VOID RTMPCleanRadarDuration(
+ 	IN PRTMP_ADAPTER	pAd);
+ 
+-VOID RTMPPrepareRDCTSFrame(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PUCHAR			pDA,
+-	IN	ULONG			Duration,
+-	IN  UCHAR           RTSRate,
+-	IN  ULONG           CTSBaseAddr,
+-	IN  UCHAR			FrameGap);
+-
+-VOID RTMPPrepareRadarDetectParams(
+-	IN PRTMP_ADAPTER	pAd);
+-
+-
+ INT Set_ChMovingTime_Proc(
+ 	IN PRTMP_ADAPTER pAd,
+ 	IN PUCHAR arg);
+Index: b/drivers/staging/rt2860/rtmp.h
+===================================================================
+--- a/drivers/staging/rt2860/rtmp.h
++++ b/drivers/staging/rt2860/rtmp.h
+@@ -3176,14 +3176,6 @@ static inline VOID ConvertMulticastIP2MA
+ }
+ #endif /* RT2860 */
+ 
+-BOOLEAN RTMPCheckForHang(
+-	IN  NDIS_HANDLE MiniportAdapterContext
+-	);
+-
+-VOID  RTMPHalt(
+-	IN  NDIS_HANDLE MiniportAdapterContext
+-	);
+-
+ //
+ //  Private routines in rtmp_init.c
+ //
+@@ -3196,11 +3188,6 @@ NDIS_STATUS RTMPAllocTxRxRingMemory(
+ 	IN  PRTMP_ADAPTER   pAd
+ 	);
+ 
+-NDIS_STATUS RTMPFindAdapter(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  NDIS_HANDLE     WrapperConfigurationContext
+-	);
+-
+ NDIS_STATUS	RTMPReadParametersHook(
+ 	IN	PRTMP_ADAPTER pAd
+ 	);
+@@ -3247,13 +3234,6 @@ VOID RTMPRingCleanUp(
+ 	IN  PRTMP_ADAPTER   pAd,
+ 	IN  UCHAR           RingType);
+ 
+-VOID RxTest(
+-	IN  PRTMP_ADAPTER   pAd);
+-
+-NDIS_STATUS DbgSendPacket(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  PNDIS_PACKET    pPacket);
+-
+ VOID UserCfgInit(
+ 	IN  PRTMP_ADAPTER   pAd);
+ 
+@@ -3307,26 +3287,6 @@ UCHAR BtoH(
+ VOID RTMPPatchMacBbpBug(
+ 	IN  PRTMP_ADAPTER   pAd);
+ 
+-VOID RTMPPatchCardBus(
+-	IN	PRTMP_ADAPTER	pAdapter);
+-
+-VOID RTMPPatchRalinkCardBus(
+-	IN	PRTMP_ADAPTER	pAdapter,
+-	IN	ULONG			Bus);
+-
+-ULONG RTMPReadCBConfig(
+-	IN	ULONG	Bus,
+-	IN	ULONG	Slot,
+-	IN	ULONG	Func,
+-	IN	ULONG	Offset);
+-
+-VOID RTMPWriteCBConfig(
+-	IN	ULONG	Bus,
+-	IN	ULONG	Slot,
+-	IN	ULONG	Func,
+-	IN	ULONG	Offset,
+-	IN	ULONG	Value);
+-
+ VOID RTMPInitTimer(
+ 	IN  PRTMP_ADAPTER           pAd,
+ 	IN  PRALINK_TIMER_STRUCT    pTimer,
+@@ -3415,14 +3375,6 @@ VOID PeerPublicAction(
+ 	IN PRTMP_ADAPTER pAd,
+ 	IN MLME_QUEUE_ELEM *Elem);
+ 
+-VOID StaPublicAction(
+-	IN PRTMP_ADAPTER pAd,
+-	IN UCHAR Bss2040Coexist);
+-
+-VOID PeerBSSTranAction(
+-	IN PRTMP_ADAPTER pAd,
+-	IN MLME_QUEUE_ELEM *Elem);
+-
+ VOID PeerHTAction(
+ 	IN PRTMP_ADAPTER pAd,
+ 	IN MLME_QUEUE_ELEM *Elem);
+@@ -3464,39 +3416,18 @@ VOID InsertActField(
+ 	IN UINT8 Category,
+ 	IN UINT8 ActCode);
+ 
+-BOOLEAN QosBADataParse(
+-	IN PRTMP_ADAPTER	pAd,
+-	IN BOOLEAN bAMSDU,
+-	IN PUCHAR p8023Header,
+-	IN UCHAR	WCID,
+-	IN UCHAR	TID,
+-	IN USHORT Sequence,
+-	IN UCHAR DataOffset,
+-	IN USHORT Datasize,
+-	IN UINT   CurRxIndex);
+-
+ BOOLEAN CntlEnqueueForRecv(
+     IN	PRTMP_ADAPTER	pAd,
+ 	IN ULONG Wcid,
+     IN ULONG MsgLen,
+ 	IN PFRAME_BA_REQ pMsg);
+ 
+-VOID BaAutoManSwitch(
+-	IN	PRTMP_ADAPTER	pAd);
+-
+-VOID HTIOTCheck(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN    UCHAR     BatRecIdx);
+-
+ //
+ // Private routines in rtmp_data.c
+ //
+ BOOLEAN RTMPHandleRxDoneInterrupt(
+ 	IN  PRTMP_ADAPTER   pAd);
+ 
+-VOID RTMPHandleTxDoneInterrupt(
+-	IN  PRTMP_ADAPTER   pAd);
+-
+ BOOLEAN RTMPHandleTxRingDmaDoneInterrupt(
+ 	IN  PRTMP_ADAPTER   pAd,
+ 	IN  INT_SOURCE_CSR_STRUC TxRingBitmap);
+@@ -3663,12 +3594,6 @@ VOID RTMPSendRTSFrame(
+ 	IN  UCHAR           QueIdx,
+ 	IN  UCHAR			FrameGap);
+ 
+-
+-NDIS_STATUS RTMPApplyPacketFilter(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  PRT28XX_RXD_STRUC      pRxD,
+-	IN  PHEADER_802_11  pHeader);
+-
+ PQUEUE_HEADER   RTMPCheckTxSwQueue(
+ 	IN  PRTMP_ADAPTER   pAd,
+ 	OUT UCHAR           *QueIdx);
+@@ -3719,10 +3644,6 @@ BOOLEAN RTMPCheckEtherType(
+ 	IN	PNDIS_PACKET	pPacket);
+ 
+ 
+-VOID RTMPCckBbpTuning(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	UINT			TxRate);
+-
+ //
+ // Private routines in rtmp_wep.c
+ //
+@@ -3739,12 +3660,6 @@ VOID RTMPEncryptData(
+ 	IN  PUCHAR          pDest,
+ 	IN  UINT            Len);
+ 
+-BOOLEAN	RTMPDecryptData(
+-	IN	PRTMP_ADAPTER	pAdapter,
+-	IN	PUCHAR			pSrc,
+-	IN	UINT			Len,
+-	IN	UINT			idx);
+-
+ BOOLEAN	RTMPSoftDecryptWEP(
+ 	IN PRTMP_ADAPTER 	pAd,
+ 	IN PUCHAR			pData,
+@@ -3992,23 +3907,6 @@ VOID BATableDeleteORIEntry(
+ 	IN OUT	PRTMP_ADAPTER pAd,
+ 	IN		BA_ORI_ENTRY	*pBAORIEntry);
+ 
+-VOID BATableDeleteRECEntry(
+-	IN OUT	PRTMP_ADAPTER pAd,
+-	IN		BA_REC_ENTRY	*pBARECEntry);
+-
+-VOID BATableTearORIEntry(
+-	IN OUT	PRTMP_ADAPTER pAd,
+-	IN		UCHAR TID,
+-	IN		UCHAR Wcid,
+-	IN		BOOLEAN bForceDelete,
+-	IN		BOOLEAN ALL);
+-
+-VOID BATableTearRECEntry(
+-	IN OUT	PRTMP_ADAPTER pAd,
+-	IN		UCHAR TID,
+-	IN		UCHAR WCID,
+-	IN		BOOLEAN ALL);
+-
+ VOID  BssEntrySet(
+ 	IN  PRTMP_ADAPTER   pAd,
+ 	OUT PBSS_ENTRY pBss,
+@@ -4184,10 +4082,6 @@ VOID DisassocTimeout(
+ 	IN PVOID SystemSpecific3);
+ 
+ //----------------------------------------------
+-VOID MlmeDisassocReqAction(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  MLME_QUEUE_ELEM *Elem);
+-
+ VOID MlmeAssocReqAction(
+ 	IN  PRTMP_ADAPTER   pAd,
+ 	IN  MLME_QUEUE_ELEM *Elem);
+@@ -4351,10 +4245,6 @@ VOID ScanTimeout(
+ 	IN PVOID SystemSpecific2,
+ 	IN PVOID SystemSpecific3);
+ 
+-VOID MlmeScanReqAction(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  MLME_QUEUE_ELEM *Elem);
+-
+ VOID InvalidStateWhenScan(
+ 	IN  PRTMP_ADAPTER   pAd,
+ 	IN  MLME_QUEUE_ELEM *Elem);
+@@ -4367,10 +4257,6 @@ VOID InvalidStateWhenStart(
+ 	IN  PRTMP_ADAPTER   pAd,
+ 	IN  MLME_QUEUE_ELEM *Elem);
+ 
+-VOID PeerBeacon(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  MLME_QUEUE_ELEM *Elem);
+-
+ VOID EnqueueProbeRequest(
+ 	IN PRTMP_ADAPTER pAd);
+ 
+@@ -4744,12 +4630,6 @@ VOID LinkDownExec(
+ 	IN PVOID SystemSpecific2,
+ 	IN PVOID SystemSpecific3);
+ 
+-VOID LinkUpExec(
+-	IN PVOID SystemSpecific1,
+-	IN PVOID FunctionContext,
+-	IN PVOID SystemSpecific2,
+-	IN PVOID SystemSpecific3);
+-
+ VOID STAMlmePeriodicExec(
+ 	PRTMP_ADAPTER pAd);
+ 
+@@ -4836,12 +4716,6 @@ VOID StaQuickResponeForRateUpExec(
+ 	IN PVOID SystemSpecific2,
+ 	IN PVOID SystemSpecific3);
+ 
+-VOID AsicBbpTuning1(
+-	IN PRTMP_ADAPTER pAd);
+-
+-VOID AsicBbpTuning2(
+-	IN PRTMP_ADAPTER pAd);
+-
+ VOID RTMPUpdateMlmeRate(
+ 	IN PRTMP_ADAPTER	pAd);
+ 
+@@ -4911,31 +4785,6 @@ VOID ChangeToCellPowerLimit(
+ 	IN PRTMP_ADAPTER pAd,
+ 	IN UCHAR         AironetCellPowerLimit);
+ 
+-VOID RaiseClock(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  UINT32 *x);
+-
+-VOID LowerClock(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  UINT32 *x);
+-
+-USHORT ShiftInBits(
+-	IN  PRTMP_ADAPTER   pAd);
+-
+-VOID ShiftOutBits(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  USHORT data,
+-	IN  USHORT count);
+-
+-VOID EEpromCleanup(
+-	IN  PRTMP_ADAPTER   pAd);
+-
+-VOID EWDS(
+-	IN  PRTMP_ADAPTER   pAd);
+-
+-VOID EWEN(
+-	IN  PRTMP_ADAPTER   pAd);
+-
+ USHORT RTMP_EEPROM_READ16(
+ 	IN  PRTMP_ADAPTER   pAd,
+ 	IN  USHORT Offset);
+@@ -5061,12 +4910,6 @@ VOID RTMPIoctlGetMacTable(
+ 	IN PRTMP_ADAPTER pAd,
+ 	IN struct iwreq *wrq);
+ 
+-VOID RTMPIndicateWPA2Status(
+-	IN  PRTMP_ADAPTER  pAdapter);
+-
+-VOID	RTMPOPModeSwitching(
+-	IN	PRTMP_ADAPTER	pAd);
+-
+ VOID    RTMPAddBSSIDCipher(
+     IN  PRTMP_ADAPTER   pAd,
+ 	IN	UCHAR	Aid,
+@@ -5088,11 +4931,6 @@ VOID RTMPSendWirelessEvent(
+ 	IN  UCHAR			BssIdx,
+ 	IN	CHAR			Rssi);
+ 
+-VOID	NICUpdateCntlCounters(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PHEADER_802_11	pHeader,
+-	IN    UCHAR			SubType,
+-	IN	PRXWI_STRUC 	pRxWI);
+ //
+ // prototype in wpa.c
+ //
+@@ -5256,13 +5094,6 @@ CHAR    ConvertToRssi(
+ 	IN CHAR				Rssi,
+ 	IN UCHAR    RssiNumber);
+ 
+-VOID APAsicEvaluateRxAnt(
+-	IN PRTMP_ADAPTER	pAd);
+-
+-
+-VOID APAsicRxAntEvalTimeout(
+-	IN PRTMP_ADAPTER	pAd);
+-
+ //
+ // function prototype in cmm_wpa.c
+ //
+@@ -5347,187 +5178,16 @@ VOID RTMPMakeRSNIE(
+ // function prototype in ap_wpa.c
+ //
+ 
+-BOOLEAN APWpaMsgTypeSubst(
+-	IN UCHAR    EAPType,
+-	OUT INT *MsgType) ;
+-
+-MAC_TABLE_ENTRY *PACInquiry(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  ULONG           Wcid);
+-
+-BOOLEAN RTMPCheckMcast(
+-	IN PRTMP_ADAPTER pAd,
+-	IN PEID_STRUCT      eid_ptr,
+-	IN MAC_TABLE_ENTRY  *pEntry);
+-
+-BOOLEAN RTMPCheckUcast(
+-	IN PRTMP_ADAPTER pAd,
+-	IN PEID_STRUCT      eid_ptr,
+-	IN MAC_TABLE_ENTRY  *pEntry);
+-
+-BOOLEAN RTMPCheckAUTH(
+-	IN PRTMP_ADAPTER pAd,
+-	IN PEID_STRUCT      eid_ptr,
+-	IN MAC_TABLE_ENTRY  *pEntry);
+-
+-VOID WPAStart4WayHS(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  MAC_TABLE_ENTRY *pEntry,
+-	IN	ULONG			TimeInterval);
+-
+-VOID WPAStart2WayGroupHS(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  MAC_TABLE_ENTRY *pEntry);
+-
+-VOID APWpaEAPPacketAction(
+-	IN PRTMP_ADAPTER pAd,
+-	IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID APWpaEAPOLStartAction(
+-	IN PRTMP_ADAPTER pAd,
+-	IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID APWpaEAPOLLogoffAction(
+-	IN PRTMP_ADAPTER pAd,
+-	IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID APWpaEAPOLKeyAction(
+-	IN PRTMP_ADAPTER pAd,
+-	IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID APWpaEAPOLASFAlertAction(
+-	IN  PRTMP_ADAPTER    pAd,
+-	IN  MLME_QUEUE_ELEM  *Elem);
+-
+ VOID HandleCounterMeasure(
+ 	IN PRTMP_ADAPTER pAd,
+ 	IN MAC_TABLE_ENTRY  *pEntry);
+ 
+-VOID PeerPairMsg2Action(
+-	IN PRTMP_ADAPTER pAd,
+-	IN MAC_TABLE_ENTRY  *pEntry,
+-	IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID PeerPairMsg4Action(
+-	IN PRTMP_ADAPTER pAd,
+-	IN MAC_TABLE_ENTRY  *pEntry,
+-	IN MLME_QUEUE_ELEM *Elem);
+-
+-VOID CMTimerExec(
+-	IN PVOID SystemSpecific1,
+-	IN PVOID FunctionContext,
+-	IN PVOID SystemSpecific2,
+-	IN PVOID SystemSpecific3);
+-
+-VOID WPARetryExec(
+-	IN PVOID SystemSpecific1,
+-	IN PVOID FunctionContext,
+-	IN PVOID SystemSpecific2,
+-	IN PVOID SystemSpecific3);
+-
+-VOID EnqueueStartForPSKExec(
+-    IN PVOID SystemSpecific1,
+-    IN PVOID FunctionContext,
+-    IN PVOID SystemSpecific2,
+-    IN PVOID SystemSpecific3);
+-
+-VOID RTMPHandleSTAKey(
+-    IN PRTMP_ADAPTER    pAdapter,
+-    IN MAC_TABLE_ENTRY  *pEntry,
+-    IN MLME_QUEUE_ELEM  *Elem);
+-
+-VOID PeerGroupMsg2Action(
+-	IN  PRTMP_ADAPTER    pAd,
+-	IN  PMAC_TABLE_ENTRY pEntry,
+-	IN  VOID             *Msg,
+-	IN  UINT             MsgLen);
+-
+-VOID PairDisAssocAction(
+-	IN  PRTMP_ADAPTER    pAd,
+-	IN  PMAC_TABLE_ENTRY pEntry,
+-	IN  USHORT           Reason);
+-
+-VOID MlmeDeAuthAction(
+-	IN  PRTMP_ADAPTER    pAd,
+-	IN  PMAC_TABLE_ENTRY pEntry,
+-	IN  USHORT           Reason);
+-
+-VOID GREKEYPeriodicExec(
+-	IN  PVOID   SystemSpecific1,
+-	IN  PVOID   FunctionContext,
+-	IN  PVOID   SystemSpecific2,
+-	IN  PVOID   SystemSpecific3);
+-
+-VOID CountGTK(
+-	IN  UCHAR   *PMK,
+-	IN  UCHAR   *GNonce,
+-	IN  UCHAR   *AA,
+-	OUT UCHAR   *output,
+-	IN  UINT    len);
+-
+-VOID    GetSmall(
+-	IN  PVOID   pSrc1,
+-	IN  PVOID   pSrc2,
+-	OUT PUCHAR  out,
+-	IN  ULONG   Length);
+-
+-VOID    GetLarge(
+-	IN  PVOID   pSrc1,
+-	IN  PVOID   pSrc2,
+-	OUT PUCHAR  out,
+-	IN  ULONG   Length);
+-
+-VOID APGenRandom(
+-	IN PRTMP_ADAPTER pAd,
+-	OUT UCHAR       *random);
+-
+ VOID AES_GTK_KEY_WRAP(
+ 	IN UCHAR *key,
+ 	IN UCHAR *plaintext,
+ 	IN UCHAR p_len,
+ 	OUT UCHAR *ciphertext);
+ 
+-VOID    WpaSend(
+-    IN  PRTMP_ADAPTER   pAdapter,
+-    IN  PUCHAR          pPacket,
+-    IN  ULONG           Len);
+-
+-VOID    APToWirelessSta(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN  MAC_TABLE_ENTRY *pEntry,
+-	IN  PUCHAR          pHeader802_3,
+-	IN  UINT            HdrLen,
+-	IN  PUCHAR          pData,
+-	IN  UINT            DataLen,
+-    IN	BOOLEAN			bClearFrame);
+-
+-VOID RTMPAddPMKIDCache(
+-	IN  PRTMP_ADAPTER   		pAd,
+-	IN	INT						apidx,
+-	IN	PUCHAR				pAddr,
+-	IN	UCHAR					*PMKID,
+-	IN	UCHAR					*PMK);
+-
+-INT RTMPSearchPMKIDCache(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN	INT				apidx,
+-	IN	PUCHAR		pAddr);
+-
+-VOID RTMPDeletePMKIDCache(
+-	IN  PRTMP_ADAPTER   pAd,
+-	IN	INT				apidx,
+-	IN  INT				idx);
+-
+-VOID RTMPMaintainPMKIDCache(
+-	IN  PRTMP_ADAPTER   pAd);
+-
+-VOID	RTMPSendTriggerFrame(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PVOID			pBuffer,
+-	IN	ULONG			Length,
+-	IN  UCHAR           TxRate,
+-	IN	BOOLEAN			bQosNull);
+-
+ /* timeout -- ms */
+ VOID RTMP_SetPeriodicTimer(
+ 	IN	NDIS_MINIPORT_TIMER *pTimer,
+@@ -5662,23 +5322,6 @@ UINT BA_Reorder_AMSDU_Annnounce(
+ 	IN	PRTMP_ADAPTER	pAd,
+ 	IN	PNDIS_PACKET	pPacket);
+ 
+-
+-UINT Handle_AMSDU_Packet(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PUCHAR			pData,
+-	IN	ULONG			DataSize,
+-	IN  UCHAR			FromWhichBSSID);
+-
+-
+-void convert_802_11_to_802_3_packet(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PNDIS_PACKET	pPacket,
+-	IN	PUCHAR			p8023hdr,
+-	IN	PUCHAR			pData,
+-	IN	ULONG			DataSize,
+-	IN  UCHAR			FromWhichBSSID);
+-
+-
+ PNET_DEV get_netdev_from_bssid(
+ 	IN	PRTMP_ADAPTER	pAd,
+ 	IN	UCHAR			FromWhichBSSID);
+@@ -5697,27 +5340,6 @@ PNDIS_PACKET duplicate_pkt_with_TKIP_MIC
+ 	IN	PRTMP_ADAPTER	pAd,
+ 	IN	PNDIS_PACKET	pOldPkt);
+ 
+-PNDIS_PACKET duplicate_pkt_with_VLAN(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PUCHAR			pHeader802_3,
+-    IN  UINT            HdrLen,
+-	IN	PUCHAR			pData,
+-	IN	ULONG			DataSize,
+-	IN	UCHAR			FromWhichBSSID);
+-
+-PNDIS_PACKET duplicate_pkt_with_WPI(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PNDIS_PACKET	pPacket,
+-	IN	UINT32			ext_head_len,
+-	IN	UINT32			ext_tail_len);
+-
+-UCHAR VLAN_8023_Header_Copy(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PUCHAR			pHeader802_3,
+-	IN	UINT            HdrLen,
+-	OUT PUCHAR			pData,
+-	IN	UCHAR			FromWhichBSSID);
+-
+ void ba_flush_reordering_timeout_mpdus(
+ 	IN PRTMP_ADAPTER	pAd,
+ 	IN PBA_REC_ENTRY	pBAEntry,
+@@ -5762,29 +5384,6 @@ VOID BARecSessionTearDown(
+ BOOLEAN ba_reordering_resource_init(PRTMP_ADAPTER pAd, int num);
+ void ba_reordering_resource_release(PRTMP_ADAPTER pAd);
+ 
+-ULONG AutoChBssInsertEntry(
+-	IN PRTMP_ADAPTER pAd,
+-	IN PUCHAR pBssid,
+-	IN CHAR Ssid[],
+-	IN UCHAR SsidLen,
+-	IN UCHAR ChannelNo,
+-	IN CHAR Rssi);
+-
+-void AutoChBssTableInit(
+-	IN PRTMP_ADAPTER pAd);
+-
+-void ChannelInfoInit(
+-	IN PRTMP_ADAPTER pAd);
+-
+-void AutoChBssTableDestroy(
+-	IN PRTMP_ADAPTER pAd);
+-
+-void ChannelInfoDestroy(
+-	IN PRTMP_ADAPTER pAd);
+-
+-UCHAR New_ApAutoSelectChannel(
+-	IN PRTMP_ADAPTER pAd);
+-
+ BOOLEAN rtstrmactohex(
+ 	IN char *s1,
+ 	IN char *s2);
+@@ -5983,16 +5582,6 @@ INT	Set_HtTxBASize_Proc(
+ 	IN	PRTMP_ADAPTER	pAd,
+ 	IN	PUCHAR			arg);
+ 
+-//Dls ,	kathy
+-VOID RTMPSendDLSTearDownFrame(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PUCHAR			pDA);
+-
+-//Block ACK
+-VOID QueryBATABLE(
+-	IN  PRTMP_ADAPTER pAd,
+-	OUT PQUERYBA_TABLE pBAT);
+-
+ INT	    WpaCheckEapCode(
+ 	IN  PRTMP_ADAPTER   	pAd,
+ 	IN  PUCHAR				pFrame,
+@@ -6003,22 +5592,9 @@ VOID    WpaSendMicFailureToWpaSupplicant
+     IN  PRTMP_ADAPTER       pAd,
+     IN  BOOLEAN             bUnicast);
+ 
+-VOID    SendAssocIEsToWpaSupplicant(
+-    IN  PRTMP_ADAPTER       pAd);
+-
+ int wext_notify_event_assoc(
+ 	IN  RTMP_ADAPTER *pAd);
+ 
+-VOID Handle_BSS_Width_Trigger_Events(
+-	IN PRTMP_ADAPTER pAd);
+-
+-void build_ext_channel_switch_ie(
+-	IN PRTMP_ADAPTER pAd,
+-	IN HT_EXT_CHANNEL_SWITCH_ANNOUNCEMENT_IE *pIE);
+-
+-BOOLEAN APRxDoneInterruptHandle(
+-	IN	PRTMP_ADAPTER	pAd);
+-
+ BOOLEAN STARxDoneInterruptHandle(
+ 	IN	PRTMP_ADAPTER	pAd,
+ 	IN	BOOLEAN			argc);
+@@ -6094,16 +5670,6 @@ UINT deaggregate_AMSDU_announce(
+ 		_pRxBlk->DataSize, _pRemovedLLCSNAP);                                   \
  }
  
--CFQ_CFQQ_FNS(on_rr);
--CFQ_CFQQ_FNS(wait_request);
--CFQ_CFQQ_FNS(must_dispatch);
- CFQ_CFQQ_FNS(must_alloc);
- CFQ_CFQQ_FNS(must_alloc_slice);
- CFQ_CFQQ_FNS(fifo_expire);
--CFQ_CFQQ_FNS(idle_window);
- CFQ_CFQQ_FNS(prio_changed);
--CFQ_CFQQ_FNS(slice_new);
--CFQ_CFQQ_FNS(sync);
- CFQ_CFQQ_FNS(coop);
- #undef CFQ_CFQQ_FNS
+-BOOLEAN APFowardWirelessStaToWirelessSta(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PNDIS_PACKET	pPacket,
+-	IN	ULONG			FromWhichBSSID);
+-
+-VOID Announce_or_Forward_802_3_Packet(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PNDIS_PACKET	pPacket,
+-	IN	UCHAR			FromWhichBSSID);
+-
+ VOID Sta_Announce_or_Forward_802_3_Packet(
+ 	IN	PRTMP_ADAPTER	pAd,
+ 	IN	PNDIS_PACKET	pPacket,
+@@ -6143,12 +5709,6 @@ VOID Update_Rssi_Sample(
+ 	IN RSSI_SAMPLE		*pRssi,
+ 	IN PRXWI_STRUC		pRxWI);
  
-@@ -263,66 +205,27 @@ static inline int cfq_bio_sync(struct bio *bio)
- 	return 0;
- }
+-PNDIS_PACKET GetPacketFromRxRing(
+-	IN		PRTMP_ADAPTER	pAd,
+-	OUT		PRT28XX_RXD_STRUC		pSaveRxD,
+-	OUT		BOOLEAN			*pbReschedule,
+-	IN OUT	UINT32			*pRxPending);
+-
+ PNDIS_PACKET RTMPDeFragmentDataFrame(
+ 	IN	PRTMP_ADAPTER	pAd,
+ 	IN	RX_BLK			*pRxBlk);
+@@ -6341,12 +5901,6 @@ INT rt28xx_sta_ioctl(
+ 	IN	OUT	struct ifreq	*rq,
+ 	IN	INT			cmd);
  
--/*
-- * scheduler run of queue, if there are requests pending and no one in the
-- * driver that will restart queueing
-- */
--static inline void cfq_schedule_dispatch(struct cfq_data *cfqd)
-+static inline struct io_group *cfqq_to_io_group(struct cfq_queue *cfqq)
+-BOOLEAN RT28XXSecurityKeyAdd(
+-	IN		PRTMP_ADAPTER		pAd,
+-	IN		ULONG				apidx,
+-	IN		ULONG				KeyIdx,
+-	IN		MAC_TABLE_ENTRY 	*pEntry);
+-
+ ////////////////////////////////////////
+ PNDIS_PACKET GetPacketFromRxRing(
+ 	IN		PRTMP_ADAPTER	pAd,
+@@ -6562,12 +6116,6 @@ VOID eFusePhysicalReadRegisters(
+ 	IN	USHORT Length,
+ 	OUT	USHORT* pData);
+ 
+-NDIS_STATUS NICLoadEEPROM(
+-	IN PRTMP_ADAPTER pAd);
+-
+-BOOLEAN bNeedLoadEEPROM(
+-	IN	PRTMP_ADAPTER	pAd);
+-
+ VOID RT30xxLoadRFNormalModeSetup(
+ 	IN PRTMP_ADAPTER 	pAd);
+ 
+@@ -6594,10 +6142,6 @@ VOID	RTUSBInitHTTxDesc(
+ 	IN	ULONG			BulkOutSize,
+ 	IN	usb_complete_t	Func);
+ 
+-VOID	RTUSBInitRxDesc(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PRX_CONTEXT		pRxContext);
+-
+ VOID RTUSBCleanUpDataBulkOutQueue(
+ 	IN	PRTMP_ADAPTER	pAd);
+ 
+@@ -6644,9 +6188,6 @@ VOID RTUSBInitRxDesc(
+ 	IN	PRTMP_ADAPTER	pAd,
+ 	IN  PRX_CONTEXT		pRxContext);
+ 
+-VOID RTUSBBulkRxHandle(
+-	IN unsigned long data);
+-
+ //
+ // Function Prototype in rtusb_io.c
+ //
+@@ -6794,14 +6335,6 @@ NTSTATUS	RTUSBFirmwareOpmode(
+ NTSTATUS	RTUSBVenderReset(
+ 	IN	PRTMP_ADAPTER	pAd);
+ 
+-NDIS_STATUS RTUSBSetHardWareRegister(
+-	IN	PRTMP_ADAPTER	pAdapter,
+-	IN	PVOID			pBuf);
+-
+-NDIS_STATUS RTUSBQueryHardWareRegister(
+-	IN	PRTMP_ADAPTER	pAdapter,
+-	IN	PVOID			pBuf);
+-
+ VOID CMDHandler(
+     IN PRTMP_ADAPTER pAd);
+ 
+@@ -6824,31 +6357,12 @@ NDIS_STATUS RTMPWPAAddKeyProc(
+ VOID AsicRxAntEvalAction(
+ 	IN PRTMP_ADAPTER pAd);
+ 
+-void append_pkt(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PUCHAR			pHeader802_3,
+-    IN  UINT            HdrLen,
+-	IN	PUCHAR			pData,
+-	IN	ULONG			DataSize,
+-	OUT  PNDIS_PACKET	*ppPacket);
+-
+-UINT deaggregate_AMSDU_announce(
+-	IN	PRTMP_ADAPTER	pAd,
+-	PNDIS_PACKET		pPacket,
+-	IN	PUCHAR			pData,
+-	IN	ULONG			DataSize);
+-
+ NDIS_STATUS	RTMPCheckRxError(
+ 	IN	PRTMP_ADAPTER	pAd,
+ 	IN	PHEADER_802_11	pHeader,
+ 	IN	PRXWI_STRUC	pRxWI,
+ 	IN	PRT28XX_RXD_STRUC	pRxINFO);
+ 
+-
+-VOID RTUSBMlmeHardTransmit(
+-	IN	PRTMP_ADAPTER	pAd,
+-	IN	PMGMT_STRUC		pMgmt);
+-
+ INT MlmeThread(
+ 	IN PVOID Context);
+ 
+@@ -6950,19 +6464,6 @@ VOID RT28xxUsbMlmeRadioOFF(
+ 	IN PRTMP_ADAPTER pAd);
+ #endif // RT2870 //
+ 
+-////////////////////////////////////////
+-
+-VOID QBSS_LoadInit(
+- 	IN		RTMP_ADAPTER	*pAd);
+-
+-UINT32 QBSS_LoadElementAppend(
+- 	IN		RTMP_ADAPTER	*pAd,
+-	OUT		UINT8			*buf_p);
+-
+-VOID QBSS_LoadUpdate(
+- 	IN		RTMP_ADAPTER	*pAd);
+-
+-///////////////////////////////////////
+ INT RTMPShowCfgValue(
+ 	IN	PRTMP_ADAPTER	pAd,
+ 	IN	PUCHAR			pName,
+@@ -6973,7 +6474,6 @@ PCHAR   RTMPGetRalinkAuthModeStr(
+ 
+ PCHAR   RTMPGetRalinkEncryModeStr(
+     IN  USHORT encryMode);
+-//////////////////////////////////////
+ 
+ VOID AsicStaBbpTuning(
+ 	IN PRTMP_ADAPTER pAd);
+@@ -7016,9 +6516,6 @@ int rt28xx_open(IN PNET_DEV dev);
+ 
+ __inline INT VIRTUAL_IF_UP(PRTMP_ADAPTER pAd)
  {
--	if (cfqd->busy_queues) {
--		cfq_log(cfqd, "schedule dispatch");
--		kblockd_schedule_work(cfqd->queue, &cfqd->unplug_work);
--	}
-+	return ioq_to_io_group(cfqq->ioq);
- }
- 
--static int cfq_queue_empty(struct request_queue *q)
-+static inline int cfq_class_idle(struct cfq_queue *cfqq)
- {
--	struct cfq_data *cfqd = q->elevator->elevator_data;
--
--	return !cfqd->busy_queues;
-+	return elv_ioq_class_idle(cfqq->ioq);
- }
- 
--/*
-- * Scale schedule slice based on io priority. Use the sync time slice only
-- * if a queue is marked sync and has sync io queued. A sync queue with async
-- * io only, should not get full sync slice length.
-- */
--static inline int cfq_prio_slice(struct cfq_data *cfqd, int sync,
--				 unsigned short prio)
-+static inline int cfq_cfqq_sync(struct cfq_queue *cfqq)
- {
--	const int base_slice = cfqd->cfq_slice[sync];
--
--	WARN_ON(prio >= IOPRIO_BE_NR);
--
--	return base_slice + (base_slice/CFQ_SLICE_SCALE * (4 - prio));
-+	return elv_ioq_sync(cfqq->ioq);
- }
- 
--static inline int
--cfq_prio_to_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
-+static inline int cfqq_is_active_queue(struct cfq_queue *cfqq)
- {
--	return cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio);
--}
--
--static inline void
--cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
--{
--	cfqq->slice_end = cfq_prio_to_slice(cfqd, cfqq) + jiffies;
--	cfq_log_cfqq(cfqd, cfqq, "set_slice=%lu", cfqq->slice_end - jiffies);
--}
--
--/*
-- * We need to wrap this check in cfq_cfqq_slice_new(), since ->slice_end
-- * isn't valid until the first request from the dispatch is activated
-- * and the slice time set.
-- */
--static inline int cfq_slice_used(struct cfq_queue *cfqq)
--{
--	if (cfq_cfqq_slice_new(cfqq))
--		return 0;
--	if (time_before(jiffies, cfqq->slice_end))
--		return 0;
-+	struct cfq_data *cfqd = cfqq->cfqd;
-+	struct elevator_queue *e = cfqd->queue->elevator;
- 
--	return 1;
-+	return (elv_active_sched_queue(e) == cfqq);
- }
- 
- /*
-@@ -421,33 +324,6 @@ cfq_choose_req(struct cfq_data *cfqd, struct request *rq1, struct request *rq2)
- }
- 
- /*
-- * The below is leftmost cache rbtree addon
-- */
--static struct cfq_queue *cfq_rb_first(struct cfq_rb_root *root)
--{
--	if (!root->left)
--		root->left = rb_first(&root->rb);
--
--	if (root->left)
--		return rb_entry(root->left, struct cfq_queue, rb_node);
--
--	return NULL;
--}
--
--static void rb_erase_init(struct rb_node *n, struct rb_root *root)
--{
--	rb_erase(n, root);
--	RB_CLEAR_NODE(n);
--}
--
--static void cfq_rb_erase(struct rb_node *n, struct cfq_rb_root *root)
--{
--	if (root->left == n)
--		root->left = NULL;
--	rb_erase_init(n, &root->rb);
--}
--
--/*
-  * would be nice to take fifo expire time into account as well
-  */
- static struct request *
-@@ -474,95 +350,6 @@ cfq_find_next_rq(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	return cfq_choose_req(cfqd, next, prev);
- }
- 
--static unsigned long cfq_slice_offset(struct cfq_data *cfqd,
--				      struct cfq_queue *cfqq)
--{
--	/*
--	 * just an approximation, should be ok.
--	 */
--	return (cfqd->busy_queues - 1) * (cfq_prio_slice(cfqd, 1, 0) -
--		       cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio));
--}
--
--/*
-- * The cfqd->service_tree holds all pending cfq_queue's that have
-- * requests waiting to be processed. It is sorted in the order that
-- * we will service the queues.
-- */
--static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
--				 int add_front)
--{
--	struct rb_node **p, *parent;
--	struct cfq_queue *__cfqq;
--	unsigned long rb_key;
--	int left;
--
--	if (cfq_class_idle(cfqq)) {
--		rb_key = CFQ_IDLE_DELAY;
--		parent = rb_last(&cfqd->service_tree.rb);
--		if (parent && parent != &cfqq->rb_node) {
--			__cfqq = rb_entry(parent, struct cfq_queue, rb_node);
--			rb_key += __cfqq->rb_key;
--		} else
--			rb_key += jiffies;
--	} else if (!add_front) {
--		rb_key = cfq_slice_offset(cfqd, cfqq) + jiffies;
--		rb_key += cfqq->slice_resid;
--		cfqq->slice_resid = 0;
--	} else
--		rb_key = 0;
--
--	if (!RB_EMPTY_NODE(&cfqq->rb_node)) {
--		/*
--		 * same position, nothing more to do
--		 */
--		if (rb_key == cfqq->rb_key)
--			return;
--
--		cfq_rb_erase(&cfqq->rb_node, &cfqd->service_tree);
--	}
--
--	left = 1;
--	parent = NULL;
--	p = &cfqd->service_tree.rb.rb_node;
--	while (*p) {
--		struct rb_node **n;
--
--		parent = *p;
--		__cfqq = rb_entry(parent, struct cfq_queue, rb_node);
--
--		/*
--		 * sort RT queues first, we always want to give
--		 * preference to them. IDLE queues goes to the back.
--		 * after that, sort on the next service time.
--		 */
--		if (cfq_class_rt(cfqq) > cfq_class_rt(__cfqq))
--			n = &(*p)->rb_left;
--		else if (cfq_class_rt(cfqq) < cfq_class_rt(__cfqq))
--			n = &(*p)->rb_right;
--		else if (cfq_class_idle(cfqq) < cfq_class_idle(__cfqq))
--			n = &(*p)->rb_left;
--		else if (cfq_class_idle(cfqq) > cfq_class_idle(__cfqq))
--			n = &(*p)->rb_right;
--		else if (rb_key < __cfqq->rb_key)
--			n = &(*p)->rb_left;
--		else
--			n = &(*p)->rb_right;
--
--		if (n == &(*p)->rb_right)
--			left = 0;
--
--		p = n;
--	}
--
--	if (left)
--		cfqd->service_tree.left = &cfqq->rb_node;
--
--	cfqq->rb_key = rb_key;
--	rb_link_node(&cfqq->rb_node, parent, p);
--	rb_insert_color(&cfqq->rb_node, &cfqd->service_tree.rb);
--}
--
- static struct cfq_queue *
- cfq_prio_tree_lookup(struct cfq_data *cfqd, struct rb_root *root,
- 		     sector_t sector, struct rb_node **ret_parent,
-@@ -624,57 +411,43 @@ static void cfq_prio_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 		cfqq->p_root = NULL;
- }
- 
--/*
-- * Update cfqq's position in the service tree.
-- */
--static void cfq_resort_rr_list(struct cfq_data *cfqd, struct cfq_queue *cfqq)
-+/* An active ioq is being reset. A chance to do cic related stuff. */
-+static void cfq_active_ioq_reset(struct request_queue *q, void *sched_queue)
- {
--	/*
--	 * Resorting requires the cfqq to be on the RR list already.
--	 */
--	if (cfq_cfqq_on_rr(cfqq)) {
--		cfq_service_tree_add(cfqd, cfqq, 0);
--		cfq_prio_tree_add(cfqd, cfqq);
--	}
--}
-+	struct cfq_data *cfqd = q->elevator->elevator_data;
-+	struct cfq_queue *cfqq = sched_queue;
- 
--/*
-- * add to busy list of queues for service, trying to be fair in ordering
-- * the pending list according to last request service
-- */
--static void cfq_add_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
--{
--	cfq_log_cfqq(cfqd, cfqq, "add_to_rr");
--	BUG_ON(cfq_cfqq_on_rr(cfqq));
--	cfq_mark_cfqq_on_rr(cfqq);
--	cfqd->busy_queues++;
--	if (cfq_class_rt(cfqq))
--		cfqd->busy_rt_queues++;
-+	if (cfqd->active_cic) {
-+		put_io_context(cfqd->active_cic->ioc);
-+		cfqd->active_cic = NULL;
-+	}
- 
--	cfq_resort_rr_list(cfqd, cfqq);
-+	/* Resort the cfqq in prio tree */
-+	if (cfqq)
-+		cfq_prio_tree_add(cfqd, cfqq);
- }
- 
--/*
-- * Called when the cfqq no longer has requests pending, remove it from
-- * the service tree.
-- */
--static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
-+/* An ioq has been set as active one. */
-+static void cfq_active_ioq_set(struct request_queue *q, void *sched_queue,
-+				int coop)
- {
--	cfq_log_cfqq(cfqd, cfqq, "del_from_rr");
--	BUG_ON(!cfq_cfqq_on_rr(cfqq));
--	cfq_clear_cfqq_on_rr(cfqq);
-+	struct cfq_queue *cfqq = sched_queue;
- 
--	if (!RB_EMPTY_NODE(&cfqq->rb_node))
--		cfq_rb_erase(&cfqq->rb_node, &cfqd->service_tree);
--	if (cfqq->p_root) {
--		rb_erase(&cfqq->p_node, cfqq->p_root);
--		cfqq->p_root = NULL;
--	}
-+	cfqq->slice_dispatch = 0;
-+
-+	cfq_clear_cfqq_must_alloc_slice(cfqq);
-+	cfq_clear_cfqq_fifo_expire(cfqq);
- 
--	BUG_ON(!cfqd->busy_queues);
--	cfqd->busy_queues--;
--	if (cfq_class_rt(cfqq))
--		cfqd->busy_rt_queues--;
-+	/*
-+	 * If queue was selected because it was a close cooperator, then
-+	 * mark it so that it is not selected again and again. Otherwise
-+	 * clear the coop flag so that it becomes eligible to get selected
-+	 * again.
-+	 */
-+	if (coop)
-+		cfq_mark_cfqq_coop(cfqq);
-+	else
-+		cfq_clear_cfqq_coop(cfqq);
- }
- 
- /*
-@@ -683,7 +456,6 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- static void cfq_del_rq_rb(struct request *rq)
- {
- 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
--	struct cfq_data *cfqd = cfqq->cfqd;
- 	const int sync = rq_is_sync(rq);
- 
- 	BUG_ON(!cfqq->queued[sync]);
-@@ -691,8 +463,17 @@ static void cfq_del_rq_rb(struct request *rq)
- 
- 	elv_rb_del(&cfqq->sort_list, rq);
- 
--	if (cfq_cfqq_on_rr(cfqq) && RB_EMPTY_ROOT(&cfqq->sort_list))
--		cfq_del_cfqq_rr(cfqd, cfqq);
-+	/*
-+	 * If this was last request in the queue, remove this queue from
-+	 * prio trees. For last request nr_queued count will still be 1 as
-+	 * elevator fair queuing layer is yet to do the accounting.
-+	 */
-+	if (elv_ioq_nr_queued(cfqq->ioq) == 1) {
-+		if (cfqq->p_root) {
-+			rb_erase(&cfqq->p_node, cfqq->p_root);
-+			cfqq->p_root = NULL;
-+		}
-+	}
- }
- 
- static void cfq_add_rq_rb(struct request *rq)
-@@ -710,9 +491,6 @@ static void cfq_add_rq_rb(struct request *rq)
- 	while ((__alias = elv_rb_add(&cfqq->sort_list, rq)) != NULL)
- 		cfq_dispatch_insert(cfqd->queue, __alias);
- 
--	if (!cfq_cfqq_on_rr(cfqq))
--		cfq_add_cfqq_rr(cfqd, cfqq);
--
- 	/*
- 	 * check if this request is a better next-serve candidate
- 	 */
-@@ -720,7 +498,9 @@ static void cfq_add_rq_rb(struct request *rq)
- 	cfqq->next_rq = cfq_choose_req(cfqd, cfqq->next_rq, rq);
- 
- 	/*
--	 * adjust priority tree position, if ->next_rq changes
-+	 * adjust priority tree position, if ->next_rq changes. This should
-+	 * also take care of adding a new queue to prio tree as if this is
-+	 * first request then prev would be null and cfqq->next_rq will not.
- 	 */
- 	if (prev != cfqq->next_rq)
- 		cfq_prio_tree_add(cfqd, cfqq);
-@@ -760,23 +540,9 @@ static void cfq_activate_request(struct request_queue *q, struct request *rq)
- {
- 	struct cfq_data *cfqd = q->elevator->elevator_data;
- 
--	cfqd->rq_in_driver++;
--	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "activate rq, drv=%d",
--						cfqd->rq_in_driver);
--
- 	cfqd->last_position = blk_rq_pos(rq) + blk_rq_sectors(rq);
- }
- 
--static void cfq_deactivate_request(struct request_queue *q, struct request *rq)
--{
--	struct cfq_data *cfqd = q->elevator->elevator_data;
--
--	WARN_ON(!cfqd->rq_in_driver);
--	cfqd->rq_in_driver--;
--	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "deactivate rq, drv=%d",
--						cfqd->rq_in_driver);
--}
--
- static void cfq_remove_request(struct request *rq)
- {
- 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
-@@ -861,93 +627,21 @@ static int cfq_allow_merge(struct request_queue *q, struct request *rq,
- 	return 0;
- }
- 
--static void __cfq_set_active_queue(struct cfq_data *cfqd,
--				   struct cfq_queue *cfqq)
--{
--	if (cfqq) {
--		cfq_log_cfqq(cfqd, cfqq, "set_active");
--		cfqq->slice_end = 0;
--		cfqq->slice_dispatch = 0;
--
--		cfq_clear_cfqq_wait_request(cfqq);
--		cfq_clear_cfqq_must_dispatch(cfqq);
--		cfq_clear_cfqq_must_alloc_slice(cfqq);
--		cfq_clear_cfqq_fifo_expire(cfqq);
--		cfq_mark_cfqq_slice_new(cfqq);
--
--		del_timer(&cfqd->idle_slice_timer);
--	}
--
--	cfqd->active_queue = cfqq;
--}
--
- /*
-  * current cfqq expired its slice (or was too idle), select new one
-  */
- static void
--__cfq_slice_expired(struct cfq_data *cfqd, struct cfq_queue *cfqq,
--		    int timed_out)
-+__cfq_slice_expired(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- {
--	cfq_log_cfqq(cfqd, cfqq, "slice expired t=%d", timed_out);
--
--	if (cfq_cfqq_wait_request(cfqq))
--		del_timer(&cfqd->idle_slice_timer);
--
--	cfq_clear_cfqq_wait_request(cfqq);
--
--	/*
--	 * store what was left of this slice, if the queue idled/timed out
--	 */
--	if (timed_out && !cfq_cfqq_slice_new(cfqq)) {
--		cfqq->slice_resid = cfqq->slice_end - jiffies;
--		cfq_log_cfqq(cfqd, cfqq, "resid=%ld", cfqq->slice_resid);
--	}
--
--	cfq_resort_rr_list(cfqd, cfqq);
--
--	if (cfqq == cfqd->active_queue)
--		cfqd->active_queue = NULL;
--
--	if (cfqd->active_cic) {
--		put_io_context(cfqd->active_cic->ioc);
--		cfqd->active_cic = NULL;
--	}
-+	elv_ioq_slice_expired(cfqd->queue, cfqq->ioq);
- }
- 
--static inline void cfq_slice_expired(struct cfq_data *cfqd, int timed_out)
-+static inline void cfq_slice_expired(struct cfq_data *cfqd)
- {
--	struct cfq_queue *cfqq = cfqd->active_queue;
-+	struct cfq_queue *cfqq = elv_active_sched_queue(cfqd->queue->elevator);
- 
- 	if (cfqq)
--		__cfq_slice_expired(cfqd, cfqq, timed_out);
--}
--
--/*
-- * Get next queue for service. Unless we have a queue preemption,
-- * we'll simply select the first cfqq in the service tree.
-- */
--static struct cfq_queue *cfq_get_next_queue(struct cfq_data *cfqd)
--{
--	if (RB_EMPTY_ROOT(&cfqd->service_tree.rb))
--		return NULL;
--
--	return cfq_rb_first(&cfqd->service_tree);
--}
--
--/*
-- * Get and set a new active queue for service.
-- */
--static struct cfq_queue *cfq_set_active_queue(struct cfq_data *cfqd,
--					      struct cfq_queue *cfqq)
--{
--	if (!cfqq) {
--		cfqq = cfq_get_next_queue(cfqd);
--		if (cfqq)
--			cfq_clear_cfqq_coop(cfqq);
--	}
--
--	__cfq_set_active_queue(cfqd, cfqq);
--	return cfqq;
-+		__cfq_slice_expired(cfqd, cfqq);
- }
- 
- static inline sector_t cfq_dist_from_last(struct cfq_data *cfqd,
-@@ -1024,11 +718,11 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
-  * associated with the I/O issued by cur_cfqq.  I'm not sure this is a valid
-  * assumption.
-  */
--static struct cfq_queue *cfq_close_cooperator(struct cfq_data *cfqd,
--					      struct cfq_queue *cur_cfqq,
--					      int probe)
-+static struct io_queue *cfq_close_cooperator(struct request_queue *q,
-+					      void *cur_sched_queue)
- {
--	struct cfq_queue *cfqq;
-+	struct cfq_queue *cur_cfqq = cur_sched_queue, *cfqq;
-+	struct cfq_data *cfqd = q->elevator->elevator_data;
- 
- 	/*
- 	 * A valid cfq_io_context is necessary to compare requests against
-@@ -1049,14 +743,13 @@ static struct cfq_queue *cfq_close_cooperator(struct cfq_data *cfqd,
- 	if (cfq_cfqq_coop(cfqq))
- 		return NULL;
- 
--	if (!probe)
--		cfq_mark_cfqq_coop(cfqq);
--	return cfqq;
-+	return cfqq->ioq;
- }
- 
--static void cfq_arm_slice_timer(struct cfq_data *cfqd)
-+static void cfq_arm_slice_timer(struct request_queue *q, void *sched_queue)
- {
--	struct cfq_queue *cfqq = cfqd->active_queue;
-+	struct cfq_data *cfqd = q->elevator->elevator_data;
-+	struct cfq_queue *cfqq = sched_queue;
- 	struct cfq_io_context *cic;
- 	unsigned long sl;
- 
-@@ -1069,18 +762,18 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
- 		return;
- 
- 	WARN_ON(!RB_EMPTY_ROOT(&cfqq->sort_list));
--	WARN_ON(cfq_cfqq_slice_new(cfqq));
-+	WARN_ON(elv_ioq_slice_new(cfqq->ioq));
- 
- 	/*
- 	 * idle is disabled, either manually or by past process history
- 	 */
--	if (!cfqd->cfq_slice_idle || !cfq_cfqq_idle_window(cfqq))
-+	if (!cfqd->cfq_slice_idle || !elv_ioq_idle_window(cfqq->ioq))
- 		return;
- 
- 	/*
- 	 * still requests with the driver, don't idle
- 	 */
--	if (cfqd->rq_in_driver)
-+	if (elv_rq_in_driver(q->elevator))
- 		return;
- 
- 	/*
-@@ -1090,7 +783,7 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
- 	if (!cic || !atomic_read(&cic->ioc->nr_tasks))
- 		return;
- 
--	cfq_mark_cfqq_wait_request(cfqq);
-+	elv_mark_ioq_wait_request(cfqq->ioq);
- 
- 	/*
- 	 * we don't want to idle for seeks, but we do want to allow
-@@ -1101,7 +794,7 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
- 	if (sample_valid(cic->seek_samples) && CIC_SEEKY(cic))
- 		sl = min(sl, msecs_to_jiffies(CFQ_MIN_TT));
- 
--	mod_timer(&cfqd->idle_slice_timer, jiffies + sl);
-+	elv_mod_idle_slice_timer(q->elevator, jiffies + sl);
- 	cfq_log_cfqq(cfqd, cfqq, "arm_idle: %lu", sl);
- }
- 
-@@ -1113,10 +806,9 @@ static void cfq_dispatch_insert(struct request_queue *q, struct request *rq)
- 	struct cfq_data *cfqd = q->elevator->elevator_data;
- 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
- 
--	cfq_log_cfqq(cfqd, cfqq, "dispatch_insert");
-+	cfq_log_cfqq(cfqd, cfqq, "dispatch_insert sect=%d", blk_rq_sectors(rq));
- 
- 	cfq_remove_request(rq);
--	cfqq->dispatched++;
- 	elv_dispatch_sort(q, rq);
- 
- 	if (cfq_cfqq_sync(cfqq))
-@@ -1154,78 +846,11 @@ static inline int
- cfq_prio_to_maxrq(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- {
- 	const int base_rq = cfqd->cfq_slice_async_rq;
-+	unsigned short ioprio = elv_ioq_ioprio(cfqq->ioq);
- 
--	WARN_ON(cfqq->ioprio >= IOPRIO_BE_NR);
-+	WARN_ON(ioprio >= IOPRIO_BE_NR);
- 
--	return 2 * (base_rq + base_rq * (CFQ_PRIO_LISTS - 1 - cfqq->ioprio));
--}
--
--/*
-- * Select a queue for service. If we have a current active queue,
-- * check whether to continue servicing it, or retrieve and set a new one.
-- */
--static struct cfq_queue *cfq_select_queue(struct cfq_data *cfqd)
--{
--	struct cfq_queue *cfqq, *new_cfqq = NULL;
--
--	cfqq = cfqd->active_queue;
--	if (!cfqq)
--		goto new_queue;
--
--	/*
--	 * The active queue has run out of time, expire it and select new.
--	 */
--	if (cfq_slice_used(cfqq) && !cfq_cfqq_must_dispatch(cfqq))
--		goto expire;
--
--	/*
--	 * If we have a RT cfqq waiting, then we pre-empt the current non-rt
--	 * cfqq.
--	 */
--	if (!cfq_class_rt(cfqq) && cfqd->busy_rt_queues) {
--		/*
--		 * We simulate this as cfqq timed out so that it gets to bank
--		 * the remaining of its time slice.
--		 */
--		cfq_log_cfqq(cfqd, cfqq, "preempt");
--		cfq_slice_expired(cfqd, 1);
--		goto new_queue;
--	}
--
--	/*
--	 * The active queue has requests and isn't expired, allow it to
--	 * dispatch.
--	 */
--	if (!RB_EMPTY_ROOT(&cfqq->sort_list))
--		goto keep_queue;
--
--	/*
--	 * If another queue has a request waiting within our mean seek
--	 * distance, let it run.  The expire code will check for close
--	 * cooperators and put the close queue at the front of the service
--	 * tree.
--	 */
--	new_cfqq = cfq_close_cooperator(cfqd, cfqq, 0);
--	if (new_cfqq)
--		goto expire;
--
--	/*
--	 * No requests pending. If the active queue still has requests in
--	 * flight or is idling for a new request, allow either of these
--	 * conditions to happen (or time out) before selecting a new queue.
--	 */
--	if (timer_pending(&cfqd->idle_slice_timer) ||
--	    (cfqq->dispatched && cfq_cfqq_idle_window(cfqq))) {
--		cfqq = NULL;
--		goto keep_queue;
--	}
--
--expire:
--	cfq_slice_expired(cfqd, 0);
--new_queue:
--	cfqq = cfq_set_active_queue(cfqd, new_cfqq);
--keep_queue:
--	return cfqq;
-+	return 2 * (base_rq + base_rq * (CFQ_PRIO_LISTS - 1 - ioprio));
- }
- 
- static int __cfq_forced_dispatch_cfqq(struct cfq_queue *cfqq)
-@@ -1250,12 +875,14 @@ static int cfq_forced_dispatch(struct cfq_data *cfqd)
- 	struct cfq_queue *cfqq;
- 	int dispatched = 0;
- 
--	while ((cfqq = cfq_rb_first(&cfqd->service_tree)) != NULL)
-+	while ((cfqq = elv_select_sched_queue(cfqd->queue, 1)) != NULL)
- 		dispatched += __cfq_forced_dispatch_cfqq(cfqq);
- 
--	cfq_slice_expired(cfqd, 0);
-+	/* This probably is redundant now. above loop will should make sure
-+	 * that all the busy queues have expired */
-+	cfq_slice_expired(cfqd);
- 
--	BUG_ON(cfqd->busy_queues);
-+	BUG_ON(elv_nr_busy_ioq(cfqd->queue->elevator));
- 
- 	cfq_log(cfqd, "forced_dispatch=%d", dispatched);
- 	return dispatched;
-@@ -1301,13 +928,10 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
- 	struct cfq_queue *cfqq;
- 	unsigned int max_dispatch;
- 
--	if (!cfqd->busy_queues)
--		return 0;
--
- 	if (unlikely(force))
- 		return cfq_forced_dispatch(cfqd);
- 
--	cfqq = cfq_select_queue(cfqd);
-+	cfqq = elv_select_sched_queue(q, 0);
- 	if (!cfqq)
- 		return 0;
- 
-@@ -1324,7 +948,7 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
- 	/*
- 	 * Does this cfqq already have too much IO in flight?
- 	 */
--	if (cfqq->dispatched >= max_dispatch) {
-+	if (elv_ioq_nr_dispatched(cfqq->ioq) >= max_dispatch) {
- 		/*
- 		 * idle queue must always only have a single IO in flight
- 		 */
-@@ -1334,13 +958,13 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
- 		/*
- 		 * We have other queues, don't allow more IO from this one
- 		 */
--		if (cfqd->busy_queues > 1)
-+		if (elv_nr_busy_ioq(q->elevator) > 1)
- 			return 0;
- 
- 		/*
- 		 * we are the only queue, allow up to 4 times of 'quantum'
- 		 */
--		if (cfqq->dispatched >= 4 * max_dispatch)
-+		if (elv_ioq_nr_dispatched(cfqq->ioq) >= 4 * max_dispatch)
- 			return 0;
- 	}
- 
-@@ -1349,51 +973,45 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
- 	 */
- 	cfq_dispatch_request(cfqd, cfqq);
- 	cfqq->slice_dispatch++;
--	cfq_clear_cfqq_must_dispatch(cfqq);
- 
- 	/*
- 	 * expire an async queue immediately if it has used up its slice. idle
- 	 * queue always expire after 1 dispatch round.
- 	 */
--	if (cfqd->busy_queues > 1 && ((!cfq_cfqq_sync(cfqq) &&
-+	if (elv_nr_busy_ioq(q->elevator) > 1 && ((!cfq_cfqq_sync(cfqq) &&
- 	    cfqq->slice_dispatch >= cfq_prio_to_maxrq(cfqd, cfqq)) ||
- 	    cfq_class_idle(cfqq))) {
--		cfqq->slice_end = jiffies + 1;
--		cfq_slice_expired(cfqd, 0);
-+		cfq_slice_expired(cfqd);
- 	}
- 
- 	cfq_log(cfqd, "dispatched a request");
- 	return 1;
- }
- 
--/*
-- * task holds one reference to the queue, dropped when task exits. each rq
-- * in-flight on this queue also holds a reference, dropped when rq is freed.
-- *
-- * queue lock must be held here.
-- */
--static void cfq_put_queue(struct cfq_queue *cfqq)
-+static void cfq_free_cfq_queue(struct elevator_queue *e, void *sched_queue)
- {
-+	struct cfq_queue *cfqq = sched_queue;
- 	struct cfq_data *cfqd = cfqq->cfqd;
- 
--	BUG_ON(atomic_read(&cfqq->ref) <= 0);
--
--	if (!atomic_dec_and_test(&cfqq->ref))
--		return;
-+	BUG_ON(!cfqq);
- 
--	cfq_log_cfqq(cfqd, cfqq, "put_queue");
-+	cfq_log_cfqq(cfqd, cfqq, "free_queue");
- 	BUG_ON(rb_first(&cfqq->sort_list));
- 	BUG_ON(cfqq->allocated[READ] + cfqq->allocated[WRITE]);
--	BUG_ON(cfq_cfqq_on_rr(cfqq));
- 
--	if (unlikely(cfqd->active_queue == cfqq)) {
--		__cfq_slice_expired(cfqd, cfqq, 0);
--		cfq_schedule_dispatch(cfqd);
-+	if (unlikely(cfqq_is_active_queue(cfqq))) {
-+		__cfq_slice_expired(cfqd, cfqq);
-+		elv_schedule_dispatch(cfqd->queue);
- 	}
- 
- 	kmem_cache_free(cfq_pool, cfqq);
- }
- 
-+static inline void cfq_put_queue(struct cfq_queue *cfqq)
-+{
-+	elv_put_ioq(cfqq->ioq);
-+}
-+
- /*
-  * Must always be called with the rcu_read_lock() held
-  */
-@@ -1481,9 +1099,9 @@ static void cfq_free_io_context(struct io_context *ioc)
- 
- static void cfq_exit_cfqq(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- {
--	if (unlikely(cfqq == cfqd->active_queue)) {
--		__cfq_slice_expired(cfqd, cfqq, 0);
--		cfq_schedule_dispatch(cfqd);
-+	if (unlikely(cfqq == elv_active_sched_queue(cfqd->queue->elevator))) {
-+		__cfq_slice_expired(cfqd, cfqq);
-+		elv_schedule_dispatch(cfqd->queue);
- 	}
- 
- 	cfq_put_queue(cfqq);
-@@ -1571,7 +1189,7 @@ cfq_alloc_io_context(struct cfq_data *cfqd, gfp_t gfp_mask)
- static void cfq_init_prio_data(struct cfq_queue *cfqq, struct io_context *ioc)
- {
- 	struct task_struct *tsk = current;
--	int ioprio_class;
-+	int ioprio_class, ioprio;
- 
- 	if (!cfq_cfqq_prio_changed(cfqq))
- 		return;
-@@ -1584,30 +1202,33 @@ static void cfq_init_prio_data(struct cfq_queue *cfqq, struct io_context *ioc)
- 		/*
- 		 * no prio set, inherit CPU scheduling settings
- 		 */
--		cfqq->ioprio = task_nice_ioprio(tsk);
--		cfqq->ioprio_class = task_nice_ioclass(tsk);
-+		ioprio = task_nice_ioprio(tsk);
-+		ioprio_class = task_nice_ioclass(tsk);
- 		break;
- 	case IOPRIO_CLASS_RT:
--		cfqq->ioprio = task_ioprio(ioc);
--		cfqq->ioprio_class = IOPRIO_CLASS_RT;
-+		ioprio = task_ioprio(ioc);
-+		ioprio_class = IOPRIO_CLASS_RT;
- 		break;
- 	case IOPRIO_CLASS_BE:
--		cfqq->ioprio = task_ioprio(ioc);
--		cfqq->ioprio_class = IOPRIO_CLASS_BE;
-+		ioprio = task_ioprio(ioc);
-+		ioprio_class = IOPRIO_CLASS_BE;
- 		break;
- 	case IOPRIO_CLASS_IDLE:
--		cfqq->ioprio_class = IOPRIO_CLASS_IDLE;
--		cfqq->ioprio = 7;
--		cfq_clear_cfqq_idle_window(cfqq);
-+		ioprio_class = IOPRIO_CLASS_IDLE;
-+		ioprio = 7;
-+		elv_clear_ioq_idle_window(cfqq->ioq);
- 		break;
- 	}
- 
-+	elv_ioq_set_ioprio_class(cfqq->ioq, ioprio_class);
-+	elv_ioq_set_ioprio(cfqq->ioq, ioprio);
-+
- 	/*
- 	 * keep track of original prio settings in case we have to temporarily
- 	 * elevate the priority of this queue
- 	 */
--	cfqq->org_ioprio = cfqq->ioprio;
--	cfqq->org_ioprio_class = cfqq->ioprio_class;
-+	cfqq->org_ioprio = ioprio;
-+	cfqq->org_ioprio_class = ioprio_class;
- 	cfq_clear_cfqq_prio_changed(cfqq);
- }
- 
-@@ -1649,19 +1270,17 @@ static void cfq_ioc_set_ioprio(struct io_context *ioc)
- static void cfq_init_cfqq(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 			  pid_t pid, int is_sync)
- {
--	RB_CLEAR_NODE(&cfqq->rb_node);
- 	RB_CLEAR_NODE(&cfqq->p_node);
- 	INIT_LIST_HEAD(&cfqq->fifo);
- 
--	atomic_set(&cfqq->ref, 0);
- 	cfqq->cfqd = cfqd;
- 
- 	cfq_mark_cfqq_prio_changed(cfqq);
- 
- 	if (is_sync) {
- 		if (!cfq_class_idle(cfqq))
--			cfq_mark_cfqq_idle_window(cfqq);
--		cfq_mark_cfqq_sync(cfqq);
-+			elv_mark_ioq_idle_window(cfqq->ioq);
-+		elv_mark_ioq_sync(cfqq->ioq);
- 	}
- 	cfqq->pid = pid;
- }
-@@ -1672,8 +1291,13 @@ cfq_find_alloc_queue(struct cfq_data *cfqd, int is_sync,
- {
- 	struct cfq_queue *cfqq, *new_cfqq = NULL;
- 	struct cfq_io_context *cic;
-+	struct request_queue *q = cfqd->queue;
-+	struct io_queue *ioq = NULL, *new_ioq = NULL;
-+	struct io_group *iog = NULL;
- 
- retry:
-+	iog = elv_io_get_io_group(q, 0);
-+
- 	cic = cfq_cic_lookup(cfqd, ioc);
- 	/* cic always exists here */
- 	cfqq = cic_to_cfqq(cic, is_sync);
-@@ -1683,8 +1307,29 @@ retry:
- 	 * originally, since it should just be a temporary situation.
- 	 */
- 	if (!cfqq || cfqq == &cfqd->oom_cfqq) {
-+		/* Allocate ioq object first and then cfqq */
-+		if (new_ioq) {
-+			goto alloc_cfqq;
-+		} else if (gfp_mask & __GFP_WAIT) {
-+			spin_unlock_irq(cfqd->queue->queue_lock);
-+			new_ioq = elv_alloc_ioq(q, gfp_mask | __GFP_ZERO);
-+			spin_lock_irq(cfqd->queue->queue_lock);
-+			if (new_ioq)
-+				goto retry;
-+		} else
-+			ioq = elv_alloc_ioq(q, gfp_mask | __GFP_ZERO);
-+
-+alloc_cfqq:
-+		if (!ioq && !new_ioq) {
-+			/* ioq allocation failed. Deafult to oom_cfqq */
-+			cfqq = &cfqd->oom_cfqq;
-+			goto out;
-+		}
-+
- 		cfqq = NULL;
- 		if (new_cfqq) {
-+			ioq = new_ioq;
-+			new_ioq = NULL;
- 			cfqq = new_cfqq;
- 			new_cfqq = NULL;
- 		} else if (gfp_mask & __GFP_WAIT) {
-@@ -1702,60 +1347,59 @@ retry:
- 		}
- 
- 		if (cfqq) {
-+			elv_init_ioq(q->elevator, ioq, current->pid, is_sync);
-+			elv_init_ioq_sched_queue(q->elevator, ioq, cfqq);
-+
-+			cfqq->ioq = ioq;
- 			cfq_init_cfqq(cfqd, cfqq, current->pid, is_sync);
- 			cfq_init_prio_data(cfqq, ioc);
-+
-+			/* call it after cfq has initialized queue prio */
-+			elv_init_ioq_io_group(ioq, iog);
- 			cfq_log_cfqq(cfqd, cfqq, "alloced");
--		} else
-+		} else {
- 			cfqq = &cfqd->oom_cfqq;
-+			/* If ioq allocation was successful, free it up */
-+			if (ioq)
-+				elv_free_ioq(ioq);
-+		}
- 	}
- 
-+	if (new_ioq)
-+		elv_free_ioq(new_ioq);
-+
- 	if (new_cfqq)
- 		kmem_cache_free(cfq_pool, new_cfqq);
- 
-+out:
- 	return cfqq;
- }
- 
--static struct cfq_queue **
--cfq_async_queue_prio(struct cfq_data *cfqd, int ioprio_class, int ioprio)
--{
--	switch (ioprio_class) {
--	case IOPRIO_CLASS_RT:
--		return &cfqd->async_cfqq[0][ioprio];
--	case IOPRIO_CLASS_BE:
--		return &cfqd->async_cfqq[1][ioprio];
--	case IOPRIO_CLASS_IDLE:
--		return &cfqd->async_idle_cfqq;
--	default:
--		BUG();
--	}
--}
--
- static struct cfq_queue *
- cfq_get_queue(struct cfq_data *cfqd, int is_sync, struct io_context *ioc,
- 	      gfp_t gfp_mask)
- {
- 	const int ioprio = task_ioprio(ioc);
- 	const int ioprio_class = task_ioprio_class(ioc);
--	struct cfq_queue **async_cfqq = NULL;
-+	struct cfq_queue *async_cfqq = NULL;
- 	struct cfq_queue *cfqq = NULL;
-+	struct io_group *iog = elv_io_get_io_group(cfqd->queue, 0);
- 
- 	if (!is_sync) {
--		async_cfqq = cfq_async_queue_prio(cfqd, ioprio_class, ioprio);
--		cfqq = *async_cfqq;
-+		async_cfqq = elv_io_group_async_queue_prio(iog, ioprio_class,
-+								ioprio);
-+		cfqq = async_cfqq;
- 	}
- 
- 	if (!cfqq)
- 		cfqq = cfq_find_alloc_queue(cfqd, is_sync, ioc, gfp_mask);
- 
--	/*
--	 * pin the queue now that it's allocated, scheduler exit will prune it
--	 */
--	if (!is_sync && !(*async_cfqq)) {
--		atomic_inc(&cfqq->ref);
--		*async_cfqq = cfqq;
--	}
-+	if (!is_sync && !async_cfqq)
-+		elv_io_group_set_async_queue(iog, ioprio_class, ioprio,
-+							cfqq->ioq);
- 
--	atomic_inc(&cfqq->ref);
-+	/* ioc reference */
-+	elv_get_ioq(cfqq->ioq);
- 	return cfqq;
- }
- 
-@@ -1960,7 +1604,7 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	if (!cfq_cfqq_sync(cfqq) || cfq_class_idle(cfqq))
- 		return;
- 
--	enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
-+	enable_idle = old_idle = elv_ioq_idle_window(cfqq->ioq);
- 
- 	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
- 	    (cfqd->hw_tag && CIC_SEEKY(cic)))
-@@ -1975,9 +1619,9 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	if (old_idle != enable_idle) {
- 		cfq_log_cfqq(cfqd, cfqq, "idle=%d", enable_idle);
- 		if (enable_idle)
--			cfq_mark_cfqq_idle_window(cfqq);
-+			elv_mark_ioq_idle_window(cfqq->ioq);
- 		else
--			cfq_clear_cfqq_idle_window(cfqq);
-+			elv_clear_ioq_idle_window(cfqq->ioq);
- 	}
- }
- 
-@@ -1986,16 +1630,15 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
-  * no or if we aren't sure, a 1 will cause a preempt.
-  */
- static int
--cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
--		   struct request *rq)
-+cfq_should_preempt(struct request_queue *q, void *new_cfqq, struct request *rq)
- {
--	struct cfq_queue *cfqq;
-+	struct cfq_data *cfqd = q->elevator->elevator_data;
-+	struct cfq_queue *cfqq = elv_active_sched_queue(q->elevator);
- 
--	cfqq = cfqd->active_queue;
- 	if (!cfqq)
- 		return 0;
- 
--	if (cfq_slice_used(cfqq))
-+	if (elv_ioq_slice_used(cfqq->ioq))
- 		return 1;
- 
- 	if (cfq_class_idle(new_cfqq))
-@@ -2018,13 +1661,7 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
- 	if (rq_is_meta(rq) && !cfqq->meta_pending)
- 		return 1;
- 
--	/*
--	 * Allow an RT request to pre-empt an ongoing non-RT cfqq timeslice.
--	 */
--	if (cfq_class_rt(new_cfqq) && !cfq_class_rt(cfqq))
--		return 1;
--
--	if (!cfqd->active_cic || !cfq_cfqq_wait_request(cfqq))
-+	if (!cfqd->active_cic || !elv_ioq_wait_request(cfqq->ioq))
- 		return 0;
- 
- 	/*
-@@ -2038,27 +1675,6 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
- }
- 
- /*
-- * cfqq preempts the active queue. if we allowed preempt with no slice left,
-- * let it have half of its nominal slice.
-- */
--static void cfq_preempt_queue(struct cfq_data *cfqd, struct cfq_queue *cfqq)
--{
--	cfq_log_cfqq(cfqd, cfqq, "preempt");
--	cfq_slice_expired(cfqd, 1);
--
--	/*
--	 * Put the new queue at the front of the of the current list,
--	 * so we know that it will be selected next.
--	 */
--	BUG_ON(!cfq_cfqq_on_rr(cfqq));
--
--	cfq_service_tree_add(cfqd, cfqq, 1);
--
--	cfqq->slice_end = 0;
--	cfq_mark_cfqq_slice_new(cfqq);
--}
--
--/*
-  * Called when a new fs request (rq) is added (to cfqq). Check if there's
-  * something we should do about it
-  */
-@@ -2077,36 +1693,6 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	cfq_update_idle_window(cfqd, cfqq, cic);
- 
- 	cic->last_request_pos = blk_rq_pos(rq) + blk_rq_sectors(rq);
--
--	if (cfqq == cfqd->active_queue) {
--		/*
--		 * Remember that we saw a request from this process, but
--		 * don't start queuing just yet. Otherwise we risk seeing lots
--		 * of tiny requests, because we disrupt the normal plugging
--		 * and merging. If the request is already larger than a single
--		 * page, let it rip immediately. For that case we assume that
--		 * merging is already done. Ditto for a busy system that
--		 * has other work pending, don't risk delaying until the
--		 * idle timer unplug to continue working.
--		 */
--		if (cfq_cfqq_wait_request(cfqq)) {
--			if (blk_rq_bytes(rq) > PAGE_CACHE_SIZE ||
--			    cfqd->busy_queues > 1) {
--				del_timer(&cfqd->idle_slice_timer);
--			__blk_run_queue(cfqd->queue);
--			}
--			cfq_mark_cfqq_must_dispatch(cfqq);
--		}
--	} else if (cfq_should_preempt(cfqd, cfqq, rq)) {
--		/*
--		 * not the active queue - expire current slice if it is
--		 * idle and has expired it's mean thinktime or this new queue
--		 * has some old slice time left and is of higher priority or
--		 * this new queue is RT and the current one is BE
--		 */
--		cfq_preempt_queue(cfqd, cfqq);
--		__blk_run_queue(cfqd->queue);
--	}
- }
- 
- static void cfq_insert_request(struct request_queue *q, struct request *rq)
-@@ -2130,11 +1716,13 @@ static void cfq_insert_request(struct request_queue *q, struct request *rq)
-  */
- static void cfq_update_hw_tag(struct cfq_data *cfqd)
- {
--	if (cfqd->rq_in_driver > cfqd->rq_in_driver_peak)
--		cfqd->rq_in_driver_peak = cfqd->rq_in_driver;
-+	struct elevator_queue *eq = cfqd->queue->elevator;
-+
-+	if (elv_rq_in_driver(eq) > cfqd->rq_in_driver_peak)
-+		cfqd->rq_in_driver_peak = elv_rq_in_driver(eq);
- 
- 	if (cfqd->rq_queued <= CFQ_HW_QUEUE_MIN &&
--	    cfqd->rq_in_driver <= CFQ_HW_QUEUE_MIN)
-+	    elv_rq_in_driver(eq) <= CFQ_HW_QUEUE_MIN)
- 		return;
- 
- 	if (cfqd->hw_tag_samples++ < 50)
-@@ -2161,44 +1749,10 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
- 
- 	cfq_update_hw_tag(cfqd);
- 
--	WARN_ON(!cfqd->rq_in_driver);
--	WARN_ON(!cfqq->dispatched);
--	cfqd->rq_in_driver--;
--	cfqq->dispatched--;
--
- 	if (cfq_cfqq_sync(cfqq))
- 		cfqd->sync_flight--;
--
- 	if (sync)
- 		RQ_CIC(rq)->last_end_request = now;
--
--	/*
--	 * If this is the active queue, check if it needs to be expired,
--	 * or if we want to idle in case it has no pending requests.
--	 */
--	if (cfqd->active_queue == cfqq) {
--		const bool cfqq_empty = RB_EMPTY_ROOT(&cfqq->sort_list);
--
--		if (cfq_cfqq_slice_new(cfqq)) {
--			cfq_set_prio_slice(cfqd, cfqq);
--			cfq_clear_cfqq_slice_new(cfqq);
--		}
--		/*
--		 * If there are no requests waiting in this queue, and
--		 * there are other queues ready to issue requests, AND
--		 * those other queues are issuing requests within our
--		 * mean seek distance, give them a chance to run instead
--		 * of idling.
--		 */
--		if (cfq_slice_used(cfqq) || cfq_class_idle(cfqq))
--			cfq_slice_expired(cfqd, 1);
--		else if (cfqq_empty && !cfq_close_cooperator(cfqd, cfqq, 1) &&
--			 sync && !rq_noidle(rq))
--			cfq_arm_slice_timer(cfqd);
--	}
--
--	if (!cfqd->rq_in_driver)
--		cfq_schedule_dispatch(cfqd);
- }
- 
- /*
-@@ -2207,29 +1761,32 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
-  */
- static void cfq_prio_boost(struct cfq_queue *cfqq)
- {
-+	struct io_queue *ioq = cfqq->ioq;
-+
- 	if (has_fs_excl()) {
- 		/*
- 		 * boost idle prio on transactions that would lock out other
- 		 * users of the filesystem
- 		 */
- 		if (cfq_class_idle(cfqq))
--			cfqq->ioprio_class = IOPRIO_CLASS_BE;
--		if (cfqq->ioprio > IOPRIO_NORM)
--			cfqq->ioprio = IOPRIO_NORM;
-+			elv_ioq_set_ioprio_class(ioq, IOPRIO_CLASS_BE);
-+		if (elv_ioq_ioprio(ioq) > IOPRIO_NORM)
-+			elv_ioq_set_ioprio(ioq, IOPRIO_NORM);
-+
- 	} else {
- 		/*
- 		 * check if we need to unboost the queue
- 		 */
--		if (cfqq->ioprio_class != cfqq->org_ioprio_class)
--			cfqq->ioprio_class = cfqq->org_ioprio_class;
--		if (cfqq->ioprio != cfqq->org_ioprio)
--			cfqq->ioprio = cfqq->org_ioprio;
-+		if (elv_ioq_ioprio_class(ioq) != cfqq->org_ioprio_class)
-+			elv_ioq_set_ioprio_class(ioq, cfqq->org_ioprio_class);
-+		if (elv_ioq_ioprio(ioq) != cfqq->org_ioprio)
-+			elv_ioq_set_ioprio(ioq, cfqq->org_ioprio);
- 	}
- }
- 
- static inline int __cfq_may_queue(struct cfq_queue *cfqq)
- {
--	if ((cfq_cfqq_wait_request(cfqq) || cfq_cfqq_must_alloc(cfqq)) &&
-+	if ((elv_ioq_wait_request(cfqq->ioq) || cfq_cfqq_must_alloc(cfqq)) &&
- 	    !cfq_cfqq_must_alloc_slice(cfqq)) {
- 		cfq_mark_cfqq_must_alloc_slice(cfqq);
- 		return ELV_MQUEUE_MUST;
-@@ -2282,7 +1839,7 @@ static void cfq_put_request(struct request *rq)
- 		put_io_context(RQ_CIC(rq)->ioc);
- 
- 		rq->elevator_private = NULL;
--		rq->elevator_private2 = NULL;
-+		rq->ioq = NULL;
- 
- 		cfq_put_queue(cfqq);
- 	}
-@@ -2318,119 +1875,31 @@ cfq_set_request(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
- 
- 	cfqq->allocated[rw]++;
- 	cfq_clear_cfqq_must_alloc(cfqq);
--	atomic_inc(&cfqq->ref);
-+	elv_get_ioq(cfqq->ioq);
- 
- 	spin_unlock_irqrestore(q->queue_lock, flags);
- 
- 	rq->elevator_private = cic;
--	rq->elevator_private2 = cfqq;
-+	rq->ioq = cfqq->ioq;
- 	return 0;
- 
- queue_fail:
- 	if (cic)
- 		put_io_context(cic->ioc);
- 
--	cfq_schedule_dispatch(cfqd);
-+	elv_schedule_dispatch(cfqd->queue);
- 	spin_unlock_irqrestore(q->queue_lock, flags);
- 	cfq_log(cfqd, "set_request fail");
- 	return 1;
- }
- 
--static void cfq_kick_queue(struct work_struct *work)
--{
--	struct cfq_data *cfqd =
--		container_of(work, struct cfq_data, unplug_work);
--	struct request_queue *q = cfqd->queue;
--
--	spin_lock_irq(q->queue_lock);
--	__blk_run_queue(cfqd->queue);
--	spin_unlock_irq(q->queue_lock);
--}
--
--/*
-- * Timer running if the active_queue is currently idling inside its time slice
-- */
--static void cfq_idle_slice_timer(unsigned long data)
--{
--	struct cfq_data *cfqd = (struct cfq_data *) data;
--	struct cfq_queue *cfqq;
--	unsigned long flags;
--	int timed_out = 1;
--
--	cfq_log(cfqd, "idle timer fired");
--
--	spin_lock_irqsave(cfqd->queue->queue_lock, flags);
--
--	cfqq = cfqd->active_queue;
--	if (cfqq) {
--		timed_out = 0;
--
--		/*
--		 * We saw a request before the queue expired, let it through
--		 */
--		if (cfq_cfqq_must_dispatch(cfqq))
--			goto out_kick;
--
--		/*
--		 * expired
--		 */
--		if (cfq_slice_used(cfqq))
--			goto expire;
--
--		/*
--		 * only expire and reinvoke request handler, if there are
--		 * other queues with pending requests
--		 */
--		if (!cfqd->busy_queues)
--			goto out_cont;
--
--		/*
--		 * not expired and it has a request pending, let it dispatch
--		 */
--		if (!RB_EMPTY_ROOT(&cfqq->sort_list))
--			goto out_kick;
--	}
--expire:
--	cfq_slice_expired(cfqd, timed_out);
--out_kick:
--	cfq_schedule_dispatch(cfqd);
--out_cont:
--	spin_unlock_irqrestore(cfqd->queue->queue_lock, flags);
--}
--
--static void cfq_shutdown_timer_wq(struct cfq_data *cfqd)
--{
--	del_timer_sync(&cfqd->idle_slice_timer);
--	cancel_work_sync(&cfqd->unplug_work);
--}
--
--static void cfq_put_async_queues(struct cfq_data *cfqd)
--{
--	int i;
--
--	for (i = 0; i < IOPRIO_BE_NR; i++) {
--		if (cfqd->async_cfqq[0][i])
--			cfq_put_queue(cfqd->async_cfqq[0][i]);
--		if (cfqd->async_cfqq[1][i])
--			cfq_put_queue(cfqd->async_cfqq[1][i]);
--	}
--
--	if (cfqd->async_idle_cfqq)
--		cfq_put_queue(cfqd->async_idle_cfqq);
--}
--
- static void cfq_exit_queue(struct elevator_queue *e)
- {
- 	struct cfq_data *cfqd = e->elevator_data;
- 	struct request_queue *q = cfqd->queue;
- 
--	cfq_shutdown_timer_wq(cfqd);
--
- 	spin_lock_irq(q->queue_lock);
- 
--	if (cfqd->active_queue)
--		__cfq_slice_expired(cfqd, cfqd->active_queue, 0);
--
- 	while (!list_empty(&cfqd->cic_list)) {
- 		struct cfq_io_context *cic = list_entry(cfqd->cic_list.next,
- 							struct cfq_io_context,
-@@ -2439,12 +1908,7 @@ static void cfq_exit_queue(struct elevator_queue *e)
- 		__cfq_exit_single_io_context(cfqd, cic);
- 	}
- 
--	cfq_put_async_queues(cfqd);
--
- 	spin_unlock_irq(q->queue_lock);
--
--	cfq_shutdown_timer_wq(cfqd);
--
- 	kfree(cfqd);
- }
- 
-@@ -2457,8 +1921,6 @@ static void *cfq_init_queue(struct request_queue *q, struct elevator_queue *eq)
- 	if (!cfqd)
- 		return NULL;
- 
--	cfqd->service_tree = CFQ_RB_ROOT;
--
- 	/*
- 	 * Not strictly needed (since RB_ROOT just clears the node and we
- 	 * zeroed cfqd on alloc), but better be safe in case someone decides
-@@ -2473,25 +1935,20 @@ static void *cfq_init_queue(struct request_queue *q, struct elevator_queue *eq)
- 	 * will not attempt to free it.
- 	 */
- 	cfq_init_cfqq(cfqd, &cfqd->oom_cfqq, 1, 0);
--	atomic_inc(&cfqd->oom_cfqq.ref);
-+
-+	/* Link up oom_ioq and oom_cfqq */
-+	cfqd->oom_cfqq.ioq = elv_get_oom_ioq(eq);
-+	elv_init_ioq_sched_queue(eq, elv_get_oom_ioq(eq), &cfqd->oom_cfqq);
- 
- 	INIT_LIST_HEAD(&cfqd->cic_list);
- 
- 	cfqd->queue = q;
- 
--	init_timer(&cfqd->idle_slice_timer);
--	cfqd->idle_slice_timer.function = cfq_idle_slice_timer;
--	cfqd->idle_slice_timer.data = (unsigned long) cfqd;
--
--	INIT_WORK(&cfqd->unplug_work, cfq_kick_queue);
--
- 	cfqd->cfq_quantum = cfq_quantum;
- 	cfqd->cfq_fifo_expire[0] = cfq_fifo_expire[0];
- 	cfqd->cfq_fifo_expire[1] = cfq_fifo_expire[1];
- 	cfqd->cfq_back_max = cfq_back_max;
- 	cfqd->cfq_back_penalty = cfq_back_penalty;
--	cfqd->cfq_slice[0] = cfq_slice_async;
--	cfqd->cfq_slice[1] = cfq_slice_sync;
- 	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
- 	cfqd->cfq_slice_idle = cfq_slice_idle;
- 	cfqd->hw_tag = 1;
-@@ -2560,8 +2017,6 @@ SHOW_FUNCTION(cfq_fifo_expire_async_show, cfqd->cfq_fifo_expire[0], 1);
- SHOW_FUNCTION(cfq_back_seek_max_show, cfqd->cfq_back_max, 0);
- SHOW_FUNCTION(cfq_back_seek_penalty_show, cfqd->cfq_back_penalty, 0);
- SHOW_FUNCTION(cfq_slice_idle_show, cfqd->cfq_slice_idle, 1);
--SHOW_FUNCTION(cfq_slice_sync_show, cfqd->cfq_slice[1], 1);
--SHOW_FUNCTION(cfq_slice_async_show, cfqd->cfq_slice[0], 1);
- SHOW_FUNCTION(cfq_slice_async_rq_show, cfqd->cfq_slice_async_rq, 0);
- #undef SHOW_FUNCTION
- 
-@@ -2590,8 +2045,6 @@ STORE_FUNCTION(cfq_back_seek_max_store, &cfqd->cfq_back_max, 0, UINT_MAX, 0);
- STORE_FUNCTION(cfq_back_seek_penalty_store, &cfqd->cfq_back_penalty, 1,
- 		UINT_MAX, 0);
- STORE_FUNCTION(cfq_slice_idle_store, &cfqd->cfq_slice_idle, 0, UINT_MAX, 1);
--STORE_FUNCTION(cfq_slice_sync_store, &cfqd->cfq_slice[1], 1, UINT_MAX, 1);
--STORE_FUNCTION(cfq_slice_async_store, &cfqd->cfq_slice[0], 1, UINT_MAX, 1);
- STORE_FUNCTION(cfq_slice_async_rq_store, &cfqd->cfq_slice_async_rq, 1,
- 		UINT_MAX, 0);
- #undef STORE_FUNCTION
-@@ -2605,10 +2058,10 @@ static struct elv_fs_entry cfq_attrs[] = {
- 	CFQ_ATTR(fifo_expire_async),
- 	CFQ_ATTR(back_seek_max),
- 	CFQ_ATTR(back_seek_penalty),
--	CFQ_ATTR(slice_sync),
--	CFQ_ATTR(slice_async),
- 	CFQ_ATTR(slice_async_rq),
- 	CFQ_ATTR(slice_idle),
-+	ELV_ATTR(slice_sync),
-+	ELV_ATTR(slice_async),
- 	__ATTR_NULL
- };
- 
-@@ -2621,8 +2074,6 @@ static struct elevator_type iosched_cfq = {
- 		.elevator_dispatch_fn =		cfq_dispatch_requests,
- 		.elevator_add_req_fn =		cfq_insert_request,
- 		.elevator_activate_req_fn =	cfq_activate_request,
--		.elevator_deactivate_req_fn =	cfq_deactivate_request,
--		.elevator_queue_empty_fn =	cfq_queue_empty,
- 		.elevator_completed_req_fn =	cfq_completed_request,
- 		.elevator_former_req_fn =	elv_rb_former_request,
- 		.elevator_latter_req_fn =	elv_rb_latter_request,
-@@ -2632,7 +2083,14 @@ static struct elevator_type iosched_cfq = {
- 		.elevator_init_fn =		cfq_init_queue,
- 		.elevator_exit_fn =		cfq_exit_queue,
- 		.trim =				cfq_free_io_context,
-+		.elevator_free_sched_queue_fn =	cfq_free_cfq_queue,
-+		.elevator_active_ioq_set_fn = 	cfq_active_ioq_set,
-+		.elevator_active_ioq_reset_fn =	cfq_active_ioq_reset,
-+		.elevator_arm_slice_timer_fn = 	cfq_arm_slice_timer,
-+		.elevator_should_preempt_fn = 	cfq_should_preempt,
-+		.elevator_close_cooperator_fn = cfq_close_cooperator,
- 	},
-+	.elevator_features =    ELV_IOSCHED_NEED_FQ,
- 	.elevator_attrs =	cfq_attrs,
- 	.elevator_name =	"cfq",
- 	.elevator_owner =	THIS_MODULE,
-@@ -2640,14 +2098,6 @@ static struct elevator_type iosched_cfq = {
- 
- static int __init cfq_init(void)
- {
--	/*
--	 * could be 0 on HZ < 1000 setups
--	 */
--	if (!cfq_slice_async)
--		cfq_slice_async = 1;
--	if (!cfq_slice_idle)
--		cfq_slice_idle = 1;
--
- 	if (cfq_slab_setup())
- 		return -ENOMEM;
- 
--- 
-1.6.0.6
-
+-extern VOID MeshMakeBeacon(IN PRTMP_ADAPTER pAd, IN UCHAR idx);
+-extern VOID MeshUpdateBeaconFrame(IN PRTMP_ADAPTER pAd, IN UCHAR idx);
+-
+ 	if (VIRTUAL_IF_NUM(pAd) == 0)
+ 	{
+ 		if (rt28xx_open(pAd->net_dev) != 0)
+Index: b/drivers/staging/rt2860/rtmp_ckipmic.h
+===================================================================
+--- a/drivers/staging/rt2860/rtmp_ckipmic.h
++++ b/drivers/staging/rt2860/rtmp_ckipmic.h
+@@ -46,24 +46,6 @@ typedef	struct	_MIC_CONTEXT	{
+ 	UCHAR		part[4];			/* for conversion of message to u32 for mmh   */
+ }	MIC_CONTEXT, *PMIC_CONTEXT;
+ 
+-VOID	CKIP_key_permute(
+-	OUT	UCHAR	*PK,			/* output permuted key */
+-	IN	UCHAR	*CK,			/* input CKIP key */
+-	IN	UCHAR	toDsFromDs,		/* input toDs/FromDs bits */
+-	IN	UCHAR	*piv);			/* input pointer to IV */
+-
+-VOID	RTMPCkipMicInit(
+-	IN	PMIC_CONTEXT		pContext,
+-	IN	PUCHAR				CK);
+-
+-VOID RTMPMicUpdate(
+-    IN  PMIC_CONTEXT        pContext,
+-    IN  PUCHAR              pOctets,
+-    IN  INT                 len);
+-
+-ULONG RTMPMicGetCoefficient(
+-    IN  PMIC_CONTEXT         pContext);
+-
+ VOID xor_128(
+     IN  PUCHAR              a,
+     IN  PUCHAR              b,
+@@ -93,21 +75,4 @@ VOID mix_column(
+     IN  PUCHAR              in,
+     OUT PUCHAR              out);
+ 
+-VOID RTMPAesEncrypt(
+-    IN  PUCHAR              key,
+-    IN  PUCHAR              data,
+-    IN  PUCHAR              ciphertext);
+-
+-VOID RTMPMicFinal(
+-    IN  PMIC_CONTEXT        pContext,
+-    OUT UCHAR               digest[4]);
+-
+-VOID RTMPCkipInsertCMIC(
+-    IN  PRTMP_ADAPTER   pAd,
+-    OUT PUCHAR          pMIC,
+-    IN  PUCHAR          p80211hdr,
+-    IN  PNDIS_PACKET    pPacket,
+-    IN  PCIPHER_KEY     pKey,
+-    IN  PUCHAR          mic_snap);
+-
+ #endif //__RTMP_CKIPMIC_H__
