@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbZHPJc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbZHPJei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbZHPJc6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 05:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbZHPJcz
+	id S1754814AbZHPJei (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 05:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbZHPJcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 05:32:55 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:36454 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754751AbZHPJcx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 05:32:53 -0400
-Date: Sun, 16 Aug 2009 10:32:51 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-Cc: Zeev Tarantov <zeev.tarantov@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] [hwmon] linux 2.6.31-rc6 regression
-Message-ID: <20090816093251.GA1027@srcf.ucam.org>
-References: <12d7e64c0908150329k1bf123der18e74112c5b9cd97@mail.gmail.com> <20090816010303.GA9588@srcf.ucam.org> <20090816053735.GB1998@phenom2.trippelsdorf.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090816053735.GB1998@phenom2.trippelsdorf.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+	Sun, 16 Aug 2009 05:32:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45371 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754080AbZHPJaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 05:30:14 -0400
+From: Avi Kivity <avi@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 35/48] KVM: Grab pic lock in kvm_pic_clear_isr_ack
+Date: Sun, 16 Aug 2009 12:29:55 +0300
+Message-Id: <1250415008-17175-36-git-send-email-avi@redhat.com>
+In-Reply-To: <1250415008-17175-1-git-send-email-avi@redhat.com>
+References: <1250415008-17175-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 16, 2009 at 07:37:35AM +0200, Markus Trippelsdorf wrote:
-> On Sun, Aug 16, 2009 at 02:03:03AM +0100, Matthew Garrett wrote:
-> > The hwmon driver is attempting to allocate a region that's also used by 
-> > your ACPI firmware. There's no way to synchronise access between the 
-> > kernel and the firmware, so allowing both is potentially racy - we've 
-> > seen numerous cases where the combination results in the system 
-> > incorrectly generating critical temperatuer shutdowns, for instance, 
-> > when some other indexed access gets interpreted as the temperature or 
-> > when the hwmon chip's state machine is confused. The failure of hwmon to 
-> > bind is a feature here, not a bug. You can override it with 
-> > acpi_enforce_resources=no on the kernel command line.
-> 
-> But we don't introduce »features« that break hardware monitoring on
-> numerous machines in rc6 normally, IIRC.
-> If this so important and critical to you, than just add a »hyperstrict«
-> parameter to acpi_enforce_resources or make »lax« the default.
+From: Marcelo Tosatti <mtosatti@redhat.com>
 
-It's not - 2.6.29 had this behaviour, and it got broken in 2.6.30. This 
-restores the status quo.
+isr_ack is protected by kvm_pic->lock.
 
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+ arch/x86/kvm/i8259.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kvm/i8259.c b/arch/x86/kvm/i8259.c
+index 2520922..bf94a45 100644
+--- a/arch/x86/kvm/i8259.c
++++ b/arch/x86/kvm/i8259.c
+@@ -72,8 +72,10 @@ static void pic_clear_isr(struct kvm_kpic_state *s, int irq)
+ void kvm_pic_clear_isr_ack(struct kvm *kvm)
+ {
+ 	struct kvm_pic *s = pic_irqchip(kvm);
++	pic_lock(s);
+ 	s->pics[0].isr_ack = 0xff;
+ 	s->pics[1].isr_ack = 0xff;
++	pic_unlock(s);
+ }
+ 
+ /*
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+1.6.3.3
+
