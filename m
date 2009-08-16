@@ -1,51 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbZHPJei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbZHPJdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754814AbZHPJei (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 05:34:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbZHPJcQ
+	id S1754794AbZHPJdg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 05:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbZHPJcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 05:32:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45371 "EHLO mx2.redhat.com"
+	Sun, 16 Aug 2009 05:32:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45362 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754080AbZHPJaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 05:30:14 -0400
+	id S1753985AbZHPJaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 05:30:13 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 35/48] KVM: Grab pic lock in kvm_pic_clear_isr_ack
-Date: Sun, 16 Aug 2009 12:29:55 +0300
-Message-Id: <1250415008-17175-36-git-send-email-avi@redhat.com>
+Subject: [PATCH 22/48] KVM: powerpc: fix some init/exit annotations
+Date: Sun, 16 Aug 2009 12:29:42 +0300
+Message-Id: <1250415008-17175-23-git-send-email-avi@redhat.com>
 In-Reply-To: <1250415008-17175-1-git-send-email-avi@redhat.com>
 References: <1250415008-17175-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marcelo Tosatti <mtosatti@redhat.com>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 
-isr_ack is protected by kvm_pic->lock.
+Fixes a couple of warnings like this one:
 
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+WARNING: arch/powerpc/kvm/kvm-440.o(.text+0x1e8c): Section mismatch in reference from the function kvmppc_44x_exit() to the function .exit.text:kvmppc_booke_exit()
+The function kvmppc_44x_exit() references a function in an exit section.
+Often the function kvmppc_booke_exit() has valid usage outside the exit section
+and the fix is to remove the __exit annotation of kvmppc_booke_exit.
+
+Also add some __init annotations on obvious routines.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/i8259.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ arch/powerpc/kvm/44x.c   |    4 ++--
+ arch/powerpc/kvm/booke.c |    2 +-
+ arch/powerpc/kvm/e500.c  |    4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/kvm/i8259.c b/arch/x86/kvm/i8259.c
-index 2520922..bf94a45 100644
---- a/arch/x86/kvm/i8259.c
-+++ b/arch/x86/kvm/i8259.c
-@@ -72,8 +72,10 @@ static void pic_clear_isr(struct kvm_kpic_state *s, int irq)
- void kvm_pic_clear_isr_ack(struct kvm *kvm)
- {
- 	struct kvm_pic *s = pic_irqchip(kvm);
-+	pic_lock(s);
- 	s->pics[0].isr_ack = 0xff;
- 	s->pics[1].isr_ack = 0xff;
-+	pic_unlock(s);
+diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
+index 0cef809..f4d1b55 100644
+--- a/arch/powerpc/kvm/44x.c
++++ b/arch/powerpc/kvm/44x.c
+@@ -138,7 +138,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ 	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
  }
  
- /*
+-static int kvmppc_44x_init(void)
++static int __init kvmppc_44x_init(void)
+ {
+ 	int r;
+ 
+@@ -149,7 +149,7 @@ static int kvmppc_44x_init(void)
+ 	return kvm_init(NULL, sizeof(struct kvmppc_vcpu_44x), THIS_MODULE);
+ }
+ 
+-static void kvmppc_44x_exit(void)
++static void __exit kvmppc_44x_exit(void)
+ {
+ 	kvmppc_booke_exit();
+ }
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 642e420..e7bf4d0 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -520,7 +520,7 @@ int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
+ 	return kvmppc_core_vcpu_translate(vcpu, tr);
+ }
+ 
+-int kvmppc_booke_init(void)
++int __init kvmppc_booke_init(void)
+ {
+ 	unsigned long ivor[16];
+ 	unsigned long max_ivor = 0;
+diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+index d8067fd..674e796 100644
+--- a/arch/powerpc/kvm/e500.c
++++ b/arch/powerpc/kvm/e500.c
+@@ -132,7 +132,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ 	kmem_cache_free(kvm_vcpu_cache, vcpu_e500);
+ }
+ 
+-static int kvmppc_e500_init(void)
++static int __init kvmppc_e500_init(void)
+ {
+ 	int r, i;
+ 	unsigned long ivor[3];
+@@ -160,7 +160,7 @@ static int kvmppc_e500_init(void)
+ 	return kvm_init(NULL, sizeof(struct kvmppc_vcpu_e500), THIS_MODULE);
+ }
+ 
+-static void kvmppc_e500_exit(void)
++static void __init kvmppc_e500_exit(void)
+ {
+ 	kvmppc_booke_exit();
+ }
 -- 
 1.6.3.3
 
