@@ -1,110 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbZHPSBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932109AbZHPSBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755540AbZHPSBf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 14:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZHPSBe
+	id S932109AbZHPSBj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 14:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZHPSBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 14:01:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56181 "EHLO hera.kernel.org"
+	Sun, 16 Aug 2009 14:01:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56183 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755232AbZHPSBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 14:01:33 -0400
-Date: Sun, 16 Aug 2009 18:00:51 GMT
-From: tip-bot for Leonardo Potenza <lpotenza@inwind.it>
+	id S1755529AbZHPSBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 14:01:35 -0400
+Date: Sun, 16 Aug 2009 18:01:04 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       lpotenza@inwind.it, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lpotenza@inwind.it, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <200908161855.48302.lpotenza@inwind.it>
-References: <200908161855.48302.lpotenza@inwind.it>
-Subject: [tip:x86/urgent] x86: Annotate section mismatch warnings in kernel/apic/x2apic_uv_x.c
-Message-ID: <tip-52459ab91363343af8ae252766e9da762344a2e7@git.kernel.org>
-Git-Commit-ID: 52459ab91363343af8ae252766e9da762344a2e7
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
+       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1250445414-29237-1-git-send-email-fweisbec@gmail.com>
+References: <1250445414-29237-1-git-send-email-fweisbec@gmail.com>
+Subject: [tip:perfcounters/core] perf tools: Put the show mode into the event headers files
+Message-ID: <tip-0f25bfc8d8b31a4ac8e4ff6cbc3911fb7092a4a7@git.kernel.org>
+Git-Commit-ID: 0f25bfc8d8b31a4ac8e4ff6cbc3911fb7092a4a7
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 16 Aug 2009 18:00:52 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 16 Aug 2009 18:01:05 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  52459ab91363343af8ae252766e9da762344a2e7
-Gitweb:     http://git.kernel.org/tip/52459ab91363343af8ae252766e9da762344a2e7
-Author:     Leonardo Potenza <lpotenza@inwind.it>
-AuthorDate: Sun, 16 Aug 2009 18:55:48 +0200
+Commit-ID:  0f25bfc8d8b31a4ac8e4ff6cbc3911fb7092a4a7
+Gitweb:     http://git.kernel.org/tip/0f25bfc8d8b31a4ac8e4ff6cbc3911fb7092a4a7
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Sun, 16 Aug 2009 19:56:54 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 16 Aug 2009 19:44:13 +0200
+CommitDate: Sun, 16 Aug 2009 19:59:13 +0200
 
-x86: Annotate section mismatch warnings in kernel/apic/x2apic_uv_x.c
+perf tools: Put the show mode into the event headers files
 
-The function uv_acpi_madt_oem_check() has been marked __init,
-the struct apic_x2apic_uv_x has been marked __refdata.
+Annotate and report share the same flags to filter events
+considering their context (kernel, user, hypervisor).
 
-The aim is to address the following section mismatch messages:
+Both tools have their own definitions of these flags. Factorize
+them out into the event headers file.
 
-WARNING: arch/x86/kernel/apic/built-in.o(.data+0x1368): Section mismatch in reference from the variable apic_x2apic_uv_x to the function .cpuinit.text:uv_wakeup_secondary()
-The variable apic_x2apic_uv_x references
-the function __cpuinit uv_wakeup_secondary()
-If the reference is valid then annotate the
-variable with __init* or __refdata (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: arch/x86/kernel/built-in.o(.data+0x68e8): Section mismatch in reference from the variable apic_x2apic_uv_x to the function .cpuinit.text:uv_wakeup_secondary()
-The variable apic_x2apic_uv_x references
-the function __cpuinit uv_wakeup_secondary()
-If the reference is valid then annotate the
-variable with __init* or __refdata (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: arch/x86/built-in.o(.text+0x7b36f): Section mismatch in reference from the function uv_acpi_madt_oem_check() to the function .init.text:early_ioremap()
-The function uv_acpi_madt_oem_check() references
-the function __init early_ioremap().
-This is often because uv_acpi_madt_oem_check lacks a __init
-annotation or the annotation of early_ioremap is wrong.
-
-WARNING: arch/x86/built-in.o(.text+0x7b38d): Section mismatch in reference from the function uv_acpi_madt_oem_check() to the function .init.text:early_iounmap()
-The function uv_acpi_madt_oem_check() references
-the function __init early_iounmap().
-This is often because uv_acpi_madt_oem_check lacks a __init
-annotation or the annotation of early_iounmap is wrong.
-
-WARNING: arch/x86/built-in.o(.data+0x8668): Section mismatch in reference from the variable apic_x2apic_uv_x to the function .cpuinit.text:uv_wakeup_secondary()
-The variable apic_x2apic_uv_x references
-the function __cpuinit uv_wakeup_secondary()
-If the reference is valid then annotate the
-variable with __init* or __refdata (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-Signed-off-by: Leonardo Potenza <lpotenza@inwind.it>
-LKML-Reference: <200908161855.48302.lpotenza@inwind.it>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+LKML-Reference: <1250445414-29237-1-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/apic/x2apic_uv_x.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ tools/perf/builtin-annotate.c |    4 ----
+ tools/perf/builtin-report.c   |    4 ----
+ tools/perf/util/event.h       |    6 ++++++
+ 3 files changed, 6 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
-index 832e908..6011593 100644
---- a/arch/x86/kernel/apic/x2apic_uv_x.c
-+++ b/arch/x86/kernel/apic/x2apic_uv_x.c
-@@ -46,7 +46,7 @@ static int early_get_nodeid(void)
- 	return node_id.s.node_id;
- }
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 820e7cc..6d75151 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -22,10 +22,6 @@
+ #include "util/parse-events.h"
+ #include "util/thread.h"
  
--static int uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
-+static int __init uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- {
- 	if (!strcmp(oem_id, "SGI")) {
- 		if (!strcmp(oem_table_id, "UVL"))
-@@ -253,7 +253,7 @@ static void uv_send_IPI_self(int vector)
- 	apic_write(APIC_SELF_IPI, vector);
- }
+-#define SHOW_KERNEL	1
+-#define SHOW_USER	2
+-#define SHOW_HV		4
+-
+ static char		const *input_name = "perf.data";
  
--struct apic apic_x2apic_uv_x = {
-+struct apic __refdata apic_x2apic_uv_x = {
+ static char		default_sort_order[] = "comm,symbol";
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index e104ed3..05d52ff 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -27,10 +27,6 @@
  
- 	.name				= "UV large system",
- 	.probe				= NULL,
+ #include "util/thread.h"
+ 
+-#define SHOW_KERNEL	1
+-#define SHOW_USER	2
+-#define SHOW_HV		4
+-
+ static char		const *input_name = "perf.data";
+ 
+ static char		default_sort_order[] = "comm,dso,symbol";
+diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
+index fa7c50b..fa2d4e9 100644
+--- a/tools/perf/util/event.h
++++ b/tools/perf/util/event.h
+@@ -4,6 +4,12 @@
+ #include "util.h"
+ #include <linux/list.h>
+ 
++enum {
++	SHOW_KERNEL	= 1,
++	SHOW_USER	= 2,
++	SHOW_HV		= 4,
++};
++
+ /*
+  * PERF_SAMPLE_IP | PERF_SAMPLE_TID | *
+  */
