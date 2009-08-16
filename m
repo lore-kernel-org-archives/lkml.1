@@ -1,168 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998AbZHPAv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753063AbZHPAx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752998AbZHPAv6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 20:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZHPAv5
+	id S1753063AbZHPAx3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 20:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZHPAx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 20:51:57 -0400
-Received: from sing.entic.net ([208.64.63.147]:34276 "EHLO mail.q-ag.de"
+	Sat, 15 Aug 2009 20:53:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41188 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750878AbZHPAv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 20:51:57 -0400
-Message-Id: <200908160051.n7G0pSWd024357@mail.q-ag.de>
-From: Manfred Spraul <manfred@colorfullife.com>
-To: linux-kernel@vger.kernel.org
-Cc: npiggin@suse.de
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Pierre Peiffer <peifferp@gmail.com>
-Date: Sun, 16 Aug 2009 01:07:38 +0200
-Subject: [PATCH 2/4] ipc/sem.c: add a per-semaphore pending list
+	id S1751441AbZHPAx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 20:53:28 -0400
+Message-ID: <4A875874.20401@kernel.org>
+Date: Sun, 16 Aug 2009 09:53:08 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Guillaume Knispel <gknispel@proformatique.com>
+CC: linux-kernel@vger.kernel.org, Miklos Szeredi <mszeredi@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] poll/select: initialize triggered field of struct poll_wqueues
+References: <20090815193024.121926e6@xilun.lan.proformatique.com>
+In-Reply-To: <20090815193024.121926e6@xilun.lan.proformatique.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 16 Aug 2009 00:53:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Based on Nick's findings:
+Guillaume Knispel wrote:
+> poll/select: initialize triggered field of struct poll_wqueues
+> 
+> The triggered field of struct poll_wqueues introduced in commit
+> 5f820f648c92a5ecc771a96b3c29aa6e90013bba "poll: allow f_op->poll to
+> sleep" was set to 1 in pollwake() (now __pollwake() ), tested and
+> later set to 0 in poll_schedule_timeout(), but not initialized before.
+> As a result when the process needs to sleep, triggered was likely to be
+> non-zero even if pollwake() is not called before the first
+> poll_schedule_timeout(), meaning schedule_hrtimeout_range() would not
+> be called and an extra loop calling all ->poll() would be done.
+> 
+> This patch initialize triggered to 0 in poll_initwait() so the ->poll()
+> are not called twice before the process goes to sleep when it needs to.
+> 
+> Signed-off-by: Guillaume Knispel <gknispel@proformatique.com>
 
-sysv sem has the concept of semaphore arrays that consist out of multiple
-semaphores. Atomic operations that affect multiple semaphores are supported.
+Ah... nice spotting.
 
-The patch is the first step for optimizing simple, single semaphore operations:
-In addition to the global list of all pending operations, a 2nd, per-semaphore
-list with the simple operations is added.
+Acked-by: Tejun Heo <tj@kernel.org>
 
-Note: this patch does not make sense by itself, the new list is used nowhere.
+Thanks.
 
-Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
----
- include/linux/sem.h |    5 ++++-
- ipc/sem.c           |   37 ++++++++++++++++++++++++++++++++-----
- 2 files changed, 36 insertions(+), 6 deletions(-)
-
-diff --git a/include/linux/sem.h b/include/linux/sem.h
-index 1b191c1..8a4adbe 100644
---- a/include/linux/sem.h
-+++ b/include/linux/sem.h
-@@ -86,6 +86,7 @@ struct task_struct;
- struct sem {
- 	int	semval;		/* current value */
- 	int	sempid;		/* pid of last operation */
-+	struct list_head sem_pending; /* pending single-sop operations */
- };
- 
- /* One sem_array data structure for each set of semaphores in the system. */
-@@ -96,11 +97,13 @@ struct sem_array {
- 	struct sem		*sem_base;	/* ptr to first semaphore in array */
- 	struct list_head	sem_pending;	/* pending operations to be processed */
- 	struct list_head	list_id;	/* undo requests on this array */
--	unsigned long		sem_nsems;	/* no. of semaphores in array */
-+	int			sem_nsems;	/* no. of semaphores in array */
-+	int			complex_count;	/* pending complex operations */
- };
- 
- /* One queue for each sleeping process in the system. */
- struct sem_queue {
-+	struct list_head	simple_list; /* queue of pending operations */
- 	struct list_head	list;	 /* queue of pending operations */
- 	struct task_struct	*sleeper; /* this process */
- 	struct sem_undo		*undo;	 /* undo structure */
-diff --git a/ipc/sem.c b/ipc/sem.c
-index 9425817..0cad759 100644
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -240,6 +240,7 @@ static int newary(struct ipc_namespace *ns, struct ipc_params *params)
- 	key_t key = params->key;
- 	int nsems = params->u.nsems;
- 	int semflg = params->flg;
-+	int i;
- 
- 	if (!nsems)
- 		return -EINVAL;
-@@ -272,6 +273,11 @@ static int newary(struct ipc_namespace *ns, struct ipc_params *params)
- 	ns->used_sems += nsems;
- 
- 	sma->sem_base = (struct sem *) &sma[1];
-+
-+	for (i = 0; i < nsems; i++)
-+		INIT_LIST_HEAD(&sma->sem_base[i].sem_pending);
-+
-+	sma->complex_count = 0;
- 	INIT_LIST_HEAD(&sma->sem_pending);
- 	INIT_LIST_HEAD(&sma->list_id);
- 	sma->sem_nsems = nsems;
-@@ -418,6 +424,15 @@ static void wake_up_sem_queue(struct sem_queue *q, int error)
- 	preempt_enable();
- }
- 
-+static void unlink_queue(struct sem_array *sma, struct sem_queue *q)
-+{
-+	list_del(&q->list);
-+	if (q->nsops == 1)
-+		list_del(&q->simple_list);
-+	else
-+		sma->complex_count--;
-+}
-+
- /* Go through the pending queue for the indicated semaphore
-  * looking for tasks that can be completed.
-  */
-@@ -437,7 +452,7 @@ again:
- 		if (error > 0)
- 			continue;
- 
--		list_del(&q->list);
-+		unlink_queue(sma, q);
- 
- 		/*
- 		 * The next operation that must be checked depends on the type
-@@ -531,8 +546,7 @@ static void freeary(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
- 
- 	/* Wake up all pending processes and let them fail with EIDRM. */
- 	list_for_each_entry_safe(q, tq, &sma->sem_pending, list) {
--		list_del(&q->list);
--
-+		unlink_queue(sma, q);
- 		wake_up_sem_queue(q, -EIDRM);
- 	}
- 
-@@ -1190,6 +1204,19 @@ SYSCALL_DEFINE4(semtimedop, int, semid, struct sembuf __user *, tsops,
- 	else
- 		list_add(&queue.list, &sma->sem_pending);
- 
-+	if (nsops == 1) {
-+		struct sem *curr;
-+		curr = &sma->sem_base[sops->sem_num];
-+
-+		if (alter)
-+			list_add_tail(&queue.simple_list, &curr->sem_pending);
-+		else
-+			list_add(&queue.simple_list, &curr->sem_pending);
-+	} else {
-+		INIT_LIST_HEAD(&queue.simple_list);
-+		sma->complex_count++;
-+	}
-+
- 	queue.status = -EINTR;
- 	queue.sleeper = current;
- 	current->state = TASK_INTERRUPTIBLE;
-@@ -1231,7 +1258,7 @@ SYSCALL_DEFINE4(semtimedop, int, semid, struct sembuf __user *, tsops,
- 	 */
- 	if (timeout && jiffies_left == 0)
- 		error = -EAGAIN;
--	list_del(&queue.list);
-+	unlink_queue(sma, &queue);
- 
- out_unlock_free:
- 	sem_unlock(sma);
-@@ -1374,7 +1401,7 @@ static int sysvipc_sem_proc_show(struct seq_file *s, void *it)
- 	struct sem_array *sma = it;
- 
- 	return seq_printf(s,
--			  "%10d %10d  %4o %10lu %5u %5u %5u %5u %10lu %10lu\n",
-+			  "%10d %10d  %4o %10u %5u %5u %5u %5u %10lu %10lu\n",
- 			  sma->sem_perm.key,
- 			  sma->sem_perm.id,
- 			  sma->sem_perm.mode,
 -- 
-1.6.2.5
-
+tejun
