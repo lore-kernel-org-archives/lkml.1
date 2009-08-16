@@ -1,880 +1,537 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932219AbZHPTb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932200AbZHPTbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932219AbZHPTb4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 15:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755974AbZHPTbx
+	id S932200AbZHPTbk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 15:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755973AbZHPTbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 15:31:53 -0400
+	Sun, 16 Aug 2009 15:31:31 -0400
 Received: from mail-fx0-f215.google.com ([209.85.220.215]:55539 "EHLO
 	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755900AbZHPTbn (ORCPT
+	with ESMTP id S1755897AbZHPTbR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 15:31:43 -0400
+	Sun, 16 Aug 2009 15:31:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=RHcbinFB3R4c0Rk01noOhUOOwaxXmGqpGeoGY4rUHcfwczOf5yEe5BOhAyrNZpFfP8
-         jBilgiIPmBcjtppy1TI6k4q4+7A2mpx+38cq82ej6pnlL9I9FpaEZj4HA7y66NQrffys
-         Ug9+/vBQ8XSmj1eioqJTWiGVz57lx+2tTPqaY=
+        b=qmA1QXFNrJQkmoxM199fxHpdsLhUVFwkg+WLQWDSWOBSlLnz8KcnZsVcqdBcvit/92
+         UqA5c5/KflSLSLwCX8T4uXty890mnGyt8QMxbSklqiW+K5cqQBDjDtMvQuzrjpbUUV3F
+         CxFXHEiww/N7ROo7IpX1UugWNnw5PpMBRgRoU=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: devel@driverdev.osuosl.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 16 Aug 2009 21:31:56 +0200
-Message-Id: <20090816193156.3789.86009.sendpatchset@localhost.localdomain>
+Date: Sun, 16 Aug 2009 21:31:30 +0200
+Message-Id: <20090816193130.3789.20875.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
 References: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
-Subject: [PATCH 20/22] Staging: rtxxx0: remove private debugging ioctls
+Subject: [PATCH 16/22] Staging: rtxxx0: remove dead virtual adapter support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtxxx0: remove private debugging ioctls
+Subject: [PATCH] Staging: rtxxx0: remove dead virtual adapter support
+
+* remove dead virtual adapter support
+* remove needless rt28xx_ioctl() wrapper
+* remove superfluous NULL checks
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rt2860/oid.h       |    7 
- drivers/staging/rt2860/sta_ioctl.c |  775 -------------------------------------
- 2 files changed, 782 deletions(-)
+ drivers/staging/rt2860/rt_linux.h    |    6 
+ drivers/staging/rt2860/rt_main_dev.c |   33 ---
+ drivers/staging/rt2860/rtmp.h        |    5 
+ drivers/staging/rt2860/sta_ioctl.c   |  293 -----------------------------------
+ 4 files changed, 9 insertions(+), 328 deletions(-)
 
-Index: b/drivers/staging/rt2860/oid.h
+Index: b/drivers/staging/rt2860/rt_linux.h
 ===================================================================
---- a/drivers/staging/rt2860/oid.h
-+++ b/drivers/staging/rt2860/oid.h
-@@ -627,13 +627,6 @@ typedef struct _NDIS_802_11_CAPABILITY
- #define RT_PRIV_IOCTL_EXT							(SIOCIWFIRSTPRIV + 0x01) // Sync. with AP for wsc upnp daemon
- #define RTPRIV_IOCTL_SET							(SIOCIWFIRSTPRIV + 0x02)
+--- a/drivers/staging/rt2860/rt_linux.h
++++ b/drivers/staging/rt2860/rt_linux.h
+@@ -198,12 +198,6 @@ struct os_cookie {
+ 	INT 					ioctl_if;
+ };
  
--#ifdef DBG
--#define RTPRIV_IOCTL_BBP                            (SIOCIWFIRSTPRIV + 0x03)
--#define RTPRIV_IOCTL_MAC                            (SIOCIWFIRSTPRIV + 0x05)
--#define RTPRIV_IOCTL_RF                             (SIOCIWFIRSTPRIV + 0x13)
--#define RTPRIV_IOCTL_E2P                            (SIOCIWFIRSTPRIV + 0x07)
--#endif
+-typedef struct _VIRTUAL_ADAPTER
+-{
+-	struct net_device		*RtmpDev;
+-	struct net_device		*VirtualDev;
+-} VIRTUAL_ADAPTER, PVIRTUAL_ADAPTER;
 -
- #define RTPRIV_IOCTL_STATISTICS                     (SIOCIWFIRSTPRIV + 0x09)
- #define RTPRIV_IOCTL_ADD_PMKID_CACHE                (SIOCIWFIRSTPRIV + 0x0A)
- #define RTPRIV_IOCTL_RADIUS_DATA                    (SIOCIWFIRSTPRIV + 0x0C)
+ #undef  ASSERT
+ #define ASSERT(x)
+ 
+Index: b/drivers/staging/rt2860/rt_main_dev.c
+===================================================================
+--- a/drivers/staging/rt2860/rt_main_dev.c
++++ b/drivers/staging/rt2860/rt_main_dev.c
+@@ -670,7 +670,7 @@ err:
+ static const struct net_device_ops rt2860_netdev_ops = {
+ 	.ndo_open		= MainVirtualIF_open,
+ 	.ndo_stop		= MainVirtualIF_close,
+-	.ndo_do_ioctl		= rt28xx_ioctl,
++	.ndo_do_ioctl		= rt28xx_sta_ioctl,
+ 	.ndo_get_stats		= RT28xx_get_ether_stats,
+ 	.ndo_validate_addr	= NULL,
+ 	.ndo_set_mac_address	= eth_mac_addr,
+@@ -970,37 +970,6 @@ void tbtt_tasklet(unsigned long data)
+ 
+ }
+ 
+-INT rt28xx_ioctl(
+-	IN	struct net_device	*net_dev,
+-	IN	OUT	struct ifreq	*rq,
+-	IN	INT					cmd)
+-{
+-	VIRTUAL_ADAPTER	*pVirtualAd = NULL;
+-	RTMP_ADAPTER	*pAd = NULL;
+-	INT				ret = 0;
+-
+-	if (net_dev->priv_flags == INT_MAIN)
+-	{
+-		pAd = net_dev->ml_priv;
+-	}
+-	else
+-	{
+-		pVirtualAd = net_dev->ml_priv;
+-		pAd = pVirtualAd->RtmpDev->ml_priv;
+-	}
+-
+-	if (pAd == NULL)
+-	{
+-		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->ml_priv will be NULL in 2rd open */
+-		return -ENETDOWN;
+-	}
+-
+-	ret = rt28xx_sta_ioctl(net_dev, rq, cmd);
+-
+-	return ret;
+-}
+-
+ /*
+     ========================================================================
+ 
+Index: b/drivers/staging/rt2860/rtmp.h
+===================================================================
+--- a/drivers/staging/rt2860/rtmp.h
++++ b/drivers/staging/rt2860/rtmp.h
+@@ -6331,11 +6331,6 @@ VOID RT28xx_UpdateBeaconToAsic(
+ 	IN ULONG BeaconLen,
+ 	IN ULONG UpdatePos);
+ 
+-INT rt28xx_ioctl(
+-	IN	struct net_device	*net_dev,
+-	IN	OUT	struct ifreq	*rq,
+-	IN	INT			cmd);
+-
+ INT rt28xx_sta_ioctl(
+ 	IN	struct net_device	*net_dev,
+ 	IN	OUT	struct ifreq	*rq,
 Index: b/drivers/staging/rt2860/sta_ioctl.c
 ===================================================================
 --- a/drivers/staging/rt2860/sta_ioctl.c
 +++ b/drivers/staging/rt2860/sta_ioctl.c
-@@ -93,23 +93,6 @@ struct iw_priv_args privtab[] = {
- #endif
- /* --- sub-ioctls relations --- */
- 
--#ifdef DBG
--{ RTPRIV_IOCTL_BBP,
--  IW_PRIV_TYPE_CHAR | IW_PRIV_SIZE_MASK, IW_PRIV_TYPE_CHAR | IW_PRIV_SIZE_MASK,
--  "bbp"},
--{ RTPRIV_IOCTL_MAC,
--  IW_PRIV_TYPE_CHAR | 1024, IW_PRIV_TYPE_CHAR | 1024,
--  "mac"},
--#ifdef RT30xx
--{ RTPRIV_IOCTL_RF,
--  IW_PRIV_TYPE_CHAR | IW_PRIV_SIZE_MASK, IW_PRIV_TYPE_CHAR | IW_PRIV_SIZE_MASK,
--  "rf"},
--#endif // RT30xx //
--{ RTPRIV_IOCTL_E2P,
--  IW_PRIV_TYPE_CHAR | 1024, IW_PRIV_TYPE_CHAR | 1024,
--  "e2p"},
--#endif  /* DBG */
--
- { RTPRIV_IOCTL_STATISTICS,
-   0, IW_PRIV_TYPE_CHAR | IW_PRIV_SIZE_MASK,
-   "stat"},
-@@ -173,29 +156,6 @@ INT Set_Wpa_Support(
-     IN	PRTMP_ADAPTER	pAd,
- 	IN	PUCHAR			arg);
- 
--#ifdef DBG
--#if !defined(RT2860) && !defined(RT30xx)
--VOID RTMPIoctlBBP(
--	IN	PRTMP_ADAPTER	pAdapter,
--	IN	struct iwreq	*wrq);
+@@ -577,38 +577,10 @@ int rt_ioctl_giwfreq(struct net_device *
+ 		   struct iw_request_info *info,
+ 		   struct iw_freq *freq, char *extra)
+ {
+-    VIRTUAL_ADAPTER *pVirtualAd = NULL;
+-#ifndef RT30xx
+-	PRTMP_ADAPTER pAdapter = NULL;
 -#endif
--
--VOID RTMPIoctlMAC(
--	IN	PRTMP_ADAPTER	pAdapter,
--	IN	struct iwreq	*wrq);
--
--VOID RTMPIoctlE2PROM(
--    IN  PRTMP_ADAPTER   pAdapter,
--    IN  struct iwreq    *wrq);
--
 -#ifdef RT30xx
--VOID RTMPIoctlRF(
--    IN  PRTMP_ADAPTER   pAdapter,
--    IN  struct iwreq    *wrq);
--#endif // RT30xx //
--#endif // DBG //
--
--
- NDIS_STATUS RTMPWPANoneAddKeyProc(
-     IN  PRTMP_ADAPTER   pAd,
-     IN	PVOID			pBuf);
-@@ -2562,138 +2522,6 @@ int rt_ioctl_siwpmksa(struct net_device 
- 	return 0;
- }
+-	PRTMP_ADAPTER pAdapter;
+-#endif
+-	UCHAR ch;
++	PRTMP_ADAPTER pAdapter = dev->ml_priv;
++	UCHAR ch = pAdapter->CommonCfg.Channel;
+ 	ULONG	m;
  
--#ifdef DBG
--static int
--rt_private_ioctl_bbp(struct net_device *dev, struct iw_request_info *info,
--		struct iw_point *wrq, char *extra)
--			{
--	CHAR				*this_char;
--	CHAR				*value = NULL;
--	UCHAR				regBBP = 0;
--	UINT32				bbpId;
--	UINT32				bbpValue;
--	BOOLEAN				bIsPrintAllBBP = FALSE;
--	INT					Status = 0;
--    PRTMP_ADAPTER       pAdapter = dev->ml_priv;
--
--
--	memset(extra, 0x00, IW_PRIV_SIZE_MASK);
--
--	if (wrq->length > 1) //No parameters.
--				{
--		sprintf(extra, "\n");
--
--		//Parsing Read or Write
--		this_char = wrq->pointer;
--		DBGPRINT(RT_DEBUG_TRACE, ("this_char=%s\n", this_char));
--		if (!*this_char)
--			goto next;
--
--		if ((value = rtstrchr(this_char, '=')) != NULL)
--			*value++ = 0;
--
--		if (!value || !*value)
--		{ //Read
--			DBGPRINT(RT_DEBUG_TRACE, ("this_char=%s, value=%s\n", this_char, value));
--			if (sscanf(this_char, "%d", &(bbpId)) == 1)
--			{
--#ifndef RT30xx
--				if (bbpId <= 136)
--#endif // RT30xx //
--#ifdef RT30xx
--				if (bbpId <= 138)  // edit by johnli, RF power sequence setup, add BBP R138 for ADC dynamic on/off control
--#endif // RT30xx //
--				{
--					{
--					RTMP_BBP_IO_READ8_BY_REG_ID(pAdapter, bbpId, &regBBP);
--					}
--					sprintf(extra+strlen(extra), "R%02d[0x%02X]:%02X\n", bbpId, bbpId*2, regBBP);
--                    wrq->length = strlen(extra) + 1; // 1: size of '\0'
--					DBGPRINT(RT_DEBUG_TRACE, ("msg=%s\n", extra));
--				}
--				else
--				{//Invalid parametes, so default printk all bbp
--					bIsPrintAllBBP = TRUE;
--					goto next;
--				}
--			}
--			else
--			{ //Invalid parametes, so default printk all bbp
--				bIsPrintAllBBP = TRUE;
--				goto next;
--			}
--		}
--		else
--		{ //Write
--			if ((sscanf(this_char, "%d", &(bbpId)) == 1) && (sscanf(value, "%x", &(bbpValue)) == 1))
--			{
--#ifndef RT30xx
--				if (bbpId <= 136)
--#endif // RT30xx //
--#ifdef RT30xx
--				if (bbpId <= 138)  // edit by johnli, RF power sequence setup, add BBP R138 for ADC dynamic on/off control
--#endif // RT30xx //
--				{
--					{
--					    RTMP_BBP_IO_WRITE8_BY_REG_ID(pAdapter, bbpId, bbpValue);
--    					//Read it back for showing
--    					RTMP_BBP_IO_READ8_BY_REG_ID(pAdapter, bbpId, &regBBP);
--			}
--					sprintf(extra+strlen(extra), "R%02d[0x%02X]:%02X\n", bbpId, bbpId*2, regBBP);
--                    wrq->length = strlen(extra) + 1; // 1: size of '\0'
--					DBGPRINT(RT_DEBUG_TRACE, ("msg=%s\n", extra));
--				}
--				else
--				{//Invalid parametes, so default printk all bbp
--					bIsPrintAllBBP = TRUE;
--					goto next;
--				}
--			}
--			else
--			{ //Invalid parametes, so default printk all bbp
--				bIsPrintAllBBP = TRUE;
--				goto next;
--			}
--		}
--		}
--	else
--		bIsPrintAllBBP = TRUE;
--
--next:
--	if (bIsPrintAllBBP)
+-	if (dev->priv_flags == INT_MAIN)
 -	{
--		memset(extra, 0x00, IW_PRIV_SIZE_MASK);
--		sprintf(extra, "\n");
+-		pAdapter = dev->ml_priv;
+-	}
+-	else
+-	{
+-		pVirtualAd = dev->ml_priv;
 -#ifndef RT30xx
--		for (bbpId = 0; bbpId <= 136; bbpId++)
--#endif // RT30xx //
--#ifdef RT30xx
--		for (bbpId = 0; bbpId <= 138; bbpId++)  // edit by johnli, RF power sequence setup, add BBP R138 for ADC dynamic on/off control
--#endif // RT30xx //
--		{
--		    if (strlen(extra) >= (IW_PRIV_SIZE_MASK - 10))
--                break;
--			RTMP_BBP_IO_READ8_BY_REG_ID(pAdapter, bbpId, &regBBP);
--#ifndef RT30xx
--			sprintf(extra+strlen(extra), "R%02d[0x%02X]:%02X    ", bbpId, bbpId*2, regBBP);
--			if (bbpId%5 == 4)
--				sprintf(extra+strlen(extra), "\n");
+-		if (pVirtualAd && pVirtualAd->RtmpDev)
 -#endif
--#ifdef RT30xx
--			sprintf(extra+strlen(extra), "%03d = %02X\n", bbpId, regBBP);  // edit by johnli, change display format
--#endif
--		}
--
--        wrq->length = strlen(extra) + 1; // 1: size of '\0'
--        DBGPRINT(RT_DEBUG_TRACE, ("wrq->length = %d\n", wrq->length));
+-			pAdapter = pVirtualAd->RtmpDev->ml_priv;
 -	}
 -
--	DBGPRINT(RT_DEBUG_TRACE, ("<==rt_private_ioctl_bbp\n\n"));
+-	if (pAdapter == NULL)
+-	{
+-		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->ml_priv will be NULL in 2rd open */
+-		return -ENETDOWN;
+-	}
 -
--    return Status;
--}
--#endif // DBG //
+-		ch = pAdapter->CommonCfg.Channel;
 -
- int rt_ioctl_siwrate(struct net_device *dev,
+ 	DBGPRINT(RT_DEBUG_TRACE,("==>rt_ioctl_giwfreq  %d\n", ch));
+ 
+     MAP_CHANNEL_ID_TO_KHZ(ch, m);
+@@ -656,31 +628,7 @@ int rt_ioctl_giwmode(struct net_device *
+ 		   struct iw_request_info *info,
+ 		   __u32 *mode, char *extra)
+ {
+-#ifndef RT30xx
+-	PRTMP_ADAPTER 	pAdapter = NULL;
+-	VIRTUAL_ADAPTER *pVirtualAd = NULL;
+-
+-	if (dev->priv_flags == INT_MAIN)
+-	{
+-		pAdapter = dev->ml_priv;
+-	}
+-	else
+-	{
+-		pVirtualAd = dev->ml_priv;
+-		if (pVirtualAd && pVirtualAd->RtmpDev)
+-			pAdapter = pVirtualAd->RtmpDev->ml_priv;
+-	}
+-
+-	if (pAdapter == NULL)
+-	{
+-		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->ml_priv will be NULL in 2rd open */
+-		return -ENETDOWN;
+-	}
+-#endif
+-#ifdef RT30xx
+ 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
+-#endif
+ 
+ 	if (ADHOC_ON(pAdapter))
+ 		*mode = IW_MODE_ADHOC;
+@@ -724,37 +672,11 @@ int rt_ioctl_giwrange(struct net_device 
+ 		   struct iw_request_info *info,
+ 		   struct iw_point *data, char *extra)
+ {
+-#ifndef RT30xx
+-	PRTMP_ADAPTER 	pAdapter = NULL;
+-	VIRTUAL_ADAPTER *pVirtualAd = NULL;
+-#endif
+-#ifdef RT30xx
+ 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
+-#endif
+ 	struct iw_range *range = (struct iw_range *) extra;
+ 	u16 val;
+ 	int i;
+ 
+-#ifndef RT30xx
+-	if (dev->priv_flags == INT_MAIN)
+-	{
+-		pAdapter = dev->ml_priv;
+-	}
+-	else
+-	{
+-		pVirtualAd = dev->ml_priv;
+-		if (pVirtualAd && pVirtualAd->RtmpDev)
+-			pAdapter = pVirtualAd->RtmpDev->ml_priv;
+-	}
+-
+-	if (pAdapter == NULL)
+-	{
+-		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->ml_priv will be NULL in 2rd open */
+-		return -ENETDOWN;
+-	}
+-#endif
+-
+ 	DBGPRINT(RT_DEBUG_TRACE ,("===>rt_ioctl_giwrange\n"));
+ 	data->length = sizeof(struct iw_range);
+ 	memset(range, 0, sizeof(struct iw_range));
+@@ -871,31 +793,7 @@ int rt_ioctl_giwap(struct net_device *de
+ 		      struct iw_request_info *info,
+ 		      struct sockaddr *ap_addr, char *extra)
+ {
+-#ifndef RT30xx
+-	PRTMP_ADAPTER 	pAdapter = NULL;
+-	VIRTUAL_ADAPTER *pVirtualAd = NULL;
+-
+-	if (dev->priv_flags == INT_MAIN)
+-	{
+-		pAdapter = dev->ml_priv;
+-	}
+-	else
+-	{
+-		pVirtualAd = dev->ml_priv;
+-		if (pVirtualAd && pVirtualAd->RtmpDev)
+-			pAdapter = pVirtualAd->RtmpDev->ml_priv;
+-	}
+-
+-	if (pAdapter == NULL)
+-	{
+-		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->ml_priv will be NULL in 2rd open */
+-		return -ENETDOWN;
+-	}
+-#endif
+-#ifdef RT30xx
+ 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
+-#endif
+ 
+ 	if (INFRA_ON(pAdapter) || ADHOC_ON(pAdapter))
+ 	{
+@@ -1398,31 +1296,7 @@ int rt_ioctl_giwessid(struct net_device 
+ 			 struct iw_request_info *info,
+ 			 struct iw_point *data, char *essid)
+ {
+-#ifndef RT30xx
+-	PRTMP_ADAPTER 	pAdapter = NULL;
+-	VIRTUAL_ADAPTER *pVirtualAd = NULL;
+-
+-	if (dev->priv_flags == INT_MAIN)
+-	{
+-		pAdapter = dev->ml_priv;
+-	}
+-	else
+-	{
+-		pVirtualAd = dev->ml_priv;
+-		if (pVirtualAd && pVirtualAd->RtmpDev)
+-			pAdapter = pVirtualAd->RtmpDev->ml_priv;
+-	}
+-
+-	if (pAdapter == NULL)
+-	{
+-		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->ml_priv will be NULL in 2rd open */
+-		return -ENETDOWN;
+-	}
+-#endif
+-#ifdef RT30xx
+ 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
+-#endif
+ 
+ 	data->flags = 1;
+     if (MONITOR_ON(pAdapter))
+@@ -1482,31 +1356,7 @@ int rt_ioctl_giwnickn(struct net_device 
+ 			 struct iw_request_info *info,
+ 			 struct iw_point *data, char *nickname)
+ {
+-#ifndef RT30xx
+-	PRTMP_ADAPTER 	pAdapter = NULL;
+-	VIRTUAL_ADAPTER *pVirtualAd = NULL;
+-
+-	if (dev->priv_flags == INT_MAIN)
+-	{
+-		pAdapter = dev->ml_priv;
+-	}
+-	else
+-	{
+-		pVirtualAd = dev->ml_priv;
+-		if (pVirtualAd && pVirtualAd->RtmpDev)
+-			pAdapter = pVirtualAd->RtmpDev->ml_priv;
+-	}
+-
+-	if (pAdapter == NULL)
+-	{
+-		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->ml_priv will be NULL in 2rd open */
+-		return -ENETDOWN;
+-	}
+-#endif
+-#ifdef RT30xx
+ 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
+-#endif
+ 
+ 	if (data->length > strlen(pAdapter->nickname) + 1)
+ 		data->length = strlen(pAdapter->nickname) + 1;
+@@ -1550,31 +1400,7 @@ int rt_ioctl_giwrts(struct net_device *d
+ 		       struct iw_request_info *info,
+ 		       struct iw_param *rts, char *extra)
+ {
+-#ifndef RT30xx
+-	PRTMP_ADAPTER 	pAdapter = NULL;
+-	VIRTUAL_ADAPTER *pVirtualAd = NULL;
+-
+-	if (dev->priv_flags == INT_MAIN)
+-	{
+-		pAdapter = dev->ml_priv;
+-	}
+-	else
+-	{
+-		pVirtualAd = dev->ml_priv;
+-		if (pVirtualAd && pVirtualAd->RtmpDev)
+-			pAdapter = pVirtualAd->RtmpDev->ml_priv;
+-	}
+-
+-	if (pAdapter == NULL)
+-	{
+-		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->ml_priv will be NULL in 2rd open */
+-		return -ENETDOWN;
+-	}
+-#endif
+-#ifdef RT30xx
+ 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
+-#endif
+ 
+ 	//check if the interface is down
+     	if(!RTMP_TEST_FLAG(pAdapter, fRTMP_ADAPTER_INTERRUPT_IN_USE))
+@@ -1621,31 +1447,7 @@ int rt_ioctl_giwfrag(struct net_device *
  			struct iw_request_info *info,
- 			union iwreq_data *wrqu, char *extra)
-@@ -2876,11 +2704,7 @@ static const iw_handler rt_priv_handlers
- 	(iw_handler) NULL, /* + 0x00 */
- 	(iw_handler) NULL, /* + 0x01 */
- 	(iw_handler) rt_ioctl_setparam, /* + 0x02 */
--#ifdef DBG
--	(iw_handler) rt_private_ioctl_bbp, /* + 0x03 */
--#else
- 	(iw_handler) NULL, /* + 0x03 */
--#endif
- 	(iw_handler) NULL, /* + 0x04 */
- 	(iw_handler) NULL, /* + 0x05 */
- 	(iw_handler) NULL, /* + 0x06 */
-@@ -4939,19 +4763,6 @@ INT rt28xx_sta_ioctl(
- 		case RTPRIV_IOCTL_GSITESURVEY:
- 			RTMPIoctlGetSiteSurvey(pAd, wrq);
- 		    break;
--#ifdef DBG
--		case RTPRIV_IOCTL_MAC:
--			RTMPIoctlMAC(pAd, wrq);
--			break;
--		case RTPRIV_IOCTL_E2P:
--			RTMPIoctlE2PROM(pAd, wrq);
--			break;
--#ifdef RT30xx
--		case RTPRIV_IOCTL_RF:
--			RTMPIoctlRF(pAd, wrq);
--			break;
--#endif // RT30xx //
--#endif // DBG //
-         case SIOCETHTOOL:
-                 break;
- 		default:
-@@ -5850,592 +5661,6 @@ INT Set_Wpa_Support(
-     return TRUE;
- }
- 
--#ifdef DBG
--/*
--    ==========================================================================
--    Description:
--        Read / Write MAC
--    Arguments:
--        pAdapter                    Pointer to our adapter
--        wrq                         Pointer to the ioctl argument
--
--    Return Value:
--        None
--
--    Note:
--        Usage:
--               1.) iwpriv ra0 mac 0        ==> read MAC where Addr=0x0
--               2.) iwpriv ra0 mac 0=12     ==> write MAC where Addr=0x0, value=12
--    ==========================================================================
--*/
--VOID RTMPIoctlMAC(
--	IN	PRTMP_ADAPTER	pAdapter,
--	IN	struct iwreq	*wrq)
--{
--	CHAR				*this_char;
--	CHAR				*value;
--	INT					j = 0, k = 0;
--	CHAR				msg[1024];
--	CHAR				arg[255];
--	ULONG				macAddr = 0;
--	UCHAR				temp[16], temp2[16];
--	UINT32				macValue = 0;
--	INT					Status;
--#ifdef RT30xx
--	BOOLEAN				bIsPrintAllMAC = FALSE;
--#endif
--
--	memset(msg, 0x00, 1024);
--	if (wrq->u.data.length > 1) //No parameters.
--	{
--	    Status = copy_from_user(arg, wrq->u.data.pointer, (wrq->u.data.length > 255) ? 255 : wrq->u.data.length);
--		sprintf(msg, "\n");
--
--		//Parsing Read or Write
--	    this_char = arg;
--		if (!*this_char)
--			goto next;
--
--		if ((value = rtstrchr(this_char, '=')) != NULL)
--			*value++ = 0;
--
--		if (!value || !*value)
--		{ //Read
--			// Sanity check
--			if(strlen(this_char) > 4)
--				goto next;
--
--			j = strlen(this_char);
--			while(j-- > 0)
--			{
--				if(this_char[j] > 'f' || this_char[j] < '0')
--					return;
--			}
--
--			// Mac Addr
--			k = j = strlen(this_char);
--			while(j-- > 0)
--			{
--				this_char[4-k+j] = this_char[j];
--			}
--
--			while(k < 4)
--				this_char[3-k++]='0';
--			this_char[4]='\0';
--
--			if(strlen(this_char) == 4)
--			{
--				AtoH(this_char, temp, 2);
--				macAddr = *temp*256 + temp[1];
--				if (macAddr < 0xFFFF)
--				{
--					RTMP_IO_READ32(pAdapter, macAddr, &macValue);
--					DBGPRINT(RT_DEBUG_TRACE, ("MacAddr=%lx, MacValue=%x\n", macAddr, macValue));
--					sprintf(msg+strlen(msg), "[0x%08lX]:%08X  ", macAddr , macValue);
--				}
--				else
+ 			struct iw_param *frag, char *extra)
+ {
 -#ifndef RT30xx
--				{//Invalid parametes, so default printk all bbp
--#endif
--#ifdef RT30xx
--				{//Invalid parametes, so default printk all mac
--					bIsPrintAllMAC = TRUE;
--#endif
--					goto next;
--				}
--			}
--		}
--		else
--		{ //Write
--			memcpy(&temp2, value, strlen(value));
--			temp2[strlen(value)] = '\0';
+-	PRTMP_ADAPTER 	pAdapter = NULL;
+-	VIRTUAL_ADAPTER *pVirtualAd = NULL;
 -
--			// Sanity check
--			if((strlen(this_char) > 4) || strlen(temp2) > 8)
--				goto next;
--
--			j = strlen(this_char);
--			while(j-- > 0)
--			{
--				if(this_char[j] > 'f' || this_char[j] < '0')
--					return;
--			}
--
--			j = strlen(temp2);
--			while(j-- > 0)
--			{
--				if(temp2[j] > 'f' || temp2[j] < '0')
--					return;
--			}
--
--			//MAC Addr
--			k = j = strlen(this_char);
--			while(j-- > 0)
--			{
--				this_char[4-k+j] = this_char[j];
--			}
--
--			while(k < 4)
--				this_char[3-k++]='0';
--			this_char[4]='\0';
--
--			//MAC value
--			k = j = strlen(temp2);
--			while(j-- > 0)
--			{
--				temp2[8-k+j] = temp2[j];
--			}
--
--			while(k < 8)
--				temp2[7-k++]='0';
--			temp2[8]='\0';
--
--			{
--				AtoH(this_char, temp, 2);
--				macAddr = *temp*256 + temp[1];
--
--				AtoH(temp2, temp, 4);
--				macValue = *temp*256*256*256 + temp[1]*256*256 + temp[2]*256 + temp[3];
--
--				// debug mode
--				if (macAddr == (HW_DEBUG_SETTING_BASE + 4))
--				{
--					// 0x2bf4: byte0 non-zero: enable R17 tuning, 0: disable R17 tuning
--                    if (macValue & 0x000000ff)
--                    {
--                        pAdapter->BbpTuning.bEnable = TRUE;
--                        DBGPRINT(RT_DEBUG_TRACE,("turn on R17 tuning\n"));
--                    }
--                    else
--                    {
--                        UCHAR R66;
--                        pAdapter->BbpTuning.bEnable = FALSE;
--                        R66 = 0x26 + GET_LNA_GAIN(pAdapter);
--						RTMP_BBP_IO_WRITE8_BY_REG_ID(pAdapter, BBP_R66, (0x26 + GET_LNA_GAIN(pAdapter)));
--                        DBGPRINT(RT_DEBUG_TRACE,("turn off R17 tuning, restore to 0x%02x\n", R66));
--                    }
--					return;
--				}
--
--				DBGPRINT(RT_DEBUG_TRACE, ("MacAddr=%02lx, MacValue=0x%x\n", macAddr, macValue));
--
--				RTMP_IO_WRITE32(pAdapter, macAddr, macValue);
--				sprintf(msg+strlen(msg), "[0x%08lX]:%08X  ", macAddr, macValue);
--			}
--		}
--	}
--#ifdef RT30xx
--	else
--		bIsPrintAllMAC = TRUE;
--#endif
--next:
--#ifdef RT30xx
--	if (bIsPrintAllMAC)
+-	if (dev->priv_flags == INT_MAIN)
 -	{
--		struct file		*file_w;
--		PCHAR			fileName = "MacDump.txt";
--		mm_segment_t	orig_fs;
--
--		orig_fs = get_fs();
--		set_fs(KERNEL_DS);
--
--		// open file
--		file_w = filp_open(fileName, O_WRONLY|O_CREAT, 0);
--		if (IS_ERR(file_w))
--		{
--			DBGPRINT(RT_DEBUG_TRACE, ("-->2) %s: Error %ld opening %s\n", __func__, -PTR_ERR(file_w), fileName));
--		}
--		else
--		{
--			if (file_w->f_op && file_w->f_op->write)
--			{
--				file_w->f_pos = 0;
--				macAddr = 0x1000;
--
--				while (macAddr <= 0x1800)
--				{
--					RTMP_IO_READ32(pAdapter, macAddr, &macValue);
--					sprintf(msg, "%08lx = %08X\n", macAddr, macValue);
--
--					// write data to file
--					file_w->f_op->write(file_w, msg, strlen(msg), &file_w->f_pos);
--
--					printk("%s", msg);
--					macAddr += 4;
--				}
--				sprintf(msg, "\nDump all MAC values to %s\n", fileName);
--			}
--			filp_close(file_w, NULL);
--		}
--		set_fs(orig_fs);
--	}
--#endif /* RT30xx */
--	if(strlen(msg) == 1)
--		sprintf(msg+strlen(msg), "===>Error command format!");
--
--	// Copy the information into the user buffer
--	wrq->u.data.length = strlen(msg);
--	Status = copy_to_user(wrq->u.data.pointer, msg, wrq->u.data.length);
--
--	DBGPRINT(RT_DEBUG_TRACE, ("<==RTMPIoctlMAC\n\n"));
--}
--
--/*
--    ==========================================================================
--    Description:
--        Read / Write E2PROM
--    Arguments:
--        pAdapter                    Pointer to our adapter
--        wrq                         Pointer to the ioctl argument
--
--    Return Value:
--        None
--
--    Note:
--        Usage:
--               1.) iwpriv ra0 e2p 0     	==> read E2PROM where Addr=0x0
--               2.) iwpriv ra0 e2p 0=1234    ==> write E2PROM where Addr=0x0, value=1234
--    ==========================================================================
--*/
--VOID RTMPIoctlE2PROM(
--	IN	PRTMP_ADAPTER	pAdapter,
--	IN	struct iwreq	*wrq)
--{
--	CHAR				*this_char;
--	CHAR				*value;
--	INT					j = 0, k = 0;
--	CHAR				msg[1024];
--	CHAR				arg[255];
--	USHORT				eepAddr = 0;
--	UCHAR				temp[16], temp2[16];
--	USHORT				eepValue;
--	int					Status;
--#ifdef RT30xx
--	BOOLEAN				bIsPrintAllE2P = FALSE;
--#endif
--
--	memset(msg, 0x00, 1024);
--	if (wrq->u.data.length > 1) //No parameters.
--	{
--	    Status = copy_from_user(arg, wrq->u.data.pointer, (wrq->u.data.length > 255) ? 255 : wrq->u.data.length);
--		sprintf(msg, "\n");
--
--	    //Parsing Read or Write
--		this_char = arg;
--
--
--		if (!*this_char)
--			goto next;
--
--		if ((value = rtstrchr(this_char, '=')) != NULL)
--			*value++ = 0;
--
--		if (!value || !*value)
--		{ //Read
--
--			// Sanity check
--			if(strlen(this_char) > 4)
--				goto next;
--
--			j = strlen(this_char);
--			while(j-- > 0)
--			{
--				if(this_char[j] > 'f' || this_char[j] < '0')
--					return;
--			}
--
--			// E2PROM addr
--			k = j = strlen(this_char);
--			while(j-- > 0)
--			{
--				this_char[4-k+j] = this_char[j];
--			}
--
--			while(k < 4)
--				this_char[3-k++]='0';
--			this_char[4]='\0';
--
--			if(strlen(this_char) == 4)
--			{
--				AtoH(this_char, temp, 2);
--				eepAddr = *temp*256 + temp[1];
--				if (eepAddr < 0xFFFF)
--				{
--					RT28xx_EEPROM_READ16(pAdapter, eepAddr, eepValue);
--					sprintf(msg+strlen(msg), "[0x%04X]:0x%04X  ", eepAddr , eepValue);
--				}
--				else
--				{//Invalid parametes, so default printk all bbp
--#ifdef RT30xx
--					bIsPrintAllE2P = TRUE;
--#endif
--					goto next;
--				}
--			}
--		}
--		else
--		{ //Write
--			memcpy(&temp2, value, strlen(value));
--			temp2[strlen(value)] = '\0';
--
--			// Sanity check
--			if((strlen(this_char) > 4) || strlen(temp2) > 8)
--				goto next;
--
--			j = strlen(this_char);
--			while(j-- > 0)
--			{
--				if(this_char[j] > 'f' || this_char[j] < '0')
--					return;
--			}
--			j = strlen(temp2);
--			while(j-- > 0)
--			{
--				if(temp2[j] > 'f' || temp2[j] < '0')
--					return;
--			}
--
--			//MAC Addr
--			k = j = strlen(this_char);
--			while(j-- > 0)
--			{
--				this_char[4-k+j] = this_char[j];
--			}
--
--			while(k < 4)
--				this_char[3-k++]='0';
--			this_char[4]='\0';
--
--			//MAC value
--			k = j = strlen(temp2);
--			while(j-- > 0)
--			{
--				temp2[4-k+j] = temp2[j];
--			}
--
--			while(k < 4)
--				temp2[3-k++]='0';
--			temp2[4]='\0';
--
--			AtoH(this_char, temp, 2);
--			eepAddr = *temp*256 + temp[1];
--
--			AtoH(temp2, temp, 2);
--			eepValue = *temp*256 + temp[1];
--
--			RT28xx_EEPROM_WRITE16(pAdapter, eepAddr, eepValue);
--			sprintf(msg+strlen(msg), "[0x%02X]:%02X  ", eepAddr, eepValue);
--		}
--	}
--#ifdef RT30xx
--	else
--		bIsPrintAllE2P = TRUE;
--#endif
--next:
--#ifdef RT30xx
--	if (bIsPrintAllE2P)
--	{
--		struct file		*file_w;
--		PCHAR			fileName = "EEPROMDump.txt";
--		mm_segment_t	orig_fs;
--
--		orig_fs = get_fs();
--		set_fs(KERNEL_DS);
--
--		// open file
--		file_w = filp_open(fileName, O_WRONLY|O_CREAT, 0);
--		if (IS_ERR(file_w))
--		{
--			DBGPRINT(RT_DEBUG_TRACE, ("-->2) %s: Error %ld opening %s\n", __func__, -PTR_ERR(file_w), fileName));
--		}
--		else
--		{
--			if (file_w->f_op && file_w->f_op->write)
--			{
--				file_w->f_pos = 0;
--				eepAddr = 0x00;
--
--				while (eepAddr <= 0xFE)
--				{
--					RT28xx_EEPROM_READ16(pAdapter, eepAddr, eepValue);
--					sprintf(msg, "%08x = %04x\n", eepAddr , eepValue);
--
--					// write data to file
--					file_w->f_op->write(file_w, msg, strlen(msg), &file_w->f_pos);
--
--					printk("%s", msg);
--					eepAddr += 2;
--				}
--				sprintf(msg, "\nDump all EEPROM values to %s\n", fileName);
--			}
--			filp_close(file_w, NULL);
--		}
--		set_fs(orig_fs);
--	}
--#endif /* RT30xx */
--	if(strlen(msg) == 1)
--		sprintf(msg+strlen(msg), "===>Error command format!");
--
--
--	// Copy the information into the user buffer
--	wrq->u.data.length = strlen(msg);
--	Status = copy_to_user(wrq->u.data.pointer, msg, wrq->u.data.length);
--
--	DBGPRINT(RT_DEBUG_TRACE, ("<==RTMPIoctlE2PROM\n"));
--}
--#ifdef RT30xx
--/*
--    ==========================================================================
--    Description:
--        Read / Write RF register
--Arguments:
--    pAdapter                    Pointer to our adapter
--    wrq                         Pointer to the ioctl argument
--
--    Return Value:
--        None
--
--    Note:
--        Usage:
--               1.) iwpriv ra0 rf                ==> read all RF registers
--               2.) iwpriv ra0 rf 1              ==> read RF where RegID=1
--               3.) iwpriv ra0 rf 1=10		    ==> write RF R1=0x10
--    ==========================================================================
--*/
--VOID RTMPIoctlRF(
--	IN	PRTMP_ADAPTER	pAdapter,
--	IN	struct iwreq	*wrq)
--{
--	CHAR				*this_char;
--	CHAR				*value;
--	UCHAR				regRF = 0;
--	CHAR				msg[2048];
--	CHAR				arg[255];
--	INT					rfId;
--	LONG				rfValue;
--	int					Status;
--	BOOLEAN				bIsPrintAllRF = FALSE;
--
--
--	memset(msg, 0x00, 2048);
--	if (wrq->u.data.length > 1) //No parameters.
--	{
--	    Status = copy_from_user(arg, wrq->u.data.pointer, (wrq->u.data.length > 255) ? 255 : wrq->u.data.length);
--		sprintf(msg, "\n");
--
--	    //Parsing Read or Write
--		this_char = arg;
--		if (!*this_char)
--			goto next;
--
--		if ((value = strchr(this_char, '=')) != NULL)
--			*value++ = 0;
--
--		if (!value || !*value)
--		{ //Read
--			if (sscanf(this_char, "%d", &(rfId)) == 1)
--			{
--				if (rfId <= 31)
--				{
--					// In RT2860 ATE mode, we do not load 8051 firmware.
--                                            //We must access RF directly.
--                    // For RT2870 ATE mode, ATE_RF_IO_WRITE8(/READ8)_BY_REG_ID are redefined.
--					// according to Andy, Gary, David require.
--					// the command rf shall read rf register directly for dubug.
--					// BBP_IO_READ8_BY_REG_ID(pAdapter, bbpId, &regBBP);
--					RT30xxReadRFRegister(pAdapter, rfId, &regRF);
--
--					sprintf(msg+strlen(msg), "R%02d[0x%02x]:%02X  ", rfId, rfId*2, regRF);
--				}
--				else
--				{//Invalid parametes, so default printk all RF
--					bIsPrintAllRF = TRUE;
--					goto next;
--				}
--			}
--			else
--			{ //Invalid parametes, so default printk all RF
--				bIsPrintAllRF = TRUE;
--				goto next;
--			}
--		}
--		else
--		{ //Write
--			if ((sscanf(this_char, "%d", &(rfId)) == 1) && (sscanf(value, "%lx", &(rfValue)) == 1))
--			{
--				if (rfId <= 31)
--				{
--					// In RT2860 ATE mode, we do not load 8051 firmware.
--					// We should access RF registers directly.
--                    // For RT2870 ATE mode, ATE_RF_IO_WRITE8/READ8_BY_REG_ID are redefined.
--						{
--							// according to Andy, Gary, David require.
--							// the command RF shall read/write RF register directly for dubug.
--							//BBP_IO_READ8_BY_REG_ID(pAdapter, bbpId, &regBBP);
--					                //BBP_IO_WRITE8_BY_REG_ID(pAdapter, (UCHAR)bbpId,(UCHAR) bbpValue);
--							RT30xxReadRFRegister(pAdapter, rfId, &regRF);
--							RT30xxWriteRFRegister(pAdapter, (UCHAR)rfId,(UCHAR) rfValue);
--					                //Read it back for showing
--							//BBP_IO_READ8_BY_REG_ID(pAdapter, bbpId, &regBBP);
--							RT30xxReadRFRegister(pAdapter, rfId, &regRF);
--					                sprintf(msg+strlen(msg), "R%02d[0x%02X]:%02X\n", rfId, rfId*2, regRF);
--				                }
--				}
--				else
--				{//Invalid parametes, so default printk all RF
--					bIsPrintAllRF = TRUE;
--				}
--			}
--			else
--			{ //Invalid parametes, so default printk all RF
--				bIsPrintAllRF = TRUE;
--			}
--		}
--	}
--	else
--		bIsPrintAllRF = TRUE;
--next:
--	if (bIsPrintAllRF)
--	{
--		memset(msg, 0x00, 2048);
--		sprintf(msg, "\n");
--		for (rfId = 0; rfId <= 31; rfId++)
--		{
--			// according to Andy, Gary, David require.
--			// the command RF shall read/write RF register directly for dubug.
--			RT30xxReadRFRegister(pAdapter, rfId, &regRF);
--			sprintf(msg+strlen(msg), "%03d = %02X\n", rfId, regRF);
--		}
--		// Copy the information into the user buffer
--		DBGPRINT(RT_DEBUG_TRACE, ("strlen(msg)=%d\n", (UINT32)strlen(msg)));
--		wrq->u.data.length = strlen(msg);
--		if (copy_to_user(wrq->u.data.pointer, msg, wrq->u.data.length))
--		{
--			DBGPRINT(RT_DEBUG_TRACE, ("%s: copy_to_user() fail\n", __func__));
--		}
+-		pAdapter = dev->ml_priv;
 -	}
 -	else
 -	{
--		if(strlen(msg) == 1)
--			sprintf(msg+strlen(msg), "===>Error command format!");
--
--		DBGPRINT(RT_DEBUG_TRACE, ("copy to user [msg=%s]\n", msg));
--		// Copy the information into the user buffer
--		DBGPRINT(RT_DEBUG_TRACE, ("strlen(msg) =%d\n", (UINT32)strlen(msg)));
--
--		// Copy the information into the user buffer
--		wrq->u.data.length = strlen(msg);
--		Status = copy_to_user(wrq->u.data.pointer, msg, wrq->u.data.length);
+-		pVirtualAd = dev->ml_priv;
+-		if (pVirtualAd && pVirtualAd->RtmpDev)
+-			pAdapter = pVirtualAd->RtmpDev->ml_priv;
 -	}
 -
--	DBGPRINT(RT_DEBUG_TRACE, ("<==RTMPIoctlRF\n\n"));
--}
--#endif // RT30xx //
--#endif // DBG //
+-	if (pAdapter == NULL)
+-	{
+-		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->ml_priv will be NULL in 2rd open */
+-		return -ENETDOWN;
+-	}
+-#endif
+-#ifdef RT30xx
+ 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
+-#endif
+ 
+ 	//check if the interface is down
+     	if(!RTMP_TEST_FLAG(pAdapter, fRTMP_ADAPTER_INTERRUPT_IN_USE))
+@@ -1781,32 +1583,8 @@ rt_ioctl_giwencode(struct net_device *de
+ 			  struct iw_request_info *info,
+ 			  struct iw_point *erq, char *key)
+ {
+-#ifdef RT30xx
+ 	PRTMP_ADAPTER pAdapter = dev->ml_priv;
+-#endif
+ 	int kid;
+-#ifndef RT30xx
+-	PRTMP_ADAPTER 	pAdapter = NULL;
+-	VIRTUAL_ADAPTER *pVirtualAd = NULL;
 -
+-	if (dev->priv_flags == INT_MAIN)
+-	{
+-		pAdapter = dev->ml_priv;
+-	}
+-	else
+-	{
+-		pVirtualAd = dev->ml_priv;
+-		if (pVirtualAd && pVirtualAd->RtmpDev)
+-			pAdapter = pVirtualAd->RtmpDev->ml_priv;
+-	}
 -
+-	if (pAdapter == NULL)
+-	{
+-		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->ml_priv will be NULL in 2rd open */
+-		return -ENETDOWN;
+-	}
+-#endif
+ 
+ 	//check if the interface is down
+ 	if(!RTMP_TEST_FLAG(pAdapter, fRTMP_ADAPTER_INTERRUPT_IN_USE))
+@@ -1863,31 +1641,12 @@ static int
+ rt_ioctl_setparam(struct net_device *dev, struct iw_request_info *info,
+ 			 void *w, char *extra)
+ {
+-    VIRTUAL_ADAPTER	*pVirtualAd = NULL;
+-	PRTMP_ADAPTER pAdapter;
+-	POS_COOKIE pObj;
++	PRTMP_ADAPTER pAdapter = dev->ml_priv;
++	POS_COOKIE pObj = (POS_COOKIE)pAdapter->OS_Cookie;
+ 	char *this_char = extra;
+ 	char *value;
+ 	int  Status=0;
+ 
+-	if (dev->priv_flags == INT_MAIN)
+-	{
+-		pAdapter = dev->ml_priv;
+-	}
+-	else
+-	{
+-		pVirtualAd = dev->ml_priv;
+-		pAdapter = pVirtualAd->RtmpDev->ml_priv;
+-	}
+-	pObj = (POS_COOKIE) pAdapter->OS_Cookie;
 -
+-	if (pAdapter == NULL)
+-	{
+-		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->ml_priv will be NULL in 2rd open */
+-		return -ENETDOWN;
+-	}
 -
- INT Set_TGnWifiTest_Proc(
-     IN  PRTMP_ADAPTER   pAd,
-     IN  PUCHAR          arg)
+ 	{
+ 		pObj->ioctl_if_type = INT_MAIN;
+         pObj->ioctl_if = MAIN_MBSSID;
+@@ -2031,27 +1790,10 @@ rt_private_show(struct net_device *dev, 
+ 		struct iw_point *wrq, char *extra)
+ {
+     INT				Status = 0;
+-    VIRTUAL_ADAPTER	*pVirtualAd = NULL;
+-    PRTMP_ADAPTER   pAd;
+-	POS_COOKIE		pObj;
++    PRTMP_ADAPTER pAd = dev->ml_priv;
++    POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;
+     u32             subcmd = wrq->flags;
+ 
+-	if (dev->priv_flags == INT_MAIN)
+-		pAd = dev->ml_priv;
+-	else
+-	{
+-		pVirtualAd = dev->ml_priv;
+-		pAd = pVirtualAd->RtmpDev->ml_priv;
+-	}
+-	pObj = (POS_COOKIE) pAd->OS_Cookie;
+-
+-	if (pAd == NULL)
+-	{
+-		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->ml_priv will be NULL in 2rd open */
+-		return -ENETDOWN;
+-	}
+-
+     if (extra == NULL)
+     {
+         wrq->length = 0;
+@@ -5017,32 +4759,13 @@ INT rt28xx_sta_ioctl(
+ 	IN	OUT	struct ifreq	*rq,
+ 	IN	INT					cmd)
+ {
+-	POS_COOKIE			pObj;
+-	VIRTUAL_ADAPTER		*pVirtualAd = NULL;
+-	RTMP_ADAPTER        *pAd = NULL;
++	RTMP_ADAPTER *pAd = net_dev->ml_priv;
++	POS_COOKIE pObj = (POS_COOKIE)pAd->OS_Cookie;
+ 	struct iwreq        *wrq = (struct iwreq *) rq;
+ 	BOOLEAN				StateMachineTouched = FALSE;
+ 	INT					Status = NDIS_STATUS_SUCCESS;
+ 	USHORT				subcmd;
+ 
+-	if (net_dev->priv_flags == INT_MAIN)
+-	{
+-		pAd = net_dev->ml_priv;
+-	}
+-	else
+-	{
+-		pVirtualAd = net_dev->ml_priv;
+-		pAd = pVirtualAd->RtmpDev->ml_priv;
+-	}
+-	pObj = (POS_COOKIE) pAd->OS_Cookie;
+-
+-	if (pAd == NULL)
+-	{
+-		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->ml_priv will be NULL in 2rd open */
+-		return -ENETDOWN;
+-	}
+-
+     //check if the interface is down
+     if(!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_IN_USE))
+     {
