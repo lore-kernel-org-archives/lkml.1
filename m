@@ -1,70 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbZHPPwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZHPPwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755281AbZHPPwM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 11:52:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbZHPPwL
+	id S1755414AbZHPPwX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 11:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbZHPPwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 11:52:11 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:64577 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751781AbZHPPwK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 11:52:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=vW7mtcov+Vpuv3m+ysCODQBMf9F87CCxzkjKl0CANYN5hOwRTZpSZmlVsU731/2aMD
-         3/YBR8XVgtO6lUdhXEq68S810o9OEWN8L1qG3OYumRccxsdApwrNWeO8eQhjkOZL30QY
-         G2PYVjZ5oDLm0UTbJ7GY2w7LPz2YzuEYuKp8E=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>
-Subject: [PATCH] perf tools: Substract -Wformat-nonliteral from Wformat=2 in extra flags
-Date: Sun, 16 Aug 2009 17:52:07 +0200
-Message-Id: <1250437927-25490-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <20090816151829.GA8116@elte.hu>
-References: <20090816151829.GA8116@elte.hu>
+	Sun, 16 Aug 2009 11:52:22 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43113 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755307AbZHPPwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 11:52:20 -0400
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+ slot is freed)
+From: James Bottomley <James.Bottomley@suse.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
+       Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
+       Greg Freemyer <greg.freemyer@gmail.com>,
+       Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+In-Reply-To: <20090816083434.2ce69859@infradead.org>
+References: <200908122007.43522.ngupta@vflare.org>
+	 <20090813151312.GA13559@linux.intel.com>
+	 <20090813162621.GB1915@phenom2.trippelsdorf.de>
+	 <alpine.DEB.1.10.0908130931400.28013@asgard.lang.hm>
+	 <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>
+	 <alpine.DEB.1.10.0908131342460.28013@asgard.lang.hm>
+	 <3e8340490908131354q167840fcv124ec56c92bbb830@mail.gmail.com>
+	 <4A85E0DC.9040101@rtr.ca>
+	 <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com>
+	 <20090814234539.GE27148@parisc-linux.org>
+	 <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com>
+	 <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca>
+	 <1250344518.4159.4.camel@mulgrave.site>
+	 <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk>
+	 <20090816083434.2ce69859@infradead.org>
+Content-Type: text/plain
+Date: Sun, 16 Aug 2009 10:52:07 -0500
+Message-Id: <1250437927.3856.119.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The soon coming perf trace needs to use printf with dynamically built
-formats.
+On Sun, 2009-08-16 at 08:34 -0700, Arjan van de Ven wrote:
+> On Sun, 16 Aug 2009 15:05:30 +0100
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+> > On Sat, 15 Aug 2009 08:55:17 -0500
+> > James Bottomley <James.Bottomley@suse.de> wrote:
+> > 
+> > > On Sat, 2009-08-15 at 09:22 -0400, Mark Lord wrote:
+> > > > James Bottomley wrote:
+> > > > >
+> > > > > This means you have to drain the outstanding NCQ commands
+> > > > > (stalling the device) before you can send a TRIM.   If we do
+> > > > > this for every discard, the performance impact will be pretty
+> > > > > devastating, hence the need to coalesce.  It's nothing really
+> > > > > to do with device characteristics, it's an ATA protocol problem.
+> > > > ..
+> > > > 
+> > > > I don't think that's really much of an issue -- we already have
+> > > > to do that for cache-flushes whenever barriers are enabled.  Yes
+> > > > it costs, but not too much.
+> > > 
+> > > That's not really what the enterprise is saying about flush
+> > > barriers. True, not all the performance problems are NCQ queue
+> > > drain, but for a steady workload they are significant.
+> > 
+> > Flush barriers are nightmare for more than enterprise. You drive
+> > basically goes for a hike for a bit which trashes interactivity as
+> > well. If the device can't do trim and the like without a drain I
+> > don't see much point doing it at all, except maybe to wait for idle
+> > devices and run a filesystem managed background 'strimmer' thread to
+> > just weed out now idle blocks that have stayed idle - eg by adding an
+> > inode of all the deleted untrimmed blocks and giving it an irregular
+> > empty ? 
+> 
+> trim is mostly for ssd's though, and those tend to not have the "goes
+> for a hike" behavior as much......
 
-But we are using -Wformat=2 which is a shortcut for the following set:
--Wformat -Wformat-security -Wformat-y2k -Wformat-nonliteral
+Well, yes and no ... a lot of SSDs don't actually implement NCQ, so the
+impact to them will be less ... although I think enterprise class SSDs
+do implement NCQ.
 
--Wformat-nonliteral warns when it can't check formats because they are
-not builtin constant strings, but we want to feature dynamic formats.
-What we want instead is Wformat=2 minus -Wformat-nonliteral, which is
-what this patch does.
+> I wonder if it's worse to batch stuff up, because then the trim itself
+> gets bigger and might take longer.....
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
----
- tools/perf/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+So this is where we're getting into the realms of speculation.  There
+really are only about a couple of people out there with trim
+implementing SSDs, so that's not really enough to make any judgement.
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index d637aea..5d54ddb 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -169,7 +169,7 @@ endif
- #
- # Include saner warnings here, which can catch bugs:
- #
--EXTRA_WARNINGS = -Wcast-align -Wformat=2 -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
-+EXTRA_WARNINGS = -Wcast-align -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
- 
- CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
- LDFLAGS = -lpthread -lrt -lelf -lm
--- 
-1.6.2.3
+However, the enterprise has been doing UNMAP for a while, so we can draw
+inferences from them since the SSD FTL will operate similarly.  For
+them, UNMAP is the same cost in terms of time regardless of the number
+of extents.  The reason is that it's moving the blocks from the global
+in use list to the global free list.  Part of the problem is that this
+involves locking and quiescing, so UNMAP ends up being quite expensive
+to the array but constant in terms of cost (hence they want as few
+unmaps for as many sectors as possible).
+
+For SSDs, the FTL has to have a separate operation: erase.  Now, one
+could see the correct implementation simply moving the sectors from the
+in-use list to the to be cleaned list and still do the cleaning in the
+background: that would be constant cost (but, again, likely expensive).
+Of course, if SSD vendors decided to erase on the spot when seeing TRIM,
+this wouldn't be true ...
+
+James
+
 
