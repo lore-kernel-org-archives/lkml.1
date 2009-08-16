@@ -1,81 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbZHPQBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbZHPQEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755461AbZHPQBO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 12:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755085AbZHPQBN
+	id S1755478AbZHPQEN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 12:04:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZHPQEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 12:01:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39286 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754594AbZHPQBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 12:01:12 -0400
-Date: Sun, 16 Aug 2009 16:00:36 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
-       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1250437927-25490-1-git-send-email-fweisbec@gmail.com>
-References: <1250437927-25490-1-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/core] perf tools: Substract -Wformat-nonliteral from Wformat=2 in extra flags
-Message-ID: <tip-0d31b82dd5c54a0b1e1d789427abdcc180bc4602@git.kernel.org>
-Git-Commit-ID: 0d31b82dd5c54a0b1e1d789427abdcc180bc4602
-X-Mailer: tip-git-log-daemon
+	Sun, 16 Aug 2009 12:04:12 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:50962 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751846AbZHPQEM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 12:04:12 -0400
+Date: Sun, 16 Aug 2009 17:04:06 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-usb@vger.kernel.org,
+       linux-pci@vger.kernel.org, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
+Message-ID: <20090816160406.GA10163@srcf.ucam.org>
+References: <200908152321.53283.rjw@sisk.pl> <Pine.LNX.4.44L0.0908161151020.6522-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 16 Aug 2009 16:00:37 +0000 (UTC)
+In-Reply-To: <Pine.LNX.4.44L0.0908161151020.6522-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0d31b82dd5c54a0b1e1d789427abdcc180bc4602
-Gitweb:     http://git.kernel.org/tip/0d31b82dd5c54a0b1e1d789427abdcc180bc4602
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Sun, 16 Aug 2009 17:52:07 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 16 Aug 2009 17:56:09 +0200
+On Sun, Aug 16, 2009 at 11:57:53AM -0400, Alan Stern wrote:
+> On Sat, 15 Aug 2009, Rafael J. Wysocki wrote:
+> 
+> > > Why would you ever want runtime_wakeup to be false unless 
+> > > runtime_forbidden is true? Surely the point of runtime power management 
+> > > is to be transparent to the user, in which case remote wakeup is 
+> > > required?
+> 
+> Matthew, what makes you think remote wakeup is required?  Lots of
+> power-manageable devices don't support it at all (consider disk drives
+> or display screens).
 
-perf tools: Substract -Wformat-nonliteral from Wformat=2 in extra flags
+Sorry, I meant in cases where remote wakeup is a sensible concept. For 
+things like storage there's obviously no reason to require it, but for 
+something like USB the absence of remote wakeup would effectively break 
+the driver for most users.
 
-The soon coming perf trace needs to use printf with dynamically
-built formats.
-
-But we are using -Wformat=2 which is a shortcut for the
-following set: -Wformat -Wformat-security -Wformat-y2k
--Wformat-nonliteral
-
--Wformat-nonliteral warns when it can't check formats because
-they are not builtin constant strings, but we want to feature
-dynamic formats. What we want instead is Wformat=2 minus
--Wformat-nonliteral, which is what this patch does.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
-LKML-Reference: <1250437927-25490-1-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- tools/perf/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index d637aea..5d54ddb 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -169,7 +169,7 @@ endif
- #
- # Include saner warnings here, which can catch bugs:
- #
--EXTRA_WARNINGS = -Wcast-align -Wformat=2 -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
-+EXTRA_WARNINGS = -Wcast-align -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
- 
- CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
- LDFLAGS = -lpthread -lrt -lelf -lm
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
