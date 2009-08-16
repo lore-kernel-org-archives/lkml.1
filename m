@@ -1,101 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbZHPGlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751889AbZHPGwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbZHPGlp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 02:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZHPGlp
+	id S1751889AbZHPGwu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 02:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbZHPGwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 02:41:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40665 "EHLO mx2.mail.elte.hu"
+	Sun, 16 Aug 2009 02:52:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45590 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753439AbZHPGlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 02:41:44 -0400
-Date: Sun, 16 Aug 2009 08:41:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       kjwinchester@gmail.com, tglx@linutronix.de, borislav.petkov@amd.com
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86, AMD: Disable wrongly set
-	X86_FEATURE_LAHF_LM CPUID bit
-Message-ID: <20090816064132.GA16278@elte.hu>
-References: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com> <tip-c74cb13b94118ec89e48849806356b67caa5ff86@git.kernel.org>
+	id S1750722AbZHPGws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 02:52:48 -0400
+Date: Sun, 16 Aug 2009 09:51:10 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com
+Subject: Re: [PATCHv3 2/2] vhost_net: a kernel-level virtio server
+Message-ID: <20090816065110.GA3008@redhat.com>
+References: <cover.1250187913.git.mst@redhat.com> <20090813182931.GC6585@redhat.com> <200908141340.36176.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <tip-c74cb13b94118ec89e48849806356b67caa5ff86@git.kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200908141340.36176.arnd@arndb.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 14, 2009 at 01:40:36PM +0200, Arnd Bergmann wrote:
+> On Thursday 13 August 2009, Michael S. Tsirkin wrote:
+> > What it is: vhost net is a character device that can be used to reduce
+> > the number of system calls involved in virtio networking.
+> > Existing virtio net code is used in the guest without modification.
+> 
+> AFAICT, you have addressed all my comments, mostly by convincing me
+> that you got it right anyway ;-).
+> 
+> I hope this gets into 2.6.32, good work!
+> 
+> > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> 
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
+> 
+> One idea though:
+> 
+> > +	/* Parameter checking */
+> > +	if (sock->sk->sk_type != SOCK_RAW) {
+> > +		r = -ESOCKTNOSUPPORT;
+> > +		goto done;
+> > +	}
+> > +
+> > +	r = sock->ops->getname(sock, (struct sockaddr *)&uaddr.sa,
+> > +			       &uaddr_len, 0);
+> > +	if (r)
+> > +		goto done;
+> > +
+> > +	if (uaddr.sa.sll_family != AF_PACKET) {
+> > +		r = -EPFNOSUPPORT;
+> > +		goto done;
+> > +	}
+> 
+> You currently limit the scope of the driver by only allowing raw packet
+> sockets to be passed into the network driver. In qemu, we currently support
+> some very similar transports:
+> 
+> * raw packet (not in a release yet)
+> * tcp connection
+> * UDP multicast
+> * tap character device
+> * VDE with Unix local sockets
+> 
+> My primary interest right now is the tap support, but I think it would
+> be interesting in general to allow different file descriptor types
+> in vhost_net_set_socket. AFAICT, there are two major differences
+> that we need to handle for this:
+> 
+> * most of the transports are sockets, tap uses a character device.
+>   This could be dealt with by having both a struct socket * in
+>   struct vhost_net *and* a struct file *, or by always keeping the
+>   struct file and calling vfs_readv/vfs_writev for the data transport
+>   in both cases.
 
-* tip-bot for Borislav Petkov <borislav.petkov@amd.com> wrote:
+I am concerned that character devices might have weird side effects with
+read/write operations and that calling them from kernel thread the way I
+do might have security implications. Can't point at anything specific
+though at the moment.
+I wonder - can we expose the underlying socket used by tap, or will that
+create complex lifetime issues?
 
-> Commit-ID:  c74cb13b94118ec89e48849806356b67caa5ff86
-> Gitweb:     http://git.kernel.org/tip/c74cb13b94118ec89e48849806356b67caa5ff86
-> Author:     Borislav Petkov <borislav.petkov@amd.com>
-> AuthorDate: Fri, 14 Aug 2009 14:06:34 +0200
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Sat, 15 Aug 2009 18:43:59 +0200
+> * Each transport has a slightly different header, we have
+>   - raw ethernet frames (raw, udp multicast, tap)
+>   - 32-bit length + raw frames, possibly fragmented (tcp)
+>   - 80-bit header + raw frames, possibly fragmented (tap with vnet_hdr)
+>   To handle these three cases, we need either different ioctl numbers
+>   so that vhost_net can choose the right one, or a flags field in
+>   VHOST_NET_SET_SOCKET, like
 > 
-> x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM CPUID bit
+>   #define VHOST_NET_RAW		1
+>   #define VHOST_NET_LEN_HDR	2
+>   #define VHOST_NET_VNET_HDR	4
 > 
-> fbd8b1819e80ac5a176d085fdddc3a34d1499318 turns off the bit for
-> /proc/cpuinfo. However, a proper/full fix would be to additionally
-> turn off the bit in the CPUID output so that future callers get
-> correct CPU features info.
-> 
-> Do that by basically reversing what the BIOS wrongfully does at boot.
-> 
-> Tested-by: Kevin Winchester <kjwinchester@gmail.com>
-> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-> Cc: kjwinchester@gmail.com
-> Cc: mikpe@it.uu.se
-> Cc: brgerst@gmail.com
-> LKML-Reference: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> 
-> ---
->  arch/x86/kernel/cpu/amd.c |   12 +++++++++++-
->  1 files changed, 11 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-> index 63fddcd..0ee63dd 100644
-> --- a/arch/x86/kernel/cpu/amd.c
-> +++ b/arch/x86/kernel/cpu/amd.c
-> @@ -404,9 +404,19 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
->  		/*
->  		 * Some BIOSes incorrectly force this feature, but only K8
->  		 * revision D (model = 0x14) and later actually support it.
-> +		 * (AMD Erratum #110, docId: 25759).
->  		 */
-> -		if (c->x86_model < 0x14)
-> +		if (c->x86_model < 0x14 && cpu_has(c, X86_FEATURE_LAHF_LM)) {
-> +			u64 val;
-> +
->  			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
-> +			if (!rdmsrl_amd_safe(0xc001100d, &val)) {
-> +				val &= ~(1ULL << 32);
-> +				wrmsr_amd_safe(0xc001100d, (u32) val,
-> +							   (u32)(val >> 32));
-> +			}
-> +		}
-> +
->  	}
->  	if (c->x86 == 0x10 || c->x86 == 0x11)
->  		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
+>   struct vhost_net_socket {
+> 	unsigned int flags;
+> 	int fd;
+>   };
+>   #define VHOST_NET_SET_SOCKET _IOW(VHOST_VIRTIO, 0x30, struct vhost_net_socket)
 
--tip testing found this build bug caused by this patch:
+It seems we can query the socket to find out the type, or use the
+features ioctl.
 
-arch/x86/kernel/cpu/amd.c: In function ‘init_amd’:
-arch/x86/kernel/cpu/amd.c:417: error: implicit declaration of function ‘wrmsr_amd_safe’
+> If both of those are addressed, we can treat vhost_net as a generic
+> way to do network handling in the kernel independent of the qemu
+> model (raw, tap, ...) for it. 
+> 
+> Your qemu patch would have to work differently, so instead of 
+> 
+> qemu -net nic,vhost=eth0
+> 
+> you would do the same as today with the raw packet socket extension
+> 
+> qemu -net nic -net raw,ifname=eth0 
+> 
+> Qemu could then automatically try to use vhost_net, if it's available
+> in the kernel, or just fall back on software vlan otherwise.
+> Does that make sense?
+> 
+> 	Arnd <>
 
-	Ingo
+I agree, long term it should be enabled automatically when possible.
+
+-- 
+MST
