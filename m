@@ -1,100 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbZHPL3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbZHPMVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbZHPL3m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 07:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbZHPL3l
+	id S1754193AbZHPMVn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 08:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbZHPMVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 07:29:41 -0400
-Received: from mga03.intel.com ([143.182.124.21]:30801 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753290AbZHPL3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 07:29:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,389,1246863600"; 
-   d="scan'208";a="176292624"
-Date: Sun, 16 Aug 2009 19:29:10 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Jeff Dike <jdike@addtoit.com>, Avi Kivity <avi@redhat.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-Message-ID: <20090816112910.GA3208@localhost>
-References: <20090806100824.GO23385@random.random> <4A7AAE07.1010202@redhat.com> <20090806102057.GQ23385@random.random> <20090806105932.GA1569@localhost> <4A7AC201.4010202@redhat.com> <20090806130631.GB6162@localhost> <20090806210955.GA14201@c2.user-mode-linux.org> <20090816031827.GA6888@localhost> <4A87829C.4090908@redhat.com> <20090816051502.GB13740@localhost>
+	Sun, 16 Aug 2009 08:21:42 -0400
+Received: from mail-px0-f196.google.com ([209.85.216.196]:57850 "EHLO
+	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754075AbZHPMVl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 08:21:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=GpSqzRZIqzV47OdVgL/ijyIU0rAW4HS0Ww9d3npEkg8aNhEO+TiCzNdnM4FVrFWfMc
+         bzzGZK9QHFuVAi+ufJ9e5rj9EQXSKXmVCUxHhGbQba/lol3AtqeAQI04kg8C/EQBk/5Z
+         YYlwezgteoDv9DDLZOo5+f+xGYVU+ffUeMZlQ=
+Message-ID: <4A87F9C1.5090601@gmail.com>
+Date: Sun, 16 Aug 2009 21:21:21 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090816051502.GB13740@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+CC: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: [PATCH #upstream-fixes] libata: fix off-by-one error in ata_tf_read_block()
+References: <20090815.224843.240484147.anemo@mba.ocn.ne.jp>	<4A876BC3.3020407@gmail.com> <20090816.183355.89035427.anemo@mba.ocn.ne.jp>
+In-Reply-To: <20090816.183355.89035427.anemo@mba.ocn.ne.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 16, 2009 at 01:15:02PM +0800, Wu Fengguang wrote:
-> On Sun, Aug 16, 2009 at 11:53:00AM +0800, Rik van Riel wrote:
-> > Wu Fengguang wrote:
-> > > On Fri, Aug 07, 2009 at 05:09:55AM +0800, Jeff Dike wrote:
-> > >> Side question -
-> > >> 	Is there a good reason for this to be in shrink_active_list()
-> > >> as opposed to __isolate_lru_page?
-> > >>
-> > >> 		if (unlikely(!page_evictable(page, NULL))) {
-> > >> 			putback_lru_page(page);
-> > >> 			continue;
-> > >> 		}
-> > >>
-> > >> Maybe we want to minimize the amount of code under the lru lock or
-> > >> avoid duplicate logic in the isolate_page functions.
-> > > 
-> > > I guess the quick test means to avoid the expensive page_referenced()
-> > > call that follows it. But that should be mostly one shot cost - the
-> > > unevictable pages are unlikely to cycle in active/inactive list again
-> > > and again.
-> > 
-> > Please read what putback_lru_page does.
-> > 
-> > It moves the page onto the unevictable list, so that
-> > it will not end up in this scan again.
-> 
-> Yes it does. I said 'mostly' because there is a small hole that an
-> unevictable page may be scanned but still not moved to unevictable
-> list: when a page is mapped in two places, the first pte has the
-> referenced bit set, the _second_ VMA has VM_LOCKED bit set, then
-> page_referenced() will return 1 and shrink_page_list() will move it
-> into active list instead of unevictable list. Shall we fix this rare
-> case?
+ata_tf_read_block() has off-by-one error when converting CHS address
+to LBA.  The bug isn't very visible because ata_tf_read_block() is
+used only when generating sense data for a failed RW command and CHS
+addressing isn't used too often these days.
 
-How about this fix?
+This problem was spotted by Atsushi Nemoto.
 
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 ---
-mm: stop circulating of referenced mlocked pages
+> Well, I expect fix by you (or other libata hackers) since I think you
+> can write better warning message and changelog than me ;)
 
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
+In that case, sure.  Thanks a lot for the nice spotting.  :-)
 
---- linux.orig/mm/rmap.c	2009-08-16 19:11:13.000000000 +0800
-+++ linux/mm/rmap.c	2009-08-16 19:22:46.000000000 +0800
-@@ -358,6 +358,7 @@ static int page_referenced_one(struct pa
- 	 */
- 	if (vma->vm_flags & VM_LOCKED) {
- 		*mapcount = 1;	/* break early from loop */
-+		*vm_flags |= VM_LOCKED;
- 		goto out_unmap;
+ drivers/ata/libata-core.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 072ba5e..e71149b 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -709,7 +709,13 @@ u64 ata_tf_read_block(struct ata_taskfile *tf, struct ata_device *dev)
+ 		head = tf->device & 0xf;
+ 		sect = tf->lbal;
+ 
+-		block = (cyl * dev->heads + head) * dev->sectors + sect;
++		if (!sect) {
++			ata_dev_printk(dev, KERN_WARNING, "device reported "
++				       "invalid CHS sector 0\n");
++			sect = 1; /* oh well */
++		}
++
++		block = (cyl * dev->heads + head) * dev->sectors + sect - 1;
  	}
  
-@@ -482,6 +483,8 @@ static int page_referenced_file(struct p
- 	}
- 
- 	spin_unlock(&mapping->i_mmap_lock);
-+	if (*vm_flags & VM_LOCKED)
-+		referenced = 0;
- 	return referenced;
- }
- 
+ 	return block;
+
