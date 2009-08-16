@@ -1,271 +1,314 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbZHPJai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbZHPJay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754311AbZHPJai (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 05:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZHPJag
+	id S1754377AbZHPJay (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 05:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbZHPJae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 05:30:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45379 "EHLO mx2.redhat.com"
+	Sun, 16 Aug 2009 05:30:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45380 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754100AbZHPJaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754104AbZHPJaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 16 Aug 2009 05:30:15 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 41/48] KVM: VMX: Move rmode structure to vmx-specific code
-Date: Sun, 16 Aug 2009 12:30:01 +0300
-Message-Id: <1250415008-17175-42-git-send-email-avi@redhat.com>
+Subject: [PATCH 47/48] KVM: Break dependency between vcpu index in vcpus array and vcpu_id.
+Date: Sun, 16 Aug 2009 12:30:07 +0300
+Message-Id: <1250415008-17175-48-git-send-email-avi@redhat.com>
 In-Reply-To: <1250415008-17175-1-git-send-email-avi@redhat.com>
 References: <1250415008-17175-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-rmode is only used in vmx, so move it to vmx.c
+From: Gleb Natapov <gleb@redhat.com>
 
+Archs are free to use vcpu_id as they see fit. For x86 it is used as
+vcpu's apic id. New ioctl is added to configure boot vcpu id that was
+assumed to be 0 till now.
+
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/include/asm/kvm_host.h |   10 -----
- arch/x86/kvm/vmx.c              |   78 ++++++++++++++++++++++-----------------
- 2 files changed, 44 insertions(+), 44 deletions(-)
+ arch/ia64/include/asm/kvm_host.h |    1 -
+ arch/ia64/kvm/Kconfig            |    1 +
+ arch/ia64/kvm/kvm-ia64.c         |    8 +---
+ arch/ia64/kvm/vcpu.c             |    2 +-
+ arch/x86/kvm/Kconfig             |    1 +
+ include/linux/kvm.h              |    2 +
+ include/linux/kvm_host.h         |    6 +++
+ virt/kvm/Kconfig                 |    3 ++
+ virt/kvm/kvm_main.c              |   64 +++++++++++++++++++++++---------------
+ 9 files changed, 55 insertions(+), 33 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index a1a96a5..c7b0cc2 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -340,16 +340,6 @@ struct kvm_vcpu_arch {
- 		u8 nr;
- 	} interrupt;
+diff --git a/arch/ia64/include/asm/kvm_host.h b/arch/ia64/include/asm/kvm_host.h
+index 5f43697..9cf1c4b 100644
+--- a/arch/ia64/include/asm/kvm_host.h
++++ b/arch/ia64/include/asm/kvm_host.h
+@@ -465,7 +465,6 @@ struct kvm_arch {
+ 	unsigned long	metaphysical_rr4;
+ 	unsigned long	vmm_init_rr;
  
--	struct {
--		int vm86_active;
--		u8 save_iopl;
--		struct kvm_save_segment {
--			u16 selector;
--			unsigned long base;
--			u32 limit;
--			u32 ar;
--		} tr, es, ds, fs, gs;
--	} rmode;
- 	int halt_request; /* real mode on Intel only */
+-	int		online_vcpus;
+ 	int		is_sn2;
  
- 	int cpuid_nent;
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index f0f9773..ae68292 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -88,6 +88,14 @@ struct vcpu_vmx {
- 		int           guest_efer_loaded;
- 	} host_state;
- 	struct {
-+		int vm86_active;
-+		u8 save_iopl;
-+		struct kvm_save_segment {
-+			u16 selector;
-+			unsigned long base;
-+			u32 limit;
-+			u32 ar;
-+		} tr, es, ds, fs, gs;
- 		struct {
- 			bool pending;
- 			u8 vector;
-@@ -516,7 +524,7 @@ static void update_exception_bitmap(struct kvm_vcpu *vcpu)
- 		if (vcpu->guest_debug & KVM_GUESTDBG_USE_SW_BP)
- 			eb |= 1u << BP_VECTOR;
- 	}
--	if (vcpu->arch.rmode.vm86_active)
-+	if (to_vmx(vcpu)->rmode.vm86_active)
- 		eb = ~0;
- 	if (enable_ept)
- 		eb &= ~(1u << PF_VECTOR); /* bypass_guest_pf = 0 */
-@@ -752,7 +760,7 @@ static unsigned long vmx_get_rflags(struct kvm_vcpu *vcpu)
+ 	struct kvm_ioapic *vioapic;
+diff --git a/arch/ia64/kvm/Kconfig b/arch/ia64/kvm/Kconfig
+index f922bbb..cbadd8a 100644
+--- a/arch/ia64/kvm/Kconfig
++++ b/arch/ia64/kvm/Kconfig
+@@ -25,6 +25,7 @@ config KVM
+ 	select PREEMPT_NOTIFIERS
+ 	select ANON_INODES
+ 	select HAVE_KVM_IRQCHIP
++	select KVM_APIC_ARCHITECTURE
+ 	---help---
+ 	  Support hosting fully virtualized guest machines using hardware
+ 	  virtualization extensions.  You will need a fairly recent
+diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
+index 4082665..d1f7bcd 100644
+--- a/arch/ia64/kvm/kvm-ia64.c
++++ b/arch/ia64/kvm/kvm-ia64.c
+@@ -338,7 +338,7 @@ static struct kvm_vcpu *lid_to_vcpu(struct kvm *kvm, unsigned long id,
+ 	union ia64_lid lid;
+ 	int i;
  
- static void vmx_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
- {
--	if (vcpu->arch.rmode.vm86_active)
-+	if (to_vmx(vcpu)->rmode.vm86_active)
- 		rflags |= X86_EFLAGS_IOPL | X86_EFLAGS_VM;
- 	vmcs_writel(GUEST_RFLAGS, rflags);
+-	for (i = 0; i < kvm->arch.online_vcpus; i++) {
++	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++) {
+ 		if (kvm->vcpus[i]) {
+ 			lid.val = VCPU_LID(kvm->vcpus[i]);
+ 			if (lid.id == id && lid.eid == eid)
+@@ -412,7 +412,7 @@ static int handle_global_purge(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 
+ 	call_data.ptc_g_data = p->u.ptc_g_data;
+ 
+-	for (i = 0; i < kvm->arch.online_vcpus; i++) {
++	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++) {
+ 		if (!kvm->vcpus[i] || kvm->vcpus[i]->arch.mp_state ==
+ 						KVM_MP_STATE_UNINITIALIZED ||
+ 					vcpu == kvm->vcpus[i])
+@@ -852,8 +852,6 @@ struct  kvm *kvm_arch_create_vm(void)
+ 
+ 	kvm_init_vm(kvm);
+ 
+-	kvm->arch.online_vcpus = 0;
+-
+ 	return kvm;
+ 
  }
-@@ -809,7 +817,7 @@ static void vmx_queue_exception(struct kvm_vcpu *vcpu, unsigned nr,
- 		intr_info |= INTR_INFO_DELIVER_CODE_MASK;
+@@ -1356,8 +1354,6 @@ struct kvm_vcpu *kvm_arch_vcpu_create(struct kvm *kvm,
+ 		goto fail;
  	}
  
--	if (vcpu->arch.rmode.vm86_active) {
-+	if (vmx->rmode.vm86_active) {
- 		vmx->rmode.irq.pending = true;
- 		vmx->rmode.irq.vector = nr;
- 		vmx->rmode.irq.rip = kvm_rip_read(vcpu);
-@@ -1395,15 +1403,15 @@ static void enter_pmode(struct kvm_vcpu *vcpu)
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+-	kvm->arch.online_vcpus++;
+-
+ 	return vcpu;
+ fail:
+ 	return ERR_PTR(r);
+diff --git a/arch/ia64/kvm/vcpu.c b/arch/ia64/kvm/vcpu.c
+index 61a3320..dce75b7 100644
+--- a/arch/ia64/kvm/vcpu.c
++++ b/arch/ia64/kvm/vcpu.c
+@@ -831,7 +831,7 @@ static void vcpu_set_itc(struct kvm_vcpu *vcpu, u64 val)
+ 	kvm = (struct kvm *)KVM_VM_BASE;
  
- 	vmx->emulation_required = 1;
--	vcpu->arch.rmode.vm86_active = 0;
-+	vmx->rmode.vm86_active = 0;
+ 	if (kvm_vcpu_is_bsp(vcpu)) {
+-		for (i = 0; i < kvm->arch.online_vcpus; i++) {
++		for (i = 0; i < atomic_read(&kvm->online_vcpus); i++) {
+ 			v = (struct kvm_vcpu *)((char *)vcpu +
+ 					sizeof(struct kvm_vcpu_data) * i);
+ 			VMX(v, itc_offset) = itc_offset;
+diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
+index 8cd2a4e..7fbedfd 100644
+--- a/arch/x86/kvm/Kconfig
++++ b/arch/x86/kvm/Kconfig
+@@ -27,6 +27,7 @@ config KVM
+ 	select ANON_INODES
+ 	select HAVE_KVM_IRQCHIP
+ 	select HAVE_KVM_EVENTFD
++	select KVM_APIC_ARCHITECTURE
+ 	---help---
+ 	  Support hosting fully virtualized guest machines using hardware
+ 	  virtualization extensions.  You will need a fairly recent
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index f1dada0..5037e17 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -430,6 +430,7 @@ struct kvm_trace_rec {
+ #ifdef __KVM_HAVE_PIT
+ #define KVM_CAP_PIT2 33
+ #endif
++#define KVM_CAP_SET_BOOT_CPU_ID 34
  
--	vmcs_writel(GUEST_TR_BASE, vcpu->arch.rmode.tr.base);
--	vmcs_write32(GUEST_TR_LIMIT, vcpu->arch.rmode.tr.limit);
--	vmcs_write32(GUEST_TR_AR_BYTES, vcpu->arch.rmode.tr.ar);
-+	vmcs_writel(GUEST_TR_BASE, vmx->rmode.tr.base);
-+	vmcs_write32(GUEST_TR_LIMIT, vmx->rmode.tr.limit);
-+	vmcs_write32(GUEST_TR_AR_BYTES, vmx->rmode.tr.ar);
+ #ifdef KVM_CAP_IRQ_ROUTING
  
- 	flags = vmcs_readl(GUEST_RFLAGS);
- 	flags &= ~(X86_EFLAGS_IOPL | X86_EFLAGS_VM);
--	flags |= (vcpu->arch.rmode.save_iopl << IOPL_SHIFT);
-+	flags |= (vmx->rmode.save_iopl << IOPL_SHIFT);
- 	vmcs_writel(GUEST_RFLAGS, flags);
+@@ -537,6 +538,7 @@ struct kvm_irqfd {
+ #define KVM_DEASSIGN_DEV_IRQ       _IOW(KVMIO, 0x75, struct kvm_assigned_irq)
+ #define KVM_IRQFD                  _IOW(KVMIO, 0x76, struct kvm_irqfd)
+ #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
++#define KVM_SET_BOOT_CPU_ID        _IO(KVMIO, 0x78)
  
- 	vmcs_writel(GUEST_CR4, (vmcs_readl(GUEST_CR4) & ~X86_CR4_VME) |
-@@ -1414,10 +1422,10 @@ static void enter_pmode(struct kvm_vcpu *vcpu)
- 	if (emulate_invalid_guest_state)
- 		return;
+ /*
+  * ioctls for vcpu fds
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index a5bd429..d3fdf1a 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -131,8 +131,12 @@ struct kvm {
+ 	int nmemslots;
+ 	struct kvm_memory_slot memslots[KVM_MEMORY_SLOTS +
+ 					KVM_PRIVATE_MEM_SLOTS];
++#ifdef CONFIG_KVM_APIC_ARCHITECTURE
++	u32 bsp_vcpu_id;
+ 	struct kvm_vcpu *bsp_vcpu;
++#endif
+ 	struct kvm_vcpu *vcpus[KVM_MAX_VCPUS];
++	atomic_t online_vcpus;
+ 	struct list_head vm_list;
+ 	struct mutex lock;
+ 	struct kvm_io_bus mmio_bus;
+@@ -550,8 +554,10 @@ static inline void kvm_irqfd_release(struct kvm *kvm) {}
  
--	fix_pmode_dataseg(VCPU_SREG_ES, &vcpu->arch.rmode.es);
--	fix_pmode_dataseg(VCPU_SREG_DS, &vcpu->arch.rmode.ds);
--	fix_pmode_dataseg(VCPU_SREG_GS, &vcpu->arch.rmode.gs);
--	fix_pmode_dataseg(VCPU_SREG_FS, &vcpu->arch.rmode.fs);
-+	fix_pmode_dataseg(VCPU_SREG_ES, &vmx->rmode.es);
-+	fix_pmode_dataseg(VCPU_SREG_DS, &vmx->rmode.ds);
-+	fix_pmode_dataseg(VCPU_SREG_GS, &vmx->rmode.gs);
-+	fix_pmode_dataseg(VCPU_SREG_FS, &vmx->rmode.fs);
+ #endif /* CONFIG_HAVE_KVM_EVENTFD */
  
- 	vmcs_write16(GUEST_SS_SELECTOR, 0);
- 	vmcs_write32(GUEST_SS_AR_BYTES, 0x93);
-@@ -1460,19 +1468,19 @@ static void enter_rmode(struct kvm_vcpu *vcpu)
- 		return;
- 
- 	vmx->emulation_required = 1;
--	vcpu->arch.rmode.vm86_active = 1;
-+	vmx->rmode.vm86_active = 1;
- 
--	vcpu->arch.rmode.tr.base = vmcs_readl(GUEST_TR_BASE);
-+	vmx->rmode.tr.base = vmcs_readl(GUEST_TR_BASE);
- 	vmcs_writel(GUEST_TR_BASE, rmode_tss_base(vcpu->kvm));
- 
--	vcpu->arch.rmode.tr.limit = vmcs_read32(GUEST_TR_LIMIT);
-+	vmx->rmode.tr.limit = vmcs_read32(GUEST_TR_LIMIT);
- 	vmcs_write32(GUEST_TR_LIMIT, RMODE_TSS_SIZE - 1);
- 
--	vcpu->arch.rmode.tr.ar = vmcs_read32(GUEST_TR_AR_BYTES);
-+	vmx->rmode.tr.ar = vmcs_read32(GUEST_TR_AR_BYTES);
- 	vmcs_write32(GUEST_TR_AR_BYTES, 0x008b);
- 
- 	flags = vmcs_readl(GUEST_RFLAGS);
--	vcpu->arch.rmode.save_iopl
-+	vmx->rmode.save_iopl
- 		= (flags & X86_EFLAGS_IOPL) >> IOPL_SHIFT;
- 
- 	flags |= X86_EFLAGS_IOPL | X86_EFLAGS_VM;
-@@ -1494,10 +1502,10 @@ static void enter_rmode(struct kvm_vcpu *vcpu)
- 		vmcs_writel(GUEST_CS_BASE, 0xf0000);
- 	vmcs_write16(GUEST_CS_SELECTOR, vmcs_readl(GUEST_CS_BASE) >> 4);
- 
--	fix_rmode_seg(VCPU_SREG_ES, &vcpu->arch.rmode.es);
--	fix_rmode_seg(VCPU_SREG_DS, &vcpu->arch.rmode.ds);
--	fix_rmode_seg(VCPU_SREG_GS, &vcpu->arch.rmode.gs);
--	fix_rmode_seg(VCPU_SREG_FS, &vcpu->arch.rmode.fs);
-+	fix_rmode_seg(VCPU_SREG_ES, &vmx->rmode.es);
-+	fix_rmode_seg(VCPU_SREG_DS, &vmx->rmode.ds);
-+	fix_rmode_seg(VCPU_SREG_GS, &vmx->rmode.gs);
-+	fix_rmode_seg(VCPU_SREG_FS, &vmx->rmode.fs);
- 
- continue_rmode:
- 	kvm_mmu_reset_context(vcpu);
-@@ -1638,6 +1646,7 @@ static void ept_update_paging_mode_cr4(unsigned long *hw_cr4,
- 
- static void vmx_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
++#ifdef CONFIG_KVM_APIC_ARCHITECTURE
+ static inline bool kvm_vcpu_is_bsp(struct kvm_vcpu *vcpu)
  {
-+	struct vcpu_vmx *vmx = to_vmx(vcpu);
- 	unsigned long hw_cr0;
+ 	return vcpu->kvm->bsp_vcpu == vcpu;
+ }
+ #endif
++#endif
+diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
+index 56c6848..daece36 100644
+--- a/virt/kvm/Kconfig
++++ b/virt/kvm/Kconfig
+@@ -9,3 +9,6 @@ config HAVE_KVM_IRQCHIP
+ config HAVE_KVM_EVENTFD
+        bool
+        select EVENTFD
++
++config KVM_APIC_ARCHITECTURE
++       bool
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 0d54ede..25e1f9c 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -689,11 +689,6 @@ out:
+ }
+ #endif
  
- 	if (enable_unrestricted_guest)
-@@ -1648,10 +1657,10 @@ static void vmx_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
- 
- 	vmx_fpu_deactivate(vcpu);
- 
--	if (vcpu->arch.rmode.vm86_active && (cr0 & X86_CR0_PE))
-+	if (vmx->rmode.vm86_active && (cr0 & X86_CR0_PE))
- 		enter_pmode(vcpu);
- 
--	if (!vcpu->arch.rmode.vm86_active && !(cr0 & X86_CR0_PE))
-+	if (!vmx->rmode.vm86_active && !(cr0 & X86_CR0_PE))
- 		enter_rmode(vcpu);
- 
- #ifdef CONFIG_X86_64
-@@ -1707,7 +1716,7 @@ static void vmx_set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
- 
- static void vmx_set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4)
+-static inline int valid_vcpu(int n)
+-{
+-	return likely(n >= 0 && n < KVM_MAX_VCPUS);
+-}
+-
+ inline int kvm_is_mmio_pfn(pfn_t pfn)
  {
--	unsigned long hw_cr4 = cr4 | (vcpu->arch.rmode.vm86_active ?
-+	unsigned long hw_cr4 = cr4 | (to_vmx(vcpu)->rmode.vm86_active ?
- 		    KVM_RMODE_VM_CR4_ALWAYS_ON : KVM_PMODE_VM_CR4_ALWAYS_ON);
- 
- 	vcpu->arch.cr4 = cr4;
-@@ -1787,20 +1796,21 @@ static u32 vmx_segment_access_rights(struct kvm_segment *var)
- static void vmx_set_segment(struct kvm_vcpu *vcpu,
- 			    struct kvm_segment *var, int seg)
+ 	if (pfn_valid(pfn)) {
+@@ -1714,24 +1709,18 @@ static struct file_operations kvm_vcpu_fops = {
+  */
+ static int create_vcpu_fd(struct kvm_vcpu *vcpu)
  {
-+	struct vcpu_vmx *vmx = to_vmx(vcpu);
- 	struct kvm_vmx_segment_field *sf = &kvm_vmx_segment_fields[seg];
- 	u32 ar;
+-	int fd = anon_inode_getfd("kvm-vcpu", &kvm_vcpu_fops, vcpu, 0);
+-	if (fd < 0)
+-		kvm_put_kvm(vcpu->kvm);
+-	return fd;
++	return anon_inode_getfd("kvm-vcpu", &kvm_vcpu_fops, vcpu, 0);
+ }
  
--	if (vcpu->arch.rmode.vm86_active && seg == VCPU_SREG_TR) {
--		vcpu->arch.rmode.tr.selector = var->selector;
--		vcpu->arch.rmode.tr.base = var->base;
--		vcpu->arch.rmode.tr.limit = var->limit;
--		vcpu->arch.rmode.tr.ar = vmx_segment_access_rights(var);
-+	if (vmx->rmode.vm86_active && seg == VCPU_SREG_TR) {
-+		vmx->rmode.tr.selector = var->selector;
-+		vmx->rmode.tr.base = var->base;
-+		vmx->rmode.tr.limit = var->limit;
-+		vmx->rmode.tr.ar = vmx_segment_access_rights(var);
- 		return;
+ /*
+  * Creates some virtual cpus.  Good luck creating more than one.
+  */
+-static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, int n)
++static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
+ {
+ 	int r;
+ 	struct kvm_vcpu *vcpu;
+ 
+-	if (!valid_vcpu(n))
+-		return -EINVAL;
+-
+-	vcpu = kvm_arch_vcpu_create(kvm, n);
++	vcpu = kvm_arch_vcpu_create(kvm, id);
+ 	if (IS_ERR(vcpu))
+ 		return PTR_ERR(vcpu);
+ 
+@@ -1742,25 +1731,38 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, int n)
+ 		return r;
+ 
+ 	mutex_lock(&kvm->lock);
+-	if (kvm->vcpus[n]) {
+-		r = -EEXIST;
++	if (atomic_read(&kvm->online_vcpus) == KVM_MAX_VCPUS) {
++		r = -EINVAL;
+ 		goto vcpu_destroy;
  	}
- 	vmcs_writel(sf->base, var->base);
- 	vmcs_write32(sf->limit, var->limit);
- 	vmcs_write16(sf->selector, var->selector);
--	if (vcpu->arch.rmode.vm86_active && var->s) {
-+	if (vmx->rmode.vm86_active && var->s) {
- 		/*
- 		 * Hack real-mode segments into vm86 compatibility.
- 		 */
-@@ -2394,7 +2404,7 @@ static int vmx_vcpu_reset(struct kvm_vcpu *vcpu)
- 		goto out;
+-	kvm->vcpus[n] = vcpu;
+-	if (n == 0)
+-		kvm->bsp_vcpu = vcpu;
+-	mutex_unlock(&kvm->lock);
++
++	for (r = 0; r < atomic_read(&kvm->online_vcpus); r++)
++		if (kvm->vcpus[r]->vcpu_id == id) {
++			r = -EEXIST;
++			goto vcpu_destroy;
++		}
++
++	BUG_ON(kvm->vcpus[atomic_read(&kvm->online_vcpus)]);
+ 
+ 	/* Now it's all set up, let userspace reach it */
+ 	kvm_get_kvm(kvm);
+ 	r = create_vcpu_fd(vcpu);
+-	if (r < 0)
+-		goto unlink;
++	if (r < 0) {
++		kvm_put_kvm(kvm);
++		goto vcpu_destroy;
++	}
++
++	kvm->vcpus[atomic_read(&kvm->online_vcpus)] = vcpu;
++	smp_wmb();
++	atomic_inc(&kvm->online_vcpus);
++
++#ifdef CONFIG_KVM_APIC_ARCHITECTURE
++	if (kvm->bsp_vcpu_id == id)
++		kvm->bsp_vcpu = vcpu;
++#endif
++	mutex_unlock(&kvm->lock);
+ 	return r;
+ 
+-unlink:
+-	mutex_lock(&kvm->lock);
+-	kvm->vcpus[n] = NULL;
+ vcpu_destroy:
+ 	mutex_unlock(&kvm->lock);
+ 	kvm_arch_vcpu_destroy(vcpu);
+@@ -2233,6 +2235,15 @@ static long kvm_vm_ioctl(struct file *filp,
+ 		r = kvm_irqfd(kvm, data.fd, data.gsi, data.flags);
+ 		break;
  	}
- 
--	vmx->vcpu.arch.rmode.vm86_active = 0;
-+	vmx->rmode.vm86_active = 0;
- 
- 	vmx->soft_vnmi_blocked = 0;
- 
-@@ -2532,7 +2542,7 @@ static void vmx_inject_irq(struct kvm_vcpu *vcpu)
- 	KVMTRACE_1D(INJ_VIRQ, vcpu, (u32)irq, handler);
- 
- 	++vcpu->stat.irq_injections;
--	if (vcpu->arch.rmode.vm86_active) {
-+	if (vmx->rmode.vm86_active) {
- 		vmx->rmode.irq.pending = true;
- 		vmx->rmode.irq.vector = irq;
- 		vmx->rmode.irq.rip = kvm_rip_read(vcpu);
-@@ -2573,7 +2583,7 @@ static void vmx_inject_nmi(struct kvm_vcpu *vcpu)
++#ifdef CONFIG_KVM_APIC_ARCHITECTURE
++	case KVM_SET_BOOT_CPU_ID:
++		r = 0;
++		if (atomic_read(&kvm->online_vcpus) != 0)
++			r = -EBUSY;
++		else
++			kvm->bsp_vcpu_id = arg;
++		break;
++#endif
+ 	default:
+ 		r = kvm_arch_vm_ioctl(filp, ioctl, arg);
  	}
- 
- 	++vcpu->stat.nmi_injections;
--	if (vcpu->arch.rmode.vm86_active) {
-+	if (vmx->rmode.vm86_active) {
- 		vmx->rmode.irq.pending = true;
- 		vmx->rmode.irq.vector = NMI_VECTOR;
- 		vmx->rmode.irq.rip = kvm_rip_read(vcpu);
-@@ -2737,7 +2747,7 @@ static int handle_exception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 		return kvm_mmu_page_fault(vcpu, cr2, error_code);
- 	}
- 
--	if (vcpu->arch.rmode.vm86_active &&
-+	if (vmx->rmode.vm86_active &&
- 	    handle_rmode_exception(vcpu, intr_info & INTR_INFO_VECTOR_MASK,
- 								error_code)) {
- 		if (vcpu->arch.halt_request) {
+@@ -2299,6 +2310,9 @@ static long kvm_dev_ioctl_check_extension_generic(long arg)
+ 	case KVM_CAP_USER_MEMORY:
+ 	case KVM_CAP_DESTROY_MEMORY_REGION_WORKS:
+ 	case KVM_CAP_JOIN_MEMORY_REGIONS_WORKS:
++#ifdef CONFIG_KVM_APIC_ARCHITECTURE
++	case KVM_CAP_SET_BOOT_CPU_ID:
++#endif
+ 		return 1;
+ #ifdef CONFIG_HAVE_KVM_IRQCHIP
+ 	case KVM_CAP_IRQ_ROUTING:
 -- 
 1.6.3.3
 
