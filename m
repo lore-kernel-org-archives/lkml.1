@@ -1,370 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbZHPTaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932197AbZHPTa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbZHPTaV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 15:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755854AbZHPTaT
+	id S932197AbZHPTa5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 15:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932141AbZHPTa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 15:30:19 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:45385 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755788AbZHPTaO (ORCPT
+	Sun, 16 Aug 2009 15:30:56 -0400
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:55539 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932138AbZHPTaw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 15:30:14 -0400
+	Sun, 16 Aug 2009 15:30:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=AK7b1n2NKXEoxiAY7+FlQ9BDD5fwBf9nkha/qph/0cllT0g0PyrN7hYrHEHXYIMqix
-         xIOOAJ/xKH+hnN2FnQLwXETKAudm5fFtRYBa5KxFFSum81+ehfhN7I6grL0t1R25dcJ6
-         X68OatMPD6YhDc9v39tpQ6bzup29qjM2GB7OU=
+        b=Cw06J5NBLFuSBxM5KwQmYQBUYWMX0lEetkkJbwC4RlDiBtF1k3EL3pgilYx5oUf9i/
+         KlwbNU8/EV2JCOhyxY7WMRkGHtgxAt4lM5tkbI32CCZN0RdpeIrh8l38Vk8AsknYsOp1
+         PHrhBc4yRMfZK+ks7loB8gZxdEtPvHvjPdR+c=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: devel@driverdev.osuosl.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 16 Aug 2009 21:30:25 +0200
-Message-Id: <20090816193025.3789.87640.sendpatchset@localhost.localdomain>
+Date: Sun, 16 Aug 2009 21:31:04 +0200
+Message-Id: <20090816193104.3789.12936.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
 References: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
-Subject: [PATCH 08/22] Staging: rtxxx0: kill PID macros
+Subject: [PATCH 12/22] Staging: rtxxx0: unify RT{USB,MP}FilterCalibration()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtxxx0: kill PID macros
+Subject: [PATCH] Staging: rtxxx0: unify RT{USB,MP}FilterCalibration()
 
-* kill PID macros
-* unify now identical RT30xx and !RT30xx code
+RTMP_BBP_IO_{READ,WRITE}8_BY_REG_ID equals RTUSB{Read,Write}BBPRegister
+in case of USB chipsets so unify RT30xx and !RT30xx code.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rt2860/rt_linux.h              |   16 ----
- drivers/staging/rt2870/2870_main_dev.c         |   86 -------------------------
- drivers/staging/rt2870/common/2870_rtmp_init.c |   48 +------------
- drivers/staging/rt2870/common/rtusb_io.c       |    2 
- drivers/staging/rt2870/rt2870.h                |   17 ----
- 5 files changed, 9 insertions(+), 160 deletions(-)
+ drivers/staging/rt2860/common/rtmp_init.c |  154 +-----------------------------
+ 1 file changed, 10 insertions(+), 144 deletions(-)
 
-Index: b/drivers/staging/rt2860/rt_linux.h
+Index: b/drivers/staging/rt2860/common/rtmp_init.c
 ===================================================================
---- a/drivers/staging/rt2860/rt_linux.h
-+++ b/drivers/staging/rt2860/rt_linux.h
-@@ -161,15 +161,6 @@ typedef int (*HARD_START_XMIT_FUNC)(stru
- #define NDIS_PACKET_TYPE_BROADCAST		2
- #define NDIS_PACKET_TYPE_ALL_MULTICAST	3
+--- a/drivers/staging/rt2860/common/rtmp_init.c
++++ b/drivers/staging/rt2860/common/rtmp_init.c
+@@ -1099,145 +1099,6 @@ NDIS_STATUS	NICReadRegParameters(
  
+ 	========================================================================
+ */
 -#ifndef RT30xx
--typedef	struct pid *	THREAD_PID;
--#define	THREAD_PID_INIT_VALUE	NULL
--#define	GET_PID(_v)	find_get_pid(_v)
--#define	GET_PID_NUMBER(_v)	pid_nr(_v)
--#define CHECK_PID_LEGALITY(_pid)	if (pid_nr(_pid) > 0)
--#define KILL_THREAD_PID(_A, _B, _C)	kill_pid(_A, _B, _C)
--#endif
+-VOID RTUSBFilterCalibration(
+-	IN PRTMP_ADAPTER pAd)
+-{
+-	UCHAR	R55x = 0, value, FilterTarget = 0x1E, BBPValue;
+-	UINT	loop = 0, count = 0, loopcnt = 0, ReTry = 0;
+-	UCHAR	RF_R24_Value = 0;
 -
- struct os_lock  {
- 	spinlock_t		lock;
- 	unsigned long  	flags;
-@@ -185,16 +176,9 @@ struct os_cookie {
- #ifdef RT2870
- 	struct usb_device		*pUsb_Dev;
- 
--#ifndef RT30xx
--	THREAD_PID				MLMEThr_pid;
--	THREAD_PID				RTUSBCmdThr_pid;
--	THREAD_PID				TimerQThr_pid;
--#endif
--#ifdef RT30xx
- 	struct pid	*MLMEThr_pid;
- 	struct pid	*RTUSBCmdThr_pid;
- 	struct pid	*TimerQThr_pid;
--#endif
- #endif // RT2870 //
- 
- 	struct tasklet_struct 	rx_done_task;
-Index: b/drivers/staging/rt2870/2870_main_dev.c
-===================================================================
---- a/drivers/staging/rt2870/2870_main_dev.c
-+++ b/drivers/staging/rt2870/2870_main_dev.c
-@@ -346,12 +346,7 @@ INT MlmeThread(
- 	 */
- 	DBGPRINT(RT_DEBUG_TRACE,( "<---%s\n",__func__));
- 
--#ifndef RT30xx
--	pObj->MLMEThr_pid = THREAD_PID_INIT_VALUE;
--#endif
--#ifdef RT30xx
- 	pObj->MLMEThr_pid = NULL;
--#endif
- 
- 	complete_and_exit (&pAd->mlmeComplete, 0);
- 	return 0;
-@@ -459,12 +454,7 @@ INT RTUSBCmdThread(
- 	 */
- 	DBGPRINT(RT_DEBUG_TRACE,( "<---RTUSBCmdThread\n"));
- 
--#ifndef RT30xx
--	pObj->RTUSBCmdThr_pid = THREAD_PID_INIT_VALUE;
--#endif
--#ifdef RT30xx
- 	pObj->RTUSBCmdThr_pid = NULL;
--#endif
- 
- 	complete_and_exit (&pAd->CmdQComplete, 0);
- 	return 0;
-@@ -558,12 +548,8 @@ INT TimerQThread(
- 	 */
- 	DBGPRINT(RT_DEBUG_TRACE,( "<---%s\n",__func__));
- 
--#ifndef RT30xx
--	pObj->TimerQThr_pid = THREAD_PID_INIT_VALUE;
--#endif
--#ifdef RT30xx
- 	pObj->TimerQThr_pid = NULL;
--#endif
-+
- 	complete_and_exit(&pAd->TimerQComplete, 0);
- 	return 0;
- 
-@@ -994,76 +980,11 @@ VOID RT28xxThreadTerminate(
- 	RTUSBCancelPendingIRPs(pAd);
- 
- 	// Terminate Threads
--#ifndef RT30xx
--	CHECK_PID_LEGALITY(pObj->TimerQThr_pid)
+-	// Give bbp filter initial value
+-	pAd->Mlme.CaliBW20RfR24 = 0x16;
+-	pAd->Mlme.CaliBW40RfR24 = 0x36;  //Bit[5] must be 1 for BW 40
+-
+-	do
 -	{
--		POS_COOKIE pObj = (POS_COOKIE)pAd->OS_Cookie;
--
--		printk("Terminate the TimerQThr_pid=%d!\n", GET_PID_NUMBER(pObj->TimerQThr_pid));
--		mb();
--		pAd->TimerFunc_kill = 1;
--		mb();
--		ret = KILL_THREAD_PID(pObj->TimerQThr_pid, SIGTERM, 1);
--		if (ret)
+-		if (loop == 1)	//BandWidth = 40 MHz
 -		{
--			printk(KERN_WARNING "%s: unable to stop TimerQThread, pid=%d, ret=%d!\n",
--					pAd->net_dev->name, GET_PID_NUMBER(pObj->TimerQThr_pid), ret);
+-			// Write 0x27 to RF_R24 to program filter
+-			RF_R24_Value = 0x27;
+-			RT30xxWriteRFRegister(pAd, RF_R24, RF_R24_Value);
+-			FilterTarget = 0x19;
+-
+-			// when calibrate BW40, BBP mask must set to BW40.
+-			RTUSBReadBBPRegister(pAd, BBP_R4, &BBPValue);
+-			BBPValue&= (~0x18);
+-			BBPValue|= (0x10);
+-			RTUSBWriteBBPRegister(pAd, BBP_R4, BBPValue);
+-		}
+-		else			//BandWidth = 20 MHz
+-		{
+-			// Write 0x07 to RF_R24 to program filter
+-			RF_R24_Value = 0x07;
+-			RT30xxWriteRFRegister(pAd, RF_R24, RF_R24_Value);
+-			FilterTarget = 0x16;
+-		}
+-
+-		// Write 0x01 to RF_R22 to enable baseband loopback mode
+-		RT30xxReadRFRegister(pAd, RF_R22, &value);
+-		value |= 0x01;
+-		RT30xxWriteRFRegister(pAd, RF_R22, value);
+-
+-		// Write 0x00 to BBP_R24 to set power & frequency of passband test tone
+-		RTUSBWriteBBPRegister(pAd, BBP_R24, 0);
+-
+-		do
+-		{
+-			// Write 0x90 to BBP_R25 to transmit test tone
+-			RTUSBWriteBBPRegister(pAd, BBP_R25, 0x90);
+-
+-			RTMPusecDelay(1000);
+-			// Read BBP_R55[6:0] for received power, set R55x = BBP_R55[6:0]
+-			RTUSBReadBBPRegister(pAd, BBP_R55, &value);
+-			R55x = value & 0xFF;
+-
+-		} while ((ReTry++ < 100) && (R55x == 0));
+-
+-		// Write 0x06 to BBP_R24 to set power & frequency of stopband test tone
+-		RTUSBWriteBBPRegister(pAd, BBP_R24, 0x06);
+-
+-		while(TRUE)
+-		{
+-			// Write 0x90 to BBP_R25 to transmit test tone
+-			RTUSBWriteBBPRegister(pAd, BBP_R25, 0x90);
+-
+-			//We need to wait for calibration
+-			RTMPusecDelay(1000);
+-			RTUSBReadBBPRegister(pAd, BBP_R55, &value);
+-			value &= 0xFF;
+-			if ((R55x - value) < FilterTarget)
+-			{
+-				RF_R24_Value ++;
+-			}
+-			else if ((R55x - value) == FilterTarget)
+-			{
+-				RF_R24_Value ++;
+-				count ++;
+-			}
+-			else
+-			{
+-				break;
+-			}
+-
+-			// prevent infinite loop cause driver hang.
+-			if (loopcnt++ > 100)
+-			{
+-				DBGPRINT(RT_DEBUG_ERROR, ("RTUSBFilterCalibration - can't find a valid value, loopcnt=%d stop calibrating", loopcnt));
+-				break;
+-			}
+-
+-			// Write RF_R24 to program filter
+-			RT30xxWriteRFRegister(pAd, RF_R24, RF_R24_Value);
+-		}
+-
+-		if (count > 0)
+-		{
+-			RF_R24_Value = RF_R24_Value - ((count) ? (1) : (0));
+-		}
+-
+-		// Store for future usage
+-		if (loopcnt < 100)
+-		{
+-			if (loop++ == 0)
+-			{
+-				//BandWidth = 20 MHz
+-				pAd->Mlme.CaliBW20RfR24 = (UCHAR)RF_R24_Value;
+-			}
+-			else
+-			{
+-				//BandWidth = 40 MHz
+-				pAd->Mlme.CaliBW40RfR24 = (UCHAR)RF_R24_Value;
+-				break;
+-			}
 -		}
 -		else
--		{
--			wait_for_completion(&pAd->TimerQComplete);
--			pObj->TimerQThr_pid = THREAD_PID_INIT_VALUE;
--		}
--	}
+-			break;
 -
--	CHECK_PID_LEGALITY(pObj->MLMEThr_pid)
--	{
--		printk("Terminate the MLMEThr_pid=%d!\n", GET_PID_NUMBER(pObj->MLMEThr_pid));
--		mb();
--		pAd->mlme_kill = 1;
--		//RT28XX_MLME_HANDLER(pAd);
--		mb();
--		ret = KILL_THREAD_PID(pObj->MLMEThr_pid, SIGTERM, 1);
--		if (ret)
--		{
--			printk (KERN_WARNING "%s: unable to Mlme thread, pid=%d, ret=%d!\n",
--					pAd->net_dev->name, GET_PID_NUMBER(pObj->MLMEThr_pid), ret);
--		}
--		else
--		{
--			//wait_for_completion (&pAd->notify);
--			wait_for_completion (&pAd->mlmeComplete);
--			pObj->MLMEThr_pid = THREAD_PID_INIT_VALUE;
--		}
--	}
- 
--	CHECK_PID_LEGALITY(pObj->RTUSBCmdThr_pid)
--	{
--		printk("Terminate the RTUSBCmdThr_pid=%d!\n", GET_PID_NUMBER(pObj->RTUSBCmdThr_pid));
--		mb();
--		NdisAcquireSpinLock(&pAd->CmdQLock);
--		pAd->CmdQ.CmdQState = RT2870_THREAD_STOPED;
--		NdisReleaseSpinLock(&pAd->CmdQLock);
--		mb();
--		//RTUSBCMDUp(pAd);
--		ret = KILL_THREAD_PID(pObj->RTUSBCmdThr_pid, SIGTERM, 1);
--		if (ret)
--		{
--			printk(KERN_WARNING "%s: unable to RTUSBCmd thread, pid=%d, ret=%d!\n",
--					pAd->net_dev->name, GET_PID_NUMBER(pObj->RTUSBCmdThr_pid), ret);
--		}
--		else
--		{
--			//wait_for_completion (&pAd->notify);
--			wait_for_completion (&pAd->CmdQComplete);
--			pObj->RTUSBCmdThr_pid = THREAD_PID_INIT_VALUE;
--		}
--	}
--#endif
+-		RT30xxWriteRFRegister(pAd, RF_R24, RF_R24_Value);
+-
+-		// reset count
+-		count = 0;
+-	} while(TRUE);
+-
+-	//
+-	// Set back to initial state
+-	//
+-	RTUSBWriteBBPRegister(pAd, BBP_R24, 0);
+-
+-	RT30xxReadRFRegister(pAd, RF_R22, &value);
+-	value &= ~(0x01);
+-	RT30xxWriteRFRegister(pAd, RF_R22, value);
+-
+-	// set BBP back to BW20
+-	RTUSBReadBBPRegister(pAd, BBP_R4, &BBPValue);
+-	BBPValue&= (~0x18);
+-	RTUSBWriteBBPRegister(pAd, BBP_R4, BBPValue);
+-
+-	DBGPRINT(RT_DEBUG_TRACE, ("RTUSBFilterCalibration - CaliBW20RfR24=0x%x, CaliBW40RfR24=0x%x\n", pAd->Mlme.CaliBW20RfR24, pAd->Mlme.CaliBW40RfR24));
+-}
+-#endif /* RT30xx */
 -#ifdef RT30xx
- 	if (pid_nr(pObj->TimerQThr_pid) > 0)
+ VOID RTMPFilterCalibration(
+ 	IN PRTMP_ADAPTER pAd)
+ {
+@@ -1246,9 +1107,13 @@ VOID RTMPFilterCalibration(
+ 	UCHAR	RF_R24_Value = 0;
+ 
+ 	// Give bbp filter initial value
++#ifndef RT30xx
++	pAd->Mlme.CaliBW20RfR24 = 0x16;
++	pAd->Mlme.CaliBW40RfR24 = 0x36;  //Bit[5] must be 1 for BW 40
++#else
+ 	pAd->Mlme.CaliBW20RfR24 = 0x1F;
+ 	pAd->Mlme.CaliBW40RfR24 = 0x2F; //Bit[5] must be 1 for BW 40
+-
++#endif
+ 	do
  	{
- 		POS_COOKIE pObj = (POS_COOKIE)pAd->OS_Cookie;
-+
- 		printk("Terminate the TimerQThr_pid=%d!\n", pid_nr(pObj->TimerQThr_pid));
- 		mb();
- 		pAd->TimerFunc_kill = 1;
-@@ -1116,7 +1037,7 @@ VOID RT28xxThreadTerminate(
- 		{
- 			printk(KERN_WARNING "%s: unable to RTUSBCmd thread, pid=%d, ret=%d!\n",
- 					pAd->net_dev->name, pid_nr(pObj->RTUSBCmdThr_pid), ret);
--	}
-+		}
- 		else
- 		{
- 			//wait_for_completion (&pAd->notify);
-@@ -1124,7 +1045,6 @@ VOID RT28xxThreadTerminate(
- 			pObj->RTUSBCmdThr_pid = NULL;
+ 		if (loop == 1)	//BandWidth = 40 MHz
+@@ -1266,11 +1131,12 @@ VOID RTMPFilterCalibration(
+ 			BBPValue&= (~0x18);
+ 			BBPValue|= (0x10);
+ 			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R4, BBPValue);
+-
++#ifdef RT30xx
+ 			// set to BW40
+ 			RT30xxReadRFRegister(pAd, RF_R31, &value);
+ 			value |= 0x20;
+ 			RT30xxWriteRFRegister(pAd, RF_R31, value);
++#endif
  		}
- 	}
--#endif
+ 		else			//BandWidth = 20 MHz
+ 		{
+@@ -1281,11 +1147,12 @@ VOID RTMPFilterCalibration(
+ 				FilterTarget = 0x13;
+ 			else
+ 				FilterTarget = 0x16;
+-
++#ifdef RT30xx
+ 			// set to BW20
+ 			RT30xxReadRFRegister(pAd, RF_R31, &value);
+ 			value &= (~0x20);
+ 			RT30xxWriteRFRegister(pAd, RF_R31, value);
++#endif
+ 		}
  
- 	// Kill tasklets
- 	pAd->mlme_kill = 0;
-Index: b/drivers/staging/rt2870/common/2870_rtmp_init.c
-===================================================================
---- a/drivers/staging/rt2870/common/2870_rtmp_init.c
-+++ b/drivers/staging/rt2870/common/2870_rtmp_init.c
-@@ -699,14 +699,9 @@ NDIS_STATUS AdapterBlockAllocateMemory(
+ 		// Write 0x01 to RF_R22 to enable baseband loopback mode
+@@ -1390,7 +1257,6 @@ VOID RTMPFilterCalibration(
  
- 	usb_dev = pObj->pUsb_Dev;
+ 	DBGPRINT(RT_DEBUG_TRACE, ("RTMPFilterCalibration - CaliBW20RfR24=0x%x, CaliBW40RfR24=0x%x\n", pAd->Mlme.CaliBW20RfR24, pAd->Mlme.CaliBW40RfR24));
+ }
+-#endif /* RT30xx */
  
--#ifndef RT30xx
--	pObj->MLMEThr_pid		= THREAD_PID_INIT_VALUE;
--	pObj->RTUSBCmdThr_pid	= THREAD_PID_INIT_VALUE;
--#endif
--#ifdef RT30xx
- 	pObj->MLMEThr_pid	= NULL;
- 	pObj->RTUSBCmdThr_pid	= NULL;
--#endif
-+
- 	*ppAd = (PVOID)vmalloc(sizeof(RTMP_ADAPTER));
+ VOID NICInitRT30xxRFRegisters(IN PRTMP_ADAPTER pAd)
+ {
+@@ -1417,7 +1283,7 @@ VOID NICInitRT30xxRFRegisters(IN PRTMP_A
+                 }
  
- 	if (*ppAd)
-@@ -761,75 +756,42 @@ NDIS_STATUS	 CreateThreads(
- 	init_completion (&pAd->TimerQComplete);
- 
- 	// Creat MLME Thread
--#ifndef RT30xx
--	pObj->MLMEThr_pid= THREAD_PID_INIT_VALUE;
--	pid_number = kernel_thread(MlmeThread, pAd, CLONE_VM);
--	if (pid_number < 0)
--	{
--#endif
--#ifdef RT30xx
- 	pObj->MLMEThr_pid = NULL;
- 	pid_number = kernel_thread(MlmeThread, pAd, CLONE_VM);
- 	if (pid_number < 0)
- 	{
--#endif
- 		printk (KERN_WARNING "%s: unable to start Mlme thread\n",pAd->net_dev->name);
- 		return NDIS_STATUS_FAILURE;
- 	}
- 
--#ifndef RT30xx
--	pObj->MLMEThr_pid = GET_PID(pid_number);
--#endif
--#ifdef RT30xx
- 	pObj->MLMEThr_pid = find_get_pid(pid_number);
--#endif
-+
- 	// Wait for the thread to start
- 	wait_for_completion(&(pAd->mlmeComplete));
- 
- 	// Creat Command Thread
--#ifndef RT30xx
--	pObj->RTUSBCmdThr_pid= THREAD_PID_INIT_VALUE;
--	pid_number = kernel_thread(RTUSBCmdThread, pAd, CLONE_VM);
--	if (pid_number < 0)
--#endif
--#ifdef RT30xx
- 	pObj->RTUSBCmdThr_pid = NULL;
- 	pid_number = kernel_thread(RTUSBCmdThread, pAd, CLONE_VM);
- 	if (pid_number < 0)
--#endif
- 	{
- 		printk (KERN_WARNING "%s: unable to start RTUSBCmd thread\n",pAd->net_dev->name);
- 		return NDIS_STATUS_FAILURE;
- 	}
- 
--#ifndef RT30xx
--	pObj->RTUSBCmdThr_pid = GET_PID(pid_number);
--#endif
--#ifdef RT30xx
- 	pObj->RTUSBCmdThr_pid = find_get_pid(pid_number);
--#endif
-+
- 	wait_for_completion(&(pAd->CmdQComplete));
- 
--#ifndef RT30xx
--	pObj->TimerQThr_pid= THREAD_PID_INIT_VALUE;
--	pid_number = kernel_thread(TimerQThread, pAd, CLONE_VM);
--	if (pid_number < 0)
--#endif
--#ifdef RT30xx
- 	pObj->TimerQThr_pid = NULL;
- 	pid_number = kernel_thread(TimerQThread, pAd, CLONE_VM);
- 	if (pid_number < 0)
--#endif
- 	{
- 		printk (KERN_WARNING "%s: unable to start TimerQThread\n",pAd->net_dev->name);
- 		return NDIS_STATUS_FAILURE;
- 	}
--#ifndef RT30xx
--	pObj->TimerQThr_pid = GET_PID(pid_number);
--#endif
--#ifdef RT30xx
-+
- 	pObj->TimerQThr_pid = find_get_pid(pid_number);
--#endif
-+
- 	// Wait for the thread to start
- 	wait_for_completion(&(pAd->TimerQComplete));
- 
-Index: b/drivers/staging/rt2870/common/rtusb_io.c
-===================================================================
---- a/drivers/staging/rt2870/common/rtusb_io.c
-+++ b/drivers/staging/rt2870/common/rtusb_io.c
-@@ -984,7 +984,7 @@ NDIS_STATUS	RTUSBEnqueueCmdFromNdis(
- 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;
- 
- #ifndef RT30xx
--	CHECK_PID_LEGALITY(pObj->RTUSBCmdThr_pid)
-+	if (pid_nr(pObj->RTUSBCmdThr_pid) > 0)
+                 //For RF filter Calibration
+-                RTUSBFilterCalibration(pAd);
++		RTMPFilterCalibration(pAd);
+         }
  #endif
  #ifdef RT30xx
- 	if (pObj->RTUSBCmdThr_pid < 0)
-Index: b/drivers/staging/rt2870/rt2870.h
-===================================================================
---- a/drivers/staging/rt2870/rt2870.h
-+++ b/drivers/staging/rt2870/rt2870.h
-@@ -437,22 +437,6 @@ VOID RTUSBBulkOutRTSFrameComplete(purbb_
- VOID RTUSBBulkOutPsPollComplete(purbb_t pUrb, struct pt_regs *pt_regs);
- VOID RTUSBBulkRxComplete(purbb_t pUrb, struct pt_regs *pt_regs);
- 
--#ifndef RT30xx
--#define RTUSBMlmeUp(pAd)	        \
--{								    \
--	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;	\
--	CHECK_PID_LEGALITY(pObj->MLMEThr_pid)		    \
--        up(&(pAd->mlme_semaphore)); \
--}
--
--#define RTUSBCMDUp(pAd)	                \
--{									    \
--	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;	\
--	CHECK_PID_LEGALITY(pObj->RTUSBCmdThr_pid)	    \
--	    up(&(pAd->RTUSBCmd_semaphore)); \
--}
--#endif
--#ifdef RT30xx
- #define RTUSBMlmeUp(pAd)	        \
- {								    \
- 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;	\
-@@ -466,7 +450,6 @@ VOID RTUSBBulkRxComplete(purbb_t pUrb, s
- 	if (pid_nr(pObj->RTUSBCmdThr_pid) > 0) \
- 	    up(&(pAd->RTUSBCmd_semaphore)); \
- }
--#endif
- 
- static inline NDIS_STATUS RTMPAllocateMemory(
- 	OUT PVOID *ptr,
