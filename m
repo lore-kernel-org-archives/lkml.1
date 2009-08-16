@@ -1,195 +1,341 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932518AbZHPTgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932552AbZHPThR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932518AbZHPTgw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 15:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932506AbZHPTgt
+	id S932552AbZHPThR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 15:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932281AbZHPThO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 15:36:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35763 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932227AbZHPTcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 15:32:04 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com
-Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
-       jmarchan@redhat.com
-Subject: [PATCH 09/24] io-controller: Export disk time used and nr sectors dipatched through cgroups
-Date: Sun, 16 Aug 2009 15:30:31 -0400
-Message-Id: <1250451046-9966-10-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1250451046-9966-1-git-send-email-vgoyal@redhat.com>
-References: <1250451046-9966-1-git-send-email-vgoyal@redhat.com>
+	Sun, 16 Aug 2009 15:37:14 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:52834 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932284AbZHPThI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 15:37:08 -0400
+Message-ID: <4A885FD1.4030105@gmail.com>
+Date: Sun, 16 Aug 2009 21:36:49 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+MIME-Version: 1.0
+To: Michael Spang <mspang@csclub.uwaterloo.ca>
+CC: "David S. Miller" <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH] Revert netlink ABI change to gnet_stats_basic
+References: <1250002683-28554-1-git-send-email-mspang@csclub.uwaterloo.ca>	 <4A87FCAC.5070705@gmail.com> <118a63b80908160642j73568637n2f3fa97fc33d8e57@mail.gmail.com>
+In-Reply-To: <118a63b80908160642j73568637n2f3fa97fc33d8e57@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 16 Aug 2009 21:37:04 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o This patch exports some statistics through cgroup interface. Two of the
-  statistics currently exported are actual disk time assigned to the cgroup
-  and actual number of sectors dispatched to disk on behalf of this cgroup.
+Michael Spang a écrit :
+> On Sun, Aug 16, 2009 at 8:33 AM, Eric Dumazet<eric.dumazet@gmail.com> wrote:
+>> What exactly broke after patch was pushed ?
+> 
+> The libnl library refuses to initialize with 2.6.30 with pre-2.6.30
+> headers. With 2.6.30 I get
+> 
+>   $ libnl-1.1/src/nl-qdisc-dump brief
+>   Unable to retrieve qdisc cache
+> 
+> whereas previously I would get
+> 
+>   $ libnl-1.1/src/nl-qdisc-dump brief
+>   htb qdisc dev eth0 handle 01: parent root r2q 10000 default :02
+> 
+> It works fine if I use the headers from 2.6.30, but then I don't
+> believe it would work with older kernels.
+> 
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+OK, then we are stuck to use a separate definition for user land
+and kernel land, or risk various side effects, like performance hit
+and security risk.
+
+Thanks a lot Michael
+
+[PATCH] net: restore gnet_stats_basic to previous definition
+
+In 5e140dfc1fe87eae27846f193086724806b33c7d "net: reorder struct Qdisc
+for better SMP performance" the definition of struct gnet_stats_basic
+changed incompatibly, as copies of this struct are shipped to
+userland via netlink.
+
+Restoring old behavior is not welcome, for performance reason.
+
+Fix is to use a private structure for kernel, and
+teach gnet_stats_copy_basic() to convert from kernel to user land,
+using legacy structure (struct gnet_stats_basic)
+
+Based on a report and initial patch from Michael Spang.
+
+Reported-by: Michael Spang <mspang@csclub.uwaterloo.ca>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 ---
- block/elevator-fq.c |   76 +++++++++++++++++++++++++++++++++++++++++++++++++++
- block/elevator-fq.h |   10 +++++++
- 2 files changed, 86 insertions(+), 0 deletions(-)
+ include/linux/gen_stats.h          |    5 +++++
+ include/net/act_api.h              |    2 +-
+ include/net/gen_stats.h            |   10 +++++-----
+ include/net/netfilter/xt_rateest.h |    2 +-
+ include/net/sch_generic.h          |    2 +-
+ net/core/gen_estimator.c           |   12 ++++++------
+ net/core/gen_stats.c               |   11 ++++++++---
+ net/netfilter/xt_RATEEST.c         |    2 +-
+ net/sched/sch_atm.c                |    2 +-
+ net/sched/sch_cbq.c                |    2 +-
+ net/sched/sch_drr.c                |    2 +-
+ net/sched/sch_hfsc.c               |    2 +-
+ net/sched/sch_htb.c                |    2 +-
+ 13 files changed, 33 insertions(+), 23 deletions(-)
 
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 8d91ff7..de13d30 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -13,6 +13,7 @@
+diff --git a/include/linux/gen_stats.h b/include/linux/gen_stats.h
+index 0ffa41d..710e901 100644
+--- a/include/linux/gen_stats.h
++++ b/include/linux/gen_stats.h
+@@ -22,6 +22,11 @@ struct gnet_stats_basic
+ {
+ 	__u64	bytes;
+ 	__u32	packets;
++};
++struct gnet_stats_basic_packed
++{
++	__u64	bytes;
++	__u32	packets;
+ } __attribute__ ((packed));
  
- #include <linux/blkdev.h>
- #include <linux/blktrace_api.h>
-+#include <linux/seq_file.h>
- #include "elevator-fq.h"
+ /**
+diff --git a/include/net/act_api.h b/include/net/act_api.h
+index 565eed8..c05fd71 100644
+--- a/include/net/act_api.h
++++ b/include/net/act_api.h
+@@ -16,7 +16,7 @@ struct tcf_common {
+ 	u32				tcfc_capab;
+ 	int				tcfc_action;
+ 	struct tcf_t			tcfc_tm;
+-	struct gnet_stats_basic		tcfc_bstats;
++	struct gnet_stats_basic_packed	tcfc_bstats;
+ 	struct gnet_stats_queue		tcfc_qstats;
+ 	struct gnet_stats_rate_est	tcfc_rate_est;
+ 	spinlock_t			tcfc_lock;
+diff --git a/include/net/gen_stats.h b/include/net/gen_stats.h
+index d136b52..c148855 100644
+--- a/include/net/gen_stats.h
++++ b/include/net/gen_stats.h
+@@ -28,7 +28,7 @@ extern int gnet_stats_start_copy_compat(struct sk_buff *skb, int type,
+ 					spinlock_t *lock, struct gnet_dump *d);
  
- const int elv_slice_sync = HZ / 10;
-@@ -257,6 +258,8 @@ entity_served(struct io_entity *entity, unsigned long served,
- 	for_each_entity(entity) {
- 		entity->vdisktime += elv_delta_fair(served, entity);
- 		update_min_vdisktime(entity->st);
-+		entity->total_time += served;
-+		entity->total_sectors += nr_sectors;
- 	}
+ extern int gnet_stats_copy_basic(struct gnet_dump *d,
+-				 struct gnet_stats_basic *b);
++				 struct gnet_stats_basic_packed *b);
+ extern int gnet_stats_copy_rate_est(struct gnet_dump *d,
+ 				    struct gnet_stats_rate_est *r);
+ extern int gnet_stats_copy_queue(struct gnet_dump *d,
+@@ -37,14 +37,14 @@ extern int gnet_stats_copy_app(struct gnet_dump *d, void *st, int len);
+ 
+ extern int gnet_stats_finish_copy(struct gnet_dump *d);
+ 
+-extern int gen_new_estimator(struct gnet_stats_basic *bstats,
++extern int gen_new_estimator(struct gnet_stats_basic_packed *bstats,
+ 			     struct gnet_stats_rate_est *rate_est,
+ 			     spinlock_t *stats_lock, struct nlattr *opt);
+-extern void gen_kill_estimator(struct gnet_stats_basic *bstats,
++extern void gen_kill_estimator(struct gnet_stats_basic_packed *bstats,
+ 			       struct gnet_stats_rate_est *rate_est);
+-extern int gen_replace_estimator(struct gnet_stats_basic *bstats,
++extern int gen_replace_estimator(struct gnet_stats_basic_packed *bstats,
+ 				 struct gnet_stats_rate_est *rate_est,
+ 				 spinlock_t *stats_lock, struct nlattr *opt);
+-extern bool gen_estimator_active(const struct gnet_stats_basic *bstats,
++extern bool gen_estimator_active(const struct gnet_stats_basic_packed *bstats,
+ 				 const struct gnet_stats_rate_est *rate_est);
+ #endif
+diff --git a/include/net/netfilter/xt_rateest.h b/include/net/netfilter/xt_rateest.h
+index 65d594d..ddbf37e 100644
+--- a/include/net/netfilter/xt_rateest.h
++++ b/include/net/netfilter/xt_rateest.h
+@@ -8,7 +8,7 @@ struct xt_rateest {
+ 	spinlock_t			lock;
+ 	struct gnet_estimator		params;
+ 	struct gnet_stats_rate_est	rstats;
+-	struct gnet_stats_basic		bstats;
++	struct gnet_stats_basic_packed	bstats;
+ };
+ 
+ extern struct xt_rateest *xt_rateest_lookup(const char *name);
+diff --git a/include/net/sch_generic.h b/include/net/sch_generic.h
+index 964ffa0..5482e95 100644
+--- a/include/net/sch_generic.h
++++ b/include/net/sch_generic.h
+@@ -72,7 +72,7 @@ struct Qdisc
+ 	 */
+ 	unsigned long		state;
+ 	struct sk_buff_head	q;
+-	struct gnet_stats_basic bstats;
++	struct gnet_stats_basic_packed bstats;
+ 	struct gnet_stats_queue	qstats;
+ };
+ 
+diff --git a/net/core/gen_estimator.c b/net/core/gen_estimator.c
+index 78e5bfc..493775f 100644
+--- a/net/core/gen_estimator.c
++++ b/net/core/gen_estimator.c
+@@ -81,7 +81,7 @@
+ struct gen_estimator
+ {
+ 	struct list_head	list;
+-	struct gnet_stats_basic	*bstats;
++	struct gnet_stats_basic_packed	*bstats;
+ 	struct gnet_stats_rate_est	*rate_est;
+ 	spinlock_t		*stats_lock;
+ 	int			ewma_log;
+@@ -165,7 +165,7 @@ static void gen_add_node(struct gen_estimator *est)
  }
  
-@@ -850,6 +853,66 @@ STORE_FUNCTION(weight, IO_WEIGHT_MIN, IO_WEIGHT_MAX);
- STORE_FUNCTION(ioprio_class, IOPRIO_CLASS_RT, IOPRIO_CLASS_IDLE);
- #undef STORE_FUNCTION
+ static
+-struct gen_estimator *gen_find_node(const struct gnet_stats_basic *bstats,
++struct gen_estimator *gen_find_node(const struct gnet_stats_basic_packed *bstats,
+ 				    const struct gnet_stats_rate_est *rate_est)
+ {
+ 	struct rb_node *p = est_root.rb_node;
+@@ -202,7 +202,7 @@ struct gen_estimator *gen_find_node(const struct gnet_stats_basic *bstats,
+  *
+  * NOTE: Called under rtnl_mutex
+  */
+-int gen_new_estimator(struct gnet_stats_basic *bstats,
++int gen_new_estimator(struct gnet_stats_basic_packed *bstats,
+ 		      struct gnet_stats_rate_est *rate_est,
+ 		      spinlock_t *stats_lock,
+ 		      struct nlattr *opt)
+@@ -262,7 +262,7 @@ static void __gen_kill_estimator(struct rcu_head *head)
+  *
+  * NOTE: Called under rtnl_mutex
+  */
+-void gen_kill_estimator(struct gnet_stats_basic *bstats,
++void gen_kill_estimator(struct gnet_stats_basic_packed *bstats,
+ 			struct gnet_stats_rate_est *rate_est)
+ {
+ 	struct gen_estimator *e;
+@@ -292,7 +292,7 @@ EXPORT_SYMBOL(gen_kill_estimator);
+  *
+  * Returns 0 on success or a negative error code.
+  */
+-int gen_replace_estimator(struct gnet_stats_basic *bstats,
++int gen_replace_estimator(struct gnet_stats_basic_packed *bstats,
+ 			  struct gnet_stats_rate_est *rate_est,
+ 			  spinlock_t *stats_lock, struct nlattr *opt)
+ {
+@@ -308,7 +308,7 @@ EXPORT_SYMBOL(gen_replace_estimator);
+  *
+  * Returns true if estimator is active, and false if not.
+  */
+-bool gen_estimator_active(const struct gnet_stats_basic *bstats,
++bool gen_estimator_active(const struct gnet_stats_basic_packed *bstats,
+ 			  const struct gnet_stats_rate_est *rate_est)
+ {
+ 	ASSERT_RTNL();
+diff --git a/net/core/gen_stats.c b/net/core/gen_stats.c
+index c3d0ffe..8569310 100644
+--- a/net/core/gen_stats.c
++++ b/net/core/gen_stats.c
+@@ -106,16 +106,21 @@ gnet_stats_start_copy(struct sk_buff *skb, int type, spinlock_t *lock,
+  * if the room in the socket buffer was not sufficient.
+  */
+ int
+-gnet_stats_copy_basic(struct gnet_dump *d, struct gnet_stats_basic *b)
++gnet_stats_copy_basic(struct gnet_dump *d, struct gnet_stats_basic_packed *b)
+ {
+ 	if (d->compat_tc_stats) {
+ 		d->tc_stats.bytes = b->bytes;
+ 		d->tc_stats.packets = b->packets;
+ 	}
  
-+static int io_cgroup_disk_time_read(struct cgroup *cgroup,
-+				struct cftype *cftype, struct seq_file *m)
-+{
-+	struct io_cgroup *iocg;
-+	struct io_group *iog;
-+	struct hlist_node *n;
-+
-+	if (!cgroup_lock_live_group(cgroup))
-+		return -ENODEV;
-+
-+	iocg = cgroup_to_io_cgroup(cgroup);
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
-+		/*
-+		 * There might be groups which are not functional and
-+		 * waiting to be reclaimed upon cgoup deletion.
-+		 */
-+		if (iog->key) {
-+			seq_printf(m, "%u:%u %lu\n", MAJOR(iog->dev),
-+					MINOR(iog->dev),
-+					iog->entity.total_time);
-+		}
+-	if (d->tail)
+-		return gnet_stats_copy(d, TCA_STATS_BASIC, b, sizeof(*b));
++	if (d->tail) {
++		struct gnet_stats_basic sb;
+ 
++		memset(&sb, 0, sizeof(sb));
++		sb.bytes = b->bytes;
++		sb.packets = b->packets;
++		return gnet_stats_copy(d, TCA_STATS_BASIC, &sb, sizeof(sb));
 +	}
-+	rcu_read_unlock();
-+	cgroup_unlock();
-+
-+	return 0;
-+}
-+
-+static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
-+				struct cftype *cftype, struct seq_file *m)
-+{
-+	struct io_cgroup *iocg;
-+	struct io_group *iog;
-+	struct hlist_node *n;
-+
-+	if (!cgroup_lock_live_group(cgroup))
-+		return -ENODEV;
-+
-+	iocg = cgroup_to_io_cgroup(cgroup);
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
-+		/*
-+		 * There might be groups which are not functional and
-+		 * waiting to be reclaimed upon cgoup deletion.
-+		 */
-+		if (iog->key) {
-+			seq_printf(m, "%u:%u %lu\n", MAJOR(iog->dev),
-+					MINOR(iog->dev),
-+					iog->entity.total_sectors);
-+		}
-+	}
-+	rcu_read_unlock();
-+	cgroup_unlock();
-+
-+	return 0;
-+}
-+
- struct cftype io_files[] = {
- 	{
- 		.name = "weight",
-@@ -861,6 +924,14 @@ struct cftype io_files[] = {
- 		.read_u64 = io_cgroup_ioprio_class_read,
- 		.write_u64 = io_cgroup_ioprio_class_write,
- 	},
-+	{
-+		.name = "disk_time",
-+		.read_seq_string = io_cgroup_disk_time_read,
-+	},
-+	{
-+		.name = "disk_sectors",
-+		.read_seq_string = io_cgroup_disk_sectors_read,
-+	},
- };
+ 	return 0;
+ }
  
- static int iocg_populate(struct cgroup_subsys *subsys, struct cgroup *cgroup)
-@@ -952,6 +1023,8 @@ io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
- 	struct io_cgroup *iocg;
- 	struct io_group *iog, *leaf = NULL, *prev = NULL;
- 	gfp_t flags = GFP_ATOMIC |  __GFP_ZERO;
-+	unsigned int major, minor;
-+	struct backing_dev_info *bdi = &q->backing_dev_info;
+diff --git a/net/netfilter/xt_RATEEST.c b/net/netfilter/xt_RATEEST.c
+index 43f5676..d80b819 100644
+--- a/net/netfilter/xt_RATEEST.c
++++ b/net/netfilter/xt_RATEEST.c
+@@ -74,7 +74,7 @@ static unsigned int
+ xt_rateest_tg(struct sk_buff *skb, const struct xt_target_param *par)
+ {
+ 	const struct xt_rateest_target_info *info = par->targinfo;
+-	struct gnet_stats_basic *stats = &info->est->bstats;
++	struct gnet_stats_basic_packed *stats = &info->est->bstats;
  
- 	for (; cgroup != NULL; cgroup = cgroup->parent) {
- 		iocg = cgroup_to_io_cgroup(cgroup);
-@@ -972,6 +1045,9 @@ io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
+ 	spin_lock_bh(&info->est->lock);
+ 	stats->bytes += skb->len;
+diff --git a/net/sched/sch_atm.c b/net/sched/sch_atm.c
+index 2a8b83a..ab82f14 100644
+--- a/net/sched/sch_atm.c
++++ b/net/sched/sch_atm.c
+@@ -49,7 +49,7 @@ struct atm_flow_data {
+ 	struct socket		*sock;		/* for closing */
+ 	u32			classid;	/* x:y type ID */
+ 	int			ref;		/* reference count */
+-	struct gnet_stats_basic	bstats;
++	struct gnet_stats_basic_packed	bstats;
+ 	struct gnet_stats_queue	qstats;
+ 	struct atm_flow_data	*next;
+ 	struct atm_flow_data	*excess;	/* flow for excess traffic;
+diff --git a/net/sched/sch_cbq.c b/net/sched/sch_cbq.c
+index 23a1676..d5798e1 100644
+--- a/net/sched/sch_cbq.c
++++ b/net/sched/sch_cbq.c
+@@ -128,7 +128,7 @@ struct cbq_class
+ 	long			avgidle;
+ 	long			deficit;	/* Saved deficit for WRR */
+ 	psched_time_t		penalized;
+-	struct gnet_stats_basic bstats;
++	struct gnet_stats_basic_packed bstats;
+ 	struct gnet_stats_queue qstats;
+ 	struct gnet_stats_rate_est rate_est;
+ 	struct tc_cbq_xstats	xstats;
+diff --git a/net/sched/sch_drr.c b/net/sched/sch_drr.c
+index 7597fe1..12b2fb0 100644
+--- a/net/sched/sch_drr.c
++++ b/net/sched/sch_drr.c
+@@ -22,7 +22,7 @@ struct drr_class {
+ 	unsigned int			refcnt;
+ 	unsigned int			filter_cnt;
  
- 		iog->iocg_id = css_id(&iocg->css);
+-	struct gnet_stats_basic		bstats;
++	struct gnet_stats_basic_packed		bstats;
+ 	struct gnet_stats_queue		qstats;
+ 	struct gnet_stats_rate_est	rate_est;
+ 	struct list_head		alist;
+diff --git a/net/sched/sch_hfsc.c b/net/sched/sch_hfsc.c
+index 362c281..dad0144 100644
+--- a/net/sched/sch_hfsc.c
++++ b/net/sched/sch_hfsc.c
+@@ -116,7 +116,7 @@ struct hfsc_class
+ 	struct Qdisc_class_common cl_common;
+ 	unsigned int	refcnt;		/* usage count */
  
-+		sscanf(dev_name(bdi->dev), "%u:%u", &major, &minor);
-+		iog->dev = MKDEV(major, minor);
-+
- 		io_group_init_entity(iocg, iog);
- 
- 		atomic_set(&iog->ref, 0);
-diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-index 671f366..e1d5bdd 100644
---- a/block/elevator-fq.h
-+++ b/block/elevator-fq.h
-@@ -52,6 +52,13 @@ struct io_entity {
- 
- 	unsigned short ioprio, ioprio_class;
- 	int ioprio_changed;
-+
-+	/*
-+	 * Keep track of total service received by this entity. Keep the
-+	 * stats both for time slices and number of sectors dispatched
-+	 */
-+	unsigned long total_time;
-+	unsigned long total_sectors;
- };
- 
- /*
-@@ -103,6 +110,9 @@ struct io_group {
- 	struct io_queue *async_idle_queue;
- 	void *key;
- 	struct rcu_head rcu_head;
-+
-+	/* The device MKDEV(major, minor), this group has been created for */
-+	dev_t	dev;
- };
- 
- struct io_cgroup {
--- 
-1.6.0.6
-
+-	struct gnet_stats_basic bstats;
++	struct gnet_stats_basic_packed bstats;
+ 	struct gnet_stats_queue qstats;
+ 	struct gnet_stats_rate_est rate_est;
+ 	unsigned int	level;		/* class level in hierarchy */
+diff --git a/net/sched/sch_htb.c b/net/sched/sch_htb.c
+index 88cd026..ec4d463 100644
+--- a/net/sched/sch_htb.c
++++ b/net/sched/sch_htb.c
+@@ -74,7 +74,7 @@ enum htb_cmode {
+ struct htb_class {
+ 	struct Qdisc_class_common common;
+ 	/* general class parameters */
+-	struct gnet_stats_basic bstats;
++	struct gnet_stats_basic_packed bstats;
+ 	struct gnet_stats_queue qstats;
+ 	struct gnet_stats_rate_est rate_est;
+ 	struct tc_htb_xstats xstats;	/* our special stats */
