@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbZHPJbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbZHPJbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754429AbZHPJbp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 05:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbZHPJbi
+	id S1754349AbZHPJbh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 05:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbZHPJbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 05:31:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45381 "EHLO mx2.redhat.com"
+	Sun, 16 Aug 2009 05:31:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45382 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754114AbZHPJaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754123AbZHPJaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 16 Aug 2009 05:30:15 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 45/48] KVM: Introduce kvm_vcpu_is_bsp() function.
-Date: Sun, 16 Aug 2009 12:30:05 +0300
-Message-Id: <1250415008-17175-46-git-send-email-avi@redhat.com>
+Subject: [PATCH 48/48] KVM: Use macro to iterate over vcpus.
+Date: Sun, 16 Aug 2009 12:30:08 +0300
+Message-Id: <1250415008-17175-49-git-send-email-avi@redhat.com>
 In-Reply-To: <1250415008-17175-1-git-send-email-avi@redhat.com>
 References: <1250415008-17175-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,259 +23,342 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Gleb Natapov <gleb@redhat.com>
 
-Use it instead of open code "vcpu_id zero is BSP" assumption.
-
 Signed-off-by: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/ia64/kvm/kvm-ia64.c |    2 +-
- arch/ia64/kvm/vcpu.c     |    2 +-
- arch/x86/kvm/i8254.c     |    4 ++--
- arch/x86/kvm/i8259.c     |    6 +++---
- arch/x86/kvm/lapic.c     |    7 ++++---
- arch/x86/kvm/svm.c       |    4 ++--
- arch/x86/kvm/vmx.c       |    6 +++---
- arch/x86/kvm/x86.c       |    4 ++--
- include/linux/kvm_host.h |    5 +++++
- virt/kvm/ioapic.c        |    4 +++-
- virt/kvm/kvm_main.c      |    2 ++
- 11 files changed, 28 insertions(+), 18 deletions(-)
+ arch/ia64/kvm/kvm-ia64.c   |   29 ++++++++++++++---------------
+ arch/powerpc/kvm/powerpc.c |   16 ++++++++++------
+ arch/s390/kvm/kvm-s390.c   |   33 ++++++++++++++++-----------------
+ arch/x86/kvm/i8254.c       |    7 ++-----
+ arch/x86/kvm/mmu.c         |    6 +++---
+ arch/x86/kvm/x86.c         |   25 ++++++++++++-------------
+ include/linux/kvm_host.h   |   11 +++++++++++
+ virt/kvm/irq_comm.c        |    6 ++----
+ virt/kvm/kvm_main.c        |   19 +++++++------------
+ 9 files changed, 77 insertions(+), 75 deletions(-)
 
 diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
-index 8dde369..4082665 100644
+index d1f7bcd..5c766bd 100644
 --- a/arch/ia64/kvm/kvm-ia64.c
 +++ b/arch/ia64/kvm/kvm-ia64.c
-@@ -1216,7 +1216,7 @@ int kvm_arch_vcpu_init(struct kvm_vcpu *vcpu)
- 	if (IS_ERR(vmm_vcpu))
- 		return PTR_ERR(vmm_vcpu);
+@@ -337,13 +337,12 @@ static struct kvm_vcpu *lid_to_vcpu(struct kvm *kvm, unsigned long id,
+ {
+ 	union ia64_lid lid;
+ 	int i;
++	struct kvm_vcpu *vcpu;
  
--	if (vcpu->vcpu_id == 0) {
-+	if (kvm_vcpu_is_bsp(vcpu)) {
- 		vcpu->arch.mp_state = KVM_MP_STATE_RUNNABLE;
+-	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++) {
+-		if (kvm->vcpus[i]) {
+-			lid.val = VCPU_LID(kvm->vcpus[i]);
+-			if (lid.id == id && lid.eid == eid)
+-				return kvm->vcpus[i];
+-		}
++	kvm_for_each_vcpu(i, vcpu, kvm) {
++		lid.val = VCPU_LID(vcpu);
++		if (lid.id == id && lid.eid == eid)
++			return vcpu;
+ 	}
  
- 		/*Set entry address for first run.*/
-diff --git a/arch/ia64/kvm/vcpu.c b/arch/ia64/kvm/vcpu.c
-index cc406d0..61a3320 100644
---- a/arch/ia64/kvm/vcpu.c
-+++ b/arch/ia64/kvm/vcpu.c
-@@ -830,7 +830,7 @@ static void vcpu_set_itc(struct kvm_vcpu *vcpu, u64 val)
+ 	return NULL;
+@@ -409,21 +408,21 @@ static int handle_global_purge(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 	struct kvm *kvm = vcpu->kvm;
+ 	struct call_data call_data;
+ 	int i;
++	struct kvm_vcpu *vcpui;
  
- 	kvm = (struct kvm *)KVM_VM_BASE;
+ 	call_data.ptc_g_data = p->u.ptc_g_data;
  
--	if (vcpu->vcpu_id == 0) {
-+	if (kvm_vcpu_is_bsp(vcpu)) {
- 		for (i = 0; i < kvm->arch.online_vcpus; i++) {
- 			v = (struct kvm_vcpu *)((char *)vcpu +
- 					sizeof(struct kvm_vcpu_data) * i);
+-	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++) {
+-		if (!kvm->vcpus[i] || kvm->vcpus[i]->arch.mp_state ==
+-						KVM_MP_STATE_UNINITIALIZED ||
+-					vcpu == kvm->vcpus[i])
++	kvm_for_each_vcpu(i, vcpui, kvm) {
++		if (vcpui->arch.mp_state == KVM_MP_STATE_UNINITIALIZED ||
++				vcpu == vcpui)
+ 			continue;
+ 
+-		if (waitqueue_active(&kvm->vcpus[i]->wq))
+-			wake_up_interruptible(&kvm->vcpus[i]->wq);
++		if (waitqueue_active(&vcpui->wq))
++			wake_up_interruptible(&vcpui->wq);
+ 
+-		if (kvm->vcpus[i]->cpu != -1) {
+-			call_data.vcpu = kvm->vcpus[i];
+-			smp_call_function_single(kvm->vcpus[i]->cpu,
++		if (vcpui->cpu != -1) {
++			call_data.vcpu = vcpui;
++			smp_call_function_single(vcpui->cpu,
+ 					vcpu_global_purge, &call_data, 1);
+ 		} else
+ 			printk(KERN_WARNING"kvm: Uninit vcpu received ipi!\n");
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 2cf915e..7ad30e0 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -122,13 +122,17 @@ struct kvm *kvm_arch_create_vm(void)
+ static void kvmppc_free_vcpus(struct kvm *kvm)
+ {
+ 	unsigned int i;
++	struct kvm_vcpu *vcpu;
+ 
+-	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+-		if (kvm->vcpus[i]) {
+-			kvm_arch_vcpu_free(kvm->vcpus[i]);
+-			kvm->vcpus[i] = NULL;
+-		}
+-	}
++	kvm_for_each_vcpu(i, vcpu, kvm)
++		kvm_arch_vcpu_free(vcpu);
++
++	mutex_lock(&kvm->lock);
++	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++)
++		kvm->vcpus[i] = NULL;
++
++	atomic_set(&kvm->online_vcpus, 0);
++	mutex_unlock(&kvm->lock);
+ }
+ 
+ void kvm_arch_sync_events(struct kvm *kvm)
+diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+index 098bfa6..36ad2b4 100644
+--- a/arch/s390/kvm/kvm-s390.c
++++ b/arch/s390/kvm/kvm-s390.c
+@@ -211,13 +211,17 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
+ static void kvm_free_vcpus(struct kvm *kvm)
+ {
+ 	unsigned int i;
++	struct kvm_vcpu *vcpu;
+ 
+-	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+-		if (kvm->vcpus[i]) {
+-			kvm_arch_vcpu_destroy(kvm->vcpus[i]);
+-			kvm->vcpus[i] = NULL;
+-		}
+-	}
++	kvm_for_each_vcpu(i, vcpu, kvm)
++		kvm_arch_vcpu_destroy(vcpu);
++
++	mutex_lock(&kvm->lock);
++	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++)
++		kvm->vcpus[i] = NULL;
++
++	atomic_set(&kvm->online_vcpus, 0);
++	mutex_unlock(&kvm->lock);
+ }
+ 
+ void kvm_arch_sync_events(struct kvm *kvm)
+@@ -314,8 +318,6 @@ struct kvm_vcpu *kvm_arch_vcpu_create(struct kvm *kvm,
+ 	BUG_ON(!kvm->arch.sca);
+ 	if (!kvm->arch.sca->cpu[id].sda)
+ 		kvm->arch.sca->cpu[id].sda = (__u64) vcpu->arch.sie_block;
+-	else
+-		BUG_ON(!kvm->vcpus[id]); /* vcpu does already exist */
+ 	vcpu->arch.sie_block->scaoh = (__u32)(((__u64)kvm->arch.sca) >> 32);
+ 	vcpu->arch.sie_block->scaol = (__u32)(__u64)kvm->arch.sca;
+ 
+@@ -682,7 +684,8 @@ int kvm_arch_set_memory_region(struct kvm *kvm,
+ 				struct kvm_memory_slot old,
+ 				int user_alloc)
+ {
+-	int i;
++	int i, j = 0, r = -EINVAL;
++	struct kvm_vcpu *vcpu;
+ 
+ 	/* A few sanity checks. We can have exactly one memory slot which has
+ 	   to start at guest virtual zero and which has to be located at a
+@@ -707,14 +710,10 @@ int kvm_arch_set_memory_region(struct kvm *kvm,
+ 		return -EINVAL;
+ 
+ 	/* request update of sie control block for all available vcpus */
+-	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+-		if (kvm->vcpus[i]) {
+-			if (test_and_set_bit(KVM_REQ_MMU_RELOAD,
+-						&kvm->vcpus[i]->requests))
+-				continue;
+-			kvm_s390_inject_sigp_stop(kvm->vcpus[i],
+-						  ACTION_RELOADVCPU_ON_STOP);
+-		}
++	kvm_for_each_vcpu(i, vcpu, kvm) {
++		if (test_and_set_bit(KVM_REQ_MMU_RELOAD, &vcpu->requests))
++			continue;
++		kvm_s390_inject_sigp_stop(vcpu, ACTION_RELOADVCPU_ON_STOP);
+ 	}
+ 
+ 	return 0;
 diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
-index 3837db6..008a831 100644
+index 06d8f84..15fc95b 100644
 --- a/arch/x86/kvm/i8254.c
 +++ b/arch/x86/kvm/i8254.c
-@@ -231,7 +231,7 @@ int pit_has_pending_timer(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_pit *pit = vcpu->kvm->arch.vpit;
- 
--	if (pit && vcpu->vcpu_id == 0 && pit->pit_state.irq_ack)
-+	if (pit && kvm_vcpu_is_bsp(vcpu) && pit->pit_state.irq_ack)
- 		return atomic_read(&pit->pit_state.pit_timer.pending);
- 	return 0;
- }
-@@ -252,7 +252,7 @@ void __kvm_migrate_pit_timer(struct kvm_vcpu *vcpu)
- 	struct kvm_pit *pit = vcpu->kvm->arch.vpit;
- 	struct hrtimer *timer;
- 
--	if (vcpu->vcpu_id != 0 || !pit)
-+	if (!kvm_vcpu_is_bsp(vcpu) || !pit)
- 		return;
- 
- 	timer = &pit->pit_state.pit_timer.timer;
-diff --git a/arch/x86/kvm/i8259.c b/arch/x86/kvm/i8259.c
-index bf94a45..148c52a 100644
---- a/arch/x86/kvm/i8259.c
-+++ b/arch/x86/kvm/i8259.c
-@@ -57,7 +57,7 @@ static void pic_unlock(struct kvm_pic *s)
- 	}
- 
- 	if (wakeup) {
--		vcpu = s->kvm->vcpus[0];
-+		vcpu = s->kvm->bsp_vcpu;
- 		if (vcpu)
- 			kvm_vcpu_kick(vcpu);
- 	}
-@@ -254,7 +254,7 @@ void kvm_pic_reset(struct kvm_kpic_state *s)
- {
- 	int irq, irqbase, n;
- 	struct kvm *kvm = s->pics_state->irq_request_opaque;
--	struct kvm_vcpu *vcpu0 = kvm->vcpus[0];
-+	struct kvm_vcpu *vcpu0 = kvm->bsp_vcpu;
- 
- 	if (s == &s->pics_state->pics[0])
- 		irqbase = 0;
-@@ -512,7 +512,7 @@ static void picdev_read(struct kvm_io_device *this,
- static void pic_irq_request(void *opaque, int level)
- {
- 	struct kvm *kvm = opaque;
--	struct kvm_vcpu *vcpu = kvm->vcpus[0];
-+	struct kvm_vcpu *vcpu = kvm->bsp_vcpu;
- 	struct kvm_pic *s = pic_irqchip(kvm);
- 	int irq = pic_get_irq(&s->pics[0]);
- 
-diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-index 44f20cd..b066130 100644
---- a/arch/x86/kvm/lapic.c
-+++ b/arch/x86/kvm/lapic.c
-@@ -793,7 +793,8 @@ void kvm_lapic_set_base(struct kvm_vcpu *vcpu, u64 value)
- 		vcpu->arch.apic_base = value;
- 		return;
- 	}
--	if (apic->vcpu->vcpu_id)
-+
-+	if (!kvm_vcpu_is_bsp(apic->vcpu))
- 		value &= ~MSR_IA32_APICBASE_BSP;
- 
- 	vcpu->arch.apic_base = value;
-@@ -844,7 +845,7 @@ void kvm_lapic_reset(struct kvm_vcpu *vcpu)
- 	}
- 	update_divide_count(apic);
- 	atomic_set(&apic->lapic_timer.pending, 0);
--	if (vcpu->vcpu_id == 0)
-+	if (kvm_vcpu_is_bsp(vcpu))
- 		vcpu->arch.apic_base |= MSR_IA32_APICBASE_BSP;
- 	apic_update_ppr(apic);
- 
-@@ -985,7 +986,7 @@ int kvm_apic_accept_pic_intr(struct kvm_vcpu *vcpu)
- 	u32 lvt0 = apic_get_reg(vcpu->arch.apic, APIC_LVT0);
- 	int r = 0;
- 
--	if (vcpu->vcpu_id == 0) {
-+	if (kvm_vcpu_is_bsp(vcpu)) {
- 		if (!apic_hw_enabled(vcpu->arch.apic))
- 			r = 1;
- 		if ((lvt0 & APIC_LVT_MASKED) == 0 &&
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 0710e45..a7fa87b 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -645,7 +645,7 @@ static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
- 
- 	init_vmcb(svm);
- 
--	if (vcpu->vcpu_id != 0) {
-+	if (!kvm_vcpu_is_bsp(vcpu)) {
- 		kvm_rip_write(vcpu, 0);
- 		svm->vmcb->save.cs.base = svm->vcpu.arch.sipi_vector << 12;
- 		svm->vmcb->save.cs.selector = svm->vcpu.arch.sipi_vector << 8;
-@@ -709,7 +709,7 @@ static struct kvm_vcpu *svm_create_vcpu(struct kvm *kvm, unsigned int id)
- 	fx_init(&svm->vcpu);
- 	svm->vcpu.fpu_active = 1;
- 	svm->vcpu.arch.apic_base = 0xfee00000 | MSR_IA32_APICBASE_ENABLE;
--	if (svm->vcpu.vcpu_id == 0)
-+	if (kvm_vcpu_is_bsp(&svm->vcpu))
- 		svm->vcpu.arch.apic_base |= MSR_IA32_APICBASE_BSP;
- 
- 	return &svm->vcpu;
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index ae68292..c08bb4c 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -2411,7 +2411,7 @@ static int vmx_vcpu_reset(struct kvm_vcpu *vcpu)
- 	vmx->vcpu.arch.regs[VCPU_REGS_RDX] = get_rdx_init_val();
- 	kvm_set_cr8(&vmx->vcpu, 0);
- 	msr = 0xfee00000 | MSR_IA32_APICBASE_ENABLE;
--	if (vmx->vcpu.vcpu_id == 0)
-+	if (kvm_vcpu_is_bsp(&vmx->vcpu))
- 		msr |= MSR_IA32_APICBASE_BSP;
- 	kvm_set_apic_base(&vmx->vcpu, msr);
- 
-@@ -2422,7 +2422,7 @@ static int vmx_vcpu_reset(struct kvm_vcpu *vcpu)
- 	 * GUEST_CS_BASE should really be 0xffff0000, but VT vm86 mode
- 	 * insists on having GUEST_CS_BASE == GUEST_CS_SELECTOR << 4.  Sigh.
+@@ -669,11 +669,8 @@ static void __inject_pit_timer_intr(struct kvm *kvm)
+ 	 * VCPU0, and only if its LVT0 is in EXTINT mode.
  	 */
--	if (vmx->vcpu.vcpu_id == 0) {
-+	if (kvm_vcpu_is_bsp(&vmx->vcpu)) {
- 		vmcs_write16(GUEST_CS_SELECTOR, 0xf000);
- 		vmcs_writel(GUEST_CS_BASE, 0x000f0000);
- 	} else {
-@@ -2451,7 +2451,7 @@ static int vmx_vcpu_reset(struct kvm_vcpu *vcpu)
- 	vmcs_writel(GUEST_SYSENTER_EIP, 0);
+ 	if (kvm->arch.vapics_in_nmi_mode > 0)
+-		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+-			vcpu = kvm->vcpus[i];
+-			if (vcpu)
+-				kvm_apic_nmi_wd_deliver(vcpu);
+-		}
++		kvm_for_each_vcpu(i, vcpu, kvm)
++			kvm_apic_nmi_wd_deliver(vcpu);
+ }
  
- 	vmcs_writel(GUEST_RFLAGS, 0x02);
--	if (vmx->vcpu.vcpu_id == 0)
-+	if (kvm_vcpu_is_bsp(&vmx->vcpu))
- 		kvm_rip_write(vcpu, 0xfff0);
- 	else
- 		kvm_rip_write(vcpu, 0);
+ void kvm_inject_pit_timer_irqs(struct kvm_vcpu *vcpu)
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index d443a42..5f97dbd 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -1347,10 +1347,10 @@ static void kvm_mmu_put_page(struct kvm_mmu_page *sp, u64 *parent_pte)
+ static void kvm_mmu_reset_last_pte_updated(struct kvm *kvm)
+ {
+ 	int i;
++	struct kvm_vcpu *vcpu;
+ 
+-	for (i = 0; i < KVM_MAX_VCPUS; ++i)
+-		if (kvm->vcpus[i])
+-			kvm->vcpus[i]->arch.last_pte_updated = NULL;
++	kvm_for_each_vcpu(i, vcpu, kvm)
++		vcpu->arch.last_pte_updated = NULL;
+ }
+ 
+ static void kvm_mmu_unlink_parents(struct kvm *kvm, struct kvm_mmu_page *sp)
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index e877efa..d8adc1d 100644
+index d8adc1d..89862a8 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -4330,7 +4330,7 @@ int kvm_arch_vcpu_ioctl_set_sregs(struct kvm_vcpu *vcpu,
- 	kvm_set_segment(vcpu, &sregs->ldt, VCPU_SREG_LDTR);
+@@ -2946,10 +2946,7 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
  
- 	/* Older userspace won't unhalt the vcpu on reset. */
--	if (vcpu->vcpu_id == 0 && kvm_rip_read(vcpu) == 0xfff0 &&
-+	if (kvm_vcpu_is_bsp(vcpu) && kvm_rip_read(vcpu) == 0xfff0 &&
- 	    sregs->cs.selector == 0xf000 && sregs->cs.base == 0xffff0000 &&
- 	    !(vcpu->arch.cr0 & X86_CR0_PE))
- 		vcpu->arch.mp_state = KVM_MP_STATE_RUNNABLE;
-@@ -4601,7 +4601,7 @@ int kvm_arch_vcpu_init(struct kvm_vcpu *vcpu)
- 	kvm = vcpu->kvm;
+ 	spin_lock(&kvm_lock);
+ 	list_for_each_entry(kvm, &vm_list, vm_list) {
+-		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+-			vcpu = kvm->vcpus[i];
+-			if (!vcpu)
+-				continue;
++		kvm_for_each_vcpu(i, vcpu, kvm) {
+ 			if (vcpu->cpu != freq->cpu)
+ 				continue;
+ 			if (!kvm_request_guest_time_update(vcpu))
+@@ -4678,20 +4675,22 @@ static void kvm_unload_vcpu_mmu(struct kvm_vcpu *vcpu)
+ static void kvm_free_vcpus(struct kvm *kvm)
+ {
+ 	unsigned int i;
++	struct kvm_vcpu *vcpu;
  
- 	vcpu->arch.mmu.root_hpa = INVALID_PAGE;
--	if (!irqchip_in_kernel(kvm) || vcpu->vcpu_id == 0)
-+	if (!irqchip_in_kernel(kvm) || kvm_vcpu_is_bsp(vcpu))
- 		vcpu->arch.mp_state = KVM_MP_STATE_RUNNABLE;
- 	else
- 		vcpu->arch.mp_state = KVM_MP_STATE_UNINITIALIZED;
+ 	/*
+ 	 * Unpin any mmu pages first.
+ 	 */
+-	for (i = 0; i < KVM_MAX_VCPUS; ++i)
+-		if (kvm->vcpus[i])
+-			kvm_unload_vcpu_mmu(kvm->vcpus[i]);
+-	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+-		if (kvm->vcpus[i]) {
+-			kvm_arch_vcpu_free(kvm->vcpus[i]);
+-			kvm->vcpus[i] = NULL;
+-		}
+-	}
++	kvm_for_each_vcpu(i, vcpu, kvm)
++		kvm_unload_vcpu_mmu(vcpu);
++	kvm_for_each_vcpu(i, vcpu, kvm)
++		kvm_arch_vcpu_free(vcpu);
++
++	mutex_lock(&kvm->lock);
++	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++)
++		kvm->vcpus[i] = NULL;
+ 
++	atomic_set(&kvm->online_vcpus, 0);
++	mutex_unlock(&kvm->lock);
+ }
+ 
+ void kvm_arch_sync_events(struct kvm *kvm)
 diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index a29ea03..a5bd429 100644
+index d3fdf1a..c6e4d02 100644
 --- a/include/linux/kvm_host.h
 +++ b/include/linux/kvm_host.h
-@@ -131,6 +131,7 @@ struct kvm {
- 	int nmemslots;
- 	struct kvm_memory_slot memslots[KVM_MEMORY_SLOTS +
- 					KVM_PRIVATE_MEM_SLOTS];
-+	struct kvm_vcpu *bsp_vcpu;
- 	struct kvm_vcpu *vcpus[KVM_MAX_VCPUS];
- 	struct list_head vm_list;
- 	struct mutex lock;
-@@ -549,4 +550,8 @@ static inline void kvm_irqfd_release(struct kvm *kvm) {}
+@@ -179,6 +179,17 @@ struct kvm {
+ #define kvm_printf(kvm, fmt ...) printk(KERN_DEBUG fmt)
+ #define vcpu_printf(vcpu, fmt...) kvm_printf(vcpu->kvm, fmt)
  
- #endif /* CONFIG_HAVE_KVM_EVENTFD */
- 
-+static inline bool kvm_vcpu_is_bsp(struct kvm_vcpu *vcpu)
++static inline struct kvm_vcpu *kvm_get_vcpu(struct kvm *kvm, int i)
 +{
-+	return vcpu->kvm->bsp_vcpu == vcpu;
++	smp_rmb();
++	return kvm->vcpus[i];
 +}
- #endif
-diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
-index 2a56671..0532fa6 100644
---- a/virt/kvm/ioapic.c
-+++ b/virt/kvm/ioapic.c
-@@ -164,7 +164,9 @@ static int ioapic_deliver(struct kvm_ioapic *ioapic, int irq)
- 	/* Always delivery PIT interrupt to vcpu 0 */
- 	if (irq == 0) {
- 		irqe.dest_mode = 0; /* Physical mode. */
--		irqe.dest_id = ioapic->kvm->vcpus[0]->vcpu_id;
-+		/* need to read apic_id from apic regiest since
-+		 * it can be rewritten */
-+		irqe.dest_id = ioapic->kvm->bsp_vcpu->vcpu_id;
- 	}
- #endif
- 	return kvm_irq_delivery_to_apic(ioapic->kvm, NULL, &irqe);
++
++#define kvm_for_each_vcpu(idx, vcpup, kvm) \
++	for (idx = 0, vcpup = kvm_get_vcpu(kvm, idx); \
++	     idx < atomic_read(&kvm->online_vcpus) && vcpup; \
++	     vcpup = kvm_get_vcpu(kvm, ++idx))
++
+ int kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id);
+ void kvm_vcpu_uninit(struct kvm_vcpu *vcpu);
+ 
+diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
+index 08a9a49..bb8a1b5 100644
+--- a/virt/kvm/irq_comm.c
++++ b/virt/kvm/irq_comm.c
+@@ -68,10 +68,8 @@ int kvm_irq_delivery_to_apic(struct kvm *kvm, struct kvm_lapic *src,
+ 			kvm_is_dm_lowest_prio(irq))
+ 		printk(KERN_INFO "kvm: apic: phys broadcast and lowest prio\n");
+ 
+-	for (i = 0; i < KVM_MAX_VCPUS; i++) {
+-		vcpu = kvm->vcpus[i];
+-
+-		if (!vcpu || !kvm_apic_present(vcpu))
++	kvm_for_each_vcpu(i, vcpu, kvm) {
++		if (!kvm_apic_present(vcpu))
+ 			continue;
+ 
+ 		if (!kvm_apic_match_dest(vcpu, src, irq->shorthand,
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 0d481b2..0d54ede 100644
+index 25e1f9c..777fe53 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -1747,6 +1747,8 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, int n)
+@@ -738,10 +738,7 @@ static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
+ 
+ 	me = get_cpu();
+ 	spin_lock(&kvm->requests_lock);
+-	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+-		vcpu = kvm->vcpus[i];
+-		if (!vcpu)
+-			continue;
++	kvm_for_each_vcpu(i, vcpu, kvm) {
+ 		if (test_and_set_bit(req, &vcpu->requests))
+ 			continue;
+ 		cpu = vcpu->cpu;
+@@ -1718,7 +1715,7 @@ static int create_vcpu_fd(struct kvm_vcpu *vcpu)
+ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
+ {
+ 	int r;
+-	struct kvm_vcpu *vcpu;
++	struct kvm_vcpu *vcpu, *v;
+ 
+ 	vcpu = kvm_arch_vcpu_create(kvm, id);
+ 	if (IS_ERR(vcpu))
+@@ -1736,8 +1733,8 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
  		goto vcpu_destroy;
  	}
- 	kvm->vcpus[n] = vcpu;
-+	if (n == 0)
-+		kvm->bsp_vcpu = vcpu;
- 	mutex_unlock(&kvm->lock);
  
- 	/* Now it's all set up, let userspace reach it */
+-	for (r = 0; r < atomic_read(&kvm->online_vcpus); r++)
+-		if (kvm->vcpus[r]->vcpu_id == id) {
++	kvm_for_each_vcpu(r, v, kvm)
++		if (v->vcpu_id == id) {
+ 			r = -EEXIST;
+ 			goto vcpu_destroy;
+ 		}
+@@ -2526,11 +2523,9 @@ static int vcpu_stat_get(void *_offset, u64 *val)
+ 	*val = 0;
+ 	spin_lock(&kvm_lock);
+ 	list_for_each_entry(kvm, &vm_list, vm_list)
+-		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+-			vcpu = kvm->vcpus[i];
+-			if (vcpu)
+-				*val += *(u32 *)((void *)vcpu + offset);
+-		}
++		kvm_for_each_vcpu(i, vcpu, kvm)
++			*val += *(u32 *)((void *)vcpu + offset);
++
+ 	spin_unlock(&kvm_lock);
+ 	return 0;
+ }
 -- 
 1.6.3.3
 
