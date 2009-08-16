@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbZHPVDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbZHPVEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756109AbZHPVDf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 17:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbZHPVDf
+	id S1756117AbZHPVEq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 17:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbZHPVEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 17:03:35 -0400
-Received: from www84.your-server.de ([213.133.104.84]:51413 "EHLO
+	Sun, 16 Aug 2009 17:04:46 -0400
+Received: from www84.your-server.de ([213.133.104.84]:33597 "EHLO
 	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755772AbZHPVDe (ORCPT
+	with ESMTP id S1755791AbZHPVEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 17:03:34 -0400
-Subject: Re: [PATCH 0/7] kfifo: add record handling functions
+	Sun, 16 Aug 2009 17:04:45 -0400
+Subject: Re: [PATCH 7/7] kfifo: add record handling functions
 From: Stefani Seibold <stefani@seibold.net>
 To: linux-kernel <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -19,8 +19,8 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
 In-Reply-To: <1250455161.28540.4.camel@wall-e>
 References: <1250455161.28540.4.camel@wall-e>
 Content-Type: text/plain
-Date: Sun, 16 Aug 2009 23:03:04 +0200
-Message-Id: <1250456584.28540.27.camel@wall-e>
+Date: Sun, 16 Aug 2009 23:04:15 +0200
+Message-Id: <1250456655.28540.28.camel@wall-e>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
