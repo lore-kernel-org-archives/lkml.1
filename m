@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103AbZHPNtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752386AbZHPNxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752103AbZHPNtg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 09:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZHPNtf
+	id S1752386AbZHPNxQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 09:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZHPNxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 09:49:35 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:61120 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbZHPNtf (ORCPT
+	Sun, 16 Aug 2009 09:53:16 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36815 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751164AbZHPNxP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 09:49:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=VDeOhWWFsZfzsxQeguqpoc7v2Zz0fmv5+geBnUXzEt2oaT0RRjE23mYNAu9FCvyTU9
-         lDhd86hVi8whEo/Oxwi/vQQBDribo6eFSmom2wgOPU0xxyZX+KyNxe2u/uk6qZARAqCL
-         6eomJ9tq1otDssNPCPBzAfWyAaP9yia/zJ2c4=
+	Sun, 16 Aug 2009 09:53:15 -0400
+Date: Sun, 16 Aug 2009 09:53:15 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Mark Lord <liml@rtr.ca>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: [PATCH, RFC] xfs: batched discard support
+Message-ID: <20090816135315.GA25251@infradead.org>
+References: <20090816004705.GA7347@infradead.org> <4A876255.10606@rtr.ca> <4A876CA9.20906@rtr.ca> <20090816022500.GA12392@infradead.org> <4A8802F3.6010908@rtr.ca>
 MIME-Version: 1.0
-In-Reply-To: <4A87FCAC.5070705@gmail.com>
-References: <1250002683-28554-1-git-send-email-mspang@csclub.uwaterloo.ca>
-	 <4A87FCAC.5070705@gmail.com>
-Date: Sun, 16 Aug 2009 09:42:49 -0400
-X-Google-Sender-Auth: de9e534d7e0166d4
-Message-ID: <118a63b80908160642j73568637n2f3fa97fc33d8e57@mail.gmail.com>
-Subject: Re: [PATCH] Revert netlink ABI change to gnet_stats_basic
-From: Michael Spang <mspang@csclub.uwaterloo.ca>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8802F3.6010908@rtr.ca>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 16, 2009 at 8:33 AM, Eric Dumazet<eric.dumazet@gmail.com> wrote:
+On Sun, Aug 16, 2009 at 09:00:35AM -0400, Mark Lord wrote:
+> Okay, this gives me ENOSYS now --> discard/trim support is missing from
+> the lower layers.
+
+ENOSYS or EOPNOTSUPP?
+
+> What other patches do I need to make this work?
 >
-> What exactly broke after patch was pushed ?
+> The latest from Matthew's discard tree (May 2009) don't appear to be sufficient,
+> even after updating them for 2.6.31-rc6.
 
-The libnl library refuses to initialize with 2.6.30 with pre-2.6.30
-headers. With 2.6.30 I get
+Hmm.  That was kinda the reason why I didn't want to post stuff yet.  In
+current mainline only MTD implements the prepare_discard_fn, and we'll
+need it implemented and working.  I think Matthews patches should be
+sufficient, unless they have some ATA revision check to not issue the
+TRIM for your device.
 
-  $ libnl-1.1/src/nl-qdisc-dump brief
-  Unable to retrieve qdisc cache
-
-whereas previously I would get
-
-  $ libnl-1.1/src/nl-qdisc-dump brief
-  htb qdisc dev eth0 handle 01: parent root r2q 10000 default :02
-
-It works fine if I use the headers from 2.6.30, but then I don't
-believe it would work with older kernels.
-
-Michael
