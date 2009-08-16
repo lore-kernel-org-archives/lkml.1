@@ -1,136 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbZHPOG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753710AbZHPOIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753793AbZHPOG3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 10:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbZHPOG2
+	id S1753710AbZHPOIw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 10:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZHPOIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 10:06:28 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:3503 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751939AbZHPOG1 (ORCPT
+	Sun, 16 Aug 2009 10:08:51 -0400
+Received: from mailrelay010.isp.belgacom.be ([195.238.6.177]:48336 "EHLO
+	mailrelay010.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752679AbZHPOIu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 10:06:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=wJ7FLvmFaCefMulKR1Knk2+n3C6t6PTQ0jsG5ObcZCbX+TihAcfAfOuRsJvsaixEd8
-         uSLfroM5yAyKSI2DaUz0t0ss3nT7jyPW5/MECcV05XOKzBLLuBs9Jw8l1G8mgaTyrsw8
-         RoYfvBDARQ0YD2pi/I03Jsuufxe63Rm7TDHFs=
-Date: Sun, 16 Aug 2009 16:06:24 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf: Enable more compiler warnings
-Message-ID: <20090816140623.GB6031@nowhere>
-References: <tip-83a0944fa919fb2ebcfc1f8933d86e437b597ca6@git.kernel.org> <20090816124641.GA6031@nowhere> <20090816140154.GA9408@elte.hu>
+	Sun, 16 Aug 2009 10:08:50 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAOquh0pR9cbZ/2dsb2JhbADRPwmEEAWCKQ
+Date: Sun, 16 Aug 2009 16:08:50 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Wim Van Sebroeck <wim@iguana.be>,
+       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH RT 8/6] [ARM, WATCHDOG] davinci: include mach/timex.h
+	in davinci_wdt.c
+Message-ID: <20090816140850.GP4302@infomag.iguana.be>
+References: <20090807203939.GA19374@pengutronix.de> <1249810600-21946-1-git-send-email-u.kleine-koenig@pengutronix.de> <1249810600-21946-2-git-send-email-u.kleine-koenig@pengutronix.de> <20090809094306.GA26591@n2100.arm.linux.org.uk> <87iqgvk43c.fsf@deeprootsystems.com> <20090810172637.GC27147@n2100.arm.linux.org.uk> <87zla7fkio.fsf@deeprootsystems.com> <20090810220234.GD27147@n2100.arm.linux.org.uk> <87zla3hhy6.fsf@deeprootsystems.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090816140154.GA9408@elte.hu>
+In-Reply-To: <87zla3hhy6.fsf@deeprootsystems.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 16, 2009 at 04:01:54PM +0200, Ingo Molnar wrote:
-> 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > On Sun, Aug 16, 2009 at 08:57:54AM +0000, tip-bot for Ingo Molnar wrote:
-> > > Commit-ID:  83a0944fa919fb2ebcfc1f8933d86e437b597ca6
-> > > Gitweb:     http://git.kernel.org/tip/83a0944fa919fb2ebcfc1f8933d86e437b597ca6
-> > > Author:     Ingo Molnar <mingo@elte.hu>
-> > > AuthorDate: Sat, 15 Aug 2009 12:26:57 +0200
-> > > Committer:  Ingo Molnar <mingo@elte.hu>
-> > > CommitDate: Sun, 16 Aug 2009 10:47:47 +0200
-> > > 
-> > > perf: Enable more compiler warnings
-> > > 
-> > > Related to a shadowed variable bug fix Valdis Kletnieks noticed
-> > > that perf does not get built with -Wshadow, which could have
-> > > helped us avoid the bug.
-> > > 
-> > > So enable -Wshadow and also enable the following warnings on
-> > > perf builds, in addition to the already enabled -Wall -Wextra
-> > > -std=gnu99 warnings:
-> > > 
-> > >  -Wcast-align
-> > >  -Wformat=2
-> > >  -Wshadow
-> > >  -Winit-self
-> > >  -Wpacked
-> > >  -Wredundant-decls
-> > >  -Wstack-protector
-> > >  -Wstrict-aliasing=3
-> > >  -Wswitch-default
-> > >  -Wswitch-enum
-> > 
-> > 
-> > 
-> > This one looks like more a pain than something useful.
-> > 
-> > I have this code in perf trace:
-> > 
-> > static int event_item_type(enum event_type type)
-> > {
-> > 	switch (type) {
-> > 	case EVENT_ITEM:
-> > 	case EVENT_DQUOTE:
-> > 	case EVENT_SQUOTE:
-> > 		return 1;
-> > 	default:
-> > 		return 0;
-> > 	}
-> > }
-> > 
-> > Which results in:
-> > 
-> > util/trace-event-parse.c: In function ‘event_item_type’:
-> > util/trace-event-parse.c:377: erreur: enumeration value ‘EVENT_ERROR’ not handled in switch
-> > util/trace-event-parse.c:377: erreur: enumeration value ‘EVENT_NONE’ not handled in switch
-> > util/trace-event-parse.c:377: erreur: enumeration value ‘EVENT_SPACE’ not handled in switch
-> > util/trace-event-parse.c:377: erreur: enumeration value ‘EVENT_NEWLINE’ not handled in switch
-> > util/trace-event-parse.c:377: erreur: enumeration value ‘EVENT_OP’ not handled in switch
-> > util/trace-event-parse.c:377: erreur: enumeration value ‘EVENT_DELIM’ not handled in switch
-> > 
-> > The default case already handles these and I guess we don't want workarounds like:
-> > 
-> > static int event_item_type(enum event_type type)
-> > {
-> >         switch (type) {
-> >         case EVENT_ITEM:
-> >         case EVENT_DQUOTE:
-> >         case EVENT_SQUOTE:
-> >                 return 1;
-> > 	case EVENT_ERROR:
-> > 	case EVENT_NONE:
-> > 	case EVENT_SPACE:
-> > 	case EVENT_NEWLINE:
-> > 	case EVENT_OP:
-> > 	case EVENT_DELIM:
-> >         default:
-> >                 return 0;
-> >         }
-> > }
-> > 
-> > 
-> > Right? :-)
-> > 
-> > This warning might be useful for *very* specific cases, but not here IMO.
-> 
-> i think it's useful when an enum gets extended. Say we add a new 
-> event enum and want to make sure it's handled in _all_ switch 
-> statements that deals with them. This warning ensures that we 
-> propagate the new case to all usage sites.
-> 
-> 	Ingo
+Hi Kevin,
 
+> > On Mon, Aug 10, 2009 at 02:04:31PM -0700, Kevin Hilman wrote:
+> >> @@ -86,6 +88,9 @@ static void wdt_enable(void)
+> >>  {
+> >>  	u32 tgcr;
+> >>  	u32 timer_margin;
+> >> +	u32 wdt_freq;
+> >> +
+> >> +	wdt_freq = clk_get_rate(wdt_clk);
+> >
+> > Much better - and only a minor nit which doesn't deserve a repost -
+> > wdt_freq should probably match the return type of clk_get_rate.  IOW
+> > unsigned long.
+> 
+> Wim,
+> 
+> If you're OK with this, can you queue this one for 2.6.32?
 
-Ok, it's a bit annoying to cover all enum cases but well, I agree
-with the above possibility...
+I'm also OK with this. I'll queue it up in my -next tree today or tomorrow.
+
+Kind regards,
+Wim.
 
