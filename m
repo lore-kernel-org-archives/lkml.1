@@ -1,69 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbZHPKIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbZHPKOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022AbZHPKIe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 06:08:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbZHPKIe
+	id S1752894AbZHPKOi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 06:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZHPKOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 06:08:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42581 "EHLO mx3.mail.elte.hu"
+	Sun, 16 Aug 2009 06:14:37 -0400
+Received: from bu3sch.de ([62.75.166.246]:38985 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751216AbZHPKId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 06:08:33 -0400
-Date: Sun, 16 Aug 2009 12:08:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kmemleak: Ignore the aperture memory hole on x86_64
-Message-ID: <20090816100820.GA26474@elte.hu>
-References: <20090812205215.GA21451@elte.hu> <1250289913.5085.17.camel@pc1117.cambridge.arm.com> <1250290118.5085.21.camel@pc1117.cambridge.arm.com>
+	id S1750959AbZHPKOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 06:14:37 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Threaded interrupt handlers broken?
+Date: Sun, 16 Aug 2009 12:14:36 +0200
+User-Agent: KMail/1.9.9
+Cc: Thomas Gleixner <tglx@linutronix.de>
+References: <200908161153.14081.mb@bu3sch.de>
+In-Reply-To: <200908161153.14081.mb@bu3sch.de>
+X-Move-Along: Nothing to see here. No, really... Nothing.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1250290118.5085.21.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200908161214.37008.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Catalin Marinas <catalin.marinas@arm.com> wrote:
-
-> This block is allocated with alloc_bootmem() and scanned by kmemleak but
-> the kernel direct mapping may no longer exist. This patch tells kmemleak
-> to ignore this memory hole.
+On Sunday 16 August 2009 11:53:13 Michael Buesch wrote:
+> Hi,
 > 
-> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/kernel/aperture_64.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
+> I was trying to use threaded interrupt handlers, but the code always crashes
+> within irq_thread() with a "BUG: spinlock bad magic 00000000".
+> The spinlock that's not properly initialized is from the wait_for_threads waitqueue.
+> It crashes on line 526 (see below).
+> The initialization of the waitqueue struct seems to depend on whether the IRQ is
+> shared or not. I don't know if that's correct, but I patched it to unconditionally
+> initialize the struct. That did not help.
 > 
-> diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
-> index 676debf..cb690b3 100644
-> --- a/arch/x86/kernel/aperture_64.c
-> +++ b/arch/x86/kernel/aperture_64.c
-> @@ -94,6 +94,11 @@ static u32 __init allocate_aperture(void)
->  	 * code for safe
->  	 */
->  	p = __alloc_bootmem_nopanic(aper_size, aper_size, 512ULL<<20);
-> +	/*
-> +	 * Kmemleak should not scan this block as it may not be mapped via the
-> +	 * kernel direct mapping.
-> +	 */
-> +	kmemleak_ignore(p);
+> Any ideas?
+> 
+> 
+> 490 static int irq_thread(void *data)
+> 491 {
+> 492         struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO/2, };
+> 493         struct irqaction *action = data;
+> 494         struct irq_desc *desc = irq_to_desc(action->irq);
+> 495         int wake;
+> 496 
+> 497         sched_setscheduler(current, SCHED_FIFO, &param);
+> 498         current->irqaction = action;
+> 499 
+> 500         while (!irq_wait_for_interrupt(action)) {
+> 501 
+> 502                 irq_thread_check_affinity(desc, action);
+> 503 
+> 504                 atomic_inc(&desc->threads_active);
+> 505 
+> 506                 spin_lock_irq(&desc->lock);
+> 507                 if (unlikely(desc->status & IRQ_DISABLED)) {
+> 508                         /*
+> 509                          * CHECKME: We might need a dedicated
+> 510                          * IRQ_THREAD_PENDING flag here, which
+> 511                          * retriggers the thread in check_irq_resend()
+> 512                          * but AFAICT IRQ_PENDING should be fine as it
+> 513                          * retriggers the interrupt itself --- tglx
+> 514                          */
+> 515                         desc->status |= IRQ_PENDING;
+> 516                         spin_unlock_irq(&desc->lock);
+> 517                 } else {
+> 518                         spin_unlock_irq(&desc->lock);
+> 519 
+> 520                         action->thread_fn(action->irq, action->dev_id);
+> 521                 }
+> 522 
+> 523                 wake = atomic_dec_and_test(&desc->threads_active);
 
-i tried this in -tip, it causes this build error:
+Is this test logic inverted? atomic_dec_and_test() means
+(threads_active - 1) == 0
+Shouldn't it be like this?
+(threads_active - 1) != 0
 
-arch/x86/kernel/aperture_64.c: In function ‘allocate_aperture’:
-arch/x86/kernel/aperture_64.c:101: error: implicit declaration of function ‘kmemleak_ignore’
+> 524 
+> 525                 if (wake && waitqueue_active(&desc->wait_for_threads))
+> 526                         wake_up(&desc->wait_for_threads);                <<<<<<<<<<<<<<<<<<<<<<<<
+> 527         }
+> 528 
+> 529         /*
+> 530          * Clear irqaction. Otherwise exit_irq_thread() would make
+> 531          * fuzz about an active irq thread going into nirvana.
+> 532          */
+> 533         current->irqaction = NULL;
+> 534         return 0;
+> 535 }
+> 
 
-	Ingo
+
+
+-- 
+Greetings, Michael.
