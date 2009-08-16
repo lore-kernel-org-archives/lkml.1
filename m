@@ -1,110 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbZHPHQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752334AbZHPHbI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753077AbZHPHQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 03:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbZHPHQ1
+	id S1752334AbZHPHbI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 03:31:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbZHPHbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 03:16:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50569 "EHLO mx3.mail.elte.hu"
+	Sun, 16 Aug 2009 03:31:08 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:53996 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750765AbZHPHQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 03:16:26 -0400
-Date: Sun, 16 Aug 2009 09:16:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       Avi Kivity <avi@redhat.com>, alacrityvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
-	vbus_driver objects
-Message-ID: <20090816071607.GB29537@elte.hu>
-References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A870964.9090408@codemonkey.ws>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1750795AbZHPHbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 03:31:07 -0400
+Date: Sun, 16 Aug 2009 17:31:01 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-mm@kvack.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: mm/ipw2200 regression (was: Re: linux-next: Tree for August 6)
+Message-Id: <20090816173101.6e47b702.sfr@canb.auug.org.au>
+In-Reply-To: <200908151856.48596.bzolnier@gmail.com>
+References: <20090806192209.513abec7.sfr@canb.auug.org.au>
+	<200908062250.51498.bzolnier@gmail.com>
+	<200908071515.45169.bzolnier@gmail.com>
+	<200908151856.48596.bzolnier@gmail.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__16_Aug_2009_17_31_01_+1000_+6c3MUXKSgOxtZ7o"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Sun__16_Aug_2009_17_31_01_+1000_+6c3MUXKSgOxtZ7o
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Anthony Liguori <anthony@codemonkey.ws> wrote:
+Hi Bart,
 
-> Ingo Molnar wrote:
->> * Gregory Haskins <ghaskins@novell.com> wrote:
->>
->>   
->>> This will generally be used for hypervisors to publish any host-side
->>> virtual devices up to a guest.  The guest will have the opportunity
->>> to consume any devices present on the vbus-proxy as if they were
->>> platform devices, similar to existing buses like PCI.
->>>
->>> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->>> ---
->>>
->>>  MAINTAINERS                 |    6 ++
->>>  arch/x86/Kconfig            |    2 +
->>>  drivers/Makefile            |    1  drivers/vbus/Kconfig        |   
->>> 14 ++++
->>>  drivers/vbus/Makefile       |    3 +
->>>  drivers/vbus/bus-proxy.c    |  152 +++++++++++++++++++++++++++++++++++++++++++
->>>  include/linux/vbus_driver.h |   73 +++++++++++++++++++++
->>>  7 files changed, 251 insertions(+), 0 deletions(-)
->>>  create mode 100644 drivers/vbus/Kconfig
->>>  create mode 100644 drivers/vbus/Makefile
->>>  create mode 100644 drivers/vbus/bus-proxy.c
->>>  create mode 100644 include/linux/vbus_driver.h
->>>     
->>
->> Is there a consensus on this with the KVM folks? (i've added the KVM  
->> list to the Cc:)
->   
-> I'll let Avi comment about it from a KVM perspective but from a 
-> QEMU perspective, I don't think we want to support two paravirtual 
-> IO frameworks.  I'd like to see them converge.  Since there's an 
-> install base of guests today with virtio drivers, there really 
-> ought to be a compelling reason to change the virtio ABI in a 
-> non-backwards compatible way.  This means convergence really ought 
-> to be adding features to virtio.
-
-I agree.
-
-While different paravirt drivers are inevitable for things that are 
-externally constrained (say support different hypervisors), doing 
-different _Linux internal_ paravirt drivers looks plain stupid and 
-counter-productive. It splits testing and development.
-
-So either the vbus code replaces virtio (for technical merits such 
-as performance and other details), or virtio is enhanced with the 
-vbus performance enhancements.
-
-> On paper, I don't think vbus really has any features over virtio.  
-> vbus does things in different ways (paravirtual bus vs. pci for 
-> discovery) but I think we're happy with how virtio does things 
-> today.
+On Sat, 15 Aug 2009 18:56:48 +0200 Bartlomiej Zolnierkiewicz <bzolnier@gmai=
+l.com> wrote:
 >
-> I think the reason vbus gets better performance for networking 
-> today is that vbus' backends are in the kernel while virtio's 
-> backends are currently in userspace.  Since Michael has a 
-> functioning in-kernel backend for virtio-net now, I suspect we're 
-> weeks (maybe days) away from performance results.  My expectation 
-> is that vhost + virtio-net will be as good as venet + vbus.  If 
-> that's the case, then I don't see any reason to adopt vbus unless 
-> Greg things there are other compelling features over virtio.
+> The bug managed to slip into Linus' tree..
+>=20
+> ipw2200: Firmware error detected.  Restarting.
+> ipw2200/0: page allocation failure. order:6, mode:0x8020
+> Pid: 945, comm: ipw2200/0 Not tainted 2.6.31-rc6-dirty #69
+                                                   ^^^^^
+So, this is rc6 plus what?  (just in case it is relevant).
 
-Keeping virtio's backend in user-space was rather stupid IMHO. 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Having the _option_ to piggyback to user-space (for flexibility, 
-extensibility, etc.) is OK, but not having kernel acceleration is 
-bad.
+--Signature=_Sun__16_Aug_2009_17_31_01_+1000_+6c3MUXKSgOxtZ7o
+Content-Type: application/pgp-signature
 
-	Ingo
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqHtbUACgkQjjKRsyhoI8zhbQCZAVTfcWmZU0Dghmfh3ADZ2kL2
+LyQAoLsN7Zd63GWHW1AZKHxsu/q5K43T
+=UIR2
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__16_Aug_2009_17_31_01_+1000_+6c3MUXKSgOxtZ7o--
