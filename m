@@ -1,102 +1,306 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084AbZHPU5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbZHPVAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756084AbZHPU5Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 16:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbZHPU5X
+	id S1755929AbZHPVAo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 17:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbZHPVAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 16:57:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33313 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755994AbZHPU5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 16:57:22 -0400
-Date: Sun, 16 Aug 2009 22:57:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Martin-=C9ric?= Racine <q-funk@iki.fi>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alexander Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #13941] x86 Geode issue
-Message-ID: <20090816205706.GB3463@elte.hu>
-References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera> <200908131654.45227.rjw@sisk.pl> <11fae7c70908130800q7b4a5293t5c373613d736d74@mail.gmail.com> <200908132034.34951.rjw@sisk.pl> <11fae7c70908161217p33830075p783880315a31b2e5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <11fae7c70908161217p33830075p783880315a31b2e5@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 16 Aug 2009 17:00:44 -0400
+Received: from www84.your-server.de ([213.133.104.84]:51375 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753870AbZHPVAn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 17:00:43 -0400
+Subject: Re: [PATCH 6/7] kfifo: add kfifo_skip, kfifo_from_user and
+ kfifo_to_user
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
+In-Reply-To: <1250455161.28540.4.camel@wall-e>
+References: <1250455161.28540.4.camel@wall-e>
+Content-Type: text/plain
+Date: Sun, 16 Aug 2009 23:00:14 +0200
+Message-Id: <1250456414.28540.25.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ Add kfifo_reset_out() to lockless save discard the fifo output
+ Add kfifo_skip() to skip a number of output bytes
+ Add kfifo_from_user() to copy user space data into the fifo
+ Add kfifo_to_user() to copy fifo data to user space
 
-* Martin-Éric Racine <q-funk@iki.fi> wrote:
+Signed-off-by: Stefani Seibold <stefani@seibold.net>
+---
+ include/linux/kfifo.h |   47 ++++++++++++++++
+ kernel/kfifo.c        |  139 ++++++++++++++++++++++++++++++++++++++++++++------
+ 2 files changed, 170 insertions(+), 16 deletions(-)
 
-> On Thu, Aug 13, 2009 at 9:34 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > On Thursday 13 August 2009, Martin-Éric Racine wrote:
-> >> On Thu, Aug 13, 2009 at 5:54 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> >> > On Thursday 13 August 2009, Martin-Éric Racine wrote:
-> >> >> 2009/8/13 Martin-Éric Racine <q-funk@iki.fi>:
-> >> >> > On Thu, Aug 13, 2009 at 12:07 PM, Ingo Molnar<mingo@elte.hu> wrote:
-> >> >> >> * Martin-Éric Racine <q-funk@iki.fi> wrote:
-> >> >> >>> Yes, this bug is still valid.
-> >> >> >>>
-> >> >> >>> Ubuntu kernel team member Leann Ogasawara and I are slowly
-> >> >> >>> bisecting our way through the changes that took place since 2.6.30
-> >> >> >>> to find the commit that introduced this regression. Please stay
-> >> >> >>> tuned.
-> >> >> >>
-> >> >> >> hm, the only outright Geode related commit was:
-> >> >> >>
-> >> >> >>  d6c585a: x86: geode: Mark mfgpt irq IRQF_TIMER to prevent resume failure
-> >> >> >>
-> >> >> >> the jpg at:
-> >> >> >>
-> >> >> >>  http://launchpadlibrarian.net/28892781/00002.jpg
-> >> >> >>
-> >> >> >> is very out of focus - but what i could decypher suggests a
-> >> >> >> pagefault crash in the VFS code, in generic_delete_inode().
-> >> >>
-> >> >> This one might be a bit better:
-> >> >>
-> >> >> http://launchpadlibrarian.net/30267494/2.6.31-5.24.jpg
-> >
-> > Hmm.  This looks like a sysfs oops to my untrained eye.
-> 
-> The bisect I did with Leann Ogasawara has narrowed the kernel panic
-> down to the following:
-> 
-> commit f19d4a8fa6f9b6ccf54df0971c97ffcaa390b7b0
-> Author: Al Viro <viro@zeniv.linux.org.uk>
-> Date: Mon Jun 8 19:50:45 2009 -0400
-> 
->     add caching of ACLs in struct inode
-> 
->     No helpers, no conversions yet.
-> 
->     Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+diff -u -N -r linux-2.6.31-rc4-kfifo5/include/linux/kfifo.h linux-2.6.31-rc4-kfifo6/include/linux/kfifo.h
+--- linux-2.6.31-rc4-kfifo5/include/linux/kfifo.h	2009-08-16 22:16:43.000000000 +0200
++++ linux-2.6.31-rc4-kfifo6/include/linux/kfifo.h	2009-08-16 22:17:08.000000000 +0200
+@@ -97,6 +97,16 @@
+ }
+ 
+ /**
++ * kfifo_reset_out - skip FIFO contents
++ * @fifo: the fifo to be emptied.
++ */
++static inline void kfifo_reset_out(struct kfifo *fifo)
++{
++	smp_mb();
++	fifo->out = fifo->in;
++}
++
++/**
+  * kfifo_size - returns the size of the fifo in bytes
+  * @fifo: the fifo to be used.
+  */
+@@ -203,4 +213,41 @@
+ 	return ret;
+ }
+ 
++extern void kfifo_skip(struct kfifo *fifo, unsigned int len);
++
++extern __must_check unsigned int kfifo_from_user(struct kfifo *fifo,
++	const void __user *from, unsigned int n);
++
++extern __must_check unsigned int kfifo_to_user(struct kfifo *fifo,
++	void __user *to, unsigned int n);
++
++/**
++ * __kfifo_add_out internal helper function for updating the out offset
++ */
++static inline void __kfifo_add_out(struct kfifo *fifo,
++				unsigned int off)
++{
++	smp_mb();
++	fifo->out += off;
++}
++
++/**
++ * __kfifo_add_in internal helper function for updating the in offset
++ */
++static inline void __kfifo_add_in(struct kfifo *fifo,
++				unsigned int off)
++{
++	smp_wmb();
++	fifo->in += off;
++}
++
++/**
++ * __kfifo_off internal helper function for calculating the index of a
++ * given offeset
++ */
++static inline unsigned int __kfifo_off(struct kfifo *fifo, unsigned int off)
++{
++	return off & (fifo->size - 1);
++}
++
+ #endif
+diff -u -N -r linux-2.6.31-rc4-kfifo5/kernel/kfifo.c linux-2.6.31-rc4-kfifo6/kernel/kfifo.c
+--- linux-2.6.31-rc4-kfifo5/kernel/kfifo.c	2009-08-16 22:09:05.000000000 +0200
++++ linux-2.6.31-rc4-kfifo6/kernel/kfifo.c	2009-08-16 22:09:13.000000000 +0200
+@@ -26,6 +26,7 @@
+ #include <linux/err.h>
+ #include <linux/kfifo.h>
+ #include <linux/log2.h>
++#include <linux/uaccess.h>
+ 
+ static void _kfifo_init(struct kfifo *fifo, unsigned char *buffer,
+ 		unsigned int size)
+@@ -100,6 +101,21 @@
+ EXPORT_SYMBOL(kfifo_free);
+ 
+ /**
++ * kfifo_skip - skip output data
++ * @fifo: the fifo to be used.
++ * @len: number of bytes to skip
++ */
++void kfifo_skip(struct kfifo *fifo, unsigned int len)
++{
++	if (len < kfifo_len(fifo)) {
++		__kfifo_add_out(fifo, len);
++		return;
++	}
++	kfifo_reset_out(fifo);
++}
++EXPORT_SYMBOL(kfifo_skip);
++
++/**
+  * kfifo_in - puts some data into the FIFO
+  * @fifo: the fifo to be used.
+  * @from: the data to be added.
+@@ -115,6 +131,7 @@
+ unsigned int kfifo_in(struct kfifo *fifo,
+ 			const unsigned char *from, unsigned int len)
+ {
++	unsigned int off;
+ 	unsigned int l;
+ 
+ 	len = min(len, fifo->size - fifo->in + fifo->out);
+@@ -126,21 +143,16 @@
+ 
+ 	smp_mb();
+ 
++	off = __kfifo_off(fifo, fifo->in);
++
+ 	/* first put the data starting from fifo->in to buffer end */
+-	l = min(len, fifo->size - (fifo->in & (fifo->size - 1)));
+-	memcpy(fifo->buffer + (fifo->in & (fifo->size - 1)), from, l);
++	l = min(len, fifo->size - off);
++	memcpy(fifo->buffer + off, from, l);
+ 
+ 	/* then put the rest (if any) at the beginning of the buffer */
+ 	memcpy(fifo->buffer, from + l, len - l);
+ 
+-	/*
+-	 * Ensure that we add the bytes to the kfifo -before-
+-	 * we update the fifo->in index.
+-	 */
+-
+-	smp_wmb();
+-
+-	fifo->in += len;
++	__kfifo_add_in(fifo, len);
+ 
+ 	return len;
+ }
+@@ -161,6 +173,7 @@
+ unsigned int kfifo_out(struct kfifo *fifo,
+ 			 unsigned char *to, unsigned int len)
+ {
++	unsigned int off;
+ 	unsigned int l;
+ 
+ 	len = min(len, fifo->in - fifo->out);
+@@ -172,22 +185,116 @@
+ 
+ 	smp_rmb();
+ 
++	off = __kfifo_off(fifo, fifo->out);
++
+ 	/* first get the data from fifo->out until the end of the buffer */
+-	l = min(len, fifo->size - (fifo->out & (fifo->size - 1)));
+-	memcpy(to, fifo->buffer + (fifo->out & (fifo->size - 1)), l);
++	l = min(len, fifo->size - off);
++	memcpy(to, fifo->buffer + off, l);
+ 
+ 	/* then get the rest (if any) from the beginning of the buffer */
+ 	memcpy(to + l, fifo->buffer, len - l);
+ 
++	__kfifo_add_out(fifo, len);
++
++	return len;
++}
++EXPORT_SYMBOL(kfifo_out);
++
++/**
++ * kfifo_from_user - puts some data from user space into the FIFO
++ * @fifo: the fifo to be used.
++ * @from: pointer to the data to be added.
++ * @len: the length of the data to be added.
++ *
++ * This function copies at most @len bytes from the @from into the
++ * FIFO depending and returns the number of copied bytes.
++ *
++ * Note that with only one concurrent reader and one concurrent
++ * writer, you don't need extra locking to use these functions.
++ */
++unsigned int kfifo_from_user(struct kfifo *fifo,
++	const void __user *from, unsigned int len)
++{
++	unsigned int off;
++	unsigned int l;
++	int ret;
++
++	len = min(len, fifo->size - fifo->in + fifo->out);
++
+ 	/*
+-	 * Ensure that we remove the bytes from the kfifo -before-
+-	 * we update the fifo->out index.
++	 * Ensure that we sample the fifo->out index -before- we
++	 * start putting bytes into the kfifo.
+ 	 */
+ 
+ 	smp_mb();
+ 
+-	fifo->out += len;
++	off = __kfifo_off(fifo, fifo->in);
++
++	/* first put the data starting from fifo->in to buffer end */
++	l = min(len, fifo->size - off);
++	ret = copy_from_user(fifo->buffer + off, from, l);
++
++	if (unlikely(ret))
++		return l - ret;
++
++	/* then put the rest (if any) at the beginning of the buffer */
++	ret = copy_from_user(fifo->buffer, from + l, len - l);
++
++	if (unlikely(ret))
++		return len - ret;
++
++	__kfifo_add_in(fifo, len);
+ 
+ 	return len;
+ }
+-EXPORT_SYMBOL(kfifo_out);
++EXPORT_SYMBOL(kfifo_from_user);
++
++/**
++ * kfifo_to_user - gets data from the FIFO and write it to user space
++ * @fifo: the fifo to be used.
++ * @to: where the data must be copied.
++ * @len: the size of the destination buffer.
++ *
++ * This function copies at most @len bytes from the FIFO into the
++ * @to buffer and returns the number of copied bytes.
++ *
++ * Note that with only one concurrent reader and one concurrent
++ * writer, you don't need extra locking to use these functions.
++ */
++unsigned int kfifo_to_user(struct kfifo *fifo,
++	void __user *to, unsigned int len)
++{
++	unsigned int off;
++	unsigned int l;
++	int ret;
++
++	len = min(len, fifo->in - fifo->out);
++
++	/*
++	 * Ensure that we sample the fifo->in index -before- we
++	 * start removing bytes from the kfifo.
++	 */
++
++	smp_rmb();
++
++	off = __kfifo_off(fifo, fifo->out);
++
++	/* first get the data from fifo->out until the end of the buffer */
++	l = min(len, fifo->size - off);
++	ret = copy_to_user(to, fifo->buffer + off, l);
++
++	if (unlikely(ret))
++		return l - ret;
++
++	/* then get the rest (if any) from the beginning of the buffer */
++	ret = copy_to_user(to + l, fifo->buffer, len - l);
++
++	if (unlikely(ret))
++		return len - ret;
++
++	__kfifo_add_out(fifo, len);
++
++	return len;
++}
++EXPORT_SYMBOL(kfifo_to_user);
++
 
-Weird. If the functions do what their name suggests, i.e. if 
-inode_init_always() is an always called constructor and if 
-destroy_inode() is an unconditional destructor then this patch 
-should have no functional effect on the VFS side.
 
-It increases the size of struct inode, so if you have some old 
-module (built to an older version of fs.h) still around it might 
-corrupt your inode data structure.
-
-Or the size change might trigger some dormant bug. It might move a 
-critical inode right into the path of a pre-existing (but not 
-visibly crash-triggering) data corruption.
-
-The possibilities on the 'weird bug' front are endless - the 
-crash/oops itself should be turned into text, posted here and 
-analyzed.
-
-	Ingo
