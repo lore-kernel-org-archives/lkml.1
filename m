@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbZHPBfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbZHPBhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753274AbZHPBfV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 21:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZHPBfU
+	id S1753310AbZHPBhg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 21:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZHPBhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 21:35:20 -0400
-Received: from rtr.ca ([76.10.145.34]:50006 "EHLO mail.rtr.ca"
+	Sat, 15 Aug 2009 21:37:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35806 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751910AbZHPBfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 21:35:19 -0400
-Message-ID: <4A876255.10606@rtr.ca>
-Date: Sat, 15 Aug 2009 21:35:17 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	id S1752202AbZHPBhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 21:37:35 -0400
+Message-ID: <4A8762C7.7030505@kernel.org>
+Date: Sun, 16 Aug 2009 10:37:11 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-Cc: xfs@oss.sgi.com, linux-fsdevel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH, RFC] xfs: batched discard support
-References: <20090816004705.GA7347@infradead.org>
-In-Reply-To: <20090816004705.GA7347@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Guillaume Knispel <gknispel@proformatique.com>,
+       linux-kernel@vger.kernel.org, Miklos Szeredi <mszeredi@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-fsdevel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH] poll/select: initialize triggered field of struct poll_wqueues
+References: <20090815193024.121926e6@xilun.lan.proformatique.com>	<4A875874.20401@kernel.org> <20090815181559.d73f0da6.akpm@linux-foundation.org>
+In-Reply-To: <20090815181559.d73f0da6.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 16 Aug 2009 01:37:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> Given that everyone is so big in the discard discussion I'd like to
-> present what I had started to prepare for XFS.  I didn't plan to send it
-> out until I get my hands onto a TRIM capable device (or at least get
-> time to add support to qemu), and so far it's only been tested in
-> dry-run mode.
-> 
-> The basic idea is to add an ioctl which walks the free space btrees in
-> each allocation group and simply discard everythin that is free.  Given
-> that XFS doesn't gragment freespace very much that's a very efficient
-> way to do it.  In addition we also already support setting a threshold
-> under which we don't bother to discard an extent, it's currently
-> hardcoded in the helper tool.  In the future we could also add things
-> like a sequence number in the AG headers if anything has changed at all,
-> but let's leave those optimizations until we need them.
-> 
-> XFS locks the allocation btree using the btree buffers, so we do not
-> block allocations from any extent which we're not currenly discarding.
-> 
-> Now the caveat for that is that we really do want to do the discard
-> synchronously, that is wait for the request to finish.  That's what
-> I've implemented in this patch, but it's the part I haven't been
-> able to test so far.  (and yes, this should be separate patch, but it's
-> really just an RFC for now)
-> 
-> Mark, any chance to try it?  Just create an XFS filesystem, age it a
-> bit and then call the attached little trim.c program on the mountmoint
-> (or any file inside the filesystem for that matter)
-..
+Hello,
 
-Looking at it now.  Thanks, Christoph!
+Andrew Morton wrote:
+> OK, thanks.
+> 
+> I tagged this for -stable backporting.  That isn't strictly needed, as
+> there's no particular harm caused here.  But using an uninitialised
+> variable in the core poll/select code is pretty gross.
+
+Yes, I was thinking about putting this for -stable too.  It's not
+critical but still.
+
+Thanks.
+
+-- 
+tejun
