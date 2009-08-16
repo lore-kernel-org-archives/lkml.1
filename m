@@ -1,122 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbZHPJhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbZHPJiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755096AbZHPJhE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 05:37:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbZHPJaN
+	id S1755312AbZHPJiz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 05:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbZHPJit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 05:30:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45330 "EHLO mx2.redhat.com"
+	Sun, 16 Aug 2009 05:38:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45339 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753767AbZHPJaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 05:30:10 -0400
+	id S1753969AbZHPJaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 05:30:11 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 02/48] KVM: Replace MSR_IA32_TIME_STAMP_COUNTER with MSR_IA32_TSC of msr-index.h
-Date: Sun, 16 Aug 2009 12:29:22 +0300
-Message-Id: <1250415008-17175-3-git-send-email-avi@redhat.com>
+Subject: [PATCH 09/48] KVM: Drop interrupt shadow when single stepping should be done only on VMX
+Date: Sun, 16 Aug 2009 12:29:29 +0300
+Message-Id: <1250415008-17175-10-git-send-email-avi@redhat.com>
 In-Reply-To: <1250415008-17175-1-git-send-email-avi@redhat.com>
 References: <1250415008-17175-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+From: Gleb Natapov <gleb@redhat.com>
 
-Use standard msr-index.h's MSR declaration.
+The problem exists only on VMX. Also currently we skip this step if
+there is pending exception. The patch fixes this too.
 
-MSR_IA32_TSC is better than MSR_IA32_TIME_STAMP_COUNTER as it also solves
-80 column issue.
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/include/asm/kvm_host.h |    2 --
- arch/x86/kvm/svm.c              |    4 ++--
- arch/x86/kvm/vmx.c              |    4 ++--
- arch/x86/kvm/x86.c              |    5 ++---
- 4 files changed, 6 insertions(+), 9 deletions(-)
+ arch/x86/kvm/vmx.c |    8 ++++++++
+ arch/x86/kvm/x86.c |    3 ---
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index eabdc1c..7956175 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -752,8 +752,6 @@ static inline void kvm_inject_gp(struct kvm_vcpu *vcpu, u32 error_code)
- 	kvm_queue_exception_e(vcpu, GP_VECTOR, error_code);
- }
- 
--#define MSR_IA32_TIME_STAMP_COUNTER		0x010
--
- #define TSS_IOPB_BASE_OFFSET 0x66
- #define TSS_BASE_SIZE 0x68
- #define TSS_IOPB_SIZE (65536 / 8)
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index b1f658a..48b22c9 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1953,7 +1953,7 @@ static int svm_get_msr(struct kvm_vcpu *vcpu, unsigned ecx, u64 *data)
- 	struct vcpu_svm *svm = to_svm(vcpu);
- 
- 	switch (ecx) {
--	case MSR_IA32_TIME_STAMP_COUNTER: {
-+	case MSR_IA32_TSC: {
- 		u64 tsc;
- 
- 		rdtscll(tsc);
-@@ -2043,7 +2043,7 @@ static int svm_set_msr(struct kvm_vcpu *vcpu, unsigned ecx, u64 data)
- 	struct vcpu_svm *svm = to_svm(vcpu);
- 
- 	switch (ecx) {
--	case MSR_IA32_TIME_STAMP_COUNTER: {
-+	case MSR_IA32_TSC: {
- 		u64 tsc;
- 
- 		rdtscll(tsc);
 diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index db0b8b6..c87c93f 100644
+index c87c93f..c14bffc 100644
 --- a/arch/x86/kvm/vmx.c
 +++ b/arch/x86/kvm/vmx.c
-@@ -941,7 +941,7 @@ static int vmx_get_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 *pdata)
- 	case MSR_EFER:
- 		return kvm_get_msr_common(vcpu, msr_index, pdata);
- #endif
--	case MSR_IA32_TIME_STAMP_COUNTER:
-+	case MSR_IA32_TSC:
- 		data = guest_read_tsc();
- 		break;
- 	case MSR_IA32_SYSENTER_CS:
-@@ -1001,7 +1001,7 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 data)
- 	case MSR_IA32_SYSENTER_ESP:
- 		vmcs_writel(GUEST_SYSENTER_ESP, data);
- 		break;
--	case MSR_IA32_TIME_STAMP_COUNTER:
-+	case MSR_IA32_TSC:
- 		rdtscll(host_tsc);
- 		guest_write_tsc(data, host_tsc);
- 		break;
+@@ -3453,6 +3453,14 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 	if (test_bit(VCPU_REGS_RIP, (unsigned long *)&vcpu->arch.regs_dirty))
+ 		vmcs_writel(GUEST_RIP, vcpu->arch.regs[VCPU_REGS_RIP]);
+ 
++	/* When single-stepping over STI and MOV SS, we must clear the
++	 * corresponding interruptibility bits in the guest state. Otherwise
++	 * vmentry fails as it then expects bit 14 (BS) in pending debug
++	 * exceptions being set, but that's not correct for the guest debugging
++	 * case. */
++	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP)
++		vmx_set_interrupt_shadow(vcpu, 0);
++
+ 	/*
+ 	 * Loading guest fpu may have cleared host cr0.ts
+ 	 */
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 3d45290..6d46079 100644
+index 25a1c57..f064239 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -466,7 +466,7 @@ static u32 msrs_to_save[] = {
- #ifdef CONFIG_X86_64
- 	MSR_CSTAR, MSR_KERNEL_GS_BASE, MSR_SYSCALL_MASK, MSR_LSTAR,
- #endif
--	MSR_IA32_TIME_STAMP_COUNTER, MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
-+	MSR_IA32_TSC, MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
- 	MSR_IA32_PERF_STATUS, MSR_IA32_CR_PAT, MSR_VM_HSAVE_PA
- };
+@@ -3361,9 +3361,6 @@ static void update_cr8_intercept(struct kvm_vcpu *vcpu)
  
-@@ -644,8 +644,7 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
- 
- 	/* Keep irq disabled to prevent changes to the clock */
- 	local_irq_save(flags);
--	kvm_get_msr(v, MSR_IA32_TIME_STAMP_COUNTER,
--			  &vcpu->hv_clock.tsc_timestamp);
-+	kvm_get_msr(v, MSR_IA32_TSC, &vcpu->hv_clock.tsc_timestamp);
- 	ktime_get_ts(&ts);
- 	local_irq_restore(flags);
- 
+ static void inject_pending_irq(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ {
+-	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP)
+-		kvm_x86_ops->set_interrupt_shadow(vcpu, 0);
+-
+ 	/* try to reinject previous events if any */
+ 	if (vcpu->arch.nmi_injected) {
+ 		kvm_x86_ops->set_nmi(vcpu);
 -- 
 1.6.3.3
 
