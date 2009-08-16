@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbZHPUrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbZHPUvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756065AbZHPUrJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 16:47:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756028AbZHPUrI
+	id S1756078AbZHPUvK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 16:51:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbZHPUvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 16:47:08 -0400
-Received: from www84.your-server.de ([213.133.104.84]:58807 "EHLO
+	Sun, 16 Aug 2009 16:51:09 -0400
+Received: from www84.your-server.de ([213.133.104.84]:53337 "EHLO
 	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753651AbZHPUrG (ORCPT
+	with ESMTP id S1755896AbZHPUvI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 16:47:06 -0400
-Subject: Re: [PATCH 2/7] kfifo: move out spinlock
+	Sun, 16 Aug 2009 16:51:08 -0400
+Subject: Re: [PATCH 3/7] kfifo: cleanup namespace
 From: Stefani Seibold <stefani@seibold.net>
 To: linux-kernel <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -19,8 +19,8 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
 In-Reply-To: <1250455161.28540.4.camel@wall-e>
 References: <1250455161.28540.4.camel@wall-e>
 Content-Type: text/plain
-Date: Sun, 16 Aug 2009 22:46:30 +0200
-Message-Id: <1250455590.28540.10.camel@wall-e>
+Date: Sun, 16 Aug 2009 22:50:57 +0200
+Message-Id: <1250455857.28540.15.camel@wall-e>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
@@ -29,755 +29,513 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the pointer to the spinlock out of struct kfifo. Most
-users in tree do not actually use a spinlock, so the few
-exceptions now have to call kfifo_{get,put}_locked, which takes
-an extra argument to a spinlock.
+change name of __kfifo_* functions to kfifo_*, because 
+the prefix __kfifo should be reserved for internal functions.
 
 Signed-off-by: Stefani Seibold <stefani@seibold.net>
 ---
- drivers/char/nozomi.c                       |    2 
- drivers/char/sonypi.c                       |   21 ++++---
- drivers/infiniband/hw/cxgb3/cxio_resource.c |   36 +++++++------
- drivers/media/video/meye.c                  |   35 +++++++-----
- drivers/net/wireless/libertas/main.c        |    2 
- drivers/platform/x86/fujitsu-laptop.c       |   18 +++---
- drivers/platform/x86/sony-laptop.c          |   22 ++++----
- drivers/scsi/libiscsi.c                     |    2 
- drivers/scsi/libiscsi_tcp.c                 |    2 
- drivers/scsi/libsrp.c                       |    9 +--
- drivers/usb/host/fhci.h                     |    2 
- include/linux/kfifo.h                       |   76 ++++++++++++----------------
- kernel/kfifo.c                              |   17 ++----
- net/dccp/probe.c                            |    6 +-
- 14 files changed, 126 insertions(+), 124 deletions(-)
+ drivers/char/nozomi.c                       |   12 +++++-----
+ drivers/infiniband/hw/cxgb3/cxio_resource.c |   10 ++++----
+ drivers/net/wireless/libertas/cmd.c         |    4 +--
+ drivers/net/wireless/libertas/main.c        |    8 +++----
+ drivers/platform/x86/sony-laptop.c          |    2 -
+ drivers/scsi/libiscsi.c                     |   14 ++++++------
+ drivers/scsi/libiscsi_tcp.c                 |   20 ++++++++---------
+ drivers/scsi/libsrp.c                       |    2 -
+ drivers/usb/host/fhci.h                     |    6 ++---
+ include/linux/kfifo.h                       |   32 ++++++----------------------
+ kernel/kfifo.c                              |   12 +++++-----
+ net/dccp/probe.c                            |    2 -
+ 12 files changed, 53 insertions(+), 71 deletions(-)
 
-diff -u -N -r linux-2.6.31-rc4-kfifo1/drivers/char/nozomi.c linux-2.6.31-rc4-kfifo2/drivers/char/nozomi.c
---- linux-2.6.31-rc4-kfifo1/drivers/char/nozomi.c	2009-08-16 21:25:14.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo2/drivers/char/nozomi.c	2009-08-11 12:46:56.000000000 +0200
-@@ -685,7 +685,7 @@
+diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/char/nozomi.c linux-2.6.31-rc4-kfifo3/drivers/char/nozomi.c
+--- linux-2.6.31-rc4-kfifo2/drivers/char/nozomi.c	2009-08-11 12:46:56.000000000 +0200
++++ linux-2.6.31-rc4-kfifo3/drivers/char/nozomi.c	2009-08-11 13:14:26.000000000 +0200
+@@ -797,7 +797,7 @@
+ 	struct tty_struct *tty = tty_port_tty_get(&port->port);
  
- 		for (i = PORT_MDM; i < MAX_PORT; i++) {
- 			kfifo_alloc(&dc->port[i].fifo_ul,
--				FIFO_BUFFER_SIZE_UL, GFP_ATOMIC, NULL);
-+				FIFO_BUFFER_SIZE_UL, GFP_ATOMIC);
- 			memset(&dc->port[i].ctrl_dl, 0, sizeof(struct ctrl_dl));
- 			memset(&dc->port[i].ctrl_ul, 0, sizeof(struct ctrl_ul));
- 		}
-diff -u -N -r linux-2.6.31-rc4-kfifo1/drivers/char/sonypi.c linux-2.6.31-rc4-kfifo2/drivers/char/sonypi.c
---- linux-2.6.31-rc4-kfifo1/drivers/char/sonypi.c	2009-08-16 21:22:46.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo2/drivers/char/sonypi.c	2009-08-11 12:56:44.000000000 +0200
-@@ -776,8 +776,9 @@
- {
- 	struct sonypi_keypress kp;
+ 	/* Get data from tty and place in buf for now */
+-	size = __kfifo_get(&port->fifo_ul, dc->send_buf,
++	size = kfifo_get(&port->fifo_ul, dc->send_buf,
+ 			   ul_size < SEND_BUF_MAX ? ul_size : SEND_BUF_MAX);
  
--	while (kfifo_get(&sonypi_device.input_fifo, (unsigned char *)&kp,
--			 sizeof(kp)) == sizeof(kp)) {
-+	while (kfifo_get_locked(&sonypi_device.input_fifo, (unsigned char *)&kp,
-+			 sizeof(kp), &sonypi_device.input_fifo_lock)
-+			== sizeof(kp)) {
- 		msleep(10);
- 		input_report_key(kp.dev, kp.key, 0);
- 		input_sync(kp.dev);
-@@ -826,8 +827,9 @@
- 	if (kp.dev) {
- 		input_report_key(kp.dev, kp.key, 1);
- 		input_sync(kp.dev);
--		kfifo_put(&sonypi_device.input_fifo,
--			  (unsigned char *)&kp, sizeof(kp));
-+		kfifo_put_locked(&sonypi_device.input_fifo,
-+			(unsigned char *)&kp, sizeof(kp),
-+			&sonypi_device.input_fifo_lock);
- 		schedule_work(&sonypi_device.input_work);
+ 	if (size == 0) {
+@@ -987,11 +987,11 @@
+ 
+ 	} else if (old_ctrl.CTS == 0 && ctrl_dl.CTS == 1) {
+ 
+-		if (__kfifo_len(&dc->port[port].fifo_ul)) {
++		if (kfifo_len(&dc->port[port].fifo_ul)) {
+ 			DBG1("Enable interrupt (0x%04X) on port: %d",
+ 				enable_ier, port);
+ 			DBG1("Data in buffer [%d], enable transmit! ",
+-				__kfifo_len(&dc->port[port].fifo_ul));
++				kfifo_len(&dc->port[port].fifo_ul));
+ 			enable_transmit_ul(port, dc);
+ 		} else {
+ 			DBG1("No data in buffer...");
+@@ -1671,7 +1671,7 @@
+ 		goto exit;
  	}
- }
-@@ -879,7 +881,8 @@
- 		acpi_bus_generate_proc_event(sonypi_acpi_device, 1, event);
- #endif
  
--	kfifo_put(&sonypi_device.fifo, (unsigned char *)&event, sizeof(event));
-+	kfifo_put_locked(&sonypi_device.fifo, (unsigned char *)&event,
-+			sizeof(event), &sonypi_device.fifo_lock);
- 	kill_fasync(&sonypi_device.fifo_async, SIGIO, POLL_IN);
- 	wake_up_interruptible(&sonypi_device.fifo_proc_list);
+-	rval = __kfifo_put(&port->fifo_ul, (unsigned char *)buffer, count);
++	rval = kfifo_put(&port->fifo_ul, (unsigned char *)buffer, count);
  
-@@ -928,7 +931,8 @@
- 		return ret;
+ 	/* notify card */
+ 	if (unlikely(dc == NULL)) {
+@@ -1719,7 +1719,7 @@
+ 	if (!port->port.count)
+ 		goto exit;
  
- 	while (ret < count &&
--	       (kfifo_get(&sonypi_device.fifo, &c, sizeof(c)) == sizeof(c))) {
-+	       (kfifo_get_locked(&sonypi_device.fifo, &c, sizeof(c),
-+				 &sonypi_device.fifo_lock) == sizeof(c))) {
- 		if (put_user(c, buf++))
- 			return -EFAULT;
- 		ret++;
-@@ -1312,8 +1316,7 @@
- 			"http://www.linux.it/~malattia/wiki/index.php/Sony_drivers\n");
+-	room = port->fifo_ul.size - __kfifo_len(&port->fifo_ul);
++	room = port->fifo_ul.size - kfifo_len(&port->fifo_ul);
  
- 	spin_lock_init(&sonypi_device.fifo_lock);
--	error = kfifo_alloc(&sonypi_device.fifo, SONYPI_BUF_SIZE, GFP_KERNEL,
--					 &sonypi_device.fifo_lock);
-+	error = kfifo_alloc(&sonypi_device.fifo, SONYPI_BUF_SIZE, GFP_KERNEL);
- 	if (error) {
- 		printk(KERN_ERR "sonypi: kfifo_alloc failed\n");
- 		return error;
-@@ -1393,7 +1396,7 @@
+ exit:
+ 	mutex_unlock(&port->tty_sem);
+@@ -1876,7 +1876,7 @@
+ 		goto exit_in_buffer;
+ 	}
  
- 		spin_lock_init(&sonypi_device.input_fifo_lock);
- 		error = kfifo_alloc(&sonypi_device.input_fifo, SONYPI_BUF_SIZE,
--				GFP_KERNEL, &sonypi_device.input_fifo_lock);
-+				GFP_KERNEL);
- 		if (error) {
- 			printk(KERN_ERR "sonypi: kfifo_alloc failed\n");
- 			goto err_inpdev_unregister;
-diff -u -N -r linux-2.6.31-rc4-kfifo1/drivers/infiniband/hw/cxgb3/cxio_resource.c linux-2.6.31-rc4-kfifo2/drivers/infiniband/hw/cxgb3/cxio_resource.c
---- linux-2.6.31-rc4-kfifo1/drivers/infiniband/hw/cxgb3/cxio_resource.c	2009-08-16 21:20:12.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo2/drivers/infiniband/hw/cxgb3/cxio_resource.c	2009-08-11 12:47:57.000000000 +0200
-@@ -55,7 +55,7 @@
- 	u32 rarray[16];
- 	spin_lock_init(fifo_lock);
+-	rval = __kfifo_len(&port->fifo_ul);
++	rval = kfifo_len(&port->fifo_ul);
  
--	if (kfifo_alloc(fifo, nr * sizeof(u32), GFP_KERNEL, fifo_lock))
-+	if (kfifo_alloc(fifo, nr * sizeof(u32), GFP_KERNEL))
+ exit_in_buffer:
+ 	return rval;
+diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/infiniband/hw/cxgb3/cxio_resource.c linux-2.6.31-rc4-kfifo3/drivers/infiniband/hw/cxgb3/cxio_resource.c
+--- linux-2.6.31-rc4-kfifo2/drivers/infiniband/hw/cxgb3/cxio_resource.c	2009-08-11 12:47:57.000000000 +0200
++++ linux-2.6.31-rc4-kfifo3/drivers/infiniband/hw/cxgb3/cxio_resource.c	2009-08-11 13:14:18.000000000 +0200
+@@ -59,7 +59,7 @@
  		return -ENOMEM;
  
  	for (i = 0; i < skip_low + skip_high; i++)
-@@ -86,7 +86,8 @@
- 			__kfifo_put(fifo, (unsigned char *) &i, sizeof(u32));
+-		__kfifo_put(fifo, (unsigned char *) &entry, sizeof(u32));
++		kfifo_put(fifo, (unsigned char *) &entry, sizeof(u32));
+ 	if (random) {
+ 		j = 0;
+ 		random_bytes = random32();
+@@ -71,19 +71,19 @@
+ 				random_bytes = random32();
+ 			}
+ 			idx = (random_bytes >> (j * 2)) & 0xF;
+-			__kfifo_put(fifo,
++			kfifo_put(fifo,
+ 				(unsigned char *) &rarray[idx],
+ 				sizeof(u32));
+ 			rarray[idx] = i;
+ 			j++;
+ 		}
+ 		for (i = 0; i < RANDOM_SIZE; i++)
+-			__kfifo_put(fifo,
++			kfifo_put(fifo,
+ 				(unsigned char *) &rarray[i],
+ 				sizeof(u32));
+ 	} else
+ 		for (i = skip_low; i < nr - skip_high; i++)
+-			__kfifo_put(fifo, (unsigned char *) &i, sizeof(u32));
++			kfifo_put(fifo, (unsigned char *) &i, sizeof(u32));
  
  	for (i = 0; i < skip_low + skip_high; i++)
--		kfifo_get(fifo, (unsigned char *) &entry, sizeof(u32));
-+		kfifo_get_locked(fifo, (unsigned char *) &entry,
-+				sizeof(u32), fifo_lock);
- 	return 0;
- }
- 
-@@ -113,8 +114,7 @@
- 	spin_lock_init(&rdev_p->rscp->qpid_fifo_lock);
- 
- 	if (kfifo_alloc(&rdev_p->rscp->qpid_fifo, T3_MAX_NUM_QP * sizeof(u32),
--					      GFP_KERNEL,
--					      &rdev_p->rscp->qpid_fifo_lock))
-+					      GFP_KERNEL))
- 		return -ENOMEM;
+ 		kfifo_get_locked(fifo, (unsigned char *) &entry,
+@@ -119,7 +119,7 @@
  
  	for (i = 16; i < T3_MAX_NUM_QP; i++)
-@@ -177,33 +177,37 @@
- /*
-  * returns 0 if no resource available
-  */
--static u32 cxio_hal_get_resource(struct kfifo *fifo)
-+static u32 cxio_hal_get_resource(struct kfifo *fifo, spinlock_t * lock)
- {
- 	u32 entry;
--	if (kfifo_get(fifo, (unsigned char *) &entry, sizeof(u32)))
-+	if (kfifo_get_locked(fifo, (unsigned char *) &entry, sizeof(u32), lock))
- 		return entry;
- 	else
- 		return 0;	/* fifo emptry */
- }
- 
--static void cxio_hal_put_resource(struct kfifo *fifo, u32 entry)
-+static void cxio_hal_put_resource(struct kfifo *fifo, spinlock_t * lock,
-+		u32 entry)
- {
--	BUG_ON(kfifo_put(fifo, (unsigned char *) &entry, sizeof(u32)) == 0);
-+	BUG_ON(
-+	kfifo_put_locked(fifo, (unsigned char *) &entry, sizeof(u32), lock)
-+	== 0);
- }
- 
- u32 cxio_hal_get_stag(struct cxio_hal_resource *rscp)
- {
--	return cxio_hal_get_resource(&rscp->tpt_fifo);
-+	return cxio_hal_get_resource(&rscp->tpt_fifo, &rscp->tpt_fifo_lock);
- }
- 
- void cxio_hal_put_stag(struct cxio_hal_resource *rscp, u32 stag)
- {
--	cxio_hal_put_resource(&rscp->tpt_fifo, stag);
-+	cxio_hal_put_resource(&rscp->tpt_fifo, &rscp->tpt_fifo_lock, stag);
- }
- 
- u32 cxio_hal_get_qpid(struct cxio_hal_resource *rscp)
- {
--	u32 qpid = cxio_hal_get_resource(&rscp->qpid_fifo);
-+	u32 qpid = cxio_hal_get_resource(&rscp->qpid_fifo,
-+			&rscp->qpid_fifo_lock);
- 	PDBG("%s qpid 0x%x\n", __func__, qpid);
- 	return qpid;
- }
-@@ -211,27 +215,27 @@
- void cxio_hal_put_qpid(struct cxio_hal_resource *rscp, u32 qpid)
- {
- 	PDBG("%s qpid 0x%x\n", __func__, qpid);
--	cxio_hal_put_resource(&rscp->qpid_fifo, qpid);
-+	cxio_hal_put_resource(&rscp->qpid_fifo, &rscp->qpid_fifo_lock, qpid);
- }
- 
- u32 cxio_hal_get_cqid(struct cxio_hal_resource *rscp)
- {
--	return cxio_hal_get_resource(&rscp->cqid_fifo);
-+	return cxio_hal_get_resource(&rscp->cqid_fifo, &rscp->cqid_fifo_lock);
- }
- 
- void cxio_hal_put_cqid(struct cxio_hal_resource *rscp, u32 cqid)
- {
--	cxio_hal_put_resource(&rscp->cqid_fifo, cqid);
-+	cxio_hal_put_resource(&rscp->cqid_fifo, &rscp->cqid_fifo_lock, cqid);
- }
- 
- u32 cxio_hal_get_pdid(struct cxio_hal_resource *rscp)
- {
--	return cxio_hal_get_resource(&rscp->pdid_fifo);
-+	return cxio_hal_get_resource(&rscp->pdid_fifo, &rscp->pdid_fifo_lock);
- }
- 
- void cxio_hal_put_pdid(struct cxio_hal_resource *rscp, u32 pdid)
- {
--	cxio_hal_put_resource(&rscp->pdid_fifo, pdid);
-+	cxio_hal_put_resource(&rscp->pdid_fifo, &rscp->pdid_fifo_lock, pdid);
- }
- 
- void cxio_hal_destroy_resource(struct cxio_hal_resource *rscp)
-diff -u -N -r linux-2.6.31-rc4-kfifo1/drivers/media/video/meye.c linux-2.6.31-rc4-kfifo2/drivers/media/video/meye.c
---- linux-2.6.31-rc4-kfifo1/drivers/media/video/meye.c	2009-08-16 21:14:20.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo2/drivers/media/video/meye.c	2009-08-09 11:40:34.000000000 +0200
-@@ -799,8 +799,8 @@
- 		return IRQ_HANDLED;
- 
- 	if (meye.mchip_mode == MCHIP_HIC_MODE_CONT_OUT) {
--		if (kfifo_get(&meye.grabq, (unsigned char *)&reqnr,
--			      sizeof(int)) != sizeof(int)) {
-+		if (kfifo_get_locked(&meye.grabq, (unsigned char *)&reqnr,
-+			      sizeof(int), &meye.grabq_lock) != sizeof(int)) {
- 			mchip_free_frame();
- 			return IRQ_HANDLED;
- 		}
-@@ -810,7 +810,8 @@
- 		meye.grab_buffer[reqnr].state = MEYE_BUF_DONE;
- 		do_gettimeofday(&meye.grab_buffer[reqnr].timestamp);
- 		meye.grab_buffer[reqnr].sequence = sequence++;
--		kfifo_put(&meye.doneq, (unsigned char *)&reqnr, sizeof(int));
-+		kfifo_put_locked(&meye.doneq, (unsigned char *)&reqnr,
-+				sizeof(int), &meye.doneq_lock);
- 		wake_up_interruptible(&meye.proc_list);
- 	} else {
- 		int size;
-@@ -819,8 +820,8 @@
- 			mchip_free_frame();
- 			goto again;
- 		}
--		if (kfifo_get(&meye.grabq, (unsigned char *)&reqnr,
--			      sizeof(int)) != sizeof(int)) {
-+		if (kfifo_get_locked(&meye.grabq, (unsigned char *)&reqnr,
-+			      sizeof(int), &meye.grabq_lock) != sizeof(int)) {
- 			mchip_free_frame();
- 			goto again;
- 		}
-@@ -830,7 +831,8 @@
- 		meye.grab_buffer[reqnr].state = MEYE_BUF_DONE;
- 		do_gettimeofday(&meye.grab_buffer[reqnr].timestamp);
- 		meye.grab_buffer[reqnr].sequence = sequence++;
--		kfifo_put(&meye.doneq, (unsigned char *)&reqnr, sizeof(int));
-+		kfifo_put_locked(&meye.doneq, (unsigned char *)&reqnr,
-+				sizeof(int), &meye.doneq_lock);
- 		wake_up_interruptible(&meye.proc_list);
- 	}
- 	mchip_free_frame();
-@@ -932,7 +934,8 @@
- 		mchip_cont_compression_start();
- 
- 	meye.grab_buffer[*nb].state = MEYE_BUF_USING;
--	kfifo_put(&meye.grabq, (unsigned char *)nb, sizeof(int));
-+	kfifo_put_locked(&meye.grabq, (unsigned char *)nb, sizeof(int),
-+			 &meye.grabq_lock);
- 	mutex_unlock(&meye.lock);
- 
+ 		if (!(i & rdev_p->qpmask))
+-			__kfifo_put(&rdev_p->rscp->qpid_fifo,
++			kfifo_put(&rdev_p->rscp->qpid_fifo,
+ 				    (unsigned char *) &i, sizeof(u32));
  	return 0;
-@@ -964,7 +967,8 @@
- 		/* fall through */
- 	case MEYE_BUF_DONE:
- 		meye.grab_buffer[*i].state = MEYE_BUF_UNUSED;
--		kfifo_get(&meye.doneq, (unsigned char *)&unused, sizeof(int));
-+		kfifo_get_locked(&meye.doneq, (unsigned char *)&unused,
-+				sizeof(int), &meye.doneq_lock);
- 	}
- 	*i = meye.grab_buffer[*i].size;
- 	mutex_unlock(&meye.lock);
-@@ -1451,7 +1455,8 @@
- 	buf->flags |= V4L2_BUF_FLAG_QUEUED;
- 	buf->flags &= ~V4L2_BUF_FLAG_DONE;
- 	meye.grab_buffer[buf->index].state = MEYE_BUF_USING;
--	kfifo_put(&meye.grabq, (unsigned char *)&buf->index, sizeof(int));
-+	kfifo_put_locked(&meye.grabq, (unsigned char *)&buf->index,
-+			sizeof(int), &meye.grabq_lock);
- 	mutex_unlock(&meye.lock);
- 
- 	return 0;
-@@ -1477,8 +1482,8 @@
- 		return -EINTR;
- 	}
- 
--	if (!kfifo_get(&meye.doneq, (unsigned char *)&reqnr,
--		       sizeof(int))) {
-+	if (!kfifo_get_locked(&meye.doneq, (unsigned char *)&reqnr,
-+		       sizeof(int), &meye.doneq_lock)) {
- 		mutex_unlock(&meye.lock);
- 		return -EBUSY;
- 	}
-@@ -1745,14 +1750,14 @@
- 	}
- 
- 	spin_lock_init(&meye.grabq_lock);
--	if (kfifo_alloc(&meye.grabq, sizeof(int) * MEYE_MAX_BUFNBRS, GFP_KERNEL,
--				 &meye.grabq_lock)) {
-+	if (kfifo_alloc(&meye.grabq, sizeof(int) * MEYE_MAX_BUFNBRS,
-+				GFP_KERNEL)) {
- 		printk(KERN_ERR "meye: fifo allocation failed\n");
- 		goto outkfifoalloc1;
- 	}
- 	spin_lock_init(&meye.doneq_lock);
--	if (kfifo_alloc(&meye.doneq, sizeof(int) * MEYE_MAX_BUFNBRS, GFP_KERNEL,
--				 &meye.doneq_lock)) {
-+	if (kfifo_alloc(&meye.doneq, sizeof(int) * MEYE_MAX_BUFNBRS,
-+				GFP_KERNEL)) {
- 		printk(KERN_ERR "meye: fifo allocation failed\n");
- 		goto outkfifoalloc2;
- 	}
-diff -u -N -r linux-2.6.31-rc4-kfifo1/drivers/net/wireless/libertas/main.c linux-2.6.31-rc4-kfifo2/drivers/net/wireless/libertas/main.c
---- linux-2.6.31-rc4-kfifo1/drivers/net/wireless/libertas/main.c	2009-08-16 21:25:46.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo2/drivers/net/wireless/libertas/main.c	2009-08-11 12:45:53.000000000 +0200
-@@ -1121,7 +1121,7 @@
- 	priv->resp_len[0] = priv->resp_len[1] = 0;
- 
- 	/* Create the event FIFO */
--	ret = kfifo_alloc(&priv->event_fifo, sizeof(u32) * 16, GFP_KERNEL, NULL);
-+	ret = kfifo_alloc(&priv->event_fifo, sizeof(u32) * 16, GFP_KERNEL);
- 	if (ret) {
- 		lbs_pr_err("Out of memory allocating event FIFO buffer\n");
- 		goto out;
-diff -u -N -r linux-2.6.31-rc4-kfifo1/drivers/platform/x86/fujitsu-laptop.c linux-2.6.31-rc4-kfifo2/drivers/platform/x86/fujitsu-laptop.c
---- linux-2.6.31-rc4-kfifo1/drivers/platform/x86/fujitsu-laptop.c	2009-08-16 21:01:06.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo2/drivers/platform/x86/fujitsu-laptop.c	2009-08-11 22:46:08.000000000 +0200
-@@ -834,7 +834,7 @@
- 	/* kfifo */
- 	spin_lock_init(&fujitsu_hotkey->fifo_lock);
- 	error = kfifo_alloc(&fujitsu_hotkey->fifo, RINGBUFFERSIZE * sizeof(int),
--			GFP_KERNEL, &fujitsu_hotkey->fifo_lock);
-+			GFP_KERNEL);
- 	if (error) {
- 		printk(KERN_ERR "kfifo_alloc failed\n");
- 		goto err_stop;
-@@ -1007,9 +1007,10 @@
- 				vdbg_printk(FUJLAPTOP_DBG_TRACE,
- 					"Push keycode into ringbuffer [%d]\n",
- 					keycode);
--				status = kfifo_put(&fujitsu_hotkey->fifo,
-+				status = kfifo_put_locked(&fujitsu_hotkey->fifo,
- 						   (unsigned char *)&keycode,
--						   sizeof(keycode));
-+						   sizeof(keycode),
-+						   &fujitsu_hotkey->fifo_lock);
- 				if (status != sizeof(keycode)) {
- 					vdbg_printk(FUJLAPTOP_DBG_WARN,
- 					    "Could not push keycode [0x%x]\n",
-@@ -1020,11 +1021,12 @@
- 				}
- 			} else if (keycode == 0) {
- 				while ((status =
--					kfifo_get
--					(&fujitsu_hotkey->fifo, (unsigned char *)
--					 &keycode_r,
--					 sizeof
--					 (keycode_r))) == sizeof(keycode_r)) {
-+					kfifo_get_locked(
-+					 &fujitsu_hotkey->fifo,
-+					 (unsigned char *) &keycode_r,
-+					 sizeof(keycode_r),
-+					 &fujitsu_hotkey->fifo_lock))
-+					 == sizeof(keycode_r)) {
- 					input_report_key(input, keycode_r, 0);
- 					input_sync(input);
- 					vdbg_printk(FUJLAPTOP_DBG_TRACE,
-diff -u -N -r linux-2.6.31-rc4-kfifo1/drivers/platform/x86/sony-laptop.c linux-2.6.31-rc4-kfifo2/drivers/platform/x86/sony-laptop.c
---- linux-2.6.31-rc4-kfifo1/drivers/platform/x86/sony-laptop.c	2009-08-16 21:11:55.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo2/drivers/platform/x86/sony-laptop.c	2009-08-11 12:49:23.000000000 +0200
-@@ -300,8 +300,9 @@
- {
- 	struct sony_laptop_keypress kp;
- 
--	while (kfifo_get(&sony_laptop_input.fifo, (unsigned char *)&kp,
--			 sizeof(kp)) == sizeof(kp)) {
-+	while (kfifo_get_locked(&sony_laptop_input.fifo, (unsigned char *)&kp,
-+			sizeof(kp), &sony_laptop_input.fifo_lock)
-+			== sizeof(kp)) {
- 		msleep(10);
- 		input_report_key(kp.dev, kp.key, 0);
- 		input_sync(kp.dev);
-@@ -362,8 +363,9 @@
- 		/* we emit the scancode so we can always remap the key */
- 		input_event(kp.dev, EV_MSC, MSC_SCAN, event);
- 		input_sync(kp.dev);
--		kfifo_put(&sony_laptop_input.fifo,
--			  (unsigned char *)&kp, sizeof(kp));
-+		kfifo_put_locked(&sony_laptop_input.fifo,
-+			  (unsigned char *)&kp, sizeof(kp),
-+			  &sony_laptop_input.fifo_lock);
- 
- 		if (!work_pending(&sony_laptop_release_key_work))
- 			queue_work(sony_laptop_input.wq,
-@@ -386,8 +388,7 @@
- 	/* kfifo */
- 	spin_lock_init(&sony_laptop_input.fifo_lock);
- 	error =
--	 kfifo_alloc(&sony_laptop_input.fifo, SONY_LAPTOP_BUF_SIZE, GFP_KERNEL,
--			    &sony_laptop_input.fifo_lock);
-+	 kfifo_alloc(&sony_laptop_input.fifo, SONY_LAPTOP_BUF_SIZE, GFP_KERNEL);
- 	if (error) {
- 		printk(KERN_ERR DRV_PFX "kfifo_alloc failed\n");
- 		goto err_dec_users;
-@@ -2143,7 +2144,8 @@
- 		return ret;
- 
- 	while (ret < count &&
--	       (kfifo_get(&sonypi_compat.fifo, &c, sizeof(c)) == sizeof(c))) {
-+	       (kfifo_get_locked(&sonypi_compat.fifo, &c, sizeof(c),
-+			  &sonypi_compat.fifo_lock) == sizeof(c))) {
- 		if (put_user(c, buf++))
- 			return -EFAULT;
- 		ret++;
-@@ -2322,7 +2324,8 @@
- 
- static void sonypi_compat_report_event(u8 event)
- {
--	kfifo_put(&sonypi_compat.fifo, (unsigned char *)&event, sizeof(event));
-+	kfifo_put_locked(&sonypi_compat.fifo, (unsigned char *)&event,
-+			sizeof(event), &sonypi_compat.fifo_lock);
- 	kill_fasync(&sonypi_compat.fifo_async, SIGIO, POLL_IN);
- 	wake_up_interruptible(&sonypi_compat.fifo_proc_list);
  }
-@@ -2333,8 +2336,7 @@
+diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/net/wireless/libertas/cmd.c linux-2.6.31-rc4-kfifo3/drivers/net/wireless/libertas/cmd.c
+--- linux-2.6.31-rc4-kfifo2/drivers/net/wireless/libertas/cmd.c	2009-08-11 12:51:53.000000000 +0200
++++ linux-2.6.31-rc4-kfifo3/drivers/net/wireless/libertas/cmd.c	2009-08-11 13:14:45.000000000 +0200
+@@ -1862,7 +1862,7 @@
+ 	priv->dnld_sent = DNLD_RES_RECEIVED;
  
- 	spin_lock_init(&sonypi_compat.fifo_lock);
- 	error =
--	 kfifo_alloc(&sonypi_compat.fifo, SONY_LAPTOP_BUF_SIZE, GFP_KERNEL,
--					 &sonypi_compat.fifo_lock);
-+	 kfifo_alloc(&sonypi_compat.fifo, SONY_LAPTOP_BUF_SIZE, GFP_KERNEL);
- 	if (error) {
- 		printk(KERN_ERR DRV_PFX "kfifo_alloc failed\n");
- 		return error;
-diff -u -N -r linux-2.6.31-rc4-kfifo1/drivers/scsi/libiscsi.c linux-2.6.31-rc4-kfifo2/drivers/scsi/libiscsi.c
---- linux-2.6.31-rc4-kfifo1/drivers/scsi/libiscsi.c	2009-08-16 21:29:03.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo2/drivers/scsi/libiscsi.c	2009-08-09 16:15:00.000000000 +0200
+ 	/* If nothing to do, go back to sleep (?) */
+-	if (!__kfifo_len(&priv->event_fifo) && !priv->resp_len[priv->resp_idx])
++	if (!kfifo_len(&priv->event_fifo) && !priv->resp_len[priv->resp_idx])
+ 		priv->psstate = PS_STATE_SLEEP;
+ 
+ 	spin_unlock_irqrestore(&priv->driver_lock, flags);
+@@ -1936,7 +1936,7 @@
+ 	}
+ 
+ 	/* Pending events or command responses? */
+-	if (__kfifo_len(&priv->event_fifo) || priv->resp_len[priv->resp_idx]) {
++	if (kfifo_len(&priv->event_fifo) || priv->resp_len[priv->resp_idx]) {
+ 		allowed = 0;
+ 		lbs_deb_host("pending events or command responses\n");
+ 	}
+diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/net/wireless/libertas/main.c linux-2.6.31-rc4-kfifo3/drivers/net/wireless/libertas/main.c
+--- linux-2.6.31-rc4-kfifo2/drivers/net/wireless/libertas/main.c	2009-08-11 12:45:53.000000000 +0200
++++ linux-2.6.31-rc4-kfifo3/drivers/net/wireless/libertas/main.c	2009-08-11 13:14:41.000000000 +0200
+@@ -772,7 +772,7 @@
+ 			shouldsleep = 1;	/* Can't send a command; one already running */
+ 		else if (!list_empty(&priv->cmdpendingq))
+ 			shouldsleep = 0;	/* We have a command to send */
+-		else if (__kfifo_len(&priv->event_fifo))
++		else if (kfifo_len(&priv->event_fifo))
+ 			shouldsleep = 0;	/* We have an event to process */
+ 		else
+ 			shouldsleep = 1;	/* No command */
+@@ -851,10 +851,10 @@
+ 
+ 		/* Process hardware events, e.g. card removed, link lost */
+ 		spin_lock_irq(&priv->driver_lock);
+-		while (__kfifo_len(&priv->event_fifo)) {
++		while (kfifo_len(&priv->event_fifo)) {
+ 			u32 event;
+ 
+-			__kfifo_get(&priv->event_fifo, (unsigned char *) &event,
++			kfifo_get(&priv->event_fifo, (unsigned char *) &event,
+ 				sizeof(event));
+ 			spin_unlock_irq(&priv->driver_lock);
+ 			lbs_process_event(priv, event);
+@@ -1578,7 +1578,7 @@
+ 	if (priv->psstate == PS_STATE_SLEEP)
+ 		priv->psstate = PS_STATE_AWAKE;
+ 
+-	__kfifo_put(&priv->event_fifo, (unsigned char *) &event, sizeof(u32));
++	kfifo_put(&priv->event_fifo, (unsigned char *) &event, sizeof(u32));
+ 
+ 	wake_up_interruptible(&priv->waitq);
+ 
+diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/platform/x86/sony-laptop.c linux-2.6.31-rc4-kfifo3/drivers/platform/x86/sony-laptop.c
+--- linux-2.6.31-rc4-kfifo2/drivers/platform/x86/sony-laptop.c	2009-08-11 12:49:23.000000000 +0200
++++ linux-2.6.31-rc4-kfifo3/drivers/platform/x86/sony-laptop.c	2009-08-11 13:13:24.000000000 +0200
 @@ -2121,7 +2121,7 @@
- 	if (q->pool == NULL)
- 		return -ENOMEM;
+ 	spin_lock_irqsave(&sonypi_compat.fifo_lock, flags);
  
--	kfifo_init(&q->queue, (void*)q->pool, max * sizeof(void*), NULL);
-+	kfifo_init(&q->queue, (void*)q->pool, max * sizeof(void*));
+ 	if (atomic_inc_return(&sonypi_compat.open_count) == 1)
+-		__kfifo_reset(&sonypi_compat.fifo);
++		kfifo_reset(&sonypi_compat.fifo);
  
- 	for (i = 0; i < max; i++) {
- 		q->pool[i] = kzalloc(item_size, GFP_KERNEL);
-diff -u -N -r linux-2.6.31-rc4-kfifo1/drivers/scsi/libiscsi_tcp.c linux-2.6.31-rc4-kfifo2/drivers/scsi/libiscsi_tcp.c
---- linux-2.6.31-rc4-kfifo1/drivers/scsi/libiscsi_tcp.c	2009-08-16 21:24:53.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo2/drivers/scsi/libiscsi_tcp.c	2009-08-11 22:41:11.000000000 +0200
-@@ -1128,7 +1128,7 @@
+ 	spin_unlock_irqrestore(&sonypi_compat.fifo_lock, flags);
  
- 		/* R2T xmit queue */
- 		if (kfifo_alloc(&tcp_task->r2tqueue,
--		      session->max_r2t * 4 * sizeof(void*), GFP_KERNEL, NULL)) {
-+		      session->max_r2t * 4 * sizeof(void*), GFP_KERNEL)) {
- 			iscsi_pool_free(&tcp_task->r2tpool);
- 			goto r2t_alloc_fail;
+diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/scsi/libiscsi.c linux-2.6.31-rc4-kfifo3/drivers/scsi/libiscsi.c
+--- linux-2.6.31-rc4-kfifo2/drivers/scsi/libiscsi.c	2009-08-09 16:15:00.000000000 +0200
++++ linux-2.6.31-rc4-kfifo3/drivers/scsi/libiscsi.c	2009-08-11 13:13:43.000000000 +0200
+@@ -428,7 +428,7 @@
+ 	if (conn->login_task == task)
+ 		return;
+ 
+-	__kfifo_put(&session->cmdpool.queue, (void*)&task, sizeof(void*));
++	kfifo_put(&session->cmdpool.queue, (void*)&task, sizeof(void*));
+ 
+ 	if (sc) {
+ 		task->sc = NULL;
+@@ -614,7 +614,7 @@
+ 		BUG_ON(conn->c_stage == ISCSI_CONN_INITIAL_STAGE);
+ 		BUG_ON(conn->c_stage == ISCSI_CONN_STOPPED);
+ 
+-		if (!__kfifo_get(&session->cmdpool.queue,
++		if (!kfifo_get(&session->cmdpool.queue,
+ 				 (void*)&task, sizeof(void*)))
+ 			return NULL;
+ 	}
+@@ -1376,7 +1376,7 @@
+ {
+ 	struct iscsi_task *task;
+ 
+-	if (!__kfifo_get(&conn->session->cmdpool.queue,
++	if (!kfifo_get(&conn->session->cmdpool.queue,
+ 			 (void *) &task, sizeof(void *)))
+ 		return NULL;
+ 
+@@ -2129,7 +2129,7 @@
+ 			q->max = i;
+ 			goto enomem;
  		}
-diff -u -N -r linux-2.6.31-rc4-kfifo1/drivers/scsi/libsrp.c linux-2.6.31-rc4-kfifo2/drivers/scsi/libsrp.c
---- linux-2.6.31-rc4-kfifo1/drivers/scsi/libsrp.c	2009-08-16 21:29:13.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo2/drivers/scsi/libsrp.c	2009-08-09 16:18:53.000000000 +0200
-@@ -58,8 +58,7 @@
- 		goto free_pool;
+-		__kfifo_put(&q->queue, (void*)&q->pool[i], sizeof(void*));
++		kfifo_put(&q->queue, (void*)&q->pool[i], sizeof(void*));
+ 	}
  
- 	spin_lock_init(&q->lock);
--	kfifo_init(&q->queue, (void *) q->pool, max * sizeof(void *),
--			      &q->lock);
-+	kfifo_init(&q->queue, (void *) q->pool, max * sizeof(void *));
+ 	if (items) {
+@@ -2476,7 +2476,7 @@
+ 
+ 	/* allocate login_task used for the login/text sequences */
+ 	spin_lock_bh(&session->lock);
+-	if (!__kfifo_get(&session->cmdpool.queue,
++	if (!kfifo_get(&session->cmdpool.queue,
+                          (void*)&conn->login_task,
+ 			 sizeof(void*))) {
+ 		spin_unlock_bh(&session->lock);
+@@ -2496,7 +2496,7 @@
+ 	return cls_conn;
+ 
+ login_task_data_alloc_fail:
+-	__kfifo_put(&session->cmdpool.queue, (void*)&conn->login_task,
++	kfifo_put(&session->cmdpool.queue, (void*)&conn->login_task,
+ 		    sizeof(void*));
+ login_task_alloc_fail:
+ 	iscsi_destroy_conn(cls_conn);
+@@ -2559,7 +2559,7 @@
+ 	free_pages((unsigned long) conn->data,
+ 		   get_order(ISCSI_DEF_MAX_RECV_SEG_LEN));
+ 	kfree(conn->persistent_address);
+-	__kfifo_put(&session->cmdpool.queue, (void*)&conn->login_task,
++	kfifo_put(&session->cmdpool.queue, (void*)&conn->login_task,
+ 		    sizeof(void*));
+ 	if (session->leadconn == conn)
+ 		session->leadconn = NULL;
+diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/scsi/libiscsi_tcp.c linux-2.6.31-rc4-kfifo3/drivers/scsi/libiscsi_tcp.c
+--- linux-2.6.31-rc4-kfifo2/drivers/scsi/libiscsi_tcp.c	2009-08-11 22:41:11.000000000 +0200
++++ linux-2.6.31-rc4-kfifo3/drivers/scsi/libiscsi_tcp.c	2009-08-11 22:41:20.000000000 +0200
+@@ -445,15 +445,15 @@
+ 		return;
+ 
+ 	/* flush task's r2t queues */
+-	while (__kfifo_get(&tcp_task->r2tqueue, (void*)&r2t, sizeof(void*))) {
+-		__kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
++	while (kfifo_get(&tcp_task->r2tqueue, (void*)&r2t, sizeof(void*))) {
++		kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
+ 			    sizeof(void*));
+ 		ISCSI_DBG_TCP(task->conn, "pending r2t dropped\n");
+ 	}
+ 
+ 	r2t = tcp_task->r2t;
+ 	if (r2t != NULL) {
+-		__kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
++		kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
+ 			    sizeof(void*));
+ 		tcp_task->r2t = NULL;
+ 	}
+@@ -541,7 +541,7 @@
+ 		return 0;
+ 	}
+ 
+-	rc = __kfifo_get(&tcp_task->r2tpool.queue, (void*)&r2t, sizeof(void*));
++	rc = kfifo_get(&tcp_task->r2tpool.queue, (void*)&r2t, sizeof(void*));
+ 	if (!rc) {
+ 		iscsi_conn_printk(KERN_ERR, conn, "Could not allocate R2T. "
+ 				  "Target has sent more R2Ts than it "
+@@ -554,7 +554,7 @@
+ 	if (r2t->data_length == 0) {
+ 		iscsi_conn_printk(KERN_ERR, conn,
+ 				  "invalid R2T with zero data len\n");
+-		__kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
++		kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
+ 			    sizeof(void*));
+ 		return ISCSI_ERR_DATALEN;
+ 	}
+@@ -570,7 +570,7 @@
+ 				  "invalid R2T with data len %u at offset %u "
+ 				  "and total length %d\n", r2t->data_length,
+ 				  r2t->data_offset, scsi_out(task->sc)->length);
+-		__kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
++		kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
+ 			    sizeof(void*));
+ 		return ISCSI_ERR_DATALEN;
+ 	}
+@@ -580,7 +580,7 @@
+ 	r2t->sent = 0;
+ 
+ 	tcp_task->exp_datasn = r2tsn + 1;
+-	__kfifo_put(&tcp_task->r2tqueue, (void*)&r2t, sizeof(void*));
++	kfifo_put(&tcp_task->r2tqueue, (void*)&r2t, sizeof(void*));
+ 	conn->r2t_pdus_cnt++;
+ 
+ 	iscsi_requeue_task(task);
+@@ -951,7 +951,7 @@
+ 		return conn->session->tt->init_pdu(task, 0, task->data_count);
+ 	}
+ 
+-	BUG_ON(__kfifo_len(&tcp_task->r2tqueue));
++	BUG_ON(kfifo_len(&tcp_task->r2tqueue));
+ 	tcp_task->exp_datasn = 0;
+ 
+ 	/* Prepare PDU, optionally w/ immediate data */
+@@ -982,7 +982,7 @@
+ 			if (r2t->data_length <= r2t->sent) {
+ 				ISCSI_DBG_TCP(task->conn,
+ 					      "  done with r2t %p\n", r2t);
+-				__kfifo_put(&tcp_task->r2tpool.queue,
++				kfifo_put(&tcp_task->r2tpool.queue,
+ 					    (void *)&tcp_task->r2t,
+ 					    sizeof(void *));
+ 				tcp_task->r2t = r2t = NULL;
+@@ -990,7 +990,7 @@
+ 		}
+ 
+ 		if (r2t == NULL) {
+-			__kfifo_get(&tcp_task->r2tqueue,
++			kfifo_get(&tcp_task->r2tqueue,
+ 				    (void *)&tcp_task->r2t, sizeof(void *));
+ 			r2t = tcp_task->r2t;
+ 		}
+diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/scsi/libsrp.c linux-2.6.31-rc4-kfifo3/drivers/scsi/libsrp.c
+--- linux-2.6.31-rc4-kfifo2/drivers/scsi/libsrp.c	2009-08-09 16:18:53.000000000 +0200
++++ linux-2.6.31-rc4-kfifo3/drivers/scsi/libsrp.c	2009-08-11 13:14:12.000000000 +0200
+@@ -61,7 +61,7 @@
+ 	kfifo_init(&q->queue, (void *) q->pool, max * sizeof(void *));
  
  	for (i = 0, iue = q->items; i < max; i++) {
- 		__kfifo_put(&q->queue, (void *) &iue, sizeof(void *));
-@@ -164,7 +163,8 @@
- {
- 	struct iu_entry *iue = NULL;
+-		__kfifo_put(&q->queue, (void *) &iue, sizeof(void *));
++		kfifo_put(&q->queue, (void *) &iue, sizeof(void *));
+ 		iue->sbuf = ring[i];
+ 		iue++;
+ 	}
+diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/usb/host/fhci.h linux-2.6.31-rc4-kfifo3/drivers/usb/host/fhci.h
+--- linux-2.6.31-rc4-kfifo2/drivers/usb/host/fhci.h	2009-08-11 12:46:08.000000000 +0200
++++ linux-2.6.31-rc4-kfifo3/drivers/usb/host/fhci.h	2009-08-11 13:14:36.000000000 +0200
+@@ -505,19 +505,19 @@
  
--	kfifo_get(&target->iu_queue.queue, (void *) &iue, sizeof(void *));
-+	kfifo_get_locked(&target->iu_queue.queue, (void *) &iue,
-+			sizeof(void *), &target->iu_queue.lock);
- 	if (!iue)
- 		return iue;
- 	iue->target = target;
-@@ -176,7 +176,8 @@
- 
- void srp_iu_put(struct iu_entry *iue)
+ static inline unsigned int cq_howmany(struct kfifo *kfifo)
  {
--	kfifo_put(&iue->target->iu_queue.queue, (void *) &iue, sizeof(void *));
-+	kfifo_put_locked(&iue->target->iu_queue.queue, (void *) &iue,
-+			sizeof(void *), &iue->target->iu_queue.lock);
- }
- EXPORT_SYMBOL_GPL(srp_iu_put);
- 
-diff -u -N -r linux-2.6.31-rc4-kfifo1/drivers/usb/host/fhci.h linux-2.6.31-rc4-kfifo2/drivers/usb/host/fhci.h
---- linux-2.6.31-rc4-kfifo1/drivers/usb/host/fhci.h	2009-08-16 21:25:35.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo2/drivers/usb/host/fhci.h	2009-08-11 12:46:08.000000000 +0200
-@@ -495,7 +495,7 @@
- /* fifo of pointers */
- static inline int cq_new(struct kfifo *fifo, int size)
- {
--	return kfifo_alloc(fifo, size * sizeof(void *), GFP_KERNEL, NULL);
-+	return kfifo_alloc(fifo, size * sizeof(void *), GFP_KERNEL);
+-	return __kfifo_len(kfifo) / sizeof(void *);
++	return kfifo_len(kfifo) / sizeof(void *);
  }
  
- static inline void cq_delete(struct kfifo *kfifo)
-diff -u -N -r linux-2.6.31-rc4-kfifo1/include/linux/kfifo.h linux-2.6.31-rc4-kfifo2/include/linux/kfifo.h
---- linux-2.6.31-rc4-kfifo1/include/linux/kfifo.h	2009-08-16 22:14:30.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo2/include/linux/kfifo.h	2009-08-16 22:18:26.000000000 +0200
-@@ -30,13 +30,12 @@
- 	unsigned int size;	/* the size of the allocated buffer */
- 	unsigned int in;	/* data is added at offset (in % size) */
- 	unsigned int out;	/* data is extracted from off. (out % size) */
--	spinlock_t *lock;	/* protects concurrent modifications */
- };
+ static inline int cq_put(struct kfifo *kfifo, void *p)
+ {
+-	return __kfifo_put(kfifo, (void *)&p, sizeof(p));
++	return kfifo_put(kfifo, (void *)&p, sizeof(p));
+ }
  
- extern void kfifo_init(struct kfifo *fifo, unsigned char *buffer,
--			unsigned int size, spinlock_t *lock);
-+			unsigned int size);
+ static inline void *cq_get(struct kfifo *kfifo)
+ {
+ 	void *p = NULL;
+ 
+-	__kfifo_get(kfifo, (void *)&p, sizeof(p));
++	kfifo_get(kfifo, (void *)&p, sizeof(p));
+ 	return p;
+ }
+ 
+diff -u -N -r linux-2.6.31-rc4-kfifo2/include/linux/kfifo.h linux-2.6.31-rc4-kfifo3/include/linux/kfifo.h
+--- linux-2.6.31-rc4-kfifo2/include/linux/kfifo.h	2009-08-16 22:18:26.000000000 +0200
++++ linux-2.6.31-rc4-kfifo3/include/linux/kfifo.h	2009-08-16 22:15:37.000000000 +0200
+@@ -37,34 +37,25 @@
  extern __must_check int kfifo_alloc(struct kfifo *fifo, unsigned int size,
--			gfp_t gfp_mask, spinlock_t *lock);
-+			gfp_t gfp_mask);
+ 			gfp_t gfp_mask);
  extern void kfifo_free(struct kfifo *fifo);
- extern unsigned int __kfifo_put(struct kfifo *fifo,
+-extern unsigned int __kfifo_put(struct kfifo *fifo,
++extern unsigned int kfifo_put(struct kfifo *fifo,
  				const unsigned char *buffer, unsigned int len);
-@@ -58,58 +57,67 @@
-  */
- static inline void kfifo_reset(struct kfifo *fifo)
- {
--	unsigned long flags;
--
--	spin_lock_irqsave(fifo->lock, flags);
--
- 	__kfifo_reset(fifo);
-+}
-+
-+/**
-+ * __kfifo_len - returns the number of bytes available in the FIFO
-+ * @fifo: the fifo to be used.
-+ */
-+static inline unsigned int __kfifo_len(struct kfifo *fifo)
-+{
-+	register unsigned int	out;
- 
--	spin_unlock_irqrestore(fifo->lock, flags);
-+	out = fifo->out;
-+	smp_rmb();
-+	return fifo->in - out;
- }
+-extern unsigned int __kfifo_get(struct kfifo *fifo,
++extern unsigned int kfifo_get(struct kfifo *fifo,
+ 				unsigned char *buffer, unsigned int len);
  
  /**
-- * kfifo_put - puts some data into the FIFO
-+ * kfifo_put_locked - puts some data into the FIFO using a spinlock for locking
-  * @fifo: the fifo to be used.
-- * @buffer: the data to be added.
-+ * @from: the data to be added.
-  * @len: the length of the data to be added.
-+ * @lock: pointer to the spinlock to use for locking.
-  *
-- * This function copies at most @len bytes from the @buffer into
-+ * This function copies at most @len bytes from the @from buffer into
-  * the FIFO depending on the free space, and returns the number of
-  * bytes copied.
-  */
--static inline unsigned int kfifo_put(struct kfifo *fifo,
--				const unsigned char *buffer, unsigned int len)
-+static inline __must_check unsigned int kfifo_put_locked(struct kfifo *fifo,
-+		const unsigned char *from, unsigned int n, spinlock_t *lock)
- {
- 	unsigned long flags;
- 	unsigned int ret;
- 
--	spin_lock_irqsave(fifo->lock, flags);
-+	spin_lock_irqsave(lock, flags);
- 
--	ret = __kfifo_put(fifo, buffer, len);
-+	ret = __kfifo_put(fifo, from, n);
- 
--	spin_unlock_irqrestore(fifo->lock, flags);
-+	spin_unlock_irqrestore(lock, flags);
- 
- 	return ret;
- }
- 
- /**
-- * kfifo_get - gets some data from the FIFO
-+ * kfifo_get_locked - gets some data from the FIFO using a spinlock for locking
-  * @fifo: the fifo to be used.
-- * @buffer: where the data must be copied.
-+ * @to: where the data must be copied.
-  * @len: the size of the destination buffer.
-+ * @lock: pointer to the spinlock to use for locking.
-  *
-  * This function copies at most @len bytes from the FIFO into the
-- * @buffer and returns the number of copied bytes.
-+ * @to buffer and returns the number of copied bytes.
-  */
--static inline unsigned int kfifo_get(struct kfifo *fifo,
--				     unsigned char *buffer, unsigned int len)
-+static inline __must_check unsigned int kfifo_get_locked(struct kfifo *fifo,
-+	unsigned char *to, unsigned int n, spinlock_t *lock)
- {
- 	unsigned long flags;
- 	unsigned int ret;
- 
--	spin_lock_irqsave(fifo->lock, flags);
-+	spin_lock_irqsave(lock, flags);
- 
--	ret = __kfifo_get(fifo, buffer, len);
-+	ret = __kfifo_get(fifo, to, n);
- 
- 	/*
- 	 * optimization: if the FIFO is empty, set the indices to 0
-@@ -118,36 +126,18 @@
- 	if (fifo->in == fifo->out)
- 		fifo->in = fifo->out = 0;
- 
--	spin_unlock_irqrestore(fifo->lock, flags);
-+	spin_unlock_irqrestore(lock, flags);
- 
- 	return ret;
- }
- 
- /**
-- * __kfifo_len - returns the number of bytes available in the FIFO, no locking version
-- * @fifo: the fifo to be used.
+- * __kfifo_reset - removes the entire FIFO contents, no locking version
+- * @fifo: the fifo to be emptied.
 - */
--static inline unsigned int __kfifo_len(struct kfifo *fifo)
+-static inline void __kfifo_reset(struct kfifo *fifo)
 -{
--	return fifo->in - fifo->out;
+-	fifo->in = fifo->out = 0;
 -}
 -
 -/**
-  * kfifo_len - returns the number of bytes available in the FIFO
+  * kfifo_reset - removes the entire FIFO contents
+  * @fifo: the fifo to be emptied.
+  */
+ static inline void kfifo_reset(struct kfifo *fifo)
+ {
+-	__kfifo_reset(fifo);
++	fifo->in = fifo->out = 0;
+ }
+ 
+ /**
+- * __kfifo_len - returns the number of bytes available in the FIFO
++ * kfifo_len - returns the number of used bytes in the FIFO
   * @fifo: the fifo to be used.
   */
- static inline unsigned int kfifo_len(struct kfifo *fifo)
+-static inline unsigned int __kfifo_len(struct kfifo *fifo)
++static inline unsigned int kfifo_len(struct kfifo *fifo)
  {
--	unsigned long flags;
--	unsigned int ret;
--
--	spin_lock_irqsave(fifo->lock, flags);
--
--	ret = __kfifo_len(fifo);
--
--	spin_unlock_irqrestore(fifo->lock, flags);
--
--	return ret;
-+	return __kfifo_len(fifo);
+ 	register unsigned int	out;
+ 
+@@ -92,7 +83,7 @@
+ 
+ 	spin_lock_irqsave(lock, flags);
+ 
+-	ret = __kfifo_put(fifo, from, n);
++	ret = kfifo_put(fifo, from, n);
+ 
+ 	spin_unlock_irqrestore(lock, flags);
+ 
+@@ -117,7 +108,7 @@
+ 
+ 	spin_lock_irqsave(lock, flags);
+ 
+-	ret = __kfifo_get(fifo, to, n);
++	ret = kfifo_get(fifo, to, n);
+ 
+ 	/*
+ 	 * optimization: if the FIFO is empty, set the indices to 0
+@@ -131,13 +122,4 @@
+ 	return ret;
  }
  
+-/**
+- * kfifo_len - returns the number of bytes available in the FIFO
+- * @fifo: the fifo to be used.
+- */
+-static inline unsigned int kfifo_len(struct kfifo *fifo)
+-{
+-	return __kfifo_len(fifo);
+-}
+-
  #endif
-diff -u -N -r linux-2.6.31-rc4-kfifo1/kernel/kfifo.c linux-2.6.31-rc4-kfifo2/kernel/kfifo.c
---- linux-2.6.31-rc4-kfifo1/kernel/kfifo.c	2009-08-16 21:34:51.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo2/kernel/kfifo.c	2009-08-16 22:08:37.000000000 +0200
-@@ -28,11 +28,10 @@
- #include <linux/log2.h>
+diff -u -N -r linux-2.6.31-rc4-kfifo2/kernel/kfifo.c linux-2.6.31-rc4-kfifo3/kernel/kfifo.c
+--- linux-2.6.31-rc4-kfifo2/kernel/kfifo.c	2009-08-16 22:08:37.000000000 +0200
++++ linux-2.6.31-rc4-kfifo3/kernel/kfifo.c	2009-08-16 22:08:48.000000000 +0200
+@@ -100,7 +100,7 @@
+ EXPORT_SYMBOL(kfifo_free);
  
- static void _kfifo_init(struct kfifo *fifo, unsigned char *buffer,
--		unsigned int size, spinlock_t *lock)
-+		unsigned int size)
- {
- 	fifo->buffer = buffer;
- 	fifo->size = size;
--	fifo->lock = lock;
- 
- 	kfifo_reset(fifo);
- }
-@@ -42,16 +41,14 @@
-  * @fifo: the fifo to assign the buffer
-  * @buffer: the preallocated buffer to be used.
-  * @size: the size of the internal buffer, this have to be a power of 2.
-- * @lock: the lock to be used to protect the fifo buffer
-  *
+ /**
+- * __kfifo_put - puts some data into the FIFO, no locking version
++ * kfifo_put - puts some data into the FIFO, no locking version
+  * @fifo: the fifo to be used.
+  * @buffer: the data to be added.
+  * @len: the length of the data to be added.
+@@ -112,7 +112,7 @@
+  * Note that with only one concurrent reader and one concurrent
+  * writer, you don't need extra locking to use these functions.
   */
--void kfifo_init(struct kfifo *fifo, unsigned char *buffer, unsigned int size,
--			spinlock_t *lock)
-+void kfifo_init(struct kfifo *fifo, unsigned char *buffer, unsigned int size)
+-unsigned int __kfifo_put(struct kfifo *fifo,
++unsigned int kfifo_put(struct kfifo *fifo,
+ 			const unsigned char *buffer, unsigned int len)
  {
- 	/* size must be a power of 2 */
- 	BUG_ON(!is_power_of_2(size));
+ 	unsigned int l;
+@@ -144,10 +144,10 @@
  
--	_kfifo_init(fifo, buffer, size, lock);
-+	_kfifo_init(fifo, buffer, size);
+ 	return len;
  }
- EXPORT_SYMBOL(kfifo_init);
+-EXPORT_SYMBOL(__kfifo_put);
++EXPORT_SYMBOL(kfifo_put);
  
-@@ -60,7 +57,6 @@
-  * @fifo: the fifo to assign then new buffer
-  * @size: the size of the buffer to be allocated, this have to be a power of 2.
-  * @gfp_mask: get_free_pages mask, passed to kmalloc()
-- * @lock: the lock to be used to protect the fifo buffer
-  *
-  * This function dynamically allocates a new fifo internal buffer
-  *
-@@ -68,8 +64,7 @@
-  * The buffer will be release with kfifo_free().
-  * Return 0 if no error, otherwise the an error code
+ /**
+- * __kfifo_get - gets some data from the FIFO, no locking version
++ * kfifo_get - gets some data from the FIFO, no locking version
+  * @fifo: the fifo to be used.
+  * @buffer: where the data must be copied.
+  * @len: the size of the destination buffer.
+@@ -158,7 +158,7 @@
+  * Note that with only one concurrent reader and one concurrent
+  * writer, you don't need extra locking to use these functions.
   */
--int kfifo_alloc(struct kfifo *fifo, unsigned int size, gfp_t gfp_mask,
--			spinlock_t *lock)
-+int kfifo_alloc(struct kfifo *fifo, unsigned int size, gfp_t gfp_mask)
+-unsigned int __kfifo_get(struct kfifo *fifo,
++unsigned int kfifo_get(struct kfifo *fifo,
+ 			 unsigned char *buffer, unsigned int len)
  {
- 	unsigned char *buffer;
+ 	unsigned int l;
+@@ -190,4 +190,4 @@
  
-@@ -84,11 +79,11 @@
- 
- 	buffer = kmalloc(size, gfp_mask);
- 	if (!buffer) {
--		_kfifo_init(fifo, 0, 0, NULL);
-+		_kfifo_init(fifo, 0, 0);
+ 	return len;
+ }
+-EXPORT_SYMBOL(__kfifo_get);
++EXPORT_SYMBOL(kfifo_get);
+diff -u -N -r linux-2.6.31-rc4-kfifo2/net/dccp/probe.c linux-2.6.31-rc4-kfifo3/net/dccp/probe.c
+--- linux-2.6.31-rc4-kfifo2/net/dccp/probe.c	2009-08-11 12:50:28.000000000 +0200
++++ linux-2.6.31-rc4-kfifo3/net/dccp/probe.c	2009-08-11 13:15:34.000000000 +0200
+@@ -132,7 +132,7 @@
  		return -ENOMEM;
- 	}
  
--	_kfifo_init(fifo, buffer, size, lock);
-+	_kfifo_init(fifo, buffer, size);
- 
- 	return 0;
- }
-diff -u -N -r linux-2.6.31-rc4-kfifo1/net/dccp/probe.c linux-2.6.31-rc4-kfifo2/net/dccp/probe.c
---- linux-2.6.31-rc4-kfifo1/net/dccp/probe.c	2009-08-16 21:24:04.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo2/net/dccp/probe.c	2009-08-11 12:50:28.000000000 +0200
-@@ -67,7 +67,7 @@
- 	len += vscnprintf(tbuf+len, sizeof(tbuf)-len, fmt, args);
- 	va_end(args);
- 
--	kfifo_put(&dccpw.fifo, tbuf, len);
-+	kfifo_put_locked(&dccpw.fifo, tbuf, len, &dccpw.lock);
- 	wake_up(&dccpw.wait);
- }
- 
-@@ -136,7 +136,7 @@
+ 	error = wait_event_interruptible(dccpw.wait,
+-					 __kfifo_len(&dccpw.fifo) != 0);
++					 kfifo_len(&dccpw.fifo) != 0);
  	if (error)
  		goto out_free;
  
--	cnt = kfifo_get(&dccpw.fifo, tbuf, len);
-+	cnt = kfifo_get_locked(&dccpw.fifo, tbuf, len, &dccpw.lock);
- 	error = copy_to_user(buf, tbuf, cnt) ? -EFAULT : 0;
- 
- out_free:
-@@ -157,7 +157,7 @@
- 
- 	init_waitqueue_head(&dccpw.wait);
- 	spin_lock_init(&dccpw.lock);
--	if (kfifo_alloc(&dccpw.fifo, bufsize, GFP_KERNEL, &dccpw.lock))
-+	if (kfifo_alloc(&dccpw.fifo, bufsize, GFP_KERNEL))
- 		return ret;
- 	if (!proc_net_fops_create(&init_net, procname, S_IRUSR, &dccpprobe_fops))
- 		goto err0;
 
 
