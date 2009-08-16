@@ -1,147 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbZHPJBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752123AbZHPJLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753480AbZHPJBK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 05:01:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbZHPJBJ
+	id S1752123AbZHPJLR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 05:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbZHPJLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 05:01:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41941 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751216AbZHPJBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 05:01:07 -0400
-Date: Sun, 16 Aug 2009 09:00:37 GMT
-From: tip-bot for Darren Hart <dvhltc@us.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, dvhltc@us.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, jkacur@redhat.com, eric.dumazet@gmail.com,
-       johnstul@us.ibm.com, peterz@infradead.org, dino@in.ibm.com,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, dvhltc@us.ibm.com,
-       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com, jkacur@redhat.com,
-       johnstul@us.ibm.com, peterz@infradead.org, dino@in.ibm.com,
-       tglx@linutronix.de
-In-Reply-To: <20090814003650.14634.63916.stgit@Aeon>
-References: <20090814003650.14634.63916.stgit@Aeon>
-Subject: [tip:core/futexes] futex: Detect mismatched requeue targets
-Message-ID: <tip-84bc4af59081ee974dd80210e694ab59ebe51ce8@git.kernel.org>
-Git-Commit-ID: 84bc4af59081ee974dd80210e694ab59ebe51ce8
-X-Mailer: tip-git-log-daemon
+	Sun, 16 Aug 2009 05:11:16 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:40673 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbZHPJLP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 05:11:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=KJLsCYmY6r3myrDeHPbx2YO14LgxM0xdynIkD9yn9MgFL7v38G2MI7JVVdSbD5oeB2
+         FiYkODbOhU41VmuvMuUe6gpo39aUkaxq+JFn0jh2OYp+d0Y6qBWK2+ME694msbLn05QL
+         PX59oicBK0JHAVq8+ObELDN7ncrmL7TozJPsM=
+Date: Sun, 16 Aug 2009 12:14:25 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Make shr to divide by power of 2 (resend)
+Message-ID: <20090816091425.GB7968@localdomain.by>
+References: <20090815134312.GA7533@localdomain.by>
+ <4A86BC96.9040702@gmail.com>
+ <alpine.LFD.2.00.0908150947260.14440@localhost>
+ <20090815141212.GA7692@localdomain.by>
+ <4A871DAF.10609@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="QKdGvSO+nmPlgiQ/"
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 16 Aug 2009 09:00:39 +0000 (UTC)
+In-Reply-To: <4A871DAF.10609@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  84bc4af59081ee974dd80210e694ab59ebe51ce8
-Gitweb:     http://git.kernel.org/tip/84bc4af59081ee974dd80210e694ab59ebe51ce8
-Author:     Darren Hart <dvhltc@us.ibm.com>
-AuthorDate: Thu, 13 Aug 2009 17:36:53 -0700
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Sun, 16 Aug 2009 10:59:05 +0200
 
-futex: Detect mismatched requeue targets
+--QKdGvSO+nmPlgiQ/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-There is currently no check to ensure that userspace uses the same
-futex requeue target (uaddr2) in futex_requeue() that the waiter used
-in futex_wait_requeue_pi().  A mismatch here could very unexpected
-results as the waiter assumes it either wakes on uaddr1 or uaddr2. We
-could detect this on wakeup in the waiter, but the cleanup is more
-intense after the improper requeue has occured.
+On (08/15/09 22:42), Jiri Slaby wrote:
+> On 08/15/2009 04:12 PM, Sergey Senozhatsky wrote:
+> > On (08/15/09 09:49), Robert P. J. Day wrote:
+> >> On Sat, 15 Aug 2009, Jiri Slaby wrote:
+> >>
+> >>> On 08/15/2009 03:43 PM, Sergey Senozhatsky wrote:
+> >>>> Make an arithmetic right shift to divide by power of 2.
+> >>>
+> >>> Why? Is out there a compiler not doing that?
+> >>>
+> >>> Seems like it should be rather converted to DIV_ROUND_UP.
+> >>>
+> >=20
+> >                                 =20
+> > It was duscussed, so I'll just copy paste my answer.
+> > On (08/08/09 09:35), Andi Kleen wrote:
+> >> DIV should be always slower than a SHIFT.
+> >>
+> >> But it has nothing really to do with the CPU. The point is that the co=
+mpiler
+> >> always selects a suitable one by itself. Rewriting x / 2 to x >> 1 is
+> >> one of the easiest exercises in compiler optimizations.
+> >>
+> >> The only case when the compiler cannot do this easily by itself is
+> >> when the dividend is not a constant.
+>=20
+> I think Andi (Cced again) meant divisor. When a divisor is constant, you
+> can always transform division to some of subs/adds/muls/shifts.
 
-This patch stores the waiter's expected requeue target in a new
-requeue_pi_key pointer in the futex_q which futex_requeue() checks
-prior to attempting to do a proxy lock acquistion or a requeue when
-requeue_pi=1. If they don't match, return -EINVAL from futex_requeue,
-aborting the requeue of any remaining waiters.
-
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: John Kacur <jkacur@redhat.com>
-Cc: Dinakar Guniguntala <dino@in.ibm.com>
-Cc: John Stultz <johnstul@us.ibm.com>
-LKML-Reference: <20090814003650.14634.63916.stgit@Aeon>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cced  Andi Kleen <andi@firstfloor.org>
 
 
----
- kernel/futex.c |   24 ++++++++++++++++++++----
- 1 files changed, 20 insertions(+), 4 deletions(-)
+>=20
+> >         int width =3D (vc->vc_font.width + 7) >> 3;
+> >=20
+> >> That said -Os sometimes screws us up on this, but it's still not worth
+> >> doing this change manually.
+> >>
+> >=20
+> > My point is that it should 'look the same'.
+> > I mean there are 5
+> >         int width =3D (vc->vc_font.width + 7) >> 3;
+> > *not exactly this one, but vc->vc_font.width (+ 7)? >> 3
+> >=20
+> > and _only_ one
+> >         int width =3D (vc->vc_font.width + 7) / 8;
+> >=20
+> >=20
+> >>   it does seem like a DIV_ROUND_UP would be better but perhaps another
+> >> solution would be to define a meaningful macro name for that
+> >> operation.  if that conversion is going to be done regularly, a macro
+> >> with an informative name might be in order.  if it's a one-shot
+> >> operation, though, not much point.
+> >>
+> >=20
+> > No, it's not a one-shot.
+> >=20
+> > grep -c '>>' bitblit.c
+> > 7
+>=20
+> Then please use DIV_ROUND_UP macro (or whatever alias) all over the place.
+>=20
 
-diff --git a/kernel/futex.c b/kernel/futex.c
-index d077201..f0dea28 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -115,6 +115,9 @@ struct futex_q {
- 	/* rt_waiter storage for requeue_pi: */
- 	struct rt_mutex_waiter *rt_waiter;
- 
-+	/* The expected requeue pi target futex key: */
-+	union futex_key *requeue_pi_key;
-+
- 	/* Bitset for the optional bitmasked wakeup */
- 	u32 bitset;
- };
-@@ -1080,6 +1083,10 @@ static int futex_proxy_trylock_atomic(u32 __user *pifutex,
- 	if (!top_waiter)
- 		return 0;
- 
-+	/* Ensure we requeue to the expected futex. */
-+	if (!match_futex(top_waiter->requeue_pi_key, key2))
-+		return -EINVAL;
-+
- 	/*
- 	 * Try to take the lock for top_waiter.  Set the FUTEX_WAITERS bit in
- 	 * the contended case or if set_waiters is 1.  The pi_state is returned
-@@ -1260,6 +1267,12 @@ retry_private:
- 			continue;
- 		}
- 
-+		/* Ensure we requeue to the expected futex for requeue_pi. */
-+		if (requeue_pi && !match_futex(this->requeue_pi_key, &key2)) {
-+			ret = -EINVAL;
-+			break;
-+		}
-+
- 		/*
- 		 * Requeue nr_requeue waiters and possibly one more in the case
- 		 * of requeue_pi if we couldn't acquire the lock atomically.
-@@ -1735,6 +1748,7 @@ static int futex_wait(u32 __user *uaddr, int fshared,
- 	q.pi_state = NULL;
- 	q.bitset = bitset;
- 	q.rt_waiter = NULL;
-+	q.requeue_pi_key = NULL;
- 
- 	if (abs_time) {
- 		to = &timeout;
-@@ -1842,6 +1856,7 @@ static int futex_lock_pi(u32 __user *uaddr, int fshared,
- 
- 	q.pi_state = NULL;
- 	q.rt_waiter = NULL;
-+	q.requeue_pi_key = NULL;
- retry:
- 	q.key = FUTEX_KEY_INIT;
- 	ret = get_futex_key(uaddr, fshared, &q.key, VERIFY_WRITE);
-@@ -2153,15 +2168,16 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, int fshared,
- 	debug_rt_mutex_init_waiter(&rt_waiter);
- 	rt_waiter.task = NULL;
- 
--	q.pi_state = NULL;
--	q.bitset = bitset;
--	q.rt_waiter = &rt_waiter;
--
- 	key2 = FUTEX_KEY_INIT;
- 	ret = get_futex_key(uaddr2, fshared, &key2, VERIFY_WRITE);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
-+	q.pi_state = NULL;
-+	q.bitset = bitset;
-+	q.rt_waiter = &rt_waiter;
-+	q.requeue_pi_key = &key2;
-+
- 	/* Prepare to wait on uaddr. */
- 	ret = futex_wait_setup(uaddr, val, fshared, &q, &hb);
- 	if (ret)
+Sorry, once again (just to clear).
+
+There are different shr/shl operations in bitblit.c. Like,
+#1
+cur_height =3D vc->vc_font.height >> 1
+cur_height =3D (vc->vc_font.height << 1)/3;
+c |=3D c >> 1;
+u32 idx =3D vc->vc_font.width >> 3;
+etc.
+
+So, should I convert it to something like:
+#2
+cur_height =3D DIV_XXX(vc->vc_font.height, 2)
+cur_height =3D DIV_XXX( MUL_XXX(vc->vc_font.height, 2), 3); or cur_height =
+=3D DIV_XXX( (vc->vc_font.height * 2), 3);
+c |=3D DIV_XXX(c, 1);
+u32 idx =3D DIV_XXX(vc->vc_font.width, 8);
+
+#1 is better-looking I think.
+
+	Sergey
+--QKdGvSO+nmPlgiQ/
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iJwEAQECAAYFAkqHzfEACgkQfKHnntdSXjQ/vwP/eV4r3e8KbeuSNRxD1/0liUpn
+cESRFsmRSLPrGJ5OJ2hcNlPPCSgZK8mhHgcivEPtOJMV9p5tsvfaKFm7ZgDaMyRs
+AvlSmQFgVftQ7n8AIqy4GfY1sjQE35qW+QGhzR7OYapYvvxrw4l8rOIxFQ1x8l3P
+N2CNdX3auYb1yCZF/7w=
+=q7l1
+-----END PGP SIGNATURE-----
+
+--QKdGvSO+nmPlgiQ/--
