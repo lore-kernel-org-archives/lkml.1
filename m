@@ -1,81 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751945AbZHPMeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751441AbZHPMpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751945AbZHPMeG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 08:34:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbZHPMeG
+	id S1751441AbZHPMpy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 08:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbZHPMpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 08:34:06 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:36297 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751104AbZHPMeF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 08:34:05 -0400
-Message-ID: <4A87FCAC.5070705@gmail.com>
-Date: Sun, 16 Aug 2009 14:33:48 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Sun, 16 Aug 2009 08:45:53 -0400
+Received: from bu3sch.de ([62.75.166.246]:59297 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750904AbZHPMpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 08:45:53 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Threaded interrupt handlers broken?
+Date: Sun, 16 Aug 2009 14:45:52 +0200
+User-Agent: KMail/1.9.9
+Cc: Thomas Gleixner <tglx@linutronix.de>
+References: <200908161153.14081.mb@bu3sch.de> <200908161214.37008.mb@bu3sch.de>
+In-Reply-To: <200908161214.37008.mb@bu3sch.de>
+X-Move-Along: Nothing to see here. No, really... Nothing.
 MIME-Version: 1.0
-To: Michael Spang <mspang@csclub.uwaterloo.ca>
-CC: "David S. Miller" <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] Revert netlink ABI change to gnet_stats_basic
-References: <1250002683-28554-1-git-send-email-mspang@csclub.uwaterloo.ca>
-In-Reply-To: <1250002683-28554-1-git-send-email-mspang@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 16 Aug 2009 14:34:01 +0200 (CEST)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908161445.53147.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Spang a écrit :
-> In 5e140dfc1fe87eae27846f193086724806b33c7d "net: reorder struct Qdisc
-> for better SMP performance" the definition of struct gnet_stats_basic
-> changed incompatibly, and as copies of this struct may be shipped to
-> userland via netlink. This reverts back to the old ABI.
-
-So userland expects to get exactly 16 bytes instead of 12 ?
-
-iproute2 has no problem :
-
-void print_tcstats2_attr(FILE *fp, struct rtattr *rta, char *prefix, struct rtattr **xstats)
-{
-        SPRINT_BUF(b1);
-        struct rtattr *tbs[TCA_STATS_MAX + 1];
-
-        parse_rtattr_nested(tbs, TCA_STATS_MAX, rta);
-
-        if (tbs[TCA_STATS_BASIC]) {
-                struct gnet_stats_basic bs = {0};
-                memcpy(&bs, RTA_DATA(tbs[TCA_STATS_BASIC]), MIN(RTA_PAYLOAD(tbs[TCA_STATS_BASIC]), sizeof(bs)));
-                fprintf(fp, "%sSent %llu bytes %u pkt",
-                        prefix, (unsigned long long) bs.bytes, bs.packets);
-        }
-
-
-What exactly broke after patch was pushed ?
-
-It would be better to fix gnet_stats_copy_basic() if necessary...
-
-
+On Sunday 16 August 2009 12:14:36 Michael Buesch wrote:
+> > 506                 spin_lock_irq(&desc->lock);
+> > 507                 if (unlikely(desc->status & IRQ_DISABLED)) {
+> > 508                         /*
+> > 509                          * CHECKME: We might need a dedicated
+> > 510                          * IRQ_THREAD_PENDING flag here, which
+> > 511                          * retriggers the thread in check_irq_resend()
+> > 512                          * but AFAICT IRQ_PENDING should be fine as it
+> > 513                          * retriggers the interrupt itself --- tglx
+> > 514                          */
+> > 515                         desc->status |= IRQ_PENDING;
+> > 516                         spin_unlock_irq(&desc->lock);
+> > 517                 } else {
+> > 518                         spin_unlock_irq(&desc->lock);
+> > 519 
+> > 520                         action->thread_fn(action->irq, action->dev_id);
+> > 521                 }
+> > 522 
+> > 523                 wake = atomic_dec_and_test(&desc->threads_active);
 > 
-> Signed-off-by: Michael Spang <mspang@csclub.uwaterloo.ca>
-> ---
->  include/linux/gen_stats.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/gen_stats.h b/include/linux/gen_stats.h
-> index 0ffa41d..13f4e74 100644
-> --- a/include/linux/gen_stats.h
-> +++ b/include/linux/gen_stats.h
-> @@ -22,7 +22,7 @@ struct gnet_stats_basic
->  {
->  	__u64	bytes;
->  	__u32	packets;
-> -} __attribute__ ((packed));
-> +};
->  
->  /**
->   * struct gnet_stats_rate_est - rate estimator
+> Is this test logic inverted? atomic_dec_and_test() means
+> (threads_active - 1) == 0
+> Shouldn't it be like this?
+> (threads_active - 1) != 0
 
+I need the following patch for threaded IRQs to work.
+The first hunk obviously is incorrect. But without it the thread_fn is
+never called.
+
+Index: wireless-testing/kernel/irq/manage.c
+===================================================================
+--- wireless-testing.orig/kernel/irq/manage.c	2009-08-15 22:22:07.000000000 +0200
++++ wireless-testing/kernel/irq/manage.c	2009-08-16 14:05:23.000000000 +0200
+@@ -504,7 +504,7 @@ static int irq_thread(void *data)
+ 		atomic_inc(&desc->threads_active);
+ 
+ 		spin_lock_irq(&desc->lock);
+-		if (unlikely(desc->status & IRQ_DISABLED)) {
++		if (0&&unlikely(desc->status & IRQ_DISABLED)) {
+ 			/*
+ 			 * CHECKME: We might need a dedicated
+ 			 * IRQ_THREAD_PENDING flag here, which
+@@ -520,7 +520,7 @@ static int irq_thread(void *data)
+ 			action->thread_fn(action->irq, action->dev_id);
+ 		}
+ 
+-		wake = atomic_dec_and_test(&desc->threads_active);
++		wake = !atomic_dec_and_test(&desc->threads_active);
+ 
+ 		if (wake && waitqueue_active(&desc->wait_for_threads))
+ 			wake_up(&desc->wait_for_threads);
+
+
+
+-- 
+Greetings, Michael.
