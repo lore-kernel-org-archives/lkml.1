@@ -1,341 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbZHPTao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbZHPTal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932117AbZHPTao (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 15:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbZHPTam
+	id S1755944AbZHPTal (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 15:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755850AbZHPTai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 15:30:42 -0400
+	Sun, 16 Aug 2009 15:30:38 -0400
 Received: from mail-bw0-f222.google.com ([209.85.218.222]:45385 "EHLO
 	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755925AbZHPTai (ORCPT
+	with ESMTP id S1755918AbZHPTaT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 15:30:38 -0400
+	Sun, 16 Aug 2009 15:30:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=lgCv9BIbkwBH494KSLV1LTY6sOSH96F3tNkNM4YB+akBdyOR+bSBSVltLY2M8TMYGz
-         BE9ZMhxy1oWV0P9Q4J+5OuwcJ4yveZvFP3Yaj0Xa5e282lIRl+/QP6pfhi8pDk21eoun
-         PueU32i9MNl/9cFDaw9+q5n3/L5WG6Lz544vI=
+        b=R5QHFrEY5JFezMtOnXVuHxfHyWOpvYeAybjgRMEQCLgoI7f8d1dneWl8jtC1x+kDtG
+         wC/arZSVcw3q3+pp3ipeVeyJ6P+7Oa3Pr1+CwZa5BJoKU9G42Akl8XzFlEo7fLij+HDA
+         f3IKoWzybyNYmCV0TLfmus5Lk7E4FXZBb5ULQ=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: devel@driverdev.osuosl.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 16 Aug 2009 21:30:38 +0200
-Message-Id: <20090816193038.3789.90073.sendpatchset@localhost.localdomain>
+Date: Sun, 16 Aug 2009 21:30:32 +0200
+Message-Id: <20090816193032.3789.79171.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
 References: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
-Subject: [PATCH 10/22] Staging: rtxxx0: unify different RT30xx{Read,Write}RFRegister() flavors
+Subject: [PATCH 09/22] Staging: rtxxx0: remove unused defines
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtxxx0: unify different RT30xx{Read,Write}RFRegister() flavors
-
-RTMP_IO_{READ,WRITE}32 equals RTUSB{Read,Write}MACRegister
-in case of USB chipsets so unify RT30xx and !RT30xx code.
+Subject: [PATCH] Staging: rtxxx0: remove unused defines
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rt2860/common/mlme.c     |  111 -------------------------------
- drivers/staging/rt2860/rt28xx.h          |    3 
- drivers/staging/rt2860/rtmp.h            |   14 ---
- drivers/staging/rt2870/common/rtusb_io.c |   25 +++---
- drivers/staging/rt2870/rt2870.h          |    3 
- 5 files changed, 15 insertions(+), 141 deletions(-)
+ drivers/staging/rt2860/oid.h      |   26 --------------------------
+ drivers/staging/rt2860/rtmp.h     |    7 -------
+ drivers/staging/rt2860/rtmp_def.h |    5 -----
+ 3 files changed, 38 deletions(-)
 
-Index: b/drivers/staging/rt2860/common/mlme.c
+Index: b/drivers/staging/rt2860/oid.h
 ===================================================================
---- a/drivers/staging/rt2860/common/mlme.c
-+++ b/drivers/staging/rt2860/common/mlme.c
-@@ -5636,117 +5636,6 @@ VOID 	AsicUpdateProtect(
- }
+--- a/drivers/staging/rt2860/oid.h
++++ b/drivers/staging/rt2860/oid.h
+@@ -670,32 +670,6 @@ enum {
+ #define OID_802_11_GET_COUNTRY_CODE				0x0716
+ #define OID_802_11_GET_CHANNEL_GEOGRAPHY		0x0717
  
- #ifdef RT30xx
--/*
--	========================================================================
--
--	Routine Description: Write RT30xx RF register through MAC
--
--	Arguments:
--
--	Return Value:
--
--	IRQL =
--
--	Note:
--
--	========================================================================
--*/
--NTSTATUS RT30xxWriteRFRegister(
--	IN	PRTMP_ADAPTER	pAd,
--	IN	UCHAR			RegID,
--	IN	UCHAR			Value)
--{
--	RF_CSR_CFG_STRUC	rfcsr;
--	UINT				i = 0;
--
--	do
--	{
--		RTMP_IO_READ32(pAd, RF_CSR_CFG, &rfcsr.word);
--
--		if (!rfcsr.field.RF_CSR_KICK)
--			break;
--		i++;
--	}
--	while ((i < RETRY_LIMIT) && (!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST)));
--
--	if ((i == RETRY_LIMIT) || (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST)))
--	{
--		DBGPRINT_RAW(RT_DEBUG_ERROR, ("Retry count exhausted or device removed!!!\n"));
--		return STATUS_UNSUCCESSFUL;
--	}
--
--	rfcsr.field.RF_CSR_WR = 1;
--	rfcsr.field.RF_CSR_KICK = 1;
--	rfcsr.field.TESTCSR_RFACC_REGNUM = RegID;
--	rfcsr.field.RF_CSR_DATA = Value;
--
--	RTMP_IO_WRITE32(pAd, RF_CSR_CFG, rfcsr.word);
--
--	return STATUS_SUCCESS;
--}
--
--
--/*
--	========================================================================
--
--	Routine Description: Read RT30xx RF register through MAC
--
--	Arguments:
--
--	Return Value:
--
--	IRQL =
--
--	Note:
--
--	========================================================================
--*/
--NTSTATUS RT30xxReadRFRegister(
--	IN	PRTMP_ADAPTER	pAd,
--	IN	UCHAR			RegID,
--	IN	PUCHAR			pValue)
--{
--	RF_CSR_CFG_STRUC	rfcsr;
--	UINT				i=0, k=0;
--
--	for (i=0; i<MAX_BUSY_COUNT; i++)
--	{
--		RTMP_IO_READ32(pAd, RF_CSR_CFG, &rfcsr.word);
--
--		if (rfcsr.field.RF_CSR_KICK == BUSY)
--		{
--			continue;
--		}
--		rfcsr.word = 0;
--		rfcsr.field.RF_CSR_WR = 0;
--		rfcsr.field.RF_CSR_KICK = 1;
--		rfcsr.field.TESTCSR_RFACC_REGNUM = RegID;
--		RTMP_IO_WRITE32(pAd, RF_CSR_CFG, rfcsr.word);
--		for (k=0; k<MAX_BUSY_COUNT; k++)
--		{
--			RTMP_IO_READ32(pAd, RF_CSR_CFG, &rfcsr.word);
--
--			if (rfcsr.field.RF_CSR_KICK == IDLE)
--				break;
--		}
--		if ((rfcsr.field.RF_CSR_KICK == IDLE) &&
--			(rfcsr.field.TESTCSR_RFACC_REGNUM == RegID))
--		{
--			*pValue = (UCHAR)rfcsr.field.RF_CSR_DATA;
--			break;
--		}
--	}
--	if (rfcsr.field.RF_CSR_KICK == BUSY)
--	{
--		DBGPRINT_ERR(("RF read R%d=0x%x fail, i[%d], k[%d]\n", RegID, rfcsr.word,i,k));
--		return STATUS_UNSUCCESSFUL;
--	}
--
--	return STATUS_SUCCESS;
--}
--#endif // RT30xx //
--
 -#ifdef RT30xx
- // add by johnli, RF power sequence setup
- /*
- 	==========================================================================
-Index: b/drivers/staging/rt2860/rt28xx.h
-===================================================================
---- a/drivers/staging/rt2860/rt28xx.h
-+++ b/drivers/staging/rt2860/rt28xx.h
-@@ -47,10 +47,11 @@
- #define PCI_EECTRL			0x0004
- #define PCI_MCUCTRL			0x0008
- 
-+typedef int NTSTATUS;
-+
- #ifdef RT30xx
- #define	OPT_14			0x114
- 
--typedef int				NTSTATUS;
- #define	RETRY_LIMIT             10
- #define STATUS_SUCCESS				0x00
- #define STATUS_UNSUCCESSFUL 		0x01
+-#define RT_OID_WSC_SET_PASSPHRASE                   0x0740 // passphrase for wpa(2)-psk
+-#define RT_OID_WSC_DRIVER_AUTO_CONNECT              0x0741
+-#define RT_OID_WSC_QUERY_DEFAULT_PROFILE            0x0742
+-#define RT_OID_WSC_SET_CONN_BY_PROFILE_INDEX        0x0743
+-#define RT_OID_WSC_SET_ACTION                       0x0744
+-#define RT_OID_WSC_SET_SSID                         0x0745
+-#define RT_OID_WSC_SET_PIN_CODE                     0x0746
+-#define RT_OID_WSC_SET_MODE                         0x0747 // PIN or PBC
+-#define RT_OID_WSC_SET_CONF_MODE                    0x0748 // Enrollee or Registrar
+-#define RT_OID_WSC_SET_PROFILE                      0x0749
+-
+-#define RT_OID_802_11_WSC_QUERY_PROFILE				0x0750
+-// for consistency with RT61
+-#define RT_OID_WSC_QUERY_STATUS						0x0751
+-#define RT_OID_WSC_PIN_CODE							0x0752
+-#define RT_OID_WSC_UUID								0x0753
+-#define RT_OID_WSC_SET_SELECTED_REGISTRAR			0x0754
+-#define RT_OID_WSC_EAPMSG							0x0755
+-#define RT_OID_WSC_MANUFACTURER						0x0756
+-#define RT_OID_WSC_MODEL_NAME						0x0757
+-#define RT_OID_WSC_MODEL_NO							0x0758
+-#define RT_OID_WSC_SERIAL_NO						0x0759
+-#define RT_OID_WSC_MAC_ADDRESS						0x0760
+-#endif
+-
+ #ifdef LLTD_SUPPORT
+ // for consistency with RT61
+ #define RT_OID_GET_PHY_MODE                         0x761
 Index: b/drivers/staging/rt2860/rtmp.h
 ===================================================================
 --- a/drivers/staging/rt2860/rtmp.h
 +++ b/drivers/staging/rt2860/rtmp.h
-@@ -6528,7 +6528,6 @@ VOID AsicTurnOnRFClk(
- 	IN PRTMP_ADAPTER 	pAd,
- 	IN	UCHAR			Channel);
+@@ -407,8 +407,6 @@ typedef struct  _QUEUE_HEADER   {
+ #define IS_RT3070(_pAd)				(((_pAd)->MACVersion & 0xffff0000) == 0x30700000)
+ #ifdef RT30xx
+ #define IS_RT3071(_pAd)				(((_pAd)->MACVersion & 0xffff0000) == 0x30710000)
+-#define IS_RT2070(_pAd)				(((_pAd)->RfIcType == RFIC_2020) || ((_pAd)->EFuseTag == 0x27))
+-
+ #define IS_RT30xx(_pAd)				(((_pAd)->MACVersion & 0xfff00000) == 0x30700000)
+ #endif
+ 
+@@ -664,11 +662,6 @@ typedef struct  _QUEUE_HEADER   {
+ #define BBP_IO_READ8_BY_REG_ID(_A, _I, _pV)   		RTUSBReadBBPRegister(_A, _I, _pV)
+ #endif // RT2870 //
  
 -#ifdef RT30xx
- NTSTATUS RT30xxWriteRFRegister(
- 	IN	PRTMP_ADAPTER	pAd,
- 	IN	UCHAR			RegID,
-@@ -6539,6 +6538,7 @@ NTSTATUS RT30xxReadRFRegister(
- 	IN	UCHAR			RegID,
- 	IN	PUCHAR			pValue);
- 
-+#ifdef RT30xx
- //2008/09/11:KH add to support efuse<--
- UCHAR eFuseReadRegisters(
- 	IN	PRTMP_ADAPTER	pAd,
-@@ -6735,18 +6735,6 @@ NTSTATUS RTUSBWriteRFRegister(
- 	IN	PRTMP_ADAPTER	pAd,
- 	IN	UINT32			Value);
- 
--#ifndef RT30xx
--NTSTATUS	RT30xxWriteRFRegister(
--	IN	PRTMP_ADAPTER	pAd,
--	IN	UCHAR			RegID,
--	IN	UCHAR			Value);
+-#define RTMP_RF_IO_READ8_BY_REG_ID(_A, _I, _pV)    RT30xxReadRFRegister(_A, _I, _pV)
+-#define RTMP_RF_IO_WRITE8_BY_REG_ID(_A, _I, _V)    RT30xxWriteRFRegister(_A, _I, _V)
+-#endif // RT30xx //
 -
--NTSTATUS	RT30xxReadRFRegister(
--	IN	PRTMP_ADAPTER	pAd,
--	IN	UCHAR			RegID,
--	IN	PUCHAR			pValue);
+ #define     MAP_CHANNEL_ID_TO_KHZ(ch, khz)  {               \
+                 switch (ch)                                 \
+                 {                                           \
+Index: b/drivers/staging/rt2860/rtmp_def.h
+===================================================================
+--- a/drivers/staging/rt2860/rtmp_def.h
++++ b/drivers/staging/rt2860/rtmp_def.h
+@@ -624,11 +624,6 @@
+ #define AP_CNTL_STATE_MACHINE           15
+ #define AP_WPA_STATE_MACHINE            16
+ 
+-#ifdef RT30xx
+-#define WSC_STATE_MACHINE            17
+-#define WSC_UPNP_STATE_MACHINE		    18
 -#endif
 -
- NTSTATUS RTUSB_VendorRequest(
- 	IN	PRTMP_ADAPTER	pAd,
- 	IN	UINT32			TransferFlags,
-Index: b/drivers/staging/rt2870/common/rtusb_io.c
-===================================================================
---- a/drivers/staging/rt2870/common/rtusb_io.c
-+++ b/drivers/staging/rt2870/common/rtusb_io.c
-@@ -671,11 +671,10 @@ NTSTATUS	RTUSBWriteRFRegister(
- 	return STATUS_SUCCESS;
- }
- 
--#ifndef RT30xx
- /*
- 	========================================================================
- 
--	Routine Description: Write RT3070 RF register through MAC
-+	Routine Description: Write RT30xx RF register through MAC
- 
- 	Arguments:
- 
-@@ -687,7 +686,7 @@ NTSTATUS	RTUSBWriteRFRegister(
- 
- 	========================================================================
- */
--NTSTATUS	RT30xxWriteRFRegister(
-+NTSTATUS RT30xxWriteRFRegister(
- 	IN	PRTMP_ADAPTER	pAd,
- 	IN	UCHAR			RegID,
- 	IN	UCHAR			Value)
-@@ -697,7 +696,7 @@ NTSTATUS	RT30xxWriteRFRegister(
- 
- 	do
- 	{
--		RTUSBReadMACRegister(pAd, RF_CSR_CFG, &rfcsr.word);
-+		RTMP_IO_READ32(pAd, RF_CSR_CFG, &rfcsr.word);
- 
- 		if (!rfcsr.field.RF_CSR_KICK)
- 			break;
-@@ -716,15 +715,16 @@ NTSTATUS	RT30xxWriteRFRegister(
- 	rfcsr.field.TESTCSR_RFACC_REGNUM = RegID;
- 	rfcsr.field.RF_CSR_DATA = Value;
- 
--	RTUSBWriteMACRegister(pAd, RF_CSR_CFG, rfcsr.word);
-+	RTMP_IO_WRITE32(pAd, RF_CSR_CFG, rfcsr.word);
- 
- 	return STATUS_SUCCESS;
- }
- 
-+
- /*
- 	========================================================================
- 
--	Routine Description: Read RT3070 RF register through MAC
-+	Routine Description: Read RT30xx RF register through MAC
- 
- 	Arguments:
- 
-@@ -736,17 +736,17 @@ NTSTATUS	RT30xxWriteRFRegister(
- 
- 	========================================================================
- */
--NTSTATUS	RT30xxReadRFRegister(
-+NTSTATUS RT30xxReadRFRegister(
- 	IN	PRTMP_ADAPTER	pAd,
- 	IN	UCHAR			RegID,
- 	IN	PUCHAR			pValue)
- {
- 	RF_CSR_CFG_STRUC	rfcsr;
--	UINT				i=0, k;
-+	UINT				i=0, k=0;
- 
- 	for (i=0; i<MAX_BUSY_COUNT; i++)
- 	{
--		RTUSBReadMACRegister(pAd, RF_CSR_CFG, &rfcsr.word);
-+		RTMP_IO_READ32(pAd, RF_CSR_CFG, &rfcsr.word);
- 
- 		if (rfcsr.field.RF_CSR_KICK == BUSY)
- 		{
-@@ -756,10 +756,10 @@ NTSTATUS	RT30xxReadRFRegister(
- 		rfcsr.field.RF_CSR_WR = 0;
- 		rfcsr.field.RF_CSR_KICK = 1;
- 		rfcsr.field.TESTCSR_RFACC_REGNUM = RegID;
--		RTUSBWriteMACRegister(pAd, RF_CSR_CFG, rfcsr.word);
-+		RTMP_IO_WRITE32(pAd, RF_CSR_CFG, rfcsr.word);
- 		for (k=0; k<MAX_BUSY_COUNT; k++)
- 		{
--			RTUSBReadMACRegister(pAd, RF_CSR_CFG, &rfcsr.word);
-+			RTMP_IO_READ32(pAd, RF_CSR_CFG, &rfcsr.word);
- 
- 			if (rfcsr.field.RF_CSR_KICK == IDLE)
- 				break;
-@@ -773,13 +773,12 @@ NTSTATUS	RT30xxReadRFRegister(
- 	}
- 	if (rfcsr.field.RF_CSR_KICK == BUSY)
- 	{
--		DBGPRINT_ERR(("RF read R%d=0x%x fail\n", RegID, rfcsr.word));
-+		DBGPRINT_ERR(("RF read R%d=0x%x fail, i[%d], k[%d]\n", RegID, rfcsr.word,i,k));
- 		return STATUS_UNSUCCESSFUL;
- 	}
- 
- 	return STATUS_SUCCESS;
- }
--#endif /* RT30xx */
- 
- /*
- 	========================================================================
-Index: b/drivers/staging/rt2870/rt2870.h
-===================================================================
---- a/drivers/staging/rt2870/rt2870.h
-+++ b/drivers/staging/rt2870/rt2870.h
-@@ -407,9 +407,6 @@ extern UCHAR EpToQueue[6];
- //#undef MlmeAllocateMemory
- //#undef MlmeFreeMemory
- 
--#ifndef RT30xx
--typedef int				NTSTATUS;
--#endif
- typedef struct usb_device	* PUSB_DEV;
- 
- /* MACRO for linux usb */
+ //
+ // STA's CONTROL/CONNECT state machine: states, events, total function #
+ //
