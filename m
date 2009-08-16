@@ -1,154 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbZHPVjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbZHPVtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756222AbZHPVjh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 17:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbZHPVjf
+	id S1756087AbZHPVtj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 17:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755545AbZHPVti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 17:39:35 -0400
-Received: from kroah.org ([198.145.64.141]:36158 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756183AbZHPVj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 17:39:26 -0400
-Date: Sun, 16 Aug 2009 14:35:23 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Cc: lwn@lwn.net
-Subject: Linux 2.6.27.30
-Message-ID: <20090816213523.GC7015@kroah.com>
+	Sun, 16 Aug 2009 17:49:38 -0400
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:61137 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753948AbZHPVth (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 17:49:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition
+         :content-transfer-encoding:in-reply-to:user-agent;
+        b=NVL31K0WYqvdsQb4npTOVTORYNJsm/PjW/BAlWAbBBhBh1kmSzrTdTmeMr40exohyN
+         VqDNNBUAxkd1jGY5A3pxLFyh3r+iD8DXXk7kL1FQ54diIIFAKkVfYeLqUEgP6XJ2qPP+
+         37k2VZoPHTapf+s09m7JtF9VQH/6C/+1RQhgU=
+Date: Sun, 16 Aug 2009 23:49:34 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       kjwinchester@gmail.com, tglx@linutronix.de, borislav.petkov@amd.com,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/urgent] x86, AMD: Disable wrongly set
+ X86_FEATURE_LAHF_LM CPUID bit
+Message-ID: <20090816214934.GB7765@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+	linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
+	tglx@linutronix.de, borislav.petkov@amd.com,
+	linux-tip-commits@vger.kernel.org
+References: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com>
+ <tip-c74cb13b94118ec89e48849806356b67caa5ff86@git.kernel.org>
+ <20090816064132.GA16278@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090816064132.GA16278@elte.hu>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm announcing the release of the 2.6.27.30 kernel.  All users of the
-2.6.27 kernel series are very strongly encouraged to upgrade.
+On Sun, Aug 16, 2009 at 08:41:32AM +0200, Ingo Molnar wrote:
+> -tip testing found this build bug caused by this patch:
+> 
+> arch/x86/kernel/cpu/amd.c: In function ‘init_amd’:
+> arch/x86/kernel/cpu/amd.c:417: error: implicit declaration of function ‘wrmsr_amd_safe’
 
-I'll also be replying to this message with a copy of the patch between
-2.6.27.29 and 2.6.27.30
+Oops, forgot paravirt. Here's a fixed version:
 
-The updated 2.6.27.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.27.y.git
-and can be browsed at the normal kernel.org git web browser:
-        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=summary
+--
+From: Borislav Petkov <borislav.petkov@amd.com>
+Date: Sat, 15 Aug 2009 17:06:39 +0000
+Subject: [PATCH 1/2] x86, msr: Add a AMD wrmsr with exception handling
 
-thanks,
+Add native_write_msr_amd_safe() - we need this for a workaround.
 
-greg k-h
+( While at it, convert native_read_msr_amd_safe to using
+  more robust named inline asm parameters as the rest of the
+  functions. )
 
-------------
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+Cc: kjwinchester@gmail.com
+Cc: mikpe@it.uu.se
+Cc: brgerst@gmail.com
+---
+ arch/x86/include/asm/msr.h      |   32 ++++++++++++++++++++++++++++----
+ arch/x86/include/asm/paravirt.h |   11 +++++++++--
+ arch/x86/kernel/paravirt.c      |    1 +
+ 3 files changed, 38 insertions(+), 6 deletions(-)
 
- Makefile                           |    2 +-
- arch/parisc/kernel/cache.c         |   23 +++++++++++++++--------
- arch/parisc/kernel/pci-dma.c       |   12 ++++++++----
- arch/x86/kernel/pci-gart_64.c      |   10 ++++++++--
- block/Kconfig                      |   11 +++++++----
- drivers/firewire/fw-sbp2.c         |   10 +++++++++-
- drivers/hwmon/smsc47m1.c           |   11 +++++++++++
- drivers/i2c/chips/tsl2550.c        |   17 ++++++++++-------
- drivers/ieee1394/sbp2.c            |    1 +
- drivers/ieee1394/sbp2.h            |    8 +++++++-
- drivers/misc/Kconfig               |    4 +++-
- drivers/net/usb/asix.c             |    8 ++++++++
- drivers/scsi/libsas/sas_port.c     |   19 +++++++++++++++----
- drivers/usb/core/devio.c           |   10 ++++++----
- drivers/usb/serial/ftdi_sio.c      |    3 +++
- drivers/usb/serial/ftdi_sio.h      |   14 ++++++++++++++
- drivers/usb/storage/transport.c    |    2 +-
- drivers/usb/storage/unusual_devs.h |    7 +++++++
- fs/binfmt_flat.c                   |   17 ++++++++++++-----
- fs/compat_ioctl.c                  |    1 +
- fs/nfs/direct.c                    |   20 ++++++++++----------
- fs/nfs/read.c                      |    6 ++----
- fs/nfs/write.c                     |    6 ++----
- fs/proc/base.c                     |   27 ++++++++++++---------------
- fs/proc/task_mmu.c                 |    1 +
- fs/proc/task_nommu.c               |    1 +
- fs/sysfs/dir.c                     |    2 ++
- include/asm-parisc/tlbflush.h      |   13 ++++++-------
- include/asm-x86/irqflags.h         |    8 +++++++-
- include/linux/nfs_fs.h             |    5 ++---
- kernel/fork.c                      |   22 +++++++++++-----------
- mm/hugetlb.c                       |    2 +-
- mm/page_alloc.c                    |   13 +++++++++----
- net/socket.c                       |    2 +-
- 34 files changed, 214 insertions(+), 104 deletions(-)
+diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
+index 48ad9d2..3ea381b 100644
+--- a/arch/x86/include/asm/msr.h
++++ b/arch/x86/include/asm/msr.h
+@@ -76,14 +76,14 @@ static inline unsigned long long native_read_msr_amd_safe(unsigned int msr,
+ {
+ 	DECLARE_ARGS(val, low, high);
+ 
+-	asm volatile("2: rdmsr ; xor %0,%0\n"
++	asm volatile("2: rdmsr ; xor %[err],%[err]\n"
+ 		     "1:\n\t"
+ 		     ".section .fixup,\"ax\"\n\t"
+-		     "3:  mov %3,%0 ; jmp 1b\n\t"
++		     "3:  mov %[fault],%[err] ; jmp 1b\n\t"
+ 		     ".previous\n\t"
+ 		     _ASM_EXTABLE(2b, 3b)
+-		     : "=r" (*err), EAX_EDX_RET(val, low, high)
+-		     : "c" (msr), "D" (0x9c5a203a), "i" (-EFAULT));
++		     : [err] "=r" (*err), EAX_EDX_RET(val, low, high)
++		     : "c" (msr), "D" (0x9c5a203a), [fault] "i" (-EFAULT));
+ 	return EAX_EDX_VAL(val, low, high);
+ }
+ 
+@@ -111,6 +111,25 @@ notrace static inline int native_write_msr_safe(unsigned int msr,
+ 	return err;
+ }
+ 
++static inline unsigned long long native_write_msr_amd_safe(unsigned int msr,
++							   unsigned low,
++							   unsigned high)
++{
++	int err;
++	asm volatile("2: wrmsr ; xor %[err],%[err]\n"
++		     "1:\n\t"
++		     ".section .fixup,\"ax\"\n\t"
++		     "3:  mov %[fault],%[err] ; jmp 1b\n\t"
++		     ".previous\n\t"
++		     _ASM_EXTABLE(2b, 3b)
++		     : [err] "=a" (err)
++		     : "c" (msr), "0" (low), "d" (high), [fault] "i" (-EFAULT),
++		       "D" (0x9c5a203a)
++		     : "memory");
++	return err;
++
++}
++
+ extern unsigned long long native_read_tsc(void);
+ 
+ static __always_inline unsigned long long __native_read_tsc(void)
+@@ -164,6 +183,11 @@ static inline int wrmsr_safe(unsigned msr, unsigned low, unsigned high)
+ 	return native_write_msr_safe(msr, low, high);
+ }
+ 
++static inline int wrmsr_amd_safe(unsigned msr, unsigned low, unsigned high)
++{
++	return native_write_msr_amd_safe(msr, low, high);
++}
++
+ /* rdmsr with exception handling */
+ #define rdmsr_safe(msr, p1, p2)					\
+ ({								\
+diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
+index 4fb37c8..82143e5 100644
+--- a/arch/x86/include/asm/paravirt.h
++++ b/arch/x86/include/asm/paravirt.h
+@@ -169,6 +169,7 @@ struct pv_cpu_ops {
+ 	u64 (*read_msr_amd)(unsigned int msr, int *err);
+ 	u64 (*read_msr)(unsigned int msr, int *err);
+ 	int (*write_msr)(unsigned int msr, unsigned low, unsigned high);
++	u64 (*write_msr_amd)(unsigned int msr, unsigned low, unsigned high);
+ 
+ 	u64 (*read_tsc)(void);
+ 	u64 (*read_pmc)(int counter);
+@@ -829,6 +830,11 @@ static inline int paravirt_write_msr(unsigned msr, unsigned low, unsigned high)
+ 	return PVOP_CALL3(int, pv_cpu_ops.write_msr, msr, low, high);
+ }
+ 
++static inline int paravirt_write_msr_amd(unsigned msr, unsigned low, unsigned high)
++{
++	return PVOP_CALL3(u64, pv_cpu_ops.write_msr_amd, msr, low, high);
++}
++
+ /* These should all do BUG_ON(_err), but our headers are too tangled. */
+ #define rdmsr(msr, val1, val2)			\
+ do {						\
+@@ -849,8 +855,9 @@ do {						\
+ 	val = paravirt_read_msr(msr, &_err);	\
+ } while (0)
+ 
+-#define wrmsrl(msr, val)	wrmsr(msr, (u32)((u64)(val)), ((u64)(val))>>32)
+-#define wrmsr_safe(msr, a, b)	paravirt_write_msr(msr, a, b)
++#define wrmsrl(msr, val)		wrmsr(msr, (u32)((u64)(val)), ((u64)(val))>>32)
++#define wrmsr_safe(msr, a, b)		paravirt_write_msr(msr, a, b)
++#define wrmsr_amd_safe(msr, a, b)	paravirt_write_msr_amd(msr, a, b)
+ 
+ /* rdmsr with exception handling */
+ #define rdmsr_safe(msr, a, b)			\
+diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
+index 70ec9b9..9996e51 100644
+--- a/arch/x86/kernel/paravirt.c
++++ b/arch/x86/kernel/paravirt.c
+@@ -364,6 +364,7 @@ struct pv_cpu_ops pv_cpu_ops = {
+ 	.read_msr = native_read_msr_safe,
+ 	.read_msr_amd = native_read_msr_amd_safe,
+ 	.write_msr = native_write_msr_safe,
++	.write_msr_amd = native_write_msr_amd_safe,
+ 	.read_tsc = native_read_tsc,
+ 	.read_pmc = native_read_pmc,
+ 	.read_tscp = native_read_tscp,
+-- 
+1.6.3.3
 
-Alan Stern (1):
-      USB: usbfs: fix -ENOENT error code to be -ENODEV
 
-Dhaval Vasa (1):
-      USB: ftdi_sio: add product_id for Marvell OpenRD Base, Client
-
-Eric Dumazet (1):
-      execve: must clear current->clear_child_tid
-
-Eric Sandeen (2):
-      hugetlbfs: fix i_blocks accounting
-      compat_ioctl: hook up compat handler for FIEMAP ioctl
-
-Giacomo Lozito (1):
-      USB: storage: raise timeout in usb_stor_Bulk_max_lun
-
-Greg Kroah-Hartman (2):
-      asix: new device ids
-      Linux 2.6.27.30
-
-H. Peter Anvin (1):
-      x86: fix assembly constraints in native_save_fl()
-
-Helge Deller (1):
-      parisc: ensure broadcast tlb purge runs single threaded
-
-Henrique de Moraes Holschuh (1):
-      thinkpad-acpi: disable broken bay and dock subdrivers
-
-Jean Delvare (1):
-      hwmon: (smsc47m1) Differentiate between LPC47M233 and LPC47M292
-
-John Stoffel (1):
-      Make SCSI SG v4 driver enabled by default and remove EXPERIMENTAL dependency, since udev depends on BSG
-
-Linus Torvalds (2):
-      flat: fix uninitialized ptr with shared libs
-      Make sock_sendpage() use kernel_sendpage()
-
-Mark Langsdorf (1):
-      x86: enable GART-IOMMU only after setting up protection methods
-
-Marko H�nninen (1):
-      USB: ftdi_sio: add vendor and product id for Bayer glucose meter serial converter cable
-
-Mel Gorman (1):
-      page-allocator: preserve PFN ordering when __GFP_COLD is set
-
-Michael Buesch (1):
-      USB: devio: Properly do access_ok() checks
-
-Michele Jr De Candia (1):
-      i2c/tsl2550: Fix lux value in dark environment
-
-Oleg Nesterov (2):
-      mm_for_maps: simplify, use ptrace_may_access()
-      mm_for_maps: shift down_read(mmap_sem) to the caller
-
-Peter Oberparleiter (1):
-      sysfs: fix hardlink count on device_move
-
-Rogerio Brito (1):
-      USB: storage: include Prolific Technology USB drive in unusual_devs list
-
-Stefan Richter (2):
-      ieee1394: sbp2: add support for disks >2 TB (and 16 bytes long CDBs)
-      firewire: sbp2: add support for disks >2 TB (and 16 bytes long CDBs)
-
-Tom Peng (1):
-      SCSI: libsas: reuse the original port when hotplugging phys in wide ports
-
-Trond Myklebust (1):
-      NFS: Fix an O_DIRECT Oops...
-
+-- 
+Regards/Gruss,
+    Boris.
