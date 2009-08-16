@@ -1,111 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932109AbZHPSBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZHPSHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932109AbZHPSBj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 14:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZHPSBh
+	id S1755533AbZHPSHj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 14:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbZHPSHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 14:01:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56183 "EHLO hera.kernel.org"
+	Sun, 16 Aug 2009 14:07:38 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47246 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755529AbZHPSBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 14:01:35 -0400
-Date: Sun, 16 Aug 2009 18:01:04 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
-       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1250445414-29237-1-git-send-email-fweisbec@gmail.com>
-References: <1250445414-29237-1-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/core] perf tools: Put the show mode into the event headers files
-Message-ID: <tip-0f25bfc8d8b31a4ac8e4ff6cbc3911fb7092a4a7@git.kernel.org>
-Git-Commit-ID: 0f25bfc8d8b31a4ac8e4ff6cbc3911fb7092a4a7
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 16 Aug 2009 18:01:05 +0000 (UTC)
+	id S1750795AbZHPSHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 14:07:37 -0400
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+ slot is freed)
+From: James Bottomley <James.Bottomley@suse.de>
+To: Mark Lord <liml@rtr.ca>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Worley <worleys@gmail.com>,
+       Matthew Wilcox <matthew@wil.cx>, Bryan Donlan <bdonlan@gmail.com>,
+       david@lang.hm, Greg Freemyer <greg.freemyer@gmail.com>,
+       Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+In-Reply-To: <4A8834B6.2070104@rtr.ca>
+References: <200908122007.43522.ngupta@vflare.org>
+	 <20090813151312.GA13559@linux.intel.com>
+	 <20090813162621.GB1915@phenom2.trippelsdorf.de>
+	 <alpine.DEB.1.10.0908130931400.28013@asgard.lang.hm>
+	 <87f94c370908131115r680a7523w3cdbc78b9e82373c@mail.gmail.com>
+	 <alpine.DEB.1.10.0908131342460.28013@asgard.lang.hm>
+	 <3e8340490908131354q167840fcv124ec56c92bbb830@mail.gmail.com>
+	 <4A85E0DC.9040101@rtr.ca>
+	 <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com>
+	 <20090814234539.GE27148@parisc-linux.org>
+	 <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com>
+	 <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca>
+	 <1250344518.4159.4.camel@mulgrave.site>
+	 <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk>
+	 <20090816083434.2ce69859@infradead.org>
+	 <1250437927.3856.119.camel@mulgrave.site>  <4A8834B6.2070104@rtr.ca>
+Content-Type: text/plain
+Date: Sun, 16 Aug 2009 13:07:27 -0500
+Message-Id: <1250446047.3856.273.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0f25bfc8d8b31a4ac8e4ff6cbc3911fb7092a4a7
-Gitweb:     http://git.kernel.org/tip/0f25bfc8d8b31a4ac8e4ff6cbc3911fb7092a4a7
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Sun, 16 Aug 2009 19:56:54 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 16 Aug 2009 19:59:13 +0200
+On Sun, 2009-08-16 at 12:32 -0400, Mark Lord wrote:
+> James Bottomley wrote:
+> >
+> > For SSDs, the FTL has to have a separate operation: erase.  Now, one
+> > could see the correct implementation simply moving the sectors from the
+> > in-use list to the to be cleaned list and still do the cleaning in the
+> > background: that would be constant cost (but, again, likely expensive).
+> > Of course, if SSD vendors decided to erase on the spot when seeing TRIM,
+> > this wouldn't be true ...
+> ..
+> 
+> The SSDs based upon the Indilinx Barefoot controller appear to do
+> the erase on the spot, along with a fair amount of garbage collection.
 
-perf tools: Put the show mode into the event headers files
+Groan.  I'm with Jim on this one:  If trim is going to cost us in terms
+of current fs performance, it's likely not worth it.  The whole point of
+a TRIM/UNMAP is that we're just passing hints about storage use.  If the
+drives make us pay the penalty of acting on the hints as we pass them
+in, we may as well improve performance just by not hinting.  Or at least
+it's detrimental hinting in real time.
 
-Annotate and report share the same flags to filter events
-considering their context (kernel, user, hypervisor).
+So I think we've iterated to the conclusion that it has to be a user
+space process which tries to identify idle periods and begin trimming.
 
-Both tools have their own definitions of these flags. Factorize
-them out into the event headers file.
+> The overhead does vary by size of the TRIM operation (number of sectors
+> and extents), but even a single-sector TRIM has very high overhead.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
-LKML-Reference: <1250445414-29237-1-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+So it's something like X + nY (n == number of sectors).  If X is large,
+it still argues for batching .. it's just there's likely an upper bound
+to the batch where the benefit is no longer worth the cost.
+
+> Samsung also now has SSDs at retail with TRIM.
+> I don't have one of those here.
+
+Heh, OS writers not having access to the devices is about par for the
+current course.
+
+James
 
 
----
- tools/perf/builtin-annotate.c |    4 ----
- tools/perf/builtin-report.c   |    4 ----
- tools/perf/util/event.h       |    6 ++++++
- 3 files changed, 6 insertions(+), 8 deletions(-)
-
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 820e7cc..6d75151 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -22,10 +22,6 @@
- #include "util/parse-events.h"
- #include "util/thread.h"
- 
--#define SHOW_KERNEL	1
--#define SHOW_USER	2
--#define SHOW_HV		4
--
- static char		const *input_name = "perf.data";
- 
- static char		default_sort_order[] = "comm,symbol";
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index e104ed3..05d52ff 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -27,10 +27,6 @@
- 
- #include "util/thread.h"
- 
--#define SHOW_KERNEL	1
--#define SHOW_USER	2
--#define SHOW_HV		4
--
- static char		const *input_name = "perf.data";
- 
- static char		default_sort_order[] = "comm,dso,symbol";
-diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-index fa7c50b..fa2d4e9 100644
---- a/tools/perf/util/event.h
-+++ b/tools/perf/util/event.h
-@@ -4,6 +4,12 @@
- #include "util.h"
- #include <linux/list.h>
- 
-+enum {
-+	SHOW_KERNEL	= 1,
-+	SHOW_USER	= 2,
-+	SHOW_HV		= 4,
-+};
-+
- /*
-  * PERF_SAMPLE_IP | PERF_SAMPLE_TID | *
-  */
