@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbZHPPzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbZHPP5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755309AbZHPPzX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 11:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbZHPPzW
+	id S1755346AbZHPP5y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 11:57:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbZHPP5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 11:55:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36721 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755065AbZHPPzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 11:55:22 -0400
-Date: Sun, 16 Aug 2009 17:55:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mark Kelly <mark@bifferos.com>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Florian Fainelli <florian@openwrt.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch] x86 CPU detection for RDC
-Message-ID: <20090816155507.GA2791@elte.hu>
-References: <58001.1250437590@bifferos.com>
+	Sun, 16 Aug 2009 11:57:53 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:45641 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754594AbZHPP5w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 11:57:52 -0400
+Date: Sun, 16 Aug 2009 11:57:53 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Matthew Garrett <mjg59@srcf.ucam.org>, <linux-usb@vger.kernel.org>,
+       <linux-pci@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] [RFC] PCI: Runtime power management
+In-Reply-To: <200908152321.53283.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0908161151020.6522-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <58001.1250437590@bifferos.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 15 Aug 2009, Rafael J. Wysocki wrote:
 
-* Mark Kelly <mark@bifferos.com> wrote:
+> > Why would you ever want runtime_wakeup to be false unless 
+> > runtime_forbidden is true? Surely the point of runtime power management 
+> > is to be transparent to the user, in which case remote wakeup is 
+> > required?
 
- > From about 2.6.29, CPU detection appears to have changed such 
- > that
-> a patch is required for RDC x86-compatible CPUs (possibly other 
-> undetected x86 CPUs as well).  A work-around was to add a couple 
-> of null checks to arch/x86/kernel/cpu/common.c, e.g.:
+Matthew, what makes you think remote wakeup is required?  Lots of
+power-manageable devices don't support it at all (consider disk drives
+or display screens).
+
+> Well, this was exactly my point previously. :-)
 > 
-> if (this_cpu && this_cpu->c_identify)
->              ~~~~~~~~~~~~~~~~~~~~~~~
->     this_cpu->c_identify(c);
-> 
-> However the patch below attempts to do this detection properly, 
-> and also detect all variants of RDC CPUs. I have also added some 
-> documentation for this platform.
-> 
-> See also:
-> http://sites.google.com/site/bifferboard/Home/s3282-kernel-issues
+> Still, although for the majority of devices 'runtime_wakeup' disabled would
+> mean no runtime PM at all IMO, there may be devices that actually work without
+> remote wakeup, although they support it in general.
 
-ok, this definitely looks like a step in the right direction. The 
-patch needs a few small fixes:
+That last part is quite true.  For example, we might suspend the device
+whenever no process has opened the device file.  It would be a degraded 
+form of power management, but better than nothing.
 
- - the one you sent was line-wrapped. (please see
-   Documentation/email-clients.txt about how to send plain-text 
-   patches.)
+> I can even imagine a scenario where this setting might be useful, like when
+> we don't want a network adapter to be woken up from the outside.
 
- - there's a few stylistic errors in the patch, 
-   scripts/checkpatch.pl reports:
+Or if the device's support for remote wakeup is broken.
 
-     total: 24 errors, 5 warnings, 0 checks, 157 lines checked
+Alan Stern
 
-	Ingo
