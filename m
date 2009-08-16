@@ -1,268 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbZHPWNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbZHPWOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756247AbZHPWNP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 18:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755468AbZHPWNO
+	id S1756271AbZHPWOH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 18:14:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbZHPWOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 18:13:14 -0400
-Received: from kroah.org ([198.145.64.141]:49897 "EHLO coco.kroah.org"
+	Sun, 16 Aug 2009 18:14:06 -0400
+Received: from THUNK.ORG ([69.25.196.29]:60094 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755398AbZHPWNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 18:13:13 -0400
-Date: Sun, 16 Aug 2009 15:04:25 -0700
-From: Greg KH <greg@kroah.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Soeren Sonnenburg <bugreports@nn7.de>,
-       =?iso-8859-1?Q?J=E9r=E9mie?= Huchet <jeremie@lamah.info>
-Subject: Re: [PATCH] Samsung backlight driver
-Message-ID: <20090816220425.GA20988@kroah.com>
-References: <20090814194815.GA31474@kroah.com>
- <20090814222533.26D94526EC9@mailhub.coreip.homeip.net>
- <20090814224835.GA31585@kroah.com>
- <20090815074645.A8582526EA5@mailhub.coreip.homeip.net>
+	id S1755435AbZHPWOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 18:14:04 -0400
+Date: Sun, 16 Aug 2009 18:13:25 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: James Bottomley <James.Bottomley@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
+       Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
+       Greg Freemyer <greg.freemyer@gmail.com>,
+       Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+Subject: Re: Discard support
+Message-ID: <20090816221325.GF17958@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Roland Dreier <rdreier@cisco.com>,
+	James Bottomley <James.Bottomley@suse.de>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
+	Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+	Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
+	Greg Freemyer <greg.freemyer@gmail.com>,
+	Markus Trippelsdorf <markus@trippelsdorf.de>,
+	Matthew Wilcox <willy@linux.intel.com>,
+	Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+	Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+	Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+	linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+References: <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com> <20090814234539.GE27148@parisc-linux.org> <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com> <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca> <1250344518.4159.4.camel@mulgrave.site> <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk> <20090816083434.2ce69859@infradead.org> <1250437927.3856.119.camel@mulgrave.site> <adavdkn2ztb.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090815074645.A8582526EA5@mailhub.coreip.homeip.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <adavdkn2ztb.fsf@cisco.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 15, 2009 at 12:15:50AM -0700, Dmitry Torokhov wrote:
-> On Fri, Aug 14, 2009 at 03:48:35PM -0700, Greg KH wrote:
-> > Here's an updated version, with two more laptop models supported, and
-> > the comments from Dmitry added in.
-> > 
+On Sun, Aug 16, 2009 at 02:50:40PM -0700, Roland Dreier wrote:
 > 
-> You are leaking pci device reference in error unwinding path....
+>  > Well, yes and no ... a lot of SSDs don't actually implement NCQ, so the
+>  > impact to them will be less ... although I think enterprise class SSDs
+>  > do implement NCQ.
 > 
-> Here you go, just fold it together with yours.
+> Really?  Which SSDs don't implement NCQ?
 
-Thank you very much for the patch, I appreciate it.
+The Intel X25-M was the first SSD to implement NCQ.  The OCZ Core V2
+advertised NCQ with a queue depth of 1, but even that was buggy, so
+Linux has a black list for the that SSD:
 
-Jérémie, I've now added the pci id for your device, so the driver should
-now work for it as well.  Let me know if you have any problems with it.
+      http://markmail.org/message/jvjpmcdqjwrmyl4w
 
-I've included an updated version below that also adds support for the
-N120 laptop series.
+As far as I know, all of the SSD's using the crappy JMicron JMF602
+controllers don't support NCQ in any real way, which would includes
+most of the reasonably priced SSD's up until first half of this year.
+(The OCZ Summit SSD, which uses the Indilnx controller is an exception
+to this statement, but it's more expensive that the JMF602 based
+SSD's, although less expensive than the Intel SSD.)
 
-thanks,
+JMicron is trying to seek redemption with their JMF612 controllers,
+which were announced at the end of May of this year, and those
+controllers do support NCQ, and are claimed to not to have the
+disatrous small write latency problem of their '602 bretheren.  I'm
+not aware of any products using the JMF612 yet, though.  (According to
+reports the '612 controllers weren't going to hit mass production
+until July, so hopefully later this fall we'll start seeing products
+using the new JMicron controller.)
 
-greg k-h
-
------------------------
-
-From: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Samsung backlight driver
-
-This driver implements backlight controls for Samsung laptops that
-currently do not have ACPI support for this control.
-
-It has been tested on the N130 laptop and properly works there.
-
-Info for the NC10 was provided by Soeren Sonnenburg <bugreports@nn7.de>
-Info for the NP-Q45 from Jérémie Huchet <jeremie@lamah.info>
-
-Many thanks to Dmitry Torokhov <dmitry.torokhov@gmail.com> for cleanups
-and other suggestions on how to make the driver simpler.
-
-Cc: Soeren Sonnenburg <bugreports@nn7.de>
-Cc: Jérémie Huchet <jeremie@lamah.info>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/platform/x86/Kconfig             |   12 ++
- drivers/platform/x86/Makefile            |    1 
- drivers/platform/x86/samsung-backlight.c |  157 +++++++++++++++++++++++++++++++
- 3 files changed, 170 insertions(+)
-
---- a/drivers/platform/x86/Kconfig
-+++ b/drivers/platform/x86/Kconfig
-@@ -425,4 +425,16 @@ config ACPI_TOSHIBA
- 
- 	  If you have a legacy free Toshiba laptop (such as the Libretto L1
- 	  series), say Y.
-+
-+config SAMSUNG_BACKLIGHT
-+	tristate "Samsung Backlight driver"
-+	depends on BACKLIGHT_CLASS_DEVICE
-+	depends on DMI
-+	---help---
-+	  This driver adds support to control the backlight on a number of
-+	  Samsung laptops, like the N130.
-+
-+	  It will only be loaded on laptops that properly need it, so it is
-+	  safe to say Y here.
-+
- endif # X86_PLATFORM_DEVICES
---- a/drivers/platform/x86/Makefile
-+++ b/drivers/platform/x86/Makefile
-@@ -20,3 +20,4 @@ obj-$(CONFIG_INTEL_MENLOW)	+= intel_menl
- obj-$(CONFIG_ACPI_WMI)		+= wmi.o
- obj-$(CONFIG_ACPI_ASUS)		+= asus_acpi.o
- obj-$(CONFIG_ACPI_TOSHIBA)	+= toshiba_acpi.o
-+obj-$(CONFIG_SAMSUNG_BACKLIGHT)	+= samsung-backlight.o
---- /dev/null
-+++ b/drivers/platform/x86/samsung-backlight.c
-@@ -0,0 +1,157 @@
-+/*
-+ * Samsung N130 and NC10 Laptop Backlight driver
-+ *
-+ * Copyright (C) 2009 Greg Kroah-Hartman (gregkh@suse.de)
-+ * Copyright (C) 2009 Novell Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/backlight.h>
-+#include <linux/fb.h>
-+#include <linux/dmi.h>
-+
-+#define MAX_BRIGHT	0xff
-+#define OFFSET		0xf4
-+
-+static int offset = OFFSET;
-+module_param(offset, int, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(offset, "The offset into the PCI device for the brightness control");
-+
-+static struct pci_dev *pci_device;
-+static struct backlight_device *backlight_device;
-+
-+static u8 read_brightness(void)
-+{
-+	u8 brightness;
-+
-+	pci_read_config_byte(pci_device, offset, &brightness);
-+	return brightness;
-+}
-+
-+static void set_brightness(u8 brightness)
-+{
-+	pci_write_config_byte(pci_device, offset, brightness);
-+}
-+
-+static int get_brightness(struct backlight_device *bd)
-+{
-+	return bd->props.brightness;
-+}
-+
-+static int update_status(struct backlight_device *bd)
-+{
-+	set_brightness(bd->props.brightness);
-+	return 0;
-+}
-+
-+static struct backlight_ops backlight_ops = {
-+	.get_brightness	= get_brightness,
-+	.update_status	= update_status,
-+};
-+
-+static int __init dmi_check_cb(const struct dmi_system_id *id)
-+{
-+	printk(KERN_INFO KBUILD_MODNAME ": found laptop model '%s'\n",
-+		id->ident);
-+	return 0;
-+}
-+
-+static struct dmi_system_id __initdata samsung_dmi_table[] = {
-+	{
-+		.ident = "N120",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "N120"),
-+			DMI_MATCH(DMI_BOARD_NAME, "N120"),
-+		},
-+		.callback = dmi_check_cb,
-+	},
-+	{
-+		.ident = "N130",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "N130"),
-+			DMI_MATCH(DMI_BOARD_NAME, "N130"),
-+		},
-+		.callback = dmi_check_cb,
-+	},
-+	{
-+		.ident = "NC10",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "NC10"),
-+			DMI_MATCH(DMI_BOARD_NAME, "NC10"),
-+		},
-+		.callback = dmi_check_cb,
-+	},
-+	{
-+		.ident = "NP-Q45",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "SQ45S70S"),
-+			DMI_MATCH(DMI_BOARD_NAME, "SQ45S70S"),
-+		},
-+		.callback = dmi_check_cb,
-+	},
-+	{ },
-+};
-+
-+static int __init samsung_init(void)
-+{
-+	if (!dmi_check_system(samsung_dmi_table))
-+		return -ENODEV;
-+
-+	/*
-+	 * The Samsung N120, N130, and NC10 use pci device id 0x27ae, while the
-+	 * NP-Q45 uses 0x2a02.  Odds are we might need to add more to the
-+	 * list over time...
-+	 */
-+	pci_device = pci_get_device(PCI_VENDOR_ID_INTEL, 0x27ae, NULL);
-+	if (!pci_device) {
-+		pci_device = pci_get_device(PCI_VENDOR_ID_INTEL, 0x2a02, NULL);
-+		if (!pci_device)
-+			return -ENODEV;
-+	}
-+
-+	/* create a backlight device to talk to this one */
-+	backlight_device = backlight_device_register("samsung",
-+						     &pci_device->dev,
-+						     NULL, &backlight_ops);
-+	if (IS_ERR(backlight_device)) {
-+		pci_dev_put(pci_device);
-+		return PTR_ERR(backlight_device);
-+	}
-+
-+	backlight_device->props.max_brightness = MAX_BRIGHT;
-+	backlight_device->props.brightness = read_brightness();
-+	backlight_device->props.power = FB_BLANK_UNBLANK;
-+	backlight_update_status(backlight_device);
-+
-+	return 0;
-+}
-+
-+static void __exit samsung_exit(void)
-+{
-+	backlight_device_unregister(backlight_device);
-+
-+	/* we are done with the PCI device, put it back */
-+	pci_dev_put(pci_device);
-+}
-+
-+module_init(samsung_init);
-+module_exit(samsung_exit);
-+
-+MODULE_AUTHOR("Greg Kroah-Hartman <gregkh@suse.de>");
-+MODULE_DESCRIPTION("Samsung Backlight driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnN120:*:rnN120:*");
-+MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnN130:*:rnN130:*");
-+MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnNC10:*:rnNC10:*");
-+MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnSQ45S70S:*:rnSQ45S70S:*");
-
+      	  				- Ted
