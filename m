@@ -1,97 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752271AbZHPQ4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbZHPQ7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752271AbZHPQ4U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 12:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbZHPQ4T
+	id S1752746AbZHPQ7y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 12:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZHPQ7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 12:56:19 -0400
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:43961 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbZHPQ4S (ORCPT
+	Sun, 16 Aug 2009 12:59:53 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:5889 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751873AbZHPQ7w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 12:56:18 -0400
+	Sun, 16 Aug 2009 12:59:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:from:to:subject:date:user-agent:cc
-         :disposition-notification-to:mime-version:content-type
-         :content-transfer-encoding:message-id;
-        b=Ti76O7hEx6Pyrj/qQXjWNumN0qnvBjvKJmIYDvQqu8MZoN2dR8mJ7Q7dT7VNs4kl9m
-         6Wkw82rz7An0cWA07jIJRyoVLRLlkBQTNSOP2S/0mpwZ3X/RZNcHcin8tO+gQzFutaSu
-         uRMZHkZa7Qthnuf/On/sGu0TZzIn/GDq7NLx0=
-From: Leonardo Potenza <lpotenza@inwind.it>
-To: kernel-janitors@vger.kernel.org
-Subject: [PATCH] x86: fix section mismatch warnings in kernel/apic/x2apic_uv_x.c
-Date: Sun, 16 Aug 2009 18:55:48 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.30-smp1; KDE/4.3.0; x86_64; ; )
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=UHjFIoZpgxvYXuatmMAsXJMTopRarnRDY7FOIR0gG4EuuhW69QRIkAcOwcc7yH5Rgt
+         AB1Sj5kJAeYXIoW4HG44D9MYW/VmWLbIDmhkULIPG47qA2FRywc3R5gMXKne0E8PMFNJ
+         f3AtEyg95Q+/fFw3EE4ad7XVToaQL0qIA3ows=
+Message-ID: <4A883943.5050508@gmail.com>
+Date: Sun, 16 Aug 2009 10:52:19 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Subject: Re: [2.6.31-rc6] ACPI region conflict regression...
+References: <6278d2220908160259v38c34c4ck6db2853ae886492@mail.gmail.com>
+In-Reply-To: <6278d2220908160259v38c34c4ck6db2853ae886492@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908161855.48302.lpotenza@inwind.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Leonardo Potenza <lpotenza@inwind.it>
+On 08/16/2009 03:59 AM, Daniel J Blueman wrote:
+> When booting 2.6.31-rc6 on some x86-64 hardware with fan control and
+> monitoring via the Winbond 83627 chip, 2.6.31-rc6 prevents the module
+> using an I/O region [1] described in the ACPI DSDT table [2] - which
+> didn't occur in -rc5.
+>
+> Is there a way to relax this, or does it require adding
+> acpi_bus_register_driver(struct acpi_driver) and the needed code this
+> late in the game?
+>
+> Thanks,
+>    Daniel
+>
+> --- [1]
+>
+> w83627ehf: Found W83627EHG chip at 0x290
+> ACPI: I/O resource w83627ehf [0x295-0x296] conflicts with ACPI region
+> SEN1 [0x295-0x296]
+> ACPI: Device needs an ACPI driver
 
-The function uv_acpi_madt_oem_check() has been marked __init, the struct apic_x2apic_uv_x has been marked __refdata.
-The aim is to remove the following section mismatch messages:
+This is only a warning, it doesn't prevent reserving the region by 
+default, does it?
 
-WARNING: arch/x86/kernel/apic/built-in.o(.data+0x1368): Section mismatch in reference from the variable apic_x2apic_uv_x to the function .cpuinit.text:uv_wakeup_secondary()
-The variable apic_x2apic_uv_x references
-the function __cpuinit uv_wakeup_secondary()
-If the reference is valid then annotate the
-variable with __init* or __refdata (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+>
+> --- [2]
+>
+>      OperationRegion (SEN1, SystemIO, 0x0295, 0x02)
+>      Field (SEN1, ByteAcc, NoLock, Preserve)
+>      {
+>          SEI0,   8,
+>          SED0,   8
+>      }
 
-WARNING: arch/x86/kernel/built-in.o(.data+0x68e8): Section mismatch in reference from the variable apic_x2apic_uv_x to the function .cpuinit.text:uv_wakeup_secondary()
-The variable apic_x2apic_uv_x references
-the function __cpuinit uv_wakeup_secondary()
-If the reference is valid then annotate the
-variable with __init* or __refdata (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: arch/x86/built-in.o(.text+0x7b36f): Section mismatch in reference from the function uv_acpi_madt_oem_check() to the function .init.text:early_ioremap()
-The function uv_acpi_madt_oem_check() references
-the function __init early_ioremap().
-This is often because uv_acpi_madt_oem_check lacks a __init 
-annotation or the annotation of early_ioremap is wrong.
-
-WARNING: arch/x86/built-in.o(.text+0x7b38d): Section mismatch in reference from the function uv_acpi_madt_oem_check() to the function .init.text:early_iounmap()
-The function uv_acpi_madt_oem_check() references
-the function __init early_iounmap().
-This is often because uv_acpi_madt_oem_check lacks a __init 
-annotation or the annotation of early_iounmap is wrong.
-
-WARNING: arch/x86/built-in.o(.data+0x8668): Section mismatch in reference from the variable apic_x2apic_uv_x to the function .cpuinit.text:uv_wakeup_secondary()
-The variable apic_x2apic_uv_x references
-the function __cpuinit uv_wakeup_secondary()
-If the reference is valid then annotate the
-variable with __init* or __refdata (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-Signed-off-by: Leonardo Potenza <lpotenza@inwind.it>
----
-Index: linux-2.6/arch/x86/kernel/apic/x2apic_uv_x.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/x2apic_uv_x.c	2009-08-16 17:48:15.000000000 +0200
-+++ linux-2.6/arch/x86/kernel/apic/x2apic_uv_x.c	2009-08-16 17:52:05.000000000 +0200
-@@ -46,7 +46,7 @@ static int early_get_nodeid(void)
- 	return node_id.s.node_id;
- }
- 
--static int uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
-+static int __init uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- {
- 	if (!strcmp(oem_id, "SGI")) {
- 		if (!strcmp(oem_table_id, "UVL"))
-@@ -253,7 +253,7 @@ static void uv_send_IPI_self(int vector)
- 	apic_write(APIC_SELF_IPI, vector);
- }
- 
--struct apic apic_x2apic_uv_x = {
-+struct apic __refdata apic_x2apic_uv_x = {
- 
- 	.name				= "UV large system",
- 	.probe				= NULL,
