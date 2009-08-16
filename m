@@ -1,73 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbZHPJjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbZHPJhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755439AbZHPJjq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 05:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbZHPJix
+	id S1755177AbZHPJhb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 05:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbZHPJh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 05:38:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45337 "EHLO mx2.redhat.com"
+	Sun, 16 Aug 2009 05:37:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45347 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753966AbZHPJaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 05:30:11 -0400
+	id S1754001AbZHPJaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 05:30:12 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 06/48] KVM: x86 emulator: Implement zero-extended immediate decoding
-Date: Sun, 16 Aug 2009 12:29:26 +0300
-Message-Id: <1250415008-17175-7-git-send-email-avi@redhat.com>
+Subject: [PATCH 19/48] KVM: No disable_irq for MSI/MSI-X interrupt on device assignment
+Date: Sun, 16 Aug 2009 12:29:39 +0300
+Message-Id: <1250415008-17175-20-git-send-email-avi@redhat.com>
 In-Reply-To: <1250415008-17175-1-git-send-email-avi@redhat.com>
 References: <1250415008-17175-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Absolute jumps use zero extended immediate operands.
+From: Sheng Yang <sheng@linux.intel.com>
 
+Disable interrupt at interrupt handler and enable it when guest ack is for
+the level triggered interrupt, to prevent reinjected interrupt. MSI/MSI-X don't
+need it.
+
+One possible problem is multiply same vector interrupt injected between irq
+handler and scheduled work handler would be merged as one for MSI/MSI-X.
+But AFAIK, the drivers handle it well.
+
+The patch fixed the oplin card performance issue(MSI-X performance is half of
+MSI/INTx).
+
+Signed-off-by: Sheng Yang <sheng@linux.intel.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/x86_emulate.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+ virt/kvm/kvm_main.c |   22 ++++++++--------------
+ 1 files changed, 8 insertions(+), 14 deletions(-)
 
-diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
-index 616de46..a30d5fc 100644
---- a/arch/x86/kvm/x86_emulate.c
-+++ b/arch/x86/kvm/x86_emulate.c
-@@ -60,6 +60,7 @@
- #define SrcImmByte  (6<<4)	/* 8-bit sign-extended immediate operand. */
- #define SrcOne      (7<<4)	/* Implied '1' */
- #define SrcImmUByte (8<<4)      /* 8-bit unsigned immediate operand. */
-+#define SrcImmU     (9<<4)      /* Immediate operand, unsigned */
- #define SrcMask     (0xf<<4)
- /* Generic ModRM decode. */
- #define ModRM       (1<<8)
-@@ -1027,6 +1028,7 @@ done_prefixes:
- 		c->src.type = OP_MEM;
- 		break;
- 	case SrcImm:
-+	case SrcImmU:
- 		c->src.type = OP_IMM;
- 		c->src.ptr = (unsigned long *)c->eip;
- 		c->src.bytes = (c->d & ByteOp) ? 1 : c->op_bytes;
-@@ -1044,6 +1046,19 @@ done_prefixes:
- 			c->src.val = insn_fetch(s32, 4, c->eip);
- 			break;
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index dee321e..2d9bc43 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -120,7 +120,7 @@ static void kvm_assigned_dev_interrupt_work_handler(struct work_struct *work)
+ {
+ 	struct kvm_assigned_dev_kernel *assigned_dev;
+ 	struct kvm *kvm;
+-	int irq, i;
++	int i;
+ 
+ 	assigned_dev = container_of(work, struct kvm_assigned_dev_kernel,
+ 				    interrupt_work);
+@@ -143,20 +143,10 @@ static void kvm_assigned_dev_interrupt_work_handler(struct work_struct *work)
+ 			kvm_set_irq(assigned_dev->kvm,
+ 				    assigned_dev->irq_source_id,
+ 				    guest_entries[i].vector, 1);
+-			irq = assigned_dev->host_msix_entries[i].vector;
+-			if (irq != 0)
+-				enable_irq(irq);
+-			assigned_dev->host_irq_disabled = false;
  		}
-+		if ((c->d & SrcMask) == SrcImmU) {
-+			switch (c->src.bytes) {
-+			case 1:
-+				c->src.val &= 0xff;
-+				break;
-+			case 2:
-+				c->src.val &= 0xffff;
-+				break;
-+			case 4:
-+				c->src.val &= 0xffffffff;
-+				break;
-+			}
-+		}
- 		break;
- 	case SrcImmByte:
- 	case SrcImmUByte:
+-	} else {
++	} else
+ 		kvm_set_irq(assigned_dev->kvm, assigned_dev->irq_source_id,
+ 			    assigned_dev->guest_irq, 1);
+-		if (assigned_dev->irq_requested_type &
+-				KVM_DEV_IRQ_GUEST_MSI) {
+-			enable_irq(assigned_dev->host_irq);
+-			assigned_dev->host_irq_disabled = false;
+-		}
+-	}
+ 
+ 	spin_unlock_irq(&assigned_dev->assigned_dev_lock);
+ 	mutex_unlock(&assigned_dev->kvm->lock);
+@@ -179,8 +169,10 @@ static irqreturn_t kvm_assigned_dev_intr(int irq, void *dev_id)
+ 
+ 	schedule_work(&assigned_dev->interrupt_work);
+ 
+-	disable_irq_nosync(irq);
+-	assigned_dev->host_irq_disabled = true;
++	if (assigned_dev->irq_requested_type & KVM_DEV_IRQ_GUEST_INTX) {
++		disable_irq_nosync(irq);
++		assigned_dev->host_irq_disabled = true;
++	}
+ 
+ out:
+ 	spin_unlock_irqrestore(&assigned_dev->assigned_dev_lock, flags);
+@@ -417,6 +409,7 @@ static int assigned_device_enable_guest_msi(struct kvm *kvm,
+ {
+ 	dev->guest_irq = irq->guest_irq;
+ 	dev->ack_notifier.gsi = -1;
++	dev->host_irq_disabled = false;
+ 	return 0;
+ }
+ #endif
+@@ -427,6 +420,7 @@ static int assigned_device_enable_guest_msix(struct kvm *kvm,
+ {
+ 	dev->guest_irq = irq->guest_irq;
+ 	dev->ack_notifier.gsi = -1;
++	dev->host_irq_disabled = false;
+ 	return 0;
+ }
+ #endif
 -- 
 1.6.3.3
 
