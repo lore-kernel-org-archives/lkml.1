@@ -1,134 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751889AbZHPGwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752906AbZHPHFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751889AbZHPGwu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 02:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbZHPGwt
+	id S1752906AbZHPHFH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 03:05:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbZHPHFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 02:52:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45590 "EHLO mx2.redhat.com"
+	Sun, 16 Aug 2009 03:05:06 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41370 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750722AbZHPGws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 02:52:48 -0400
-Date: Sun, 16 Aug 2009 09:51:10 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com
-Subject: Re: [PATCHv3 2/2] vhost_net: a kernel-level virtio server
-Message-ID: <20090816065110.GA3008@redhat.com>
-References: <cover.1250187913.git.mst@redhat.com> <20090813182931.GC6585@redhat.com> <200908141340.36176.arnd@arndb.de>
+	id S1750722AbZHPHFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 03:05:04 -0400
+Date: Sun, 16 Aug 2009 09:04:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kmemleak: Ignore the aperture memory hole on x86_64
+Message-ID: <20090816070451.GA29537@elte.hu>
+References: <20090815141716.GA15941@elte.hu> <1250375681.6889.25.camel@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200908141340.36176.arnd@arndb.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1250375681.6889.25.camel@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 14, 2009 at 01:40:36PM +0200, Arnd Bergmann wrote:
-> On Thursday 13 August 2009, Michael S. Tsirkin wrote:
-> > What it is: vhost net is a character device that can be used to reduce
-> > the number of system calls involved in virtio networking.
-> > Existing virtio net code is used in the guest without modification.
-> 
-> AFAICT, you have addressed all my comments, mostly by convincing me
-> that you got it right anyway ;-).
-> 
-> I hope this gets into 2.6.32, good work!
-> 
-> > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> 
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> 
-> One idea though:
-> 
-> > +	/* Parameter checking */
-> > +	if (sock->sk->sk_type != SOCK_RAW) {
-> > +		r = -ESOCKTNOSUPPORT;
-> > +		goto done;
-> > +	}
-> > +
-> > +	r = sock->ops->getname(sock, (struct sockaddr *)&uaddr.sa,
-> > +			       &uaddr_len, 0);
-> > +	if (r)
-> > +		goto done;
-> > +
-> > +	if (uaddr.sa.sll_family != AF_PACKET) {
-> > +		r = -EPFNOSUPPORT;
-> > +		goto done;
-> > +	}
-> 
-> You currently limit the scope of the driver by only allowing raw packet
-> sockets to be passed into the network driver. In qemu, we currently support
-> some very similar transports:
-> 
-> * raw packet (not in a release yet)
-> * tcp connection
-> * UDP multicast
-> * tap character device
-> * VDE with Unix local sockets
-> 
-> My primary interest right now is the tap support, but I think it would
-> be interesting in general to allow different file descriptor types
-> in vhost_net_set_socket. AFAICT, there are two major differences
-> that we need to handle for this:
-> 
-> * most of the transports are sockets, tap uses a character device.
->   This could be dealt with by having both a struct socket * in
->   struct vhost_net *and* a struct file *, or by always keeping the
->   struct file and calling vfs_readv/vfs_writev for the data transport
->   in both cases.
 
-I am concerned that character devices might have weird side effects with
-read/write operations and that calling them from kernel thread the way I
-do might have security implications. Can't point at anything specific
-though at the moment.
-I wonder - can we expose the underlying socket used by tap, or will that
-create complex lifetime issues?
+* Catalin Marinas <catalin.marinas@arm.com> wrote:
 
-> * Each transport has a slightly different header, we have
->   - raw ethernet frames (raw, udp multicast, tap)
->   - 32-bit length + raw frames, possibly fragmented (tcp)
->   - 80-bit header + raw frames, possibly fragmented (tap with vnet_hdr)
->   To handle these three cases, we need either different ioctl numbers
->   so that vhost_net can choose the right one, or a flags field in
->   VHOST_NET_SET_SOCKET, like
+> On Sat, 2009-08-15 at 15:17 +0100, Ingo Molnar wrote:
+> > * Catalin Marinas <catalin.marinas@arm.com> wrote:
+> > > +     /*
+> > > +      * Kmemleak should not scan this block as it may not be mapped via the
+> > > +      * kernel direct mapping.
+> > > +      */
+> > > +     kmemleak_ignore(p);
+> > 
+> > More importantly, kmemleak should _never_ do the garbage collection
+> > scan for device memory (such as the agp aperture above). All the
+> > aperture areas are in that category - PCI aperture, IOMMU areas,
+> > etc. etc.
+> > 
+> > Please double check that kmemleak does not check those - there are
+> > devices where pure reading of that address space can have
+> > side-effects.
 > 
->   #define VHOST_NET_RAW		1
->   #define VHOST_NET_LEN_HDR	2
->   #define VHOST_NET_VNET_HDR	4
-> 
->   struct vhost_net_socket {
-> 	unsigned int flags;
-> 	int fd;
->   };
->   #define VHOST_NET_SET_SOCKET _IOW(VHOST_VIRTIO, 0x30, struct vhost_net_socket)
+> I'll do a grep. But would such memory still be mapped in the 
+> kernel direct mapping? [...]
 
-It seems we can query the socket to find out the type, or use the
-features ioctl.
+It should not be mapped directly - we try to map all kinds of 
+resources 'precisely', so that there can be no cache aliasing 
+complications due to over-mapping - but still, there are 
+compatibility ranges that are always mapped (the BIOS area for 
+example).
 
-> If both of those are addressed, we can treat vhost_net as a generic
-> way to do network handling in the kernel independent of the qemu
-> model (raw, tap, ...) for it. 
+> [...] In this particular case, it was alloc_bootmem() memory which 
+> seems to have been unmapped (and cause an oops), otherwise, at 
+> least on some architectures, may have problems with speculative 
+> fetches.
 > 
-> Your qemu patch would have to work differently, so instead of 
+> Kmemleak doesn't track other mappings like ioremap, so it should 
+> not scan device memory.
 > 
-> qemu -net nic,vhost=eth0
-> 
-> you would do the same as today with the raw packet socket extension
-> 
-> qemu -net nic -net raw,ifname=eth0 
-> 
-> Qemu could then automatically try to use vhost_net, if it's available
-> in the kernel, or just fall back on software vlan otherwise.
-> Does that make sense?
-> 
-> 	Arnd <>
+> Since you raised this, I realised there is a class of kmalloc'ed 
+> memory blocks that may have some issues on non-coherent 
+> architectures. If such blocks are used for DMA and cache 
+> invalidation is only done in dma_map_single(FROM_DEVICE) (the ARM 
+> case), kmemleak scanning before dma_unmap_single() may pollute the 
+> cache. One solution is to invalidate the caches again in 
+> dma_unmap_single(). I'm not sure ignoring GFP_DMA blocks would be 
+> feasible if this flag is used for other blocks containing 
+> pointers. I need to do some tests but I don't think x86 is 
+> affected.
 
-I agree, long term it should be enabled automatically when possible.
+Yeah, x86 shouldnt be affected.
 
--- 
-MST
+	Ingo
