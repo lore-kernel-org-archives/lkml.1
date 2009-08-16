@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbZHPBmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbZHPCAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753347AbZHPBmj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 21:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbZHPBmj
+	id S1753517AbZHPCAa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 22:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZHPCAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 21:42:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45627 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751910AbZHPBmi (ORCPT
+	Sat, 15 Aug 2009 22:00:30 -0400
+Received: from ns.ariel-networks.com ([122.216.114.210]:46873 "EHLO
+	ns.ariel-networks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752032AbZHPCA3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 21:42:38 -0400
-Date: Sat, 15 Aug 2009 18:40:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Tejun Heo <tj@kernel.org>, Guillaume Knispel <gknispel@proformatique.com>,
-       linux-kernel@vger.kernel.org, Miklos Szeredi <mszeredi@suse.cz>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-fsdevel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH] poll/select: initialize triggered field of struct
- poll_wqueues
-In-Reply-To: <alpine.LFD.2.01.0908151839310.3162@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0908151840270.3162@localhost.localdomain>
-References: <20090815193024.121926e6@xilun.lan.proformatique.com> <4A875874.20401@kernel.org> <20090815181559.d73f0da6.akpm@linux-foundation.org> <alpine.LFD.2.01.0908151839310.3162@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 15 Aug 2009 22:00:29 -0400
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86 : omit duplicate processing at pte_pgprot()
+Message-Id: <20090816020030.73E8037813C@ns.ariel-networks.com>
+Date: Sun, 16 Aug 2009 11:00:30 +0900 (JST)
+From: ohyama_sec@ariel-networks.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I'm sorry, I resend the same context message accidentally.
+So, please ignore this message.
 
+thank you.
 
-On Sat, 15 Aug 2009, Linus Torvalds wrote:
-> 
-> Hmm. I committed it when Tejun's ack came in, but I didn't tag it for 
-> stable. Oh well.
-
-Oh, actually, I noticed that I hadn't pushed it out yet. So I added the 
-stable tag and did so.
-
-		Linus
+ohyama_sec@ariel-networks.com wrote:
+> I suggest following PATCH that omit duplicate processing of mask.
+>
+> pte_pgprot() macro [arch/x86/include/asm/pgtable.h] call pte_flags() [arch/x86/include/asm/pgtable_types.h] that return value is masked by PTE_FLAGS_MASK in pte_flags() function, and this macro also masks the returned value by PTE_FLAGS_MASK.
+>
+> I guess that we don't have to do the mask processing at pte_pgprot() macro because it has already been masked at pte_flags().
+> So, how about the following PATCH ?
+>
+>     <Hiroyasu OHYAMA>
+>
+> diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
+> index 3cc06e3..a0b454c 100644
+> --- a/arch/x86/include/asm/pgtable.h
+> +++ b/arch/x86/include/asm/pgtable.h
+> @@ -265,7 +265,7 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
+>         return __pgprot(preservebits | addbits);
+>          }
+>
+>          -#define pte_pgprot(x) __pgprot(pte_flags(x) & PTE_FLAGS_MASK)
+>          +#define pte_pgprot(x) __pgprot(pte_flags(x))
+>
+>           #define canon_pgprot(p) __pgprot(massage_pgprot(p))
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>   
