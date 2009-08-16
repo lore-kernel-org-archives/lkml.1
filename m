@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbZHPQ7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbZHPRAJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752746AbZHPQ7y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 12:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZHPQ7x
+	id S1753363AbZHPRAJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 13:00:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbZHPRAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 12:59:53 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:5889 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751873AbZHPQ7w (ORCPT
+	Sun, 16 Aug 2009 13:00:08 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41478 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752779AbZHPRAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 12:59:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=UHjFIoZpgxvYXuatmMAsXJMTopRarnRDY7FOIR0gG4EuuhW69QRIkAcOwcc7yH5Rgt
-         AB1Sj5kJAeYXIoW4HG44D9MYW/VmWLbIDmhkULIPG47qA2FRywc3R5gMXKne0E8PMFNJ
-         f3AtEyg95Q+/fFw3EE4ad7XVToaQL0qIA3ows=
-Message-ID: <4A883943.5050508@gmail.com>
-Date: Sun, 16 Aug 2009 10:52:19 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Sun, 16 Aug 2009 13:00:06 -0400
+Date: Sun, 16 Aug 2009 12:59:43 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
+       Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
+       Greg Freemyer <greg.freemyer@gmail.com>,
+       Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+	slot is freed)
+Message-ID: <20090816165943.GA26983@infradead.org>
+References: <4A85E0DC.9040101@rtr.ca> <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com> <20090814234539.GE27148@parisc-linux.org> <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com> <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca> <1250344518.4159.4.camel@mulgrave.site> <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk> <20090816083434.2ce69859@infradead.org> <1250437927.3856.119.camel@mulgrave.site>
 MIME-Version: 1.0
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-Subject: Re: [2.6.31-rc6] ACPI region conflict regression...
-References: <6278d2220908160259v38c34c4ck6db2853ae886492@mail.gmail.com>
-In-Reply-To: <6278d2220908160259v38c34c4ck6db2853ae886492@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250437927.3856.119.camel@mulgrave.site>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/16/2009 03:59 AM, Daniel J Blueman wrote:
-> When booting 2.6.31-rc6 on some x86-64 hardware with fan control and
-> monitoring via the Winbond 83627 chip, 2.6.31-rc6 prevents the module
-> using an I/O region [1] described in the ACPI DSDT table [2] - which
-> didn't occur in -rc5.
->
-> Is there a way to relax this, or does it require adding
-> acpi_bus_register_driver(struct acpi_driver) and the needed code this
-> late in the game?
->
-> Thanks,
->    Daniel
->
-> --- [1]
->
-> w83627ehf: Found W83627EHG chip at 0x290
-> ACPI: I/O resource w83627ehf [0x295-0x296] conflicts with ACPI region
-> SEN1 [0x295-0x296]
-> ACPI: Device needs an ACPI driver
+On Sun, Aug 16, 2009 at 10:52:07AM -0500, James Bottomley wrote:
+> However, the enterprise has been doing UNMAP for a while, so we can draw
+> inferences from them since the SSD FTL will operate similarly.  For
+> them, UNMAP is the same cost in terms of time regardless of the number
+> of extents.  The reason is that it's moving the blocks from the global
+> in use list to the global free list.  Part of the problem is that this
+> involves locking and quiescing, so UNMAP ends up being quite expensive
+> to the array but constant in terms of cost (hence they want as few
+> unmaps for as many sectors as possible).
 
-This is only a warning, it doesn't prevent reserving the region by 
-default, does it?
-
->
-> --- [2]
->
->      OperationRegion (SEN1, SystemIO, 0x0295, 0x02)
->      Field (SEN1, ByteAcc, NoLock, Preserve)
->      {
->          SEI0,   8,
->          SED0,   8
->      }
+How are they doing the unmaps?  Using something similar to Mark's wiper
+script and using SG_IO?  Because right now we do not actually implement
+UNMAP support in the kernel.  I'd really love to test the XFS batched
+discard support with a real UNMAP implementation.
 
