@@ -1,116 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbZHPRwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbZHPR46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755464AbZHPRwT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 13:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbZHPRwS
+	id S1755513AbZHPR46 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 13:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbZHPR45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 13:52:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57738 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753491AbZHPRwS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 13:52:18 -0400
-Date: Sun, 16 Aug 2009 19:52:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mark Kelly <mark@bifferos.com>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Florian Fainelli <florian@openwrt.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch] x86 CPU detection for RDC
-Message-ID: <20090816175204.GA28553@elte.hu>
-References: <58001.1250437590@bifferos.com> <20090816155507.GA2791@elte.hu> <alpine.LNX.2.00.0908160317250.19588@cent.localnet>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0908160317250.19588@cent.localnet>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 16 Aug 2009 13:56:57 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:35661 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754208AbZHPR44 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 13:56:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=lLJMhrwylJ5ZL4VlpxoIlRDJVuGrUtVYsJj/7YnRL/B3mtEIbrmyhlKp69QoY2KYrl
+         Yg3iz6hHcSOyEvTSiE6oIEVReWtw8OxFwNXdt1Zl2Ho45eNbQkfWqTJsN3mA8+H/+SM7
+         OGWCEkuLf427G7Mtj+yZgyQSGs9cBj9l1W/DE=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>
+Subject: [PATCH] perf tools: Put the show mode into the event headers files
+Date: Sun, 16 Aug 2009 19:56:54 +0200
+Message-Id: <1250445414-29237-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1250443461-28130-1-git-send-email-fweisbec@gmail.com>
+References: <1250443461-28130-1-git-send-email-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Annotate and report share the same flags to filter events
+considering their context (kernel, user, hypervisor).
 
-* Mark Kelly <mark@bifferos.com> wrote:
+Both tools have their own definitions of these flags. Factorize
+them in the event headers file.
 
-> +static void __cpuinit rdc_identify(struct cpuinfo_x86 *c)
-> +{
-> +	u16 vendor, device;
-> +	u32 customer_id;
-> +
-> +	/* RDC CPU is SoC (system-on-chip), Northbridge is always present. */
-> +	vendor = read_pci_config_16(0, 0, 0, PCI_VENDOR_ID);
-> +	device = read_pci_config_16(0, 0, 0, PCI_DEVICE_ID);
-> +
-> +	if (vendor != PCI_VENDOR_ID_RDC || device != PCI_DEVICE_ID_RDC_R6020)
-> +		return;  /* not RDC */
-> +
-> +	/* NB: We could go on and check other devices, e.g. r6040 NIC, but
-> +	   that's probably overkill */
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+---
+ tools/perf/builtin-annotate.c |    4 ----
+ tools/perf/builtin-report.c   |    4 ----
+ tools/perf/util/event.h       |    6 ++++++
+ 3 files changed, 6 insertions(+), 8 deletions(-)
 
-please use the customary (multi-line) comment style:
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 820e7cc..6d75151 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -22,10 +22,6 @@
+ #include "util/parse-events.h"
+ #include "util/thread.h"
+ 
+-#define SHOW_KERNEL	1
+-#define SHOW_USER	2
+-#define SHOW_HV		4
+-
+ static char		const *input_name = "perf.data";
+ 
+ static char		default_sort_order[] = "comm,symbol";
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index e104ed3..05d52ff 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -27,10 +27,6 @@
+ 
+ #include "util/thread.h"
+ 
+-#define SHOW_KERNEL	1
+-#define SHOW_USER	2
+-#define SHOW_HV		4
+-
+ static char		const *input_name = "perf.data";
+ 
+ static char		default_sort_order[] = "comm,dso,symbol";
+diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
+index fa7c50b..fa2d4e9 100644
+--- a/tools/perf/util/event.h
++++ b/tools/perf/util/event.h
+@@ -4,6 +4,12 @@
+ #include "util.h"
+ #include <linux/list.h>
+ 
++enum {
++	SHOW_KERNEL	= 1,
++	SHOW_USER	= 2,
++	SHOW_HV		= 4,
++};
++
+ /*
+  * PERF_SAMPLE_IP | PERF_SAMPLE_TID | *
+  */
+-- 
+1.6.2.3
 
-  /*
-   * Comment .....
-   * ...... goes here.
-   */
-
-specified in Documentation/CodingStyle.
-
-> +	strcpy(c->x86_vendor_id, "RDC");
-> +	c->x86_vendor = X86_VENDOR_RDC;
-> +
-> +	customer_id = read_pci_config(0, 0, 0, 0x90);
-> +
-> +	switch (customer_id) {
-> +		/* id names are from RDC */
-> +	case 0x00321000:
-> +		strcpy(c->x86_model_id, "R3210/R3211");
-> +		break;
-> +	case 0x00321001:
-> +		strcpy(c->x86_model_id, "AMITRISC20000/20010");
-> +		break;
-> +	case 0x00321002:
-> +		strcpy(c->x86_model_id, "R3210X/Edimax");
-> +		break;
-> +	case 0x00321003:
-> +		strcpy(c->x86_model_id, "R3210/Kcodes");
-> +		break;
-> +	case 0x00321004:  /* tested */
-> +		strcpy(c->x86_model_id, "S3282/CodeTek");
-> +		break;
-> +	case 0x00321007:
-> +		strcpy(c->x86_model_id, "R8610");
-> +		break;
-> +	default:
-> +		printk(KERN_INFO "Unrecognised Customer ID (0x%x) please "
-> +			"report to bifferos@yahoo.co.uk\n", customer_id);
-
-I'd rather see them reported to linux-kernel@vger.kernel.org. Also, 
-please concatenate the string on a single line (and ignore the 
-checkpatch warning in this case, even if the line is over-long).
-
-Also, please use pr_info() here. Plus, put 'RDC' into the printout 
-so that people know that the RDC cpu is unknown. (it's not clear 
-from this printk)
-
-> +		/* We'll default to the R321x since that's mentioned
-> +		   elsewhere in the kernel sources */
-> +		strcpy(c->x86_model_id, "R321x");
-> +
-> +		/* blank the vendor_id, so we get a warning that this
-> +		   is unsupported, your system may be unstable etc...
-> +		   Is there a better way? */
-
-(these multi-line comments too need to be fixed.)
-
-> +		strcpy(c->x86_vendor_id, "");
-
-hm, the default should already be an empty string (i.e. \0) - why 
-does this need to be cleared again?
-
-	Ingo
