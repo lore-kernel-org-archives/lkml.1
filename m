@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756321AbZHPWrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756351AbZHPWv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756321AbZHPWrr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 18:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756302AbZHPWrq
+	id S1756351AbZHPWv0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 18:51:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756309AbZHPWvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 18:47:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45822 "EHLO ogre.sisk.pl"
+	Sun, 16 Aug 2009 18:51:25 -0400
+Received: from rtr.ca ([76.10.145.34]:48435 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756291AbZHPWrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 18:47:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release preallocated memory unnecessarily (rev. 2)
-Date: Mon, 17 Aug 2009 00:48:01 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-rjw; KDE/4.3.0; x86_64; ; )
-Cc: "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "pavel@ucw.cz" <pavel@ucw.cz>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905060105.10800.rjw@sisk.pl> <20090816134610.GA6266@localhost>
-In-Reply-To: <20090816134610.GA6266@localhost>
+	id S1756308AbZHPWvX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 18:51:23 -0400
+Message-ID: <4A888D6B.8020103@rtr.ca>
+Date: Sun, 16 Aug 2009 18:51:23 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Theodore Tso <tytso@mit.edu>, Roland Dreier <rdreier@cisco.com>,
+       James Bottomley <James.Bottomley@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
+       Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
+       Greg Freemyer <greg.freemyer@gmail.com>,
+       Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+Subject: Re: Discard support
+References: <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com> <20090814234539.GE27148@parisc-linux.org> <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com> <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca> <1250344518.4159.4.camel@mulgrave.site> <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk> <20090816083434.2ce69859@infradead.org> <1250437927.3856.119.camel@mulgrave.site> <adavdkn2ztb.fsf@cisco.com> <20090816221325.GF17958@mit.edu>
+In-Reply-To: <20090816221325.GF17958@mit.edu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908170048.01609.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 16 August 2009, Wu Fengguang wrote:
-> On Wed, May 06, 2009 at 07:05:09AM +0800, Rafael J. Wysocki wrote:
-> > On Tuesday 05 May 2009, Wu Fengguang wrote:
-> > > On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > Since the hibernation code is now going to use allocations of memory
-> > > > to create enough room for the image, it can also use the page frames
-> > > > allocated at this stage as image page frames.  The low-level
-> > > > hibernation code needs to be rearranged for this purpose, but it
-> > > > allows us to avoid freeing a great number of pages and allocating
-> > > > these same pages once again later, so it generally is worth doing.
-> > > > 
-> > > > [rev. 2: Change the strategy of preallocating memory to allocate as
-> > > >  many pages as needed to get the right image size in one shot (the
-> > > >  excessive allocated pages are released afterwards).]
-> > > 
-> > > Rafael, I tried out your patches and found doubled memory shrink speed!
-> > >
-> > > [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
-> > > [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
-> > 
-> > Unfortunately, I'm observing a regression and a huge one.
-> > 
-> > On my Atom-based test box with 1 GB of RAM after a fresh boot and starting X
-> > with KDE 4 there are ~256 MB free.  To create an image we need to free ~300 MB
-> > and that takes ~2 s with the old code and ~15 s with the new one.
-> > 
-> > It helps to call shrink_all_memory() once with a sufficiently large argument
-> > before the preallocation.
+Theodore Tso wrote:
+> On Sun, Aug 16, 2009 at 02:50:40PM -0700, Roland Dreier wrote:
+>>  > Well, yes and no ... a lot of SSDs don't actually implement NCQ, so the
+>>  > impact to them will be less ... although I think enterprise class SSDs
+>>  > do implement NCQ.
+>>
+>> Really?  Which SSDs don't implement NCQ?
 > 
-> The 10 fold slowdown may be related to swapping IO:
-
-I guess it is.
-
-> shrink_all_memory() tends to be reclaiming less anon pages.
+> The Intel X25-M was the first SSD to implement NCQ.  The OCZ Core V2
+> advertised NCQ with a queue depth of 1, but even that was buggy, so
+> Linux has a black list for the that SSD:
 > 
-> Is this box running on SSD? (Which can be slow on random writes.)
+>       http://markmail.org/message/jvjpmcdqjwrmyl4w
+> 
+> As far as I know, all of the SSD's using the crappy JMicron JMF602
+> controllers don't support NCQ in any real way, which would includes
+> most of the reasonably priced SSD's up until first half of this year.
+> (The OCZ Summit SSD, which uses the Indilnx controller is an exception
+> to this statement, but it's more expensive that the JMF602 based
+> SSD's, although less expensive than the Intel SSD.)
+> 
+> JMicron is trying to seek redemption with their JMF612 controllers,
+> which were announced at the end of May of this year, and those
+> controllers do support NCQ, and are claimed to not to have the
+> disatrous small write latency problem of their '602 bretheren.  I'm
+> not aware of any products using the JMF612 yet, though.  (According to
+> reports the '612 controllers weren't going to hit mass production
+> until July, so hopefully later this fall we'll start seeing products
+> using the new JMicron controller.)
+..
 
-No, on a normal spinning-plate HDD (2.5'').
+Great summary, Ted.
 
-Thanks,
-Rafael
+To add:  SSDs based upon the Indilinx controller don't appear to scale
+beyond an NCQ depth of about 4 or so.  Whereas Intel SSDs continue to
+improve with increased queue depth up to 31 on Linux.
+
+Or at least that's what I recall from reading various SSD benchmarks
+a few weeks ago here. 
+
+Cheers
