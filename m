@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbZHPDCM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZHPDZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbZHPDCM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Aug 2009 23:02:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbZHPDCM
+	id S1753846AbZHPDZb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Aug 2009 23:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbZHPDZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Aug 2009 23:02:12 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:8887 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753739AbZHPDCL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Aug 2009 23:02:11 -0400
-From: Ricardo Jorge da Fonseca Marques Ferreira <storm@sys49152.net>
-To: Len Brown <lenb@kernel.org>
-Subject: Re: Regression in ACPI in 2.6.31-rc5
-Date: Sun, 16 Aug 2009 04:00:03 +0100
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc5-git9-17-default; KDE/4.3.0; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <200908072333.24631.storm@sys49152.net> <alpine.LFD.2.00.0908122350560.22946@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0908122350560.22946@localhost.localdomain>
+	Sat, 15 Aug 2009 23:25:31 -0400
+Received: from rtr.ca ([76.10.145.34]:52282 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753559AbZHPDZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Aug 2009 23:25:30 -0400
+Message-ID: <4A877C29.1070706@rtr.ca>
+Date: Sat, 15 Aug 2009 23:25:29 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Christoph Hellwig <hch@infradead.org>
+Cc: xfs@oss.sgi.com, linux-fsdevel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [PATCH, RFC] xfs: batched discard support
+References: <20090816004705.GA7347@infradead.org> <4A876255.10606@rtr.ca> <4A876CA9.20906@rtr.ca> <20090816022500.GA12392@infradead.org> <4A8773C4.6030409@rtr.ca>
+In-Reply-To: <4A8773C4.6030409@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908160400.03391.storm@sys49152.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 August 2009, Len Brown wrote:
-> > I had two drivers stop working in 2.6.31 that were working fine in
-> > 2.6.30. They are iwlagn and sky2. If i pass acpi=off to the kernel, they
-> > work as expected.
->
-> the bug report for this issue is here:
-> http://bugzilla.kernel.org/show_bug.cgi?id=13940
->
-> is it possible to bisect which commit between 2.6.30 and 2.6.31-rc5
-> caused this regression?
+Mark Lord wrote:
+> Christoph Hellwig wrote:
+>> On Sat, Aug 15, 2009 at 10:19:21PM -0400, Mark Lord wrote:
+>>> Mark Lord wrote:
+>>>> Christoph Hellwig wrote:
+>>> ..
+>>>>> Mark, any chance to try it?  Just create an XFS filesystem, age it a
+>>>>> bit and then call the attached little trim.c program on the mountmoint
+>>>>> (or any file inside the filesystem for that matter)
+>>>> ..
+>>>>
+>>>> Looking at it now.  Thanks, Christoph!
+>>> ..
+>>>
+>>> Fails to work on 64-bit kernel w/ 32-bit userspace (no compat ioctl).
+>>> Rebuilding with 32-bit kernel now..
+>>
+>> The actual ioctl is compatible, just add the
+>>
+>>     case XFS_IOC_TRIM:
+>>         return xfs_ioc_trim(mp, arg);
+>>
+>> to xfs_file_compat_ioctl().  I'll add this to the next spin of the patch.
+> ..
+> 
+> Peachy.  Rebuilding again now..
+> 
+> Don't wait up for this .. I'll finish it on Sunday.  Bedtime.  :)
+..
 
-git bisect tells me that commit 5d423ccd7ba4285f1084e91b26805e1d0ae978ed 
-(x86/pci: remove rounding quirk from e820_setup_gap()) caused the problem.
+Mmm.. doesn't work on stock 2.6.31-rc6.
+It must also require Matthew's patches for discard/trim support.
 
-I built a kernel based on HEAD with that commit reverted and both drivers 
-work.
+Later.
 
