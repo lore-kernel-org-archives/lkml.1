@@ -1,85 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbZHQGYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbZHQG3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756851AbZHQGYg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 02:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbZHQGYf
+	id S1756663AbZHQG3x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 02:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbZHQG3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 02:24:35 -0400
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:36440 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750831AbZHQGYf (ORCPT
+	Mon, 17 Aug 2009 02:29:52 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:6406 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750842AbZHQG3w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 02:24:35 -0400
-Date: Mon, 17 Aug 2009 11:54:18 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: balbir@linux.vnet.ibm.com, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "Li, Shaohua" <shaohua.li@intel.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
-       "Brown, Len" <len.brown@intel.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>,
-       "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
-Message-ID: <20090817062418.GB31027@in.ibm.com>
-Reply-To: dipankar@in.ibm.com
-References: <20090810081941.GA18649@elf.ucw.cz> <1249950137.11545.38184.camel@localhost.localdomain> <20090812115806.GK24339@elf.ucw.cz> <20090812195753.GA14649@in.ibm.com> <alpine.LFD.2.00.0908122036580.22946@localhost.localdomain> <20090813045931.GB14649@in.ibm.com> <20090814113021.GL32418@elf.ucw.cz> <20090816182629.GA31027@in.ibm.com> <20090816194441.GA22626@balbir.in.ibm.com> <1250459602.8648.35.camel@laptop>
+	Mon, 17 Aug 2009 02:29:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Q/OhKSeAOvcDEca+G9DwxSG+BjuDXidezEi5eU0qXqKW7OtonhOwI6isJF/2s5fQFz
+         gdK58qEW7ZVNtNOzlW8XWF46hHAfX6g9tqw2ddqhPPbmBUN9WLuEEHTEcT0CCMomic8M
+         gkCEtzs/GHgzqQfXjQpu6U1iNYniGtsB0EZLw=
+Date: Mon, 17 Aug 2009 14:32:02 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Tatsuhiro Aoshima <tatsu.pc@gmail.com>,
+       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+Subject: Re: [PATCH] proc: let task status file print utime and stime.
+Message-ID: <20090817063202.GO5039@cr0.nay.redhat.com>
+References: <20090815233629.A067.A69D9226@jp.fujitsu.com> <20090817023802.GF5039@cr0.nay.redhat.com> <20090817114242.1419bd1f.kamezawa.hiroyu@jp.fujitsu.com> <20090817061821.GM5039@cr0.nay.redhat.com> <20090817152206.50c35330.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1250459602.8648.35.camel@laptop>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090817152206.50c35330.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 16, 2009 at 11:53:22PM +0200, Peter Zijlstra wrote:
-> On Mon, 2009-08-17 at 01:14 +0530, Balbir Singh wrote:
-> > Agreed, I've tried to come with a little ASCII art to depict your
-> > scenairos graphically
-> > 
-> > 
-> >         +--------+ don't need (offline)
-> >         |  OS    +----------->+------------+
-> >         +--+-----+            | hypervisor +-----> Reuse CPU
-> >            |                  |            |       for something
-> >            |                  |            |       else
-> >            |                  |            |   (visible to users)
-> >            |                  |            |    as resource changed
-> >            |                  +----------- +
-> >            V (needed, but can cede)
-> >        +------------+
-> >        | hypervisor | Don't reuse CPU
-> >        |            |  (CPU ceded)
-> >        |            | give back to OS
-> >        +------------+ when needed.
-> >                         (Not visible to
-> >                         users as so resource
-> >                         binding changed)
-> 
-> I still don't get it... _why_ should this be exposed in the guest
-> kernel? Why not let the hypervisor manage a guest's offline cpus in a
-> way it sees fit?
+On Mon, Aug 17, 2009 at 03:22:06PM +0900, KAMEZAWA Hiroyuki wrote:
+>On Mon, 17 Aug 2009 14:18:21 +0800
+>Amerigo Wang <xiyou.wangcong@gmail.com> wrote:
+>
+>> Ah... in fact, I expected 'ps' can report this, however, surprisingly
+>> it doesn't have this, at least not what I expect (unless I miss
+>> something obvious).
+>> 
+>> 
+>> >
+>> >In another thinking, in old days, /proc/<pid>/stat was enough because most of
+>> >users uses scanf() or some C langage to read fixed-format data.
+>> >/proc/<pid>/status is useful for some script languages which has 
+>> >good parser per line. 
+>> >
+>> 
+>> Well... I think this work should be left to 'ps', e.g.
+>> 
+>>   ps -o pid,utime,stime
+>> 
+>> 'ps' is responsible to read /proc/<pid>/stat for the user.
+>> 
+>Hmm, personally, I don't like 'ps' and its unified filter.
+>
+>When I want to know status of a process of PID,
+># ps -o pid,utime,stime  PID
+>
+>'ps' scans *all* process and filter PID. (try #strace ps)
+>I like checking /proc/<pid>/<something> without 'ps' in an environment
+>where thousands of processes runs.
 
-For most parts, we do. The guest kernel doesn't manage the offline
-CPU state. That is typically done by the hypervisor. However, offline
-operation as defined now always result in a VM resize in some hypervisor
-systems (like pseries) - it would be convenient to have a non-resize
-offline operation which lets the guest cede the cpu to hypervisor
-with the hint that the VM shouldn't be resized and the guest needs the guarantee
-to get the cpu back any time. The hypervisor can do whatever it wants
-with the ceded CPU including putting it in a low power state, but
-not change the physical cpu shares of the VM. The pseries hypervisor,
-for example, clearly distinguishes between the two - "rtas-stop-self" call
-to resize VM vs. H_CEDE hypercall with a hint. What I am suggesting
-is that we allow this with an extension to existing interfaces because it 
-makes sense to allow sort of "hibernation" of the cpus without changing any
-configuration of the VMs.
+Sure, we already have '-p' for 'ps', e.g.
 
-Thanks
-Dipankar
+ ps -p 1 -o pid,user,comm
+
+Enjoy. :-)
+
+Anyway, I would like to see 'ps' to have 'utime,stime' field, on
+my machine, its output for 'utime,stime' looks wrong.
+
+Maybe we should Cc procps developers?
