@@ -1,100 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbZHQXJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758274AbZHQXMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758206AbZHQXJb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 19:09:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbZHQXJa
+	id S1758274AbZHQXMk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 19:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757830AbZHQXMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 19:09:30 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:36371 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751837AbZHQXJ3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 19:09:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mCTAFfwvcvAtRAxnC/0isoDCPDDfgyF4sYnBGsXFDb3ecpgKe0dWlAabGxm1YvCXua
-         MBLeB2RB1FhbWVatFuuAK1IHwbYN7At2F/jCKnG9ZPt3/Gzq6V+047UM0LSeZYYE+hlD
-         aVUfw6ptrNfdRnVN+CHWzN2WtmJEx3qBWdoWk=
-Date: Tue, 18 Aug 2009 01:09:27 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, peterz@infradead.org,
-       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
-       lizf@cn.fujitsu.com
-Subject: Re: [PATCH 07/12] add ftrace_event_call void * 'data' field
-Message-ID: <20090817230926.GC4962@nowhere>
-References: <cover.1249932670.git.jbaron@redhat.com> <2f63f892c862efd4f58f9d3e72cb5bc55f2d0025.1249932670.git.jbaron@redhat.com> <20090811100904.GA4938@nowhere> <alpine.DEB.2.00.0908171818420.25890@gandalf.stny.rr.com>
+	Mon, 17 Aug 2009 19:12:40 -0400
+Received: from sous-sol.org ([216.99.217.87]:46583 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753580AbZHQXMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 19:12:39 -0400
+Date: Mon, 17 Aug 2009 16:11:56 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Faidon Liambotis <paravoid@debian.org>
+Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       iommu@lists.linux-foundation.org,
+       David Woodhouse <David.Woodhouse@intel.com>
+Subject: Re: [regression, bisected] fails to boot on Dell Optiplex 760 with
+	VT-d enabled
+Message-ID: <20090817231156.GJ24885@sequoia.sous-sol.org>
+References: <4A89CB52.4030008@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908171818420.25890@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A89CB52.4030008@debian.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 17, 2009 at 06:19:33PM -0400, Steven Rostedt wrote:
+* Faidon Liambotis (paravoid@debian.org) wrote:
+> I am experiencin a bug on an Dell Optiplex 760 with a configuration that
+> has an Intel Core2 Q9550 CPU and with an up-to-date BIOS, version A03.
 > 
-> On Tue, 11 Aug 2009, Frederic Weisbecker wrote:
-> 
-> > On Mon, Aug 10, 2009 at 04:52:44PM -0400, Jason Baron wrote:
-> > > add an optional * void pointer to 'ftrace_event_call' that is
-> > > passed in for regfunc and unregfunc.
-> > > 
-> > > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > > 
-> > > ---
-> > >  include/linux/ftrace_event.h |    5 +++--
-> > >  include/trace/ftrace.h       |    4 ++--
-> > >  kernel/trace/trace_events.c  |    4 ++--
-> > >  3 files changed, 7 insertions(+), 6 deletions(-)
-> > > 
-> > > diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-> > > index ac8c6f8..8544f12 100644
-> > > --- a/include/linux/ftrace_event.h
-> > > +++ b/include/linux/ftrace_event.h
-> > > @@ -112,8 +112,8 @@ struct ftrace_event_call {
-> > >  	struct dentry		*dir;
-> > >  	struct trace_event	*event;
-> > >  	int			enabled;
-> > > -	int			(*regfunc)(void);
-> > > -	void			(*unregfunc)(void);
-> > > +	int			(*regfunc)(void *);
-> > > +	void			(*unregfunc)(void *);
-> > >  	int			id;
-> > >  	int			(*raw_init)(void);
-> > >  	int			(*show_format)(struct trace_seq *s);
-> > > @@ -122,6 +122,7 @@ struct ftrace_event_call {
-> > >  	int			filter_active;
-> > >  	struct event_filter	*filter;
-> > >  	void			*mod;
-> > > +	void			*data;
-> > >  
-> > >  	atomic_t		profile_count;
-> > >  	int			(*profile_enable)(struct ftrace_event_call *);
-> > > diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-> > > index 80e5f6c..a0de384 100644
-> > > --- a/include/trace/ftrace.h
-> > > +++ b/include/trace/ftrace.h
-> > > @@ -568,7 +568,7 @@ static void ftrace_raw_event_##call(proto)				\
-> > >  		trace_nowake_buffer_unlock_commit(event, irq_flags, pc); \
-> > >  }									\
-> > >  									\
-> > > -static int ftrace_raw_reg_event_##call(void)				\
-> > > +static int ftrace_raw_reg_event_##call(void *ptr)			\
-> > 
-> > 
-> > Shouldn't it have a __used attribute here, or something?
-> 
-> Do function parameters need that? There's lots of places where the 
-> parameter of a function is not used by a function itself.
-> 
-> -- Steve
+> When "VT for Direct I/O" is enabled in the BIOS, v2.6.30 boots and works
+> perfectly, while v2.6.31-rc1..rc6 fail (both of them x86-64).
 
+AFAIK, this platform is broken when VT-d is enabled.
+Can you add this patch to a broken kernel and retest?
+Please boot with 'debug' on the kernel command line.
 
-No actually, I thought gcc would warn, but it didn't :-)
+ drivers/pci/dmar.c |   19 ++++++++++++-------
+ 1 files changed, 12 insertions(+), 7 deletions(-)
 
-
+diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
+index 7b287cb..40f497b 100644
+--- a/drivers/pci/dmar.c
++++ b/drivers/pci/dmar.c
+@@ -631,6 +631,18 @@ int alloc_iommu(struct dmar_drhd_unit *drhd)
+ 	}
+ 	iommu->cap = dmar_readq(iommu->reg + DMAR_CAP_REG);
+ 	iommu->ecap = dmar_readq(iommu->reg + DMAR_ECAP_REG);
++	ver = readl(iommu->reg + DMAR_VER_REG);
++	printk(KERN_DEBUG "IOMMU %llx: ver %d:%d cap %llx ecap %llx\n",
++		(unsigned long long)drhd->reg_base_addr,
++		DMAR_VER_MAJOR(ver), DMAR_VER_MINOR(ver),
++		(unsigned long long)iommu->cap,
++		(unsigned long long)iommu->ecap);
++
++	if (ver == (u32)-1 || iommu->cap == (u64)-1 || iommu->ecap == (u64)-1) {
++		printk(KERN_ERR "IOMMU: BIOS or hardware problem, disabling "
++			"VT-d\n");
++		goto error;
++	}
+ 
+ #ifdef CONFIG_DMAR
+ 	agaw = iommu_calculate_agaw(iommu);
+@@ -664,13 +676,6 @@ int alloc_iommu(struct dmar_drhd_unit *drhd)
+ 		}
+ 	}
+ 
+-	ver = readl(iommu->reg + DMAR_VER_REG);
+-	pr_debug("IOMMU %llx: ver %d:%d cap %llx ecap %llx\n",
+-		(unsigned long long)drhd->reg_base_addr,
+-		DMAR_VER_MAJOR(ver), DMAR_VER_MINOR(ver),
+-		(unsigned long long)iommu->cap,
+-		(unsigned long long)iommu->ecap);
+-
+ 	spin_lock_init(&iommu->register_lock);
+ 
+ 	drhd->iommu = iommu;
