@@ -1,134 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbZHQIUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbZHQIXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757385AbZHQIUy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 04:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757223AbZHQIUy
+	id S1757407AbZHQIXX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 04:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbZHQIXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 04:20:54 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:47650 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757220AbZHQIUx (ORCPT
+	Mon, 17 Aug 2009 04:23:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35470 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757223AbZHQIXV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 04:20:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mH5Gjl44hXqpMtBRjoxdGBTcpKD5xSYL2bxjNYKOfpwYZVuKrnCy/T8UldbbwJVy5r
-         2mfB8Zn36T2LsSdNfoBySwmy2yOu09W5/x4wVvfrtk+P1c37Get+t9zgfK1pOlwLyWUU
-         y/OZDLOJa0Dqb8fdRRGQyeU6/YzN1EwwTKIus=
-Date: Mon, 17 Aug 2009 16:23:10 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Michael Abbott <michael@araneidae.co.uk>
-Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Jan Engelhardt <jengelh@medozas.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Re: /proc/uptime idle counter remains at 0
-Message-ID: <20090817082310.GB5868@cr0.nay.redhat.com>
-References: <alpine.LSU.2.00.0905090957490.27646@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0908141315310.1670@venus.araneidae.co.uk> <20090817052502.GJ5039@cr0.nay.redhat.com> <Pine.LNX.4.64.0908170707550.1592@venus.araneidae.co.uk> <20090817062324.GN5039@cr0.nay.redhat.com> <Pine.LNX.4.64.0908170743300.1592@venus.araneidae.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0908170743300.1592@venus.araneidae.co.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 17 Aug 2009 04:23:21 -0400
+Date: Mon, 17 Aug 2009 01:21:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Stefani Seibold <stefani@seibold.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 2/7] kfifo: move out spinlock
+Message-Id: <20090817012150.9bb699ed.akpm@linux-foundation.org>
+In-Reply-To: <20090817090829.689a604c@lxorguk.ukuu.org.uk>
+References: <1250455161.28540.4.camel@wall-e>
+	<1250455590.28540.10.camel@wall-e>
+	<20090816235843.0f7f11de@lxorguk.ukuu.org.uk>
+	<20090816163422.a147a918.akpm@linux-foundation.org>
+	<20090817074820.3585206b@lxorguk.ukuu.org.uk>
+	<20090817003617.2abe0a95.akpm@linux-foundation.org>
+	<20090817090829.689a604c@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 17, 2009 at 07:58:29AM +0100, Michael Abbott wrote:
->On Mon, 17 Aug 2009, Amerigo Wang wrote:
->> On Mon, Aug 17, 2009 at 07:12:36AM +0100, Michael Abbott wrote:
->> >On Mon, 17 Aug 2009, Amerigo Wang wrote:
->> >> On Fri, Aug 14, 2009 at 01:18:08PM +0100, Michael Abbott wrote:
->> >> >commit 6d67e34f45a92f347388e35bd84bf0361e660d3b
->> >> >Author: Michael Abbott <michael.abbott@diamond.ac.uk>
->> >> >Date:   Mon May 11 07:14:19 2009 +0100
->> >> >
->> >> >    Fix idle time field in /proc/uptime
->> >> >    
->> >> >    Git commit 79741dd changes idle cputime accounting, but unfortunately
->> >> >    the /proc/uptime file hasn't caught up.  Here the idle time calculation
->> >> >    from /proc/stat is copied over.  Further changes from commit e1c8053
->> >> >    are also included in this fix.
->> >> >    
->> >> >    Signed-off-by: Michael Abbott <michael.abbott@diamond.ac.uk>
->> >> >
->> >> >diff --git a/fs/proc/uptime.c b/fs/proc/uptime.c
->> >> >index 0c10a0b..be286b4 100644
->> >> >--- a/fs/proc/uptime.c
->> >> >+++ b/fs/proc/uptime.c
->> >> >@@ -4,22 +4,32 @@
->> >> > #include <linux/sched.h>
->> >> > #include <linux/seq_file.h>
->> >> > #include <linux/time.h>
->> >> >+#include <linux/kernel_stat.h>
->> >> > #include <asm/cputime.h>
->> >> >+#include <asm/div64.h>
->> >> > 
->> >> > static int uptime_proc_show(struct seq_file *m, void *v)
->> >> > {
->> >> > 	struct timespec uptime;
->> >> >-	struct timespec idle;
->> >> >-	cputime_t idletime = cputime_add(init_task.utime, init_task.stime);
->> >> >+	int i;
->> >> >+	cputime64_t idle = cputime64_zero;
->> >> >+	unsigned long int idle_mod;
->> >> >+
->> >> >+	for_each_possible_cpu(i) {
->> >> >+		idle = cputime64_add(idle, kstat_cpu(i).cpustat.idle);
->> >> >+#ifdef arch_idle_time
->> >> >+		idle = cputime64_add(idle, arch_idle_time(i));
->> >> >+#endif
->> >> 
->> >> 
->> >> This ugly #ifdef can be removed, check fs/proc/stat.c.
->> >
->> >I'm sorry?  Are you sure?  Here is what fs/proc/stat.c has to say:
->> >
->> >#ifndef arch_idle_time
->> >#define arch_idle_time(cpu) 0
->> >#endif
->> >...
->> >		idle = cputime64_add(idle, arch_idle_time(i));
->> >
->> >
->> >I think what you're actually saying is the #ifdef can be moved to 
->> >somewhere where it can be easily missed.  For this very reason, I'd rather 
->> >be more explicit about it.
->> 
->> Yes, indeed.
->> 
->> I was suggesting to move that #ifdef into some header so that
->> both two files can use it. For me, this is the better fix.
->
->Yes, you're right, this is a much better idea.  In fact, the definition of 
->the arch_idle_time symbol itself should be fixed.
->
->My problem here is I'm not getting much traction getting little patches 
->like this in;  your suggestion is almost to make this patch larger!
+On Mon, 17 Aug 2009 09:08:29 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
+> > > Those wrappers happen to be called kfifo_get and kfifo_put
+> > 
+> > Those names are wrong.
+> 
+> We've had them for years
 
-You can send it in another patch. ;)
+So?  It's been wrong for years.  This is a chance to fix it.
 
+> > They're wrong because they are the spinlock-specific variant.  What are
+> > we going to call the mutex_lock-specific variant?
+> 
+> There isn't one.
 
->
->
->Oh, that's nasty.  Looks as if arch_idle_time only exists in 
->	arch/s390/include/asm/cputime.h
->and there are 20 other architecture specific cputime.h files as well as 
->asm-generic/cputime.h.  I guess asm-generic/cputime.h is only included if 
->an architecture specific cputime.h doesn't exist, so it would seem that 
->the direct solution would be to add
->	#define arch_idle_time(cpu) 0
->to *all* the other cputime.h files.  Ewww.
+Oh come on.
 
+> > 
+> > > > But the happens-to-use-spin_lock functions shouldn't be called
+> > > > kfifo_get(), because that steals namespace from the unlocked functions,
+> > > > and makes the naming for the happens-to-use-mutex_lock functions look
+> > > > weird.
+> > > 
+> > > All over the kernel unlocked function versions have a leading _ name.
+> > > It's the kernel convention.
+> > 
+> > tisn't.  radix-tree, rbrtee, idr, list_head, prio_tree, flex_array -
+> > none of them use that convention.
+> 
+> Some random "10 second grep" examples, and this is also used more
+> generally for the "without extra goo" variant of things
+> 
+> __set_special_pids
+> __sysrq_put_key_op
+> __sysrq_get_key_op
+> __handle_sysrq
+> __audit_getname
+> __audit_inode
+> __audit_node_child
+> 
+> and the without extra goo use includes such minor classics
+> __get_user
+> __put_user
+> 
+> the kernel contains lots and lots of
+> 
+> __foo()
+> 
+> foo()
+> {
+> 	spin_lock(bar);
+> 	__foo()
+> 	spin_unlock(bar)
+> }
 
-Yeah, include/asm-generic/cputime.h is the right place to add it, I think.
+None of those functions are part of general container libraries.  All
+the ones I mentioned _are_ part of general container libraries.
 
+Plus, as I've said enty en times and keep getting ignored: the current
+naming is wrong.  The generic kfifo_get() should not be assuming that
+the caller wants spinlock-based locking.
 
->
->Could we just get this patch in, please, and then maybe use this as a 
->trigger to clean up everything else?
+> > > The other thing I must say I dislike about these patches is the
+> > > gratuitious 'let's rename all the functions' approach it takes. The kfifo
+> > > API is documented, used and random API of the year type changes mess
+> > > stuff up and cause unneeded churn.
+> > 
+> > It fixes naming mistakes.  Long-term it is the correct thing to do. 
+> > Best to do it now before we get more callers.
+> 
+> Why don't we fix all the really dumb naming mistakes then - things like
+> the chrdev interfaces ? Massive churn, massive confusion. Patches are
+> always being rejected (and rightfully so) for causing such messes.
 
-Well, you can separate the patch and send them together.
+These patches don't make a mess.  Stefani has already fixed all callers
+in a small number of patches.
+
+> And remember: its very hard to fix existing API documentation and books.
+> It's doubly dangerous (and IMHO a complete no-no) to change the API of an
+> interface if you don't change it such that old code will not reliably get
+> a compile time failure.
+
+The patchet will cause unmigrated code to fail to build, won't it?
