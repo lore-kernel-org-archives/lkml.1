@@ -1,98 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932408AbZHQRTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbZHQRV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932408AbZHQRTt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 13:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932359AbZHQRTt
+	id S1757523AbZHQRV1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 13:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbZHQRV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 13:19:49 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58628 "EHLO mx2.suse.de"
+	Mon, 17 Aug 2009 13:21:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59801 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932291AbZHQRTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 13:19:47 -0400
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
-  slot is freed)
-From: James Bottomley <James.Bottomley@suse.de>
-To: Greg Freemyer <greg.freemyer@gmail.com>
-Cc: Bill Davidsen <davidsen@tmr.com>, Mark Lord <liml@rtr.ca>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Worley <worleys@gmail.com>,
-       Matthew Wilcox <matthew@wil.cx>, Bryan Donlan <bdonlan@gmail.com>,
-       david@lang.hm, Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-In-Reply-To: <87f94c370908171008t44ff64ack2153e740128278e@mail.gmail.com>
-References: <200908122007.43522.ngupta@vflare.org>
-	 <1250344518.4159.4.camel@mulgrave.site>
-	 <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk>
-	 <20090816083434.2ce69859@infradead.org>
-	 <1250437927.3856.119.camel@mulgrave.site> <4A8834B6.2070104@rtr.ca>
-	 <1250446047.3856.273.camel@mulgrave.site> <4A884D9C.3060603@rtr.ca>
-	 <1250447052.3856.294.camel@mulgrave.site> <4A898752.9000205@tmr.com>
-	 <87f94c370908171008t44ff64ack2153e740128278e@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 17 Aug 2009 17:19:35 +0000
-Message-Id: <1250529575.7858.31.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	id S1752546AbZHQRV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 13:21:26 -0400
+Date: Mon, 17 Aug 2009 19:16:05 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: stephane eranian <eranian@googlemail.com>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
+       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
+       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
+       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
+       roland@redhat.com
+Subject: Re: F_SETOWN_TID: F_SETOWN was thread-specific for a while
+Message-ID: <20090817171605.GB15907@redhat.com>
+References: <20090730192040.GA9503@redhat.com> <1248984003.4164.0.camel@laptop> <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins> <20090731141122.a1939712.akpm@linux-foundation.org> <7c86c4470908030553v5a0a4448p94ab612700d68066@mail.gmail.com> <20090809054601.GA26152@shareable.org> <7c86c4470908100522q44dc1228i315b29d69fc98da3@mail.gmail.com> <20090810170338.GA14223@redhat.com> <7c86c4470908101401k49f42788o25eb1efaa631f065@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <7c86c4470908101401k49f42788o25eb1efaa631f065@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-17 at 13:08 -0400, Greg Freemyer wrote:
-> All,
-> 
-> Seems like the high-level wrap-up of all this is:
-> 
-> There are hopes that highly efficient SSDs will appear on the market
-> that can leverage a passthru non-coalescing discard feature.  And that
-> a whitelist should be created to allow those SSDs to see discards
-> intermixed with the rest of the data i/o.
+Sorry for late reply...
 
-That's not my conclusion.  Mine was the NCQ drain would still be
-detremental to interleaved trim even if the drive could do it for zero
-cost.
+On 08/10, stephane eranian wrote:
+>
+> On Mon, Aug 10, 2009 at 7:03 PM, Oleg Nesterov<oleg@redhat.com> wrote:
+> > On 08/10, stephane eranian wrote:
+> >>
+> >> You must use F_SETSIG on SIGIO if you want your signal handler to
+> >> receive the file descriptor in siginfo. This is useful if you want to perform
+> >> some actions on the descriptor. That is the case in perfmon and this is
+> >> the case in certain situations with perfcounters as well.
+> >>
+> >> Setting SA_SIGINFO provides siginfo, but the si_fd field is NOT set
+> >> correctly without F_SETSIG. I have verified this with perfcounters, and
+> >> this is indeed the case.
+> >>
+> >> This behavior seems kind of odd to me.
+> >
+> > Agreed, this looks a bit odd. But at least this is documented. From
+> > man 2 fcntl:
+> >
+> >        By using F_SETSIG with a nonzero value, and setting SA_SIGINFO for the
+> >        signal handler (see sigac- tion(2)), extra information about I/O events
+> >        is passed to the handler in a  siginfo_t  structure.  If  the si_code
+> >        field indicates the source is SI_SIGIO, the si_fd field gives the file
+> >        descriptor associated with the event.  Otherwise, there is no indication
+> >        which file descriptors are pending,
+> >
+> > Not sure if it is safe to change the historical behaviour.
+> >
+> Don't need to change it.
 
-> For the other known cases:
-> 
-> SSDs that meet the ata-8 spec, but don't exceed it
-> Enterprise SCSI
+Good,
 
-No, SCSI will do WRITE_SAME/UNMAP as currently drafted in SBC3
+> But for SIGIO, if you see SA_SIGINFO, then pass the si_fd.
 
-> mdraid with SSD storage used to build raid5 / raid6 arrays
-> 
-> Non-coalescing is believed detrimental,
+But this means we do change the behaviour ;) Confused.
 
-It is?  Why?
 
->  but a regular flushing of the
-> unused blocks/sectors via a tool like Mark Lord has written should be
-> acceptable.
-> 
-> Mark, I don't believe your tool really addresses the mdraid situation,
-> do you agree.  ie. Since your bypassing most of the block stack,
-> mdraid has no way of snooping on / adjusting the discards you are
-> sending out.
-> 
-> Thus the 2 solutions that have been worked on already seem to address
-> the needs of everything but mdraid.
+In any case. We should not look at SA_SIGINFO at all. If sys_sigaction() was
+called without SA_SIGINFO, then it doesn'matter if we send SEND_SIG_PRIV or
+siginfo_t with the correct si_fd/etc.
 
-I count three:  Mark Lord script via SG_IO.  hch enhanced script via
-XFS_TRIM and willy current discard inline which he's considering
-coalescing for.
+And again, this is even documented. The change is trivial but user-space
+visible, it may confuse the (stupid) app which uses SIGIO + SA_SIGINFO
+without F_SETSIG.
 
-James
-
-> Also, there has been no discussion of dm based volumes.  (ie LVM2 based volumes)
-> 
-> For mdraid or dm it seems we need to enhance Mark's script to pass the
-> trim commands through the full block stack.  Mark, please cmiiw
-> 
-> Greg
-
+Oleg.
 
