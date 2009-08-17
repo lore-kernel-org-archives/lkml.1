@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932205AbZHQQ4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbZHQRGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932205AbZHQQ4s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 12:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932212AbZHQQ4r
+	id S1757623AbZHQRGv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 13:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756895AbZHQRGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 12:56:47 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:19872 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753692AbZHQQ4p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 12:56:45 -0400
-Message-ID: <4A898BC4.70704@hp.com>
-Date: Mon, 17 Aug 2009 12:56:36 -0400
-From: jim owens <jowens@hp.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Mon, 17 Aug 2009 13:06:50 -0400
+Received: from mail.atheros.com ([12.36.123.2]:58138 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753692AbZHQRGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 13:06:49 -0400
+Date: Mon, 17 Aug 2009 10:06:44 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "linville@tuxdriver.com" <linville@tuxdriver.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "Larry.Finger@lwfinger.net" <Larry.Finger@lwfinger.net>,
+       "aquilaver@yahoo.com" <aquilaver@yahoo.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Dan Williams <dcbw@redhat.com>, Kai Engert <kengert@redhat.com>,
+       Jean Tourrilhes <jt@hpl.hp.com>, Tim de Waal <tim.dewaal@yahoo.com>,
+       Roy Marples <uberlord@gentoo.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Christian Lamparter <chunkeey@web.de>,
+       =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       Tim Gardner <tim.gardner@canonical.com>
+Subject: Re: [PATCH v4 34/34] wireless: mark prism54.ko as deprecated and
+ mark for removal
+Message-ID: <20090817170644.GE4352@mosca>
+References: <1250281559-13041-1-git-send-email-lrodriguez@atheros.com>
+ <1250281559-13041-35-git-send-email-lrodriguez@atheros.com>
+ <1250323182.15069.0.camel@johannes.local>
 MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-CC: Mark Lord <liml@rtr.ca>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       James Bottomley <James.Bottomley@suse.de>,
-       Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
-       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
-       Greg Freemyer <greg.freemyer@gmail.com>,
-       Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
- slot is freed)
-References: <3e8340490908131354q167840fcv124ec56c92bbb830@mail.gmail.com> <4A85E0DC.9040101@rtr.ca> <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com> <20090814234539.GE27148@parisc-linux.org> <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com> <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca> <1250344518.4159.4.camel@mulgrave.site> <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk> <20090816083434.2ce69859@infradead.org> <20090816154430.GE17958@mit.edu> <4A8841D7.10506@rtr.ca> <4A8843C3.3020409@rtr.ca> <4A8985B6.30103@tmr.com>
-In-Reply-To: <4A8985B6.30103@tmr.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <1250323182.15069.0.camel@johannes.local>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
+On Sat, Aug 15, 2009 at 12:59:42AM -0700, Johannes Berg wrote:
+> On Fri, 2009-08-14 at 16:25 -0400, Luis R. Rodriguez wrote:
+> > The preferred modules is p54.ko, which also supports FullMAC
+> > PCI / Cardbus devices. We schedule removal for 2.6.34. Reason
+> > to remove this is no one really is testing prism54.ko anymore,
+> > and while it works p54.ko provides support for the same hardware.
+> > It should be noted I have been told some FullMAC devices may not
+> > have worked with the SoftMAC driver but to date we have yet to
+> > recieve a single bug report regarding this. If there are users
+> > out there please let us know!
 > 
-> I assume that it really is artificial, rather than the device really 
-> being ready for another operation (other than another TRIM). I lack the 
-> hardware, but the test would be the time to complete a read, trim and 
-> read, and two trim and read operations. Just my thought that the TRIM in 
-> progress may only block the next TRIM, rather than other operations.
+> Not that I care about the changelog, but I do find it illogical to refer
+> to modules w/o .ko everywhere and then with .ko in the changelog. Of
+> course you were consistent ;)
 
-I don't know his test sequence but READ is not the likely command
-before and after TRIM unless we are talking about TRIM being issued
-only in delayed host garbage collection.  Filesystems send WRITES
-during delete.
+Heh I've gone and cleaned this up in the series, I just removed the
+.ko usage when I refer to modules in the entries and commit log.
 
-jim
+> > -	  The module will be called prism54.
+> > +	  When built as module you get prism54.ko
+> 
+> NAK this change.
 
+Heh ok, changed it.
+
+  Luis
