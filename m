@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757619AbZHQKhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757639AbZHQK4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757619AbZHQKhu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 06:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbZHQKht
+	id S1757639AbZHQK4M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 06:56:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757528AbZHQK4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 06:37:49 -0400
-Received: from sg2ehsobe004.messaging.microsoft.com ([207.46.51.78]:30965 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757351AbZHQKhs convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 06:37:48 -0400
-X-SpamScore: -23
-X-BigFish: VPS-23(z21eWz98dN936eMzz1202hzzz32i203h6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KOIO63-04-A4E-01
-Date: Mon, 17 Aug 2009 12:37:15 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
-CC: linux-kernel@vger.kernel.org, Doug Thompson <norsk5@yahoo.com>
-Subject: Re: Backporting newer EDAC drivers to "stable" tree 2.6.27.x?
-Message-ID: <20090817103715.GC3677@aftab>
-References: <200908171106.00973.carsten.aulbert@aei.mpg.de>
+	Mon, 17 Aug 2009 06:56:11 -0400
+Received: from mga06.intel.com ([134.134.136.21]:15705 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751051AbZHQK4K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 06:56:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,395,1246863600"; 
+   d="scan'208";a="439580436"
+Message-ID: <4A893746.4040402@linux.intel.com>
+Date: Mon, 17 Aug 2009 12:56:06 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <200908171106.00973.carsten.aulbert@aei.mpg.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 17 Aug 2009 10:37:15.0143 (UTC) FILETIME=[AFC21170:01CA1F26]
-Content-Transfer-Encoding: 8BIT
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, hpa@zytor.com, tglx@linutronix.de,
+       Yinghai Lu <yinghai@kernel.org>, Huang Ying <ying.huang@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-tip-commits@vger.kernel.org
+Subject: Re: [boot crash] Re: [tip:x86/mce3] x86, mce: use 64bit machine	check
+ code on 32bit
+References: <tip-4efc0670baf4b14bc95502e54a83ccf639146125@git.kernel.org> <20090812113652.GA19632@elte.hu> <4A88E3E4.40506@jp.fujitsu.com> <20090817083544.GC15390@elte.hu> <4A891E17.1090901@jp.fujitsu.com>
+In-Reply-To: <4A891E17.1090901@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Adding Doug to CC. ]
+Hidetoshi Seto wrote:
+> One possibility is: if the BIOS doesn't clear status in banks,
+> new mce codes will try to log such junks.
+> If the junk is totally junk but can be decoded as a valid log with
+> MISCV or ADDRV bit, and if the cpu try to access register which is
+> not implemented (e.g. IA32_MCi_MISC/ADDR), then such access might
+> cause a general protection exception. (ref. ASDM 3A 15.3.2.3)
 
-On Mon, Aug 17, 2009 at 11:06:00AM +0200, Carsten Aulbert wrote:
-> what is the recommended way to incorporate newer EDAC drivers from 2.6.30 or 
-> later into the long term 2.6.27.x series? Are there ongoing efforts already we 
-> could just re-use or does one "just" take the latest patchset and tries to 
-> apply it cleanly (enough) to the latest long term kernel?
+The MCA declares if it comes with ADDR or MISC in a status bit
+and the MCA code only accesses these MSRs if these status bits are set.
+Also I believe P3 implemented ADDR at least, likely even MISC.
 
-I've made an AMD64 EDAC backport for RHEL5.4 but since they're using a
-heavily patched 2.6.18, this'll be of little or no use for you so you
-might just as well slap the driver into .27 sources and fix it up.
+The old 32bit MCA code did that too
 
-There also might be the need to adjust some EDAC core
-stuff for which Doug has some patches at the svn repo at
-http://bluesmoke.sourceforge.net/ but you'll have to do a bit of
-digging yourself :).
-
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+-Andi
