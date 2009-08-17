@@ -1,67 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbZHQRGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbZHQRIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757623AbZHQRGv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 13:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756895AbZHQRGu
+	id S932227AbZHQRIZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 13:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757108AbZHQRIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 13:06:50 -0400
-Received: from mail.atheros.com ([12.36.123.2]:58138 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753692AbZHQRGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 13:06:49 -0400
-Date: Mon, 17 Aug 2009 10:06:44 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       "linville@tuxdriver.com" <linville@tuxdriver.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "Larry.Finger@lwfinger.net" <Larry.Finger@lwfinger.net>,
-       "aquilaver@yahoo.com" <aquilaver@yahoo.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Dan Williams <dcbw@redhat.com>, Kai Engert <kengert@redhat.com>,
-       Jean Tourrilhes <jt@hpl.hp.com>, Tim de Waal <tim.dewaal@yahoo.com>,
-       Roy Marples <uberlord@gentoo.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Christian Lamparter <chunkeey@web.de>,
-       =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-       Tim Gardner <tim.gardner@canonical.com>
-Subject: Re: [PATCH v4 34/34] wireless: mark prism54.ko as deprecated and
- mark for removal
-Message-ID: <20090817170644.GE4352@mosca>
-References: <1250281559-13041-1-git-send-email-lrodriguez@atheros.com>
- <1250281559-13041-35-git-send-email-lrodriguez@atheros.com>
- <1250323182.15069.0.camel@johannes.local>
+	Mon, 17 Aug 2009 13:08:25 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:55253 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755677AbZHQRIX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 13:08:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=tqx+kKMeqsnGpXD39rgg0l1CJsZGHMvn8jxkvFmmXh3u2nL/a36Xt8L1dG5Dulqu04
+         pRPKtujktCvLzxEi2SD5xqk66TGSNa6KNynZ7d0kn4zBRL6wWQjlOcsYZYFloXnFXXBv
+         DjBZs1aGvUW5QOUyDzWxlESaB6vQ4sorh89iI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <1250323182.15069.0.camel@johannes.local>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4A898752.9000205@tmr.com>
+References: <200908122007.43522.ngupta@vflare.org>
+	 <1250344518.4159.4.camel@mulgrave.site>
+	 <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk>
+	 <20090816083434.2ce69859@infradead.org>
+	 <1250437927.3856.119.camel@mulgrave.site> <4A8834B6.2070104@rtr.ca>
+	 <1250446047.3856.273.camel@mulgrave.site> <4A884D9C.3060603@rtr.ca>
+	 <1250447052.3856.294.camel@mulgrave.site> <4A898752.9000205@tmr.com>
+Date: Mon, 17 Aug 2009 13:08:23 -0400
+Message-ID: <87f94c370908171008t44ff64ack2153e740128278e@mail.gmail.com>
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap 
+	slot is freed)
+From: Greg Freemyer <greg.freemyer@gmail.com>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: James Bottomley <James.Bottomley@suse.de>, Mark Lord <liml@rtr.ca>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Worley <worleys@gmail.com>,
+       Matthew Wilcox <matthew@wil.cx>, Bryan Donlan <bdonlan@gmail.com>,
+       david@lang.hm, Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 15, 2009 at 12:59:42AM -0700, Johannes Berg wrote:
-> On Fri, 2009-08-14 at 16:25 -0400, Luis R. Rodriguez wrote:
-> > The preferred modules is p54.ko, which also supports FullMAC
-> > PCI / Cardbus devices. We schedule removal for 2.6.34. Reason
-> > to remove this is no one really is testing prism54.ko anymore,
-> > and while it works p54.ko provides support for the same hardware.
-> > It should be noted I have been told some FullMAC devices may not
-> > have worked with the SoftMAC driver but to date we have yet to
-> > recieve a single bug report regarding this. If there are users
-> > out there please let us know!
-> 
-> Not that I care about the changelog, but I do find it illogical to refer
-> to modules w/o .ko everywhere and then with .ko in the changelog. Of
-> course you were consistent ;)
+All,
 
-Heh I've gone and cleaned this up in the series, I just removed the
-.ko usage when I refer to modules in the entries and commit log.
+Seems like the high-level wrap-up of all this is:
 
-> > -	  The module will be called prism54.
-> > +	  When built as module you get prism54.ko
-> 
-> NAK this change.
+There are hopes that highly efficient SSDs will appear on the market
+that can leverage a passthru non-coalescing discard feature.  And that
+a whitelist should be created to allow those SSDs to see discards
+intermixed with the rest of the data i/o.
 
-Heh ok, changed it.
+For the other known cases:
 
-  Luis
+SSDs that meet the ata-8 spec, but don't exceed it
+Enterprise SCSI
+mdraid with SSD storage used to build raid5 / raid6 arrays
+
+Non-coalescing is believed detrimental, but a regular flushing of the
+unused blocks/sectors via a tool like Mark Lord has written should be
+acceptable.
+
+Mark, I don't believe your tool really addresses the mdraid situation,
+do you agree.  ie. Since your bypassing most of the block stack,
+mdraid has no way of snooping on / adjusting the discards you are
+sending out.
+
+Thus the 2 solutions that have been worked on already seem to address
+the needs of everything but mdraid.
+
+Also, there has been no discussion of dm based volumes.  (ie LVM2 based volumes)
+
+For mdraid or dm it seems we need to enhance Mark's script to pass the
+trim commands through the full block stack.  Mark, please cmiiw
+
+Greg
