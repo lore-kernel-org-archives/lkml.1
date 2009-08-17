@@ -1,235 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbZHQVf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758163AbZHQVhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758156AbZHQVf5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 17:35:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbZHQVf4
+	id S1758163AbZHQVhh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 17:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbZHQVhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 17:35:56 -0400
-Received: from mga11.intel.com ([192.55.52.93]:18204 "EHLO mga11.intel.com"
+	Mon, 17 Aug 2009 17:37:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58997 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753692AbZHQVf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 17:35:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,398,1246863600"; 
-   d="scan'208";a="484310109"
-Subject: Re: [patch] clockevents_notify() need to be called with irq's
- enabled
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Brown, Len" <len.brown@intel.com>
-In-Reply-To: <alpine.LFD.2.00.0908172325380.2782@localhost.localdomain>
-References: <1250203681.27006.10842.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0908140753370.1283@localhost.localdomain>
-	 <1250234778.2965.8.camel@sbs-t61>
-	 <alpine.LFD.2.00.0908141025290.1283@localhost.localdomain>
-	 <1250271593.3077.8.camel@sbs-t61.sc.intel.com>
-	 <alpine.LFD.2.00.0908142159480.1283@localhost.localdomain>
-	 <1250544150.2709.197.camel@sbs-t61.sc.intel.com>
-	 <alpine.LFD.2.00.0908172325380.2782@localhost.localdomain>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Mon, 17 Aug 2009 14:34:59 -0700
-Message-Id: <1250544899.2709.210.camel@sbs-t61.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	id S1752480AbZHQVhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 17:37:35 -0400
+Date: Mon, 17 Aug 2009 23:37:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [GIT PULL] x86 fixes
+Message-ID: <20090817213719.GA3195@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-17 at 14:27 -0700, Thomas Gleixner wrote:
-> Suresh,
-> 
-> On Mon, 17 Aug 2009, Suresh Siddha wrote:
-> 
-> > --- tip.orig/arch/x86/kernel/process.c
-> > +++ tip/arch/x86/kernel/process.c
-> > @@ -508,17 +508,10 @@ static void c1e_idle(void)
-> >  
-> >  		if (!cpumask_test_cpu(cpu, c1e_mask)) {
-> >  			cpumask_set_cpu(cpu, c1e_mask);
-> > -			/*
-> > -			 * Force broadcast so ACPI can not interfere. Needs
-> > -			 * to run with interrupts enabled as it uses
-> > -			 * smp_function_call.
-> > -			 */
-> 
-> Please keep the first sentence of the comment intact. Everything else
-> looks fine.
+Linus,
 
-Oops. Patch appended.
----
+Please pull the latest x86-fixes-for-linus git tree from:
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: take clockevents_lock with interrupts disabled
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
 
-Currently clockevents_notify() is called with interrupts enabled at some
-places and interrupts disabled at some other places.
+ Thanks,
 
-This results in a deadlock in this scenario.
+	Ingo
 
-cpu A holding the clockevents_lock in clockevents_notify() with irq enabled
-cpu B waiting for the clockevents_lock in clockevents_notify() with irq disabled
-cpu C doing set_mtrr() which will try to rendezvous of all the cpus.
+------------------>
+Bartlomiej Zolnierkiewicz (1):
+      x86, mce: don't log boot MCEs on Pentium M (model == 13) CPUs
 
-This will result in C and A come to the rendezvous point and waiting for B.
-B stuck forever waiting for the spinlock and thus not reaching rendezvous
-point.
+Cliff Wickman (1):
+      x86: Fix UV BAU destination subnode id
 
-Fix the clockevents code so that clockevents_lock is taken
-with interrupts disabled and thus avoid the above deadlock.
+Hugh Dickins (1):
+      x86, mce: therm_throt: Don't log redundant normality
 
-Also call lapic_timer_propagate_broadcast() on the destination cpu so that
-we avoid calling smp_call_function() in the clockevents notifier chain.
+Ingo Molnar (1):
+      x86, mce: Don't initialize MCEs on unknown CPUs
 
-This issue left us wondering if we need to change the MTRR rendezvous logic to
-use stop machine logic (instead of smp_call_function) or add a check
-in spinlock debug code to see if there are other spinlocks which gets
-taken under both interrupts enabled/disabled conditions.
+Leonardo Potenza (1):
+      x86: Annotate section mismatch warnings in kernel/apic/x2apic_uv_x.c
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
----
 
-Index: tip/arch/x86/kernel/process.c
-===================================================================
---- tip.orig/arch/x86/kernel/process.c
-+++ tip/arch/x86/kernel/process.c
-@@ -509,16 +509,12 @@ static void c1e_idle(void)
- 		if (!cpumask_test_cpu(cpu, c1e_mask)) {
- 			cpumask_set_cpu(cpu, c1e_mask);
- 			/*
--			 * Force broadcast so ACPI can not interfere. Needs
--			 * to run with interrupts enabled as it uses
--			 * smp_function_call.
--			 */
--			local_irq_enable();
-+ 			 * Force broadcast so ACPI can not interfere.
-+ 			 */
- 			clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_FORCE,
- 					   &cpu);
- 			printk(KERN_INFO "Switch to broadcast mode on CPU%d\n",
- 			       cpu);
--			local_irq_disable();
- 		}
- 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
- 
-Index: tip/drivers/acpi/processor_idle.c
-===================================================================
---- tip.orig/drivers/acpi/processor_idle.c
-+++ tip/drivers/acpi/processor_idle.c
-@@ -162,8 +162,9 @@ static void lapic_timer_check_state(int 
- 		pr->power.timer_broadcast_on_state = state;
- }
- 
--static void lapic_timer_propagate_broadcast(struct acpi_processor *pr)
-+static void lapic_timer_propagate_broadcast(void *arg)
- {
-+	struct acpi_processor *pr = (struct acpi_processor *) arg;
- 	unsigned long reason;
- 
- 	reason = pr->power.timer_broadcast_on_state < INT_MAX ?
-@@ -635,7 +636,8 @@ static int acpi_processor_power_verify(s
- 		working++;
- 	}
- 
--	lapic_timer_propagate_broadcast(pr);
-+	smp_call_function_single(pr->id, lapic_timer_propagate_broadcast,
-+				 pr, 1);
- 
- 	return (working);
- }
-Index: tip/kernel/time/clockevents.c
-===================================================================
---- tip.orig/kernel/time/clockevents.c
-+++ tip/kernel/time/clockevents.c
-@@ -137,11 +137,12 @@ int clockevents_program_event(struct clo
+ arch/x86/include/asm/uv/uv_bau.h         |    2 +-
+ arch/x86/kernel/apic/x2apic_uv_x.c       |    4 ++--
+ arch/x86/kernel/cpu/mcheck/mce.c         |   19 ++++++++++++++++---
+ arch/x86/kernel/cpu/mcheck/therm_throt.c |    7 +++++--
+ arch/x86/kernel/tlb_uv.c                 |    1 +
+ 5 files changed, 25 insertions(+), 8 deletions(-)
+
+diff --git a/arch/x86/include/asm/uv/uv_bau.h b/arch/x86/include/asm/uv/uv_bau.h
+index bddd44f..80e2984 100644
+--- a/arch/x86/include/asm/uv/uv_bau.h
++++ b/arch/x86/include/asm/uv/uv_bau.h
+@@ -133,7 +133,7 @@ struct bau_msg_payload {
+  * see table 4.2.3.0.1 in broacast_assist spec.
   */
- int clockevents_register_notifier(struct notifier_block *nb)
- {
-+	unsigned long flags;
- 	int ret;
- 
--	spin_lock(&clockevents_lock);
-+	spin_lock_irqsave(&clockevents_lock, flags);
- 	ret = raw_notifier_chain_register(&clockevents_chain, nb);
--	spin_unlock(&clockevents_lock);
-+	spin_unlock_irqrestore(&clockevents_lock, flags);
- 
- 	return ret;
+ struct bau_msg_header {
+-	unsigned int dest_subnodeid:6;	/* must be zero */
++	unsigned int dest_subnodeid:6;	/* must be 0x10, for the LB */
+ 	/* bits 5:0 */
+ 	unsigned int base_dest_nodeid:15; /* nasid>>1 (pnode) of */
+ 	/* bits 20:6 */			  /* first bit in node_map */
+diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
+index 832e908..6011593 100644
+--- a/arch/x86/kernel/apic/x2apic_uv_x.c
++++ b/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -46,7 +46,7 @@ static int early_get_nodeid(void)
+ 	return node_id.s.node_id;
  }
-@@ -178,16 +179,18 @@ static void clockevents_notify_released(
-  */
- void clockevents_register_device(struct clock_event_device *dev)
+ 
+-static int uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
++static int __init uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
  {
-+	unsigned long flags;
+ 	if (!strcmp(oem_id, "SGI")) {
+ 		if (!strcmp(oem_table_id, "UVL"))
+@@ -253,7 +253,7 @@ static void uv_send_IPI_self(int vector)
+ 	apic_write(APIC_SELF_IPI, vector);
+ }
+ 
+-struct apic apic_x2apic_uv_x = {
++struct apic __refdata apic_x2apic_uv_x = {
+ 
+ 	.name				= "UV large system",
+ 	.probe				= NULL,
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index 1cfb623..0121304 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -1226,8 +1226,13 @@ static void mce_init(void)
+ }
+ 
+ /* Add per CPU specific workarounds here */
+-static void mce_cpu_quirks(struct cpuinfo_x86 *c)
++static int mce_cpu_quirks(struct cpuinfo_x86 *c)
+ {
++	if (c->x86_vendor == X86_VENDOR_UNKNOWN) {
++		pr_info("MCE: unknown CPU type - not enabling MCE support.\n");
++		return -EOPNOTSUPP;
++	}
 +
- 	BUG_ON(dev->mode != CLOCK_EVT_MODE_UNUSED);
- 	BUG_ON(!dev->cpumask);
- 
--	spin_lock(&clockevents_lock);
-+	spin_lock_irqsave(&clockevents_lock, flags);
- 
- 	list_add(&dev->list, &clockevent_devices);
- 	clockevents_do_notify(CLOCK_EVT_NOTIFY_ADD, dev);
- 	clockevents_notify_released();
- 
--	spin_unlock(&clockevents_lock);
-+	spin_unlock_irqrestore(&clockevents_lock, flags);
- }
- EXPORT_SYMBOL_GPL(clockevents_register_device);
- 
-@@ -235,8 +238,9 @@ void clockevents_exchange_device(struct 
- void clockevents_notify(unsigned long reason, void *arg)
- {
- 	struct list_head *node, *tmp;
-+	unsigned long flags;
- 
--	spin_lock(&clockevents_lock);
-+	spin_lock_irqsave(&clockevents_lock, flags);
- 	clockevents_do_notify(reason, arg);
- 
- 	switch (reason) {
-@@ -251,7 +255,7 @@ void clockevents_notify(unsigned long re
- 	default:
- 		break;
+ 	/* This should be disabled by the BIOS, but isn't always */
+ 	if (c->x86_vendor == X86_VENDOR_AMD) {
+ 		if (c->x86 == 15 && banks > 4) {
+@@ -1273,11 +1278,20 @@ static void mce_cpu_quirks(struct cpuinfo_x86 *c)
+ 		if ((c->x86 > 6 || (c->x86 == 6 && c->x86_model >= 0xe)) &&
+ 			monarch_timeout < 0)
+ 			monarch_timeout = USEC_PER_SEC;
++
++		/*
++		 * There are also broken BIOSes on some Pentium M and
++		 * earlier systems:
++		 */
++		if (c->x86 == 6 && c->x86_model <= 13 && mce_bootlog < 0)
++			mce_bootlog = 0;
  	}
--	spin_unlock(&clockevents_lock);
-+	spin_unlock_irqrestore(&clockevents_lock, flags);
- }
- EXPORT_SYMBOL_GPL(clockevents_notify);
- #endif
-Index: tip/kernel/time/tick-broadcast.c
-===================================================================
---- tip.orig/kernel/time/tick-broadcast.c
-+++ tip/kernel/time/tick-broadcast.c
-@@ -205,11 +205,11 @@ static void tick_handle_periodic_broadca
-  * Powerstate information: The system enters/leaves a state, where
-  * affected devices might stop
-  */
--static void tick_do_broadcast_on_off(void *why)
-+static void tick_do_broadcast_on_off(unsigned long *reason)
- {
- 	struct clock_event_device *bc, *dev;
- 	struct tick_device *td;
--	unsigned long flags, *reason = why;
-+	unsigned long flags;
- 	int cpu, bc_stopped;
- 
- 	spin_lock_irqsave(&tick_broadcast_lock, flags);
-@@ -276,8 +276,7 @@ void tick_broadcast_on_off(unsigned long
- 		printk(KERN_ERR "tick-broadcast: ignoring broadcast for "
- 		       "offline CPU #%d\n", *oncpu);
- 	else
--		smp_call_function_single(*oncpu, tick_do_broadcast_on_off,
--					 &reason, 1);
-+		tick_do_broadcast_on_off(&reason);
+ 	if (monarch_timeout < 0)
+ 		monarch_timeout = 0;
+ 	if (mce_bootlog != 0)
+ 		mce_panic_timeout = 30;
++
++	return 0;
  }
  
- /*
-
-
+ static void __cpuinit mce_ancient_init(struct cpuinfo_x86 *c)
+@@ -1338,11 +1352,10 @@ void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
+ 	if (!mce_available(c))
+ 		return;
+ 
+-	if (mce_cap_init() < 0) {
++	if (mce_cap_init() < 0 || mce_cpu_quirks(c) < 0) {
+ 		mce_disabled = 1;
+ 		return;
+ 	}
+-	mce_cpu_quirks(c);
+ 
+ 	machine_check_vector = do_machine_check;
+ 
+diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+index 8bc64cf..5957a93 100644
+--- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
++++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+@@ -116,11 +116,14 @@ static int therm_throt_process(int curr)
+ 		       cpu, __get_cpu_var(thermal_throttle_count));
+ 
+ 		add_taint(TAINT_MACHINE_CHECK);
+-	} else if (was_throttled) {
++		return 1;
++	}
++	if (was_throttled) {
+ 		printk(KERN_INFO "CPU%d: Temperature/speed normal\n", cpu);
++		return 1;
+ 	}
+ 
+-	return 1;
++	return 0;
+ }
+ 
+ #ifdef CONFIG_SYSFS
+diff --git a/arch/x86/kernel/tlb_uv.c b/arch/x86/kernel/tlb_uv.c
+index 8ccabb8..77b9689 100644
+--- a/arch/x86/kernel/tlb_uv.c
++++ b/arch/x86/kernel/tlb_uv.c
+@@ -744,6 +744,7 @@ uv_activation_descriptor_init(int node, int pnode)
+ 		 * note that base_dest_nodeid is actually a nasid.
+ 		 */
+ 		ad2->header.base_dest_nodeid = uv_partition_base_pnode << 1;
++		ad2->header.dest_subnodeid = 0x10; /* the LB */
+ 		ad2->header.command = UV_NET_ENDPOINT_INTD;
+ 		ad2->header.int_both = 1;
+ 		/*
