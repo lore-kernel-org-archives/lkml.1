@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757199AbZHQH6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757238AbZHQIAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757199AbZHQH6Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 03:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbZHQH6Y
+	id S1757238AbZHQIAx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 04:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757203AbZHQIAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 03:58:24 -0400
-Received: from e28smtp08.in.ibm.com ([59.145.155.8]:57811 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752498AbZHQH6X (ORCPT
+	Mon, 17 Aug 2009 04:00:53 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:13738 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757157AbZHQIAw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 03:58:23 -0400
-Date: Mon, 17 Aug 2009 13:28:15 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: balbir@linux.vnet.ibm.com, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "Li, Shaohua" <shaohua.li@intel.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
-       "Brown, Len" <len.brown@intel.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>,
-       "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
-Message-ID: <20090817075815.GB11049@in.ibm.com>
-Reply-To: dipankar@in.ibm.com
-References: <20090812115806.GK24339@elf.ucw.cz> <20090812195753.GA14649@in.ibm.com> <alpine.LFD.2.00.0908122036580.22946@localhost.localdomain> <20090813045931.GB14649@in.ibm.com> <20090814113021.GL32418@elf.ucw.cz> <20090816182629.GA31027@in.ibm.com> <20090816194441.GA22626@balbir.in.ibm.com> <1250459602.8648.35.camel@laptop> <20090817062418.GB31027@in.ibm.com> <1250493357.5241.1656.camel@twins>
+	Mon, 17 Aug 2009 04:00:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=wNHIZ54YuR2r1YKgVOcka/INIls9xoles1Boffsq/QfXzinLhjR6LywTWcGpV+oYyM
+         hkpkn6Yxujp/gfdE53ldlgeBUwt45HEiFyQrIyXHWy8k5545ZbSZlH2wjf5sVnYxg2No
+         /ZRbVehttmWySE0PacIWKtbgNY+T70H2DrfuA=
+Message-ID: <4A890E33.2080302@gmail.com>
+Date: Mon, 17 Aug 2009 10:00:51 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-7.4 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250493357.5241.1656.camel@twins>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+CC: akpm@linux-foundation.org, andi@firstfloor.org, rpjday@crashcourse.ca,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] VIDEO: console, use DIV_ROUND_UP
+References: <20090817073147.GA2967@localdomain.by> <1250495293-13035-1-git-send-email-jirislaby@gmail.com> <20090817080023.GB2967@localdomain.by>
+In-Reply-To: <20090817080023.GB2967@localdomain.by>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 17, 2009 at 09:15:57AM +0200, Peter Zijlstra wrote:
-> On Mon, 2009-08-17 at 11:54 +0530, Dipankar Sarma wrote:
-> > For most parts, we do. The guest kernel doesn't manage the offline
-> > CPU state. That is typically done by the hypervisor. However, offline
-> > operation as defined now always result in a VM resize in some hypervisor
-> > systems (like pseries) - it would be convenient to have a non-resize
-> > offline operation which lets the guest cede the cpu to hypervisor
-> > with the hint that the VM shouldn't be resized and the guest needs the guarantee
-> > to get the cpu back any time. The hypervisor can do whatever it wants
-> > with the ceded CPU including putting it in a low power state, but
-> > not change the physical cpu shares of the VM. The pseries hypervisor,
-> > for example, clearly distinguishes between the two - "rtas-stop-self" call
-> > to resize VM vs. H_CEDE hypercall with a hint. What I am suggesting
-> > is that we allow this with an extension to existing interfaces because it 
-> > makes sense to allow sort of "hibernation" of the cpus without changing any
-> > configuration of the VMs.
-> 
-> >From my POV the thing you call cede is the only sane thing to do for a
-> guest. Let the hypervisor management interface deal with resizing guests
-> if and when that's needed.
+On 08/17/2009 10:00 AM, Sergey Senozhatsky wrote:
+> So... In general, ((vc->vc_font.width + 7) >> 3) ==  DIV_ROUND_UP(vc->vc_font.width, 8) - 1;
 
-That is more or less how it currently works - atleast for pseries hypervisor. 
-The current "offline" operation with "rtas-stop-self" call I mentioned
-earlier is initiated by the hypervisor management interfaces/tool in
-pseries system. This wakes up a guest system tool that echoes "1"
-to the offline file resulting in the configuration change.
-The OS involvement is necessary to evacuate tasks/interrupts
-from the released CPU. We don't really want to initiate this from guests.
+?
 
-> Thing is, you don't want a guest to be able to influence the amount of
-> cpu shares attributed to it. You want that in explicit control of
-> whomever manages the hypervisor.
+#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
 
-Agreed. But given a fixed cpu share by the hypervisor management tools,
-we would like to be able to cede cpus to hypervisor leaving the hypervisor
-configuration intact. This, we don't have at the moment and want to just
-extend the current interface for this.
+DIV_ROUND_UP(vc->vc_font.width, 8) expands to:
+(((vc->vc_font.width) + (8) - 1) / (8))
+which is pretty printed:
+(vc->vc_font.width + 7) / 8
+and that's equivalent to:
+(vc->vc_font.width + 7) >> 3
 
-Thanks
-Dipankar
+Correct?
 
+> Are you sure we really can use DIV_ROUND_UP?
+
+Yeah, pretty sure.
