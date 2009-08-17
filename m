@@ -1,36 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932310AbZHQLyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932557AbZHQLyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932310AbZHQLyd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 07:54:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757879AbZHQLyd
+	id S932557AbZHQLyk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 07:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932366AbZHQLyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 07:54:33 -0400
-Received: from www.lumino.de ([85.159.12.10]:33249 "HELO imap.lumino.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757878AbZHQLyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 07:54:32 -0400
-Message-ID: <4A8944B3.8010201@lumino.de>
-Date: Mon, 17 Aug 2009 13:53:23 +0200
-From: Michael Schnell <mschnell@lumino.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: nios2-dev@sopc.et.ntust.edu.tw
-CC: Arnd Bergmann <arnd@arndb.de>, Paul Mundt <lethal@linux-sh.org>,
-       linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [Nios2-dev] implementing Futex
-References: <4A842B32.5030401@lumino.de> <200908131839.41803.arnd@arndb.de> <4A8919CB.4000709@lumino.de>
-In-Reply-To: <4A8919CB.4000709@lumino.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Aug 2009 07:54:38 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:41019 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932333AbZHQLyf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 07:54:35 -0400
+Message-Id: <4A8961170200007800010117@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Mon, 17 Aug 2009 12:54:31 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Greg Kroah-Hartman" <GregKH@novell.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] adjust Hyper-V Kconfig
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After some more thoughts it's obvious that we should do the
-return-PC-tweaking according to the "custom ie" flag in the ISR entry
-code rather than in the Kernel exit code, as the exit will go to another
-process than the one that was interrupted ans did set the flag. I don't
-know if that is more difficult than using the exit code (as blackfin does).
+Hyper-V sub-components' options should all depend on the base option.
 
--Michael
+The default of these sub-component options is also more reasonably set
+to that of the base option (since it makes little sense to enable the
+base option without the sub-component ones).
+
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+
+--- linux-next/drivers/staging/hv/Kconfig
++++ linux-next/drivers/staging/hv/Kconfig
+@@ -6,23 +6,27 @@
+ 	  Select this option to run Linux as a Hyper-V client operating
+ 	  system.
+
++if HYPERV
++
+ config HYPERV_STORAGE
+ 	tristate "Microsoft Hyper-V virtual storage driver"
+-	depends on SCSI && m
+-	default n
++	depends on SCSI
++	default HYPERV
+ 	help
+ 	 Select this option to enable the Hyper-V virtual storage driver.
+ 
+ config HYPERV_BLOCK
+ 	tristate "Microsoft Hyper-V virtual block driver"
+-	depends on BLOCK && SCSI && m
+-	default n
++	depends on BLOCK && SCSI
++	default HYPERV
+ 	help
+ 	  Select this option to enable the Hyper-V virtual block driver.
+ 
+ config HYPERV_NET
+ 	tristate "Microsoft Hyper-V virtual network driver"
+-	depends on NET && m
+-	default n
++	depends on NET
++	default HYPERV
+ 	help
+ 	  Select this option to enable the Hyper-V virtual network driver.
++
++endif
+
+
+
