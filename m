@@ -1,103 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbZHQVjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbZHQVpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758183AbZHQVjq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 17:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758169AbZHQVjq
+	id S1758149AbZHQVpw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 17:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758090AbZHQVpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 17:39:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59590 "EHLO mx3.mail.elte.hu"
+	Mon, 17 Aug 2009 17:45:52 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:51303 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758084AbZHQVjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 17:39:45 -0400
-Date: Mon, 17 Aug 2009 23:39:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [GIT PULL] perfcounters fixes
-Message-ID: <20090817213934.GA6551@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751228AbZHQVpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 17:45:51 -0400
+Date: Mon, 17 Aug 2009 14:45:46 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: clocksource changes in 2.6.31 - possible regression
+Message-ID: <20090817144546.7f1d6572@nehalam>
+In-Reply-To: <1250545077.7212.49.camel@localhost.localdomain>
+References: <20090817090319.20979986@nehalam>
+	<1250531337.26171.12.camel@work-vm>
+	<20090817110127.40ee5c29@nehalam>
+	<1250532954.26171.35.camel@work-vm>
+	<20090817112704.2b4b2987@nehalam>
+	<1250543459.7212.41.camel@localhost.localdomain>
+	<1250545077.7212.49.camel@localhost.localdomain>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Mon, 17 Aug 2009 14:37:57 -0700
+john stultz <johnstul@us.ibm.com> wrote:
 
-Please pull the latest perfcounters-fixes-for-linus git tree from:
+> On Mon, 2009-08-17 at 14:11 -0700, john stultz wrote:
+> > On Mon, 2009-08-17 at 11:27 -0700, Stephen Hemminger wrote:
+> > > On Mon, 17 Aug 2009 11:15:54 -0700
+> > > john stultz <johnstul@us.ibm.com> wrote:
+> > > 
+> > > > On Mon, 2009-08-17 at 11:01 -0700, Stephen Hemminger wrote:
+> > > > > On Mon, 17 Aug 2009 10:48:57 -0700
+> > > > > john stultz <johnstul@us.ibm.com> wrote:
+> > > > > 
+> > > > > > On Mon, 2009-08-17 at 09:03 -0700, Stephen Hemminger wrote:
+> > > > > > > The following commit causes a change for kernels built with HRT but
+> > > > > > > not actually using HRT.  I typically use the generic kernel we ship
+> > > > > > > on test machines, and that kernel has NOHZ and HRT (for power savings/virt
+> > > > > > > and HRT for QoS), but I want to be able to enable TSC as a clock source
+> > > > > > > when doing performance tests with pktgen.
+> > > > > > > 
+> > > > > > > The machine in question is a several year old Opteron box, that
+> > > > > > > normally reports clocksources: acpi_pm jiffies tsc
+> > > > > > > but now with 2.6.31-rc6, it only has acpi_pm.
+> > > > > > 
+> > > > > > I might need to review the patch again, but I believe we just don't
+> > > > > > allow you to switch to non HRT compatible clocksources (like jiffies) if
+> > > > > > we're already in HRT mode (and thus would hang when switched). 
+> > > > > > 
+> > > > > > 
+> > > > > > The behavior you describe where you can't switch to the TSC, may be due
+> > > > > > to the TSC disqualification code marking it as non HRT compatible
+> > > > > > (again, I need to double check). While I'm not sure that's really
+> > > > > > correct, as the TSC is fine for HRT, in this case on your box, the TSC
+> > > > > > has been marked as unstable (likely due to being unsynced on old AMD SMP
+> > > > > > systems). There is a real chance that the timekeeping code on your
+> > > > > > system could see the TSC go backwards, calculate a negative time
+> > > > > > interval, and then end up hanging. 
+> > > > > > 
+> > > > > 
+> > > > > TSC was alway stable on this box, and worked fine.  There was no
+> > > > > message in log about TSC instability. The change was bisected
+> > > > > down to that one commit.
+> > > > 
+> > > > But just to clarify, the TSC was never selected as the default
+> > > > clocksource on the box either, right?
+> > > 
+> > > correct.
+> > > 
+> > > I am okay with turning it off on boot command line for my tests,
+> > > but it might be an issue for other users.
+> > 
+> > 
+> > So looking at the code in question:
+> > 		/*
+> > 		 * Don't show non-HRES clocksource if the tick code is
+> > 		 * in one shot mode (highres=on or nohz=on)
+> > 		 */
+> > 		if (!tick_oneshot_mode_active() ||
+> > 		    (src->flags & CLOCK_SOURCE_VALID_FOR_HRES))
+> > 
+> > So we require the clock to be valid for hres if we're in hres mode.
+> > 
+> > Then looking at where that flag is manipulated:
+> > $ git grep -n CLOCK_SOURCE_VALID_FOR_HRES
+> > include/linux/clocksource.h:214:#define CLOCK_SOURCE_VALID_FOR_HRES             
+> > kernel/time/clocksource.c:168:  cs->flags &= ~(CLOCK_SOURCE_VALID_FOR_HRES | CLO
+> > kernel/time/clocksource.c:200:                          cs->flags |= CLOCK_SOURC
+> > kernel/time/clocksource.c:257:                  cs->flags |= CLOCK_SOURCE_VALID_
+> > kernel/time/clocksource.c:285:          cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES
+> > kernel/time/clocksource.c:517:      !(ovr->flags & CLOCK_SOURCE_VALID_FOR_HRES))
+> > kernel/time/clocksource.c:557:              (src->flags & CLOCK_SOURCE_VALID_FOR
+> > kernel/time/timekeeping.c:273:          ret = clock->flags & CLOCK_SOURCE_VALID_
+> > 
+> > 
+> > We can see clocksource.c:168 is the only line that disables the flag and
+> > that's in clocksource_ratewd() after we've found an actual inconsistency
+> > from the watchdog. 
+> > 
+> > So unless I'm missing a more subtle bug in the watchdog assignment of
+> > the CLOCK_SOURCE_VALID_FOR_HRES bit,  I'm a little hesitant that its
+> > really as stable as you feel it is.
+> > 
+> > Mind running with the following patch and sending me the dmesg?
+> 
+> Actually, don't.. I found the issue.
+> 
+> in init_tsc_clocksource():
+> 	/* lower the rating if we already know its unstable: */
+> 	if (check_tsc_unstable()) {
+> 		clocksource_tsc.rating = 0;
+> 		clocksource_tsc.flags &= ~CLOCK_SOURCE_IS_CONTINUOUS;
+> 	}
+> 
+> We already disqualify the TSC as not continuous, so its not valid for
+> HRT. So I think the patch in question is still correct.
+> 
+> However, I think its fair, that as your TSC is being disqualified for
+> being an old AMD SMP box, and there is a *possibility* that if you don't
+> run with cpufreq and the SUMA-ness of the box didn't get in the way of
+> TSC synchronization, you might have an argument for overriding the
+> unsynchronized_tsc() heuristics.
+> 
+> Luckily the option is already there. :)
+> 
+> So try booting with "tsc=reliable" to override those checks, and I think
+> you'll be able to do what you want to do.
+> 
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git perfcounters-fixes-for-linus
+Good idea, doesn't work.
 
- Thanks,
+vyatta@amd1:~$ cat /proc/cmdline 
+BOOT_IMAGE=/boot/vmlinuz-2.6.31-rc6 root=/dev/sda1 ro tsc=reliable
+vyatta@amd1:~$ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+acpi_pm 
 
-	Ingo
-
------------------->
-Arnaldo Carvalho de Melo (1):
-      perf record: Fix typo in pid_synthesize_comm_event
-
-Carlos R. Mafra (1):
-      perf: Rename perf-examples.txt to examples.txt
-
-Paul Mackerras (1):
-      perf_counter: Check task on counter read IPI
-
-
- kernel/perf_counter.c                              |   11 +++++++++++
- .../{perf-examples.txt => examples.txt}            |    0
- tools/perf/builtin-record.c                        |    2 +-
- 3 files changed, 12 insertions(+), 1 deletions(-)
- rename tools/perf/Documentation/{perf-examples.txt => examples.txt} (100%)
-
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 534e20d..b8fe739 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -1503,10 +1503,21 @@ static void perf_counter_enable_on_exec(struct task_struct *task)
-  */
- static void __perf_counter_read(void *info)
- {
-+	struct perf_cpu_context *cpuctx = &__get_cpu_var(perf_cpu_context);
- 	struct perf_counter *counter = info;
- 	struct perf_counter_context *ctx = counter->ctx;
- 	unsigned long flags;
- 
-+	/*
-+	 * If this is a task context, we need to check whether it is
-+	 * the current task context of this cpu.  If not it has been
-+	 * scheduled out before the smp call arrived.  In that case
-+	 * counter->count would have been updated to a recent sample
-+	 * when the counter was scheduled out.
-+	 */
-+	if (ctx->task && cpuctx->task_ctx != ctx)
-+		return;
-+
- 	local_irq_save(flags);
- 	if (ctx->is_active)
- 		update_context_time(ctx);
-diff --git a/tools/perf/Documentation/perf-examples.txt b/tools/perf/Documentation/examples.txt
-similarity index 100%
-rename from tools/perf/Documentation/perf-examples.txt
-rename to tools/perf/Documentation/examples.txt
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index 3d051b9..89a5ddc 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -219,7 +219,7 @@ static pid_t pid_synthesize_comm_event(pid_t pid, int full)
- 	snprintf(filename, sizeof(filename), "/proc/%d/status", pid);
- 
- 	fp = fopen(filename, "r");
--	if (fd == NULL) {
-+	if (fp == NULL) {
- 		/*
- 		 * We raced with a task exiting - just return:
- 		 */
+-- 
