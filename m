@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbZHQIgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757426AbZHQIjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757433AbZHQIgi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 04:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757423AbZHQIgh
+	id S1757426AbZHQIjl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 04:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757331AbZHQIjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 04:36:37 -0400
-Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:34188 "EHLO
-	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757147AbZHQIgg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 04:36:36 -0400
-X-Greylist: delayed 517 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Aug 2009 04:36:36 EDT
-From: Reinhard Tartler <siretart@tauware.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Kosina <jkosina@suse.cz>, linux-kbuild@vger.kernel.org
-Subject: [PATCH] cpumask: fix typo s/CONFIG_CPU_HOTPLUG/CONFIG_HOTPLUG_CPU/
-Date: Mon, 17 Aug 2009 10:19:33 +0200
-Organization: Uni Erlangen, Informatik 4, Lehrstuhl =?utf-8?Q?f=C3=BCr?=
- Betriebs- und verteile Systeme
-X-Url: http://www4.informatik.uni-erlangen.de/~tartler
-Message-ID: <rwuzl9y975c.fsf@faui48a.informatik.uni-erlangen.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 17 Aug 2009 04:39:40 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:38118 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757147AbZHQIjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 04:39:39 -0400
+Date: Mon, 17 Aug 2009 18:39:34 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next:  tree build failure
+Message-Id: <20090817183934.6fd7cf15.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In ./arch/*/Kconfig, this Kconfig symbol is defined as HOTPLUG_CPU, and
-never as CPU_HOTPLUG
+Hi Rafael,
 
-Signed-off-by: Reinhard Tartler <siretart@tauware.de>
+Today's linux-next build (powerpc allyesconfig) failed like this:
+
+drivers/base/power/runtime.c:948: error: __ksymtab_pm_runtime_disable causes a section type conflict
+
+Caused by commit d9d4cc5169ca18df9ff5afd31c6e6b715ecb454a ("PM: Introduce
+core framework for run-time PM of I/O devices (rev. 17)") from the
+suspend tree.  This commit EXPORTs pm_runtime_disable which is an inline
+function that calls __pm_runtime_disable (which is probably what was
+meant to be EXPORTed).
+
+I wish we could get these type of errors to fail on x86 as well ...
+
+I have applied the following patch for today.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 17 Aug 2009 18:34:28 +1000
+Subject: [PATCH] suspend: EXPORT the correct function.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- kernel/smp.c |    2 +-
+ drivers/base/power/runtime.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/smp.c b/kernel/smp.c
-index ad63d85..94188b8 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -57,7 +57,7 @@ hotplug_cfd(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 			return NOTIFY_BAD;
- 		break;
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 28a3f91..38556f6 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -945,7 +945,7 @@ void __pm_runtime_disable(struct device *dev, bool check_resume)
+  out:
+ 	spin_unlock_irq(&dev->power.lock);
+ }
+-EXPORT_SYMBOL_GPL(pm_runtime_disable);
++EXPORT_SYMBOL_GPL(__pm_runtime_disable);
  
--#ifdef CONFIG_CPU_HOTPLUG
-+#ifdef CONFIG_HOTPLUG_CPU
- 	case CPU_UP_CANCELED:
- 	case CPU_UP_CANCELED_FROZEN:
- 
+ /**
+  * pm_runtime_enable - Enable run-time PM of a device.
 -- 
-1.5.6.5
+1.6.3.3
 
-
--- 
-Reinhard Tartler                     Department of Computer Science IV
-Martensstr 1, 91058 Erlangen Germany, University of Erlangen-Nuremberg
-            http://www4.informatik.uni-erlangen.de/~tartler
