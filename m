@@ -1,193 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbZHQRxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932656AbZHQRyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932619AbZHQRxi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 13:53:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757722AbZHQRxi
+	id S932656AbZHQRyJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 13:54:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932284AbZHQRyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 13:53:38 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:60396 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757649AbZHQRxh (ORCPT
+	Mon, 17 Aug 2009 13:54:08 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:45641 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757722AbZHQRyH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 13:53:37 -0400
-Date: Mon, 17 Aug 2009 19:53:32 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [circular locking bug] Re: [patch 00/15] clocksource /
- timekeeping rework V4 (resend V3 + bug fix)
-Message-ID: <20090817195332.1e1f98b0@skybase>
-In-Reply-To: <20090817092807.GA10460@elte.hu>
-References: <20090814134717.859098725@de.ibm.com>
-	<1250300765.8269.29.camel@localhost.localdomain>
-	<alpine.LFD.2.00.0908151057500.1283@localhost.localdomain>
-	<20090815095221.GA15831@elte.hu>
-	<alpine.LFD.2.00.0908151207000.1283@localhost.localdomain>
-	<20090817094042.03fe5d38@skybase>
-	<alpine.LFD.2.00.0908171038420.2782@localhost.localdomain>
-	<20090817092807.GA10460@elte.hu>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Aug 2009 13:54:07 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; CHARSET=US-ASCII
+Date: Mon, 17 Aug 2009 10:53:17 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86: move dmar_table_init out of enable_IR
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, Gleb Natapov <gleb@redhat.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Message-id: <4A89990D.4030703@sun.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Aug 2009 11:28:07 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
 
-> 
-> -tip testing still triggers lockdep troubles with latest 
-> timers/core. I think timekeeping_notify() might be involved.
-> 
-> Bootlog below, config attached.
-> [   43.081726] =======================================================
-> [   43.089512] [ INFO: possible circular locking dependency detected ]
-> [   43.090020] 2.6.31-rc6-tip-01039-ge54d9cb-dirty #4937
-> [   43.090020] -------------------------------------------------------
-> [   43.090020] S99local/5002 is trying to acquire lock:
-> [   43.090020]  (events){+.+.+.}, at: [<ffffffff8106ff4c>] cleanup_workqueue_thread+0x2d/0xdd
-> [   43.090020] 
-> [   43.090020] but task is already holding lock:
-> [   43.090020]  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff818387aa>] cpu_down+0x3b/0xb4
-> [   43.090020] 
-> [   43.090020] which lock already depends on the new lock.
-> [   43.090020] 
-> [   43.090020] 
-> [   43.090020] the existing dependency chain (in reverse order) is:
-> [   43.090020] 
-> [   43.090020] -> #4 (cpu_add_remove_lock){+.+.+.}:
-> [   43.090020]        [<ffffffff8108925d>] check_prev_add+0x18e/0x225
-> [   43.090020]        [<ffffffff8108976a>] validate_chain+0x476/0x556
-> [   43.090020]        [<ffffffff81089bfa>] __lock_acquire+0x3b0/0x43b
-> [   43.090020]        [<ffffffff81089d5a>] lock_acquire+0xd5/0x10e
-> [   43.090020]        [<ffffffff81872229>] __mutex_lock_common+0x5b/0x3b0
-> [   43.090020]        [<ffffffff81872683>] mutex_lock_nested+0x45/0x62
-> [   43.090020]        [<ffffffff8105de75>] cpu_maps_update_begin+0x25/0x3b
-> [   43.090020]        [<ffffffff81070348>] __create_workqueue_key+0x137/0x200
-> [   43.090020]        [<ffffffff810a2397>] stop_machine_create+0x4d/0xc2
-> [   43.090020]        [<ffffffff810a2438>] stop_machine+0x2c/0x74
-> [   43.090020]        [<ffffffff8107f163>] timekeeping_notify+0x31/0x4c
-> [   43.090020]        [<ffffffff81080258>] clocksource_select+0xc9/0xe8
-> [   43.090020]        [<ffffffff81080b8c>] clocksource_register+0x70/0xa1
-> [   43.090020]        [<ffffffff81d4cc6a>] init_acpi_pm_clocksource+0xf3/0x114
-> [   43.090020]        [<ffffffff8100a092>] do_one_initcall+0x65/0x15b
-> [   43.090020]        [<ffffffff81d0d992>] do_basic_setup+0x59/0x82
-> [   43.090020]        [<ffffffff81d0da3e>] kernel_init+0x83/0xdd
-> [   43.090020]        [<ffffffff8101520a>] child_rip+0xa/0x20
-> [   43.090020] 
-> [   43.090020] -> #3 (setup_lock){+.+.+.}:
-> [   43.090020]        [<ffffffff8108925d>] check_prev_add+0x18e/0x225
-> [   43.090020]        [<ffffffff8108976a>] validate_chain+0x476/0x556
-> [   43.090020]        [<ffffffff81089bfa>] __lock_acquire+0x3b0/0x43b
-> [   43.090020]        [<ffffffff81089d5a>] lock_acquire+0xd5/0x10e
-> [   43.090020]        [<ffffffff81872229>] __mutex_lock_common+0x5b/0x3b0
-> [   43.090020]        [<ffffffff81872683>] mutex_lock_nested+0x45/0x62
-> [   43.090020]        [<ffffffff810a236f>] stop_machine_create+0x25/0xc2
-> [   43.090020]        [<ffffffff810a2438>] stop_machine+0x2c/0x74
-> [   43.090020]        [<ffffffff8107f163>] timekeeping_notify+0x31/0x4c
-> [   43.090020]        [<ffffffff81080258>] clocksource_select+0xc9/0xe8
-> [   43.090020]        [<ffffffff81080b8c>] clocksource_register+0x70/0xa1
-> [   43.090020]        [<ffffffff81d4cc6a>] init_acpi_pm_clocksource+0xf3/0x114
-> [   43.090020]        [<ffffffff8100a092>] do_one_initcall+0x65/0x15b
-> [   43.090020]        [<ffffffff81d0d992>] do_basic_setup+0x59/0x82
-> [   43.090020]        [<ffffffff81d0da3e>] kernel_init+0x83/0xdd
-> [   43.090020]        [<ffffffff8101520a>] child_rip+0xa/0x20
-> [   43.090020] 
-> [   43.090020] -> #2 (clocksource_mutex){+.+.+.}:
-> [   43.090020]        [<ffffffff8108925d>] check_prev_add+0x18e/0x225
-> [   43.090020]        [<ffffffff8108976a>] validate_chain+0x476/0x556
-> [   43.090020]        [<ffffffff81089bfa>] __lock_acquire+0x3b0/0x43b
-> [   43.090020]        [<ffffffff81089d5a>] lock_acquire+0xd5/0x10e
-> [   43.090020]        [<ffffffff81872229>] __mutex_lock_common+0x5b/0x3b0
-> [   43.090020]        [<ffffffff81872683>] mutex_lock_nested+0x45/0x62
-> [   43.090020]        [<ffffffff8108076c>] clocksource_change_rating+0x34/0xaf
-> [   43.090020]        [<ffffffff8108091a>] clocksource_watchdog_work+0x133/0x16f
-> [   43.090020]        [<ffffffff8106f9ca>] run_workqueue+0x161/0x265
-> [   43.090020]        [<ffffffff8106fbb3>] worker_thread+0xe5/0x10c
-> [   43.090020]        [<ffffffff81074b64>] kthread+0x98/0xa0
-> [   43.090020]        [<ffffffff8101520a>] child_rip+0xa/0x20
-> [   43.090020] 
-> [   43.090020] -> #1 (&watchdog_work){+.+...}:
-> [   43.090020]        [<ffffffff8108925d>] check_prev_add+0x18e/0x225
-> [   43.090020]        [<ffffffff8108976a>] validate_chain+0x476/0x556
-> [   43.090020]        [<ffffffff81089bfa>] __lock_acquire+0x3b0/0x43b
-> [   43.090020]        [<ffffffff81089d5a>] lock_acquire+0xd5/0x10e
-> [   43.090020]        [<ffffffff8106f9c4>] run_workqueue+0x15b/0x265
-> [   43.090020]        [<ffffffff8106fbb3>] worker_thread+0xe5/0x10c
-> [   43.090020]        [<ffffffff81074b64>] kthread+0x98/0xa0
-> [   43.090020]        [<ffffffff8101520a>] child_rip+0xa/0x20
-> [   43.090020] 
-> [   43.090020] -> #0 (events){+.+.+.}:
-> [   43.090020]        [<ffffffff81089146>] check_prev_add+0x77/0x225
-> [   43.090020]        [<ffffffff8108976a>] validate_chain+0x476/0x556
-> [   43.090020]        [<ffffffff81089bfa>] __lock_acquire+0x3b0/0x43b
-> [   43.090020]        [<ffffffff81089d5a>] lock_acquire+0xd5/0x10e
-> [   43.090020]        [<ffffffff8106ff73>] cleanup_workqueue_thread+0x54/0xdd
-> [   43.090020]        [<ffffffff81839c41>] workqueue_cpu_callback+0xdb/0x13f
-> [   43.090020]        [<ffffffff8187714e>] notifier_call_chain+0x6d/0xb5
-> [   43.090020]        [<ffffffff8107a19e>] raw_notifier_call_chain+0x22/0x38
-> [   43.090020]        [<ffffffff81838735>] _cpu_down+0x2c2/0x2fc
-> [   43.090020]        [<ffffffff818387cc>] cpu_down+0x5d/0xb4
-> [   43.090020]        [<ffffffff8183988e>] store_online+0x3f/0x9a
-> [   43.090020]        [<ffffffff813c2e41>] sysdev_store+0x2e/0x44
-> [   43.090020]        [<ffffffff811559a5>] sysfs_write_file+0xf3/0x13c
-> [   43.090020]        [<ffffffff810f6f7a>] vfs_write+0xbe/0x130
-> [   43.090020]        [<ffffffff810f70e2>] sys_write+0x56/0x93
-> [   43.090020]        [<ffffffff81014042>] system_call_fastpath+0x16/0x1b
-> [   43.090020] 
-> [   43.090020] other info that might help us debug this:
-> [   43.090020] 
-> [   43.090020] 2 locks held by S99local/5002:
-> [   43.090020]  #0:  (&buffer->mutex){+.+.+.}, at: [<ffffffff811558f9>] sysfs_write_file+0x47/0x13c
-> [   43.090020]  #1:  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff818387aa>] cpu_down+0x3b/0xb4
-> [   43.090020] 
-> [   43.090020] stack backtrace:
-> [   43.090020] Pid: 5002, comm: S99local Not tainted 2.6.31-rc6-tip-01039-ge54d9cb-dirty #4937
-> [   43.090020] Call Trace:
-> [   43.090020]  [<ffffffff81088bb0>] print_circular_bug+0xcf/0xf4
-> [   43.090020]  [<ffffffff81089146>] check_prev_add+0x77/0x225
-> [   43.090020]  [<ffffffff818710e5>] ? wait_for_common+0xeb/0x150
-> [   43.090020]  [<ffffffff8108976a>] validate_chain+0x476/0x556
-> [   43.090020]  [<ffffffff81087d17>] ? mark_lock+0x31/0x17d
-> [   43.090020]  [<ffffffff81089bfa>] __lock_acquire+0x3b0/0x43b
-> [   43.090020]  [<ffffffff8106ff4c>] ? cleanup_workqueue_thread+0x2d/0xdd
-> [   43.090020]  [<ffffffff8106ff4c>] ? cleanup_workqueue_thread+0x2d/0xdd
-> [   43.090020]  [<ffffffff81089d5a>] lock_acquire+0xd5/0x10e
-> [   43.090020]  [<ffffffff8106ff4c>] ? cleanup_workqueue_thread+0x2d/0xdd
-> [   43.090020]  [<ffffffff81871283>] ? wait_for_completion+0x2b/0x41
-> [   43.090020]  [<ffffffff81074be5>] ? kthread_stop+0x79/0xd9
-> [   43.090020]  [<ffffffff8106ff73>] cleanup_workqueue_thread+0x54/0xdd
-> [   43.090020]  [<ffffffff8106ff4c>] ? cleanup_workqueue_thread+0x2d/0xdd
-> [   43.090020]  [<ffffffff81839c41>] workqueue_cpu_callback+0xdb/0x13f
-> [   43.090020]  [<ffffffff8187714e>] notifier_call_chain+0x6d/0xb5
-> [   43.090020]  [<ffffffff8107a19e>] raw_notifier_call_chain+0x22/0x38
-> [   43.090020]  [<ffffffff81838735>] _cpu_down+0x2c2/0x2fc
-> [   43.090020]  [<ffffffff818710e5>] ? wait_for_common+0xeb/0x150
-> [   43.090020]  [<ffffffff818387cc>] cpu_down+0x5d/0xb4
-> [   43.090020]  [<ffffffff8183988e>] store_online+0x3f/0x9a
-> [   43.090020]  [<ffffffff813c2e41>] sysdev_store+0x2e/0x44
-> [   43.090020]  [<ffffffff811559a5>] sysfs_write_file+0xf3/0x13c
-> [   43.090020]  [<ffffffff810f65fa>] ? rw_verify_area+0x97/0xd1
-> [   43.090020]  [<ffffffff810f6f7a>] vfs_write+0xbe/0x130
-> [   43.090020]  [<ffffffff810f70e2>] sys_write+0x56/0x93
-> [   43.090020]  [<ffffffff81014042>] system_call_fastpath+0x16/0x1b
-> [   43.829633] lockdep: fixing up alternatives.
+on x2apic system, we got
+[    1.818072] ------------[ cut here ]------------
+[    1.820376] WARNING: at kernel/lockdep.c:2461
+lockdep_trace_alloc+0xa5/0xe9()
+[    1.835282] Hardware name: ASSY,
+[    1.839006] Modules linked in:
+[    1.841253] Pid: 1, comm: swapper Not tainted
+2.6.31-rc5-tip-03926-g39aaa80-dirty #510
+[    1.858056] Call Trace:
+[    1.859913]  [<ffffffff810d13aa>] ? lockdep_trace_alloc+0xa5/0xe9
+[    1.876270]  [<ffffffff81093f37>] warn_slowpath_common+0x8d/0xd0
+[    1.879132]  [<ffffffff81093fa1>] warn_slowpath_null+0x27/0x3d
+[    1.896823]  [<ffffffff810d13aa>] lockdep_trace_alloc+0xa5/0xe9
+[    1.900659]  [<ffffffff810cf5a0>] ? lock_release_holdtime+0x2f/0x199
+[    1.917188]  [<ffffffff81167a3c>] kmem_cache_alloc_notrace+0x42/0x111
+[    1.922320]  [<ffffffff8106fe8c>] ? reserve_memtype+0x152/0x518
+[    1.938137]  [<ffffffff8106f8b1>] ? pat_pagerange_is_ram+0x4a/0x91
+[    1.941730]  [<ffffffff8106fe8c>] reserve_memtype+0x152/0x518
+[    1.958115]  [<ffffffff8106ce62>] __ioremap_caller+0x1dd/0x30f
+[    1.975507]  [<ffffffff81ce2c5c>] ? acpi_os_map_memory+0x2a/0x47
+[    1.978987]  [<ffffffff8106d0fd>] ioremap_nocache+0x2a/0x40
+[    2.031400]  [<ffffffff810d0364>] ? trace_hardirqs_off+0x20/0x36
+[    2.036096]  [<ffffffff81ce2c5c>] acpi_os_map_memory+0x2a/0x47
+[    2.046263]  [<ffffffff815cd642>] acpi_tb_verify_table+0x3d/0x85
+[    2.050349]  [<ffffffff81d34af7>] ? _spin_unlock_irqrestore+0x50/0x76
+[    2.067327]  [<ffffffff815ccad6>] acpi_get_table_with_size+0x64/0xd9
+[    2.070860]  [<ffffffff81d34af7>] ? _spin_unlock_irqrestore+0x50/0x76
+[    2.088000]  [<ffffffff825c88d5>] dmar_table_detect+0x33/0x70
+[    2.092047]  [<ffffffff825c8a01>] dmar_table_init+0x43/0x428
+[    2.106854]  [<ffffffff825a7537>] enable_IR+0x1c/0x8d
+[    2.110256]  [<ffffffff825a7624>] enable_IR_x2apic+0x7c/0x19e
+[    2.127139]  [<ffffffff825a4876>] native_smp_prepare_cpus+0x139/0x3b8
+[    2.145175]  [<ffffffff8259678d>] kernel_init+0x71/0x1da
+[    2.148913]  [<ffffffff8104305a>] child_rip+0xa/0x20
+[    2.152349]  [<ffffffff810429fc>] ? restore_args+0x0/0x30
+[    2.167931]  [<ffffffff8259671c>] ? kernel_init+0x0/0x1da
+[    2.171671]  [<ffffffff81043050>] ? child_rip+0x0/0x20
+[    2.187607] ---[ end trace a7919e7f17c0a725 ]---
 
-Urg. As far as I read the lockdep message it complains about this: 
-cpu_down tries to remove the workqueue, the workqueue tries to get
-the clocksource_mutex, timekeeping_notify is called with the
-clocksource_mutex held and tries to execute stop_machine which is
-blocked because of cpu_down.
-A solution would be to use a single-threaded workqueue, no?
+Pallipadi, Venkatesh said
 
--- 
-blue skies,
-   Martin.
+| Looks like the problem started with this commit
+|
+| commit ce69a784504222c3ab6f1b3c357d09ec5772127a
+|Author: Gleb Natapov <gleb@redhat.com>
+|Date:   Mon Jul 20 15:24:17 2009 +0300
+|
+|x86/apic: Enable x2APIC without interrupt remapping under KVM
+|
+|Before this commit, dmar_table_init() was getting called with interrupts
+|enabled and after this commit, it is getting called with interrupts
+|disabled.
 
-"Reality continues to ruin my life." - Calvin.
+so try to move out dmar_table_init out of that function.
 
+Analyzed-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/kernel/apic/apic.c |   22 +++++++++++++---------
+ 1 file changed, 13 insertions(+), 9 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/apic/apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/apic.c
++++ linux-2.6/arch/x86/kernel/apic/apic.c
+@@ -1365,14 +1365,6 @@ void enable_x2apic(void)
+ int __init enable_IR(void)
+ {
+ #ifdef CONFIG_INTR_REMAP
+-    int ret;
+-
+-    ret = dmar_table_init();
+-    if (ret) {
+-        pr_debug("dmar_table_init() failed with %d:\n", ret);
+-        return 0;
+-    }
+-
+     if (!intr_remapping_supported()) {
+         pr_debug("intr-remapping not supported\n");
+         return 0;
+@@ -1400,6 +1392,14 @@ void __init enable_IR_x2apic(void)
+     unsigned long flags;
+     struct IO_APIC_route_entry **ioapic_entries = NULL;
+     int ret, x2apic_enabled = 0;
++    int dmar_table_init_ret = 0;
++
++#ifdef CONFIG_INTR_REMAP
++    dmar_table_init_ret = dmar_table_init();
++    if (dmar_table_init_ret)
++        pr_debug("dmar_table_init() failed with %d:\n",
++                dmar_table_init_ret);
++#endif
+ 
+     ioapic_entries = alloc_ioapic_entries();
+     if (!ioapic_entries) {
+@@ -1417,7 +1417,11 @@ void __init enable_IR_x2apic(void)
+     mask_8259A();
+     mask_IO_APIC_setup(ioapic_entries);
+ 
+-    ret = enable_IR();
++    if (dmar_table_init_ret)
++        ret = 0;
++    else
++        ret = enable_IR();
++
+     if (!ret) {
+         /* IR is required if there is APIC ID > 255 even when running
+          * under KVM
