@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbZHQD5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750963AbZHQEYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbZHQD5y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 23:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbZHQD5x
+	id S1750963AbZHQEYp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 00:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbZHQEYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 23:57:53 -0400
-Received: from mail.gmx.net ([213.165.64.20]:35847 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752541AbZHQD5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 23:57:52 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+dEsNLH+6d9mqYb1jizWsQaB5eRurpxfaGDYN7OQ
-	e47uduCs708KwQ
-Subject: Re: [PATCH 00/22] Staging: rt{286,287,307}0: various fixes/cleanups
-From: Mike Galbraith <efault@gmx.de>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <1250480865.7243.15.camel@marge.simson.net>
-References: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
-	 <1250480865.7243.15.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Mon, 17 Aug 2009 05:57:51 +0200
-Message-Id: <1250481471.7243.19.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Mon, 17 Aug 2009 00:24:44 -0400
+Received: from smtp.infotech.no ([82.134.31.41]:57243 "EHLO elrond.infotech.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750800AbZHQEYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 00:24:43 -0400
+Message-ID: <4A88DB77.2070304@interlog.com>
+Date: Mon, 17 Aug 2009 00:24:23 -0400
+From: Douglas Gilbert <dgilbert@interlog.com>
+Reply-To: dgilbert@interlog.com
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>
+CC: James Bottomley <James.Bottomley@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
+       Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
+       Greg Freemyer <greg.freemyer@gmail.com>,
+       Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+ slot is freed)
+References: <4A85E0DC.9040101@rtr.ca> <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com> <20090814234539.GE27148@parisc-linux.org> <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com> <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca> <1250344518.4159.4.camel@mulgrave.site> <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk> <20090816083434.2ce69859@infradead.org> <1250437927.3856.119.camel@mulgrave.site> <20090816165943.GA26983@infradead.org>
+In-Reply-To: <20090816165943.GA26983@infradead.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-devel@driverdev.osuosl.org seems to make replies arrive only
-at /dev/null, so I'll try again without.
+Christoph Hellwig wrote:
+> On Sun, Aug 16, 2009 at 10:52:07AM -0500, James Bottomley wrote:
+>> However, the enterprise has been doing UNMAP for a while, so we can draw
+>> inferences from them since the SSD FTL will operate similarly.  For
+>> them, UNMAP is the same cost in terms of time regardless of the number
+>> of extents.  The reason is that it's moving the blocks from the global
+>> in use list to the global free list.  Part of the problem is that this
+>> involves locking and quiescing, so UNMAP ends up being quite expensive
+>> to the array but constant in terms of cost (hence they want as few
+>> unmaps for as many sectors as possible).
+> 
+> How are they doing the unmaps?  Using something similar to Mark's wiper
+> script and using SG_IO?  Because right now we do not actually implement
+> UNMAP support in the kernel.  I'd really love to test the XFS batched
+> discard support with a real UNMAP implementation.
 
-Hi. This is the qmail-send program at mail.gmx.net.
-I'm afraid I wasn't able to deliver your message to the following addresses.
-This is a permanent error; I've given up. Sorry it didn't work out.
+The sg3_utils version 1.28 beta at http://sg.danny.cz/sg/
+has a new sg_unmap utility and the previous release
+included sg_write_same with Unmap bit support.
+sg_readcap has been updated to show the TPE and TPRZ bits.
 
-<devel@driverdev.osuosl.org>:
-140.211.166.17_does_not_like_recipient./Remote_host_said:_550_5.1.1_<devel@driverdev.osuosl.org>:_Recipient_address_rejected:_User_unknown_in_virtual_alias_table/Giving_up_on_140.211.166.17./
+There is a new SCSI GET LBA STATUS command coming
+(approved at the last t10 meeting, awaiting the next
+SBC-3 draft). That will show the mapped/unmapped
+status of logical blocks in a range of LBAs. I can
+add a utility for that as well.
 
-
-On Mon, 2009-08-17 at 05:47 +0200, Mike Galbraith wrote:
-> On Sun, 2009-08-16 at 21:29 +0200, Bartlomiej Zolnierkiewicz wrote:
-> > Hi,
-> > 
-> > Some fixes, some cleanups and a lot of preparations for finally merging
-> > rt{28,30}70 drivers together.
-> > 
-> > Tested with RT2860 (Asus Eee 901) and RT3070 (el cheapo USB dongle that
-> > I've bought recently to speed up the development, I'm posting this mail
-> > using it right now) chipsets.
-> 
-> I plugged these into tip this morning (3, 5 and 21 needed hammering) and
-> tried my box's onboard USB gizmo:
-> 
-> Bus 007 Device 003: ID 13d3:3247 IMC Networks 802.11 n/g/b Wireless LAN Adapter
-> 
-> Works fine here.
-> 
-> > PS I tried using rt2800usb driver found in 2.6.31-rc6 (with overdue fix
-> > for memory corruption in rf cache from Pavel Roskin) for RT3070 chipset
-> > but it doesn't seem to work yet (iwlist wlan0 scan => no stations)..
-> 
-> Yeah, I can ping/traceroute with it, but that's about it, seems to choke
-> as soon as you need to xfer non-dinky packets.  (I would have thought
-> that the corruption fix would swim upstream given it's utterly deadly)
-> 
-> 	-Mike
+Doug Gilbert
 
