@@ -1,98 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbZHQCql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbZHQCwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbZHQCql (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 22:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756658AbZHQCql
+	id S1756699AbZHQCwj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 22:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756612AbZHQCwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 22:46:41 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:65517 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756479AbZHQCqk (ORCPT
+	Sun, 16 Aug 2009 22:52:38 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37240 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756470AbZHQCwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 22:46:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=h1BSuAM4nD3u6+arokX6hGRYHNqsxFUmxKs5XYsLvsTLOcYX2AoqzeoxYeiLJ/roHv
-         JOmrF5Cn7t4TT3cqZC6WUvXMq8apXNI7XdjndV5I0nF09zfHPgZZZV0xk4B7cf1qjHi/
-         gyF9kNR184BX0TxQ+itxqNksWCzuc5B8eKFxM=
-Date: Mon, 17 Aug 2009 10:48:58 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Vincent Li <macli@brc.ubc.ca>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fs/proc/base.c: fix proc_fault_inject_write() input
-	sanity check
-Message-ID: <20090817024858.GG5039@cr0.nay.redhat.com>
-References: <1250281120-3308-1-git-send-email-macli@brc.ubc.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250281120-3308-1-git-send-email-macli@brc.ubc.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 16 Aug 2009 22:52:38 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 17 Aug 2009 11:50:52 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Amerigo Wang <xiyou.wangcong@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 0/6] kcore clean up and enhance
+Message-Id: <20090817115052.d512a294.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090812094309.GB5929@cr0.nay.redhat.com>
+References: <20090806192416.4f94be76.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090812094309.GB5929@cr0.nay.redhat.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 14, 2009 at 01:18:40PM -0700, Vincent Li wrote:
->Remove obfuscated zero-length input check and return -EINVAL instead of -EIO error
->to make the error message clear to user. Add whitespace stripping. No functionality changes.
+On Wed, 12 Aug 2009 17:43:09 +0800
+Amerigo Wang <xiyou.wangcong@gmail.com> wrote:
 
-If so, why not introduce a new wrapper which is simply strstrip+simple_strtol?
-Now, at least it has two users.
-
-
->
->The old code:
->
->echo  1  > /proc/pid/make-it-fail (ok)
->echo 1foo > /proc/pid/make-it-fail (-bash: echo: write error: Input/output error)
->
->The new code:
->
->echo  1  > /proc/pid/make-it-fail (ok)
->echo 1foo > /proc/pid/make-it-fail (-bash: echo: write error: Invalid argument)
->
->This patch is conservative in changes to not breaking existing scripts/applications.
->based on v2.6.31-rc6, compiled and tested ok.
->
->Signed-off-by: Vincent Li <macli@brc.ubc.ca>
->---
-> fs/proc/base.c |   11 +++++------
-> 1 files changed, 5 insertions(+), 6 deletions(-)
->
->diff --git a/fs/proc/base.c b/fs/proc/base.c
->index 175db25..ba345d9 100644
->--- a/fs/proc/base.c
->+++ b/fs/proc/base.c
->@@ -1182,17 +1182,16 @@ static ssize_t proc_fault_inject_write(struct file * file,
-> 		count = sizeof(buffer) - 1;
-> 	if (copy_from_user(buffer, buf, count))
-> 		return -EFAULT;
->-	make_it_fail = simple_strtol(buffer, &end, 0);
->-	if (*end == '\n')
->-		end++;
->+	make_it_fail = simple_strtol(strstrip(buffer), &end, 0);
->+	if (*end)
->+		return -EINVAL;
-> 	task = get_proc_task(file->f_dentry->d_inode);
-> 	if (!task)
-> 		return -ESRCH;
-> 	task->make_it_fail = make_it_fail;
-> 	put_task_struct(task);
->-	if (end - buffer == 0)
->-		return -EIO;
->-	return end - buffer;
->+
->+	return count;
-> }
+> On Thu, Aug 06, 2009 at 07:24:16PM +0900, KAMEZAWA Hiroyuki wrote:
+> >
+> >This patch set is for /proc/kcore. By this,
+> >
+> > - many per-arch hooks are removed.
+> >
+> > - /proc/kcore will know really valid physical memory area.
+> >
+> > - /proc/kcore will be aware of memory hotplug.
+> >
+> > - /proc/kcore will be architecture independent i.e.
+> >   if an arch supports CONFIG_MMU, it can use /proc/kcore.
+> >   (if the arch uses usual memory layout.)
 > 
-> static const struct file_operations proc_fault_inject_operations = {
->-- 
->1.6.0.4
->
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+> Hi, this version looks fine for me, I can't spot any obvious
+> mistakes now.
+> 
+> I would like to see these patches merged into -mm, so that
+> I can test the whole stuff about /proc/kcore.
+> 
+> Andrew, could you take these?
+> 
+I'm back. I'll rewrite a rebased one to the newest rc(or mmotm)
+and check it.
+
+Thanks,
+-Kame
+
