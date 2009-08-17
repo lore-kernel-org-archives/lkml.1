@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbZHQI5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbZHQI6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757500AbZHQI5r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 04:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757455AbZHQI5r
+	id S1757513AbZHQI6P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 04:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbZHQI6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 04:57:47 -0400
-Received: from mail.atheros.com ([12.36.123.2]:42787 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751933AbZHQI5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 04:57:46 -0400
-From: Sujith <Sujith.Manoharan@atheros.com>
+	Mon, 17 Aug 2009 04:58:13 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:62232 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757428AbZHQI6M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 04:58:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=YdWuZauQ7tlS3AQIw3oQX2MUbQgIg4ylDFAHH1Zwq9P4LSGReNsSWOi5XHvvaFgAum
+         +mhj/1kJ8854dSQO+38QKSie1kIjfB/W7w3acL6A4xr0DWZwHyPVBthjbef41KiIIicl
+         jODNM3MtsNXhDEpJO87EnvRv36yRzw4Qic0a8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <200908141344.50639.arnd@arndb.de>
+References: <4A842B32.5030401@lumino.de> <200908131839.41803.arnd@arndb.de> 
+	<4A85327D.2040003@lumino.de> <200908141344.50639.arnd@arndb.de>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 17 Aug 2009 04:57:53 -0400
+Message-ID: <8bd0f97a0908170157m71e4ffafna9e1afbb214655cc@mail.gmail.com>
+Subject: Re: implementing Futex
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Michael Schnell <mschnell@lumino.de>, linux-kernel@vger.kernel.org,
+       Paul Mundt <lethal@linux-sh.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-ID: <19081.7071.596267.497541@gargle.gargle.HOWL>
-Date: Mon, 17 Aug 2009 14:28:07 +0530
-To: Miles Lane <miles.lane@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       Jouni Malinen <Jouni.Malinen@atheros.com>,
-       Vasanth Thiagarajan <Vasanth.Thiagarajan@atheros.com>,
-       Senthilkumar Balasubramanian 
-	<Senthilkumar.Balasubramanian@atheros.com>
-Subject: 2.6.31-rc5-git9 -- [<c10562ad>] __report_bad_irq+0x2e/0x6f
-In-Reply-To: <a44ae5cd0908142242s623b7068m1c7bca4388d32e04@mail.gmail.com>
-References: <a44ae5cd0908142242s623b7068m1c7bca4388d32e04@mail.gmail.com>
-X-Mailer: VM 8.0.12 under 23.1.1 (x86_64-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miles Lane wrote:
-> Running Ubuntu Karmic (pre-9.10) updated today, I hit this resuming from suspend.
-> Afterwards, I had to rmmod ath9k & ath, and then modprobe them to get my WIFI working again.
-> 
-> [  600.778140] hub 1-0:1.0: port 8, status 0503, change 0000, 480 Mb/s
-> [  600.799650] done.
-> [  602.489540] irq 19: nobody cared (try booting with the "irqpoll" option)
-> [  602.489558] Pid: 3314, comm: gnome-screensav Not tainted 2.6.31-rc5-git9 #5
-> [  602.489567] Call Trace:
-> [  602.489587]  [<c10562ad>] __report_bad_irq+0x2e/0x6f
-> [  602.489600]  [<c10563e3>] note_interrupt+0xf5/0x14e
-> [  602.489611]  [<c105539a>] ? handle_IRQ_event+0x8a/0x95
-> [  602.489624]  [<c1056925>] handle_fasteoi_irq+0x8a/0xad
-> [  602.489636]  [<c105689b>] ? handle_fasteoi_irq+0x0/0xad
-> [  602.489644]  <IRQ>  [<c100454b>] ? do_IRQ+0x41/0x95
-> [  602.489665]  [<c10030b5>] ? common_interrupt+0x35/0x3c
-> [  602.489673] handlers:
-> [  602.489679] [<f8389124>] (usb_hcd_irq+0x0/0x71 [usbcore])
-> [  602.489733] [<f84940d2>] (ath_isr+0x0/0x12e [ath9k])
-> [  602.489769] Disabling IRQ #19
-> [  602.586887]
+On Fri, Aug 14, 2009 at 07:44, Arnd Bergmann wrote:
+> On Friday 14 August 2009, Michael Schnell wrote:
+>> Does that mean that both in fact do run in the same mode (I suppose
+>> Kernel Mode and thus the CPU's "System Mode" rather than the CPU's "User
+>> Mode".
+>
+> yes
+>
+>> With that - and supposing that as of Kernel 2.6.31 the sh code I see in
+>> Kernel 2.6.30 is used in /asm/generic, I would be able to just use the
+>> "generic" case for "implementing" a working Futex syscall for the NIOS).
+>
+> Well, I haven't put that code into asm-generic/futex.h yet and it's
+> too late for 2.6.31, but it should get there eventually, if one of us
+> four submits a tested patch ;-).
 
-A patch fixing this issue is in wireless-testing.
-URL: http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=commit;h=6bffc3e18e342c5cc7dcf7207e15ec7a027419e8
-
-To pull the latest wireless code, you can use compat-wireless.
-Check http://wireless.kernel.org/en/users/Download
-
-Sujith
+well, that thread stalled because i posted a question wrt spinlock/irq
+usage and didnt get a response ...
+-mike
