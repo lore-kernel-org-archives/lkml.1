@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932243AbZHQLgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbZHQLh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932243AbZHQLgT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 07:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757799AbZHQLgT
+	id S1757820AbZHQLh7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 07:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757800AbZHQLh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 07:36:19 -0400
-Received: from mga06.intel.com ([134.134.136.21]:46377 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757775AbZHQLgS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 07:36:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,396,1246863600"; 
-   d="scan'208";a="541936091"
-Message-ID: <4A89409B.8020103@linux.intel.com>
-Date: Mon, 17 Aug 2009 13:35:55 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Mon, 17 Aug 2009 07:37:59 -0400
+Received: from bu3sch.de ([62.75.166.246]:36676 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757777AbZHQLh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 07:37:58 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Threaded interrupt handlers broken?
+Date: Mon, 17 Aug 2009 13:37:58 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200908161153.14081.mb@bu3sch.de> <alpine.LFD.2.00.0908171302430.2782@localhost.localdomain> <alpine.LFD.2.00.0908171311260.2782@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0908171311260.2782@localhost.localdomain>
+X-Move-Along: Nothing to see here. No, really... Nothing.
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
-       tglx@linutronix.de, Yinghai Lu <yinghai@kernel.org>,
-       Huang Ying <ying.huang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [PATCH] x86, mce: Don't initialize MCEs on unknown CPUs
-References: <tip-4efc0670baf4b14bc95502e54a83ccf639146125@git.kernel.org> <20090812113652.GA19632@elte.hu> <4A88E3E4.40506@jp.fujitsu.com> <20090817083544.GC15390@elte.hu> <4A891E17.1090901@jp.fujitsu.com> <20090817112938.GA22794@elte.hu>
-In-Reply-To: <20090817112938.GA22794@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908171337.58713.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-
+On Monday 17 August 2009 13:12:09 Thomas Gleixner wrote:
+> On Mon, 17 Aug 2009, Thomas Gleixner wrote:
+> > On Mon, 17 Aug 2009, Thomas Gleixner wrote:
+> > 
+> > > On Mon, 17 Aug 2009, Michael Buesch wrote:
+> > > > Ok, I added some more debugging code:
+> > > > http://bu3sch.de/patches/wireless-testing/20090817-1219/patches/001-hack-threaded-irqs.patch
+> > > > 
+> > > > Here's the result:
+> > > > http://bu3sch.de/misc/dmesg2
+> > > >
+> > > > Is it possible that the irq_to_desc() in irq_thread() fails and the
+> > > > resulting desc pointer points to something random? That could
+> > > > probably explain why the bit is set and why the spinlock is
+> > > > uninitialized. But it would not explain why desc->lock would still
+> > > > work... Maybe irq_to_desc() returns a descriptor to another irq (!=
+> > > > 52)?
+> > > 
+> > > That would cause the whole irq code to fail. Can you send/upload your
+> > > .config please ?
+> > 
+> > Also just add printk("desc: %p \n", desc); to the various places to
+> > make sure that your pointers are correct.
 > 
-> btw., i found the bug - it's due to:
+> Gah. I think I found it.
 > 
->   # CONFIG_CPU_SUP_INTEL is not set
-
-Ah, thanks for debugging. Very tricky and nasty. Perhaps these options are more trouble
-than what they save in code.
-
->  static void __cpuinit mce_ancient_init(struct cpuinfo_x86 *c)
-> @@ -1342,11 +1352,10 @@ void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
->  	if (!mce_available(c))
->  		return;
->  
-> -	if (mce_cap_init() < 0) {
-> +	if (mce_cap_init() < 0 || mce_cpu_quirks(c) < 0) {
->  		mce_disabled = 1;
->  		return;
+> I wonder why nobody else ever tripped over this.
+> 
+> Thanks,
+> 
+> 	tglx
+> ---
+> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> index d222515..223b062 100644
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -607,7 +607,6 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
+>  		 */
+>  		get_task_struct(t);
+>  		new->thread = t;
+> -		wake_up_process(t);
 >  	}
-> -	mce_cpu_quirks(c);
+>  
+>  	/*
+> @@ -712,6 +711,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
+>  	new->dir = NULL;
+>  	register_handler_proc(irq, new);
+>  
+> +	if (new->thread)
+> +		wake_up_process(new->thread);
+> +
+>  	return 0;
+>  
+>  mismatch:
+> 
+> 
 
-I'm very pedantic here and it's more a theoretical problem, but mce_cap_init() allocates
-memory which you leak and this could rerun on each CPU hotplug. So if you have a unknown CPU and do
-a lot of CPU hotadds in a loop then you would eventually fill all memory.
-Better kfree() the bank arrays.
+This fixes it :)
 
--Andi
+Tested-by: Michael Buesch <mb@bu3sch.de>
+
+-- 
+Greetings, Michael.
