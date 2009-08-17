@@ -1,78 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751179AbZHQEam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751261AbZHQEqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751179AbZHQEam (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 00:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbZHQEal
+	id S1751261AbZHQEqM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 00:46:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbZHQEqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 00:30:41 -0400
-Received: from cantor.suse.de ([195.135.220.2]:55910 "EHLO mx1.suse.de"
+	Mon, 17 Aug 2009 00:46:12 -0400
+Received: from kroah.org ([198.145.64.141]:59035 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750931AbZHQEal (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 00:30:41 -0400
-Date: Sun, 16 Aug 2009 21:29:14 -0700
-From: Greg KH <gregkh@suse.de>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Thomas Backlund <tmb@mandriva.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org, lwn@lwn.net
-Subject: Re: Linux 2.6.27.30
-Message-ID: <20090817042914.GA20814@suse.de>
-References: <20090816213523.GC7015@kroah.com>
- <4A8891AC.5090606@mandriva.org>
- <20090817042133.GB11624@1wt.eu>
+	id S1751109AbZHQEqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 00:46:11 -0400
+Date: Sun, 16 Aug 2009 21:44:50 -0700
+From: Greg KH <greg@kroah.com>
+To: Christian Roche <christian.roche.fr@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Oops: sysfs: duplicate filename 'usbdev3.3_ep81' can not be
+ created
+Message-ID: <20090817044450.GB20884@kroah.com>
+References: <589ee1d0908160656u40672d47i7a7abe9923681f09@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090817042133.GB11624@1wt.eu>
+In-Reply-To: <589ee1d0908160656u40672d47i7a7abe9923681f09@mail.gmail.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 17, 2009 at 06:21:33AM +0200, Willy Tarreau wrote:
-> On Mon, Aug 17, 2009 at 02:09:32AM +0300, Thomas Backlund wrote:
-> > Greg KH skrev:
-> > >I'm announcing the release of the 2.6.27.30 kernel.  All users of the
-> > >2.6.27 kernel series are very strongly encouraged to upgrade.
-> > >
-> > >I'll also be replying to this message with a copy of the patch between
-> > >2.6.27.29 and 2.6.27.30
-> > >
-> > >The updated 2.6.27.y git tree can be found at:
-> > >        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.27.y.git
-> > >and can be browsed at the normal kernel.org git web browser:
-> > >        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=summary
-> > >
-> > >thanks,
-> > >
-> > >greg k-h
-> > >
-> > 
-> > This is broken on x86_64
-> > 
-> > config attached....
-> > 
-> > [thomas@tmb linux-2.6.27.30]$ LC_ALL=C make
-> >   CHK     include/linux/version.h
-> >   CHK     include/linux/utsrelease.h
-> >   CALL    scripts/checksyscalls.sh
-> >   CHK     include/linux/compile.h
-> >   CC      fs/compat_ioctl.o
-> > fs/compat_ioctl.c:1913: error: 'FS_IOC_FIEMAP' undeclared here (not in a 
-> > function)
-> > make[1]: *** [fs/compat_ioctl.o] Error 1
-> > make: *** [fs] Error 2
+On Sun, Aug 16, 2009 at 02:56:29PM +0100, Christian Roche wrote:
+> Hi there,
 > 
-> indeed, fiemap was merged after 2.6.27, so the patch below was not
-> appropriate for 2.6.27.x :
+> I'm encountering a kernel oops when trying to use a USB 3G modem. The
+> modem is an LG LDU-1900D USB key used in Morocco to access Wana's 3G
+> network. The modem works fine in Vista but comes with no Linux
+> drivers. I've seen one similar message in the list archive, but it
+> seems to be related to another, already corrected bug
+> (http://www.gossamer-threads.com/lists/linux/kernel/981459#981459).
 > 
->     [patch 16/28] compat_ioctl: hook up compat handler for FIEMAP ioctl
+> Does anyone here have an idea ? Thanks to kindly keep me cc'ed, I'm
+> not subscribed to the list (a tad too technical for me :-)
 > 
-> Greg, commit 9ac3664242f11fb38ea5029712bc77ee317fe38c should be reverted
-> I think.
+> My system: Linux jimi 2.6.29.6-217.2.3.fc11.i586 #1 SMP Wed Jul 29
+> 15:46:46 EDT 2009 i686 i686 i386 GNU/Linux
 
-You are right, I'll do it in the morning and push out another .27 update
-with this fix in it.
+Please try a 2.6.30 kernel release, this problem has been fixed in
+there.
 
 thanks,
 
