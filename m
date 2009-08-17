@@ -1,63 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbZHQHPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZHQHQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292AbZHQHPX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 03:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbZHQHPX
+	id S1756586AbZHQHQz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 03:16:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZHQHQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 03:15:23 -0400
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:49515 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750831AbZHQHPW (ORCPT
+	Mon, 17 Aug 2009 03:16:54 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:40253 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751754AbZHQHQy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 03:15:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=lH5jdITAAemRt2cWit0IVFcXn/gVW8Dvg0ZB9Bm/WWC2LNQF+nRI6bmnByRgU9WwUN
-         wbm6URqTZyFjCS4fwRvcfwAm6+IQqCC/7ZPNnefK0z3K4/OmMDwdV4BV331muNrt12zD
-         2sBmrHntjzZk9YdioWChJaThW2I4tac95qSRU=
-Message-ID: <4A890388.8070709@gmail.com>
-Date: Mon, 17 Aug 2009 09:15:20 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-7.4 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-CC: Andi Kleen <andi@firstfloor.org>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make shr to divide by power of 2 (resend)
-References: <20090815134312.GA7533@localdomain.by> <4A86BC96.9040702@gmail.com> <alpine.LFD.2.00.0908150947260.14440@localhost> <20090815141212.GA7692@localdomain.by> <4A871DAF.10609@gmail.com> <20090816091425.GB7968@localdomain.by>
-In-Reply-To: <20090816091425.GB7968@localdomain.by>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-2
+	Mon, 17 Aug 2009 03:16:54 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: dipankar@in.ibm.com
+Cc: balbir@linux.vnet.ibm.com, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <lenb@kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Li, Shaohua" <shaohua.li@intel.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
+       "Brown, Len" <len.brown@intel.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>,
+       "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090817062418.GB31027@in.ibm.com>
+References: <20090810081941.GA18649@elf.ucw.cz>
+	 <1249950137.11545.38184.camel@localhost.localdomain>
+	 <20090812115806.GK24339@elf.ucw.cz> <20090812195753.GA14649@in.ibm.com>
+	 <alpine.LFD.2.00.0908122036580.22946@localhost.localdomain>
+	 <20090813045931.GB14649@in.ibm.com> <20090814113021.GL32418@elf.ucw.cz>
+	 <20090816182629.GA31027@in.ibm.com>
+	 <20090816194441.GA22626@balbir.in.ibm.com>
+	 <1250459602.8648.35.camel@laptop>  <20090817062418.GB31027@in.ibm.com>
+Content-Type: text/plain
+Date: Mon, 17 Aug 2009 09:15:57 +0200
+Message-Id: <1250493357.5241.1656.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/16/2009 11:14 AM, Sergey Senozhatsky wrote:
-> There are different shr/shl operations in bitblit.c. Like,
-> #1
-> cur_height = vc->vc_font.height >> 1
-> cur_height = (vc->vc_font.height << 1)/3;
-> c |= c >> 1;
-> u32 idx = vc->vc_font.width >> 3;
-> etc.
+On Mon, 2009-08-17 at 11:54 +0530, Dipankar Sarma wrote:
+> On Sun, Aug 16, 2009 at 11:53:22PM +0200, Peter Zijlstra wrote:
+> > On Mon, 2009-08-17 at 01:14 +0530, Balbir Singh wrote:
+> > > Agreed, I've tried to come with a little ASCII art to depict your
+> > > scenairos graphically
+> > > 
+> > > 
+> > >         +--------+ don't need (offline)
+> > >         |  OS    +----------->+------------+
+> > >         +--+-----+            | hypervisor +-----> Reuse CPU
+> > >            |                  |            |       for something
+> > >            |                  |            |       else
+> > >            |                  |            |   (visible to users)
+> > >            |                  |            |    as resource changed
+> > >            |                  +----------- +
+> > >            V (needed, but can cede)
+> > >        +------------+
+> > >        | hypervisor | Don't reuse CPU
+> > >        |            |  (CPU ceded)
+> > >        |            | give back to OS
+> > >        +------------+ when needed.
+> > >                         (Not visible to
+> > >                         users as so resource
+> > >                         binding changed)
+> > 
+> > I still don't get it... _why_ should this be exposed in the guest
+> > kernel? Why not let the hypervisor manage a guest's offline cpus in a
+> > way it sees fit?
 > 
-> So, should I convert it to something like:
+> For most parts, we do. The guest kernel doesn't manage the offline
+> CPU state. That is typically done by the hypervisor. However, offline
+> operation as defined now always result in a VM resize in some hypervisor
+> systems (like pseries) - it would be convenient to have a non-resize
+> offline operation which lets the guest cede the cpu to hypervisor
+> with the hint that the VM shouldn't be resized and the guest needs the guarantee
+> to get the cpu back any time. The hypervisor can do whatever it wants
+> with the ceded CPU including putting it in a low power state, but
+> not change the physical cpu shares of the VM. The pseries hypervisor,
+> for example, clearly distinguishes between the two - "rtas-stop-self" call
+> to resize VM vs. H_CEDE hypercall with a hint. What I am suggesting
+> is that we allow this with an extension to existing interfaces because it 
+> makes sense to allow sort of "hibernation" of the cpus without changing any
+> configuration of the VMs.
 
-Not at all. I was writing about about (X + 7) / 8 [or >> 3] which is
-DIV_ROUND_UP(X, 8).
+>From my POV the thing you call cede is the only sane thing to do for a
+guest. Let the hypervisor management interface deal with resizing guests
+if and when that's needed.
 
-> #2
-> cur_height = DIV_XXX(vc->vc_font.height, 2)
-> cur_height = DIV_XXX( MUL_XXX(vc->vc_font.height, 2), 3); or cur_height = DIV_XXX( (vc->vc_font.height * 2), 3);
-> c |= DIV_XXX(c, 1);
-> u32 idx = DIV_XXX(vc->vc_font.width, 8);
-> 
-> #1 is better-looking I think.
+Thing is, you don't want a guest to be able to influence the amount of
+cpu shares attributed to it. You want that in explicit control of
+whomever manages the hypervisor.
 
-Agreed. I would write it without shifts though. But we were talking
-about the roundup case not about the shifts all over the code.
