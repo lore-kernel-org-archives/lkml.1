@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbZHQIPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbZHQIRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757394AbZHQIPY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 04:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbZHQIPW
+	id S1757397AbZHQIRf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 04:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757251AbZHQIRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 04:15:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33917 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757355AbZHQIPV (ORCPT
+	Mon, 17 Aug 2009 04:17:33 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:24117 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757370AbZHQIRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 04:15:21 -0400
-Date: Mon, 17 Aug 2009 09:15:24 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
-Subject: Re: [PATCH 2/7] kfifo: move out spinlock
-Message-ID: <20090817091524.33f99737@lxorguk.ukuu.org.uk>
-In-Reply-To: <1250495182.20837.27.camel@wall-e>
-References: <1250455161.28540.4.camel@wall-e>
-	<1250455590.28540.10.camel@wall-e>
-	<20090816235843.0f7f11de@lxorguk.ukuu.org.uk>
-	<20090816163422.a147a918.akpm@linux-foundation.org>
-	<20090817074820.3585206b@lxorguk.ukuu.org.uk>
-	<1250495182.20837.27.camel@wall-e>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Mon, 17 Aug 2009 04:17:31 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH] perf_counter: Check task on counter read IPI
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <19076.63614.277861.368125@drongo.ozlabs.ibm.com>
+References: <19076.63614.277861.368125@drongo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Mon, 17 Aug 2009 10:16:56 +0200
+Message-Id: <1250497016.5241.1675.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > All over the kernel unlocked function versions have a leading _ name.
-> > It's the kernel convention.
+On Fri, 2009-08-14 at 15:39 +1000, Paul Mackerras wrote:
+> In general, code in perf_counter.c that is called through an IPI
+> checks, for per-task counters, that the counter's task is still the
+> current task.  This is to handle the race condition where the cpu
+> switches from the task we want to another task in the interval between
+> sending the IPI and the IPI arriving and being handled on the target
+> CPU.
 > 
-> Thats is not true in every case. Have a look at list.h - That was the
-> pattern i have implemented the new kfifo API.
-
-Of course it isn't true in every case. Show me a *single* kernel
-convention that is. It's also not true in no cases. foo_locked isn't used
-much at all.
-
-> The main reason to do this was to design a cleaner interface. Because
-> there are very few users of this API, i thought it is a good time and
-> chance to do this.
+> For some reason, __perf_counter_read is missing this check, yet there
+> is no reason why the race condition can't occur.  This adds a check
+> that the current task is the one we want.  If it isn't, we just
+> return.  In that case the counter->count value should be up to date,
+> since it will have been updated when the counter was scheduled out,
+> which must have happened since the IPI was sent.
 > 
-> My first draft version does also not renamed this functions, but there
-> was some concerns about the new functionality without modification the
-> function names.
-> 
-> Also the remove of the spinlock made is necessary to rename the
-> functions for preventing miss-use by out-of-kernel-tree drivers.
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> ---
+> I don't have an example of an actual failure due to this race, but it
+> seems obvious that it could occur and we need to guard against it, so
+> I think this should go in .31.
 
-So if you didn't remove the spinlock you wouldn't have to change the API
-and patch all the drivers.
- 
-> I think the break is not so hard if you believe. All you have to do is
-> to replace or kfifo_get() into kfifo_out_locked() and kfifo_put() into
-> kfifo_in_locked() if you really need the old behavior.
+Hmm, right.
 
-Which is very long winded. If you want longwinded and without breaking
-stuff you can use
+However those other sites have retry loops in the caller, but callers of
+__perf_counter_read() do not. Granted, I'm not sure what they should
+retry on exactly, but this patch trades an invalid update to a missing
+update.
 
-foo_unlocked() or unlocked_foo()
+While I think the balance tips towards favouring the missing update, its
+not really much of an improvement.
 
-which do occur in the kernel (eg ioctl) when we want people to be
-specifically aware of it although according to grep a little less often
-than foo_locked() [discounting foo_is_locked which is general tests]
+I guess we could keep a sequence count with the update and loop until it
+gets increased or something?
+
 
