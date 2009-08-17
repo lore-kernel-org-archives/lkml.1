@@ -1,99 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZHQHQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757011AbZHQH2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756586AbZHQHQz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 03:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZHQHQy
+	id S1757011AbZHQH2e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 03:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbZHQH2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 03:16:54 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:40253 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751754AbZHQHQy (ORCPT
+	Mon, 17 Aug 2009 03:28:33 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:30875 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751238AbZHQH2c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 03:16:54 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: dipankar@in.ibm.com
-Cc: balbir@linux.vnet.ibm.com, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "Li, Shaohua" <shaohua.li@intel.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
-       "Brown, Len" <len.brown@intel.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>,
-       "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090817062418.GB31027@in.ibm.com>
-References: <20090810081941.GA18649@elf.ucw.cz>
-	 <1249950137.11545.38184.camel@localhost.localdomain>
-	 <20090812115806.GK24339@elf.ucw.cz> <20090812195753.GA14649@in.ibm.com>
-	 <alpine.LFD.2.00.0908122036580.22946@localhost.localdomain>
-	 <20090813045931.GB14649@in.ibm.com> <20090814113021.GL32418@elf.ucw.cz>
-	 <20090816182629.GA31027@in.ibm.com>
-	 <20090816194441.GA22626@balbir.in.ibm.com>
-	 <1250459602.8648.35.camel@laptop>  <20090817062418.GB31027@in.ibm.com>
-Content-Type: text/plain
-Date: Mon, 17 Aug 2009 09:15:57 +0200
-Message-Id: <1250493357.5241.1656.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Aug 2009 03:28:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=EU/4slDVwzhO3kHt0lUFbWq7ZGpaYNN2ZCF7BQACJ0barUkN1Y3UibOFWX+f9sY+S8
+         pYMHtSF1wmFw6L9gpt4VJbYg82xgm1qWhbMVd5rjllvllqFFd3k8uxym1FZqZZc03pSr
+         28zoJd/HW1cd2geY/HcIPWa2izMySLVnrRjpM=
+Date: Mon, 17 Aug 2009 10:31:47 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Make shr to divide by power of 2 (resend)
+Message-ID: <20090817073147.GA2967@localdomain.by>
+References: <20090815134312.GA7533@localdomain.by>
+ <4A86BC96.9040702@gmail.com>
+ <alpine.LFD.2.00.0908150947260.14440@localhost>
+ <20090815141212.GA7692@localdomain.by>
+ <4A871DAF.10609@gmail.com>
+ <20090816091425.GB7968@localdomain.by>
+ <4A890388.8070709@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="HlL+5n6rz5pIUxbD"
+Content-Disposition: inline
+In-Reply-To: <4A890388.8070709@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-17 at 11:54 +0530, Dipankar Sarma wrote:
-> On Sun, Aug 16, 2009 at 11:53:22PM +0200, Peter Zijlstra wrote:
-> > On Mon, 2009-08-17 at 01:14 +0530, Balbir Singh wrote:
-> > > Agreed, I've tried to come with a little ASCII art to depict your
-> > > scenairos graphically
-> > > 
-> > > 
-> > >         +--------+ don't need (offline)
-> > >         |  OS    +----------->+------------+
-> > >         +--+-----+            | hypervisor +-----> Reuse CPU
-> > >            |                  |            |       for something
-> > >            |                  |            |       else
-> > >            |                  |            |   (visible to users)
-> > >            |                  |            |    as resource changed
-> > >            |                  +----------- +
-> > >            V (needed, but can cede)
-> > >        +------------+
-> > >        | hypervisor | Don't reuse CPU
-> > >        |            |  (CPU ceded)
-> > >        |            | give back to OS
-> > >        +------------+ when needed.
-> > >                         (Not visible to
-> > >                         users as so resource
-> > >                         binding changed)
-> > 
-> > I still don't get it... _why_ should this be exposed in the guest
-> > kernel? Why not let the hypervisor manage a guest's offline cpus in a
-> > way it sees fit?
-> 
-> For most parts, we do. The guest kernel doesn't manage the offline
-> CPU state. That is typically done by the hypervisor. However, offline
-> operation as defined now always result in a VM resize in some hypervisor
-> systems (like pseries) - it would be convenient to have a non-resize
-> offline operation which lets the guest cede the cpu to hypervisor
-> with the hint that the VM shouldn't be resized and the guest needs the guarantee
-> to get the cpu back any time. The hypervisor can do whatever it wants
-> with the ceded CPU including putting it in a low power state, but
-> not change the physical cpu shares of the VM. The pseries hypervisor,
-> for example, clearly distinguishes between the two - "rtas-stop-self" call
-> to resize VM vs. H_CEDE hypercall with a hint. What I am suggesting
-> is that we allow this with an extension to existing interfaces because it 
-> makes sense to allow sort of "hibernation" of the cpus without changing any
-> configuration of the VMs.
 
->From my POV the thing you call cede is the only sane thing to do for a
-guest. Let the hypervisor management interface deal with resizing guests
-if and when that's needed.
+--HlL+5n6rz5pIUxbD
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thing is, you don't want a guest to be able to influence the amount of
-cpu shares attributed to it. You want that in explicit control of
-whomever manages the hypervisor.
+On (08/17/09 09:15), Jiri Slaby wrote:
+> On 08/16/2009 11:14 AM, Sergey Senozhatsky wrote:
+> > There are different shr/shl operations in bitblit.c. Like,
+> > #1
+> > cur_height =3D vc->vc_font.height >> 1
+> > cur_height =3D (vc->vc_font.height << 1)/3;
+> > c |=3D c >> 1;
+> > u32 idx =3D vc->vc_font.width >> 3;
+> > etc.
+> >=20
+> > So, should I convert it to something like:
+>=20
+> Not at all. I was writing about about (X + 7) / 8 [or >> 3] which is
+> DIV_ROUND_UP(X, 8).
+>=20
+As far as I can understand:=20
+DIV_ROUND_UP(61, 8):
+(111101 + 111) >> 3 -> 1000 =3D=3D 8
 
+(int)(61/8) =3D=3D 7
+
+So, we need not DIV_ROUND_UP but (let it be) DIV_SHR (a,b) (a) >> (b);
+In that case cur_height =3D vc->vc_font.height >> 2 should be cur_height =
+=3D DIV_SHR(vc->vc_font.height, 1).
+And this is kind of obfuscation I think.
+
+> > #2
+> > cur_height =3D DIV_XXX(vc->vc_font.height, 2)
+> > cur_height =3D DIV_XXX( MUL_XXX(vc->vc_font.height, 2), 3); or cur_heig=
+ht =3D DIV_XXX( (vc->vc_font.height * 2), 3);
+> > c |=3D DIV_XXX(c, 1);
+> > u32 idx =3D DIV_XXX(vc->vc_font.width, 8);
+> >=20
+> > #1 is better-looking I think.
+>=20
+> Agreed. I would write it without shifts though. But we were talking
+> about the roundup case not about the shifts all over the code.
+>=20
+
+	Sergey
+--HlL+5n6rz5pIUxbD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iJwEAQECAAYFAkqJB2MACgkQfKHnntdSXjThNAQAwFKB6eefXlMlUavml7w8w/JV
+OHS2SyB0+xJGwmk+ssSVdp3c1vTGhfyq1dvGiTMcglry9vB2vNIpxzO0hU6JFIMr
+/k+xsuT3Wq5R9H6W99cq3pplMZ/olL+mF2E4Pl9VQfptjpB+VaxlfuVNWtb1HI6f
+7iQkRZbZ62YmE1FRI3k=
+=iS51
+-----END PGP SIGNATURE-----
+
+--HlL+5n6rz5pIUxbD--
