@@ -1,213 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757859AbZHQLq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757862AbZHQLuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757859AbZHQLq5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 07:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757838AbZHQLq5
+	id S1757862AbZHQLuL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 07:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757716AbZHQLuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 07:46:57 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:54157 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757762AbZHQLq4 (ORCPT
+	Mon, 17 Aug 2009 07:50:10 -0400
+Received: from msux-gh1-uea01.nsa.gov ([63.239.67.1]:34296 "EHLO
+	msux-gh1-uea01.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757670AbZHQLuJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 07:46:56 -0400
-Date: Mon, 17 Aug 2009 14:46:51 +0300
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH 3/3] MFD: TWL4030: OMAP: Board-specifc DPS scripts for
- RX51 board
-Message-ID: <20090817114651.GD5007@everest>
-Mail-Followup-To: Samuel Ortiz <sameo@linux.intel.com>,
-	dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-	linux-omap@vger.kernel.org
-References: <1247050179-31187-1-git-send-email-amit.kucheria@verdurent.com>
- <20090804180304.GI8601@sortiz.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090804180304.GI8601@sortiz.org>
-X-URL: http://www.verdurent.com/
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 17 Aug 2009 07:50:09 -0400
+Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on
+ sysfs files, directories, and symlinks.
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: "David P. Quigley" <dpquigl@tycho.nsa.gov>, jmorris@namei.org,
+       Greg Kroah-Hartman <greg@kroah.com>, ebiederm@xmission.com,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       selinux@tycho.nsa.gov
+In-Reply-To: <4A860D0F.7020205@schaufler-ca.com>
+References: <1247665721-2619-1-git-send-email-dpquigl@tycho.nsa.gov>
+	 <4A84EF1D.8060408@schaufler-ca.com>
+	 <1250252411.2422.177.camel@moss-pluto.epoch.ncsc.mil>
+	 <4A860D0F.7020205@schaufler-ca.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Mon, 17 Aug 2009 07:53:13 -0400
+Message-Id: <1250509993.3629.93.camel@moss-pluto.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09 Aug 04, Samuel Ortiz wrote:
-> Hi Amit,
+On Fri, 2009-08-14 at 18:19 -0700, Casey Schaufler wrote:
+> Stephen Smalley wrote:
+> > On Thu, 2009-08-13 at 21:59 -0700, Casey Schaufler wrote:
+> >   
+> >> From: Casey Schaufler <casey@schaufler-ca.com>
+> >>
+> >> This patch is in response to David P. Quigley's proposal from
+> >> July of this year. That patch provided special case handling of
+> >> LSM xattrs in the security name space.
+> >>
+> >> This patch provides an in memory representation of general
+> >> xattrs. It currently only allows xattrs in the security namespace,
+> >> but that is only because the support of ACLs is beyond the
+> >> day's needs. The list of xattrs for a given file is created on
+> >> demand and a system that does not use xattrs should be pretty
+> >> well oblivious to the changes. On the down side, this requires
+> >> an unpleasant locking scheme. Improvements would of course be
+> >> welcome.
+> >>
+> >> This scheme should generalize to any memory based file system,
+> >> although I have not attempted to create a generic implementation
+> >> here.
+> >>     
+> >
+> > I don't understand the benefits of this scheme compared to David's patch
+> > - can you explain?
 > 
-> On Wed, Jul 08, 2009 at 01:49:39PM +0300, Amit Kucheria wrote:
-> > Add support for Dynamic Power Switching (DPS) for the RX51 board.
-> Could I have an Acked-by from Tony or someone from Nokia maintaining this
-> board (e.g. Lauri) ?
+> Sure, you bet. David's scheme requires as LSM and is only capable
+> of supporting security namespace attributes. It is further not a
+> reasonable model for other memory based filesystems. If all you
+> ever want to support is SELinux, it would be fine, but an LSM
+> that uses multiple xattrs (Smack only uses multiple xattrs on
+> sockets, but it does use them) would be hard pressed to work off
+> of a secid. This is a swag at real xattr support, which is the
+> right thing to do for any filesystem. Special purpose interfaces
+> to solve a single instance of a problem are for squares.
+
+I don't see that one particularly wants full xattr support on sysfs
+nodes (or other in-memory filesystems).  Why would one support e.g.
+user.* attributes on such nodes?  Why would one support filesystem
+capabilities on such nodes (careful - last thing we want is a repeat of
+suid bit on proc nodes)?  And if you want ACL support, you'll need code
+to actually enforce those ACLs within the filesystem, not just generic
+xattr handler code - see the tmpfs code in mm/shmem.c for an example of
+ACL support for in-memory filesystems.
+
+> >   It seems worse in terms of locking,
 > 
+> I'll buy that, and happily incorporate improvements. The
+> crude locking is an artifact of keeping memory usage down.
 
-I'll cc Tony in the refreshed patches. Please note that this is not the
-final version of the script. As the scripts are optimised, I'll send in
-fixes.
+But you don't need any extra locking if you just directly use the
+existing memory storage provided by the security module.
 
-Regards,
-Amit
-
-> > Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
-> > ---
-> >  arch/arm/mach-omap2/board-rx51-peripherals.c |  122 +++++++++++++++++++++++++-
-> >  1 files changed, 120 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
-> > index 9a0bf67..f7ebec8 100644
-> > --- a/arch/arm/mach-omap2/board-rx51-peripherals.c
-> > +++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
-> > @@ -1,5 +1,5 @@
-> >  /*
-> > - * linux/arch/arm/mach-omap2/board-rx51-flash.c
-> > + * linux/arch/arm/mach-omap2/board-rx51-peripherals.c
-> >   *
-> >   * Copyright (C) 2008-2009 Nokia
-> >   *
-> > @@ -278,7 +278,124 @@ static struct twl4030_gpio_platform_data rx51_gpio_data = {
-> >  	.setup			= rx51_twlgpio_setup,
-> >  };
-> >  
-> > -static struct twl4030_platform_data rx51_twldata = {
-> > +static struct twl4030_ins sleep_on_seq[] __initdata = {
-> > +/*
-> > + * Turn off VDD1 and VDD2.
-> > + */
-> > +	{MSG_SINGULAR(DEV_GRP_P1, 0xf, RES_STATE_OFF), 4},
-> > +	{MSG_SINGULAR(DEV_GRP_P1, 0x10, RES_STATE_OFF), 2},
-> > +/*
-> > + * And also turn off the OMAP3 PLLs and the sysclk output.
-> > + */
-> > +	{MSG_SINGULAR(DEV_GRP_P1, 0x7, RES_STATE_OFF), 3},
-> > +	{MSG_SINGULAR(DEV_GRP_P1, 0x17, RES_STATE_OFF), 3},
-> > +};
-> > +
-> > +static struct twl4030_script sleep_on_script __initdata = {
-> > +	.script = sleep_on_seq,
-> > +	.size   = ARRAY_SIZE(sleep_on_seq),
-> > +	.flags  = TRITON_SLEEP_SCRIPT,
-> > +};
-> > +
-> > +static struct twl4030_ins wakeup_seq[] __initdata = {
-> > +/*
-> > + * Reenable the OMAP3 PLLs.
-> > + * Wakeup VDD1 and VDD2.
-> > + * Reenable sysclk output.
-> > + */
-> > +	{MSG_SINGULAR(DEV_GRP_P1, 0x7, RES_STATE_ACTIVE), 0x30},
-> > +	{MSG_SINGULAR(DEV_GRP_P1, 0xf, RES_STATE_ACTIVE), 0x30},
-> > +	{MSG_SINGULAR(DEV_GRP_P1, 0x10, RES_STATE_ACTIVE), 0x37},
-> > +	{MSG_SINGULAR(DEV_GRP_P1, 0x19, RES_STATE_ACTIVE), 3},
-> > +};
-> > +
-> > +static struct twl4030_script wakeup_script __initdata = {
-> > +	.script	= wakeup_seq,
-> > +	.size	= ARRAY_SIZE(wakeup_seq),
-> > +	.flags	= TRITON_WAKEUP12_SCRIPT,
-> > +};
-> > +
-> > +static struct twl4030_ins wakeup_p3_seq[] __initdata = {
-> > +/*
-> > + * Wakeup VDD1 (dummy to be able to insert a delay)
-> > + * Enable CLKEN
-> > + */
-> > +	{MSG_SINGULAR(DEV_GRP_P1, 0x17, RES_STATE_ACTIVE), 3},
-> > +};
-> > +
-> > +static struct twl4030_script wakeup_p3_script __initdata = {
-> > +	.script	= wakeup_p3_seq,
-> > +	.size	= ARRAY_SIZE(wakeup_p3_seq),
-> > +	.flags	= TRITON_WAKEUP3_SCRIPT,
-> > +};
-> > +
-> > +static struct twl4030_ins wrst_seq[] __initdata = {
-> > +/*
-> > + * Reset twl4030.
-> > + * Reset VDD1 regulator.
-> > + * Reset VDD2 regulator.
-> > + * Reset VPLL1 regulator.
-> > + * Enable sysclk output.
-> > + * Reenable twl4030.
-> > + */
-> > +	{MSG_SINGULAR(DEV_GRP_NULL, RES_RESET, RES_STATE_OFF), 2},
-> > +	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_ALL, 0, 1, RES_STATE_ACTIVE),
-> > +		0x13},
-> > +	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_PP, 0, 2, RES_STATE_WRST), 0x13},
-> > +	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_PP, 0, 3, RES_STATE_OFF), 0x13},
-> > +	{MSG_SINGULAR(DEV_GRP_NULL, RES_VDD1, RES_STATE_WRST), 0x13},
-> > +	{MSG_SINGULAR(DEV_GRP_NULL, RES_VDD2, RES_STATE_WRST), 0x13},
-> > +	{MSG_SINGULAR(DEV_GRP_NULL, RES_VPLL1, RES_STATE_WRST), 0x35},
-> > +	{MSG_SINGULAR(DEV_GRP_P1, RES_HFCLKOUT, RES_STATE_ACTIVE), 2},
-> > +	{MSG_SINGULAR(DEV_GRP_NULL, RES_RESET, RES_STATE_ACTIVE), 2},
-> > +};
-> > +
-> > +static struct twl4030_script wrst_script __initdata = {
-> > +	.script = wrst_seq,
-> > +	.size   = ARRAY_SIZE(wrst_seq),
-> > +	.flags  = TRITON_WRST_SCRIPT,
-> > +};
-> > +
-> > +static struct twl4030_script *twl4030_scripts[] __initdata = {
-> > +	/* wakeup12 script should be loaded before sleep script, otherwise a
-> > +	   board might hit retention before loading of wakeup script is
-> > +	   completed. This can cause boot failures depending on timing issues.
-> > +	*/
-> > +	&wakeup_script,
-> > +	&sleep_on_script,
-> > +	&wakeup_p3_script,
-> > +	&wrst_script,
-> > +};
-> > +
-> > +static struct twl4030_resconfig twl4030_rconfig[] __initdata = {
-> > +	{ .resource = RES_VINTANA1, .devgroup = -1, .type = -1, .type2 = 1 },
-> > +	{ .resource = RES_VINTANA2, .devgroup = -1, .type = -1, .type2 = 1 },
-> > +	{ .resource = RES_VINTDIG, .devgroup = -1, .type = -1, .type2 = 1 },
-> > +	{ .resource = RES_VMMC1, .devgroup = -1, .type = -1, .type2 = 3},
-> > +	{ .resource = RES_VMMC2, .devgroup = DEV_GRP_NULL, .type = -1,
-> > +	  .type2 = 3},
-> > +	{ .resource = RES_VAUX1, .devgroup = -1, .type = -1, .type2 = 3},
-> > +	{ .resource = RES_VAUX2, .devgroup = -1, .type = -1, .type2 = 3},
-> > +	{ .resource = RES_VAUX3, .devgroup = -1, .type = -1, .type2 = 3},
-> > +	{ .resource = RES_VAUX4, .devgroup = -1, .type = -1, .type2 = 3},
-> > +	{ .resource = RES_VPLL2, .devgroup = -1, .type = -1, .type2 = 3},
-> > +	{ .resource = RES_VDAC, .devgroup = -1, .type = -1, .type2 = 3},
-> > +	{ .resource = RES_VSIM, .devgroup = DEV_GRP_NULL, .type = -1,
-> > +	  .type2 = 3},
-> > +	{ .resource = RES_CLKEN, .devgroup = DEV_GRP_P3, .type = -1,
-> > +		.type2 = 1 },
-> > +	{ 0, 0},
-> > +};
-> > +
-> > +static struct twl4030_power_data rx51_t2scripts_data __initdata = {
-> > +	.scripts        = twl4030_scripts,
-> > +	.size   = ARRAY_SIZE(twl4030_scripts),
-> > +	.resource_config = twl4030_rconfig,
-> > +};
-> > +
-> > +
-> > +
-> > +static struct twl4030_platform_data rx51_twldata __initdata = {
-> >  	.irq_base		= TWL4030_IRQ_BASE,
-> >  	.irq_end		= TWL4030_IRQ_END,
-> >  
-> > @@ -286,6 +403,7 @@ static struct twl4030_platform_data rx51_twldata = {
-> >  	.gpio			= &rx51_gpio_data,
-> >  	.keypad			= &rx51_kp_data,
-> >  	.madc			= &rx51_madc_data,
-> > +	.power			= &rx51_t2scripts_data,
-> >  
-> >  	.vaux1			= &rx51_vaux1,
-> >  	.vaux2			= &rx51_vaux2,
-> > -- 
-> > 1.6.3.3
-> > 
+> >  memory use,
 > 
-> -- 
-> Intel Open Source Technology Centre
-> http://oss.intel.com/
+> There are less than 12,000 entries in /sys on my machine.
+> Is that really an issue?
+> 
+> >  and
+> > is no more general than David's patch.
+> 
+> Except that one could (fix the locking and) port this code to
+> other memory based file systems, such as smackfs or selinuxfs
+> without much bother. You'd have to implement new LSM hooks for
+> each file system you ported the other approach for. It
+> can be used without an LSM, it could support multiple security
+> xattrs and it can support other namespaces.
+
+The hooks proposed by David would work with other in-memory filesystems
+that likewise need to save the attribute in a backing data structure -
+only the particular backing data structure and placement of the hooks
+would be specific to the filesystem, and that is unavoidable.
+
+For in-memory filesystems that pin the inodes, we already have all the
+support we require by virtue of the existing vfs fallbacks.
 
 -- 
--------------------------------------------------------------------------
-Amit Kucheria,				 Kernel Developer, Verdurent
--------------------------------------------------------------------------
+Stephen Smalley
+National Security Agency
+
