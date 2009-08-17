@@ -1,59 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756527AbZHQBhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756542AbZHQBwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756527AbZHQBhS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Aug 2009 21:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbZHQBhR
+	id S1756542AbZHQBwH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Aug 2009 21:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755353AbZHQBwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Aug 2009 21:37:17 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:60382 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751156AbZHQBhR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Aug 2009 21:37:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BLOzxnu6zReOCx5aV7BeuHulK1WiamgTjvBDMJ3N5XbPheBOSD7GekNSXR7t+NEcVR
-         KhhwA/TM3ML7R4ffFnVP7oyA0rMcIXV/HQ/7TPCdgodcSGGQ/Aqd6VDyelnUs/a4fdSP
-         yBTtnM6IykP0OwObGV80WXt8QSEAtxTO/RI/E=
-Date: Mon, 17 Aug 2009 09:39:33 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: David Wagner <daw@cs.berkeley.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Security: information leaks in /proc enable keystroke recovery
-Message-ID: <20090817013933.GA5039@cr0.nay.redhat.com>
-References: <200908152221.n7FMLRuw005799@taverner.cs.berkeley.edu>
+	Sun, 16 Aug 2009 21:52:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43794 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754611AbZHQBwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Aug 2009 21:52:05 -0400
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH 1/3] notify: unused event private race
+To: linux-kernel@vger.kernel.org, fs-devel@vger.kernel.org
+Cc: torvalds@linux-foundation.org, viro@ZenIV.linux.org.uk
+Date: Sun, 16 Aug 2009 21:51:44 -0400
+Message-ID: <20090817015143.15099.80614.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908152221.n7FMLRuw005799@taverner.cs.berkeley.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 15, 2009 at 03:21:27PM -0700, David Wagner wrote:
->
->In a nutshell, they exploit the fact that many files in /proc are
->world-readable yet contain sensitive information that can leak information
->about inter-keystroke timings.  For instance, /proc/$PID/stat reveals the
->ESP and EIP registers of the associated process, and is world-readable.
->/proc/pid/status is also mentioned as revealing information that could
->be exploited in these attacks.
->
->Based on my understanding of their work, it sounds like some of
->the information on those files should perhaps not be world-readable.
->It's not clear to me that it's reasonable for the kernel to reveal ESP,
->EIP, and other sensitive information about process behavior to everyone
->on the same system.
+inotify decides if private data it passed to get added to an event was used
+by checking list_empty().  But it's possible that the event may have been
+dequeued and the private event removed so it would look empty.  The fix is
+to use the return code from fsnotify_add_notify_event rather than looking
+at the list.
 
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
 
-Nope, just make sure EIP, ESP, WCHAN etc. info will not be leaked.
+ fs/notify/inotify/inotify_fsnotify.c |   13 +++++++------
+ fs/notify/inotify/inotify_user.c     |    7 +++----
+ fs/notify/notification.c             |    7 +++----
+ 3 files changed, 13 insertions(+), 14 deletions(-)
 
+diff --git a/fs/notify/inotify/inotify_fsnotify.c b/fs/notify/inotify/inotify_fsnotify.c
+index 47cd258..5dcbafe 100644
+--- a/fs/notify/inotify/inotify_fsnotify.c
++++ b/fs/notify/inotify/inotify_fsnotify.c
+@@ -62,13 +62,14 @@ static int inotify_handle_event(struct fsnotify_group *group, struct fsnotify_ev
+ 	event_priv->wd = wd;
+ 
+ 	ret = fsnotify_add_notify_event(group, event, fsn_event_priv);
+-	/* EEXIST is not an error */
+-	if (ret == -EEXIST)
+-		ret = 0;
+-
+-	/* did event_priv get attached? */
+-	if (list_empty(&fsn_event_priv->event_list))
++	if (ret) {
+ 		inotify_free_event_priv(fsn_event_priv);
++		/* EEXIST says we tail matched, EOVERFLOW isn't something
++		 * to report up the stack. */
++		if ((ret == -EEXIST) ||
++		    (ret == -EOVERFLOW))
++			ret = 0;
++	}
+ 
+ 	/*
+ 	 * If we hold the entry until after the event is on the queue
+diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+index c17d5a3..54cbded 100644
+--- a/fs/notify/inotify/inotify_user.c
++++ b/fs/notify/inotify/inotify_user.c
+@@ -386,6 +386,7 @@ void inotify_ignored_and_remove_idr(struct fsnotify_mark_entry *entry,
+ 	struct fsnotify_event *ignored_event;
+ 	struct inotify_event_private_data *event_priv;
+ 	struct fsnotify_event_private_data *fsn_event_priv;
++	int ret;
+ 
+ 	ignored_event = fsnotify_create_event(NULL, FS_IN_IGNORED, NULL,
+ 					      FSNOTIFY_EVENT_NONE, NULL, 0,
+@@ -404,10 +405,8 @@ void inotify_ignored_and_remove_idr(struct fsnotify_mark_entry *entry,
+ 	fsn_event_priv->group = group;
+ 	event_priv->wd = ientry->wd;
+ 
+-	fsnotify_add_notify_event(group, ignored_event, fsn_event_priv);
+-
+-	/* did the private data get added? */
+-	if (list_empty(&fsn_event_priv->event_list))
++	ret = fsnotify_add_notify_event(group, ignored_event, fsn_event_priv);
++	if (ret)
+ 		inotify_free_event_priv(fsn_event_priv);
+ 
+ skip_send_ignore:
+diff --git a/fs/notify/notification.c b/fs/notify/notification.c
+index 5213685..74b3cf3 100644
+--- a/fs/notify/notification.c
++++ b/fs/notify/notification.c
+@@ -171,9 +171,7 @@ int fsnotify_add_notify_event(struct fsnotify_group *group, struct fsnotify_even
+ 	struct list_head *list = &group->notification_list;
+ 	struct fsnotify_event_holder *last_holder;
+ 	struct fsnotify_event *last_event;
+-
+-	/* easy to tell if priv was attached to the event */
+-	INIT_LIST_HEAD(&priv->event_list);
++	int ret = 0;
+ 
+ 	/*
+ 	 * There is one fsnotify_event_holder embedded inside each fsnotify_event.
+@@ -194,6 +192,7 @@ alloc_holder:
+ 
+ 	if (group->q_len >= group->max_events) {
+ 		event = &q_overflow_event;
++		ret = -EOVERFLOW;
+ 		/* sorry, no private data on the overflow event */
+ 		priv = NULL;
+ 	}
+@@ -235,7 +234,7 @@ alloc_holder:
+ 	mutex_unlock(&group->notification_mutex);
+ 
+ 	wake_up(&group->notification_waitq);
+-	return 0;
++	return ret;
+ }
+ 
+ /*
 
->
->Are folks already aware of these vulnerabilities?
-
-Yes, we have already fixed this in commit f83ce3 by Jake, so EIP, ESP
-and WCHAN will not be leaked for non-privileged users.
