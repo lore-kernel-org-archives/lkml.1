@@ -1,48 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbZHQUhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbZHQUip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758023AbZHQUhe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 16:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757982AbZHQUhe
+	id S1758031AbZHQUip (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 16:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbZHQUip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 16:37:34 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:37427 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754885AbZHQUhd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 16:37:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=MkGGWPSvts0dnXmkKRTommQvoYKuKGCTn6mXYa9dmranwZPeTo5Z654c82DPXxvpcm
-         VJmyWXKs0GvDV3gy63Yt/M9+j/lFoV2DhMxb6j0KPiJ4scg5FOdbN1qgcXHkIOqnF2NF
-         S26OwmqwYRMdT4u0CjSnpUK34netKZaHN8z8A=
-Message-ID: <4A89BFAE.7080003@gmail.com>
-Date: Mon, 17 Aug 2009 13:38:06 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: ohci1396_dma=early nogo on an imac?
-References: <4A88F6BF.7090104@gmail.com> <4A89722A.1070407@s5r6.in-berlin.de> <dd18b0c30908171104o7ed67aa3x7cab741263de09c3@mail.gmail.com> <4A899D41.7000405@s5r6.in-berlin.de> <4A89A7C0.1090909@gmail.com> <4A89BA75.6040900@s5r6.in-berlin.de>
-In-Reply-To: <4A89BA75.6040900@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Aug 2009 16:38:45 -0400
+Received: from kroah.org ([198.145.64.141]:36820 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754175AbZHQUio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 16:38:44 -0400
+Subject: patch staging-dream-separate-kconfig-makefile-into-subdirectory.patch added to gregkh-2.6 tree
+To: pavel@ucw.cz, gregkh@suse.de, greg@kroah.com, linux-kernel@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Mon, 17 Aug 2009 13:36:14 -0700
+In-Reply-To: <20090808122701.GD11163@elf.ucw.cz>
+Message-ID: <12505413741700@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Justin P. Mattock wrote:
->> The problem im seeing is if I use ohci1394_dma=early on the bad kernel
->> instantly Ill get a message on the screen saying:
->>
->> PANIC: early exception 08 rip 246:10 error ffffffff8145ff15 cr2 0
->
-> Hmm, as I am not familiar with anything related to early 
-> initialization, I have no idea what it means let alone what causes it.
-alright, 2.6.31-rc5 works
-(positive side is this is not far back in time).
 
-Justin P. Mattock
+This is a note to let you know that I've just added the patch titled
+
+    Subject: Staging: Dream: separate Kconfig/Makefile into subdirectory
+
+to my gregkh-2.6 tree.  Its filename is
+
+    staging-dream-separate-kconfig-makefile-into-subdirectory.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From pavel@ucw.cz  Mon Aug 17 13:03:17 2009
+From: Pavel Machek <pavel@ucw.cz>
+Date: Sat, 8 Aug 2009 14:27:02 +0200
+Subject: Staging: Dream: separate Kconfig/Makefile into subdirectory
+To: Greg KH <greg@kroah.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Message-ID: <20090808122701.GD11163@elf.ucw.cz>
+Content-Disposition: inline
+
+Separate Kconfig/Makefile glue from dream into subdirectory. I plan to
+add few more drivers, and changing staging/Makefile each time sounds
+like inviting conflicts.
+
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/staging/Kconfig  |    6 ++----
+ drivers/staging/Makefile |    3 +--
+ 2 files changed, 3 insertions(+), 6 deletions(-)
+
+--- a/drivers/staging/Kconfig
++++ b/drivers/staging/Kconfig
+@@ -99,6 +99,8 @@ source "drivers/staging/epl/Kconfig"
+ 
+ source "drivers/staging/android/Kconfig"
+ 
++source "drivers/staging/dream/Kconfig"
++
+ source "drivers/staging/dst/Kconfig"
+ 
+ source "drivers/staging/pohmelfs/Kconfig"
+@@ -131,10 +133,6 @@ source "drivers/staging/cpc-usb/Kconfig"
+ 
+ source "drivers/staging/pata_rdc/Kconfig"
+ 
+-source "drivers/staging/dream/smd/Kconfig"
+-
+-source "drivers/staging/dream/camera/Kconfig"
+-
+ source "drivers/staging/udlfb/Kconfig"
+ 
+ source "drivers/staging/hv/Kconfig"
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -32,6 +32,7 @@ obj-$(CONFIG_INPUT_MIMIO)	+= mimio/
+ obj-$(CONFIG_TRANZPORT)		+= frontier/
+ obj-$(CONFIG_EPL)		+= epl/
+ obj-$(CONFIG_ANDROID)		+= android/
++obj-$(CONFIG_ANDROID)		+= dream/
+ obj-$(CONFIG_DST)		+= dst/
+ obj-$(CONFIG_POHMELFS)		+= pohmelfs/
+ obj-$(CONFIG_STLC45XX)		+= stlc45xx/
+@@ -48,6 +49,4 @@ obj-$(CONFIG_VT6656)		+= vt6656/
+ obj-$(CONFIG_USB_CPC)		+= cpc-usb/
+ obj-$(CONFIG_RDC_17F3101X)	+= pata_rdc/
+ obj-$(CONFIG_FB_UDL)		+= udlfb/
+-obj-$(CONFIG_MSM_ADSP)		+= dream/qdsp5/ dream/smd/
+-obj-$(CONFIG_MSM_CAMERA)	+= dream/camera/
+ obj-$(CONFIG_HYPERV)		+= hv/
+
