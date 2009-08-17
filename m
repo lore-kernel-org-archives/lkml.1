@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbZHQSPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932676AbZHQSQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757933AbZHQSPQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 14:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbZHQSPQ
+	id S932676AbZHQSQO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 14:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757896AbZHQSQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 14:15:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35917 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751624AbZHQSPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 14:15:14 -0400
-Message-ID: <4A899E73.6000505@redhat.com>
-Date: Mon, 17 Aug 2009 14:16:19 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090806 Fedora/3.0-3.7.b3.fc12 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@suse.de>
-CC: Greg Freemyer <greg.freemyer@gmail.com>, Bill Davidsen <davidsen@tmr.com>,
-       Mark Lord <liml@rtr.ca>, Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Worley <worleys@gmail.com>,
-       Matthew Wilcox <matthew@wil.cx>, Bryan Donlan <bdonlan@gmail.com>,
-       david@lang.hm, Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
- slot is freed)
-References: <200908122007.43522.ngupta@vflare.org>	 <1250344518.4159.4.camel@mulgrave.site>	 <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk>	 <20090816083434.2ce69859@infradead.org>	 <1250437927.3856.119.camel@mulgrave.site> <4A8834B6.2070104@rtr.ca>	 <1250446047.3856.273.camel@mulgrave.site> <4A884D9C.3060603@rtr.ca>	 <1250447052.3856.294.camel@mulgrave.site> <4A898752.9000205@tmr.com>	 <87f94c370908171008t44ff64ack2153e740128278e@mail.gmail.com> <1250529575.7858.31.camel@mulgrave.site>
-In-Reply-To: <1250529575.7858.31.camel@mulgrave.site>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 17 Aug 2009 14:16:13 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:38291 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756844AbZHQSQN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 14:16:13 -0400
+Subject: Re: clocksource changes in 2.6.31 - possible regression
+From: john stultz <johnstul@us.ibm.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090817110127.40ee5c29@nehalam>
+References: <20090817090319.20979986@nehalam>
+	 <1250531337.26171.12.camel@work-vm>  <20090817110127.40ee5c29@nehalam>
+Content-Type: text/plain
+Date: Mon, 17 Aug 2009 11:15:54 -0700
+Message-Id: <1250532954.26171.35.camel@work-vm>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-08-17 at 11:01 -0700, Stephen Hemminger wrote:
+> On Mon, 17 Aug 2009 10:48:57 -0700
+> john stultz <johnstul@us.ibm.com> wrote:
+> 
+> > On Mon, 2009-08-17 at 09:03 -0700, Stephen Hemminger wrote:
+> > > The following commit causes a change for kernels built with HRT but
+> > > not actually using HRT.  I typically use the generic kernel we ship
+> > > on test machines, and that kernel has NOHZ and HRT (for power savings/virt
+> > > and HRT for QoS), but I want to be able to enable TSC as a clock source
+> > > when doing performance tests with pktgen.
+> > > 
+> > > The machine in question is a several year old Opteron box, that
+> > > normally reports clocksources: acpi_pm jiffies tsc
+> > > but now with 2.6.31-rc6, it only has acpi_pm.
+> > 
+> > I might need to review the patch again, but I believe we just don't
+> > allow you to switch to non HRT compatible clocksources (like jiffies) if
+> > we're already in HRT mode (and thus would hang when switched). 
+> > 
+> > 
+> > The behavior you describe where you can't switch to the TSC, may be due
+> > to the TSC disqualification code marking it as non HRT compatible
+> > (again, I need to double check). While I'm not sure that's really
+> > correct, as the TSC is fine for HRT, in this case on your box, the TSC
+> > has been marked as unstable (likely due to being unsynced on old AMD SMP
+> > systems). There is a real chance that the timekeeping code on your
+> > system could see the TSC go backwards, calculate a negative time
+> > interval, and then end up hanging. 
+> > 
+> 
+> TSC was alway stable on this box, and worked fine.  There was no
+> message in log about TSC instability. The change was bisected
+> down to that one commit.
 
-Chiming in here a bit late, but coalescing requests is also a good way 
-to prevent read-modify-write cycles.
+But just to clarify, the TSC was never selected as the default
+clocksource on the box either, right?
 
-Specifically, if I remember the concern correctly, for the WRITE_SAME 
-with unmap bit set, when the IO is not evenly aligned on the "erase 
-chunk" (whatever they call it) boundary the device can be forced to do a 
-read-modify-write (of zeroes) to the end or beginning of that region.
+thanks
+-john
 
-For a disk array, the WRITE_SAME with unmap bit when done cleanly on an 
-aligned boundary can be done entirely in the array's cache. The 
-read-modify-write can generate several reads to the back end disks which 
-are significantly slower....
-
-ric
 
