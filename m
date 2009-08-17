@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbZHQNy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187AbZHQN43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753297AbZHQNy3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 09:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZHQNy2
+	id S1753187AbZHQN43 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 09:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbZHQN42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 09:54:28 -0400
-Received: from mail-yw0-f173.google.com ([209.85.211.173]:41023 "EHLO
-	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752473AbZHQNy1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 09:54:27 -0400
-Message-ID: <4A896112.9030407@codemonkey.ws>
-Date: Mon, 17 Aug 2009 08:54:26 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       Avi Kivity <avi@redhat.com>, alacrityvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
- objects
-References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <20090816071607.GB29537@elte.hu>
-In-Reply-To: <20090816071607.GB29537@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 17 Aug 2009 09:56:28 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50104 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751087AbZHQN40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 09:56:26 -0400
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+ slot is freed)
+From: James Bottomley <James.Bottomley@suse.de>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
+       Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
+       Greg Freemyer <greg.freemyer@gmail.com>,
+       Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+In-Reply-To: <20090816165943.GA26983@infradead.org>
+References: <4A85E0DC.9040101@rtr.ca>
+	 <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com>
+	 <20090814234539.GE27148@parisc-linux.org>
+	 <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com>
+	 <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca>
+	 <1250344518.4159.4.camel@mulgrave.site>
+	 <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk>
+	 <20090816083434.2ce69859@infradead.org>
+	 <1250437927.3856.119.camel@mulgrave.site>
+	 <20090816165943.GA26983@infradead.org>
+Content-Type: text/plain
+Date: Mon, 17 Aug 2009 08:56:12 -0500
+Message-Id: <1250517372.3844.3.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->> I think the reason vbus gets better performance for networking 
->> today is that vbus' backends are in the kernel while virtio's 
->> backends are currently in userspace.  Since Michael has a 
->> functioning in-kernel backend for virtio-net now, I suspect we're 
->> weeks (maybe days) away from performance results.  My expectation 
->> is that vhost + virtio-net will be as good as venet + vbus.  If 
->> that's the case, then I don't see any reason to adopt vbus unless 
->> Greg things there are other compelling features over virtio.
->>     
->
-> Keeping virtio's backend in user-space was rather stupid IMHO. 
->   
+On Sun, 2009-08-16 at 12:59 -0400, Christoph Hellwig wrote:
+> On Sun, Aug 16, 2009 at 10:52:07AM -0500, James Bottomley wrote:
+> > However, the enterprise has been doing UNMAP for a while, so we can draw
+> > inferences from them since the SSD FTL will operate similarly.  For
+> > them, UNMAP is the same cost in terms of time regardless of the number
+> > of extents.  The reason is that it's moving the blocks from the global
+> > in use list to the global free list.  Part of the problem is that this
+> > involves locking and quiescing, so UNMAP ends up being quite expensive
+> > to the array but constant in terms of cost (hence they want as few
+> > unmaps for as many sectors as possible).
+> 
+> How are they doing the unmaps?  Using something similar to Mark's wiper
+> script and using SG_IO?  Because right now we do not actually implement
+> UNMAP support in the kernel.  I'd really love to test the XFS batched
+> discard support with a real UNMAP implementation.
 
-I don't think it's quite so clear.
+You mean how is the array vendor testing their implementation?  Using
+SG_IO ... without any filesystem, I believe.
 
-There's nothing about vhost_net that would prevent a userspace 
-application from using it as a higher performance replacement for tun/tap.
+The testing was initially done to see if the initial maximal discard
+proposal from LSF09 was a viable approach (which it wasn't given the
+time taken to UNMAP).
 
-The fact that we can avoid userspace for most of the fast paths is nice 
-but that's really an issue of vhost_net vs. tun/tap.
+James
 
- From the kernel's perspective, a KVM guest is just a userspace 
-process.  Having new userspace interfaces that are only useful to KVM 
-guests would be a bad thing.
 
-Regards,
-
-Anthony Liguori
