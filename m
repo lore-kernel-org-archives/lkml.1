@@ -1,82 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932217AbZHQUoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757650AbZHQUsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932217AbZHQUoj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 16:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbZHQUoj
+	id S1757650AbZHQUsZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 16:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZHQUsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 16:44:39 -0400
-Received: from www.tglx.de ([62.245.132.106]:41973 "EHLO www.tglx.de"
+	Mon, 17 Aug 2009 16:48:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48831 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755047AbZHQUoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 16:44:38 -0400
-Date: Mon, 17 Aug 2009 22:44:16 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stephen Hemminger <shemminger@vyatta.com>
-cc: john stultz <johnstul@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: clocksource changes in 2.6.31 - possible regression
-In-Reply-To: <20090817132703.2db7b0c9@nehalam>
-Message-ID: <alpine.LFD.2.00.0908172233400.2782@localhost.localdomain>
-References: <20090817090319.20979986@nehalam> <1250531337.26171.12.camel@work-vm> <20090817110127.40ee5c29@nehalam> <1250532954.26171.35.camel@work-vm> <20090817112704.2b4b2987@nehalam> <alpine.LFD.2.00.0908172032500.2782@localhost.localdomain>
- <20090817125406.03e26060@nehalam> <alpine.LFD.2.00.0908172202430.2782@localhost.localdomain> <20090817132703.2db7b0c9@nehalam>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1751196AbZHQUsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 16:48:23 -0400
+Message-ID: <4A89C1CE.9040501@kernel.org>
+Date: Mon, 17 Aug 2009 13:47:10 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, Gleb Natapov <gleb@redhat.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH] x86: move dmar_table_init out of enable_IR
+References: <4A89990D.4030703@sun.com> <20090817180924.GA8599@elte.hu>	 <4A899F3C.2050104@kernel.org> <1250534019.2709.94.camel@sbs-t61.sc.intel.com>
+In-Reply-To: <1250534019.2709.94.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen,
-
-On Mon, 17 Aug 2009, Stephen Hemminger wrote:
-> > 
-> cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+Suresh Siddha wrote:
+> On Mon, 2009-08-17 at 11:19 -0700, Yinghai Lu wrote:
+>> ---
+>>  arch/x86/kernel/apic/apic.c |   22 +++++++++++++---------
+>>  1 file changed, 13 insertions(+), 9 deletions(-)
+>>
+>> Index: linux-2.6/arch/x86/kernel/apic/apic.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/kernel/apic/apic.c
+>> +++ linux-2.6/arch/x86/kernel/apic/apic.c
+>> @@ -1365,14 +1365,6 @@ void enable_x2apic(void)
+>>  int __init enable_IR(void)
+>>  {
+>>  #ifdef CONFIG_INTR_REMAP
+>> -	int ret;
+>> -
+>> -	ret = dmar_table_init();
+>> -	if (ret) {
+>> -		pr_debug("dmar_table_init() failed with %d:\n", ret);
+>> -		return 0;
+>> -	}
+>> -
+>>  	if (!intr_remapping_supported()) {
+>>  		pr_debug("intr-remapping not supported\n");
+>>  		return 0;
+>> @@ -1400,6 +1392,14 @@ void __init enable_IR_x2apic(void)
+>>  	unsigned long flags;
+>>  	struct IO_APIC_route_entry **ioapic_entries = NULL;
+>>  	int ret, x2apic_enabled = 0;
+>> +	int dmar_table_init_ret = 0;
+>> +
+>> +#ifdef CONFIG_INTR_REMAP
+>> +	dmar_table_init_ret = dmar_table_init();
+>> +	if (dmar_table_init_ret)
+>> +		pr_debug("dmar_table_init() failed with %d:\n",
+>> +				dmar_table_init_ret);
+>> +#endif
 > 
-> acpi_pm jiffies tsc 
+> We can remove this ifdef check, as dmar_table_init() already handles
+> the !config_intr_remap
+> 
+> Also, at this error condition, we should simply return if the cpu has no
+> x2apic support. There is no x2apic support and we failed to enable
+> interrupt-remapping. No need to go further down.
 
-Hmm. So while your dmesg does not tell anything about the TSC being
-unreliable, it's listed as the worst clocksource of all.
+like this ?
 
-The missing dmesg output is not really suprising, see patch below.
-
-Thanks,
-
-	tglx
 ---
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 71f4368..e254bc0 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -761,7 +761,7 @@ void mark_tsc_unstable(char *reason)
- {
- 	if (!tsc_unstable) {
- 		tsc_unstable = 1;
--		printk("Marking TSC unstable due to %s\n", reason);
-+		printk(KERN_NOTICE "Marking TSC unstable due to %s\n", reason);
- 		/* Change only the rating, when not registered */
- 		if (clocksource_tsc.mult)
- 			clocksource_change_rating(&clocksource_tsc, 0);
-@@ -815,6 +815,8 @@ static void __init check_system_tsc_reliable(void)
-  */
- __cpuinit int unsynchronized_tsc(void)
- {
-+	int unstable = tsc_unstable;
-+
- 	if (!cpu_has_tsc || tsc_unstable)
- 		return 1;
+ arch/x86/kernel/apic/apic.c |    9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/apic/apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/apic.c
++++ linux-2.6/arch/x86/kernel/apic/apic.c
+@@ -1392,14 +1392,11 @@ void __init enable_IR_x2apic(void)
+ 	unsigned long flags;
+ 	struct IO_APIC_route_entry **ioapic_entries = NULL;
+ 	int ret, x2apic_enabled = 0;
+-	int dmar_table_init_ret = 0;
++	int dmar_table_init_ret;
  
-@@ -832,10 +834,10 @@ __cpuinit int unsynchronized_tsc(void)
- 	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL) {
- 		/* assume multi socket systems are not synchronized: */
- 		if (num_possible_cpus() > 1)
--			tsc_unstable = 1;
-+			unstable = 1;
- 	}
+-#ifdef CONFIG_INTR_REMAP
+ 	dmar_table_init_ret = dmar_table_init();
+-	if (dmar_table_init_ret)
+-		pr_debug("dmar_table_init() failed with %d:\n",
+-				dmar_table_init_ret);
+-#endif
++	if (dmar_table_init_ret && !x2apic_supported())
++		return;
  
--	return tsc_unstable;
-+	return unstable;
- }
- 
- static void __init init_tsc_clocksource(void)
+ 	ioapic_entries = alloc_ioapic_entries();
+ 	if (!ioapic_entries) {
+
 
 
