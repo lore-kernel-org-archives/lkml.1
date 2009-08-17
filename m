@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751461AbZHQM6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751580AbZHQNBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751461AbZHQM6b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 08:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbZHQM6b
+	id S1751580AbZHQNBW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 09:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbZHQNBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 08:58:31 -0400
-Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:57465 "EHLO
-	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750872AbZHQM6a (ORCPT
+	Mon, 17 Aug 2009 09:01:21 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:54247 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750872AbZHQNBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 08:58:30 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #13389] Warning 'Invalid throttling state, reset' gets displayed when it should not be
-Date: Mon, 17 Aug 2009 14:58:30 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <YCu3FOC0QrC.A.MaE.RD2fKB@chimera> <pRuaDVjxFBG.A.52F.kF2fKB@chimera>
-In-Reply-To: <pRuaDVjxFBG.A.52F.kF2fKB@chimera>
+	Mon, 17 Aug 2009 09:01:21 -0400
+Message-ID: <4A8954F8.7040602@colorfullife.com>
+Date: Mon, 17 Aug 2009 15:02:48 +0200
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Nick Piggin <npiggin@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Nadia Derbey <Nadia.Derbey@bull.net>,
+       Pierre Peiffer <peifferp@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [patch 4a/4] ipc: sem optimise simple operations
+References: <200908141946.n7EJkh7B018160@mail.q-ag.de> <20090815045237.GC19195@wotan.suse.de> <4A86899A.6050502@colorfullife.com> <20090815103820.GC8954@wotan.suse.de> <4A86ABF0.2070207@colorfullife.com> <20090815144908.GA30951@wotan.suse.de> <4A86E30E.8030208@colorfullife.com> <20090816103127.GB8644@wotan.suse.de> <4A87ED93.5060104@colorfullife.com> <20090817064446.GD9962@wotan.suse.de>
+In-Reply-To: <20090817064446.GD9962@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908171458.31106.elendil@planet.nl>
-X-OriginalArrivalTime: 17 Aug 2009 12:58:31.0639 (UTC) FILETIME=[6C24B670:01CA1F3A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 09 August 2009, Rafael J. Wysocki wrote:
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-> be listed and let me know (either way).
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13389
-> Subject	: Warning 'Invalid throttling state, reset' gets displayed
->		  when it should not be
-> Submitter	: Frans Pop <elendil@planet.nl> 
-> Patch		: http://bugzilla.kernel.org/attachment.cgi?id=21671
-> 		  http://bugzilla.kernel.org/attachment.cgi?id=21672
+On 08/17/2009 08:44 AM, Nick Piggin wrote:
+> OK, well let's just get something in.
+>    
+Good, I would propose the that the following 7 patches should be merged:
 
-I've just submitted the patches through mail:
-http://lkml.org/lkml/2009/8/17/169
+http://lkml.org/lkml/2009/8/11/59
+http://lkml.org/lkml/2009/8/11/9
+http://lkml.org/lkml/2009/8/11/14
+http://lkml.org/lkml/2009/8/15/163
+http://lkml.org/lkml/2009/8/15/164
+http://lkml.org/lkml/2009/8/15/167
+http://lkml.org/lkml/2009/8/15/168
 
-Maybe that will help.
+Nick: is that ok from your point of view?
 
-Cheers,
-FJP
+> That said, I'm not too unhappy with your version if you feel strongly
+> about it.
+I would prefer it:
+We simply don't know if a wait-for-zero list, only for single sop operations, is a step in the right direction.
+
+Postgres uses single sop operations with just +-1 on one semaphore.
+You wrote that your SAP workload also uses +-1.
+According to google codesearch, apache, mozilla, mpich all use +-1.
+
+Thus: Who uses single sop, wait for zero?
+I'm just afraid that we optimize for the wrong case.
+
+--
+	Manfred
+
