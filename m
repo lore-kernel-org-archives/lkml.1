@@ -1,133 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbZHQIEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbZHQIFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757345AbZHQIEx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 04:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757337AbZHQIEu
+	id S1757340AbZHQIFg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 04:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757220AbZHQIFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 04:04:50 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34341 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757340AbZHQIEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 04:04:48 -0400
-Date: Mon, 17 Aug 2009 08:02:05 GMT
-From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       lizf@cn.fujitsu.com, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <4A88ED41.5000000@cn.fujitsu.com>
-References: <4A88ED41.5000000@cn.fujitsu.com>
-Subject: [tip:core/locking] lockdep: Simplify lockdep seqfile code
-Message-ID: <tip-8109e1de8502421f9efff1359f2779b1adcc0724@git.kernel.org>
-Git-Commit-ID: 8109e1de8502421f9efff1359f2779b1adcc0724
-X-Mailer: tip-git-log-daemon
+	Mon, 17 Aug 2009 04:05:35 -0400
+Received: from mail-gx0-f205.google.com ([209.85.217.205]:61118 "EHLO
+	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757253AbZHQIFa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 04:05:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uVbAnyJJjKozwXnK2AkJ3h6HpoJ66wpXq/HXIJ1x8MnzlpZNa7vQEsB9Bj58ECqlhQ
+         OjP/BH/7gYYMYv3ki8dP1c5VTqeMOstnEiNP9kQo2wTwh6dumvRMQKyPlsW7M7K+T/+P
+         oAcDOCzeOo3NN1Z/SEZVt8q4IL4n+dXVfZJls=
+Date: Mon, 17 Aug 2009 11:08:53 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: akpm@linux-foundation.org, andi@firstfloor.org, rpjday@crashcourse.ca,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] VIDEO: console, use DIV_ROUND_UP
+Message-ID: <20090817080853.GC2967@localdomain.by>
+References: <20090817073147.GA2967@localdomain.by>
+ <1250495293-13035-1-git-send-email-jirislaby@gmail.com>
+ <20090817080023.GB2967@localdomain.by>
+ <4A890E33.2080302@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UFHRwCdBEJvubb2X"
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 17 Aug 2009 08:02:06 +0000 (UTC)
+In-Reply-To: <4A890E33.2080302@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8109e1de8502421f9efff1359f2779b1adcc0724
-Gitweb:     http://git.kernel.org/tip/8109e1de8502421f9efff1359f2779b1adcc0724
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Mon, 17 Aug 2009 13:40:17 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 17 Aug 2009 09:54:40 +0200
 
-lockdep: Simplify lockdep seqfile code
+--UFHRwCdBEJvubb2X
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Use seq_list_start_head() and seq_list_next().
+On (08/17/09 10:00), Jiri Slaby wrote:
+> On 08/17/2009 10:00 AM, Sergey Senozhatsky wrote:
+> > So... In general, ((vc->vc_font.width + 7) >> 3) =3D=3D  DIV_ROUND_UP(v=
+c->vc_font.width, 8) - 1;
+>=20
+> ?
+>=20
+Oops, silly me. Somehow I thought about
+DIV_ROUND_UP((vc->vc_font.width + 7) , 8). My fault. Sorry.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <4A88ED41.5000000@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+>=20
+> DIV_ROUND_UP(vc->vc_font.width, 8) expands to:
+> (((vc->vc_font.width) + (8) - 1) / (8))
+> which is pretty printed:
+> (vc->vc_font.width + 7) / 8
+> and that's equivalent to:
+> (vc->vc_font.width + 7) >> 3
+>=20
+> Correct?
+Right.
 
+>=20
+> > Are you sure we really can use DIV_ROUND_UP?
+>=20
+> Yeah, pretty sure.
+>=20
+OK.
+--UFHRwCdBEJvubb2X
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
----
- kernel/lockdep_proc.c |   46 +++++-----------------------------------------
- 1 files changed, 5 insertions(+), 41 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
-index 9a7996e..05fb5fd 100644
---- a/kernel/lockdep_proc.c
-+++ b/kernel/lockdep_proc.c
-@@ -25,38 +25,12 @@
- 
- static void *l_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	struct lock_class *class;
--
--	(*pos)++;
--
--	if (v == SEQ_START_TOKEN)
--		class = m->private;
--	else {
--		class = v;
--
--		if (class->lock_entry.next != &all_lock_classes)
--			class = list_entry(class->lock_entry.next,
--					   struct lock_class, lock_entry);
--		else
--			class = NULL;
--	}
--
--	return class;
-+	return seq_list_next(v, &all_lock_classes, pos);
- }
- 
- static void *l_start(struct seq_file *m, loff_t *pos)
- {
--	struct lock_class *class;
--	loff_t i = 0;
--
--	if (*pos == 0)
--		return SEQ_START_TOKEN;
--
--	list_for_each_entry(class, &all_lock_classes, lock_entry) {
--		if (++i == *pos)
--		return class;
--	}
--	return NULL;
-+	return seq_list_start_head(&all_lock_classes, *pos);
- }
- 
- static void l_stop(struct seq_file *m, void *v)
-@@ -82,11 +56,11 @@ static void print_name(struct seq_file *m, struct lock_class *class)
- 
- static int l_show(struct seq_file *m, void *v)
- {
--	struct lock_class *class = v;
-+	struct lock_class *class = list_entry(v, struct lock_class, lock_entry);
- 	struct lock_list *entry;
- 	char usage[LOCK_USAGE_CHARS];
- 
--	if (v == SEQ_START_TOKEN) {
-+	if (v == &all_lock_classes) {
- 		seq_printf(m, "all lock classes:\n");
- 		return 0;
- 	}
-@@ -128,17 +102,7 @@ static const struct seq_operations lockdep_ops = {
- 
- static int lockdep_open(struct inode *inode, struct file *file)
- {
--	int res = seq_open(file, &lockdep_ops);
--	if (!res) {
--		struct seq_file *m = file->private_data;
--
--		if (!list_empty(&all_lock_classes))
--			m->private = list_entry(all_lock_classes.next,
--					struct lock_class, lock_entry);
--		else
--			m->private = NULL;
--	}
--	return res;
-+	return seq_open(file, &lockdep_ops);
- }
- 
- static const struct file_operations proc_lockdep_operations = {
+iJwEAQECAAYFAkqJEBUACgkQfKHnntdSXjS/3AP9HTYCJz36u8IhDvckOvyqt4CV
+CEAkrOqVV8sL6JwnwfiVYEWzUoM7sEvAzmlJyKwCaiRnbcF+RepoTm4l59DslatA
+Dii9VyunS6mAeUOCu8Xk3H4EEJIGDHJ9LLBffDrFfJ3ZYvo8Dk0yWUn6+xKPcn6O
+hSesCFuVgIOjY15mKAk=
+=3hsL
+-----END PGP SIGNATURE-----
+
+--UFHRwCdBEJvubb2X--
