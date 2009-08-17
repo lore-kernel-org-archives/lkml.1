@@ -1,46 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZHQNpD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbZHQNxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbZHQNpD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 09:45:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZHQNpD
+	id S1752810AbZHQNxL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 09:53:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbZHQNxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 09:45:03 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39718 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752313AbZHQNpB (ORCPT
+	Mon, 17 Aug 2009 09:53:10 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:53270 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413AbZHQNxI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 09:45:01 -0400
-To: mark@bifferos.com
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] x86 CPU detection for RDC
-From: Andi Kleen <andi@firstfloor.org>
-References: <58001.1250437590@bifferos.com>
-Date: Mon, 17 Aug 2009 15:44:58 +0200
-In-Reply-To: <58001.1250437590@bifferos.com> (Mark Kelly's message of "Sun, 16 Aug 2009 16:46:30 +0100")
-Message-ID: <87hbw6sgf9.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Mon, 17 Aug 2009 09:53:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZIG7XEeqixU1Qb1nMFQr5OSGFJ+a4lqbriELgJV7M0qayOszxjD5bpJnJ4Dvl3QKJi
+         1PFeH0trmaHgL07IrCiuirQf91I+fHmjgkG0zPsNHsAcaf2RV13uGEz0rtlVlzvbV0Sw
+         Syquy5DzAr8rePmz3bdhdwi9kZjEoGKTWe3dc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1250514738.8475.26.camel@heimdal.trondhjem.org>
+References: <6278d2220908161540h78f17424m592c5acf3420f906@mail.gmail.com>
+	 <1250514738.8475.26.camel@heimdal.trondhjem.org>
+Date: Mon, 17 Aug 2009 14:53:08 +0100
+Message-ID: <6278d2220908170653s45df9989t9fa550f7efa0c182@mail.gmail.com>
+Subject: Re: [2.6.31-rc5] oops: NFS4 client manager kthread...
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: linux-nfs@vger.kernel.org, Chuck Lever <chuck.lever@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Kelly <mark@bifferos.com> writes:
-> +{
-> +	u16 vendor, device;
-> +	
-> +	/* RDC CPU is SoC (system-on-chip), Northbridge is always present. */
-> +	vendor = read_pci_config_16(0, 0, 0, PCI_VENDOR_ID);
-> +	device = read_pci_config_16(0, 0, 0, PCI_DEVICE_ID);
+Hi Trond,
 
-This needs some check first if PCI is even enabled. You can use
-early_pci_allowed() for this or just add a handler in early quirks
-that sets a flag you test here.
+On Mon, Aug 17, 2009 at 2:12 PM, Trond
+Myklebust<Trond.Myklebust@netapp.com> wrote:
+> On Sun, 2009-08-16 at 23:40 +0100, Daniel J Blueman wrote:
+>> After losing and regaining ethernet link a few times with 2.6.31-rc5
+>> [1], I've hit an oops in the NFS4 client manager kthread [2] on my
+>> client with NFS4 homedir mount.
+>>
+>> Do you have a frequent test-case for when the client's manager kthread
+>> gets invoked (with and without succeeding callbacks, due to eg a
+>> firewall)? Server here is unpatched 2.6.30-rc6; I recall seeing
+>> problems when the manager kthread gets invoked, across quite a few
+>> kernel releases, just wasn't lucky enough to catch an oops.
+>>
+>> Oppsing in allow_signal() suggests task state corruption perhaps? I'm
+>> downloading the debug kernel to match up the disassembly and line
+>> numbers, if that helps? This time, the client had no firewall (but
+>> have seen other issues when the callback has failed due to the
+>> firewall).
+>
+> Those aren't Oopses. They are 'soft lockup' warnings. Basically, they're
+> saying that the CPU is getting stuck waiting for a spin lock or a mutex.
+>
+> In this case, it is probably the fact that the state manager is going
+> nuts trying to recover, while the connection to the server keeps coming
+> up and going down.
+>
+> What does 'netstat -t' say when you get into this situation?
 
-Also I would suggest to not hard code your own email addresses
-in printk (which might go away), but use some list like linux-kernel.
+Whoops; it's true the stack-trace comes from the soft-lockup detector.
 
--Andi
+There was a single 200s link excursion, but the client didn't recover
+as locks are held and never released it seems; I observe the
+'192.168.1.250-m' NFS4 manager kthread being created and not going
+away, despite IP connectivity with the server being fine after.
+
+I'll reproduce it with stock 2.6.31-rc6 on the client and get 'netstat
+-t' output.
+
+Thanks for looking at this!
+  Daniel
+
+> Cheers
+>  Trond
+>
+> --
+> Trond Myklebust
+> Linux NFS client maintainer
+>
+> NetApp
+> Trond.Myklebust@netapp.com
+> www.netapp.com
+>
+
+
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Daniel J Blueman
