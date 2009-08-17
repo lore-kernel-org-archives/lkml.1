@@ -1,60 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbZHQOtD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbZHQO6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754425AbZHQOtD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 10:49:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbZHQOtC
+	id S1754996AbZHQO6h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 10:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbZHQO6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 10:49:02 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:63669 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752601AbZHQOtB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 10:49:01 -0400
-Date: Mon, 17 Aug 2009 10:49:01 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Johannes Stezenbach <js@sig21.net>
-cc: Ingo Molnar <mingo@elte.hu>, Robert Richter <robert.richter@amd.com>,
-       Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.31-rc5 regression: x86 MCE malfunction on Thinkpad T42p
-In-Reply-To: <20090811154006.GA5315@sig21.net>
-Message-ID: <alpine.DEB.2.00.0908171041160.20915@gandalf.stny.rr.com>
-References: <87k51cgdt8.fsf@basil.nowhere.org> <20090810122731.GA5863@sig21.net> <20090810123228.GD6838@basil.fritz.box> <20090810125651.GB6082@sig21.net> <20090810132923.GA4418@elte.hu> <20090810192658.GA15513@sig21.net> <20090810201406.GA6961@elte.hu>
- <20090810203706.GA17338@sig21.net> <20090810213133.GB16944@elte.hu> <20090810221307.GA19236@sig21.net> <20090811154006.GA5315@sig21.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 17 Aug 2009 10:58:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60846 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752238AbZHQO6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 10:58:34 -0400
+Message-ID: <4A896FFE.5050207@redhat.com>
+Date: Mon, 17 Aug 2009 17:58:06 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
+ objects
+References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com>
+In-Reply-To: <4A8965E0.8050608@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/17/2009 05:14 PM, Gregory Haskins wrote:
+> Note: No one has ever proposed to change the virtio-ABI.  In fact, this
+> thread in question doesn't even touch virtio, and even the patches that
+> I have previously posted to add virtio-capability do it in a backwards
+> compatible way
+>    
 
-On Tue, 11 Aug 2009, Johannes Stezenbach wrote:
+Your patches include venet, which is a direct competitor to virtio-net, 
+so it splits the development effort.
 
-> On Tue, Aug 11, 2009 at 12:13:07AM +0200, Johannes Stezenbach wrote:
-> > On Mon, Aug 10, 2009 at 11:31:33PM +0200, Ingo Molnar wrote:
-> > > * Johannes Stezenbach <js@sig21.net> wrote:
-> > > > 
-> > > > Could the warning be caused by the cpufreq ondemand governor? ISTR 
-> > > > that one should switch to the performance governor before doing 
-> > > > any profiling, but I forgot for this test.
-> > > 
-> > > there might be a connection - it could in theory cause sched_clock() 
-> > > transients and confuse the ring-buffer time-stamping.
-> > 
-> > I'll try tomorrow after a fresh boot if the warning also appears
-> > with the performance governor.
-> 
-> Nope, cpufreq was not the culprit.  The "Delta way too big!"
-> warning in rb_reserve_next_event() happens after suspend-to-RAM.
+> Case in point: Take an upstream kernel and you can modprobe the
+> vbus-pcibridge in and virtio devices will work over that transport
+> unmodified.
+>    
 
-Yeah, the ring buffer expects the time delta of two different events on 
-the same page to be less than 2^59 nanosecs apart. But something must have 
-screwed things up, since 2^59 nanosecs is 6671 days (18 years).
+Older kernels don't support it, and Windows doesn't support it.
 
-Perhaps coming out of suspend to ram changes the timestamp? Does it reset 
-the result of sched_clock?
+>>   vbus
+>> does things in different ways (paravirtual bus vs. pci for discovery)
+>> but I think we're happy with how virtio does things today.
+>>
+>>      
+> Thats fine.  KVM can stick with virtio-pci if it wants.  AlacrityVM will
+> support virtio-pci and vbus (with possible convergence with
+> virtio-vbus).  If at some point KVM thinks vbus is interesting, I will
+> gladly work with getting it integrated into upstream KVM as well.  Until
+> then, they can happily coexist without issue between the two projects.
+>    
 
--- Steve
+If vbus is to go upstream, it must go via the same path other drivers 
+go.  Virtio wasn't merged via the kvm tree and virtio-host won't be either.
+
+I don't have any technical objections to vbus/venet (I had in the past 
+re interrupts but I believe you've addressed them), and it appears to 
+perform very well.  However I still think we should address virtio's 
+shortcomings (as Michael is doing) rather than create a competitor.  We 
+have enough external competition, we don't need in-tree competitors.
+
+>> I think the reason vbus gets better performance for networking today is
+>> that vbus' backends are in the kernel while virtio's backends are
+>> currently in userspace.
+>>      
+> Well, with all due respect, you also said initially when I announced
+> vbus that in-kernel doesn't matter, and tried to make virtio-net run as
+> fast as venet from userspace ;)  Given that we never saw those userspace
+> patches from you that in fact equaled my performance, I assume you were
+> wrong about that statement.
+
+I too thought that if we'd improved the userspace interfaces we'd get 
+fast networking without pushing virtio details into the kernels, 
+benefiting not just kvm but the Linux community at large.  This might 
+still be correct but in fact no one turned up with the patches.  Maybe 
+they're impossible to write, hard to write, or uninteresting to write 
+for those who are capable of writing them.  As it is, we've given up and 
+Michael wrote vhost.
+
+> Perhaps you were wrong about other things too?
+>    
+
+I'm pretty sure Anthony doesn't posses a Diploma of Perpetual Omniscience.
+
+>> Since Michael has a functioning in-kernel
+>> backend for virtio-net now, I suspect we're weeks (maybe days) away from
+>> performance results.  My expectation is that vhost + virtio-net will be
+>> as good as venet + vbus.
+>>      
+> This is not entirely impossible, at least for certain simple benchmarks
+> like singleton throughput and latency.
+
+What about more complex benchmarks?  Do you thing vbus+venet has an 
+advantage there?
+
+> But if you think that this
+> somehow invalidates vbus as a concept, you have missed the point entirely.
+>
+> vbus is about creating a flexible (e.g. cross hypervisor, and even
+> physical system or userspace application) in-kernel IO containers with
+> linux.  The "guest" interface represents what I believe to be the ideal
+> interface for ease of use, yet maximum performance for
+> software-to-software interaction.
+
+Maybe.  But layering venet or vblock on top of it makes it specific to 
+hypervisors.  The venet/vblock ABIs are not very interesting for 
+user-to-user (and anyway, they could use virtio just as well).
+
+> venet was originally crafted just to validate the approach and test the
+> vbus interface.  It ended up being so much faster that virtio-net, that
+> people in the vbus community started coding against its ABI.
+
+It ended up being much faster than qemu's host implementation, not the 
+virtio ABI.  When asked you've indicated that you don't see any 
+deficiencies in the virtio protocol.
+
+> OTOH, Michael's patch is purely targeted at improving virtio-net on kvm,
+> and its likewise constrained by various limitations of that decision
+> (such as its reliance of the PCI model, and the kvm memory scheme).  The
+> tradeoff is that his approach will work in all existing virtio-net kvm
+> guests, and is probably significantly less code since he can re-use the
+> qemu PCI bus model.
+>    
+
+virtio does not depend on PCI and virtio-host does not either.
+
+> Conversely, I am not afraid of requiring a new driver to optimize the
+> general PV interface.  In the long term, this will reduce the amount of
+> reimplementing the same code over and over, reduce system overhead, and
+> it adds new features not previously available (for instance, coalescing
+> and prioritizing interrupts).
+>    
+
+If it were proven to me a new driver is needed I'd switch too.  So far 
+no proof has materialized.
+
+>> If that's the case, then I don't see any
+>> reason to adopt vbus unless Greg things there are other compelling
+>> features over virtio.
+>>      
+> Aside from the fact that this is another confusion of the vbus/virtio
+> relationship...yes, of course there are compelling features (IMHO) or I
+> wouldn't be expending effort ;)  They are at least compelling enough to
+> put in AlacrityVM.  If upstream KVM doesn't want them, that's KVMs
+> decision and I am fine with that.  Simply never apply my qemu patches to
+> qemu-kvm.git, and KVM will be blissfully unaware if vbus is present.  I
+> do hope that I can convince the KVM community otherwise, however. :)
+>    
+
+If the vbus patches make it into the kernel I see no reason not to 
+support them in qemu.  qemu supports dozens if not hundreds of devices, 
+one more wouldn't matter.
+
+But there's a lot of work before that can happen; for example you must 
+support save/restore/migrate for vbus to be mergable.
+
+-- 
+error compiling committee.c: too many arguments to function
 
