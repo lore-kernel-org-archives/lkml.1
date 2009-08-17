@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbZHQUgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbZHQUhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758016AbZHQUgv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 16:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754885AbZHQUgu
+	id S1758023AbZHQUhe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 16:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757982AbZHQUhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 16:36:50 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:16802 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753186AbZHQUgt (ORCPT
+	Mon, 17 Aug 2009 16:37:34 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:37427 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754885AbZHQUhd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 16:36:49 -0400
-Message-ID: <4A89BF90.5070202@oracle.com>
-Date: Mon, 17 Aug 2009 13:37:36 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 17 Aug 2009 16:37:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=MkGGWPSvts0dnXmkKRTommQvoYKuKGCTn6mXYa9dmranwZPeTo5Z654c82DPXxvpcm
+         VJmyWXKs0GvDV3gy63Yt/M9+j/lFoV2DhMxb6j0KPiJ4scg5FOdbN1qgcXHkIOqnF2NF
+         S26OwmqwYRMdT4u0CjSnpUK34netKZaHN8z8A=
+Message-ID: <4A89BFAE.7080003@gmail.com>
+Date: Mon, 17 Aug 2009 13:38:06 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009031304)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-next <linux-next@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH -next] trace_skb: fix build when CONFIG_NET is not enabled
-Content-Type: text/plain; charset=ISO-8859-1
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: ohci1396_dma=early nogo on an imac?
+References: <4A88F6BF.7090104@gmail.com> <4A89722A.1070407@s5r6.in-berlin.de> <dd18b0c30908171104o7ed67aa3x7cab741263de09c3@mail.gmail.com> <4A899D41.7000405@s5r6.in-berlin.de> <4A89A7C0.1090909@gmail.com> <4A89BA75.6040900@s5r6.in-berlin.de>
+In-Reply-To: <4A89BA75.6040900@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt012.oracle.com [141.146.116.21]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4A89BF32.0051:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Stefan Richter wrote:
+> Justin P. Mattock wrote:
+>> The problem im seeing is if I use ohci1394_dma=early on the bad kernel
+>> instantly Ill get a message on the screen saying:
+>>
+>> PANIC: early exception 08 rip 246:10 error ffffffff8145ff15 cr2 0
+>
+> Hmm, as I am not familiar with anything related to early 
+> initialization, I have no idea what it means let alone what causes it.
+alright, 2.6.31-rc5 works
+(positive side is this is not far back in time).
 
-Fix trace_skb_sources build when CONFIG_NET is not enabled:
-
-kernel/built-in.o: In function `probe_skb_dequeue':
-trace_skb_sources.c:(.text+0xd9152): undefined reference to `init_net'
-trace_skb_sources.c:(.text+0xd9188): undefined reference to `dev_get_by_index'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Neil Horman <nhorman@tuxdriver.com>
----
- kernel/trace/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-next-20090817.orig/kernel/trace/Kconfig
-+++ linux-next-20090817/kernel/trace/Kconfig
-@@ -236,6 +236,7 @@ config BOOT_TRACER
- 
- config SKB_SOURCES_TRACER
- 	bool "Trace skb source information"
-+	depends on NET
- 	select GENERIC_TRACER
- 	help
- 	   This tracer helps developers/sysadmins correlate skb allocation and
-
-
-
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+Justin P. Mattock
