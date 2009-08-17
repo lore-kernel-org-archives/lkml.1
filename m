@@ -1,90 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbZHQI3C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbZHQIbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757341AbZHQI3C (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 04:29:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757189AbZHQI3B
+	id S1757404AbZHQIbv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 04:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757212AbZHQIbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 04:29:01 -0400
-Received: from www84.your-server.de ([213.133.104.84]:39721 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755043AbZHQI3A (ORCPT
+	Mon, 17 Aug 2009 04:31:50 -0400
+Received: from mail-px0-f196.google.com ([209.85.216.196]:63165 "EHLO
+	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757189AbZHQIbt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 04:29:00 -0400
-Subject: Re: [PATCH 2/7] kfifo: move out spinlock
-From: Stefani Seibold <stefani@seibold.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
-In-Reply-To: <20090817091524.33f99737@lxorguk.ukuu.org.uk>
-References: <1250455161.28540.4.camel@wall-e>
-	 <1250455590.28540.10.camel@wall-e>
-	 <20090816235843.0f7f11de@lxorguk.ukuu.org.uk>
-	 <20090816163422.a147a918.akpm@linux-foundation.org>
-	 <20090817074820.3585206b@lxorguk.ukuu.org.uk>
-	 <1250495182.20837.27.camel@wall-e>
-	 <20090817091524.33f99737@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Mon, 17 Aug 2009 10:28:56 +0200
-Message-Id: <1250497736.20837.39.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Mon, 17 Aug 2009 04:31:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uQJtv4+iyfZChQBrvgSb9wbq3OotV6MYSrofst6pkK5SJwsgJ7s222nt55Whf8WEN2
+         TcwHz/HF6GndtErOEBCnLNwsV4LK2ItnPtKekIdjYup3HiOE1H+aSJSGybRQ1q6kvzdM
+         RWjHCZpfUTg5XkFiIZLmoh0fG+ME6+PqrIAYM=
+Date: Mon, 17 Aug 2009 16:34:04 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Tatsuhiro Aoshima <tatsu.pc@gmail.com>,
+       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>, albert@users.sf.net
+Subject: Re: [PATCH] proc: let task status file print utime and stime.
+Message-ID: <20090817083404.GC5868@cr0.nay.redhat.com>
+References: <20090815233629.A067.A69D9226@jp.fujitsu.com> <20090817023802.GF5039@cr0.nay.redhat.com> <20090817114242.1419bd1f.kamezawa.hiroyu@jp.fujitsu.com> <20090817061821.GM5039@cr0.nay.redhat.com> <20090817152206.50c35330.kamezawa.hiroyu@jp.fujitsu.com> <20090817063202.GO5039@cr0.nay.redhat.com> <20090817153253.52bf9c69.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090817153253.52bf9c69.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, den 17.08.2009, 09:15 +0100 schrieb Alan Cox:
-> > > All over the kernel unlocked function versions have a leading _ name.
-> > > It's the kernel convention.
-> > 
-> > Thats is not true in every case. Have a look at list.h - That was the
-> > pattern i have implemented the new kfifo API.
-> 
-> Of course it isn't true in every case. Show me a *single* kernel
-> convention that is. It's also not true in no cases. foo_locked isn't used
-> much at all.
-> 
-> > The main reason to do this was to design a cleaner interface. Because
-> > there are very few users of this API, i thought it is a good time and
-> > chance to do this.
-> > 
-> > My first draft version does also not renamed this functions, but there
-> > was some concerns about the new functionality without modification the
-> > function names.
-> > 
-> > Also the remove of the spinlock made is necessary to rename the
-> > functions for preventing miss-use by out-of-kernel-tree drivers.
-> 
-> So if you didn't remove the spinlock you wouldn't have to change the API
-> and patch all the drivers.
->  
+On Mon, Aug 17, 2009 at 03:32:53PM +0900, KAMEZAWA Hiroyuki wrote:
+>On Mon, 17 Aug 2009 14:32:02 +0800
+>Amerigo Wang <xiyou.wangcong@gmail.com> wrote:
+>
+>> On Mon, Aug 17, 2009 at 03:22:06PM +0900, KAMEZAWA Hiroyuki wrote:
+>> >On Mon, 17 Aug 2009 14:18:21 +0800
+>> >Amerigo Wang <xiyou.wangcong@gmail.com> wrote:
+>> >
+>> >> Ah... in fact, I expected 'ps' can report this, however, surprisingly
+>> >> it doesn't have this, at least not what I expect (unless I miss
+>> >> something obvious).
+>> >> 
+>> >> 
+>> >> >
+>> >> >In another thinking, in old days, /proc/<pid>/stat was enough because most of
+>> >> >users uses scanf() or some C langage to read fixed-format data.
+>> >> >/proc/<pid>/status is useful for some script languages which has 
+>> >> >good parser per line. 
+>> >> >
+>> >> 
+>> >> Well... I think this work should be left to 'ps', e.g.
+>> >> 
+>> >>   ps -o pid,utime,stime
+>> >> 
+>> >> 'ps' is responsible to read /proc/<pid>/stat for the user.
+>> >> 
+>> >Hmm, personally, I don't like 'ps' and its unified filter.
+>> >
+>> >When I want to know status of a process of PID,
+>> ># ps -o pid,utime,stime  PID
+>> >
+>> >'ps' scans *all* process and filter PID. (try #strace ps)
+>> >I like checking /proc/<pid>/<something> without 'ps' in an environment
+>> >where thousands of processes runs.
+>> 
+>> Sure, we already have '-p' for 'ps', e.g.
+>> 
+>>  ps -p 1 -o pid,user,comm
+>> 
+>> Enjoy. :-)
+>I said it's verrrrry slow.
 
-No. The kfifo struct in place does made it also necessary to patch all
-this drivers. 
 
-And the spinlock is in most cases useless, because the API works fine if
-only one reader and one writer is using the fifo. This is the common
-case.
+Hmm, for me it looks like that 'ps' should be fixed...
 
-> > I think the break is not so hard if you believe. All you have to do is
-> > to replace or kfifo_get() into kfifo_out_locked() and kfifo_put() into
-> > kfifo_in_locked() if you really need the old behavior.
-> 
-> Which is very long winded. If you want longwinded and without breaking
-> stuff you can use
-> 
-> foo_unlocked() or unlocked_foo()
-> 
-> which do occur in the kernel (eg ioctl) when we want people to be
-> specifically aware of it although according to grep a little less often
-> than foo_locked() [discounting foo_is_locked which is general tests]
-> 
+I haven't checked the source code of 'ps', but I don't think
+this is O(n) if '-p' is specified. If we just use something
+like 'test -d /proc/<pid>' it would be O(1).
 
-If you like it is very easy to add a compatibility layer, which restores
-the old function names. But for what, only for very few users who
-depends on it? This will only waste the name space.
-  
 
+>
+>> 
+>> Anyway, I would like to see 'ps' to have 'utime,stime' field, on
+>> my machine, its output for 'utime,stime' looks wrong.
+>> 
+>> Maybe we should Cc procps developers?
+>ya, maybe. it's good to be CCed.
+
+
+Done. Albert?
+
+
+>
+>
+>BTW, why all other status
+>Name:   cat
+>State:  R (running)
+>Tgid:   7068
+>Pid:    7068
+>PPid:   6115
+>TracerPid:      0
+>Uid:    500     500     500     500
+>Gid:    500     500     500     500
+>FDSize: 256
+>Groups: 500
+>
+>are allowed to be duplicated ?
+
+
+I don't know... :( I still prefer to use 'ps'.
