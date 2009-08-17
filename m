@@ -1,89 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757586AbZHQKLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757592AbZHQKX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757586AbZHQKLS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 06:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757410AbZHQKLR
+	id S1757592AbZHQKX7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 06:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZHQKX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 06:11:17 -0400
-Received: from cyrus.watson.org ([65.122.17.42]:60343 "EHLO cyrus.watson.org"
+	Mon, 17 Aug 2009 06:23:59 -0400
+Received: from bu3sch.de ([62.75.166.246]:52573 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750842AbZHQKLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 06:11:17 -0400
-Date: Mon, 17 Aug 2009 11:11:18 +0100 (BST)
-From: Robert Watson <rwatson@FreeBSD.org>
-X-X-Sender: robert@fledge.watson.org
-To: David Wagner <daw@cs.berkeley.edu>
-cc: Oliver Pinter <oliver.pntr@gmail.com>, freebsd-hackers@FreeBSD.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Security: information leaks in /proc enable keystroke recovery
-In-Reply-To: <200908170058.n7H0wahu005383@taverner.cs.berkeley.edu>
-Message-ID: <alpine.BSF.2.00.0908171046010.1901@fledge.watson.org>
-References: <200908170058.n7H0wahu005383@taverner.cs.berkeley.edu>
-User-Agent: Alpine 2.00 (BSF 1167 2008-08-23)
+	id S1751238AbZHQKX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 06:23:58 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Threaded interrupt handlers broken?
+Date: Mon, 17 Aug 2009 12:23:57 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200908161153.14081.mb@bu3sch.de> <200908162301.21775.mb@bu3sch.de> <alpine.LFD.2.00.0908162316150.2782@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0908162316150.2782@localhost.localdomain>
+X-Move-Along: Nothing to see here. No, really... Nothing.
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Disposition: inline
+Message-Id: <200908171223.57412.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 16 August 2009 23:28:37 Thomas Gleixner wrote:
+> On Sun, 16 Aug 2009, Michael Buesch wrote:
+> > On Sunday 16 August 2009 22:05:59 Thomas Gleixner wrote:
+> > > Hmm. Nothing interesting AFAICT, but it would be really interesting to
+> > > find out why the IRQ_DISABLED flag is set.
+> > > 
+> > > Can you add some debug into disable_irq() e.g. WARN_ON(irq ==
+> > > BC43_IRQ_NR); so we can see what disables that interrupt.
+> > 
+> > I do not see a warning, if I put this into __disable_irq():
+> > WARN_ON(irq == 52);
+> > /proc/interrupts shows 52 as IRQ number for b43.
+> > And dmesg shows "... irq 52 on host ... mapped to virtual irq 52".
+> > So I guess the test is OK and the flag is added by some other means.
+> > Maybe by some weird powerpc architecture code?
+> > 
+> > It seems a little bit weird, however, that the WARN_ON does not even trigger
+> > on module unload, which as far as I can tell should disable the IRQ line
+> > in the free_irq() call (no other shared devices on this IRQ).
+> 
+> free_irq does not call disable_irq().
+> 
+> There are only a few places which set that flag.
+> 
+> dynamic_irq_init() which should not be called in your system
+> 
+> __set_irq_handler() only if a handler gets uninstalled and replaced by
+> handle_bad_irq
+> 
+> __disable_irq() which you already excluded
+> 
+> __freq_irq() which should not be called
+> 
+> note_interrupt() which should be visible in dmesg, but we do not see
+> such a thing.
+> 
+> IRQ_DISABLED is cleared at even less places:
+> 
+> request_irq() and __enable_irq() 
+> 
+> I'm really confused. Can you please add debug into those places and
+> provide the output. Also please print desc->status of irq 52 before
+> and after calling request_threaded_irq().
+> 
+> Thanks,
+> 
+> 	tglx
 
-On Sun, 16 Aug 2009, David Wagner wrote:
+Ok, I added some more debugging code:
+http://bu3sch.de/patches/wireless-testing/20090817-1219/patches/001-hack-threaded-irqs.patch
 
-> I accept your argument that there is no point trying to defend against 
-> deliberate communication of information between two cooperating processes 
-> via some sneaky channel; there is no hope of stopping that in 
-> general-purpose commodity OS's.  If process X and Y are both colluding to 
-> send information from X to Y, they will succeed, no matter how hard we try. 
-> We have no hope of closing all such channels, for general-purpose commodity 
-> OS's (like FreeBSD or Linux).
+Here's the result:
+http://bu3sch.de/misc/dmesg2
 
-Moving beyind EIP/ESP, which are clearly a bad idea:
+Is it possible that the irq_to_desc() in irq_thread() fails and the resulting desc
+pointer points to something random? That could probably explain why the bit is set
+and why the spinlock is uninitialized. But it would not explain why desc->lock would
+still work... Maybe irq_to_desc() returns a descriptor to another irq (!= 52)?
 
-The OS community has not engaged well with the concerns raised by past 
-cache-based crypto side channels, in part because it seemed the least complex 
-solution was hardening crypto against having key-driven footprints in the 
-cache.  However, the problem they represent (avoiding the use of shared 
-resources between mutually untrusting processes, and then mitigating efects 
-that remain) definitely sounds like the covert channel problem, with very 
-similar concerns extensively discussed in the documents I referred to.
-
-In an interactive system, the scheduling of threads in a process reflect the 
-completion of various events: user I/O, network I/O, disk I/O, or perhaps the 
-expiration of a timer associated with application-internal events (animations, 
-statistics, etc).  Monitoring these from another process is intentionally easy 
-on commodity OS's -- there are a variety of monitoring statistics, from the 
-already mentioned process/thread execution time, to context switch counters, 
-wait channels/addresses, lock states, timestamps on special devices, etc, not 
-to mention having CPU sink processes that nice themselves appropriately and 
-hang around monitoring execution of other processes/threads/the kernel through 
-gaps in its own scheduling.  Some of the intentional mechanisms are specific 
-to processes, and easy to block by policy.  Others are global, and begin the 
-sliding down the slope of "making the system and applications a lot harder to 
-analyze and debug", something that sites frequently hosting large numbers of 
-mutually untrusting users (web farms) may not be willing to deal do.
-
-Into the area of techniques that annoy people: my guess is that you may also 
-be able to measure the context switching of processes on other CPUs through 
-very careful timing of events in the kernel on your local CPU.  For example, 
-it's a reasonable bet that using the TSC and carefully selected system 
-calls/arguments, you can measure cache line behavior associated with kernel 
-scheduler/statistic lines that will be pulled to another CPU when a context 
-switch takes place.  For example, consider per-CPU run queue locks or context 
-switch statistics, which may in edge cases be pulled to another CPU, such as 
-when monitoring takes place.  If they are already local to the attacking CPU, 
-no context switch has taken place on the other CPU since you last checked; if 
-they're non-local, a context switch has taken place.
-
-Following Colin Percival's paper on cache side channels for RSA, there was a 
-lot of discussion about how the OS could help mitigate these problems: do you 
-provide "security critical sections" around cryptography which introduce 
-temporary but performance-degrading mutual exclusion of caches based on 
-knowledge of the CPU topology, for example.  Identifying and offering similar 
-trade-offs between performance and security, avoiding excess complexity, and 
-in particular, limiting the scope of those performance losses to only critical 
-moments will be key if the security community wants to engage the OS community 
-here.  Otherwise I suspect these concerns will pass by, unaddressed, again.
-
-Robert N M Watson
-Computer Laboratory
-University of Cambridge
+-- 
+Greetings, Michael.
