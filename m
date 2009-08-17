@@ -1,94 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbZHQWDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbZHQWEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758197AbZHQWDe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 18:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbZHQWDe
+	id S1758186AbZHQWEL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 18:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbZHQWEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 18:03:34 -0400
-Received: from rtr.ca ([76.10.145.34]:36274 "EHLO mail.rtr.ca"
+	Mon, 17 Aug 2009 18:04:10 -0400
+Received: from solitude.tty.gr ([95.154.208.37]:56282 "EHLO mx.tty.gr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752798AbZHQWDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 18:03:33 -0400
-Message-ID: <4A89D3B5.5080200@rtr.ca>
-Date: Mon, 17 Aug 2009 18:03:33 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	id S1752630AbZHQWEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 18:04:09 -0400
+X-Greylist: delayed 2175 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Aug 2009 18:04:09 EDT
+Message-ID: <4A89CB52.4030008@debian.org>
+Date: Tue, 18 Aug 2009 00:27:46 +0300
+From: Faidon Liambotis <paravoid@debian.org>
+Organization: Debian
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
 MIME-Version: 1.0
-To: Chris Ball <cjb@laptop.org>
-Cc: linux-btrfs@vger.kernel.org, Chris Mason <chris.mason@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Why does stat() return invalid st_dev field for btrfs ??
-References: <4A89C1DA.6040601@rtr.ca> <4A89C86A.1040207@rtr.ca> <m3eirads6m.fsf@pullcord.laptop.org> <4A89D2AC.5080006@rtr.ca>
-In-Reply-To: <4A89D2AC.5080006@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: linux-kernel@vger.kernel.org
+CC: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Weidong Han <weidong.han@intel.com>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       iommu@lists.linux-foundation.org, allen.m.kay@intel.com,
+       fenghua.yu@intel.com
+Subject: [regression, bisected] fails to boot on Dell Optiplex 760 with VT-d
+ enabled
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
->
-> stat(2) seems to return invalid major/minor device info
-> for btrfs filesystems.
-> 
-> Why?  Is this a bug?
-> 
-> Eg.
-> 
->     [~] uname -r
->     2.6.31-rc6
->     [~] mkfs.btrfs /dev/sdb
->     
->     WARNING! - Btrfs Btrfs v0.19 IS EXPERIMENTAL
->     WARNING! - see http://btrfs.wiki.kernel.org before using
->     
->     fs created label (null) on /dev/sdb
->             nodesize 4096 leafsize 4096 sectorsize 4096 size 30.06GB
->     Btrfs Btrfs v0.19
->     [~] mount /dev/sdb /x -t btrfs
->     [~] stat --format="%04D" /x
->     0017
->     [~] touch /x/junk
->     [~] stat --format="%04D" /x/junk
->     0017
-> 
-> This gives major=0x00, minor=0x17 for /dev/sdb,
-> which should have major=8, minor=0x10.
-> 
-> ???
+I am experiencin a bug on an Dell Optiplex 760 with a configuration that
+has an Intel Core2 Q9550 CPU and with an up-to-date BIOS, version A03.
 
-> Chris Ball wrote:
->> Hi,
->>
->>    > Mmm.. btrfs appears to configure itself as a "pseudo" filesystem,
->>    > which is why it returns fake device numbers via stat(), similar
->>    > to procfs or sysfs.
->>
->> Probably because a single btrfs filesystem can be composed of multiple
->> devices; one major/minor would not be sufficient.
-> ..
-> 
-> So I'm seeing in the code.
-> 
-> But for the 99% common case (personal computers, one drive), it would be
-> rather useful it it would comply with filesystem standards there.
-> 
-> In the unlikely event that a btrfs actually is composed of multiple 
-> devices,
-> then in that case perhaps return something nonsensical.
-> 
-> Mmm.. don't we already *have* an LVM layer in Linux?
-> 
-> Seems like a rather bad idea to have a new Linux-specific
-> filesystem re-implement it's own private LVM, and thus
-> confuse various disk management tools and the like.
-..
+When "VT for Direct I/O" is enabled in the BIOS, v2.6.30 boots and works
+perfectly, while v2.6.31-rc1..rc6 fail (both of them x86-64).
 
-[added linux-kernel to CC: list]
+More specifically, I get an endless loop of printing the following
+messages in
+the screen:
+        DMAR: [DMA Read] Request device [ff:1f.7] fault addr
+              fffffffffffff000
+        DMAR: [fault reason 255] Unknown
+and the boot process doesn't move on from there.
 
-Along those lines -- since btrfs reports invalid device information to stat(2),
-then I would suggest that it should also return -ENOTSUP for the FIBMAP and FIEMAP
-ioctl() calls.  Otherwise, somebody's filesystem is going to get corrupted.
+I ran git bisect good v2.6.30/bad v2.6.31-rc1 and I was pointed to the
+following commit:
+	937582382c71b75b29fbb92615629494e1a05ac0
+	x86, intr-remap: enable interrupt remapping early
 
-Cheers
+I have no idea if VT-d is functioning on v2.6.30; I just had the option
+enabled in the BIOS and noticed the problem when I tried to upgrade to
+2.6.31-rcX.
+
+I've read a similar bug report against a Mandriva kernel and another
+VT-d related bug for the same hardware against Xen and in both threads
+they were finger-pointing the BIOS.
+
+I'm not sure if that's the case but, even if it is, I'd expect the
+system to boot, like previous versions did, perhaps printing a warning
+about VT-d functionality.
+
+Thanks,
+Faidon
