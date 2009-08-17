@@ -1,81 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758274AbZHQXMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbZHQXTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758274AbZHQXMk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 19:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757830AbZHQXMk
+	id S1757975AbZHQXTA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 19:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbZHQXS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 19:12:40 -0400
-Received: from sous-sol.org ([216.99.217.87]:46583 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753580AbZHQXMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 19:12:39 -0400
-Date: Mon, 17 Aug 2009 16:11:56 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Faidon Liambotis <paravoid@debian.org>
-Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
-       iommu@lists.linux-foundation.org,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: Re: [regression, bisected] fails to boot on Dell Optiplex 760 with
-	VT-d enabled
-Message-ID: <20090817231156.GJ24885@sequoia.sous-sol.org>
-References: <4A89CB52.4030008@debian.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A89CB52.4030008@debian.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 17 Aug 2009 19:18:59 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:33874 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751293AbZHQXS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 19:18:59 -0400
+Subject: Re: clocksource changes in 2.6.31 - possible regression
+From: john stultz <johnstul@us.ibm.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090817160212.029b3e42@nehalam>
+References: <20090817090319.20979986@nehalam>
+	 <1250531337.26171.12.camel@work-vm>	<20090817110127.40ee5c29@nehalam>
+	 <1250532954.26171.35.camel@work-vm>	<20090817112704.2b4b2987@nehalam>
+	 <1250543459.7212.41.camel@localhost.localdomain>
+	 <1250545077.7212.49.camel@localhost.localdomain>
+	 <20090817144546.7f1d6572@nehalam>
+	 <1250547802.7212.82.camel@localhost.localdomain>
+	 <20090817160212.029b3e42@nehalam>
+Content-Type: text/plain
+Date: Mon, 17 Aug 2009 16:17:54 -0700
+Message-Id: <1250551074.7212.84.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Faidon Liambotis (paravoid@debian.org) wrote:
-> I am experiencin a bug on an Dell Optiplex 760 with a configuration that
-> has an Intel Core2 Q9550 CPU and with an up-to-date BIOS, version A03.
+On Mon, 2009-08-17 at 16:02 -0700, Stephen Hemminger wrote:
+> On Mon, 17 Aug 2009 15:23:22 -0700
+> john stultz <johnstul@us.ibm.com> wrote:
 > 
-> When "VT for Direct I/O" is enabled in the BIOS, v2.6.30 boots and works
-> perfectly, while v2.6.31-rc1..rc6 fail (both of them x86-64).
+> > On Mon, 2009-08-17 at 14:45 -0700, Stephen Hemminger wrote:
+> > > On Mon, 17 Aug 2009 14:37:57 -0700
+> > > john stultz <johnstul@us.ibm.com> wrote:
+> > > > However, I think its fair, that as your TSC is being disqualified for
+> > > > being an old AMD SMP box, and there is a *possibility* that if you don't
+> > > > run with cpufreq and the SUMA-ness of the box didn't get in the way of
+> > > > TSC synchronization, you might have an argument for overriding the
+> > > > unsynchronized_tsc() heuristics.
+> > > > 
+> > > > Luckily the option is already there. :)
+> > > > 
+> > > > So try booting with "tsc=reliable" to override those checks, and I think
+> > > > you'll be able to do what you want to do.
+> > > > 
+> > > 
+> > > Good idea, doesn't work.
+> > > 
+> > > vyatta@amd1:~$ cat /proc/cmdline 
+> > > BOOT_IMAGE=/boot/vmlinuz-2.6.31-rc6 root=/dev/sda1 ro tsc=reliable
+> > > vyatta@amd1:~$ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+> > > acpi_pm 
+> > 
+> > Bah! My apologies for half-assing this. 
+> > 
+> > How about with the following *tested* patch (includes a variant of
+> > Thomas' fix). 
+> > 
+> > thanks
+> > -john
+> > 
+> > 
+> > Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> > 
+> > diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> > index 71f4368..648fb26 100644
+> > --- a/arch/x86/kernel/tsc.c
+> > +++ b/arch/x86/kernel/tsc.c
+> > @@ -825,6 +825,9 @@ __cpuinit int unsynchronized_tsc(void)
+> >  
+> >  	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
+> >  		return 0;
+> > +
+> > +	if (tsc_clocksource_reliable)
+> > +		return 0;
+> >  	/*
+> >  	 * Intel systems are normally all synchronized.
+> >  	 * Exceptions must mark TSC as unstable:
+> > @@ -832,10 +835,10 @@ __cpuinit int unsynchronized_tsc(void)
+> >  	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL) {
+> >  		/* assume multi socket systems are not synchronized: */
+> >  		if (num_possible_cpus() > 1)
+> > -			tsc_unstable = 1;
+> > +			return 1;
+> >  	}
+> >  
+> > -	return tsc_unstable;
+> > +	return 0;
+> >  }
+> >  
+> >  static void __init init_tsc_clocksource(void)
+> > 
+> > 
+> 
+> This adds tsc, but makes it first?  it is reliable, but do I want
+> to make it most important?
+> 
+> $ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+> tsc acpi_pm
 
-AFAIK, this platform is broken when VT-d is enabled.
-Can you add this patch to a broken kernel and retest?
-Please boot with 'debug' on the kernel command line.
 
- drivers/pci/dmar.c |   19 ++++++++++++-------
- 1 files changed, 12 insertions(+), 7 deletions(-)
+Well, if you're overriding the system saying that its safe, then sure,
+its better then anything else, why wouldn't we?
 
-diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
-index 7b287cb..40f497b 100644
---- a/drivers/pci/dmar.c
-+++ b/drivers/pci/dmar.c
-@@ -631,6 +631,18 @@ int alloc_iommu(struct dmar_drhd_unit *drhd)
- 	}
- 	iommu->cap = dmar_readq(iommu->reg + DMAR_CAP_REG);
- 	iommu->ecap = dmar_readq(iommu->reg + DMAR_ECAP_REG);
-+	ver = readl(iommu->reg + DMAR_VER_REG);
-+	printk(KERN_DEBUG "IOMMU %llx: ver %d:%d cap %llx ecap %llx\n",
-+		(unsigned long long)drhd->reg_base_addr,
-+		DMAR_VER_MAJOR(ver), DMAR_VER_MINOR(ver),
-+		(unsigned long long)iommu->cap,
-+		(unsigned long long)iommu->ecap);
-+
-+	if (ver == (u32)-1 || iommu->cap == (u64)-1 || iommu->ecap == (u64)-1) {
-+		printk(KERN_ERR "IOMMU: BIOS or hardware problem, disabling "
-+			"VT-d\n");
-+		goto error;
-+	}
- 
- #ifdef CONFIG_DMAR
- 	agaw = iommu_calculate_agaw(iommu);
-@@ -664,13 +676,6 @@ int alloc_iommu(struct dmar_drhd_unit *drhd)
- 		}
- 	}
- 
--	ver = readl(iommu->reg + DMAR_VER_REG);
--	pr_debug("IOMMU %llx: ver %d:%d cap %llx ecap %llx\n",
--		(unsigned long long)drhd->reg_base_addr,
--		DMAR_VER_MAJOR(ver), DMAR_VER_MINOR(ver),
--		(unsigned long long)iommu->cap,
--		(unsigned long long)iommu->ecap);
--
- 	spin_lock_init(&iommu->register_lock);
- 
- 	drhd->iommu = iommu;
+thanks
+-john
+
+
