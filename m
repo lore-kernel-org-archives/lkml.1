@@ -1,220 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758365AbZHQX1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbZHQX1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758365AbZHQX1S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 19:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758259AbZHQX1Q
+	id S1758406AbZHQX1h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 19:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758398AbZHQX1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 19:27:16 -0400
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:23877 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932448AbZHQX0y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 19:26:54 -0400
-X-Loopcount0: from 10.9.160.253
-Message-ID: <4A89E768.7010207@dell.com>
-Date: Mon, 17 Aug 2009 18:27:36 -0500
-From: Mario Limonciello <mario_limonciello@dell.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090804)
-MIME-Version: 1.0
-To: cezary.jackiewicz@gmail.com
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] Add rfkill support to compal-laptop
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig121A5D7D329F1E352EF9C933"
+	Mon, 17 Aug 2009 19:27:35 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:55748 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758394AbZHQX1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 19:27:33 -0400
+Date: Mon, 17 Aug 2009 16:27:29 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: clocksource changes in 2.6.31 - possible regression
+Message-ID: <20090817162729.451613b4@nehalam>
+In-Reply-To: <1250551074.7212.84.camel@localhost.localdomain>
+References: <20090817090319.20979986@nehalam>
+	<1250531337.26171.12.camel@work-vm>
+	<20090817110127.40ee5c29@nehalam>
+	<1250532954.26171.35.camel@work-vm>
+	<20090817112704.2b4b2987@nehalam>
+	<1250543459.7212.41.camel@localhost.localdomain>
+	<1250545077.7212.49.camel@localhost.localdomain>
+	<20090817144546.7f1d6572@nehalam>
+	<1250547802.7212.82.camel@localhost.localdomain>
+	<20090817160212.029b3e42@nehalam>
+	<1250551074.7212.84.camel@localhost.localdomain>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig121A5D7D329F1E352EF9C933
-Content-Type: multipart/mixed;
- boundary="------------000504070907030503050604"
+On Mon, 17 Aug 2009 16:17:54 -0700
+john stultz <johnstul@us.ibm.com> wrote:
 
-This is a multi-part message in MIME format.
---------------000504070907030503050604
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+> On Mon, 2009-08-17 at 16:02 -0700, Stephen Hemminger wrote:
+> > On Mon, 17 Aug 2009 15:23:22 -0700
+> > john stultz <johnstul@us.ibm.com> wrote:
+> > 
+> > > On Mon, 2009-08-17 at 14:45 -0700, Stephen Hemminger wrote:
+> > > > On Mon, 17 Aug 2009 14:37:57 -0700
+> > > > john stultz <johnstul@us.ibm.com> wrote:
+> > > > > However, I think its fair, that as your TSC is being disqualified for
+> > > > > being an old AMD SMP box, and there is a *possibility* that if you don't
+> > > > > run with cpufreq and the SUMA-ness of the box didn't get in the way of
+> > > > > TSC synchronization, you might have an argument for overriding the
+> > > > > unsynchronized_tsc() heuristics.
+> > > > > 
+> > > > > Luckily the option is already there. :)
+> > > > > 
+> > > > > So try booting with "tsc=reliable" to override those checks, and I think
+> > > > > you'll be able to do what you want to do.
+> > > > > 
+> > > > 
+> > > > Good idea, doesn't work.
+> > > > 
+> > > > vyatta@amd1:~$ cat /proc/cmdline 
+> > > > BOOT_IMAGE=/boot/vmlinuz-2.6.31-rc6 root=/dev/sda1 ro tsc=reliable
+> > > > vyatta@amd1:~$ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+> > > > acpi_pm 
+> > > 
+> > > Bah! My apologies for half-assing this. 
+> > > 
+> > > How about with the following *tested* patch (includes a variant of
+> > > Thomas' fix). 
+> > > 
+> > > thanks
+> > > -john
+> > > 
+> > > 
+> > > Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> > > 
+> > > diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> > > index 71f4368..648fb26 100644
+> > > --- a/arch/x86/kernel/tsc.c
+> > > +++ b/arch/x86/kernel/tsc.c
+> > > @@ -825,6 +825,9 @@ __cpuinit int unsynchronized_tsc(void)
+> > >  
+> > >  	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
+> > >  		return 0;
+> > > +
+> > > +	if (tsc_clocksource_reliable)
+> > > +		return 0;
+> > >  	/*
+> > >  	 * Intel systems are normally all synchronized.
+> > >  	 * Exceptions must mark TSC as unstable:
+> > > @@ -832,10 +835,10 @@ __cpuinit int unsynchronized_tsc(void)
+> > >  	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL) {
+> > >  		/* assume multi socket systems are not synchronized: */
+> > >  		if (num_possible_cpus() > 1)
+> > > -			tsc_unstable = 1;
+> > > +			return 1;
+> > >  	}
+> > >  
+> > > -	return tsc_unstable;
+> > > +	return 0;
+> > >  }
+> > >  
+> > >  static void __init init_tsc_clocksource(void)
+> > > 
+> > > 
+> > 
+> > This adds tsc, but makes it first?  it is reliable, but do I want
+> > to make it most important?
+> > 
+> > $ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+> > tsc acpi_pm
+> 
+> 
+> Well, if you're overriding the system saying that its safe, then sure,
+> its better then anything else, why wouldn't we?
+> 
 
-In order to be useful in modern kernels and standard interfaces,
-compal-laptop should have rfkill support.  This patch adds it.
---=20
-Mario Limonciello
-*Dell | Linux Engineering*
-mario_limonciello@dell.com
+That's acceptable, maybe add change to Documentation/kernel-parameters.txt
 
---------------000504070907030503050604
-Content-Type: text/x-patch;
- name="02_add_rfkill_support.diff"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline;
- filename="02_add_rfkill_support.diff"
+	tsc=		Disable clocksource-must-verify flag for TSC.
+			Format: <string>
+			[x86] reliable: mark tsc clocksource as reliable and
+                        makes tsc the default clocksource; this
+			disables clocksource verification at runtime.
+			Used to enable high-resolution timer mode on older
+			hardware, and in virtualized environment.
 
---- drivers/platform/x86/compal-laptop.c.old	2009-08-17 07:01:36.24487443=
-0 -0500
-+++ drivers/platform/x86/compal-laptop.c	2009-08-17 07:02:15.012836625 -0=
-500
-@@ -52,6 +52,7 @@
- #include <linux/backlight.h>
- #include <linux/platform_device.h>
- #include <linux/autoconf.h>
-+#include <linux/rfkill.h>
-=20
- #define COMPAL_DRIVER_VERSION "0.2.6"
-=20
-@@ -64,6 +65,9 @@
- #define WLAN_MASK	0x01
- #define BT_MASK 	0x02
-=20
-+static struct rfkill *wifi_rfkill;
-+static struct rfkill *bluetooth_rfkill;
-+
- static int force;
- module_param(force, bool, 0);
- MODULE_PARM_DESC(force, "Force driver load, ignore DMI data");
-@@ -89,6 +93,87 @@
- 	return (int) result;
- }
-=20
-+static void compal_rfkill_query(struct rfkill *rfkill, void *data)
-+{
-+	unsigned long radio =3D (unsigned long) data;
-+	u8 result;
-+	bool blocked;
-+
-+	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
-+
-+	if ((result & KILLSWITCH_MASK) =3D=3D 0)
-+		blocked =3D 1;
-+        else if (radio =3D=3D WLAN_MASK)
-+		blocked =3D !(result & WLAN_MASK);
-+	else
-+		blocked =3D !((result & BT_MASK) >> 1);
-+
-+	rfkill_set_sw_state(rfkill,blocked);
-+	rfkill_set_hw_state(rfkill,0);
-+}
-+
-+static int compal_rfkill_set(void *data, bool blocked)
-+{
-+	unsigned long radio =3D (unsigned long) data;
-+	u8 result, value;
-+
-+	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
-+
-+	if ((result & KILLSWITCH_MASK) =3D=3D 0)
-+		return -EINVAL;
-+	else {
-+		if (!blocked)
-+			value =3D (u8) (result | radio);
-+		else
-+			value =3D (u8) (result & ~radio);
-+		ec_write(COMPAL_EC_COMMAND_WIRELESS, value);
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct rfkill_ops compal_rfkill_ops =3D {
-+	.set_block =3D compal_rfkill_set,
-+	.query =3D compal_rfkill_query,
-+};
-+
-+static int setup_rfkill(void)
-+{
-+	int ret;
-+
-+	wifi_rfkill =3D rfkill_alloc("compal-wifi", NULL, RFKILL_TYPE_WLAN,
-+					&compal_rfkill_ops, (void *) WLAN_MASK);
-+	if (!wifi_rfkill) {
-+		ret =3D -ENOMEM;
-+		goto err_wifi;
-+	}
-+	ret =3D rfkill_register(wifi_rfkill);
-+	if (ret)
-+		goto err_wifi;
-+
-+	bluetooth_rfkill =3D rfkill_alloc("compal-bluetooth", NULL, RFKILL_TYPE=
-_BLUETOOTH,
-+					&compal_rfkill_ops, (void *) BT_MASK);
-+	if (!bluetooth_rfkill) {
-+		ret =3D -ENOMEM;
-+		goto err_bt;
-+	}
-+	ret =3D rfkill_register(bluetooth_rfkill);
-+	if (ret)
-+		goto err_bt;
-+
-+	return 0;
-+err_bt:
-+	rfkill_destroy(bluetooth_rfkill);
-+	if (bluetooth_rfkill)
-+		rfkill_unregister(bluetooth_rfkill);
-+err_wifi:
-+	rfkill_destroy(wifi_rfkill);
-+	if (wifi_rfkill)
-+		rfkill_unregister(wifi_rfkill);
-+
-+	return ret;
-+}
-+
- static int set_wlan_state(int state)
- {
- 	u8 result, value;
-@@ -357,6 +442,12 @@
- 	if (!force && !dmi_check_system(compal_dmi_table))
- 		return -ENODEV;
-=20
-+	ret =3D setup_rfkill();
-+	if (ret) {
-+		printk(KERN_WARNING "compal-laptop: Unable to setup rfkill\n");
-+		goto fail_rfkill;
-+	}
-+
- 	/* Register backlight stuff */
-=20
- 	if (!acpi_video_backlight_support()) {
-@@ -410,6 +501,13 @@
-=20
- 	backlight_device_unregister(compalbl_device);
-=20
-+fail_rfkill:
-+
-+	if (wifi_rfkill)
-+		rfkill_unregister(wifi_rfkill);
-+	if (bluetooth_rfkill)
-+		rfkill_unregister(bluetooth_rfkill);
-+
- 	return ret;
- }
-=20
-@@ -420,6 +518,10 @@
- 	platform_device_unregister(compal_device);
- 	platform_driver_unregister(&compal_driver);
- 	backlight_device_unregister(compalbl_device);
-+	if (wifi_rfkill)
-+		rfkill_unregister(wifi_rfkill);
-+	if (bluetooth_rfkill)
-+		rfkill_unregister(bluetooth_rfkill);
-=20
- 	printk(KERN_INFO "compal-laptop: driver unloaded.\n");
- }
 
---------------000504070907030503050604--
-
---------------enig121A5D7D329F1E352EF9C933
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkqJ52gACgkQ2CrZjkA73Yv9KwCfbRMp1giiFiate4jC4c6ZQmut
-9gQAn0i6zcQ5g3AXFCMO5VZXWa0nZ43Y
-=Gfvx
------END PGP SIGNATURE-----
-
---------------enig121A5D7D329F1E352EF9C933--
+-- 
