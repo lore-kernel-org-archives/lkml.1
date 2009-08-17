@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932308AbZHQJ0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932338AbZHQJ0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932308AbZHQJ0V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 05:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932187AbZHQJ0U
+	id S932338AbZHQJ0n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 05:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932284AbZHQJ0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 05:26:20 -0400
-Received: from www84.your-server.de ([213.133.104.84]:38044 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932180AbZHQJ0U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 05:26:20 -0400
-Subject: Re: [PATCH 2/7] kfifo: move out spinlock
-From: Stefani Seibold <stefani@seibold.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
-In-Reply-To: <20090817095349.4cf8d3c5@lxorguk.ukuu.org.uk>
-References: <1250455161.28540.4.camel@wall-e>
-	 <1250455590.28540.10.camel@wall-e>
-	 <20090816235843.0f7f11de@lxorguk.ukuu.org.uk>
-	 <20090816163422.a147a918.akpm@linux-foundation.org>
-	 <20090817074820.3585206b@lxorguk.ukuu.org.uk>
-	 <1250495182.20837.27.camel@wall-e>
-	 <20090817091524.33f99737@lxorguk.ukuu.org.uk>
-	 <1250497736.20837.39.camel@wall-e>
-	 <20090817095349.4cf8d3c5@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Mon, 17 Aug 2009 11:26:20 +0200
-Message-Id: <1250501180.25359.12.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Mon, 17 Aug 2009 05:26:42 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:34703 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932187AbZHQJ0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 05:26:41 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Message-ID: <19081.8782.92022.727631@cargo.ozlabs.ibm.com>
+Date: Mon, 17 Aug 2009 19:26:38 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf_counter: Check task on counter read IPI
+In-Reply-To: <1250497016.5241.1675.camel@twins>
+References: <19076.63614.277861.368125@drongo.ozlabs.ibm.com>
+	<1250497016.5241.1675.camel@twins>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, den 17.08.2009, 09:53 +0100 schrieb Alan Cox:
-> > And the spinlock is in most cases useless, because the API works fine if
-> > only one reader and one writer is using the fifo. This is the common
-> > case.
-> 
-> That is one good argument for fixing the naming. The USB serial code
-> probably can be persuaded to use the  single reader/writer assumption as
-> well.
-> 
-> > If you like it is very easy to add a compatibility layer, which restores
-> > the old function names. But for what, only for very few users who
-> > depends on it? This will only waste the name space.
-> 
-> Ooh the tragedy, we are short many things but namespace strangely is not
-> one of them. Especially when the names all start kfifo_ and __kfifo_, a
-> namespace much in demand by other code.
-> 
-> I'd rather have the old names, or the new names than some kind of gunge
-> middle layer of both. Either choice is better.
+Peter Zijlstra writes:
 
-The question is: what do you expect? Should i provide a compat layer?
-Should i retiring my work? 
+> > I don't have an example of an actual failure due to this race, but it
+> > seems obvious that it could occur and we need to guard against it, so
+> > I think this should go in .31.
+> 
+> Hmm, right.
+> 
+> However those other sites have retry loops in the caller, but callers of
+> __perf_counter_read() do not. Granted, I'm not sure what they should
+> retry on exactly, but this patch trades an invalid update to a missing
+> update.
 
-Give me a solution for this dilemma. I see at this point no way if you
-insist for the spinlock to design a clean interface.
+It relies on the counter sched-out updating ->count for all the
+counters on the task.  We know that the sched-out happened very
+recently, i.e. in the interval between deciding to send the IPI and
+the IPI arriving.  So the counter value should be sufficiently up to
+date.  Ingo pointed this out to me some time ago.
 
-Stefani
+I tried to address that in the comments and the patch description but
+perhaps I wasn't explicit enough.
 
+Paul.
