@@ -1,100 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751470AbZHQFB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751652AbZHQFIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751470AbZHQFB2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 01:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbZHQFB1
+	id S1751652AbZHQFIr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 01:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbZHQFIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 01:01:27 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33486 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751156AbZHQFB0 (ORCPT
+	Mon, 17 Aug 2009 01:08:46 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:65064 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751274AbZHQFIp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 01:01:26 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4A88E3E4.40506@jp.fujitsu.com>
-Date: Mon, 17 Aug 2009 14:00:20 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Mon, 17 Aug 2009 01:08:45 -0400
+Message-ID: <4A88E5CC.6050706@vflare.org>
+Date: Mon, 17 Aug 2009 10:38:28 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
-       ak@linux.intel.com, tglx@linutronix.de, Yinghai Lu <yinghai@kernel.org>,
-       Huang Ying <ying.huang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [boot crash] Re: [tip:x86/mce3] x86, mce: use 64bit machine check
- code on 32bit
-References: <tip-4efc0670baf4b14bc95502e54a83ccf639146125@git.kernel.org> <20090812113652.GA19632@elte.hu>
-In-Reply-To: <20090812113652.GA19632@elte.hu>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] swap: send callback when swap slot is freed
+References: <200908122007.43522.ngupta@vflare.org> <20090817115529.59395cea.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090817115529.59395cea.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
-
-Ingo Molnar wrote:
-> * tip-bot for Andi Kleen <ak@linux.intel.com> wrote:
-> 
->> Commit-ID:  4efc0670baf4b14bc95502e54a83ccf639146125
->> Gitweb:     http://git.kernel.org/tip/4efc0670baf4b14bc95502e54a83ccf639146125
->> Author:     Andi Kleen <ak@linux.intel.com>
->> AuthorDate: Tue, 28 Apr 2009 19:07:31 +0200
->> Committer:  H. Peter Anvin <hpa@zytor.com>
->> CommitDate: Thu, 28 May 2009 09:24:13 -0700
+On 08/17/2009 08:25 AM, KAMEZAWA Hiroyuki wrote:
+> On Wed, 12 Aug 2009 20:07:43 +0530
+> Nitin Gupta<ngupta@vflare.org>  wrote:
+>
+>> Currently, we have "swap discard" mechanism which sends a discard bio request
+>> when we find a free cluster during scan_swap_map(). This callback can come a
+>> long time after swap slots are actually freed.
 >>
->> x86, mce: use 64bit machine check code on 32bit
+>> This delay in callback is a great problem when (compressed) RAM [1] is used
+>> as a swap device. So, this change adds a callback which is called as
+>> soon as a swap slot becomes free. For above mentioned case of swapping
+>> over compressed RAM device, this is very useful since we can immediately
+>> free memory allocated for this swap page.
+>>
+>> This callback does not replace swap discard support. It is called with
+>> swap_lock held, so it is meant to trigger action that finishes quickly.
+>> However, swap discard is an I/O request and can be used for taking longer
+>> actions.
+>>
+>> Links:
+>> [1] http://code.google.com/p/compcache/
+>>
+>
+> Hmm, do you really need notify at *every* swap free ?
+> No batching is necessary ?
+>
 
-(snip)
-
-> 
-> This commit causes a new regression, it broke the bootup on one of 
-> my -tip testsystems, an older, Pentium-M based HP laptop (HP 
-> OmniBook 6000 EA).
-> 
-> The symptom is that the bootup hard-hangs after MCE init:
-> 
->  [    0.022996] Mount-cache hash table entries: 512
->  [    0.024996] Initializing cgroup subsys debug
->  [    0.025996] Initializing cgroup subsys cpuacct
->  [    0.026995] Initializing cgroup subsys devices
->  [    0.027995] Initializing cgroup subsys freezer
->  [    0.028995] mce: CPU supports 5 MCE banks
-> 
-> Kernel config attached. cpuinfo:
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 6
-> model		: 8
-> model name	: 06/08
-> stepping	: 10
-> cpu MHz		: 846.372
-
-According to the cpuid, I suppose this cpu is Pentium III.
-
-> fdiv_bug	: no
-> hlt_bug		: no
-> f00f_bug	: no
-> coma_bug	: no
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 2
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat pse36 mmx fxsr sse up
-
-None of acpi, apic, and tm is available.
-So at least thermal codes should be innocent.
-
-> bogomips	: 1692.74
-> clflush size	: 32
-> power management:
-> 
-> 	Ingo
-
-Could you try boot your laptop with mce=nobootlog?
-
+We need notify for every swap free and no batching is desired, at least for 
+compcache case.
 
 Thanks,
-H.Seto
-
+Nitin
