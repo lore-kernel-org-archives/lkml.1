@@ -1,46 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757622AbZHQUFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932108AbZHQUFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757622AbZHQUFS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 16:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbZHQUFR
+	id S932108AbZHQUFX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 16:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757644AbZHQUFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 16:05:17 -0400
-Received: from www.tglx.de ([62.245.132.106]:55273 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752086AbZHQUFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 16:05:16 -0400
-Date: Mon, 17 Aug 2009 22:04:39 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stephen Hemminger <shemminger@vyatta.com>
-cc: john stultz <johnstul@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: clocksource changes in 2.6.31 - possible regression
-In-Reply-To: <20090817125406.03e26060@nehalam>
-Message-ID: <alpine.LFD.2.00.0908172202430.2782@localhost.localdomain>
-References: <20090817090319.20979986@nehalam> <1250531337.26171.12.camel@work-vm> <20090817110127.40ee5c29@nehalam> <1250532954.26171.35.camel@work-vm> <20090817112704.2b4b2987@nehalam> <alpine.LFD.2.00.0908172032500.2782@localhost.localdomain>
- <20090817125406.03e26060@nehalam>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 17 Aug 2009 16:05:20 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:60864 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754446AbZHQUFT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 16:05:19 -0400
+Date: Mon, 17 Aug 2009 16:05:15 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: len.brown@intel.com
+cc: linux-kernel@vger.kernel.org
+Subject: 2.6.31-rc5: ACPI Error: Null physical address
+Message-ID: <alpine.DEB.1.10.0908171603130.20399@gentwo.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Aug 2009, Stephen Hemminger wrote:
-> On Mon, 17 Aug 2009 20:34:02 +0200 (CEST)
-> Thomas Gleixner <tglx@linutronix.de> wrote:
-> > 
-> > Can you please provide a full dmesg of pre 31 and the output of
+On Dell R610 (Nehalem 2.93Ghz Dual Quad)
 
-Thanks for the dmesg. Can you please send the output of 
 
-> > /sys/.../available_clocksources before you switch to TSC ?
-
-as well ? While at it please add the output of
-/sys/.../current_clocksource
-
-Thanks,
-
-	tglx
-
+[    0.000000] ACPI: ERST 00000000bf6b2390 00270 (v01 DELL   PE_SC3   00000001 DELL 00000001)
+[    0.000000] ACPI: HEST 00000000bf6b2600 0027C (v01 DELL   PE_SC3   00000001 DELL 00000001)
+[    0.000000] ACPI: BERT 00000000bf6b2210 00030 (v01 DELL   PE_SC3   00000001 DELL 00000001)
+[    0.000000] ACPI: EINJ 00000000bf6b2240 00150 (v01 DELL   PE_SC3   00000001 DELL 00000001)
+[    0.000000] ACPI Error: Null physical address for ACPI table [<NULL>] 20090521 tbutils-313
+[    0.000000] ACPI: TCPA 00000000bf6c3bc0 00064 (v02 DELL   PE_SC3   00000001 DELL 00000001)
+[    0.000000] ACPI: Local APIC address 0xfee00000
 
