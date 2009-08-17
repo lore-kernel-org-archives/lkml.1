@@ -1,40 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbZHQGo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZHQGrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756949AbZHQGo6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 02:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756933AbZHQGo5
+	id S1756916AbZHQGrk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 02:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbZHQGrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 02:44:57 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:43133 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756890AbZHQGox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 02:44:53 -0400
-Date: Mon, 17 Aug 2009 01:44:47 -0500
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.31-rc7
-User-Agent: Heirloom mailx 12.2 01/07/07
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 17 Aug 2009 02:47:39 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51016 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756875AbZHQGri (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 02:47:38 -0400
+Date: Mon, 17 Aug 2009 07:48:20 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Stefani Seibold <stefani@seibold.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 2/7] kfifo: move out spinlock
+Message-ID: <20090817074820.3585206b@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090816163422.a147a918.akpm@linux-foundation.org>
+References: <1250455161.28540.4.camel@wall-e>
+	<1250455590.28540.10.camel@wall-e>
+	<20090816235843.0f7f11de@lxorguk.ukuu.org.uk>
+	<20090816163422.a147a918.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090817064448.0CF1DA4A9DC6@attica.americas.sgi.com>
-From: felixb@sgi.com (Felix Blyakher)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 894ef820b10d77e2d6d717342fc408bdd9825139:
-  Randy Dunlap (1):
-        dm-log-userspace: fix printk format warning
+> kfifo has no business assuming that the caller wants to use
+> spin_lock() locking.
+> 
+> If we want to add wrapper helpers around kfifo to reduce code
+> duplication in callers, and if one of those wrapper helpers provides
+> spinlock-based locking then fine.
 
-are available in the git repository at:
+Those wrappers happen to be called kfifo_get and kfifo_put
 
-  git://oss.sgi.com/xfs/xfs for-linus
+> But the happens-to-use-spin_lock functions shouldn't be called
+> kfifo_get(), because that steals namespace from the unlocked functions,
+> and makes the naming for the happens-to-use-mutex_lock functions look
+> weird.
 
-Christoph Hellwig (1):
-      xfs: fix locking in xfs_iget_cache_hit
+All over the kernel unlocked function versions have a leading _ name.
+It's the kernel convention.
 
- fs/xfs/linux-2.6/xfs_sync.c |   13 ++++-
- fs/xfs/linux-2.6/xfs_sync.h |    1 +
- fs/xfs/xfs_iget.c           |  113 ++++++++++++++++++++++---------------------
- 3 files changed, 70 insertions(+), 57 deletions(-)
+The other thing I must say I dislike about these patches is the
+gratuitious 'let's rename all the functions' approach it takes. The kfifo
+API is documented, used and random API of the year type changes mess
+stuff up and cause unneeded churn.
+
+The implementation itself is a really really nice idea.
+
+
