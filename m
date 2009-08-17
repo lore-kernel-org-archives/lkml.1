@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751775AbZHQNKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752287AbZHQNMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751775AbZHQNKr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 09:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbZHQNKq
+	id S1752287AbZHQNMT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 09:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbZHQNMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 09:10:46 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47742 "EHLO mx2.suse.de"
+	Mon, 17 Aug 2009 09:12:18 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:20468 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750937AbZHQNKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 09:10:46 -0400
-Date: Mon, 17 Aug 2009 15:10:44 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nadia Derbey <Nadia.Derbey@bull.net>,
-       Pierre Peiffer <peifferp@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [patch 4a/4] ipc: sem optimise simple operations
-Message-ID: <20090817131044.GI9962@wotan.suse.de>
-References: <20090815045237.GC19195@wotan.suse.de> <4A86899A.6050502@colorfullife.com> <20090815103820.GC8954@wotan.suse.de> <4A86ABF0.2070207@colorfullife.com> <20090815144908.GA30951@wotan.suse.de> <4A86E30E.8030208@colorfullife.com> <20090816103127.GB8644@wotan.suse.de> <4A87ED93.5060104@colorfullife.com> <20090817064446.GD9962@wotan.suse.de> <4A8954F8.7040602@colorfullife.com>
+	id S1750999AbZHQNMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 09:12:18 -0400
+X-IronPort-AV: E=Sophos;i="4.43,396,1246863600"; 
+   d="scan'208";a="226184403"
+Subject: Re: [2.6.31-rc5] oops: NFS4 client manager kthread...
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+Cc: linux-nfs@vger.kernel.org, Chuck Lever <chuck.lever@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <6278d2220908161540h78f17424m592c5acf3420f906@mail.gmail.com>
+References: <6278d2220908161540h78f17424m592c5acf3420f906@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Mon, 17 Aug 2009 09:12:18 -0400
+Message-Id: <1250514738.8475.26.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8954F8.7040602@colorfullife.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.26.1 
+X-OriginalArrivalTime: 17 Aug 2009 13:12:19.0543 (UTC) FILETIME=[599CD670:01CA1F3C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 17, 2009 at 03:02:48PM +0200, Manfred Spraul wrote:
-> On 08/17/2009 08:44 AM, Nick Piggin wrote:
-> >OK, well let's just get something in.
-> >   
-> Good, I would propose the that the following 7 patches should be merged:
+On Sun, 2009-08-16 at 23:40 +0100, Daniel J Blueman wrote:
+> After losing and regaining ethernet link a few times with 2.6.31-rc5
+> [1], I've hit an oops in the NFS4 client manager kthread [2] on my
+> client with NFS4 homedir mount.
 > 
-> http://lkml.org/lkml/2009/8/11/59
-> http://lkml.org/lkml/2009/8/11/9
-> http://lkml.org/lkml/2009/8/11/14
-> http://lkml.org/lkml/2009/8/15/163
-> http://lkml.org/lkml/2009/8/15/164
-> http://lkml.org/lkml/2009/8/15/167
-> http://lkml.org/lkml/2009/8/15/168
+> Do you have a frequent test-case for when the client's manager kthread
+> gets invoked (with and without succeeding callbacks, due to eg a
+> firewall)? Server here is unpatched 2.6.30-rc6; I recall seeing
+> problems when the manager kthread gets invoked, across quite a few
+> kernel releases, just wasn't lucky enough to catch an oops.
 > 
-> Nick: is that ok from your point of view?
+> Oppsing in allow_signal() suggests task state corruption perhaps? I'm
+> downloading the debug kernel to match up the disassembly and line
+> numbers, if that helps? This time, the client had no firewall (but
+> have seen other issues when the callback has failed due to the
+> firewall).
 
-Well I don't know if they need to be broken up so much... the complex
-list one is just broken out of my patch, no? I don't think it really
-is more reviewable if you just add it without doing anything to it...
-but whatever.
+Those aren't Oopses. They are 'soft lockup' warnings. Basically, they're
+saying that the CPU is getting stuck waiting for a spin lock or a mutex.
 
- 
-> >That said, I'm not too unhappy with your version if you feel strongly
-> >about it.
-> I would prefer it:
-> We simply don't know if a wait-for-zero list, only for single sop 
-> operations, is a step in the right direction.
-> 
-> Postgres uses single sop operations with just +-1 on one semaphore.
-> You wrote that your SAP workload also uses +-1.
-> According to google codesearch, apache, mozilla, mpich all use +-1.
-> 
-> Thus: Who uses single sop, wait for zero?
+In this case, it is probably the fact that the state manager is going
+nuts trying to recover, while the connection to the server keeps coming
+up and going down.
 
-Oracle. Arguably it is also better behaviour for fairness to wake in
-FIFO order too in that case.
+What does 'netstat -t' say when you get into this situation?
 
-> I'm just afraid that we optimize for the wrong case.
+Cheers
+  Trond
 
-My point is that there is very little downside, and it is actually
-going via simpler code paths (and less icache). So I think it makes
-sense, but anyway.
+-- 
+Trond Myklebust
+Linux NFS client maintainer
 
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
