@@ -1,115 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbZHQOlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbZHQOlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755310AbZHQOlV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 10:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbZHQOlU
+	id S1755271AbZHQOlO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 10:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbZHQOlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 10:41:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59097 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753166AbZHQOlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 10:41:19 -0400
-Date: Mon, 17 Aug 2009 16:40:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <williams@redhat.com>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Christoph Hellwig <hch@infradead.org>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Roland McGrath <roland@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Jiaying Zhang <jiayingz@google.com>, Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 4/4] perf tools: Add perf trace
-Message-ID: <20090817144007.GC3602@elte.hu>
-References: <1250518688-7207-1-git-send-email-fweisbec@gmail.com> <1250518688-7207-4-git-send-email-fweisbec@gmail.com>
+	Mon, 17 Aug 2009 10:41:14 -0400
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:44082 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755165AbZHQOlN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 10:41:13 -0400
+Date: Mon, 17 Aug 2009 20:10:58 +0530
+From: Dipankar Sarma <dipankar@in.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: balbir@linux.vnet.ibm.com, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <lenb@kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Li, Shaohua" <shaohua.li@intel.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
+       "Brown, Len" <len.brown@intel.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>,
+       "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+Message-ID: <20090817144058.GA5126@in.ibm.com>
+Reply-To: dipankar@in.ibm.com
+References: <20090812195753.GA14649@in.ibm.com> <alpine.LFD.2.00.0908122036580.22946@localhost.localdomain> <20090813045931.GB14649@in.ibm.com> <20090814113021.GL32418@elf.ucw.cz> <20090816182629.GA31027@in.ibm.com> <20090816194441.GA22626@balbir.in.ibm.com> <1250459602.8648.35.camel@laptop> <20090817062418.GB31027@in.ibm.com> <1250493357.5241.1656.camel@twins> <20090817075815.GB11049@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1250518688-7207-4-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090817075815.GB11049@in.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> This adds perf trace into the set of perf tools. It is written to 
-> fetch the tracepoints samples from perf events and display them, 
-> according to the events informations given by the debugfs files 
-> through the util/trace* tools.
+On Mon, Aug 17, 2009 at 01:28:15PM +0530, Dipankar Sarma wrote:
+> On Mon, Aug 17, 2009 at 09:15:57AM +0200, Peter Zijlstra wrote:
+> > On Mon, 2009-08-17 at 11:54 +0530, Dipankar Sarma wrote:
+> > > For most parts, we do. The guest kernel doesn't manage the offline
+> > > CPU state. That is typically done by the hypervisor. However, offline
+> > > operation as defined now always result in a VM resize in some hypervisor
+> > > systems (like pseries) - it would be convenient to have a non-resize
+> > > offline operation which lets the guest cede the cpu to hypervisor
+> > > with the hint that the VM shouldn't be resized and the guest needs the guarantee
+> > > to get the cpu back any time. The hypervisor can do whatever it wants
+> > > with the ceded CPU including putting it in a low power state, but
+> > > not change the physical cpu shares of the VM. The pseries hypervisor,
+> > > for example, clearly distinguishes between the two - "rtas-stop-self" call
+> > > to resize VM vs. H_CEDE hypercall with a hint. What I am suggesting
+> > > is that we allow this with an extension to existing interfaces because it 
+> > > makes sense to allow sort of "hibernation" of the cpus without changing any
+> > > configuration of the VMs.
+> > 
+> > >From my POV the thing you call cede is the only sane thing to do for a
+> > guest. Let the hypervisor management interface deal with resizing guests
+> > if and when that's needed.
 > 
-> It is a rough first shot and doesn't yet handle the cpu, 
-> timestamps fields and some other things.
+> That is more or less how it currently works - atleast for pseries hypervisor. 
+> The current "offline" operation with "rtas-stop-self" call I mentioned
+> earlier is initiated by the hypervisor management interfaces/tool in
+> pseries system. This wakes up a guest system tool that echoes "1"
+> to the offline file resulting in the configuration change.
+
+Should have said - echoes "0" to the online file. 
+
+You don't necessarily need this in the guest Linux as long as there is
+a way for hypervisor tools to internally move Linux tasks/interrupts
+from a vcpu - async event handled by the kernel, for example.
+But I think it is too late for that - the interface has long been
+exported.
+
+
+> The OS involvement is necessary to evacuate tasks/interrupts
+> from the released CPU. We don't really want to initiate this from guests.
 > 
-> Example:
+> > Thing is, you don't want a guest to be able to influence the amount of
+> > cpu shares attributed to it. You want that in explicit control of
+> > whomever manages the hypervisor.
 > 
-> perf record -f -e workqueue:workqueue_execution:record -F 1 -a
-> perf trace
+> Agreed. But given a fixed cpu share by the hypervisor management tools,
+> we would like to be able to cede cpus to hypervisor leaving the hypervisor
+> configuration intact. This, we don't have at the moment and want to just
+> extend the current interface for this.
 > 
->        kblockd/0-236   [000]     0.000000: workqueue_execution: thread=:236 func=cfq_kick_queue+0x0
->      kondemand/0-360   [000]     0.000000: workqueue_execution: thread=:360 func=do_dbs_timer+0x0
->      kondemand/0-360   [000]     0.000000: workqueue_execution: thread=:360 func=do_dbs_timer+0x0
->      kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
->      kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
->      kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
->      kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
->      kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
->      kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
->      kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
->      kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
->      kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
->      kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
->      kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
->      kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
->      kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
-
-Nice!
-
-> Todo:
+> Thanks
+> Dipankar
 > 
-> - A lot of things!
-
-heh :-)
-
-To help this move forward i've put the patches into 
-tip:perfcounters/tracing. We might still rebase that branch, should 
-it become necessary, before merging it into perfcounters/core - but 
-it should give a first glimpse to people who want to try this.
-
-A first bugreport:
-
-took me some time to figure out that i need to pass in -R to create 
-a trace.info. I think we want to share the namespace anyway - 
-there's no real difference between perf.data and trace.info - both 
-contain trace records.
-
-once i added -R i ran into this problem:
-
-# perf record -R -f -e workqueue:workqueue_execution:record -F 1 -a
-^C
-[ perf record: Captured and wrote 0.250 MB perf.data (~10928 samples) ]
-
-aldebaran:/home/mingo/linux/linux/tools/perf> perf trace
-  Fatal: bad op token )
-version = 0.5
-
-Some missing patch?
-
-	Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
