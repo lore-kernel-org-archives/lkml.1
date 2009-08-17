@@ -1,90 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbZHQIFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757367AbZHQIGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757340AbZHQIFg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 04:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757220AbZHQIFf
+	id S1757367AbZHQIGb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 04:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757332AbZHQIG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 04:05:35 -0400
-Received: from mail-gx0-f205.google.com ([209.85.217.205]:61118 "EHLO
-	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757253AbZHQIFa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 04:05:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=uVbAnyJJjKozwXnK2AkJ3h6HpoJ66wpXq/HXIJ1x8MnzlpZNa7vQEsB9Bj58ECqlhQ
-         OjP/BH/7gYYMYv3ki8dP1c5VTqeMOstnEiNP9kQo2wTwh6dumvRMQKyPlsW7M7K+T/+P
-         oAcDOCzeOo3NN1Z/SEZVt8q4IL4n+dXVfZJls=
-Date: Mon, 17 Aug 2009 11:08:53 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: akpm@linux-foundation.org, andi@firstfloor.org, rpjday@crashcourse.ca,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] VIDEO: console, use DIV_ROUND_UP
-Message-ID: <20090817080853.GC2967@localdomain.by>
-References: <20090817073147.GA2967@localdomain.by>
- <1250495293-13035-1-git-send-email-jirislaby@gmail.com>
- <20090817080023.GB2967@localdomain.by>
- <4A890E33.2080302@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="UFHRwCdBEJvubb2X"
-Content-Disposition: inline
-In-Reply-To: <4A890E33.2080302@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 17 Aug 2009 04:06:28 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:42875 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757329AbZHQIGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 04:06:24 -0400
+Date: Mon, 17 Aug 2009 18:06:19 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: <sfi-devel@simplefirmware.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Feng Tang <feng.tang@intel.com>, Len Brown <len.brown@intel.com>
+Subject: linux-next: manual merge of the sfi tree with the acpi tree
+Message-Id: <20090817180619.214fb0f0.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__17_Aug_2009_18_06_19_+1000_tD_Z+gHztpqGkJdO"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---UFHRwCdBEJvubb2X
-Content-Type: text/plain; charset=us-ascii
+--Signature=_Mon__17_Aug_2009_18_06_19_+1000_tD_Z+gHztpqGkJdO
+Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On (08/17/09 10:00), Jiri Slaby wrote:
-> On 08/17/2009 10:00 AM, Sergey Senozhatsky wrote:
-> > So... In general, ((vc->vc_font.width + 7) >> 3) =3D=3D  DIV_ROUND_UP(v=
-c->vc_font.width, 8) - 1;
->=20
-> ?
->=20
-Oops, silly me. Somehow I thought about
-DIV_ROUND_UP((vc->vc_font.width + 7) , 8). My fault. Sorry.
+Hi all,
 
-> #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
->=20
-> DIV_ROUND_UP(vc->vc_font.width, 8) expands to:
-> (((vc->vc_font.width) + (8) - 1) / (8))
-> which is pretty printed:
-> (vc->vc_font.width + 7) / 8
-> and that's equivalent to:
-> (vc->vc_font.width + 7) >> 3
->=20
-> Correct?
-Right.
+Today's linux-next merge of the sfi tree got a conflict in
+arch/x86/include/asm/io_apic.h arch/x86/kernel/acpi/boot.c
+arch/x86/kernel/apic/io_apic.c between commit
+f488a00f3759327c687e17858c07a1b0ea811cf0 ("ACPI, x86: remove ACPI
+dependency on some IO-APIC routines") from the acpi tree and commit
+2a98e7573b83bac1a79292a428090ee352626216 ("ACPI, x86: expose some IO-APIC
+routines when CONFIG_ACPI=3Dn") from the sfi tree.
 
->=20
-> > Are you sure we really can use DIV_ROUND_UP?
->=20
-> Yeah, pretty sure.
->=20
-OK.
---UFHRwCdBEJvubb2X
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+The latter seems to be a superset of the former (with one name change
+uniq_ioapic_id -> io_apic_unique_id).  I fixed it up (using the sfi
+trees' versions) and can carry the fix as necessary.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__17_Aug_2009_18_06_19_+1000_tD_Z+gHztpqGkJdO
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iJwEAQECAAYFAkqJEBUACgkQfKHnntdSXjS/3AP9HTYCJz36u8IhDvckOvyqt4CV
-CEAkrOqVV8sL6JwnwfiVYEWzUoM7sEvAzmlJyKwCaiRnbcF+RepoTm4l59DslatA
-Dii9VyunS6mAeUOCu8Xk3H4EEJIGDHJ9LLBffDrFfJ3ZYvo8Dk0yWUn6+xKPcn6O
-hSesCFuVgIOjY15mKAk=
-=3hsL
+iEYEARECAAYFAkqJD3sACgkQjjKRsyhoI8xYNgCfQ9dwK4N1UsLjYIYvA/1kNHRj
+0KMAn0GYvcxIQ8dVQYxxPu+hFppl7lp8
+=h0A4
 -----END PGP SIGNATURE-----
 
---UFHRwCdBEJvubb2X--
+--Signature=_Mon__17_Aug_2009_18_06_19_+1000_tD_Z+gHztpqGkJdO--
