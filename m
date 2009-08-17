@@ -1,191 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbZHQQtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932205AbZHQQ4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757544AbZHQQtQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 12:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757504AbZHQQtO
+	id S932205AbZHQQ4s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 12:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932212AbZHQQ4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 12:49:14 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:52010 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757499AbZHQQtN (ORCPT
+	Mon, 17 Aug 2009 12:56:47 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:19872 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753692AbZHQQ4p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 12:49:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kPX5bZr5wNgRJHTD2U5gJnjBGUiR63SuNd2/lmIuPYUUxTEwN5V1nUwBSfHBhNK1eL
-         SGvTbctA5/YeYWqx18PbEq6DnpUYiv3Vjj4Yg4udYbsLSSUufpEM/RPWYIkDeZzqly78
-         8AUoFerdRGvSq8XOd5D7UEyGjCG3N+W/QGb7g=
-Date: Mon, 17 Aug 2009 18:49:11 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] Add timer-source of walltime for ftrace
-Message-ID: <20090817164909.GB4953@nowhere>
-References: <4A698F90.90501@cn.fujitsu.com> <alpine.DEB.2.00.0907240902030.17438@gandalf.stny.rr.com> <20090728103227.D7FB.A69D9226@jp.fujitsu.com> <20090728015351.GF5147@nowhere> <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com> <4A89213C.5090109@cn.fujitsu.com>
+	Mon, 17 Aug 2009 12:56:45 -0400
+Message-ID: <4A898BC4.70704@hp.com>
+Date: Mon, 17 Aug 2009 12:56:36 -0400
+From: jim owens <jowens@hp.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A89213C.5090109@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Bill Davidsen <davidsen@tmr.com>
+CC: Mark Lord <liml@rtr.ca>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       James Bottomley <James.Bottomley@suse.de>,
+       Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
+       Greg Freemyer <greg.freemyer@gmail.com>,
+       Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+ slot is freed)
+References: <3e8340490908131354q167840fcv124ec56c92bbb830@mail.gmail.com> <4A85E0DC.9040101@rtr.ca> <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com> <20090814234539.GE27148@parisc-linux.org> <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com> <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca> <1250344518.4159.4.camel@mulgrave.site> <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk> <20090816083434.2ce69859@infradead.org> <20090816154430.GE17958@mit.edu> <4A8841D7.10506@rtr.ca> <4A8843C3.3020409@rtr.ca> <4A8985B6.30103@tmr.com>
+In-Reply-To: <4A8985B6.30103@tmr.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 17, 2009 at 05:22:04PM +0800, Zhaolei wrote:
-> We can add a timer-source for ftrace to support wall-time display.
-> It is based on Steven Rostedt <rostedt@goodmis.org>'s suggestion in:
-> http://lkml.org/lkml/2009/7/24/103
+Bill Davidsen wrote:
 > 
-> It needs to be applied on my patch of:
-> [PATCH v4 1/2] Add function to convert between calendar time and broken-down time for universal use
-> and
-> [PATCH v2 2/2] ftrace: Unify effect of writing to trace_options and option/*
-> 
-> We can get following output:
->  # cd /mnt/debugfs/tracing/
->  # ls options/*clock
->  options/global-clock  options/local-clock  options/walltime-clock
->  # echo sched_switch > current_tracer
->  # cat trace
->  # tracer: sched_switch
->  #
->  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
->  #              | |       |          |         |
->              bash-3560  [000]   694.242386:   3560:120:S   + [000]  3560:120:S bash
->              bash-3560  [000]   694.242476:   3560:120:S   + [000]  3560:120:S bash
->              bash-3560  [000]   694.242865:   3560:120:R   + [000]     5:115:S events/0
->              bash-3560  [000]   694.242912:   3560:120:R ==> [000]     5:115:R events/0
->          events/0-5     [000]   694.243015:      5:115:R   + [000]  3558:120:S sshd
->          events/0-5     [000]   694.243040:      5:115:S ==> [000]  3560:120:R bash
->              bash-3560  [000]   694.243312:   3560:120:S   + [000]  3560:120:S bash
->              bash-3560  [000]   694.243374:   3560:120:S ==> [000]  3558:120:R sshd
->  ...
->  # echo 1 > options/walltime-clock
->  # echo > trace
->  # cat trace
->  # tracer: sched_switch
->  #
->  #           TASK-PID    CPU#           TIMESTAMP  FUNCTION
->  #              | |       |                 |         |
->              bash-3560  [000] 2009-08-17 23:58:22   3560:120:S   + [000]  3560:120:S bash
->              bash-3560  [000] 2009-08-17 23:58:22   3560:120:R   + [000]     5:115:S events/0
->              bash-3560  [000] 2009-08-17 23:58:22   3560:120:R ==> [000]     5:115:R events/0
->          events/0-5     [000] 2009-08-17 23:58:22      5:115:R   + [000]  3558:120:S sshd
->          events/0-5     [000] 2009-08-17 23:58:22      5:115:S ==> [000]  3558:120:R sshd
->              sshd-3558  [000] 2009-08-17 23:58:22   3558:120:S ==> [000]  3560:120:R bash
->              bash-3560  [000] 2009-08-17 23:58:22   3560:120:S   + [000]  3560:120:S bash
->              bash-3560  [000] 2009-08-17 23:58:22   3560:120:S   + [000]  3560:120:S bash
->  ...
-> 
-> Note:
-> It is only a prototype patch to for demostrate what is result looks like.
-> There still have many works to do(bug to fix) before apply.
-> For example, we need to add a hook(tracepoint) of xtime change event,
-> so we can update walltime's clock base then.
-> And maybe we need clear all events when changing clock-source, because old
-> clock value can't displayed correctly in new clock's format.
-> 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  include/linux/trace_clock.h |    1 +
->  kernel/trace/trace.c        |   55 ++++++++++++++++++++++++++++++------------
->  kernel/trace/trace.h        |    6 +++-
->  kernel/trace/trace_clock.c  |   47 ++++++++++++++++++++++++++++++++++++
->  kernel/trace/trace_output.c |   20 ++++++++++++---
->  5 files changed, 107 insertions(+), 22 deletions(-)
-> 
-> diff --git a/include/linux/trace_clock.h b/include/linux/trace_clock.h
-> index 7a81303..322707e 100644
-> --- a/include/linux/trace_clock.h
-> +++ b/include/linux/trace_clock.h
-> @@ -15,5 +15,6 @@
->  extern u64 notrace trace_clock_local(void);
->  extern u64 notrace trace_clock(void);
->  extern u64 notrace trace_clock_global(void);
-> +extern u64 notrace trace_clock_walltime(void);
->  
->  #endif /* _LINUX_TRACE_CLOCK_H */
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index b7d873b..4474f7d 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -263,8 +263,8 @@ static DECLARE_WAIT_QUEUE_HEAD(trace_wait);
->  
->  /* trace_flags holds trace_options default values */
->  unsigned long trace_flags = TRACE_ITER_PRINT_PARENT | TRACE_ITER_PRINTK |
-> -	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO | TRACE_ITER_SLEEP_TIME |
-> -	TRACE_ITER_GRAPH_TIME;
-> +	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO | TRACE_ITER_LOCAL_CLK |
-> +	TRACE_ITER_SLEEP_TIME | TRACE_ITER_GRAPH_TIME;
->  
->  /**
->   * trace_wake_up - wake up tasks waiting for trace input
-> @@ -324,6 +324,8 @@ static const char *trace_options[] = {
->  	"context-info",
->  	"latency-format",
->  	"global-clock",
-> +	"local-clock",
-> +	"walltime-clock",
->  	"sleep-time",
->  	"graph-time",
->  	NULL
-> @@ -1423,8 +1425,17 @@ static void print_lat_help_header(struct seq_file *m)
->  
->  static void print_func_help_header(struct seq_file *m)
->  {
-> -	seq_puts(m, "#           TASK-PID    CPU#    TIMESTAMP  FUNCTION\n");
-> -	seq_puts(m, "#              | |       |          |         |\n");
-> +	if (trace_flags & TRACE_ITER_WALLTIME_CLK) {
-> +		seq_puts(m, "#           TASK-PID    CPU# "
-> +			"          TIMESTAMP  FUNCTION\n");
-> +		seq_puts(m, "#              | |       |   "
-> +			"              |         |\n");
-> +	} else {
-> +		seq_puts(m, "#           TASK-PID    CPU# "
-> +			"   TIMESTAMP  FUNCTION\n");
-> +		seq_puts(m, "#              | |       |   "
-> +			"       |         |\n");
-> +	}
->  }
->  
->  
-> @@ -2151,30 +2162,42 @@ static int set_tracer_option(struct tracer *trace, char *cmp, int neg)
->  
->  static void set_tracer_flags(unsigned int mask, int enabled)
->  {
-> +	u64 (*clkfunc)(void) = NULL;
-> +
->  	/* do nothing if flag is already set */
->  	if (!!(trace_flags & mask) == !!enabled)
->  		return;
->  
-> -	if (enabled)
-> -		trace_flags |= mask;
-> -	else
-> -		trace_flags &= ~mask;
-> +	if (mask == TRACE_ITER_GLOBAL_CLK)
-> +		clkfunc = trace_clock_global;
-> +	if (mask == TRACE_ITER_LOCAL_CLK)
-> +		clkfunc = trace_clock_local;
-> +	if (mask == TRACE_ITER_WALLTIME_CLK)
-> +		clkfunc = trace_clock_walltime;
->  
-> -	if (mask == TRACE_ITER_GLOBAL_CLK) {
-> -		u64 (*func)(void);
-> +	if (clkfunc) {
-> +		if (!enabled)
-> +			return;
+> I assume that it really is artificial, rather than the device really 
+> being ready for another operation (other than another TRIM). I lack the 
+> hardware, but the test would be the time to complete a read, trim and 
+> read, and two trim and read operations. Just my thought that the TRIM in 
+> progress may only block the next TRIM, rather than other operations.
 
+I don't know his test sequence but READ is not the likely command
+before and after TRIM unless we are talking about TRIM being issued
+only in delayed host garbage collection.  Filesystems send WRITES
+during delete.
 
-
-If the user set a clock option file to 0, then it means he
-was expecting something, probably reset the default clock
-which is clock_local.
-
-But what if the user set 0 to the local_clock...hmm..
-
+jim
 
