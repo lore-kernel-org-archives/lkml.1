@@ -1,87 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbZHQJSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932230AbZHQJTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757575AbZHQJSl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 05:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbZHQJSl
+	id S932230AbZHQJTv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 05:19:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbZHQJTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 05:18:41 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34351 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757553AbZHQJSk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 05:18:40 -0400
-Date: Mon, 17 Aug 2009 11:18:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
-       ak@linux.intel.com, tglx@linutronix.de, Yinghai Lu <yinghai@kernel.org>,
-       Huang Ying <ying.huang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [boot crash] Re: [tip:x86/mce3] x86, mce: use 64bit machine
-	check code on 32bit
-Message-ID: <20090817091800.GA21269@elte.hu>
-References: <tip-4efc0670baf4b14bc95502e54a83ccf639146125@git.kernel.org> <20090812113652.GA19632@elte.hu> <4A88E3E4.40506@jp.fujitsu.com> <20090817083544.GC15390@elte.hu> <4A891E17.1090901@jp.fujitsu.com>
+	Mon, 17 Aug 2009 05:19:50 -0400
+Received: from mail-pz0-f196.google.com ([209.85.222.196]:65244 "EHLO
+	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757539AbZHQJTu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 05:19:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kV17CF/jqQjL4Dct2PV0otCinNGlE9nEtXK70CTI8PmBV728Ruq9nghUaV4omjvQHc
+         Lzhf0lMV6lwdLA1dE9FemSPMbJwoMRECbIghVDlLNnQ0a7KUUomarNNqLT6tuChz8fLc
+         w6VpYx+owZUNOi3w70nkwuZ0rRl90QIOfEDU0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A891E17.1090901@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090817091458.GR4302@infomag.iguana.be>
+References: <4A69CE00.10401@gmail.com>
+	 <20090804201032.GB30892@infomag.iguana.be>
+	 <e68bb3470908041955t7e07929bv612a25e0bc0264c1@mail.gmail.com>
+	 <20090805070822.GC30892@infomag.iguana.be>
+	 <e68bb3470908050100n4f6f8ed3hbd227a13e038e55f@mail.gmail.com>
+	 <20090805103127.GF30892@infomag.iguana.be>
+	 <4A79873A.5010504@gmail.com> <4A88C328.5040706@gmail.com>
+	 <20090817091458.GR4302@infomag.iguana.be>
+Date: Mon, 17 Aug 2009 17:19:51 +0800
+Message-ID: <e68bb3470908170219i6d0a26c3r57e2ca2b4fe01b76@mail.gmail.com>
+Subject: Re: [PATCH v2] Add watchdog driver for w90p910
+From: Wan ZongShun <mcuos.com@gmail.com>
+To: Wim Van Sebroeck <wim@iguana.be>
+Cc: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dear Wim,
 
-* Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
-
-> Ingo Molnar wrote:
-> > * Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
-> >> Could you try boot your laptop with mce=nobootlog?
-> > 
-> > Hm, why should that make any difference? mce=nobootlog only 
-> > influences whether we pass records into the mcelog buffer but 
-> > does not affect whether we touch the hardware.
-> 
-> Old mce codes doesn't take bootlog.
-
-I understand what you mean, and i know that we have a number of BIOS 
-workarounds in the code - but i think some of those workarounds are 
-wrong and they dont actually solve anything.
-
-The thing is, mce=nobootlog does _not_ keep us from touching MCE 
-related hardware registers during bootup.
-
-It only inhibits us from doing an mce_log() call:
-
-                if (!(flags & MCP_DONTLOG) && !mce_dont_log_ce) {
-                        mce_log(&m);
-                        add_taint(TAINT_MACHINE_CHECK);
-                }
-
-but an mce_log() call itself only passes on the data we already read 
-from hardware registers, into the MCE ring-buffer (which is a pure 
-software construct).
-
-> One possibility is: if the BIOS doesn't clear status in banks,
-> new mce codes will try to log such junks.
+2009/8/17 Wim Van Sebroeck <wim@iguana.be>:
+> Hi Wan,
 >
-> If the junk is totally junk but can be decoded as a valid log with 
-> MISCV or ADDRV bit, and if the cpu try to access register which is 
-> not implemented (e.g. IA32_MCi_MISC/ADDR), then such access might 
-> cause a general protection exception. (ref. ASDM 3A 15.3.2.3)
-> 
-> I'm just guessing...
+>> At the same time, I renamed this driver name, due to I
+>> have changed the corresponding device name in my arch file.
+>
+> Isn't it best to rename the driver in drivers/watchdog also to nuc900_wdt.c ?
 
-My point is that mce=nobootlog will only affect whether we call 
-mce_log(). It does not keep us from touching all the MSRs that 
-relate to MCEs.
+Of course , If you permit :).
+Waiting for me, I will fix the patch regarding this, and re-submit it to you.
 
-mce=off does that, and the box boots up fine with that specified 
-(and as expected).
+Thanks for your help.
 
-	Ingo
+> Thanks,
+> Wim.
+>
+>
+
+
+
+-- 
+Wan z.s
