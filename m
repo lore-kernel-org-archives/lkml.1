@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757844AbZHQUTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbZHQUXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757844AbZHQUTm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 16:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757753AbZHQUTm
+	id S1757878AbZHQUXy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 16:23:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754175AbZHQUXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 16:19:42 -0400
-Received: from rtr.ca ([76.10.145.34]:55806 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757706AbZHQUTk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 16:19:40 -0400
-Message-ID: <4A89BB5B.5060403@rtr.ca>
-Date: Mon, 17 Aug 2009 16:19:39 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Mon, 17 Aug 2009 16:23:53 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:36671 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753446AbZHQUXw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 16:23:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Oc4++gaoJKYkezfMOjiSX0CxDWYrRkRvupiZJVag4v5VN47jVznK+tp1kTHFiKj4yK
+         jFCNBiKqbh5TzM3+epIxBVv8Z8ESoQV5ZQLJxIo1snJXzkYYQeu3rrEJQ0SIE+yfK/sZ
+         51+Fe3EUEOBdAhN15BZYXTF2W7iHi4JV1/axo=
+Message-ID: <4A89BC79.4070200@gmail.com>
+Date: Mon, 17 Aug 2009 13:24:25 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009031304)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Greg Freemyer <greg.freemyer@gmail.com>, Bill Davidsen <davidsen@tmr.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Worley <worleys@gmail.com>,
-       Matthew Wilcox <matthew@wil.cx>, Bryan Donlan <bdonlan@gmail.com>,
-       david@lang.hm, Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
-  slot is freed)
-References: <200908122007.43522.ngupta@vflare.org>	 <20090816083434.2ce69859@infradead.org>	 <1250437927.3856.119.camel@mulgrave.site> <4A8834B6.2070104@rtr.ca>	 <1250446047.3856.273.camel@mulgrave.site> <4A884D9C.3060603@rtr.ca>	 <1250447052.3856.294.camel@mulgrave.site> <4A898752.9000205@tmr.com>	 <87f94c370908171008t44ff64ack2153e740128278e@mail.gmail.com>	 <1250529575.7858.31.camel@mulgrave.site>	 <87f94c370908171121u5ee8016p253824b16851b48@mail.gmail.com> <1250536709.7858.43.camel@mulgrave.site>
-In-Reply-To: <1250536709.7858.43.camel@mulgrave.site>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: ohci1396_dma=early nogo on an imac?
+References: <4A88F6BF.7090104@gmail.com> <4A89722A.1070407@s5r6.in-berlin.de> <dd18b0c30908171104o7ed67aa3x7cab741263de09c3@mail.gmail.com> <4A899D41.7000405@s5r6.in-berlin.de> <4A89A7C0.1090909@gmail.com> <4A89BA75.6040900@s5r6.in-berlin.de>
+In-Reply-To: <4A89BA75.6040900@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Mon, 2009-08-17 at 14:21 -0400, Greg Freemyer wrote:
->> On Mon, Aug 17, 2009 at 1:19 PM, James Bottomley<James.Bottomley@suse.de> wrote:
->>> On Mon, 2009-08-17 at 13:08 -0400, Greg Freemyer wrote:
-..
->>>> Non-coalescing is believed detrimental,
->>> It is?  Why?
->> For the only compliant SSD in the wild, Mark has shown it to be true
->> via testing.
-> 
-> He only said larger trims take longer.  As I said previously, if it's a
-> X+nY relationship, then we still benefit from accumulation up to some
-> value of n.
-..
+Stefan Richter wrote:
+> Justin P. Mattock wrote:
+>> The problem im seeing is if I use ohci1394_dma=early on the bad kernel
+>> instantly Ill get a message on the screen saying:
+>>
+>> PANIC: early exception 08 rip 246:10 error ffffffff8145ff15 cr2 0
+>
+> Hmm, as I am not familiar with anything related to early 
+> initialization, I have no idea what it means let alone what causes it.
+neither do I, at the moment I'll load
+2.6.31-rc5 to see if I hit this, then
+ill go through all of the commits up to rc6
+if not ill have to start back with 2.6.30.4
+and work my way up.
 
-Err, what I said was, "rm -rf /usr/src/linux" takes over half an hour
-with uncoalesced TRIM, and only a scant few seconds in total *with*
-coalesced TRIM.
-
-
+Justin P. Mattock
