@@ -1,139 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369AbZHQFWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752012AbZHQFcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754369AbZHQFWp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 01:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZHQFWo
+	id S1752012AbZHQFcG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 01:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbZHQFcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 01:22:44 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:59144 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751238AbZHQFWn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 01:22:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=S7Tuzywa/dqGFiesnxq5CsaRShEwUYnJoyV9s4Gxj5sE8xrP1YaXAWJmd9nfbGfXX9
-         SyY8MoGCRYSx89UsfH04KUnINztHpRs5UXWzDMLBhSP2KSX7jGLxiKuBg03PVl3AQ0kb
-         qLYrnqnHKyCvjOetH9hjc5NJigMHVvxFcfzU0=
-Date: Mon, 17 Aug 2009 13:25:02 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Michael Abbott <michael@araneidae.co.uk>
-Cc: Jan Engelhardt <jengelh@medozas.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Re: /proc/uptime idle counter remains at 0
-Message-ID: <20090817052502.GJ5039@cr0.nay.redhat.com>
-References: <alpine.LSU.2.00.0905090957490.27646@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0908141315310.1670@venus.araneidae.co.uk>
+	Mon, 17 Aug 2009 01:32:05 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63085 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750983AbZHQFcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 01:32:04 -0400
+Message-ID: <4A88EACC.6010805@cn.fujitsu.com>
+Date: Mon, 17 Aug 2009 13:29:48 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0908141315310.1670@venus.araneidae.co.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, ryov@valinux.co.jp,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com
+Subject: Re: [PATCH 02/24] io-controller: Core of the elevator fair queuing
+References: <1250451046-9966-1-git-send-email-vgoyal@redhat.com> <1250451046-9966-3-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1250451046-9966-3-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 14, 2009 at 01:18:08PM +0100, Michael Abbott wrote:
->Reviving this:
->
->On Sat, 9 May 2009, Jan Engelhardt wrote:
->> starting from v2.6.28-4930-g79741dd lasting thru at least v2.6.29.1,
->> the second field of /proc/uptime always shows 0.00. This happens for
->> both the typical i386 (my case) and on an ARM (according to Michael,
->> cc'ed).
->> 
->> >From the commit log of 79741dd:
->> 
->> 	"""The cpu time spent by the idle process actually doing
->> 	something is currently accounted as idle time. This is plain
->> 	wrong, the architectures that support VIRT_CPU_ACCOUNTING=y
->> 	can do better: distinguish between the time spent doing
->> 	nothing and the time spent by idle doing work. The first is
->> 	accounted with account_idle_time and the second with
->> 	account_system_time."""
->> 
->> Citing Michael from our irc conversation:
->> 
->> 	"""the writer[committer] [says] that [the] idle process time
->> 	isn't really idle time ... but that's all that /proc/uptime
->> 	looks at. I guess fs/proc/uptime.c needs to catch up."""
->> 
->> So, were the updates to uptime.c missed, or do we now live on with
->> /proc/uptime constantly having 0?
->
->My previous patch seems to have run into the sand.  It every so nearly got 
->pulled into mainstream as far as I can tell, but didn't seem to make it; 
->no idea what happened.
->
->So here we go again:
->
->commit 6d67e34f45a92f347388e35bd84bf0361e660d3b
->Author: Michael Abbott <michael.abbott@diamond.ac.uk>
->Date:   Mon May 11 07:14:19 2009 +0100
->
->    Fix idle time field in /proc/uptime
->    
->    Git commit 79741dd changes idle cputime accounting, but unfortunately
->    the /proc/uptime file hasn't caught up.  Here the idle time calculation
->    from /proc/stat is copied over.  Further changes from commit e1c8053
->    are also included in this fix.
->    
->    Signed-off-by: Michael Abbott <michael.abbott@diamond.ac.uk>
->
->diff --git a/fs/proc/uptime.c b/fs/proc/uptime.c
->index 0c10a0b..be286b4 100644
->--- a/fs/proc/uptime.c
->+++ b/fs/proc/uptime.c
->@@ -4,22 +4,32 @@
-> #include <linux/sched.h>
-> #include <linux/seq_file.h>
-> #include <linux/time.h>
->+#include <linux/kernel_stat.h>
-> #include <asm/cputime.h>
->+#include <asm/div64.h>
-> 
-> static int uptime_proc_show(struct seq_file *m, void *v)
-> {
-> 	struct timespec uptime;
->-	struct timespec idle;
->-	cputime_t idletime = cputime_add(init_task.utime, init_task.stime);
->+	int i;
->+	cputime64_t idle = cputime64_zero;
->+	unsigned long int idle_mod;
->+
->+	for_each_possible_cpu(i) {
->+		idle = cputime64_add(idle, kstat_cpu(i).cpustat.idle);
->+#ifdef arch_idle_time
->+		idle = cputime64_add(idle, arch_idle_time(i));
->+#endif
+Vivek Goyal wrote:
+...
+> +static void place_entity(struct io_service_tree *st, struct io_entity *entity,
+> +				int add_front)
+> +{
+> +	u64 vdisktime = st->min_vdisktime;
+> +	struct rb_node *parent;
+> +	struct io_entity *entry;
+> +	int nr_active = st->nr_active - 1;
+> +
+> +	/*
+> +	 * Currently put entity at the end of last entity. This probably will
+> +	 * require adjustments as we move along
+> +	 */
+> +	if (io_entity_class_idle(entity)) {
+> +		vdisktime = elv_delta_fair(ELV_IDLE_DELAY, entity);
+> +		parent = rb_last(&st->active);
+> +		if (parent) {
+> +			entry = rb_entry(parent, struct io_entity, rb_node);
+> +			vdisktime += entry->vdisktime;
+> +		}
+> +	} else if (!add_front && nr_active) {
+> +		parent = rb_last(&st->active);
+> +		if (parent) {
+> +			entry = rb_entry(parent, struct io_entity, rb_node);
+> +			vdisktime = entry->vdisktime;
+> +		}
+> +	} else
+> +		vdisktime = st->min_vdisktime;
+
+Hi Vivek,
+
+Should we set vdisktime a little small than st->min_vdisktime to ensure putting
+this entity at the left-most position when add_front is set?
+
+> +
+> +	entity->vdisktime = max_vdisktime(st->min_vdisktime, vdisktime);
+> +}
+> +
+> +static inline void io_entity_update_prio(struct io_entity *entity)
+> +{
+> +	if (unlikely(entity->ioprio_changed)) {
+> +		/*
+> +		 * Re-initialize the service tree as ioprio class of the
+> +		 * entity might have changed.
+> +		 */
+> +		init_io_entity_service_tree(entity, parent_entity(entity));
+> +		entity->ioprio_changed = 0;
+> +	}
+> +}
+> +
 
 
-This ugly #ifdef can be removed, check fs/proc/stat.c.
+-- 
+Regards
+Gui Jianfeng
 
-Thanks.
-
-
->+	}
->+	idle = cputime64_to_clock_t(idle);
->+	idle_mod = do_div(idle, 100);
-> 
-> 	do_posix_clock_monotonic_gettime(&uptime);
-> 	monotonic_to_bootbased(&uptime);
->-	cputime_to_timespec(idletime, &idle);
->-	seq_printf(m, "%lu.%02lu %lu.%02lu\n",
->+	seq_printf(m, "%lu.%02lu %llu.%02lu\n",
-> 			(unsigned long) uptime.tv_sec,
-> 			(uptime.tv_nsec / (NSEC_PER_SEC / 100)),
->-			(unsigned long) idle.tv_sec,
->-			(idle.tv_nsec / (NSEC_PER_SEC / 100)));
->+			idle, idle_mod);
-> 	return 0;
-> }
-> 
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
