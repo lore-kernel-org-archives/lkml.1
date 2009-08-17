@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbZHQQDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932AbZHQQLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756575AbZHQQDY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 12:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756507AbZHQQDY
+	id S1756932AbZHQQLq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 12:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbZHQQLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 12:03:24 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:34849 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753580AbZHQQDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 12:03:23 -0400
-Date: Mon, 17 Aug 2009 09:03:19 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: clocksource changes in 2.6.31 - possible regression
-Message-ID: <20090817090319.20979986@nehalam>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 17 Aug 2009 12:11:45 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:35447 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754036AbZHQQLp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 12:11:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=bgUO6W/hDmlrr41u0+5Sp7FO0rjM7+jBUu1SXqnDtkqWXFus+9lnOiwFV4nr5Opt9m
+         wuqkYoIfGlyNMItDNKJr7rSLCvmSkako48piBc6ou+DuEDUvl1IwlvPy+q/Hb4e3J1lw
+         FaOC2fh9mOftGqOccK/4k9kcOxfWd8mNib1NI=
+Message-ID: <4A89813A.4060603@gmail.com>
+Date: Mon, 17 Aug 2009 09:11:38 -0700
+From: Joonwoo Park <joonwpark81@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071020)
+MIME-Version: 1.0
+To: Rodolfo Giometti <giometti@enneenne.com>,
+       Linux PPS <linuxpps@ml.enneenne.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] pps: fix incorrect verdict check
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following commit causes a change for kernels built with HRT but
-not actually using HRT.  I typically use the generic kernel we ship
-on test machines, and that kernel has NOHZ and HRT (for power savings/virt
-and HRT for QoS), but I want to be able to enable TSC as a clock source
-when doing performance tests with pktgen.
+From: Joonwoo Park <joonwpark81@gmail.com>
 
-The machine in question is a several year old Opteron box, that
-normally reports clocksources: acpi_pm jiffies tsc
-but now with 2.6.31-rc6, it only has acpi_pm.
+Fix incorrect verdict check and returns error if device_create failed,
+otherwise driver triggers kernel oops.
 
-Since HRT/NOHZ is not really runtime configurable, I think the
-proper behavior is:
+Signed-off-by: Joonwoo Park<joonwpark81@gmail.com>
+---
+ drivers/pps/pps.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-  * kernel reports all possible clocksources and chooses the best
-    by default
-  * if user demands a different clocksource, the kernel should use that
-    but degrade if necessary: ie. high-res timers have less (maybe even
-    only HZ accuracy), and nohz should be automatically disabled if
-    needed
+diff --git a/drivers/pps/pps.c b/drivers/pps/pps.c
+index ac8cc8c..fea17e7 100644
+--- a/drivers/pps/pps.c
++++ b/drivers/pps/pps.c
+@@ -244,7 +244,7 @@ int pps_register_cdev(struct pps_device *pps)
+ 	}
+ 	pps->dev = device_create(pps_class, pps->info.dev, pps->devno, NULL,
+ 							"pps%d", pps->id);
+-	if (err)
++	if (IS_ERR(pps->dev))
+ 		goto del_cdev;
+ 	dev_set_drvdata(pps->dev, pps);
+ 
+-- 
+1.5.5.1
 
-commit 3f68535adad8dd89499505a65fb25d0e02d118cc
-Author: john stultz <johnstul@us.ibm.com>
-Date:   Wed Jan 21 22:53:22 2009 -0700
-
-    clocksource: sanity check sysfs clocksource changes
-    
-    Thomas, Andrew and Ingo pointed out that we don't have any safety checks
-    in the clocksource sysfs entries to make sure sysadmins don't try to
-    change the clocksource to a non high-res timer capable clocksource (such
-    as jiffies) when high-res timers (HRT) is enabled.  Doing so will likely
-    hang a system.
-    
-    Correct this by filtering non HRT clocksources from available_clocksources
-    and not accepting non HRT clocksources with HRT enabled.
-    
-    Signed-off-by: John Stultz <johnstul@us.ibm.com>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
