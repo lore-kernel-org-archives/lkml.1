@@ -1,94 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbZHQTSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbZHQTSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754028AbZHQTSA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 15:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbZHQTR7
+	id S1754528AbZHQTSo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 15:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbZHQTSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 15:17:59 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:36598 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753665AbZHQTR6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 15:17:58 -0400
-Message-ID: <4A89AC97.6030109@oracle.com>
-Date: Mon, 17 Aug 2009 12:16:39 -0700
-From: "tina.yang" <tina.yang@oracle.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Jiri Kosina <trivial@kernel.org>
-Subject: [PATCH] sysrq: add debug message to reboot event
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 17 Aug 2009 15:18:44 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34405 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753805AbZHQTSm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 15:18:42 -0400
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+  slot is freed)
+From: James Bottomley <James.Bottomley@suse.de>
+To: Greg Freemyer <greg.freemyer@gmail.com>
+Cc: Bill Davidsen <davidsen@tmr.com>, Mark Lord <liml@rtr.ca>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Worley <worleys@gmail.com>,
+       Matthew Wilcox <matthew@wil.cx>, Bryan Donlan <bdonlan@gmail.com>,
+       david@lang.hm, Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+In-Reply-To: <87f94c370908171121u5ee8016p253824b16851b48@mail.gmail.com>
+References: <200908122007.43522.ngupta@vflare.org>
+	 <20090816083434.2ce69859@infradead.org>
+	 <1250437927.3856.119.camel@mulgrave.site> <4A8834B6.2070104@rtr.ca>
+	 <1250446047.3856.273.camel@mulgrave.site> <4A884D9C.3060603@rtr.ca>
+	 <1250447052.3856.294.camel@mulgrave.site> <4A898752.9000205@tmr.com>
+	 <87f94c370908171008t44ff64ack2153e740128278e@mail.gmail.com>
+	 <1250529575.7858.31.camel@mulgrave.site>
+	 <87f94c370908171121u5ee8016p253824b16851b48@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 17 Aug 2009 14:18:29 -0500
+Message-Id: <1250536709.7858.43.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt006.oracle.com [141.146.116.15]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4A89AC99.00AB:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add debug message to detect keyboard vs non-keyboard
-triggered sysrq-b events.
+On Mon, 2009-08-17 at 14:21 -0400, Greg Freemyer wrote:
+> On Mon, Aug 17, 2009 at 1:19 PM, James Bottomley<James.Bottomley@suse.de> wrote:
+> > On Mon, 2009-08-17 at 13:08 -0400, Greg Freemyer wrote:
+> >> All,
+> >>
+> >> Seems like the high-level wrap-up of all this is:
+> >>
+> >> There are hopes that highly efficient SSDs will appear on the market
+> >> that can leverage a passthru non-coalescing discard feature.  And that
+> >> a whitelist should be created to allow those SSDs to see discards
+> >> intermixed with the rest of the data i/o.
+> >
+> > That's not my conclusion.  Mine was the NCQ drain would still be
+> > detremental to interleaved trim even if the drive could do it for zero
+> > cost.
+> 
+> Maybe I misunderstood Jim Owens previous comment that designing for
+> devices that only meet the spec. was not his / Linus'es preference.
+> 
+> Instead they want to have a whitelist enabled list of drives that
+> support trim / ncq without having to drain the queue.
 
-Signed-off-by: Tina Yang <Tina.Yang@oracle.com>
-Signed-off-by: Zach Brown <Zach.Brown@oracle.com>
+There's no way to do this.  The spec explicitly requires that you not
+overlap tagged and untagged commands.  The reason is fairly obvious:
+you wouldn't be able to separate the completions.
 
----
+> I just re-read his post and he did not explicitly say that, so maybe
+> I'm mis-representing it.
+> 
+> >> For the other known cases:
+> >>
+> >> SSDs that meet the ata-8 spec, but don't exceed it
+> >> Enterprise SCSI
+> >
+> > No, SCSI will do WRITE_SAME/UNMAP as currently drafted in SBC3
+> >
+> >> mdraid with SSD storage used to build raid5 / raid6 arrays
+> >>
+> >> Non-coalescing is believed detrimental,
+> >
+> > It is?  Why?
+> 
+> For the only compliant SSD in the wild, Mark has shown it to be true
+> via testing.
 
---- linux-2.6.git/drivers/char/sysrq.c.orig     2009-08-13
-15:43:34.000000000 -0700
-+++ linux-2.6.git/drivers/char/sysrq.c  2009-08-13 21:51:15.832694000 -0700
-@@ -135,17 +135,22 @@ static struct sysrq_key_op sysrq_crash_o
-        .enable_mask    = SYSRQ_ENABLE_DUMP,
- };
+He only said larger trims take longer.  As I said previously, if it's a
+X+nY relationship, then we still benefit from accumulation up to some
+value of n.
 
--static void sysrq_handle_reboot(int key, struct tty_struct *tty)
-+static void sysrq_handle_reboot(int check_mask, int key, struct
-tty_struct *tty)
- {
-+       if (check_mask)
-+               printk("<keyboard-invoked>\n");
-+        else
-+               printk("<non-keyboard-invoked: PID %d COMMAND %s>\n",
-+                               current->pid, current->comm);
-        lockdep_off();
-        local_irq_enable();
-        emergency_restart();
- }
- static struct sysrq_key_op sysrq_reboot_op = {
--       .handler        = sysrq_handle_reboot,
--       .help_msg       = "reBoot",
--       .action_msg     = "Resetting",
--       .enable_mask    = SYSRQ_ENABLE_BOOT,
-+       .handler_with_mask      = sysrq_handle_reboot,
-+       .help_msg               = "reBoot",
-+       .action_msg             = "Resetting",
-+       .enable_mask            = SYSRQ_ENABLE_BOOT,
- };
+> For Enterprise SCSI, I thought you said a coalescing solution is
+> preferred.  (I took that to mean non-coalescing is detremental.  Not
+> true?).
 
- static void sysrq_handle_sync(int key, struct tty_struct *tty)
-@@ -509,7 +514,10 @@ void __handle_sysrq(int key, struct tty_
-                if (!check_mask || sysrq_on_mask(op_p->enable_mask)) {
-                        printk("%s\n", op_p->action_msg);
-                        console_loglevel = orig_log_level;
--                       op_p->handler(key, tty);
-+                       if (op_p->handler_with_mask)
-+                               op_p->handler_with_mask(check_mask, key,
-tty);
-+                       else
-+                               op_p->handler(key, tty);
-                } else {
-                        printk("This sysrq operation is disabled.\n");
-                }
---- linux-2.6.git/include/linux/sysrq.h.orig    2009-08-13
-20:53:48.085786000 -0700
-+++ linux-2.6.git/include/linux/sysrq.h 2009-08-13 20:54:12.625756000 -0700
-@@ -32,6 +32,7 @@ struct tty_struct;
+I'm trying to persuade the array vendors to speak for themselves, but it
+seems that UNMAP takes time.  Of course, in SCSI, this is a taggable
+command so we don't have the drain overhead ... but then we can't do
+anything that would produce an undetermined state based on out of order
+tag execution either.
 
- struct sysrq_key_op {
-        void (*handler)(int, struct tty_struct *);
-+       void (*handler_with_mask)(int, int, struct tty_struct *);
-        char *help_msg;
-        char *action_msg;
-        int enable_mask;
+> For mdraid, if the trims are not coalesced mdraid will have to either
+> ignore them, or coalesce them themselves. Having them come in bigger
+> discard ranges is clearly better.  (ie. At least the size of a stripe,
+> so it can adjust the start / end sector to a stripe boundary.)
+
+If we did discard accumulation in-kernel (a big if), it would likely be
+at the request level; thus md and dm would automatically inherit it.
+dm/md are a problem for a userspace accumulation solution, though
+(although I suspect the request elevator can fix that).
+
+> >>  but a regular flushing of the
+> >> unused blocks/sectors via a tool like Mark Lord has written should be
+> >> acceptable.
+> >>
+> >> Mark, I don't believe your tool really addresses the mdraid situation,
+> >> do you agree.  ie. Since your bypassing most of the block stack,
+> >> mdraid has no way of snooping on / adjusting the discards you are
+> >> sending out.
+> >>
+> >> Thus the 2 solutions that have been worked on already seem to address
+> >> the needs of everything but mdraid.
+> >
+> > I count three:  Mark Lord script via SG_IO.  hch enhanced script via
+> > XFS_TRIM and willy current discard inline which he's considering
+> > coalescing for.
+> 
+> I missed XFS_TRIM somehow.  What benefit does XFS_TRIM provide at a
+> high level?  Is it part of the realtime delete file process, or an
+> after the fact scanner?
+
+It guarantees that trim does not overlap allocations and writes on a
+running system, so it gives us safety of execution.
+
+James
+
 
