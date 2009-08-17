@@ -1,310 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbZHQJC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757533AbZHQJJD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757521AbZHQJC4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 05:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757462AbZHQJCz
+	id S1757533AbZHQJJD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 05:09:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757508AbZHQJJC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 05:02:55 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:49630 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757446AbZHQJCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 05:02:54 -0400
-Message-ID: <4A891B3C.5030608@cn.fujitsu.com>
-Date: Mon, 17 Aug 2009 16:56:28 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 17 Aug 2009 05:09:02 -0400
+Received: from mail-px0-f196.google.com ([209.85.216.196]:44081 "EHLO
+	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757498AbZHQJJA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 05:09:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=aRw4YjfyEDyF/ImgGT6AuGOP5aG/K6ROeiSRwKaxJkFQoWqgkonWF9j4Gt4BP7Vr0T
+         fkAH0z5eeRWsHlWd6Pn0rNd9tuNnVuGEgT4+xGvkKJSLFbJYsH72CLey9V6HVqjQeSMg
+         Gb1R3hi05AVNIqyKI45o4VTvmqV9FfTG/zuoQ=
+Date: Mon, 17 Aug 2009 17:11:16 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Guillaume Knispel <gknispel@proformatique.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH] poll/select: avoid arithmetic overflow in
+	__estimate_accuracy()
+Message-ID: <20090817091116.GD5868@cr0.nay.redhat.com>
+References: <20090816222921.26c92ccd@xilun.lan.proformatique.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH][RESEND] tracing/events: Add module tracepoints
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090816222921.26c92ccd@xilun.lan.proformatique.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add trace points to trace module_load, module_free, module_get,
-module_put and module_request, and use trace_event facility
-to get the trace output.
+On Sun, Aug 16, 2009 at 10:29:21PM +0200, Guillaume Knispel wrote:
+>__estimate_accuracy() was prone to integer overflow, for example
+>if *tv == {2147, 483648000} on a 32 bit computer (or even for delays
+>as small as {429, 500000000} if the task is niced).
+>
+>Because the result was already forced between 0 and 100ms, the effect
+>of the overflow was not too problematic, but the use of the hrtimer
+>range feature was not optimal in overflow cases.
+>
+>This patch ensures that there can not be an integer overflow in this
+>function.
+>
+>Signed-off-by: Guillaume Knispel <gknispel@proformatique.com>
+>---
+> fs/select.c |   14 ++++++++++----
+> 1 files changed, 10 insertions(+), 4 deletions(-)
+>
+>diff --git a/fs/select.c b/fs/select.c
+>index 8084834..a201fc3 100644
+>--- a/fs/select.c
+>+++ b/fs/select.c
+>@@ -41,22 +41,28 @@
+>  * better solutions..
+>  */
+> 
+>+#define MAX_SLACK	(100 * NSEC_PER_MSEC)
+>+
+> static long __estimate_accuracy(struct timespec *tv)
+> {
+> 	long slack;
+> 	int divfactor = 1000;
+> 
+>+	if (tv->tv_sec < 0)
+>+		return 0;
+>+
+> 	if (task_nice(current) > 0)
+> 		divfactor = divfactor / 5;
+> 
+>+	if (tv->tv_sec > MAX_SLACK / (NSEC_PER_SEC/divfactor))
+>+		return MAX_SLACK;
+>+
 
-Here's the sample output:
 
-     TASK-PID    CPU#    TIMESTAMP  FUNCTION
-        | |       |          |         |
-    <...>-42    [000]     1.758380: module_request: fb0 wait=1 call_site=fb_open
-    ...
-    <...>-60    [000]     3.269403: module_load: scsi_wait_scan
-    <...>-60    [000]     3.269432: module_put: scsi_wait_scan call_site=sys_init_module refcnt=0
-    <...>-61    [001]     3.273168: module_free: scsi_wait_scan
-    ...
-    <...>-1021  [000]    13.836081: module_load: sunrpc
-    <...>-1021  [000]    13.840589: module_put: sunrpc call_site=sys_init_module refcnt=-1
-    <...>-1027  [000]    13.848098: module_get: sunrpc call_site=try_module_get refcnt=0
-    <...>-1027  [000]    13.848308: module_get: sunrpc call_site=get_filesystem refcnt=1
-    <...>-1027  [000]    13.848692: module_put: sunrpc call_site=put_filesystem refcnt=0
-    ...
- modprobe-2587  [001]  1088.437213: module_load: trace_events_sample F
- modprobe-2587  [001]  1088.437786: module_put: trace_events_sample call_site=sys_init_module refcnt=0
+Yes? Isn't MAX_SLACK also too big for 'long' on 32bit machine?
 
-Note:
+Try:
 
-- the taints flag can be 'F', 'C' and/or 'P' if mod->taints != 0
+% printf "%d\n" "100*1000000000 > 0x7fffffff"
+1
 
-- the module refcnt is percpu, so it can be negative in a specific cpu
+Am I missing something here?
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Acked-by: Rusty Russell <rusty@rustcorp.com.au>
----
- include/linux/module.h        |   14 ++++-
- include/trace/events/module.h |  126 +++++++++++++++++++++++++++++++++++++++++
- kernel/kmod.c                 |    4 +
- kernel/module.c               |   11 ++++
- 4 files changed, 152 insertions(+), 3 deletions(-)
- create mode 100644 include/trace/events/module.h
 
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 7a5c82c..86863cd 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -17,10 +17,12 @@
- #include <linux/moduleparam.h>
- #include <linux/marker.h>
- #include <linux/tracepoint.h>
--#include <asm/local.h>
- 
-+#include <asm/local.h>
- #include <asm/module.h>
- 
-+#include <trace/events/module.h>
-+
- /* Not Yet Implemented */
- #define MODULE_SUPPORTED_DEVICE(name)
- 
-@@ -480,7 +482,10 @@ static inline local_t *__module_ref_addr(struct module *mod, int cpu)
- static inline void __module_get(struct module *module)
- {
- 	if (module) {
--		local_inc(__module_ref_addr(module, get_cpu()));
-+		unsigned int cpu = get_cpu();
-+		local_inc(__module_ref_addr(module, cpu));
-+		trace_module_get(module, _THIS_IP_,
-+				 local_read(__module_ref_addr(module, cpu)));
- 		put_cpu();
- 	}
- }
-@@ -491,8 +496,11 @@ static inline int try_module_get(struct module *module)
- 
- 	if (module) {
- 		unsigned int cpu = get_cpu();
--		if (likely(module_is_live(module)))
-+		if (likely(module_is_live(module))) {
- 			local_inc(__module_ref_addr(module, cpu));
-+			trace_module_get(module, _THIS_IP_,
-+				local_read(__module_ref_addr(module, cpu)));
-+		}
- 		else
- 			ret = 0;
- 		put_cpu();
-diff --git a/include/trace/events/module.h b/include/trace/events/module.h
-new file mode 100644
-index 0000000..84160fb
---- /dev/null
-+++ b/include/trace/events/module.h
-@@ -0,0 +1,126 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM module
-+
-+#if !defined(_TRACE_MODULE_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_MODULE_H
-+
-+#include <linux/tracepoint.h>
-+
-+#ifdef CONFIG_MODULES
-+
-+struct module;
-+
-+#define show_module_flags(flags) __print_flags(flags, "",	\
-+	{ (1UL << TAINT_PROPRIETARY_MODULE),	"P" },		\
-+	{ (1UL << TAINT_FORCED_MODULE),		"F" },		\
-+	{ (1UL << TAINT_CRAP),			"C" })
-+
-+TRACE_EVENT(module_load,
-+
-+	TP_PROTO(struct module *mod),
-+
-+	TP_ARGS(mod),
-+
-+	TP_STRUCT__entry(
-+		__field(	unsigned int,	taints		)
-+		__string(	name,		mod->name	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->taints = mod->taints;
-+		__assign_str(name, mod->name);
-+	),
-+
-+	TP_printk("%s %s", __get_str(name), show_module_flags(__entry->taints))
-+);
-+
-+TRACE_EVENT(module_free,
-+
-+	TP_PROTO(struct module *mod),
-+
-+	TP_ARGS(mod),
-+
-+	TP_STRUCT__entry(
-+		__string(	name,		mod->name	)
-+	),
-+
-+	TP_fast_assign(
-+		__assign_str(name, mod->name);
-+	),
-+
-+	TP_printk("%s", __get_str(name))
-+);
-+
-+TRACE_EVENT(module_get,
-+
-+	TP_PROTO(struct module *mod, unsigned long ip, int refcnt),
-+
-+	TP_ARGS(mod, ip, refcnt),
-+
-+	TP_STRUCT__entry(
-+		__field(	unsigned long,	ip		)
-+		__field(	int,		refcnt		)
-+		__string(	name,		mod->name	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->ip	= ip;
-+		__entry->refcnt	= refcnt;
-+		__assign_str(name, mod->name);
-+	),
-+
-+	TP_printk("%s call_site=%pf refcnt=%d",
-+		  __get_str(name), (void *)__entry->ip, __entry->refcnt)
-+);
-+
-+TRACE_EVENT(module_put,
-+
-+	TP_PROTO(struct module *mod, unsigned long ip, int refcnt),
-+
-+	TP_ARGS(mod, ip, refcnt),
-+
-+	TP_STRUCT__entry(
-+		__field(	unsigned long,	ip		)
-+		__field(	int,		refcnt		)
-+		__string(	name,		mod->name	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->ip	= ip;
-+		__entry->refcnt	= refcnt;
-+		__assign_str(name, mod->name);
-+	),
-+
-+	TP_printk("%s call_site=%pf refcnt=%d",
-+		  __get_str(name), (void *)__entry->ip, __entry->refcnt)
-+);
-+
-+TRACE_EVENT(module_request,
-+
-+	TP_PROTO(char *name, bool wait, unsigned long ip),
-+
-+	TP_ARGS(name, wait, ip),
-+
-+	TP_STRUCT__entry(
-+		__field(	bool,		wait		)
-+		__field(	unsigned long,	ip		)
-+		__string(	name,		name		)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->wait	= wait;
-+		__entry->ip	= ip;
-+		__assign_str(name, name);
-+	),
-+
-+	TP_printk("%s wait=%d call_site=%pf",
-+		  __get_str(name), (int)__entry->wait, (void *)__entry->ip)
-+);
-+
-+#endif /* CONFIG_MODULES */
-+
-+#endif /* _TRACE_MODULE_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
-+
-diff --git a/kernel/kmod.c b/kernel/kmod.c
-index 385c31a..a922808 100644
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -37,6 +37,8 @@
- #include <linux/suspend.h>
- #include <asm/uaccess.h>
- 
-+#include <trace/events/module.h>
-+
- extern int max_threads;
- 
- static struct workqueue_struct *khelper_wq;
-@@ -108,6 +110,8 @@ int __request_module(bool wait, const char *fmt, ...)
- 		return -ENOMEM;
- 	}
- 
-+	trace_module_request(module_name, wait, _RET_IP_);
-+
- 	ret = call_usermodehelper(modprobe_path, argv, envp,
- 			wait ? UMH_WAIT_PROC : UMH_WAIT_EXEC);
- 	atomic_dec(&kmod_concurrent);
-diff --git a/kernel/module.c b/kernel/module.c
-index fd14114..b182143 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -55,6 +55,11 @@
- #include <linux/percpu.h>
- #include <linux/kmemleak.h>
- 
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/module.h>
-+
-+EXPORT_TRACEPOINT_SYMBOL(module_get);
-+
- #if 0
- #define DEBUGP printk
- #else
-@@ -940,6 +945,8 @@ void module_put(struct module *module)
- 	if (module) {
- 		unsigned int cpu = get_cpu();
- 		local_dec(__module_ref_addr(module, cpu));
-+		trace_module_put(module, _RET_IP_,
-+				 local_read(__module_ref_addr(module, cpu)));
- 		/* Maybe they're waiting for us to drop reference? */
- 		if (unlikely(!module_is_live(module)))
- 			wake_up_process(module->waiter);
-@@ -1491,6 +1498,8 @@ static int __unlink_module(void *_mod)
- /* Free a module, remove from lists, etc (must hold module_mutex). */
- static void free_module(struct module *mod)
- {
-+	trace_module_free(mod);
-+
- 	/* Delete from various lists */
- 	stop_machine(__unlink_module, mod, NULL);
- 	remove_notes_attrs(mod);
-@@ -2358,6 +2367,8 @@ static noinline struct module *load_module(void __user *umod,
- 	/* Get rid of temporary copy */
- 	vfree(hdr);
- 
-+	trace_module_load(mod);
-+
- 	/* Done! */
- 	return mod;
- 
--- 
-1.6.3
+Thanks.
 
+
+> 	slack = tv->tv_nsec / divfactor;
+> 	slack += tv->tv_sec * (NSEC_PER_SEC/divfactor);
+> 
+>-	if (slack > 100 * NSEC_PER_MSEC)
+>-		slack =  100 * NSEC_PER_MSEC;
+>+	if (slack > MAX_SLACK)
+>+		return MAX_SLACK;
+> 
+>-	if (slack < 0)
+>-		slack = 0;
+> 	return slack;
+> }
+> 
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
