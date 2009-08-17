@@ -1,84 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbZHQRIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932312AbZHQRJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932227AbZHQRIZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 13:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757108AbZHQRIZ
+	id S932312AbZHQRJg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 13:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932258AbZHQRJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 13:08:25 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:55253 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755677AbZHQRIX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 13:08:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=tqx+kKMeqsnGpXD39rgg0l1CJsZGHMvn8jxkvFmmXh3u2nL/a36Xt8L1dG5Dulqu04
-         pRPKtujktCvLzxEi2SD5xqk66TGSNa6KNynZ7d0kn4zBRL6wWQjlOcsYZYFloXnFXXBv
-         DjBZs1aGvUW5QOUyDzWxlESaB6vQ4sorh89iI=
+	Mon, 17 Aug 2009 13:09:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60830 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932167AbZHQRJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 13:09:34 -0400
+Date: Mon, 17 Aug 2009 19:05:14 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: stephane eranian <eranian@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
+       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
+       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
+       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
+       roland@redhat.com
+Subject: Re: F_SETOWN_TID: F_SETOWN was thread-specific for a while
+Message-ID: <20090817170514.GA15907@redhat.com>
+References: <20090730192040.GA9503@redhat.com> <1248984003.4164.0.camel@laptop> <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins> <20090731141122.a1939712.akpm@linux-foundation.org> <7c86c4470908030553v5a0a4448p94ab612700d68066@mail.gmail.com> <20090809054601.GA26152@shareable.org> <7c86c4470908100522q44dc1228i315b29d69fc98da3@mail.gmail.com> <20090810170338.GA14223@redhat.com> <20090811131009.GB29354@shareable.org>
 MIME-Version: 1.0
-In-Reply-To: <4A898752.9000205@tmr.com>
-References: <200908122007.43522.ngupta@vflare.org>
-	 <1250344518.4159.4.camel@mulgrave.site>
-	 <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk>
-	 <20090816083434.2ce69859@infradead.org>
-	 <1250437927.3856.119.camel@mulgrave.site> <4A8834B6.2070104@rtr.ca>
-	 <1250446047.3856.273.camel@mulgrave.site> <4A884D9C.3060603@rtr.ca>
-	 <1250447052.3856.294.camel@mulgrave.site> <4A898752.9000205@tmr.com>
-Date: Mon, 17 Aug 2009 13:08:23 -0400
-Message-ID: <87f94c370908171008t44ff64ack2153e740128278e@mail.gmail.com>
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap 
-	slot is freed)
-From: Greg Freemyer <greg.freemyer@gmail.com>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: James Bottomley <James.Bottomley@suse.de>, Mark Lord <liml@rtr.ca>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Worley <worleys@gmail.com>,
-       Matthew Wilcox <matthew@wil.cx>, Bryan Donlan <bdonlan@gmail.com>,
-       david@lang.hm, Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090811131009.GB29354@shareable.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All,
+Sorry for late reply.
 
-Seems like the high-level wrap-up of all this is:
+And I am a bit confused.
 
-There are hopes that highly efficient SSDs will appear on the market
-that can leverage a passthru non-coalescing discard feature.  And that
-a whitelist should be created to allow those SSDs to see discards
-intermixed with the rest of the data i/o.
+On 08/11, Jamie Lokier wrote:
+>
+> Oleg Nesterov wrote:
+> > Agreed, this looks a bit odd. But at least this is documented. From
+> > man 2 fcntl:
+> >
+> > 	By using F_SETSIG with a nonzero value, and setting SA_SIGINFO
+> > 	for the signal handler (see sigaction(2)), extra information
+> > 	about I/O events is passed to the handler in a siginfo_t
+> > 	structure.  If the si_code field indicates the source is
+> > 	SI_SIGIO, the si_fd field gives the file descriptor associated
+> > 	with the event.  Otherwise, there is no indication which file
+> > 	descriptors are pending,
+> >
+> > Not sure if it is safe to change the historical behaviour.
+>
+> The change in 2.6.12 breaks some code of mine, which uses RT queued
+> I/O signals on multiple threads but as far as I know it's not used
+> anywhere now.
+>
+> In the <= 2.4 era, there were lots of web servers and benchmarks using
+> queued I/O signals for scalable event-driven I/O, but I don't know of
+> any implementation who dared do it with multiple threads, except mine.
+>
+> It was regarded as "beware ye who enter here" territory, which I can
+> attest to from the long time it took to get it right and the multitude
+> of kernel bugs and version changes needing to be worked around.
+>
+> Since 2.6, everyone uses epoll which is much better, except that
+> occasionally SIGIO comes in handy when an async notification is
+> required.
+>
+> So the change in 2.6.12 does break something that probably isn't much
+> used, but it's too late now.
 
-For the other known cases:
+So, you seem to agree we should not change this odd behaviour?
 
-SSDs that meet the ata-8 spec, but don't exceed it
-Enterprise SCSI
-mdraid with SSD storage used to build raid5 / raid6 arrays
+> Occasionally thread-specific SIGIO (or
+> F_SETSIG) is useful; F_SETOWN_TID makes that nice and clear.
 
-Non-coalescing is believed detrimental, but a regular flushing of the
-unused blocks/sectors via a tool like Mark Lord has written should be
-acceptable.
+Great. If you agree with F_SETOWN_TID, could you look at the next
+Peter's patch
 
-Mark, I don't believe your tool really addresses the mdraid situation,
-do you agree.  ie. Since your bypassing most of the block stack,
-mdraid has no way of snooping on / adjusting the discards you are
-sending out.
+	"[PATCH 3/2 -v4] fcntl: F_[SG]ETOWN_EX"
+	http://marc.info/?l=linux-kernel&m=124956452125468
 
-Thus the 2 solutions that have been worked on already seem to address
-the needs of everything but mdraid.
+and ack it?
 
-Also, there has been no discussion of dm based volumes.  (ie LVM2 based volumes)
+> I would drop the pseudo-"bug compatible" behaviour of using negative
+> tid to mean pid; that's pointless.
 
-For mdraid or dm it seems we need to enhance Mark's script to pass the
-trim commands through the full block stack.  Mark, please cmiiw
+done,
 
-Greg
+> I'd also make F_GETOWN return an
+> error when F_SETOWN_TID has been used,
+
+This is not trivial, F_GETOWN can't return the error. A negative
+result means PIDTYPE_PGID.
+
+> and F_GETOWN_TID return an
+> error when F_SETOWN has been used.
+
+F_GETOWN_EX does this even better.
+
+Oleg.
+
