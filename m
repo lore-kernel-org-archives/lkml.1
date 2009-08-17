@@ -1,110 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751948AbZHQNCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751991AbZHQNEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751948AbZHQNCr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 09:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZHQNCr
+	id S1751991AbZHQNEX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 09:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZHQNEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 09:02:47 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:64860 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751068AbZHQNCp (ORCPT
+	Mon, 17 Aug 2009 09:04:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57989 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751068AbZHQNEW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 09:02:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=I6D07juX/DsY6Ehli/igbRaxgiVo+9jzOjnrgneD/AhgLrDWEo5kFQnirOtLeHp57w
-         XeBzvtf6vvb4QOCt1GreqWB9IaUx/Ocnw4b8wiFPE3j25Y+Mx1urDMgiM/0sJ1/Kgmpd
-         dskirhMEE2g/5QKU30/rV5m/S+GZUlr6cSu4E=
-Message-ID: <4A8954F0.3040402@gmail.com>
-Date: Mon, 17 Aug 2009 09:02:40 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       Avi Kivity <avi@redhat.com>, alacrityvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
- objects
-References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu>
-In-Reply-To: <20090815103243.GA26749@elte.hu>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig51FCF08CCE8E65DE010D1EC3"
+	Mon, 17 Aug 2009 09:04:22 -0400
+Subject: [PATCH] perf_counter: Default to higher paranoia level
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 17 Aug 2009 15:03:44 +0200
+Message-Id: <1250514224.5241.1743.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig51FCF08CCE8E65DE010D1EC3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Change the default permissions on perf counters.
 
-Ingo Molnar wrote:
-> * Gregory Haskins <ghaskins@novell.com> wrote:
->=20
->> This will generally be used for hypervisors to publish any host-side
->> virtual devices up to a guest.  The guest will have the opportunity
->> to consume any devices present on the vbus-proxy as if they were
->> platform devices, similar to existing buses like PCI.
->>
->> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->> ---
->>
->>  MAINTAINERS                 |    6 ++
->>  arch/x86/Kconfig            |    2 +
->>  drivers/Makefile            |    1=20
->>  drivers/vbus/Kconfig        |   14 ++++
->>  drivers/vbus/Makefile       |    3 +
->>  drivers/vbus/bus-proxy.c    |  152 ++++++++++++++++++++++++++++++++++=
-+++++++++
->>  include/linux/vbus_driver.h |   73 +++++++++++++++++++++
->>  7 files changed, 251 insertions(+), 0 deletions(-)
->>  create mode 100644 drivers/vbus/Kconfig
->>  create mode 100644 drivers/vbus/Makefile
->>  create mode 100644 drivers/vbus/bus-proxy.c
->>  create mode 100644 include/linux/vbus_driver.h
->=20
-> Is there a consensus on this with the KVM folks? (i've added the KVM=20
-> list to the Cc:)
->=20
->=20
+The new default will disallow regular users to create cpu-wide
+counters, and will anonymize kernel IPs for task samples.
 
-Hi Ingo,
+This will allow a user to profile his own applications and still know
+the proportion of the kernel events, but does not expose kernel IPs.
 
-Avi can correct me if I am wrong, but the agreement that he and I came
-to a few months ago was something to the effect of:
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ arch/x86/kernel/cpu/perf_counter.c |    6 ++++++
+ include/linux/perf_counter.h       |    1 +
+ kernel/perf_counter.c              |   27 ++++++++++++++++++++-------
+ 3 files changed, 27 insertions(+), 7 deletions(-)
 
-kvm will be neutral towards various external IO subsystems, and instead
-provide various hooks (see irqfd, ioeventfd) to permit these IO
-subsystems to interface with kvm.
+diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+index 396e35d..0fe1126 100644
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@ -2153,7 +2153,13 @@ static const struct stacktrace_ops backtrace_ops = {
+ static void
+ perf_callchain_kernel(struct pt_regs *regs, struct perf_callchain_entry *entry)
+ {
++	u64 anon_ip = perf_paranoid_anon_ip();
++
+ 	callchain_store(entry, PERF_CONTEXT_KERNEL);
++	if (anon_ip) {
++		callchain_store(entry, anon_ip);
++		return;
++	}
+ 	callchain_store(entry, regs->ip);
+ 
+ 	dump_trace(NULL, regs, NULL, 0, &backtrace_ops, entry);
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index 9ba1822..b74b1c3 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -754,6 +754,7 @@ static inline void perf_counter_mmap(struct vm_area_struct *vma)
+ extern void perf_counter_comm(struct task_struct *tsk);
+ extern void perf_counter_fork(struct task_struct *tsk);
+ 
++extern unsigned long perf_paranoid_anon_ip(void);
+ extern struct perf_callchain_entry *perf_callchain(struct pt_regs *regs);
+ 
+ extern int sysctl_perf_counter_paranoid;
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index b8fe739..8daf760 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -48,18 +48,29 @@ static atomic_t nr_task_counters __read_mostly;
+  * perf counter paranoia level:
+  *  0 - not paranoid
+  *  1 - disallow cpu counters to unpriv
+- *  2 - disallow kernel profiling to unpriv
++ *  2 - anonymize kernel RIPs to unpriv
++ *  3 - disallow kernel profiling to unpriv
+  */
+-int sysctl_perf_counter_paranoid __read_mostly;
++int sysctl_perf_counter_paranoid __read_mostly = 2;
+ 
+ static inline bool perf_paranoid_cpu(void)
+ {
+-	return sysctl_perf_counter_paranoid > 0;
++	return !capable(CAP_SYS_ADMIN) && sysctl_perf_counter_paranoid > 0;
++}
++
++static inline bool perf_paranoid_anon(void)
++{
++	return !capable(CAP_SYS_ADMIN) && sysctl_perf_counter_paranoid > 1;
+ }
+ 
+ static inline bool perf_paranoid_kernel(void)
+ {
+-	return sysctl_perf_counter_paranoid > 1;
++	return !capable(CAP_SYS_ADMIN) && sysctl_perf_counter_paranoid > 2;
++}
++
++unsigned long perf_paranoid_anon_ip(void)
++{
++	return perf_paranoid_anon() ? _THIS_IP_ : 0;
+ }
+ 
+ int sysctl_perf_counter_mlock __read_mostly = 512; /* 'free' kb per user */
+@@ -1571,7 +1582,7 @@ static struct perf_counter_context *find_get_context(pid_t pid, int cpu)
+ 	 */
+ 	if (cpu != -1) {
+ 		/* Must be root to operate on a CPU counter: */
+-		if (perf_paranoid_cpu() && !capable(CAP_SYS_ADMIN))
++		if (perf_paranoid_cpu())
+ 			return ERR_PTR(-EACCES);
+ 
+ 		if (cpu < 0 || cpu > num_possible_cpus())
+@@ -2841,7 +2852,9 @@ void perf_counter_output(struct perf_counter *counter, int nmi,
+ 	header.misc |= perf_misc_flags(data->regs);
+ 
+ 	if (sample_type & PERF_SAMPLE_IP) {
+-		ip = perf_instruction_pointer(data->regs);
++		ip = perf_paranoid_anon_ip();
++		if (!ip || user_mode(data->regs))
++			ip = perf_instruction_pointer(data->regs);
+ 		header.size += sizeof(ip);
+ 	}
+ 
+@@ -4227,7 +4240,7 @@ SYSCALL_DEFINE5(perf_counter_open,
+ 		return ret;
+ 
+ 	if (!attr.exclude_kernel) {
+-		if (perf_paranoid_kernel() && !capable(CAP_SYS_ADMIN))
++		if (perf_paranoid_kernel())
+ 			return -EACCES;
+ 	}
+ 
 
-AlacrityVM is one of the first projects to take advantage of that
-interface.  AlacrityVM is kvm-core + vbus-core + vbus-kvm-connector +
-vbus-enhanced qemu + guest drivers.  This thread is part of the
-guest-drivers portion.  Note that it is specific to alacrityvm, not kvm,
-which is why the kvm list was not included in the conversation (also an
-agreement with Avi: http://lkml.org/lkml/2009/8/6/231).
-
-Kind Regards,
--Greg
-
-
---------------enig51FCF08CCE8E65DE010D1EC3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqJVPEACgkQP5K2CMvXmqHhIACePG05qVQu/pdlu1Gh0/YSgvgb
-4ZsAn3tT2aw3ki6Uq90+Y/ZHjd/4lQEZ
-=7cSS
------END PGP SIGNATURE-----
-
---------------enig51FCF08CCE8E65DE010D1EC3--
