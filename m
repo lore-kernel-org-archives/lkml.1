@@ -1,116 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbZHQFm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbZHQFpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756792AbZHQFm2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 01:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756612AbZHQFm1
+	id S1756773AbZHQFpP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 01:45:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbZHQFpO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 01:42:27 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58548 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751363AbZHQFm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 01:42:26 -0400
-Message-ID: <4A88ED6B.6030602@cn.fujitsu.com>
-Date: Mon, 17 Aug 2009 13:40:59 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 17 Aug 2009 01:45:14 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:1338 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750831AbZHQFpN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 01:45:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QpcOYpqrGQP8Qz/0qPJ021oUP1nj2WnBA47zpeOes8oowMUHA+OjY3+wJEB2pkUbkQ
+         XmcYLFMfITWR1lQFYa67qljfduc1q9z83zh8Y/pE68sey4ScaAMkE1KoRTXY+8229lJM
+         U1BmSCTTHL2pkgJZlmy8kd7dj4XHijg2+QH4U=
+Date: Mon, 17 Aug 2009 13:47:32 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org
+Subject: Re: [PATCH] scripts/ver_linux
+Message-ID: <20090817054732.GK5039@cr0.nay.redhat.com>
+References: <alpine.DEB.2.01.0908132251000.30417@bogon.housecafe.de>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 5/5] lockdep: Simplify lock_stat seqfile code
-References: <4A88ED15.20800@cn.fujitsu.com>
-In-Reply-To: <4A88ED15.20800@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.01.0908132251000.30417@bogon.housecafe.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- make ls_next() call ls_start()
-- remove redundant code in lock_stat_release()
+On Thu, Aug 13, 2009 at 10:57:17PM -0700, Christian Kujau wrote:
+>Hi there,
+>
+>sometimes I'm using scripts/ver_linux to quickly have an overview of my 
+>(build-)environment. The output is usually a bit off, since I don't have 
+>"kbd" or "console-tools" installed and don't have /sbin:/usr/sbin in my 
+>PATH.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/lockdep_proc.c |   29 +++++++----------------------
- 1 files changed, 7 insertions(+), 22 deletions(-)
+Hmm, so probably you are also using a Red Hat distribution?
+AFAIK, only some Fedora and RHEL don't have /sbin and /usr/sbin in $PATH.
 
-diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
-index cd5ed35..37b6ddc 100644
---- a/kernel/lockdep_proc.c
-+++ b/kernel/lockdep_proc.c
-@@ -383,7 +383,6 @@ struct lock_stat_data {
- };
- 
- struct lock_stat_seq {
--	struct lock_stat_data *iter;
- 	struct lock_stat_data *iter_end;
- 	struct lock_stat_data stats[MAX_LOCKDEP_KEYS];
- };
-@@ -571,34 +570,22 @@ static void seq_header(struct seq_file *m)
- static void *ls_start(struct seq_file *m, loff_t *pos)
- {
- 	struct lock_stat_seq *data = m->private;
-+	struct lock_stat_data *iter;
- 
- 	if (*pos == 0)
- 		return SEQ_START_TOKEN;
- 
--	data->iter = data->stats + (*pos - 1);
--	if (data->iter >= data->iter_end)
--		data->iter = NULL;
-+	iter = data->stats + (*pos - 1);
-+	if (iter >= data->iter_end)
-+		iter = NULL;
- 
--	return data->iter;
-+	return iter;
- }
- 
- static void *ls_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	struct lock_stat_seq *data = m->private;
--
- 	(*pos)++;
--
--	if (v == SEQ_START_TOKEN)
--		data->iter = data->stats;
--	else {
--		data->iter = v;
--		data->iter++;
--	}
--
--	if (data->iter == data->iter_end)
--		data->iter = NULL;
--
--	return data->iter;
-+	return ls_start(m, pos);
- }
- 
- static void ls_stop(struct seq_file *m, void *v)
-@@ -636,7 +623,6 @@ static int lock_stat_open(struct inode *inode, struct file *file)
- 		struct lock_stat_data *iter = data->stats;
- 		struct seq_file *m = file->private_data;
- 
--		data->iter = iter;
- 		list_for_each_entry(class, &all_lock_classes, lock_entry) {
- 			iter->class = class;
- 			iter->stats = lock_stats(class);
-@@ -644,7 +630,7 @@ static int lock_stat_open(struct inode *inode, struct file *file)
- 		}
- 		data->iter_end = iter;
- 
--		sort(data->stats, data->iter_end - data->iter,
-+		sort(data->stats, data->iter_end - data->stats,
- 				sizeof(struct lock_stat_data),
- 				lock_stat_cmp, NULL);
- 
-@@ -679,7 +665,6 @@ static int lock_stat_release(struct inode *inode, struct file *file)
- 	struct seq_file *seq = file->private_data;
- 
- 	vfree(seq->private);
--	seq->private = NULL;
- 	return seq_release(inode, file);
- }
- 
--- 
-1.6.3
+Anyway, it looks reasonable.
 
+Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
+
+Thanks.
+
+
+
+>The patch below makes scripts/ver_linux print a better result, 
+>compared to its original output:
+>
+>-module-init-tools      found
+>+module-init-tools      3.4
+>+e2fsprogs              1.41.3
+>+jfsutils               1.1.12
+>+reiserfsprogs          3.6.19
+>+reiser4progs           1.0.6
+>+xfsprogs               2.9.8
+> Linux C Library        2.7
+> Procps                 3.2.7
+>-Kbd                    loadkeys:
+>+Net-tools              1.60
+> Sh-utils               6.10
+>
+>Signed-off-by: Christian Kujau <lists@nerdbynature.de>
+>
+>--- linux-2.6-git/scripts/ver_linux.orig	2009-08-14 07:47:12.185695350 +0200
+>+++ linux-2.6-git/scripts/ver_linux	2009-08-14 07:47:23.642348227 +0200
+>@@ -4,6 +4,7 @@
+> # /bin /sbin /usr/bin /usr/sbin /usr/local/bin, but it may
+> # differ on your system.
+> #
+>+PATH="$PATH":/sbin:/usr/sbin
+> echo 'If some fields are empty or look unusual you may have an old version.'
+> echo 'Compare to the current minimal requirements in Documentation/Changes.'
+> echo ' '
+>@@ -76,7 +77,7 @@ ifconfig --version 2>&1 | grep tools | a
+> 
+> # Kbd needs 'loadkeys -h',
+> loadkeys -h 2>&1 | awk \
+>-'(NR==1 && ($3 !~ /option/)) {print "Kbd                   ", $3}'
+>+'(NR==1 && ($1 = /^loadkeys/)) {print "Kbd                   ", $3}'
+> 
+> # while console-tools needs 'loadkeys -V'.
+> loadkeys -V 2>&1 | awk \
+>
+>-- 
+>BOFH excuse #17:
+>
+>fat electrons in the lines
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
