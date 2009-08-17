@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbZHQOSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbZHQOSa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754236AbZHQOSQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 10:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbZHQOSQ
+	id S1754610AbZHQOSa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 10:18:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbZHQOS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 10:18:16 -0400
+	Mon, 17 Aug 2009 10:18:28 -0400
 Received: from mail-ew0-f214.google.com ([209.85.219.214]:63159 "EHLO
 	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752737AbZHQOSO (ORCPT
+	with ESMTP id S1754396AbZHQOSY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 10:18:14 -0400
+	Mon, 17 Aug 2009 10:18:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=UMoi2VmHNOsEijuvw2HNz4MaZZj4H7u0VDhHsGR9hQ/vQwtS+/d6o9KI8QXOWoAr89
-         nREVesLIYqUmOywGTorEie6bnGdhqGf9pK7Dxv3cBflp6L2iCvAHHKEqkwre3TL8oQ3L
-         BKk2oEgLoVydEUYQVl7tPdvSUbKGYsLKZKoks=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=qp5YuMllzYYsMdWBRi021iS0bG3+Wm1BUgM08oI6F9fePvL4dKkF4ZHfqY9FZcJY4n
+         qRQkAbZixOUVNhowGoB/lwRL1+40HnfS7+0atGgTZ8FcRJGeCQp46sTSnbr+LTjqV3PT
+         DT13cO/q/3hWmQUfyzM3UVcxgO3SyYO6nOHmQ=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
@@ -33,35 +34,52 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        Tom Zanussi <tzanussi@gmail.com>, "Frank Ch. Eigler" <fche@redhat.com>,
        Roland McGrath <roland@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Jiaying Zhang <jiayingz@google.com>,
-       Anton Blanchard <anton@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 1/4] perf tools: Add trace event debugfs IO handler
-Date: Mon, 17 Aug 2009 16:18:05 +0200
-Message-Id: <1250518688-7207-1-git-send-email-fweisbec@gmail.com>
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Jiaying Zhang <jiayingz@google.com>, Anton Blanchard <anton@samba.org>
+Subject: [PATCH 4/4] perf tools: Add perf trace
+Date: Mon, 17 Aug 2009 16:18:08 +0200
+Message-Id: <1250518688-7207-4-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1250518688-7207-1-git-send-email-fweisbec@gmail.com>
+References: <1250518688-7207-1-git-send-email-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <rostedt@goodmis.org>
+This adds perf trace into the set of perf tools.
+It is written to fetch the tracepoints samples from perf events and
+display them, according to the events informations given by the debugfs
+files through the util/trace* tools.
 
-Add util/trace-event-info.c which handles ftrace file IO from debugfs
-and provides general helpers to fetch/save ftrace events informations.
+It is a rough first shot and doesn't yet handle the cpu, timestamps fields
+and some other things.
 
-This file is a rename of the trace-cmd.c file from the trace-cmd tools,
-written by Steven Rostedt and Josh Triplett, originated from the git
-tree:
+Example:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/trace-cmd.git
+perf record -f -e workqueue:workqueue_execution:record -F 1 -a
+perf trace
 
-This is a perf tools integration.
-For now, ftrace events informations are saved in a separate file than
-the standard perf.data
+       kblockd/0-236   [000]     0.000000: workqueue_execution: thread=:236 func=cfq_kick_queue+0x0
+     kondemand/0-360   [000]     0.000000: workqueue_execution: thread=:360 func=do_dbs_timer+0x0
+     kondemand/0-360   [000]     0.000000: workqueue_execution: thread=:360 func=do_dbs_timer+0x0
+     kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
+     kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
+     kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
+     kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
+     kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
+     kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
+     kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
+     kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
+     kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
+     kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
+     kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
+     kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
+     kondemand/1-361   [000]     0.000000: workqueue_execution: thread=:361 func=do_dbs_timer+0x0
 
-[fweisbec@gmail.com: various changes for perf tools integration]
+Todo:
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+- A lot of things!
+
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
@@ -72,754 +90,367 @@ Cc: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Tom Zanussi <tzanussi@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 ---
- tools/perf/util/trace-event-info.c |  491 ++++++++++++++++++++++++++++++++++++
- tools/perf/util/trace-event.h      |  238 +++++++++++++++++
- 2 files changed, 729 insertions(+), 0 deletions(-)
- create mode 100644 tools/perf/util/trace-event-info.c
- create mode 100644 tools/perf/util/trace-event.h
+ tools/perf/Makefile         |    4 +
+ tools/perf/builtin-record.c |    4 +
+ tools/perf/builtin-trace.c  |  277 +++++++++++++++++++++++++++++++++++++++++++
+ tools/perf/perf.c           |    1 +
+ tools/perf/util/util.h      |    1 +
+ 5 files changed, 287 insertions(+), 0 deletions(-)
+ create mode 100644 tools/perf/builtin-trace.c
 
-diff --git a/tools/perf/util/trace-event-info.c b/tools/perf/util/trace-event-info.c
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 5d54ddb..c481a51 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -347,6 +347,9 @@ LIB_OBJS += util/values.o
+ LIB_OBJS += util/debug.o
+ LIB_OBJS += util/map.o
+ LIB_OBJS += util/thread.o
++LIB_OBJS += util/trace-event-parse.o
++LIB_OBJS += util/trace-event-read.o
++LIB_OBJS += util/trace-event-info.o
+ 
+ BUILTIN_OBJS += builtin-annotate.o
+ BUILTIN_OBJS += builtin-help.o
+@@ -355,6 +358,7 @@ BUILTIN_OBJS += builtin-record.o
+ BUILTIN_OBJS += builtin-report.o
+ BUILTIN_OBJS += builtin-stat.o
+ BUILTIN_OBJS += builtin-top.o
++BUILTIN_OBJS += builtin-trace.o
+ 
+ PERFLIBS = $(LIB_FILE)
+ 
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 6a5db67..3ce2f03 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -17,6 +17,7 @@
+ #include "util/header.h"
+ #include "util/event.h"
+ #include "util/debug.h"
++#include "util/trace-event.h"
+ 
+ #include <unistd.h>
+ #include <sched.h>
+@@ -519,6 +520,9 @@ static int __cmd_record(int argc, const char **argv)
+ 	signal(SIGCHLD, sig_handler);
+ 	signal(SIGINT, sig_handler);
+ 
++	if (raw_samples)
++		read_tracing_data();
++
+ 	if (!stat(output_name, &st) && st.st_size) {
+ 		if (!force && !append_file) {
+ 			fprintf(stderr, "Error, output file %s exists, use -A to append or -f to overwrite.\n",
+diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
 new file mode 100644
-index 0000000..78adff1
+index 0000000..b160a9f
 --- /dev/null
-+++ b/tools/perf/util/trace-event-info.c
-@@ -0,0 +1,491 @@
-+/*
-+ * Copyright (C) 2008,2009, Steven Rostedt <srostedt@redhat.com>
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; version 2 of the License (not later!)
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ */
-+#define _GNU_SOURCE
-+#include <dirent.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <stdarg.h>
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <sys/wait.h>
-+#include <pthread.h>
-+#include <fcntl.h>
-+#include <unistd.h>
-+#include <ctype.h>
-+#include <errno.h>
++++ b/tools/perf/builtin-trace.c
+@@ -0,0 +1,277 @@
++#include "builtin.h"
 +
-+#include "trace-event.h"
++#include "util/util.h"
++#include "util/cache.h"
++#include "util/symbol.h"
++#include "util/thread.h"
++#include "util/header.h"
++
++#include "util/parse-options.h"
++
++#include "perf.h"
++#include "util/debug.h"
++
++#include "util/trace-event.h"
++
++static char		const *input_name = "perf.data";
++static int		input;
++static unsigned long	page_size;
++static unsigned long	mmap_window = 32;
++
++static unsigned long	total = 0;
++static unsigned long	total_comm = 0;
++
++static struct rb_root	threads;
++static struct thread	*last_match;
++
++static struct perf_header *header;
++static u64		sample_type;
 +
 +
-+#define VERSION "0.5"
++static int
++process_comm_event(event_t *event, unsigned long offset, unsigned long head)
++{
++	struct thread *thread;
 +
-+#define _STR(x) #x
-+#define STR(x) _STR(x)
-+#define MAX_PATH 256
++	thread = threads__findnew(event->comm.pid, &threads, &last_match);
 +
-+#define TRACE_CTRL	"tracing_on"
-+#define TRACE		"trace"
-+#define AVAILABLE	"available_tracers"
-+#define CURRENT		"current_tracer"
-+#define ITER_CTRL	"trace_options"
-+#define MAX_LATENCY	"tracing_max_latency"
++	dump_printf("%p [%p]: PERF_EVENT_COMM: %s:%d\n",
++		(void *)(offset + head),
++		(void *)(long)(event->header.size),
++		event->comm.comm, event->comm.pid);
 +
-+unsigned int page_size;
++	if (thread == NULL ||
++	    thread__set_comm(thread, event->comm.comm)) {
++		dump_printf("problem processing PERF_EVENT_COMM, skipping event.\n");
++		return -1;
++	}
++	total_comm++;
 +
-+static const char *output_file = "trace.info";
-+static int output_fd;
++	return 0;
++}
 +
-+struct event_list {
-+	struct event_list *next;
-+	const char *event;
++static int
++process_sample_event(event_t *event, unsigned long offset, unsigned long head)
++{
++	char level;
++	int show = 0;
++	struct dso *dso = NULL;
++	struct thread *thread;
++	u64 ip = event->ip.ip;
++	u64 period = 1;
++	void *more_data = event->ip.__more_data;
++	int cpumode;
++
++	thread = threads__findnew(event->ip.pid, &threads, &last_match);
++
++	if (sample_type & PERF_SAMPLE_PERIOD) {
++		period = *(u64 *)more_data;
++		more_data += sizeof(u64);
++	}
++
++	dump_printf("%p [%p]: PERF_EVENT_SAMPLE (IP, %d): %d/%d: %p period: %Ld\n",
++		(void *)(offset + head),
++		(void *)(long)(event->header.size),
++		event->header.misc,
++		event->ip.pid, event->ip.tid,
++		(void *)(long)ip,
++		(long long)period);
++
++	dump_printf(" ... thread: %s:%d\n", thread->comm, thread->pid);
++
++	if (thread == NULL) {
++		eprintf("problem processing %d event, skipping it.\n",
++			event->header.type);
++		return -1;
++	}
++
++	cpumode = event->header.misc & PERF_EVENT_MISC_CPUMODE_MASK;
++
++	if (cpumode == PERF_EVENT_MISC_KERNEL) {
++		show = SHOW_KERNEL;
++		level = 'k';
++
++		dso = kernel_dso;
++
++		dump_printf(" ...... dso: %s\n", dso->name);
++
++	} else if (cpumode == PERF_EVENT_MISC_USER) {
++
++		show = SHOW_USER;
++		level = '.';
++
++	} else {
++		show = SHOW_HV;
++		level = 'H';
++
++		dso = hypervisor_dso;
++
++		dump_printf(" ...... dso: [hypervisor]\n");
++	}
++
++	if (sample_type & PERF_SAMPLE_RAW) {
++		struct {
++			u32 size;
++			char data[0];
++		} *raw = more_data;
++
++		/*
++		 * FIXME: better resolve from pid from the struct trace_entry
++		 * field, although it should be the same than this perf
++		 * event pid
++		 */
++		print_event(0, raw->data, raw->size, 0, thread->comm);
++	}
++	total += period;
++
++	return 0;
++}
++
++static int
++process_event(event_t *event, unsigned long offset, unsigned long head)
++{
++	trace_event(event);
++
++	switch (event->header.type) {
++	case PERF_EVENT_MMAP ... PERF_EVENT_LOST:
++		return 0;
++
++	case PERF_EVENT_COMM:
++		return process_comm_event(event, offset, head);
++
++	case PERF_EVENT_EXIT ... PERF_EVENT_READ:
++		return 0;
++
++	case PERF_EVENT_SAMPLE:
++		return process_sample_event(event, offset, head);
++
++	case PERF_EVENT_MAX:
++	default:
++		return -1;
++	}
++
++	return 0;
++}
++
++static int __cmd_trace(void)
++{
++	int ret, rc = EXIT_FAILURE;
++	unsigned long offset = 0;
++	unsigned long head = 0;
++	struct stat perf_stat;
++	event_t *event;
++	uint32_t size;
++	char *buf;
++
++	trace_report();
++
++	input = open(input_name, O_RDONLY);
++	if (input < 0) {
++		perror("failed to open file");
++		exit(-1);
++	}
++
++	ret = fstat(input, &perf_stat);
++	if (ret < 0) {
++		perror("failed to stat file");
++		exit(-1);
++	}
++
++	if (!perf_stat.st_size) {
++		fprintf(stderr, "zero-sized file, nothing to do!\n");
++		exit(0);
++	}
++	header = perf_header__read(input);
++	sample_type = perf_header__sample_type(header);
++
++	if (load_kernel() < 0) {
++		perror("failed to load kernel symbols");
++		return EXIT_FAILURE;
++	}
++
++remap:
++	buf = (char *)mmap(NULL, page_size * mmap_window, PROT_READ,
++			   MAP_SHARED, input, offset);
++	if (buf == MAP_FAILED) {
++		perror("failed to mmap file");
++		exit(-1);
++	}
++
++more:
++	event = (event_t *)(buf + head);
++
++	size = event->header.size;
++	if (!size)
++		size = 8;
++
++	if (head + event->header.size >= page_size * mmap_window) {
++		unsigned long shift = page_size * (head / page_size);
++		int res;
++
++		res = munmap(buf, page_size * mmap_window);
++		assert(res == 0);
++
++		offset += shift;
++		head -= shift;
++		goto remap;
++	}
++
++	size = event->header.size;
++
++
++	if (!size || process_event(event, offset, head) < 0) {
++
++		/*
++		 * assume we lost track of the stream, check alignment, and
++		 * increment a single u64 in the hope to catch on again 'soon'.
++		 */
++
++		if (unlikely(head & 7))
++			head &= ~7ULL;
++
++		size = 8;
++	}
++
++	head += size;
++
++	if (offset + head < (unsigned long)perf_stat.st_size)
++		goto more;
++
++	rc = EXIT_SUCCESS;
++	close(input);
++
++	return rc;
++}
++
++static const char * const annotate_usage[] = {
++	"perf trace [<options>] <command>",
++	NULL
 +};
 +
-+struct events {
-+	struct events *sibling;
-+	struct events *children;
-+	struct events *next;
-+	char *name;
++static const struct option options[] = {
++	OPT_BOOLEAN('D', "dump-raw-trace", &dump_trace,
++		    "dump raw trace in ASCII"),
++	OPT_BOOLEAN('v', "verbose", &verbose,
++		    "be more verbose (show symbol address, etc)"),
 +};
 +
-+
-+
-+static void die(const char *fmt, ...)
++int cmd_trace(int argc, const char **argv, const char *prefix __used)
 +{
-+	va_list ap;
-+	int ret = errno;
-+
-+	if (errno)
-+		perror("trace-cmd");
-+	else
-+		ret = -1;
-+
-+	va_start(ap, fmt);
-+	fprintf(stderr, "  ");
-+	vfprintf(stderr, fmt, ap);
-+	va_end(ap);
-+
-+	fprintf(stderr, "\n");
-+	exit(ret);
-+}
-+
-+void *malloc_or_die(unsigned int size)
-+{
-+	void *data;
-+
-+	data = malloc(size);
-+	if (!data)
-+		die("malloc");
-+	return data;
-+}
-+
-+static const char *find_debugfs(void)
-+{
-+	static char debugfs[MAX_PATH+1];
-+	static int debugfs_found;
-+	char type[100];
-+	FILE *fp;
-+
-+	if (debugfs_found)
-+		return debugfs;
-+
-+	if ((fp = fopen("/proc/mounts","r")) == NULL)
-+		die("Can't open /proc/mounts for read");
-+
-+	while (fscanf(fp, "%*s %"
-+		      STR(MAX_PATH)
-+		      "s %99s %*s %*d %*d\n",
-+		      debugfs, type) == 2) {
-+		if (strcmp(type, "debugfs") == 0)
-+			break;
-+	}
-+	fclose(fp);
-+
-+	if (strcmp(type, "debugfs") != 0)
-+		die("debugfs not mounted, please mount");
-+
-+	debugfs_found = 1;
-+
-+	return debugfs;
-+}
-+
-+/*
-+ * Finds the path to the debugfs/tracing
-+ * Allocates the string and stores it.
-+ */
-+static const char *find_tracing_dir(void)
-+{
-+	static char *tracing;
-+	static int tracing_found;
-+	const char *debugfs;
-+
-+	if (tracing_found)
-+		return tracing;
-+
-+	debugfs = find_debugfs();
-+
-+	tracing = malloc_or_die(strlen(debugfs) + 9);
-+
-+	sprintf(tracing, "%s/tracing", debugfs);
-+
-+	tracing_found = 1;
-+	return tracing;
-+}
-+
-+static char *get_tracing_file(const char *name)
-+{
-+	const char *tracing;
-+	char *file;
-+
-+	tracing = find_tracing_dir();
-+	if (!tracing)
-+		return NULL;
-+
-+	file = malloc_or_die(strlen(tracing) + strlen(name) + 2);
-+
-+	sprintf(file, "%s/%s", tracing, name);
-+	return file;
-+}
-+
-+static void put_tracing_file(char *file)
-+{
-+	free(file);
-+}
-+
-+static ssize_t write_or_die(const void *buf, size_t len)
-+{
-+	int ret;
-+
-+	ret = write(output_fd, buf, len);
-+	if (ret < 0)
-+		die("writing to '%s'", output_file);
-+
-+	return ret;
-+}
-+
-+int bigendian(void)
-+{
-+	unsigned char str[] = { 0x1, 0x2, 0x3, 0x4, 0x0, 0x0, 0x0, 0x0};
-+	unsigned int *ptr;
-+
-+	ptr = (unsigned int *)str;
-+	return *ptr == 0x01020304;
-+}
-+
-+static unsigned long long copy_file_fd(int fd)
-+{
-+	unsigned long long size = 0;
-+	char buf[BUFSIZ];
-+	int r;
-+
-+	do {
-+		r = read(fd, buf, BUFSIZ);
-+		if (r > 0) {
-+			size += r;
-+			write_or_die(buf, r);
-+		}
-+	} while (r > 0);
-+
-+	return size;
-+}
-+
-+static unsigned long long copy_file(const char *file)
-+{
-+	unsigned long long size = 0;
-+	int fd;
-+
-+	fd = open(file, O_RDONLY);
-+	if (fd < 0)
-+		die("Can't read '%s'", file);
-+	size = copy_file_fd(fd);
-+	close(fd);
-+
-+	return size;
-+}
-+
-+static unsigned long get_size_fd(int fd)
-+{
-+	unsigned long long size = 0;
-+	char buf[BUFSIZ];
-+	int r;
-+
-+	do {
-+		r = read(fd, buf, BUFSIZ);
-+		if (r > 0)
-+			size += r;
-+	} while (r > 0);
-+
-+	lseek(fd, 0, SEEK_SET);
-+
-+	return size;
-+}
-+
-+static unsigned long get_size(const char *file)
-+{
-+	unsigned long long size = 0;
-+	int fd;
-+
-+	fd = open(file, O_RDONLY);
-+	if (fd < 0)
-+		die("Can't read '%s'", file);
-+	size = get_size_fd(fd);
-+	close(fd);
-+
-+	return size;
-+}
-+
-+static void read_header_files(void)
-+{
-+	unsigned long long size, check_size;
-+	char *path;
-+	int fd;
-+
-+	path = get_tracing_file("events/header_page");
-+	fd = open(path, O_RDONLY);
-+	if (fd < 0)
-+		die("can't read '%s'", path);
-+
-+	/* unfortunately, you can not stat debugfs files for size */
-+	size = get_size_fd(fd);
-+
-+	write_or_die("header_page", 12);
-+	write_or_die(&size, 8);
-+	check_size = copy_file_fd(fd);
-+	if (size != check_size)
-+		die("wrong size for '%s' size=%lld read=%lld",
-+		    path, size, check_size);
-+	put_tracing_file(path);
-+
-+	path = get_tracing_file("events/header_event");
-+	fd = open(path, O_RDONLY);
-+	if (fd < 0)
-+		die("can't read '%s'", path);
-+
-+	size = get_size_fd(fd);
-+
-+	write_or_die("header_event", 13);
-+	write_or_die(&size, 8);
-+	check_size = copy_file_fd(fd);
-+	if (size != check_size)
-+		die("wrong size for '%s'", path);
-+	put_tracing_file(path);
-+}
-+
-+static void copy_event_system(const char *sys)
-+{
-+	unsigned long long size, check_size;
-+	struct dirent *dent;
-+	struct stat st;
-+	char *format;
-+	DIR *dir;
-+	int count = 0;
-+	int ret;
-+
-+	dir = opendir(sys);
-+	if (!dir)
-+		die("can't read directory '%s'", sys);
-+
-+	while ((dent = readdir(dir))) {
-+		if (strcmp(dent->d_name, ".") == 0 ||
-+		    strcmp(dent->d_name, "..") == 0)
-+			continue;
-+		format = malloc_or_die(strlen(sys) + strlen(dent->d_name) + 10);
-+		sprintf(format, "%s/%s/format", sys, dent->d_name);
-+		ret = stat(format, &st);
-+		free(format);
-+		if (ret < 0)
-+			continue;
-+		count++;
-+	}
-+
-+	write_or_die(&count, 4);
-+
-+	rewinddir(dir);
-+	while ((dent = readdir(dir))) {
-+		if (strcmp(dent->d_name, ".") == 0 ||
-+		    strcmp(dent->d_name, "..") == 0)
-+			continue;
-+		format = malloc_or_die(strlen(sys) + strlen(dent->d_name) + 10);
-+		sprintf(format, "%s/%s/format", sys, dent->d_name);
-+		ret = stat(format, &st);
-+
-+		if (ret >= 0) {
-+			/* unfortunately, you can not stat debugfs files for size */
-+			size = get_size(format);
-+			write_or_die(&size, 8);
-+			check_size = copy_file(format);
-+			if (size != check_size)
-+				die("error in size of file '%s'", format);
-+		}
-+
-+		free(format);
-+	}
-+}
-+
-+static void read_ftrace_files(void)
-+{
-+	char *path;
-+
-+	path = get_tracing_file("events/ftrace");
-+
-+	copy_event_system(path);
-+
-+	put_tracing_file(path);
-+}
-+
-+static void read_event_files(void)
-+{
-+	struct dirent *dent;
-+	struct stat st;
-+	char *path;
-+	char *sys;
-+	DIR *dir;
-+	int count = 0;
-+	int ret;
-+
-+	path = get_tracing_file("events");
-+
-+	dir = opendir(path);
-+	if (!dir)
-+		die("can't read directory '%s'", path);
-+
-+	while ((dent = readdir(dir))) {
-+		if (strcmp(dent->d_name, ".") == 0 ||
-+		    strcmp(dent->d_name, "..") == 0 ||
-+		    strcmp(dent->d_name, "ftrace") == 0)
-+			continue;
-+		sys = malloc_or_die(strlen(path) + strlen(dent->d_name) + 2);
-+		sprintf(sys, "%s/%s", path, dent->d_name);
-+		ret = stat(sys, &st);
-+		free(sys);
-+		if (ret < 0)
-+			continue;
-+		if (S_ISDIR(st.st_mode))
-+			count++;
-+	}
-+
-+	write_or_die(&count, 4);
-+
-+	rewinddir(dir);
-+	while ((dent = readdir(dir))) {
-+		if (strcmp(dent->d_name, ".") == 0 ||
-+		    strcmp(dent->d_name, "..") == 0 ||
-+		    strcmp(dent->d_name, "ftrace") == 0)
-+			continue;
-+		sys = malloc_or_die(strlen(path) + strlen(dent->d_name) + 2);
-+		sprintf(sys, "%s/%s", path, dent->d_name);
-+		ret = stat(sys, &st);
-+		if (ret >= 0) {
-+			if (S_ISDIR(st.st_mode)) {
-+				write_or_die(dent->d_name, strlen(dent->d_name) + 1);
-+				copy_event_system(sys);
-+			}
-+		}
-+		free(sys);
-+	}
-+
-+	put_tracing_file(path);
-+}
-+
-+static void read_proc_kallsyms(void)
-+{
-+	unsigned int size, check_size;
-+	const char *path = "/proc/kallsyms";
-+	struct stat st;
-+	int ret;
-+
-+	ret = stat(path, &st);
-+	if (ret < 0) {
-+		/* not found */
-+		size = 0;
-+		write_or_die(&size, 4);
-+		return;
-+	}
-+	size = get_size(path);
-+	write_or_die(&size, 4);
-+	check_size = copy_file(path);
-+	if (size != check_size)
-+		die("error in size of file '%s'", path);
-+
-+}
-+
-+static void read_ftrace_printk(void)
-+{
-+	unsigned int size, check_size;
-+	const char *path;
-+	struct stat st;
-+	int ret;
-+
-+	path = get_tracing_file("printk_formats");
-+	ret = stat(path, &st);
-+	if (ret < 0) {
-+		/* not found */
-+		size = 0;
-+		write_or_die(&size, 4);
-+		return;
-+	}
-+	size = get_size(path);
-+	write_or_die(&size, 4);
-+	check_size = copy_file(path);
-+	if (size != check_size)
-+		die("error in size of file '%s'", path);
-+
-+}
-+
-+void read_tracing_data(void)
-+{
-+	char buf[BUFSIZ];
-+
-+	output_fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC | O_LARGEFILE, 0644);
-+	if (output_fd < 0)
-+		die("creating file '%s'", output_file);
-+
-+	buf[0] = 23;
-+	buf[1] = 8;
-+	buf[2] = 68;
-+	memcpy(buf + 3, "tracing", 7);
-+
-+	write_or_die(buf, 10);
-+
-+	write_or_die(VERSION, strlen(VERSION) + 1);
-+
-+	/* save endian */
-+	if (bigendian())
-+		buf[0] = 1;
-+	else
-+		buf[0] = 0;
-+
-+	write_or_die(buf, 1);
-+
-+	/* save size of long */
-+	buf[0] = sizeof(long);
-+	write_or_die(buf, 1);
-+
-+	/* save page_size */
++	symbol__init();
 +	page_size = getpagesize();
-+	write_or_die(&page_size, 4);
 +
-+	read_header_files();
-+	read_ftrace_files();
-+	read_event_files();
-+	read_proc_kallsyms();
-+	read_ftrace_printk();
++	argc = parse_options(argc, argv, options, annotate_usage, 0);
++	if (argc) {
++		/*
++		 * Special case: if there's an argument left then assume tha
++		 * it's a symbol filter:
++		 */
++		if (argc > 1)
++			usage_with_options(annotate_usage, options);
++	}
++
++
++	setup_pager();
++
++	return __cmd_trace();
 +}
-diff --git a/tools/perf/util/trace-event.h b/tools/perf/util/trace-event.h
-new file mode 100644
-index 0000000..3ddb894
---- /dev/null
-+++ b/tools/perf/util/trace-event.h
-@@ -0,0 +1,238 @@
-+#ifndef _PARSE_EVENTS_H
-+#define _PARSE_EVENTS_H
-+
-+
-+#define __unused __attribute__((unused))
-+
-+
-+#ifndef PAGE_MASK
-+#define PAGE_MASK (page_size - 1)
-+#endif
-+
-+enum {
-+	RINGBUF_TYPE_PADDING		= 29,
-+	RINGBUF_TYPE_TIME_EXTEND	= 30,
-+	RINGBUF_TYPE_TIME_STAMP		= 31,
-+};
-+
-+#ifndef TS_SHIFT
-+#define TS_SHIFT		27
-+#endif
-+
-+#define NSECS_PER_SEC		1000000000ULL
-+#define NSECS_PER_USEC		1000ULL
-+
-+enum format_flags {
-+	FIELD_IS_ARRAY		= 1,
-+	FIELD_IS_POINTER	= 2,
-+};
-+
-+struct format_field {
-+	struct format_field	*next;
-+	char			*type;
-+	char			*name;
-+	int			offset;
-+	int			size;
-+	unsigned long		flags;
-+};
-+
-+struct format {
-+	int			nr_common;
-+	int			nr_fields;
-+	struct format_field	*common_fields;
-+	struct format_field	*fields;
-+};
-+
-+struct print_arg_atom {
-+	char			*atom;
-+};
-+
-+struct print_arg_string {
-+	char			*string;
-+};
-+
-+struct print_arg_field {
-+	char			*name;
-+	struct format_field	*field;
-+};
-+
-+struct print_flag_sym {
-+	struct print_flag_sym	*next;
-+	char			*value;
-+	char			*str;
-+};
-+
-+struct print_arg_typecast {
-+	char 			*type;
-+	struct print_arg	*item;
-+};
-+
-+struct print_arg_flags {
-+	struct print_arg	*field;
-+	char			*delim;
-+	struct print_flag_sym	*flags;
-+};
-+
-+struct print_arg_symbol {
-+	struct print_arg	*field;
-+	struct print_flag_sym	*symbols;
-+};
-+
-+struct print_arg;
-+
-+struct print_arg_op {
-+	char			*op;
-+	int			prio;
-+	struct print_arg	*left;
-+	struct print_arg	*right;
-+};
-+
-+struct print_arg_func {
-+	char			*name;
-+	struct print_arg	*args;
-+};
-+
-+enum print_arg_type {
-+	PRINT_NULL,
-+	PRINT_ATOM,
-+	PRINT_FIELD,
-+	PRINT_FLAGS,
-+	PRINT_SYMBOL,
-+	PRINT_TYPE,
-+	PRINT_STRING,
-+	PRINT_OP,
-+};
-+
-+struct print_arg {
-+	struct print_arg		*next;
-+	enum print_arg_type		type;
-+	union {
-+		struct print_arg_atom		atom;
-+		struct print_arg_field		field;
-+		struct print_arg_typecast	typecast;
-+		struct print_arg_flags		flags;
-+		struct print_arg_symbol		symbol;
-+		struct print_arg_func		func;
-+		struct print_arg_string		string;
-+		struct print_arg_op		op;
-+	};
-+};
-+
-+struct print_fmt {
-+	char			*format;
-+	struct print_arg	*args;
-+};
-+
-+struct event {
-+	struct event		*next;
-+	char			*name;
-+	int			id;
-+	int			flags;
-+	struct format		format;
-+	struct print_fmt	print_fmt;
-+};
-+
-+enum {
-+	EVENT_FL_ISFTRACE	= 1,
-+	EVENT_FL_ISPRINT	= 2,
-+	EVENT_FL_ISBPRINT	= 4,
-+	EVENT_FL_ISFUNC		= 8,
-+	EVENT_FL_ISFUNCENT	= 16,
-+	EVENT_FL_ISFUNCRET	= 32,
-+};
-+
-+struct record {
-+	unsigned long long ts;
-+	int size;
-+	void *data;
-+};
-+
-+struct record *trace_peek_data(int cpu);
-+struct record *trace_read_data(int cpu);
-+
-+void parse_set_info(int nr_cpus, int long_sz);
-+
-+void trace_report(void);
-+
-+void *malloc_or_die(unsigned int size);
-+
-+void parse_cmdlines(char *file, int size);
-+void parse_proc_kallsyms(char *file, unsigned int size);
-+void parse_ftrace_printk(char *file, unsigned int size);
-+
-+void print_funcs(void);
-+void print_printk(void);
-+
-+int parse_ftrace_file(char *buf, unsigned long size);
-+int parse_event_file(char *buf, unsigned long size, char *system);
-+void print_event(int cpu, void *data, int size, unsigned long long nsecs,
-+		  char *comm);
-+
-+extern int file_bigendian;
-+extern int host_bigendian;
-+
-+int bigendian(void);
-+
-+static inline unsigned short __data2host2(unsigned short data)
-+{
-+	unsigned short swap;
-+
-+	if (host_bigendian == file_bigendian)
-+		return data;
-+
-+	swap = ((data & 0xffULL) << 8) |
-+		((data & (0xffULL << 8)) >> 8);
-+
-+	return swap;
-+}
-+
-+static inline unsigned int __data2host4(unsigned int data)
-+{
-+	unsigned int swap;
-+
-+	if (host_bigendian == file_bigendian)
-+		return data;
-+
-+	swap = ((data & 0xffULL) << 24) |
-+		((data & (0xffULL << 8)) << 8) |
-+		((data & (0xffULL << 16)) >> 8) |
-+		((data & (0xffULL << 24)) >> 24);
-+
-+	return swap;
-+}
-+
-+static inline unsigned long long __data2host8(unsigned long long data)
-+{
-+	unsigned long long swap;
-+
-+	if (host_bigendian == file_bigendian)
-+		return data;
-+
-+	swap = ((data & 0xffULL) << 56) |
-+		((data & (0xffULL << 8)) << 40) |
-+		((data & (0xffULL << 16)) << 24) |
-+		((data & (0xffULL << 24)) << 8) |
-+		((data & (0xffULL << 32)) >> 8) |
-+		((data & (0xffULL << 40)) >> 24) |
-+		((data & (0xffULL << 48)) >> 40) |
-+		((data & (0xffULL << 56)) >> 56);
-+
-+	return swap;
-+}
-+
-+#define data2host2(ptr)		__data2host2(*(unsigned short *)ptr)
-+#define data2host4(ptr)		__data2host4(*(unsigned int *)ptr)
-+#define data2host8(ptr)		__data2host8(*(unsigned long long *)ptr)
-+
-+extern int header_page_ts_offset;
-+extern int header_page_ts_size;
-+extern int header_page_size_offset;
-+extern int header_page_size_size;
-+extern int header_page_data_offset;
-+extern int header_page_data_size;
-+
-+int parse_header_page(char *buf, unsigned long size);
-+
-+void read_tracing_data(void);
-+
-+#endif /* _PARSE_EVENTS_H */
+diff --git a/tools/perf/perf.c b/tools/perf/perf.c
+index 31982ad..fe4589d 100644
+--- a/tools/perf/perf.c
++++ b/tools/perf/perf.c
+@@ -292,6 +292,7 @@ static void handle_internal_command(int argc, const char **argv)
+ 		{ "top", cmd_top, 0 },
+ 		{ "annotate", cmd_annotate, 0 },
+ 		{ "version", cmd_version, 0 },
++		{ "trace", cmd_trace, 0 },
+ 	};
+ 	unsigned int i;
+ 	static const char ext[] = STRIP_EXTENSION;
+diff --git a/tools/perf/util/util.h b/tools/perf/util/util.h
+index d61a6f0..c62ef97 100644
+--- a/tools/perf/util/util.h
++++ b/tools/perf/util/util.h
+@@ -311,6 +311,7 @@ static inline int has_extension(const char *filename, const char *ext)
+ #undef isspace
+ #undef isdigit
+ #undef isalpha
++#undef isprint
+ #undef isalnum
+ #undef tolower
+ #undef toupper
 -- 
 1.6.2.3
 
