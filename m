@@ -1,70 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750963AbZHQEYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751000AbZHQE1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750963AbZHQEYp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 00:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbZHQEYo
+	id S1751000AbZHQE1A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 00:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750818AbZHQE07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 00:24:44 -0400
-Received: from smtp.infotech.no ([82.134.31.41]:57243 "EHLO elrond.infotech.no"
+	Mon, 17 Aug 2009 00:26:59 -0400
+Received: from cantor.suse.de ([195.135.220.2]:55867 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750800AbZHQEYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 00:24:43 -0400
-Message-ID: <4A88DB77.2070304@interlog.com>
-Date: Mon, 17 Aug 2009 00:24:23 -0400
-From: Douglas Gilbert <dgilbert@interlog.com>
-Reply-To: dgilbert@interlog.com
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	id S1750703AbZHQE07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 00:26:59 -0400
+Date: Sun, 16 Aug 2009 21:20:10 -0700
+From: Greg KH <gregkh@suse.de>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/22] Staging: rt{286,287,307}0: various fixes/cleanups
+Message-ID: <20090817042010.GA20673@suse.de>
+References: <20090816192934.3789.3648.sendpatchset@localhost.localdomain>
+ <1250480865.7243.15.camel@marge.simson.net>
+ <1250481471.7243.19.camel@marge.simson.net>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: James Bottomley <James.Bottomley@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
-       Chris Worley <worleys@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
-       Bryan Donlan <bdonlan@gmail.com>, david@lang.hm,
-       Greg Freemyer <greg.freemyer@gmail.com>,
-       Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
- slot is freed)
-References: <4A85E0DC.9040101@rtr.ca> <f3177b9e0908141621j15ea96c0s26124d03fc2b0acf@mail.gmail.com> <20090814234539.GE27148@parisc-linux.org> <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com> <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca> <1250344518.4159.4.camel@mulgrave.site> <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk> <20090816083434.2ce69859@infradead.org> <1250437927.3856.119.camel@mulgrave.site> <20090816165943.GA26983@infradead.org>
-In-Reply-To: <20090816165943.GA26983@infradead.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250481471.7243.19.camel@marge.simson.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Sun, Aug 16, 2009 at 10:52:07AM -0500, James Bottomley wrote:
->> However, the enterprise has been doing UNMAP for a while, so we can draw
->> inferences from them since the SSD FTL will operate similarly.  For
->> them, UNMAP is the same cost in terms of time regardless of the number
->> of extents.  The reason is that it's moving the blocks from the global
->> in use list to the global free list.  Part of the problem is that this
->> involves locking and quiescing, so UNMAP ends up being quite expensive
->> to the array but constant in terms of cost (hence they want as few
->> unmaps for as many sectors as possible).
+On Mon, Aug 17, 2009 at 05:57:51AM +0200, Mike Galbraith wrote:
+> devel@driverdev.osuosl.org seems to make replies arrive only
+> at /dev/null, so I'll try again without.
 > 
-> How are they doing the unmaps?  Using something similar to Mark's wiper
-> script and using SG_IO?  Because right now we do not actually implement
-> UNMAP support in the kernel.  I'd really love to test the XFS batched
-> discard support with a real UNMAP implementation.
+> Hi. This is the qmail-send program at mail.gmx.net.
+> I'm afraid I wasn't able to deliver your message to the following addresses.
+> This is a permanent error; I've given up. Sorry it didn't work out.
+> 
+> <devel@driverdev.osuosl.org>:
+> 140.211.166.17_does_not_like_recipient./Remote_host_said:_550_5.1.1_<devel@driverdev.osuosl.org>:_Recipient_address_rejected:_User_unknown_in_virtual_alias_table/Giving_up_on_140.211.166.17./
 
-The sg3_utils version 1.28 beta at http://sg.danny.cz/sg/
-has a new sg_unmap utility and the previous release
-included sg_write_same with Unmap bit support.
-sg_readcap has been updated to show the TPE and TPRZ bits.
+Yeah, we are having major postfix problems, people are still working on
+it :(
 
-There is a new SCSI GET LBA STATUS command coming
-(approved at the last t10 meeting, awaiting the next
-SBC-3 draft). That will show the mapped/unmapped
-status of logical blocks in a range of LBAs. I can
-add a utility for that as well.
+thanks,
 
-Doug Gilbert
-
+greg k-h
