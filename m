@@ -1,124 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbZHQWHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbZHQWIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758236AbZHQWHj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 18:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932428AbZHQWHh
+	id S1758240AbZHQWIK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 18:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbZHQWIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 18:07:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49478 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932448AbZHQWHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 18:07:33 -0400
-Date: Mon, 17 Aug 2009 22:06:56 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
-       peterz@infradead.org, efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1250543271-8383-4-git-send-email-fweisbec@gmail.com>
-References: <1250543271-8383-4-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/tracing] perf tools: Make trace event format parser aware of cast to pointers
-Message-ID: <tip-3f9edc2382d5f7c97c693838abb207a9d6bab1fa@git.kernel.org>
-Git-Commit-ID: 3f9edc2382d5f7c97c693838abb207a9d6bab1fa
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 17 Aug 2009 22:06:57 +0000 (UTC)
+	Mon, 17 Aug 2009 18:08:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35142 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752630AbZHQWII (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 18:08:08 -0400
+Date: Mon, 17 Aug 2009 15:05:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: djwong@us.ibm.com
+Cc: lenb@kernel.org, linux-acpi@vger.kernel.org, rui.zhang@intel.com,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [PATCH v2] acpi_power_meter: hwmon driver for ACPI 4.0 power
+ meters
+Message-Id: <20090817150558.3468426b.akpm@linux-foundation.org>
+In-Reply-To: <20090806204255.GD14694@plum>
+References: <20090725004322.20709.96804.stgit@elm3a70.beaverton.ibm.com>
+	<20090725004335.20709.52288.stgit@elm3a70.beaverton.ibm.com>
+	<alpine.LFD.2.00.0907272124110.4445@localhost.localdomain>
+	<20090803205812.GC14694@plum>
+	<20090806204255.GD14694@plum>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3f9edc2382d5f7c97c693838abb207a9d6bab1fa
-Gitweb:     http://git.kernel.org/tip/3f9edc2382d5f7c97c693838abb207a9d6bab1fa
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Mon, 17 Aug 2009 23:07:51 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 18 Aug 2009 00:00:19 +0200
+On Thu, 6 Aug 2009 13:42:57 -0700
+"Darrick J. Wong" <djwong@us.ibm.com> wrote:
 
-perf tools: Make trace event format parser aware of cast to pointers
+> This driver exposes ACPI 4.0 compliant power meters as hardware monitoring
+> devices.  This second revision of the driver also exports the ACPI string
+> info as sysfs attributes, a list of the devices that the meter measures,
+> and will send ACPI notifications over the ACPI netlink socket.
+> 
+>
+> ...
+>
+> +static ssize_t set_avg_interval(struct device *dev,
+> +				struct device_attribute *devattr,
+> +				const char *buf, size_t count)
+> +{
+> +	struct acpi_device *acpi_dev = to_acpi_device(dev);
+> +	struct acpi_power_meter_resource *resource = acpi_dev->driver_data;
+> +	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
+> +	struct acpi_object_list args = { 1, &arg0 };
+> +	int res;
+> +	unsigned long temp;
+> +	unsigned long long data;
+> +	acpi_status status;
+> +
+> +	res = strict_strtoul(buf, 10, &temp);
+> +	if (res)
+> +		return res;
+> +
+> +	if (temp > resource->caps.max_avg_interval ||
+> +	    temp < resource->caps.min_avg_interval)
+> +		return -EINVAL;
+> +	arg0.integer.value = temp;
+> +
+> +	mutex_lock(&resource->lock);
+> +	status = acpi_evaluate_integer(resource->acpi_dev->handle, "_PAI",
+> +				       &args, &data);
+> +	if (!ACPI_FAILURE(status))
+> +		resource->avg_interval = temp;
+> +	mutex_unlock(&resource->lock);
+> +
+> +	if (ACPI_FAILURE(status)) {
+> +		ACPI_EXCEPTION((AE_INFO, status, "Evaluating _PAI"));
+> +		return -EINVAL;
+> +	}
+> +
+> +	if (data)
+> +		return -EINVAL;
 
-The ftrace event format parser handles the usual casts but not
-the cast to pointers. Such casts have been introduced recently
-with the module trace events and raise the following parsing
-error:
+I find this test of `data' inexplicable.  Is it just me, or do we need
+a comment here?
 
-	Fatal: bad op token )
+> +	return count;
+> +}
+> +
+>
+> ...
+>
+> +static ssize_t set_cap(struct device *dev, struct device_attribute *devattr,
+> +		       const char *buf, size_t count)
+> +{
+> +	struct acpi_device *acpi_dev = to_acpi_device(dev);
+> +	struct acpi_power_meter_resource *resource = acpi_dev->driver_data;
+> +	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
+> +	struct acpi_object_list args = { 1, &arg0 };
+> +	int res;
+> +	unsigned long temp;
+> +	unsigned long long data;
+> +	acpi_status status;
+> +
+> +	res = strict_strtoul(buf, 10, &temp);
+> +	if (res)
+> +		return res;
+> +
+> +	temp /= 1000;
+> +	if (temp > resource->caps.max_cap || temp < resource->caps.min_cap)
+> +		return -EINVAL;
+> +	arg0.integer.value = temp;
+> +
+> +	mutex_lock(&resource->lock);
+> +	status = acpi_evaluate_integer(resource->acpi_dev->handle, "_SHL",
+> +				       &args, &data);
+> +	if (!ACPI_FAILURE(status))
+> +		resource->cap = temp;
+> +	mutex_unlock(&resource->lock);
+> +
+> +	if (ACPI_FAILURE(status)) {
+> +		ACPI_EXCEPTION((AE_INFO, status, "Evaluating _SHL"));
+> +		return -EINVAL;
+> +	}
+> +
+> +	if (data)
+> +		return -EINVAL;
 
-This is because it considers the "*" character as a binary
-operator. Make it then aware of casts to pointers.
+ditto.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <1250543271-8383-4-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> +	return count;
+> +}
+> +
 
-
----
- tools/perf/util/trace-event-parse.c |   31 +++++++++++++++++++++++++++----
- 1 files changed, 27 insertions(+), 4 deletions(-)
-
-diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
-index ead6a9a..b53b27f 100644
---- a/tools/perf/util/trace-event-parse.c
-+++ b/tools/perf/util/trace-event-parse.c
-@@ -1462,6 +1462,7 @@ process_paren(struct event *event, struct print_arg *arg, char **tok)
- {
- 	struct print_arg *item_arg;
- 	enum event_type type;
-+	int ptr_cast = 0;
- 	char *token;
- 
- 	type = process_arg(event, arg, &token);
-@@ -1469,11 +1470,26 @@ process_paren(struct event *event, struct print_arg *arg, char **tok)
- 	if (type == EVENT_ERROR)
- 		return EVENT_ERROR;
- 
--	if (type == EVENT_OP)
--		type = process_op(event, arg, &token);
-+	if (type == EVENT_OP) {
-+		/* handle the ptr casts */
-+		if (!strcmp(token, "*")) {
-+			/*
-+			 * FIXME: should we zapp whitespaces before ')' ?
-+			 * (may require a peek_token_item())
-+			 */
-+			if (__peek_char() == ')') {
-+				ptr_cast = 1;
-+				free_token(token);
-+				type = read_token_item(&token);
-+			}
-+		}
-+		if (!ptr_cast) {
-+			type = process_op(event, arg, &token);
- 
--	if (type == EVENT_ERROR)
--		return EVENT_ERROR;
-+			if (type == EVENT_ERROR)
-+				return EVENT_ERROR;
-+		}
-+	}
- 
- 	if (test_type_token(type, token, EVENT_DELIM, (char *)")")) {
- 		free_token(token);
-@@ -1499,6 +1515,13 @@ process_paren(struct event *event, struct print_arg *arg, char **tok)
- 		item_arg = malloc_or_die(sizeof(*item_arg));
- 
- 		arg->type = PRINT_TYPE;
-+		if (ptr_cast) {
-+			char *old = arg->atom.atom;
-+
-+			arg->atom.atom = malloc_or_die(strlen(old + 3));
-+			sprintf(arg->atom.atom, "%s *", old);
-+			free(old);
-+		}
- 		arg->typecast.type = arg->atom.atom;
- 		arg->typecast.item = item_arg;
- 		type = process_arg_token(event, item_arg, &token, type);
