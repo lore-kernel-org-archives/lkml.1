@@ -1,143 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758268AbZHQWkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbZHQWnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758268AbZHQWkk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 18:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758235AbZHQWkj
+	id S1754056AbZHQWnY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 18:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZHQWnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 18:40:39 -0400
-Received: from casper.infradead.org ([85.118.1.10]:51847 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757940AbZHQWki (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 18:40:38 -0400
-Date: Mon, 17 Aug 2009 23:40:38 +0100 (BST)
-From: Alexey Korolev <akorolev@infradead.org>
-To: mel@csn.ul.ie, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3]HTLB mapping for drivers. Hstate for files with hugetlb
- mapping(take 2)
-Message-ID: <alpine.LFD.2.00.0908172333410.32114@casper.infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 17 Aug 2009 18:43:23 -0400
+Received: from kroah.org ([198.145.64.141]:41613 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751777AbZHQWnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 18:43:23 -0400
+Date: Mon, 17 Aug 2009 15:42:03 -0700
+From: Greg KH <greg@kroah.com>
+To: linux-usb@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: usbutils 0.86 release
+Message-ID: <20090817224203.GA6111@kroah.com>
+References: <20090817223626.GA5826@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-SRS-Rewrite: SMTP reverse-path rewritten from <akorolev@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090817223626.GA5826@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch slightly modifies the procedure for getting hstate from inode.
-If inode correspond to hugetlbfs - the hugetlbfs hstate will be returned, otherwise 
-hstate of vfs mount. We need this since we can have files with hugetlb mapping which are 
-not part of hugetlbfs.
+On Mon, Aug 17, 2009 at 03:36:26PM -0700, Greg KH wrote:
+> Here's the 0.86 release of usbutils.
+> 
+> There's a few minor fixups for the usb-devices script, as well as a
+> patch to help make fetching HID descriptors a bit more robust.
+> 
+> And a number of build configuration fixes as well.
+> 
+> The tarballs can be downloaded from sf.net at:
+> 	https://sourceforge.net/project/showfiles.php?group_id=3581
+> 
+> Or directly from kernel.org now:
+> 	http://www.kernel.org/pub/linux/utils/usb/usbutils/
 
-Also this patch contains a function which reports hstate related to vfsmount as information
-about huge page size is much important for drivers.
+Ok, I take that back, they can't be downloaded from the sf.net site as I
+can't figure out how to upload a new version there with the "improved"
+interface they have now provided.
 
-Signed-off-by: Alexey Korolev <akorolev@infradead.org>
+So for the near future, usbutils releases will be found on kernel.org as
+it's just so damm simpler than a 4-part multi-form-javascript-lunacy
+that sf.net seems to now rely on.
 
----
- fs/hugetlbfs/inode.c    |   16 +++++++++++-----
- include/linux/hugetlb.h |   16 ++++++++++++++--
- 2 files changed, 25 insertions(+), 7 deletions(-)
+thanks,
 
-diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-index f53cf64..6510acc 100644
---- a/fs/hugetlbfs/inode.c
-+++ b/fs/hugetlbfs/inode.c
-@@ -34,9 +34,6 @@
- 
- #include <asm/uaccess.h>
- 
--/* some random number */
--#define HUGETLBFS_MAGIC	0x958458f6
--
- static const struct super_operations hugetlbfs_ops;
- static const struct address_space_operations hugetlbfs_aops;
- const struct file_operations hugetlbfs_file_operations;
-@@ -50,6 +47,8 @@ static struct backing_dev_info hugetlbfs_backing_dev_info = {
- 
- int sysctl_hugetlb_shm_group;
- 
-+struct vfsmount *hugetlbfs_vfsmount;
-+
- enum {
- 	Opt_size, Opt_nr_inodes,
- 	Opt_mode, Opt_uid, Opt_gid,
-@@ -928,13 +927,20 @@ static struct file_system_type hugetlbfs_fs_type = {
- 	.kill_sb	= kill_litter_super,
- };
- 
--static struct vfsmount *hugetlbfs_vfsmount;
--
- static int can_do_hugetlb_shm(void)
- {
- 	return capable(CAP_IPC_LOCK) || in_group_p(sysctl_hugetlb_shm_group);
- }
- 
-+struct hstate *hugetlb_vfsmount_hstate(void)
-+{
-+	struct hugetlbfs_sb_info *hsb;
-+
-+	hsb = HUGETLBFS_SB(hugetlbfs_vfsmount->mnt_root->d_sb);
-+	return hsb->hstate;
-+}
-+EXPORT_SYMBOL(hugetlb_vfsmount_hstate);
-+
- struct file *hugetlb_file_setup(const char *name, size_t size, int acctflag)
- {
- 	int error = -ENOMEM;
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index e42fa32..e132a61 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -8,6 +8,7 @@
- #include <linux/mempolicy.h>
- #include <linux/shm.h>
- #include <asm/tlbflush.h>
-+#include <linux/mount.h>
- 
- struct ctl_table;
- 
-@@ -110,6 +111,10 @@ static inline void hugetlb_report_meminfo(struct seq_file *m)
- #endif /* !CONFIG_HUGETLB_PAGE */
- 
- #ifdef CONFIG_HUGETLBFS
-+
-+/* some random number */
-+#define HUGETLBFS_MAGIC	0x958458f6
-+
- struct hugetlbfs_config {
- 	uid_t   uid;
- 	gid_t   gid;
-@@ -222,11 +227,17 @@ extern unsigned int default_hstate_idx;
- 
- #define default_hstate (hstates[default_hstate_idx])
- 
-+struct hstate *hugetlb_vfsmount_hstate(void);
-+
- static inline struct hstate *hstate_inode(struct inode *i)
- {
- 	struct hugetlbfs_sb_info *hsb;
--	hsb = HUGETLBFS_SB(i->i_sb);
--	return hsb->hstate;
-+
-+	if (i->i_sb->s_magic == HUGETLBFS_MAGIC) {
-+		hsb = HUGETLBFS_SB(i->i_sb);
-+		return hsb->hstate;
-+	}
-+	return hugetlb_vfsmount_hstate();
- }
- 
- static inline struct hstate *hstate_file(struct file *f)
-@@ -282,6 +293,7 @@ static inline struct hstate *page_hstate(struct page *page)
- 
- #else
- struct hstate {};
-+#define hugetlb_vfsmount_hstate() NULL
- #define hugetlb_alloc_pages_immediate(h, n, m) NULL
- #define hugetlb_free_pages_immediate(h, p)
- #define alloc_bootmem_huge_page(h) NULL
--- 
-
-Alternativelly the patch is available here:
-http://git.infradead.org/users/akorolev/mm-patches.git/commit/b3eca27294ae47e78234bd8ec87c356998be969a
+greg k-h
