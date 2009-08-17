@@ -1,96 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758228AbZHQWYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758111AbZHQW0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758228AbZHQWYb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 18:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbZHQWYa
+	id S1758111AbZHQW0M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 18:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbZHQW0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 18:24:30 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:34503 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753344AbZHQWY3 (ORCPT
+	Mon, 17 Aug 2009 18:26:12 -0400
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:54166 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751632AbZHQW0L convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 18:24:29 -0400
-Subject: Re: clocksource changes in 2.6.31 - possible regression
-From: john stultz <johnstul@us.ibm.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090817144546.7f1d6572@nehalam>
-References: <20090817090319.20979986@nehalam>
-	 <1250531337.26171.12.camel@work-vm>	<20090817110127.40ee5c29@nehalam>
-	 <1250532954.26171.35.camel@work-vm>	<20090817112704.2b4b2987@nehalam>
-	 <1250543459.7212.41.camel@localhost.localdomain>
-	 <1250545077.7212.49.camel@localhost.localdomain>
-	 <20090817144546.7f1d6572@nehalam>
-Content-Type: text/plain
-Date: Mon, 17 Aug 2009 15:23:22 -0700
-Message-Id: <1250547802.7212.82.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Aug 2009 18:26:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=qOuYUU2Apy4d74lZBPAQNtIW4V7l0JTNz8bK6zom15Ce6GUqv+ri/U8hWYY7WS6r7Q
+         zsF96/kcaKq8PKX1zVvH2NuUZY/+JHK+P0Use8ywfTxWOPo/g/URHKG1xvo1yvo1fLmU
+         mkeR8kd4PdtANKXH1P31f7E/EbV2RV9NyICz0=
+MIME-Version: 1.0
+Reply-To: eranian@gmail.com
+In-Reply-To: <20090817171605.GB15907@redhat.com>
+References: <20090730192040.GA9503@redhat.com>
+	 <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins>
+	 <20090731141122.a1939712.akpm@linux-foundation.org>
+	 <7c86c4470908030553v5a0a4448p94ab612700d68066@mail.gmail.com>
+	 <20090809054601.GA26152@shareable.org>
+	 <7c86c4470908100522q44dc1228i315b29d69fc98da3@mail.gmail.com>
+	 <20090810170338.GA14223@redhat.com>
+	 <7c86c4470908101401k49f42788o25eb1efaa631f065@mail.gmail.com>
+	 <20090817171605.GB15907@redhat.com>
+Date: Tue, 18 Aug 2009 00:26:11 +0200
+Message-ID: <7c86c4470908171526j60add584qfc635ba91cd4df46@mail.gmail.com>
+Subject: Re: F_SETOWN_TID: F_SETOWN was thread-specific for a while
+From: stephane eranian <eranian@googlemail.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
+       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
+       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
+       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
+       roland@redhat.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-17 at 14:45 -0700, Stephen Hemminger wrote:
-> On Mon, 17 Aug 2009 14:37:57 -0700
-> john stultz <johnstul@us.ibm.com> wrote:
-> > However, I think its fair, that as your TSC is being disqualified for
-> > being an old AMD SMP box, and there is a *possibility* that if you don't
-> > run with cpufreq and the SUMA-ness of the box didn't get in the way of
-> > TSC synchronization, you might have an argument for overriding the
-> > unsynchronized_tsc() heuristics.
-> > 
-> > Luckily the option is already there. :)
-> > 
-> > So try booting with "tsc=reliable" to override those checks, and I think
-> > you'll be able to do what you want to do.
-> > 
-> 
-> Good idea, doesn't work.
-> 
-> vyatta@amd1:~$ cat /proc/cmdline 
-> BOOT_IMAGE=/boot/vmlinuz-2.6.31-rc6 root=/dev/sda1 ro tsc=reliable
-> vyatta@amd1:~$ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
-> acpi_pm 
+Oleg,
 
-Bah! My apologies for half-assing this. 
+On Mon, Aug 17, 2009 at 7:16 PM, Oleg Nesterov<oleg@redhat.com> wrote:
+> Sorry for late reply...
+>
+> On 08/10, stephane eranian wrote:
+>>
+>> On Mon, Aug 10, 2009 at 7:03 PM, Oleg Nesterov<oleg@redhat.com> wrote:
+>> > On 08/10, stephane eranian wrote:
+>> >>
+>> >> You must use F_SETSIG on SIGIO if you want your signal handler to
+>> >> receive the file descriptor in siginfo. This is useful if you want to perform
+>> >> some actions on the descriptor. That is the case in perfmon and this is
+>> >> the case in certain situations with perfcounters as well.
+>> >>
+>> >> Setting SA_SIGINFO provides siginfo, but the si_fd field is NOT set
+>> >> correctly without F_SETSIG. I have verified this with perfcounters, and
+>> >> this is indeed the case.
+>> >>
+>> >> This behavior seems kind of odd to me.
+>> >
+>> > Agreed, this looks a bit odd. But at least this is documented. From
+>> > man 2 fcntl:
+>> >
+>> >        By using F_SETSIG with a nonzero value, and setting SA_SIGINFO for the
+>> >        signal handler (see sigac- tion(2)), extra information about I/O events
+>> >        is passed to the handler in a  siginfo_t  structure.  If  the si_code
+>> >        field indicates the source is SI_SIGIO, the si_fd field gives the file
+>> >        descriptor associated with the event.  Otherwise, there is no indication
+>> >        which file descriptors are pending,
+>> >
+>> > Not sure if it is safe to change the historical behaviour.
+>> >
+>> Don't need to change it.
+>
+> Good,
+>
+>> But for SIGIO, if you see SA_SIGINFO, then pass the si_fd.
+>
+> But this means we do change the behaviour ;) Confused.
+>
+I meant do not remove F_SETSIG and its side-effect on si_fd.
 
-How about with the following *tested* patch (includes a variant of
-Thomas' fix). 
+>
+> In any case. We should not look at SA_SIGINFO at all. If sys_sigaction() was
+> called without SA_SIGINFO, then it doesn'matter if we send SEND_SIG_PRIV or
+> siginfo_t with the correct si_fd/etc.
+>
+What's the official role of SA_SIGINFO? Pass a siginfo struct?
 
-thanks
--john
+Does POSIX describe the rules governing the content of si_fd?
+Or is si_fd a Linux-ony extension in which case it goes with F_SETSIG.
 
+> And again, this is even documented. The change is trivial but user-space
+> visible, it may confuse the (stupid) app which uses SIGIO + SA_SIGINFO
+> without F_SETSIG.
+>
+That would be an app that uses SIGINFO and fiddles with si_fd which has no
+defined content. What kind of app would that be?
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 71f4368..648fb26 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -825,6 +825,9 @@ __cpuinit int unsynchronized_tsc(void)
- 
- 	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
- 		return 0;
-+
-+	if (tsc_clocksource_reliable)
-+		return 0;
- 	/*
- 	 * Intel systems are normally all synchronized.
- 	 * Exceptions must mark TSC as unstable:
-@@ -832,10 +835,10 @@ __cpuinit int unsynchronized_tsc(void)
- 	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL) {
- 		/* assume multi socket systems are not synchronized: */
- 		if (num_possible_cpus() > 1)
--			tsc_unstable = 1;
-+			return 1;
- 	}
- 
--	return tsc_unstable;
-+	return 0;
- }
- 
- static void __init init_tsc_clocksource(void)
-
-
+It would seem natural that in the siginfo passed to the handler of SIGIO, the
+file descriptor be passed by default. That is all I am trying to say here.
