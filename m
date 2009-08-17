@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbZHQTUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753599AbZHQTYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754049AbZHQTUj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 15:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbZHQTUi
+	id S1753599AbZHQTYO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 15:24:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZHQTYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 15:20:38 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:46722 "EHLO e5.ny.us.ibm.com"
+	Mon, 17 Aug 2009 15:24:14 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34596 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753271AbZHQTUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 15:20:38 -0400
-Date: Mon, 17 Aug 2009 12:20:36 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Josh Triplett <josht@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       hugh.dickins@tiscali.co.uk, benh@kernel.crashing.org
-Subject: Re: [PATCH -tip/core/rcu 1/6] Cleanups and fixes for RCU in face
-	of heavy CPU-hotplug stress
-Message-ID: <20090817192036.GJ6760@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090815165153.GA8886@linux.vnet.ibm.com> <1250533487.2709.14.camel@josh-work.beaverton.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250533487.2709.14.camel@josh-work.beaverton.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1752690AbZHQTYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 15:24:12 -0400
+Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
+ slot is freed)
+From: James Bottomley <James.Bottomley@suse.de>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
+       Chris Worley <worleys@gmail.com>, Bryan Donlan <bdonlan@gmail.com>,
+       david@lang.hm, Greg Freemyer <greg.freemyer@gmail.com>,
+       Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
+In-Reply-To: <20090817191250.GA1816@infradead.org>
+References: <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com>
+	 <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca>
+	 <1250344518.4159.4.camel@mulgrave.site>
+	 <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk>
+	 <20090816083434.2ce69859@infradead.org>
+	 <1250437927.3856.119.camel@mulgrave.site>
+	 <20090816165943.GA26983@infradead.org>
+	 <1250517372.3844.3.camel@mulgrave.site>
+	 <20090817141038.GB11966@parisc-linux.org>
+	 <20090817191250.GA1816@infradead.org>
+Content-Type: text/plain
+Date: Mon, 17 Aug 2009 19:24:02 +0000
+Message-Id: <1250537042.7858.46.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 17, 2009 at 11:24:47AM -0700, Josh Triplett wrote:
-> On Sat, 2009-08-15 at 09:51 -0700, Paul E. McKenney wrote:
-> > These pass tests combining rcutorture and continuous CPU-hotplug
-> > operations, in other words, no sleeping between successive CPU-hotplug
-> > operations.  This set does not fix the bug involving deadlocks through
-> > rcutorture, kthread_stop(), and migration threads.  However, this bug
-> > does not affect production systems, so should not stand in the way of
-> > applying these patches.
+On Mon, 2009-08-17 at 15:12 -0400, Christoph Hellwig wrote:
+> On Mon, Aug 17, 2009 at 08:10:38AM -0600, Matthew Wilcox wrote:
+> > On Mon, Aug 17, 2009 at 08:56:12AM -0500, James Bottomley wrote:
+> > > The testing was initially done to see if the initial maximal discard
+> > > proposal from LSF09 was a viable approach (which it wasn't given the
+> > > time taken to UNMAP).
+> > 
+> > It would be nice if that feedback could be made public instead of it
+> > leaking out in dribs and drabs like this.
 > 
-> Commit 63706172f332fd3f6e7458ebfb35fa6de9c21dc5, "kthreads: rework
-> kthread_stop()", looks like it fixes kthread_stop to work concurrently.
-> That may fix the issue you observed.
+> Yeah, I don't remember hearing about anything like this either.
 
-Very cool!!!  Given that Oleg is the author, it probably also works.  :-)
+Well you were both in #storage when it got discussed on 4 May.  However,
+I'm hopeful that the array vendors will make a more direct statement of
+the capabilities shortly.
 
-							Thanx, Paul
+James
+
+
