@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757238AbZHQIAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbZHQIC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757238AbZHQIAx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 04:00:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757203AbZHQIAx
+	id S1757261AbZHQIC7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 04:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757229AbZHQIC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 04:00:53 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:13738 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757157AbZHQIAw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 04:00:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=wNHIZ54YuR2r1YKgVOcka/INIls9xoles1Boffsq/QfXzinLhjR6LywTWcGpV+oYyM
-         hkpkn6Yxujp/gfdE53ldlgeBUwt45HEiFyQrIyXHWy8k5545ZbSZlH2wjf5sVnYxg2No
-         /ZRbVehttmWySE0PacIWKtbgNY+T70H2DrfuA=
-Message-ID: <4A890E33.2080302@gmail.com>
-Date: Mon, 17 Aug 2009 10:00:51 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-7.4 Thunderbird/3.0b3
+	Mon, 17 Aug 2009 04:02:59 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34295 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757208AbZHQIC6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 04:02:58 -0400
+Date: Mon, 17 Aug 2009 08:01:39 GMT
+From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       lizf@cn.fujitsu.com, peterz@infradead.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       lizf@cn.fujitsu.com, peterz@infradead.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <4A88ED15.20800@cn.fujitsu.com>
+References: <4A88ED15.20800@cn.fujitsu.com>
+Subject: [tip:core/locking] lockdep: Fix missing entry in /proc/lock_stat
+Message-ID: <tip-212274347fc4d2a7c56bf6c953b02c809e7e0be1@git.kernel.org>
+Git-Commit-ID: 212274347fc4d2a7c56bf6c953b02c809e7e0be1
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-CC: akpm@linux-foundation.org, andi@firstfloor.org, rpjday@crashcourse.ca,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] VIDEO: console, use DIV_ROUND_UP
-References: <20090817073147.GA2967@localdomain.by> <1250495293-13035-1-git-send-email-jirislaby@gmail.com> <20090817080023.GB2967@localdomain.by>
-In-Reply-To: <20090817080023.GB2967@localdomain.by>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 17 Aug 2009 08:01:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/17/2009 10:00 AM, Sergey Senozhatsky wrote:
-> So... In general, ((vc->vc_font.width + 7) >> 3) ==  DIV_ROUND_UP(vc->vc_font.width, 8) - 1;
+Commit-ID:  212274347fc4d2a7c56bf6c953b02c809e7e0be1
+Gitweb:     http://git.kernel.org/tip/212274347fc4d2a7c56bf6c953b02c809e7e0be1
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Mon, 17 Aug 2009 13:39:33 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 17 Aug 2009 09:54:39 +0200
 
-?
+lockdep: Fix missing entry in /proc/lock_stat
 
-#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+One entry is missing in the output of /proc/lock_stat.
 
-DIV_ROUND_UP(vc->vc_font.width, 8) expands to:
-(((vc->vc_font.width) + (8) - 1) / (8))
-which is pretty printed:
-(vc->vc_font.width + 7) / 8
-and that's equivalent to:
-(vc->vc_font.width + 7) >> 3
+The cause is, when ls_start() is called the 2nd time, we should
+start from stats[@pos-1] but not stats[@pos], because pos == 0
+is the header.
 
-Correct?
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <4A88ED15.20800@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> Are you sure we really can use DIV_ROUND_UP?
 
-Yeah, pretty sure.
+---
+ kernel/lockdep_proc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
+index fba81f1..5dbe30b 100644
+--- a/kernel/lockdep_proc.c
++++ b/kernel/lockdep_proc.c
+@@ -634,7 +634,7 @@ static void *ls_start(struct seq_file *m, loff_t *pos)
+ 	if (*pos == 0)
+ 		return SEQ_START_TOKEN;
+ 
+-	data->iter = data->stats + *pos;
++	data->iter = data->stats + (*pos - 1);
+ 	if (data->iter >= data->iter_end)
+ 		data->iter = NULL;
+ 
