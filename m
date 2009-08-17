@@ -1,119 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbZHQIbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbZHQIeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757404AbZHQIbv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 04:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757212AbZHQIbu
+	id S1757413AbZHQIeO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 04:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbZHQIeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 04:31:50 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:63165 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757189AbZHQIbt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 04:31:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=uQJtv4+iyfZChQBrvgSb9wbq3OotV6MYSrofst6pkK5SJwsgJ7s222nt55Whf8WEN2
-         TcwHz/HF6GndtErOEBCnLNwsV4LK2ItnPtKekIdjYup3HiOE1H+aSJSGybRQ1q6kvzdM
-         RWjHCZpfUTg5XkFiIZLmoh0fG+ME6+PqrIAYM=
-Date: Mon, 17 Aug 2009 16:34:04 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Tatsuhiro Aoshima <tatsu.pc@gmail.com>,
-       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>, albert@users.sf.net
-Subject: Re: [PATCH] proc: let task status file print utime and stime.
-Message-ID: <20090817083404.GC5868@cr0.nay.redhat.com>
-References: <20090815233629.A067.A69D9226@jp.fujitsu.com> <20090817023802.GF5039@cr0.nay.redhat.com> <20090817114242.1419bd1f.kamezawa.hiroyu@jp.fujitsu.com> <20090817061821.GM5039@cr0.nay.redhat.com> <20090817152206.50c35330.kamezawa.hiroyu@jp.fujitsu.com> <20090817063202.GO5039@cr0.nay.redhat.com> <20090817153253.52bf9c69.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090817153253.52bf9c69.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 17 Aug 2009 04:34:14 -0400
+Received: from mga02.intel.com ([134.134.136.20]:24845 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757147AbZHQIeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 04:34:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,394,1246863600"; 
+   d="scan'208";a="439552978"
+Subject: Re: [PATCH 0/3] Generic sysfs support for ACPI ALS and other ALS
+	devices
+From: Zhang Rui <rui.zhang@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Richard Purdie <rpurdie@rpsys.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <greg@kroah.com>
+In-Reply-To: <20090806095258.GA31370@elf.ucw.cz>
+References: <1249290657.2670.250.camel@rzhang-dt>
+	 <20090804132129.GH18974@elf.ucw.cz> <1249434170.2670.386.camel@rzhang-dt>
+	 <20090805161931.GA9749@elf.ucw.cz> <1249522879.2670.480.camel@rzhang-dt>
+	 <20090806071353.GB21847@elf.ucw.cz> <1249548430.2670.517.camel@rzhang-dt>
+	 <20090806095258.GA31370@elf.ucw.cz>
+Content-Type: text/plain
+Date: Mon, 17 Aug 2009 16:32:43 +0800
+Message-Id: <1250497963.5351.33.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 17, 2009 at 03:32:53PM +0900, KAMEZAWA Hiroyuki wrote:
->On Mon, 17 Aug 2009 14:32:02 +0800
->Amerigo Wang <xiyou.wangcong@gmail.com> wrote:
->
->> On Mon, Aug 17, 2009 at 03:22:06PM +0900, KAMEZAWA Hiroyuki wrote:
->> >On Mon, 17 Aug 2009 14:18:21 +0800
->> >Amerigo Wang <xiyou.wangcong@gmail.com> wrote:
->> >
->> >> Ah... in fact, I expected 'ps' can report this, however, surprisingly
->> >> it doesn't have this, at least not what I expect (unless I miss
->> >> something obvious).
->> >> 
->> >> 
->> >> >
->> >> >In another thinking, in old days, /proc/<pid>/stat was enough because most of
->> >> >users uses scanf() or some C langage to read fixed-format data.
->> >> >/proc/<pid>/status is useful for some script languages which has 
->> >> >good parser per line. 
->> >> >
->> >> 
->> >> Well... I think this work should be left to 'ps', e.g.
->> >> 
->> >>   ps -o pid,utime,stime
->> >> 
->> >> 'ps' is responsible to read /proc/<pid>/stat for the user.
->> >> 
->> >Hmm, personally, I don't like 'ps' and its unified filter.
->> >
->> >When I want to know status of a process of PID,
->> ># ps -o pid,utime,stime  PID
->> >
->> >'ps' scans *all* process and filter PID. (try #strace ps)
->> >I like checking /proc/<pid>/<something> without 'ps' in an environment
->> >where thousands of processes runs.
->> 
->> Sure, we already have '-p' for 'ps', e.g.
->> 
->>  ps -p 1 -o pid,user,comm
->> 
->> Enjoy. :-)
->I said it's verrrrry slow.
+On Thu, 2009-08-06 at 17:52 +0800, Pavel Machek wrote:
+> Hi!
+> 
+> > > Yes, so just export
+> > > 
+> > > ALS exports
+> > > 1. the current ambient light illuminance
+> > > 2. the current mapped ambient light illuminance
+> > > 
+> > In fact, only one attribute is enough.
+> 
+> Good. (I thought you would want to export the 1) too, mainly for debugging).
+> 
+> > The ALS driver can query the current illuminance, parse the mapping and
+> > only export the display luminance adjustment values to user space.
+> 
+> > then user space just needs to
+> > 1. set a brightness level as the base point
+> > 2. get the display adjustment value and calculate a proper brightness
+> > level at any time.
+> > 
+> > this is easier, but it makes me feel that this doesn't look like an
+> > _ALS_ device any more.
+> > We still should export some ALS properties to user space, shouldn't
+> > we?
+> 
+> Why? Just because ACPI specs is ugly does not mean we should make
+> Linux ugly, too. Please just use suggestion above.
+> 
+> > Could you please look at the documentation about ALS sysfs class in the
+> > patch I sent out just now, and comment on that one please? thanks!
+> 
+> I did. The interface is too ugly to live.
+
+Hi, Pavel,
+
+I tried to convert the ALS sysfs I/F to two attributes only, i.e.
+illuminance and adjustment.
+But I found several potential problems.
+1. the illuminance to display adjustment mappings can not be convert to
+a brightness level smoothly.
+for example,
+	illuminance	adjustment
+1	600		70
+2	900		100
+3	1500		120
+when the current illuminance is not one of the values listed in the
+mappings, e.g. 750, the ALS driver don't have enough knowledge to get
+the proper display adjustment, especially that a proper display
+adjustment would be easy to select a proper brightness level.
+We'd better leave this to user space, which is more flexible.
+2. I don't know if there will be laptops exporting buggy mappings that
+needs to be overridden some day, but the current sysfs I/F is easy for
+expanding.
+what do you think?
+
+thanks,
+rui
 
 
-Hmm, for me it looks like that 'ps' should be fixed...
 
-I haven't checked the source code of 'ps', but I don't think
-this is O(n) if '-p' is specified. If we just use something
-like 'test -d /proc/<pid>' it would be O(1).
+> 								Pavel
+> 
 
-
->
->> 
->> Anyway, I would like to see 'ps' to have 'utime,stime' field, on
->> my machine, its output for 'utime,stime' looks wrong.
->> 
->> Maybe we should Cc procps developers?
->ya, maybe. it's good to be CCed.
-
-
-Done. Albert?
-
-
->
->
->BTW, why all other status
->Name:   cat
->State:  R (running)
->Tgid:   7068
->Pid:    7068
->PPid:   6115
->TracerPid:      0
->Uid:    500     500     500     500
->Gid:    500     500     500     500
->FDSize: 256
->Groups: 500
->
->are allowed to be duplicated ?
-
-
-I don't know... :( I still prefer to use 'ps'.
