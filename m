@@ -1,208 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757785AbZHQL0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757792AbZHQL1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757785AbZHQL0c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 07:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757765AbZHQL0b
+	id S1757792AbZHQL1l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 07:27:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757750AbZHQL1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 07:26:31 -0400
-Received: from mga05.intel.com ([192.55.52.89]:14421 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757753AbZHQL0a (ORCPT
+	Mon, 17 Aug 2009 07:27:40 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:24116 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757720AbZHQL1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 07:26:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,396,1246863600"; 
-   d="scan'208";a="717436275"
-Date: Mon, 17 Aug 2009 13:28:40 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Linus Walleij <linus.walleij@stericsson.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MFD AB3100 OTP readout
-Message-ID: <20090817112839.GC3228@sortiz.org>
-References: <1250494649-13361-1-git-send-email-linus.walleij@stericsson.com>
+	Mon, 17 Aug 2009 07:27:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=UwD0cI9lF2kgBx6EirtO5kf/iB9GDxZKZN0SQJ5+C9S92O/KcR5sn77SzM5jKFGsD+
+         N46eoTLi3nxi1akKFaYMHf4rGeg3JXkrQ3HP2ts5T8oLgtc+CpnoDQogTi+pAJtDzSNK
+         tetZmhrZuhJa+6WtImjBCEDTEnUtvp6Z07Bhc=
+Date: Mon, 17 Aug 2009 14:30:59 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: "Brown, Len" <len.brown@intel.com>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: acpi_ex_system_memory_space_handler oops
+Message-ID: <20090817113059.GA3245@localdomain.by>
+References: <20090812201034.GA2983@localdomain.by>
+ <1250498613.28336.68.camel@minggr.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Dxnq1zWXvFF0Q93v"
 Content-Disposition: inline
-In-Reply-To: <1250494649-13361-1-git-send-email-linus.walleij@stericsson.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1250498613.28336.68.camel@minggr.sh.intel.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-On Mon, Aug 17, 2009 at 09:37:29AM +0200, Linus Walleij wrote:
-> This adds the ability to read out OTP (One-Time Programmable)
-> registers in the AB3100 MFD ASIC. It's a simple sysfs file you
-> can cat to prompt. The OTP registers of the AB3100 are used to
-> store various device-unique information such as customer ID,
-> product flags and the 3GPP standard IMEI (International Mobile
-> Equipment Indentity) number.
-2 comments on this patch:
+--Dxnq1zWXvFF0Q93v
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-1) The sysfs rule of thumb is "1 value per file" (see
-Documentation/filesystems/sysfs.txt". So if you want to use sysfs for that you
-should split your register reads into several sysfs entries.
-It seems to me that debugfs would be a more appropriate tool for what you're
-trying to achieve.
+On (08/17/09 16:43), Lin Ming wrote:
+> On Thu, 2009-08-13 at 04:10 +0800, Sergey Senozhatsky wrote:
+> > [    0.205668] ACPI Error (dswload-0790): [PCFG] Namespace lookup failu=
+re, AE_ALREADY_EXISTS
+> > [    0.205899] ACPI Exception: AE_ALREADY_EXISTS, During name lookup/ca=
+talog 20090521 psloop-227
+> > [    0.206124] ACPI Error (psparse-0537): Method parse/execution failed=
+ [\_SB_.RBPE] (Node f7017678), AE_ALREADY_EXISTS
+> > [    0.206417] ACPI: Marking method RBPE as Serialized because of AE_AL=
+READY_EXISTS error
+> > [    0.206773] ACPI Error (psparse-0537): Method parse/execution failed=
+ [\_SB_.PCI0.P0P4.XCRD._STA] (Node f7015648), AE_ALREADY_EXISTS
+> > [    0.207070] ACPI: Marking method _STA as Serialized because of AE_AL=
+READY_EXISTS error
+> > [    0.207326] ACPI Error (uteval-0256): Method execution failed [\_SB_=
+=2EPCI0.P0P4.XCRD._STA] (Node f7015648), AE_ALREADY_EXISTS
+> > [    0.213503] ACPI Error: Could not map memory at 0000000000000000, si=
+ze 0 20090521 exregion-173
+> > [    0.213734] ACPI Exception: AE_NO_MEMORY, Returned by Handler for [S=
+ystemMemory] 20090521 evregion-424
+> > [    0.213963] ACPI Error (psparse-0537): Method parse/execution failed=
+ [\_SB_.RBPE] (Node f7017678), AE_NO_MEMORY
+> > [    0.214286] ACPI Error (psparse-0537): Method parse/execution failed=
+ [\_GPE._L01] (Node f701d198), AE_NO_MEMORY
+> > [    0.214616] ACPI Exception: AE_NO_MEMORY, while evaluating GPE metho=
+d [_L01] 20090521 evgpe-568
+> > [    0.216428] PCI: MCFG area at e0000000 reserved in ACPI motherboard =
+resources
+> > [    0.216523] PCI: updated MCFG configuration 0: base e0000000 segment=
+ 0 buses 0 - 63
+> > [    0.216627] PCI: Using MMCONFIG for extended config space
+>=20
+> Hi, Sergey
+>
+Hi, Lin
+=20
+> 2. Debug kernel patch
+>=20
+> Currently, we exit the interpreter when setup region, because it may
+> execute control methods, such as _REG.
+>=20
+> The attached debug kernel patch (region-debug.patch) don't exit the
+> interpreter if the region is temporary, namely, it is defined inside a
+> method.
+>=20
 
-2) You really dont need to register a new driver just for adding some sysfs or
-debugfs entries. Your ab3100_otp_probe() routine could just be called by your
-ab3100_probe routine, or added to the ab3100_setup_debugfs() one. 
+rc6-git2
+25 successful reboots.
 
-Cheers,
-Samuel.
+I'll need some more time to test against rc5.
 
-> Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
-> ---
->  drivers/mfd/Makefile     |    2 +-
->  drivers/mfd/ab3100-otp.c |  123 ++++++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 124 insertions(+), 1 deletions(-)
->  create mode 100644 drivers/mfd/ab3100-otp.c
-> 
-> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-> index 6f8a9a1..13128b4 100644
-> --- a/drivers/mfd/Makefile
-> +++ b/drivers/mfd/Makefile
-> @@ -43,4 +43,4 @@ obj-$(CONFIG_PMIC_DA903X)	+= da903x.o
->  obj-$(CONFIG_MFD_PCF50633)	+= pcf50633-core.o
->  obj-$(CONFIG_PCF50633_ADC)	+= pcf50633-adc.o
->  obj-$(CONFIG_PCF50633_GPIO)	+= pcf50633-gpio.o
-> -obj-$(CONFIG_AB3100_CORE)	+= ab3100-core.o
-> +obj-$(CONFIG_AB3100_CORE)	+= ab3100-core.o ab3100-otp.o
-> diff --git a/drivers/mfd/ab3100-otp.c b/drivers/mfd/ab3100-otp.c
-> new file mode 100644
-> index 0000000..48d998c
-> --- /dev/null
-> +++ b/drivers/mfd/ab3100-otp.c
-> @@ -0,0 +1,123 @@
-> +/*
-> + * drivers/mfd/ab3100_otp.c
-> + *
-> + * Copyright (C) 2007-2009 ST-Ericsson AB
-> + * License terms: GNU General Public License (GPL) version 2
-> + * Driver to read out OTP from the AB3100 Mixed-signal circuit
-> + * Author: Linus Walleij <linus.walleij@stericsson.com>
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/mfd/ab3100.h>
-> +
-> +/* The OTP registers */
-> +#define AB3100_OTP0		0xb0
-> +#define AB3100_OTP1		0xb1
-> +#define AB3100_OTP2		0xb2
-> +#define AB3100_OTP3		0xb3
-> +#define AB3100_OTP4		0xb4
-> +#define AB3100_OTP5		0xb5
-> +#define AB3100_OTP6		0xb6
-> +#define AB3100_OTP7		0xb7
-> +#define AB3100_OTPP		0xbf
-> +
-> +static ssize_t show_otp(struct device *dev,
-> +			struct device_attribute *attr, char *buf)
-> +{
-> +	struct ab3100 *ab = dev_get_drvdata(dev);
-> +	u8 otpval[8];
-> +	u8 otpp;
-> +	u16 cid; /* Customer ID */
-> +	u32 tac; /* Type Allocation Code */
-> +	u8 fac;  /* Final Assembly Code */
-> +	u32 svn; /* Software Version Number */
-> +	int err;
-> +	char *bufp = buf;
-> +
-> +	err = ab3100_get_register_interruptible(ab, AB3100_OTPP, &otpp);
-> +	if (err) {
-> +		printk(KERN_ERR "Unable to read OTPP register\n");
-> +		return err;
-> +	}
-> +
-> +	err = ab3100_get_register_page_interruptible(ab, AB3100_OTP0,
-> +						     otpval, 8);
-> +	if (err) {
-> +		printk(KERN_ERR "Unable to read OTPO register\n");
-> +		return err;
-> +	}
-> +
-> +	bufp += sprintf(bufp, "OTP is %s\n",
-> +			(otpp & 0x80) ? "LOCKED" : "UNLOCKED");
-> +
-> +	bufp += sprintf(bufp, "OTP clock switch startup is %s\n",
-> +			(otpp & 0x40) ? "32kHz" : "34.1kHz (1MHz/30)");
-> +
-> +	bufp += sprintf(bufp, "PAF is %s\n",
-> +			(otpval[1] & 0x80) ? "SET" : "NOT SET");
-> +
-> +	bufp += sprintf(bufp, "IMEI is %s\n",
-> +			(otpval[1] & 0x40) ? "CHANGEABLE" : "NOT CHANGEABLE");
-> +
-> +	cid = ((otpval[1] << 8) | otpval[0]) & 0x3fff;
-> +	bufp += sprintf(bufp, "CID: 0x%04x (decimal: %d)\n", cid, cid);
-> +	tac = ((otpval[4] & 0x0f) << 16) | (otpval[3] << 8) | otpval[2];
-> +	fac = ((otpval[5] & 0x0f) << 4) | (otpval[4] >> 4);
-> +	svn = (otpval[7] << 12) | (otpval[6] << 4) | (otpval[5] >> 4);
-> +	bufp += sprintf(bufp, "IMEI: %u-%u-%u\n", tac, fac, svn);
-> +
-> +	return bufp-buf;
-> +}
-> +
-> +static DEVICE_ATTR(otp, S_IRUGO, show_otp, NULL);
-> +
-> +static int __init ab3100_otp_probe(struct platform_device *pdev)
-> +{
-> +	int err;
-> +
-> +	dev_info(&pdev->dev, "AB3100 OTP readout registered\n");
-> +
-> +	/* sysfs entries */
-> +	err = device_create_file(&pdev->dev, &dev_attr_otp);
-> +	if (err != 0) {
-> +		dev_err(&pdev->dev, "AB3100 OTP file registration failed!\n");
-> +		return err;
-> +	}
-> +	return 0;
-> +}
-> +
-> +static int __exit ab3100_otp_remove(struct platform_device *pdev)
-> +{
-> +	device_remove_file(&pdev->dev, &dev_attr_otp);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver ab3100_otp_driver = {
-> +	.driver = {
-> +		.name = "ab3100-otp",
-> +		.owner = THIS_MODULE,
-> +	},
-> +	.remove	 = __exit_p(ab3100_otp_remove),
-> +};
-> +
-> +static int __init ab3100_otp_init(void)
-> +{
-> +	return platform_driver_probe(&ab3100_otp_driver,
-> +				     ab3100_otp_probe);
-> +}
-> +
-> +static void __exit ab3100_otp_exit(void)
-> +{
-> +	platform_driver_unregister(&ab3100_otp_driver);
-> +}
-> +
-> +module_init(ab3100_otp_init);
-> +module_exit(ab3100_otp_exit);
-> +
-> +MODULE_AUTHOR("Linus Walleij <linus.walleij@stericsson.com>");
-> +MODULE_DESCRIPTION("AB3100 OTP Readout Driver");
-> +MODULE_LICENSE("GPL");
-> -- 
-> 1.6.2.1
-> 
+/*should I also test DSDT in case region-debug.patch fixed the problem?*/
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+	Sergey
+
+--Dxnq1zWXvFF0Q93v
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iJwEAQECAAYFAkqJP3MACgkQfKHnntdSXjQ2/AP9EnHEEkKG4m0t3HvSvB3GHBZo
+2iWnIfhoUtopCtYmH1Q59miTQOcDEvCkJ1t4+lnFpO2Z6KmtlLJGfmRd1yvqKiGR
+dgjjLI1h+34fGDvoimUNArANVFMdv26BZGytQgT6x8Jp82Pa4Cwx9dn6tsvSgJX0
+0AIn+1WX16VrRSEoy5M=
+=f1hc
+-----END PGP SIGNATURE-----
+
+--Dxnq1zWXvFF0Q93v--
