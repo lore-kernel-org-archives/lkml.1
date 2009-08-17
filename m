@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757426AbZHQIjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbZHQIkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757426AbZHQIjl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 04:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757331AbZHQIjk
+	id S1757436AbZHQIkw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 04:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbZHQIkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 04:39:40 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38118 "EHLO smtps.tip.net.au"
+	Mon, 17 Aug 2009 04:40:52 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52112 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757147AbZHQIjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 04:39:39 -0400
-Date: Mon, 17 Aug 2009 18:39:34 +1000
+	id S1757330AbZHQIkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 04:40:51 -0400
+Date: Mon, 17 Aug 2009 18:40:48 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next:  tree build failure
-Message-Id: <20090817183934.6fd7cf15.sfr@canb.auug.org.au>
+Subject: linux-next: suspend  tree build failure
+Message-Id: <20090817184048.db6d94f9.sfr@canb.auug.org.au>
 X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -22,6 +22,8 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+[Sorry if some get this twice, I fixed up the subject.]
 
 Hi Rafael,
 
