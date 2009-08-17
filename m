@@ -1,88 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbZHQWrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbZHQWtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758280AbZHQWrt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 18:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZHQWrt
+	id S1758283AbZHQWtm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 18:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757957AbZHQWtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 18:47:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34542 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752336AbZHQWrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 18:47:48 -0400
-Date: Tue, 18 Aug 2009 00:47:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, akpm@linux-foundation.org,
-       nhorman@tuxdriver.com, rostedt@goodmis.org
-Subject: Re: [PATCH -next] trace_skb: fix build when CONFIG_NET is not
-	enabled
-Message-ID: <20090817224727.GA13795@elte.hu>
-References: <4A89BF90.5070202@oracle.com> <20090817215808.GB15016@elte.hu> <20090817.153326.69833512.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090817.153326.69833512.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 17 Aug 2009 18:49:41 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:52413 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752350AbZHQWtk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 18:49:40 -0400
+Subject: Re: kernel segv with 2.6.31-rc6 ?
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-parisc <linux-parisc@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A89CC4D.5040801@gmx.de>
+References: <4A89CC4D.5040801@gmx.de>
+Content-Type: text/plain
+Date: Mon, 17 Aug 2009 22:49:36 +0000
+Message-Id: <1250549376.7858.96.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David Miller <davem@davemloft.net> wrote:
-
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Mon, 17 Aug 2009 23:58:08 +0200
+On Mon, 2009-08-17 at 23:31 +0200, Helge Deller wrote:
+> anyone else seeing this with 2.6.31-rc6 ?
 > 
-> >> --- linux-next-20090817.orig/kernel/trace/Kconfig
-> >> +++ linux-next-20090817/kernel/trace/Kconfig
-> >> @@ -236,6 +236,7 @@ config BOOT_TRACER
-> >>  
-> >>  config SKB_SOURCES_TRACER
-> >>  	bool "Trace skb source information"
-> >> +	depends on NET
-> >>  	select GENERIC_TRACER
-> >>  	help
-> >>  	   This tracer helps developers/sysadmins correlate skb allocation and
-> > 
-> > Hm, there's nothing like this in the tracing tree.
-> > 
-> > Could we please move kernel/trace/* commits to the tracing tree, so 
-> > that it gets adequate testing and review, etc?
+> <...system boots up...>
+> Waiting for /dev to be fully populated...
+>   
+> sysfs: cannot create duplicate filename '/module/ac97_bus/sections/.text'
+> ------------[ cut here ]------------
+> Badness at fs/sysfs/dir.c:487
+>   
+>       YZrvWESTHLNXBCVMcbcbcbcbOGFRQPDI
+> PSW: 00000000000001000000000000001111 Not tainted
+> r00-03  0004000f 10669bd0 10204ff8 7ce58340
+> r04-07  7efcd000 ffffffef 7f881d74 7efcd000
+> r08-11  0008746c 00000000 7f1c6400 0008441c
+> r12-15  00000019 00084332 105a96c8 00000124
+> r16-19  0000fff1 00000017 00084abc ffffffff
+> r20-23  7eeff080 00000060 102f5898 10330dec
+> r24-27  ffffffff 0000000e 10669c04 10656670
+> r28-31  00000050 00000190 7ce583c0 10123988
+> sr00-03  00000000 00000000 00000000 00000008
+> sr04-07  00000000 00000000 00000000 00000000
+>   
+> IASQ: 00000000 00000000 IAOQ: 10204ff8 10204ffc
+>   IIR: 03ffe01f    ISR: 00000000  IOR: 00000000
+>   CPU:        0   CR30: 7ce58000 CR31: 11111111
+>   ORIG_R28: 00000001
+>   IAOQ[0]: sysfs_add_one+0xb8/0xd0
+>   IAOQ[1]: sysfs_add_one+0xbc/0xd0
+>   RP(r2): sysfs_add_one+0xb8/0xd0
+> Backtrace:
+>   [<102045b8>] sysfs_add_file_mode+0x60/0xc4
+>   [<1020748c>] internal_create_group+0xf0/0x1d8
+>   
+> Backtrace:
+>   [<1016f0f0>] load_module+0x10e8/0x1294
+>   
 > 
-> This one (like previous networking tracing changes Neil has made) 
-> touched a decent amount of networking code, and thus we 
-> integrated it into net-next-2.6
+> Kernel Fault: Code=26 regs=7ce58200 (Addr=00000030)
+>   
+>       YZrvWESTHLNXBCVMcbcbcbcbOGFRQPDI
+> PSW: 00000000000001100000000000001111 Tainted: G        W
+> r00-03  0006000f 7ce58200 1016f0f0 7ce58140
+> r04-07  00084444 00000019 00087424 7eddb660
+> r08-11  00084000 00000001 7f1c66a4 0008441c
+> r12-15  00000019 00084332 105a96c8 00000124
+> r16-19  0000fff1 00000017 00084abc 00000000
+> r20-23  00000000 1016d3e0 7eddb668 00000124
+> r24-27  105a96cc 00000000 7eddb660 10656670
+> r28-31  00000000 00000001 7ce58200 00000000
+> sr00-03  00000000 00000000 00000000 00000008
+> sr04-07  00000000 00000000 00000000 00000000
+>   
+> IASQ: 00000000 00000000 IAOQ: 1016f130 1016f134
+>   IIR: 4b940060    ISR: 00000000  IOR: 00000030
+>   CPU:        0   CR30: 7ce58000 CR31: 11111111
+>   ORIG_R28: 00084332
+>   IAOQ[0]: load_module+0x1128/0x1294
+>   IAOQ[1]: load_module+0x112c/0x1294
+>   RP(r2): load_module+0x10e8/0x1294
+> Backtrace:
+>   [<1016f0f0>] load_module+0x10e8/0x1294
+>   
+> Kernel panic - not syncing: Kernel Fault
+> Backtrace:
+>   [<1011ac28>] show_stack+0x18/0x28
+>   [<1013f3a0>] vprintk+0x19c/0x430
 
-the three skb-sources-tracer patches i saw submitted were:
+The root cause is a duplicate section name (.text); is this legal?
 
- include/trace/events/skb.h |   20 ++++++++++++++++++++
- net/core/datagram.c        |    3 +++
- 2 files changed, 23 insertions(+)
+However, there's a problem with commit
+6d76013381ed28979cd122eb4b249a88b5e384fa in that if you fail to allocate
+a mod->sect_attrs (in this case it's null because of the duplication),
+it still gets used without checking in add_notes_attrs()
 
- kernel/traceKconfig |   10 ++++++++++
+This should fix it
 
- kernel/trace/Makefile            |    1
- kernel/trace/trace.h             |   19 ++++++
- kernel/trace/trace_skb_sources.c |  154 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+Signed-off-by: James Bottomley <James.Bottomley@suse.de>
 
-only touched the networking code for 3 lines in 
-net/core/datagram.c.
+---
 
-Think about it: how would you react if i added a new file to 
-net/core/ and modified net/Kconfig, and then broke the build? You'd 
-quite likely insist on it being done via net-next-2.6, right? You'd 
-also likely be upset about that kind of change, wouldnt you?
+diff --git a/kernel/module.c b/kernel/module.c
+index fd14114..a703c49 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2353,7 +2353,8 @@ static noinline struct module *load_module(void __user *umod,
+ 	if (err < 0)
+ 		goto unlink;
+ 	add_sect_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
+-	add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
++	if (mod->sect_attrs)
++		add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
+ 
+ 	/* Get rid of temporary copy */
+ 	vfree(hdr);
 
-Also, has the review feedback from the tracing folks been 
-addressed? Please separate these patches out and lets do this 
-properly, this approach is not acceptable.
 
-	Ingo
