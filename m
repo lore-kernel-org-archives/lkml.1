@@ -1,259 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757768AbZHQL0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757785AbZHQL0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757768AbZHQL0E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 07:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbZHQL0D
+	id S1757785AbZHQL0c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 07:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757765AbZHQL0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 07:26:03 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43145 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757720AbZHQL0B (ORCPT
+	Mon, 17 Aug 2009 07:26:31 -0400
+Received: from mga05.intel.com ([192.55.52.89]:14421 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757753AbZHQL0a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 07:26:01 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
-       seto.hidetoshi@jp.fujitsu.com, ak@linux.intel.com, tglx@linutronix.de,
-       Yinghai Lu <yinghai@kernel.org>, Huang@firstfloor.org,
-       "Ying <ying"@firstfloor.org, linux-tip-commits@vger.kernel.org
-Subject: Re: [boot crash] Re: [tip:x86/mce3] x86, mce: use 64bit machine check code on 32bit
-From: Andi Kleen <andi@firstfloor.org>
-References: <tip-4efc0670baf4b14bc95502e54a83ccf639146125@git.kernel.org>
-	<20090812113652.GA19632@elte.hu>
-Date: Mon, 17 Aug 2009 13:25:58 +0200
-In-Reply-To: <20090812113652.GA19632@elte.hu> (Ingo Molnar's message of "Wed, 12 Aug 2009 13:36:52 +0200")
-Message-ID: <87ljlismux.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Mon, 17 Aug 2009 07:26:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,396,1246863600"; 
+   d="scan'208";a="717436275"
+Date: Mon, 17 Aug 2009 13:28:40 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Linus Walleij <linus.walleij@stericsson.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MFD AB3100 OTP readout
+Message-ID: <20090817112839.GC3228@sortiz.org>
+References: <1250494649-13361-1-git-send-email-linus.walleij@stericsson.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250494649-13361-1-git-send-email-linus.walleij@stericsson.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+Hi Linus,
 
-Weird the original mail didn't make it through, only saw the replies.
+On Mon, Aug 17, 2009 at 09:37:29AM +0200, Linus Walleij wrote:
+> This adds the ability to read out OTP (One-Time Programmable)
+> registers in the AB3100 MFD ASIC. It's a simple sysfs file you
+> can cat to prompt. The OTP registers of the AB3100 are used to
+> store various device-unique information such as customer ID,
+> product flags and the 3GPP standard IMEI (International Mobile
+> Equipment Indentity) number.
+2 comments on this patch:
 
->> all quirks.
->
-> This commit causes a new regression, it broke the bootup on one of 
-> my -tip testsystems, an older, Pentium-M based HP laptop (HP 
-> OmniBook 6000 EA).
->
-> The symptom is that the bootup hard-hangs after MCE init:
->
->  [    0.022996] Mount-cache hash table entries: 512
->  [    0.024996] Initializing cgroup subsys debug
->  [    0.025996] Initializing cgroup subsys cpuacct
->  [    0.026995] Initializing cgroup subsys devices
->  [    0.027995] Initializing cgroup subsys freezer
->  [    0.028995] mce: CPU supports 5 MCE banks
+1) The sysfs rule of thumb is "1 value per file" (see
+Documentation/filesystems/sysfs.txt". So if you want to use sysfs for that you
+should split your register reads into several sysfs entries.
+It seems to me that debugfs would be a more appropriate tool for what you're
+trying to achieve.
 
-Thanks for testing. 
+2) You really dont need to register a new driver just for adding some sysfs or
+debugfs entries. Your ab3100_otp_probe() routine could just be called by your
+ab3100_probe routine, or added to the ab3100_setup_debugfs() one. 
 
-I assume the system boots with CONFIG_X86_NEW_MCE disabled and machine checks 
-enabled, correct? As in you never booted with mce=off or a similar option
-on older kernels.
+Cheers,
+Samuel.
 
-First please test with the patch I posted in 
-
-http://article.gmane.org/gmane.linux.kernel/875563
-
-I don't see that one in tip. 
-
-If that doesn't help please boot with the appended debug patch and post the console
-log again, then we will hopefully  see where it hangs.
-
--Andi
-
-commit 09f099eafbff70ecf55f7f111d2fb497ddb9a915
-Author: Andi Kleen <ak@linux.intel.com>
-Date:   Mon Aug 17 13:15:50 2009 +0200
-
-    Debug patch: trace mce init
-    
-    Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index 1cfb623..bfaed40 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -45,6 +45,8 @@
- 
- #include "mce-internal.h"
- 
-+#define D printk("%s:%d\n", __FILE__, __LINE__)
-+
- /* Handle unconfigured int18 (should never happen) */
- static void unexpected_machine_check(struct pt_regs *regs, long error_code)
- {
-@@ -1196,6 +1198,8 @@ static int mce_cap_init(void)
- 	if (cap & MCG_SER_P)
- 		mce_ser = 1;
- 
-+	D;
-+
- 	return 0;
- }
- 
-@@ -1209,20 +1213,30 @@ static void mce_init(void)
- 	 * Log the machine checks left over from the previous reset.
- 	 */
- 	bitmap_fill(all_banks, MAX_NR_BANKS);
-+	D;
- 	machine_check_poll(MCP_UC|(!mce_bootlog ? MCP_DONTLOG : 0), &all_banks);
- 
-+	D;
-+
- 	set_in_cr4(X86_CR4_MCE);
- 
-+	D;
-+
- 	rdmsrl(MSR_IA32_MCG_CAP, cap);
-+	D;
- 	if (cap & MCG_CTL_P)
- 		wrmsr(MSR_IA32_MCG_CTL, 0xffffffff, 0xffffffff);
-+	D;
- 
- 	for (i = 0; i < banks; i++) {
- 		if (skip_bank_init(i))
- 			continue;
-+		printk("init bank %d\n", i);
- 		wrmsrl(MSR_IA32_MC0_CTL+4*i, bank[i]);
- 		wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
- 	}
-+
-+	D;
- }
- 
- /* Add per CPU specific workarounds here */
-@@ -1319,9 +1333,12 @@ static void mce_init_timer(void)
- 	*n = check_interval * HZ;
- 	if (!*n)
- 		return;
-+
-+	D;
- 	setup_timer(t, mcheck_timer, smp_processor_id());
- 	t->expires = round_jiffies(jiffies + *n);
- 	add_timer_on(t, smp_processor_id());
-+	D;
- }
- 
- /*
-@@ -1340,15 +1357,21 @@ void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
- 
- 	if (mce_cap_init() < 0) {
- 		mce_disabled = 1;
-+		D;
- 		return;
- 	}
-+	D;
- 	mce_cpu_quirks(c);
-+	D;
- 
- 	machine_check_vector = do_machine_check;
- 
- 	mce_init();
-+	D;
- 	mce_cpu_features(c);
-+	D;
- 	mce_init_timer();
-+	D;
- 	INIT_WORK(&__get_cpu_var(mce_work), mce_process_work);
- }
- 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel.c b/arch/x86/kernel/cpu/mcheck/mce_intel.c
-index e1acec0..0d6aeab 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_intel.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_intel.c
-@@ -13,6 +13,8 @@
- #include <asm/msr.h>
- #include <asm/mce.h>
- 
-+#define D printk("%s:%d\n", __FILE__, __LINE__)
-+
- /*
-  * Support for Intel Correct Machine Check Interrupts. This allows
-  * the CPU to raise an interrupt when a corrected machine check happened.
-@@ -207,6 +209,8 @@ static void intel_init_cmci(void)
- 	if (!cmci_supported(&banks))
- 		return;
- 
-+	D;
-+
- 	mce_threshold_vector = intel_threshold_interrupt;
- 	cmci_discover(banks, 1);
- 	/*
-@@ -217,10 +221,15 @@ static void intel_init_cmci(void)
- 	 */
- 	apic_write(APIC_LVTCMCI, THRESHOLD_APIC_VECTOR|APIC_DM_FIXED);
- 	cmci_recheck();
-+
-+	D;
- }
- 
- void mce_intel_feature_init(struct cpuinfo_x86 *c)
- {
-+	D;
- 	intel_init_thermal(c);
-+	D;
- 	intel_init_cmci();
-+	D;
- }
-diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-index bff8dd1..b4c6ca0 100644
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -31,6 +31,8 @@
- #include <asm/mce.h>
- #include <asm/msr.h>
- 
-+#define D printk("%s:%d\n", __FILE__, __LINE__)
-+
- /* How long to wait between reporting thermal events */
- #define CHECK_INTERVAL		(300 * HZ)
- 
-@@ -236,10 +238,14 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
- 	int tm2 = 0;
- 	u32 l, h;
- 
-+	D;
-+
- 	/* Thermal monitoring depends on ACPI and clock modulation*/
- 	if (!cpu_has(c, X86_FEATURE_ACPI) || !cpu_has(c, X86_FEATURE_ACC))
- 		return;
- 
-+	D;
-+
- 	/*
- 	 * First check if its enabled already, in which case there might
- 	 * be some SMM goo which handles it, so we can't even put a handler
-@@ -253,6 +259,9 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
- 		return;
- 	}
- 
-+	D;
-+
-+
- 	if (cpu_has(c, X86_FEATURE_TM2) && (l & MSR_IA32_MISC_ENABLE_TM2))
- 		tm2 = 1;
- 
-@@ -264,6 +273,8 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
- 		return;
- 	}
- 
-+	D;
-+
- 	/* We'll mask the thermal vector in the lapic till we're ready: */
- 	h = THERMAL_APIC_VECTOR | APIC_DM_FIXED | APIC_LVT_MASKED;
- 	apic_write(APIC_LVTTHMR, h);
-@@ -286,4 +297,6 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
- 
- 	/* enable thermal throttle processing */
- 	atomic_set(&therm_throt_en, 1);
-+
-+	D;
- }
-
+> Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
+> ---
+>  drivers/mfd/Makefile     |    2 +-
+>  drivers/mfd/ab3100-otp.c |  123 ++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 124 insertions(+), 1 deletions(-)
+>  create mode 100644 drivers/mfd/ab3100-otp.c
+> 
+> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+> index 6f8a9a1..13128b4 100644
+> --- a/drivers/mfd/Makefile
+> +++ b/drivers/mfd/Makefile
+> @@ -43,4 +43,4 @@ obj-$(CONFIG_PMIC_DA903X)	+= da903x.o
+>  obj-$(CONFIG_MFD_PCF50633)	+= pcf50633-core.o
+>  obj-$(CONFIG_PCF50633_ADC)	+= pcf50633-adc.o
+>  obj-$(CONFIG_PCF50633_GPIO)	+= pcf50633-gpio.o
+> -obj-$(CONFIG_AB3100_CORE)	+= ab3100-core.o
+> +obj-$(CONFIG_AB3100_CORE)	+= ab3100-core.o ab3100-otp.o
+> diff --git a/drivers/mfd/ab3100-otp.c b/drivers/mfd/ab3100-otp.c
+> new file mode 100644
+> index 0000000..48d998c
+> --- /dev/null
+> +++ b/drivers/mfd/ab3100-otp.c
+> @@ -0,0 +1,123 @@
+> +/*
+> + * drivers/mfd/ab3100_otp.c
+> + *
+> + * Copyright (C) 2007-2009 ST-Ericsson AB
+> + * License terms: GNU General Public License (GPL) version 2
+> + * Driver to read out OTP from the AB3100 Mixed-signal circuit
+> + * Author: Linus Walleij <linus.walleij@stericsson.com>
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/kernel.h>
+> +#include <linux/init.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/mfd/ab3100.h>
+> +
+> +/* The OTP registers */
+> +#define AB3100_OTP0		0xb0
+> +#define AB3100_OTP1		0xb1
+> +#define AB3100_OTP2		0xb2
+> +#define AB3100_OTP3		0xb3
+> +#define AB3100_OTP4		0xb4
+> +#define AB3100_OTP5		0xb5
+> +#define AB3100_OTP6		0xb6
+> +#define AB3100_OTP7		0xb7
+> +#define AB3100_OTPP		0xbf
+> +
+> +static ssize_t show_otp(struct device *dev,
+> +			struct device_attribute *attr, char *buf)
+> +{
+> +	struct ab3100 *ab = dev_get_drvdata(dev);
+> +	u8 otpval[8];
+> +	u8 otpp;
+> +	u16 cid; /* Customer ID */
+> +	u32 tac; /* Type Allocation Code */
+> +	u8 fac;  /* Final Assembly Code */
+> +	u32 svn; /* Software Version Number */
+> +	int err;
+> +	char *bufp = buf;
+> +
+> +	err = ab3100_get_register_interruptible(ab, AB3100_OTPP, &otpp);
+> +	if (err) {
+> +		printk(KERN_ERR "Unable to read OTPP register\n");
+> +		return err;
+> +	}
+> +
+> +	err = ab3100_get_register_page_interruptible(ab, AB3100_OTP0,
+> +						     otpval, 8);
+> +	if (err) {
+> +		printk(KERN_ERR "Unable to read OTPO register\n");
+> +		return err;
+> +	}
+> +
+> +	bufp += sprintf(bufp, "OTP is %s\n",
+> +			(otpp & 0x80) ? "LOCKED" : "UNLOCKED");
+> +
+> +	bufp += sprintf(bufp, "OTP clock switch startup is %s\n",
+> +			(otpp & 0x40) ? "32kHz" : "34.1kHz (1MHz/30)");
+> +
+> +	bufp += sprintf(bufp, "PAF is %s\n",
+> +			(otpval[1] & 0x80) ? "SET" : "NOT SET");
+> +
+> +	bufp += sprintf(bufp, "IMEI is %s\n",
+> +			(otpval[1] & 0x40) ? "CHANGEABLE" : "NOT CHANGEABLE");
+> +
+> +	cid = ((otpval[1] << 8) | otpval[0]) & 0x3fff;
+> +	bufp += sprintf(bufp, "CID: 0x%04x (decimal: %d)\n", cid, cid);
+> +	tac = ((otpval[4] & 0x0f) << 16) | (otpval[3] << 8) | otpval[2];
+> +	fac = ((otpval[5] & 0x0f) << 4) | (otpval[4] >> 4);
+> +	svn = (otpval[7] << 12) | (otpval[6] << 4) | (otpval[5] >> 4);
+> +	bufp += sprintf(bufp, "IMEI: %u-%u-%u\n", tac, fac, svn);
+> +
+> +	return bufp-buf;
+> +}
+> +
+> +static DEVICE_ATTR(otp, S_IRUGO, show_otp, NULL);
+> +
+> +static int __init ab3100_otp_probe(struct platform_device *pdev)
+> +{
+> +	int err;
+> +
+> +	dev_info(&pdev->dev, "AB3100 OTP readout registered\n");
+> +
+> +	/* sysfs entries */
+> +	err = device_create_file(&pdev->dev, &dev_attr_otp);
+> +	if (err != 0) {
+> +		dev_err(&pdev->dev, "AB3100 OTP file registration failed!\n");
+> +		return err;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int __exit ab3100_otp_remove(struct platform_device *pdev)
+> +{
+> +	device_remove_file(&pdev->dev, &dev_attr_otp);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver ab3100_otp_driver = {
+> +	.driver = {
+> +		.name = "ab3100-otp",
+> +		.owner = THIS_MODULE,
+> +	},
+> +	.remove	 = __exit_p(ab3100_otp_remove),
+> +};
+> +
+> +static int __init ab3100_otp_init(void)
+> +{
+> +	return platform_driver_probe(&ab3100_otp_driver,
+> +				     ab3100_otp_probe);
+> +}
+> +
+> +static void __exit ab3100_otp_exit(void)
+> +{
+> +	platform_driver_unregister(&ab3100_otp_driver);
+> +}
+> +
+> +module_init(ab3100_otp_init);
+> +module_exit(ab3100_otp_exit);
+> +
+> +MODULE_AUTHOR("Linus Walleij <linus.walleij@stericsson.com>");
+> +MODULE_DESCRIPTION("AB3100 OTP Readout Driver");
+> +MODULE_LICENSE("GPL");
+> -- 
+> 1.6.2.1
+> 
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Intel Open Source Technology Centre
+http://oss.intel.com/
