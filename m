@@ -1,188 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758163AbZHQVhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbZHQVjF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758163AbZHQVhh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 17:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbZHQVhg
+	id S1758173AbZHQVjF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 17:39:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758084AbZHQVjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 17:37:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58997 "EHLO mx3.mail.elte.hu"
+	Mon, 17 Aug 2009 17:39:05 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:51335 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752480AbZHQVhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 17:37:35 -0400
-Date: Mon, 17 Aug 2009 23:37:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [GIT PULL] x86 fixes
-Message-ID: <20090817213719.GA3195@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1754664AbZHQVjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 17:39:03 -0400
+Subject: Re: clocksource changes in 2.6.31 - possible regression
+From: john stultz <johnstul@us.ibm.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <1250543459.7212.41.camel@localhost.localdomain>
+References: <20090817090319.20979986@nehalam>
+	 <1250531337.26171.12.camel@work-vm>	<20090817110127.40ee5c29@nehalam>
+	 <1250532954.26171.35.camel@work-vm>  <20090817112704.2b4b2987@nehalam>
+	 <1250543459.7212.41.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 17 Aug 2009 14:37:57 -0700
+Message-Id: <1250545077.7212.49.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Mon, 2009-08-17 at 14:11 -0700, john stultz wrote:
+> On Mon, 2009-08-17 at 11:27 -0700, Stephen Hemminger wrote:
+> > On Mon, 17 Aug 2009 11:15:54 -0700
+> > john stultz <johnstul@us.ibm.com> wrote:
+> > 
+> > > On Mon, 2009-08-17 at 11:01 -0700, Stephen Hemminger wrote:
+> > > > On Mon, 17 Aug 2009 10:48:57 -0700
+> > > > john stultz <johnstul@us.ibm.com> wrote:
+> > > > 
+> > > > > On Mon, 2009-08-17 at 09:03 -0700, Stephen Hemminger wrote:
+> > > > > > The following commit causes a change for kernels built with HRT but
+> > > > > > not actually using HRT.  I typically use the generic kernel we ship
+> > > > > > on test machines, and that kernel has NOHZ and HRT (for power savings/virt
+> > > > > > and HRT for QoS), but I want to be able to enable TSC as a clock source
+> > > > > > when doing performance tests with pktgen.
+> > > > > > 
+> > > > > > The machine in question is a several year old Opteron box, that
+> > > > > > normally reports clocksources: acpi_pm jiffies tsc
+> > > > > > but now with 2.6.31-rc6, it only has acpi_pm.
+> > > > > 
+> > > > > I might need to review the patch again, but I believe we just don't
+> > > > > allow you to switch to non HRT compatible clocksources (like jiffies) if
+> > > > > we're already in HRT mode (and thus would hang when switched). 
+> > > > > 
+> > > > > 
+> > > > > The behavior you describe where you can't switch to the TSC, may be due
+> > > > > to the TSC disqualification code marking it as non HRT compatible
+> > > > > (again, I need to double check). While I'm not sure that's really
+> > > > > correct, as the TSC is fine for HRT, in this case on your box, the TSC
+> > > > > has been marked as unstable (likely due to being unsynced on old AMD SMP
+> > > > > systems). There is a real chance that the timekeeping code on your
+> > > > > system could see the TSC go backwards, calculate a negative time
+> > > > > interval, and then end up hanging. 
+> > > > > 
+> > > > 
+> > > > TSC was alway stable on this box, and worked fine.  There was no
+> > > > message in log about TSC instability. The change was bisected
+> > > > down to that one commit.
+> > > 
+> > > But just to clarify, the TSC was never selected as the default
+> > > clocksource on the box either, right?
+> > 
+> > correct.
+> > 
+> > I am okay with turning it off on boot command line for my tests,
+> > but it might be an issue for other users.
+> 
+> 
+> So looking at the code in question:
+> 		/*
+> 		 * Don't show non-HRES clocksource if the tick code is
+> 		 * in one shot mode (highres=on or nohz=on)
+> 		 */
+> 		if (!tick_oneshot_mode_active() ||
+> 		    (src->flags & CLOCK_SOURCE_VALID_FOR_HRES))
+> 
+> So we require the clock to be valid for hres if we're in hres mode.
+> 
+> Then looking at where that flag is manipulated:
+> $ git grep -n CLOCK_SOURCE_VALID_FOR_HRES
+> include/linux/clocksource.h:214:#define CLOCK_SOURCE_VALID_FOR_HRES             
+> kernel/time/clocksource.c:168:  cs->flags &= ~(CLOCK_SOURCE_VALID_FOR_HRES | CLO
+> kernel/time/clocksource.c:200:                          cs->flags |= CLOCK_SOURC
+> kernel/time/clocksource.c:257:                  cs->flags |= CLOCK_SOURCE_VALID_
+> kernel/time/clocksource.c:285:          cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES
+> kernel/time/clocksource.c:517:      !(ovr->flags & CLOCK_SOURCE_VALID_FOR_HRES))
+> kernel/time/clocksource.c:557:              (src->flags & CLOCK_SOURCE_VALID_FOR
+> kernel/time/timekeeping.c:273:          ret = clock->flags & CLOCK_SOURCE_VALID_
+> 
+> 
+> We can see clocksource.c:168 is the only line that disables the flag and
+> that's in clocksource_ratewd() after we've found an actual inconsistency
+> from the watchdog. 
+> 
+> So unless I'm missing a more subtle bug in the watchdog assignment of
+> the CLOCK_SOURCE_VALID_FOR_HRES bit,  I'm a little hesitant that its
+> really as stable as you feel it is.
+> 
+> Mind running with the following patch and sending me the dmesg?
 
-Please pull the latest x86-fixes-for-linus git tree from:
+Actually, don't.. I found the issue.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+in init_tsc_clocksource():
+	/* lower the rating if we already know its unstable: */
+	if (check_tsc_unstable()) {
+		clocksource_tsc.rating = 0;
+		clocksource_tsc.flags &= ~CLOCK_SOURCE_IS_CONTINUOUS;
+	}
 
- Thanks,
+We already disqualify the TSC as not continuous, so its not valid for
+HRT. So I think the patch in question is still correct.
 
-	Ingo
+However, I think its fair, that as your TSC is being disqualified for
+being an old AMD SMP box, and there is a *possibility* that if you don't
+run with cpufreq and the SUMA-ness of the box didn't get in the way of
+TSC synchronization, you might have an argument for overriding the
+unsynchronized_tsc() heuristics.
 
------------------->
-Bartlomiej Zolnierkiewicz (1):
-      x86, mce: don't log boot MCEs on Pentium M (model == 13) CPUs
+Luckily the option is already there. :)
 
-Cliff Wickman (1):
-      x86: Fix UV BAU destination subnode id
+So try booting with "tsc=reliable" to override those checks, and I think
+you'll be able to do what you want to do.
 
-Hugh Dickins (1):
-      x86, mce: therm_throt: Don't log redundant normality
-
-Ingo Molnar (1):
-      x86, mce: Don't initialize MCEs on unknown CPUs
-
-Leonardo Potenza (1):
-      x86: Annotate section mismatch warnings in kernel/apic/x2apic_uv_x.c
+thanks
+-john
 
 
- arch/x86/include/asm/uv/uv_bau.h         |    2 +-
- arch/x86/kernel/apic/x2apic_uv_x.c       |    4 ++--
- arch/x86/kernel/cpu/mcheck/mce.c         |   19 ++++++++++++++++---
- arch/x86/kernel/cpu/mcheck/therm_throt.c |    7 +++++--
- arch/x86/kernel/tlb_uv.c                 |    1 +
- 5 files changed, 25 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/include/asm/uv/uv_bau.h b/arch/x86/include/asm/uv/uv_bau.h
-index bddd44f..80e2984 100644
---- a/arch/x86/include/asm/uv/uv_bau.h
-+++ b/arch/x86/include/asm/uv/uv_bau.h
-@@ -133,7 +133,7 @@ struct bau_msg_payload {
-  * see table 4.2.3.0.1 in broacast_assist spec.
-  */
- struct bau_msg_header {
--	unsigned int dest_subnodeid:6;	/* must be zero */
-+	unsigned int dest_subnodeid:6;	/* must be 0x10, for the LB */
- 	/* bits 5:0 */
- 	unsigned int base_dest_nodeid:15; /* nasid>>1 (pnode) of */
- 	/* bits 20:6 */			  /* first bit in node_map */
-diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
-index 832e908..6011593 100644
---- a/arch/x86/kernel/apic/x2apic_uv_x.c
-+++ b/arch/x86/kernel/apic/x2apic_uv_x.c
-@@ -46,7 +46,7 @@ static int early_get_nodeid(void)
- 	return node_id.s.node_id;
- }
- 
--static int uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
-+static int __init uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- {
- 	if (!strcmp(oem_id, "SGI")) {
- 		if (!strcmp(oem_table_id, "UVL"))
-@@ -253,7 +253,7 @@ static void uv_send_IPI_self(int vector)
- 	apic_write(APIC_SELF_IPI, vector);
- }
- 
--struct apic apic_x2apic_uv_x = {
-+struct apic __refdata apic_x2apic_uv_x = {
- 
- 	.name				= "UV large system",
- 	.probe				= NULL,
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index 1cfb623..0121304 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -1226,8 +1226,13 @@ static void mce_init(void)
- }
- 
- /* Add per CPU specific workarounds here */
--static void mce_cpu_quirks(struct cpuinfo_x86 *c)
-+static int mce_cpu_quirks(struct cpuinfo_x86 *c)
- {
-+	if (c->x86_vendor == X86_VENDOR_UNKNOWN) {
-+		pr_info("MCE: unknown CPU type - not enabling MCE support.\n");
-+		return -EOPNOTSUPP;
-+	}
-+
- 	/* This should be disabled by the BIOS, but isn't always */
- 	if (c->x86_vendor == X86_VENDOR_AMD) {
- 		if (c->x86 == 15 && banks > 4) {
-@@ -1273,11 +1278,20 @@ static void mce_cpu_quirks(struct cpuinfo_x86 *c)
- 		if ((c->x86 > 6 || (c->x86 == 6 && c->x86_model >= 0xe)) &&
- 			monarch_timeout < 0)
- 			monarch_timeout = USEC_PER_SEC;
-+
-+		/*
-+		 * There are also broken BIOSes on some Pentium M and
-+		 * earlier systems:
-+		 */
-+		if (c->x86 == 6 && c->x86_model <= 13 && mce_bootlog < 0)
-+			mce_bootlog = 0;
- 	}
- 	if (monarch_timeout < 0)
- 		monarch_timeout = 0;
- 	if (mce_bootlog != 0)
- 		mce_panic_timeout = 30;
-+
-+	return 0;
- }
- 
- static void __cpuinit mce_ancient_init(struct cpuinfo_x86 *c)
-@@ -1338,11 +1352,10 @@ void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
- 	if (!mce_available(c))
- 		return;
- 
--	if (mce_cap_init() < 0) {
-+	if (mce_cap_init() < 0 || mce_cpu_quirks(c) < 0) {
- 		mce_disabled = 1;
- 		return;
- 	}
--	mce_cpu_quirks(c);
- 
- 	machine_check_vector = do_machine_check;
- 
-diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-index 8bc64cf..5957a93 100644
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -116,11 +116,14 @@ static int therm_throt_process(int curr)
- 		       cpu, __get_cpu_var(thermal_throttle_count));
- 
- 		add_taint(TAINT_MACHINE_CHECK);
--	} else if (was_throttled) {
-+		return 1;
-+	}
-+	if (was_throttled) {
- 		printk(KERN_INFO "CPU%d: Temperature/speed normal\n", cpu);
-+		return 1;
- 	}
- 
--	return 1;
-+	return 0;
- }
- 
- #ifdef CONFIG_SYSFS
-diff --git a/arch/x86/kernel/tlb_uv.c b/arch/x86/kernel/tlb_uv.c
-index 8ccabb8..77b9689 100644
---- a/arch/x86/kernel/tlb_uv.c
-+++ b/arch/x86/kernel/tlb_uv.c
-@@ -744,6 +744,7 @@ uv_activation_descriptor_init(int node, int pnode)
- 		 * note that base_dest_nodeid is actually a nasid.
- 		 */
- 		ad2->header.base_dest_nodeid = uv_partition_base_pnode << 1;
-+		ad2->header.dest_subnodeid = 0x10; /* the LB */
- 		ad2->header.command = UV_NET_ENDPOINT_INTD;
- 		ad2->header.int_both = 1;
- 		/*
