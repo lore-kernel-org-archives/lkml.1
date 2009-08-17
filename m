@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbZHQJtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbZHQJvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270AbZHQJtL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 05:49:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZHQJtL
+	id S1757374AbZHQJvI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 05:51:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbZHQJvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 05:49:11 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44946 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751754AbZHQJtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 05:49:10 -0400
-Date: Mon, 17 Aug 2009 11:48:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-mm@kvack.org,
-       Christoph Lameter <cl@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Matt Mackall <mpm@selenic.com>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [Patch] proc: drop write permission on 'timer_list' and
-	'slabinfo'
-Message-ID: <20090817094822.GA17838@elte.hu>
-References: <20090817094525.6355.88682.sendpatchset@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090817094525.6355.88682.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+	Mon, 17 Aug 2009 05:51:06 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49456 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756278AbZHQJvE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 05:51:04 -0400
+Date: Mon, 17 Aug 2009 10:51:31 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 2/7] kfifo: move out spinlock
+Message-ID: <20090817105131.244fb157@lxorguk.ukuu.org.uk>
+In-Reply-To: <1250501180.25359.12.camel@wall-e>
+References: <1250455161.28540.4.camel@wall-e>
+	<1250455590.28540.10.camel@wall-e>
+	<20090816235843.0f7f11de@lxorguk.ukuu.org.uk>
+	<20090816163422.a147a918.akpm@linux-foundation.org>
+	<20090817074820.3585206b@lxorguk.ukuu.org.uk>
+	<1250495182.20837.27.camel@wall-e>
+	<20090817091524.33f99737@lxorguk.ukuu.org.uk>
+	<1250497736.20837.39.camel@wall-e>
+	<20090817095349.4cf8d3c5@lxorguk.ukuu.org.uk>
+	<1250501180.25359.12.camel@wall-e>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> The question is: what do you expect? Should i provide a compat layer?
+> Should i retiring my work? 
 
-* Amerigo Wang <amwang@redhat.com> wrote:
+Do what you think is right.
 
-> /proc/timer_list and /proc/slabinfo are not supposed to be 
-> written, so there should be no write permissions on it.
+> Give me a solution for this dilemma. I see at this point no way if you
+> insist for the spinlock to design a clean interface.
 
-good catch!
+Then I won't insist.
 
-> --- a/kernel/time/timer_list.c
-> +++ b/kernel/time/timer_list.c
+Alan
 
-I have applied the timer_list bits to the timer tree. The SLUB/SLAB 
-bits should go into the SLAB tree i guess.
-
-Thanks,
-
-	Ingo
