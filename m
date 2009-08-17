@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbZHQSXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbZHQSYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757965AbZHQSXG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 14:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757952AbZHQSXF
+	id S1757974AbZHQSYi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 14:24:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757956AbZHQSYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 14:23:05 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60446 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757948AbZHQSXD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 14:23:03 -0400
-Message-ID: <4A899FEA.9020707@zytor.com>
-Date: Mon, 17 Aug 2009 11:22:34 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mark Kelly <mark@bifferos.com>, linux-kernel@vger.kernel.org,
-       Florian Fainelli <florian@openwrt.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch] x86 CPU detection for RDC
-References: <58001.1250437590@bifferos.com> <20090816155507.GA2791@elte.hu> <alpine.LNX.2.00.0908160317250.19588@cent.localnet> <20090816175204.GA28553@elte.hu> <alpine.LNX.2.00.0908160404300.20653@cent.localnet> <4A899A1D.8060808@zytor.com> <20090817180825.GA5558@elte.hu>
-In-Reply-To: <20090817180825.GA5558@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 17 Aug 2009 14:24:37 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:33036 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757952AbZHQSYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 14:24:37 -0400
+Subject: Re: [PATCH -tip/core/rcu 1/6] Cleanups and fixes for RCU in face
+ of heavy CPU-hotplug stress
+From: Josh Triplett <josht@linux.vnet.ibm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       hugh.dickins@tiscali.co.uk, benh@kernel.crashing.org
+In-Reply-To: <20090815165153.GA8886@linux.vnet.ibm.com>
+References: <20090815165153.GA8886@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Mon, 17 Aug 2009 11:24:47 -0700
+Message-Id: <1250533487.2709.14.camel@josh-work.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/17/2009 11:08 AM, Ingo Molnar wrote:
-> 
-> X86_RDC321X already exists in arch/x86/Kconfig. It should probably 
-> grow a 'depends on PCI' rline or so.
-> 
+On Sat, 2009-08-15 at 09:51 -0700, Paul E. McKenney wrote:
+> These pass tests combining rcutorture and continuous CPU-hotplug
+> operations, in other words, no sleeping between successive CPU-hotplug
+> operations.  This set does not fix the bug involving deadlocks through
+> rcutorture, kthread_stop(), and migration threads.  However, this bug
+> does not affect production systems, so should not stand in the way of
+> applying these patches.
 
-Sounds like it.
+Commit 63706172f332fd3f6e7458ebfb35fa6de9c21dc5, "kthreads: rework
+kthread_stop()", looks like it fixes kthread_stop to work concurrently.
+That may fix the issue you observed.
 
-	-hpa
+- Josh Triplett
 
