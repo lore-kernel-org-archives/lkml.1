@@ -1,54 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbZHQTNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbZHQTQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753102AbZHQTNS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 15:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbZHQTNS
+	id S1753380AbZHQTQr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 15:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbZHQTQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 15:13:18 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54962 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750703AbZHQTNQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 15:13:16 -0400
-Date: Mon, 17 Aug 2009 15:12:50 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
-       Chris Worley <worleys@gmail.com>, Bryan Donlan <bdonlan@gmail.com>,
-       david@lang.hm, Greg Freemyer <greg.freemyer@gmail.com>,
-       Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nitin Gupta <ngupta@vflare.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Linux RAID <linux-raid@vger.kernel.org>
-Subject: Re: Discard support (was Re: [PATCH] swap: send callback when swap
-	slot is freed)
-Message-ID: <20090817191250.GA1816@infradead.org>
-References: <f3177b9e0908141719s658dc79eye92ab46558a97260@mail.gmail.com> <1250341176.4159.2.camel@mulgrave.site> <4A86B69C.7090001@rtr.ca> <1250344518.4159.4.camel@mulgrave.site> <20090816150530.2bae6d1f@lxorguk.ukuu.org.uk> <20090816083434.2ce69859@infradead.org> <1250437927.3856.119.camel@mulgrave.site> <20090816165943.GA26983@infradead.org> <1250517372.3844.3.camel@mulgrave.site> <20090817141038.GB11966@parisc-linux.org>
+	Mon, 17 Aug 2009 15:16:46 -0400
+Received: from sg2ehsobe004.messaging.microsoft.com ([207.46.51.78]:47308 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752944AbZHQTQp convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 15:16:45 -0400
+X-SpamScore: -16
+X-BigFish: VPS-16(zz1432R98dNzz1202hzzz2fh6bh62h)
+X-Spam-TCS-SCL: 1:0
+Message-ID: <4A89AC40.2040109@am.sony.com>
+Date: Mon, 17 Aug 2009 12:15:12 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090817141038.GB11966@parisc-linux.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+CC: Denys Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>, kernel@pengutronix.de
+Subject: Re: New fast(?)-boot results on ARM
+References: <20090814170228.GM13320@pengutronix.de> <1158166a0908141304y70300ab3p899b0d4609efded9@mail.gmail.com> <20090814204305.GA31727@pengutronix.de>
+In-Reply-To: <20090814204305.GA31727@pengutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+X-OriginalArrivalTime: 17 Aug 2009 19:15:13.0354 (UTC) FILETIME=[0BD0BAA0:01CA1F6F]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 17, 2009 at 08:10:38AM -0600, Matthew Wilcox wrote:
-> On Mon, Aug 17, 2009 at 08:56:12AM -0500, James Bottomley wrote:
-> > The testing was initially done to see if the initial maximal discard
-> > proposal from LSF09 was a viable approach (which it wasn't given the
-> > time taken to UNMAP).
+Robert Schwebel wrote:
+> On Fri, Aug 14, 2009 at 10:04:57PM +0200, Denys Vlasenko wrote:
+>>> [ �5.082616] < �0.007992> RPC: Registered tcp transport module.
+>>> [ �5.605159] < �0.522543> eth0: config: auto-negotiation on, 100FDX, 100HDX, 10FDX, 10HDX.
+>>> [ �6.602621] < �0.997462> IP-Config: Complete:
+>>> [ �6.606638] < �0.004017> � � �device=eth0, addr=192.168.23.197, mask=255.255.0.0, gw=192.168.23.2,
+>>> [ �6.614588] < �0.007950> � � �host=192.168.23.197, domain=, nis-domain=(none),
+>>> [ �6.618652] < �0.004064> � � �bootserver=192.168.23.2, rootserver=192.168.23.2, rootpath=
+>> Well, this ~1 second is not really kernel's fault, it's DHCP delay.
+>> But, do you need to do it at this moment?
+>> You do not seem to be using networking filesystems.
+>> You can run DHCP client in userspace.
 > 
-> It would be nice if that feedback could be made public instead of it
-> leaking out in dribs and drabs like this.
+> The board has ip autoconfig configured in, because we also use tftp/nfs
+> boot for development. But it had been disabled on the commandline:
+> 
+> ip=192.168.23.197:192.168.23.2:192.168.23.2:255.255.0.0:::
+> 
+> That shouldn't do dhcp, right?
 
-Yeah, I don't remember hearing about anything like this either.
+I think it doesn't, but I'm not positive.  The DHCP trasmissions
+themselves don't take very long.  There are some very long timeouts
+in the network code paths, which appear to be used whether you specify
+a static address or not.
+
+See the definitions of CONF_PRE_OPEN and CON_POST_OPEN
+in net/ipv4/ipconfig.c
+
+They are set to ridiculously long values.  In my experience,
+you can cut them down considerably with no dangerous side
+effects (but I haven't asked the network guys about the
+possible downsides).
+
+Here's a patch which I've used in the past.  (Sorry
+if it doesn't apply cleanly, I just extracted it from
+a PDF and the whitespace may have gotten messed up.
+It's short enough that you can hand-edit the files if
+there's a problem.)
+
+I'd like to hear back, if you apply this, whether it shortens
+the network startup time for you.
+
+diff --git a/net/ipv4/ipconfig.c b/net/ipv4/ipconfig.c
+index 42065ff..e42d83f 100644
+--- a/net/ipv4/ipconfig.c
++++ b/net/ipv4/ipconfig.c
+@@ -86,8 +86,10 @@
+ #endif
+
+ /* Define the friendly delay before and after opening net devices */
+-#define CONF_PRE_OPEN 500 /* Before opening: 1/2 second */
+-#define CONF_POST_OPEN 1 /* After opening: 1 second */
++/*#define CONF_PRE_OPEN 500 /* Before opening: 1/2 second */
++/*#define CONF_POST_OPEN 1 /* After opening: 1 second */
++#define CONF_PRE_OPEN 5 /* Before opening: 5 milli seconds */
++#define CONF_POST_OPEN 10 /* After opening: 10 milli seconds */
+
+ /* Define the timeout for waiting for a DHCP/BOOTP/RARP reply */
+ #define CONF_OPEN_RETRIES 2 /* (Re)open devices twice */
+@@ -1292,7 +1294,7 @@ static int __init ip_auto_config(void)
+ 		return -1;
+ 	/* Give drivers a chance to settle */
+-	ssleep(CONF_POST_OPEN);
++	msleep(CONF_POST_OPEN);
+
+ 	/*
+ 	 * If the config information is insufficient (e.g., our IP address or
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
