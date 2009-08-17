@@ -1,62 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbZHQWRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbZHQWTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbZHQWRI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 18:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZHQWRH
+	id S1758108AbZHQWTg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 18:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbZHQWTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 18:17:07 -0400
-Received: from mga03.intel.com ([143.182.124.21]:60403 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750907AbZHQWRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 18:17:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,398,1246863600"; 
-   d="scan'208";a="176757049"
-Subject: Re: [regression, bisected] fails to boot on Dell Optiplex 760 with
- VT-d enabled
-From: David Woodhouse <david.woodhouse@intel.com>
-To: Faidon Liambotis <paravoid@debian.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Han, Weidong" <weidong.han@intel.com>,
-       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
-       "Kay, Allen M" <allen.m.kay@intel.com>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>
-In-Reply-To: <4A89CB52.4030008@debian.org>
-References: <4A89CB52.4030008@debian.org>
-Content-Type: text/plain
-Organization: Intel Corporation. Pipers Way, Swindon, Wiltshire, SN3 1RJ,
- UK.
-Date: Mon, 17 Aug 2009 23:17:03 +0100
-Message-Id: <1250547423.7405.362.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Aug 2009 18:19:35 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:40315 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751927AbZHQWTf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 18:19:35 -0400
+Date: Mon, 17 Aug 2009 18:19:33 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
+       lizf@cn.fujitsu.com
+Subject: Re: [PATCH 07/12] add ftrace_event_call void * 'data' field
+In-Reply-To: <20090811100904.GA4938@nowhere>
+Message-ID: <alpine.DEB.2.00.0908171818420.25890@gandalf.stny.rr.com>
+References: <cover.1249932670.git.jbaron@redhat.com> <2f63f892c862efd4f58f9d3e72cb5bc55f2d0025.1249932670.git.jbaron@redhat.com> <20090811100904.GA4938@nowhere>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-17 at 14:27 -0700, Faidon Liambotis wrote:
-> I am experiencin a bug on an Dell Optiplex 760 with a configuration that
-> has an Intel Core2 Q9550 CPU and with an up-to-date BIOS, version A03.
+
+On Tue, 11 Aug 2009, Frederic Weisbecker wrote:
+
+> On Mon, Aug 10, 2009 at 04:52:44PM -0400, Jason Baron wrote:
+> > add an optional * void pointer to 'ftrace_event_call' that is
+> > passed in for regfunc and unregfunc.
+> > 
+> > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > 
+> > ---
+> >  include/linux/ftrace_event.h |    5 +++--
+> >  include/trace/ftrace.h       |    4 ++--
+> >  kernel/trace/trace_events.c  |    4 ++--
+> >  3 files changed, 7 insertions(+), 6 deletions(-)
+> > 
+> > diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+> > index ac8c6f8..8544f12 100644
+> > --- a/include/linux/ftrace_event.h
+> > +++ b/include/linux/ftrace_event.h
+> > @@ -112,8 +112,8 @@ struct ftrace_event_call {
+> >  	struct dentry		*dir;
+> >  	struct trace_event	*event;
+> >  	int			enabled;
+> > -	int			(*regfunc)(void);
+> > -	void			(*unregfunc)(void);
+> > +	int			(*regfunc)(void *);
+> > +	void			(*unregfunc)(void *);
+> >  	int			id;
+> >  	int			(*raw_init)(void);
+> >  	int			(*show_format)(struct trace_seq *s);
+> > @@ -122,6 +122,7 @@ struct ftrace_event_call {
+> >  	int			filter_active;
+> >  	struct event_filter	*filter;
+> >  	void			*mod;
+> > +	void			*data;
+> >  
+> >  	atomic_t		profile_count;
+> >  	int			(*profile_enable)(struct ftrace_event_call *);
+> > diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> > index 80e5f6c..a0de384 100644
+> > --- a/include/trace/ftrace.h
+> > +++ b/include/trace/ftrace.h
+> > @@ -568,7 +568,7 @@ static void ftrace_raw_event_##call(proto)				\
+> >  		trace_nowake_buffer_unlock_commit(event, irq_flags, pc); \
+> >  }									\
+> >  									\
+> > -static int ftrace_raw_reg_event_##call(void)				\
+> > +static int ftrace_raw_reg_event_##call(void *ptr)			\
 > 
-> When "VT for Direct I/O" is enabled in the BIOS, v2.6.30 boots and works
-> perfectly, while v2.6.31-rc1..rc6 fail (both of them x86-64).
 > 
-> More specifically, I get an endless loop of printing the following
-> messages in
-> the screen:
->         DMAR: [DMA Read] Request device [ff:1f.7] fault addr
->               fffffffffffff000
->         DMAR: [fault reason 255] Unknown
-> and the boot process doesn't move on from there.
+> Shouldn't it have a __used attribute here, or something?
 
-Is it fixed by http://git.infradead.org/iommu-2.6.git/commit/0815565a ?
+Do function parameters need that? There's lots of places where the 
+parameter of a function is not used by a function itself.
 
-I strongly suspect you weren't actually using the IOMMU in your
-'working' 2.6.30 kernel? Can you show a full log of that one booting?
+-- Steve
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+> 
+> 
+> >  {									\
+> >  	int ret;							\
+> >  									\
+> > @@ -579,7 +579,7 @@ static int ftrace_raw_reg_event_##call(void)				\
+> >  	return ret;							\
+> >  }									\
+> >  									\
+> > -static void ftrace_raw_unreg_event_##call(void)				\
+> > +static void ftrace_raw_unreg_event_##call(void *ptr)			\
+> 
+> 
+> 
+> Same here.
+> 
+> 
+> 
+> >  {									\
+> >  	unregister_trace_##call(ftrace_raw_event_##call);		\
+> >  }									\
+> > diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+> > index f95f847..1d289e2 100644
+> > --- a/kernel/trace/trace_events.c
+> > +++ b/kernel/trace/trace_events.c
+> > @@ -86,14 +86,14 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+> >  		if (call->enabled) {
+> >  			call->enabled = 0;
+> >  			tracing_stop_cmdline_record();
+> > -			call->unregfunc();
+> > +			call->unregfunc(call->data);
+> >  		}
+> >  		break;
+> >  	case 1:
+> >  		if (!call->enabled) {
+> >  			call->enabled = 1;
+> >  			tracing_start_cmdline_record();
+> > -			call->regfunc();
+> > +			call->regfunc(call->data);
+> >  		}
+> >  		break;
+> >  	}
+> > -- 
+> > 1.6.2.5
+> > 
+> 
+> 
