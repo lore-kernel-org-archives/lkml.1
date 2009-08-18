@@ -1,181 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751997AbZHRUmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751922AbZHRUut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751997AbZHRUmd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 16:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbZHRUmc
+	id S1751922AbZHRUut (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 16:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbZHRUut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 16:42:32 -0400
-Received: from comal.ext.ti.com ([198.47.26.152]:54909 "EHLO comal.ext.ti.com"
+	Tue, 18 Aug 2009 16:50:49 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:33144 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751275AbZHRUmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 16:42:31 -0400
-Message-ID: <4A8B1221.30003@ti.com>
-Date: Tue, 18 Aug 2009 15:42:09 -0500
-From: Jon Hunter <jon-hunter@ti.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	id S1751432AbZHRUus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 16:50:48 -0400
+Date: Tue, 18 Aug 2009 21:50:50 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] page-allocator: Move pcp static fields for high
+	and batch off-pcp and onto the zone
+Message-ID: <20090818205050.GA756@csn.ul.ie>
+References: <1250594162-17322-1-git-send-email-mel@csn.ul.ie> <1250594162-17322-4-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0908181015420.32284@gentwo.org> <20090818164216.GA13435@csn.ul.ie> <alpine.DEB.1.10.0908181355490.3840@gentwo.org>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: john stultz <johnstul@us.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] Dynamic Tick: Prevent clocksource wrapping during
- idle
-References: <1250617512-23567-1-git-send-email-jon-hunter@ti.com> <1250617512-23567-2-git-send-email-jon-hunter@ti.com> <alpine.LFD.2.00.0908182115270.3361@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0908182115270.3361@localhost.localdomain>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0908181355490.3840@gentwo.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Thomas Gleixner wrote:
-> On Tue, 18 Aug 2009, Jon Hunter wrote:
+On Tue, Aug 18, 2009 at 01:56:22PM -0400, Christoph Lameter wrote:
+> On Tue, 18 Aug 2009, Mel Gorman wrote:
 > 
->> From: Jon Hunter <jon-hunter@ti.com>
->>
->> The dynamic tick allows the kernel to sleep for periods longer
->> than a single tick. This patch prevents that the kernel from
->> sleeping for a period longer than the maximum time that the
->> current clocksource can count. This ensures that the kernel will
->> not lose track of time. This patch adds a function called
->> "clocksource_max_deferment()" that calculates the maximum time the
->> kernel can sleep for a given clocksource and function called
->> "timekeeping_max_deferment()" that returns maximum time the kernel
->> can sleep for the current clocksource.
->>
->> Signed-off-by: Jon Hunter <jon-hunter@ti.com>
->> ---
->>  include/linux/clocksource.h |    2 +
->>  include/linux/time.h        |    1 +
->>  kernel/time/clocksource.c   |   47 +++++++++++++++++++++++++++++++++++
->>  kernel/time/tick-sched.c    |   57 ++++++++++++++++++++++++++++++++----------
->>  kernel/time/timekeeping.c   |   11 ++++++++
->>  5 files changed, 104 insertions(+), 14 deletions(-)
->>
->> diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
->> index 9ea40ff..09ed7f1 100644
->> --- a/include/linux/clocksource.h
->> +++ b/include/linux/clocksource.h
->> @@ -151,6 +151,7 @@ extern u64 timecounter_cyc2time(struct timecounter *tc,
->>   *			subtraction of non 64 bit counters
->>   * @mult:		cycle to nanosecond multiplier
->>   * @shift:		cycle to nanosecond divisor (power of two)
->> + * @max_idle_ns:	max idle time permitted by the clocksource (nsecs)
->>   * @flags:		flags describing special properties
->>   * @vread:		vsyscall based read
->>   * @resume:		resume function for the clocksource, if necessary
->> @@ -168,6 +169,7 @@ struct clocksource {
->>  	cycle_t mask;
->>  	u32 mult;
->>  	u32 shift;
->> +	s64 max_idle_ns;
+> > On Tue, Aug 18, 2009 at 10:18:48AM -0400, Christoph Lameter wrote:
+> > >
+> > > This will increase the cache footprint for the hot code path. Could these
+> > > new variable be moved next to zone fields that are already in use there?
+> > > The pageset array is used f.e.
+> > >
+> >
+> > pageset is ____cacheline_aligned_in_smp so putting pcp->high/batch near
+> > it won't help in terms of cache footprint. This is why I located it near
+> > watermarks because it's known they'll be needed at roughly the same time
+> > pcp->high/batch would be normally accessed.
 > 
-> I don't think we should move this to the clocksource. That should go
-> into the new struct timekeeper and initialized when a clocksource is
-> selected for timekeeping.
+> watermarks are not accessed from the hot code path in free_hot_cold page.
 > 
->> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
->> index e0f59a2..7a98e90 100644
->> --- a/kernel/time/tick-sched.c
->> +++ b/kernel/time/tick-sched.c
->> @@ -217,6 +217,7 @@ void tick_nohz_stop_sched_tick(int inidle)
->>  	ktime_t last_update, expires, now;
->>  	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
->>  	int cpu;
->> +	s64 time_delta, max_time_delta;
->>  
->>  	local_irq_save(flags);
->>  
->> @@ -270,6 +271,18 @@ void tick_nohz_stop_sched_tick(int inidle)
->>  		seq = read_seqbegin(&xtime_lock);
->>  		last_update = last_jiffies_update;
->>  		last_jiffies = jiffies;
->> +
->> +		/*
->> +		 * On SMP we really should only care for the CPU which
->> +		 * has the do_timer duty assigned. All other CPUs can
->> +		 * sleep as long as they want.
->> +		 */
->> +		if (cpu == tick_do_timer_cpu ||
->> +				tick_do_timer_cpu == TICK_DO_TIMER_NONE)
->> +			max_time_delta = timekeeping_max_deferment();
->> +		else
->> +			max_time_delta = KTIME_MAX;
->> +
-> 
-> Is it worth the extra check instead of always using
-> timekeeping_max_deferment() ?
-> 
->>  	} while (read_seqretry(&xtime_lock, seq));
->>  
->>  	/* Get the next timer wheel timer */
->> @@ -289,11 +302,30 @@ void tick_nohz_stop_sched_tick(int inidle)
->>  	if ((long)delta_jiffies >= 1) {
->>  
->>  		/*
->> -		* calculate the expiry time for the next timer wheel
->> -		* timer
->> -		*/
->> -		expires = ktime_add_ns(last_update, tick_period.tv64 *
->> -				   delta_jiffies);
->> +		 * calculate the expiry time for the next timer wheel
->> +		 * timer. delta_jiffies >= NEXT_TIMER_MAX_DELTA signals
->> +		 * that there is no timer pending or at least extremely
->> +		 * far into the future (12 days for HZ=1000). In this
->> +		 * case we set the expiry to the end of time.
->> +		 */
->> +		if (likely(delta_jiffies < NEXT_TIMER_MAX_DELTA)) {
->> +
->> +			/*
->> +			 * Calculate the time delta for the next timer event.
->> +			 * If the time delta exceeds the maximum time delta
->> +			 * permitted by the current clocksource then adjust
->> +			 * the time delta accordingly to ensure the
->> +			 * clocksource does not wrap.
->> +			 */
->> +			time_delta = tick_period.tv64 * delta_jiffies;
->> +
->> +			if (time_delta > max_time_delta)
->> +				time_delta = max_time_delta;
->> +
->> +			expires = ktime_add_ns(last_update, time_delta);
->> +		} else {
->> +			expires.tv64 = KTIME_MAX;
->> +		}
-> 
-> This looks incorrect. You set expires to KTIME_MAX when no timer is
-> pending, but that defeats the purpose of this patch. When we hit this
-> code path and the next interrupt comes in after the timekeeping
-> clocksource wrapped we are bust.
 
-Right, so this is a bit of a grey area for me. When I first started 
-looking at this I was questioning the purpose of the following code that 
-exists today in the tick_nohz_stop_sched_tick() function:
+They are used in a commonly-used path for allocation so there is some
+advantage. Put beside pageset, there is no advantage as that structure
+is already aligned to a cache-line.
 
-	/*
-	 * delta_jiffies >= NEXT_TIMER_MAX_DELTA signals that
-	 * there is no timer pending or at least extremly far
-	 * into the future (12 days for HZ=1000). In this case
-	 * we simply stop the tick timer:
-	 */
-	if (unlikely(delta_jiffies >= NEXT_TIMER_MAX_DELTA)) {
-		ts->idle_expires.tv64 = KTIME_MAX;
-		if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
-			hrtimer_cancel(&ts->sched_timer);
-			goto out;
-	}
-
-The above code checks to see delta_jiffies is greater than 
-NEXT_TIMER_MAX_DELTA, if so then sets expires to KTIME_MAX and disables 
-the timer. I had questioned this a few months ago, but I don't think 
-that John and I knew the history here. So for right or wrong, I left 
-this code alone. In the above patch it is still do the same thing if 
-delta_jiffies is indeed greater than NEXT_TIMER_MAX_DELTA.
-
-If you agree that this code is not needed and that in the case where we 
-have no timers we should simply make the next timer event always occur 
-in max_time_delta ns later, then I can re-work it to do this.
-
-Thanks
-Jon
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
