@@ -1,60 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752466AbZHRX56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbZHRX6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752466AbZHRX56 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 19:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbZHRX55
+	id S1752470AbZHRX6S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 19:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbZHRX6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 19:57:57 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34518 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752330AbZHRX55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 19:57:57 -0400
-Date: Wed, 19 Aug 2009 09:57:51 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: suspend tree build failure
-Message-Id: <20090819095751.4aa7b2e6.sfr@canb.auug.org.au>
-In-Reply-To: <200908182343.32375.rjw@sisk.pl>
-References: <20090818183049.8bde1ee6.sfr@canb.auug.org.au>
-	<200908182343.32375.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__19_Aug_2009_09_57_51_+1000_u.F5g/zVAq0nQxFt"
+	Tue, 18 Aug 2009 19:58:17 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:10477 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752242AbZHRX6R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 19:58:17 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=from:subject:to:cc:date:message-id:user-agent:
+	mime-version:content-type:content-transfer-encoding:x-system-of-record;
+	b=uvOHhZHz+o4RlQZ1Zz96DtnESf4Z40wSGn7pLrU23ptZkP5SKzCy95gq/tdU2cM+K
+	MUrdBx+US7uKJ90B7KYxw==
+From: Paul Menage <menage@google.com>
+Subject: [PATCH 0/8] CGroups: cgroup memberlist enhancements/fixes
+To: akpm@linux-foundation.org, bblum@andrew.cmu.edu, lizf@cn.fujitsu.com
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Date: Tue, 18 Aug 2009 16:58:06 -0700
+Message-ID: <20090818235059.22531.42618.stgit@menage.mtv.corp.google.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__19_Aug_2009_09_57_51_+1000_u.F5g/zVAq0nQxFt
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The following series adds a "cgroup.procs" file to each cgroup that
+reports unique tgids rather than pids, and allows all threads in a
+threadgroup to be atomically moved to a new cgroup.
 
-Hi Rafael,
+The subsystem "attach" interface is modified to support attaching
+whole threadgroups at a time, which could introduce potential problems
+if any subsystem were to need to access the old cgroup of every thread
+being moved. The attach interface may need to be revised if this
+becomes the case.
 
-On Tue, 18 Aug 2009 23:43:32 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
->
-> Sorry for the trouble, I've just pushed an updated tree.
+Also added is functionality for read/write locking all CLONE_THREAD
+fork()ing within a threadgroup, by means of an rwsem that lives in the
+sighand_struct, for per-threadgroup-ness and also for sharing a
+cacheline with the sighand's atomic count. This scheme should
+introduce no extra overhead in the fork path when there's no
+contention.
 
-Thanks.
+The final patch reveals potential for a race when forking before a
+subsystem's attach function is called - one potential solution in case
+any subsystem has this problem is to hang on to the group's fork mutex
+through the attach() calls, though no subsystem yet demonstrates need
+for an extended critical section.
 
-"Third time's the charm" :-)
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+---
 
---Signature=_Wed__19_Aug_2009_09_57_51_+1000_u.F5g/zVAq0nQxFt
-Content-Type: application/pgp-signature
+Ben Blum (7):
+      Adds ability to move all threads in a process to a new cgroup atomically
+      Adds functionality to read/write lock CLONE_THREAD fork()ing per-threadgroup
+      Lets ss->can_attach and ss->attach do whole threadgroups at a time
+      Changes css_set freeing mechanism to be under RCU
+      Use vmalloc for large cgroups pidlist allocations
+      Ensures correct concurrent opening/reading of pidlists across pid namespaces
+      Adds a read-only "procs" file similar to "tasks" that shows only unique tgids
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Paul Menage (1):
+      Revert commit 8827c288feb7810185aa7c2e37537202fc709869
 
-iEYEARECAAYFAkqLP/8ACgkQjjKRsyhoI8wbsACbBQdOpXFzc/OTwnYDOeM2byFz
-7usAoI5ahi5kxPRT5g9cLjcmCBBsIjiL
-=fwPt
------END PGP SIGNATURE-----
 
---Signature=_Wed__19_Aug_2009_09_57_51_+1000_u.F5g/zVAq0nQxFt--
+ Documentation/cgroups/cgroups.txt |   25 +
+ include/linux/cgroup.h            |   67 ++-
+ include/linux/init_task.h         |    9 
+ include/linux/sched.h             |   15 +
+ kernel/cgroup.c                   |  948 +++++++++++++++++++++++++++++--------
+ kernel/cgroup_freezer.c           |   15 +
+ kernel/cpuset.c                   |   66 ++-
+ kernel/fork.c                     |    9 
+ kernel/ns_cgroup.c                |   16 +
+ kernel/sched.c                    |   35 +
+ mm/memcontrol.c                   |    3 
+ security/device_cgroup.c          |    3 
+ 12 files changed, 974 insertions(+), 237 deletions(-)
+
