@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751985AbZHRUhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752010AbZHRUiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751985AbZHRUhQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 16:37:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZHRUhN
+	id S1752010AbZHRUiU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 16:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZHRUiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 16:37:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40182 "EHLO mx2.redhat.com"
+	Tue, 18 Aug 2009 16:38:19 -0400
+Received: from www.tglx.de ([62.245.132.106]:40816 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750787AbZHRUhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 16:37:12 -0400
-Date: Tue, 18 Aug 2009 23:35:22 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Cc: Avi Kivity <avi@redhat.com>, Gregory Haskins <gregory.haskins@gmail.com>,
-       kvm@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
-       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
-	model for vbus_driver objects
-Message-ID: <20090818203522.GA20393@redhat.com>
-References: <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <20090817174142.GA11140@redhat.com> <4A89BAC5.9040400@gmail.com> <20090818084606.GA13878@redhat.com> <20090818155329.GD31060@ovro.caltech.edu> <4A8ADC09.3030205@redhat.com> <20090818172752.GC17631@ovro.caltech.edu> <4A8AE918.5000109@redhat.com> <20090818182735.GD17631@ovro.caltech.edu>
+	id S1751690AbZHRUiT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 16:38:19 -0400
+Date: Tue, 18 Aug 2009 22:37:36 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [GIT pull] irq fixes for 2.6.31
+In-Reply-To: <alpine.LFD.2.01.0908181330210.3158@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0908182235500.3361@localhost.localdomain>
+References: <alpine.LFD.2.00.0908172055360.2782@localhost.localdomain> <alpine.LFD.2.01.0908171340540.3162@localhost.localdomain> <alpine.LFD.2.00.0908172342400.2782@localhost.localdomain> <alpine.LFD.2.01.0908181330210.3158@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090818182735.GD17631@ovro.caltech.edu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 11:27:35AM -0700, Ira W. Snyder wrote:
-> I haven't studied vhost-net very carefully yet. As soon as I saw the
-> copy_(to|from)_user() I stopped reading, because it seemed useless for
-> my case. I'll look again and try to find where vhost-net supports
-> setting MAC addresses and other features.
-
-vhost net doesn't do this at all. You bind raw socket to a network
-device, and program that with usual userspace interfaces.
-
-> Also, in my case I'd like to boot Linux with my rootfs over NFS. Is
-> vhost-net capable of this?
+On Tue, 18 Aug 2009, Linus Torvalds wrote:
+> On Mon, 17 Aug 2009, Thomas Gleixner wrote:
+> > 
+> > I have no idea what went wrong this time. I force pushed the branch
+> > and pulled it back on a test machine to compile and test boot. The
+> > test machine still has the correct sha1 for that branch while
+> > master.kernel.org did not. I probably pushed out some other branch
+> > between the point where I sent the pull request and the time you
+> > pulled, but I can not find any hint in my bash history which would
+> > explain why it wreckaged the irq-fixes-for-linus branch.
+> > 
+> > Just double checked that it is pushed out to git://.... as well.
 > 
-> I've had Arnd, BenH, and Grant Likely (and others, privately) contact me
-> about devices they are working with that would benefit from something
-> like virtio-over-PCI. I'd like to see vhost-net be merged with the
-> capability to support my use case. There are plenty of others that would
-> benefit, not just myself.
+> It's still wrong. 
 > 
-> I'm not sure vhost-net is being written with this kind of future use in
-> mind. I'd hate to see it get merged, and then have to change the ABI to
-> support physical-device-to-device usage. It would be better to keep
-> future use in mind now, rather than try and hack it in later.
+> 	http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=irq-fixes-for-linus
+> 
+> still does _not_ show that
+> 
+> 	genirq: Do not wakeup irq thread from __setup_irq() and set action->irq
+> 
+> commit, but the broken one.
 
-I still need to think your usage over. I am not so sure this fits what
-vhost is trying to do. If not, possibly it's better to just have a
-separate driver for your device.
+Err, no. Please see the mail I sent an hour ago.
 
+Even the http.... interface shows the one I want you to pull:
 
-> Thanks for the comments.
-> Ira
+     69ab849439b506cd8dd2879527fdb64d95dd5211
+
+Thanks,
+
+	tglx
