@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbZHRKOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbZHRKPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758473AbZHRKOc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 06:14:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbZHRKOb
+	id S1758617AbZHRKPj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 06:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbZHRKPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 06:14:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54108 "EHLO mx2.redhat.com"
+	Tue, 18 Aug 2009 06:15:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40718 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751994AbZHRKOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 06:14:30 -0400
-Message-ID: <4A8A7EE5.6090209@redhat.com>
-Date: Tue, 18 Aug 2009 13:13:57 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1751994AbZHRKPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 06:15:37 -0400
+Date: Tue, 18 Aug 2009 12:15:25 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mark Kelly <mark@bifferos.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, Florian Fainelli <florian@openwrt.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch, v2] x86: CPU detection for RDC
+Message-ID: <20090818101525.GB14374@elte.hu>
+References: <20090816175204.GA28553@elte.hu> <alpine.LNX.2.00.0908160404300.20653@cent.localnet> <4A899A1D.8060808@zytor.com> <20090817180825.GA5558@elte.hu> <4A899FEA.9020707@zytor.com> <871vnas2gn.fsf@basil.nowhere.org> <4A89A724.406@zytor.com> <20090817213118.GA24747@one.firstfloor.org> <4A89D300.5030509@zytor.com> <alpine.LNX.2.00.0908170746040.28730@cent.localnet>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Gregory Haskins <gregory.haskins@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for	vbus_driver
- objects
-References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A8954F0.3040402@gmail.com> <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com> <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com> <20090818095313.GC13878@redhat.com> <4A8A7BB9.2020906@redhat.com> <20090818100945.GD13878@redhat.com>
-In-Reply-To: <20090818100945.GD13878@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.00.0908170746040.28730@cent.localnet>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.5
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0127]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/18/2009 01:09 PM, Michael S. Tsirkin wrote:
->
->> mmio and pio don't have this problem since the host can use the address
->> to locate the destination.
->>      
-> So userspace could map hypercall to address during setup and tell the
-> host kernel?
->    
 
-Suppose a nested guest has two devices.  One a virtual device backed by 
-its host (our guest), and one a virtual device backed by us (the real 
-host), and assigned by the guest to the nested guest.  If both devices 
-use hypercalls, there is no way to distinguish between them.
+* Mark Kelly <mark@bifferos.com> wrote:
 
--- 
-error compiling committee.c: too many arguments to function
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -382,6 +382,7 @@ config X86_RDC321X
+>  	bool "RDC R-321x SoC"
+>  	depends on X86_32
+>  	depends on X86_EXTENDED_PLATFORM
+> +	select PCI
+>  	select M486
+>  	select X86_REBOOTFIXUPS
 
+PCI is a complex interactive Kconfig switch and we dont select it 
+in x86 code. Please add a 'depends on PCI' line instead, as i 
+suggested in my mail.
+
+	Ingo
