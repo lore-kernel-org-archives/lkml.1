@@ -1,174 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758397AbZHRKBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758373AbZHRKF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758397AbZHRKBN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 06:01:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758260AbZHRKBM
+	id S1758373AbZHRKF5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 06:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbZHRKF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 06:01:12 -0400
-Received: from mga03.intel.com ([143.182.124.21]:11777 "EHLO mga03.intel.com"
+	Tue, 18 Aug 2009 06:05:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41379 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758235AbZHRKBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 06:01:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,401,1246863600"; 
-   d="scan'208";a="176977599"
-Date: Tue, 18 Aug 2009 18:00:32 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Rik van Riel <riel@redhat.com>, Jeff Dike <jdike@addtoit.com>,
-       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-Message-ID: <20090818100031.GC16298@localhost>
-References: <20090806210955.GA14201@c2.user-mode-linux.org> <20090816031827.GA6888@localhost> <4A87829C.4090908@redhat.com> <20090816051502.GB13740@localhost> <20090816112910.GA3208@localhost> <28c262360908170733q4bc5ddb8ob2fc976b6a468d6e@mail.gmail.com> <20090818023438.GB7958@localhost> <20090818131734.3d5bceb2.minchan.kim@barrios-desktop> <20090818093119.GA12679@localhost> <20090818185247.a4516389.minchan.kim@barrios-desktop>
+	id S1754266AbZHRKF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 06:05:56 -0400
+Date: Tue, 18 Aug 2009 12:05:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Jason Baron <jbaron@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Wu Zhangjin <wuzj@lemote.com>, linux-next@vger.kernel.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [S390] ftrace: update system call tracer support
+Message-ID: <20090818100526.GA14374@elte.hu>
+References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com> <20090812091133.GA21655@elte.hu> <20090818004654.GA4402@linux-sh.org> <20090818073211.GA26670@elte.hu> <20090818085110.GA2074@elte.hu> <20090818105927.30f6a140@skybase>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090818185247.a4516389.minchan.kim@barrios-desktop>
+In-Reply-To: <20090818105927.30f6a140@skybase>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 05:52:47PM +0800, Minchan Kim wrote:
-> On Tue, 18 Aug 2009 17:31:19 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
+
+* Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+
+> On Tue, 18 Aug 2009 10:51:10 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> > On Tue, Aug 18, 2009 at 12:17:34PM +0800, Minchan Kim wrote:
-> > > On Tue, 18 Aug 2009 10:34:38 +0800
-> > > Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > 
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > * Paul Mundt <lethal@linux-sh.org> wrote:
 > > > 
-> > > > Minchan,
+> > > > [ Adding to Cc everyone that now has a broken tree thanks to this .. ]
 > > > > 
-> > > > On Mon, Aug 17, 2009 at 10:33:54PM +0800, Minchan Kim wrote:
-> > > > > On Sun, Aug 16, 2009 at 8:29 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> > > > > > On Sun, Aug 16, 2009 at 01:15:02PM +0800, Wu Fengguang wrote:
-> > > > > >> On Sun, Aug 16, 2009 at 11:53:00AM +0800, Rik van Riel wrote:
-> > > > > >> > Wu Fengguang wrote:
-> > > > > >> > > On Fri, Aug 07, 2009 at 05:09:55AM +0800, Jeff Dike wrote:
-> > > > > >> > >> Side question -
-> > > > > >> > >>  Is there a good reason for this to be in shrink_active_list()
-> > > > > >> > >> as opposed to __isolate_lru_page?
-> > > > > >> > >>
-> > > > > >> > >>          if (unlikely(!page_evictable(page, NULL))) {
-> > > > > >> > >>                  putback_lru_page(page);
-> > > > > >> > >>                  continue;
-> > > > > >> > >>          }
-> > > > > >> > >>
-> > > > > >> > >> Maybe we want to minimize the amount of code under the lru lock or
-> > > > > >> > >> avoid duplicate logic in the isolate_page functions.
-> > > > > >> > >
-> > > > > >> > > I guess the quick test means to avoid the expensive page_referenced()
-> > > > > >> > > call that follows it. But that should be mostly one shot cost - the
-> > > > > >> > > unevictable pages are unlikely to cycle in active/inactive list again
-> > > > > >> > > and again.
-> > > > > >> >
-> > > > > >> > Please read what putback_lru_page does.
-> > > > > >> >
-> > > > > >> > It moves the page onto the unevictable list, so that
-> > > > > >> > it will not end up in this scan again.
-> > > > > >>
-> > > > > >> Yes it does. I said 'mostly' because there is a small hole that an
-> > > > > >> unevictable page may be scanned but still not moved to unevictable
-> > > > > >> list: when a page is mapped in two places, the first pte has the
-> > > > > >> referenced bit set, the _second_ VMA has VM_LOCKED bit set, then
-> > > > > >> page_referenced() will return 1 and shrink_page_list() will move it
-> > > > > >> into active list instead of unevictable list. Shall we fix this rare
-> > > > > >> case?
+> > > > On Wed, Aug 12, 2009 at 11:11:33AM +0200, Ingo Molnar wrote:
+> > > > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > > > > > This pull request integrate one cleanup/fix for ftrace and an 
+> > > > > > update for syscall tracing: the migration from old-style tracer to 
+> > > > > > individual tracepoints/trace_events and the support for perf 
+> > > > > > counter.
+> > > > > > 
+> > > > > > I've tested it with success either with ftrace (every syscall 
+> > > > > > tracepoints enabled at the same time without problems) and with 
+> > > > > > perfcounter.
+> > > > > > 
+> > > > > > May be one drawback: it creates so much trace events that the 
+> > > > > > ftrace selftests can take some time :-)
 > > > > > 
-> > > > > I think it's not a big deal.
+> > > > > Pulled, thanks a lot!
 > > > > 
-> > > > Maybe, otherwise I should bring up this issue long time before :)
-> > > > 
-> > > > > As you mentioned, it's rare case so there would be few pages in active
-> > > > > list instead of unevictable list.
-> > > > 
-> > > > Yes.
-> > > > 
-> > > > > When next time to scan comes, we can try to move the pages into
-> > > > > unevictable list, again.
-> > > > 
-> > > > Will PG_mlocked be set by then? Otherwise the situation is not likely 
-> > > > to change and the VM_LOCKED pages may circulate in active/inactive
-> > > > list for countless times.
+> > > > And this has now subsequently broken every single SH and S390 
+> > > > configuration, [...]
 > > > 
-> > > PG_mlocked is not important in that case. 
-> > > Important thing is VM_LOCKED vma. 
-> > > I think below annotaion can help you to understand my point. :)
+> > > I test SH cross-builds regularly. I just checked the SH defconfig 
+> > > and it builds just fine here:
+> > > 
+> > > $ make -j32 CROSS_COMPILE=sh3-linux- ARCH=sh vmlinux
 > > 
-> > Hmm, it looks like pages under VM_LOCKED vma is guaranteed to have
-> > PG_mlocked set, and so will be caught by page_evictable(). Is it?
+> > The s390 build indeed broke. (This got masked by the s390 toolchain 
+> > i'm using not having been able to build Linus's tree - i fixed 
+> > that.)
+> > 
+> > Could you try the fix below? It does the trick here.
+> > 
+> > Martin, Heiko - does the fix look good to you? regs->gprs[2] seems 
+> > to be the register used for both the syscall number (enter 
+> > callback) and for the return code (exit callback).
 > 
-> No. I am sorry for making my point not clear. 
-> I meant following as. 
-> When the next time to scan,
-> 
-> shrink_page_list 
-  -> 
-                referenced = page_referenced(page, 1,
-                                                sc->mem_cgroup, &vm_flags);
-                /* In active use or really unfreeable?  Activate it. */
-                if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
-                                        referenced && page_mapping_inuse(page))
-                        goto activate_locked;
-  
-> -> try_to_unmap
-     ~~~~~~~~~~~~ this line won't be reached if page is found to be
-     referenced in the above lines?
+> Correct, for do_syscall_trace_{enter,exit} the code in entry.S 
+> stores the system call number in regs->gprs[2]. The fix is fine. 
+> Thanks Ingo.
 
-Thanks,
-Fengguang
+Thanks, i've added your Acked-by to the commit. I suspect you dont 
+want to pull tracing infrastructure changes into the S390 tree, so 
+keeping this fix in the tracing tree would be the best option?
 
-> 	-> try_to_unmap_xxx
-> 		-> if (vma->vm_flags & VM_LOCKED)
-> 		-> try_to_mlock_page
-> 			-> TestSetPageMlocked
-> 			-> putback_lru_page
-> 
-> So at last, the page will be located in unevictable list. 
-> 
-> > Then I was worrying about a null problem. Sorry for the confusion!
-> > 
-> > Thanks,
-> > Fengguang
-> > 
-> > > ----
-> > > 
-> > > /*
-> > >  * called from munlock()/munmap() path with page supposedly on the LRU.
-> > >  *
-> > >  * Note:  unlike mlock_vma_page(), we can't just clear the PageMlocked
-> > >  * [in try_to_munlock()] and then attempt to isolate the page.  We must
-> > >  * isolate the page to keep others from messing with its unevictable
-> > >  * and mlocked state while trying to munlock.  However, we pre-clear the
-> > >  * mlocked state anyway as we might lose the isolation race and we might
-> > >  * not get another chance to clear PageMlocked.  If we successfully
-> > >  * isolate the page and try_to_munlock() detects other VM_LOCKED vmas
-> > >  * mapping the page, it will restore the PageMlocked state, unless the page
-> > >  * is mapped in a non-linear vma.  So, we go ahead and SetPageMlocked(),
-> > >  * perhaps redundantly.
-> > >  * If we lose the isolation race, and the page is mapped by other VM_LOCKED
-> > >  * vmas, we'll detect this in vmscan--via try_to_munlock() or try_to_unmap()
-> > >  * either of which will restore the PageMlocked state by calling
-> > >  * mlock_vma_page() above, if it can grab the vma's mmap sem.
-> > >  */
-> > > static void munlock_vma_page(struct page *page)
-> > > {
-> > > ...
-> > > 
-> > > -- 
-> > > Kind regards,
-> > > Minchan Kim
-> 
-> 
-> -- 
-> Kind regards,
-> Minchan Kim
+	Ingo
