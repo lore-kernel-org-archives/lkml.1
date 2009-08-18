@@ -1,56 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751056AbZHRSYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751441AbZHRS1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751056AbZHRSYY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 14:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbZHRSYX
+	id S1751441AbZHRS1g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 14:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbZHRS1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 14:24:23 -0400
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:14897
-	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750736AbZHRSYW (ORCPT
+	Tue, 18 Aug 2009 14:27:36 -0400
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:51202 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbZHRS1f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 14:24:22 -0400
-X-SpamScore: -13
-X-BigFish: VPS-13(zz1454K1432Rzz1202hzzz2fh6bh62h)
-X-Spam-TCS-SCL: 1:0
-Message-ID: <4A8AF1B0.4010608@am.sony.com>
-Date: Tue, 18 Aug 2009 11:23:44 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 18 Aug 2009 14:27:35 -0400
+Date: Tue, 18 Aug 2009 11:27:35 -0700
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Avi Kivity <avi@redhat.com>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net,
+       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
+	model for vbus_driver objects
+Message-ID: <20090818182735.GD17631@ovro.caltech.edu>
+References: <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <20090817174142.GA11140@redhat.com> <4A89BAC5.9040400@gmail.com> <20090818084606.GA13878@redhat.com> <20090818155329.GD31060@ovro.caltech.edu> <4A8ADC09.3030205@redhat.com> <20090818172752.GC17631@ovro.caltech.edu> <4A8AE918.5000109@redhat.com>
 MIME-Version: 1.0
-To: Dirk Behme <dirk.behme@googlemail.com>
-CC: Sascha Hauer <s.hauer@pengutronix.de>,
-       Robert Schwebel <r.schwebel@pengutronix.de>,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       Arjan van de Ven <arjan@linux.intel.com>, kernel@pengutronix.de
-Subject: Re: New fast(?)-boot results on ARM
-References: <20090814170228.GM13320@pengutronix.de> <20090818140605.GB9943@pengutronix.de> <4A8AC95E.2040907@googlemail.com>
-In-Reply-To: <4A8AC95E.2040907@googlemail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Aug 2009 18:23:45.0926 (UTC) FILETIME=[05FA5A60:01CA2031]
-X-SEL-encryption-scan: scanned
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8AE918.5000109@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Tue, 18 Aug 2009 11:27:36 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dirk Behme wrote
-> Btw.: I tried to summarize some hints given in this thread in
-> 
-> http://elinux.org/Boot_Time#Boot_time_check_list
-> 
-> Please feel free to add and correct stuff!
+On Tue, Aug 18, 2009 at 08:47:04PM +0300, Avi Kivity wrote:
+> On 08/18/2009 08:27 PM, Ira W. Snyder wrote:
+>>> In fact, modern x86s do have dma engines these days (google for Intel
+>>> I/OAT), and one of our plans for vhost-net is to allow their use for
+>>> packets above a certain size.  So a patch allowing vhost-net to
+>>> optionally use a dma engine is a good thing.
+>>>      
+>> Yes, I'm aware that very modern x86 PCs have general purpose DMA
+>> engines, even though I don't have any capable hardware. However, I think
+>> it is better to support using any PC (with or without DMA engine, any
+>> architecture) as the PCI master, and just handle the DMA all from the
+>> PCI agent, which is known to have DMA?
+>>    
+>
+> Certainly; but if your PCI agent will support the DMA API, then the same  
+> vhost code will work with both I/OAT and your specialized hardware.
+>
 
-That's a great summary of the points raised in the discussion.
-It's good to organize the information and save it in an
-easy-to-read format.
+Yes, that's true. My ppc is a Freescale MPC8349EMDS. It has a Linux
+DMAEngine driver in mainline, which I've used. That's excellent.
 
-Thanks very much for doing that!
- -- Tim
+>>> Exposing a knob to userspace is not an insurmountable problem; vhost-net
+>>> already allows changing the memory layout, for example.
+>>>
+>>>      
+>> Let me explain the most obvious problem I ran into: setting the MAC
+>> addresses used in virtio.
+>>
+>> On the host (PCI master), I want eth0 (virtio-net) to get a random MAC
+>> address.
+>>
+>> On the guest (PCI agent), I want eth0 (virtio-net) to get a specific MAC
+>> address, aa:bb:cc:dd:ee:ff.
+>>
+>> The virtio feature negotiation code handles this, by seeing the
+>> VIRTIO_NET_F_MAC feature in it's configuration space. If BOTH drivers do
+>> not have VIRTIO_NET_F_MAC set, then NEITHER will use the specified MAC
+>> address. This is because the feature negotiation code only accepts a
+>> feature if it is offered by both sides of the connection.
+>>
+>> In this case, I must have the guest generate a random MAC address and
+>> have the host put aa:bb:cc:dd:ee:ff into the guest's configuration
+>> space. This basically means hardcoding the MAC addresses in the Linux
+>> drivers, which is a big no-no.
+>>
+>> What would I expose to userspace to make this situation manageable?
+>>
+>>    
+>
+> I think in this case you want one side to be virtio-net (I'm guessing  
+> the x86) and the other side vhost-net (the ppc boards with the dma  
+> engine).  virtio-net on x86 would communicate with userspace on the ppc  
+> board to negotiate features and get a mac address, the fast path would  
+> be between virtio-net and vhost-net (which would use the dma engine to  
+> push and pull data).
+>
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+Ah, that seems backwards, but it should work after vhost-net learns how
+to use the DMAEngine API.
 
+I haven't studied vhost-net very carefully yet. As soon as I saw the
+copy_(to|from)_user() I stopped reading, because it seemed useless for
+my case. I'll look again and try to find where vhost-net supports
+setting MAC addresses and other features.
+
+Also, in my case I'd like to boot Linux with my rootfs over NFS. Is
+vhost-net capable of this?
+
+I've had Arnd, BenH, and Grant Likely (and others, privately) contact me
+about devices they are working with that would benefit from something
+like virtio-over-PCI. I'd like to see vhost-net be merged with the
+capability to support my use case. There are plenty of others that would
+benefit, not just myself.
+
+I'm not sure vhost-net is being written with this kind of future use in
+mind. I'd hate to see it get merged, and then have to change the ABI to
+support physical-device-to-device usage. It would be better to keep
+future use in mind now, rather than try and hack it in later.
+
+Thanks for the comments.
+Ira
