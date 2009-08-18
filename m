@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750963AbZHRVWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751075AbZHRVWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750963AbZHRVWf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 17:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbZHRVWf
+	id S1751075AbZHRVWm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 17:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbZHRVWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 17:22:35 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:56014 "EHLO aun.it.uu.se"
+	Tue, 18 Aug 2009 17:22:40 -0400
+Received: from kroah.org ([198.145.64.141]:49879 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750858AbZHRVWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 17:22:34 -0400
+	id S1751017AbZHRVWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 17:22:39 -0400
+Date: Tue, 18 Aug 2009 14:19:46 -0700
+From: Greg KH <greg@kroah.com>
+To: Christian Roche <christian.roche.fr@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Oops: sysfs: duplicate filename 'usbdev3.3_ep81' can not be
+ created
+Message-ID: <20090818211946.GA23309@kroah.com>
+References: <589ee1d0908160656u40672d47i7a7abe9923681f09@mail.gmail.com>
+ <20090817044450.GB20884@kroah.com>
+ <589ee1d0908171837u70e14c41hdd6fd4ab0aa50c7@mail.gmail.com>
+ <20090818015504.GA29939@kroah.com>
+ <589ee1d0908181353o5a648242p702ec607b78c2e56@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19083.7062.710265.941247@pilspetsen.it.uu.se>
-Date: Tue, 18 Aug 2009 23:22:30 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: linux-kernel@vger.kernel.org
-Subject: completely hide parts of the partition table from Windows?
-Cc: Andries Brouwer <aeb@cwi.nl>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <589ee1d0908181353o5a648242p702ec607b78c2e56@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The BIOS on my laptop clips disk capacities to 128GB. There's no BIOS
-update or BIOS setup option to fix this. Passing libata.ignore_hpa=1
-allows the Linux kernel to access larger disks, so Linux does work Ok
-with larger disks.
+On Tue, Aug 18, 2009 at 09:53:51PM +0100, Christian Roche wrote:
+> >> I just installed a 2.6.30 kernel:
+> >>
+> >> > uname -a
+> >> Linux jimi 2.6.30.5-32.fc11.i586 #1 SMP Mon Aug 17 16:21:07 EDT 2009
+> >> i686 i686 i386 GNU/Linux
+> >>
+> >> but it looks like I still have the pb. Below is what happens after the
+> >> modeswitch, and the output of lsusb.
+> >
+> > It's harmless, only a warning, but I thought it really was fixed.  Oh
+> > well, how about the 2.6.31-rc6 kernel?
+> 
+> Hi again Greg,
+> 
+> can I test again a 2.6.31 kernel with Fedora 11 ?  I don't find any
+> build in this series on koji. Or should I try to compile it on my own
+> ? ( argh! :-(  I haven't done that in a long time)
 
-However, the laptop dual-boots Windows (for work-related stuff), and
-Windows has a major problem: if any entry in the msdos partition table
-refers to a sector above the BIOS 128GB limit, the Windows kernel
-crashes and reboots early in its boot sequence. The type of the
-partition doesn't matter, the fact that it describes an area above
-the stupid BIOS limit is enough to trigger the crash.
+I do not know anything about Fedora kernels, sorry.
 
-So what I'm looking for is some sub-partition table format with the
-following two properties:
-1. resides in an msdos partition entry of a type that Windows does
-   not inspect (for whatever extended partitions or Apple/BSD/Sun
-   stuff that Windows may have been taught to recognize)
-2. the locations and sizes of the sub-partitions are NOT limited by
-   the parent msdos partition entry
+> Besides is this message really only a harmless warning ?
 
-I've looked at the code in fs/partitions/msdos.c, and it seems that
-most of the extended/BSD/Sun formats don't give me property #2 above.
+It should be.
 
-The minix and Unixware format parsers look like they ignore the parent
-msdos partion entry boundaries, but I'm not sure if that's by design
-or just sloppy coding.
+> I'm unable to have the USB modem work on linux, and I thought this was
+> due to this pb. However if you say this is really only a warning then
+> I should look for another cause.
+> 
+> In particular I get the following error :
+> > setserial /dev/ttyACM0
+> /dev/ttyACM0: Input/output error
 
-Any recommendations? If no existing partition table format is suitable
-for my use case then I'm perfectly willing to invent a simple new format
-and add the corresponding parser to the kernel.
+That's a different error.
 
-/Mikael
+> and similarly ttyACM0 (or ACM1, ACM2, which are created by the USB
+> key) cannot be accessed with minicom, wvdial, etc. Do you have an idea
+> what could be the culprit here ?
+
+That's some other problem.  It would be great if you could try out the
+2.6.31-rc kernel as work has gone on in this area.
+
+thanks,
+
+greg k-h
