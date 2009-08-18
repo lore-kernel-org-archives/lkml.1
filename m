@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751268AbZHRVeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751335AbZHRVnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751268AbZHRVeY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 17:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbZHRVeX
+	id S1751335AbZHRVnH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 17:43:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbZHRVnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 17:34:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37006 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751177AbZHRVeX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 17:34:23 -0400
-Date: Tue, 18 Aug 2009 14:33:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ben Blum <bblum@google.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       serue@us.ibm.com, lizf@cn.fujitsu.com, menage@google.com,
-       bblum@google.com
-Subject: Re: [PATCH v3 0/7] CGroups: cgroup memberlist enhancement+fix
-Message-Id: <20090818143358.9cc9aff3.akpm@linux-foundation.org>
-In-Reply-To: <20090811004737.21950.29188.stgit@hastromil.mtv.corp.google.com>
-References: <20090811004737.21950.29188.stgit@hastromil.mtv.corp.google.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 18 Aug 2009 17:43:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55989 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751222AbZHRVnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 17:43:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: suspend tree build failure
+Date: Tue, 18 Aug 2009 23:43:32 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090818183049.8bde1ee6.sfr@canb.auug.org.au>
+In-Reply-To: <20090818183049.8bde1ee6.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908182343.32375.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Aug 2009 17:57:30 -0700
-Ben Blum <bblum@google.com> wrote:
+On Tuesday 18 August 2009, Stephen Rothwell wrote:
+> Hi Rafael,
 
-> The following series adds a "cgroup.procs" file to each cgroup that reports
-> unique tgids rather than pids, which can also be written to for moving all
-> threads in a threadgroup at once.
+Hi,
 
-Well that didn't get much of a response, did it.
+> Today's linux-next build (i386 defconfig) failed like this:
+> 
+> drivers/base/power/main.c: In function 'device_pm_init':
+> drivers/base/power/main.c:59: error: 'struct dev_pm_info' has no member named 'lock'
 
-Any acks, nacks or quacks from the cgroups guys, please?
+Argh, that line shouldn't even be there.
+
+> Caused by commit ea8e84f27325d9ddc7692f728a10e0a22cd59f52 ("PM: Introduce
+> core framework for run-time PM of I/O devices (rev. 17)") from the
+> suspend tree.  The i386 defconfig does not have CONFIG_PM_RUNTIME set but
+> does have CONFIG_PM_SLEEP=y ...
+> 
+> I have reverted that commit for today.
+> 
+> When you add a new CONFIG variable, it is worth doing test builds both
+> with it turned on and turned off ...
+
+I tested it, but I broke the patch afterwards by mistake. :-(
+
+Sorry for the trouble, I've just pushed an updated tree.
+
+Thanks,
+Rafael
