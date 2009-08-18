@@ -1,41 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbZHROPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbZHROTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756732AbZHROPV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 10:15:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbZHROPU
+	id S1758808AbZHROTD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 10:19:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZHROTC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 10:15:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37626 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751149AbZHROPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 10:15:18 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090814133225.GB27905@us.ibm.com>
-References: <20090814133225.GB27905@us.ibm.com> <2359eed20908132115t2f6cea3by2429d54914d5ac6f@mail.gmail.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: dhowells@redhat.com, Will Drewry <redpig@dataspill.org>,
-       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       linux-security-module@vger.kernel.org, morgan@kernel.org
-Subject: Re: [RFC][PATCH 1/1] support optional non-VFS capability inheritance without disabling file caps
-Date: Tue, 18 Aug 2009 15:07:12 +0100
-Message-ID: <27938.1250604432@redhat.com>
+	Tue, 18 Aug 2009 10:19:02 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:38035 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752233AbZHROTB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 10:19:01 -0400
+Date: Tue, 18 Aug 2009 10:18:48 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] page-allocator: Move pcp static fields for high and
+ batch off-pcp and onto the zone
+In-Reply-To: <1250594162-17322-4-git-send-email-mel@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0908181015420.32284@gentwo.org>
+References: <1250594162-17322-1-git-send-email-mel@csn.ul.ie> <1250594162-17322-4-git-send-email-mel@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn <serue@us.ibm.com> wrote:
 
-> Heck, maybe we can use the fscache or a stackable fs to provide a view
-> of a non-xattr fs with xattrs layered on top.  David Howells, does
-> that sound doable or would that be an abuse?
+This will increase the cache footprint for the hot code path. Could these
+new variable be moved next to zone fields that are already in use there?
+The pageset array is used f.e.
 
-You could use fscache, but you would have to deal with the cache not being
-available or suddenly going away.  Note that fscache does not stack on top of
-another fs in Linux in the way it does in Solaris - the non-xattr fs would
-have to actively talk to fscache.  But it's certainly possible.
 
-David
