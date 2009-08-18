@@ -1,129 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751048AbZHRV00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751054AbZHRVaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751048AbZHRV00 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 17:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbZHRV00
+	id S1751054AbZHRVaK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 17:30:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbZHRVaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 17:26:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47251 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750787AbZHRV0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 17:26:24 -0400
-Message-ID: <4A8B1C7F.4060008@redhat.com>
-Date: Wed, 19 Aug 2009 00:26:23 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-CC: "Michael S. Tsirkin" <mst@redhat.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net,
-       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
- model for vbus_driver objects
-References: <4A8965E0.8050608@gmail.com> <20090817174142.GA11140@redhat.com> <4A89BAC5.9040400@gmail.com> <20090818084606.GA13878@redhat.com> <20090818155329.GD31060@ovro.caltech.edu> <4A8ADC09.3030205@redhat.com> <20090818172752.GC17631@ovro.caltech.edu> <4A8AE918.5000109@redhat.com> <20090818182735.GD17631@ovro.caltech.edu> <4A8AF880.6080704@redhat.com> <20090818205919.GA1168@ovro.caltech.edu>
-In-Reply-To: <20090818205919.GA1168@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 18 Aug 2009 17:30:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50783 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750876AbZHRVaI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 17:30:08 -0400
+Date: Tue, 18 Aug 2009 14:30:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Altobelli <david.altobelli@hp.com>
+Cc: david.altobelli@hp.com, linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: Re: [PATCH 2/3] hpilo: add interrupt handler
+Message-Id: <20090818143003.4924d26a.akpm@linux-foundation.org>
+In-Reply-To: <20090810200005.GB29404@ldl.fc.hp.com>
+References: <20090810195735.GA29372@ldl.fc.hp.com>
+	<20090810200005.GB29404@ldl.fc.hp.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/18/2009 11:59 PM, Ira W. Snyder wrote:
-> On a non shared-memory system (where the guest's RAM is not just a chunk
-> of userspace RAM in the host system), virtio's management model seems to
-> fall apart. Feature negotiation doesn't work as one would expect.
->    
+On Mon, 10 Aug 2009 14:00:05 -0600
+David Altobelli <david.altobelli@hp.com> wrote:
 
-In your case, virtio-net on the main board accesses PCI config space 
-registers to perform the feature negotiation; software on your PCI cards 
-needs to trap these config space accesses and respond to them according 
-to virtio ABI.
+> Add interrupt handler to hpilo.  This is enablement for poll handler, and
+> it also simplifies the logic for handling an iLO reset, because now 
+> only the interrupt handler needs to look for reset, the file system interfaces
+> only need to return failure when a reset has happened.
+> 
+> Please CC me on any replies.
 
-(There's no real guest on your setup, right?  just a kernel running on 
-and x86 system and other kernels running on the PCI cards?)
+It would be very helpful if there were comments in hpilo.h which fully
+describe the roles of each lock.
 
-> This does appear to be solved by vbus, though I haven't written a
-> vbus-over-PCI implementation, so I cannot be completely sure.
->    
-
-Even if virtio-pci doesn't work out for some reason (though it should), 
-you can write your own virtio transport and implement its config space 
-however you like.
-
-> I'm not at all clear on how to get feature negotiation to work on a
-> system like mine. From my study of lguest and kvm (see below) it looks
-> like userspace will need to be involved, via a miscdevice.
->    
-
-I don't see why.  Is the kernel on the PCI cards in full control of all 
-accesses?
-
-> Ok. I thought I should at least express my concerns while we're
-> discussing this, rather than being too late after finding the time to
-> study the driver.
 >
-> Off the top of my head, I would think that transporting userspace
-> addresses in the ring (for copy_(to|from)_user()) vs. physical addresses
-> (for DMAEngine) might be a problem. Pinning userspace pages into memory
-> for DMA is a bit of a pain, though it is possible.
->    
-
-Oh, the ring doesn't transport userspace addresses.  It transports guest 
-addresses, and it's up to vhost to do something with them.
-
-Currently vhost supports two translation modes:
-
-1. virtio address == host virtual address (using copy_to_user)
-2. virtio address == offsetted host virtual address (using copy_to_user)
-
-The latter mode is used for kvm guests (with multiple offsets, skipping 
-some details).
-
-I think you need to add a third mode, virtio address == host physical 
-address (using dma engine).  Once you do that, and wire up the 
-signalling, things should work.
-
-> There is also the problem of different endianness between host and guest
-> in virtio-net. The struct virtio_net_hdr (include/linux/virtio_net.h)
-> defines fields in host byte order. Which totally breaks if the guest has
-> a different endianness. This is a virtio-net problem though, and is not
-> transport specific.
->    
-
-Yeah.  You'll need to add byteswaps.
-
-> I've browsed over both the kvm and lguest code, and it looks like they
-> each re-invent a mechanism for transporting interrupts between the host
-> and guest, using eventfd. They both do this by implementing a
-> miscdevice, which is basically their management interface.
+> ...
 >
-> See drivers/lguest/lguest_user.c (see write() and LHREQ_EVENTFD) and
-> kvm-kmod-devel-88/x86/kvm_main.c (see kvm_vm_ioctl(), called via
-> kvm_dev_ioctl()) for how they hook up eventfd's.
+> @@ -496,27 +491,28 @@ static int ilo_close(struct inode *ip, s
+>  	int slot;
+>  	struct ccb_data *data;
+>  	struct ilo_hwinfo *hw;
+> +	unsigned long flags;
+>  
+>  	slot = iminor(ip) % MAX_CCB;
+>  	hw = container_of(ip->i_cdev, struct ilo_hwinfo, cdev);
+>  
+> -	spin_lock(&hw->alloc_lock);
+> -
+> -	if (is_device_reset(hw))
+> -		ilo_locked_reset(hw);
+> +	spin_lock(&hw->open_lock);
+>  
+>  	if (hw->ccb_alloc[slot]->ccb_cnt == 1) {
+>  
+>  		data = fp->private_data;
+>  
+> +		spin_lock_irqsave(&hw->alloc_lock, flags);
+> +		hw->ccb_alloc[slot] = NULL;
+> +		spin_unlock_irqrestore(&hw->alloc_lock, flags);
+> +
+>  		ilo_ccb_close(hw->ilo_dev, data);
+>  
+>  		kfree(data);
+> -		hw->ccb_alloc[slot] = NULL;
+>  	} else
+>  		hw->ccb_alloc[slot]->ccb_cnt--;
+>  
+> -	spin_unlock(&hw->alloc_lock);
+> +	spin_unlock(&hw->open_lock);
+>  
+>  	return 0;
+>  }
+
+Here I'd have expected that alloc_lock would provide the protection for
+->ccb_cnt.  But the code doesn't do that - it instead appears to use
+->open_lock.
+
+The code doesn't tell us what open_lock's role is intended to be so
+this reviewer can't really tell whether or not this was a mistake.
+
+
 >
-> I can now imagine how two userspace programs (host and guest) could work
-> together to implement a management interface, including hotplug of
-> devices, etc. Of course, this would basically reinvent the vbus
-> management interface into a specific driver.
->    
+> ...
+>
+> @@ -549,22 +543,31 @@ static int ilo_open(struct inode *ip, st
+>  			goto out;
+>  		}
+>  
+> +		data->ccb_cnt = 1;
+> +		data->ccb_excl = fp->f_flags & O_EXCL;
+> +		data->ilo_hw = hw;
+> +		init_waitqueue_head(&data->ccb_waitq);
+> +
+>  		/* write the ccb to hw */
+> +		spin_lock_irqsave(&hw->alloc_lock, flags);
+>  		ilo_ccb_open(hw, data, slot);
+> +		hw->ccb_alloc[slot] = data;
+> +		spin_unlock_irqrestore(&hw->alloc_lock, flags);
+>  
+>  		/* make sure the channel is functional */
+>  		error = ilo_ccb_verify(hw, data);
+>  		if (error) {
+> +
+> +			spin_lock_irqsave(&hw->alloc_lock, flags);
+> +			hw->ccb_alloc[slot] = NULL;
+> +			spin_unlock_irqrestore(&hw->alloc_lock, flags);
+> +
+>  			ilo_ccb_close(hw->ilo_dev, data);
+> +
+>  			kfree(data);
+>  			goto out;
+>  		}
+>  
+> -		data->ccb_cnt = 1;
+> -		data->ccb_excl = fp->f_flags & O_EXCL;
+> -		data->ilo_hw = hw;
+> -		hw->ccb_alloc[slot] = data;
+> -
+>  	} else {
+>  		kfree(data);
+>  		if (fp->f_flags & O_EXCL || hw->ccb_alloc[slot]->ccb_excl) {
+> @@ -580,7 +583,7 @@ static int ilo_open(struct inode *ip, st
+>  		}
+>  	}
+>  out:
+> -	spin_unlock(&hw->alloc_lock);
+> +	spin_unlock(&hw->open_lock);
+>  
+>  	if (!error)
+>  		fp->private_data = hw->ccb_alloc[slot];
+> @@ -596,6 +599,41 @@ static const struct file_operations ilo_
+>  	.release 	= ilo_close,
+>  };
 
-You don't need anything in the guest userspace (virtio-net) side.
+>From this function I infer that the designed lock nesting is
 
-> I think this is partly what Greg is trying to abstract out into generic
-> code. I haven't studied the actual data transport mechanisms in vbus,
-> though I have studied virtio's transport mechanism. I think a generic
-> management interface for virtio might be a good thing to consider,
-> because it seems there are at least two implementations already: kvm and
-> lguest.
->    
+	open_lock
+	->alloc_lock
+	  ->fifo_lock
 
-Management code in the kernel doesn't really help unless you plan to 
-manage things with echo and cat.
+yes?  It would be useful to document that also.
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+Have these changes been runtime tested with lockdep enabled?
+
+>
+> ...
+>
 
