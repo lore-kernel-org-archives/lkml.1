@@ -1,106 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752302AbZHRGyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752427AbZHRG6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752302AbZHRGyb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 02:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbZHRGya
+	id S1752427AbZHRG6p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 02:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbZHRG6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 02:54:30 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54638 "EHLO mx2.redhat.com"
+	Tue, 18 Aug 2009 02:58:44 -0400
+Received: from mga02.intel.com ([134.134.136.20]:36075 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751246AbZHRGya (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 02:54:30 -0400
-Message-ID: <4A8A50AD.7030004@redhat.com>
-Date: Tue, 18 Aug 2009 14:56:45 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
-MIME-Version: 1.0
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-CC: Stephen Smalley <sds@tycho.nsa.gov>, linux-kernel@vger.kernel.org,
-       esandeen@redhat.com, eteo@redhat.com, eparis@redhat.com,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: [Patch 1/2] selinux: ajust rules for ATTR_FORCE
-References: <20090817071001.5913.94767.sendpatchset@localhost.localdomain>	<20090817071011.5913.69970.sendpatchset@localhost.localdomain>	<1250511313.3629.103.camel@moss-pluto.epoch.ncsc.mil>	<87prau5ld1.fsf@devron.myhome.or.jp>	<1250536052.3629.154.camel@moss-pluto.epoch.ncsc.mil>	<873a7q441a.fsf@devron.myhome.or.jp>	<1250538981.3629.184.camel@moss-pluto.epoch.ncsc.mil>	<87fxbq19qs.fsf@devron.myhome.or.jp> <87my5yxidt.fsf@devron.myhome.or.jp>
-In-Reply-To: <87my5yxidt.fsf@devron.myhome.or.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751590AbZHRG6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 02:58:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,401,1246863600"; 
+   d="scan'208";a="542249797"
+Subject: Re: [RFC][PATCH 5/7] PM: Asynchronous suspend and resume of PCI
+	devices
+From: Zhang Rui <rui.zhang@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
+       Arjan van de Ven <arjan@linux.intel.com>, Greg KH <gregkh@suse.de>
+In-Reply-To: <200908170220.18874.rjw@sisk.pl>
+References: <200908122218.13975.rjw@sisk.pl>
+	 <200908170215.21173.rjw@sisk.pl>  <200908170220.18874.rjw@sisk.pl>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 18 Aug 2009 14:57:08 +0800
+Message-Id: <1250578628.5351.64.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OGAWA Hirofumi wrote:
-> Could you review this? I've added ATTR_TIMES_SET to check explicit
-> utimes(), and tried it with minimum change.
->
-> [I'm not sure this handles notify_change() usage of nfsd (and perhaps
-> other network fs too) correctly, and whether selinux may want to check
-> it. I guess network fs _may_ try to change the multiple attributes at a
-> time. Well, even if it's true, it would be another topic...]
->
->   
+On Mon, 2009-08-17 at 08:20 +0800, Rafael J. Wysocki wrote:
+> Set async_suspend for all PCI devices and PCIe port services.
+> 
+﻿Alan said that we can not break the resume order of the uhci/ehci host
+controllers on some platforms.
 
-Ah, according to the discussion here, I know I misunderstood 
-ATTR_FORCE... sorry.
-> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
->
->
-> From: Amerigo Wang <amwang@redhat.com>
->
-> As suggested by OGAWA Hirofumi in thread: http://lkml.org/lkml/2009/8/7/132,
-> we should let selinux_inode_setattr() to match our ATTR_* rules.
-> ATTR_FORCE should not force things like ATTR_SIZE.
->
-> Cc: Stephen Smalley <sds@tycho.nsa.gov>
-> Cc: Eric Paris <eparis@redhat.com>
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> [tweaks]
-> Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
->   
+For example,
+00:1a.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI
+Controller #4 (rev 02)
+00:1a.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI
+Controller #5 (rev 02)
+00:1a.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI
+Controller #2 (rev 02)
+00:1a.7 must be resumed after 00:1a.0 and 00:1a.1
 
-Great!
+please refer to this thread:
+http://marc.info/?l=linux-acpi&m=122996117918188&w=2
 
-Some comments below.
+So I'm afraid we can not suspend/resume the PCI devices in parallel,
+unless we add this off-tree dependency at the same time.
 
+thanks,
+rui
 > ---
->
->  security/selinux/hooks.c |   13 +++++++++----
->  1 file changed, 9 insertions(+), 4 deletions(-)
->
-> diff -puN security/selinux/hooks.c~selinux-truncate-fix security/selinux/hooks.c
-> --- linux-2.6/security/selinux/hooks.c~selinux-truncate-fix	2009-08-18 03:50:09.000000000 +0900
-> +++ linux-2.6-hirofumi/security/selinux/hooks.c	2009-08-18 05:35:11.000000000 +0900
-> @@ -2711,12 +2711,17 @@ static int selinux_inode_permission(stru
->  static int selinux_inode_setattr(struct dentry *dentry, struct iattr *iattr)
->  {
->  	const struct cred *cred = current_cred();
-> +	unsigned int ia_valid = iattr->ia_valid;
+>  drivers/input/serio/i8042.c     |    2 ++
+>  drivers/pci/pci.c               |    2 ++
+>  drivers/pci/pcie/portdrv_core.c |    1 +
+>  3 files changed, 5 insertions(+)
+> 
+> Index: linux-2.6/drivers/pci/pci.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/pci.c
+> +++ linux-2.6/drivers/pci/pci.c
+> @@ -1409,6 +1409,8 @@ void pci_pm_init(struct pci_dev *dev)
+>  	} else {
+>  		dev->pme_support = 0;
+>  	}
+> +
+> +	device_enable_async_suspend(&dev->dev, true);
+>  }
 >  
-> -	if (iattr->ia_valid & ATTR_FORCE)
-> -		return 0;
-> +	/* ATTR_FORCE is just used for ATTR_KILL_S[UG]ID. */
-> +	if (ia_valid & ATTR_FORCE) {
-> +		ia_valid &= ~(ATTR_KILL_SUID | ATTR_KILL_SGID | ATTR_MODE);
-> +		if (!ia_valid)
-> +			return 0;
->   
-
-So if I read this correctly, (ATTR_FORCE| ATTR_KILL_SUID|ATTR_MODE) will 
-not return here, since 'ia_valid' will be ATTR_FORCE finally.
-
-I think you forgot to clear ATTR_FORCE here...
-
-> +	}
+>  /**
+> Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
+> +++ linux-2.6/drivers/pci/pcie/portdrv_core.c
+> @@ -280,6 +280,7 @@ static void pcie_device_init(struct pci_
+>  	dev_set_name(device, "%s:pcie%02x",
+>  		 pci_name(parent), get_descriptor_id(port_type, service_type));
+>  	device->parent = &parent->dev;
+> +	device_enable_async_suspend(device, true);
+>  }
 >  
-> -	if (iattr->ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID |
-> -			       ATTR_ATIME_SET | ATTR_MTIME_SET))
-> +	if (ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID |
-> +			ATTR_ATIME_SET | ATTR_MTIME_SET | ATTR_TIMES_SET))
->  		return dentry_has_perm(cred, NULL, dentry, FILE__SETATTR);
->  
->  	return dentry_has_perm(cred, NULL, dentry, FILE__WRITE);
-> _
->
->   
-I am not sure about ATTR_TIMES_SET here, but looks fine. :-/
-
+>  /**
 
