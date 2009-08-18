@@ -1,239 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbZHRLr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbZHRLuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758050AbZHRLr5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 07:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881AbZHRLr4
+	id S1754840AbZHRLuf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 07:50:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbZHRLuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 07:47:56 -0400
-Received: from cantor.suse.de ([195.135.220.2]:35083 "EHLO mx1.suse.de"
+	Tue, 18 Aug 2009 07:50:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53306 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753104AbZHRLr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 07:47:56 -0400
-Date: Tue, 18 Aug 2009 13:47:52 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] page-allocator: Move pcp static fields for high and batch off-pcp and onto the zone
-Message-ID: <20090818114752.GP9962@wotan.suse.de>
-References: <1250594162-17322-1-git-send-email-mel@csn.ul.ie> <1250594162-17322-4-git-send-email-mel@csn.ul.ie>
-Mime-Version: 1.0
+	id S1750934AbZHRLue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 07:50:34 -0400
+Date: Tue, 18 Aug 2009 13:45:33 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: stephane eranian <eranian@googlemail.com>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
+       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
+       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
+       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
+       roland@redhat.com
+Subject: Re: F_SETOWN_TID: F_SETOWN was thread-specific for a while
+Message-ID: <20090818114533.GA32289@redhat.com>
+References: <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins> <20090731141122.a1939712.akpm@linux-foundation.org> <7c86c4470908030553v5a0a4448p94ab612700d68066@mail.gmail.com> <20090809054601.GA26152@shareable.org> <7c86c4470908100522q44dc1228i315b29d69fc98da3@mail.gmail.com> <20090810170338.GA14223@redhat.com> <7c86c4470908101401k49f42788o25eb1efaa631f065@mail.gmail.com> <20090817171605.GB15907@redhat.com> <7c86c4470908171526j60add584qfc635ba91cd4df46@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1250594162-17322-4-git-send-email-mel@csn.ul.ie>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <7c86c4470908171526j60add584qfc635ba91cd4df46@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 12:16:02PM +0100, Mel Gorman wrote:
-> Having multiple lists per PCPU increased the size of the per-pcpu
-> structure. Two of the fields, high and batch, do not change within a
-> zone making that information redundant. This patch moves those fields
-> off the PCP and onto the zone to reduce the size of the PCPU.
+On 08/18, stephane eranian wrote:
+>
+> On Mon, Aug 17, 2009 at 7:16 PM, Oleg Nesterov<oleg@redhat.com> wrote:
+> > Sorry for late reply...
+> >
+> > On 08/10, stephane eranian wrote:
+> >>
+> >> On Mon, Aug 10, 2009 at 7:03 PM, Oleg Nesterov<oleg@redhat.com> wrote:
+> >> >
+> >> > Not sure if it is safe to change the historical behaviour.
+> >> >
+> >> Don't need to change it.
+> >
+> > Good,
+> >
+> >> But for SIGIO, if you see SA_SIGINFO, then pass the si_fd.
+> >
+> > But this means we do change the behaviour ;) Confused.
+> >
+> I meant do not remove F_SETSIG and its side-effect on si_fd.
 
-Hmm.. I did have some patches a long long time ago that among other
-things made the lists larger for the local node only....
+Ah, now I see what you meant.
 
-But I guess if something like that is ever shown to be a good idea
-then we can go back to the old scheme. So yeah this seems OK.
+> > In any case. We should not look at SA_SIGINFO at all. If sys_sigaction() was
+> > called without SA_SIGINFO, then it doesn'matter if we send SEND_SIG_PRIV or
+> > siginfo_t with the correct si_fd/etc.
+> >
+> What's the official role of SA_SIGINFO? Pass a siginfo struct?
+>
+> Does POSIX describe the rules governing the content of si_fd?
+> Or is si_fd a Linux-ony extension in which case it goes with F_SETSIG.
 
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> ---
->  include/linux/mmzone.h |    9 +++++----
->  mm/page_alloc.c        |   47 +++++++++++++++++++++++++----------------------
->  mm/vmstat.c            |    4 ++--
->  3 files changed, 32 insertions(+), 28 deletions(-)
-> 
-> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-> index 6e0b624..57a3ef0 100644
-> --- a/include/linux/mmzone.h
-> +++ b/include/linux/mmzone.h
-> @@ -167,12 +167,10 @@ enum zone_watermarks {
->  #define high_wmark_pages(z) (z->watermark[WMARK_HIGH])
->  
->  struct per_cpu_pages {
-> -	int count;		/* number of pages in the list */
-> -	int high;		/* high watermark, emptying needed */
-> -	int batch;		/* chunk size for buddy add/remove */
-> -
->  	/* Lists of pages, one per migrate type stored on the pcp-lists */
->  	struct list_head lists[MIGRATE_PCPTYPES];
-> +
-> +	int count;		/* number of pages in the list */
->  };
->  
->  struct per_cpu_pageset {
-> @@ -284,6 +282,9 @@ struct zone {
->  	/* zone watermarks, access with *_wmark_pages(zone) macros */
->  	unsigned long watermark[NR_WMARK];
->  
-> +	int pcp_high;		/* high watermark, emptying needed */
-> +	int pcp_batch;		/* chunk size for buddy add/remove */
-> +
->  	/*
->  	 * We don't know if the memory that we're going to allocate will be freeable
->  	 * or/and it will be released eventually, so to avoid totally wasting several
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index dd3f306..65cdfbf 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -988,8 +988,8 @@ void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp)
->  	int to_drain;
->  
->  	local_irq_save(flags);
-> -	if (pcp->count >= pcp->batch)
-> -		to_drain = pcp->batch;
-> +	if (pcp->count >= zone->pcp_batch)
-> +		to_drain = zone->pcp_batch;
->  	else
->  		to_drain = pcp->count;
->  	free_pcppages_bulk(zone, to_drain, pcp);
-> @@ -1129,9 +1129,9 @@ static void free_hot_cold_page(struct page *page, int cold)
->  	else
->  		list_add(&page->lru, &pcp->lists[migratetype]);
->  	pcp->count++;
-> -	if (pcp->count >= pcp->high) {
-> -		free_pcppages_bulk(zone, pcp->batch, pcp);
-> -		pcp->count -= pcp->batch;
-> +	if (pcp->count >= zone->pcp_high) {
-> +		free_pcppages_bulk(zone, zone->pcp_batch, pcp);
-> +		pcp->count -= zone->pcp_batch;
->  	}
->  
->  out:
-> @@ -1199,7 +1199,7 @@ again:
->  		local_irq_save(flags);
->  		if (list_empty(list)) {
->  			pcp->count += rmqueue_bulk(zone, 0,
-> -					pcp->batch, list,
-> +					zone->pcp_batch, list,
->  					migratetype, cold);
->  			if (unlikely(list_empty(list)))
->  				goto failed;
-> @@ -2178,8 +2178,8 @@ void show_free_areas(void)
->  			pageset = zone_pcp(zone, cpu);
->  
->  			printk("CPU %4d: hi:%5d, btch:%4d usd:%4d\n",
-> -			       cpu, pageset->pcp.high,
-> -			       pageset->pcp.batch, pageset->pcp.count);
-> +			       cpu, zone->pcp_high,
-> +			       zone->pcp_batch, pageset->pcp.count);
->  		}
->  	}
->  
-> @@ -3045,7 +3045,9 @@ static int zone_batchsize(struct zone *zone)
->  #endif
->  }
->  
-> -static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
-> +static void setup_pageset(struct zone *zone,
-> +				struct per_cpu_pageset *p,
-> +				unsigned long batch)
->  {
->  	struct per_cpu_pages *pcp;
->  	int migratetype;
-> @@ -3054,8 +3056,8 @@ static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
->  
->  	pcp = &p->pcp;
->  	pcp->count = 0;
-> -	pcp->high = 6 * batch;
-> -	pcp->batch = max(1UL, 1 * batch);
-> +	zone->pcp_high = 6 * batch;
-> +	zone->pcp_batch = max(1UL, 1 * batch);
->  	for (migratetype = 0; migratetype < MIGRATE_PCPTYPES; migratetype++)
->  		INIT_LIST_HEAD(&pcp->lists[migratetype]);
->  }
-> @@ -3065,16 +3067,17 @@ static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
->   * to the value high for the pageset p.
->   */
->  
-> -static void setup_pagelist_highmark(struct per_cpu_pageset *p,
-> +static void setup_pagelist_highmark(struct zone *zone,
-> +				struct per_cpu_pageset *p,
->  				unsigned long high)
->  {
->  	struct per_cpu_pages *pcp;
->  
->  	pcp = &p->pcp;
-> -	pcp->high = high;
-> -	pcp->batch = max(1UL, high/4);
-> +	zone->pcp_high = high;
-> +	zone->pcp_batch = max(1UL, high/4);
->  	if ((high/4) > (PAGE_SHIFT * 8))
-> -		pcp->batch = PAGE_SHIFT * 8;
-> +		zone->pcp_batch = PAGE_SHIFT * 8;
->  }
->  
->  
-> @@ -3115,10 +3118,10 @@ static int __cpuinit process_zones(int cpu)
->  		if (!zone_pcp(zone, cpu))
->  			goto bad;
->  
-> -		setup_pageset(zone_pcp(zone, cpu), zone_batchsize(zone));
-> +		setup_pageset(zone, zone_pcp(zone, cpu), zone_batchsize(zone));
->  
->  		if (percpu_pagelist_fraction)
-> -			setup_pagelist_highmark(zone_pcp(zone, cpu),
-> +			setup_pagelist_highmark(zone, zone_pcp(zone, cpu),
->  			 	(zone->present_pages / percpu_pagelist_fraction));
->  	}
->  
-> @@ -3250,7 +3253,7 @@ static int __zone_pcp_update(void *data)
->  
->  		local_irq_save(flags);
->  		free_pcppages_bulk(zone, pcp->count, pcp);
-> -		setup_pageset(pset, batch);
-> +		setup_pageset(zone, pset, batch);
->  		local_irq_restore(flags);
->  	}
->  	return 0;
-> @@ -3270,9 +3273,9 @@ static __meminit void zone_pcp_init(struct zone *zone)
->  #ifdef CONFIG_NUMA
->  		/* Early boot. Slab allocator not functional yet */
->  		zone_pcp(zone, cpu) = &boot_pageset[cpu];
-> -		setup_pageset(&boot_pageset[cpu],0);
-> +		setup_pageset(zone, &boot_pageset[cpu],0);
->  #else
-> -		setup_pageset(zone_pcp(zone,cpu), batch);
-> +		setup_pageset(zone, zone_pcp(zone,cpu), batch);
->  #endif
->  	}
->  	if (zone->present_pages)
-> @@ -4781,7 +4784,7 @@ int lowmem_reserve_ratio_sysctl_handler(ctl_table *table, int write,
->  }
->  
->  /*
-> - * percpu_pagelist_fraction - changes the pcp->high for each zone on each
-> + * percpu_pagelist_fraction - changes the zone->pcp_high for each zone on each
->   * cpu.  It is the fraction of total pages in each zone that a hot per cpu pagelist
->   * can have before it gets flushed back to buddy allocator.
->   */
-> @@ -4800,7 +4803,7 @@ int percpu_pagelist_fraction_sysctl_handler(ctl_table *table, int write,
->  		for_each_online_cpu(cpu) {
->  			unsigned long  high;
->  			high = zone->present_pages / percpu_pagelist_fraction;
-> -			setup_pagelist_highmark(zone_pcp(zone, cpu), high);
-> +			setup_pagelist_highmark(zone, zone_pcp(zone, cpu), high);
->  		}
->  	}
->  	return 0;
-> diff --git a/mm/vmstat.c b/mm/vmstat.c
-> index c81321f..a9d23c3 100644
-> --- a/mm/vmstat.c
-> +++ b/mm/vmstat.c
-> @@ -746,8 +746,8 @@ static void zoneinfo_show_print(struct seq_file *m, pg_data_t *pgdat,
->  			   "\n              batch: %i",
->  			   i,
->  			   pageset->pcp.count,
-> -			   pageset->pcp.high,
-> -			   pageset->pcp.batch);
-> +			   zone->pcp_high,
-> +			   zone->pcp_batch);
->  #ifdef CONFIG_SMP
->  		seq_printf(m, "\n  vm stats threshold: %d",
->  				pageset->stat_threshold);
-> -- 
-> 1.6.3.3
+Not sure I understand your concern...
+
+OK. You suggest to pass siginfo_t with .si_fd/etc when we detect SA_SIGINFO.
+
+But, in that case we can _always_ pass siginfo_t, regardless of SA_SIGINFO.
+If the task has a signal handler and sigaction() was called without
+SA_SIGINFO, then the handler must not look into *info (the second arg of
+sigaction->sa_sigaction). And in fact, __setup_rt_frame() doesn't even
+copy the info to the user-space:
+
+	if (ka->sa.sa_flags & SA_SIGINFO) {
+		if (copy_siginfo_to_user(&frame->info, info))
+			return -EFAULT;
+	}
+
+OK? Or I missed something?
+
+> > And again, this is even documented. The change is trivial but user-space
+> > visible, it may confuse the (stupid) app which uses SIGIO + SA_SIGINFO
+> > without F_SETSIG.
+> >
+> That would be an app that uses SIGINFO and fiddles with si_fd which has no
+> defined content. What kind of app would that be?
+
+The stupid app. But it is always unsafe to make the user-visible changes
+without good reasons. Even when we fix the bug (and the current code is not
+buggy) sometimes we have "this patch breaks my app or test-case!" reports.
+If nothing else, we can break the test-case which simply does
+
+	void sigio_handler(int sig, siginfo_t *info, void *u)
+	{
+		assert(info->si_code == 0 && info->si_code = 0x80);
+	}
+
+Once again: this is _documented_ !
+
+And we can't set .si_fd = fd whithout changing .si_code, this will break
+copy_siginfo_to_user().
+
+Or. Suppose that some app does:
+
+	void io_handler(int sig, siginfo_t *info, void *u)
+	{
+		if ((info->si_code & __SI_MASK) != SI_POLL) {
+			// RT signal failed! sig MUST be == SIGIO
+			recover();
+		} else {
+			do_something(info->si_fd);
+		}
+	}
+
+	int main(void)
+	{
+		sigaction(SIGRTMIN, { SA_SIGINFO, io_handler });
+		sigaction(SIGIO,    { SA_SIGINFO, io_handler });
+		...
+	}
+
+This is correct. But if we change the current behaviour, this app won't
+be able to detect the overflow.
+
+> It would seem natural that in the siginfo passed to the handler of SIGIO, the
+> file descriptor be passed by default. That is all I am trying to say here.
+
+Completely agreed! I was always puzzled by send_sigio_to_task(). I was never
+able to understand why it looks so strange.
+
+So, I think it should be
+
+	static void send_sigio_to_task(struct task_struct *p,
+				       struct fown_struct *fown,
+				       int fd,
+				       int reason)
+	{
+		siginfo_t si;
+		/*
+		 * F_SETSIG can change ->signum lockless in parallel, make
+		 * sure we read it once and use the same value throughout.
+		 */
+		int signum = ACCESS_ONCE(fown->signum) ?: SIGIO;
+
+		if (!sigio_perm(p, fown, signum))
+			return;
+
+		si.si_signo = signum;
+		si.si_errno = 0;
+		si.si_code  = reason;
+		si.si_fd    = fd;
+		/* Make sure we are called with one of the POLL_*
+		   reasons, otherwise we could leak kernel stack into
+		   userspace.  */
+		BUG_ON((reason & __SI_MASK) != __SI_POLL);
+		if (reason - POLL_IN >= NSIGPOLL)
+			si.si_band  = ~0L;
+		else
+			si.si_band = band_table[reason - POLL_IN];
+
+		/* Failure to queue an rt signal must be reported as SIGIO */
+		if (!group_send_sig_info(signum, &si, p))
+			group_send_sig_info(SIGIO, SEND_SIG_PRIV, p);
+	}
+
+(except it should be on top of fcntl-add-f_etown_ex.patch).
+This way, at least we don't break the "detect RT signal failed" above.
+
+What do you think?
+
+But let me repeat: I just can't convince myself we have a good reason
+to change the strange, but carefully documented behaviour.
+
+In case you agree with the code above, I can send the patch. But only
+if I have a "good" changelog from you + your Signed-of-by in advance ;)
+
+Otherwise, please feel free to send this/similar change yourself.
+
+Oleg.
+
