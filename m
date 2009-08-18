@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbZHRKo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758660AbZHRKp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758646AbZHRKo4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 06:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756829AbZHRKo4
+	id S1758660AbZHRKp2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 06:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758531AbZHRKp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 06:44:56 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:50484 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753012AbZHRKoz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 06:44:55 -0400
-Date: Tue, 18 Aug 2009 12:44:10 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Alex Riesen <raa.lkml@gmail.com>
-Cc: Marco Stornelli <marco.stornelli@gmail.com>,
-       Johannes Stezenbach <js@sig21.net>,
-       Denys Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Tim Bird <tim.bird@am.sony.com>, kernel@pengutronix.de
-Subject: Re: New fast(?)-boot results on ARM
-Message-ID: <20090818104410.GO29655@pengutronix.de>
-References: <20090814170228.GM13320@pengutronix.de> <1158166a0908141304y70300ab3p899b0d4609efded9@mail.gmail.com> <20090814204305.GA31727@pengutronix.de> <20090815103532.GA5596@sig21.net> <4A8A7D38.5020201@gmail.com> <20090818102136.GN29655@pengutronix.de> <81b0412b0908180334u51fd957dh36f2a4946dffbb0b@mail.gmail.com>
+	Tue, 18 Aug 2009 06:45:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50465 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758053AbZHRKp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 06:45:26 -0400
+Message-ID: <4A8A8631.1040006@redhat.com>
+Date: Tue, 18 Aug 2009 13:45:05 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <81b0412b0908180334u51fd957dh36f2a4946dffbb0b@mail.gmail.com>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 12:43:29 up 12 days, 22:02, 53 users,  load average: 7.45, 6.38,
-	5.27
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: rsc@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: Gregory Haskins <gregory.haskins@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for	vbus_driver
+ objects
+References: <20090815103243.GA26749@elte.hu> <4A8954F0.3040402@gmail.com> <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com> <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com> <20090818095313.GC13878@redhat.com> <4A8A7BB9.2020906@redhat.com> <20090818100945.GD13878@redhat.com> <4A8A7EE5.6090209@redhat.com> <20090818102840.GF13878@redhat.com>
+In-Reply-To: <20090818102840.GF13878@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 12:34:52PM +0200, Alex Riesen wrote:
-> On Tue, Aug 18, 2009 at 12:21, Robert Schwebel<r.schwebel@pengutronix.de> wrote:
-> > - In general we want to have our systems close to what the mainline
-> >  does; Automation & Embedded is only a small market, and anything
-> >  which is *not* specific to these markets but mainline is good.
+On 08/18/2009 01:28 PM, Michael S. Tsirkin wrote:
 >
-> BTW, what is your mainline (or it looks like you mean "upstream")?
+>> Suppose a nested guest has two devices.  One a virtual device backed by
+>> its host (our guest), and one a virtual device backed by us (the real
+>> host), and assigned by the guest to the nested guest.  If both devices
+>> use hypercalls, there is no way to distinguish between them.
+>>      
+> Not sure I understand. What I had in mind is that devices would have to
+> either use different hypercalls and map hypercall to address during
+> setup, or pass address with each hypercall.  We get the hypercall,
+> translate the address as if it was pio access, and know the destination?
+>    
 
-unpatched kernel.org
+There are no different hypercalls.  There's just one hypercall 
+instruction, and there's no standard on how it's used.  If a nested call 
+issues a hypercall instruction, you have no idea if it's calling a 
+Hyper-V hypercall or a vbus/virtio kick.
 
-rsc
+You could have a protocol where you register the hypercall instruction's 
+address with its recipient, but it quickly becomes a tangled mess.  And 
+for what?  pio and hypercalls have the same performance characteristics.
+
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+error compiling committee.c: too many arguments to function
+
