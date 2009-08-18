@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759510AbZHRRvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759392AbZHRR43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759510AbZHRRvZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 13:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759371AbZHRRvY
+	id S1759392AbZHRR43 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 13:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758833AbZHRR43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 13:51:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43880 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759344AbZHRRvX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 13:51:23 -0400
-Subject: Re: Make LSM_MMAP_MIN_ADDR default match its help text.
-From: Eric Paris <eparis@redhat.com>
-To: Dave Jones <davej@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>
-In-Reply-To: <20090818174736.GA23352@redhat.com>
-References: <200908172100.n7HL08SR001061@hera.kernel.org>
-	 <20090818174736.GA23352@redhat.com>
-Content-Type: text/plain
-Date: Tue, 18 Aug 2009 13:50:54 -0400
-Message-Id: <1250617854.2239.1.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Aug 2009 13:56:29 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:49197 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758794AbZHRR42 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 13:56:28 -0400
+Date: Tue, 18 Aug 2009 13:56:22 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] page-allocator: Move pcp static fields for high and
+ batch off-pcp and onto the zone
+In-Reply-To: <20090818164216.GA13435@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0908181355490.3840@gentwo.org>
+References: <1250594162-17322-1-git-send-email-mel@csn.ul.ie> <1250594162-17322-4-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0908181015420.32284@gentwo.org> <20090818164216.GA13435@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-18 at 13:47 -0400, Dave Jones wrote:
-> Commit 788084aba2ab7348257597496befcbccabdc98a3 added the LSM_MMAP_MIN_ADDR
-> option, whose help text states "For most ia64, ppc64 and x86 users with lots
-> of address space a value of 65536 is reasonable and should cause no problems."
-> Which implies that it's default setting was typoed.
+On Tue, 18 Aug 2009, Mel Gorman wrote:
 
-Acked-by: Eric Paris <eparis@redhat.com>
+> On Tue, Aug 18, 2009 at 10:18:48AM -0400, Christoph Lameter wrote:
+> >
+> > This will increase the cache footprint for the hot code path. Could these
+> > new variable be moved next to zone fields that are already in use there?
+> > The pageset array is used f.e.
+> >
+>
+> pageset is ____cacheline_aligned_in_smp so putting pcp->high/batch near
+> it won't help in terms of cache footprint. This is why I located it near
+> watermarks because it's known they'll be needed at roughly the same time
+> pcp->high/batch would be normally accessed.
 
-This can wait or go now.  the tests against this are always a strict >
-(not >=) and they are always rounded to PAGE_SIZE.  Thus both have the
-same address protections.
-
--Eric
-
-> Signed-off-by: Dave Jones <davej@redhat.com>
-> 
-> --- linux-2.6.30.noarch/security/Kconfig~	2009-08-18 13:45:33.000000000 -0400
-> +++ linux-2.6.30.noarch/security/Kconfig	2009-08-18 13:45:36.000000000 -0400
-> @@ -116,7 +116,7 @@ config SECURITY_ROOTPLUG
->  config LSM_MMAP_MIN_ADDR
->  	int "Low address space for LSM to from user allocation"
->  	depends on SECURITY && SECURITY_SELINUX
-> -	default 65535
-> +	default 65536
->  	help
->  	  This is the portion of low virtual memory which should be protected
->  	  from userspace allocation.  Keeping a user from writing to low pages
-
-
+watermarks are not accessed from the hot code path in free_hot_cold page.
