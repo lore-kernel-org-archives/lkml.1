@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbZHRIni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755813AbZHRIoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753756AbZHRIni (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 04:43:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbZHRInh
+	id S1755813AbZHRIoQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 04:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbZHRIoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 04:43:37 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:45603 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886AbZHRIng (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 04:43:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bp3LwWRho896VDrmCNc9S0PP8xFWhQ4H0SwCAE5nzafOTpd2CZB3CzXJUQ5Nu861K7
-         VcuZlNp3/8fCJFcVQgm4g+gUitMMl06k0NthNzan1l3XHpvqjWeO6he1m+trODwt85An
-         8/pyo3IwT+GN/yRVClZ/dvn+O853yV4qxK+5E=
+	Tue, 18 Aug 2009 04:44:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35792 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752164AbZHRIoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 04:44:14 -0400
+Message-ID: <4A8A6A65.3010907@redhat.com>
+Date: Tue, 18 Aug 2009 16:46:29 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
 MIME-Version: 1.0
-In-Reply-To: <4A89E76B.5070204@dell.com>
-References: <4A89E76B.5070204@dell.com>
-Date: Tue, 18 Aug 2009 09:43:36 +0100
-Message-ID: <9b2b86520908180143t4b25c1f7hd78cd4b4333c4ab4@mail.gmail.com>
-Subject: Re: [PATCH 3/3] Drop platform sysfs support
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Mario Limonciello <mario_limonciello@dell.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       cezary.jackiewicz@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+CC: Stephen Smalley <sds@tycho.nsa.gov>, linux-kernel@vger.kernel.org,
+       esandeen@redhat.com, eteo@redhat.com, eparis@redhat.com,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: [Patch 1/2] selinux: ajust rules for ATTR_FORCE
+References: <20090817071001.5913.94767.sendpatchset@localhost.localdomain>	<20090817071011.5913.69970.sendpatchset@localhost.localdomain>	<1250511313.3629.103.camel@moss-pluto.epoch.ncsc.mil>	<87prau5ld1.fsf@devron.myhome.or.jp>	<1250536052.3629.154.camel@moss-pluto.epoch.ncsc.mil>	<873a7q441a.fsf@devron.myhome.or.jp>	<1250538981.3629.184.camel@moss-pluto.epoch.ncsc.mil>	<87fxbq19qs.fsf@devron.myhome.or.jp>	<87my5yxidt.fsf@devron.myhome.or.jp> <87y6pha7vv.fsf@devron.myhome.or.jp>
+In-Reply-To: <87y6pha7vv.fsf@devron.myhome.or.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/18/09, Mario Limonciello <mario_limonciello@dell.com> wrote:
-> With rfkill support being added, the platform support is no longer
-> necessary.  Standard rfkill interfaces can be used to administer the box
-> now.
-> --
-> Mario Limonciello
-> *Dell | Linux Engineering*
-> mario_limonciello@dell.com
+OGAWA Hirofumi wrote:
+> [Sorry if this killed thread. My ISP seems to be stopping email server
+> now. I've read this email from web archive.]
 >
+>   
+>>> @@ -2711,12 +2711,17 @@ static int selinux_inode_permission(stru
+>>>  static int selinux_inode_setattr(struct dentry *dentry, struct iattr *iattr)
+>>>  {
+>>>  	const struct cred *cred = current_cred();
+>>> +	unsigned int ia_valid = iattr->ia_valid;
+>>>  
+>>> -	if (iattr->ia_valid & ATTR_FORCE)
+>>> -		return 0;
+>>> +	/* ATTR_FORCE is just used for ATTR_KILL_S[UG]ID. */
+>>> +	if (ia_valid & ATTR_FORCE) {
+>>> +		ia_valid &= ~(ATTR_KILL_SUID | ATTR_KILL_SGID | ATTR_MODE);
+>>> +		if (!ia_valid)
+>>> +			return 0;
+>>>   
+>>>       
+>> So if I read this correctly, (ATTR_FORCE| ATTR_KILL_SUID|ATTR_MODE) will 
+>> not return here, since 'ia_valid' will be ATTR_FORCE finally.
+>>
+>> I think you forgot to clear ATTR_FORCE here...
+>>     
+>
+> Whoops, good catch. Fortunately, it doesn't seem to have actual problem,
+> but it's bug obviously, and sorry for that. Fixed patch was attached.
+>   
 
--static struct platform_device *compal_device;
+This version looks OK for me! Stephen, any objections?
 
-I don't think this is the right way to go.  I don't object to removing
-the sysfs attributes, but the platform device can still be useful as a
-parent device to the rfkill and backlight devices.  (See my earlier
-comment on the use of rfkill_allocate()).
+Thank you!
 
-In practice I suspect it makes no difference that the rfkill and
-backlight devices are exported as virtual devices with no physical
-parent.  I just don't think it's "right" :-).
-
-Thanks
-Alan
