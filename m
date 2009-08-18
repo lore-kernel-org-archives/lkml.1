@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbZHRKkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbZHRKml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758638AbZHRKkT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 06:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755422AbZHRKkS
+	id S1758640AbZHRKml (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 06:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbZHRKmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 06:40:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38893 "EHLO mx2.redhat.com"
+	Tue, 18 Aug 2009 06:42:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38944 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752864AbZHRKkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 06:40:17 -0400
-Date: Tue, 18 Aug 2009 13:28:40 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gregory Haskins <gregory.haskins@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
-	vbus_driver objects
-Message-ID: <20090818102840.GF13878@redhat.com>
-References: <20090815103243.GA26749@elte.hu> <4A8954F0.3040402@gmail.com> <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com> <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com> <20090818095313.GC13878@redhat.com> <4A8A7BB9.2020906@redhat.com> <20090818100945.GD13878@redhat.com> <4A8A7EE5.6090209@redhat.com>
+	id S1751666AbZHRKmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 06:42:39 -0400
+Message-ID: <4A8A83F4.6010408@redhat.com>
+Date: Tue, 18 Aug 2009 18:35:32 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8A7EE5.6090209@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org, linux-mm@kvack.org,
+       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       akpm@linux-foundation.org, bernhard.walle@gmx.de,
+       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 8/8] kexec: allow to shrink reserved memory
+References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>	<20090812081906.5757.39417.sendpatchset@localhost.localdomain>	<m1bpmk8l1g.fsf@fess.ebiederm.org>	<4A83893D.50707@redhat.com>	<m1eirg5j9i.fsf@fess.ebiederm.org>	<4A83CD84.8040609@redhat.com>	<m1tz0avy4h.fsf@fess.ebiederm.org>	<4A8927DD.6060209@redhat.com>	<20090818092939.2efbe158.kamezawa.hiroyu@jp.fujitsu.com>	<4A8A4ABB.70003@redhat.com> <20090818172552.779d0768.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090818172552.779d0768.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 01:13:57PM +0300, Avi Kivity wrote:
-> On 08/18/2009 01:09 PM, Michael S. Tsirkin wrote:
+KAMEZAWA Hiroyuki wrote:
+> On Tue, 18 Aug 2009 14:31:23 +0800
+> Amerigo Wang <amwang@redhat.com> wrote:
+>   
+>>>     It's hidden from the system before mem_init() ?
+>>>   
+>>>       
+>> Not sure, but probably yes. It is reserved in setup_arch() which is 
+>> before mm_init() which calls mem_init().
 >>
->>> mmio and pio don't have this problem since the host can use the address
->>> to locate the destination.
->>>      
->> So userspace could map hypercall to address during setup and tell the
->> host kernel?
->>    
+>> Do you have any advice to free that reserved memory after boot? :)
+>>
+>>     
 >
-> Suppose a nested guest has two devices.  One a virtual device backed by  
-> its host (our guest), and one a virtual device backed by us (the real  
-> host), and assigned by the guest to the nested guest.  If both devices  
-> use hypercalls, there is no way to distinguish between them.
+> Let's see arch/x86/mm/init.c::free_initmem()
+>
+> Maybe it's all you want.
+>
+> 	- ClearPageReserved()
+> 	- init_page_count()
+> 	- free_page()
+> 	- totalram_pages++
+>   
 
-Not sure I understand. What I had in mind is that devices would have to
-either use different hypercalls and map hypercall to address during
-setup, or pass address with each hypercall.  We get the hypercall,
-translate the address as if it was pio access, and know the destination?
+Just FYI: calling ClearPageReserved() caused an oops: "Unable to handle 
+paging request".
 
-> -- 
-> error compiling committee.c: too many arguments to function
+I am trying to figure out why...
+
