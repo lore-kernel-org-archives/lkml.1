@@ -1,101 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758373AbZHRKF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758265AbZHRKHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758373AbZHRKF5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 06:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbZHRKF5
+	id S1758265AbZHRKHZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 06:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbZHRKHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 06:05:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41379 "EHLO mx2.mail.elte.hu"
+	Tue, 18 Aug 2009 06:07:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60374 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754266AbZHRKF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 06:05:56 -0400
-Date: Tue, 18 Aug 2009 12:05:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Jason Baron <jbaron@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       Wu Zhangjin <wuzj@lemote.com>, linux-next@vger.kernel.org,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [S390] ftrace: update system call tracer support
-Message-ID: <20090818100526.GA14374@elte.hu>
-References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com> <20090812091133.GA21655@elte.hu> <20090818004654.GA4402@linux-sh.org> <20090818073211.GA26670@elte.hu> <20090818085110.GA2074@elte.hu> <20090818105927.30f6a140@skybase>
+	id S1754199AbZHRKHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 06:07:23 -0400
+Date: Tue, 18 Aug 2009 10:06:37 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       schwidefsky@de.ibm.com, lethal@linux-sh.org, fweisbec@gmail.com,
+       rostedt@goodmis.org, heiko.carstens@de.ibm.com, tglx@linutronix.de,
+       jbaron@redhat.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       schwidefsky@de.ibm.com, lethal@linux-sh.org, fweisbec@gmail.com,
+       rostedt@goodmis.org, heiko.carstens@de.ibm.com, jbaron@redhat.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <tip-fb34a08c3469b2be9eae626ccb96476b4687b810@git.kernel.org>
+References: <tip-fb34a08c3469b2be9eae626ccb96476b4687b810@git.kernel.org>
+Subject: [tip:tracing/core] [S390] ftrace: update system call tracer support
+Message-ID: <tip-130cd840892285eaf1eadf71217b34af3395107f@git.kernel.org>
+Git-Commit-ID: 130cd840892285eaf1eadf71217b34af3395107f
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090818105927.30f6a140@skybase>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 18 Aug 2009 10:06:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  130cd840892285eaf1eadf71217b34af3395107f
+Gitweb:     http://git.kernel.org/tip/130cd840892285eaf1eadf71217b34af3395107f
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Tue, 18 Aug 2009 10:41:57 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 18 Aug 2009 12:03:19 +0200
 
-* Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+[S390] ftrace: update system call tracer support
 
-> On Tue, 18 Aug 2009 10:51:10 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > * Paul Mundt <lethal@linux-sh.org> wrote:
-> > > 
-> > > > [ Adding to Cc everyone that now has a broken tree thanks to this .. ]
-> > > > 
-> > > > On Wed, Aug 12, 2009 at 11:11:33AM +0200, Ingo Molnar wrote:
-> > > > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > > > > > This pull request integrate one cleanup/fix for ftrace and an 
-> > > > > > update for syscall tracing: the migration from old-style tracer to 
-> > > > > > individual tracepoints/trace_events and the support for perf 
-> > > > > > counter.
-> > > > > > 
-> > > > > > I've tested it with success either with ftrace (every syscall 
-> > > > > > tracepoints enabled at the same time without problems) and with 
-> > > > > > perfcounter.
-> > > > > > 
-> > > > > > May be one drawback: it creates so much trace events that the 
-> > > > > > ftrace selftests can take some time :-)
-> > > > > 
-> > > > > Pulled, thanks a lot!
-> > > > 
-> > > > And this has now subsequently broken every single SH and S390 
-> > > > configuration, [...]
-> > > 
-> > > I test SH cross-builds regularly. I just checked the SH defconfig 
-> > > and it builds just fine here:
-> > > 
-> > > $ make -j32 CROSS_COMPILE=sh3-linux- ARCH=sh vmlinux
-> > 
-> > The s390 build indeed broke. (This got masked by the s390 toolchain 
-> > i'm using not having been able to build Linus's tree - i fixed 
-> > that.)
-> > 
-> > Could you try the fix below? It does the trick here.
-> > 
-> > Martin, Heiko - does the fix look good to you? regs->gprs[2] seems 
-> > to be the register used for both the syscall number (enter 
-> > callback) and for the return code (exit callback).
-> 
-> Correct, for do_syscall_trace_{enter,exit} the code in entry.S 
-> stores the system call number in regs->gprs[2]. The fix is fine. 
-> Thanks Ingo.
+Commit fb34a08c3 ("tracing: Add trace events for each syscall
+entry/exit") changed the lowlevel API to ftrace syscall tracing
+but did not update s390 which started making use of it recently.
 
-Thanks, i've added your Acked-by to the commit. I suspect you dont 
-want to pull tracing infrastructure changes into the S390 tree, so 
-keeping this fix in the tracing tree would be the best option?
+This broke the s390 build, as reported by Paul Mundt.
 
-	Ingo
+Update the callbacks with the syscall number and the syscall
+return code values. This allows per syscall tracepoints,
+syscall argument enumeration /debug/tracing/events/syscalls/
+and perfcounters support and integration on s390 too.
+
+Reported-by: Paul Mundt <lethal@linux-sh.org>
+Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Jason Baron <jbaron@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <tip-fb34a08c3469b2be9eae626ccb96476b4687b810@git.kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/s390/kernel/ptrace.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/s390/kernel/ptrace.c b/arch/s390/kernel/ptrace.c
+index 43acd73..05f57cd 100644
+--- a/arch/s390/kernel/ptrace.c
++++ b/arch/s390/kernel/ptrace.c
+@@ -662,7 +662,7 @@ asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
+ 	}
+ 
+ 	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
+-		ftrace_syscall_enter(regs);
++		trace_syscall_enter(regs, regs->gprs[2]);
+ 
+ 	if (unlikely(current->audit_context))
+ 		audit_syscall_entry(is_compat_task() ?
+@@ -680,7 +680,7 @@ asmlinkage void do_syscall_trace_exit(struct pt_regs *regs)
+ 				   regs->gprs[2]);
+ 
+ 	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
+-		ftrace_syscall_exit(regs);
++		trace_syscall_exit(regs, regs->gprs[2]);
+ 
+ 	if (test_thread_flag(TIF_SYSCALL_TRACE))
+ 		tracehook_report_syscall_exit(regs, 0);
