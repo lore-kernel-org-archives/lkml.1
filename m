@@ -1,174 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758887AbZHRMuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbZHRM5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758887AbZHRMuJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 08:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758878AbZHRMuI
+	id S1758892AbZHRM5P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 08:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758866AbZHRM5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 08:50:08 -0400
-Received: from mga09.intel.com ([134.134.136.24]:27060 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758877AbZHRMuG convert rfc822-to-8bit (ORCPT
+	Tue, 18 Aug 2009 08:57:14 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36661 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758531AbZHRM5N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 08:50:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,402,1246863600"; 
-   d="scan'208";a="542341710"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>
-Date: Tue, 18 Aug 2009 13:49:57 +0100
-Subject: RE: [PATCH] perf_counter: Fix a race on perf_counter_ctx
-Thread-Topic: [PATCH] perf_counter: Fix a race on perf_counter_ctx
-Thread-Index: AcoZwPH32O+eE+8/TDeninUWmRiuXwAjFfggAARFOmABZBQJ8A==
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EC1CB7725@irsmsx504.ger.corp.intel.com>
-References: <928CFBE8E7CB0040959E56B4EA41A77EC1BFEFEB@irsmsx504.ger.corp.intel.com>
- <20090807103127.GA23139@elte.hu> <20090807103610.GA23728@elte.hu>
- <928CFBE8E7CB0040959E56B4EA41A77EC1BFF02D@irsmsx504.ger.corp.intel.com>
- <928CFBE8E7CB0040959E56B4EA41A77EC1BFF048@irsmsx504.ger.corp.intel.com>
- <20090807112421.GB30014@elte.hu> <20090807113349.GA31673@elte.hu>
- <1249667341.17467.5.camel@twins> <20090808120315.GA14086@elte.hu>
- <928CFBE8E7CB0040959E56B4EA41A77EC1BFF464@irsmsx504.ger.corp.intel.com>
- <20090810134608.GA8295@elte.hu>
-  <928CFBE8E7CB0040959E56B4EA41A77EC1BFF78D@irsmsx504.ger.corp.intel.com>
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EC1BFF78D@irsmsx504.ger.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+	Tue, 18 Aug 2009 08:57:13 -0400
+Subject: Re: [PATCH 02/12] sched: Separate out allocation/free/goto-hell
+ from __build_sched_domains
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090818105300.GC29515@alberich.amd.com>
+References: <20090818104944.GA29515@alberich.amd.com>
+	 <20090818105300.GC29515@alberich.amd.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 18 Aug 2009 14:57:10 +0200
+Message-Id: <1250600230.7583.278.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo, Peter,
+On Tue, 2009-08-18 at 12:53 +0200, Andreas Herrmann wrote:
+> @@ -8213,6 +8213,23 @@ struct s_data {
+>         struct root_domain      *rd;
+>  };
+>  
+> +enum s_alloc {
+> +       sa_sched_groups = 0,
+> +       sa_rootdomain,
+> +       sa_tmpmask,
+> +       sa_send_covered,
+> +       sa_this_core_map,
+> +       sa_this_sibling_map,
+> +       sa_nodemask,
+> +       sa_sched_group_nodes,
+> +#ifdef CONFIG_NUMA
+> +       sa_notcovered,
+> +       sa_covered,
+> +       sa_domainspan,
+> +#endif
+> +       sa_none,
+> +};
+> +
+>  /*
+>   * SMT sched-domains:
+>   */
+> @@ -8500,6 +8517,77 @@ static void set_domain_attribute(struct sched_domain *sd,
+>         }
+>  }
+>  
+> +static void __free_domain_allocs(struct s_data *d, enum s_alloc what,
+> +                                const struct cpumask *cpu_map)
+> +{
+> +       switch (what) {
+> +       case sa_sched_groups:
+> +               free_sched_groups(cpu_map, d->tmpmask); /* fall through */
+> +               d->sched_group_nodes = NULL;
+> +       case sa_rootdomain:
+> +               free_rootdomain(d->rd); /* fall through */
+> +       case sa_tmpmask:
+> +               free_cpumask_var(d->tmpmask); /* fall through */
+> +       case sa_send_covered:
+> +               free_cpumask_var(d->send_covered); /* fall through */
+> +       case sa_this_core_map:
+> +               free_cpumask_var(d->this_core_map); /* fall through */
+> +       case sa_this_sibling_map:
+> +               free_cpumask_var(d->this_sibling_map); /* fall through */
+> +       case sa_nodemask:
+> +               free_cpumask_var(d->nodemask); /* fall through */
+> +       case sa_sched_group_nodes:
+> +#ifdef CONFIG_NUMA
+> +               kfree(d->sched_group_nodes); /* fall through */
+> +       case sa_notcovered:
+> +               free_cpumask_var(d->notcovered); /* fall through */
+> +       case sa_covered:
+> +               free_cpumask_var(d->covered); /* fall through */
+> +       case sa_domainspan:
+> +               free_cpumask_var(d->domainspan); /* fall through */
+> +#endif
+> +       case sa_none:
+> +               break;
+> +       }
+> +}
+> +
+> +static enum s_alloc __visit_domain_allocation_hell(struct s_data *d,
+> +                                                  const struct cpumask *cpu_map)
+> +{
+> +#ifdef CONFIG_NUMA
+> +       if (!alloc_cpumask_var(&d->domainspan, GFP_KERNEL))
+> +               return sa_none;
+> +       if (!alloc_cpumask_var(&d->covered, GFP_KERNEL))
+> +               return sa_domainspan;
+> +       if (!alloc_cpumask_var(&d->notcovered, GFP_KERNEL))
+> +               return sa_covered;
+> +       /* Allocate the per-node list of sched groups */
+> +       d->sched_group_nodes = kcalloc(nr_node_ids,
+> +                                     sizeof(struct sched_group *), GFP_KERNEL);
+> +       if (!d->sched_group_nodes) {
+> +               printk(KERN_WARNING "Can not alloc sched group node list\n");
+> +               return sa_notcovered;
+> +       }
+> +       sched_group_nodes_bycpu[cpumask_first(cpu_map)] = d->sched_group_nodes;
+> +#endif
+> +       if (!alloc_cpumask_var(&d->nodemask, GFP_KERNEL))
+> +               return sa_sched_group_nodes;
+> +       if (!alloc_cpumask_var(&d->this_sibling_map, GFP_KERNEL))
+> +               return sa_nodemask;
+> +       if (!alloc_cpumask_var(&d->this_core_map, GFP_KERNEL))
+> +               return sa_this_sibling_map;
+> +       if (!alloc_cpumask_var(&d->send_covered, GFP_KERNEL))
+> +               return sa_this_core_map;
+> +       if (!alloc_cpumask_var(&d->tmpmask, GFP_KERNEL))
+> +               return sa_send_covered;
+> +       d->rd = alloc_rootdomain();
+> +       if (!d->rd) {
+> +               printk(KERN_WARNING "Cannot alloc root domain\n");
+> +               return sa_tmpmask;
+> +       }
+> +       return sa_rootdomain;
+> +}
 
-Did you say that branch tracing is working for you?
+Code like this makes me wonder if the decomposition you chose is the
+right one.
 
-On my system, the kernel hangs.
+I'd much rather see something that keeps the various domain levels fully
+isolated. That is, the numa code should not need to know anything about
+the multi-core code etc.
 
-Could it be that it simply takes too long to copy the trace? When I set the number
-of samples to 10, everything seems to work OK. When I increase that number to 1000,
-the kernel is getting very slow and eventually hangs.
+The above we still have everything mixed in one.
 
-I get a message "hrtimer: interrupt too slow", and I get a soft lockup bug. The rest
-of the message log seems pretty garbled.
+Maybe something along the lines of (skipping lots of fun detail):
 
-In that case, I should probably defer the perf_counter_output() and simply switch
-buffers in the interrupt handler. This would use twice as much locked memory, though, and
-it will likely lose trace when tracing kernel branches. I would further need to make
-sure that the counter does not go away when I do the perf_counter_output(). If possible,
-I should also stall the task until its trace has been processed.
+struct domain_constructor {
+	struct sched_domain *func(const struct cpumask *cpu_map,
+				  struct sched_domain_attr *attr);
+};
 
-All in all, it adds complexity and makes the feature more expensive. If you think that
-this could cause the problem of the hanging kernel, I would give it a try.
+struct domain_constructor domain_constructors[] = {
+	{ &construct_numa_domain },
+	{ &construct_mc_domain },
+	{ &construct_cpu_domain },
+	{ &construct_smt_domain },
+};
 
+static int construct_sched_domains(const struct cpumask *cpu_map,
+				   struct sched_domain_attr *attr)
+{
+	int i;
+	struct sched_domain *top = NULL, *parent = NULL, *sd;
 
-One more thing, Peter's patch seems to make the problem appear much more reliably
-than before. Without the patch, I only got the kernel hang when I ran perf top
-in the background. Now, the kernel hangs for every perf record that uses branch
-tracing. This could give another hint to the problem, but I did not find anything
-when I looked at the patch. Do you have any idea, Peter?
+	for (i = 0; i < ARRAY_SIZE(domain_constructors); i++) {
+		sd = domain_constructors[i].func(cpu_map, attr);
+		if (!sd)
+			continue;
+		if (IS_PTR(sd)) {
+			ret = PTR_ERR(sd);
+			goto fail;
+		}
+		if (!top)
+			top = sd;
 
+		if (degenerate_domain(parent, sd)) {
+			fold_domain(parent, sd);
+			sd->destroy();
+			continue;
+		}
 
-thanks,
-markus.
+		sd->parent = parent;
+		parent = sd;
+	}
 
+	ret = attach_domain(sd);
+	if (ret)
+		goto fail;
 
->>>* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
->>>
->>>> I've been using some old version of perf. When I try to build the
->>>> version for the latest -tip, I get the following build error:
->>>>
->>>> builtin-annotate.o: In function `print_summary':
->>>> /home/markus/linux/git-tip/tools/perf/builtin-annotate.c:1211: undefined reference to `rb_first'
->>>> /home/markus/linux/git-tip/tools/perf/builtin-annotate.c:1223: undefined reference to `rb_next'
->>>> builtin-annotate.o: In function `insert_source_line':
->>>
->>>Weird. How do you build perf? Do you do:
->>>
->>>  cd tools/perf/
->>>  make
->>>
->>>? does your build directory have the ../../lib/rbtree.c file?
->>
->>Yes and yes.
->
->
->The rbtree object file does not seem to be an ELF file (see below).
->
->When I have gcc generate an assembly file and generate the object with a
->separate call to gcc, I can build perf.
->
->When I say "perf record -f -e branches -c 1", the kernel hangs.
->
->You said that this is working for you?
->
->regards,
->markus.
->
->----
->
->[markus@labpc212 perf]$ gcc --version
->gcc (GCC) 4.3.2 20081105 (Red Hat 4.3.2-7)
->Copyright (C) 2008 Free Software Foundation, Inc.
->This is free software; see the source for copying conditions.  There is NO
->warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
->
->[markus@labpc212 perf]$ file *.o util/*.o
->builtin-annotate.o:   ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->builtin-help.o:       ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->builtin-list.o:       ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->builtin-record.o:     ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->builtin-report.o:     ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->builtin-stat.o:       ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->builtin-top.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->perf.o:               ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/abspath.o:       ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/alias.o:         ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/callchain.o:     ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/color.o:         ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/config.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/ctype.o:         ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/environment.o:   ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/exec_cmd.o:      ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/header.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/help.o:          ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/levenshtein.o:   ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/module.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/pager.o:         ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/parse-events.o:  ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/parse-options.o: ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/path.o:          ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/quote.o:         ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/rbtree.o:        data
->util/run-command.o:   ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/sigchain.o:      ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/strbuf.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/string.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/strlist.o:       data
->util/symbol.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/usage.o:         ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/values.o:        ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->util/wrapper.o:       ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
->[markus@labpc212 perf]$
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+out:
+	return ret;
+	
+fail:
+	for (sd = parent; sd; sd = parent) {
+		parent = sd->parent;
+		sd->destroy();
+	}
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+	goto out;
+}
+
 
