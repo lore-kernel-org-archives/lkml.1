@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbZHRHHC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752855AbZHRHHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752771AbZHRHHC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 03:07:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZHRHHC
+	id S1752855AbZHRHHW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 03:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZHRHHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 03:07:02 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42554 "EHLO mx3.mail.elte.hu"
+	Tue, 18 Aug 2009 03:07:21 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:54245 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752257AbZHRHHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 03:07:00 -0400
-Date: Tue, 18 Aug 2009 09:06:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: Please pull my perfcounters.git tree
-Message-ID: <20090818070656.GA25564@elte.hu>
-References: <19082.14855.905695.140648@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19082.14855.905695.140648@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751975AbZHRHHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 03:07:20 -0400
+From: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+To: linux-mtd@lists.infradead.org
+Cc: davinci-linux-open-source@linux.davincidsp.com, david-b@pacbell.net,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+Subject: [PATCH] [MTD] driver/Makefile: Initialize "mtd" and "spi" before "net"
+Date: Tue, 18 Aug 2009 12:34:04 -0400
+Message-Id: <1250613244-25447-1-git-send-email-sudhakar.raj@ti.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On TI's da850/omap-l138 EVM, MAC address is stored in SPI flash.
 
-* Paul Mackerras <paulus@samba.org> wrote:
+This patch changes the initialization sequence of the drivers
+by moving mtd and spi ahead of net in drivers/Makefile thereby
+enabling da850/omap-l138 ethernet driver to read the MAC address
+while booting.
 
-> Ingo,
-> 
-> The following changes since commit 64f1607ffbbc772685733ea63e6f7f4183df1b16:
->   Linus Torvalds (1):
->         Linux 2.6.31-rc6
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perfcounters.git master
-> 
-> Paul Mackerras (3):
->       powerpc/32: Always order writes to halves of 64-bit PTEs
->       powerpc: Allow perf_counters to access user memory at interrupt time
->       perf_counter: powerpc: Add callchain support
-> 
->  arch/powerpc/include/asm/pgtable.h   |    6 +-
->  arch/powerpc/kernel/Makefile         |    2 +-
->  arch/powerpc/kernel/asm-offsets.c    |    2 +
->  arch/powerpc/kernel/exceptions-64s.S |   19 ++
->  arch/powerpc/kernel/perf_callchain.c |  527 ++++++++++++++++++++++++++++++++++
->  arch/powerpc/mm/slb.c                |   37 ++-
->  arch/powerpc/mm/stab.c               |   11 +-
->  7 files changed, 588 insertions(+), 16 deletions(-)
->  create mode 100644 arch/powerpc/kernel/perf_callchain.c
-> 
-> These commits implement callchain support for perf_counters on 
-> powerpc. [...]
+Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+---
+ drivers/Makefile |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-nice!
+diff --git a/drivers/Makefile b/drivers/Makefile
+index bc4205d..2a1d41f 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -42,6 +42,8 @@ obj-y				+= macintosh/
+ obj-$(CONFIG_IDE)		+= ide/
+ obj-$(CONFIG_SCSI)		+= scsi/
+ obj-$(CONFIG_ATA)		+= ata/
++obj-$(CONFIG_MTD)		+= mtd/
++obj-$(CONFIG_SPI)		+= spi/
+ obj-y				+= net/
+ obj-$(CONFIG_ATM)		+= atm/
+ obj-$(CONFIG_FUSION)		+= message/
+@@ -50,8 +52,6 @@ obj-y				+= ieee1394/
+ obj-$(CONFIG_UIO)		+= uio/
+ obj-y				+= cdrom/
+ obj-y				+= auxdisplay/
+-obj-$(CONFIG_MTD)		+= mtd/
+-obj-$(CONFIG_SPI)		+= spi/
+ obj-$(CONFIG_PCCARD)		+= pcmcia/
+ obj-$(CONFIG_DIO)		+= dio/
+ obj-$(CONFIG_SBUS)		+= sbus/
+-- 
+1.5.6
 
-> [...]  They have been acked by Ben Herrenschmidt and I have asked 
-> him to pull them into his powerpc-next branch.  It would be good 
-> if you could pull them into the tip tree on some suitable branch 
-> so they get tested together with the other perf_counter changes 
-> that are pending for the 2.6.32 merge window.
-
-Pulled into tip:perfcounters/core, thanks Paul!
-
-	Ingo
