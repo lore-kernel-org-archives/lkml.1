@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752099AbZHRWov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752061AbZHRWru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752099AbZHRWov (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 18:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZHRWou
+	id S1752061AbZHRWru (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 18:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbZHRWrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 18:44:50 -0400
-Received: from mga09.intel.com ([134.134.136.24]:1577 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751662AbZHRWou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 18:44:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,404,1246863600"; 
-   d="scan'208";a="542625986"
-Date: Tue, 18 Aug 2009 15:44:42 -0700
-From: mgross <mgross@linux.intel.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH, RESEND 0/2] pm_qos: remove BKL and de-race
-Message-ID: <20090818224442.GA16014@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20090813140554.014ce1e0@bike.lwn.net>
+	Tue, 18 Aug 2009 18:47:49 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:53230 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751022AbZHRWrs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 18:47:48 -0400
+Date: Wed, 19 Aug 2009 07:47:49 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: suspend tree build failure
+Message-ID: <20090818224749.GA26661@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20090818183049.8bde1ee6.sfr@canb.auug.org.au> <200908182343.32375.rjw@sisk.pl> <20090818221301.GA20676@linux-sh.org> <200908190040.50949.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090813140554.014ce1e0@bike.lwn.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200908190040.50949.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 02:05:54PM -0600, Jonathan Corbet wrote:
-
-Sorry for the late reply.  I'll look over the patches shortly.
-
---mgross
-
-> Here's a repost of my two-patch set getting rid of the BKL and some
-> racy code in pm_qos_params.c.  There's been no changes since the last
-> time around other than the addition of a couple of tags.  Patches
-> follow, or they can be pulled from:
+On Wed, Aug 19, 2009 at 12:40:50AM +0200, Rafael J. Wysocki wrote:
+> On Wednesday 19 August 2009, Paul Mundt wrote:
+> > Argh, and rebased in the process, again. This is now the second time in
+> > as many days this has been rebased, meaning I have to throw away my topic
+> > branch and re-create. I thought this was going to remain stable? I would
+> > like the SH runtime PM code to get some coverage in -next, but I can't
+> > merge it in to my tree if the suspend tree keeps rebasing every day.
 > 
-> 	git://git.lwn.net/linux-2.6.git bkl-removal
+> Well, my linux-next branch is not to guaranteed to be stable, just like the
+> entire linux-next tree.
 > 
-> Ingo, you didn't say whether these could find a home in your
-> violent-death-to-the-bkl tree until the merge window opens.  So they're
-> still looking for a place to rest; I guess I could ask Stephen to take
-> the bkl-removal tree back into linux-next, but that seems like
-> overkill.
+> Once the patch stops making trouble, I'll move it into my for-linus branch,
+> which _is_ guaranteed not to be rebased (in fact it's never rebased).
 > 
-> Thanks,
+> I haven't done it yet exactly because of these build problems.  Please wait
+> for a couple of days more for things to settle down.
 > 
-> jon
+Ah, ok, I misunderstood the intention of your -next branch. I'll wait for
+it to cool off, thanks. ;-)
