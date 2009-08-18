@@ -1,92 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752252AbZHRX15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbZHRX3G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752252AbZHRX15 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 19:27:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbZHRX14
+	id S1752277AbZHRX3G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 19:29:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZHRX3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 19:27:56 -0400
-Received: from mga05.intel.com ([192.55.52.89]:65228 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751788AbZHRX14 (ORCPT
+	Tue, 18 Aug 2009 19:29:06 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:52982 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbZHRX3F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 19:27:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,404,1246863600"; 
-   d="scan'208";a="718258213"
-Date: Tue, 18 Aug 2009 16:27:57 -0700
-From: mgross <mgross@linux.intel.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 1/2] pm_qos: remove the BKL
-Message-ID: <20090818232757.GB16014@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20090813140554.014ce1e0@bike.lwn.net> <20090813140716.4490ab37@bike.lwn.net>
+	Tue, 18 Aug 2009 19:29:05 -0400
+Date: Tue, 18 Aug 2009 19:29:03 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Justin Mattock <justinmattock@gmail.com>
+cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: system gets stuck in a lock during boot
+In-Reply-To: <dd18b0c30908180924n3848d32ave258f98a5f703c38@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0908181926410.28398@gandalf.stny.rr.com>
+References: <4A84345D.60506@gmail.com> <20090818104905.GC5231@nowhere>  <20090818160911.GA21243@goodmis.org> <dd18b0c30908180924n3848d32ave258f98a5f703c38@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090813140716.4490ab37@bike.lwn.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1424940369-1250638036=:28398"
+Content-ID: <alpine.DEB.2.00.0908181927430.28398@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 02:07:16PM -0600, Jonathan Corbet wrote:
-> pm_qos_power_open got its lock_kernel() calls from the open() pushdown.  A
-> look at the code shows that the only global resources accessed are
-> pm_qos_array and "name".  pm_qos_array doesn't change (things pointed to
-> therein do change, but they are atomics and/or are protected by
-> pm_qos_lock).  Accesses to "name" are totally unprotected with or without
-> the BKL; that will be fixed shortly.  The BKL is not helpful here; take it
-> out.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--8323328-1424940369-1250638036=:28398
+Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-ID: <alpine.DEB.2.00.0908181927431.28398@gandalf.stny.rr.com>
 
 
+On Tue, 18 Aug 2009, Justin Mattock wrote:
 
-Signed-off-by: Mark Gross <mgross@linux.intel.com>
+> On Tue, Aug 18, 2009 at 9:09 AM, Steven Rostedt<rostedt@goodmis.org> wrot=
+e:
+> > On Tue, Aug 18, 2009 at 12:49:06PM +0200, Frederic Weisbecker wrote:
+> >> On Thu, Aug 13, 2009 at 08:42:21AM -0700, Justin P. Mattock wrote:
+> >> > I posted already and had no reply,
+> >> > I cannot boot my system with the latest git
+> >> >
+> >> > seems to be stuck in some lock:
 
---mgross
+BTW, it does not look like it got stuck in a lock. The backtrace shows=20
+that it paniced inside event_create_dir due to a bad pointer.
 
-> 
-> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-> Cc: Mark Gross <mgross@linux.intel.com>
-> ---
->  kernel/pm_qos_params.c |    8 +-------
->  1 files changed, 1 insertions(+), 7 deletions(-)
-> 
-> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> index dfdec52..d96b83e 100644
-> --- a/kernel/pm_qos_params.c
-> +++ b/kernel/pm_qos_params.c
-> @@ -29,7 +29,6 @@
->  
->  #include <linux/pm_qos_params.h>
->  #include <linux/sched.h>
-> -#include <linux/smp_lock.h>
->  #include <linux/spinlock.h>
->  #include <linux/slab.h>
->  #include <linux/time.h>
-> @@ -352,20 +351,15 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
->  	int ret;
->  	long pm_qos_class;
->  
-> -	lock_kernel();
->  	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
->  	if (pm_qos_class >= 0) {
->  		filp->private_data = (void *)pm_qos_class;
->  		sprintf(name, "process_%d", current->pid);
->  		ret = pm_qos_add_requirement(pm_qos_class, name,
->  					PM_QOS_DEFAULT_VALUE);
-> -		if (ret >= 0) {
-> -			unlock_kernel();
-> +		if (ret >= 0)
->  			return 0;
-> -		}
->  	}
-> -	unlock_kernel();
-> -
->  	return -EPERM;
->  }
->  
-> -- 
-> 1.6.2.5
+> >> >
+> >> > [ =A0 0.655640] [<ffffffff81440c33>] panic+0x84/0x129
+> >> > [ =A0 0.655883] [<ffffffff81063f96>] =A0do_exit+0x84/0x67e
+> >> > [ =A0 0.656125] [<ffffffff81445044>] oops_end+0x9c/0xb7
+> >> > [ =A0 0.656368] [<ffffffff81044a6c>] no_context+0x200/0x223
+> >> > [ =A0 0.656611] [<ffffffff81442d3d>] ? __mutex_lock_slowpath+0x226/0=
+x249
+> >> > [ =A0 0.656848] [<ffffffff81044c36>] __bad_area_nosemaphore+0x1a7/0x=
+1e1
+> >> > [ =A0 0.657097] [<ffffffff81442b01>]? mutex_unlock+0x1c/0x32
+> >> > [ =A0 0.657097] [<ffffffff811ce094>] ? inode_doinit_with_dentry+0x53=
+3/0x5be
+> >> > [ =A0 0.657579] [<ffffffff81443ee0>] ? _spin_unlock+0x1c/0x32
+> >> > [ =A0 0.657822] [<ffffffff81044c91>] bad_area_nosemaphore+0x2a/0x40
+> >> > [ =A0 0.658066] [<ffffffff811ce149>] ? selinux_d_instantiate+0x2a/0x=
+40
+> >> > [ =A0 0.658309] [<ffffffff8144687d>] do_page_fault+0x192/0x2dd
+> >> > [ =A0 0.658549] [<ffffffff814444cf>] page_fault+0x1f/0x30
+> >> > [ =A0 0.658791] [<ffffffff8120e856>] ? strcmp+0x17/0x46
+> >> > [ =A0 0.659040] [<ffffffff810b9ca0>] event_create_dir+0x49/0x37b
+> >>
+> >>
+> >>
+> >> Ouch...
+> >>
+> >> I've never seen such panic. Could you send me your config, hopefully
+> >> I could reproduce it?
+> >
+> > Send me the config too please.
+> >
+> > -- Steve
+> >
+> >
+>=20
+> yeah this happens with rc6 but not with rc5.
+>=20
+> The system is a linux from scratch build
+> x86_64 I used these flags for building everything:
+>=20
+>  CFLAGS=3D" -m64 -mtune=3Dcore2 -march=3Dcore2 -mfpmath=3Dboth  -O2 -pipe
+>  -fomit-frame-pointer -fstack-protector" CXXFLAGS=3D"${CFLAGS}" MAKEOPTS=
+=3D"{-j3}"
+>=20
+> also:  I have a macbook(not x86_64) that is running rc6 that seems
+> to be fine.(I can double check).
+>=20
+> attached is .config, dmesg as well.
+
+BTW, how did you get the dmesg? Is it from a clean boot?
+
+Since it works fine in -rc5 but breaks in -rc6, could you do a git bisect=
+=20
+on it? It shouldn't take too long.
+
+Thanks,
+
+-- Steve
+
+
+--8323328-1424940369-1250638036=:28398--
