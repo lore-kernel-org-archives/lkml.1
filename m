@@ -1,81 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751652AbZHRUEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751719AbZHRUFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751652AbZHRUEp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 16:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbZHRUEo
+	id S1751719AbZHRUFn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 16:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZHRUFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 16:04:44 -0400
-Received: from www.tglx.de ([62.245.132.106]:50226 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750888AbZHRUEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 16:04:43 -0400
-Date: Tue, 18 Aug 2009 22:03:43 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>
-Subject: [ANNOUNCE] 2.6.31-rc6-rt4
-In-Reply-To: <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain> <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain>
- <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>
- <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>
- <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 18 Aug 2009 16:05:42 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:60197 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751261AbZHRUFl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 16:05:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=E2xIapsrCtSgdlhwlBtGNqP8oVL8Zk62dz74DzaVuXIyX29JUM6frxVeIvof+cP0AO
+         BAOmpBkkKMWLiemJSa/jNIuB1NZBS07esF/C8NCVrqTX7Mn9Mx2mYyUI7M1i8ON2GoL6
+         dl6b3eVbrKi86K5ujAP/9ZVu9wfKzVg3wsSvw=
+Message-ID: <4A8B09B6.2000605@gmail.com>
+Date: Tue, 18 Aug 2009 13:06:14 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009031304)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: system gets stuck in a lock during boot
+References: <4A84345D.60506@gmail.com> <20090818104905.GC5231@nowhere>  <20090818160911.GA21243@goodmis.org> <dd18b0c30908180924n3848d32ave258f98a5f703c38@mail.gmail.com> <alpine.DEB.2.00.0908181544320.20691@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0908181544320.20691@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the next update to our new preempt-rt
-series.
+Steven Rostedt wrote:
+> On Tue, 18 Aug 2009, Justin Mattock wrote:
+>
+>    
+>> On Tue, Aug 18, 2009 at 9:09 AM, Steven Rostedt<rostedt@goodmis.org>  wrote:
+>>      
+>>> On Tue, Aug 18, 2009 at 12:49:06PM +0200, Frederic Weisbecker wrote:
+>>>        
+>>>> On Thu, Aug 13, 2009 at 08:42:21AM -0700, Justin P. Mattock wrote:
+>>>>          
+>>>>> I posted already and had no reply,
+>>>>> I cannot boot my system with the latest git
+>>>>>
+>>>>> seems to be stuck in some lock:
+>>>>>
+>>>>> [   0.655640] [<ffffffff81440c33>] panic+0x84/0x129
+>>>>> [   0.655883] [<ffffffff81063f96>]  do_exit+0x84/0x67e
+>>>>> [   0.656125] [<ffffffff81445044>] oops_end+0x9c/0xb7
+>>>>> [   0.656368] [<ffffffff81044a6c>] no_context+0x200/0x223
+>>>>> [   0.656611] [<ffffffff81442d3d>] ? __mutex_lock_slowpath+0x226/0x249
+>>>>> [   0.656848] [<ffffffff81044c36>] __bad_area_nosemaphore+0x1a7/0x1e1
+>>>>> [   0.657097] [<ffffffff81442b01>]? mutex_unlock+0x1c/0x32
+>>>>> [   0.657097] [<ffffffff811ce094>] ? inode_doinit_with_dentry+0x533/0x5be
+>>>>> [   0.657579] [<ffffffff81443ee0>] ? _spin_unlock+0x1c/0x32
+>>>>> [   0.657822] [<ffffffff81044c91>] bad_area_nosemaphore+0x2a/0x40
+>>>>> [   0.658066] [<ffffffff811ce149>] ? selinux_d_instantiate+0x2a/0x40
+>>>>> [   0.658309] [<ffffffff8144687d>] do_page_fault+0x192/0x2dd
+>>>>> [   0.658549] [<ffffffff814444cf>] page_fault+0x1f/0x30
+>>>>> [   0.658791] [<ffffffff8120e856>] ? strcmp+0x17/0x46
+>>>>> [   0.659040] [<ffffffff810b9ca0>] event_create_dir+0x49/0x37b
+>>>>>            
+>>>>
+>>>> Ouch...
+>>>>
+>>>> I've never seen such panic. Could you send me your config, hopefully
+>>>> I could reproduce it?
+>>>>          
+>>> Send me the config too please.
+>>>
+>>> -- Steve
+>>>
+>>>
+>>>        
+>> yeah this happens with rc6 but not with rc5.
+>>
+>> The system is a linux from scratch build
+>> x86_64 I used these flags for building everything:
+>>
+>>   CFLAGS=" -m64 -mtune=core2 -march=core2 -mfpmath=both  -O2 -pipe
+>>   -fomit-frame-pointer -fstack-protector" CXXFLAGS="${CFLAGS}" MAKEOPTS="{-j3}"
+>>
+>> also:  I have a macbook(not x86_64) that is running rc6 that seems
+>> to be fine.(I can double check).
+>>
+>> attached is .config, dmesg as well.
+>>      
+>
+> I used your config and I can not reproduce the bug you have. Was this a
+> constant issue? That is, was it reproducible at every boot?
+>
+> -- Steve
+yes.
+every boot this shows up.
 
-  [ I skipped -rt3 as it failed in testing ]
+Justin P. Mattock
 
- - update to the ONESHOT irq infrastructure scheduled for mainline
-
- - scheduling while atomic fix in tty_ldisc
-
-The know problems (PSeries / ARM highmem) still persist and we have a
-new one which is related to cgroup memcontrol. The latter one is easy
-to fix but will have to wait for the next release.
-
-Download locations:
-
-    http://rt.et.redhat.com/download/
-    http://www.kernel.org/pub/linux/kernel/projects/rt/
-
-Git release branch:
-    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31-rc6
- 
-Git development branch:
-    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
-
-Gitweb:
-    http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31-rc6
- 
-Information on the RT patch can be found at:
-
-    http://rt.wiki.kernel.org/index.php/Main_Page
-
-to build the 2.6.31-rc6-rt4 tree, the following patches should be
-applied:
-
-    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.30.tar.bz2
-    http://www.kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.31-rc6.bz2
-    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31-rc6-rt4.bz2
-
-Enjoy !
-
-       tglx
