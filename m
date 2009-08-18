@@ -1,280 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758837AbZHRPJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZHRPPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758837AbZHRPJq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 11:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbZHRPJp
+	id S1754692AbZHRPPR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 11:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZHRPPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 11:09:45 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:41223 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886AbZHRPJo (ORCPT
+	Tue, 18 Aug 2009 11:15:16 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:53795 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751057AbZHRPPO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 11:09:44 -0400
-Date: Tue, 18 Aug 2009 17:09:42 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [circular locking bug] Re: [patch 00/15] clocksource /
- timekeeping rework V4 (resend V3 + bug fix)
-Message-ID: <20090818170942.3ab80c91@skybase>
-In-Reply-To: <20090817092807.GA10460@elte.hu>
-References: <20090814134717.859098725@de.ibm.com>
-	<1250300765.8269.29.camel@localhost.localdomain>
-	<alpine.LFD.2.00.0908151057500.1283@localhost.localdomain>
-	<20090815095221.GA15831@elte.hu>
-	<alpine.LFD.2.00.0908151207000.1283@localhost.localdomain>
-	<20090817094042.03fe5d38@skybase>
-	<alpine.LFD.2.00.0908171038420.2782@localhost.localdomain>
-	<20090817092807.GA10460@elte.hu>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Aug 2009 11:15:14 -0400
+Date: Tue, 18 Aug 2009 11:14:37 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: pull request: wireless-2.6 2009-08-18
+Message-ID: <20090818151436.GA2768@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Aug 2009 11:28:07 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+Dave,
 
-> 
-> -tip testing still triggers lockdep troubles with latest 
-> timers/core. I think timekeeping_notify() might be involved.
-> 
-> Bootlog below, config attached.
-> [   43.081726] =======================================================
-> [   43.089512] [ INFO: possible circular locking dependency detected ]
-> [   43.090020] 2.6.31-rc6-tip-01039-ge54d9cb-dirty #4937
-> [   43.090020] -------------------------------------------------------
-> [   43.090020] S99local/5002 is trying to acquire lock:
-> [   43.090020]  (events){+.+.+.}, at: [<ffffffff8106ff4c>] cleanup_workqueue_thread+0x2d/0xdd
-> [   43.090020] 
-> [   43.090020] but task is already holding lock:
-> [   43.090020]  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff818387aa>] cpu_down+0x3b/0xb4
-> [   43.090020] 
-> [   43.090020] which lock already depends on the new lock.
-> [   43.090020] 
-> [   43.090020] 
-> [   43.090020] the existing dependency chain (in reverse order) is:
-> [   43.090020] 
-> [   43.090020] -> #4 (cpu_add_remove_lock){+.+.+.}:
-> [   43.090020]        [<ffffffff8108925d>] check_prev_add+0x18e/0x225
-> [   43.090020]        [<ffffffff8108976a>] validate_chain+0x476/0x556
-> [   43.090020]        [<ffffffff81089bfa>] __lock_acquire+0x3b0/0x43b
-> [   43.090020]        [<ffffffff81089d5a>] lock_acquire+0xd5/0x10e
-> [   43.090020]        [<ffffffff81872229>] __mutex_lock_common+0x5b/0x3b0
-> [   43.090020]        [<ffffffff81872683>] mutex_lock_nested+0x45/0x62
-> [   43.090020]        [<ffffffff8105de75>] cpu_maps_update_begin+0x25/0x3b
-> [   43.090020]        [<ffffffff81070348>] __create_workqueue_key+0x137/0x200
-> [   43.090020]        [<ffffffff810a2397>] stop_machine_create+0x4d/0xc2
-> [   43.090020]        [<ffffffff810a2438>] stop_machine+0x2c/0x74
-> [   43.090020]        [<ffffffff8107f163>] timekeeping_notify+0x31/0x4c
-> [   43.090020]        [<ffffffff81080258>] clocksource_select+0xc9/0xe8
-> [   43.090020]        [<ffffffff81080b8c>] clocksource_register+0x70/0xa1
-> [   43.090020]        [<ffffffff81d4cc6a>] init_acpi_pm_clocksource+0xf3/0x114
-> [   43.090020]        [<ffffffff8100a092>] do_one_initcall+0x65/0x15b
-> [   43.090020]        [<ffffffff81d0d992>] do_basic_setup+0x59/0x82
-> [   43.090020]        [<ffffffff81d0da3e>] kernel_init+0x83/0xdd
-> [   43.090020]        [<ffffffff8101520a>] child_rip+0xa/0x20
-> [   43.090020] 
-> [   43.090020] -> #3 (setup_lock){+.+.+.}:
-> [   43.090020]        [<ffffffff8108925d>] check_prev_add+0x18e/0x225
-> [   43.090020]        [<ffffffff8108976a>] validate_chain+0x476/0x556
-> [   43.090020]        [<ffffffff81089bfa>] __lock_acquire+0x3b0/0x43b
-> [   43.090020]        [<ffffffff81089d5a>] lock_acquire+0xd5/0x10e
-> [   43.090020]        [<ffffffff81872229>] __mutex_lock_common+0x5b/0x3b0
-> [   43.090020]        [<ffffffff81872683>] mutex_lock_nested+0x45/0x62
-> [   43.090020]        [<ffffffff810a236f>] stop_machine_create+0x25/0xc2
-> [   43.090020]        [<ffffffff810a2438>] stop_machine+0x2c/0x74
-> [   43.090020]        [<ffffffff8107f163>] timekeeping_notify+0x31/0x4c
-> [   43.090020]        [<ffffffff81080258>] clocksource_select+0xc9/0xe8
-> [   43.090020]        [<ffffffff81080b8c>] clocksource_register+0x70/0xa1
-> [   43.090020]        [<ffffffff81d4cc6a>] init_acpi_pm_clocksource+0xf3/0x114
-> [   43.090020]        [<ffffffff8100a092>] do_one_initcall+0x65/0x15b
-> [   43.090020]        [<ffffffff81d0d992>] do_basic_setup+0x59/0x82
-> [   43.090020]        [<ffffffff81d0da3e>] kernel_init+0x83/0xdd
-> [   43.090020]        [<ffffffff8101520a>] child_rip+0xa/0x20
-> [   43.090020] 
-> [   43.090020] -> #2 (clocksource_mutex){+.+.+.}:
-> [   43.090020]        [<ffffffff8108925d>] check_prev_add+0x18e/0x225
-> [   43.090020]        [<ffffffff8108976a>] validate_chain+0x476/0x556
-> [   43.090020]        [<ffffffff81089bfa>] __lock_acquire+0x3b0/0x43b
-> [   43.090020]        [<ffffffff81089d5a>] lock_acquire+0xd5/0x10e
-> [   43.090020]        [<ffffffff81872229>] __mutex_lock_common+0x5b/0x3b0
-> [   43.090020]        [<ffffffff81872683>] mutex_lock_nested+0x45/0x62
-> [   43.090020]        [<ffffffff8108076c>] clocksource_change_rating+0x34/0xaf
-> [   43.090020]        [<ffffffff8108091a>] clocksource_watchdog_work+0x133/0x16f
-> [   43.090020]        [<ffffffff8106f9ca>] run_workqueue+0x161/0x265
-> [   43.090020]        [<ffffffff8106fbb3>] worker_thread+0xe5/0x10c
-> [   43.090020]        [<ffffffff81074b64>] kthread+0x98/0xa0
-> [   43.090020]        [<ffffffff8101520a>] child_rip+0xa/0x20
-> [   43.090020] 
-> [   43.090020] -> #1 (&watchdog_work){+.+...}:
-> [   43.090020]        [<ffffffff8108925d>] check_prev_add+0x18e/0x225
-> [   43.090020]        [<ffffffff8108976a>] validate_chain+0x476/0x556
-> [   43.090020]        [<ffffffff81089bfa>] __lock_acquire+0x3b0/0x43b
-> [   43.090020]        [<ffffffff81089d5a>] lock_acquire+0xd5/0x10e
-> [   43.090020]        [<ffffffff8106f9c4>] run_workqueue+0x15b/0x265
-> [   43.090020]        [<ffffffff8106fbb3>] worker_thread+0xe5/0x10c
-> [   43.090020]        [<ffffffff81074b64>] kthread+0x98/0xa0
-> [   43.090020]        [<ffffffff8101520a>] child_rip+0xa/0x20
-> [   43.090020] 
-> [   43.090020] -> #0 (events){+.+.+.}:
-> [   43.090020]        [<ffffffff81089146>] check_prev_add+0x77/0x225
-> [   43.090020]        [<ffffffff8108976a>] validate_chain+0x476/0x556
-> [   43.090020]        [<ffffffff81089bfa>] __lock_acquire+0x3b0/0x43b
-> [   43.090020]        [<ffffffff81089d5a>] lock_acquire+0xd5/0x10e
-> [   43.090020]        [<ffffffff8106ff73>] cleanup_workqueue_thread+0x54/0xdd
-> [   43.090020]        [<ffffffff81839c41>] workqueue_cpu_callback+0xdb/0x13f
-> [   43.090020]        [<ffffffff8187714e>] notifier_call_chain+0x6d/0xb5
-> [   43.090020]        [<ffffffff8107a19e>] raw_notifier_call_chain+0x22/0x38
-> [   43.090020]        [<ffffffff81838735>] _cpu_down+0x2c2/0x2fc
-> [   43.090020]        [<ffffffff818387cc>] cpu_down+0x5d/0xb4
-> [   43.090020]        [<ffffffff8183988e>] store_online+0x3f/0x9a
-> [   43.090020]        [<ffffffff813c2e41>] sysdev_store+0x2e/0x44
-> [   43.090020]        [<ffffffff811559a5>] sysfs_write_file+0xf3/0x13c
-> [   43.090020]        [<ffffffff810f6f7a>] vfs_write+0xbe/0x130
-> [   43.090020]        [<ffffffff810f70e2>] sys_write+0x56/0x93
-> [   43.090020]        [<ffffffff81014042>] system_call_fastpath+0x16/0x1b
-> [   43.090020] 
-> [   43.090020] other info that might help us debug this:
-> [   43.090020] 
-> [   43.090020] 2 locks held by S99local/5002:
-> [   43.090020]  #0:  (&buffer->mutex){+.+.+.}, at: [<ffffffff811558f9>] sysfs_write_file+0x47/0x13c
-> [   43.090020]  #1:  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff818387aa>] cpu_down+0x3b/0xb4
-> [   43.090020] 
-> [   43.090020] stack backtrace:
-> [   43.090020] Pid: 5002, comm: S99local Not tainted 2.6.31-rc6-tip-01039-ge54d9cb-dirty #4937
-> [   43.090020] Call Trace:
-> [   43.090020]  [<ffffffff81088bb0>] print_circular_bug+0xcf/0xf4
-> [   43.090020]  [<ffffffff81089146>] check_prev_add+0x77/0x225
-> [   43.090020]  [<ffffffff818710e5>] ? wait_for_common+0xeb/0x150
-> [   43.090020]  [<ffffffff8108976a>] validate_chain+0x476/0x556
-> [   43.090020]  [<ffffffff81087d17>] ? mark_lock+0x31/0x17d
-> [   43.090020]  [<ffffffff81089bfa>] __lock_acquire+0x3b0/0x43b
-> [   43.090020]  [<ffffffff8106ff4c>] ? cleanup_workqueue_thread+0x2d/0xdd
-> [   43.090020]  [<ffffffff8106ff4c>] ? cleanup_workqueue_thread+0x2d/0xdd
-> [   43.090020]  [<ffffffff81089d5a>] lock_acquire+0xd5/0x10e
-> [   43.090020]  [<ffffffff8106ff4c>] ? cleanup_workqueue_thread+0x2d/0xdd
-> [   43.090020]  [<ffffffff81871283>] ? wait_for_completion+0x2b/0x41
-> [   43.090020]  [<ffffffff81074be5>] ? kthread_stop+0x79/0xd9
-> [   43.090020]  [<ffffffff8106ff73>] cleanup_workqueue_thread+0x54/0xdd
-> [   43.090020]  [<ffffffff8106ff4c>] ? cleanup_workqueue_thread+0x2d/0xdd
-> [   43.090020]  [<ffffffff81839c41>] workqueue_cpu_callback+0xdb/0x13f
-> [   43.090020]  [<ffffffff8187714e>] notifier_call_chain+0x6d/0xb5
-> [   43.090020]  [<ffffffff8107a19e>] raw_notifier_call_chain+0x22/0x38
-> [   43.090020]  [<ffffffff81838735>] _cpu_down+0x2c2/0x2fc
-> [   43.090020]  [<ffffffff818710e5>] ? wait_for_common+0xeb/0x150
-> [   43.090020]  [<ffffffff818387cc>] cpu_down+0x5d/0xb4
-> [   43.090020]  [<ffffffff8183988e>] store_online+0x3f/0x9a
-> [   43.090020]  [<ffffffff813c2e41>] sysdev_store+0x2e/0x44
-> [   43.090020]  [<ffffffff811559a5>] sysfs_write_file+0xf3/0x13c
-> [   43.090020]  [<ffffffff810f65fa>] ? rw_verify_area+0x97/0xd1
-> [   43.090020]  [<ffffffff810f6f7a>] vfs_write+0xbe/0x130
-> [   43.090020]  [<ffffffff810f70e2>] sys_write+0x56/0x93
-> [   43.090020]  [<ffffffff81014042>] system_call_fastpath+0x16/0x1b
-> [   43.829633] lockdep: fixing up alternatives.
+Two more for 2.6.31...
 
-I though about this circular dependency for a while and came to the
-conclusion that stop_machine from a multithreaded workqueue is not
-allowed. It deadlocks with cpu_down. We either use a single-threaded
-workqueue or an explicitly created kernel thread for the clocksource
-downgrade. The kthread_run solution seems to be less painful than
-to create a single-threaded workqueue. Untested patch below.
+The one from Johannes is actually already in net-next-2.6, but it has
+since been reported to cause a possible irq lock inversion dependency in
+2.6.31-rc6, as described here:
 
---
-Subject: [PATCH] clocksource watchdog circular locking dependency
+	http://marc.info/?l=linux-wireless&m=125052198303537&w=2
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+The one from me fixes a minor bounds checking problem in orinoco, as
+reported by Dan Carpenter.  It is simple and obvious.
 
-stop_machine from a multithreaded workqueue is not allowed because
-of a circular locking dependency between cpu_down and the workqueue
-execution. Use a kernel thread to do the clocksource downgrade.
+Please let me know if there are problems!
 
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: john stultz <johnstul@us.ibm.com>
-Cc: Daniel Walker <dwalker@fifo99.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+John
 
 ---
- kernel/time/clocksource.c |   19 ++++++++++++++++---
- 1 file changed, 16 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/kernel/time/clocksource.c
-===================================================================
---- linux-2.6.orig/kernel/time/clocksource.c
-+++ linux-2.6/kernel/time/clocksource.c
-@@ -29,6 +29,7 @@
- #include <linux/module.h>
- #include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
- #include <linux/tick.h>
-+#include <linux/kthread.h>
+Individual patches are available here:
+
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+
+---
+
+The following changes since commit 8cdb045632e5ee22854538619ac6f150eb0a4894:
+  Tom Goff (1):
+        gre: Fix MTU calculation for bound GRE tunnels
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+Johannes Berg (1):
+      mac80211: fix todo lock
+
+John W. Linville (1):
+      orinoco: correct key bounds check in orinoco_hw_get_tkip_iv
+
+ drivers/net/wireless/orinoco/hw.c |    2 +-
+ net/mac80211/key.c                |   28 +++++++++++++++-------------
+ 2 files changed, 16 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/net/wireless/orinoco/hw.c b/drivers/net/wireless/orinoco/hw.c
+index 632fac8..b394627 100644
+--- a/drivers/net/wireless/orinoco/hw.c
++++ b/drivers/net/wireless/orinoco/hw.c
+@@ -70,7 +70,7 @@ int orinoco_hw_get_tkip_iv(struct orinoco_private *priv, int key, u8 *tsc)
+ 	int err = 0;
+ 	u8 tsc_arr[4][IW_ENCODE_SEQ_MAX_SIZE];
  
- void timecounter_init(struct timecounter *tc,
- 		      const struct cyclecounter *cc,
-@@ -130,7 +131,7 @@ static DEFINE_SPINLOCK(watchdog_lock);
- static cycle_t watchdog_last;
- static int watchdog_running;
+-	if ((key < 0) || (key > 4))
++	if ((key < 0) || (key >= 4))
+ 		return -EINVAL;
  
--static void clocksource_watchdog_work(struct work_struct *work);
-+static int clocksource_watchdog_kthread(void *data);
- 
- /*
-  * Interval: 0.5sec Threshold: 0.0625s
-@@ -138,6 +139,15 @@ static void clocksource_watchdog_work(st
- #define WATCHDOG_INTERVAL (HZ >> 1)
- #define WATCHDOG_THRESHOLD (NSEC_PER_SEC >> 4)
- 
-+static void clocksource_watchdog_work(struct work_struct *work)
-+{
-+	/*
-+	 * If kthread_run fails the next watchdog scan over the
-+	 * watchdog_list will find the unstable clock again.
-+	 */
-+	kthread_run(clocksource_watchdog_kthread, NULL, "kwatchdog");
-+}
-+
- static void clocksource_unstable(struct clocksource *cs, int64_t delta)
+ 	err = hermes_read_ltv(hw, USER_BAP, HERMES_RID_CURRENT_TKIP_IV,
+diff --git a/net/mac80211/key.c b/net/mac80211/key.c
+index ce26756..659a42d 100644
+--- a/net/mac80211/key.c
++++ b/net/mac80211/key.c
+@@ -67,6 +67,8 @@ static DECLARE_WORK(todo_work, key_todo);
+  *
+  * @key: key to add to do item for
+  * @flag: todo flag(s)
++ *
++ * Must be called with IRQs or softirqs disabled.
+  */
+ static void add_todo(struct ieee80211_key *key, u32 flag)
  {
- 	printk(KERN_WARNING "Clocksource %s unstable (delta = %Ld ns)\n",
-@@ -166,8 +176,10 @@ static void clocksource_watchdog(unsigne
- 	list_for_each_entry(cs, &watchdog_list, wd_list) {
+@@ -140,9 +142,9 @@ static void ieee80211_key_enable_hw_accel(struct ieee80211_key *key)
+ 	ret = drv_set_key(key->local, SET_KEY, &sdata->vif, sta, &key->conf);
  
- 		/* Clocksource already marked unstable? */
--		if (cs->flags & CLOCK_SOURCE_UNSTABLE)
-+		if (cs->flags & CLOCK_SOURCE_UNSTABLE) {
-+			schedule_work(&watchdog_work);
- 			continue;
-+		}
- 
- 		csnow = cs->read(cs);
- 
-@@ -303,7 +315,7 @@ static void clocksource_dequeue_watchdog
- 	spin_unlock_irqrestore(&watchdog_lock, flags);
- }
- 
--static void clocksource_watchdog_work(struct work_struct *work)
-+static int clocksource_watchdog_kthread(void *data)
- {
- 	struct clocksource *cs, *tmp;
- 	unsigned long flags;
-@@ -324,6 +336,7 @@ static void clocksource_watchdog_work(st
- 		list_del_init(&cs->wd_list);
- 		clocksource_change_rating(cs, 0);
+ 	if (!ret) {
+-		spin_lock(&todo_lock);
++		spin_lock_bh(&todo_lock);
+ 		key->flags |= KEY_FLAG_UPLOADED_TO_HARDWARE;
+-		spin_unlock(&todo_lock);
++		spin_unlock_bh(&todo_lock);
  	}
-+	return 0;
+ 
+ 	if (ret && ret != -ENOSPC && ret != -EOPNOTSUPP)
+@@ -164,12 +166,12 @@ static void ieee80211_key_disable_hw_accel(struct ieee80211_key *key)
+ 	if (!key || !key->local->ops->set_key)
+ 		return;
+ 
+-	spin_lock(&todo_lock);
++	spin_lock_bh(&todo_lock);
+ 	if (!(key->flags & KEY_FLAG_UPLOADED_TO_HARDWARE)) {
+-		spin_unlock(&todo_lock);
++		spin_unlock_bh(&todo_lock);
+ 		return;
+ 	}
+-	spin_unlock(&todo_lock);
++	spin_unlock_bh(&todo_lock);
+ 
+ 	sta = get_sta_for_key(key);
+ 	sdata = key->sdata;
+@@ -188,9 +190,9 @@ static void ieee80211_key_disable_hw_accel(struct ieee80211_key *key)
+ 		       wiphy_name(key->local->hw.wiphy),
+ 		       key->conf.keyidx, sta ? sta->addr : bcast_addr, ret);
+ 
+-	spin_lock(&todo_lock);
++	spin_lock_bh(&todo_lock);
+ 	key->flags &= ~KEY_FLAG_UPLOADED_TO_HARDWARE;
+-	spin_unlock(&todo_lock);
++	spin_unlock_bh(&todo_lock);
  }
  
- #else /* CONFIG_CLOCKSOURCE_WATCHDOG */
-
+ static void __ieee80211_set_default_key(struct ieee80211_sub_if_data *sdata,
+@@ -437,14 +439,14 @@ void ieee80211_key_link(struct ieee80211_key *key,
+ 
+ 	__ieee80211_key_replace(sdata, sta, old_key, key);
+ 
+-	spin_unlock_irqrestore(&sdata->local->key_lock, flags);
+-
+ 	/* free old key later */
+ 	add_todo(old_key, KEY_FLAG_TODO_DELETE);
+ 
+ 	add_todo(key, KEY_FLAG_TODO_ADD_DEBUGFS);
+ 	if (netif_running(sdata->dev))
+ 		add_todo(key, KEY_FLAG_TODO_HWACCEL_ADD);
++
++	spin_unlock_irqrestore(&sdata->local->key_lock, flags);
+ }
+ 
+ static void __ieee80211_key_free(struct ieee80211_key *key)
+@@ -547,7 +549,7 @@ static void __ieee80211_key_todo(void)
+ 	 */
+ 	synchronize_rcu();
+ 
+-	spin_lock(&todo_lock);
++	spin_lock_bh(&todo_lock);
+ 	while (!list_empty(&todo_list)) {
+ 		key = list_first_entry(&todo_list, struct ieee80211_key, todo);
+ 		list_del_init(&key->todo);
+@@ -558,7 +560,7 @@ static void __ieee80211_key_todo(void)
+ 					  KEY_FLAG_TODO_HWACCEL_REMOVE |
+ 					  KEY_FLAG_TODO_DELETE);
+ 		key->flags &= ~todoflags;
+-		spin_unlock(&todo_lock);
++		spin_unlock_bh(&todo_lock);
+ 
+ 		work_done = false;
+ 
+@@ -591,9 +593,9 @@ static void __ieee80211_key_todo(void)
+ 
+ 		WARN_ON(!work_done);
+ 
+-		spin_lock(&todo_lock);
++		spin_lock_bh(&todo_lock);
+ 	}
+-	spin_unlock(&todo_lock);
++	spin_unlock_bh(&todo_lock);
+ }
+ 
+ void ieee80211_key_todo(void)
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
