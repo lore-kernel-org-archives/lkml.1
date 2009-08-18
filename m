@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752351AbZHRX4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752439AbZHRX53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752351AbZHRX4V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 19:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZHRX4U
+	id S1752439AbZHRX53 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 19:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbZHRX52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 19:56:20 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:57403 "EHLO aun.it.uu.se"
+	Tue, 18 Aug 2009 19:57:28 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56429 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751082AbZHRX4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 19:56:20 -0400
+	id S1750900AbZHRX51 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 19:57:27 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Zhang Rui <rui.zhang@intel.com>, Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume (updated)
+Date: Wed, 19 Aug 2009 01:58:09 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
+Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       "linux-acpi" <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
+       Greg KH <gregkh@suse.de>
+References: <200908122218.13975.rjw@sisk.pl> <1250579793.5351.79.camel@rzhang-dt> <200908182201.11489.rjw@sisk.pl>
+In-Reply-To: <200908182201.11489.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19083.16290.445891.283072@pilspetsen.it.uu.se>
-Date: Wed, 19 Aug 2009 01:56:18 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org
-Subject: Re: completely hide parts of the partition table from Windows?
-In-Reply-To: <20090818223522.GA5872@ub>
-References: <19083.7062.710265.941247@pilspetsen.it.uu.se>
-	<20090818223522.GA5872@ub>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200908190158.09623.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andries E. Brouwer writes:
- > On Tue, Aug 18, 2009 at 11:22:30PM +0200, Mikael Pettersson wrote:
- > 
- > > So what I'm looking for is some sub-partition table format with the
- > > following two properties:
- > > 1. resides in an msdos partition entry of a type that Windows does
- > >    not inspect (for whatever extended partitions or Apple/BSD/Sun
- > >    stuff that Windows may have been taught to recognize)
- > > 2. the locations and sizes of the sub-partitions are NOT limited by
- > >    the parent msdos partition entry
- > 
- > The reason I added type 85 = LINUX_EXTENDED_PARTITION
- > was precisely your concern: it should be something
- > that DOS/Windows doesnt know about.
- > 
- > > I've looked at the code in fs/partitions/msdos.c, and it seems that
- > > most of the extended/BSD/Sun formats don't give me property #2 above.
- > 
- > The standard description of extended partitions says that the size field
- > of the parent extended partition descriptor is irrelevant, only the
- > starting sector matters.
- > 
- > If you look at the parse_extended() code in msdos.c you'll see
- > that it does not use its parameter first_size.
- > (Except in a certain case that you will not be in.)
+On Tuesday 18 August 2009, Rafael J. Wysocki wrote:
+> On Tuesday 18 August 2009, Zhang Rui wrote:
+> > On Mon, 2009-08-17 at 08:15 +0800, Rafael J. Wysocki wrote:
+> > > On Wednesday 12 August 2009, Rafael J. Wysocki wrote:
+> > > > Hi,
+> > > > 
+> > > > The following patches introduce a mechanism allowing us to execute device
+> > > > drivers' suspend and resume callbacks asynchronously during system sleep
+> > > > transitions, such as suspend to RAM.  The idea is explained in the [1/1] patch
+> > > > message.
+> > > 
+> > > Changes:
+> > > 
+> > > * Added [1/7] that fixes kerneldoc comments in drivers/base/power/main.c
+> > >   (this is a 2.6.32 candidate).
+> > > 
+> > > * Added [2/7] adding a framework for representing PM link (idea described
+> > >   in the patch message).
+> > > 
+> > > * [3/7] is the async resume patch (idea described in the patch message).
+> > > 
+> > > * [4/7] is the async suspend patch.
+> > > 
+> > > * [5/7] - [7/7] set async_suspend for devices in a few selected subsystems.
+> > > 
+> > > The patches have been tested on HP nx6325.
+> > > 
+> > I tried this patch set and it does work. :)
+> > But unfortunately it doesn't save too much time.
+> > 
+> > I still think that the child device should inherit its parent's
+> > async_suspend flag to do the asynchronous resume more efficiently.
+> > 
+> > or at least we should provide such an interface
+> > in ﻿drivers/base/power/common.c, so that device can tell the device core
+> > to inherit this flag if there is no off-tree dependency.
+> 
+> Well, I'd prefer to identify all of the off-tree dependencies that have to be
+> taken into account and handle all devices asynchronously.
 
-Right. I misread the "process the data partitions" part to imply
-that the limits were enforced for all four entries, not just the
-last two usually-junk entries. Thanks for clarifiying that.
+Anyway, I have tested the appended patch on top of [1/7]-[7/7] and my test box
+appears to work fine with it, although it doesn't work in the "async for all"
+case.
 
- > Make a table that has a Linux extended partition (type 85)
- > that is short enough not to cause Windows to worry. Have logical
- > partitions inside of any size and location you desire.
-
-I have created extended partitions with non-default type
-(though not 85). I'll see if I can convince fdisk or parted to
-create one with entries exceeding the parent's limits.
+I guess the next step will be to see which devices are not handled
+asynchronously with the patch below and try to figure out which of them
+break(s) things.
 
 Thanks,
+Rafael
 
-/Mikael
+---
+ drivers/base/power/common.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/base/power/common.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/common.c
++++ linux-2.6/drivers/base/power/common.c
+@@ -32,7 +32,11 @@ void device_pm_add(struct device *dev)
+ 	pr_debug("PM: Adding info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus",
+ 		 kobject_name(&dev->kobj));
+-	pm_link_add(dev, dev->parent);
++	if (dev->parent) {
++		pm_link_add(dev, dev->parent);
++		if (dev->parent->power.async_suspend)
++			dev->power.async_suspend = true;
++	}
+ 	device_pm_list_add(dev);
+ }
+ 
