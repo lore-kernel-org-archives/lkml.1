@@ -1,184 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbZHRLuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758566AbZHRLvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754840AbZHRLuf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 07:50:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbZHRLuf
+	id S1758566AbZHRLvH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 07:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbZHRLvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 07:50:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53306 "EHLO mx2.redhat.com"
+	Tue, 18 Aug 2009 07:51:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53321 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750934AbZHRLue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 07:50:34 -0400
-Date: Tue, 18 Aug 2009 13:45:33 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: stephane eranian <eranian@googlemail.com>
-Cc: Jamie Lokier <jamie@shareable.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
-       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
-       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
-       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
-       roland@redhat.com
-Subject: Re: F_SETOWN_TID: F_SETOWN was thread-specific for a while
-Message-ID: <20090818114533.GA32289@redhat.com>
-References: <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins> <20090731141122.a1939712.akpm@linux-foundation.org> <7c86c4470908030553v5a0a4448p94ab612700d68066@mail.gmail.com> <20090809054601.GA26152@shareable.org> <7c86c4470908100522q44dc1228i315b29d69fc98da3@mail.gmail.com> <20090810170338.GA14223@redhat.com> <7c86c4470908101401k49f42788o25eb1efaa631f065@mail.gmail.com> <20090817171605.GB15907@redhat.com> <7c86c4470908171526j60add584qfc635ba91cd4df46@mail.gmail.com>
+	id S1753179AbZHRLvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 07:51:04 -0400
+Date: Tue, 18 Aug 2009 14:49:14 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Gregory Haskins <gregory.haskins@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
+	vbus_driver objects
+Message-ID: <20090818114914.GA17721@redhat.com>
+References: <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com> <20090818095313.GC13878@redhat.com> <4A8A7BB9.2020906@redhat.com> <20090818100945.GD13878@redhat.com> <4A8A7EE5.6090209@redhat.com> <20090818102840.GF13878@redhat.com> <4A8A8631.1040006@redhat.com> <20090818110708.GG13878@redhat.com> <4A8A8D6D.9040909@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7c86c4470908171526j60add584qfc635ba91cd4df46@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A8A8D6D.9040909@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/18, stephane eranian wrote:
+On Tue, Aug 18, 2009 at 02:15:57PM +0300, Avi Kivity wrote:
+> On 08/18/2009 02:07 PM, Michael S. Tsirkin wrote:
+>> On Tue, Aug 18, 2009 at 01:45:05PM +0300, Avi Kivity wrote:
+>>    
+>>> On 08/18/2009 01:28 PM, Michael S. Tsirkin wrote:
+>>>      
+>>>>        
+>>>>> Suppose a nested guest has two devices.  One a virtual device backed by
+>>>>> its host (our guest), and one a virtual device backed by us (the real
+>>>>> host), and assigned by the guest to the nested guest.  If both devices
+>>>>> use hypercalls, there is no way to distinguish between them.
+>>>>>
+>>>>>          
+>>>> Not sure I understand. What I had in mind is that devices would have to
+>>>> either use different hypercalls and map hypercall to address during
+>>>> setup, or pass address with each hypercall.  We get the hypercall,
+>>>> translate the address as if it was pio access, and know the destination?
+>>>>
+>>>>        
+>>> There are no different hypercalls.  There's just one hypercall
+>>> instruction, and there's no standard on how it's used.  If a nested call
+>>> issues a hypercall instruction, you have no idea if it's calling a
+>>> Hyper-V hypercall or a vbus/virtio kick.
+>>>      
+>> userspace will know which it is, because hypercall capability
+>> in the device has been activated, and can tell kernel, using
+>> something similar to iosignalfd. No?
+>>    
 >
-> On Mon, Aug 17, 2009 at 7:16 PM, Oleg Nesterov<oleg@redhat.com> wrote:
-> > Sorry for late reply...
-> >
-> > On 08/10, stephane eranian wrote:
-> >>
-> >> On Mon, Aug 10, 2009 at 7:03 PM, Oleg Nesterov<oleg@redhat.com> wrote:
-> >> >
-> >> > Not sure if it is safe to change the historical behaviour.
-> >> >
-> >> Don't need to change it.
-> >
-> > Good,
-> >
-> >> But for SIGIO, if you see SA_SIGINFO, then pass the si_fd.
-> >
-> > But this means we do change the behaviour ;) Confused.
-> >
-> I meant do not remove F_SETSIG and its side-effect on si_fd.
+> The host kernel sees a hypercall vmexit.  How does it know if it's a  
+> nested-guest-to-guest hypercall or a nested-guest-to-host hypercall?   
+> The two are equally valid at the same time.
 
-Ah, now I see what you meant.
+Here is how this can work - it is similar to MSI if you like:
+- by default, the device uses pio kicks
+- nested guest driver can enable hypercall capability in the device,
+  probably with pci config cycle
+- guest userspace (hypervisor running in guest) will see this request
+  and perform pci config cycle on the "real" device, telling it to which
+  nested guest this device is assigned
+- host userspace (hypervisor running in host) will see this.
+  it now knows both which guest the hypercalls will be for,
+  and that the device in question is an emulated one,
+  and can set up kvm appropriately
 
-> > In any case. We should not look at SA_SIGINFO at all. If sys_sigaction() was
-> > called without SA_SIGINFO, then it doesn'matter if we send SEND_SIG_PRIV or
-> > siginfo_t with the correct si_fd/etc.
-> >
-> What's the official role of SA_SIGINFO? Pass a siginfo struct?
+
+>>> You could have a protocol where you register the hypercall instruction's
+>>> address with its recipient, but it quickly becomes a tangled mess.
+>>>      
+>> I really thought we could pass the io address in register as an input
+>> parameter. Is there a way to do this in a secure manner?
+>>
+>> Hmm. Doesn't kvm use hypercalls now? How does this work with nesting?
+>> For example, in this code in arch/x86/kvm/x86.c:
+>>
+>>          switch (nr) {
+>>          case KVM_HC_VAPIC_POLL_IRQ:
+>>                  ret = 0;
+>>                  break;
+>>          case KVM_HC_MMU_OP:
+>>                  r = kvm_pv_mmu_op(vcpu, a0, hc_gpa(vcpu, a1, a2),&ret);
+>>                  break;
+>>          default:
+>>                  ret = -KVM_ENOSYS;
+>>                  break;
+>>          }
+>>
+>> how do we know that it's the guest and not the nested guest performing
+>> the hypercall?
+>>    
 >
-> Does POSIX describe the rules governing the content of si_fd?
-> Or is si_fd a Linux-ony extension in which case it goes with F_SETSIG.
+> The host knows whether the guest or nested guest are running.  If the  
+> guest is running, it's a guest-to-host hypercall.  If the nested guest  
+> is running, it's a nested-guest-to-guest hypercall.  We don't have  
+> nested-guest-to-host hypercalls (and couldn't unless we get agreement on  
+> a protocol from all hypervisor vendors).
 
-Not sure I understand your concern...
+Not necessarily. What I am saying is we could make this protocol part of
+guest paravirt driver. the guest that loads the driver and enables the
+capability, has to agree to the protocol. If it doesn't want to, it does
+not have to use that driver.
 
-OK. You suggest to pass siginfo_t with .si_fd/etc when we detect SA_SIGINFO.
-
-But, in that case we can _always_ pass siginfo_t, regardless of SA_SIGINFO.
-If the task has a signal handler and sigaction() was called without
-SA_SIGINFO, then the handler must not look into *info (the second arg of
-sigaction->sa_sigaction). And in fact, __setup_rt_frame() doesn't even
-copy the info to the user-space:
-
-	if (ka->sa.sa_flags & SA_SIGINFO) {
-		if (copy_siginfo_to_user(&frame->info, info))
-			return -EFAULT;
-	}
-
-OK? Or I missed something?
-
-> > And again, this is even documented. The change is trivial but user-space
-> > visible, it may confuse the (stupid) app which uses SIGIO + SA_SIGINFO
-> > without F_SETSIG.
-> >
-> That would be an app that uses SIGINFO and fiddles with si_fd which has no
-> defined content. What kind of app would that be?
-
-The stupid app. But it is always unsafe to make the user-visible changes
-without good reasons. Even when we fix the bug (and the current code is not
-buggy) sometimes we have "this patch breaks my app or test-case!" reports.
-If nothing else, we can break the test-case which simply does
-
-	void sigio_handler(int sig, siginfo_t *info, void *u)
-	{
-		assert(info->si_code == 0 && info->si_code = 0x80);
-	}
-
-Once again: this is _documented_ !
-
-And we can't set .si_fd = fd whithout changing .si_code, this will break
-copy_siginfo_to_user().
-
-Or. Suppose that some app does:
-
-	void io_handler(int sig, siginfo_t *info, void *u)
-	{
-		if ((info->si_code & __SI_MASK) != SI_POLL) {
-			// RT signal failed! sig MUST be == SIGIO
-			recover();
-		} else {
-			do_something(info->si_fd);
-		}
-	}
-
-	int main(void)
-	{
-		sigaction(SIGRTMIN, { SA_SIGINFO, io_handler });
-		sigaction(SIGIO,    { SA_SIGINFO, io_handler });
-		...
-	}
-
-This is correct. But if we change the current behaviour, this app won't
-be able to detect the overflow.
-
-> It would seem natural that in the siginfo passed to the handler of SIGIO, the
-> file descriptor be passed by default. That is all I am trying to say here.
-
-Completely agreed! I was always puzzled by send_sigio_to_task(). I was never
-able to understand why it looks so strange.
-
-So, I think it should be
-
-	static void send_sigio_to_task(struct task_struct *p,
-				       struct fown_struct *fown,
-				       int fd,
-				       int reason)
-	{
-		siginfo_t si;
-		/*
-		 * F_SETSIG can change ->signum lockless in parallel, make
-		 * sure we read it once and use the same value throughout.
-		 */
-		int signum = ACCESS_ONCE(fown->signum) ?: SIGIO;
-
-		if (!sigio_perm(p, fown, signum))
-			return;
-
-		si.si_signo = signum;
-		si.si_errno = 0;
-		si.si_code  = reason;
-		si.si_fd    = fd;
-		/* Make sure we are called with one of the POLL_*
-		   reasons, otherwise we could leak kernel stack into
-		   userspace.  */
-		BUG_ON((reason & __SI_MASK) != __SI_POLL);
-		if (reason - POLL_IN >= NSIGPOLL)
-			si.si_band  = ~0L;
-		else
-			si.si_band = band_table[reason - POLL_IN];
-
-		/* Failure to queue an rt signal must be reported as SIGIO */
-		if (!group_send_sig_info(signum, &si, p))
-			group_send_sig_info(SIGIO, SEND_SIG_PRIV, p);
-	}
-
-(except it should be on top of fcntl-add-f_etown_ex.patch).
-This way, at least we don't break the "detect RT signal failed" above.
-
-What do you think?
-
-But let me repeat: I just can't convince myself we have a good reason
-to change the strange, but carefully documented behaviour.
-
-In case you agree with the code above, I can send the patch. But only
-if I have a "good" changelog from you + your Signed-of-by in advance ;)
-
-Otherwise, please feel free to send this/similar change yourself.
-
-Oleg.
-
+> -- 
+> error compiling committee.c: too many arguments to function
