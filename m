@@ -1,122 +1,294 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbZHRIkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702AbZHRImd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755305AbZHRIkH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 04:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZHRIkH
+	id S1753702AbZHRImd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 04:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZHRImc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 04:40:07 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:57814 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751994AbZHRIkF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 04:40:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=dza3MpGjeIPrbojEf0pPqGl407xnZYycWVT4riRBpIxo51vgUFZcDKhWK6D0TvdI9l
-         S/E5/xhdLlk+rX2n/JotQuNEDwXg0VZAf4YRqvKWD9VdE53TcYPVdmPB09swsmS5yBo6
-         2iMcnHlGDdK6Xf1QCxaUreGxlcdOm3VS4rEd4=
-MIME-Version: 1.0
-In-Reply-To: <4A7A106B.2070809@mnementh.co.uk>
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>
-	 <4A71F2A5.4060206@mnementh.co.uk>
-	 <aec7e5c30908021952j7947b513w7d62f2c4d87bd3c5@mail.gmail.com>
-	 <4A787C2C.5070000@mnementh.co.uk>
-	 <aec7e5c30908041908p568f413albef7dede3fd2cb83@mail.gmail.com>
-	 <4A798A4B.4000901@mnementh.co.uk>
-	 <Pine.LNX.4.64.0908051702180.5802@axis700.grange>
-	 <4A7A08FE.5000909@mnementh.co.uk>
-	 <Pine.LNX.4.64.0908060045320.9219@axis700.grange>
-	 <4A7A106B.2070809@mnementh.co.uk>
-Date: Tue, 18 Aug 2009 17:40:03 +0900
-Message-ID: <aec7e5c30908180140n3d46c9c0i33560b2e09ad3f9d@mail.gmail.com>
-Subject: Re: MMC: Make the configuration memory resource optional
-From: Magnus Damm <magnus.damm@gmail.com>
-To: Ian Molton <ian@mnementh.co.uk>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       pHilipp Zabel <philipp.zabel@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>
-Content-Type: multipart/mixed; boundary=001636418539f767e304716676e6
+	Tue, 18 Aug 2009 04:42:32 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:59461 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750886AbZHRIma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 04:42:30 -0400
+Date: Tue, 18 Aug 2009 18:42:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for August 18
+Message-Id: <20090818184215.fdf1c7ae.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__18_Aug_2009_18_42_15_+1000_JNWlFlyhzcjzOG8."
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---001636418539f767e304716676e6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+--Signature=_Tue__18_Aug_2009_18_42_15_+1000_JNWlFlyhzcjzOG8.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Ian!
+Hi all,
 
-On Thu, Aug 6, 2009 at 8:06 AM, Ian Molton<ian@mnementh.co.uk> wrote:
-> Ok, so then your controller (unless it uses a different scheme altogether
-> for the card clock divider) probably has a max card clock of 12MHz and a min
-> of 24/512MHz.
+Changes since 20090817:
 
-Allright, I've now tested the tmio_mmc driver on a ms7724se board. In
-the current configuration the tmio_mmc block is driven by a 83 Mhz
-clock. We can change the frequency of this clock but it will affect
-other hardware blocks as well so I'd rather not unless I really have
-to.
+This tree fails to build for powerpc allyesconfig (due to a TOC overflow
+problem in the final link).
 
-> I'm fine with that. If someone who _has_ this hardware could get a 'scope on
-> the card clock and see what frequencies actually appear out there, I'd
-> _really_ appreciate it.
+The xfs tree gained a conflict against Linus' tree.
 
-I've done some measurements with my Fluke 123 Scopemeter. It's limited
-to 20 MHz so I didn't measure all combinations. I hooked it up to pin
-5 of CN7 on the ms7724se board. In total I did 7 measurements, with
-XSHIFT from 0 to 6. One line per measurement below. The number on the
-far right is the value from the scope.
+The fsnotify tree gained conflicts against Linus' tree.
 
-using clock 162760 (162760, 83333332) [162760] 0x0180 -> 162.7 kHz
-using clock 325520 (162760, 83333332) [325520] 0x0140 -> 0.326 MHz
-using clock 651040 (162760, 83333332) [651040] 0x0120 -> 0.651 MHz
-using clock 1302080 (162760, 83333332) [1302080] 0x0110 -> 01.30 MHz
-using clock 2604160 (162760, 83333332) [2604160] 0x0108 -> 02.61 MHz
-using clock 5208320 (162760, 83333332) [5208320] 0x0104 -> 05.21 MHz
-using clock 10416640 (162760, 83333332) [10416640] 0x0102 -> 10.42 MHz
+The suspend tree lost its build failure, but gained another for which I
+reverted a commit.
 
-Everything seems to work as expected what I can tell. The frequencies match.
+The usb tree lost its conflicts.
 
-I've attached a patch which shows details of the printouts. Hopefully
-it includes all you need.
+----------------------------------------------------------------------------
 
-FYI, I needed to modify the tmio_mmc driver to change the
-dev->num_resources check in probe from 3 to 2 to support the SuperH
-hardware. Can you please roll in that change and send an updated
-version of your "MMC / MFD / Clocks" patch whenever you have time?
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
-Thanks for your help!
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
 
+Below is a summary of the state of the merge.
+
+We are up to 140 trees (counting Linus' and 21 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
 Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-/ magnus
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/for-next
+Merging pxa/for-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging thumb-2/thumb-2
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+CONFLICT (content): Merge conflict in arch/mips/cavium-octeon/dma-octeon.c
+CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
+x-helper-errata.c
+CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
+CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
+CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+CONFLICT (content): Merge conflict in fs/configfs/dir.c
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_sync.h
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/board-dm646x-ev=
+m.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm355.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm644x.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm646x.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
+355.h
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
+644x.h
+Merging quota/for_next
+Merging kbuild/master
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging mmc/next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+CONFLICT (content): Merge conflict in drivers/input/misc/Kconfig
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_crtc.c
+CONFLICT (content): Merge conflict in drivers/gpu/drm/i915/intel_sdvo.c
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+CONFLICT (content): Merge conflict in fs/notify/inotify/inotify_fsnotify.c
+CONFLICT (content): Merge conflict in fs/notify/inotify/inotify_user.c
+CONFLICT (content): Merge conflict in fs/notify/notification.c
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging drbd/drbd
+Applying: drbd: fix for removal of blk_queue_stack_limits
+Merging kmemleak/kmemleak
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in arch/x86/include/asm/socket.h
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+CONFLICT (content): Merge conflict in kernel/fork.c
+CONFLICT (content): Merge conflict in kernel/trace/trace.h
+Merging oprofile/for-next
+CONFLICT (content): Merge conflict in kernel/trace/ring_buffer.c
+Merging edac-amd/for-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
+CONFLICT (content): Merge conflict in include/linux/topology.h
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
+Merging sfi/sfi-test
+CONFLICT (content): Merge conflict in arch/x86/include/asm/io_apic.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/acpi/boot.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/apic/io_apic.c
+CONFLICT (content): Merge conflict in drivers/acpi/internal.h
+CONFLICT (content): Merge conflict in drivers/acpi/tables.c
+CONFLICT (content): Merge conflict in include/linux/acpi.h
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/base/class.c
+CONFLICT (content): Merge conflict in init/main.c
+Merging quilt/tty
+CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
+Merging quilt/usb
+Merging quilt/staging
+CONFLICT (delete/modify): drivers/staging/epl/VirtualEthernetLinux.c delete=
+d in quilt/staging and modified in HEAD. Version HEAD of drivers/staging/ep=
+l/VirtualEthernetLinux.c left in tree.
+$ git rm -f drivers/staging/epl/VirtualEthernetLinux.c
+Merging scsi-post-merge/master
+[master e6cb60d] Revert "PM: Introduce core framework for run-time PM of I/=
+O devices (rev. 17)"
 
---001636418539f767e304716676e6
-Content-Type: application/octet-stream; 
-	name="linux-2.6.32-pre-sh-se7724-tmio-measure-hack-20090818.patch"
-Content-Disposition: attachment; 
-	filename="linux-2.6.32-pre-sh-se7724-tmio-measure-hack-20090818.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fyidmy380
+--Signature=_Tue__18_Aug_2009_18_42_15_+1000_JNWlFlyhzcjzOG8.
+Content-Type: application/pgp-signature
 
-LS0tIDAwMDcvZHJpdmVycy9tbWMvaG9zdC90bWlvX21tYy5jCisrKyB3b3JrL2RyaXZlcnMvbW1j
-L2hvc3QvdG1pb19tbWMuYwkyMDA5LTA4LTE4IDE3OjAzOjIyLjAwMDAwMDAwMCArMDkwMApAQCAt
-MzUsMTMgKzM1LDE2IEBACiAKICNpbmNsdWRlICJ0bWlvX21tYy5oIgogCisjZGVmaW5lIFhTSElG
-VCA2CisjZGVmaW5lIFhMSU1JVCAoMTYyNzYwIDw8IFhTSElGVCkKKwogc3RhdGljIHZvaWQgdG1p
-b19tbWNfc2V0X2Nsb2NrKHN0cnVjdCB0bWlvX21tY19ob3N0ICpob3N0LCBpbnQgbmV3X2Nsb2Nr
-KQogewogCXUzMiBjbGsgPSAwLCBjbG9jazsKIAogCWlmIChuZXdfY2xvY2spIHsKIAkJZm9yIChj
-bG9jayA9IGhvc3QtPm1tYy0+Zl9taW4sIGNsayA9IDB4ODAwMDAwODA7Ci0JCQluZXdfY2xvY2sg
-Pj0gKGNsb2NrPDwxKTsgY2xrID4+PSAxKQorCQkgICAgIChjbG9jayA8IFhMSU1JVCkgJiYgKG5l
-d19jbG9jayA+PSAoY2xvY2s8PDEpKTsgY2xrID4+PSAxKQogCQkJY2xvY2sgPDw9IDE7CiAJCWNs
-ayB8PSAweDEwMDsKIAl9CkBAIC00OSw2ICs1MiwxMCBAQCBzdGF0aWMgdm9pZCB0bWlvX21tY19z
-ZXRfY2xvY2soc3RydWN0IHRtCiAJaWYoaG9zdC0+c2V0X25vX2Nsa19kaXYpCiAJCWhvc3QtPnNl
-dF9ub19jbGtfZGl2KE5VTEwsIChjbGs+PjIyKSAmIDEpOwogCisJcHJpbnRrKCJ1c2luZyBjbG9j
-ayAlZCAoJWQsICVkKSBbJWRdIDB4JTA0eFxuIiwKKwkgICAgICAgY2xvY2ssIGhvc3QtPm1tYy0+
-Zl9taW4sIGhvc3QtPm1tYy0+Zl9tYXgsIFhMSU1JVCwKKwkgICAgICAgY2xrICYgMHgxZmYpOwor
-CiAJc2RfY3RybF93cml0ZTE2KGhvc3QsIENUTF9TRF9DQVJEX0NMS19DVEwsIGNsayAmIDB4MWZm
-KTsKIH0KIAo=
---001636418539f767e304716676e6--
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqKaWcACgkQjjKRsyhoI8xjxgCfVSj2GT25HQ3rjW8m66Q+KOAT
+WrgAn0+4rrZh8fe/w2wwteDjuPvHSS5D
+=FCXe
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__18_Aug_2009_18_42_15_+1000_JNWlFlyhzcjzOG8.--
