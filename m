@@ -1,87 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757560AbZHRNnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758883AbZHRNpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757560AbZHRNnq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 09:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbZHRNnp
+	id S1758883AbZHRNpq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 09:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbZHRNpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 09:43:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37843 "EHLO mx2.mail.elte.hu"
+	Tue, 18 Aug 2009 09:45:45 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59891 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753303AbZHRNno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 09:43:44 -0400
-Date: Tue, 18 Aug 2009 15:43:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v2] task_struct: stack_canary is not needed without
-	CC_STACKPROTECTOR
-Message-ID: <20090818134328.GA28366@elte.hu>
-References: <4A8A44CA.2020701@ct.jp.nec.com> <87ws51r2wh.fsf@basil.nowhere.org> <4A8A5FD4.5070908@ct.jp.nec.com>
+	id S1753568AbZHRNpn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 09:45:43 -0400
+Message-ID: <4A8AB076.6080906@redhat.com>
+Date: Tue, 18 Aug 2009 16:45:26 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8A5FD4.5070908@ct.jp.nec.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
+ objects
+References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <4A89FF08.30509@codemonkey.ws> <4A8AA9BD.2070909@gmail.com>
+In-Reply-To: <4A8AA9BD.2070909@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/18/2009 04:16 PM, Gregory Haskins wrote:
+> The issue here is that vbus is designed to be a generic solution to
+> in-kernel virtual-IO.  It will support (via abstraction of key
+> subsystems) a variety of environments that may or may not be similar in
+> facilities to KVM, and therefore it represents the
+> least-common-denominator as far as what external dependencies it requires.
+>    
 
-* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+Maybe it will be easier to evaluate it in the context of these other 
+environments.  It's difficult to assess this without an example.
 
-> Andi Kleen wrote:
-> > Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> writes:
-> > 
-> >> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> >>
-> >> The field stack_canary is only used with CC_STACKPROTECTOR.
-> >> This patch reduces task_struct size without CC_STACKPROTECTOR.
-> > 
-> > Adding a ifdef in the middle of a widely used structure is 
-> > nasty.  It means that if someone changes the option then the 
-> > newly loaded modules don't work anymore (yes that's not 
-> > officially supported, but works most of the time and is often 
-> > convenient in practice)
+> The bottom line is this: despite the tendency for people to jump at
+> "don't put much in the kernel!", the fact is that a "bus" designed for
+> software to software (such as vbus) is almost laughably trivial.  Its
+> essentially a list of objects that have an int (dev-id) and char*
+> (dev-type) attribute.  All the extra goo that you see me setting up in
+> something like the kvm-connector needs to be done for fast-path
+> _anyway_, so transporting the verbs to query this simple list is not
+> really a big deal.
+>    
 
-( Ugh. Not having clean builds and clean modules is utterly 
-  dangerous and taints the kernel. I ignore all bugreports from
-  people that do that - a kernel that has been butchered like that
-  is just not trustable. )
+It's not laughably trivial when you try to support the full feature set 
+of kvm (for example, live migration will require dirty memory tracking, 
+and exporting all state stored in the kernel to userspace).
 
-> > So when you add a ifdef please move the field to the end at 
-> > least.
+> Note that I didn't really want to go that route.  As you know, I tried
+> pushing this straight through kvm first since earlier this year, but I
+> was met with reluctance to even bother truly understanding what I was
+> proposing, comments like "tell me your ideas so I can steal them", and
+>    
 
-Moving the stack canary it last is futile and makes no sense 
-whatsoever, for three independent reasons:
+Oh come on, I wrote "steal" as a convenient shorthand for 
+"cross-pollinate your ideas into our code according to the letter and 
+spirit of the GNU General Public License".  Since we're all trying to 
+improve Linux we may as well cooperate.
 
-It's stupidly shortsighted: there's 20 other config options in the 
-middle of struct task struct already. Half of struct task_struct is
-#ifdef-ed, and there can only be one 'last' field.
+> "sorry, we are going to reinvent our own instead".
 
-It's merge unfriendly: moving fields last in structs can cause 
-patch conflict problems: new subsystems/features tend to append to 
-task_struct, colliding with this patch. task_struct is frequently 
-patched.
+No.  Adopting venet/vbus would mean reinventing something that already 
+existed.  Continuing to support virtio/pci is not reinventing anything.
 
-It hurts performance: the canary is used very frequently on 
-stackprotector kernels and has been placed on a hot cacheline 
-intentionally. Moving it last just adds a small but real 
-performance regression.
+> This isn't exactly
+> going to motivate someone to continue pushing these ideas within that
+> community.  I was made to feel (purposely?) unwelcome at times.  So I
+> can either roll over and die, or start my own project.
+>    
 
-Really, Andi, if you give 'advice' like this you should be declared 
-armed and dangerous ... ;-)
+You haven't convinced me that your ideas are worth the effort of 
+abandoning virtio/pci or maintaining both venet/vbus and virtio/pci.  
+I'm sorry if that made you feel unwelcome.  There's no reason to 
+interpret disagreement as malice though.
 
-> Here's the update.
+-- 
+error compiling committee.c: too many arguments to function
 
-I've applied v1, thanks Hiroshi!
-
-	Ingo
