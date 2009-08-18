@@ -1,80 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbZHRK3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758627AbZHRKex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758066AbZHRK3o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 06:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbZHRK3n
+	id S1758627AbZHRKex (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 06:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbZHRKex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 06:29:43 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:50023 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751358AbZHRK3n convert rfc822-to-8bit (ORCPT
+	Tue, 18 Aug 2009 06:34:53 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:45913 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751358AbZHRKew convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 06:29:43 -0400
+	Tue, 18 Aug 2009 06:34:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=p4vf/w51kjBl4ilG7DB2JKJWPmn8vmIehQni9Dje8O7F1fGT1ePslYStVw+sgwnx44
+         Ntx+fZENhI0TpRberezC6SwFutwkbf3FfIF9RHEYcOOycQG4cRbR580aCNYZuEVo3Mhc
+         GNtASrFRIcRRtGyRvtucgkSQ/lllZWlKmNSEY=
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0908172317470.32114@casper.infradead.org>
-References: <alpine.LFD.2.00.0908172317470.32114@casper.infradead.org>
-Date: Tue, 18 Aug 2009 11:29:43 +0100
-Message-ID: <56e00de0908180329p2a37da3fp43ddcb8c2d63336a@mail.gmail.com>
-Subject: Re: [PATCH 0/3]HTLB mapping for drivers (take 2)
-From: Eric Munson <linux-mm@mgebm.net>
-To: Alexey Korolev <akorolev@infradead.org>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20090818102136.GN29655@pengutronix.de>
+References: <20090814170228.GM13320@pengutronix.de>
+	 <1158166a0908141304y70300ab3p899b0d4609efded9@mail.gmail.com>
+	 <20090814204305.GA31727@pengutronix.de>
+	 <20090815103532.GA5596@sig21.net> <4A8A7D38.5020201@gmail.com>
+	 <20090818102136.GN29655@pengutronix.de>
+Date: Tue, 18 Aug 2009 12:34:52 +0200
+Message-ID: <81b0412b0908180334u51fd957dh36f2a4946dffbb0b@mail.gmail.com>
+Subject: Re: New fast(?)-boot results on ARM
+From: Alex Riesen <raa.lkml@gmail.com>
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Cc: Marco Stornelli <marco.stornelli@gmail.com>,
+       Johannes Stezenbach <js@sig21.net>,
+       Denys Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Tim Bird <tim.bird@am.sony.com>, kernel@pengutronix.de
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 17, 2009 at 11:24 PM, Alexey Korolev<akorolev@infradead.org> wrote:
-> Hi,
->
-> The patch set listed below provides device drivers with the ability to
-> map memory regions to user space via HTLB interfaces.
->
-> Why we need it?
-> Device drivers often need to map memory regions to user-space to allow
-> efficient data handling in user mode. Involving hugetlb mapping may
-> bring performance gain if mapped regions are relatively large. Our tests
-> showed that it is possible to gain up to 7% performance if hugetlb
-> mapping is enabled. In my case involving hugetlb starts to make sense if
-> buffer is more or equal to 4MB. Since typically, device throughput
-> increase over time there are more and more reasons to involve huge pages
-> to remap large regions.
-> For example hugetlb remapping could be important for performance of Data
-> acquisition systems (logic analyzers, DSO), Network monitoring systems
-> (packet capture), HD video capture/frame buffer �and probably other.
->
-> How it is implemented?
-> Implementation and idea is very close to what is already done in
-> ipc/shm.c.
-> We create file on hugetlbfs vfsmount point and populate file with pages
-> we want to mmap. Then we associate hugetlbfs file mapping with file
-> mapping we want to access.
->
-> So typical procedure for mapping of huge pages to userspace by drivers
-> should be:
-> 1 Allocate some huge pages
-> 2 Create file on vfs mount of hugetlbfs
-> 3 Add pages to page cache of mapping associated with hugetlbfs file
-> 4 Replace file's mapping with the hugetlbfs file mapping
-> ..............
-> 5 Remove pages from page cache
-> 6 Remove hugetlbfs file
-> 7 Free pages
-> (Please find example in following messages)
->
-> Detailed description is given in the following messages.
-> Thanks a lot to Mel Gorman who gave good advice and code prototype and
-> Stephen Donnelly for assistance in description composing.
->
-> Alexey
+On Tue, Aug 18, 2009 at 12:21, Robert Schwebel<r.schwebel@pengutronix.de> wrote:
+> - In general we want to have our systems close to what the mainline
+>  does; Automation & Embedded is only a small market, and anything
+>  which is *not* specific to these markets but mainline is good.
 
-It sounds like this patch set working towards the same goal as my
-MAP_HUGETLB set.  The only difference I see is you allocate huge page
-at a time and (if I am understanding the patch) fault the page in
-immediately, where MAP_HUGETLB only faults pages as needed.  Does the
-MAP_HUGETLB patch set provide the functionality that you need, and if
-not, what can be done to provide what you need?
-
-Eric
+BTW, what is your mainline (or it looks like you mean "upstream")?
