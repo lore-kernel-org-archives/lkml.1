@@ -1,274 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758889AbZHRNQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932225AbZHRNQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758889AbZHRNQx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 09:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758837AbZHRNQw
+	id S932225AbZHRNQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 09:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932123AbZHRNQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 09:16:52 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:52741 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758808AbZHRNQt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 09:16:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=k5A8YOjfOek/iWrrcX7HxDOX6KGZ6mn0wl9LwRNywv+PLj7GjJcmdf7Jek30sXipPk
-         5eZBBZoQZB/ONoxQA3eU3Q8Yy79YElA+D1XR/i30De/DJOtrnECeZyfVOG6xihHseLMq
-         OuS9pRcLaxUEqtURIvMfExT/1mjy+6bVdBG/U=
-Message-ID: <4A8AA9BD.2070909@gmail.com>
-Date: Tue, 18 Aug 2009 09:16:45 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Tue, 18 Aug 2009 09:16:56 -0400
+Received: from sg2ehsobe002.messaging.microsoft.com ([207.46.51.76]:3504 "EHLO
+	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932112AbZHRNQy convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 09:16:54 -0400
+X-SpamScore: -22
+X-BigFish: VPS-22(zz1432R98dN4015L1b0bMzz1202hzzz32i6bh203h43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KOKQ6M-02-2JP-02
+X-M-MSG: 
+Date: Tue, 18 Aug 2009 15:15:58 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/12] cleanup __build_sched_domains()
+Message-ID: <20090818131558.GO29515@alberich.amd.com>
+References: <20090818104944.GA29515@alberich.amd.com> <20090818111644.GA23983@elte.hu>
 MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
-       kvm@vger.kernel.org, Avi Kivity <avi@redhat.com>,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
- objects
-References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <4A89FF08.30509@codemonkey.ws>
-In-Reply-To: <4A89FF08.30509@codemonkey.ws>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig4E2580682E311698A6C8BB03"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <20090818111644.GA23983@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 18 Aug 2009 13:15:59.0283 (UTC) FILETIME=[07004030:01CA2006]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4E2580682E311698A6C8BB03
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Aug 18, 2009 at 01:16:44PM +0200, Ingo Molnar wrote:
+> 
+> * Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+> 
+> > Hi,
+> > 
+> > Following patches try to make __build_sched_domains() less ugly 
+> > and more readable. They shouldn't be harmful. Thus I think they 
+> > can be applied for .32.
+> > 
+> > Patches are against tip/master as of today.
+> > 
+> > FYI, I need those patches as a base for introducing a new domain 
+> > level for multi-node CPUs for which I intend to sent patches as 
+> > RFC asap.
+> 
+> Very nice cleanups!
+> 
+> Magny-Cours indeed will need one more sched-domains level, 
+> something like:
+> 
+>    [smt thread]
+>    core
+>    internal numa node
+>    cpu socket
+>    external numa node 
 
-Anthony Liguori wrote:
-> Gregory Haskins wrote:
->> Note: No one has ever proposed to change the virtio-ABI.
->=20
-> virtio-pci is part of the virtio ABI.  You are proposing changing that.=
+My current approach is to have the numa node domain either below CPU
+(in case of multi-cpu node where SRAT describes each internal node as
+a NUMA node) or as is, as the top-level domain (e.g. in case of node
+interleaving or missing/broken ACPI SRAT detection).
 
+Sched domain levels (note SMT==SIBLING, NODE==NUMA) are: 
 
-I'm sorry, but I respectfully disagree with you here.
+(1) groups in NUMA domain are subsets of groups in CPU domain
+(2) groups in NUMA domain are supersets groups in CPU domain
 
-virtio has an ABI...I am not modifying that.
+(1)         | (2)
+------------|-------------------
+SMT         | SMT
+MC          | MC
+MN (new)    | MN
+NUMA        | CPU
+CPU         | NUMA
 
-virtio-pci has an ABI...I am not modifying that either.
+I'll also introduce a new parameter sched_mn_power_savings which will
+cause that tasks are scheduled on one socket until its capacity is
+reached. If capacity is reached other sockets can also be occupied.
 
-The subsystem in question is virtio-vbus, and is a completely standalone
-addition to the virtio ecosystem.  By your argument, virtio amd
-virtio-pci should fuse together, and virtio-lguest and virtio-s390
-should go away because they diverge from the virtio-pci ABI, right?
+> ... which is certainly interesting, especially since the hierarchy 
+> possibly 'crosses', i.e. we might have the two internal numa nodes 
+> share a L2 or L3 cache, right?
 
-I seriously doubt you would agree with that statement.  The fact is, the
-design of virtio not only permits modular replacement of its transport
-ABI, it encourages it.
+> I'd also not be surprised if the load-balancer needed some care to 
+> properly handle such a setup.
 
-So how is virtio-vbus any different from the other three?  I understand
-that it means you need to load a new driver in the guest, and I am ok
-with that.  virtio-pci was once a non-upstream driver too and required
-someone to explicitly load it, wasn't it?  You gotta crawl before you
-can walk...
+It needs some care and gave me some headache to get it working in all
+cases (i.e. NUMA, no-NUMA, NUMA-but-no-SRAT). My current code (that
+still needs to be split in proper patches for submission) works fine
+in all but one case. And I am still debugging it.
 
->=20
-> You cannot add new kernel modules to guests and expect them to remain
-> supported.
+The case that is not working is a normal (non-multi-node) NUMA system
+on which switching to power policy does not take effect for already
+running tasks. Just the new created ones are scheduled according to
+the power policy.
 
-??? Of course you can.  How is this different from any other driver?
-
-
->  So there is value in reusing existing ABIs
-
-
-Well, I wont argue with you on that one.  There is certainly value there.=
-
-
-My contention is that sometimes the liability of that ABI is greater
-than its value, and thats when its time to evaluate the design decisions
-that lead to re-use vs re-design.
-
-
->=20
->>> I think the reason vbus gets better performance for networking today =
-is
->>> that vbus' backends are in the kernel while virtio's backends are
->>> currently in userspace.
->>>    =20
->>
->> Well, with all due respect, you also said initially when I announced
->> vbus that in-kernel doesn't matter, and tried to make virtio-net run a=
-s
->> fast as venet from userspace ;)  Given that we never saw those userspa=
-ce
->> patches from you that in fact equaled my performance, I assume you wer=
-e
->> wrong about that statement.  Perhaps you were wrong about other things=
-
->> too?
->>  =20
->=20
-> I'm wrong about a lot of things :-)  I haven't yet been convinced that
-> I'm wrong here though.
->=20
-> One of the gray areas here is what constitutes an in-kernel backend.=20
-> tun/tap is a sort of an in-kernel backend.  Userspace is still involved=
-
-> in all of the paths.  vhost seems to be an intermediate step between
-> tun/tap and vbus.  The fast paths avoid userspace completely.  Many of
-> the slow paths involve userspace still (like migration apparently).=20
-> With vbus, userspace is avoided entirely.  In some ways, you could argu=
-e
-> that slirp and vbus are opposite ends of the virtual I/O spectrum.
->=20
-> I believe strongly that we should avoid putting things in the kernel
-> unless they absolutely have to be.
+> It's all welcome work in any case, and for .32.
 
 
-I would generally agree with you on that.  Particularly in the case of
-kvm, having slow-path bus-management code in-kernel is not strictly
-necessary because KVM has qemu in userspace.
+Thanks,
 
-The issue here is that vbus is designed to be a generic solution to
-in-kernel virtual-IO.  It will support (via abstraction of key
-subsystems) a variety of environments that may or may not be similar in
-facilities to KVM, and therefore it represents the
-least-common-denominator as far as what external dependencies it requires=
-=2E
+Andreas
 
-The bottom line is this: despite the tendency for people to jump at
-"don't put much in the kernel!", the fact is that a "bus" designed for
-software to software (such as vbus) is almost laughably trivial.  Its
-essentially a list of objects that have an int (dev-id) and char*
-(dev-type) attribute.  All the extra goo that you see me setting up in
-something like the kvm-connector needs to be done for fast-path
-_anyway_, so transporting the verbs to query this simple list is not
-really a big deal.
-
-If we were talking about full ICH emulation for a PCI bus, I would agree
-with you.  In the case of vbus, I think its overstated.
+-- 
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
 
->  I'm definitely interested in playing
-> with vhost to see if there are ways to put even less in the kernel.  In=
-
-> particular, I think it would be a big win to avoid knowledge of slots i=
-n
-> the kernel by doing ring translation in userspace.
-
-Ultimately I think that would not be a very good proposition.  Ring
-translation is actually not that hard, and that would definitely be a
-measurable latency source to try and do as you propose.  But, I will not
-discourage you from trying if that is what you want to do.
-
->  This implies a
-> userspace transition in the fast path.  This may or may not be
-> acceptable.  I think this is going to be a very interesting experiment
-> and will ultimately determine whether my intuition about the cost of
-> dropping to userspace is right or wrong.
-
-I can already tell you its wrong, just based on the fact that even extra
-kthread switches can hurt from my own experience playing in this area...
-
->=20
->=20
->> Conversely, I am not afraid of requiring a new driver to optimize the
->> general PV interface.  In the long term, this will reduce the amount o=
-f
->> reimplementing the same code over and over, reduce system overhead, an=
-d
->> it adds new features not previously available (for instance, coalescin=
-g
->> and prioritizing interrupts).
->>  =20
->=20
-> I think you have a lot of ideas and I don't know that we've been able t=
-o
-> really understand your vision.  Do you have any plans on writing a pape=
-r
-> about vbus that goes into some of your thoughts in detail?
-
-I really need to, I know...
-
-
->=20
->>> If that's the case, then I don't see any
->>> reason to adopt vbus unless Greg things there are other compelling
->>> features over virtio.
->>>    =20
->>
->> Aside from the fact that this is another confusion of the vbus/virtio
->> relationship...yes, of course there are compelling features (IMHO) or =
-I
->> wouldn't be expending effort ;)  They are at least compelling enough t=
-o
->> put in AlacrityVM.
->=20
-> This whole AlactricyVM thing is really hitting this nail with a
-> sledgehammer.
-
-Note that I didn't really want to go that route.  As you know, I tried
-pushing this straight through kvm first since earlier this year, but I
-was met with reluctance to even bother truly understanding what I was
-proposing, comments like "tell me your ideas so I can steal them", and
-"sorry, we are going to reinvent our own instead".  This isn't exactly
-going to motivate someone to continue pushing these ideas within that
-community.  I was made to feel (purposely?) unwelcome at times.  So I
-can either roll over and die, or start my own project.
-
-In addition, almost all of vbus is completely independent of kvm anyway
-(I think there are only 3 patches that actually touch KVM, and they are
-relatively minor).  And vbus doesn't really fit into any other category
-of maintained subsystem either.  So it really calls for a new branch of
-maintainership, of which I currently sit.  AlacrityVM will serve as the
-collaboration point of that maintainership.
-
-The bottom line is, there are people out there who are interested in
-what we are doing (and that number grows everyday).  Starting a new
-project wasn't what I wanted per se, but I don't think there was much
-choice.
-
-
-  While the kernel needs to be very careful about what it
-> pulls in, as long as you're willing to commit to ABI compatibility, we
-> can pull code into QEMU to support vbus.  Then you can just offer vbus
-> host and guest drivers instead of forking the kernel.
-
-Ok, I will work on pushing those patches next.
-
->=20
->>   If upstream KVM doesn't want them, that's KVMs
->> decision and I am fine with that.  Simply never apply my qemu patches =
-to
->> qemu-kvm.git, and KVM will be blissfully unaware if vbus is present.
->=20
-> As I mentioned before, if you submit patches to upstream QEMU, we'll
-> apply them (after appropriate review).  As I said previously, we want t=
-o
-> avoid user confusion as much as possible.  Maybe this means limiting it=
-
-> to -device or a separate machine type.  I'm not sure, but that's
-> something we can discussion on qemu-devel.
-
-Ok.
-
-Kind Regards,
--Greg
-
-
---------------enig4E2580682E311698A6C8BB03
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqKqb4ACgkQP5K2CMvXmqHhVwCggZTZqWJtdKn2ioP+xJsYaN+d
-1uoAnRCPfLLr0PBV7uo7m1xVIPYUuod4
-=v/Dx
------END PGP SIGNATURE-----
-
---------------enig4E2580682E311698A6C8BB03--
