@@ -1,116 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbZHRHjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753611AbZHRHjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752919AbZHRHjI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 03:39:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbZHRHjG
+	id S1753611AbZHRHjV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 03:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZHRHjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 03:39:06 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:58964 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751439AbZHRHjD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 03:39:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38874 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751474AbZHRHjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 18 Aug 2009 03:39:03 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, linux-kernel@vger.kernel.org,
-       esandeen@redhat.com, eteo@redhat.com, eparis@redhat.com,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: [Patch 1/2] selinux: ajust rules for ATTR_FORCE
-References: <20090817071001.5913.94767.sendpatchset@localhost.localdomain>
-	<20090817071011.5913.69970.sendpatchset@localhost.localdomain>
-	<1250511313.3629.103.camel@moss-pluto.epoch.ncsc.mil>
-	<87prau5ld1.fsf@devron.myhome.or.jp>
-	<1250536052.3629.154.camel@moss-pluto.epoch.ncsc.mil>
-	<873a7q441a.fsf@devron.myhome.or.jp>
-	<1250538981.3629.184.camel@moss-pluto.epoch.ncsc.mil>
-	<87fxbq19qs.fsf@devron.myhome.or.jp>
-	<87my5yxidt.fsf@devron.myhome.or.jp>
-Date: Tue, 18 Aug 2009 16:39:00 +0900
-In-Reply-To: <87my5yxidt.fsf@devron.myhome.or.jp> (OGAWA Hirofumi's message of
-	"Tue, 18 Aug 2009 06:03:42 +0900")
-Message-ID: <87y6pha7vv.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+Message-ID: <4A8A5A7F.5050809@redhat.com>
+Date: Tue, 18 Aug 2009 10:38:39 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: Gregory Haskins <gregory.haskins@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
+ objects
+References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <4A89FF08.30509@codemonkey.ws>
+In-Reply-To: <4A89FF08.30509@codemonkey.ws>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sorry if this killed thread. My ISP seems to be stopping email server
-now. I've read this email from web archive.]
+On 08/18/2009 04:08 AM, Anthony Liguori wrote:
+> I believe strongly that we should avoid putting things in the kernel 
+> unless they absolutely have to be.  I'm definitely interested in 
+> playing with vhost to see if there are ways to put even less in the 
+> kernel.  In particular, I think it would be a big win to avoid 
+> knowledge of slots in the kernel by doing ring translation in 
+> userspace.  This implies a userspace transition in the fast path.  
+> This may or may not be acceptable.  I think this is going to be a very 
+> interesting experiment and will ultimately determine whether my 
+> intuition about the cost of dropping to userspace is right or wrong.
 
->> @@ -2711,12 +2711,17 @@ static int selinux_inode_permission(stru
->>  static int selinux_inode_setattr(struct dentry *dentry, struct iattr *iattr)
->>  {
->>  	const struct cred *cred = current_cred();
->> +	unsigned int ia_valid = iattr->ia_valid;
->>  
->> -	if (iattr->ia_valid & ATTR_FORCE)
->> -		return 0;
->> +	/* ATTR_FORCE is just used for ATTR_KILL_S[UG]ID. */
->> +	if (ia_valid & ATTR_FORCE) {
->> +		ia_valid &= ~(ATTR_KILL_SUID | ATTR_KILL_SGID | ATTR_MODE);
->> +		if (!ia_valid)
->> +			return 0;
->>   
-> 
-> So if I read this correctly, (ATTR_FORCE| ATTR_KILL_SUID|ATTR_MODE) will 
-> not return here, since 'ia_valid' will be ATTR_FORCE finally.
-> 
-> I think you forgot to clear ATTR_FORCE here...
+I believe with a perfectly scaling qemu this should be feasible.  
+Currently qemu is far from scaling perfectly, but inefficient userspace 
+is not a reason to put things into the kernel.
 
-Whoops, good catch. Fortunately, it doesn't seem to have actual problem,
-but it's bug obviously, and sorry for that. Fixed patch was attached.
+Having a translated ring is also a nice solution for migration - 
+userspace can mark the pages dirty while translating the receive ring.
 
-Thanks.
+Still, in-kernel translation is simple enough that I think we should 
+keep it.
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+error compiling committee.c: too many arguments to function
 
-
-[PATCH] selinux: adjust rules for ATTR_FORCE
-
-From: Amerigo Wang <amwang@redhat.com>
-
-As suggested by OGAWA Hirofumi in thread: http://lkml.org/lkml/2009/8/7/132,
-we should let selinux_inode_setattr() to match our ATTR_* rules.
-ATTR_FORCE should not force things like ATTR_SIZE.
-
-Cc: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: Eric Paris <eparis@redhat.com>
-Signed-off-by: WANG Cong <amwang@redhat.com>
-[tweaks]
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
-
- security/selinux/hooks.c |   14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
-
-diff -puN security/selinux/hooks.c~selinux-truncate-fix security/selinux/hooks.c
---- linux-2.6/security/selinux/hooks.c~selinux-truncate-fix	2009-08-18 06:27:58.000000000 +0900
-+++ linux-2.6-hirofumi/security/selinux/hooks.c	2009-08-18 16:10:50.000000000 +0900
-@@ -2711,12 +2711,18 @@ static int selinux_inode_permission(stru
- static int selinux_inode_setattr(struct dentry *dentry, struct iattr *iattr)
- {
- 	const struct cred *cred = current_cred();
-+	unsigned int ia_valid = iattr->ia_valid;
- 
--	if (iattr->ia_valid & ATTR_FORCE)
--		return 0;
-+	/* ATTR_FORCE is just used for ATTR_KILL_S[UG]ID. */
-+	if (ia_valid & ATTR_FORCE) {
-+		ia_valid &= ~(ATTR_KILL_SUID | ATTR_KILL_SGID | ATTR_MODE |
-+			      ATTR_FORCE);
-+		if (!ia_valid)
-+			return 0;
-+	}
- 
--	if (iattr->ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID |
--			       ATTR_ATIME_SET | ATTR_MTIME_SET))
-+	if (ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID |
-+			ATTR_ATIME_SET | ATTR_MTIME_SET | ATTR_TIMES_SET))
- 		return dentry_has_perm(cred, NULL, dentry, FILE__SETATTR);
- 
- 	return dentry_has_perm(cred, NULL, dentry, FILE__WRITE);
-_
