@@ -1,87 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752054AbZHRGb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbZHRGkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752054AbZHRGb0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 02:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbZHRGbY
+	id S1752072AbZHRGkr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 02:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbZHRGkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 02:31:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56406 "EHLO mx2.redhat.com"
+	Tue, 18 Aug 2009 02:40:47 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:45432 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751493AbZHRGbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 02:31:24 -0400
-Message-ID: <4A8A4ABB.70003@redhat.com>
-Date: Tue, 18 Aug 2009 14:31:23 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+	id S1750945AbZHRGkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 02:40:46 -0400
+Date: Tue, 18 Aug 2009 08:40:47 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, zach.brown@oracle.com
+Subject: Re: [PATCH 0/3] Page based O_DIRECT and O_DIRECT loop
+Message-ID: <20090818064047.GI12579@kernel.dk>
+References: <1250505274-17108-1-git-send-email-jens.axboe@oracle.com> <20090817220003.GA1094@infradead.org>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org, linux-mm@kvack.org,
-       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       akpm@linux-foundation.org, bernhard.walle@gmx.de,
-       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 8/8] kexec: allow to shrink reserved memory
-References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>	<20090812081906.5757.39417.sendpatchset@localhost.localdomain>	<m1bpmk8l1g.fsf@fess.ebiederm.org>	<4A83893D.50707@redhat.com>	<m1eirg5j9i.fsf@fess.ebiederm.org>	<4A83CD84.8040609@redhat.com>	<m1tz0avy4h.fsf@fess.ebiederm.org>	<4A8927DD.6060209@redhat.com> <20090818092939.2efbe158.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090818092939.2efbe158.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090817220003.GA1094@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Mon, 17 Aug 2009 17:50:21 +0800
-> Amerigo Wang <amwang@redhat.com> wrote:
->
->   
->> Eric W. Biederman wrote:
->>     
->>> Amerigo Wang <amwang@redhat.com> writes:
->>>
->>>   
->>>       
->>>> Not that simple, marking it as "__init" means it uses some "__init" data which
->>>> will be dropped after initialization.
->>>>     
->>>>         
->>> If we start with the assumption that we will be reserving to much and
->>> will free the memory once we know how much we really need I see a very
->>> simple way to go about this. We ensure that the reservation of crash
->>> kernel memory is done through a normal allocation so that we have
->>> struct page entries for every page.  On 32bit x86 that is an extra 1MB
->>> for a 128MB allocation.
->>>
->>> Then when it comes time to release that memory we clear whatever magic
->>> flags we have on the page (like PG_reserve) and call free_page.
->>>   
->>>       
->> Hmm, my MM knowledge is not good enough to judge if this works...
->> I need to check more MM source code.
->>
->> Can any MM people help?
->>
->>     
-> Hm, memory-hotplug guy is here.
->   
+On Mon, Aug 17 2009, Christoph Hellwig wrote:
+> On Mon, Aug 17, 2009 at 12:34:31PM +0200, Jens Axboe wrote:
+> > Hi,
+> > 
+> > Currently it's not feasible to use loop for O_DIRECT workloads
+> > that expect some sort of data integrity, since loop always
+> > uses page cache IO. Some time ago, I posted a variant of loop
+> > that used remapping to function like a proper disk, but that patch
+> > was a bit fragile in that it relied loop maintaining a fs block
+> > remapping tree. This time I wanted to take a different approach.
+> > 
+> > The first two patches in this series convert the O_DIRECT IO path
+> > to be page based instead of passing down the iovecs. This is
+> > basically a first version so don't expect too much of it, but it
+> > does seem to work fine for me. Most O_DIRECT users were one-liner
+> > conversions, NFS required a bit more effort (and that effort has, btw,
+> > not been tested at all yet). At least the diffstat for the core bits
+> > don't look too bad:
+> 
+> Nice!  I took a quick look and here are some superficial comments:
+> 
+>  - right nbow this loveses all the benefits of using preadv/pwritev.
+>    Qemu/KVM will not be happy about this.  We need some way to submit
+>    each vector asynchronously first and then only wait for all of them
+>    to complete.
 
-Hi, thank you!
-> Can I have a question ?
->
->   - How crash kernel's memory is preserved at boot ?
->   
+Agree. In general the O_DIRECT bits need a looking at from the plugging
+perspective.
 
-Use bootmem, I think.
+>  - do_dio is a rather odd name.  What about resurrecting
+>    generic_file_direct_IO?
 
->     It's hidden from the system before mem_init() ?
->   
+It is probably too weird. I'll change it.
 
-Not sure, but probably yes. It is reserved in setup_arch() which is 
-before mm_init() which calls mem_init().
+>  - it would be great if we could kill dio_args.user_addr and move
+>    everything that deals with it to do_dio/generic_file_direct_IO.
+>    Given that only look at it in __blockdev_direct_IO and
+>    direct_io_worker beforew we start the real work that sounds doable
+>    relatively easily.  The only issue might be NFS.
+>    After this all the bits that deal with user addresses could live
+>    in filemap.c and keep this totally out of direct-io.c
 
-Do you have any advice to free that reserved memory after boot? :)
+I'll take a look at this, but may defer this to a later patch.
 
-Thanks.
+>  - why is the rw argument no part of struct dio_args?  IMHO it
+>    should move in there.
 
+Dunno, it may as well go in there. Will fix that.
 
+>  - patch 1 should probably be split further into a first patch just
+>    introducing struct dio_args, and then doing the heavy lifting without
+>    touching all the filesystems.
+
+OK, so a dio_args with the current arguments, then a switch over to the
+page based stuff. That would probably be cleaner, I'll split it up.
+
+> Also this stuff will massively catch with my patch to sort out the
+> locking mess in __blockdev_direct_IO, you might consider working ontop
+> of that.
+
+I did notice that. I'll work off mainline for the next version, then
+I'll take the pain of merging on top of your locking rewrite next.
+
+-- 
+Jens Axboe
 
