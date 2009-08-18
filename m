@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750966AbZHREBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751089AbZHREMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750966AbZHREBv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 00:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbZHREBv
+	id S1751089AbZHREMU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 00:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750751AbZHREMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 00:01:51 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:39270 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750861AbZHREBu (ORCPT
+	Tue, 18 Aug 2009 00:12:19 -0400
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:51480 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbZHREMS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 00:01:50 -0400
-Message-ID: <4A8A277D.4090304@ct.jp.nec.com>
-Date: Tue, 18 Aug 2009 13:01:01 +0900
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Tue, 18 Aug 2009 00:12:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=b6giavPLrSby6HrCZQJfV4b84rw2fmv3dP+95Ojo1pm5rGq86QHLcpAGkJZMa8mlMl
+         /osVai+j226wvAeVJzk/N5ko/mV0ujxeoEK6vOu07MG0675UJS8Po9yb2bZeWa4b+kt9
+         EuqTP4SJabJm8mGKLDaiMkyCFwoA7mD6UQtlI=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] sched: use for_each_class macro in move_one_task()
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090817203047.6cff48fb.akpm@linux-foundation.org>
+References: <a8e1da0908172025s728c62ber37acb6c2073f7794@mail.gmail.com>
+	 <20090817203047.6cff48fb.akpm@linux-foundation.org>
+Date: Tue, 18 Aug 2009 12:12:18 +0800
+Message-ID: <a8e1da0908172112kca79a1en7042fc1738ad1336@mail.gmail.com>
+Subject: Re: -mm hang while shutdown with printk_delay
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Tue, Aug 18, 2009 at 11:30 AM, Andrew
+Morton<akpm@linux-foundation.org> wrote:
+> On Tue, 18 Aug 2009 11:25:22 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+>
+>> Hi,
+>>
+>> Test with printk_delay=200,
+>>
+>> /sbin/halt -p
+>>
+>> kernel hang after following message:
+>>
+>> Disabling non-boot CPUs
+>>
+>> There's no such problem with 2.6.31-rc6
+>
+> umm, OK.  But -mm contains six patches:
+>
+> printk-boot_delay-rename-printk_delay_msec-to-loops_per_msec.patch
+> printk-boot_delay-rename-printk_delay_msec-to-loops_per_msec-fix.patch
+> printk-boot_delay-rename-printk_delay_msec-to-loops_per_msec-fix-2.patch
+> printk-add-printk_delay-to-make-messages-readable-for-some-scenarios.patch
+> printk-add-printk_delay-to-make-messages-readable-for-some-scenarios-fix.patch
+> printk-add-printk_delay-to-make-messages-readable-for-some-scenarios-cleanup.patch
+>
+> from yourself.  Are they the cause?
+>
 
-Replace for loop with the macro for_each_class to cleanup.
+Actually I tested 2.6.31-rc6 with the above six patches applied,
+there's no such problem.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- kernel/sched.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 5184580..d559fa7 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -3461,9 +3461,10 @@ static int move_one_task(struct rq *this_rq, int this_cpu, struct rq *busiest,
- {
- 	const struct sched_class *class;
- 
--	for (class = sched_class_highest; class; class = class->next)
-+	for_each_class(class) {
- 		if (class->move_one_task(this_rq, this_cpu, busiest, sd, idle))
- 			return 1;
-+	}
- 
- 	return 0;
- }
 -- 
-1.6.3.3
-
+Regards
+dave
