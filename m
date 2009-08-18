@@ -1,243 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758770AbZHRLKD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758763AbZHRLLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758770AbZHRLKD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 07:10:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758762AbZHRLKB
+	id S1758763AbZHRLLd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 07:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758729AbZHRLLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 07:10:01 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:23148 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758759AbZHRLKA (ORCPT
+	Tue, 18 Aug 2009 07:11:32 -0400
+Received: from sg2ehsobe005.messaging.microsoft.com ([207.46.51.79]:37134 "EHLO
+	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758720AbZHRLLb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 07:10:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=C8t+mHTVvf5KAojOR0Lli138UiVpt/VbzuqyAuJRfZV+4YDBGCFO+YN0e5Dqyoi0Gr
-         0sDEog5riKNPKMtD0jQxgoVqjWrU77jpyQBHFMWmRQEVj96884zTxwQojR3oMlHTu3S8
-         TBhlI18m+Ivkc+FzuPz1R0yjcLa780HRX8TME=
-Message-ID: <4A8A8BFE.1000709@gmail.com>
-Date: Tue, 18 Aug 2009 19:09:50 +0800
-From: Wan ZongShun <mcuos.com@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Tue, 18 Aug 2009 07:11:31 -0400
+X-SpamScore: -4
+X-BigFish: VPS-4(zz936eMzz1202hzzz32i6bh203h64h)
+X-Spam-TCS-SCL: 3:0
+X-WSS-ID: 0KOKJPQ-02-6B4-02
+X-M-MSG: 
+Date: Tue, 18 Aug 2009 12:56:14 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 05/12] sched: Seperate out build of MC sched domain from
+	__build_sched_domains
+Message-ID: <20090818105614.GF29515@alberich.amd.com>
+References: <20090818104944.GA29515@alberich.amd.com>
 MIME-Version: 1.0
-To: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Russell King <linux@arm.linux.org.uk>
-Subject: [PATCH v2 3/3] ARM: Add nuc960 paltform files to w90x900 platform
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090818104944.GA29515@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 18 Aug 2009 10:56:14.0613 (UTC) FILETIME=[81592450:01CA1FF2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Russell,
 
-Add nuc960 paltform files to w90x900 platform.
+... to further strip down __build_sched_domains().
 
-Signed-off-by: Wan ZongShun <mcuos.com@gmail.com>
-
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
- arch/arm/mach-w90x900/Kconfig          |   15 +++++++++
- arch/arm/mach-w90x900/Makefile         |    2 +
- arch/arm/mach-w90x900/mach-nuc960evb.c |   44 ++++++++++++++++++++++++++
- arch/arm/mach-w90x900/nuc960.c         |   54 ++++++++++++++++++++++++++++++++
- arch/arm/mach-w90x900/nuc960.h         |   28 ++++++++++++++++
- 5 files changed, 143 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/mach-w90x900/mach-nuc960evb.c
- create mode 100644 arch/arm/mach-w90x900/nuc960.c
- create mode 100644 arch/arm/mach-w90x900/nuc960.h
+ kernel/sched.c |   30 ++++++++++++++++++------------
+ 1 files changed, 18 insertions(+), 12 deletions(-)
 
-diff --git a/arch/arm/mach-w90x900/Kconfig b/arch/arm/mach-w90x900/Kconfig
-index 163b801..69bab32 100644
---- a/arch/arm/mach-w90x900/Kconfig
-+++ b/arch/arm/mach-w90x900/Kconfig
-@@ -10,6 +10,11 @@ config CPU_NUC950
- 	help
- 	  Support for NUCP950 of Nuvoton NUC900 CPUs.
+diff --git a/kernel/sched.c b/kernel/sched.c
+index a2e09f4..e24cb49 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -8635,6 +8635,23 @@ static struct sched_domain *__build_cpu_sched_domain(struct s_data *d,
+ 	return sd;
+ }
  
-+config CPU_NUC960
-+	bool
-+	help
-+	  Support for NUCP960 of Nuvoton NUC900 CPUs.
-+
- menu "W90P910 Machines"
- 
- config MACH_W90P910EVB
-@@ -31,4 +36,14 @@ config MACH_W90P950EVB
- 
- endmenu
- 
-+menu "NUC960 Machines"
-+
-+config MACH_W90N960EVB
-+	bool "Nuvoton NUC960 Evaluation Board"
-+	select CPU_NUC960
-+	help
-+	   Say Y here if you are using the Nuvoton NUC960EVB
-+
-+endmenu
-+
- endif
-diff --git a/arch/arm/mach-w90x900/Makefile b/arch/arm/mach-w90x900/Makefile
-index a4622b5..828c032 100644
---- a/arch/arm/mach-w90x900/Makefile
-+++ b/arch/arm/mach-w90x900/Makefile
-@@ -10,8 +10,10 @@ obj-y				+= clksel.o dev.o cpu.o
- 
- obj-$(CONFIG_CPU_W90P910)	+= nuc910.o
- obj-$(CONFIG_CPU_NUC950)	+= nuc950.o
-+obj-$(CONFIG_CPU_NUC960)	+= nuc960.o
- 
- # machine support
- 
- obj-$(CONFIG_MACH_W90P910EVB)	+= mach-nuc910evb.o
- obj-$(CONFIG_MACH_W90P950EVB)	+= mach-nuc950evb.o
-+obj-$(CONFIG_MACH_W90N960EVB)	+= mach-nuc960evb.o
-diff --git a/arch/arm/mach-w90x900/mach-nuc960evb.c b/arch/arm/mach-w90x900/mach-nuc960evb.c
-new file mode 100644
-index 0000000..e3a46f1
---- /dev/null
-+++ b/arch/arm/mach-w90x900/mach-nuc960evb.c
-@@ -0,0 +1,44 @@
-+/*
-+ * linux/arch/arm/mach-w90x900/mach-nuc960evb.c
-+ *
-+ * Based on mach-s3c2410/mach-smdk2410.c by Jonas Dietsche
-+ *
-+ * Copyright (C) 2008 Nuvoton technology corporation.
-+ *
-+ * Wan ZongShun <mcuos.com@gmail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation;version 2 of the License.
-+ *
-+ */
-+
-+#include <linux/platform_device.h>
-+#include <asm/mach/arch.h>
-+#include <asm/mach/map.h>
-+#include <asm/mach-types.h>
-+#include <mach/map.h>
-+
-+#include "nuc960.h"
-+
-+static void __init nuc960evb_map_io(void)
++static struct sched_domain *__build_mc_sched_domain(struct s_data *d,
++	const struct cpumask *cpu_map, struct sched_domain_attr *attr,
++	struct sched_domain *parent, int i)
 +{
-+	nuc960_map_io();
-+	nuc960_init_clocks();
++	struct sched_domain *sd = parent;
++#ifdef CONFIG_SCHED_MC
++	sd = &per_cpu(core_domains, i).sd;
++	SD_INIT(sd, MC);
++	set_domain_attribute(sd, attr);
++	cpumask_and(sched_domain_span(sd), cpu_map, cpu_coregroup_mask(i));
++	sd->parent = parent;
++	parent->child = sd;
++	cpu_to_core_group(i, cpu_map, &sd->groups, d->tmpmask);
++#endif
++	return sd;
 +}
 +
-+static void __init nuc960evb_init(void)
-+{
-+	nuc960_board_init();
-+}
-+
-+MACHINE_START(W90N960EVB, "W90N960EVB")
-+	/* Maintainer: Wan ZongShun */
-+	.phys_io	= W90X900_PA_UART,
-+	.io_pg_offst	= (((u32)W90X900_VA_UART) >> 18) & 0xfffc,
-+	.boot_params	= 0,
-+	.map_io		= nuc960evb_map_io,
-+	.init_irq	= nuc900_init_irq,
-+	.init_machine	= nuc960evb_init,
-+	.timer		= &nuc900_timer,
-+MACHINE_END
-diff --git a/arch/arm/mach-w90x900/nuc960.c b/arch/arm/mach-w90x900/nuc960.c
-new file mode 100644
-index 0000000..8851a3a
---- /dev/null
-+++ b/arch/arm/mach-w90x900/nuc960.c
-@@ -0,0 +1,54 @@
-+/*
-+ * linux/arch/arm/mach-w90x900/nuc960.c
-+ *
-+ * Based on linux/arch/arm/plat-s3c24xx/s3c244x.c by Ben Dooks
-+ *
-+ * Copyright (c) 2008 Nuvoton technology corporation.
-+ *
-+ * Wan ZongShun <mcuos.com@gmail.com>
-+ *
-+ * NUC960 cpu support
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation;version 2 of the License.
-+ *
-+ */
-+
-+#include <linux/platform_device.h>
-+#include <asm/mach/map.h>
-+#include <mach/hardware.h>
-+#include "cpu.h"
-+
-+/* define specific CPU platform device */
-+
-+static struct platform_device *nuc960_dev[] __initdata = {
-+	&nuc900_device_kpi,
-+	&nuc900_device_fmi,
-+};
-+
-+/* define specific CPU platform io map */
-+
-+static struct map_desc nuc960evb_iodesc[] __initdata = {
-+};
-+
-+/*Init NUC960 evb io*/
-+
-+void __init nuc960_map_io(void)
-+{
-+	nuc900_map_io(nuc960evb_iodesc, ARRAY_SIZE(nuc960evb_iodesc));
-+}
-+
-+/*Init NUC960 clock*/
-+
-+void __init nuc960_init_clocks(void)
-+{
-+	nuc900_init_clocks();
-+}
-+
-+/*Init NUC960 board info*/
-+
-+void __init nuc960_board_init(void)
-+{
-+	nuc900_board_init(nuc960_dev, ARRAY_SIZE(nuc960_dev));
-+}
-diff --git a/arch/arm/mach-w90x900/nuc960.h b/arch/arm/mach-w90x900/nuc960.h
-new file mode 100644
-index 0000000..f0c07cb
---- /dev/null
-+++ b/arch/arm/mach-w90x900/nuc960.h
-@@ -0,0 +1,28 @@
-+/*
-+ * arch/arm/mach-w90x900/nuc960.h
-+ *
-+ * Copyright (c) 2008 Nuvoton corporation
-+ *
-+ * Header file for NUC900 CPU support
-+ *
-+ * Wan ZongShun <mcuos.com@gmail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+struct map_desc;
-+struct sys_timer;
-+
-+/* core initialisation functions */
-+
-+extern void nuc900_init_irq(void);
-+extern struct sys_timer nuc900_timer;
-+
-+/* extern file from nuc960.c */
-+
-+extern void nuc960_board_init(void);
-+extern void nuc960_init_clocks(void);
-+extern void nuc960_map_io(void);
+ /*
+  * Build sched domains for a given set of cpus and attach the sched domains
+  * to the individual cpus
+@@ -8665,18 +8682,7 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
+ 
+ 		sd = __build_numa_sched_domains(&d, cpu_map, attr, i);
+ 		sd = __build_cpu_sched_domain(&d, cpu_map, attr, sd, i);
+-
+-#ifdef CONFIG_SCHED_MC
+-		p = sd;
+-		sd = &per_cpu(core_domains, i).sd;
+-		SD_INIT(sd, MC);
+-		set_domain_attribute(sd, attr);
+-		cpumask_and(sched_domain_span(sd), cpu_map,
+-						   cpu_coregroup_mask(i));
+-		sd->parent = p;
+-		p->child = sd;
+-		cpu_to_core_group(i, cpu_map, &sd->groups, d.tmpmask);
+-#endif
++		sd = __build_mc_sched_domain(&d, cpu_map, attr, sd, i);
+ 
+ #ifdef CONFIG_SCHED_SMT
+ 		p = sd;
 -- 
-1.5.6.3
+1.6.4
+
+
+
