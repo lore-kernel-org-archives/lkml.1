@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752602AbZHRHFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbZHRHHC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752602AbZHRHFH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 03:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZHRHFG
+	id S1752771AbZHRHHC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 03:07:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZHRHHC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 03:05:06 -0400
-Received: from mga02.intel.com ([134.134.136.20]:6490 "EHLO mga02.intel.com"
+	Tue, 18 Aug 2009 03:07:02 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42554 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752170AbZHRHFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 03:05:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,401,1246863600"; 
-   d="scan'208";a="439926136"
-Subject: Re: [RFC][PATCH 7/7] PM: Asynchronous suspend and resume of i8042
-From: Zhang Rui <rui.zhang@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Arjan van de Ven <arjan@linux.intel.com>, Greg KH <gregkh@suse.de>
-In-Reply-To: <200908170221.34885.rjw@sisk.pl>
-References: <200908122218.13975.rjw@sisk.pl>
-	 <200908170215.21173.rjw@sisk.pl>  <200908170221.34885.rjw@sisk.pl>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 18 Aug 2009 15:03:30 +0800
-Message-Id: <1250579010.5351.69.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	id S1752257AbZHRHHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 03:07:00 -0400
+Date: Tue, 18 Aug 2009 09:06:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: Please pull my perfcounters.git tree
+Message-ID: <20090818070656.GA25564@elte.hu>
+References: <19082.14855.905695.140648@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19082.14855.905695.140648@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-17 at 08:21 +0800, Rafael J. Wysocki wrote:
-> Set async_suspend for i8042.
+
+* Paul Mackerras <paulus@samba.org> wrote:
+
+> Ingo,
 > 
-it's the psmouse reset that takes the 0.4 seconds during suspend.
-﻿so we should call device_enable_async_suspend for the psmouse serio
-device in psmouse-base.c
-
-Or invoking device_enable_async_suspend for every serio device in
-serio.c, as the keyboard also takes about 0.2s to suspend.
-
-thanks,
-rui
-> ---
->  drivers/input/serio/i8042.c |    2 ++
->  1 file changed, 2 insertions(+)
+> The following changes since commit 64f1607ffbbc772685733ea63e6f7f4183df1b16:
+>   Linus Torvalds (1):
+>         Linux 2.6.31-rc6
 > 
-> Index: linux-2.6/drivers/input/serio/i8042.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/input/serio/i8042.c
-> +++ linux-2.6/drivers/input/serio/i8042.c
-> @@ -1289,6 +1289,8 @@ static int __init i8042_init(void)
->  	if (err)
->  		goto err_free_device;
->  
-> +	device_enable_async_suspend(&i8042_platform_device->dev, true);
-> +
->  	panic_blink = i8042_panic_blink;
->  
->  	return 0;
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perfcounters.git master
+> 
+> Paul Mackerras (3):
+>       powerpc/32: Always order writes to halves of 64-bit PTEs
+>       powerpc: Allow perf_counters to access user memory at interrupt time
+>       perf_counter: powerpc: Add callchain support
+> 
+>  arch/powerpc/include/asm/pgtable.h   |    6 +-
+>  arch/powerpc/kernel/Makefile         |    2 +-
+>  arch/powerpc/kernel/asm-offsets.c    |    2 +
+>  arch/powerpc/kernel/exceptions-64s.S |   19 ++
+>  arch/powerpc/kernel/perf_callchain.c |  527 ++++++++++++++++++++++++++++++++++
+>  arch/powerpc/mm/slb.c                |   37 ++-
+>  arch/powerpc/mm/stab.c               |   11 +-
+>  7 files changed, 588 insertions(+), 16 deletions(-)
+>  create mode 100644 arch/powerpc/kernel/perf_callchain.c
+> 
+> These commits implement callchain support for perf_counters on 
+> powerpc. [...]
 
+nice!
+
+> [...]  They have been acked by Ben Herrenschmidt and I have asked 
+> him to pull them into his powerpc-next branch.  It would be good 
+> if you could pull them into the tip tree on some suitable branch 
+> so they get tested together with the other perf_counter changes 
+> that are pending for the 2.6.32 merge window.
+
+Pulled into tip:perfcounters/core, thanks Paul!
+
+	Ingo
