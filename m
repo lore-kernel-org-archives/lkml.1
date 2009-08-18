@@ -1,100 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752200AbZHRU70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752174AbZHRVEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752200AbZHRU70 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 16:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZHRU7X
+	id S1752174AbZHRVEh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 17:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbZHRVEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 16:59:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44439 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752119AbZHRU7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 16:59:21 -0400
-Date: Tue, 18 Aug 2009 23:57:48 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Cc: Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+	Tue, 18 Aug 2009 17:04:36 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:61255 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751603AbZHRVEf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 17:04:35 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver objects
+Date: Tue, 18 Aug 2009 21:04:30 +0000
+User-Agent: KMail/1.11.2 (Linux/2.6.29; KDE/4.2.2; x86_64; ; )
+Cc: "Ira W. Snyder" <iws@ovro.caltech.edu>, Avi Kivity <avi@redhat.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
        netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, Avi Kivity <avi@redhat.com>,
+       alacrityvm-devel@lists.sourceforge.net,
        Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
        Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
-	model for vbus_driver objects
-Message-ID: <20090818205748.GC20393@redhat.com>
-References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <20090817174142.GA11140@redhat.com> <4A89BAC5.9040400@gmail.com> <20090818084606.GA13878@redhat.com> <20090818155329.GD31060@ovro.caltech.edu>
+References: <4A870964.9090408@codemonkey.ws> <20090818182735.GD17631@ovro.caltech.edu> <20090818203522.GA20393@redhat.com>
+In-Reply-To: <20090818203522.GA20393@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090818155329.GD31060@ovro.caltech.edu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200908182104.30500.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19/1uGRg06WTCJ6jiZAqNS6Ywnsf8RTXDwFMWy
+ SruKq42C0gjeatkapps/sVGbYX8taJIYROVsyiJgKY7Ydl8MKm
+ lVQ8ijWcnFdKC2d1155bg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 08:53:29AM -0700, Ira W. Snyder wrote:
-> I think Greg is referring to something like my virtio-over-PCI patch.
-> I'm pretty sure that vhost is completely useless for my situation. I'd
-> like to see vhost work for my use, so I'll try to explain what I'm
-> doing.
+On Tuesday 18 August 2009 20:35:22 Michael S. Tsirkin wrote:
+> On Tue, Aug 18, 2009 at 10:27:52AM -0700, Ira W. Snyder wrote:
+> > Also, in my case I'd like to boot Linux with my rootfs over NFS. Is
+> > vhost-net capable of this?
+> > 
+> > I've had Arnd, BenH, and Grant Likely (and others, privately) contact me
+> > about devices they are working with that would benefit from something
+> > like virtio-over-PCI. I'd like to see vhost-net be merged with the
+> > capability to support my use case. There are plenty of others that would
+> > benefit, not just myself.
+
+yes.
+
+> > I'm not sure vhost-net is being written with this kind of future use in
+> > mind. I'd hate to see it get merged, and then have to change the ABI to
+> > support physical-device-to-device usage. It would be better to keep
+> > future use in mind now, rather than try and hack it in later.
 > 
-> I've got a system where I have about 20 computers connected via PCI. The
-> PCI master is a normal x86 system, and the PCI agents are PowerPC
-> systems. The PCI agents act just like any other PCI card, except they
-> are running Linux, and have their own RAM and peripherals.
-> 
-> I wrote a custom driver which imitated a network interface and a serial
-> port. I tried to push it towards mainline, and DavidM rejected it, with
-> the argument, "use virtio, don't add another virtualization layer to the
-> kernel." I think he has a decent argument, so I wrote virtio-over-PCI.
-> 
-> Now, there are some things about virtio that don't work over PCI.
-> Mainly, memory is not truly shared. It is extremely slow to access
-> memory that is "far away", meaning "across the PCI bus." This can be
-> worked around by using a DMA controller to transfer all data, along with
-> an intelligent scheme to perform only writes across the bus. If you're
-> careful, reads are never needed.
-> 
-> So, in my system, copy_(to|from)_user() is completely wrong.
-> There is no userspace, only a physical system.
+> I still need to think your usage over. I am not so sure this fits what
+> vhost is trying to do. If not, possibly it's better to just have a
+> separate driver for your device.
 
-Can guests do DMA to random host memory? Or is there some kind of IOMMU
-and DMA API involved? If the later, then note that you'll still need
-some kind of driver for your device. The question we need to ask
-ourselves then is whether this driver can reuse bits from vhost.
+I now think we need both. virtio-over-PCI does it the right way for its
+purpose and can be rather generic. It could certainly be extended to
+support virtio-net on both sides (host and guest) of KVM, but I think
+it better fits the use where a kernel wants to communicate with some
+other machine where you normally wouldn't think of using qemu.
 
-> In fact, because normal x86 computers
-> do not have DMA controllers, the host system doesn't actually handle any
-> data transfer!
+Vhost-net OTOH is great in the way that it serves as an easy way to
+move the virtio-net code from qemu into the kernel, without changing
+its behaviour. It should even straightforward to do live-migration between
+hosts with and without it, something that would be much harder with
+the virtio-over-PCI logic. Also, its internal state is local to the
+process owning its file descriptor, which makes it much easier to
+manage permissions and cleanup of its resources.
 
-Is it true that PPC has to initiate all DMA then? How do you
-manage not to do DMA reads then?
-
-> I used virtio-net in both the guest and host systems in my example
-> virtio-over-PCI patch, and succeeded in getting them to communicate.
-> However, the lack of any setup interface means that the devices must be
-> hardcoded into both drivers, when the decision could be up to userspace.
-> I think this is a problem that vbus could solve.
-
-What you describe (passing setup from host to guest) seems like
-a feature that guest devices need to support. It seems unlikely that
-vbus, being a transport layer, can address this.
-
-> 
-> For my own selfish reasons (I don't want to maintain an out-of-tree
-> driver) I'd like to see *something* useful in mainline Linux. I'm happy
-> to answer questions about my setup, just ask.
-> 
-> Ira
-
-Thanks Ira, I'll think about it.
-A couple of questions:
-- Could you please describe what kind of communication needs to happen?
-- I'm not familiar with DMA engine in question. I'm guessing it's the
-  usual thing: in/out buffers need to be kernel memory, interface is
-  asynchronous, small limited number of outstanding requests? Is there a
-  userspace interface for it and if yes how does it work?
-
-
-
--- 
-MST
-
+	Arnd <><
