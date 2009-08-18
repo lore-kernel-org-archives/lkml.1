@@ -1,201 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758614AbZHRCG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbZHRC0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758614AbZHRCG3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 22:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbZHRCG3
+	id S1755259AbZHRC0M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 22:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbZHRC0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 22:06:29 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50987 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751436AbZHRCG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 22:06:28 -0400
-Message-ID: <4A8A0D5E.1010805@cn.fujitsu.com>
-Date: Tue, 18 Aug 2009 10:09:34 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>,
+	Mon, 17 Aug 2009 22:26:12 -0400
+Received: from mga14.intel.com ([143.182.124.37]:1533 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752826AbZHRC0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 22:26:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,399,1246863600"; 
+   d="scan'208";a="176829909"
+Date: Tue, 18 Aug 2009 10:26:09 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>
+Cc: Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
+       Avi Kivity <avi@redhat.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Re: [RFC PATCH] Add timer-source of walltime for ftrace
-References: <4A698F90.90501@cn.fujitsu.com> <alpine.DEB.2.00.0907240902030.17438@gandalf.stny.rr.com> <20090728103227.D7FB.A69D9226@jp.fujitsu.com> <20090728015351.GF5147@nowhere> <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com> <4A89213C.5090109@cn.fujitsu.com> <20090817164909.GB4953@nowhere>
-In-Reply-To: <20090817164909.GB4953@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Andrea Arcangeli <aarcange@redhat.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+Message-ID: <20090818022609.GA7958@localhost>
+References: <4A843B72.6030204@redhat.com> <4A843EAE.6070200@redhat.com> <4A846581.2020304@redhat.com> <20090813211626.GA28274@cmpxchg.org> <4A850F4A.9020507@redhat.com> <20090814091055.GA29338@cmpxchg.org> <20090814095106.GA3345@localhost> <4A856467.6050102@redhat.com> <20090815054524.GB11387@localhost> <9EECC02A4CC333418C00A85D21E89326B6611E81@azsmsx502.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9EECC02A4CC333418C00A85D21E89326B6611E81@azsmsx502.amr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Mon, Aug 17, 2009 at 05:22:04PM +0800, Zhaolei wrote:
->> We can add a timer-source for ftrace to support wall-time display.
->> It is based on Steven Rostedt <rostedt@goodmis.org>'s suggestion in:
->> http://lkml.org/lkml/2009/7/24/103
->>
->> It needs to be applied on my patch of:
->> [PATCH v4 1/2] Add function to convert between calendar time and broken-down time for universal use
->> and
->> [PATCH v2 2/2] ftrace: Unify effect of writing to trace_options and option/*
->>
->> We can get following output:
->>  # cd /mnt/debugfs/tracing/
->>  # ls options/*clock
->>  options/global-clock  options/local-clock  options/walltime-clock
->>  # echo sched_switch > current_tracer
->>  # cat trace
->>  # tracer: sched_switch
->>  #
->>  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
->>  #              | |       |          |         |
->>              bash-3560  [000]   694.242386:   3560:120:S   + [000]  3560:120:S bash
->>              bash-3560  [000]   694.242476:   3560:120:S   + [000]  3560:120:S bash
->>              bash-3560  [000]   694.242865:   3560:120:R   + [000]     5:115:S events/0
->>              bash-3560  [000]   694.242912:   3560:120:R ==> [000]     5:115:R events/0
->>          events/0-5     [000]   694.243015:      5:115:R   + [000]  3558:120:S sshd
->>          events/0-5     [000]   694.243040:      5:115:S ==> [000]  3560:120:R bash
->>              bash-3560  [000]   694.243312:   3560:120:S   + [000]  3560:120:S bash
->>              bash-3560  [000]   694.243374:   3560:120:S ==> [000]  3558:120:R sshd
->>  ...
->>  # echo 1 > options/walltime-clock
->>  # echo > trace
->>  # cat trace
->>  # tracer: sched_switch
->>  #
->>  #           TASK-PID    CPU#           TIMESTAMP  FUNCTION
->>  #              | |       |                 |         |
->>              bash-3560  [000] 2009-08-17 23:58:22   3560:120:S   + [000]  3560:120:S bash
->>              bash-3560  [000] 2009-08-17 23:58:22   3560:120:R   + [000]     5:115:S events/0
->>              bash-3560  [000] 2009-08-17 23:58:22   3560:120:R ==> [000]     5:115:R events/0
->>          events/0-5     [000] 2009-08-17 23:58:22      5:115:R   + [000]  3558:120:S sshd
->>          events/0-5     [000] 2009-08-17 23:58:22      5:115:S ==> [000]  3558:120:R sshd
->>              sshd-3558  [000] 2009-08-17 23:58:22   3558:120:S ==> [000]  3560:120:R bash
->>              bash-3560  [000] 2009-08-17 23:58:22   3560:120:S   + [000]  3560:120:S bash
->>              bash-3560  [000] 2009-08-17 23:58:22   3560:120:S   + [000]  3560:120:S bash
->>  ...
->>
->> Note:
->> It is only a prototype patch to for demostrate what is result looks like.
->> There still have many works to do(bug to fix) before apply.
->> For example, we need to add a hook(tracepoint) of xtime change event,
->> so we can update walltime's clock base then.
->> And maybe we need clear all events when changing clock-source, because old
->> clock value can't displayed correctly in new clock's format.
->>
->> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
->> ---
->>  include/linux/trace_clock.h |    1 +
->>  kernel/trace/trace.c        |   55 ++++++++++++++++++++++++++++++------------
->>  kernel/trace/trace.h        |    6 +++-
->>  kernel/trace/trace_clock.c  |   47 ++++++++++++++++++++++++++++++++++++
->>  kernel/trace/trace_output.c |   20 ++++++++++++---
->>  5 files changed, 107 insertions(+), 22 deletions(-)
->>
->> diff --git a/include/linux/trace_clock.h b/include/linux/trace_clock.h
->> index 7a81303..322707e 100644
->> --- a/include/linux/trace_clock.h
->> +++ b/include/linux/trace_clock.h
->> @@ -15,5 +15,6 @@
->>  extern u64 notrace trace_clock_local(void);
->>  extern u64 notrace trace_clock(void);
->>  extern u64 notrace trace_clock_global(void);
->> +extern u64 notrace trace_clock_walltime(void);
->>  
->>  #endif /* _LINUX_TRACE_CLOCK_H */
->> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
->> index b7d873b..4474f7d 100644
->> --- a/kernel/trace/trace.c
->> +++ b/kernel/trace/trace.c
->> @@ -263,8 +263,8 @@ static DECLARE_WAIT_QUEUE_HEAD(trace_wait);
->>  
->>  /* trace_flags holds trace_options default values */
->>  unsigned long trace_flags = TRACE_ITER_PRINT_PARENT | TRACE_ITER_PRINTK |
->> -	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO | TRACE_ITER_SLEEP_TIME |
->> -	TRACE_ITER_GRAPH_TIME;
->> +	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO | TRACE_ITER_LOCAL_CLK |
->> +	TRACE_ITER_SLEEP_TIME | TRACE_ITER_GRAPH_TIME;
->>  
->>  /**
->>   * trace_wake_up - wake up tasks waiting for trace input
->> @@ -324,6 +324,8 @@ static const char *trace_options[] = {
->>  	"context-info",
->>  	"latency-format",
->>  	"global-clock",
->> +	"local-clock",
->> +	"walltime-clock",
->>  	"sleep-time",
->>  	"graph-time",
->>  	NULL
->> @@ -1423,8 +1425,17 @@ static void print_lat_help_header(struct seq_file *m)
->>  
->>  static void print_func_help_header(struct seq_file *m)
->>  {
->> -	seq_puts(m, "#           TASK-PID    CPU#    TIMESTAMP  FUNCTION\n");
->> -	seq_puts(m, "#              | |       |          |         |\n");
->> +	if (trace_flags & TRACE_ITER_WALLTIME_CLK) {
->> +		seq_puts(m, "#           TASK-PID    CPU# "
->> +			"          TIMESTAMP  FUNCTION\n");
->> +		seq_puts(m, "#              | |       |   "
->> +			"              |         |\n");
->> +	} else {
->> +		seq_puts(m, "#           TASK-PID    CPU# "
->> +			"   TIMESTAMP  FUNCTION\n");
->> +		seq_puts(m, "#              | |       |   "
->> +			"       |         |\n");
->> +	}
->>  }
->>  
->>  
->> @@ -2151,30 +2162,42 @@ static int set_tracer_option(struct tracer *trace, char *cmp, int neg)
->>  
->>  static void set_tracer_flags(unsigned int mask, int enabled)
->>  {
->> +	u64 (*clkfunc)(void) = NULL;
->> +
->>  	/* do nothing if flag is already set */
->>  	if (!!(trace_flags & mask) == !!enabled)
->>  		return;
->>  
->> -	if (enabled)
->> -		trace_flags |= mask;
->> -	else
->> -		trace_flags &= ~mask;
->> +	if (mask == TRACE_ITER_GLOBAL_CLK)
->> +		clkfunc = trace_clock_global;
->> +	if (mask == TRACE_ITER_LOCAL_CLK)
->> +		clkfunc = trace_clock_local;
->> +	if (mask == TRACE_ITER_WALLTIME_CLK)
->> +		clkfunc = trace_clock_walltime;
->>  
->> -	if (mask == TRACE_ITER_GLOBAL_CLK) {
->> -		u64 (*func)(void);
->> +	if (clkfunc) {
->> +		if (!enabled)
->> +			return;
+On Tue, Aug 18, 2009 at 02:04:46AM +0800, Dike, Jeffrey G wrote:
+> > Jeff, can you confirm if the mem cgroup's inactive list is small?
 > 
+> Nope.  I have plenty on the inactive anon list, between 13K and 16K pages (i.e. 52M to 64M).
+>
+> The inactive mapped list is much smaller - 0 to ~700 pages.
 > 
-> 
-> If the user set a clock option file to 0, then it means he
-> was expecting something, probably reset the default clock
-> which is clock_local.
+> The active lists are comparable in size, but larger - 16K - 19K pages for anon and 60 - 450 pages for mapped.
 
-Agree.
+The anon inactive list is "over scanned".  Take 16k pages for example,
+with DEF_PRIORITY=12, (16k >> 12) = 4.  So when shrink_zone() expects
+to scan 4 pages in the active/inactive list, it will be scanned
+SWAP_CLUSTER_MAX=32 pages in effect.
 
-> But what if the user set 0 to the local_clock...hmm..
+This triggers the background aging of active anon list because
+inactive_anon_is_low() is found to be true, which keeps the
+active:inactive ratio in balance.
 
-or make option like:
-# echo wallclock > option/clock
-# echo localclock > option/clock
-is best way.
-But it needs rewriting whole option source.
+So anon inactive list over scanned => anon active list over scanned =>
+anon lists over scanned relative to file lists. (The inactive file list
+may or may not be over scanned depending on its size <> (1<<prio) pages.)
 
-Maybe now, we can use a neutrality way as:
-# echo 0 > option/wallclock  # reset to default clock(local clock)
-# echo 0 > option/locakclock # no effect
+Anyway this is not the expected way vmscan should work, and batching
+up the cgroup vmscan could get rid of the mess.
 
-Thanks
-Zhaolei
-
-
-
-
+Thanks,
+Fengguang
