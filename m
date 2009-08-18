@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752141AbZHRVLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750821AbZHRVPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752141AbZHRVLI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 17:11:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbZHRVLH
+	id S1750821AbZHRVPH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 17:15:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbZHRVPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 17:11:07 -0400
-Received: from smtpfb1-g21.free.fr ([212.27.42.9]:47550 "EHLO
-	smtpfb1-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751361AbZHRVLG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 17:11:06 -0400
-Date: Tue, 18 Aug 2009 23:10:14 +0200 (CEST)
-From: dimitri.gorokhovik@free.fr
-To: David Woodhouse <dwmw2@infradead.org>,
-       David Woodhouse <David.Woodhouse@intel.com>,
-       Tim Gardner <tim.gardner@canonical.com>,
-       Scott James Remnant <scott@canonical.com>, Julia Lawall <julia@diku.dk>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Message-ID: <25767218.3393441250629814335.JavaMail.root@zimbra3-e1.priv.proxad.net>
-In-Reply-To: <1996041455.3392751250629417929.JavaMail.root@zimbra3-e1.priv.proxad.net>
-Subject: [PATCH] nftl: write support is broken
+	Tue, 18 Aug 2009 17:15:06 -0400
+Received: from www.tglx.de ([62.245.132.106]:36929 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750717AbZHRVPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 17:15:04 -0400
+Date: Tue, 18 Aug 2009 23:14:05 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Will Schmidt <will_schmidt@vnet.ibm.com>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>
+Subject: Re: [ANNOUNCE] 2.6.31-rc6-rt2
+In-Reply-To: <1250629478.516.249.camel@lexx>
+Message-ID: <alpine.LFD.2.00.0908182311250.3361@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>  <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain>  <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain>  <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain> 
+ <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain>  <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>  <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain>  <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> 
+ <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>  <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>  <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain>  <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> 
+ <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>  <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain>  <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain>  <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> 
+ <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain> <1250629478.516.249.camel@lexx>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [79.85.212.132]
-X-Mailer: Zimbra 5.0 (ZimbraWebClient - [unknown] (Linux)/5.0.15_GA_2815.UBUNTU8_64)
-X-Authenticated-User: dimitri.gorokhovik@free.fr
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Write support is broken in NFTL. Fix it.
+Will,
 
-Signed-off-by: <dimitri.gorokhovik@free.fr>
+On Tue, 18 Aug 2009, Will Schmidt wrote:
+> 
+> Booting the system seems mostly OK with maxcpus=1, though this INFO
+> message appears on the console.  (This does repeat after a while..) :
+> 
+>  INFO: task irq/16-IPI:3 blocked for more than 120 seconds.
 
----
+Hmm. Why is the IPI threaded ? Can you check older (working) RT
+versions whether the IPIs were threaded there as well ?
 
-diff --git a/drivers/mtd/nftlcore.c b/drivers/mtd/nftlcore.c
-index fb86cac..665d3eb 100644
---- a/drivers/mtd/nftlcore.c
-+++ b/drivers/mtd/nftlcore.c
-@@ -181,7 +181,7 @@ static int nftl_write(struct mtd_info *mtd, loff_t offs, size_t len,
- 	int res;
- 
- 	ops.mode = MTD_OOB_PLACE;
--	ops.ooboffs = offs;
-+	ops.ooboffs = offs & (mtd->writesize - 1);
- 	ops.ooblen = mtd->oobsize;
- 	ops.oobbuf = oob;
- 	ops.datbuf = buf;
+Thanks,
+
+	tglx
