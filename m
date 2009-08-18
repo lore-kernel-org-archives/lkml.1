@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbZHRWyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751326AbZHRXC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752127AbZHRWyQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 18:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZHRWyP
+	id S1751326AbZHRXC0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 19:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbZHRXC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 18:54:15 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:42823 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751285AbZHRWyP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 18:54:15 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Tue, 18 Aug 2009 23:54:05 +0100
-Message-Id: <1250636045-23014-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.3.3
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: [PATCH] mfd: Make MC13783 driver depend on SPI
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+	Tue, 18 Aug 2009 19:02:26 -0400
+Received: from hera.cwi.nl ([192.16.191.8]:64597 "EHLO hera.cwi.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750837AbZHRXCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 19:02:25 -0400
+X-Greylist: delayed 1827 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Aug 2009 19:02:25 EDT
+Date: Wed, 19 Aug 2009 00:35:23 +0200
+From: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: linux-kernel@vger.kernel.org, Andries Brouwer <Andries.Brouwer@cwi.nl>
+Subject: Re: completely hide parts of the partition table from Windows?
+Message-ID: <20090818223522.GA5872@ub>
+References: <19083.7062.710265.941247@pilspetsen.it.uu.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19083.7062.710265.941247@pilspetsen.it.uu.se>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Atlas chips need SPI to be enabled for chip access, if it is not
-available build failures result due to the use of the SPI APIs for
-register I/O.
+On Tue, Aug 18, 2009 at 11:22:30PM +0200, Mikael Pettersson wrote:
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/mfd/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> So what I'm looking for is some sub-partition table format with the
+> following two properties:
+> 1. resides in an msdos partition entry of a type that Windows does
+>    not inspect (for whatever extended partitions or Apple/BSD/Sun
+>    stuff that Windows may have been taught to recognize)
+> 2. the locations and sizes of the sub-partitions are NOT limited by
+>    the parent msdos partition entry
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 960c9d4..a4f3dff 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -240,6 +240,7 @@ config MFD_PCF50633
- 
- config MFD_MC13783
- 	tristate "Support Freescale MC13783"
-+	depends on SPI_MASTER
- 	select MFD_CORE
- 	help
- 	  Support for the Freescale (Atlas) MC13783 PMIC and audio CODEC.
--- 
-1.6.3.3
+The reason I added type 85 = LINUX_EXTENDED_PARTITION
+was precisely your concern: it should be something
+that DOS/Windows doesnt know about.
+
+> I've looked at the code in fs/partitions/msdos.c, and it seems that
+> most of the extended/BSD/Sun formats don't give me property #2 above.
+
+The standard description of extended partitions says that the size field
+of the parent extended partition descriptor is irrelevant, only the
+starting sector matters.
+
+If you look at the parse_extended() code in msdos.c you'll see
+that it does not use its parameter first_size.
+(Except in a certain case that you will not be in.)
+
+Make a table that has a Linux extended partition (type 85)
+that is short enough not to cause Windows to worry. Have logical
+partitions inside of any size and location you desire.
+
+Andries
 
