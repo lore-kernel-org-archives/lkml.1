@@ -1,155 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbZHRLGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758743AbZHRLHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758734AbZHRLGu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 07:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758434AbZHRLGu
+	id S1758743AbZHRLHt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 07:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758730AbZHRLHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 07:06:50 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60453 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751175AbZHRLGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 07:06:49 -0400
-Date: Tue, 18 Aug 2009 13:06:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Jason Baron <jbaron@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Wu Zhangjin <wuzj@lemote.com>, linux-next@vger.kernel.org
-Subject: Re: [GIT PULL] tracing: Syscalls trace events + perf support
-Message-ID: <20090818110616.GA20070@elte.hu>
-References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com> <20090812091133.GA21655@elte.hu> <20090818004654.GA4402@linux-sh.org> <20090818102507.GA5231@nowhere>
+	Tue, 18 Aug 2009 07:07:49 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:54387 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758692AbZHRLHs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 07:07:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=qr1ePetKPzGnRewiHzniNrk75vftRx1X2CPViHuEyWnPai75shUZwuLZNU+z48PTth
+         /7+LfMtzwLvYXG2K41exq91tf4UQ+RuacKpFkhbLoSj//3JAbXvL+dzzXUcbIYXPRElg
+         HZR0FUmYT3Lbg3Ehdmre0maDosCkKqmZvbRAQ=
+Message-ID: <4A8A8B7D.9030803@gmail.com>
+Date: Tue, 18 Aug 2009 19:07:41 +0800
+From: Wan ZongShun <mcuos.com@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090818102507.GA5231@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Russell King <linux@arm.linux.org.uk>
+Subject: [PATCH v2 2/3] ARM: Add nuc950 paltform files to w90x900 platform
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dear Russell,
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+Add nuc950 paltform files to w90x900 platform.
 
-> On Tue, Aug 18, 2009 at 09:46:55AM +0900, Paul Mundt wrote:
-> > [ Adding to Cc everyone that now has a broken tree thanks to this .. ]
-> > 
-> > On Wed, Aug 12, 2009 at 11:11:33AM +0200, Ingo Molnar wrote:
-> > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > > > This pull request integrate one cleanup/fix for ftrace and an 
-> > > > update for syscall tracing: the migration from old-style tracer to 
-> > > > individual tracepoints/trace_events and the support for perf 
-> > > > counter.
-> > > > 
-> > > > I've tested it with success either with ftrace (every syscall 
-> > > > tracepoints enabled at the same time without problems) and with 
-> > > > perfcounter.
-> > > > 
-> > > > May be one drawback: it creates so much trace events that the 
-> > > > ftrace selftests can take some time :-)
-> > > 
-> > > Pulled, thanks a lot!
-> > 
-> > And this has now subsequently broken every single SH and S390 
-> > configuration, and anyone else unfortunate enough to be 
-> > supporting ftrace syscall tracing that isn't x86, without so 
-> > much as a Cc, well done!
-> > 
-> > The s390 case can be fixed up in-tree as support has already 
-> > been merged, but in the SH case we had ftrace syscall tracing 
-> > queued up for 2.6.32, so it doesn't show up in -tip, but the 
-> > end result in -next is now completely broken.
-> > 
-> > I'm not sure how we should handle this, if tracing/core in -tip 
-> > isn't rebased, should I just pull the topic-branch in to my 
-> > tree, fix up the sh support on top of that, and push the end 
-> > result out? This seems like the easiest option at least, but I 
-> > don't know what other dependencies exist for tracing/core. 
-> > Alternative suggestions welcome.
-> > 
-> > This happens again and again with ftrace and -tip, where people 
-> > just randomly change existing interfaces, break all of the 
-> > existing users, and then fail to tell anyone about it until it 
-> > shows up in -next. Even if we had pushed all of the sh ftrace 
-> > bits to the -tip tree early on it would not have changed 
-> > anything, evident by the fact that s390 and all of the non 
-> > ftrace syscall architectures were broken by this change as well 
-> > (the latter case was at least caught and corrected, although 
-> > not by the original authors of this patch series). Is it really 
-> > that much to task that people who are running around breaking 
-> > ftrace interfaces actually bother to Cc the architectures that 
-> > are using it?
-> 
-> I've just retrieved the concerned commit in the sh tree:
-> 
-> sh: Add ftrace syscall tracing support 
-> (c652d780c9cf7f860141de232b37160fe013feca)
-> 
-> Was I cc'ed on this one? I can't find it in my inbox. Unless I'm 
-> wrong and I missed it, how could I guess I had to cc you and how 
-> am I supposed to fix something I'm even not aware of?
-> 
-> I can't find the s390 patch in my inbox either (was I cc'ed ?) 
-> ([S390] ftrace: add system call tracer support) but we should 
-> have fixed this one because it was already upstream and a 
-> git-grep ftrace_syscall_enter would have warned us about that.
-> 
-> I didn't know another arch was supporting syscall tracing (except 
-> mips because I was cc'ed, but it doesn't seem upstream nor in the 
-> mips tree).
+Signed-off-by: Wan ZongShun <mcuos.com@gmail.com>
 
-Yes, and note that Paul Mundt has not even done the minimal 
-courtesy of describing/pasting the build failure he was seeing. But 
-he had time for a 4-paragraph rant about how others are supposed to 
-do their work... And then he complains about us not having 
-considered a change he never Cc:-ed to us. How nice.
+---
+ arch/arm/mach-w90x900/Kconfig          |   15 +++++++++
+ arch/arm/mach-w90x900/Makefile         |    2 +
+ arch/arm/mach-w90x900/mach-nuc950evb.c |   44 ++++++++++++++++++++++++++
+ arch/arm/mach-w90x900/nuc950.c         |   54 ++++++++++++++++++++++++++++++++
+ arch/arm/mach-w90x900/nuc950.h         |   28 ++++++++++++++++
+ 5 files changed, 143 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/mach-w90x900/mach-nuc950evb.c
+ create mode 100644 arch/arm/mach-w90x900/nuc950.c
+ create mode 100644 arch/arm/mach-w90x900/nuc950.h
 
-( I have meanwhile fixed the bug in s390 and have posted that fix -
-  the SH fix should be an analogous twoliner. )
-
-This reply from Paul Mundt shows an _incredibly_ arrogant attitude 
-towards core kernel facilities: he almost never contributes to them 
-(i just checked the logs from v2.6.12 to v2.6.31-rc6) but _THEY_ 
-must do everything to keep SH running smoothly.
-
-And he expects that work to benefit SH to happen regardless of how 
-many actual Linux users use, develop on and report bugs from SH. 
-Where's the many SH crash reports on kerneloops.org? I see _not a 
-single SH report_, out of more than 200,000 kernel oopses reported 
-and categorized ... Why?
-
-The thing is, as things stand today SH is basically freeloding on 
-the hard work, testing and core kernel work of other architectures 
-- which is fine in itself - what is not fine is to is to then 
-complain in an unacceptable tone about bugs that affect SH.
-
-Of course SH never causes core kernel bugs because it essentially 
-does no core kernel work at all!
-
-Paul seems to think that freeloading upon 10 million lines of code 
-coupled with loud, self-sure demands for instant fixes is fine, and 
-dare anyone trying to advance Linux break the build of a single 
-architecture out of 22!
-
-Other architectures, powerpc, s390, sparc, x86 etc. all do lots of 
-core kernel work and make sure it's all nicely reciprocal and 
-friendly. SH needs to stop the whining and needs to start helping 
-out for real - or it can get unmerged and go out of tree if it does 
-not want to participate in the development process.
-
-Thanks,
-
-	Ingo
+diff --git a/arch/arm/mach-w90x900/Kconfig b/arch/arm/mach-w90x900/Kconfig
+index 8e4178f..163b801 100644
+--- a/arch/arm/mach-w90x900/Kconfig
++++ b/arch/arm/mach-w90x900/Kconfig
+@@ -5,6 +5,11 @@ config CPU_W90P910
+ 	help
+ 	  Support for W90P910 of Nuvoton W90X900 CPUs.
+ 
++config CPU_NUC950
++	bool
++	help
++	  Support for NUCP950 of Nuvoton NUC900 CPUs.
++
+ menu "W90P910 Machines"
+ 
+ config MACH_W90P910EVB
+@@ -16,4 +21,14 @@ config MACH_W90P910EVB
+ 
+ endmenu
+ 
++menu "NUC950 Machines"
++
++config MACH_W90P950EVB
++	bool "Nuvoton NUC950 Evaluation Board"
++	select CPU_NUC950
++	help
++	   Say Y here if you are using the Nuvoton NUC950EVB
++
++endmenu
++
+ endif
+diff --git a/arch/arm/mach-w90x900/Makefile b/arch/arm/mach-w90x900/Makefile
+index e38aa32..a4622b5 100644
+--- a/arch/arm/mach-w90x900/Makefile
++++ b/arch/arm/mach-w90x900/Makefile
+@@ -9,7 +9,9 @@ obj-y				+= clksel.o dev.o cpu.o
+ # W90X900 CPU support files
+ 
+ obj-$(CONFIG_CPU_W90P910)	+= nuc910.o
++obj-$(CONFIG_CPU_NUC950)	+= nuc950.o
+ 
+ # machine support
+ 
+ obj-$(CONFIG_MACH_W90P910EVB)	+= mach-nuc910evb.o
++obj-$(CONFIG_MACH_W90P950EVB)	+= mach-nuc950evb.o
+diff --git a/arch/arm/mach-w90x900/mach-nuc950evb.c b/arch/arm/mach-w90x900/mach-nuc950evb.c
+new file mode 100644
+index 0000000..cef903b
+--- /dev/null
++++ b/arch/arm/mach-w90x900/mach-nuc950evb.c
+@@ -0,0 +1,44 @@
++/*
++ * linux/arch/arm/mach-w90x900/mach-nuc950evb.c
++ *
++ * Based on mach-s3c2410/mach-smdk2410.c by Jonas Dietsche
++ *
++ * Copyright (C) 2008 Nuvoton technology corporation.
++ *
++ * Wan ZongShun <mcuos.com@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation;version 2 of the License.
++ *
++ */
++
++#include <linux/platform_device.h>
++#include <asm/mach/arch.h>
++#include <asm/mach/map.h>
++#include <asm/mach-types.h>
++#include <mach/map.h>
++
++#include "nuc950.h"
++
++static void __init nuc950evb_map_io(void)
++{
++	nuc950_map_io();
++	nuc950_init_clocks();
++}
++
++static void __init nuc950evb_init(void)
++{
++	nuc950_board_init();
++}
++
++MACHINE_START(W90P950EVB, "W90P950EVB")
++	/* Maintainer: Wan ZongShun */
++	.phys_io	= W90X900_PA_UART,
++	.io_pg_offst	= (((u32)W90X900_VA_UART) >> 18) & 0xfffc,
++	.boot_params	= 0,
++	.map_io		= nuc950evb_map_io,
++	.init_irq	= nuc900_init_irq,
++	.init_machine	= nuc950evb_init,
++	.timer		= &nuc900_timer,
++MACHINE_END
+diff --git a/arch/arm/mach-w90x900/nuc950.c b/arch/arm/mach-w90x900/nuc950.c
+new file mode 100644
+index 0000000..1495081
+--- /dev/null
++++ b/arch/arm/mach-w90x900/nuc950.c
+@@ -0,0 +1,54 @@
++/*
++ * linux/arch/arm/mach-w90x900/nuc950.c
++ *
++ * Based on linux/arch/arm/plat-s3c24xx/s3c244x.c by Ben Dooks
++ *
++ * Copyright (c) 2008 Nuvoton technology corporation.
++ *
++ * Wan ZongShun <mcuos.com@gmail.com>
++ *
++ * NUC950 cpu support
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation;version 2 of the License.
++ *
++ */
++
++#include <linux/platform_device.h>
++#include <asm/mach/map.h>
++#include <mach/hardware.h>
++#include "cpu.h"
++
++/* define specific CPU platform device */
++
++static struct platform_device *nuc950_dev[] __initdata = {
++	&nuc900_device_kpi,
++	&nuc900_device_fmi,
++};
++
++/* define specific CPU platform io map */
++
++static struct map_desc nuc950evb_iodesc[] __initdata = {
++};
++
++/*Init NUC950 evb io*/
++
++void __init nuc950_map_io(void)
++{
++	nuc900_map_io(nuc950evb_iodesc, ARRAY_SIZE(nuc950evb_iodesc));
++}
++
++/*Init NUC950 clock*/
++
++void __init nuc950_init_clocks(void)
++{
++	nuc900_init_clocks();
++}
++
++/*Init NUC950 board info*/
++
++void __init nuc950_board_init(void)
++{
++	nuc900_board_init(nuc950_dev, ARRAY_SIZE(nuc950_dev));
++}
+diff --git a/arch/arm/mach-w90x900/nuc950.h b/arch/arm/mach-w90x900/nuc950.h
+new file mode 100644
+index 0000000..98a1148
+--- /dev/null
++++ b/arch/arm/mach-w90x900/nuc950.h
+@@ -0,0 +1,28 @@
++/*
++ * arch/arm/mach-w90x900/nuc950.h
++ *
++ * Copyright (c) 2008 Nuvoton corporation
++ *
++ * Header file for NUC900 CPU support
++ *
++ * Wan ZongShun <mcuos.com@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++struct map_desc;
++struct sys_timer;
++
++/* core initialisation functions */
++
++extern void nuc900_init_irq(void);
++extern struct sys_timer nuc900_timer;
++
++/* extern file from nuc950.c */
++
++extern void nuc950_board_init(void);
++extern void nuc950_init_clocks(void);
++extern void nuc950_map_io(void);
+-- 
+1.5.6.3
