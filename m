@@ -1,87 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbZHRRGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759431AbZHRRLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759471AbZHRRGx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 13:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759420AbZHRRGw
+	id S1759431AbZHRRLT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 13:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759326AbZHRRLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 13:06:52 -0400
-Received: from ppp-152-18.adsl.restena.lu ([158.64.152.18]:60173 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759383AbZHRRGw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 13:06:52 -0400
-X-Greylist: delayed 369 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Aug 2009 13:06:51 EDT
-Date: Tue, 18 Aug 2009 19:00:16 +0200
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
- in use
-Message-ID: <20090818190016.73ce53de@neptune.home>
-In-Reply-To: <20090810192954.GA11651@suse.de>
-References: <20090808194733.38406075@neptune.home>
- <Pine.LNX.4.44L0.0908101114320.3208-100000@iolanthe.rowland.org>
- <20090810154402.GA7701@kroah.com>
- <20090810191822.26370810@neptune.home>
- <20090810181306.GA24989@kroah.com>
- <20090810203501.4d57aa5b@neptune.home>
- <20090810205115.6871239d@neptune.home>
- <20090810192954.GA11651@suse.de>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 18 Aug 2009 13:11:19 -0400
+Received: from comal.ext.ti.com ([198.47.26.152]:41821 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751087AbZHRRLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 13:11:18 -0400
+From: "Madhusudhan" <madhu.cr@ti.com>
+To: "'Adrian Hunter'" <adrian.hunter@nokia.com>
+Cc: <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
+       <linux-omap@vger.kernel.org>, <linux-arm-kernel@lists.arm.linux.org.uk>
+References: <60037.192.168.10.88.1250546653.squirrel@dbdmail.itg.ti.com> <4A8A4FC1.1090206@nokia.com> <006501ca2018$4bb7a170$544ff780@am.dhcp.ti.com>
+Subject: RE: [PATCH] omap_hsmmc: Fix for the db clock failure message
+Date: Tue, 18 Aug 2009 12:10:25 -0500
+Message-ID: <000b01ca2026$c72e5930$544ff780@am.dhcp.ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+Thread-Index: Acof0IIb48bsCq8CSYO0oKRq22IuXQARq5KAAAMmuJA=
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+In-Reply-To: <006501ca2018$4bb7a170$544ff780@am.dhcp.ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
-
-Were you able to reproduce this with a FTDI usbserial device?
 
 
-I just had a short look with 2.6.31-rc6, it crashes harder... once
-kernel did panic with general protection fault after reporting
-  tty_port_close_start: count=-1
-The second time id started output of an Oops but only half of the first
-line ever showed up on screen (Intel KMS).
-
-Note: this was with just usbserial.ko and ftdi_sio.ko rebuilt with
-CONFIG_DEBUG_INFO=y in the hope to find out what did access a bad
-pointer. (make CONFIG_DEBUG_INFO=y drivers/usb/serial/$module.ko)
-
-Will retry now with a fresh compile with CONFIG_DEBUG_INFO enabled for
-whole kernel and see if I can get better information, eventually
-switching to vesa framebuffer in case the partial output happens again.
-
-This pretty much looks like unbalanced ref-count...
-
-Thanks,
-Bruno
-
-On Mon, 10 August 2009 Greg KH <gregkh@suse.de> wrote:
-> > > I have not tried yet with a different USB serial device but will
-> > > do so soon to see if I can reproduce it there. (the other
-> > > USBSerial device I have is: 067b:2303 Prolific Technology, Inc.
-> > > PL2303 Serial Port)
-> > 
-> > I can't reproduce with this one.
-> > 
-> > Similar setup, but instead of SheevaPlug (with it's kernel started
-> > with console=ttyS0,115200 + agetty run by init) I just started
-> > agetty (same parameters) on a x86 box with uart serial port (e.g.
-> > that x86 kernel does not have console kernel parameter) and
-> > connected that one via NullModem cable to the Prolific USBSerial
-> > converter.
-> > 
-> > In this case, no matter how often I pull the USBSerial converter
-> > there is no Oops.
-> > 
-> > So it must be something that FTDI driver does differently from e.g.
-> > Prolific one.
+> -----Original Message-----
+> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
+> owner@vger.kernel.org] On Behalf Of Madhusudhan
+> Sent: Tuesday, August 18, 2009 10:27 AM
+> To: 'Adrian Hunter'
+> Cc: akpm@linux-foundation.org; linux-kernel@vger.kernel.org; linux-
+> omap@vger.kernel.org; linux-arm-kernel@lists.arm.linux.org.uk
+> Subject: RE: [PATCH] omap_hsmmc: Fix for the db clock failure message
 > 
-> Ok, thanks, I'll dig through my big box of usb devices to try to find
-> a ftdi device, I was testing this out on a pl2303 device, which is
-> why I couldn't reproduce it it seems.
+> 
+> 
+> > -----Original Message-----
+> > From: Adrian Hunter [mailto:adrian.hunter@nokia.com]
+> > Sent: Tuesday, August 18, 2009 1:53 AM
+> > To: Madhusudhan Chikkature
+> > Cc: akpm@linux-foundation.org; linux-kernel@vger.kernel.org; linux-
+> > omap@vger.kernel.org; linux-arm-kernel@lists.arm.linux.org.uk
+> > Subject: Re: [PATCH] omap_hsmmc: Fix for the db clock failure message
+> >
+> > Madhusudhan Chikkature wrote:
+> > > This patch applies on top of the series "[PATCH V2 0/32] mmc and
+> > omap_hsmmc
+> > > patches" posted by Adrian Hunter.
+> > >
+> > > -------------------------------------------------
+> > >
+> > >
+> > >
+> > > This patch removes the error message "Failed to get debounce clock.."
+> > printed
+> > > out by the HSMMC driver on OMAP3430. The debounce clock needs to be
+> > handled only
+> > > for OMAP2430.
+> >
+> > I have a suggestion that may make it tidier.
+> >
+> > What about renaming host->dbclk_enabled to host->got_dbclk and leaving
+> it
+> > alone
+> > after it is set in the probe function.  Then create a macro to use in
+> > conditions:
+> >
+> > #define have_dbclk(host) (cpu_is_omap2430() && (host)->got_dbclk)
+> >
+> > So the following:
+> >
+> > -	if (host->dbclk_enabled)
+> > +	if (cpu_is_omap2430() && host->dbclk_enabled) {
+> >  		clk_disable(host->dbclk);
+> > +		host->dbclk_enabled = 0;
+> > +	}
+> >
+> > becomes:
+> >
+> > -	if (host->dbclk_enabled)
+> > +	if (have_dbclk(host))
+> >  		clk_disable(host->dbclk);
+> >
+> > Or alternatively, forget the macro, and let the code always compile in:
+> >
+> > -	if (host->dbclk_enabled)
+> > +	if (host->got_dbclk)
+> >  		clk_disable(host->dbclk);
+> >
+> In both the cases how about the enable path? We want to enable the
+> debounce
+> clock only for OMAP2430, Right? Otherwise we will still end up throwing an
+> error message for 3430 if we check the result of clk_enable for db clock.
+> 
+> Regards,
+> Madhu
+> 
+I got your point after looking at the patch again. I guess you want to set
+the "host->got_dbclk" only once in probe if the clk_get succeeds for db clk
+and handle clk_enable/disable only based on got_dbclk. That should be fine.
+I will resubmit the patch.
+
+Regards,
+Madhu
+> >
+> > >
+> > > Signed-off-by: Madhusudhan Chikkature <madhu.cr@ti.com>
+> > > ---
+> > >  drivers/mmc/host/omap_hsmmc.c |   63 +++++++++++++++++++++++++++-----
+> --
+> > --------
+> > >  1 file changed, 41 insertions(+), 22 deletions(-)
+> > >
+> > > Index: linux-2.6/drivers/mmc/host/omap_hsmmc.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/drivers/mmc/host/omap_hsmmc.c
+> > > +++ linux-2.6/drivers/mmc/host/omap_hsmmc.c
+> > > @@ -735,8 +735,10 @@ static int omap_hsmmc_switch_opcond(stru
+> > >  	/* Disable the clocks */
+> > >  	clk_disable(host->fclk);
+> > >  	clk_disable(host->iclk);
+> > > -	if (host->dbclk_enabled)
+> > > +	if (cpu_is_omap2430() && host->dbclk_enabled) {
+> > >  		clk_disable(host->dbclk);
+> > > +		host->dbclk_enabled = 0;
+> > > +	}
+> > >
+> > >  	/* Turn the power off */
+> > >  	ret = mmc_slot(host).set_power(host->dev, host->slot_id, 0, 0);
+> > > @@ -746,9 +748,14 @@ static int omap_hsmmc_switch_opcond(stru
+> > >  		ret = mmc_slot(host).set_power(host->dev, host->slot_id, 1,
+> > >  					       vdd);
+> > >  	clk_enable(host->iclk);
+> > > -	if (host->dbclk_enabled)
+> > > -		clk_enable(host->dbclk);
+> > >  	clk_enable(host->fclk);
+> > > +	if (cpu_is_omap2430() && !host->dbclk_enabled) {
+> > > +		if (clk_enable(host->dbclk) != 0)
+> > > +			dev_dbg(mmc_dev(host->mmc), "Enabling debounce"
+> > > +						" clk failed\n");
+> > > +		else
+> > > +			host->dbclk_enabled = 1;
+> > > +	}
+> > >
+> > >  	if (ret != 0)
+> > >  		goto err;
+> > > @@ -1697,18 +1704,21 @@ static int __init omap_hsmmc_probe(struc
+> > >  		goto err1;
+> > >  	}
+> > >
+> > > -	host->dbclk = clk_get(&pdev->dev, "mmchsdb_fck");
+> > > -	/*
+> > > -	 * MMC can still work without debounce clock.
+> > > -	 */
+> > > -	if (IS_ERR(host->dbclk))
+> > > -		dev_warn(mmc_dev(host->mmc), "Failed to get debounce
+> > clock\n");
+> > > -	else
+> > > -		if (clk_enable(host->dbclk) != 0)
+> > > -			dev_dbg(mmc_dev(host->mmc), "Enabling debounce"
+> > > -							" clk failed\n");
+> > > +	if (cpu_is_omap2430()) {
+> > > +		host->dbclk = clk_get(&pdev->dev, "mmchsdb_fck");
+> > > +		/*
+> > > +		 * MMC can still work without debounce clock.
+> > > +		 */
+> > > +		if (IS_ERR(host->dbclk))
+> > > +			dev_warn(mmc_dev(host->mmc),
+> > > +				"Failed to get debounce clock\n");
+> > >  		else
+> > > -			host->dbclk_enabled = 1;
+> > > +			if (clk_enable(host->dbclk) != 0)
+> > > +				dev_dbg(mmc_dev(host->mmc), "Enabling
+> debounce"
+> > > +							" clk failed\n");
+> > > +			else
+> > > +				host->dbclk_enabled = 1;
+> > > +	}
+> > >
+> > >  	/* Since we do only SG emulation, we can have as many segs
+> > >  	 * as we want. */
+> > > @@ -1825,8 +1835,9 @@ err_irq:
+> > >  	clk_disable(host->iclk);
+> > >  	clk_put(host->fclk);
+> > >  	clk_put(host->iclk);
+> > > -	if (host->dbclk_enabled) {
+> > > -		clk_disable(host->dbclk);
+> > > +	if (cpu_is_omap2430()) {
+> > > +		if (host->dbclk_enabled)
+> > > +			clk_disable(host->dbclk);
+> > >  		clk_put(host->dbclk);
+> > >  	}
+> > >
+> > > @@ -1859,8 +1870,9 @@ static int omap_hsmmc_remove(struct plat
+> > >  		clk_disable(host->iclk);
+> > >  		clk_put(host->fclk);
+> > >  		clk_put(host->iclk);
+> > > -		if (host->dbclk_enabled) {
+> > > -			clk_disable(host->dbclk);
+> > > +		if (cpu_is_omap2430()) {
+> > > +			if (host->dbclk_enabled)
+> > > +				clk_disable(host->dbclk);
+> > >  			clk_put(host->dbclk);
+> > >  		}
+> > >
+> > > @@ -1910,8 +1922,10 @@ static int omap_hsmmc_suspend(struct pla
+> > >  				OMAP_HSMMC_READ(host->base, HCTL) & ~SDBP);
+> > >  			mmc_host_disable(host->mmc);
+> > >  			clk_disable(host->iclk);
+> > > -			if (host->dbclk_enabled)
+> > > +			if (cpu_is_omap2430() && host->dbclk_enabled) {
+> > >  				clk_disable(host->dbclk);
+> > > +				host->dbclk_enabled = 0;
+> > > +			}
+> > >  		} else {
+> > >  			host->suspended = 0;
+> > >  			if (host->pdata->resume) {
+> > > @@ -1942,14 +1956,19 @@ static int omap_hsmmc_resume(struct plat
+> > >  		if (ret)
+> > >  			goto clk_en_err;
+> > >
+> > > -		if (host->dbclk_enabled)
+> > > -			clk_enable(host->dbclk);
+> > > -
+> > >  		if (mmc_host_enable(host->mmc) != 0) {
+> > >  			clk_disable(host->iclk);
+> > >  			goto clk_en_err;
+> > >  		}
+> > >
+> > > +		if (cpu_is_omap2430() && !host->dbclk_enabled) {
+> > > +			if (clk_enable(host->dbclk) != 0)
+> > > +				dev_dbg(mmc_dev(host->mmc), "Enabling
+> debounce"
+> > > +							" clk failed\n");
+> > > +			else
+> > > +				host->dbclk_enabled = 1;
+> > > +		}
+> > > +
+> > >  		omap_hsmmc_conf_bus_power(host);
+> > >
+> > >  		if (host->pdata->resume) {
+> > >
+> > >
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe linux-omap"
+> in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > >
+> >
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
