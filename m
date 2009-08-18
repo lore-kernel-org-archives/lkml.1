@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbZHRJ5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbZHRKAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758077AbZHRJ5X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 05:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbZHRJ5W
+	id S1758067AbZHRKAw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 06:00:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbZHRKAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 05:57:22 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34013 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753244AbZHRJ5V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 05:57:21 -0400
-Date: Tue, 18 Aug 2009 11:57:18 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: fs/namespace.c:638 mntput_no_expire warn_on in 2.6.30.2
-Message-ID: <20090818095718.GA21869@basil.fritz.box>
+	Tue, 18 Aug 2009 06:00:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41462 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751994AbZHRKAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 06:00:50 -0400
+Message-ID: <4A8A7BB9.2020906@redhat.com>
+Date: Tue, 18 Aug 2009 13:00:25 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: Gregory Haskins <gregory.haskins@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for	vbus_driver
+ objects
+References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A8954F0.3040402@gmail.com> <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com> <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com> <20090818095313.GC13878@redhat.com>
+In-Reply-To: <20090818095313.GC13878@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/18/2009 12:53 PM, Michael S. Tsirkin wrote:
+> I'm not hung up on PCI, myself.  An idea that might help you get Avi
+> on-board: do setup in userspace, over PCI.  Negotiate hypercall support
+> (e.g.  with a PCI capability) and then switch to that for fastpath. Hmm?
+>    
 
-To whom it concerns or for kerneloops.org. I didn't look too closely,
-but it seems to have leaked a reference on a device mapper mount point
-so I couldn't umount anymore. This was with a kpartx loop back mount
-of a file.
+Hypercalls don't nest well.  When a nested guest issues a hypercall, you 
+have to assume it is destined to the enclosing guest, so you can't 
+assign a hypercall-capable device to a nested guest.
 
-Kernel 2.6.30.2 (+ some totally unrelated patches)
-
--Andi
-
-------------[ cut here ]------------
-WARNING: at /home/lsrc/linux-2.6.30/fs/namespace.c:638 mntput_no_expire+0xcf/0x11b()
-Hardware name:         
-Modules linked in:  ...
-Pid: 7180, comm: umount Tainted: G      D    2.6.30.2-BASIL #7
-Call Trace:
- [<ffffffff8020e284>] dump_trace+0x6e/0x292
- [<ffffffff805bccb3>] dump_stack+0x69/0x6f
- [<ffffffff802376db>] warn_slowpath_common+0x77/0xa2
- [<ffffffff802b78a1>] mntput_no_expire+0xcf/0x11b
- [<ffffffff802b7e27>] sys_umount+0x2b7/0x2e2
- [<ffffffff8020ba6b>] system_call_fastpath+0x16/0x1b
- [<00007fa4d9d1c1c7>] 0x7fa4d9d1c1c7
----[ end trace 12f3f532ce924b4b ]---
-
+mmio and pio don't have this problem since the host can use the address 
+to locate the destination.
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+error compiling committee.c: too many arguments to function
+
