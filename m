@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932685AbZHRCA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932721AbZHRCBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932685AbZHRCA4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 22:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbZHRCAz
+	id S932721AbZHRCBW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 22:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758566AbZHRCBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 22:00:55 -0400
-Received: from mga01.intel.com ([192.55.52.88]:28289 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751996AbZHRCAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 22:00:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,399,1246863600"; 
-   d="scan'208";a="717704493"
-Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume (updated)
-From: Zhang Rui <rui.zhang@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Arjan van de Ven <arjan@linux.intel.com>, Greg KH <gregkh@suse.de>
-In-Reply-To: <200908170215.21173.rjw@sisk.pl>
-References: <200908122218.13975.rjw@sisk.pl>
-	 <200908170215.21173.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Tue, 18 Aug 2009 09:59:22 +0800
-Message-Id: <1250560762.5351.44.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Mon, 17 Aug 2009 22:01:21 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58783 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753278AbZHRCBU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 22:01:20 -0400
+Message-ID: <4A8A0B14.8040700@cn.fujitsu.com>
+Date: Tue, 18 Aug 2009 09:59:48 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Amerigo Wang <amwang@redhat.com>
+CC: Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>, Matt Mackall <mpm@selenic.com>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [Patch] proc: drop write permission on 'timer_list' and 'slabinfo'
+References: <20090817094525.6355.88682.sendpatchset@localhost.localdomain>  <20090817094822.GA17838@elte.hu> <1250502847.5038.16.camel@penberg-laptop> <alpine.DEB.1.10.0908171228300.16267@gentwo.org> <4A8986BB.80409@cs.helsinki.fi> <alpine.DEB.1.10.0908171240370.16267@gentwo.org> <4A8A0B0D.6080400@redhat.com>
+In-Reply-To: <4A8A0B0D.6080400@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hmm,
-what are these patches based on?
-I tried an 2.6.31-rc6 kernel together with your run-time PM patch (rev.
-17) but still failed.
+>  static int __init slab_proc_init(void)
+>  {
+> -	proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
+> +	proc_create("slabinfo",S_IRUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
 
-thanks,
-rui
+S_IRUSR|S_IRUGO == S_IRUGO
 
-On Mon, 2009-08-17 at 08:15 +0800, Rafael J. Wysocki wrote:
-> On Wednesday 12 August 2009, Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > The following patches introduce a mechanism allowing us to execute device
-> > drivers' suspend and resume callbacks asynchronously during system sleep
-> > transitions, such as suspend to RAM.  The idea is explained in the [1/1] patch
-> > message.
-> 
-> Changes:
-> 
-> * Added [1/7] that fixes kerneldoc comments in drivers/base/power/main.c
->   (this is a 2.6.32 candidate).
-> 
-> * Added [2/7] adding a framework for representing PM link (idea described
->   in the patch message).
-> 
-> * [3/7] is the async resume patch (idea described in the patch message).
-> 
-> * [4/7] is the async suspend patch.
-> 
-> * [5/7] - [7/7] set async_suspend for devices in a few selected subsystems.
-> 
-> The patches have been tested on HP nx6325.
-> 
-> Comments welcome.
-> 
-> Thanks,
-> Rafael
-> 
+>  	return 0;
+>  }
+>  module_init(slab_proc_init);
 
