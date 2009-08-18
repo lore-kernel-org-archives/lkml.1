@@ -1,110 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751261AbZHRWG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751869AbZHRWGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751261AbZHRWG2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 18:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbZHRWG1
+	id S1751869AbZHRWGm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 18:06:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbZHRWGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 18:06:27 -0400
-Received: from wmproxy1-g27.free.fr ([212.27.42.91]:61111 "EHLO
-	wmproxy1-g27.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750837AbZHRWG0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 18:06:26 -0400
-X-Greylist: delayed 3372 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Aug 2009 18:06:26 EDT
-Date: Wed, 19 Aug 2009 00:06:28 +0200 (CEST)
-From: dimitri.gorokhovik@free.fr
-To: David Woodhouse <dwmw2@infradead.org>,
-       David Woodhouse <David.Woodhouse@intel.com>,
-       Tim Gardner <tim.gardner@canonical.com>,
-       Scott James Remnant <scott@canonical.com>, Julia Lawall <julia@diku.dk>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Message-ID: <785022442.3397251250633188592.JavaMail.root@zimbra3-e1.priv.proxad.net>
-In-Reply-To: <605152405.3397101250633087167.JavaMail.root@zimbra3-e1.priv.proxad.net>
-Subject: [PATCH] nftl: fix offset alignments
+	Tue, 18 Aug 2009 18:06:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49550 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751318AbZHRWGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 18:06:40 -0400
+Message-ID: <4A8B25F5.7050806@redhat.com>
+Date: Wed, 19 Aug 2009 01:06:45 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net,
+       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
+ model for vbus_driver objects
+References: <4A8965E0.8050608@gmail.com> <20090817174142.GA11140@redhat.com> <4A89BAC5.9040400@gmail.com> <20090818084606.GA13878@redhat.com> <20090818155329.GD31060@ovro.caltech.edu> <4A8ADC09.3030205@redhat.com> <20090818172752.GC17631@ovro.caltech.edu> <4A8AE918.5000109@redhat.com> <20090818182735.GD17631@ovro.caltech.edu> <4A8AF880.6080704@redhat.com> <20090818205919.GA1168@ovro.caltech.edu> <4A8B1C7F.4060008@redhat.com>
+In-Reply-To: <4A8B1C7F.4060008@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: [79.85.212.132]
-X-Mailer: Zimbra 5.0 (ZimbraWebClient - [unknown] (Linux)/5.0.15_GA_2815.UBUNTU8_64)
-X-Authenticated-User: dimitri.gorokhovik@free.fr
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arithmetic conversion in the mask computation makes the upper word 
-of the second argument passed down to mtd->read_oob(), be always 0
-(assuming 'offs' being a 64-bit signed long long type, and 
-'mtd->writesize' being a 32-bit unsigned int type). 
+On 08/19/2009 12:26 AM, Avi Kivity wrote:
+>>
+>> Off the top of my head, I would think that transporting userspace
+>> addresses in the ring (for copy_(to|from)_user()) vs. physical addresses
+>> (for DMAEngine) might be a problem. Pinning userspace pages into memory
+>> for DMA is a bit of a pain, though it is possible.
+>
+>
+> Oh, the ring doesn't transport userspace addresses.  It transports 
+> guest addresses, and it's up to vhost to do something with them.
+>
+> Currently vhost supports two translation modes:
+>
+> 1. virtio address == host virtual address (using copy_to_user)
+> 2. virtio address == offsetted host virtual address (using copy_to_user)
+>
+> The latter mode is used for kvm guests (with multiple offsets, 
+> skipping some details).
+>
+> I think you need to add a third mode, virtio address == host physical 
+> address (using dma engine).  Once you do that, and wire up the 
+> signalling, things should work.
 
-This patch applies over the other one adding masking in nftl_write,
-"nftl: write support is broken".
 
-Signed-off-by: <dimitri.gorokhovik@free.fr>
----
- 
-diff --git a/drivers/mtd/nftlcore.c b/drivers/mtd/nftlcore.c
-index 665d3eb..d2fd066 100644
---- a/drivers/mtd/nftlcore.c
-+++ b/drivers/mtd/nftlcore.c
-@@ -135,16 +135,17 @@ static void nftl_remove_dev(struct mtd_blktrans_dev *dev)
- int nftl_read_oob(struct mtd_info *mtd, loff_t offs, size_t len,
- 		  size_t *retlen, uint8_t *buf)
- {
-+	typeof(offs) mask = mtd->writesize - 1;
- 	struct mtd_oob_ops ops;
- 	int res;
- 
- 	ops.mode = MTD_OOB_PLACE;
--	ops.ooboffs = offs & (mtd->writesize - 1);
-+	ops.ooboffs = offs & mask;
- 	ops.ooblen = len;
- 	ops.oobbuf = buf;
- 	ops.datbuf = NULL;
- 
--	res = mtd->read_oob(mtd, offs & ~(mtd->writesize - 1), &ops);
-+	res = mtd->read_oob(mtd, offs & ~mask, &ops);
- 	*retlen = ops.oobretlen;
- 	return res;
- }
-@@ -155,16 +156,17 @@ int nftl_read_oob(struct mtd_info *mtd, loff_t offs, size_t len,
- int nftl_write_oob(struct mtd_info *mtd, loff_t offs, size_t len,
- 		   size_t *retlen, uint8_t *buf)
- {
-+	typeof(offs) mask = mtd->writesize - 1;
- 	struct mtd_oob_ops ops;
- 	int res;
- 
- 	ops.mode = MTD_OOB_PLACE;
--	ops.ooboffs = offs & (mtd->writesize - 1);
-+	ops.ooboffs = offs & mask;
- 	ops.ooblen = len;
- 	ops.oobbuf = buf;
- 	ops.datbuf = NULL;
- 
--	res = mtd->write_oob(mtd, offs & ~(mtd->writesize - 1), &ops);
-+	res = mtd->write_oob(mtd, offs & ~mask, &ops);
- 	*retlen = ops.oobretlen;
- 	return res;
- }
-@@ -177,17 +179,18 @@ int nftl_write_oob(struct mtd_info *mtd, loff_t offs, size_t len,
- static int nftl_write(struct mtd_info *mtd, loff_t offs, size_t len,
- 		      size_t *retlen, uint8_t *buf, uint8_t *oob)
- {
-+	typeof(offs) mask = mtd->writesize - 1;
- 	struct mtd_oob_ops ops;
- 	int res;
- 
- 	ops.mode = MTD_OOB_PLACE;
--	ops.ooboffs = offs & (mtd->writesize - 1);
-+	ops.ooboffs = offs & mask;
- 	ops.ooblen = mtd->oobsize;
- 	ops.oobbuf = oob;
- 	ops.datbuf = buf;
- 	ops.len = len;
- 
--	res = mtd->write_oob(mtd, offs & ~(mtd->writesize - 1), &ops);
-+	res = mtd->write_oob(mtd, offs & ~mask, &ops);
- 	*retlen = ops.retlen;
- 	return res;
- }
+You don't need in fact a third mode.  You can mmap the x86 address space 
+into your ppc userspace and use the second mode.  All you need then is 
+the dma engine glue and byte swapping.
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
