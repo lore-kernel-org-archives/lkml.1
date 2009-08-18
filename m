@@ -1,85 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbZHRIC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752209AbZHRITz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbZHRIC1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 04:02:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZHRICY
+	id S1752209AbZHRITz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 04:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbZHRITy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 04:02:24 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36341 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbZHRICV (ORCPT
+	Tue, 18 Aug 2009 04:19:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44459 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750847AbZHRITx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 04:02:21 -0400
-Message-ID: <4A8A5FD4.5070908@ct.jp.nec.com>
-Date: Tue, 18 Aug 2009 17:01:24 +0900
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] task_struct: stack_canary is not needed without CC_STACKPROTECTOR
-References: <4A8A44CA.2020701@ct.jp.nec.com> <87ws51r2wh.fsf@basil.nowhere.org>
-In-Reply-To: <87ws51r2wh.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 18 Aug 2009 04:19:53 -0400
+Date: Tue, 18 Aug 2009 01:19:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+Cc: linux-mtd@lists.infradead.org,
+       davinci-linux-open-source@linux.davincidsp.com, david-b@pacbell.net,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [MTD] driver/Makefile: Initialize "mtd" and "spi"
+ before "net"
+Message-Id: <20090818011930.765d4895.akpm@linux-foundation.org>
+In-Reply-To: <1250613244-25447-1-git-send-email-sudhakar.raj@ti.com>
+References: <1250613244-25447-1-git-send-email-sudhakar.raj@ti.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> writes:
+On Tue, 18 Aug 2009 12:34:04 -0400 Sudhakar Rajashekhara <sudhakar.raj@ti.com> wrote:
+
+> On TI's da850/omap-l138 EVM, MAC address is stored in SPI flash.
 > 
->> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->>
->> The field stack_canary is only used with CC_STACKPROTECTOR.
->> This patch reduces task_struct size without CC_STACKPROTECTOR.
+> This patch changes the initialization sequence of the drivers
+> by moving mtd and spi ahead of net in drivers/Makefile thereby
+> enabling da850/omap-l138 ethernet driver to read the MAC address
+> while booting.
 > 
-> Adding a ifdef in the middle of a widely used structure is nasty.  It
-> means that if someone changes the option then the newly loaded modules
-> don't work anymore (yes that's not officially supported, but works
-> most of the time and is often convenient in practice)
+> Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+> ---
+>  drivers/Makefile |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> So when you add a ifdef please move the field to the end at least.
+> diff --git a/drivers/Makefile b/drivers/Makefile
+> index bc4205d..2a1d41f 100644
+> --- a/drivers/Makefile
+> +++ b/drivers/Makefile
+> @@ -42,6 +42,8 @@ obj-y				+= macintosh/
+>  obj-$(CONFIG_IDE)		+= ide/
+>  obj-$(CONFIG_SCSI)		+= scsi/
+>  obj-$(CONFIG_ATA)		+= ata/
+> +obj-$(CONFIG_MTD)		+= mtd/
+> +obj-$(CONFIG_SPI)		+= spi/
+>  obj-y				+= net/
+>  obj-$(CONFIG_ATM)		+= atm/
+>  obj-$(CONFIG_FUSION)		+= message/
+> @@ -50,8 +52,6 @@ obj-y				+= ieee1394/
+>  obj-$(CONFIG_UIO)		+= uio/
+>  obj-y				+= cdrom/
+>  obj-y				+= auxdisplay/
+> -obj-$(CONFIG_MTD)		+= mtd/
+> -obj-$(CONFIG_SPI)		+= spi/
+>  obj-$(CONFIG_PCCARD)		+= pcmcia/
+>  obj-$(CONFIG_DIO)		+= dio/
+>  obj-$(CONFIG_SBUS)		+= sbus/
 
-Thanks for the comment, that's reasonable.
-Here's the update.
+That isn't a particularly maintainable way of fixing this, especially
+as there are no comments in that Makefile to prevent someone from
+rebreaking it in the future.
 
-====
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-
-The field stack_canary is only used with CC_STACKPROTECTOR.
-This patch reduces task_struct size without CC_STACKPROTECTOR.
-
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- include/linux/sched.h |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index af1e328..9a1d68d 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1247,9 +1247,6 @@ struct task_struct {
- 	pid_t pid;
- 	pid_t tgid;
- 
--	/* Canary value for the -fstack-protector gcc feature */
--	unsigned long stack_canary;
--
- 	/* 
- 	 * pointers to (original) parent process, youngest child, younger sibling,
- 	 * older sibling, respectively.  (p->father can be replaced with 
-@@ -1494,6 +1491,10 @@ struct task_struct {
- 	/* bitmask of trace recursion */
- 	unsigned long trace_recursion;
- #endif /* CONFIG_TRACING */
-+#ifdef CONFIG_CC_STACKPROTECTOR
-+	/* Canary value for the -fstack-protector gcc feature */
-+	unsigned long stack_canary;
-+#endif
- };
- 
- /* Future-safe accessor for struct task_struct's cpus_allowed. */
--- 
-1.6.3.3
+A better fix would be to use suitably prioritised initcalls - see
+include/linux/init.h around line 187.
 
