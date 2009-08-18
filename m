@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751544AbZHRWKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751966AbZHRWKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751544AbZHRWKP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 18:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbZHRWKP
+	id S1751966AbZHRWKn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 18:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbZHRWKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 18:10:15 -0400
-Received: from gate.crashing.org ([63.228.1.57]:55790 "EHLO gate.crashing.org"
+	Tue, 18 Aug 2009 18:10:42 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:41101 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750928AbZHRWKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 18:10:14 -0400
-Message-Id: <DE9C9034-D2CE-4D21-93D9-A10FE2580920@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Linux-Kernel List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	id S1751326AbZHRWKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 18:10:41 -0400
+Subject: Re: [PATCH 2/3]HTLB mapping for drivers. Hstate for files with
+ hugetlb mapping(take 2)
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Alexey Korolev <akorolev@infradead.org>
+Cc: mel@csn.ul.ie, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.0908172333410.32114@casper.infradead.org>
+References: <alpine.LFD.2.00.0908172333410.32114@casper.infradead.org>
+Content-Type: text/plain
+Date: Tue, 18 Aug 2009 15:10:38 -0700
+Message-Id: <1250633438.7335.1146.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: spin_is_locked() broken for uniprocessor?
-Date: Tue, 18 Aug 2009 17:09:56 -0500
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>
-X-Mailer: Apple Mail (2.936)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just want to validate that what I'm seeing (for UP, non-debug  
-features):
+On Mon, 2009-08-17 at 23:40 +0100, Alexey Korolev wrote:
+> 
+> @@ -110,6 +111,10 @@ static inline void hugetlb_report_meminfo(struct
+> seq_file *m)
+>  #endif /* !CONFIG_HUGETLB_PAGE */
+> 
+>  #ifdef CONFIG_HUGETLBFS
+> +
+> +/* some random number */
+> +#define HUGETLBFS_MAGIC        0x958458f6
 
-spin_is_locked() is defined as:
+Doesn't this belong in include/linux/magic.h?
 
-include/linux/spinlock.h:#define spin_is_locked(lock)    
-__raw_spin_is_locked(&(lock)->raw_lock)
+-- Dave
 
-for UP that should get us:
-
-include/linux/spinlock_up.h:#define __raw_spin_is_locked(lock)  ((void) 
-(lock), 0)
-
-which implies to me that spin_is_locked() will always return false.   
-Is this expected behavior.
-
-- k
