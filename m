@@ -1,92 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758265AbZHRKHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758484AbZHRKL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758265AbZHRKHZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 06:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbZHRKHY
+	id S1758484AbZHRKL2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 06:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329AbZHRKL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 06:07:24 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60374 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754199AbZHRKHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 06:07:23 -0400
-Date: Tue, 18 Aug 2009 10:06:37 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       schwidefsky@de.ibm.com, lethal@linux-sh.org, fweisbec@gmail.com,
-       rostedt@goodmis.org, heiko.carstens@de.ibm.com, tglx@linutronix.de,
-       jbaron@redhat.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       schwidefsky@de.ibm.com, lethal@linux-sh.org, fweisbec@gmail.com,
-       rostedt@goodmis.org, heiko.carstens@de.ibm.com, jbaron@redhat.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <tip-fb34a08c3469b2be9eae626ccb96476b4687b810@git.kernel.org>
-References: <tip-fb34a08c3469b2be9eae626ccb96476b4687b810@git.kernel.org>
-Subject: [tip:tracing/core] [S390] ftrace: update system call tracer support
-Message-ID: <tip-130cd840892285eaf1eadf71217b34af3395107f@git.kernel.org>
-Git-Commit-ID: 130cd840892285eaf1eadf71217b34af3395107f
-X-Mailer: tip-git-log-daemon
+	Tue, 18 Aug 2009 06:11:27 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:50696 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753633AbZHRKL0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 06:11:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=JXGRmtzTyHfxFhDKLntXpgMgQCJMPAUH1gf3zFgF9zK8NMJ64CqNvsC5r79dgDVKM4
+         I+mUXwDbOk9WoBF3tG9xQLq2tR389OfKRgCxon/m6Y+qRbmkVyhKWQDBIATDdak5WVC+
+         y6UCwWL4g+S+GBQ/xt9RYj5hW5CW2NKcU5dbU=
+Message-ID: <4A8A7D38.5020201@gmail.com>
+Date: Tue, 18 Aug 2009 12:06:48 +0200
+From: Marco Stornelli <marco.stornelli@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 18 Aug 2009 10:06:50 +0000 (UTC)
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+CC: Johannes Stezenbach <js@sig21.net>,
+       Denys Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Tim Bird <tim.bird@am.sony.com>, kernel@pengutronix.de
+Subject: Re: New fast(?)-boot results on ARM
+References: <20090814170228.GM13320@pengutronix.de> <1158166a0908141304y70300ab3p899b0d4609efded9@mail.gmail.com> <20090814204305.GA31727@pengutronix.de> <20090815103532.GA5596@sig21.net>
+In-Reply-To: <20090815103532.GA5596@sig21.net>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  130cd840892285eaf1eadf71217b34af3395107f
-Gitweb:     http://git.kernel.org/tip/130cd840892285eaf1eadf71217b34af3395107f
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 18 Aug 2009 10:41:57 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 18 Aug 2009 12:03:19 +0200
+Johannes Stezenbach wrote:
+> On Fri, Aug 14, 2009 at 10:43:05PM +0200, Robert Schwebel wrote:
+>> On Fri, Aug 14, 2009 at 10:04:57PM +0200, Denys Vlasenko wrote:
+>>>> rsc@thebe:~$ microcom | ptx_ts "U-Boot 2.0.0-rc9"
+> 
+>>>> [  7.137924] <  0.059316> starting udev
+>>>> [  7.147925] <  0.010001> mounting tmpfs at /dev
+>>>> [  7.182299] <  0.034374> creating static nodes
+>>>> [  7.410613] <  0.228314> starting udevd...done
+>>>> [  8.811097] <  1.400484> waiting for devices...done
+> 
+> And suddenly devtmpfs sounds like a good idea ;-)
+> 
+> We use static device nodes during boot, and later
+> setup busybox mdev for hotplug.
+> 
+> 
+> Johannes
+> 
 
-[S390] ftrace: update system call tracer support
+Yeah, I agree, do you really need udevd, device file creation at every
+start-up in /dev? Usually static devices nodes and mdev for hotplug are
+enough or at least you could use a simple script to create only once
+time the devices file (mdev -s). About the fs, do you really need a
+rootfs with ubifs? I mean, you could "split" your fs. You could use a
+read-only fs (SquashFS for example) for your root-fs, ubifs for
+permanent storage data (mounted under /data for example) and a ram fs
+for volatile data.
 
-Commit fb34a08c3 ("tracing: Add trace events for each syscall
-entry/exit") changed the lowlevel API to ftrace syscall tracing
-but did not update s390 which started making use of it recently.
-
-This broke the s390 build, as reported by Paul Mundt.
-
-Update the callbacks with the syscall number and the syscall
-return code values. This allows per syscall tracepoints,
-syscall argument enumeration /debug/tracing/events/syscalls/
-and perfcounters support and integration on s390 too.
-
-Reported-by: Paul Mundt <lethal@linux-sh.org>
-Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <tip-fb34a08c3469b2be9eae626ccb96476b4687b810@git.kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/s390/kernel/ptrace.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/s390/kernel/ptrace.c b/arch/s390/kernel/ptrace.c
-index 43acd73..05f57cd 100644
---- a/arch/s390/kernel/ptrace.c
-+++ b/arch/s390/kernel/ptrace.c
-@@ -662,7 +662,7 @@ asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
- 	}
- 
- 	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
--		ftrace_syscall_enter(regs);
-+		trace_syscall_enter(regs, regs->gprs[2]);
- 
- 	if (unlikely(current->audit_context))
- 		audit_syscall_entry(is_compat_task() ?
-@@ -680,7 +680,7 @@ asmlinkage void do_syscall_trace_exit(struct pt_regs *regs)
- 				   regs->gprs[2]);
- 
- 	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
--		ftrace_syscall_exit(regs);
-+		trace_syscall_exit(regs, regs->gprs[2]);
- 
- 	if (test_thread_flag(TIF_SYSCALL_TRACE))
- 		tracehook_report_syscall_exit(regs, 0);
+Marco
