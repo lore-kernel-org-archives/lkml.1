@@ -1,247 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758972AbZHRPvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759049AbZHRPwG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758972AbZHRPvf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 11:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755009AbZHRPvf
+	id S1759049AbZHRPwG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 11:52:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758995AbZHRPwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 11:51:35 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:46841 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754758AbZHRPve convert rfc822-to-8bit (ORCPT
+	Tue, 18 Aug 2009 11:52:05 -0400
+Received: from mail-qy0-f174.google.com ([209.85.221.174]:38633 "EHLO
+	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757231AbZHRPwD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 11:51:34 -0400
-Message-Id: <4A8AEA1F0200007800010563@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Tue, 18 Aug 2009 16:51:27 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <sam@ravnborg.org>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: fix build with older binutils and consolidate
-	 linker script
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Tue, 18 Aug 2009 11:52:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=JyP1SqIFKpqWs2Lm4uDAreKLqO1lX4dnlsBAEKwIj73hewTsvnkfS4unxu/TbFpDzv
+         5vLwyqvOCzMDT2ISKOOP4VXDtzmkEJU5/NI8q4cxvnKgCiMnVSam+UfoGA57K9oUa0aw
+         U4Cqj12TsVUKFWhlrt9ZJEsZMVtbk6N2/y0Sc=
+Message-ID: <4A8ACE1F.6020402@gmail.com>
+Date: Tue, 18 Aug 2009 11:51:59 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
+ objects
+References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <4A89FF08.30509@codemonkey.ws> <4A8AA9BD.2070909@gmail.com> <4A8AB076.6080906@redhat.com>
+In-Reply-To: <4A8AB076.6080906@redhat.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig742C65808FA9E8BC21F82393"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: build fix
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig742C65808FA9E8BC21F82393
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-binutils prior to 2.17 can't deal with the currently possible situation
-of a new segment following the per-CPU segment, but that new segment
-being empty - objcopy misplaces the .bss (and perhaps also the .brk)
-sections outside of any segment. However, the current ordering of
-sections really just appears to be the effect of cumulative unrelated
-changes; re-ordering things allows to easily guarantee that the segment
-following the per-CPU one is non-empty, and at once eliminates the need
-for the bogus data.init2 segment.
+Avi Kivity wrote:
+> On 08/18/2009 04:16 PM, Gregory Haskins wrote:
+>> The issue here is that vbus is designed to be a generic solution to
+>> in-kernel virtual-IO.  It will support (via abstraction of key
+>> subsystems) a variety of environments that may or may not be similar i=
+n
+>> facilities to KVM, and therefore it represents the
+>> least-common-denominator as far as what external dependencies it
+>> requires.
+>>   =20
+>=20
+> Maybe it will be easier to evaluate it in the context of these other
+> environments.  It's difficult to assess this without an example.
 
-Once touching this code, also use the various data section helper
-macros from include/asm-generic/vmlinux.lds.h.
+When they are ready, I will cross post the announcement to KVM.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+>=20
+>> The bottom line is this: despite the tendency for people to jump at
+>> "don't put much in the kernel!", the fact is that a "bus" designed for=
 
----
- arch/x86/kernel/vmlinux.lds.S |  126 +++++++++++++++---------------------------
- 1 file changed, 47 insertions(+), 79 deletions(-)
+>> software to software (such as vbus) is almost laughably trivial.  Its
+>> essentially a list of objects that have an int (dev-id) and char*
+>> (dev-type) attribute.  All the extra goo that you see me setting up in=
 
---- linux-2.6.31-rc6/arch/x86/kernel/vmlinux.lds.S	2009-08-18 15:31:16.000000000 +0200
-+++ 2.6.31-rc6-x86-link-order/arch/x86/kernel/vmlinux.lds.S	2009-08-18 16:42:54.000000000 +0200
-@@ -46,11 +46,10 @@ PHDRS {
- 	data PT_LOAD FLAGS(7);          /* RWE */
- #ifdef CONFIG_X86_64
- 	user PT_LOAD FLAGS(7);          /* RWE */
--	data.init PT_LOAD FLAGS(7);     /* RWE */
- #ifdef CONFIG_SMP
- 	percpu PT_LOAD FLAGS(7);        /* RWE */
-+	init PT_LOAD FLAGS(7);          /* RWE */
- #endif
--	data.init2 PT_LOAD FLAGS(7);    /* RWE */
- #endif
- 	note PT_NOTE FLAGS(0);          /* ___ */
- }
-@@ -103,65 +102,43 @@ SECTIONS
- 		__stop___ex_table = .;
- 	} :text = 0x9090
- 
--	RODATA
-+	RO_DATA(PAGE_SIZE)
- 
- 	/* Data */
--	. = ALIGN(PAGE_SIZE);
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
- 		/* Start of data section */
- 		_sdata = .;
--		DATA_DATA
--		CONSTRUCTORS
--	} :data
-+
-+		/* init_task */
-+		INIT_TASK_DATA(THREAD_SIZE)
- 
- #ifdef CONFIG_X86_32
--	/* 32 bit has nosave before _edata */
--	. = ALIGN(PAGE_SIZE);
--	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
--		__nosave_begin = .;
--		*(.data.nosave)
--		. = ALIGN(PAGE_SIZE);
--		__nosave_end = .;
--	}
-+		/* 32 bit has nosave before _edata */
-+		NOSAVE_DATA
- #endif
- 
--	. = ALIGN(PAGE_SIZE);
--	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
--		*(.data.page_aligned)
-+		PAGE_ALIGNED_DATA(PAGE_SIZE)
- 		*(.data.idt)
--	}
- 
--#ifdef CONFIG_X86_32
--	. = ALIGN(32);
--#else
--	. = ALIGN(PAGE_SIZE);
--	. = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
--#endif
--	.data.cacheline_aligned :
--		AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
--		*(.data.cacheline_aligned)
--	}
-+		CACHELINE_ALIGNED_DATA(CONFIG_X86_L1_CACHE_BYTES)
- 
--	/* rarely changed data like cpu maps */
--#ifdef CONFIG_X86_32
--	. = ALIGN(32);
--#else
--	. = ALIGN(CONFIG_X86_INTERNODE_CACHE_BYTES);
--#endif
--	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
--		*(.data.read_mostly)
-+		DATA_DATA
-+		CONSTRUCTORS
-+
-+		/* rarely changed data like cpu maps */
-+		READ_MOSTLY_DATA(CONFIG_X86_INTERNODE_CACHE_BYTES)
- 
- 		/* End of data section */
- 		_edata = .;
--	}
-+	} :data
- 
- #ifdef CONFIG_X86_64
- 
- #define VSYSCALL_ADDR (-10*1024*1024)
--#define VSYSCALL_PHYS_ADDR ((LOADADDR(.data.read_mostly) + \
--                            SIZEOF(.data.read_mostly) + 4095) & ~(4095))
--#define VSYSCALL_VIRT_ADDR ((ADDR(.data.read_mostly) + \
--                            SIZEOF(.data.read_mostly) + 4095) & ~(4095))
-+#define VSYSCALL_PHYS_ADDR ((LOADADDR(.data) + SIZEOF(.data) + \
-+                            PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
-+#define VSYSCALL_VIRT_ADDR ((ADDR(.data) + SIZEOF(.data) + \
-+                            PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
- 
- #define VLOAD_OFFSET (VSYSCALL_ADDR - VSYSCALL_PHYS_ADDR)
- #define VLOAD(x) (ADDR(x) - VLOAD_OFFSET)
-@@ -227,35 +204,29 @@ SECTIONS
- 
- #endif /* CONFIG_X86_64 */
- 
--	/* init_task */
--	. = ALIGN(THREAD_SIZE);
--	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
--		*(.data.init_task)
-+	/* Init code and data - will be freed after init */
-+	. = ALIGN(PAGE_SIZE);
-+	.init.begin : AT(ADDR(.init.begin) - LOAD_OFFSET) {
-+		__init_begin = .; /* paired with __init_end */
- 	}
--#ifdef CONFIG_X86_64
--	 :data.init
--#endif
- 
-+#if defined(CONFIG_X86_64) && defined(CONFIG_SMP)
- 	/*
--	 * smp_locks might be freed after init
--	 * start/end must be page aligned
-+	 * percpu offsets are zero-based on SMP.  PERCPU_VADDR() changes the
-+	 * output PHDR, so the next output section - .init.text - should
-+	 * start another segment - init.
- 	 */
--	. = ALIGN(PAGE_SIZE);
--	.smp_locks : AT(ADDR(.smp_locks) - LOAD_OFFSET) {
--		__smp_locks = .;
--		*(.smp_locks)
--		__smp_locks_end = .;
--		. = ALIGN(PAGE_SIZE);
--	}
-+	PERCPU_VADDR(0, :percpu)
-+#endif
- 
--	/* Init code and data - will be freed after init */
--	. = ALIGN(PAGE_SIZE);
- 	.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
--		__init_begin = .; /* paired with __init_end */
- 		_sinittext = .;
- 		INIT_TEXT
- 		_einittext = .;
- 	}
-+#if defined(CONFIG_X86_64) && defined(CONFIG_SMP)
-+	:init
-+#endif
- 
- 	.init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {
- 		INIT_DATA
-@@ -326,17 +297,7 @@ SECTIONS
- 	}
- #endif
- 
--#if defined(CONFIG_X86_64) && defined(CONFIG_SMP)
--	/*
--	 * percpu offsets are zero-based on SMP.  PERCPU_VADDR() changes the
--	 * output PHDR, so the next output section - __data_nosave - should
--	 * start another section data.init2.  Also, pda should be at the head of
--	 * percpu area.  Preallocate it and define the percpu offset symbol
--	 * so that it can be accessed as a percpu variable.
--	 */
--	. = ALIGN(PAGE_SIZE);
--	PERCPU_VADDR(0, :percpu)
--#else
-+#if !defined(CONFIG_X86_64) || !defined(CONFIG_SMP)
- 	PERCPU(PAGE_SIZE)
- #endif
- 
-@@ -347,15 +308,22 @@ SECTIONS
- 		__init_end = .;
- 	}
- 
-+	/*
-+	 * smp_locks might be freed after init
-+	 * start/end must be page aligned
-+	 */
-+	. = ALIGN(PAGE_SIZE);
-+	.smp_locks : AT(ADDR(.smp_locks) - LOAD_OFFSET) {
-+		__smp_locks = .;
-+		*(.smp_locks)
-+		__smp_locks_end = .;
-+		. = ALIGN(PAGE_SIZE);
-+	}
-+
- #ifdef CONFIG_X86_64
- 	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
--		. = ALIGN(PAGE_SIZE);
--		__nosave_begin = .;
--		*(.data.nosave)
--		. = ALIGN(PAGE_SIZE);
--		__nosave_end = .;
--	} :data.init2
--	/* use another section data.init2, see PERCPU_VADDR() above */
-+		NOSAVE_DATA
-+	}
- #endif
- 
- 	/* BSS */
+>> something like the kvm-connector needs to be done for fast-path
+>> _anyway_, so transporting the verbs to query this simple list is not
+>> really a big deal.
+>>   =20
+>=20
+> It's not laughably trivial when you try to support the full feature set=
+
+> of kvm (for example, live migration will require dirty memory tracking,=
+
+> and exporting all state stored in the kernel to userspace).
+
+Doesn't vhost suffer from the same issue?  If not, could I also apply
+the same technique to support live-migration in vbus?
+
+>=20
+>> Note that I didn't really want to go that route.  As you know, I tried=
+
+>> pushing this straight through kvm first since earlier this year, but I=
+
+>> was met with reluctance to even bother truly understanding what I was
+>> proposing, comments like "tell me your ideas so I can steal them", and=
+
+>>   =20
+>=20
+> Oh come on, I wrote "steal" as a convenient shorthand for
+> "cross-pollinate your ideas into our code according to the letter and
+> spirit of the GNU General Public License".
+
+Is that supposed to make me feel better about working with you?  I mean,
+writing, testing, polishing patches for LKML-type submission is time
+consuming.  If all you are going to do is take those ideas and rewrite
+it yourself, why should I go through that effort?
+
+And its not like that was the first time you have said that to me.
+
+> Since we're all trying to improve Linux we may as well cooperate.
+
+Well, I don't think anyone can say that I haven't been trying.
+
+>=20
+>> "sorry, we are going to reinvent our own instead".
+>=20
+> No.  Adopting venet/vbus would mean reinventing something that already
+> existed.
+
+But yet, it doesn't.
 
 
+>  Continuing to support virtio/pci is not reinventing anything.
+
+No one asked you to do otherwise.
+
+>=20
+>> This isn't exactly
+>> going to motivate someone to continue pushing these ideas within that
+>> community.  I was made to feel (purposely?) unwelcome at times.  So I
+>> can either roll over and die, or start my own project.
+>>   =20
+>=20
+> You haven't convinced me that your ideas are worth the effort of
+> abandoning virtio/pci or maintaining both venet/vbus and virtio/pci.
+
+With all due respect, I didnt ask you do to anything, especially not
+abandon something you are happy with.
+
+All I did was push guest drivers to LKML.  The code in question is
+independent of KVM, and its proven to improve the experience of using
+Linux as a platform.  There are people interested in using them (by
+virtue of the number of people that have signed up for the AlacrityVM
+list, and have mailed me privately about this work).
+
+So where is the problem here?
+
+
+> I'm sorry if that made you feel unwelcome.  There's no reason to
+> interpret disagreement as malice though.
+>=20
+
+Ok.
+
+Kind Regards,
+-Greg
+
+
+
+--------------enig742C65808FA9E8BC21F82393
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkqKzh8ACgkQP5K2CMvXmqEAyQCfUyOnz95kB7w7+t1RGVP8GZ0c
+aJAAn1jKoyRXSoJXn90qqOX2GKMrqz3S
+=/8fc
+-----END PGP SIGNATURE-----
+
+--------------enig742C65808FA9E8BC21F82393--
