@@ -1,83 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752289AbZHRXnE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752343AbZHRXnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752289AbZHRXnE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 19:43:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZHRXnE
+	id S1752343AbZHRXnr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 19:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbZHRXnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 19:43:04 -0400
-Received: from mail-yw0-f173.google.com ([209.85.211.173]:61760 "EHLO
-	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750837AbZHRXnC convert rfc822-to-8bit (ORCPT
+	Tue, 18 Aug 2009 19:43:46 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:53777 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751231AbZHRXno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 19:43:02 -0400
+	Tue, 18 Aug 2009 19:43:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=n9KeeepdQw5/+4avzjI7YHY3Q04SmTUvtuiT/4GyEqcy0aX6Y4JjTvzsH3DskTY+z7
-         +H/sDze60KmFmYpNQarP5rZzTaTq9xU7BArQrDwXqxZ+87iI9yqXAvA/Lmb0Yf90WN5Q
-         Y/nCUgmlNqYt2oo3nQ6qWmlTslZsnoUNhmJ5E=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DyeRTVIe80DA02QtSIgDcG/lFfT+jPNRiIPAPvxRRJqMndnnDVnkPRPybFlJzmoW8f
+         0Rt9xsOilv/XOW/1V3G/1w8BlkeLBdm2ccSQaWnTokNxHz5ry7zXjj+0/B22UpxeLUDf
+         X6eBwQRS0RX0IcOlJWk7ZBpqvW/VQYUM/iPA8=
+Date: Wed, 19 Aug 2009 01:43:42 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       =?utf-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>,
+       Roland McGrath <roland@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [PATCH -tip v14 03/12] kprobes: checks probe address is
+	instruction boudary on x86
+Message-ID: <20090818234341.GG5231@nowhere>
+References: <20090813203403.31965.20973.stgit@localhost.localdomain> <20090813203428.31965.21939.stgit@localhost.localdomain> <20090818230340.GF5231@nowhere> <4A8B3693.9000301@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <43e72e890908181641s2455e7f1me9b4d3bc277f197e@mail.gmail.com>
-References: <69e28c910908181329r4b6b7cc8w3c9c0d79dda3730c@mail.gmail.com> 
-	<43e72e890908181641s2455e7f1me9b4d3bc277f197e@mail.gmail.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Tue, 18 Aug 2009 16:42:41 -0700
-Message-ID: <43e72e890908181642t1c11e4aah95b52e878b3e583e@mail.gmail.com>
-Subject: Re: [ANN] b43 LP-PHY support (BCM4310/4312/4315) now ready for 
-	testing!
-To: =?UTF-8?Q?G=C3=A1bor_Stefanik?= <netrolller.3d@gmail.com>
-Cc: Broadcom Wireless <bcm43xx-dev@lists.berlios.de>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8B3693.9000301@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/18 Luis R. Rodriguez <mcgrof@gmail.com>:
-> 2009/8/18 Gábor Stefanik <netrolller.3d@gmail.com>:
->> Hello World!
->>
->> Great news for Broadcom BCM4310/4312/4315 (PCI 14e4:4315) users:
->> LP-PHY support is now at the point where it can be tested for functionality!
->
-> Hey great stuff :)
->
->> There are still problems with channel switching (a few patches ago,
->> only 802.11b/g channels 7 and 8 were working - no tests have been
->> performed since then) & TX is untested, but Larry has reported that he
->> can get scan results from channels 7 and 8. He doesn't have any AP on
->> these channels, so can't test if association works, but it should be
->> working too. It's also possible that recent patches have fixed the
->> channel switching bug, as the codepaths for channel switching have
->> been touched extensively, probably fixing a major miscalculation issue
->> ("Qdiv roundup" was completely wrong).
->>
->> So, go ahead, give it a try, and let's rock!
->>
->> Note that the code in wireless-testing is enough to start testing,
->> however it's recommended that you apply the following 2 pending fixes:
->> http://marc.info/?l=linux-wireless&m=125061590101156&w=2 and
->> http://marc.info/?l=linux-wireless&m=125062611720517&w=2
->>
->> Tomorrow's compat-wireless tarball, together with the above patches,
->> should also be good for testing. Not sure about today's tarball.
->
-> Except CONFIG_B43_PHY_LP was not enabled on compat-wireless. But now
-> it is. I kicked the cronjob and enabled CONFIG_B43_PHY_LP on
-> config.mk, please report any issues.
->
-> http://wireless.kernel.org/en/users/Download/
+On Tue, Aug 18, 2009 at 07:17:39PM -0400, Masami Hiramatsu wrote:
+> Frederic Weisbecker wrote:
+> >> +	while (addr < paddr) {
+> >> +		kernel_insn_init(&insn, (void *)addr);
+> >> +		insn_get_opcode(&insn);
+> >> +
+> >> +		/* Check if the instruction has been modified. */
+> >> +		if (insn.opcode.bytes[0] == BREAKPOINT_INSTRUCTION) {
+> >> +			ret = recover_probed_instruction(buf, addr);
+> > 
+> > 
+> > 
+> > I'm confused about the reason of this recovering. Is it to remove
+> > kprobes behind the current setting one in the current function?
+> 
+> No, it recovers just an instruction which is probed by a kprobe,
+> because we need to know the first byte of this instruction for
+> decoding it.
+> 
+> Perhaps we'd better to have more generic interface (text_peek?)
+> for it because another subsystem (e.g. kgdb) may want to insert int3...
+> 
+> Thank you,
 
 
-Oh and I forgot the release info:
+Aah, I see now, it's to keep a sane check of the instructions
+boundaries without int 3 artifacts in the middle.
 
-Origin remote URL:
-git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-testing.git
-git-describe for wireless-testing.git says: v2.6.31-rc6-31586-g80289f0
-This is a bleeding edge compat-wireless release based on: master-2009-08-18
-This is compat-release: master-2009-08-18
+But in that case, you should re-arm the breakpoint after your
+check, right?
 
-  Luis
+Or may be you could do the check without repatching?
+May be by doing a copy of insn.opcode.bytes and replacing bytes[0]
+with what a random kprobe has stolen?
+
