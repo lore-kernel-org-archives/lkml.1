@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751902AbZHRU2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751961AbZHRUd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751902AbZHRU2N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 16:28:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbZHRU2N
+	id S1751961AbZHRUd6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 16:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZHRUd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 16:28:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60278 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751689AbZHRU2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 16:28:12 -0400
-Date: Tue, 18 Aug 2009 16:27:35 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric Paris <eparis@redhat.com>, James Morris <jmorris@namei.org>
-Subject: Re: Make LSM_MMAP_MIN_ADDR default match its help text.
-Message-ID: <20090818202735.GA13579@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andreas Schwab <schwab@linux-m68k.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Eric Paris <eparis@redhat.com>, James Morris <jmorris@namei.org>
-References: <200908172100.n7HL08SR001061@hera.kernel.org> <20090818174736.GA23352@redhat.com> <m2prasq3q2.fsf@igel.home>
+	Tue, 18 Aug 2009 16:33:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51747 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751909AbZHRUd4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 16:33:56 -0400
+Date: Tue, 18 Aug 2009 13:33:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [GIT pull] irq fixes for 2.6.31
+In-Reply-To: <alpine.LFD.2.00.0908172342400.2782@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0908181330210.3158@localhost.localdomain>
+References: <alpine.LFD.2.00.0908172055360.2782@localhost.localdomain> <alpine.LFD.2.01.0908171340540.3162@localhost.localdomain> <alpine.LFD.2.00.0908172342400.2782@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m2prasq3q2.fsf@igel.home>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 10:14:29PM +0200, Andreas Schwab wrote:
- > Dave Jones <davej@redhat.com> writes:
- > 
- > >  config LSM_MMAP_MIN_ADDR
- > >  	int "Low address space for LSM to from user allocation"
- > 
- > This sentence no verb.
 
-Oops. I accidentally that.
 
-Thanks.
+On Mon, 17 Aug 2009, Thomas Gleixner wrote:
+> 
+> I have no idea what went wrong this time. I force pushed the branch
+> and pulled it back on a test machine to compile and test boot. The
+> test machine still has the correct sha1 for that branch while
+> master.kernel.org did not. I probably pushed out some other branch
+> between the point where I sent the pull request and the time you
+> pulled, but I can not find any hint in my bash history which would
+> explain why it wreckaged the irq-fixes-for-linus branch.
+> 
+> Just double checked that it is pushed out to git://.... as well.
 
-	Dave 
+It's still wrong. 
 
+	http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=irq-fixes-for-linus
+
+still does _not_ show that
+
+	genirq: Do not wakeup irq thread from __setup_irq() and set action->irq
+
+commit, but the broken one.
+
+		Linus
