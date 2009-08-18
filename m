@@ -1,88 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751259AbZHRSUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751056AbZHRSYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751259AbZHRSUr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 14:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750777AbZHRSUq
+	id S1751056AbZHRSYY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 14:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbZHRSYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 14:20:46 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:57336 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbZHRSUp (ORCPT
+	Tue, 18 Aug 2009 14:24:23 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:14897
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750736AbZHRSYW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 14:20:45 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver objects
-Date: Tue, 18 Aug 2009 20:20:10 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
-Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       kvm@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@redhat.com>
-References: <20090814154125.26116.70709.stgit@dev.haskins.net> <4A8A674E.8070200@redhat.com> <4A8ABEC9.6090006@gmail.com>
-In-Reply-To: <4A8ABEC9.6090006@gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 18 Aug 2009 14:24:22 -0400
+X-SpamScore: -13
+X-BigFish: VPS-13(zz1454K1432Rzz1202hzzz2fh6bh62h)
+X-Spam-TCS-SCL: 1:0
+Message-ID: <4A8AF1B0.4010608@am.sony.com>
+Date: Tue, 18 Aug 2009 11:23:44 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: Dirk Behme <dirk.behme@googlemail.com>
+CC: Sascha Hauer <s.hauer@pengutronix.de>,
+       Robert Schwebel <r.schwebel@pengutronix.de>,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>, kernel@pengutronix.de
+Subject: Re: New fast(?)-boot results on ARM
+References: <20090814170228.GM13320@pengutronix.de> <20090818140605.GB9943@pengutronix.de> <4A8AC95E.2040907@googlemail.com>
+In-Reply-To: <4A8AC95E.2040907@googlemail.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908182020.11126.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19o7HHjfVj1ZKQcPEio8feOzRdroYblzLDSfcP
- DH2t5vtWhgpM5ZUG4Omb5TqSKY0qIr26m7Otd+xiVpXMgdaSpX
- +FA0AsFBAVshG5WrBMwnA==
+X-OriginalArrivalTime: 18 Aug 2009 18:23:45.0926 (UTC) FILETIME=[05FA5A60:01CA2031]
+X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 18 August 2009, Gregory Haskins wrote:
-> Avi Kivity wrote:
-> > On 08/17/2009 10:33 PM, Gregory Haskins wrote:
-> > 
-> > One point of contention is that this is all managementy stuff and should
-> > be kept out of the host kernel.  Exposing shared memory, interrupts, and
-> > guest hypercalls can all be easily done from userspace (as virtio
-> > demonstrates).  True, some devices need kernel acceleration, but that's
-> > no reason to put everything into the host kernel.
+Dirk Behme wrote
+> Btw.: I tried to summarize some hints given in this thread in
 > 
-> See my last reply to Anthony.  My two points here are that:
+> http://elinux.org/Boot_Time#Boot_time_check_list
 > 
-> a) having it in-kernel makes it a complete subsystem, which perhaps has
-> diminished value in kvm, but adds value in most other places that we are
-> looking to use vbus.
-> 
-> b) the in-kernel code is being overstated as "complex".  We are not
-> talking about your typical virt thing, like an emulated ICH/PCI chipset.
->  Its really a simple list of devices with a handful of attributes.  They
-> are managed using established linux interfaces, like sysfs/configfs.
+> Please feel free to add and correct stuff!
 
-IMHO the complexity of the code is not so much of a problem. What I
-see as a problem is the complexity a kernel/user space interface that
-manages a the devices with global state.
+That's a great summary of the points raised in the discussion.
+It's good to organize the information and save it in an
+easy-to-read format.
 
-One of the greatest features of Michaels vhost driver is that all
-the state is associated with open file descriptors that either exist
-already or belong to the vhost_net misc device. When a process dies,
-all the file descriptors get closed and the whole state is cleaned
-up implicitly.
+Thanks very much for doing that!
+ -- Tim
 
-AFAICT, you can't do that with the vbus host model.
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
-> > What performance oriented items have been left unaddressed?
-> 
-> Well, the interrupt model to name one.
-
-The performance aspects of your interrupt model are independent
-of the vbus proxy, or at least they should be. Let's assume for
-now that your event notification mechanism gives significant
-performance improvements (which we can't measure independently
-right now). I don't see a reason why we could not get the
-same performance out of a paravirtual interrupt controller
-that uses the same method, and it would be straightforward
-to implement one and use that together with all the existing
-emulated PCI devices and virtio devices including vhost_net.
-
-	Arnd <><
