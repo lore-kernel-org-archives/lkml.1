@@ -1,53 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbZHRJyI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbZHRJy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758061AbZHRJyI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 05:54:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755422AbZHRJyH
+	id S1758073AbZHRJy5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 05:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758053AbZHRJy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 05:54:07 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:46101 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758049AbZHRJyG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 05:54:06 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Aug 2009 05:54:05 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=cOrSqDoY1P2nya1DjGgK2uXXoZBLxO06tmMvL2eZjGC+1sRdpY/kSerw/ESrQlRQ4G
-         Yf1peOoTdxjCOgVN7ySc1Eff+NP+iEWyJGaB3QOzLN7MpSHM+mEJPAP/ta6eqjgEBY3n
-         OocroM0pEi4Qz1XiA6cNLmpSiPO2ZBLcW8yKg=
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: gregkh@suse.de, linux-kernel@vger.kernel.org
-Cc: Alexander Beregalov <a.beregalov@gmail.com>
-Subject: [PATCH 1/2] Staging: sep: should depend on PCI
-Date: Tue, 18 Aug 2009 13:48:51 +0400
-Message-Id: <1250588932-7595-1-git-send-email-a.beregalov@gmail.com>
-X-Mailer: git-send-email 1.6.4
+	Tue, 18 Aug 2009 05:54:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34074 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758015AbZHRJyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 05:54:55 -0400
+Date: Tue, 18 Aug 2009 12:53:13 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
+       kvm@vger.kernel.org, Avi Kivity <avi@redhat.com>,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
+	vbus_driver objects
+Message-ID: <20090818095313.GC13878@redhat.com>
+References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A8954F0.3040402@gmail.com> <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com> <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A89B08A.4010103@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this build error when CONFIG_PCI is not set
-drivers/staging/sep/sep_driver.c:2548: error: implicit declaration of function 'pci_dev_get'
+On Mon, Aug 17, 2009 at 03:33:30PM -0400, Gregory Haskins wrote:
+> There is a secondary question of venet (a vbus native device) verses
+> virtio-net (a virtio native device that works with PCI or VBUS).  If
+> this contention is really around venet vs virtio-net, I may possibly
+> conceed and retract its submission to mainline.
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
- drivers/staging/sep/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+For me yes, venet+ioq competing with virtio+virtqueue.
 
-diff --git a/drivers/staging/sep/Kconfig b/drivers/staging/sep/Kconfig
-index 6ef59f8..2045809 100644
---- a/drivers/staging/sep/Kconfig
-+++ b/drivers/staging/sep/Kconfig
-@@ -2,6 +2,7 @@ config DX_SEP
- 	tristate "Discretix SEP driver"
- #	depends on MRST
- 	depends on RAR_REGISTER
-+	depends on PCI
- 	default y
- 	help
- 	  Discretix SEP driver
+> I've been pushing it to date because people are using it and I don't
+> see any reason that the driver couldn't be upstream.
+
+If virtio is just as fast, they can just use it without knowing it.
+Clearly, that's better since we support virtio anyway ...
+
+> -- Issues --
+> 
+> Out of all this, I think the biggest contention point is the design of
+> the vbus-connector that I use in AlacrityVM (Avi, correct me if I am
+> wrong and you object to other aspects as well).  I suspect that if I had
+> designed the vbus-connector to surface vbus devices as PCI devices via
+> QEMU, the patches would potentially have been pulled in a while ago.
+> 
+> There are, of course, reasons why vbus does *not* render as PCI, so this
+> is the meat of of your question, I believe.
+> 
+> At a high level, PCI was designed for software-to-hardware interaction,
+> so it makes assumptions about that relationship that do not necessarily
+> apply to virtualization.
+
+I'm not hung up on PCI, myself.  An idea that might help you get Avi
+on-board: do setup in userspace, over PCI.  Negotiate hypercall support
+(e.g.  with a PCI capability) and then switch to that for fastpath. Hmm?
+
+> As another example, the connector design coalesces *all* shm-signals
+> into a single interrupt (by prio) that uses the same context-switch
+> mitigation techniques that help boost things like networking.  This
+> effectively means we can detect and optimize out ack/eoi cycles from the
+> APIC as the IO load increases (which is when you need it most).  PCI has
+> no such concept.
+
+Could you elaborate on this one for me? How does context-switch
+mitigation work?
+
+> In addition, the signals and interrupts are priority aware, which is
+> useful for things like 802.1p networking where you may establish 8-tx
+> and 8-rx queues for your virtio-net device.  x86 APIC really has no
+> usable equivalent, so PCI is stuck here.
+
+By the way, multiqueue support in virtio would be very nice to have,
+and seems mostly unrelated to vbus.
+
+
 -- 
-1.6.4
-
+MST
