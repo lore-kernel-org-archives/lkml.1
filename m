@@ -1,128 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752816AbZHRIUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZHRIWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752816AbZHRIUM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 04:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZHRIUA
+	id S1752832AbZHRIWr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 04:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZHRIWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 04:20:00 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:38003 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752473AbZHRIT5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 04:19:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=WFg7kYFYzTf40GikNI6e9TSQECyzWDkJ3D0KzRMQ6s2mVY1aFuqV1yLkRa9dtKMaMu
-         yj+Yknnfcc8l8luNa8sQkeQH0kXUJBfY/hEiN3SZV9J4Lpd+h8rTHMgisp+UyDYb4Sqn
-         hFgJicjLr8PaNPeK6kFDpQbBpztAgFTgf0/Xk=
+	Tue, 18 Aug 2009 04:22:46 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:57918 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750853AbZHRIWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 04:22:45 -0400
+Date: Tue, 18 Aug 2009 09:22:47 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Alexey Korolev <akorolev@infradead.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3]HTLB mapping for drivers. Alloc functions & some
+	export symbols(take 2)
+Message-ID: <20090818082247.GA31469@csn.ul.ie>
+References: <alpine.LFD.2.00.0908172324130.32114@casper.infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <4A89E768.7010207@dell.com>
-References: <4A89E768.7010207@dell.com>
-Date: Tue, 18 Aug 2009 09:19:56 +0100
-Message-ID: <9b2b86520908180119m40b6c4b0se8ff7cea7776085b@mail.gmail.com>
-Subject: Re: [PATCH 2/3] Add rfkill support to compal-laptop
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Mario Limonciello <mario_limonciello@dell.com>
-Cc: Marcel Holtmann <marcel@holtmann.org>, cezary.jackiewicz@gmail.com,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0908172324130.32114@casper.infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/18/09, Mario Limonciello <mario_limonciello@dell.com> wrote:
-> In order to be useful in modern kernels and standard interfaces,
-> compal-laptop should have rfkill support.  This patch adds it.
-> --
-> Mario Limonciello
-> *Dell | Linux Engineering*
-> mario_limonciello@dell.com
->
+On Mon, Aug 17, 2009 at 11:33:38PM +0100, Alexey Korolev wrote:
+> This patch contains definitions of the hugetlb_alloc_pages_immediate & 
+> hugetlb_free_pages_immediate functions. The function hugetlb_alloc_pages_immediate 
+> allocates a single huge page. The allocation allows the selection of gfp mask and numa 
+> node. The allocation is immediate, i.e. it is not processed by hugetlbfs counting, 
+> because otherwise user must specify how much memory should be allocated, in case of 
+> a driver it could be hard to do. 
+> 
+> Also this patch adds some symbol exports. Since drivers need to create and 
+> populate/depopulate hugetlb file pg cache with pages we need to add export of 
+> hugetlb_file_setup and remove_from_page_cache. 
+> 
+> Signed-off-by: Alexey Korolev <akorolev@infradead.org>
+> 
+> ---
+>  fs/hugetlbfs/inode.c    |    1 +
+>  include/linux/hugetlb.h |    5 ++++
+>  mm/filemap.c            |    1 +
+>  mm/hugetlb.c            |   60 ++++++++++++++++++++++++++++++++++++----------
+>  4 files changed, 54 insertions(+), 13 deletions(-)
+> 
+> diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
+> index 941c842..f53cf64 100644
+> --- a/fs/hugetlbfs/inode.c
+> +++ b/fs/hugetlbfs/inode.c
+> @@ -1000,6 +1000,7 @@ out_shm_unlock:
+>  		user_shm_unlock(size, user);
+>  	return ERR_PTR(error);
+>  }
+> +EXPORT_SYMBOL(hugetlb_file_setup);
+>  
 
-I have some comments of my own as well, so here goes.
+Should be EXPORT_SYMBOL_GPL, same comment applies to the other exports.
 
-> +static void compal_rfkill_query(struct rfkill *rfkill, void *data)
+Also, the exports in this patch are unrelated to the additional
+functions you create. Please split them out as separate patches.
+
+>  static int __init init_hugetlbfs_fs(void)
+>  {
+> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+> index 2723513..e42fa32 100644
+> --- a/include/linux/hugetlb.h
+> +++ b/include/linux/hugetlb.h
+> @@ -204,6 +204,9 @@ struct huge_bootmem_page {
+>  	struct hstate *hstate;
+>  };
+>  
+> +struct page *hugetlb_alloc_pages_immediate(struct hstate *h, int nid, gfp_t gfp_mask);
+> +void hugetlb_free_pages_immediate(struct hstate *h, struct page *page);
+> +
+>  /* arch callback */
+>  int __init alloc_bootmem_huge_page(struct hstate *h);
+>  
+> @@ -279,6 +282,8 @@ static inline struct hstate *page_hstate(struct page *page)
+>  
+>  #else
+>  struct hstate {};
+> +#define hugetlb_alloc_pages_immediate(h, n, m) NULL
+> +#define hugetlb_free_pages_immediate(h, p)
+>  #define alloc_bootmem_huge_page(h) NULL
+>  #define hstate_file(f) NULL
+>  #define hstate_vma(v) NULL
+> diff --git a/mm/filemap.c b/mm/filemap.c
+> index ccea3b6..dc6da1a 100644
+> --- a/mm/filemap.c
+> +++ b/mm/filemap.c
+> @@ -146,6 +146,7 @@ void remove_from_page_cache(struct page *page)
+>  	spin_unlock_irq(&mapping->tree_lock);
+>  	mem_cgroup_uncharge_cache_page(page);
+>  }
+> +EXPORT_SYMBOL(remove_from_page_cache);
+>  
+>  static int sync_page(void *word)
+>  {
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index cafdcee..d278210 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -522,21 +522,9 @@ static struct page *dequeue_huge_page_vma(struct hstate *h,
+>  
+>  static void update_and_free_page(struct hstate *h, struct page *page)
+>  {
+> -	int i;
+> -
+> -	VM_BUG_ON(h->order >= MAX_ORDER);
+> -
+>  	h->nr_huge_pages--;
+>  	h->nr_huge_pages_node[page_to_nid(page)]--;
+> -	for (i = 0; i < pages_per_huge_page(h); i++) {
+> -		page[i].flags &= ~(1 << PG_locked | 1 << PG_error | 1 << PG_referenced |
+> -				1 << PG_dirty | 1 << PG_active | 1 << PG_reserved |
+> -				1 << PG_private | 1<< PG_writeback);
+> -	}
+> -	set_compound_page_dtor(page, NULL);
+> -	set_page_refcounted(page);
+> -	arch_release_hugepage(page);
+> -	__free_pages(page, huge_page_order(h));
+> +	hugetlb_free_pages_immediate(h, page);
+>  }
+>  
+
+This is more or less and API name-change and export. It would make the
+patch easier to read if you properly renamed it in a separate patch
+rather than having two functions that alias to the same thing.
+
+>  struct hstate *size_to_hstate(unsigned long size)
+> @@ -639,6 +627,52 @@ static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
+>  }
+>  
+>  /*
+> + * alloc_huge_pages_immediate - Allocate a single huge page for use
+> + * with a driver
+> + * @nid: The node to allocate memory on
+> + * @gfp_mask: GFP flags for the allocation
+> + * alloc_huge_page() is intended for use by device drivers that want to
+> + * back regions of memory with huge pages that will be later mapped to
+> + * userspace. Allocation are immediate. They done directly from the
+> + * buddy allocator without touching hugepage pool reservations.
+> + */
+> +struct page *hugetlb_alloc_pages_immediate(struct hstate *h,
+> +					int nid, gfp_t gfp_mask)
 > +{
-> +	unsigned long radio = (unsigned long) data;
-> +	u8 result;
-> +	bool blocked;
+> +	struct page *page;
 > +
-> +	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
+> +	if (huge_page_order(h) >= MAX_ORDER)
+> +		return NULL;
 > +
-> +	if ((result & KILLSWITCH_MASK) == 0)
-> +		blocked = 1;
-
-> +        else if (radio == WLAN_MASK)
-> +		blocked = !(result & WLAN_MASK);
-> +	else
-> +		blocked = !((result & BT_MASK) >> 1);
-
-Ick, this is overdone.  You should just be able to do
-
-+	else
-+		blocked = !(result & radio);
-
-> +	rfkill_set_sw_state(rfkill,blocked);
-> +	rfkill_set_hw_state(rfkill,0);
-
-This last line is redundant.  The HW state will default to "unblocked"
-if you never set it.
-
-> +static int compal_rfkill_set(void *data, bool blocked)
-> +{
-> +	unsigned long radio = (unsigned long) data;
-> +	u8 result, value;
-> +
-> +	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
-> +
-> +	if ((result & KILLSWITCH_MASK) == 0)
-> +		return -EINVAL;
-> +	else {
-> +		if (!blocked)
-> +			value = (u8) (result | radio);
-> +		else
-> +			value = (u8) (result & ~radio);
-> +		ec_write(COMPAL_EC_COMMAND_WIRELESS, value);
+> +	page = alloc_pages_exact_node(nid, gfp_mask|__GFP_COMP,
+> +					huge_page_order(h));
+> +	if (page && arch_prepare_hugepage(page)) {
+> +		__free_pages(page, huge_page_order(h));
+> +		return NULL;
 > +	}
-> +
-> +	return 0;
+> +	return page;
 > +}
-
-Note that the return value of rfkill_set is not propagated to
-userspace through the /dev/rfkill interface.
-
-The way you use "KILLSWITCH_MASK", it looks like a hard rfkill bit
-that covers all radios.  Why don't you report it as a hard block on
-each rfkill device?
-
-Note that strictly speaking, you should only call one rfkill_set
-function within the query() method.
-
-"@query: query the rfkill block state(s) and call exactly one of the
-rfkill_set{,_hw,_sw}_state family of functions."
-
-(I'd recommend reading the comments in include/linux/rfkill.h if you
-haven't already).  So If you do want to set both hw and sw states in
-query(), you should use rfkill_set_states().
-
-> +static int setup_rfkill(void)
-> +{
-> +	int ret;
+> +EXPORT_SYMBOL(hugetlb_alloc_pages_immediate);
 > +
-> +	wifi_rfkill = rfkill_alloc("compal-wifi", NULL, RFKILL_TYPE_WLAN,
-> +					&compal_rfkill_ops, (void *) WLAN_MASK);
+> +void hugetlb_free_pages_immediate(struct hstate *h, struct page *page)
+> +{
+> +	int i;
+> +
+> +	VM_BUG_ON(huge_page_order(h) >= MAX_ORDER);
+> +
+> +	for (i = 0; i < pages_per_huge_page(h); i++) {
+> +		page[i].flags &= ~(1 << PG_locked | 1 << PG_error |
+> +			1 << PG_referenced | 1 << PG_dirty | 1 << PG_active |
+> +			1 << PG_reserved | 1 << PG_private | 1 << PG_writeback);
+> +	}
+> +	set_compound_page_dtor(page, NULL);
+> +	set_page_refcounted(page);
+> +	arch_release_hugepage(page);
+> +	__free_pages(page, huge_page_order(h));
+> +}
+> +EXPORT_SYMBOL(hugetlb_free_pages_immediate);
+> +
+> +/*
+>   * Use a helper variable to find the next node and then
+>   * copy it back to hugetlb_next_nid afterwards:
+>   * otherwise there's a window in which a racer might
 
-I think you should use "compal_device->dev" in place of NULL here.
-Otherwise the rfkill devices will appear in sysfs as "virtual
-devices", belonging to no "physical" device.
+I haven't read through the whole patchset properly yet, but at this
+point it's looking like you are going to expect drivers to create a file
+and then manually populate the page cache with hugepages they allocate
+directly from here. That would appear to put a large burden of VM
+knowledge upon a device driver author. The patch would also appear to
+expose a lot of hugetlbfs internals.
 
-> +	bluetooth_rfkill = rfkill_alloc("compal-bluetooth", NULL, RFKILL_TYPE_BLUETOOTH,
-> +					&compal_rfkill_ops, (void *) BT_MASK);
+Have you looked at Eric Munson's patches on the implementation of
+MAP_HUGETLB in the patch set
 
-Same here.
+http://marc.info/?l=linux-mm&m=125025895815115&w=2
 
-Regards
-Alan
+?
+
+In that patchset, it was a very small number of changes required to
+expose a mapping private or shared to userspace.
+
+Would it make more sense to take an approach like that and instead add
+an additional helper within hugetlbfs (instead of the driver) that would
+return a pinned page at a given offset within a hugetlbfs file?
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
