@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751432AbZHRWLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751968AbZHRWNE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751432AbZHRWLv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 18:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZHRWLv
+	id S1751968AbZHRWNE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 18:13:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZHRWND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 18:11:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37431 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750928AbZHRWLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 18:11:50 -0400
-Message-ID: <4A8B26F8.3000301@redhat.com>
-Date: Tue, 18 Aug 2009 15:11:04 -0700
-From: Josh Stone <jistone@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Tue, 18 Aug 2009 18:13:03 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:56992 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751165AbZHRWNB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 18:13:01 -0400
+Date: Wed, 19 Aug 2009 07:13:01 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: suspend tree build failure
+Message-ID: <20090818221301.GA20676@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20090818183049.8bde1ee6.sfr@canb.auug.org.au> <200908182343.32375.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Jason Baron <jbaron@redhat.com>
-CC: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@elte.hu,
-       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
-       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
-       lizf@cn.fujitsu.com
-Subject: Re: [PATCH] tracing: Move tracepoint callbacks into DEFINE
-References: <1250580227-24363-1-git-send-email-jistone@redhat.com> <20090818141906.GA2669@redhat.com>
-In-Reply-To: <20090818141906.GA2669@redhat.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908182343.32375.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/18/2009 07:19 AM, Jason Baron wrote:
-> this makes sense...Ingo also suggested having the two high level
-> tracepoints be 'TRACE_EVENT' style. That is we should be able to
-> register with the syscall entry and get the *all* the syscall numbers
-> and arguments, and likewise on exit we should be able to get *all*
-> syscall exit return values. see:
+On Tue, Aug 18, 2009 at 11:43:32PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday 18 August 2009, Stephen Rothwell wrote:
+> > Hi Rafael,
 > 
-> http://marc.info/?l=linux-kernel&m=125008740803571&w=2 
+> Hi,
 > 
-> does this patch allow/do that?
-
-It does allow this, and I am working on a patch to do it.  There are a
-few naming conflicts between trace_syscalls.c and the stuff that ftrace
-generates for "TRACE_EVENT(syscall_enter, ...)", but I will post soon
-with a patch to resolve this.
-
-Thanks,
-
-Josh
+> > Today's linux-next build (i386 defconfig) failed like this:
+> > 
+> > drivers/base/power/main.c: In function 'device_pm_init':
+> > drivers/base/power/main.c:59: error: 'struct dev_pm_info' has no member named 'lock'
+> 
+> Argh, that line shouldn't even be there.
+> 
+> > Caused by commit ea8e84f27325d9ddc7692f728a10e0a22cd59f52 ("PM: Introduce
+> > core framework for run-time PM of I/O devices (rev. 17)") from the
+> > suspend tree.  The i386 defconfig does not have CONFIG_PM_RUNTIME set but
+> > does have CONFIG_PM_SLEEP=y ...
+> > 
+> > I have reverted that commit for today.
+> > 
+> > When you add a new CONFIG variable, it is worth doing test builds both
+> > with it turned on and turned off ...
+> 
+> I tested it, but I broke the patch afterwards by mistake. :-(
+> 
+> Sorry for the trouble, I've just pushed an updated tree.
+> 
+Argh, and rebased in the process, again. This is now the second time in
+as many days this has been rebased, meaning I have to throw away my topic
+branch and re-create. I thought this was going to remain stable? I would
+like the SH runtime PM code to get some coverage in -next, but I can't
+merge it in to my tree if the suspend tree keeps rebasing every day.
