@@ -1,98 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758818AbZHRLQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758827AbZHRLQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758818AbZHRLQY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 07:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758803AbZHRLQW
+	id S1758827AbZHRLQu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 07:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758738AbZHRLQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 07:16:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45803 "EHLO mx2.redhat.com"
+	Tue, 18 Aug 2009 07:16:07 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:50490 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758805AbZHRLQS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 07:16:18 -0400
-Message-ID: <4A8A8D6D.9040909@redhat.com>
-Date: Tue, 18 Aug 2009 14:15:57 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Gregory Haskins <gregory.haskins@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for	vbus_driver
- objects
-References: <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com> <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com> <20090818095313.GC13878@redhat.com> <4A8A7BB9.2020906@redhat.com> <20090818100945.GD13878@redhat.com> <4A8A7EE5.6090209@redhat.com> <20090818102840.GF13878@redhat.com> <4A8A8631.1040006@redhat.com> <20090818110708.GG13878@redhat.com>
-In-Reply-To: <20090818110708.GG13878@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1758478AbZHRLQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 07:16:06 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Linux Memory Management List <linux-mm@kvack.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: [PATCH 2/3] page-allocoator: Maintain rolling count of pages to free from the PCP
+Date: Tue, 18 Aug 2009 12:16:01 +0100
+Message-Id: <1250594162-17322-3-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1250594162-17322-1-git-send-email-mel@csn.ul.ie>
+References: <1250594162-17322-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/18/2009 02:07 PM, Michael S. Tsirkin wrote:
-> On Tue, Aug 18, 2009 at 01:45:05PM +0300, Avi Kivity wrote:
->    
->> On 08/18/2009 01:28 PM, Michael S. Tsirkin wrote:
->>      
->>>        
->>>> Suppose a nested guest has two devices.  One a virtual device backed by
->>>> its host (our guest), and one a virtual device backed by us (the real
->>>> host), and assigned by the guest to the nested guest.  If both devices
->>>> use hypercalls, there is no way to distinguish between them.
->>>>
->>>>          
->>> Not sure I understand. What I had in mind is that devices would have to
->>> either use different hypercalls and map hypercall to address during
->>> setup, or pass address with each hypercall.  We get the hypercall,
->>> translate the address as if it was pio access, and know the destination?
->>>
->>>        
->> There are no different hypercalls.  There's just one hypercall
->> instruction, and there's no standard on how it's used.  If a nested call
->> issues a hypercall instruction, you have no idea if it's calling a
->> Hyper-V hypercall or a vbus/virtio kick.
->>      
-> userspace will know which it is, because hypercall capability
-> in the device has been activated, and can tell kernel, using
-> something similar to iosignalfd. No?
->    
+When round-robin freeing pages from the PCP lists, empty lists may be
+encountered. In the event one of the lists has more pages than another,
+there may be numerous checks for list_empty() which is undesirable. This
+patch maintains a count of pages to free which is incremented when empty
+lists are encountered. The intention is that more pages will then be freed
+from fuller lists than the empty ones reducing the number of empty list
+checks in the free path.
 
-The host kernel sees a hypercall vmexit.  How does it know if it's a 
-nested-guest-to-guest hypercall or a nested-guest-to-host hypercall?  
-The two are equally valid at the same time.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ mm/page_alloc.c |   23 ++++++++++++++---------
+ 1 files changed, 14 insertions(+), 9 deletions(-)
 
-
->> You could have a protocol where you register the hypercall instruction's
->> address with its recipient, but it quickly becomes a tangled mess.
->>      
-> I really thought we could pass the io address in register as an input
-> parameter. Is there a way to do this in a secure manner?
->
-> Hmm. Doesn't kvm use hypercalls now? How does this work with nesting?
-> For example, in this code in arch/x86/kvm/x86.c:
->
->          switch (nr) {
->          case KVM_HC_VAPIC_POLL_IRQ:
->                  ret = 0;
->                  break;
->          case KVM_HC_MMU_OP:
->                  r = kvm_pv_mmu_op(vcpu, a0, hc_gpa(vcpu, a1, a2),&ret);
->                  break;
->          default:
->                  ret = -KVM_ENOSYS;
->                  break;
->          }
->
-> how do we know that it's the guest and not the nested guest performing
-> the hypercall?
->    
-
-The host knows whether the guest or nested guest are running.  If the 
-guest is running, it's a guest-to-host hypercall.  If the nested guest 
-is running, it's a nested-guest-to-guest hypercall.  We don't have 
-nested-guest-to-host hypercalls (and couldn't unless we get agreement on 
-a protocol from all hypervisor vendors).
-
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index a06ddf0..dd3f306 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -536,32 +536,37 @@ static void free_pcppages_bulk(struct zone *zone, int count,
+ 					struct per_cpu_pages *pcp)
+ {
+ 	int migratetype = 0;
++	int batch_free = 0;
+ 
+ 	spin_lock(&zone->lock);
+ 	zone_clear_flag(zone, ZONE_ALL_UNRECLAIMABLE);
+ 	zone->pages_scanned = 0;
+ 
+ 	__mod_zone_page_state(zone, NR_FREE_PAGES, count);
+-	while (count--) {
++	while (count) {
+ 		struct page *page;
+ 		struct list_head *list;
+ 
+ 		/*
+-		 * Remove pages from lists in a round-robin fashion. This spinning
+-		 * around potentially empty lists is bloody awful, alternatives that
+-		 * don't suck are welcome
++		 * Remove pages from lists in a round-robin fashion. A batch_free
++		 * count is maintained that is incremented when an empty list is
++		 * encountered. This is so more pages are freed off fuller lists
++		 * instead of spinning excessively around empty lists
+ 		 */
+ 		do {
++			batch_free++;
+ 			if (++migratetype == MIGRATE_PCPTYPES)
+ 				migratetype = 0;
+ 			list = &pcp->lists[migratetype];
+ 		} while (list_empty(list));
+ 
+-		page = list_entry(list->prev, struct page, lru);
+-		/* have to delete it as __free_one_page list manipulates */
+-		list_del(&page->lru);
+-		trace_mm_page_pcpu_drain(page, 0, migratetype);
+-		__free_one_page(page, zone, 0, migratetype);
++		do {
++			page = list_entry(list->prev, struct page, lru);
++			/* must delete as __free_one_page list manipulates */
++			list_del(&page->lru);
++			__free_one_page(page, zone, 0, migratetype);
++			trace_mm_page_pcpu_drain(page, 0, migratetype);
++		} while (--count && --batch_free && !list_empty(list));
+ 	}
+ 	spin_unlock(&zone->lock);
+ }
 -- 
-error compiling committee.c: too many arguments to function
+1.6.3.3
 
