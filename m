@@ -1,188 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759313AbZHRP7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759321AbZHRP72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759313AbZHRP7M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 11:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbZHRP7K
+	id S1759321AbZHRP72 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 11:59:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759316AbZHRP7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 11:59:10 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39284 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758955AbZHRP7I (ORCPT
+	Tue, 18 Aug 2009 11:59:25 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:47088 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759020AbZHRP7X convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 11:59:08 -0400
-Date: Wed, 19 Aug 2009 00:57:54 +0900 (JST)
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       Jeff Dike <jdike@addtoit.com>, Avi Kivity <avi@redhat.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20090816112910.GA3208@localhost>
-References: <20090816051502.GB13740@localhost> <20090816112910.GA3208@localhost>
-Message-Id: <20090818234310.A64B.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
+	Tue, 18 Aug 2009 11:59:23 -0400
+Message-Id: <4A8AEBFD0200007800010580@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Tue, 18 Aug 2009 16:59:25 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] fix BUILD_BUG_ON() and a couple of bogus uses of it
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Yes it does. I said 'mostly' because there is a small hole that an
-> > unevictable page may be scanned but still not moved to unevictable
-> > list: when a page is mapped in two places, the first pte has the
-> > referenced bit set, the _second_ VMA has VM_LOCKED bit set, then
-> > page_referenced() will return 1 and shrink_page_list() will move it
-> > into active list instead of unevictable list. Shall we fix this rare
-> > case?
-> 
-> How about this fix?
+gcc permitting variable length arrays makes the current construct
+used for BUILD_BUG_ON() useless, as that doesn't produce any diagnostic
+if the controlling expression isn't really constant. Instead, this
+patch makes it so that a bit field gets used here. Consequently, those
+uses where the condition isn't really constant now also need fixing.
 
-Good spotting.
-Yes, this is rare case. but I also don't think your patch introduce
-performance degression.
+Note that in the gfp.h, kmemcheck.h, and virtio_config.h cases
+MAYBE_BUILD_BUG_ON() really just serves documentation purposes - even
+if the expression is compile time constant (__builtin_constant_p()
+yields true), the array is still deemed of variable length by gcc, and
+hence the whole expression doesn't have the intended effect.
 
-However, I think your patch have one bug.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-> 
-> ---
-> mm: stop circulating of referenced mlocked pages
-> 
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
-> 
-> --- linux.orig/mm/rmap.c	2009-08-16 19:11:13.000000000 +0800
-> +++ linux/mm/rmap.c	2009-08-16 19:22:46.000000000 +0800
-> @@ -358,6 +358,7 @@ static int page_referenced_one(struct pa
->  	 */
->  	if (vma->vm_flags & VM_LOCKED) {
->  		*mapcount = 1;	/* break early from loop */
-> +		*vm_flags |= VM_LOCKED;
->  		goto out_unmap;
->  	}
->  
-> @@ -482,6 +483,8 @@ static int page_referenced_file(struct p
->  	}
->  
->  	spin_unlock(&mapping->i_mmap_lock);
-> +	if (*vm_flags & VM_LOCKED)
-> +		referenced = 0;
->  	return referenced;
->  }
->  
-
-page_referenced_file?
-I think we should change page_referenced().
-
-
-Instead, How about this?
-==============================================
-
-Subject: [PATCH] mm: stop circulating of referenced mlocked pages
-
-Currently, mlock() systemcall doesn't gurantee to mark the page PG_Mlocked
-because some race prevent page grabbing.
-In that case, instead vmscan move the page to unevictable lru.
-
-However, Recently Wu Fengguang pointed out current vmscan logic isn't so
-efficient.
-mlocked page can move circulatly active and inactive list because
-vmscan check the page is referenced _before_ cull mlocked page.
-
-Plus, vmscan should mark PG_Mlocked when cull mlocked page.
-Otherwise vm stastics show strange number.
-
-This patch does that.
-
-Reported-by: Wu Fengguang <fengguang.wu@intel.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 ---
- mm/internal.h |    5 +++--
- mm/rmap.c     |    8 +++++++-
- mm/vmscan.c   |    2 +-
- 3 files changed, 11 insertions(+), 4 deletions(-)
+ drivers/char/tpm/tpm.c        |    2 --
+ drivers/net/niu.c             |    2 +-
+ include/linux/gfp.h           |    2 +-
+ include/linux/kernel.h        |    8 ++++++--
+ include/linux/kmemcheck.h     |    2 +-
+ include/linux/virtio_config.h |    3 +--
+ 6 files changed, 10 insertions(+), 9 deletions(-)
 
-Index: b/mm/internal.h
-===================================================================
---- a/mm/internal.h	2009-06-26 21:06:43.000000000 +0900
-+++ b/mm/internal.h	2009-08-18 23:31:11.000000000 +0900
-@@ -91,7 +91,8 @@ static inline void unevictable_migrate_p
-  * to determine if it's being mapped into a LOCKED vma.
-  * If so, mark page as mlocked.
-  */
--static inline int is_mlocked_vma(struct vm_area_struct *vma, struct page *page)
-+static inline int try_set_page_mlocked(struct vm_area_struct *vma,
-+				       struct page *page)
- {
- 	VM_BUG_ON(PageLRU(page));
+--- linux-2.6.31-rc6/drivers/char/tpm/tpm.c	2009-08-18 15:31:17.000000000 +0200
++++ 2.6.31-rc6-build-bug-on/drivers/char/tpm/tpm.c	2009-08-17 15:21:11.000000000 +0200
+@@ -696,7 +696,6 @@ int __tpm_pcr_read(struct tpm_chip *chip
  
-@@ -144,7 +145,7 @@ static inline void mlock_migrate_page(st
- }
+ 	cmd.header.in = pcrread_header;
+ 	cmd.params.pcrread_in.pcr_idx = cpu_to_be32(pcr_idx);
+-	BUILD_BUG_ON(cmd.header.in.length > READ_PCR_RESULT_SIZE);
+ 	rc = transmit_cmd(chip, &cmd, cmd.header.in.length,
+ 			  "attempting to read a pcr value");
  
- #else /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
--static inline int is_mlocked_vma(struct vm_area_struct *v, struct page *p)
-+static inline int try_set_page_mlocked(struct vm_area_struct *v, struct page *p)
- {
- 	return 0;
- }
-Index: b/mm/rmap.c
-===================================================================
---- a/mm/rmap.c	2009-08-18 19:48:14.000000000 +0900
-+++ b/mm/rmap.c	2009-08-18 23:47:34.000000000 +0900
-@@ -362,7 +362,9 @@ static int page_referenced_one(struct pa
- 	 * unevictable list.
+@@ -760,7 +759,6 @@ int tpm_pcr_extend(u32 chip_num, int pcr
+ 		return -ENODEV;
+ 
+ 	cmd.header.in = pcrextend_header;
+-	BUILD_BUG_ON(be32_to_cpu(cmd.header.in.length) > EXTEND_PCR_SIZE);
+ 	cmd.params.pcrextend_in.pcr_idx = cpu_to_be32(pcr_idx);
+ 	memcpy(cmd.params.pcrextend_in.hash, hash, TPM_DIGEST_SIZE);
+ 	rc = transmit_cmd(chip, &cmd, cmd.header.in.length,
+--- linux-2.6.31-rc6/drivers/net/niu.c	2009-08-18 15:31:34.000000000 +0200
++++ 2.6.31-rc6-build-bug-on/drivers/net/niu.c	2009-08-17 15:21:11.000000000 +0200
+@@ -5615,7 +5615,7 @@ static void niu_init_tx_mac(struct niu *
+ 	/* The XMAC_MIN register only accepts values for TX min which
+ 	 * have the low 3 bits cleared.
  	 */
- 	if (vma->vm_flags & VM_LOCKED) {
--		*mapcount = 1;	/* break early from loop */
-+		*mapcount = 1;		/* break early from loop */
-+		*vm_flags |= VM_LOCKED;	/* for prevent to move active list */
-+		try_set_page_mlocked(vma, page);
- 		goto out_unmap;
- 	}
+-	BUILD_BUG_ON(min & 0x7);
++	BUG_ON(min & 0x7);
  
-@@ -531,6 +533,9 @@ int page_referenced(struct page *page,
- 	if (page_test_and_clear_young(page))
- 		referenced++;
+ 	if (np->flags & NIU_FLAGS_XMAC)
+ 		niu_init_tx_xmac(np, min, max);
+--- linux-2.6.31-rc6/include/linux/gfp.h	2009-08-18 15:31:54.000000000 +0200
++++ 2.6.31-rc6-build-bug-on/include/linux/gfp.h	2009-08-17 15:21:11.000000000 +0200
+@@ -220,7 +220,7 @@ static inline enum zone_type gfp_zone(gf
+ 					 ((1 << ZONES_SHIFT) - 1);
  
-+	if (unlikely(*vm_flags & VM_LOCKED))
-+		referenced = 0;
+ 	if (__builtin_constant_p(bit))
+-		BUILD_BUG_ON((GFP_ZONE_BAD >> bit) & 1);
++		MAYBE_BUILD_BUG_ON((GFP_ZONE_BAD >> bit) & 1);
+ 	else {
+ #ifdef CONFIG_DEBUG_VM
+ 		BUG_ON((GFP_ZONE_BAD >> bit) & 1);
+--- linux-2.6.31-rc6/include/linux/kernel.h	2009-08-18 15:31:55.000000000 +0200
++++ 2.6.31-rc6-build-bug-on/include/linux/kernel.h	2009-08-17 15:21:11.000000000 +0200
+@@ -675,13 +675,17 @@ struct sysinfo {
+ };
+ 
+ /* Force a compilation error if condition is true */
+-#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
++#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
 +
- 	return referenced;
- }
++/* Force a compilation error if condition is constant and true */
++#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
  
-@@ -784,6 +789,7 @@ static int try_to_unmap_one(struct page 
- 	 */
- 	if (!(flags & TTU_IGNORE_MLOCK)) {
- 		if (vma->vm_flags & VM_LOCKED) {
-+			try_set_page_mlocked(vma, page);
- 			ret = SWAP_MLOCK;
- 			goto out_unmap;
- 		}
-Index: b/mm/vmscan.c
-===================================================================
---- a/mm/vmscan.c	2009-08-18 19:48:14.000000000 +0900
-+++ b/mm/vmscan.c	2009-08-18 23:30:51.000000000 +0900
-@@ -2666,7 +2666,7 @@ int page_evictable(struct page *page, st
- 	if (mapping_unevictable(page_mapping(page)))
- 		return 0;
+ /* Force a compilation error if condition is true, but also produce a
+    result (of value 0 and type size_t), so the expression can be used
+    e.g. in a structure initializer (or where-ever else comma expressions
+    aren't permitted). */
+-#define BUILD_BUG_ON_ZERO(e) (sizeof(char[1 - 2 * !!(e)]) - 1)
++#define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
++#define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
  
--	if (PageMlocked(page) || (vma && is_mlocked_vma(vma, page)))
-+	if (PageMlocked(page) || (vma && try_set_page_mlocked(vma, page)))
- 		return 0;
+ /* Trap pasters of __FUNCTION__ at compile-time */
+ #define __FUNCTION__ (__func__)
+--- linux-2.6.31-rc6/include/linux/kmemcheck.h	2009-08-18 15:31:55.000000000 +0200
++++ 2.6.31-rc6-build-bug-on/include/linux/kmemcheck.h	2009-08-17 15:21:11.000000000 +0200
+@@ -140,7 +140,7 @@ static inline void kmemcheck_mark_initia
+ 	do if (ptr) {							\
+ 		int _n = (long) &((ptr)->name##_end)			\
+ 			- (long) &((ptr)->name##_begin);		\
+-		BUILD_BUG_ON(_n < 0);					\
++		MAYBE_BUILD_BUG_ON(_n < 0);				\
+ 									\
+ 		kmemcheck_mark_initialized(&((ptr)->name##_begin), _n);	\
+ 	} while (0)
+--- linux-2.6.31-rc6/include/linux/virtio_config.h	2009-08-18 15:31:55.000000000 +0200
++++ 2.6.31-rc6-build-bug-on/include/linux/virtio_config.h	2009-08-17 15:21:11.000000000 +0200
+@@ -109,8 +109,7 @@ static inline bool virtio_has_feature(co
+ 				      unsigned int fbit)
+ {
+ 	/* Did you forget to fix assumptions on max features? */
+-	if (__builtin_constant_p(fbit))
+-		BUILD_BUG_ON(fbit >= 32);
++	MAYBE_BUILD_BUG_ON(fbit >= 32);
  
- 	return 1;
-
-
-
-
-
-
+ 	if (fbit < VIRTIO_TRANSPORT_F_START)
+ 		virtio_check_driver_offered_feature(vdev, fbit);
 
 
