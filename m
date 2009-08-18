@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbZHRAD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbZHRAG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753754AbZHRAD2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 20:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZHRAD1
+	id S1756875AbZHRAG1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 20:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbZHRAG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 20:03:27 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36563
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751837AbZHRAD0 (ORCPT
+	Mon, 17 Aug 2009 20:06:26 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:40149 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751793AbZHRAG0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 20:03:26 -0400
-Date: Mon, 17 Aug 2009 17:03:37 -0700 (PDT)
-Message-Id: <20090817.170337.139340805.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, akpm@linux-foundation.org,
-       nhorman@tuxdriver.com, rostedt@goodmis.org
-Subject: Re: [PATCH -next] trace_skb: fix build when CONFIG_NET is not
- enabled
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090817230654.GC16222@elte.hu>
-References: <4A89BF90.5070202@oracle.com>
-	<20090817.160041.40869355.davem@davemloft.net>
-	<20090817230654.GC16222@elte.hu>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Aug 2009 20:06:26 -0400
+Date: Mon, 17 Aug 2009 20:06:24 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
+       lizf@cn.fujitsu.com
+Subject: Re: [PATCH 07/12] add ftrace_event_call void * 'data' field
+In-Reply-To: <20090817230926.GC4962@nowhere>
+Message-ID: <alpine.DEB.2.00.0908172004531.25890@gandalf.stny.rr.com>
+References: <cover.1249932670.git.jbaron@redhat.com> <2f63f892c862efd4f58f9d3e72cb5bc55f2d0025.1249932670.git.jbaron@redhat.com> <20090811100904.GA4938@nowhere> <alpine.DEB.2.00.0908171818420.25890@gandalf.stny.rr.com> <20090817230926.GC4962@nowhere>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 18 Aug 2009 01:06:54 +0200
 
-> ... but these are the wrong patches, they should be removed or 
-> reverted and redone properly.
+On Tue, 18 Aug 2009, Frederic Weisbecker wrote:
+> > > > @@ -568,7 +568,7 @@ static void ftrace_raw_event_##call(proto)				\
+> > > >  		trace_nowake_buffer_unlock_commit(event, irq_flags, pc); \
+> > > >  }									\
+> > > >  									\
+> > > > -static int ftrace_raw_reg_event_##call(void)				\
+> > > > +static int ftrace_raw_reg_event_##call(void *ptr)			\
+> > > 
+> > > 
+> > > Shouldn't it have a __used attribute here, or something?
+> > 
+> > Do function parameters need that? There's lots of places where the 
+> > parameter of a function is not used by a function itself.
+> > 
+> > -- Steve
+> 
+> 
+> No actually, I thought gcc would warn, but it didn't :-)
 
-Given the number of users of net-next-2.6, removal via rebasing is
-simply not an option.  The other two posibilities, sure...
+Yeah, that is the right thing too. Because functions can be passed as 
+parameters (like this one) and every "stub function" we have will then 
+need this attribute. It is OK to ignore parameters of functions without 
+telling gcc that you plan on ignoring them.
 
-> It's not just about keeping kernel/trace/* changes in the tracing 
-> tree (which we can relax on-demand given agreement), it's that 
-> these patches are also _wrong_ and we cannot relax anything about 
-> that.
+-- Steve
 
-Why don't we give Neil a chance to review the situation and fix things
-up?
-
-If revert is the final decision, that's fine, I'll revert everything.
-
-But in the mean time at least give Neil a chance to read all of your
-feedback and coordinate a way to fix things with everyone.
