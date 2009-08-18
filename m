@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751462AbZHRUA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751652AbZHRUEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751462AbZHRUA3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 16:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbZHRUA3
+	id S1751652AbZHRUEp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 16:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbZHRUEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 16:00:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55724 "EHLO ogre.sisk.pl"
+	Tue, 18 Aug 2009 16:04:44 -0400
+Received: from www.tglx.de ([62.245.132.106]:50226 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751007AbZHRUA2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 16:00:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume (updated)
-Date: Tue, 18 Aug 2009 22:01:11 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
-Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       "linux-acpi" <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Arjan van de Ven <arjan@linux.intel.com>, Greg KH <gregkh@suse.de>
-References: <200908122218.13975.rjw@sisk.pl> <200908170215.21173.rjw@sisk.pl> <1250579793.5351.79.camel@rzhang-dt>
-In-Reply-To: <1250579793.5351.79.camel@rzhang-dt>
+	id S1750888AbZHRUEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 16:04:43 -0400
+Date: Tue, 18 Aug 2009 22:03:43 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>
+Subject: [ANNOUNCE] 2.6.31-rc6-rt4
+In-Reply-To: <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain> <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain>
+ <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>
+ <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>
+ <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200908182201.11489.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 18 August 2009, Zhang Rui wrote:
-> On Mon, 2009-08-17 at 08:15 +0800, Rafael J. Wysocki wrote:
-> > On Wednesday 12 August 2009, Rafael J. Wysocki wrote:
-> > > Hi,
-> > > 
-> > > The following patches introduce a mechanism allowing us to execute device
-> > > drivers' suspend and resume callbacks asynchronously during system sleep
-> > > transitions, such as suspend to RAM.  The idea is explained in the [1/1] patch
-> > > message.
-> > 
-> > Changes:
-> > 
-> > * Added [1/7] that fixes kerneldoc comments in drivers/base/power/main.c
-> >   (this is a 2.6.32 candidate).
-> > 
-> > * Added [2/7] adding a framework for representing PM link (idea described
-> >   in the patch message).
-> > 
-> > * [3/7] is the async resume patch (idea described in the patch message).
-> > 
-> > * [4/7] is the async suspend patch.
-> > 
-> > * [5/7] - [7/7] set async_suspend for devices in a few selected subsystems.
-> > 
-> > The patches have been tested on HP nx6325.
-> > 
-> I tried this patch set and it does work. :)
-> But unfortunately it doesn't save too much time.
-> 
-> I still think that the child device should inherit its parent's
-> async_suspend flag to do the asynchronous resume more efficiently.
-> 
-> or at least we should provide such an interface
-> in ﻿drivers/base/power/common.c, so that device can tell the device core
-> to inherit this flag if there is no off-tree dependency.
+We are pleased to announce the next update to our new preempt-rt
+series.
 
-Well, I'd prefer to identify all of the off-tree dependencies that have to be
-taken into account and handle all devices asynchronously.
+  [ I skipped -rt3 as it failed in testing ]
 
-Thanks,
-Rafael
+ - update to the ONESHOT irq infrastructure scheduled for mainline
+
+ - scheduling while atomic fix in tty_ldisc
+
+The know problems (PSeries / ARM highmem) still persist and we have a
+new one which is related to cgroup memcontrol. The latter one is easy
+to fix but will have to wait for the next release.
+
+Download locations:
+
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
+
+Git release branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31-rc6
+ 
+Git development branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
+
+Gitweb:
+    http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31-rc6
+ 
+Information on the RT patch can be found at:
+
+    http://rt.wiki.kernel.org/index.php/Main_Page
+
+to build the 2.6.31-rc6-rt4 tree, the following patches should be
+applied:
+
+    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.30.tar.bz2
+    http://www.kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.31-rc6.bz2
+    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31-rc6-rt4.bz2
+
+Enjoy !
+
+       tglx
