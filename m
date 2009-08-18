@@ -1,213 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZHRIWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbZHRIXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752832AbZHRIWr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 04:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZHRIWq
+	id S1753510AbZHRIXZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 04:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbZHRIXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 04:22:46 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:57918 "EHLO gir.skynet.ie"
+	Tue, 18 Aug 2009 04:23:24 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:43322 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750853AbZHRIWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 04:22:45 -0400
-Date: Tue, 18 Aug 2009 09:22:47 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Alexey Korolev <akorolev@infradead.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3]HTLB mapping for drivers. Alloc functions & some
-	export symbols(take 2)
-Message-ID: <20090818082247.GA31469@csn.ul.ie>
-References: <alpine.LFD.2.00.0908172324130.32114@casper.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0908172324130.32114@casper.infradead.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1750886AbZHRIXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 04:23:23 -0400
+Date: Tue, 18 Aug 2009 18:23:13 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: manual merge of the mips tree with Linus' tree
+Message-Id: <20090818182313.3a1d3db1.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__18_Aug_2009_18_23_13_+1000_S/+9euet.AbRwP49"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 17, 2009 at 11:33:38PM +0100, Alexey Korolev wrote:
-> This patch contains definitions of the hugetlb_alloc_pages_immediate & 
-> hugetlb_free_pages_immediate functions. The function hugetlb_alloc_pages_immediate 
-> allocates a single huge page. The allocation allows the selection of gfp mask and numa 
-> node. The allocation is immediate, i.e. it is not processed by hugetlbfs counting, 
-> because otherwise user must specify how much memory should be allocated, in case of 
-> a driver it could be hard to do. 
-> 
-> Also this patch adds some symbol exports. Since drivers need to create and 
-> populate/depopulate hugetlb file pg cache with pages we need to add export of 
-> hugetlb_file_setup and remove_from_page_cache. 
-> 
-> Signed-off-by: Alexey Korolev <akorolev@infradead.org>
-> 
-> ---
->  fs/hugetlbfs/inode.c    |    1 +
->  include/linux/hugetlb.h |    5 ++++
->  mm/filemap.c            |    1 +
->  mm/hugetlb.c            |   60 ++++++++++++++++++++++++++++++++++++----------
->  4 files changed, 54 insertions(+), 13 deletions(-)
-> 
-> diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-> index 941c842..f53cf64 100644
-> --- a/fs/hugetlbfs/inode.c
-> +++ b/fs/hugetlbfs/inode.c
-> @@ -1000,6 +1000,7 @@ out_shm_unlock:
->  		user_shm_unlock(size, user);
->  	return ERR_PTR(error);
->  }
-> +EXPORT_SYMBOL(hugetlb_file_setup);
->  
+--Signature=_Tue__18_Aug_2009_18_23_13_+1000_S/+9euet.AbRwP49
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Should be EXPORT_SYMBOL_GPL, same comment applies to the other exports.
+Hi Ralf,
 
-Also, the exports in this patch are unrelated to the additional
-functions you create. Please split them out as separate patches.
+The linux-next merge of the mips tree gets conflicts between several
+commits from Linus' tree and (basically) the same commits from the mips
+tree.  I have been getting these for some time.  The mips tree for
+linux-next hasn't been updated since June 6 and doing a manula merge with
+Linus' tree (or rebasing it on top of Linus' tree) would fix most of these
+conflicts:
 
->  static int __init init_hugetlbfs_fs(void)
->  {
-> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-> index 2723513..e42fa32 100644
-> --- a/include/linux/hugetlb.h
-> +++ b/include/linux/hugetlb.h
-> @@ -204,6 +204,9 @@ struct huge_bootmem_page {
->  	struct hstate *hstate;
->  };
->  
-> +struct page *hugetlb_alloc_pages_immediate(struct hstate *h, int nid, gfp_t gfp_mask);
-> +void hugetlb_free_pages_immediate(struct hstate *h, struct page *page);
-> +
->  /* arch callback */
->  int __init alloc_bootmem_huge_page(struct hstate *h);
->  
-> @@ -279,6 +282,8 @@ static inline struct hstate *page_hstate(struct page *page)
->  
->  #else
->  struct hstate {};
-> +#define hugetlb_alloc_pages_immediate(h, n, m) NULL
-> +#define hugetlb_free_pages_immediate(h, p)
->  #define alloc_bootmem_huge_page(h) NULL
->  #define hstate_file(f) NULL
->  #define hstate_vma(v) NULL
-> diff --git a/mm/filemap.c b/mm/filemap.c
-> index ccea3b6..dc6da1a 100644
-> --- a/mm/filemap.c
-> +++ b/mm/filemap.c
-> @@ -146,6 +146,7 @@ void remove_from_page_cache(struct page *page)
->  	spin_unlock_irq(&mapping->tree_lock);
->  	mem_cgroup_uncharge_cache_page(page);
->  }
-> +EXPORT_SYMBOL(remove_from_page_cache);
->  
->  static int sync_page(void *word)
->  {
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index cafdcee..d278210 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -522,21 +522,9 @@ static struct page *dequeue_huge_page_vma(struct hstate *h,
->  
->  static void update_and_free_page(struct hstate *h, struct page *page)
->  {
-> -	int i;
-> -
-> -	VM_BUG_ON(h->order >= MAX_ORDER);
-> -
->  	h->nr_huge_pages--;
->  	h->nr_huge_pages_node[page_to_nid(page)]--;
-> -	for (i = 0; i < pages_per_huge_page(h); i++) {
-> -		page[i].flags &= ~(1 << PG_locked | 1 << PG_error | 1 << PG_referenced |
-> -				1 << PG_dirty | 1 << PG_active | 1 << PG_reserved |
-> -				1 << PG_private | 1<< PG_writeback);
-> -	}
-> -	set_compound_page_dtor(page, NULL);
-> -	set_page_refcounted(page);
-> -	arch_release_hugepage(page);
-> -	__free_pages(page, huge_page_order(h));
-> +	hugetlb_free_pages_immediate(h, page);
->  }
->  
+$ git merge mips
+Auto-merging arch/mips/Kconfig
+Auto-merging arch/mips/cavium-octeon/dma-octeon.c
+CONFLICT (content): Merge conflict in arch/mips/cavium-octeon/dma-octeon.c
+Auto-merging arch/mips/cavium-octeon/executive/cvmx-helper-errata.c
+CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
+x-helper-errata.c
+Auto-merging arch/mips/cavium-octeon/octeon-irq.c
+Auto-merging arch/mips/include/asm/cpu-features.h
+Auto-merging arch/mips/include/asm/mach-cavium-octeon/cpu-feature-overrides=
+.h
+Auto-merging arch/mips/mm/c-r4k.c
+Auto-merging arch/mips/mm/tlbex.c
+CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
+Auto-merging arch/mips/sibyte/Kconfig
+Auto-merging arch/mips/sibyte/swarm/setup.c
+CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
+Auto-merging arch/mips/txx9/generic/setup.c
+Auto-merging arch/mips/txx9/rbtx4939/setup.c
+Auto-merging drivers/char/hw_random/Kconfig
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
+Auto-merging drivers/char/hw_random/Makefile
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
+Auto-merging drivers/dma/Kconfig
+Auto-merging drivers/dma/Makefile
+Auto-merging drivers/dma/txx9dmac.c
+CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
+Automatic merge failed; fix conflicts and then commit the result.
 
-This is more or less and API name-change and export. It would make the
-patch easier to read if you properly renamed it in a separate patch
-rather than having two functions that alias to the same thing.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
->  struct hstate *size_to_hstate(unsigned long size)
-> @@ -639,6 +627,52 @@ static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
->  }
->  
->  /*
-> + * alloc_huge_pages_immediate - Allocate a single huge page for use
-> + * with a driver
-> + * @nid: The node to allocate memory on
-> + * @gfp_mask: GFP flags for the allocation
-> + * alloc_huge_page() is intended for use by device drivers that want to
-> + * back regions of memory with huge pages that will be later mapped to
-> + * userspace. Allocation are immediate. They done directly from the
-> + * buddy allocator without touching hugepage pool reservations.
-> + */
-> +struct page *hugetlb_alloc_pages_immediate(struct hstate *h,
-> +					int nid, gfp_t gfp_mask)
-> +{
-> +	struct page *page;
-> +
-> +	if (huge_page_order(h) >= MAX_ORDER)
-> +		return NULL;
-> +
-> +	page = alloc_pages_exact_node(nid, gfp_mask|__GFP_COMP,
-> +					huge_page_order(h));
-> +	if (page && arch_prepare_hugepage(page)) {
-> +		__free_pages(page, huge_page_order(h));
-> +		return NULL;
-> +	}
-> +	return page;
-> +}
-> +EXPORT_SYMBOL(hugetlb_alloc_pages_immediate);
-> +
-> +void hugetlb_free_pages_immediate(struct hstate *h, struct page *page)
-> +{
-> +	int i;
-> +
-> +	VM_BUG_ON(huge_page_order(h) >= MAX_ORDER);
-> +
-> +	for (i = 0; i < pages_per_huge_page(h); i++) {
-> +		page[i].flags &= ~(1 << PG_locked | 1 << PG_error |
-> +			1 << PG_referenced | 1 << PG_dirty | 1 << PG_active |
-> +			1 << PG_reserved | 1 << PG_private | 1 << PG_writeback);
-> +	}
-> +	set_compound_page_dtor(page, NULL);
-> +	set_page_refcounted(page);
-> +	arch_release_hugepage(page);
-> +	__free_pages(page, huge_page_order(h));
-> +}
-> +EXPORT_SYMBOL(hugetlb_free_pages_immediate);
-> +
-> +/*
->   * Use a helper variable to find the next node and then
->   * copy it back to hugetlb_next_nid afterwards:
->   * otherwise there's a window in which a racer might
+--Signature=_Tue__18_Aug_2009_18_23_13_+1000_S/+9euet.AbRwP49
+Content-Type: application/pgp-signature
 
-I haven't read through the whole patchset properly yet, but at this
-point it's looking like you are going to expect drivers to create a file
-and then manually populate the page cache with hugepages they allocate
-directly from here. That would appear to put a large burden of VM
-knowledge upon a device driver author. The patch would also appear to
-expose a lot of hugetlbfs internals.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Have you looked at Eric Munson's patches on the implementation of
-MAP_HUGETLB in the patch set
+iEUEARECAAYFAkqKZPEACgkQjjKRsyhoI8xMDACgsJC2JXdzQgSK1apVYNZNMBBl
+GaQAlR5cykULs08pf5v7+lphd4nwx5g=
+=7rUo
+-----END PGP SIGNATURE-----
 
-http://marc.info/?l=linux-mm&m=125025895815115&w=2
-
-?
-
-In that patchset, it was a very small number of changes required to
-expose a mapping private or shared to userspace.
-
-Would it make more sense to take an approach like that and instead add
-an additional helper within hugetlbfs (instead of the driver) that would
-return a pinned page at a given offset within a hugetlbfs file?
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+--Signature=_Tue__18_Aug_2009_18_23_13_+1000_S/+9euet.AbRwP49--
