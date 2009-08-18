@@ -1,108 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751779AbZHRXaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751869AbZHRXcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751779AbZHRXaT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 19:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZHRXaS
+	id S1751869AbZHRXcw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 19:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbZHRXcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 19:30:18 -0400
-Received: from mga09.intel.com ([134.134.136.24]:14119 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751075AbZHRXaR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 19:30:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,404,1246863600"; 
-   d="scan'208";a="440418164"
-Date: Tue, 18 Aug 2009 16:30:17 -0700
-From: mgross <mgross@linux.intel.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 2/2] pm_qos: clean up racy file-global variable
-Message-ID: <20090818233016.GC16014@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20090813140554.014ce1e0@bike.lwn.net> <20090813140825.0a39d5b6@bike.lwn.net>
+	Tue, 18 Aug 2009 19:32:52 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:50515 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751173AbZHRXcv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 19:32:51 -0400
+Date: Tue, 18 Aug 2009 16:32:47 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 1/2] hwmon: Enhance the sysfs API for power meters.
+Message-ID: <20090818233247.GC10233@tux1.beaverton.ibm.com>
+Reply-To: djwong@us.ibm.com
+References: <20090725004322.20709.96804.stgit@elm3a70.beaverton.ibm.com> <20090725004328.20709.57712.stgit@elm3a70.beaverton.ibm.com> <20090807180906.GD1728@ucw.cz> <20090808174020.GA29600@tux1.beaverton.ibm.com> <20090808214830.GC24153@elf.ucw.cz> <20090810211211.GB30815@tux1.beaverton.ibm.com> <20090812115653.GJ24339@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090813140825.0a39d5b6@bike.lwn.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090812115653.GJ24339@elf.ucw.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 02:08:25PM -0600, Jonathan Corbet wrote:
-> "name" is a poor name for a file-global variable.  It was used in three
-True. 
+On Wed, Aug 12, 2009 at 01:56:54PM +0200, Pavel Machek wrote:
 
-> different functions, with no mutual exclusion.  But it's just a tiny,
-> temporary string; let's just move it onto the stack in the functions that
-> need it.  Also use snprintf() just in case.
+> Is netlink right interface for that? Perhaps /sys files should be
+> pollable?
+
+Since the ACPI meter receives ACPI events, it seems logical to me that these
+events should be passed through to ACPI clients.  It also seems logical that
+hwmon clients shouldn't have to know about ACPI netlink sockets either, so
+I'll combine them both and see what popular consensus thinks of that. :)
+
+Therefore, I updated the patch to make the appropriate sysfs files pollable,
+and the hwmon sysfs documentation to state that they can be polled.
+
+> > So it goes with ACPI.  Given that things like Node Manager and Active Energy
+> > Manager claim to be able to control power use, I would guess that it is
+> > generally likely that a power monitoring system would take action on its own to
+> > cut power use, and not necessarily bothering to tell the OS exactly what it's
+> > doing.
 > 
+> I guess this needs to be clarified/documented properly because it
+> should go anywhere near mainline.
 
-Signed-off-by: Mark Gross <mgross@intel.com>
+Ok, I'll clarify the documentation to say that those two scenarios are
+possible, and to contact the machine vendor for details.
 
-
-> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-> Cc: Mark Gross <mgross@linux.intel.com>
-> Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  kernel/pm_qos_params.c |   12 +++++++-----
->  1 files changed, 7 insertions(+), 5 deletions(-)
-> 
-> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> index d96b83e..3db49b9 100644
-> --- a/kernel/pm_qos_params.c
-> +++ b/kernel/pm_qos_params.c
-> @@ -343,18 +343,18 @@ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_remove_notifier);
->  
-> -#define PID_NAME_LEN sizeof("process_1234567890")
-> -static char name[PID_NAME_LEN];
-> +#define PID_NAME_LEN 32
->  
->  static int pm_qos_power_open(struct inode *inode, struct file *filp)
->  {
->  	int ret;
->  	long pm_qos_class;
-> +	char name[PID_NAME_LEN];
->  
->  	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
->  	if (pm_qos_class >= 0) {
->  		filp->private_data = (void *)pm_qos_class;
-> -		sprintf(name, "process_%d", current->pid);
-> +		snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
->  		ret = pm_qos_add_requirement(pm_qos_class, name,
->  					PM_QOS_DEFAULT_VALUE);
->  		if (ret >= 0)
-> @@ -366,9 +366,10 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
->  static int pm_qos_power_release(struct inode *inode, struct file *filp)
->  {
->  	int pm_qos_class;
-> +	char name[PID_NAME_LEN];
->  
->  	pm_qos_class = (long)filp->private_data;
-> -	sprintf(name, "process_%d", current->pid);
-> +	snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
->  	pm_qos_remove_requirement(pm_qos_class, name);
->  
->  	return 0;
-> @@ -379,13 +380,14 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
->  {
->  	s32 value;
->  	int pm_qos_class;
-> +	char name[PID_NAME_LEN];
->  
->  	pm_qos_class = (long)filp->private_data;
->  	if (count != sizeof(s32))
->  		return -EINVAL;
->  	if (copy_from_user(&value, buf, sizeof(s32)))
->  		return -EFAULT;
-> -	sprintf(name, "process_%d", current->pid);
-> +	snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
->  	pm_qos_update_requirement(pm_qos_class, name, value);
->  
->  	return  sizeof(s32);
-> -- 
-> 1.6.2.5
+--D
