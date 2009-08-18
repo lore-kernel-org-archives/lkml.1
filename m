@@ -1,215 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932501AbZHRBYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbZHRBZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932501AbZHRBYh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 21:24:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbZHRBYg
+	id S1758556AbZHRBZN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 21:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZHRBZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 21:24:36 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:45756 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751005AbZHRBYf (ORCPT
+	Mon, 17 Aug 2009 21:25:12 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:37362 "EHLO
+	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752131AbZHRBZL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 21:24:35 -0400
-Subject: Re: [PATCH 2/3] Add rfkill support to compal-laptop
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Mario Limonciello <mario_limonciello@dell.com>
-Cc: cezary.jackiewicz@gmail.com, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4A89E768.7010207@dell.com>
-References: <4A89E768.7010207@dell.com>
-Content-Type: text/plain
-Date: Mon, 17 Aug 2009 18:24:03 -0700
-Message-Id: <1250558643.30166.109.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	Mon, 17 Aug 2009 21:25:11 -0400
+X-SpamScore: -21
+X-BigFish: VPS-21(zz1432R98dN4015L14e1Izz1202hzzz2fh6bh64h)
+X-Spam-TCS-SCL: 3:0
+Message-ID: <4A8A02CA.7040305@am.sony.com>
+Date: Mon, 17 Aug 2009 18:24:26 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: r.schwebel@pengutronix.de, vda.linux@googlemail.com,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       arjan@linux.intel.com, kernel@pengutronix.de, netdev@vger.kernel.org
+Subject: Re: new ipdelay= option for faster netboot
+References: <20090814204305.GA31727@pengutronix.de>	<4A89AC40.2040109@am.sony.com>	<4A89DB15.6060101@am.sony.com> <20090817.180323.253692704.davem@davemloft.net>
+In-Reply-To: <20090817.180323.253692704.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Aug 2009 01:24:27.0734 (UTC) FILETIME=[A0DAD760:01CA1FA2]
+X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mario,
-
-the general rule for patches on LKML is that you send them inline and
-not as attachment. A successful workaround for the ones with Exchange
-only mail account is to use git send-email.
-
-> --- drivers/platform/x86/compal-laptop.c.old    2009-08-17
-> 07:01:36.244874430 -0500
-> +++ drivers/platform/x86/compal-laptop.c        2009-08-17
-> 07:02:15.012836625 -0500
-> @@ -52,6 +52,7 @@
->  #include <linux/backlight.h>
->  #include <linux/platform_device.h>
->  #include <linux/autoconf.h>
-> +#include <linux/rfkill.h>
->  
->  #define COMPAL_DRIVER_VERSION "0.2.6"
->  
-> @@ -64,6 +65,9 @@
->  #define WLAN_MASK      0x01
->  #define BT_MASK        0x02
->  
-> +static struct rfkill *wifi_rfkill;
-> +static struct rfkill *bluetooth_rfkill;
-> +
->  static int force;
->  module_param(force, bool, 0);
->  MODULE_PARM_DESC(force, "Force driver load, ignore DMI data");
-> @@ -89,6 +93,87 @@
->         return (int) result;
->  }
->  
-> +static void compal_rfkill_query(struct rfkill *rfkill, void *data)
-> +{
-> +       unsigned long radio = (unsigned long) data;
-> +       u8 result;
-> +       bool blocked;
-> +
-> +       ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
-> +
-> +       if ((result & KILLSWITCH_MASK) == 0)
-> +               blocked = 1;
-> +        else if (radio == WLAN_MASK)
-> +               blocked = !(result & WLAN_MASK);
-
-You are using spaces instead of tabs here.
-
-> +       else
-> +               blocked = !((result & BT_MASK) >> 1);
-> +
-> +       rfkill_set_sw_state(rfkill,blocked);
-> +       rfkill_set_hw_state(rfkill,0);
-> +}
-> +
-> +static int compal_rfkill_set(void *data, bool blocked)
-> +{
-> +       unsigned long radio = (unsigned long) data;
-> +       u8 result, value;
-> +
-> +       ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
-> +
-> +       if ((result & KILLSWITCH_MASK) == 0)
-> +               return -EINVAL;
-> +       else {
-> +               if (!blocked)
-> +                       value = (u8) (result | radio);
-> +               else
-> +                       value = (u8) (result & ~radio);
-> +               ec_write(COMPAL_EC_COMMAND_WIRELESS, value);
-> +       }
-
-This else part is utterly stupid. There is no need to have an else
-statement. You already left the function. So get rid of it. And at the
-same time this code becomes readable.
-
-> +       return 0;
-> +}
-> +
-> +static const struct rfkill_ops compal_rfkill_ops = {
-> +       .set_block = compal_rfkill_set,
-> +       .query = compal_rfkill_query,
-> +};
-> +
-> +static int setup_rfkill(void)
-> +{
-> +       int ret;
-> +
-> +       wifi_rfkill = rfkill_alloc("compal-wifi", NULL,
-> RFKILL_TYPE_WLAN,
-> +                                       &compal_rfkill_ops, (void *)
-> WLAN_MASK);
-> +       if (!wifi_rfkill) {
-> +               ret = -ENOMEM;
-> +               goto err_wifi;
-> +       }
-> +       ret = rfkill_register(wifi_rfkill);
-> +       if (ret)
-> +               goto err_wifi;
-> +
-> +       bluetooth_rfkill = rfkill_alloc("compal-bluetooth", NULL,
-> RFKILL_TYPE_BLUETOOTH,
-> +                                       &compal_rfkill_ops, (void *)
-> BT_MASK);
-> +       if (!bluetooth_rfkill) {
-> +               ret = -ENOMEM;
-> +               goto err_bt;
-> +       }
-> +       ret = rfkill_register(bluetooth_rfkill);
-> +       if (ret)
-> +               goto err_bt;
-> +
-> +       return 0;
-> +err_bt:
-> +       rfkill_destroy(bluetooth_rfkill);
-> +       if (bluetooth_rfkill)
-> +               rfkill_unregister(bluetooth_rfkill);
-> +err_wifi:
-> +       rfkill_destroy(wifi_rfkill);
-> +       if (wifi_rfkill)
-> +               rfkill_unregister(wifi_rfkill);
-
-I don't understand how this is not a potential NULL pointer dereference.
-There might some good luck that the pointer is still valid at that time,
-but I highly doubt it. So please unregister before destory.
-
-> +
-> +       return ret;
-> +}
-> +
->  static int set_wlan_state(int state)
->  {
->         u8 result, value;
-> @@ -357,6 +442,12 @@
->         if (!force && !dmi_check_system(compal_dmi_table))
->                 return -ENODEV;
->  
-> +       ret = setup_rfkill();
-> +       if (ret) {
-> +               printk(KERN_WARNING "compal-laptop: Unable to setup
-> rfkill\n");
-> +               goto fail_rfkill;
-> +       }
-> +
->         /* Register backlight stuff */
->  
->         if (!acpi_video_backlight_support()) {
-> @@ -410,6 +501,13 @@
->  
->         backlight_device_unregister(compalbl_device);
->  
-> +fail_rfkill:
-> +
-> +       if (wifi_rfkill)
-> +               rfkill_unregister(wifi_rfkill);
-> +       if (bluetooth_rfkill)
-> +               rfkill_unregister(bluetooth_rfkill);
-> +
-
-What non-sense is this. If setup_rfkill() fails, then both RFKILL
-switches got unregistered if they ever have been registered.
-
->         return ret;
->  }
->  
-> @@ -420,6 +518,10 @@
->         platform_device_unregister(compal_device);
->         platform_driver_unregister(&compal_driver);
->         backlight_device_unregister(compalbl_device);
-> +       if (wifi_rfkill)
-> +               rfkill_unregister(wifi_rfkill);
-> +       if (bluetooth_rfkill)
-> +               rfkill_unregister(bluetooth_rfkill);
-
-Same here. It should never ever succeeded in the first place. You can
-call it conditionally.
-
->  
->         printk(KERN_INFO "compal-laptop: driver unloaded.\n");
->  }
+David Miller wrote:
+> From: Tim Bird <tim.bird@am.sony.com>
+> Date: Mon, 17 Aug 2009 15:35:01 -0700
 > 
+>> Tim Bird wrote:
+>>> See the definitions of CONF_PRE_OPEN and CON_POST_OPEN
+>>> in net/ipv4/ipconfig.c
+>>>
+>>> They are set to ridiculously long values.  In my experience,
+>>> you can cut them down considerably with no dangerous side
+>>> effects (but I haven't asked the network guys about the
+>>> possible downsides).
+>> It turns out that others have seen this delay.  Simon
+>> Arlott recently posted a patch to make the delay avoidable
+>> at boot time from the kernel command line.
+>>
+>> See http://patchwork.kernel.org/patch/31678/
+> 
+> "Rediculiously long" is a relative term.
+No offense intended.  I could have phrased this
+better.  The delays were a few orders of
+magnitude longer than apparently needed, on my
+embedded test systems with ethernet.  I didn't
+try eliminating them completely, as in the Arlott patch.
 
-Regards
+1.5 seconds is a long time for me.  My bootup time budget for
+the kernel ranges from 0.5 to 3.0 seconds, depending on the
+product.
 
-Marcel
+> I have card/switch combinations that take up to 10 seconds to
+> negotiate a proper link.
 
+What types of delays are these timeouts supposed to
+cover?  Networking delays or hardware bring-up delays?
+(Or both)?  If for networking delays, is this for all
+types of networks, or just some (e.g. ones that create
+virtual circuits)?
+
+I'm trying to get a sense for whether the card/switch
+combinations that would take this long would be encountered
+in the types of embedded devices I code for.  (TVs, camcorders,
+etc.)
+
+>
+> So what's there now is actually a quite agressive setting.
+> 
+> And BTW, discussions about stuff like this belong on
+> netdev@vger.kernel.org, which has been added to the CC:
+
+I was going to wait to see if this solved Robert's
+problem, before widening the discussion.  But I'm happy
+to find out more about these delays now.
+
+Thanks,
+ -- Tim
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
