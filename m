@@ -1,34 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759311AbZHRPnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbZHRPsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759311AbZHRPnY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 11:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759287AbZHRPnV
+	id S1759257AbZHRPsN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 11:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbZHRPsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 11:43:21 -0400
-Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:47691 "EHLO
-	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754221AbZHRPnU (ORCPT
+	Tue, 18 Aug 2009 11:48:12 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:46710 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750934AbZHRPsM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 11:43:20 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: Text/Plain; charset=utf-8
-X-IronPort-AV: E=Sophos;i="4.43,403,1246831200";   d="scan'208";a="22893162"
-From: Victor =?utf-8?q?Matar=C3=A9?= <matare@lih.rwth-aachen.de>
-Organization: Lehrstuhl =?utf-8?q?f=C3=BCr_Ingenieur-_und?= Hydrogeologie
-To: john stultz <johnstul@us.ibm.com>
-Subject: Re: clock freezes??
-Date: Tue, 18 Aug 2009 17:43:20 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.30-gentoo-r4_wald; KDE/4.3.0; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <4A69C03E.3090706@lih.rwth-aachen.de>
- <4A8190C0.5030400@lih.rwth-aachen.de> <1250008935.30440.8.camel@work-vm>
-In-reply-to: <1250008935.30440.8.camel@work-vm>
-Message-id: <200908181743.20381.matare@lih.rwth-aachen.de>
+	Tue, 18 Aug 2009 11:48:12 -0400
+Message-Id: <4A8AE95C020000780001055F@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Tue, 18 Aug 2009 16:48:12 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <linux-mm@kvack.org>, "Rusty Russell" <rusty@rustcorp.com.au>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] replace various uses of num_physpages by
+	 totalram_pages
+References: <4A8AE6280200007800010539@vpn.id2.novell.com>
+ <20090818153815.GA11913@elte.hu>
+In-Reply-To: <20090818153815.GA11913@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-just to be clear:
-> Can you trigger the problem yourself using date -s ?
-nope.
+>>> Ingo Molnar <mingo@elte.hu> 18.08.09 17:38 >>>
+>
+>* Jan Beulich <JBeulich@novell.com> wrote:
+>
+>> Sizing of memory allocations shouldn't depend on the number of 
+>> physical pages found in a system, as that generally includes 
+>> (perhaps a huge amount of) non-RAM pages. The amount of what 
+>> actually is usable as storage should instead be used as a basis 
+>> here.
+>> 
+>> Some of the calculations (i.e. those not intending to use high 
+>> memory) should likely even use (totalram_pages - 
+>> totalhigh_pages).
+>> 
+>> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+>> Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+>> 
+>> ---
+>>  arch/x86/kernel/microcode_core.c  |    4 ++--
+>
+>Acked-by: Ingo Molnar <mingo@elte.hu>
+>
+>Just curious: how did you find this bug? Did you find this by 
+>experiencing problems on a system with a lot of declared non-RAM 
+>memory?
+
+Actually, I noticed this on Xen (non-pv-ops) when booting a domain with
+a sufficiently large initial balloon. Under that condition, booting would
+frequently fail due to various table sizes being calculated way too large.
+
+Jan
+
