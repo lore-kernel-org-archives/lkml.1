@@ -1,70 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758610AbZHRB4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758605AbZHRB6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758610AbZHRB4F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 21:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758591AbZHRB4F
+	id S1758605AbZHRB6J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 21:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbZHRB6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 21:56:05 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37989
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758585AbZHRB4D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 21:56:03 -0400
-Date: Mon, 17 Aug 2009 18:56:14 -0700 (PDT)
-Message-Id: <20090817.185614.267314151.davem@davemloft.net>
-To: tim.bird@am.sony.com
-Cc: r.schwebel@pengutronix.de, vda.linux@googlemail.com,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       arjan@linux.intel.com, kernel@pengutronix.de, netdev@vger.kernel.org
-Subject: Re: new ipdelay= option for faster netboot
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4A8A06A0.2070402@am.sony.com>
-References: <4A8A02CA.7040305@am.sony.com>
-	<20090817.182754.50348941.davem@davemloft.net>
-	<4A8A06A0.2070402@am.sony.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Aug 2009 21:58:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38052 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750774AbZHRB6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 21:58:07 -0400
+Message-ID: <4A8A0B0D.6080400@redhat.com>
+Date: Tue, 18 Aug 2009 09:59:41 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>, Matt Mackall <mpm@selenic.com>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [Patch] proc: drop write permission on 'timer_list' and 'slabinfo'
+References: <20090817094525.6355.88682.sendpatchset@localhost.localdomain>  <20090817094822.GA17838@elte.hu> <1250502847.5038.16.camel@penberg-laptop> <alpine.DEB.1.10.0908171228300.16267@gentwo.org> <4A8986BB.80409@cs.helsinki.fi> <alpine.DEB.1.10.0908171240370.16267@gentwo.org>
+In-Reply-To: <alpine.DEB.1.10.0908171240370.16267@gentwo.org>
+Content-Type: multipart/mixed;
+ boundary="------------050500090409000700090907"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tim Bird <tim.bird@am.sony.com>
-Date: Mon, 17 Aug 2009 18:40:48 -0700
+This is a multi-part message in MIME format.
+--------------050500090409000700090907
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> David Miller wrote:
->> From: Tim Bird <tim.bird@am.sony.com>
->> Date: Mon, 17 Aug 2009 18:24:26 -0700
->>
->>> David Miller wrote:
->>>> I have card/switch combinations that take up to 10 seconds to
->>>> negotiate a proper link.
->>> What types of delays are these timeouts supposed to
->>> cover?
->>
->> The problem is that if you don't first give at least some time for the
->> link to come up, the remaining time it takes the link to come up will
->> end up chewing into the actual bootp/dhcp protocol timeouts.  And
->> that's what we're trying to avoid.
-> 
-> What link?  I'm not that familiar with networking.
+Christoph Lameter wrote:
+> On Mon, 17 Aug 2009, Pekka Enberg wrote:
+>
+>   
+>>> slab needs the write permissions for tuning!
+>>>       
+>> Oh, crap, you're right, I had forgotten about that. It's probably best to keep
+>> slub permissions as-is, no?
+>>     
 
-The speed and duplex settings which are negotiated or forced between
-the ethernet card and whatever is at the other end of the cable.
+Oops! I misread the code... sorry.
 
-> Assuming I'm using ethernet, what link needs to come up?
+>
+> slub perms can be changed. The patch is okay for that. But there is no
+> write method in slub. Effectively it makes no difference. Just the
+> display is nicer in /proc.
+>
+>
+>   
+Ah, ok, I update this part of patch, attached.
 
-All modern ethernet cards do autonegotiation of link parameters
-with whatever is at the other end of the ethernet cable.  Cards
-created ages ago which only support 10MB half-duplex typically
-do not support autonegotiation at all.
+Thanks!
 
-This autonegotiation works like a protocol where the two link partners
-go back and forth trying to figure out the best speed and duplex
-settings to use.  There are advertisements of link capabilities and
-stuff like that.
+Signed-off-by: WANG Cong <amwang@redhat.com>
 
-It should happen almost instantaneously, but there are millions
-upon millions of cruddy parts out there, and some of them take
-a long time to go through this negotiation process.
+
+
+
+--------------050500090409000700090907
+Content-Type: text/plain;
+ name="proc-file-write-permission-fix2.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="proc-file-write-permission-fix2.diff"
+
+diff --git a/mm/slub.c b/mm/slub.c
+index b9f1491..aba2c1b 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -4726,7 +4726,7 @@ static const struct file_operations proc_slabinfo_operations = {
+ 
+ static int __init slab_proc_init(void)
+ {
+-	proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
++	proc_create("slabinfo",S_IRUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
+ 	return 0;
+ }
+ module_init(slab_proc_init);
+
+--------------050500090409000700090907--
