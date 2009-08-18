@@ -1,97 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751970AbZHRUlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751997AbZHRUmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751970AbZHRUlI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 16:41:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZHRUlI
+	id S1751997AbZHRUmd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 16:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbZHRUmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 16:41:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36034 "EHLO mx2.redhat.com"
+	Tue, 18 Aug 2009 16:42:32 -0400
+Received: from comal.ext.ti.com ([198.47.26.152]:54909 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750888AbZHRUlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 16:41:05 -0400
-Date: Tue, 18 Aug 2009 23:39:21 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Cc: Avi Kivity <avi@redhat.com>, Gregory Haskins <gregory.haskins@gmail.com>,
-       kvm@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
-       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
-	model for vbus_driver objects
-Message-ID: <20090818203921.GB20393@redhat.com>
-References: <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <20090817174142.GA11140@redhat.com> <4A89BAC5.9040400@gmail.com> <20090818084606.GA13878@redhat.com> <20090818155329.GD31060@ovro.caltech.edu> <4A8ADC09.3030205@redhat.com> <20090818172752.GC17631@ovro.caltech.edu>
+	id S1751275AbZHRUmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 16:42:31 -0400
+Message-ID: <4A8B1221.30003@ti.com>
+Date: Tue, 18 Aug 2009 15:42:09 -0500
+From: Jon Hunter <jon-hunter@ti.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090818172752.GC17631@ovro.caltech.edu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: john stultz <johnstul@us.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] Dynamic Tick: Prevent clocksource wrapping during
+ idle
+References: <1250617512-23567-1-git-send-email-jon-hunter@ti.com> <1250617512-23567-2-git-send-email-jon-hunter@ti.com> <alpine.LFD.2.00.0908182115270.3361@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0908182115270.3361@localhost.localdomain>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 10:27:52AM -0700, Ira W. Snyder wrote:
-> On Tue, Aug 18, 2009 at 07:51:21PM +0300, Avi Kivity wrote:
-> > On 08/18/2009 06:53 PM, Ira W. Snyder wrote:
-> >> So, in my system, copy_(to|from)_user() is completely wrong. There is no
-> >> userspace, only a physical system. In fact, because normal x86 computers
-> >> do not have DMA controllers, the host system doesn't actually handle any
-> >> data transfer!
-> >>    
-> >
-> > In fact, modern x86s do have dma engines these days (google for Intel  
-> > I/OAT), and one of our plans for vhost-net is to allow their use for  
-> > packets above a certain size.  So a patch allowing vhost-net to  
-> > optionally use a dma engine is a good thing.
-> >
-> 
-> Yes, I'm aware that very modern x86 PCs have general purpose DMA
-> engines, even though I don't have any capable hardware. However, I think
-> it is better to support using any PC (with or without DMA engine, any
-> architecture) as the PCI master, and just handle the DMA all from the
-> PCI agent, which is known to have DMA?
-> 
-> >> I used virtio-net in both the guest and host systems in my example
-> >> virtio-over-PCI patch, and succeeded in getting them to communicate.
-> >> However, the lack of any setup interface means that the devices must be
-> >> hardcoded into both drivers, when the decision could be up to userspace.
-> >> I think this is a problem that vbus could solve.
-> >>    
-> >
-> > Exposing a knob to userspace is not an insurmountable problem; vhost-net  
-> > already allows changing the memory layout, for example.
-> >
-> 
-> Let me explain the most obvious problem I ran into: setting the MAC
-> addresses used in virtio.
-> 
-> On the host (PCI master), I want eth0 (virtio-net) to get a random MAC
-> address.
-> 
-> On the guest (PCI agent), I want eth0 (virtio-net) to get a specific MAC
-> address, aa:bb:cc:dd:ee:ff.
-> 
-> The virtio feature negotiation code handles this, by seeing the
-> VIRTIO_NET_F_MAC feature in it's configuration space. If BOTH drivers do
-> not have VIRTIO_NET_F_MAC set, then NEITHER will use the specified MAC
-> address. This is because the feature negotiation code only accepts a
-> feature if it is offered by both sides of the connection.
-> 
-> In this case, I must have the guest generate a random MAC address and
-> have the host put aa:bb:cc:dd:ee:ff into the guest's configuration
-> space. This basically means hardcoding the MAC addresses in the Linux
-> drivers, which is a big no-no.
-> 
-> What would I expose to userspace to make this situation manageable?
-> 
-> Thanks for the response,
-> Ira
 
-This calls for some kind of change in guest virtio.  vhost being a host
-kernel only feature, does not deal with this problem.  But assuming
-virtio in guest supports this somehow, vhost will not interfere: you do
-the setup in qemu userspace anyway, vhost will happily use a network
-device however you chose to set it up.
+Thomas Gleixner wrote:
+> On Tue, 18 Aug 2009, Jon Hunter wrote:
+> 
+>> From: Jon Hunter <jon-hunter@ti.com>
+>>
+>> The dynamic tick allows the kernel to sleep for periods longer
+>> than a single tick. This patch prevents that the kernel from
+>> sleeping for a period longer than the maximum time that the
+>> current clocksource can count. This ensures that the kernel will
+>> not lose track of time. This patch adds a function called
+>> "clocksource_max_deferment()" that calculates the maximum time the
+>> kernel can sleep for a given clocksource and function called
+>> "timekeeping_max_deferment()" that returns maximum time the kernel
+>> can sleep for the current clocksource.
+>>
+>> Signed-off-by: Jon Hunter <jon-hunter@ti.com>
+>> ---
+>>  include/linux/clocksource.h |    2 +
+>>  include/linux/time.h        |    1 +
+>>  kernel/time/clocksource.c   |   47 +++++++++++++++++++++++++++++++++++
+>>  kernel/time/tick-sched.c    |   57 ++++++++++++++++++++++++++++++++----------
+>>  kernel/time/timekeeping.c   |   11 ++++++++
+>>  5 files changed, 104 insertions(+), 14 deletions(-)
+>>
+>> diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+>> index 9ea40ff..09ed7f1 100644
+>> --- a/include/linux/clocksource.h
+>> +++ b/include/linux/clocksource.h
+>> @@ -151,6 +151,7 @@ extern u64 timecounter_cyc2time(struct timecounter *tc,
+>>   *			subtraction of non 64 bit counters
+>>   * @mult:		cycle to nanosecond multiplier
+>>   * @shift:		cycle to nanosecond divisor (power of two)
+>> + * @max_idle_ns:	max idle time permitted by the clocksource (nsecs)
+>>   * @flags:		flags describing special properties
+>>   * @vread:		vsyscall based read
+>>   * @resume:		resume function for the clocksource, if necessary
+>> @@ -168,6 +169,7 @@ struct clocksource {
+>>  	cycle_t mask;
+>>  	u32 mult;
+>>  	u32 shift;
+>> +	s64 max_idle_ns;
+> 
+> I don't think we should move this to the clocksource. That should go
+> into the new struct timekeeper and initialized when a clocksource is
+> selected for timekeeping.
+> 
+>> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+>> index e0f59a2..7a98e90 100644
+>> --- a/kernel/time/tick-sched.c
+>> +++ b/kernel/time/tick-sched.c
+>> @@ -217,6 +217,7 @@ void tick_nohz_stop_sched_tick(int inidle)
+>>  	ktime_t last_update, expires, now;
+>>  	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
+>>  	int cpu;
+>> +	s64 time_delta, max_time_delta;
+>>  
+>>  	local_irq_save(flags);
+>>  
+>> @@ -270,6 +271,18 @@ void tick_nohz_stop_sched_tick(int inidle)
+>>  		seq = read_seqbegin(&xtime_lock);
+>>  		last_update = last_jiffies_update;
+>>  		last_jiffies = jiffies;
+>> +
+>> +		/*
+>> +		 * On SMP we really should only care for the CPU which
+>> +		 * has the do_timer duty assigned. All other CPUs can
+>> +		 * sleep as long as they want.
+>> +		 */
+>> +		if (cpu == tick_do_timer_cpu ||
+>> +				tick_do_timer_cpu == TICK_DO_TIMER_NONE)
+>> +			max_time_delta = timekeeping_max_deferment();
+>> +		else
+>> +			max_time_delta = KTIME_MAX;
+>> +
+> 
+> Is it worth the extra check instead of always using
+> timekeeping_max_deferment() ?
+> 
+>>  	} while (read_seqretry(&xtime_lock, seq));
+>>  
+>>  	/* Get the next timer wheel timer */
+>> @@ -289,11 +302,30 @@ void tick_nohz_stop_sched_tick(int inidle)
+>>  	if ((long)delta_jiffies >= 1) {
+>>  
+>>  		/*
+>> -		* calculate the expiry time for the next timer wheel
+>> -		* timer
+>> -		*/
+>> -		expires = ktime_add_ns(last_update, tick_period.tv64 *
+>> -				   delta_jiffies);
+>> +		 * calculate the expiry time for the next timer wheel
+>> +		 * timer. delta_jiffies >= NEXT_TIMER_MAX_DELTA signals
+>> +		 * that there is no timer pending or at least extremely
+>> +		 * far into the future (12 days for HZ=1000). In this
+>> +		 * case we set the expiry to the end of time.
+>> +		 */
+>> +		if (likely(delta_jiffies < NEXT_TIMER_MAX_DELTA)) {
+>> +
+>> +			/*
+>> +			 * Calculate the time delta for the next timer event.
+>> +			 * If the time delta exceeds the maximum time delta
+>> +			 * permitted by the current clocksource then adjust
+>> +			 * the time delta accordingly to ensure the
+>> +			 * clocksource does not wrap.
+>> +			 */
+>> +			time_delta = tick_period.tv64 * delta_jiffies;
+>> +
+>> +			if (time_delta > max_time_delta)
+>> +				time_delta = max_time_delta;
+>> +
+>> +			expires = ktime_add_ns(last_update, time_delta);
+>> +		} else {
+>> +			expires.tv64 = KTIME_MAX;
+>> +		}
+> 
+> This looks incorrect. You set expires to KTIME_MAX when no timer is
+> pending, but that defeats the purpose of this patch. When we hit this
+> code path and the next interrupt comes in after the timekeeping
+> clocksource wrapped we are bust.
 
--- 
-MST
+Right, so this is a bit of a grey area for me. When I first started 
+looking at this I was questioning the purpose of the following code that 
+exists today in the tick_nohz_stop_sched_tick() function:
+
+	/*
+	 * delta_jiffies >= NEXT_TIMER_MAX_DELTA signals that
+	 * there is no timer pending or at least extremly far
+	 * into the future (12 days for HZ=1000). In this case
+	 * we simply stop the tick timer:
+	 */
+	if (unlikely(delta_jiffies >= NEXT_TIMER_MAX_DELTA)) {
+		ts->idle_expires.tv64 = KTIME_MAX;
+		if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
+			hrtimer_cancel(&ts->sched_timer);
+			goto out;
+	}
+
+The above code checks to see delta_jiffies is greater than 
+NEXT_TIMER_MAX_DELTA, if so then sets expires to KTIME_MAX and disables 
+the timer. I had questioned this a few months ago, but I don't think 
+that John and I knew the history here. So for right or wrong, I left 
+this code alone. In the above patch it is still do the same thing if 
+delta_jiffies is indeed greater than NEXT_TIMER_MAX_DELTA.
+
+If you agree that this code is not needed and that in the case where we 
+have no timers we should simply make the next timer event always occur 
+in max_time_delta ns later, then I can re-work it to do this.
+
+Thanks
+Jon
+
