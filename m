@@ -1,118 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758547AbZHRBI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758550AbZHRBQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758547AbZHRBI2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 21:08:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758534AbZHRBI2
+	id S1758550AbZHRBQK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 21:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758516AbZHRBQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 21:08:28 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:33167 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758531AbZHRBI1 (ORCPT
+	Mon, 17 Aug 2009 21:16:09 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:60675 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758247AbZHRBQI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 21:08:27 -0400
-Message-ID: <4A89FF08.30509@codemonkey.ws>
-Date: Mon, 17 Aug 2009 20:08:24 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 17 Aug 2009 21:16:08 -0400
+Date: Tue, 18 Aug 2009 10:16:09 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.31-rc7
+Message-ID: <20090818011609.GB4402@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
-       kvm@vger.kernel.org, Avi Kivity <avi@redhat.com>,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
- objects
-References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com>
-In-Reply-To: <4A8965E0.8050608@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> Note: No one has ever proposed to change the virtio-ABI.
+This fixes up a couple of suspend bugs (primarily impacting the SH7724
+CPU and its associated solution engine board). While technically not
+regressions, and a bit bigger than I would care for at this point, these
+changes are necessary for fixing up crash on resume for SH7724, spurious
+wakeups for CMT clocksource/clockevent users, and suspend crashes in the
+fb driver for platforms using deferred I/O.
 
-virtio-pci is part of the virtio ABI.  You are proposing changing that.
+Please pull from:
 
-You cannot add new kernel modules to guests and expect them to remain 
-supported.  So there is value in reusing existing ABIs
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.31
 
->> I think the reason vbus gets better performance for networking today is
->> that vbus' backends are in the kernel while virtio's backends are
->> currently in userspace.
->>     
->
-> Well, with all due respect, you also said initially when I announced
-> vbus that in-kernel doesn't matter, and tried to make virtio-net run as
-> fast as venet from userspace ;)  Given that we never saw those userspace
-> patches from you that in fact equaled my performance, I assume you were
-> wrong about that statement.  Perhaps you were wrong about other things too?
->   
+Which contains:
 
-I'm wrong about a lot of things :-)  I haven't yet been convinced that 
-I'm wrong here though.
+Magnus Damm (4):
+      sh: skip disabled LCDC channels
+      sh: CMT suspend/resume
+      sh: use in-soc KEYSC on se7724
+      sh: sh7724 ddr self-refresh changes
 
-One of the gray areas here is what constitutes an in-kernel backend.  
-tun/tap is a sort of an in-kernel backend.  Userspace is still involved 
-in all of the paths.  vhost seems to be an intermediate step between 
-tun/tap and vbus.  The fast paths avoid userspace completely.  Many of 
-the slow paths involve userspace still (like migration apparently).  
-With vbus, userspace is avoided entirely.  In some ways, you could argue 
-that slirp and vbus are opposite ends of the virtual I/O spectrum.
-
-I believe strongly that we should avoid putting things in the kernel 
-unless they absolutely have to be.  I'm definitely interested in playing 
-with vhost to see if there are ways to put even less in the kernel.  In 
-particular, I think it would be a big win to avoid knowledge of slots in 
-the kernel by doing ring translation in userspace.  This implies a 
-userspace transition in the fast path.  This may or may not be 
-acceptable.  I think this is going to be a very interesting experiment 
-and will ultimately determine whether my intuition about the cost of 
-dropping to userspace is right or wrong.
-
-
-> Conversely, I am not afraid of requiring a new driver to optimize the
-> general PV interface.  In the long term, this will reduce the amount of
-> reimplementing the same code over and over, reduce system overhead, and
-> it adds new features not previously available (for instance, coalescing
-> and prioritizing interrupts).
->   
-
-I think you have a lot of ideas and I don't know that we've been able to 
-really understand your vision.  Do you have any plans on writing a paper 
-about vbus that goes into some of your thoughts in detail?
-
->> If that's the case, then I don't see any
->> reason to adopt vbus unless Greg things there are other compelling
->> features over virtio.
->>     
->
-> Aside from the fact that this is another confusion of the vbus/virtio
-> relationship...yes, of course there are compelling features (IMHO) or I
-> wouldn't be expending effort ;)  They are at least compelling enough to
-> put in AlacrityVM.
-
-This whole AlactricyVM thing is really hitting this nail with a 
-sledgehammer.  While the kernel needs to be very careful about what it 
-pulls in, as long as you're willing to commit to ABI compatibility, we 
-can pull code into QEMU to support vbus.  Then you can just offer vbus 
-host and guest drivers instead of forking the kernel.
-
->   If upstream KVM doesn't want them, that's KVMs
-> decision and I am fine with that.  Simply never apply my qemu patches to
-> qemu-kvm.git, and KVM will be blissfully unaware if vbus is present.
-
-As I mentioned before, if you submit patches to upstream QEMU, we'll 
-apply them (after appropriate review).  As I said previously, we want to 
-avoid user confusion as much as possible.  Maybe this means limiting it 
-to -device or a separate machine type.  I'm not sure, but that's 
-something we can discussion on qemu-devel.
-
->   I
-> do hope that I can convince the KVM community otherwise, however. :)
->   
-
-Regards,
-
-Anthony Liguori
+ arch/sh/boards/mach-se/7724/setup.c |    9 ++--
+ arch/sh/kernel/cpu/shmobile/sleep.S |   70 ++++++++++++++++++++++++++++++++++-
+ drivers/clocksource/sh_cmt.c        |   28 ++++++++++++++
+ drivers/video/sh_mobile_lcdcfb.c    |    5 ++
+ 4 files changed, 106 insertions(+), 6 deletions(-)
