@@ -1,49 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758627AbZHRKex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758629AbZHRKi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758627AbZHRKex (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 06:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbZHRKex
+	id S1758629AbZHRKi5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 06:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758478AbZHRKi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 06:34:53 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:45913 "EHLO
+	Tue, 18 Aug 2009 06:38:56 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:39998 "EHLO
 	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751358AbZHRKew convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1753746AbZHRKi4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 06:34:52 -0400
+	Tue, 18 Aug 2009 06:38:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=p4vf/w51kjBl4ilG7DB2JKJWPmn8vmIehQni9Dje8O7F1fGT1ePslYStVw+sgwnx44
-         Ntx+fZENhI0TpRberezC6SwFutwkbf3FfIF9RHEYcOOycQG4cRbR580aCNYZuEVo3Mhc
-         GNtASrFRIcRRtGyRvtucgkSQ/lllZWlKmNSEY=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=n9uuJhFffCYqQXxJ8Pbr2g9lVuiqEAzod0a+e4xrOJPhUfwvRBl4D6brKT/Vkvw7Qj
+         q3NMQ1dzwmtzqMcYP+OuzzOplII0n7+eTvrmaglcXvIy2IOS7FZPdWv3XaSjpbclWHuU
+         MOh/3vUXd5eOF2btwL3xZAwfZQTXGaDSjS3VQ=
+Date: Tue, 18 Aug 2009 12:38:54 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing, sched: mark preempt_schedule() notrace
+Message-ID: <20090818103853.GB5231@nowhere>
+References: <4A8A5FF5.8080609@cn.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20090818102136.GN29655@pengutronix.de>
-References: <20090814170228.GM13320@pengutronix.de>
-	 <1158166a0908141304y70300ab3p899b0d4609efded9@mail.gmail.com>
-	 <20090814204305.GA31727@pengutronix.de>
-	 <20090815103532.GA5596@sig21.net> <4A8A7D38.5020201@gmail.com>
-	 <20090818102136.GN29655@pengutronix.de>
-Date: Tue, 18 Aug 2009 12:34:52 +0200
-Message-ID: <81b0412b0908180334u51fd957dh36f2a4946dffbb0b@mail.gmail.com>
-Subject: Re: New fast(?)-boot results on ARM
-From: Alex Riesen <raa.lkml@gmail.com>
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-Cc: Marco Stornelli <marco.stornelli@gmail.com>,
-       Johannes Stezenbach <js@sig21.net>,
-       Denys Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Tim Bird <tim.bird@am.sony.com>, kernel@pengutronix.de
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8A5FF5.8080609@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 12:21, Robert Schwebel<r.schwebel@pengutronix.de> wrote:
-> - In general we want to have our systems close to what the mainline
->  does; Automation & Embedded is only a small market, and anything
->  which is *not* specific to these markets but mainline is good.
+On Tue, Aug 18, 2009 at 04:01:57PM +0800, Lai Jiangshan wrote:
+> 
+> Current preempt_schedule() is not marked notrace. It may be
+> infinite recursion in __trace_graph_return().
+> 
+> preempt_schedule()
+>   __trace_graph_return()
+>     ftrace_preempt_disable() (!!return false!!)
+>     ftrace_preempt_enable()
+>       preempt_enable_notrace()
+>          preempt_schedule() (need_resched() may be true again)
 
-BTW, what is your mainline (or it looks like you mean "upstream")?
+
+
+It would happen in __trace_graph_return() , when preempt_schedule()
+has finished its job. It's very unlikely the TIF_NEED_RESCHED is
+set just after (because it has just been cleared).
+But why not. In that case, preempt_schedule() is called again but it's
+not a real tracing recursion.
+
+That seems like a normal behaviour actually.
+
+ 
+> 
+> It hardly happens, but marking preempt_schedule() notrace
+> makes it safer.
+> 
+> One interesting thing is that preempt_schedule() is in
+> the blacklist of kprobe subsystem. "__kprobes" implies "notrace".
+> But preempt_schedule() cannot be marked __kprobes for it
+> has been marked __sched. It is in the blacklist makes me
+> consider this: should it be marked "notrace" -- YES.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 5184580..2e9e209 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -5534,7 +5534,7 @@ out:
+>   * off of preempt_enable. Kernel preemptions off return from interrupt
+>   * occur there and call schedule directly.
+>   */
+> -asmlinkage void __sched preempt_schedule(void)
+> +asmlinkage void __sched notrace preempt_schedule(void)
+>  {
+>  	struct thread_info *ti = current_thread_info();
+>  
+> 
+> 
+> 
+> 
+> 
+> 
+>      
+> 
+
