@@ -1,98 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbZHRI7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757726AbZHRJFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758054AbZHRI7c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 04:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbZHRI7b
+	id S1757726AbZHRJFJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 05:05:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbZHRJFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 04:59:31 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:61723 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753149AbZHRI7a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 04:59:30 -0400
-Date: Tue, 18 Aug 2009 10:59:27 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mundt <lethal@linux-sh.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Jason Baron <jbaron@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       Wu Zhangjin <wuzj@lemote.com>, linux-next@vger.kernel.org,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [S390] ftrace: update system call tracer support
-Message-ID: <20090818105927.30f6a140@skybase>
-In-Reply-To: <20090818085110.GA2074@elte.hu>
-References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com>
-	<20090812091133.GA21655@elte.hu>
-	<20090818004654.GA4402@linux-sh.org>
-	<20090818073211.GA26670@elte.hu>
-	<20090818085110.GA2074@elte.hu>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	Tue, 18 Aug 2009 05:05:08 -0400
+Received: from cmpxchg.org ([85.214.51.133]:58559 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753149AbZHRJFH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 05:05:07 -0400
+Date: Tue, 18 Aug 2009 11:04:19 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       stern@rowland.harvard.edu, akpm@linux-foundation.org, apw@canonical.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, peterz@infradead.org
+Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
+Message-ID: <20090818090419.GA3730@cmpxchg.org>
+References: <13a78aa7-dd27-49d9-8164-d6e802bd4796@default> <20090813145106.GA25333@cmpxchg.org> <1250175853.3901.34.camel@mulgrave.site> <4A843D66.1060407@xenotime.net> <20090813180856.GB26020@cmpxchg.org> <4A85ABBB.5060806@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A85ABBB.5060806@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Aug 2009 10:51:10 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+Hello Randy,
 
+On Fri, Aug 14, 2009 at 11:23:55AM -0700, Randy Dunlap wrote:
+> Johannes Weiner wrote:
+> > diff --git a/scripts/kernel-doc b/scripts/kernel-doc
+> > index b52d340..2921aab 100755
+> > --- a/scripts/kernel-doc
+> > +++ b/scripts/kernel-doc
+> > @@ -281,6 +281,7 @@ my $doc_end = '\*/';
+> >  my $doc_com = '\s*\*\s*';
+> >  my $doc_decl = $doc_com . '(\w+)';
+> >  my $doc_sect = $doc_com . '([' . $doc_special . ']?[\w\s]+):(.*)';
+> > +my $doc_cont = $doc_com . '([^@/\s].*)';
+> >  my $doc_content = $doc_com . '(.*)';
+> >  my $doc_block = $doc_com . 'DOC:\s*(.*)?';
+> >  
+> > @@ -1995,6 +1996,7 @@ sub process_file($) {
+> >      my $identifier;
+> >      my $func;
+> >      my $descr;
+> > +    my $in_purpose = 0;
+> >      my $initial_section_counter = $section_counter;
+> >  
+> >      if (defined($ENV{'SRCTREE'})) {
+> > @@ -2044,6 +2046,7 @@ sub process_file($) {
+> >  		    $descr =~ s/\s*$//;
+> >  		    $descr =~ s/\s+/ /;
+> >  		    $declaration_purpose = xml_escape($descr);
+> > +		    $in_purpose = 1;
+> >  		} else {
+> >  		    $declaration_purpose = "";
+> >  		}
+> > @@ -2075,7 +2078,12 @@ sub process_file($) {
+> >  		++$warnings;
+> >  		$state = 0;
+> >  	    }
+> > +	} elsif ($in_purpose == 1 && /$doc_cont/o) {
+> > +	    # continued description
+> > +	    chomp($declaration_purpose);
+> > +	    $declaration_purpose .= " " . $1;
+> >  	} elsif ($state == 2) {	# look for head: lines, and include content
+> > +	    $in_purpose = 0;
+> >  	    if (/$doc_sect/o) {
+> >  		$newsection = $1;
+> >  		$newcontents = $2;
 > 
-> * Ingo Molnar <mingo@elte.hu> wrote:
+> Hi Hannes,
 > 
-> > * Paul Mundt <lethal@linux-sh.org> wrote:
-> > 
-> > > [ Adding to Cc everyone that now has a broken tree thanks to this .. ]
-> > > 
-> > > On Wed, Aug 12, 2009 at 11:11:33AM +0200, Ingo Molnar wrote:
-> > > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > > > > This pull request integrate one cleanup/fix for ftrace and an 
-> > > > > update for syscall tracing: the migration from old-style tracer to 
-> > > > > individual tracepoints/trace_events and the support for perf 
-> > > > > counter.
-> > > > > 
-> > > > > I've tested it with success either with ftrace (every syscall 
-> > > > > tracepoints enabled at the same time without problems) and with 
-> > > > > perfcounter.
-> > > > > 
-> > > > > May be one drawback: it creates so much trace events that the 
-> > > > > ftrace selftests can take some time :-)
-> > > > 
-> > > > Pulled, thanks a lot!
-> > > 
-> > > And this has now subsequently broken every single SH and S390 
-> > > configuration, [...]
-> > 
-> > I test SH cross-builds regularly. I just checked the SH defconfig 
-> > and it builds just fine here:
-> > 
-> > $ make -j32 CROSS_COMPILE=sh3-linux- ARCH=sh vmlinux
+> This looks good in theory, but it doesn't survive a "make htmldocs"
+> after the patch is applied.
 > 
-> The s390 build indeed broke. (This got masked by the s390 toolchain 
-> i'm using not having been able to build Linus's tree - i fixed 
-> that.)
+> It could be the ending kernel-doc comment characters:
+>  **/
 > 
-> Could you try the fix below? It does the trick here.
+> The problem is in drivers/scsi/scsi_devinfo.c:
+> /**
+>  * scsi_dev_info_list_delete - called from scsi.c:exit_scsi to remove the scsi_dev_info_list.
+>  **/
+> void scsi_exit_devinfo(void)
+> {
 > 
-> Martin, Heiko - does the fix look good to you? regs->gprs[2] seems 
-> to be the register used for both the syscall number (enter 
-> callback) and for the return code (exit callback).
+> 
+> I'm currently on vacation, but I'll look into it more if you can't
+> do so.
 
-Correct, for do_syscall_trace_{enter,exit} the code in entry.S stores
-the system call number in regs->gprs[2]. The fix is fine.
-Thanks Ingo.
+Yeah, it's the terminating **/ which matches $doc_cont.  I will try to
+send an updated version this evening.
 
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+	Hannes
