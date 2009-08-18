@@ -1,77 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759456AbZHRR0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbZHRR1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759456AbZHRR0v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 13:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759406AbZHRR0u
+	id S1759479AbZHRR1y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 13:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755638AbZHRR1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 13:26:50 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:39231 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755063AbZHRR0u (ORCPT
+	Tue, 18 Aug 2009 13:27:53 -0400
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:54838 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750934AbZHRR1w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 13:26:50 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, linux-kernel@vger.kernel.org,
-       esandeen@redhat.com, eteo@redhat.com, eparis@redhat.com,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: [Patch 1/2] selinux: ajust rules for ATTR_FORCE
-References: <20090817071001.5913.94767.sendpatchset@localhost.localdomain>
-	<20090817071011.5913.69970.sendpatchset@localhost.localdomain>
-	<1250511313.3629.103.camel@moss-pluto.epoch.ncsc.mil>
-	<87prau5ld1.fsf@devron.myhome.or.jp>
-	<1250536052.3629.154.camel@moss-pluto.epoch.ncsc.mil>
-	<873a7q441a.fsf@devron.myhome.or.jp>
-	<1250538981.3629.184.camel@moss-pluto.epoch.ncsc.mil>
-	<87fxbq19qs.fsf@devron.myhome.or.jp>
-	<87my5yxidt.fsf@devron.myhome.or.jp>
-	<87y6pha7vv.fsf@devron.myhome.or.jp>
-Date: Wed, 19 Aug 2009 02:26:47 +0900
-In-Reply-To: <87y6pha7vv.fsf@devron.myhome.or.jp> (OGAWA Hirofumi's message of
-	"Tue, 18 Aug 2009 16:39:00 +0900")
-Message-ID: <87ljlh119k.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Tue, 18 Aug 2009 13:27:52 -0400
+Date: Tue, 18 Aug 2009 10:27:52 -0700
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Avi Kivity <avi@redhat.com>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net,
+       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
+	model for vbus_driver objects
+Message-ID: <20090818172752.GC17631@ovro.caltech.edu>
+References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <20090817174142.GA11140@redhat.com> <4A89BAC5.9040400@gmail.com> <20090818084606.GA13878@redhat.com> <20090818155329.GD31060@ovro.caltech.edu> <4A8ADC09.3030205@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Disposition: inline
+In-Reply-To: <4A8ADC09.3030205@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Tue, 18 Aug 2009 10:27:53 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[My ISP still seems to be stopping email server :-/]
+On Tue, Aug 18, 2009 at 07:51:21PM +0300, Avi Kivity wrote:
+> On 08/18/2009 06:53 PM, Ira W. Snyder wrote:
+>> So, in my system, copy_(to|from)_user() is completely wrong. There is no
+>> userspace, only a physical system. In fact, because normal x86 computers
+>> do not have DMA controllers, the host system doesn't actually handle any
+>> data transfer!
+>>    
+>
+> In fact, modern x86s do have dma engines these days (google for Intel  
+> I/OAT), and one of our plans for vhost-net is to allow their use for  
+> packets above a certain size.  So a patch allowing vhost-net to  
+> optionally use a dma engine is a good thing.
+>
 
->>> So if I read this correctly, (ATTR_FORCE| ATTR_KILL_SUID|ATTR_MODE) will 
->>> not return here, since 'ia_valid' will be ATTR_FORCE finally.
->>> 
->>> I think you forgot to clear ATTR_FORCE here...
->> 
->> Whoops, good catch. Fortunately, it doesn't seem to have actual problem,
->> but it's bug obviously, and sorry for that. Fixed patch was attached.
-> 
-> You can add my:
-> Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
+Yes, I'm aware that very modern x86 PCs have general purpose DMA
+engines, even though I don't have any capable hardware. However, I think
+it is better to support using any PC (with or without DMA engine, any
+architecture) as the PCI master, and just handle the DMA all from the
+PCI agent, which is known to have DMA?
 
-Thanks.
+>> I used virtio-net in both the guest and host systems in my example
+>> virtio-over-PCI patch, and succeeded in getting them to communicate.
+>> However, the lack of any setup interface means that the devices must be
+>> hardcoded into both drivers, when the decision could be up to userspace.
+>> I think this is a problem that vbus could solve.
+>>    
+>
+> Exposing a knob to userspace is not an insurmountable problem; vhost-net  
+> already allows changing the memory layout, for example.
+>
 
-Amerigo, could you handle that patch with his ack for the remaining work?
+Let me explain the most obvious problem I ran into: setting the MAC
+addresses used in virtio.
 
-BTW, I think [Patch 2/2] of
+On the host (PCI master), I want eth0 (virtio-net) to get a random MAC
+address.
 
--	newattrs.ia_valid |= should_remove_suid(dentry);
-+	ret = should_remove_suid(dentry);
-+	newattrs.ia_valid |= ret;
-+	if (ret)
-+		newattrs.ia_valid |= ATTR_FORCE;
+On the guest (PCI agent), I want eth0 (virtio-net) to get a specific MAC
+address, aa:bb:cc:dd:ee:ff.
 
-should be
+The virtio feature negotiation code handles this, by seeing the
+VIRTIO_NET_F_MAC feature in it's configuration space. If BOTH drivers do
+not have VIRTIO_NET_F_MAC set, then NEITHER will use the specified MAC
+address. This is because the feature negotiation code only accepts a
+feature if it is offered by both sides of the connection.
 
-	killsuid = should_remove_suid(dentry);
-	if (killsuid)
-		newattrs.ia_valid |= killsuid | ATTR_FORCE;
+In this case, I must have the guest generate a random MAC address and
+have the host put aa:bb:cc:dd:ee:ff into the guest's configuration
+space. This basically means hardcoding the MAC addresses in the Linux
+drivers, which is a big no-no.
 
-or something (someone pointed out it) on earlier thread, IIRC.
+What would I expose to userspace to make this situation manageable?
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Thanks for the response,
+Ira
