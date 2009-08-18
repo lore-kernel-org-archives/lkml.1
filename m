@@ -1,112 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758535AbZHROLC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759174AbZHROMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758535AbZHROLC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 10:11:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbZHROLB
+	id S1759174AbZHROMB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 10:12:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbZHROMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 10:11:01 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53116 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751217AbZHROLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 10:11:00 -0400
-Date: Tue, 18 Aug 2009 14:09:36 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
-       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1250604226-6852-1-git-send-email-fweisbec@gmail.com>
-References: <1250604226-6852-1-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/core] perf tools: Fix comm column adjusting
-Message-ID: <tip-4273b005875c34beda4a11c9d4a9132d80378036@git.kernel.org>
-Git-Commit-ID: 4273b005875c34beda4a11c9d4a9132d80378036
-X-Mailer: tip-git-log-daemon
+	Tue, 18 Aug 2009 10:12:01 -0400
+Received: from smtp102.prem.mail.sp1.yahoo.com ([98.136.44.57]:41840 "HELO
+	smtp102.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753633AbZHROMA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 10:12:00 -0400
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: bJxE.NkVM1lqCMXthP2Bg2NfAtbzJfBKhvz756rcwoYJsIGG6m0HfrBWmhBkqqPpVru5epSI1j3cel2TosOE.vGEDNnl1H6k7_scuwpAgSfkfk8LXUHbw2v6rn.6hQekp40.oeS6RRBelAHt8CRS0K_LLmtXNa5v0p80cOwlkMzD73a6crIv5LHZn_mt16LVehipmCnauBUdyKX8orr_g67nN2t4GnoiTAxJGWcG6Rm6E6rN9onOAaum8WVbdc1fgzYzHmAYdclk0xdOQQAiQa9t6y2j3yrVU_2gr4qmRU9JZXLkD.EEf6A66Zmjei8a6H_RhOsdi43Vpi0Gt67e7gikfgLgXcg3peVRa451syoSUok5CyNvkQaunaa1q7k-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4A8AB6B0.8010800@schaufler-ca.com>
+Date: Tue, 18 Aug 2009 07:12:00 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 18 Aug 2009 14:09:36 +0000 (UTC)
+To: Stephen Smalley <sds@tycho.nsa.gov>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>, jmorris@namei.org,
+       gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: Re: [PATCH] Security/sysfs: v2 - Enable security xattrs to be set
+ on sysfs files, directories, and symlinks.
+References: <1247665721-2619-1-git-send-email-dpquigl@tycho.nsa.gov>	 <4A84EF1D.8060408@schaufler-ca.com> <m1my62xde6.fsf@fess.ebiederm.org>	 <4A861291.1030404@schaufler-ca.com> <m1tz09j00q.fsf@fess.ebiederm.org>	 <4A864008.50907@schaufler-ca.com> <m1my61sjie.fsf@fess.ebiederm.org>	 <4A8A2616.8020809@schaufler-ca.com> <1250597660.3629.204.camel@moss-pluto.epoch.ncsc.mil>
+In-Reply-To: <1250597660.3629.204.camel@moss-pluto.epoch.ncsc.mil>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4273b005875c34beda4a11c9d4a9132d80378036
-Gitweb:     http://git.kernel.org/tip/4273b005875c34beda4a11c9d4a9132d80378036
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Tue, 18 Aug 2009 16:03:46 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 18 Aug 2009 16:06:18 +0200
+Stephen Smalley wrote:
+> On Mon, 2009-08-17 at 20:55 -0700, Casey Schaufler wrote:
+>   
+>> From: Casey Schaufler <casey@schaufler-ca.com>
+>>
+>> Another approach to limited xattr support in sysfs.
+>>
+>> I tried to listen to the objections to a linked list representation
+>> and I think that I understand that there isn't really any interest
+>> in supporting xattrs for real, only for those maintained by LSMs.
+>> I also looked carefully into the claims that memory usage is
+>> critical and that the code I had before was duplicating effort.
+>>
+>> This version lets the surrounding code do as much of the work as
+>> possible. Unlike the initial proposal for sysfs xattrs, it does not
+>> introduce any new LSM hooks, it uses hooks that already exist. It
+>> does not support any attributes on its own, it only provides for
+>> the attribute advertised by security_inode_listsecurity(). It could
+>> easily be used by other filesystems to provide the same LSM xattr
+>> support. It could also be extended to do the list based support for
+>> arbitrary xattrs without too much effort.
+>>
+>> Probably the oddest bit is that the inode_getsecurity hooks need to
+>> check to see if they are getting called before the inode is instantiated
+>> and return -ENODATA in that event. It would be possible to do a
+>> filesystem specific check instead, but this way provides for generally
+>> correct behavior at small cost.
+>>
+>> This has been tested with Smack, but not SELinux. I think that
+>> SELinux will work correctly, but it could be that a labeling
+>> behavior that is different than the "usual" instantiation labeling
+>> is actually desired. That would be an easy change.
+>>
+>> As always, let me know if I missed something obvious or if there's a
+>> fatal flaw in the scheme.
+>>     
+>
+> The point of the David's patch was to provide a way to save the security
+> xattr in the backing data structure for sysfs entries when an attribute
+> value is set from userspace so that the value can be preserved if the
+> inode is evicted from memory and later re-instantiated.  AFAICS, your
+> patch completely misses the problem.  How about we just go back to
+> David's patch?
+>   
+Oh no, that would use too much memory!
 
-perf tools: Fix comm column adjusting
+Either you care about the value the user set, in which case you
+want to save the value the user set, or you don't. If you do, you
+have to save that value, not an LSM's interpretation of that value.
+No secids. No new hooks.
 
-The librarization of the thread helpers between annotate and
-report lost some perf report specifics.
-
-This patch fixes the thread comm column adjusting that has
-been omitted during this export.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
-LKML-Reference: <1250604226-6852-1-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+I'll have another go. Thank you for the clarification.
 
 
----
- tools/perf/builtin-report.c |   25 +++++++++++++++++++++++--
- 1 files changed, 23 insertions(+), 2 deletions(-)
-
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 1e3ad22..3fc0d47 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -665,6 +665,27 @@ static void dso__calc_col_width(struct dso *self)
- 	self->slen_calculated = 1;
- }
- 
-+static int thread__set_comm_adjust(struct thread *self, const char *comm)
-+{
-+	int ret = thread__set_comm(self, comm);
-+
-+	if (ret)
-+		return ret;
-+
-+	if (!col_width_list_str && !field_sep &&
-+	    (!comm_list || strlist__has_entry(comm_list, comm))) {
-+		unsigned int slen = strlen(comm);
-+
-+		if (slen > comms__col_width) {
-+			comms__col_width = slen;
-+			threads__col_width = slen + 6;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+
- static struct symbol *
- resolve_symbol(struct thread *thread, struct map **mapp,
- 	       struct dso **dsop, u64 *ipp)
-@@ -1056,7 +1077,7 @@ static void register_idle_thread(void)
- 	struct thread *thread = threads__findnew(0, &threads, &last_match);
- 
- 	if (thread == NULL ||
--			thread__set_comm(thread, "[idle]")) {
-+			thread__set_comm_adjust(thread, "[idle]")) {
- 		fprintf(stderr, "problem inserting idle task.\n");
- 		exit(-1);
- 	}
-@@ -1226,7 +1247,7 @@ process_comm_event(event_t *event, unsigned long offset, unsigned long head)
- 		event->comm.comm, event->comm.pid);
- 
- 	if (thread == NULL ||
--	    thread__set_comm(thread, event->comm.comm)) {
-+	    thread__set_comm_adjust(thread, event->comm.comm)) {
- 		dump_printf("problem processing PERF_EVENT_COMM, skipping event.\n");
- 		return -1;
- 	}
