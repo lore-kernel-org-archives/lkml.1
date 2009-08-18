@@ -1,49 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbZHRCqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755316AbZHRDH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755689AbZHRCqM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 22:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbZHRCqL
+	id S1755316AbZHRDH0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 23:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbZHRDHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 22:46:11 -0400
-Received: from mail.lang.hm ([64.81.33.126]:55052 "EHLO bifrost.lang.hm"
+	Mon, 17 Aug 2009 23:07:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48032 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751238AbZHRCqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 22:46:10 -0400
-Date: Mon, 17 Aug 2009 19:45:33 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Rick Jones <rick.jones2@hp.com>
-cc: David Miller <davem@davemloft.net>, tim.bird@am.sony.com,
-       r.schwebel@pengutronix.de, vda.linux@googlemail.com,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       arjan@linux.intel.com, kernel@pengutronix.de, netdev@vger.kernel.org
-Subject: Re: new ipdelay= option for faster netboot
-In-Reply-To: <4A8A0454.8000902@hp.com>
-Message-ID: <alpine.DEB.2.00.0908171942430.30426@asgard.lang.hm>
-References: <20090814204305.GA31727@pengutronix.de> <4A89AC40.2040109@am.sony.com> <4A89DB15.6060101@am.sony.com> <20090817.180323.253692704.davem@davemloft.net> <4A8A0454.8000902@hp.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1751011AbZHRDHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 23:07:25 -0400
+Message-ID: <4A8A1B2E.20505@redhat.com>
+Date: Tue, 18 Aug 2009 11:08:30 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>, Matt Mackall <mpm@selenic.com>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [Patch] proc: drop write permission on 'timer_list' and 'slabinfo'
+References: <20090817094525.6355.88682.sendpatchset@localhost.localdomain>  <20090817094822.GA17838@elte.hu> <1250502847.5038.16.camel@penberg-laptop> <alpine.DEB.1.10.0908171228300.16267@gentwo.org> <4A8986BB.80409@cs.helsinki.fi> <alpine.DEB.1.10.0908171240370.16267@gentwo.org> <4A8A0B0D.6080400@redhat.com> <4A8A0B14.8040700@cn.fujitsu.com>
+In-Reply-To: <4A8A0B14.8040700@cn.fujitsu.com>
+Content-Type: multipart/mixed;
+ boundary="------------000201070303040303050302"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Aug 2009, Rick Jones wrote:
+This is a multi-part message in MIME format.
+--------------000201070303040303050302
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> David Miller wrote:
->> I have card/switch combinations that take up to 10 seconds to
->> negotiate a proper link.
+Li Zefan wrote:
+>>  static int __init slab_proc_init(void)
+>>  {
+>> -	proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
+>> +	proc_create("slabinfo",S_IRUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
+>>     
 >
-> Gotta love it when things adhere to specs...
+> S_IRUSR|S_IRUGO == S_IRUGO
+>
+>   
 
-the default on Cisco switches is to wait 30 seconds before fully enabling 
-the port so that it can listen for spanning tree broadcasts.
+Ah, yeah. Thanks!
 
-for windows systems this doesn't cause any problems (they take long enough 
-to boot), but for a tightly configured linux box it can be fully booted 
-long before the switch decides to enable the port (for that matter, I have 
-a bare-metal install process that takes about 90 seconds from hitting 
-power, from a CD. I could probably speed things up by switching to USB 
-boot media)
+Update it.
 
-David Lang
+Signed-off-by: WANG Cong <amwang@redhat.com>
+
+
+
+--------------000201070303040303050302
+Content-Type: text/plain;
+ name="proc-file-write-permission-fix2.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="proc-file-write-permission-fix2.diff"
+
+diff --git a/mm/slub.c b/mm/slub.c
+index b9f1491..61398c0 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -4726,7 +4726,7 @@ static const struct file_operations proc_slabinfo_operations = {
+ 
+ static int __init slab_proc_init(void)
+ {
+-	proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
++	proc_create("slabinfo",S_IRUGO,NULL,&proc_slabinfo_operations);
+ 	return 0;
+ }
+ module_init(slab_proc_init);
+
+--------------000201070303040303050302--
