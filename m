@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759130AbZHRPyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbZHRPzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759130AbZHRPyV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 11:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758531AbZHRPyU
+	id S1759301AbZHRPzW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 11:55:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759123AbZHRPzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 11:54:20 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:46929 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753805AbZHRPyU convert rfc822-to-8bit (ORCPT
+	Tue, 18 Aug 2009 11:55:22 -0400
+Received: from [195.33.99.132] ([195.33.99.132]:46960 "EHLO vpn.id2.novell.com"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759033AbZHRPzV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 11:54:20 -0400
-Message-Id: <4A8AEACD020000780001056D@vpn.id2.novell.com>
+	Tue, 18 Aug 2009 11:55:21 -0400
+Message-Id: <4A8AEB0B0200007800010570@vpn.id2.novell.com>
 X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Tue, 18 Aug 2009 16:54:21 +0100
+Date: Tue, 18 Aug 2009 16:55:23 +0100
 From: "Jan Beulich" <JBeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] don't use alloc_bootmem_low() where not strictly
-	 needed
+To: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH] also use alloc_large_system_hash() for the PID hash
+	 table
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
@@ -26,80 +25,105 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since alloc_bootmem() will never return inaccessible (via virtual
-addressing) memory anyway, using the ..._low() variant only makes sense
-when the physical address range of the allocated memory must fulfill
-further constraints, espacially since on 64-bits (or more generally in
-all cases where the pools the two variants allocate from are
-different), the space available for ..._low() is more easily exhausted 
-than the full available range.
+This is being done by allowing boot time allocations to specify that
+they may want a sub-page sized amount of memory.
 
-Probably the use in alloc_tce_table() could also be eliminated (based
-on code inspection of pci-calgary_64.c), but that seems too risky given
-I know nothing about that hardware and have no way to test it.
+Overall this seems more consistent with the other hash table
+allocations, and allows making two supposedly mm-only variables really
+mm-only (nr_{kernel,all}_pages).
 
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
 ---
- arch/x86/kernel/e820.c    |    2 +-
- arch/x86/mm/init_32.c     |    4 ++--
- drivers/firmware/memmap.c |    2 +-
- kernel/power/snapshot.c   |    2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ include/linux/bootmem.h |    5 ++---
+ kernel/pid.c            |   15 ++++-----------
+ mm/page_alloc.c         |   13 ++++++++++---
+ 3 files changed, 16 insertions(+), 17 deletions(-)
 
---- linux-2.6.31-rc6/arch/x86/kernel/e820.c	2009-08-18 15:31:16.000000000 +0200
-+++ 2.6.31-rc6-avoid-alloc_bootmem_low/arch/x86/kernel/e820.c	2009-07-29 12:58:44.000000000 +0200
-@@ -1331,7 +1331,7 @@ void __init e820_reserve_resources(void)
- 	struct resource *res;
- 	u64 end;
+--- linux-2.6.31-rc6/include/linux/bootmem.h	2009-06-10 05:05:27.000000000 +0200
++++ 2.6.31-rc6-alloc-small-hash/include/linux/bootmem.h	2009-08-17 15:21:17.000000000 +0200
+@@ -132,9 +132,6 @@ static inline void *alloc_remap(int nid,
+ }
+ #endif /* CONFIG_HAVE_ARCH_ALLOC_REMAP */
  
--	res = alloc_bootmem_low(sizeof(struct resource) * e820.nr_map);
-+	res = alloc_bootmem(sizeof(struct resource) * e820.nr_map);
- 	e820_res = res;
- 	for (i = 0; i < e820.nr_map; i++) {
- 		end = e820.map[i].addr + e820.map[i].size - 1;
---- linux-2.6.31-rc6/arch/x86/mm/init_32.c	2009-08-18 15:31:16.000000000 +0200
-+++ 2.6.31-rc6-avoid-alloc_bootmem_low/arch/x86/mm/init_32.c	2009-07-29 12:58:44.000000000 +0200
-@@ -84,7 +84,7 @@ static pmd_t * __init one_md_table_init(
- #ifdef CONFIG_X86_PAE
- 	if (!(pgd_val(*pgd) & _PAGE_PRESENT)) {
- 		if (after_bootmem)
--			pmd_table = (pmd_t *)alloc_bootmem_low_pages(PAGE_SIZE);
-+			pmd_table = (pmd_t *)alloc_bootmem_pages(PAGE_SIZE);
- 		else
- 			pmd_table = (pmd_t *)alloc_low_page();
- 		paravirt_alloc_pmd(&init_mm, __pa(pmd_table) >> PAGE_SHIFT);
-@@ -116,7 +116,7 @@ static pte_t * __init one_page_table_ini
- #endif
- 			if (!page_table)
- 				page_table =
--				(pte_t *)alloc_bootmem_low_pages(PAGE_SIZE);
-+				(pte_t *)alloc_bootmem_pages(PAGE_SIZE);
- 		} else
- 			page_table = (pte_t *)alloc_low_page();
+-extern unsigned long __meminitdata nr_kernel_pages;
+-extern unsigned long __meminitdata nr_all_pages;
+-
+ extern void *alloc_large_system_hash(const char *tablename,
+ 				     unsigned long bucketsize,
+ 				     unsigned long numentries,
+@@ -145,6 +142,8 @@ extern void *alloc_large_system_hash(con
+ 				     unsigned long limit);
  
---- linux-2.6.31-rc6/drivers/firmware/memmap.c	2009-08-18 15:31:18.000000000 +0200
-+++ 2.6.31-rc6-avoid-alloc_bootmem_low/drivers/firmware/memmap.c	2009-07-29 12:58:44.000000000 +0200
-@@ -164,7 +164,7 @@ int __init firmware_map_add_early(u64 st
+ #define HASH_EARLY	0x00000001	/* Allocating during early boot? */
++#define HASH_SMALL	0x00000002	/* sub-page allocation allowed, min
++					 * shift passed via *_hash_shift */
+ 
+ /* Only NUMA needs hash distribution. 64bit NUMA architectures have
+  * sufficient vmalloc space.
+--- linux-2.6.31-rc6/kernel/pid.c	2009-08-18 15:31:56.000000000 +0200
++++ 2.6.31-rc6-alloc-small-hash/kernel/pid.c	2009-08-17 15:21:17.000000000 +0200
+@@ -40,7 +40,7 @@
+ #define pid_hashfn(nr, ns)	\
+ 	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
+ static struct hlist_head *pid_hash;
+-static int pidhash_shift;
++static unsigned int pidhash_shift = 4;
+ struct pid init_struct_pid = INIT_STRUCT_PID;
+ 
+ int pid_max = PID_MAX_DEFAULT;
+@@ -499,19 +499,12 @@ struct pid *find_ge_pid(int nr, struct p
+ void __init pidhash_init(void)
  {
- 	struct firmware_map_entry *entry;
+ 	int i, pidhash_size;
+-	unsigned long megabytes = nr_kernel_pages >> (20 - PAGE_SHIFT);
  
--	entry = alloc_bootmem_low(sizeof(struct firmware_map_entry));
-+	entry = alloc_bootmem(sizeof(struct firmware_map_entry));
- 	if (WARN_ON(!entry))
- 		return -ENOMEM;
+-	pidhash_shift = max(4, fls(megabytes * 4));
+-	pidhash_shift = min(12, pidhash_shift);
++	pid_hash = alloc_large_system_hash("PID", sizeof(*pid_hash), 0, 18,
++					   HASH_EARLY | HASH_SMALL,
++					   &pidhash_shift, NULL, 4096);
+ 	pidhash_size = 1 << pidhash_shift;
  
---- linux-2.6.31-rc6/kernel/power/snapshot.c	2009-08-18 15:31:56.000000000 +0200
-+++ 2.6.31-rc6-avoid-alloc_bootmem_low/kernel/power/snapshot.c	2009-07-29 12:58:44.000000000 +0200
-@@ -619,7 +619,7 @@ __register_nosave_region(unsigned long s
- 		BUG_ON(!region);
- 	} else
- 		/* This allocation cannot fail */
--		region = alloc_bootmem_low(sizeof(struct nosave_region));
-+		region = alloc_bootmem(sizeof(struct nosave_region));
- 	region->start_pfn = start_pfn;
- 	region->end_pfn = end_pfn;
- 	list_add_tail(&region->list, &nosave_regions);
+-	printk("PID hash table entries: %d (order: %d, %Zd bytes)\n",
+-		pidhash_size, pidhash_shift,
+-		pidhash_size * sizeof(struct hlist_head));
+-
+-	pid_hash = alloc_bootmem(pidhash_size *	sizeof(*(pid_hash)));
+-	if (!pid_hash)
+-		panic("Could not alloc pidhash!\n");
+ 	for (i = 0; i < pidhash_size; i++)
+ 		INIT_HLIST_HEAD(&pid_hash[i]);
+ }
+--- linux-2.6.31-rc6/mm/page_alloc.c	2009-08-18 15:31:56.000000000 +0200
++++ 2.6.31-rc6-alloc-small-hash/mm/page_alloc.c	2009-08-17 15:21:17.000000000 +0200
+@@ -123,8 +123,8 @@ static char * const zone_names[MAX_NR_ZO
+ 
+ int min_free_kbytes = 1024;
+ 
+-unsigned long __meminitdata nr_kernel_pages;
+-unsigned long __meminitdata nr_all_pages;
++static unsigned long __meminitdata nr_kernel_pages;
++static unsigned long __meminitdata nr_all_pages;
+ static unsigned long __meminitdata dma_reserve;
+ 
+ #ifdef CONFIG_ARCH_POPULATES_NODE_MAP
+@@ -4728,7 +4728,14 @@ void *__init alloc_large_system_hash(con
+ 			numentries <<= (PAGE_SHIFT - scale);
+ 
+ 		/* Make sure we've got at least a 0-order allocation.. */
+-		if (unlikely((numentries * bucketsize) < PAGE_SIZE))
++		if (unlikely(flags & HASH_SMALL)) {
++			/* Makes no sense without HASH_EARLY */
++			WARN_ON(!(flags & HASH_EARLY));
++			if (!(numentries >> *_hash_shift)) {
++				numentries = 1UL << *_hash_shift;
++				BUG_ON(!numentries);
++			}
++		} else if (unlikely((numentries * bucketsize) < PAGE_SIZE))
+ 			numentries = PAGE_SIZE / bucketsize;
+ 	}
+ 	numentries = roundup_pow_of_two(numentries);
 
 
 
