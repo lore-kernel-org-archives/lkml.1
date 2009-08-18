@@ -1,115 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758566AbZHRLvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758736AbZHRLzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758566AbZHRLvH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 07:51:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbZHRLvG
+	id S1758736AbZHRLzT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 07:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758693AbZHRLzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 07:51:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53321 "EHLO mx2.redhat.com"
+	Tue, 18 Aug 2009 07:55:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36456 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753179AbZHRLvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 07:51:04 -0400
-Date: Tue, 18 Aug 2009 14:49:14 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gregory Haskins <gregory.haskins@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+	id S1758662AbZHRLzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 07:55:16 -0400
+Message-ID: <4A8A9686.1070401@redhat.com>
+Date: Tue, 18 Aug 2009 14:54:46 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: Gregory Haskins <gregory.haskins@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
        alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
        netdev@vger.kernel.org
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
-	vbus_driver objects
-Message-ID: <20090818114914.GA17721@redhat.com>
-References: <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com> <20090818095313.GC13878@redhat.com> <4A8A7BB9.2020906@redhat.com> <20090818100945.GD13878@redhat.com> <4A8A7EE5.6090209@redhat.com> <20090818102840.GF13878@redhat.com> <4A8A8631.1040006@redhat.com> <20090818110708.GG13878@redhat.com> <4A8A8D6D.9040909@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8A8D6D.9040909@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for	vbus_driver
+ objects
+References: <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com> <20090818095313.GC13878@redhat.com> <4A8A7BB9.2020906@redhat.com> <20090818100945.GD13878@redhat.com> <4A8A7EE5.6090209@redhat.com> <20090818102840.GF13878@redhat.com> <4A8A8631.1040006@redhat.com> <20090818110708.GG13878@redhat.com> <4A8A8D6D.9040909@redhat.com> <20090818114914.GA17721@redhat.com>
+In-Reply-To: <20090818114914.GA17721@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 02:15:57PM +0300, Avi Kivity wrote:
-> On 08/18/2009 02:07 PM, Michael S. Tsirkin wrote:
->> On Tue, Aug 18, 2009 at 01:45:05PM +0300, Avi Kivity wrote:
->>    
->>> On 08/18/2009 01:28 PM, Michael S. Tsirkin wrote:
->>>      
->>>>        
->>>>> Suppose a nested guest has two devices.  One a virtual device backed by
->>>>> its host (our guest), and one a virtual device backed by us (the real
->>>>> host), and assigned by the guest to the nested guest.  If both devices
->>>>> use hypercalls, there is no way to distinguish between them.
->>>>>
->>>>>          
->>>> Not sure I understand. What I had in mind is that devices would have to
->>>> either use different hypercalls and map hypercall to address during
->>>> setup, or pass address with each hypercall.  We get the hypercall,
->>>> translate the address as if it was pio access, and know the destination?
->>>>
->>>>        
->>> There are no different hypercalls.  There's just one hypercall
->>> instruction, and there's no standard on how it's used.  If a nested call
->>> issues a hypercall instruction, you have no idea if it's calling a
->>> Hyper-V hypercall or a vbus/virtio kick.
->>>      
->> userspace will know which it is, because hypercall capability
->> in the device has been activated, and can tell kernel, using
->> something similar to iosignalfd. No?
->>    
+On 08/18/2009 02:49 PM, Michael S. Tsirkin wrote:
 >
-> The host kernel sees a hypercall vmexit.  How does it know if it's a  
-> nested-guest-to-guest hypercall or a nested-guest-to-host hypercall?   
-> The two are equally valid at the same time.
+>> The host kernel sees a hypercall vmexit.  How does it know if it's a
+>> nested-guest-to-guest hypercall or a nested-guest-to-host hypercall?
+>> The two are equally valid at the same time.
+>>      
+> Here is how this can work - it is similar to MSI if you like:
+> - by default, the device uses pio kicks
+> - nested guest driver can enable hypercall capability in the device,
+>    probably with pci config cycle
+> - guest userspace (hypervisor running in guest) will see this request
+>    and perform pci config cycle on the "real" device, telling it to which
+>    nested guest this device is assigned
+>    
 
-Here is how this can work - it is similar to MSI if you like:
-- by default, the device uses pio kicks
-- nested guest driver can enable hypercall capability in the device,
-  probably with pci config cycle
-- guest userspace (hypervisor running in guest) will see this request
-  and perform pci config cycle on the "real" device, telling it to which
-  nested guest this device is assigned
-- host userspace (hypervisor running in host) will see this.
-  it now knows both which guest the hypercalls will be for,
-  and that the device in question is an emulated one,
-  and can set up kvm appropriately
+So far so good.
 
+> - host userspace (hypervisor running in host) will see this.
+>    it now knows both which guest the hypercalls will be for,
+>    and that the device in question is an emulated one,
+>    and can set up kvm appropriately
+>    
 
->>> You could have a protocol where you register the hypercall instruction's
->>> address with its recipient, but it quickly becomes a tangled mess.
->>>      
->> I really thought we could pass the io address in register as an input
->> parameter. Is there a way to do this in a secure manner?
->>
->> Hmm. Doesn't kvm use hypercalls now? How does this work with nesting?
->> For example, in this code in arch/x86/kvm/x86.c:
->>
->>          switch (nr) {
->>          case KVM_HC_VAPIC_POLL_IRQ:
->>                  ret = 0;
->>                  break;
->>          case KVM_HC_MMU_OP:
->>                  r = kvm_pv_mmu_op(vcpu, a0, hc_gpa(vcpu, a1, a2),&ret);
->>                  break;
->>          default:
->>                  ret = -KVM_ENOSYS;
->>                  break;
->>          }
->>
->> how do we know that it's the guest and not the nested guest performing
->> the hypercall?
->>    
->
-> The host knows whether the guest or nested guest are running.  If the  
-> guest is running, it's a guest-to-host hypercall.  If the nested guest  
-> is running, it's a nested-guest-to-guest hypercall.  We don't have  
-> nested-guest-to-host hypercalls (and couldn't unless we get agreement on  
-> a protocol from all hypervisor vendors).
+No it doesn't.  The fact that one device uses hypercalls doesn't mean 
+all hypercalls are for that device.  Hypercalls are a shared resource, 
+and there's no way to tell for a given hypercall what device it is 
+associated with (if any).
 
-Not necessarily. What I am saying is we could make this protocol part of
-guest paravirt driver. the guest that loads the driver and enables the
-capability, has to agree to the protocol. If it doesn't want to, it does
-not have to use that driver.
+>> The host knows whether the guest or nested guest are running.  If the
+>> guest is running, it's a guest-to-host hypercall.  If the nested guest
+>> is running, it's a nested-guest-to-guest hypercall.  We don't have
+>> nested-guest-to-host hypercalls (and couldn't unless we get agreement on
+>> a protocol from all hypervisor vendors).
+>>      
+> Not necessarily. What I am saying is we could make this protocol part of
+> guest paravirt driver. the guest that loads the driver and enables the
+> capability, has to agree to the protocol. If it doesn't want to, it does
+> not have to use that driver.
+>    
 
-> -- 
-> error compiling committee.c: too many arguments to function
+It would only work for kvm-on-kvm.
+
+-- 
+error compiling committee.c: too many arguments to function
+
