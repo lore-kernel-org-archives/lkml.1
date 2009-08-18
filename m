@@ -1,107 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758421AbZHRANr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932428AbZHRATQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758421AbZHRANr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 20:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZHRANq
+	id S932428AbZHRATQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 20:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758426AbZHRATP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 20:13:46 -0400
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:52058 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753010AbZHRANp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 20:13:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=SQA3Ak0Z7iRCOX4Taxxo9swotPoXKBJAdibYOIJFR4KGuHfVzVl1pcgybjgYcvLFM8
-         5LoI5QviSMvgjUniLpZKOAWLG3DSRKlJ5W6AQSxlnGaf89ALxQcCzxts01AGY1T7F3UT
-         fChN3RX3EdhZ9AS/VgSE4LRhJLloOdl6zjmD0=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: [GIT PULL] tracing fix for 2.6.31
-Date: Tue, 18 Aug 2009 02:13:42 +0200
-Message-Id: <1250554422-5316-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
+	Mon, 17 Aug 2009 20:19:15 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:43569 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750991AbZHRATP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 20:19:15 -0400
+Subject: Re: [patch 1/3] flex_array: fix get function for elements in base
+ starting at non-zero
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0908171644540.30313@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0908171644540.30313@chino.kir.corp.google.com>
+Content-Type: text/plain
+Date: Mon, 17 Aug 2009 17:19:11 -0700
+Message-Id: <1250554751.10725.22076.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+On Mon, 2009-08-17 at 16:46 -0700, David Rientjes wrote:
+> This fixes the bug by only checking for NULL parts when all elements do
+> not fit in the base structure when flex_array_get() is used.  Otherwise,
+> fa_element_to_part_nr() will always be 0 since there are no parts
+> structures needed and such element may never have been put.  Thus, it
+> will remain NULL due to the kzalloc() of the base.
 
-Please pull the following tracing fix for .31
+Whew.  That one took me way longer to grok than it should have.  Thanks
+for finding this.  Just to be clear, there is only a bug in
+flex_array_get(), right?  The flex_array_put() change is completely
+separate and is intended to optimize the case where we know the pointer
+can't be NULL.
 
-Thanks,
-Frederic.
+This definitely fixes a bug, but do you mind if we do it a bit
+differently?  The compiler should be able to take care of figuring out
+when that pointer actually needs to be checked, and I think it looks a
+bit nicer as it stands.   
 
+--
 
-The following changes since commit df4ecf1524c7793de3121b2d4e5fc6bcc0da3bfb:
-  Linus Torvalds (1):
-        Merge branch 'upstream' of git://ftp.linux-mips.org/pub/scm/upstream-linus
+When trying to use the 'packed' flex_array format, we take the space
+normally used the ->parts[] pointers and instead use it to store user
+data.  When doing that, we may have any kind of data in the ->parts[]
+pointers that the user puts there.  The user may be storing '\0's there
+or whatever else they want.  If they do that (or the data are
+uninitialized), we might falsely trigger this NULL check.
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git \
-	tracing/urgent
-
-Zhaolei (1):
-      ftrace: Unify effect of writing to trace_options and option/*
-
- kernel/trace/trace.c |   12 ++----------
- 1 files changed, 2 insertions(+), 10 deletions(-)
+This makes sure not to check the contents of the ->parts[] array until
+after we've determined that we are not going to use the 'packed' mode.  
 
 ---
->From f2d84b65b9778e8a35dd904f7d3993f0a60c9756 Mon Sep 17 00:00:00 2001
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-Date: Fri, 7 Aug 2009 18:55:48 +0800
-Subject: [PATCH] ftrace: Unify effect of writing to trace_options and option/*
 
-"echo noglobal-clock > trace_options" can be used to change trace
-clock but "echo 0 > options/global-clock" can't. The flag toggling
-will be silently accepted without actually changing the clock callback.
+ linux-2.6.git-dave/lib/flex_array.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-We can fix it by using set_tracer_flags() in
-trace_options_core_write().
-
-Changelog:
-v1->v2: Simplified switch() after Li Zefan <lizf@cn.fujitsu.com>'s
-        suggestion
-
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-Cc: Steven Rostedt <srostedt@redhat.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/trace.c |   12 ++----------
- 1 files changed, 2 insertions(+), 10 deletions(-)
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index c22b40f..8c35839 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3896,17 +3896,9 @@ trace_options_core_write(struct file *filp, const char __user *ubuf, size_t cnt,
- 	if (ret < 0)
- 		return ret;
+diff -puN lib/flex_array.c~fa-fixes-0 lib/flex_array.c
+--- linux-2.6.git/lib/flex_array.c~fa-fixes-0	2009-08-17 17:02:51.000000000 -0700
++++ linux-2.6.git-dave/lib/flex_array.c	2009-08-17 17:02:51.000000000 -0700
+@@ -257,11 +257,11 @@ void *flex_array_get(struct flex_array *
  
--	switch (val) {
--	case 0:
--		trace_flags &= ~(1 << index);
--		break;
--	case 1:
--		trace_flags |= 1 << index;
--		break;
--
--	default:
-+	if (val != 0 && val != 1)
- 		return -EINVAL;
--	}
-+	set_tracer_flags(1 << index, val);
- 
- 	*ppos += cnt;
- 
--- 
-1.6.2.3
+ 	if (element_nr >= fa->total_nr_elements)
+ 		return NULL;
+-	if (!fa->parts[part_nr])
+-		return NULL;
+ 	if (elements_fit_in_base(fa))
+ 		part = (struct flex_array_part *)&fa->parts[0];
+ 	else
+ 		part = fa->parts[part_nr];
++	if (!part)
++		return NULL;
+ 	return &part->elements[index_inside_part(fa, element_nr)];
+ }
+_
+
+
+-- Dave
 
