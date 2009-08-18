@@ -1,101 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbZHRLkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758249AbZHRLmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbZHRLkZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 07:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbZHRLkY
+	id S1758249AbZHRLmP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 07:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZHRLmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 07:40:24 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33545 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751007AbZHRLkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 07:40:24 -0400
-Date: Tue, 18 Aug 2009 13:40:24 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: "tina.yang" <tina.yang@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] sysrq: add debug message to reboot event
-In-Reply-To: <4A89AC97.6030109@oracle.com>
-Message-ID: <alpine.LNX.2.00.0908181339310.25797@wotan.suse.de>
-References: <4A89AC97.6030109@oracle.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 18 Aug 2009 07:42:14 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:35458 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751358AbZHRLmN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 07:42:13 -0400
+Date: Tue, 18 Aug 2009 20:42:12 +0900 (JST)
+Message-Id: <20090818.204212.59676649.ryov@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com,
+       agk@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
+       jmarchan@redhat.com
+Subject: Re: [PATCH 18/24] blkio_cgroup patches from Ryo to track async
+ bios.
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <1250451046-9966-19-git-send-email-vgoyal@redhat.com>
+References: <1250451046-9966-1-git-send-email-vgoyal@redhat.com>
+	<1250451046-9966-19-git-send-email-vgoyal@redhat.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Aug 2009, tina.yang wrote:
+Hi Vivek,
 
-> Add debug message to detect keyboard vs non-keyboard
-> triggered sysrq-b events.
+Vivek Goyal <vgoyal@redhat.com> wrote:
+> o blkio_cgroup patches from Ryo to track async bios.
 > 
-> Signed-off-by: Tina Yang <Tina.Yang@oracle.com>
-> Signed-off-by: Zach Brown <Zach.Brown@oracle.com>
-> 
-> ---
-> 
-> --- linux-2.6.git/drivers/char/sysrq.c.orig     2009-08-13
-> 15:43:34.000000000 -0700
-> +++ linux-2.6.git/drivers/char/sysrq.c  2009-08-13 21:51:15.832694000 -0700
-> @@ -135,17 +135,22 @@ static struct sysrq_key_op sysrq_crash_o
->         .enable_mask    = SYSRQ_ENABLE_DUMP,
->  };
-> 
-> -static void sysrq_handle_reboot(int key, struct tty_struct *tty)
-> +static void sysrq_handle_reboot(int check_mask, int key, struct
-> tty_struct *tty)
->  {
-> +       if (check_mask)
-> +               printk("<keyboard-invoked>\n");
-> +        else
-> +               printk("<non-keyboard-invoked: PID %d COMMAND %s>\n",
-> +                               current->pid, current->comm);
->         lockdep_off();
->         local_irq_enable();
->         emergency_restart();
->  }
->  static struct sysrq_key_op sysrq_reboot_op = {
-> -       .handler        = sysrq_handle_reboot,
-> -       .help_msg       = "reBoot",
-> -       .action_msg     = "Resetting",
-> -       .enable_mask    = SYSRQ_ENABLE_BOOT,
-> +       .handler_with_mask      = sysrq_handle_reboot,
-> +       .help_msg               = "reBoot",
-> +       .action_msg             = "Resetting",
-> +       .enable_mask            = SYSRQ_ENABLE_BOOT,
->  };
-> 
->  static void sysrq_handle_sync(int key, struct tty_struct *tty)
-> @@ -509,7 +514,10 @@ void __handle_sysrq(int key, struct tty_
->                 if (!check_mask || sysrq_on_mask(op_p->enable_mask)) {
->                         printk("%s\n", op_p->action_msg);
->                         console_loglevel = orig_log_level;
-> -                       op_p->handler(key, tty);
-> +                       if (op_p->handler_with_mask)
-> +                               op_p->handler_with_mask(check_mask, key,
-> tty);
-> +                       else
-> +                               op_p->handler(key, tty);
->                 } else {
->                         printk("This sysrq operation is disabled.\n");
->                 }
-> --- linux-2.6.git/include/linux/sysrq.h.orig    2009-08-13
-> 20:53:48.085786000 -0700
-> +++ linux-2.6.git/include/linux/sysrq.h 2009-08-13 20:54:12.625756000 -0700
-> @@ -32,6 +32,7 @@ struct tty_struct;
-> 
->  struct sysrq_key_op {
->         void (*handler)(int, struct tty_struct *);
-> +       void (*handler_with_mask)(int, int, struct tty_struct *);
->         char *help_msg;
->         char *action_msg;
->         int enable_mask;
-> 
+> o Fernando is also working on another IO tracking mechanism. We are not
+>   particular about any IO tracking mechanism. This patchset can make use
+>   of any mechanism which makes it to upstream. For the time being making
+>   use of Ryo's posting.
 
-I'd rather have this go through -mm, this doesn't really fully qualify for 
-trivial tree. CCing Andrew.
+The patch attached with your mail is obsolete and it may potentially
+cause a deadlock when lock_page_cgroup() is called under radix_tree->lock.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e767e0561d7fd2333df1921f1ab4176211f9036b
 
--- 
-Jiri Kosina
-SUSE Labs
+The latest blkio-cgroup fixes the above issue and reduces IO tracking
+overhead since lock_page_cgroup() is no longer used. I would recommend
+to update to the latest version.
+
+And I have a suggestion, how about moving get_cgroup_from_page() to
+biotrack.c, I think this function would be useful for people who
+want to make use of the IO tracking mechanism.
+
+Please let me know your opinion.
+
+Thanks,
+Ryo Tsuruta
