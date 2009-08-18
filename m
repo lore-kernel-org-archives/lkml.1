@@ -1,242 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758743AbZHRLHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758756AbZHRLIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758743AbZHRLHt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 07:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758730AbZHRLHt
+	id S1758756AbZHRLIy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 07:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758737AbZHRLIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 07:07:49 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:54387 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758692AbZHRLHs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 07:07:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=qr1ePetKPzGnRewiHzniNrk75vftRx1X2CPViHuEyWnPai75shUZwuLZNU+z48PTth
-         /7+LfMtzwLvYXG2K41exq91tf4UQ+RuacKpFkhbLoSj//3JAbXvL+dzzXUcbIYXPRElg
-         HZR0FUmYT3Lbg3Ehdmre0maDosCkKqmZvbRAQ=
-Message-ID: <4A8A8B7D.9030803@gmail.com>
-Date: Tue, 18 Aug 2009 19:07:41 +0800
-From: Wan ZongShun <mcuos.com@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Tue, 18 Aug 2009 07:08:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44769 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758731AbZHRLIw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 07:08:52 -0400
+Date: Tue, 18 Aug 2009 14:07:08 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Gregory Haskins <gregory.haskins@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
+	vbus_driver objects
+Message-ID: <20090818110708.GG13878@redhat.com>
+References: <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com> <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com> <20090818095313.GC13878@redhat.com> <4A8A7BB9.2020906@redhat.com> <20090818100945.GD13878@redhat.com> <4A8A7EE5.6090209@redhat.com> <20090818102840.GF13878@redhat.com> <4A8A8631.1040006@redhat.com>
 MIME-Version: 1.0
-To: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Russell King <linux@arm.linux.org.uk>
-Subject: [PATCH v2 2/3] ARM: Add nuc950 paltform files to w90x900 platform
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8A8631.1040006@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Russell,
+On Tue, Aug 18, 2009 at 01:45:05PM +0300, Avi Kivity wrote:
+> On 08/18/2009 01:28 PM, Michael S. Tsirkin wrote:
+>>
+>>> Suppose a nested guest has two devices.  One a virtual device backed by
+>>> its host (our guest), and one a virtual device backed by us (the real
+>>> host), and assigned by the guest to the nested guest.  If both devices
+>>> use hypercalls, there is no way to distinguish between them.
+>>>      
+>> Not sure I understand. What I had in mind is that devices would have to
+>> either use different hypercalls and map hypercall to address during
+>> setup, or pass address with each hypercall.  We get the hypercall,
+>> translate the address as if it was pio access, and know the destination?
+>>    
+>
+> There are no different hypercalls.  There's just one hypercall  
+> instruction, and there's no standard on how it's used.  If a nested call  
+> issues a hypercall instruction, you have no idea if it's calling a  
+> Hyper-V hypercall or a vbus/virtio kick.
 
-Add nuc950 paltform files to w90x900 platform.
+userspace will know which it is, because hypercall capability
+in the device has been activated, and can tell kernel, using
+something similar to iosignalfd. No?
 
-Signed-off-by: Wan ZongShun <mcuos.com@gmail.com>
+> You could have a protocol where you register the hypercall instruction's  
+> address with its recipient, but it quickly becomes a tangled mess.
 
----
- arch/arm/mach-w90x900/Kconfig          |   15 +++++++++
- arch/arm/mach-w90x900/Makefile         |    2 +
- arch/arm/mach-w90x900/mach-nuc950evb.c |   44 ++++++++++++++++++++++++++
- arch/arm/mach-w90x900/nuc950.c         |   54 ++++++++++++++++++++++++++++++++
- arch/arm/mach-w90x900/nuc950.h         |   28 ++++++++++++++++
- 5 files changed, 143 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/mach-w90x900/mach-nuc950evb.c
- create mode 100644 arch/arm/mach-w90x900/nuc950.c
- create mode 100644 arch/arm/mach-w90x900/nuc950.h
+I really thought we could pass the io address in register as an input
+parameter. Is there a way to do this in a secure manner?
 
-diff --git a/arch/arm/mach-w90x900/Kconfig b/arch/arm/mach-w90x900/Kconfig
-index 8e4178f..163b801 100644
---- a/arch/arm/mach-w90x900/Kconfig
-+++ b/arch/arm/mach-w90x900/Kconfig
-@@ -5,6 +5,11 @@ config CPU_W90P910
- 	help
- 	  Support for W90P910 of Nuvoton W90X900 CPUs.
- 
-+config CPU_NUC950
-+	bool
-+	help
-+	  Support for NUCP950 of Nuvoton NUC900 CPUs.
-+
- menu "W90P910 Machines"
- 
- config MACH_W90P910EVB
-@@ -16,4 +21,14 @@ config MACH_W90P910EVB
- 
- endmenu
- 
-+menu "NUC950 Machines"
-+
-+config MACH_W90P950EVB
-+	bool "Nuvoton NUC950 Evaluation Board"
-+	select CPU_NUC950
-+	help
-+	   Say Y here if you are using the Nuvoton NUC950EVB
-+
-+endmenu
-+
- endif
-diff --git a/arch/arm/mach-w90x900/Makefile b/arch/arm/mach-w90x900/Makefile
-index e38aa32..a4622b5 100644
---- a/arch/arm/mach-w90x900/Makefile
-+++ b/arch/arm/mach-w90x900/Makefile
-@@ -9,7 +9,9 @@ obj-y				+= clksel.o dev.o cpu.o
- # W90X900 CPU support files
- 
- obj-$(CONFIG_CPU_W90P910)	+= nuc910.o
-+obj-$(CONFIG_CPU_NUC950)	+= nuc950.o
- 
- # machine support
- 
- obj-$(CONFIG_MACH_W90P910EVB)	+= mach-nuc910evb.o
-+obj-$(CONFIG_MACH_W90P950EVB)	+= mach-nuc950evb.o
-diff --git a/arch/arm/mach-w90x900/mach-nuc950evb.c b/arch/arm/mach-w90x900/mach-nuc950evb.c
-new file mode 100644
-index 0000000..cef903b
---- /dev/null
-+++ b/arch/arm/mach-w90x900/mach-nuc950evb.c
-@@ -0,0 +1,44 @@
-+/*
-+ * linux/arch/arm/mach-w90x900/mach-nuc950evb.c
-+ *
-+ * Based on mach-s3c2410/mach-smdk2410.c by Jonas Dietsche
-+ *
-+ * Copyright (C) 2008 Nuvoton technology corporation.
-+ *
-+ * Wan ZongShun <mcuos.com@gmail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation;version 2 of the License.
-+ *
-+ */
-+
-+#include <linux/platform_device.h>
-+#include <asm/mach/arch.h>
-+#include <asm/mach/map.h>
-+#include <asm/mach-types.h>
-+#include <mach/map.h>
-+
-+#include "nuc950.h"
-+
-+static void __init nuc950evb_map_io(void)
-+{
-+	nuc950_map_io();
-+	nuc950_init_clocks();
-+}
-+
-+static void __init nuc950evb_init(void)
-+{
-+	nuc950_board_init();
-+}
-+
-+MACHINE_START(W90P950EVB, "W90P950EVB")
-+	/* Maintainer: Wan ZongShun */
-+	.phys_io	= W90X900_PA_UART,
-+	.io_pg_offst	= (((u32)W90X900_VA_UART) >> 18) & 0xfffc,
-+	.boot_params	= 0,
-+	.map_io		= nuc950evb_map_io,
-+	.init_irq	= nuc900_init_irq,
-+	.init_machine	= nuc950evb_init,
-+	.timer		= &nuc900_timer,
-+MACHINE_END
-diff --git a/arch/arm/mach-w90x900/nuc950.c b/arch/arm/mach-w90x900/nuc950.c
-new file mode 100644
-index 0000000..1495081
---- /dev/null
-+++ b/arch/arm/mach-w90x900/nuc950.c
-@@ -0,0 +1,54 @@
-+/*
-+ * linux/arch/arm/mach-w90x900/nuc950.c
-+ *
-+ * Based on linux/arch/arm/plat-s3c24xx/s3c244x.c by Ben Dooks
-+ *
-+ * Copyright (c) 2008 Nuvoton technology corporation.
-+ *
-+ * Wan ZongShun <mcuos.com@gmail.com>
-+ *
-+ * NUC950 cpu support
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation;version 2 of the License.
-+ *
-+ */
-+
-+#include <linux/platform_device.h>
-+#include <asm/mach/map.h>
-+#include <mach/hardware.h>
-+#include "cpu.h"
-+
-+/* define specific CPU platform device */
-+
-+static struct platform_device *nuc950_dev[] __initdata = {
-+	&nuc900_device_kpi,
-+	&nuc900_device_fmi,
-+};
-+
-+/* define specific CPU platform io map */
-+
-+static struct map_desc nuc950evb_iodesc[] __initdata = {
-+};
-+
-+/*Init NUC950 evb io*/
-+
-+void __init nuc950_map_io(void)
-+{
-+	nuc900_map_io(nuc950evb_iodesc, ARRAY_SIZE(nuc950evb_iodesc));
-+}
-+
-+/*Init NUC950 clock*/
-+
-+void __init nuc950_init_clocks(void)
-+{
-+	nuc900_init_clocks();
-+}
-+
-+/*Init NUC950 board info*/
-+
-+void __init nuc950_board_init(void)
-+{
-+	nuc900_board_init(nuc950_dev, ARRAY_SIZE(nuc950_dev));
-+}
-diff --git a/arch/arm/mach-w90x900/nuc950.h b/arch/arm/mach-w90x900/nuc950.h
-new file mode 100644
-index 0000000..98a1148
---- /dev/null
-+++ b/arch/arm/mach-w90x900/nuc950.h
-@@ -0,0 +1,28 @@
-+/*
-+ * arch/arm/mach-w90x900/nuc950.h
-+ *
-+ * Copyright (c) 2008 Nuvoton corporation
-+ *
-+ * Header file for NUC900 CPU support
-+ *
-+ * Wan ZongShun <mcuos.com@gmail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+struct map_desc;
-+struct sys_timer;
-+
-+/* core initialisation functions */
-+
-+extern void nuc900_init_irq(void);
-+extern struct sys_timer nuc900_timer;
-+
-+/* extern file from nuc950.c */
-+
-+extern void nuc950_board_init(void);
-+extern void nuc950_init_clocks(void);
-+extern void nuc950_map_io(void);
--- 
-1.5.6.3
+Hmm. Doesn't kvm use hypercalls now? How does this work with nesting?
+For example, in this code in arch/x86/kvm/x86.c:
+
+        switch (nr) {
+        case KVM_HC_VAPIC_POLL_IRQ:
+                ret = 0;
+                break;
+        case KVM_HC_MMU_OP:
+                r = kvm_pv_mmu_op(vcpu, a0, hc_gpa(vcpu, a1, a2), &ret);
+                break;
+        default:
+                ret = -KVM_ENOSYS;
+                break;
+        }
+
+how do we know that it's the guest and not the nested guest performing
+the hypercall?
+
+> And  for what?  pio and hypercalls have the same performance characteristics.
+
+No idea about that. I'm assuming Gregory knows why he wants to use hypercalls,
+I was just trying to help find a way that is also palatable, and flexible.
+
+> -- 
+> error compiling committee.c: too many arguments to function
