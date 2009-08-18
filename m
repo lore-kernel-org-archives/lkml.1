@@ -1,96 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbZHRXHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751931AbZHRXNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752072AbZHRXHo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 19:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZHRXHo
+	id S1751931AbZHRXNI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 19:13:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbZHRXNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 19:07:44 -0400
-Received: from enyo.dsw2k3.info ([195.71.86.239]:40427 "EHLO enyo.dsw2k3.info"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751919AbZHRXHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 19:07:43 -0400
-X-Greylist: delayed 1660 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Aug 2009 19:07:42 EDT
-Date: Wed, 19 Aug 2009 00:39:36 +0200
-From: Matthias Schniedermeyer <ms@citd.de>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: linux-kernel@vger.kernel.org, Andries Brouwer <aeb@cwi.nl>
-Subject: Re: completely hide parts of the partition table from Windows?
-Message-ID: <20090818223936.GA30029@citd.de>
-References: <19083.7062.710265.941247@pilspetsen.it.uu.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19083.7062.710265.941247@pilspetsen.it.uu.se>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 18 Aug 2009 19:13:07 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:38223 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750875AbZHRXNF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 19:13:05 -0400
+Subject: Re: [ANNOUNCE] 2.6.31-rc6-rt2
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+Reply-To: will_schmidt@vnet.ibm.com
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>
+In-Reply-To: <alpine.LFD.2.00.0908182311250.3361@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain>
+	 <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain>
+	 <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain>
+	 <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain>
+	 <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>
+	 <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain>
+	 <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
+	 <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>
+	 <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
+	 <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain>
+	 <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain>
+	 <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>
+	 <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain>
+	 <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain>
+	 <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
+	 <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
+	 <1250629478.516.249.camel@lexx>
+	 <alpine.LFD.2.00.0908182311250.3361@localhost.localdomain>
+Content-Type: text/plain
+Organization: IBM
+Date: Tue, 18 Aug 2009 18:12:58 -0500
+Message-Id: <1250637178.516.327.camel@lexx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18.08.2009 23:22, Mikael Pettersson wrote:
-> The BIOS on my laptop clips disk capacities to 128GB. There's no BIOS
-> update or BIOS setup option to fix this. Passing libata.ignore_hpa=1
-> allows the Linux kernel to access larger disks, so Linux does work Ok
-> with larger disks.
+On Tue, 2009-08-18 at 23:14 +0200, Thomas Gleixner wrote:
+> Will,
 > 
-> However, the laptop dual-boots Windows (for work-related stuff), and
-> Windows has a major problem: if any entry in the msdos partition table
-> refers to a sector above the BIOS 128GB limit, the Windows kernel
-> crashes and reboots early in its boot sequence. The type of the
-> partition doesn't matter, the fact that it describes an area above
-> the stupid BIOS limit is enough to trigger the crash.
+> On Tue, 18 Aug 2009, Will Schmidt wrote:
+> > 
+> > Booting the system seems mostly OK with maxcpus=1, though this INFO
+> > message appears on the console.  (This does repeat after a while..) :
+> > 
+> >  INFO: task irq/16-IPI:3 blocked for more than 120 seconds.
 > 
-> So what I'm looking for is some sub-partition table format with the
-> following two properties:
-> 1. resides in an msdos partition entry of a type that Windows does
->    not inspect (for whatever extended partitions or Apple/BSD/Sun
->    stuff that Windows may have been taught to recognize)
-> 2. the locations and sizes of the sub-partitions are NOT limited by
->    the parent msdos partition entry
+> Hmm. Why is the IPI threaded ? Can you check older (working) RT
+> versions whether the IPIs were threaded there as well ?
+
+I don't think it was..   I do not see it with a "ps | grep IPI" on
+2.6.29.5-rt22 running on pseries. 
+
+
+
+> Thanks,
 > 
-> I've looked at the code in fs/partitions/msdos.c, and it seems that
-> most of the extended/BSD/Sun formats don't give me property #2 above.
-> 
-> The minix and Unixware format parsers look like they ignore the parent
-> msdos partion entry boundaries, but I'm not sure if that's by design
-> or just sloppy coding.
-> 
-> Any recommendations? If no existing partition table format is suitable
-> for my use case then I'm perfectly willing to invent a simple new format
-> and add the corresponding parser to the kernel.
-
-This is problem sligtly similar to my "I don't care about partitions i 
-only want to use the whole HDD for storage".
-
-The solution i use for my problem is 'loop' (My HDDs are encrypted so 
-the loop(-AES) wasn't optional anyway). With a loop you can use any 
-place in any size on the HDD like it is a partition, you just have to be 
-careful to place it correctly.
-
-The first time you have to losetup the loop so that you can mkfs it:
-losetup /dev/loop<whatever> /dev/sd<whatelse> -o <offset> --sizelimit=<size_in_byte>
-
-After the filesystem is created you can use something along this lines:
-mount /dev/sd<whatelse> /<mountpoint> -oloop,offset=<offset>,sizelimit=<size_in_bytes>[...]
-
-If you place the area last on the device, you can skip sizelimit then 
-the loop uses the whole avaiable space to the end of the device.
-
-
-AFAIK you can also use "device-mapper" in a similar way, i just don't 
-have any personal experiences.
-
-And last but not least, the documentation of GRUB meantions a 'hide'-bit 
-for partitions and suggests that DOS/Windows honours it. Maybe setting 
-the 'hide'-bit is enough.
-
-
-
-
-Bis denn
-
--- 
-Real Programmers consider "what you see is what you get" to be just as 
-bad a concept in Text Editors as it is in women. No, the Real Programmer
-wants a "you asked for it, you got it" text editor -- complicated, 
-cryptic, powerful, unforgiving, dangerous.
+> 	tglx
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
