@@ -1,55 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758539AbZHRLoE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbZHRLr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758539AbZHRLoE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 07:44:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758050AbZHRLoD
+	id S1758050AbZHRLr5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 07:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881AbZHRLr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 07:44:03 -0400
-Received: from kroah.org ([198.145.64.141]:52413 "EHLO coco.kroah.org"
+	Tue, 18 Aug 2009 07:47:56 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35083 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753903AbZHRLoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 07:44:01 -0400
-Date: Tue, 18 Aug 2009 04:42:42 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Eric Miao <eric.y.miao@gmail.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Aric D. Blumer" <aric@sdgsystems.com>,
-       Mike Rapoport <mike@compulab.co.il>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: linux-next: usb/pxa trees build failure
-Message-ID: <20090818114242.GA28534@kroah.com>
-References: <20090818135852.0b3b648d.sfr@canb.auug.org.au>
-MIME-Version: 1.0
+	id S1753104AbZHRLr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 07:47:56 -0400
+Date: Tue, 18 Aug 2009 13:47:52 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] page-allocator: Move pcp static fields for high and batch off-pcp and onto the zone
+Message-ID: <20090818114752.GP9962@wotan.suse.de>
+References: <1250594162-17322-1-git-send-email-mel@csn.ul.ie> <1250594162-17322-4-git-send-email-mel@csn.ul.ie>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090818135852.0b3b648d.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1250594162-17322-4-git-send-email-mel@csn.ul.ie>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 01:58:52PM +1000, Stephen Rothwell wrote:
-> Hi Eric, Greg,
-> 
-> The next-20090817 (and a few before) build (arm trizeps4_defconfig)
-> failed like this:
-> 
-> drivers/usb/host/ohci-pxa27x.c:507: error: 'pdev' undeclared (first use in this function)
-> 
-> Caused by the interaction of commit
-> 6458baec17e19d38b9d4eb1f96c213f91609c0e3 ("USB: ohci-pxa27x: Reconfigure
-> power settings on resume") from the usb tree with commit
-> b8fb7d4317bcea1b48c9560d23dff81121870ece ("[ARM] pxa: update
-> ohci-pxa27x.c to use 'struct dev_pm_ops'"). from the pxa tree.
-> 
-> Greg/Aric, maybe that usb tree patch needs to go through the pxa tree?
-> (and maybe "USB: ohci-pxa27x: Allow NOCP and OCPM to be cleared" as well?)
-> 
-> [this also broke the following configs: magician_defconfig,
-> em_x270_defconfig and cm_x2xx_defconfig.]
+On Tue, Aug 18, 2009 at 12:16:02PM +0100, Mel Gorman wrote:
+> Having multiple lists per PCPU increased the size of the per-pcpu
+> structure. Two of the fields, high and batch, do not change within a
+> zone making that information redundant. This patch moves those fields
+> off the PCP and onto the zone to reduce the size of the PCPU.
 
-Ick, not good.  Aric, should I drop this patch from my tree?
+Hmm.. I did have some patches a long long time ago that among other
+things made the lists larger for the local node only....
 
-thanks,
+But I guess if something like that is ever shown to be a good idea
+then we can go back to the old scheme. So yeah this seems OK.
 
-greg k-h
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  include/linux/mmzone.h |    9 +++++----
+>  mm/page_alloc.c        |   47 +++++++++++++++++++++++++----------------------
+>  mm/vmstat.c            |    4 ++--
+>  3 files changed, 32 insertions(+), 28 deletions(-)
+> 
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index 6e0b624..57a3ef0 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -167,12 +167,10 @@ enum zone_watermarks {
+>  #define high_wmark_pages(z) (z->watermark[WMARK_HIGH])
+>  
+>  struct per_cpu_pages {
+> -	int count;		/* number of pages in the list */
+> -	int high;		/* high watermark, emptying needed */
+> -	int batch;		/* chunk size for buddy add/remove */
+> -
+>  	/* Lists of pages, one per migrate type stored on the pcp-lists */
+>  	struct list_head lists[MIGRATE_PCPTYPES];
+> +
+> +	int count;		/* number of pages in the list */
+>  };
+>  
+>  struct per_cpu_pageset {
+> @@ -284,6 +282,9 @@ struct zone {
+>  	/* zone watermarks, access with *_wmark_pages(zone) macros */
+>  	unsigned long watermark[NR_WMARK];
+>  
+> +	int pcp_high;		/* high watermark, emptying needed */
+> +	int pcp_batch;		/* chunk size for buddy add/remove */
+> +
+>  	/*
+>  	 * We don't know if the memory that we're going to allocate will be freeable
+>  	 * or/and it will be released eventually, so to avoid totally wasting several
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index dd3f306..65cdfbf 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -988,8 +988,8 @@ void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp)
+>  	int to_drain;
+>  
+>  	local_irq_save(flags);
+> -	if (pcp->count >= pcp->batch)
+> -		to_drain = pcp->batch;
+> +	if (pcp->count >= zone->pcp_batch)
+> +		to_drain = zone->pcp_batch;
+>  	else
+>  		to_drain = pcp->count;
+>  	free_pcppages_bulk(zone, to_drain, pcp);
+> @@ -1129,9 +1129,9 @@ static void free_hot_cold_page(struct page *page, int cold)
+>  	else
+>  		list_add(&page->lru, &pcp->lists[migratetype]);
+>  	pcp->count++;
+> -	if (pcp->count >= pcp->high) {
+> -		free_pcppages_bulk(zone, pcp->batch, pcp);
+> -		pcp->count -= pcp->batch;
+> +	if (pcp->count >= zone->pcp_high) {
+> +		free_pcppages_bulk(zone, zone->pcp_batch, pcp);
+> +		pcp->count -= zone->pcp_batch;
+>  	}
+>  
+>  out:
+> @@ -1199,7 +1199,7 @@ again:
+>  		local_irq_save(flags);
+>  		if (list_empty(list)) {
+>  			pcp->count += rmqueue_bulk(zone, 0,
+> -					pcp->batch, list,
+> +					zone->pcp_batch, list,
+>  					migratetype, cold);
+>  			if (unlikely(list_empty(list)))
+>  				goto failed;
+> @@ -2178,8 +2178,8 @@ void show_free_areas(void)
+>  			pageset = zone_pcp(zone, cpu);
+>  
+>  			printk("CPU %4d: hi:%5d, btch:%4d usd:%4d\n",
+> -			       cpu, pageset->pcp.high,
+> -			       pageset->pcp.batch, pageset->pcp.count);
+> +			       cpu, zone->pcp_high,
+> +			       zone->pcp_batch, pageset->pcp.count);
+>  		}
+>  	}
+>  
+> @@ -3045,7 +3045,9 @@ static int zone_batchsize(struct zone *zone)
+>  #endif
+>  }
+>  
+> -static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
+> +static void setup_pageset(struct zone *zone,
+> +				struct per_cpu_pageset *p,
+> +				unsigned long batch)
+>  {
+>  	struct per_cpu_pages *pcp;
+>  	int migratetype;
+> @@ -3054,8 +3056,8 @@ static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
+>  
+>  	pcp = &p->pcp;
+>  	pcp->count = 0;
+> -	pcp->high = 6 * batch;
+> -	pcp->batch = max(1UL, 1 * batch);
+> +	zone->pcp_high = 6 * batch;
+> +	zone->pcp_batch = max(1UL, 1 * batch);
+>  	for (migratetype = 0; migratetype < MIGRATE_PCPTYPES; migratetype++)
+>  		INIT_LIST_HEAD(&pcp->lists[migratetype]);
+>  }
+> @@ -3065,16 +3067,17 @@ static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
+>   * to the value high for the pageset p.
+>   */
+>  
+> -static void setup_pagelist_highmark(struct per_cpu_pageset *p,
+> +static void setup_pagelist_highmark(struct zone *zone,
+> +				struct per_cpu_pageset *p,
+>  				unsigned long high)
+>  {
+>  	struct per_cpu_pages *pcp;
+>  
+>  	pcp = &p->pcp;
+> -	pcp->high = high;
+> -	pcp->batch = max(1UL, high/4);
+> +	zone->pcp_high = high;
+> +	zone->pcp_batch = max(1UL, high/4);
+>  	if ((high/4) > (PAGE_SHIFT * 8))
+> -		pcp->batch = PAGE_SHIFT * 8;
+> +		zone->pcp_batch = PAGE_SHIFT * 8;
+>  }
+>  
+>  
+> @@ -3115,10 +3118,10 @@ static int __cpuinit process_zones(int cpu)
+>  		if (!zone_pcp(zone, cpu))
+>  			goto bad;
+>  
+> -		setup_pageset(zone_pcp(zone, cpu), zone_batchsize(zone));
+> +		setup_pageset(zone, zone_pcp(zone, cpu), zone_batchsize(zone));
+>  
+>  		if (percpu_pagelist_fraction)
+> -			setup_pagelist_highmark(zone_pcp(zone, cpu),
+> +			setup_pagelist_highmark(zone, zone_pcp(zone, cpu),
+>  			 	(zone->present_pages / percpu_pagelist_fraction));
+>  	}
+>  
+> @@ -3250,7 +3253,7 @@ static int __zone_pcp_update(void *data)
+>  
+>  		local_irq_save(flags);
+>  		free_pcppages_bulk(zone, pcp->count, pcp);
+> -		setup_pageset(pset, batch);
+> +		setup_pageset(zone, pset, batch);
+>  		local_irq_restore(flags);
+>  	}
+>  	return 0;
+> @@ -3270,9 +3273,9 @@ static __meminit void zone_pcp_init(struct zone *zone)
+>  #ifdef CONFIG_NUMA
+>  		/* Early boot. Slab allocator not functional yet */
+>  		zone_pcp(zone, cpu) = &boot_pageset[cpu];
+> -		setup_pageset(&boot_pageset[cpu],0);
+> +		setup_pageset(zone, &boot_pageset[cpu],0);
+>  #else
+> -		setup_pageset(zone_pcp(zone,cpu), batch);
+> +		setup_pageset(zone, zone_pcp(zone,cpu), batch);
+>  #endif
+>  	}
+>  	if (zone->present_pages)
+> @@ -4781,7 +4784,7 @@ int lowmem_reserve_ratio_sysctl_handler(ctl_table *table, int write,
+>  }
+>  
+>  /*
+> - * percpu_pagelist_fraction - changes the pcp->high for each zone on each
+> + * percpu_pagelist_fraction - changes the zone->pcp_high for each zone on each
+>   * cpu.  It is the fraction of total pages in each zone that a hot per cpu pagelist
+>   * can have before it gets flushed back to buddy allocator.
+>   */
+> @@ -4800,7 +4803,7 @@ int percpu_pagelist_fraction_sysctl_handler(ctl_table *table, int write,
+>  		for_each_online_cpu(cpu) {
+>  			unsigned long  high;
+>  			high = zone->present_pages / percpu_pagelist_fraction;
+> -			setup_pagelist_highmark(zone_pcp(zone, cpu), high);
+> +			setup_pagelist_highmark(zone, zone_pcp(zone, cpu), high);
+>  		}
+>  	}
+>  	return 0;
+> diff --git a/mm/vmstat.c b/mm/vmstat.c
+> index c81321f..a9d23c3 100644
+> --- a/mm/vmstat.c
+> +++ b/mm/vmstat.c
+> @@ -746,8 +746,8 @@ static void zoneinfo_show_print(struct seq_file *m, pg_data_t *pgdat,
+>  			   "\n              batch: %i",
+>  			   i,
+>  			   pageset->pcp.count,
+> -			   pageset->pcp.high,
+> -			   pageset->pcp.batch);
+> +			   zone->pcp_high,
+> +			   zone->pcp_batch);
+>  #ifdef CONFIG_SMP
+>  		seq_printf(m, "\n  vm stats threshold: %d",
+>  				pageset->stat_threshold);
+> -- 
+> 1.6.3.3
