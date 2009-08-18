@@ -1,113 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbZHRX3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbZHRX3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752277AbZHRX3G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 19:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZHRX3G
+	id S1752135AbZHRX3m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 19:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZHRX3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 19:29:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:52982 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbZHRX3F (ORCPT
+	Tue, 18 Aug 2009 19:29:42 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45925
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750981AbZHRX3l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 19:29:05 -0400
-Date: Tue, 18 Aug 2009 19:29:03 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Justin Mattock <justinmattock@gmail.com>
-cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: system gets stuck in a lock during boot
-In-Reply-To: <dd18b0c30908180924n3848d32ave258f98a5f703c38@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0908181926410.28398@gandalf.stny.rr.com>
-References: <4A84345D.60506@gmail.com> <20090818104905.GC5231@nowhere>  <20090818160911.GA21243@goodmis.org> <dd18b0c30908180924n3848d32ave258f98a5f703c38@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1424940369-1250638036=:28398"
-Content-ID: <alpine.DEB.2.00.0908181927430.28398@gandalf.stny.rr.com>
+	Tue, 18 Aug 2009 19:29:41 -0400
+Date: Tue, 18 Aug 2009 16:29:52 -0700 (PDT)
+Message-Id: <20090818.162952.161230185.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-08-18
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090818151436.GA2768@tuxdriver.com>
+References: <20090818151436.GA2768@tuxdriver.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Tue, 18 Aug 2009 11:14:37 -0400
 
---8323328-1424940369-1250638036=:28398
-Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-ID: <alpine.DEB.2.00.0908181927431.28398@gandalf.stny.rr.com>
+> Dave,
+> 
+> Two more for 2.6.31...
+> 
+> The one from Johannes is actually already in net-next-2.6, but it has
+> since been reported to cause a possible irq lock inversion dependency in
+> 2.6.31-rc6, as described here:
+> 
+> 	http://marc.info/?l=linux-wireless&m=125052198303537&w=2
+> 
+> The one from me fixes a minor bounds checking problem in orinoco, as
+> reported by Dan Carpenter.  It is simple and obvious.
 
-
-On Tue, 18 Aug 2009, Justin Mattock wrote:
-
-> On Tue, Aug 18, 2009 at 9:09 AM, Steven Rostedt<rostedt@goodmis.org> wrot=
-e:
-> > On Tue, Aug 18, 2009 at 12:49:06PM +0200, Frederic Weisbecker wrote:
-> >> On Thu, Aug 13, 2009 at 08:42:21AM -0700, Justin P. Mattock wrote:
-> >> > I posted already and had no reply,
-> >> > I cannot boot my system with the latest git
-> >> >
-> >> > seems to be stuck in some lock:
-
-BTW, it does not look like it got stuck in a lock. The backtrace shows=20
-that it paniced inside event_create_dir due to a bad pointer.
-
-> >> >
-> >> > [ =A0 0.655640] [<ffffffff81440c33>] panic+0x84/0x129
-> >> > [ =A0 0.655883] [<ffffffff81063f96>] =A0do_exit+0x84/0x67e
-> >> > [ =A0 0.656125] [<ffffffff81445044>] oops_end+0x9c/0xb7
-> >> > [ =A0 0.656368] [<ffffffff81044a6c>] no_context+0x200/0x223
-> >> > [ =A0 0.656611] [<ffffffff81442d3d>] ? __mutex_lock_slowpath+0x226/0=
-x249
-> >> > [ =A0 0.656848] [<ffffffff81044c36>] __bad_area_nosemaphore+0x1a7/0x=
-1e1
-> >> > [ =A0 0.657097] [<ffffffff81442b01>]? mutex_unlock+0x1c/0x32
-> >> > [ =A0 0.657097] [<ffffffff811ce094>] ? inode_doinit_with_dentry+0x53=
-3/0x5be
-> >> > [ =A0 0.657579] [<ffffffff81443ee0>] ? _spin_unlock+0x1c/0x32
-> >> > [ =A0 0.657822] [<ffffffff81044c91>] bad_area_nosemaphore+0x2a/0x40
-> >> > [ =A0 0.658066] [<ffffffff811ce149>] ? selinux_d_instantiate+0x2a/0x=
-40
-> >> > [ =A0 0.658309] [<ffffffff8144687d>] do_page_fault+0x192/0x2dd
-> >> > [ =A0 0.658549] [<ffffffff814444cf>] page_fault+0x1f/0x30
-> >> > [ =A0 0.658791] [<ffffffff8120e856>] ? strcmp+0x17/0x46
-> >> > [ =A0 0.659040] [<ffffffff810b9ca0>] event_create_dir+0x49/0x37b
-> >>
-> >>
-> >>
-> >> Ouch...
-> >>
-> >> I've never seen such panic. Could you send me your config, hopefully
-> >> I could reproduce it?
-> >
-> > Send me the config too please.
-> >
-> > -- Steve
-> >
-> >
->=20
-> yeah this happens with rc6 but not with rc5.
->=20
-> The system is a linux from scratch build
-> x86_64 I used these flags for building everything:
->=20
->  CFLAGS=3D" -m64 -mtune=3Dcore2 -march=3Dcore2 -mfpmath=3Dboth  -O2 -pipe
->  -fomit-frame-pointer -fstack-protector" CXXFLAGS=3D"${CFLAGS}" MAKEOPTS=
-=3D"{-j3}"
->=20
-> also:  I have a macbook(not x86_64) that is running rc6 that seems
-> to be fine.(I can double check).
->=20
-> attached is .config, dmesg as well.
-
-BTW, how did you get the dmesg? Is it from a clean boot?
-
-Since it works fine in -rc5 but breaks in -rc6, could you do a git bisect=
-=20
-on it? It shouldn't take too long.
-
-Thanks,
-
--- Steve
-
-
---8323328-1424940369-1250638036=:28398--
+Pulled, thanks John.
