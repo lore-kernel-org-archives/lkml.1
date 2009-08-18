@@ -1,227 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbZHRPZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759133AbZHRP1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759259AbZHRPZo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 11:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759130AbZHRPZn
+	id S1759133AbZHRP1V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 11:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZHRP1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 11:25:43 -0400
-Received: from mail-qy0-f174.google.com ([209.85.221.174]:58782 "EHLO
-	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754605AbZHRPZm (ORCPT
+	Tue, 18 Aug 2009 11:27:21 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:58535 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758975AbZHRP1U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 11:25:42 -0400
-X-Greylist: delayed 358 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Aug 2009 11:25:41 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=KbmL1yMl0bgoUYym20XpObKHgUcqtTTq42Au2heiW/oDLclmbiVJ9FMEoAz+ybL5sm
-         8bxoGOlE/HXt1DP18Ib6qDCDGcKjWZDIydVhh5Xi5I79uJz7wl8A4xYEE9OQhrEufSXY
-         b1t8NOVoiEeNKI0K06HR1L/QqgYEvXqIba8cU=
-Message-ID: <4A8AC68C.6040308@gmail.com>
-Date: Tue, 18 Aug 2009 11:19:40 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Tue, 18 Aug 2009 11:27:20 -0400
+From: "Madhusudhan" <madhu.cr@ti.com>
+To: "'Adrian Hunter'" <adrian.hunter@nokia.com>
+Cc: <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
+       <linux-omap@vger.kernel.org>, <linux-arm-kernel@lists.arm.linux.org.uk>
+References: <60037.192.168.10.88.1250546653.squirrel@dbdmail.itg.ti.com> <4A8A4FC1.1090206@nokia.com>
+Subject: RE: [PATCH] omap_hsmmc: Fix for the db clock failure message
+Date: Tue, 18 Aug 2009 10:26:45 -0500
+Message-ID: <006501ca2018$4bb7a170$544ff780@am.dhcp.ti.com>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Gregory Haskins <gregory.haskins@gmail.com>,
-       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
-       kvm@vger.kernel.org, Avi Kivity <avi@redhat.com>,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for	vbus_driver
- objects
-References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <20090817174142.GA11140@redhat.com> <4A89BAC5.9040400@gmail.com> <20090818084606.GA13878@redhat.com>
-In-Reply-To: <20090818084606.GA13878@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigC642A6578DDFAC710B476427"
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+Thread-Index: Acof0IIb48bsCq8CSYO0oKRq22IuXQARq5KA
+In-Reply-To: <4A8A4FC1.1090206@nokia.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigC642A6578DDFAC710B476427
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Michael S. Tsirkin wrote:
-> On Mon, Aug 17, 2009 at 04:17:09PM -0400, Gregory Haskins wrote:
->> Michael S. Tsirkin wrote:
->>> On Mon, Aug 17, 2009 at 10:14:56AM -0400, Gregory Haskins wrote:
->>>> Case in point: Take an upstream kernel and you can modprobe the
->>>> vbus-pcibridge in and virtio devices will work over that transport
->>>> unmodified.
->>>>
->>>> See http://lkml.org/lkml/2009/8/6/244 for details.
->>> The modprobe you are talking about would need
->>> to be done in guest kernel, correct?
->> Yes, and your point is? "unmodified" (pardon the psuedo pun) modifies
->> "virtio", not "guest".
->>  It means you can take an off-the-shelf kernel
->> with off-the-shelf virtio (ala distro-kernel) and modprobe
->> vbus-pcibridge and get alacrityvm acceleration.
->=20
-> Heh, by that logic ksplice does not modify running kernel either :)
-
-Sigh...this is just fud.
-
-Again, I never said I do not modify the guest.  I only said that virtio
-is unmodified and all the existing devices can work unmodified.
-
-I hardly think its fair to compare something like loading a pci-bridge
-driver into a running kernel is the same as patching the kernel.  You
-just load a driver to get access to your IO resources...standard stuff
-really.
-
->=20
->> It is not a design goal of mine to forbid the loading of a new driver,=
-
->> so I am ok with that requirement.
->>
->>>> OTOH, Michael's patch is purely targeted at improving virtio-net on =
-kvm,
->>>> and its likewise constrained by various limitations of that decision=
-
->>>> (such as its reliance of the PCI model, and the kvm memory scheme).
->>> vhost is actually not related to PCI in any way. It simply leaves all=
-
->>> setup for userspace to do.  And the memory scheme was intentionally
->>> separated from kvm so that it can easily support e.g. lguest.
->>>
->> I think you have missed my point. I mean that vhost requires a separat=
-e
->> bus-model (ala qemu-pci).
->=20
-> So? That can be in userspace, and can be anything including vbus.
-
--ENOPARSE
-
-Can you elaborate?
-
->=20
->> And no, your memory scheme is not separated,
->> at least, not very well.  It still assumes memory-regions and
->> copy_to_user(), which is very kvm-esque.
->=20
-> I don't think so: works for lguest, kvm, UML and containers
-
-kvm _esque_ , meaning anything that follows the region+copy_to_user
-model.  Not all things do.
-
->=20
->> Vbus has people using things
->> like userspace containers (no regions),
->=20
-> vhost by default works without regions
-
-Thats a start, but not good enough if you were trying to achieve the
-same thing as vbus.  As I said before, I've never said you had to
-achieve the same thing, but do note they are distinctly different with
-different goals.  You are solving a directed problem.  I am solving a
-general problem, and trying to solve it once.
-
->=20
->> and physical hardware (dma
->> controllers, so no regions or copy_to_user) so your scheme quickly fal=
-ls
->> apart once you get away from KVM.
->=20
-> Someone took a driver and is building hardware for it ... so what?
-
-What is your point?
-
->=20
->> Don't get me wrong:  That design may have its place.  Perhaps you only=
-
->> care about fixing KVM, which is a perfectly acceptable strategy.
->> Its just not a strategy that I think is the best approach.  Essentiall=
-y you
->> are promoting the proliferation of competing backends, and I am trying=
-
->> to unify them (which is ironic that this thread started with concerns =
-I
->> was fragmenting things ;).
->=20
-> So, you don't see how venet fragments things? It's pretty obvious ...
-
-I never said it doesn't.  venet started as a test harness, but now it is
-inadvertently fragmenting the virtio-net effort.  I admit it.  It wasn't
-intentional, but just worked out that way.  Until your vhost idea is
-vetted and benchmarked, its not even in the running.  Venet is currently
-the highest performing 802.x acceleration for KVM that I am aware of, so
-it will continue to garner interest from users concerned with performance=
-=2E
-
-But likewise, vhost has the potential to fragment the back-end model.
-That was my point.
-
->=20
->> The bottom line is, you have a simpler solution that is more finely
->> targeted at KVM and virtio-networking.  It fixes probably a lot of
->> problems with the existing implementation, but it still has limitation=
-s.
->>
->> OTOH, what I am promoting is more complex, but more flexible.  That is=
-
->> the tradeoff.  You can't have both ;)
->=20
-> We can. connect eventfds to hypercalls, and vhost will work with vbus.
-
--ENOPARSE
-
-vbus doesnt use hypercalls, and I do not see why or how you would
-connect two backend models together like this.  Can you elaborate.
-
->=20
->> So do not for one second think
->> that what you implemented is equivalent, because they are not.
->>
->> In fact, I believe I warned you about this potential problem when you
->> decided to implement your own version.  I think I said something to th=
-e
->> effect of "you will either have a subset of functionality, or you will=
-
->> ultimately reinvent what I did".  Right now you are in the subset phas=
-e.
->=20
-> No. Unlike vbus, vhost supports unmodified guests and live migration.
-
-By "subset", I am referring to your interfaces and the scope of its
-applicability.  The things you need to do to make vhost work and a vbus
-device work from a memory and signaling abstration POV are going to be
-extremely similar.
-
-The difference in how the guest sees them these backends is all
-contained in the vbus-connector.  Therefore, what you *could* have done
-is simply written a connector that  does something like only support
-"virtio" backends, and surfaced them as regular PCI devices to the
-guest.  Then you could have reused all the abstraction features in vbus,
-instead of reinventing them (case in point, your region+copy_to_user
-code).  And likewise, anyone using vbus could use your virtio-net backend=
-=2E
-
-Instead, I am still left with no virtio-net backend implemented, and you
-were left designing, writing, and testing facilities that I've already
-completed.  So it was duplicative effort.
-
-Kind Regards,
--Greg
 
 
---------------enigC642A6578DDFAC710B476427
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> -----Original Message-----
+> From: Adrian Hunter [mailto:adrian.hunter@nokia.com]
+> Sent: Tuesday, August 18, 2009 1:53 AM
+> To: Madhusudhan Chikkature
+> Cc: akpm@linux-foundation.org; linux-kernel@vger.kernel.org; linux-
+> omap@vger.kernel.org; linux-arm-kernel@lists.arm.linux.org.uk
+> Subject: Re: [PATCH] omap_hsmmc: Fix for the db clock failure message
+> 
+> Madhusudhan Chikkature wrote:
+> > This patch applies on top of the series "[PATCH V2 0/32] mmc and
+> omap_hsmmc
+> > patches" posted by Adrian Hunter.
+> >
+> > -------------------------------------------------
+> >
+> >
+> >
+> > This patch removes the error message "Failed to get debounce clock.."
+> printed
+> > out by the HSMMC driver on OMAP3430. The debounce clock needs to be
+> handled only
+> > for OMAP2430.
+> 
+> I have a suggestion that may make it tidier.
+> 
+> What about renaming host->dbclk_enabled to host->got_dbclk and leaving it
+> alone
+> after it is set in the probe function.  Then create a macro to use in
+> conditions:
+> 
+> #define have_dbclk(host) (cpu_is_omap2430() && (host)->got_dbclk)
+> 
+> So the following:
+> 
+> -	if (host->dbclk_enabled)
+> +	if (cpu_is_omap2430() && host->dbclk_enabled) {
+>  		clk_disable(host->dbclk);
+> +		host->dbclk_enabled = 0;
+> +	}
+> 
+> becomes:
+> 
+> -	if (host->dbclk_enabled)
+> +	if (have_dbclk(host))
+>  		clk_disable(host->dbclk);
+> 
+> Or alternatively, forget the macro, and let the code always compile in:
+> 
+> -	if (host->dbclk_enabled)
+> +	if (host->got_dbclk)
+>  		clk_disable(host->dbclk);
+> 
+In both the cases how about the enable path? We want to enable the debounce
+clock only for OMAP2430, Right? Otherwise we will still end up throwing an
+error message for 3430 if we check the result of clk_enable for db clock. 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+Regards,
+Madhu
 
-iEYEARECAAYFAkqKxowACgkQP5K2CMvXmqFL5wCdHmpS5ZjKuu/5W8fgGnmVL3Ub
-5wIAnAqvnsJUEKc3XDa1PNscsPuuqcF1
-=KHY2
------END PGP SIGNATURE-----
+> 
+> >
+> > Signed-off-by: Madhusudhan Chikkature <madhu.cr@ti.com>
+> > ---
+> >  drivers/mmc/host/omap_hsmmc.c |   63 +++++++++++++++++++++++++++-------
+> --------
+> >  1 file changed, 41 insertions(+), 22 deletions(-)
+> >
+> > Index: linux-2.6/drivers/mmc/host/omap_hsmmc.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/mmc/host/omap_hsmmc.c
+> > +++ linux-2.6/drivers/mmc/host/omap_hsmmc.c
+> > @@ -735,8 +735,10 @@ static int omap_hsmmc_switch_opcond(stru
+> >  	/* Disable the clocks */
+> >  	clk_disable(host->fclk);
+> >  	clk_disable(host->iclk);
+> > -	if (host->dbclk_enabled)
+> > +	if (cpu_is_omap2430() && host->dbclk_enabled) {
+> >  		clk_disable(host->dbclk);
+> > +		host->dbclk_enabled = 0;
+> > +	}
+> >
+> >  	/* Turn the power off */
+> >  	ret = mmc_slot(host).set_power(host->dev, host->slot_id, 0, 0);
+> > @@ -746,9 +748,14 @@ static int omap_hsmmc_switch_opcond(stru
+> >  		ret = mmc_slot(host).set_power(host->dev, host->slot_id, 1,
+> >  					       vdd);
+> >  	clk_enable(host->iclk);
+> > -	if (host->dbclk_enabled)
+> > -		clk_enable(host->dbclk);
+> >  	clk_enable(host->fclk);
+> > +	if (cpu_is_omap2430() && !host->dbclk_enabled) {
+> > +		if (clk_enable(host->dbclk) != 0)
+> > +			dev_dbg(mmc_dev(host->mmc), "Enabling debounce"
+> > +						" clk failed\n");
+> > +		else
+> > +			host->dbclk_enabled = 1;
+> > +	}
+> >
+> >  	if (ret != 0)
+> >  		goto err;
+> > @@ -1697,18 +1704,21 @@ static int __init omap_hsmmc_probe(struc
+> >  		goto err1;
+> >  	}
+> >
+> > -	host->dbclk = clk_get(&pdev->dev, "mmchsdb_fck");
+> > -	/*
+> > -	 * MMC can still work without debounce clock.
+> > -	 */
+> > -	if (IS_ERR(host->dbclk))
+> > -		dev_warn(mmc_dev(host->mmc), "Failed to get debounce
+> clock\n");
+> > -	else
+> > -		if (clk_enable(host->dbclk) != 0)
+> > -			dev_dbg(mmc_dev(host->mmc), "Enabling debounce"
+> > -							" clk failed\n");
+> > +	if (cpu_is_omap2430()) {
+> > +		host->dbclk = clk_get(&pdev->dev, "mmchsdb_fck");
+> > +		/*
+> > +		 * MMC can still work without debounce clock.
+> > +		 */
+> > +		if (IS_ERR(host->dbclk))
+> > +			dev_warn(mmc_dev(host->mmc),
+> > +				"Failed to get debounce clock\n");
+> >  		else
+> > -			host->dbclk_enabled = 1;
+> > +			if (clk_enable(host->dbclk) != 0)
+> > +				dev_dbg(mmc_dev(host->mmc), "Enabling
+debounce"
+> > +							" clk failed\n");
+> > +			else
+> > +				host->dbclk_enabled = 1;
+> > +	}
+> >
+> >  	/* Since we do only SG emulation, we can have as many segs
+> >  	 * as we want. */
+> > @@ -1825,8 +1835,9 @@ err_irq:
+> >  	clk_disable(host->iclk);
+> >  	clk_put(host->fclk);
+> >  	clk_put(host->iclk);
+> > -	if (host->dbclk_enabled) {
+> > -		clk_disable(host->dbclk);
+> > +	if (cpu_is_omap2430()) {
+> > +		if (host->dbclk_enabled)
+> > +			clk_disable(host->dbclk);
+> >  		clk_put(host->dbclk);
+> >  	}
+> >
+> > @@ -1859,8 +1870,9 @@ static int omap_hsmmc_remove(struct plat
+> >  		clk_disable(host->iclk);
+> >  		clk_put(host->fclk);
+> >  		clk_put(host->iclk);
+> > -		if (host->dbclk_enabled) {
+> > -			clk_disable(host->dbclk);
+> > +		if (cpu_is_omap2430()) {
+> > +			if (host->dbclk_enabled)
+> > +				clk_disable(host->dbclk);
+> >  			clk_put(host->dbclk);
+> >  		}
+> >
+> > @@ -1910,8 +1922,10 @@ static int omap_hsmmc_suspend(struct pla
+> >  				OMAP_HSMMC_READ(host->base, HCTL) & ~SDBP);
+> >  			mmc_host_disable(host->mmc);
+> >  			clk_disable(host->iclk);
+> > -			if (host->dbclk_enabled)
+> > +			if (cpu_is_omap2430() && host->dbclk_enabled) {
+> >  				clk_disable(host->dbclk);
+> > +				host->dbclk_enabled = 0;
+> > +			}
+> >  		} else {
+> >  			host->suspended = 0;
+> >  			if (host->pdata->resume) {
+> > @@ -1942,14 +1956,19 @@ static int omap_hsmmc_resume(struct plat
+> >  		if (ret)
+> >  			goto clk_en_err;
+> >
+> > -		if (host->dbclk_enabled)
+> > -			clk_enable(host->dbclk);
+> > -
+> >  		if (mmc_host_enable(host->mmc) != 0) {
+> >  			clk_disable(host->iclk);
+> >  			goto clk_en_err;
+> >  		}
+> >
+> > +		if (cpu_is_omap2430() && !host->dbclk_enabled) {
+> > +			if (clk_enable(host->dbclk) != 0)
+> > +				dev_dbg(mmc_dev(host->mmc), "Enabling
+debounce"
+> > +							" clk failed\n");
+> > +			else
+> > +				host->dbclk_enabled = 1;
+> > +		}
+> > +
+> >  		omap_hsmmc_conf_bus_power(host);
+> >
+> >  		if (host->pdata->resume) {
+> >
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
+> 
 
---------------enigC642A6578DDFAC710B476427--
+
