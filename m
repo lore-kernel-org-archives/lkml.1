@@ -1,47 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758931AbZHRNZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758935AbZHRN32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758931AbZHRNZz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 09:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758808AbZHRNZy
+	id S1758935AbZHRN32 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 09:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758891AbZHRN32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 09:25:54 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56323 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753903AbZHRNZy (ORCPT
+	Tue, 18 Aug 2009 09:29:28 -0400
+Received: from ru.mvista.com ([213.79.90.228]:42066 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758831AbZHRN31 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 09:25:54 -0400
-Subject: Re: [PATCH 0/12] cleanup __build_sched_domains()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Gautham Shenoy <ego@in.ibm.com>, Vatsa <vatsa@linux.vnet.ibm.com>
-In-Reply-To: <20090818131558.GO29515@alberich.amd.com>
-References: <20090818104944.GA29515@alberich.amd.com>
-	 <20090818111644.GA23983@elte.hu>  <20090818131558.GO29515@alberich.amd.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 18 Aug 2009 15:25:41 +0200
-Message-Id: <1250601941.7583.283.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 18 Aug 2009 09:29:27 -0400
+Date: Tue, 18 Aug 2009 17:29:28 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Paul Fertser <fercerpav@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, sameo@linux.intel.com,
+       linux-kernel@vger.kernel.org, Anton Vorontsov <cbou@mail.ru>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] pcf50633: use a dedicated workqueue for irq processing
+Message-ID: <20090818132928.GA32765@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <200907281845.n6SIjIlf025081@home.pavel.comp>
+ <20090730153425.9a3fc5ac.akpm@linux-foundation.org>
+ <20090731092313.GA21633@home.pavel.comp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090731092313.GA21633@home.pavel.comp>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-18 at 15:15 +0200, Andreas Herrmann wrote:
+On Fri, Jul 31, 2009 at 01:23:13PM +0400, Paul Fertser wrote:
+> On Thu, Jul 30, 2009 at 03:34:25PM -0700, Andrew Morton wrote:
+> > On Tue, 28 Jul 2009 00:41:15 +0400
+> > Paul Fertser <fercerpav@gmail.com> wrote:
+> > 
+> > > Using the default kernel "events" workqueue causes problems with
+> > > synchronous adc readings if initiated from some task on the same
+> > > workqueue.
+> > > 
+> > > I had a deadlock trying to use pcf50633_adc_sync_read from a
+> > > power_supply class driver because the reading was initiated from the
+> > > workqueue and it waited for the irq processing to complete (to get the
+> > > result) and that was put on the same workqueue.
+> > 
+> > I don't get it.
+> > 
+> > Do you meant that pcf50633_adc_sync_read() was called via a
+> > schedule_work() handler?  If so, wasn't that a bug?
 > 
-> > I'd also not be surprised if the load-balancer needed some care to 
-> > properly handle such a setup.
+> Andrew, i think it is called this way:
 > 
-> It needs some care and gave me some headache to get it working in all
-> cases (i.e. NUMA, no-NUMA, NUMA-but-no-SRAT). My current code (that
-> still needs to be split in proper patches for submission) works fine
-> in all but one case. And I am still debugging it.
+> power_supply_changed -> schedule_work(&psy->changed_work) ->
+> power_supply_changed_work -> kobject_uevent(&psy->dev->kobj, KOBJ_CHANGE)
+> -> power_supply_uevent -> power_supply_show_property -> get_property ->
+> bat->pdata->get_voltage -> pcf50633_adc_sync_read
 > 
-> The case that is not working is a normal (non-multi-node) NUMA system
-> on which switching to power policy does not take effect for already
-> running tasks. Just the new created ones are scheduled according to
-> the power policy.
+> I assumed that since power_supply class is well-established and widely used
+> that's an intended behaviour. CCing relevant maintainers to get their
+> opinions.
 
-Note that current upstream is broken here in a way that isn't fixable in
-a straight fwd way. Ego and vatsa were looking into that iirc.
+The thing is that power_supply_changed() is supposed to be callable
+from any context (including hard IRQs), so we use schedule_work().
+
+I see the deadlock problem, and it could be fixed by a dedicated
+workqueue either in the pcf50633 driver, or power supply class.
+I don't mind either way.
+
+Another option is to implement power_supply_changed_can_sleep(),
+which won't use schedule_work(), and so we won't need another
+thread.
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
