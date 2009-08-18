@@ -1,201 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbZHRXQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752141AbZHRXRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752188AbZHRXQN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 19:16:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbZHRXQK
+	id S1752141AbZHRXRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 19:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbZHRXRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 19:16:10 -0400
-Received: from smtp110.sbc.mail.gq1.yahoo.com ([67.195.14.95]:30113 "HELO
-	smtp110.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752151AbZHRXQH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 19:16:07 -0400
-X-Yahoo-SMTP: RrAacJSswBBjW0Obe5dhTHj7mfiuboERhd4hX4HvWHq2RmBoxiTUVqFaT6p3
-X-YMail-OSG: DXdUB80VM1kj4evjgmYa.2e9dYjZek_K45X2EK4KYy4icZ8pjxhlPu7IlezFNTEFaXIZ8rR92XOWm6sVI3zXm6g.9zebQkh2LBzqzxmrAlqpmsqeSzeg7ijC4ymLUXaUkbaREPLXDVntIdcI3b93dpIrtHkO731URdpihO_swv9Dm51M.WHJUrQ4Uquevjf0W8QqMWTcEUXthEBdwZTM_YyzGKj2s.PAmdOUxVVKYE2rdNRRCeYnCF9PixM8atGpQhsFsFdtEt3iGD_KzsunAv0KZJw8AD7stvaEfEgzwxKxBOBtt13cDC9YcHZMsFDfkCMqBlrCtIMRJ20GjlBKWvpBSCIggN.8sA--
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 4/4] [LIO-Target/ConfigFS]: Add attribute for ALUA
-	secondary port access state
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Cc: Douglas Gilbert <dgilbert@interlog.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Alasdair G Kergon <agk@redhat.com>,
-       Joel Becker <joel.becker@oracle.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Florian Haas <florian.haas@linbit.com>,
-       Philipp Reisner <philipp.reisner@linbit.com>
-Content-Type: text/plain
-Date: Tue, 18 Aug 2009 16:16:05 -0700
-Message-Id: <1250637365.27590.69.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Aug 2009 19:17:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51780 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751015AbZHRXRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 19:17:18 -0400
+Message-ID: <4A8B3693.9000301@redhat.com>
+Date: Tue, 18 Aug 2009 19:17:39 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       =?UTF-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>,
+       Roland McGrath <roland@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [PATCH -tip v14 03/12] kprobes: checks probe address is	instruction
+ boudary on x86
+References: <20090813203403.31965.20973.stgit@localhost.localdomain> <20090813203428.31965.21939.stgit@localhost.localdomain> <20090818230340.GF5231@nowhere>
+In-Reply-To: <20090818230340.GF5231@nowhere>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
+Frederic Weisbecker wrote:
+> On Thu, Aug 13, 2009 at 04:34:28PM -0400, Masami Hiramatsu wrote:
+>> Ensure safeness of inserting kprobes by checking whether the specified
+>> address is at the first byte of a instruction on x86.
+>> This is done by decoding probed function from its head to the probe point.
+>>
+>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+>> Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+>> Cc: Avi Kivity <avi@redhat.com>
+>> Cc: Andi Kleen <ak@linux.intel.com>
+>> Cc: Christoph Hellwig <hch@infradead.org>
+>> Cc: Frank Ch. Eigler <fche@redhat.com>
+>> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+>> Cc: H. Peter Anvin <hpa@zytor.com>
+>> Cc: Ingo Molnar <mingo@elte.hu>
+>> Cc: Jason Baron <jbaron@redhat.com>
+>> Cc: Jim Keniston <jkenisto@us.ibm.com>
+>> Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+>> Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+>> Cc: Li Zefan <lizf@cn.fujitsu.com>
+>> Cc: Przemysław Pawełczyk <przemyslaw@pawelczyk.it>
+>> Cc: Roland McGrath <roland@redhat.com>
+>> Cc: Sam Ravnborg <sam@ravnborg.org>
+>> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+>> Cc: Steven Rostedt <rostedt@goodmis.org>
+>> Cc: Tom Zanussi <tzanussi@gmail.com>
+>> Cc: Vegard Nossum <vegard.nossum@gmail.com>
+>> ---
+>>
+>>  arch/x86/kernel/kprobes.c |   69 +++++++++++++++++++++++++++++++++++++++++++++
+>>  1 files changed, 69 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+>> index b5b1848..80d493f 100644
+>> --- a/arch/x86/kernel/kprobes.c
+>> +++ b/arch/x86/kernel/kprobes.c
+>> @@ -48,6 +48,7 @@
+>>  #include <linux/preempt.h>
+>>  #include <linux/module.h>
+>>  #include <linux/kdebug.h>
+>> +#include <linux/kallsyms.h>
+>>  
+>>  #include <asm/cacheflush.h>
+>>  #include <asm/desc.h>
+>> @@ -55,6 +56,7 @@
+>>  #include <asm/uaccess.h>
+>>  #include <asm/alternative.h>
+>>  #include <asm/debugreg.h>
+>> +#include <asm/insn.h>
+>>  
+>>  void jprobe_return_end(void);
+>>  
+>> @@ -245,6 +247,71 @@ retry:
+>>  	}
+>>  }
+>>  
+>> +/* Recover the probed instruction at addr for further analysis. */
+>> +static int recover_probed_instruction(kprobe_opcode_t *buf, unsigned long addr)
+>> +{
+>> +	struct kprobe *kp;
+>> +	kp = get_kprobe((void *)addr);
+>> +	if (!kp)
+>> +		return -EINVAL;
+>> +
+>> +	/*
+>> +	 *  Basically, kp->ainsn.insn has an original instruction.
+>> +	 *  However, RIP-relative instruction can not do single-stepping
+>> +	 *  at different place, fix_riprel() tweaks the displacement of
+>> +	 *  that instruction. In that case, we can't recover the instruction
+>> +	 *  from the kp->ainsn.insn.
+>> +	 *
+>> +	 *  On the other hand, kp->opcode has a copy of the first byte of
+>> +	 *  the probed instruction, which is overwritten by int3. And
+>> +	 *  the instruction at kp->addr is not modified by kprobes except
+>> +	 *  for the first byte, we can recover the original instruction
+>> +	 *  from it and kp->opcode.
+>> +	 */
+>> +	memcpy(buf, kp->addr, MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
+>> +	buf[0] = kp->opcode;
+>> +	return 0;
+>> +}
+>> +
+>> +/* Dummy buffers for kallsyms_lookup */
+>> +static char __dummy_buf[KSYM_NAME_LEN];
+>> +
+>> +/* Check if paddr is at an instruction boundary */
+>> +static int __kprobes can_probe(unsigned long paddr)
+>> +{
+>> +	int ret;
+>> +	unsigned long addr, offset = 0;
+>> +	struct insn insn;
+>> +	kprobe_opcode_t buf[MAX_INSN_SIZE];
+>> +
+>> +	if (!kallsyms_lookup(paddr, NULL, &offset, NULL, __dummy_buf))
+>> +		return 0;
+>> +
+>> +	/* Decode instructions */
+>> +	addr = paddr - offset;
+>> +	while (addr < paddr) {
+>> +		kernel_insn_init(&insn, (void *)addr);
+>> +		insn_get_opcode(&insn);
+>> +
+>> +		/* Check if the instruction has been modified. */
+>> +		if (insn.opcode.bytes[0] == BREAKPOINT_INSTRUCTION) {
+>> +			ret = recover_probed_instruction(buf, addr);
+> 
+> 
+> 
+> I'm confused about the reason of this recovering. Is it to remove
+> kprobes behind the current setting one in the current function?
 
-This patch updates the LIO-Target fabric module configfs code to add
-support for the SPC-4 defined ALUA secondary port access state OFFLINE.  This
-new attribute is located at:
+No, it recovers just an instruction which is probed by a kprobe,
+because we need to know the first byte of this instruction for
+decoding it.
 
-/sys/kernel/config/target/iscsi/$TARGETNAME/tpgt_$TPGT/lun/lun_0/alua_tg_pt_offline
+Perhaps we'd better to have more generic interface (text_peek?)
+for it because another subsystem (e.g. kgdb) may want to insert int3...
 
-which calls generic target_core_mod code to preform the actual OFFLINE <-> ONLINE
-state transitions for this iSCSI target port/LUN.
+Thank you,
 
-Also, this patch does a small cleanup for lio_target_port_cit and makes it use
-CONFIGFS_EATTR_*() macros to generate the default store()/show() handlers for the
-struct configfs_item_operations lio_target_port_item_ops.
-
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/iscsi_target_configfs.c |   99 ++++++++++++++++-------------
- 1 files changed, 55 insertions(+), 44 deletions(-)
-
-diff --git a/drivers/lio-core/iscsi_target_configfs.c b/drivers/lio-core/iscsi_target_configfs.c
-index 3fd42dc..1230b74 100644
---- a/drivers/lio-core/iscsi_target_configfs.c
-+++ b/drivers/lio-core/iscsi_target_configfs.c
-@@ -402,67 +402,78 @@ static struct config_item_type lio_target_np_cit = {
- 
- // Start items for lio_target_port_cit
- 
--static ssize_t lio_target_show_port_alua_tg_pt_gp (void *p, char *page)
--{
--	se_lun_t *lun = (se_lun_t *)p;
-+CONFIGFS_EATTR_STRUCT(lio_target_port, se_lun_s);
-+#define LIO_PORT_ATTR(_name, _mode)					\
-+static struct lio_target_port_attribute lio_target_port_##_name =	\
-+	__CONFIGFS_EATTR(_name, _mode,					\
-+	lio_target_port_show_attr_##_name,				\
-+	lio_target_port_store_attr_##_name);
-+
-+#define LIO_PORT_ATTR_RO(_name, _mode)					\
-+static struct lio_target_port_attribute lio_target_port_##_name =	\
-+	__CONFIGFS_EATTR_RO(_name,					\
-+	lio_target_port_show_attr_##_name);
- 
-+/*
-+ * alua_tg_pt_gp
-+ */
-+static ssize_t lio_target_port_show_attr_alua_tg_pt_gp(
-+	struct se_lun_s *lun,
-+	char *page)
-+{
- 	if (!(lun->lun_sep))
--		return(-ENODEV);
-+		return -ENODEV;
- 
--	return(core_alua_show_tg_pt_gp_info(lun->lun_sep, page));
-+	return core_alua_show_tg_pt_gp_info(lun->lun_sep, page);
- }
- 
--static ssize_t lio_target_store_port_alua_tg_pt_gp (void *p, const char *page, size_t count)
-+static ssize_t lio_target_port_store_attr_alua_tg_pt_gp(
-+	struct se_lun_s *lun,
-+	const char *page,
-+	size_t count)
- {
--	se_lun_t *lun = (se_lun_t *)p;
--
- 	if (!(lun->lun_sep))
--		return(-ENODEV);
-+		return -ENODEV;
- 
--	return(core_alua_store_tg_pt_gp_info(lun->lun_sep, page, count));
-+	return core_alua_store_tg_pt_gp_info(lun->lun_sep, page, count);
- }
- 
--static struct lio_target_configfs_attribute lio_target_attr_port_alua_tg_pt_gp = {
--	.attr	= { .ca_owner = THIS_MODULE,
--		    .ca_name = "alua_tg_pt_gp",
--		    .ca_mode = S_IRUGO | S_IWUSR },
--	.show	= lio_target_show_port_alua_tg_pt_gp,
--	.store	= lio_target_store_port_alua_tg_pt_gp,
--};
--
--static struct configfs_attribute *lio_target_port_attrs[] = {
--	&lio_target_attr_port_alua_tg_pt_gp.attr,
--	NULL,
--};
-+LIO_PORT_ATTR(alua_tg_pt_gp, S_IRUGO | S_IWUSR);
- 
--static ssize_t lio_target_port_show (struct config_item *item,
--				     struct configfs_attribute *attr,
--				     char *page)
-+/*
-+ * alua_tg_pt_offline
-+ */
-+static ssize_t lio_target_port_show_attr_alua_tg_pt_offline(
-+	struct se_lun_s *lun,
-+	char *page)
- {
--	se_lun_t *lun = container_of(to_config_group(item), se_lun_t, lun_group);
--	struct lio_target_configfs_attribute *lt_attr = container_of(
--			attr, struct lio_target_configfs_attribute, attr);
--
--	if (!(lt_attr->show))
--		return(-EINVAL);
-+	if (!(lun->lun_sep))
-+		return -ENODEV;
- 
--	return(lt_attr->show((void *)lun, page));
-+	return core_alua_show_offline_bit(lun, page);
- }
- 
--static ssize_t lio_target_port_store (struct config_item *item,
--				      struct configfs_attribute *attr,
--				      const char *page, size_t count)
-+static ssize_t lio_target_port_store_attr_alua_tg_pt_offline(
-+	struct se_lun_s *lun,
-+	const char *page,
-+	size_t count)
- {
--	se_lun_t *lun = container_of(to_config_group(item), se_lun_t, lun_group);
--	struct lio_target_configfs_attribute *lt_attr = container_of(
--			attr, struct lio_target_configfs_attribute, attr);
--
--	if (!(lt_attr->store))
--		return(-EINVAL);
-+	if (!(lun->lun_sep))
-+		return -ENODEV;
- 
--	return(lt_attr->store((void *)lun, page, count));
-+	return core_alua_store_offline_bit(lun, page, count);
- }
- 
-+LIO_PORT_ATTR(alua_tg_pt_offline, S_IRUGO | S_IWUSR);
-+
-+static struct configfs_attribute *lio_target_port_attrs[] = {
-+	&lio_target_port_alua_tg_pt_gp.attr,
-+	&lio_target_port_alua_tg_pt_offline.attr,
-+	NULL,
-+};
-+
-+CONFIGFS_EATTR_OPS(lio_target_port, se_lun_s, lun_group);
-+
- static int lio_target_port_link (struct config_item *lun_ci, struct config_item *se_dev_ci)
- {
- 	iscsi_portal_group_t *tpg;
-@@ -563,8 +574,8 @@ static int lio_target_port_unlink (struct config_item *lun_ci, struct config_ite
- 
- static struct configfs_item_operations lio_target_port_item_ops = {
- 	.release		= NULL,
--	.show_attribute		= lio_target_port_show,
--	.store_attribute	= lio_target_port_store,
-+	.show_attribute		= lio_target_port_attr_show,
-+	.store_attribute	= lio_target_port_attr_store,
- 	.allow_link		= lio_target_port_link,
- 	.check_link		= lio_target_port_check_link,
- 	.drop_link		= lio_target_port_unlink,
 -- 
-1.5.4.1
+Masami Hiramatsu
 
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
+e-mail: mhiramat@redhat.com
 
