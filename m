@@ -1,52 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757295AbZHRJf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbZHRJjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757295AbZHRJf5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 05:35:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbZHRJf5
+	id S1754767AbZHRJjB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 05:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZHRJjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 05:35:57 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:40980 "EHLO atmel-es2.atmel.fr"
+	Tue, 18 Aug 2009 05:39:00 -0400
+Received: from mga03.intel.com ([143.182.124.21]:31757 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753512AbZHRJf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 05:35:56 -0400
-Message-ID: <4A8A7579.9080604@atmel.com>
-Date: Tue, 18 Aug 2009 11:33:45 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	id S1753210AbZHRJjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 05:39:00 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,401,1246863600"; 
+   d="scan'208";a="176970834"
+Date: Tue, 18 Aug 2009 17:31:19 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Rik van Riel <riel@redhat.com>, Jeff Dike <jdike@addtoit.com>,
+       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+Message-ID: <20090818093119.GA12679@localhost>
+References: <4A7AC201.4010202@redhat.com> <20090806130631.GB6162@localhost> <20090806210955.GA14201@c2.user-mode-linux.org> <20090816031827.GA6888@localhost> <4A87829C.4090908@redhat.com> <20090816051502.GB13740@localhost> <20090816112910.GA3208@localhost> <28c262360908170733q4bc5ddb8ob2fc976b6a468d6e@mail.gmail.com> <20090818023438.GB7958@localhost> <20090818131734.3d5bceb2.minchan.kim@barrios-desktop>
 MIME-Version: 1.0
-To: Pierre Ossman <pierre@ossman.eu>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org, nico@cam.org,
-       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
-       david-b@pacbell.net, manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl,
-       ppisa@pikron.com, jarkko.lavinen@nokia.com, ben@fluff.org,
-       saschasommer@freenet.de, avorontsov@ru.mvista.com, oakad@yahoo.com,
-       ian@mnementh.co.uk, HaraldWelte@viatech.com, JosephChan@via.com.tw,
-       adrian.hunter@nokia.com
-Subject: Re: New MMC maintainer needed
-References: <20090714153601.6dfe70ff@mjolnir.ossman.eu>	<20090722151744.fffd7bf5.akpm@linux-foundation.org>	<20090728222334.0c543c47@mjolnir.ossman.eu> <20090731122623.254fd0f1@mjolnir.ossman.eu>
-In-Reply-To: <20090731122623.254fd0f1@mjolnir.ossman.eu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090818131734.3d5bceb2.minchan.kim@barrios-desktop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman :
-> This things are currently lingering in my inbox:
-
-[..]
-
-> [PATCH 1/2] atmel-mci: Unified Atmel MCI drivers (AVR32 & AT91)
-> http://marc.info/?l=linux-arm-kernel&m=124577578729455
+On Tue, Aug 18, 2009 at 12:17:34PM +0800, Minchan Kim wrote:
+> On Tue, 18 Aug 2009 10:34:38 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
 > 
-> This is nice work and it's really up to Nicolas when he wants it merged.
+> > Minchan,
+> > 
+> > On Mon, Aug 17, 2009 at 10:33:54PM +0800, Minchan Kim wrote:
+> > > On Sun, Aug 16, 2009 at 8:29 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> > > > On Sun, Aug 16, 2009 at 01:15:02PM +0800, Wu Fengguang wrote:
+> > > >> On Sun, Aug 16, 2009 at 11:53:00AM +0800, Rik van Riel wrote:
+> > > >> > Wu Fengguang wrote:
+> > > >> > > On Fri, Aug 07, 2009 at 05:09:55AM +0800, Jeff Dike wrote:
+> > > >> > >> Side question -
+> > > >> > >>  Is there a good reason for this to be in shrink_active_list()
+> > > >> > >> as opposed to __isolate_lru_page?
+> > > >> > >>
+> > > >> > >>          if (unlikely(!page_evictable(page, NULL))) {
+> > > >> > >>                  putback_lru_page(page);
+> > > >> > >>                  continue;
+> > > >> > >>          }
+> > > >> > >>
+> > > >> > >> Maybe we want to minimize the amount of code under the lru lock or
+> > > >> > >> avoid duplicate logic in the isolate_page functions.
+> > > >> > >
+> > > >> > > I guess the quick test means to avoid the expensive page_referenced()
+> > > >> > > call that follows it. But that should be mostly one shot cost - the
+> > > >> > > unevictable pages are unlikely to cycle in active/inactive list again
+> > > >> > > and again.
+> > > >> >
+> > > >> > Please read what putback_lru_page does.
+> > > >> >
+> > > >> > It moves the page onto the unevictable list, so that
+> > > >> > it will not end up in this scan again.
+> > > >>
+> > > >> Yes it does. I said 'mostly' because there is a small hole that an
+> > > >> unevictable page may be scanned but still not moved to unevictable
+> > > >> list: when a page is mapped in two places, the first pte has the
+> > > >> referenced bit set, the _second_ VMA has VM_LOCKED bit set, then
+> > > >> page_referenced() will return 1 and shrink_page_list() will move it
+> > > >> into active list instead of unevictable list. Shall we fix this rare
+> > > >> case?
+> > > 
+> > > I think it's not a big deal.
+> > 
+> > Maybe, otherwise I should bring up this issue long time before :)
+> > 
+> > > As you mentioned, it's rare case so there would be few pages in active
+> > > list instead of unevictable list.
+> > 
+> > Yes.
+> > 
+> > > When next time to scan comes, we can try to move the pages into
+> > > unevictable list, again.
+> > 
+> > Will PG_mlocked be set by then? Otherwise the situation is not likely 
+> > to change and the VM_LOCKED pages may circulate in active/inactive
+> > list for countless times.
+> 
+> PG_mlocked is not important in that case. 
+> Important thing is VM_LOCKED vma. 
+> I think below annotaion can help you to understand my point. :)
 
-Ok guys, it should be fine if we can plan a merge for those bits: I have
-additional patches that are waiting on top of this one...
+Hmm, it looks like pages under VM_LOCKED vma is guaranteed to have
+PG_mlocked set, and so will be caught by page_evictable(). Is it?
+Then I was worrying about a null problem. Sorry for the confusion!
 
-Thanks a lot. Bye,
--- 
-Nicolas Ferre
+Thanks,
+Fengguang
 
+> ----
+> 
+> /*
+>  * called from munlock()/munmap() path with page supposedly on the LRU.
+>  *
+>  * Note:  unlike mlock_vma_page(), we can't just clear the PageMlocked
+>  * [in try_to_munlock()] and then attempt to isolate the page.  We must
+>  * isolate the page to keep others from messing with its unevictable
+>  * and mlocked state while trying to munlock.  However, we pre-clear the
+>  * mlocked state anyway as we might lose the isolation race and we might
+>  * not get another chance to clear PageMlocked.  If we successfully
+>  * isolate the page and try_to_munlock() detects other VM_LOCKED vmas
+>  * mapping the page, it will restore the PageMlocked state, unless the page
+>  * is mapped in a non-linear vma.  So, we go ahead and SetPageMlocked(),
+>  * perhaps redundantly.
+>  * If we lose the isolation race, and the page is mapped by other VM_LOCKED
+>  * vmas, we'll detect this in vmscan--via try_to_munlock() or try_to_unmap()
+>  * either of which will restore the PageMlocked state by calling
+>  * mlock_vma_page() above, if it can grab the vma's mmap sem.
+>  */
+> static void munlock_vma_page(struct page *page)
+> {
+> ...
+> 
+> -- 
+> Kind regards,
+> Minchan Kim
