@@ -1,92 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbZHRIqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbZHRIqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756689AbZHRIqf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 04:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbZHRIqe
+	id S1757328AbZHRIqo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 04:46:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757206AbZHRIqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 04:46:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44662 "EHLO hera.kernel.org"
+	Tue, 18 Aug 2009 04:46:42 -0400
+Received: from 1wt.eu ([62.212.114.60]:44441 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753134AbZHRIqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 04:46:33 -0400
-Date: Tue, 18 Aug 2009 08:45:54 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       schwidefsky@de.ibm.com, lethal@linux-sh.org, fweisbec@gmail.com,
-       rostedt@goodmis.org, heiko.carstens@de.ibm.com, tglx@linutronix.de,
-       jbaron@redhat.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       schwidefsky@de.ibm.com, lethal@linux-sh.org, fweisbec@gmail.com,
-       rostedt@goodmis.org, heiko.carstens@de.ibm.com, jbaron@redhat.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <tip-fb34a08c3469b2be9eae626ccb96476b4687b810@git.kernel.org>
-References: <tip-fb34a08c3469b2be9eae626ccb96476b4687b810@git.kernel.org>
-Subject: [tip:tracing/core] [S390] ftrace: update system call tracer support
-Message-ID: <tip-a9008fd42b1c3c89f684d90bdfb9c2d05c7af119@git.kernel.org>
-Git-Commit-ID: a9008fd42b1c3c89f684d90bdfb9c2d05c7af119
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	id S1751492AbZHRIqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 04:46:40 -0400
+Date: Tue, 18 Aug 2009 10:46:25 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] splice: update mtime and atime on files
+Message-ID: <20090818084625.GF18709@1wt.eu>
+References: <E1MbyLM-0006Xd-OE@pomaz-ex.szeredi.hu> <20090815064241.GE12579@kernel.dk> <20090818050027.GE11624@1wt.eu> <20090818083547.GK12579@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 18 Aug 2009 08:45:55 +0000 (UTC)
+In-Reply-To: <20090818083547.GK12579@kernel.dk>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a9008fd42b1c3c89f684d90bdfb9c2d05c7af119
-Gitweb:     http://git.kernel.org/tip/a9008fd42b1c3c89f684d90bdfb9c2d05c7af119
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 18 Aug 2009 10:41:57 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 18 Aug 2009 10:41:49 +0200
+On Tue, Aug 18, 2009 at 10:35:48AM +0200, Jens Axboe wrote:
+> On Tue, Aug 18 2009, Willy Tarreau wrote:
+> > On Sat, Aug 15, 2009 at 08:42:41AM +0200, Jens Axboe wrote:
+> > > On Fri, Aug 14 2009, Miklos Szeredi wrote:
+> > > > From: Miklos Szeredi <mszeredi@suse.cz>
+> > > > 
+> > > > Splice should update the modification and access times on regular
+> > > > files just like read and write.  Not updating mtime will confuse
+> > > > backup tools, etc...
+> > > > 
+> > > > This patch only adds the time updates for regular files.  For pipes
+> > > > and other special files that splice touches the need for updating the
+> > > > times is less clear.  Let's discuss and fix that separately.
+> > > 
+> > > Thanks Miklos, I've queued this one up.
+> > 
+> > wouldn't it make sense to send that to stable too ? The patch is not
+> > intrusive and looks like a fix to me.
+> 
+> It doesn't really meet the stable criteria, as it's not a security issue
+> nor does it crash the kernel.
 
-[S390] ftrace: update system call tracer support
+Oh there are many other things which go to stable, especially bug
+fixes and minor improvements. We *could* classify this in the bug
+fixes as, I Miklos suggested it, this could have an impact on
+modified files which would currently not be backed up for instance.
 
-Commit fb34a08c3 ("tracing: Add trace events for each syscall
-entry/exit") changed the lowlevel API to ftrace syscall tracing
-but did not update s390 which started making use of it recently.
+Regards,
+Willy
 
-This broke the s390 build, as reported by Paul Mundt.
-
-Update the callbacks with the syscall number and the syscall
-return code values. This allows per syscall tracepoints,
-syscall argument enumeration /debug/tracing/events/syscalls/
-and perfcounters support and integration on s390 too.
-
-Reported-by: Paul Mundt <lethal@linux-sh.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <tip-fb34a08c3469b2be9eae626ccb96476b4687b810@git.kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/s390/kernel/ptrace.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/s390/kernel/ptrace.c b/arch/s390/kernel/ptrace.c
-index 43acd73..05f57cd 100644
---- a/arch/s390/kernel/ptrace.c
-+++ b/arch/s390/kernel/ptrace.c
-@@ -662,7 +662,7 @@ asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
- 	}
- 
- 	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
--		ftrace_syscall_enter(regs);
-+		trace_syscall_enter(regs, regs->gprs[2]);
- 
- 	if (unlikely(current->audit_context))
- 		audit_syscall_entry(is_compat_task() ?
-@@ -680,7 +680,7 @@ asmlinkage void do_syscall_trace_exit(struct pt_regs *regs)
- 				   regs->gprs[2]);
- 
- 	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
--		ftrace_syscall_exit(regs);
-+		trace_syscall_exit(regs, regs->gprs[2]);
- 
- 	if (test_thread_flag(TIF_SYSCALL_TRACE))
- 		tracehook_report_syscall_exit(regs, 0);
