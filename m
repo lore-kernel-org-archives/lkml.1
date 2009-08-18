@@ -1,70 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbZHRLQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbZHRLkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758783AbZHRLQy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 07:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758795AbZHRLQw
+	id S1754478AbZHRLkZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 07:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbZHRLkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 07:16:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40817 "EHLO mx3.mail.elte.hu"
+	Tue, 18 Aug 2009 07:40:24 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33545 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758738AbZHRLQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 07:16:51 -0400
-Date: Tue, 18 Aug 2009 13:16:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/12] cleanup __build_sched_domains()
-Message-ID: <20090818111644.GA23983@elte.hu>
-References: <20090818104944.GA29515@alberich.amd.com>
+	id S1751007AbZHRLkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 07:40:24 -0400
+Date: Tue, 18 Aug 2009 13:40:24 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: "tina.yang" <tina.yang@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] sysrq: add debug message to reboot event
+In-Reply-To: <4A89AC97.6030109@oracle.com>
+Message-ID: <alpine.LNX.2.00.0908181339310.25797@wotan.suse.de>
+References: <4A89AC97.6030109@oracle.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090818104944.GA29515@alberich.amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 17 Aug 2009, tina.yang wrote:
 
-* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
-
-> Hi,
+> Add debug message to detect keyboard vs non-keyboard
+> triggered sysrq-b events.
 > 
-> Following patches try to make __build_sched_domains() less ugly 
-> and more readable. They shouldn't be harmful. Thus I think they 
-> can be applied for .32.
+> Signed-off-by: Tina Yang <Tina.Yang@oracle.com>
+> Signed-off-by: Zach Brown <Zach.Brown@oracle.com>
 > 
-> Patches are against tip/master as of today.
+> ---
 > 
-> FYI, I need those patches as a base for introducing a new domain 
-> level for multi-node CPUs for which I intend to sent patches as 
-> RFC asap.
+> --- linux-2.6.git/drivers/char/sysrq.c.orig     2009-08-13
+> 15:43:34.000000000 -0700
+> +++ linux-2.6.git/drivers/char/sysrq.c  2009-08-13 21:51:15.832694000 -0700
+> @@ -135,17 +135,22 @@ static struct sysrq_key_op sysrq_crash_o
+>         .enable_mask    = SYSRQ_ENABLE_DUMP,
+>  };
+> 
+> -static void sysrq_handle_reboot(int key, struct tty_struct *tty)
+> +static void sysrq_handle_reboot(int check_mask, int key, struct
+> tty_struct *tty)
+>  {
+> +       if (check_mask)
+> +               printk("<keyboard-invoked>\n");
+> +        else
+> +               printk("<non-keyboard-invoked: PID %d COMMAND %s>\n",
+> +                               current->pid, current->comm);
+>         lockdep_off();
+>         local_irq_enable();
+>         emergency_restart();
+>  }
+>  static struct sysrq_key_op sysrq_reboot_op = {
+> -       .handler        = sysrq_handle_reboot,
+> -       .help_msg       = "reBoot",
+> -       .action_msg     = "Resetting",
+> -       .enable_mask    = SYSRQ_ENABLE_BOOT,
+> +       .handler_with_mask      = sysrq_handle_reboot,
+> +       .help_msg               = "reBoot",
+> +       .action_msg             = "Resetting",
+> +       .enable_mask            = SYSRQ_ENABLE_BOOT,
+>  };
+> 
+>  static void sysrq_handle_sync(int key, struct tty_struct *tty)
+> @@ -509,7 +514,10 @@ void __handle_sysrq(int key, struct tty_
+>                 if (!check_mask || sysrq_on_mask(op_p->enable_mask)) {
+>                         printk("%s\n", op_p->action_msg);
+>                         console_loglevel = orig_log_level;
+> -                       op_p->handler(key, tty);
+> +                       if (op_p->handler_with_mask)
+> +                               op_p->handler_with_mask(check_mask, key,
+> tty);
+> +                       else
+> +                               op_p->handler(key, tty);
+>                 } else {
+>                         printk("This sysrq operation is disabled.\n");
+>                 }
+> --- linux-2.6.git/include/linux/sysrq.h.orig    2009-08-13
+> 20:53:48.085786000 -0700
+> +++ linux-2.6.git/include/linux/sysrq.h 2009-08-13 20:54:12.625756000 -0700
+> @@ -32,6 +32,7 @@ struct tty_struct;
+> 
+>  struct sysrq_key_op {
+>         void (*handler)(int, struct tty_struct *);
+> +       void (*handler_with_mask)(int, int, struct tty_struct *);
+>         char *help_msg;
+>         char *action_msg;
+>         int enable_mask;
+> 
 
-Very nice cleanups!
+I'd rather have this go through -mm, this doesn't really fully qualify for 
+trivial tree. CCing Andrew.
 
-Magny-Cours indeed will need one more sched-domains level, 
-something like:
-
-   [smt thread]
-   core
-   internal numa node
-   cpu socket
-   external numa node 
-
-... which is certainly interesting, especially since the hierarchy 
-possibly 'crosses', i.e. we might have the two internal numa nodes 
-share a L2 or L3 cache, right?
-
-I'd also not be surprised if the load-balancer needed some care to 
-properly handle such a setup.
-
-It's all welcome work in any case, and for .32.
-
-	Ingo
+-- 
+Jiri Kosina
+SUSE Labs
