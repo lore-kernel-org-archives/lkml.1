@@ -1,46 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759364AbZHRQmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759367AbZHRQoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759364AbZHRQmP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 12:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759209AbZHRQmO
+	id S1759367AbZHRQoE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 12:44:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759329AbZHRQoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 12:42:14 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:53262 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759201AbZHRQmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 12:42:14 -0400
-Date: Tue, 18 Aug 2009 17:42:17 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] page-allocator: Move pcp static fields for high
-	and batch off-pcp and onto the zone
-Message-ID: <20090818164216.GA13435@csn.ul.ie>
-References: <1250594162-17322-1-git-send-email-mel@csn.ul.ie> <1250594162-17322-4-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0908181015420.32284@gentwo.org>
+	Tue, 18 Aug 2009 12:44:03 -0400
+Received: from exprod6ob117.obsmtp.com ([64.18.1.38]:38617 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1759325AbZHRQoC convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 12:44:02 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0908181015420.32284@gentwo.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] aio.c: move EXPORT* macros to line after function
+Date: Tue, 18 Aug 2009 12:44:00 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901BEA23B@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] aio.c: move EXPORT* macros to line after function
+Thread-Index: AcogIxYcthgj37CjS7ydAJ2ZMvYRaA==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-aio@kvack.org>, <linux-fsdevel@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 18 Aug 2009 16:44:01.0146 (UTC) FILETIME=[16C565A0:01CA2023]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 10:18:48AM -0400, Christoph Lameter wrote:
-> 
-> This will increase the cache footprint for the hot code path. Could these
-> new variable be moved next to zone fields that are already in use there?
-> The pageset array is used f.e.
-> 
+As mentioned in Documentation/CodingStyle, move EXPORT* macro's
+to the line immediately after the closing function brace line.
 
-pageset is ____cacheline_aligned_in_smp so putting pcp->high/batch near
-it won't help in terms of cache footprint. This is why I located it near
-watermarks because it's known they'll be needed at roughly the same time
-pcp->high/batch would be normally accessed.
+Also, move the __initcall() similarly.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+
+---
+
+diff --git a/fs/aio.c b/fs/aio.c
+index d065b2c..0892729 100644
+--- a/fs/aio.c
++++ b/fs/aio.c
+@@ -78,6 +78,7 @@ static int __init aio_setup(void)
+ 
+ 	return 0;
+ }
++__initcall(aio_setup);
+ 
+ static void aio_free_ring(struct kioctx *ctx)
+ {
+@@ -380,6 +381,7 @@ ssize_t wait_on_sync_kiocb(struct kiocb *iocb)
+ 	__set_current_state(TASK_RUNNING);
+ 	return iocb->ki_user_data;
+ }
++EXPORT_SYMBOL(wait_on_sync_kiocb);
+ 
+ /* exit_aio: called when the last user of mm goes away.  At this point, 
+  * there is no way for any new requests to be submited or any of the 
+@@ -573,6 +575,7 @@ int aio_put_req(struct kiocb *req)
+ 	spin_unlock_irq(&ctx->ctx_lock);
+ 	return ret;
+ }
++EXPORT_SYMBOL(aio_put_req);
+ 
+ static struct kioctx *lookup_ioctx(unsigned long ctx_id)
+ {
+@@ -1037,6 +1040,7 @@ put_rq:
+ 	spin_unlock_irqrestore(&ctx->ctx_lock, flags);
+ 	return ret;
+ }
++EXPORT_SYMBOL(aio_complete);
+ 
+ /* aio_read_evt
+  *	Pull an event off of the ioctx's event ring.  Returns the number of 
+@@ -1825,9 +1829,3 @@ SYSCALL_DEFINE5(io_getevents, aio_context_t, ctx_id,
+ 	asmlinkage_protect(5, ret, ctx_id, min_nr, nr, events, timeout);
+ 	return ret;
+ }
+-
+-__initcall(aio_setup);
+-
+-EXPORT_SYMBOL(aio_complete);
+-EXPORT_SYMBOL(aio_put_req);
+-EXPORT_SYMBOL(wait_on_sync_kiocb); 
