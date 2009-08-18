@@ -1,83 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758920AbZHRNTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758929AbZHRNUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758920AbZHRNTj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 09:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758879AbZHRNTj
+	id S1758929AbZHRNUo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 09:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758886AbZHRNUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 09:19:39 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:57309 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758865AbZHRNTh (ORCPT
+	Tue, 18 Aug 2009 09:20:44 -0400
+Received: from mga02.intel.com ([134.134.136.20]:50068 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758874AbZHRNUn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 09:19:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=uUC5IUYjWGMtm9m4m7yvcdl7HHKEpmNiW3gbfpeDPi3A6nnXZNwiQA+Hz81xn0vRwE
-         cu/iPI0JLTZ5sCoKqZ4PUGbDjRUH4j1QPBDjGlzTYSD5Iju7AQVM1/c38NkwNhlNMErr
-         g2ZgbgwecscXFWs2mBq3hREsCAH1yWDaPOUmM=
-Message-ID: <4A8AAA67.8060602@gmail.com>
-Date: Tue, 18 Aug 2009 09:19:35 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Tue, 18 Aug 2009 09:20:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,402,1246863600"; 
+   d="scan'208";a="440034388"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>
+Date: Tue, 18 Aug 2009 14:20:30 +0100
+Subject: RE: [PATCH] perf_counter: Fix a race on perf_counter_ctx
+Thread-Topic: [PATCH] perf_counter: Fix a race on perf_counter_ctx
+Thread-Index: AcogA8ajHpVyqPAxRdCSLgiZwbVxowAAjFUg
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EC1CB7775@irsmsx504.ger.corp.intel.com>
+References: <928CFBE8E7CB0040959E56B4EA41A77EC1BFEFEB@irsmsx504.ger.corp.intel.com>
+	 <20090807103127.GA23139@elte.hu> <20090807103610.GA23728@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF02D@irsmsx504.ger.corp.intel.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF048@irsmsx504.ger.corp.intel.com>
+	 <20090807112421.GB30014@elte.hu> <20090807113349.GA31673@elte.hu>
+	 <1249667341.17467.5.camel@twins> <20090808120315.GA14086@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF464@irsmsx504.ger.corp.intel.com>
+	 <20090810134608.GA8295@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF78D@irsmsx504.ger.corp.intel.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1CB7725@irsmsx504.ger.corp.intel.com>
+	 <1250600348.7583.280.camel@twins> <1250600385.7583.281.camel@twins>
+In-Reply-To: <1250600385.7583.281.camel@twins>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Gregory Haskins <GHaskins@novell.com>, mingo@elte.hu,
-       alacrityvm-devel@lists.sourceforge.net, mst@redhat.com,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model
-References: <4A8A67ED0200005A000528F5@sinclair.provo.novell.com> <4A8A67F70200005A000528F8@sinclair.provo.novell.com> <4A8A67F70200005A000528F8@sinclair.provo.novell.com> <4A8AA0C6.805@redhat.com>
-In-Reply-To: <4A8AA0C6.805@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigD249D2F1B3945978A4677231"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigD249D2F1B3945978A4677231
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+>-----Original Message-----
+>From: Peter Zijlstra [mailto:peterz@infradead.org]
+>Sent: Tuesday, August 18, 2009 3:00 PM
+>To: Metzger, Markus T
+>Cc: Ingo Molnar; tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; linux-
+>kernel@vger.kernel.org; Paul Mackerras
+>Subject: RE: [PATCH] perf_counter: Fix a race on perf_counter_ctx
+>
+>On Tue, 2009-08-18 at 14:59 +0200, Peter Zijlstra wrote:
+>> On Tue, 2009-08-18 at 13:49 +0100, Metzger, Markus T wrote:
+>> > Hi Ingo, Peter,
+>> >
+>> > Did you say that branch tracing is working for you?
+>> >
+>> > On my system, the kernel hangs.
+>> >
+>> > Could it be that it simply takes too long to copy the trace? When I set the number
+>> > of samples to 10, everything seems to work OK. When I increase that number to 1000,
+>> > the kernel is getting very slow and eventually hangs.
+>> >
+>> > I get a message "hrtimer: interrupt too slow", and I get a soft lockup bug. The rest
+>> > of the message log seems pretty garbled.
+>
+>How many NMI/s is this generating anyway?
 
-Avi Kivity wrote:
-> On 08/18/2009 03:36 PM, Gregory Haskins wrote:
->> Yeah, I agree.  I am not advocating we expend energy on this now.  But=
+One every 800 or so branches in the current configuration - which results in 800 plus
+a few perf_counter_output() calls per interrupt.
 
->> my thoughts at the time were that that particular problem can be
->> solved at io-setup time with some kind of call to qualify the address.=
+regards,
+markus.
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
->>
->> Iow: a slow path call with the address would return flags on whether
->> iowrite() should do a real io, or a IOoHC.
->>   =20
->=20
-> Yes, it could work, though we'd need somewhere to stow this
-> information.  IIRC Arnd suggested a bit from the address itself.
->=20
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
-Yeah, exactly.  I think MMIO is particularly challenging because I don't
-know if there are any bits left to use.  But like I said, its a problem
-for another day IMO.
-
--Greg
-
-
---------------enigD249D2F1B3945978A4677231
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqKqmcACgkQP5K2CMvXmqFNrQCdEsgJJ5do/n7SewSSSI7fleak
-iqEAni6IUvmvR1VpOsMQp4jM3/KI02XZ
-=snOs
------END PGP SIGNATURE-----
-
---------------enigD249D2F1B3945978A4677231--
