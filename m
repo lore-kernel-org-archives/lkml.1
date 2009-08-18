@@ -1,48 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758464AbZHRAad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758479AbZHRAbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758464AbZHRAad (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 20:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbZHRAad
+	id S1758479AbZHRAbk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 20:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758338AbZHRAbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 20:30:33 -0400
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:49961 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753125AbZHRAac convert rfc822-to-8bit (ORCPT
+	Mon, 17 Aug 2009 20:31:39 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40812 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755886AbZHRAbi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 20:30:32 -0400
-MIME-Version: 1.0
-In-Reply-To: <2359eed20908170948p6612b075mc245aa4fb92e76aa@mail.gmail.com>
-References: <2359eed20908132115t2f6cea3by2429d54914d5ac6f@mail.gmail.com>
-	 <20090814133225.GB27905@us.ibm.com>
-	 <2359eed20908140840u2886b8dci4ce72914fc2b1ea9@mail.gmail.com>
-	 <551280e50908151022tde71278gc0a745c52a8415ed@mail.gmail.com>
-	 <2359eed20908152124s1af8d95eu7d4706ec3a50bc33@mail.gmail.com>
-	 <551280e50908162150g3764d6caqf4de130befb7789f@mail.gmail.com>
-	 <2359eed20908170738w4b3c5980x4e1defb2ed8e773c@mail.gmail.com>
-	 <551280e50908170826o6f189354n4fd64a1cb601489f@mail.gmail.com>
-	 <2359eed20908170948p6612b075mc245aa4fb92e76aa@mail.gmail.com>
-Date: Mon, 17 Aug 2009 17:30:31 -0700
-X-Google-Sender-Auth: cc62fa2f16166cbd
-Message-ID: <551280e50908171730j2a598330w280672bcae900fff@mail.gmail.com>
-Subject: Re: [RFC][PATCH 1/1] support optional non-VFS capability inheritance 
-	without disabling file caps
-From: "Andrew G. Morgan" <morgan@kernel.org>
-To: Will Drewry <redpig@dataspill.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       David Howells <dhowells@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 17 Aug 2009 20:31:38 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 18 Aug 2009 09:29:39 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org, linux-mm@kvack.org,
+       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       akpm@linux-foundation.org, bernhard.walle@gmx.de,
+       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 8/8] kexec: allow to shrink reserved memory
+Message-Id: <20090818092939.2efbe158.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4A8927DD.6060209@redhat.com>
+References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>
+	<20090812081906.5757.39417.sendpatchset@localhost.localdomain>
+	<m1bpmk8l1g.fsf@fess.ebiederm.org>
+	<4A83893D.50707@redhat.com>
+	<m1eirg5j9i.fsf@fess.ebiederm.org>
+	<4A83CD84.8040609@redhat.com>
+	<m1tz0avy4h.fsf@fess.ebiederm.org>
+	<4A8927DD.6060209@redhat.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 17, 2009 at 9:48 AM, Will Drewry<redpig@dataspill.org> wrote:
-> Thanks for working through this with me.  Sorry that it took a few
-> rounds.
+On Mon, 17 Aug 2009 17:50:21 +0800
+Amerigo Wang <amwang@redhat.com> wrote:
 
-Excellent! :-)
+> Eric W. Biederman wrote:
+> > Amerigo Wang <amwang@redhat.com> writes:
+> >
+> >   
+> >> Not that simple, marking it as "__init" means it uses some "__init" data which
+> >> will be dropped after initialization.
+> >>     
+> >
+> > If we start with the assumption that we will be reserving to much and
+> > will free the memory once we know how much we really need I see a very
+> > simple way to go about this. We ensure that the reservation of crash
+> > kernel memory is done through a normal allocation so that we have
+> > struct page entries for every page.  On 32bit x86 that is an extra 1MB
+> > for a 128MB allocation.
+> >
+> > Then when it comes time to release that memory we clear whatever magic
+> > flags we have on the page (like PG_reserve) and call free_page.
+> >   
+> 
+> Hmm, my MM knowledge is not good enough to judge if this works...
+> I need to check more MM source code.
+> 
+> Can any MM people help?
+> 
+Hm, memory-hotplug guy is here.
 
-Cheers
+Can I have a question ?
 
-Andrew
+  - How crash kernel's memory is preserved at boot ?
+    It's hidden from the system before mem_init() ?
+
+Thanks,
+-Kame
+
+
+
+
+
+
+
