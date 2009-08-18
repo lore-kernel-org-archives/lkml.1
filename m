@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbZHRPQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759249AbZHRPRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759210AbZHRPQu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 11:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbZHRPQu
+	id S1759249AbZHRPRA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 11:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759238AbZHRPRA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 11:16:50 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56377 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750925AbZHRPQt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 11:16:49 -0400
-Date: Tue, 18 Aug 2009 11:16:50 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
+	Tue, 18 Aug 2009 11:17:00 -0400
+Received: from kroah.org ([198.145.64.141]:45156 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759236AbZHRPQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 11:16:59 -0400
+Date: Tue, 18 Aug 2009 08:14:27 -0700
+From: Greg KH <greg@kroah.com>
 To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-cc: Linux USB <linux-usb@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Linux USB <linux-usb@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 Subject: Re: Purpose of parameter in sysfs binary read
-In-Reply-To: <9f97a27ccc13bd63ce99be04018b6bde.squirrel@intranet.cs.nmsu.edu>
-Message-ID: <Pine.LNX.4.44L0.0908181114020.3484-100000@iolanthe.rowland.org>
+Message-ID: <20090818151427.GA6295@kroah.com>
+References: <9f97a27ccc13bd63ce99be04018b6bde.squirrel@intranet.cs.nmsu.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9f97a27ccc13bd63ce99be04018b6bde.squirrel@intranet.cs.nmsu.edu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Aug 2009, Rick L. Vinyard, Jr. wrote:
-
+On Tue, Aug 18, 2009 at 08:55:29AM -0600, Rick L. Vinyard, Jr. wrote:
 > The read function pointer of the sysfs bin_attribute structure has this
 > signature:
 > 
@@ -37,9 +37,7 @@ On Tue, 18 Aug 2009, Rick L. Vinyard, Jr. wrote:
 > 
 > Obviously it's an offset of some sort, but what is the meaning of the offset?
 
-It's the same offset argument that's found in all read or write 
-methods for all types of files.  It refers to the offset from the start 
-of the file.
+The same as any read() call, it comes from the vfs.
 
 > If I have binary data in a char* named bindata of size bsize, should it be
 > copied into buf+offset in something like:
@@ -48,11 +46,13 @@ of the file.
 > Or, is it an offset from both buf and bindata in something like:
 >   memcpy(buf+offset, bindata+offset, bsize-offset);
 
-Neither one.  If the kernel wanted to add an offset to buf, it would 
-have done so before calling the function.  The code should be more like 
-this:
+What are you using the binary sysfs attribute for?  It should ONLY be
+used as a pass-through to and from hardware, with no interpretation by
+the kernel at all.
 
-	memcpy(buf, bindata + offset, min(size, bsize - offset));
+See the existing users of this interface in the kernel for examples of
+how to use the offset parameter.
 
-Alan Stern
+thanks,
 
+greg k-h
