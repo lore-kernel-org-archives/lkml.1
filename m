@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752210AbZHRXRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751824AbZHRXVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752210AbZHRXRc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 19:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbZHRXRb
+	id S1751824AbZHRXVY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 19:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbZHRXVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 19:17:31 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:57574 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751824AbZHRXRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 19:17:30 -0400
-Date: Tue, 18 Aug 2009 16:16:04 -0700
-From: Greg KH <gregkh@suse.de>
-To: Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
- in use
-Message-ID: <20090818231604.GA27102@suse.de>
-References: <20090808194733.38406075@neptune.home>
- <Pine.LNX.4.44L0.0908101114320.3208-100000@iolanthe.rowland.org>
- <20090810154402.GA7701@kroah.com>
- <20090810191822.26370810@neptune.home>
- <20090810181306.GA24989@kroah.com>
- <20090810203501.4d57aa5b@neptune.home>
- <20090810205115.6871239d@neptune.home>
- <20090810192954.GA11651@suse.de>
- <20090818190016.73ce53de@neptune.home>
- <20090818223648.GA25659@suse.de>
+	Tue, 18 Aug 2009 19:21:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42671 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750872AbZHRXVX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 19:21:23 -0400
+Date: Tue, 18 Aug 2009 16:20:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Kumar Gala <galak@kernel.crashing.org>
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       linuxppc-dev@ozlabs.org, peterz@infradead.org, rostedt@goodmis.org
+Subject: Re: [PATCH] spinlock: __raw_spin_is_locked() should return true for
+ UP
+In-Reply-To: <1250635343-32546-1-git-send-email-galak@kernel.crashing.org>
+Message-ID: <alpine.LFD.2.01.0908181618420.3158@localhost.localdomain>
+References: <1250635343-32546-1-git-send-email-galak@kernel.crashing.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090818223648.GA25659@suse.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 03:36:48PM -0700, Greg KH wrote:
-> On Tue, Aug 18, 2009 at 07:00:16PM +0200, Bruno Prémont wrote:
-> > Hi Greg,
-> > 
-> > Were you able to reproduce this with a FTDI usbserial device?
+
+
+On Tue, 18 Aug 2009, Kumar Gala wrote:
+>
+> For some reason __raw_spin_is_locked() has been returning false for the
+> uni-processor, non-CONFIG_DEBUG_SPINLOCK.  The UP + CONFIG_DEBUG_SPINLOCK
+> handles this correctly.
 > 
-> No, I can't find one in my box.  I'll go dig in the attic next to try to
-> find on, I knew I had one before...
+> Found this by enabling CONFIG_DEBUG_VM on PPC and hitting always hitting
+> a BUG_ON that was testing to make sure the pte_lock was held.
+> 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> 
+> Linus, a fix for 2.6.31
 
-Nope, all I found was mcd_u232 and pl2303 devices, no ftdi ones :(
+This really isn't all that clear.
 
-Anyone have a brand name, or a link to one online that I can buy so that
-I can get one for testing?
+The thing is, some people may assert that a lock is held, but others could 
+easily be looping until it's not held using something like
 
-thanks,
+	while (spin_is_locked(lock))
+		cpu_relax();
 
-greg k-h
+so it's hard to tell whether it should return true or false in the case 
+where spin-locking simply doesn't exist.
+
+		Linus
