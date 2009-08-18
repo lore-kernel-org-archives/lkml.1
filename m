@@ -1,239 +1,11087 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759133AbZHRP1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbZHRP3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759133AbZHRP1V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 11:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZHRP1V
+	id S1757292AbZHRP3V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 11:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbZHRP3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 11:27:21 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:58535 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758975AbZHRP1U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 11:27:20 -0400
-From: "Madhusudhan" <madhu.cr@ti.com>
-To: "'Adrian Hunter'" <adrian.hunter@nokia.com>
-Cc: <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       <linux-omap@vger.kernel.org>, <linux-arm-kernel@lists.arm.linux.org.uk>
-References: <60037.192.168.10.88.1250546653.squirrel@dbdmail.itg.ti.com> <4A8A4FC1.1090206@nokia.com>
-Subject: RE: [PATCH] omap_hsmmc: Fix for the db clock failure message
-Date: Tue, 18 Aug 2009 10:26:45 -0500
-Message-ID: <006501ca2018$4bb7a170$544ff780@am.dhcp.ti.com>
+	Tue, 18 Aug 2009 11:29:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54032 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752824AbZHRP3C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 11:29:02 -0400
+Date: Tue, 18 Aug 2009 17:26:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       hugh.dickins@tiscali.co.uk, benh@kernel.crashing.org
+Subject: Re: [PATCH -tip/core/rcu 1/6] Cleanups and fixes for RCU in face
+	of heavy CPU-hotplug stress
+Message-ID: <20090818152643.GA5549@elte.hu>
+References: <20090815165153.GA8886@linux.vnet.ibm.com> <1250533487.2709.14.camel@josh-work.beaverton.ibm.com> <20090817192036.GJ6760@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-Thread-Index: Acof0IIb48bsCq8CSYO0oKRq22IuXQARq5KA
-In-Reply-To: <4A8A4FC1.1090206@nokia.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Content-Type: multipart/mixed; boundary="0F1p//8PRICkK4MW"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090817192036.GJ6760@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-> -----Original Message-----
-> From: Adrian Hunter [mailto:adrian.hunter@nokia.com]
-> Sent: Tuesday, August 18, 2009 1:53 AM
-> To: Madhusudhan Chikkature
-> Cc: akpm@linux-foundation.org; linux-kernel@vger.kernel.org; linux-
-> omap@vger.kernel.org; linux-arm-kernel@lists.arm.linux.org.uk
-> Subject: Re: [PATCH] omap_hsmmc: Fix for the db clock failure message
-> 
-> Madhusudhan Chikkature wrote:
-> > This patch applies on top of the series "[PATCH V2 0/32] mmc and
-> omap_hsmmc
-> > patches" posted by Adrian Hunter.
-> >
-> > -------------------------------------------------
-> >
-> >
-> >
-> > This patch removes the error message "Failed to get debounce clock.."
-> printed
-> > out by the HSMMC driver on OMAP3430. The debounce clock needs to be
-> handled only
-> > for OMAP2430.
-> 
-> I have a suggestion that may make it tidier.
-> 
-> What about renaming host->dbclk_enabled to host->got_dbclk and leaving it
-> alone
-> after it is set in the probe function.  Then create a macro to use in
-> conditions:
-> 
-> #define have_dbclk(host) (cpu_is_omap2430() && (host)->got_dbclk)
-> 
-> So the following:
-> 
-> -	if (host->dbclk_enabled)
-> +	if (cpu_is_omap2430() && host->dbclk_enabled) {
->  		clk_disable(host->dbclk);
-> +		host->dbclk_enabled = 0;
-> +	}
-> 
-> becomes:
-> 
-> -	if (host->dbclk_enabled)
-> +	if (have_dbclk(host))
->  		clk_disable(host->dbclk);
-> 
-> Or alternatively, forget the macro, and let the code always compile in:
-> 
-> -	if (host->dbclk_enabled)
-> +	if (host->got_dbclk)
->  		clk_disable(host->dbclk);
-> 
-In both the cases how about the enable path? We want to enable the debounce
-clock only for OMAP2430, Right? Otherwise we will still end up throwing an
-error message for 3430 if we check the result of clk_enable for db clock. 
-
-Regards,
-Madhu
-
-> 
-> >
-> > Signed-off-by: Madhusudhan Chikkature <madhu.cr@ti.com>
-> > ---
-> >  drivers/mmc/host/omap_hsmmc.c |   63 +++++++++++++++++++++++++++-------
-> --------
-> >  1 file changed, 41 insertions(+), 22 deletions(-)
-> >
-> > Index: linux-2.6/drivers/mmc/host/omap_hsmmc.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/mmc/host/omap_hsmmc.c
-> > +++ linux-2.6/drivers/mmc/host/omap_hsmmc.c
-> > @@ -735,8 +735,10 @@ static int omap_hsmmc_switch_opcond(stru
-> >  	/* Disable the clocks */
-> >  	clk_disable(host->fclk);
-> >  	clk_disable(host->iclk);
-> > -	if (host->dbclk_enabled)
-> > +	if (cpu_is_omap2430() && host->dbclk_enabled) {
-> >  		clk_disable(host->dbclk);
-> > +		host->dbclk_enabled = 0;
-> > +	}
-> >
-> >  	/* Turn the power off */
-> >  	ret = mmc_slot(host).set_power(host->dev, host->slot_id, 0, 0);
-> > @@ -746,9 +748,14 @@ static int omap_hsmmc_switch_opcond(stru
-> >  		ret = mmc_slot(host).set_power(host->dev, host->slot_id, 1,
-> >  					       vdd);
-> >  	clk_enable(host->iclk);
-> > -	if (host->dbclk_enabled)
-> > -		clk_enable(host->dbclk);
-> >  	clk_enable(host->fclk);
-> > +	if (cpu_is_omap2430() && !host->dbclk_enabled) {
-> > +		if (clk_enable(host->dbclk) != 0)
-> > +			dev_dbg(mmc_dev(host->mmc), "Enabling debounce"
-> > +						" clk failed\n");
-> > +		else
-> > +			host->dbclk_enabled = 1;
-> > +	}
-> >
-> >  	if (ret != 0)
-> >  		goto err;
-> > @@ -1697,18 +1704,21 @@ static int __init omap_hsmmc_probe(struc
-> >  		goto err1;
-> >  	}
-> >
-> > -	host->dbclk = clk_get(&pdev->dev, "mmchsdb_fck");
-> > -	/*
-> > -	 * MMC can still work without debounce clock.
-> > -	 */
-> > -	if (IS_ERR(host->dbclk))
-> > -		dev_warn(mmc_dev(host->mmc), "Failed to get debounce
-> clock\n");
-> > -	else
-> > -		if (clk_enable(host->dbclk) != 0)
-> > -			dev_dbg(mmc_dev(host->mmc), "Enabling debounce"
-> > -							" clk failed\n");
-> > +	if (cpu_is_omap2430()) {
-> > +		host->dbclk = clk_get(&pdev->dev, "mmchsdb_fck");
-> > +		/*
-> > +		 * MMC can still work without debounce clock.
-> > +		 */
-> > +		if (IS_ERR(host->dbclk))
-> > +			dev_warn(mmc_dev(host->mmc),
-> > +				"Failed to get debounce clock\n");
-> >  		else
-> > -			host->dbclk_enabled = 1;
-> > +			if (clk_enable(host->dbclk) != 0)
-> > +				dev_dbg(mmc_dev(host->mmc), "Enabling
-debounce"
-> > +							" clk failed\n");
-> > +			else
-> > +				host->dbclk_enabled = 1;
-> > +	}
-> >
-> >  	/* Since we do only SG emulation, we can have as many segs
-> >  	 * as we want. */
-> > @@ -1825,8 +1835,9 @@ err_irq:
-> >  	clk_disable(host->iclk);
-> >  	clk_put(host->fclk);
-> >  	clk_put(host->iclk);
-> > -	if (host->dbclk_enabled) {
-> > -		clk_disable(host->dbclk);
-> > +	if (cpu_is_omap2430()) {
-> > +		if (host->dbclk_enabled)
-> > +			clk_disable(host->dbclk);
-> >  		clk_put(host->dbclk);
-> >  	}
-> >
-> > @@ -1859,8 +1870,9 @@ static int omap_hsmmc_remove(struct plat
-> >  		clk_disable(host->iclk);
-> >  		clk_put(host->fclk);
-> >  		clk_put(host->iclk);
-> > -		if (host->dbclk_enabled) {
-> > -			clk_disable(host->dbclk);
-> > +		if (cpu_is_omap2430()) {
-> > +			if (host->dbclk_enabled)
-> > +				clk_disable(host->dbclk);
-> >  			clk_put(host->dbclk);
-> >  		}
-> >
-> > @@ -1910,8 +1922,10 @@ static int omap_hsmmc_suspend(struct pla
-> >  				OMAP_HSMMC_READ(host->base, HCTL) & ~SDBP);
-> >  			mmc_host_disable(host->mmc);
-> >  			clk_disable(host->iclk);
-> > -			if (host->dbclk_enabled)
-> > +			if (cpu_is_omap2430() && host->dbclk_enabled) {
-> >  				clk_disable(host->dbclk);
-> > +				host->dbclk_enabled = 0;
-> > +			}
-> >  		} else {
-> >  			host->suspended = 0;
-> >  			if (host->pdata->resume) {
-> > @@ -1942,14 +1956,19 @@ static int omap_hsmmc_resume(struct plat
-> >  		if (ret)
-> >  			goto clk_en_err;
-> >
-> > -		if (host->dbclk_enabled)
-> > -			clk_enable(host->dbclk);
-> > -
-> >  		if (mmc_host_enable(host->mmc) != 0) {
-> >  			clk_disable(host->iclk);
-> >  			goto clk_en_err;
-> >  		}
-> >
-> > +		if (cpu_is_omap2430() && !host->dbclk_enabled) {
-> > +			if (clk_enable(host->dbclk) != 0)
-> > +				dev_dbg(mmc_dev(host->mmc), "Enabling
-debounce"
-> > +							" clk failed\n");
-> > +			else
-> > +				host->dbclk_enabled = 1;
-> > +		}
-> > +
-> >  		omap_hsmmc_conf_bus_power(host);
-> >
-> >  		if (host->pdata->resume) {
-> >
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
-> 
+--0F1p//8PRICkK4MW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
 
+FYI, i've started triggering hangs in -tip testing recently, during 
+CPU hotplug tests:
+
+[   57.632003] eth0: no IPv6 routers present
+[  103.564010] kmemleak: 29 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[  200.380003] Hangcheck: hangcheck value past margin!
+[  248.192003] INFO: task S99local:2974 blocked for more than 120 seconds.
+[  248.194532] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[  248.202330] S99local      D 0000000c  6256  2974   2687 0x00000000
+[  248.208929]  9c7ebe90 00000086 6b67ef8b 0000000c 9f25a610 81a69869 00000001 820b6990
+[  248.216123]  820b6990 820b6990 9c6e4c20 9c6e4eb4 82c78990 00000000 6b993559 0000000c
+[  248.220616]  9c7ebe90 8105f22a 9c6e4eb4 9c6e4c20 00000001 9c7ebe98 9c7ebeb4 81a65cb3
+[  248.229990] Call Trace:
+[  248.234049]  [<81a69869>] ? _spin_unlock_irqrestore+0x22/0x37
+[  248.239769]  [<8105f22a>] ? prepare_to_wait+0x48/0x4e
+[  248.244796]  [<81a65cb3>] rcu_barrier_cpu_hotplug+0xaa/0xc9
+[  248.250343]  [<8105f029>] ? autoremove_wake_function+0x0/0x38
+[  248.256063]  [<81062cf2>] notifier_call_chain+0x49/0x71
+[  248.261263]  [<81062da0>] raw_notifier_call_chain+0x11/0x13
+[  248.266809]  [<81a0b475>] _cpu_down+0x272/0x288
+[  248.271316]  [<81a0b4d5>] cpu_down+0x4a/0xa2
+[  248.275563]  [<81a0c48a>] store_online+0x2a/0x5e
+[  248.280156]  [<81a0c460>] ? store_online+0x0/0x5e
+[  248.284836]  [<814ddc35>] sysdev_store+0x20/0x28
+[  248.289429]  [<8112e403>] sysfs_write_file+0xb8/0xe3
+[  248.294369]  [<8112e34b>] ? sysfs_write_file+0x0/0xe3
+[  248.299396]  [<810e4c8f>] vfs_write+0x91/0x120
+[  248.303817]  [<810e4dc1>] sys_write+0x40/0x65
+[  248.308150]  [<81002d73>] sysenter_do_call+0x12/0x28
+
+config and bootlog attached. I'd suspect one of these patches:
+
+684ca5c: rcu: Fix typo in rcu_irq_exit() comment header
+b612ba8: rcu: Make rcupreempt_trace.c look at offline CPUs
+8064d54: rcu: Make preemptable RCU scan all CPUs when summing RCU counters
+2e59755: rcu: Simplify RCU CPU-hotplug notification
+799e64f: cpu hotplug: Introduce cpu_notifier() to handle !HOTPLUG_CPU case
+2756962: rcu: Split hierarchical RCU initialization into boot-time and CPU-online piece
+
+Any ideas?
+
+	Ingo
+
+--0F1p//8PRICkK4MW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=config
+
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.31-rc6
+# Tue Aug 18 17:22:06 2009
+#
+# CONFIG_64BIT is not set
+CONFIG_X86_32=y
+# CONFIG_X86_64 is not set
+CONFIG_X86=y
+CONFIG_OUTPUT_FORMAT="elf32-i386"
+CONFIG_ARCH_DEFCONFIG="arch/x86/configs/i386_defconfig"
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_CMOS_UPDATE=y
+CONFIG_CLOCKSOURCE_WATCHDOG=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+CONFIG_FAST_CMPXCHG_LOCAL=y
+CONFIG_MMU=y
+CONFIG_ZONE_DMA=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_GENERIC_IOMAP=y
+CONFIG_GENERIC_BUG=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_GPIO=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+# CONFIG_RWSEM_GENERIC_SPINLOCK is not set
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_ARCH_HAS_CPU_IDLE_WAIT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+# CONFIG_GENERIC_TIME_VSYSCALL is not set
+CONFIG_ARCH_HAS_CPU_RELAX=y
+CONFIG_ARCH_HAS_DEFAULT_IDLE=y
+CONFIG_ARCH_HAS_CACHE_LINE_SIZE=y
+CONFIG_HAVE_SETUP_PER_CPU_AREA=y
+CONFIG_HAVE_DYNAMIC_PER_CPU_AREA=y
+# CONFIG_HAVE_CPUMASK_OF_CPU_MAP is not set
+CONFIG_ARCH_HIBERNATION_POSSIBLE=y
+CONFIG_ARCH_SUSPEND_POSSIBLE=y
+# CONFIG_ZONE_DMA32 is not set
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+# CONFIG_AUDIT_ARCH is not set
+CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
+CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
+CONFIG_GENERIC_IRQ_PROBE=y
+CONFIG_GENERIC_PENDING_IRQ=y
+CONFIG_USE_GENERIC_SMP_HELPERS=y
+CONFIG_X86_32_SMP=y
+CONFIG_X86_HT=y
+CONFIG_X86_TRAMPOLINE=y
+CONFIG_KTIME_SCALAR=y
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+CONFIG_CONSTRUCTORS=y
+
+#
+# General setup
+#
+CONFIG_EXPERIMENTAL=y
+CONFIG_LOCK_KERNEL=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+CONFIG_LOCALVERSION_AUTO=y
+CONFIG_HAVE_KERNEL_GZIP=y
+CONFIG_HAVE_KERNEL_BZIP2=y
+CONFIG_HAVE_KERNEL_LZMA=y
+# CONFIG_KERNEL_GZIP is not set
+# CONFIG_KERNEL_BZIP2 is not set
+CONFIG_KERNEL_LZMA=y
+# CONFIG_SWAP is not set
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
+CONFIG_POSIX_MQUEUE=y
+CONFIG_POSIX_MQUEUE_SYSCTL=y
+CONFIG_BSD_PROCESS_ACCT=y
+CONFIG_BSD_PROCESS_ACCT_V3=y
+CONFIG_TASKSTATS=y
+CONFIG_TASK_DELAY_ACCT=y
+# CONFIG_TASK_XACCT is not set
+CONFIG_AUDIT=y
+CONFIG_AUDITSYSCALL=y
+CONFIG_AUDIT_TREE=y
+
+#
+# RCU Subsystem
+#
+CONFIG_TREE_RCU=y
+# CONFIG_PREEMPT_RCU is not set
+CONFIG_RCU_TRACE=y
+CONFIG_RCU_FANOUT=32
+CONFIG_RCU_FANOUT_EXACT=y
+CONFIG_TREE_RCU_TRACE=y
+# CONFIG_PREEMPT_RCU_TRACE is not set
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_LOG_BUF_SHIFT=20
+CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
+# CONFIG_GROUP_SCHED is not set
+CONFIG_CGROUPS=y
+CONFIG_CGROUP_DEBUG=y
+CONFIG_CGROUP_NS=y
+CONFIG_CGROUP_FREEZER=y
+CONFIG_CGROUP_DEVICE=y
+# CONFIG_CPUSETS is not set
+CONFIG_CGROUP_CPUACCT=y
+# CONFIG_RESOURCE_COUNTERS is not set
+# CONFIG_SYSFS_DEPRECATED_V2 is not set
+CONFIG_RELAY=y
+CONFIG_NAMESPACES=y
+CONFIG_UTS_NS=y
+# CONFIG_IPC_NS is not set
+# CONFIG_USER_NS is not set
+# CONFIG_PID_NS is not set
+CONFIG_NET_NS=y
+# CONFIG_BLK_DEV_INITRD is not set
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+CONFIG_SYSCTL=y
+CONFIG_ANON_INODES=y
+CONFIG_EMBEDDED=y
+CONFIG_UID16=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+CONFIG_KALLSYMS_ALL=y
+CONFIG_KALLSYMS_EXTRA_PASS=y
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+# CONFIG_ELF_CORE is not set
+CONFIG_PCSPKR_PLATFORM=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_EPOLL=y
+# CONFIG_SIGNALFD is not set
+# CONFIG_TIMERFD is not set
+CONFIG_EVENTFD=y
+# CONFIG_SHMEM is not set
+# CONFIG_AIO is not set
+CONFIG_HAVE_PERF_COUNTERS=y
+
+#
+# Performance Counters
+#
+CONFIG_PERF_COUNTERS=y
+CONFIG_EVENT_PROFILE=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_PCI_QUIRKS=y
+CONFIG_SLUB_DEBUG=y
+CONFIG_STRIP_ASM_SYMS=y
+CONFIG_COMPAT_BRK=y
+# CONFIG_SLAB is not set
+CONFIG_SLUB=y
+# CONFIG_SLOB is not set
+# CONFIG_PROFILING is not set
+CONFIG_TRACEPOINTS=y
+CONFIG_MARKERS=y
+CONFIG_HAVE_OPROFILE=y
+CONFIG_KPROBES=y
+CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
+CONFIG_KRETPROBES=y
+CONFIG_HAVE_IOREMAP_PROT=y
+CONFIG_HAVE_KPROBES=y
+CONFIG_HAVE_KRETPROBES=y
+CONFIG_HAVE_ARCH_TRACEHOOK=y
+CONFIG_HAVE_DMA_ATTRS=y
+CONFIG_HAVE_DMA_API_DEBUG=y
+CONFIG_HAVE_HW_BREAKPOINT=y
+
+#
+# GCOV-based kernel profiling
+#
+CONFIG_SLOW_WORK=y
+CONFIG_HAVE_GENERIC_DMA_COHERENT=y
+CONFIG_SLABINFO=y
+CONFIG_RT_MUTEXES=y
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_FORCE_LOAD=y
+# CONFIG_MODULE_UNLOAD is not set
+CONFIG_MODVERSIONS=y
+CONFIG_MODULE_SRCVERSION_ALL=y
+CONFIG_STOP_MACHINE=y
+CONFIG_BLOCK=y
+CONFIG_LBDAF=y
+CONFIG_BLK_DEV_BSG=y
+CONFIG_BLK_DEV_INTEGRITY=y
+
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_AS=y
+# CONFIG_IOSCHED_DEADLINE is not set
+CONFIG_IOSCHED_CFQ=m
+# CONFIG_DEFAULT_AS is not set
+# CONFIG_DEFAULT_DEADLINE is not set
+# CONFIG_DEFAULT_CFQ is not set
+CONFIG_DEFAULT_NOOP=y
+CONFIG_DEFAULT_IOSCHED="noop"
+CONFIG_PREEMPT_NOTIFIERS=y
+CONFIG_FREEZER=y
+
+#
+# Processor type and features
+#
+CONFIG_TICK_ONESHOT=y
+CONFIG_NO_HZ=y
+# CONFIG_HIGH_RES_TIMERS is not set
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+CONFIG_SMP=y
+CONFIG_SPARSE_IRQ=y
+CONFIG_X86_MPPARSE=y
+# CONFIG_X86_BIGSMP is not set
+CONFIG_X86_EXTENDED_PLATFORM=y
+CONFIG_X86_ELAN=y
+CONFIG_X86_RDC321X=y
+# CONFIG_X86_32_NON_STANDARD is not set
+CONFIG_SCHED_OMIT_FRAME_POINTER=y
+CONFIG_PARAVIRT_GUEST=y
+# CONFIG_VMI is not set
+CONFIG_KVM_CLOCK=y
+CONFIG_KVM_GUEST=y
+CONFIG_LGUEST_GUEST=y
+CONFIG_PARAVIRT=y
+CONFIG_PARAVIRT_SPINLOCKS=y
+CONFIG_PARAVIRT_CLOCK=y
+CONFIG_PARAVIRT_DEBUG=y
+CONFIG_MEMTEST=y
+CONFIG_X86_CPU=y
+CONFIG_X86_L1_CACHE_BYTES=64
+CONFIG_X86_INTERNODE_CACHE_BYTES=64
+CONFIG_X86_CMPXCHG=y
+CONFIG_X86_L1_CACHE_SHIFT=4
+CONFIG_X86_XADD=y
+CONFIG_X86_WP_WORKS_OK=y
+CONFIG_X86_INVLPG=y
+CONFIG_X86_BSWAP=y
+CONFIG_X86_POPAD_OK=y
+CONFIG_X86_ALIGNMENT_16=y
+CONFIG_X86_MINIMUM_CPU_FAMILY=4
+CONFIG_X86_DEBUGCTLMSR=y
+CONFIG_PROCESSOR_SELECT=y
+# CONFIG_CPU_SUP_INTEL is not set
+CONFIG_CPU_SUP_CYRIX_32=y
+CONFIG_CPU_SUP_AMD=y
+# CONFIG_CPU_SUP_CENTAUR is not set
+CONFIG_CPU_SUP_TRANSMETA_32=y
+CONFIG_CPU_SUP_UMC_32=y
+# CONFIG_X86_DS is not set
+CONFIG_HPET_TIMER=y
+CONFIG_DMI=y
+# CONFIG_IOMMU_HELPER is not set
+# CONFIG_IOMMU_API is not set
+CONFIG_NR_CPUS=8
+# CONFIG_SCHED_SMT is not set
+CONFIG_SCHED_MC=y
+CONFIG_PREEMPT_NONE=y
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT is not set
+CONFIG_X86_LOCAL_APIC=y
+CONFIG_X86_IO_APIC=y
+# CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS is not set
+# CONFIG_X86_MCE is not set
+CONFIG_VM86=y
+# CONFIG_TOSHIBA is not set
+CONFIG_I8K=y
+CONFIG_X86_REBOOTFIXUPS=y
+CONFIG_MICROCODE=m
+CONFIG_MICROCODE_INTEL=y
+CONFIG_MICROCODE_AMD=y
+CONFIG_MICROCODE_OLD_INTERFACE=y
+# CONFIG_X86_MSR is not set
+CONFIG_X86_CPUID=y
+CONFIG_X86_CPU_DEBUG=m
+# CONFIG_NOHIGHMEM is not set
+CONFIG_HIGHMEM4G=y
+# CONFIG_HIGHMEM64G is not set
+# CONFIG_VMSPLIT_3G is not set
+# CONFIG_VMSPLIT_3G_OPT is not set
+CONFIG_VMSPLIT_2G=y
+# CONFIG_VMSPLIT_2G_OPT is not set
+# CONFIG_VMSPLIT_1G is not set
+CONFIG_PAGE_OFFSET=0x80000000
+CONFIG_HIGHMEM=y
+# CONFIG_ARCH_PHYS_ADDR_T_64BIT is not set
+CONFIG_ARCH_FLATMEM_ENABLE=y
+CONFIG_ARCH_SPARSEMEM_ENABLE=y
+CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+CONFIG_ILLEGAL_POINTER_VALUE=0
+CONFIG_SELECT_MEMORY_MODEL=y
+CONFIG_FLATMEM_MANUAL=y
+# CONFIG_DISCONTIGMEM_MANUAL is not set
+# CONFIG_SPARSEMEM_MANUAL is not set
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+CONFIG_SPARSEMEM_STATIC=y
+CONFIG_PAGEFLAGS_EXTENDED=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+# CONFIG_PHYS_ADDR_T_64BIT is not set
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_BOUNCE=y
+CONFIG_VIRT_TO_BUS=y
+CONFIG_HAVE_MLOCK=y
+CONFIG_HAVE_MLOCKED_PAGE_BIT=y
+CONFIG_MMU_NOTIFIER=y
+CONFIG_DEFAULT_MMAP_MIN_ADDR=4096
+CONFIG_HIGHPTE=y
+CONFIG_X86_CHECK_BIOS_CORRUPTION=y
+CONFIG_X86_BOOTPARAM_MEMORY_CORRUPTION_CHECK=y
+# CONFIG_X86_RESERVE_LOW_64K is not set
+# CONFIG_MATH_EMULATION is not set
+CONFIG_MTRR=y
+# CONFIG_MTRR_SANITIZER is not set
+# CONFIG_X86_PAT is not set
+# CONFIG_SECCOMP is not set
+CONFIG_CC_STACKPROTECTOR_ALL=y
+CONFIG_CC_STACKPROTECTOR=y
+# CONFIG_HZ_100 is not set
+# CONFIG_HZ_250 is not set
+# CONFIG_HZ_300 is not set
+CONFIG_HZ_1000=y
+CONFIG_HZ=1000
+# CONFIG_SCHED_HRTICK is not set
+# CONFIG_KEXEC is not set
+CONFIG_CRASH_DUMP=y
+CONFIG_PHYSICAL_START=0x1000000
+CONFIG_RELOCATABLE=y
+CONFIG_X86_NEED_RELOCS=y
+CONFIG_PHYSICAL_ALIGN=0x1000000
+CONFIG_HOTPLUG_CPU=y
+# CONFIG_COMPAT_VDSO is not set
+CONFIG_CMDLINE_BOOL=y
+CONFIG_CMDLINE=""
+# CONFIG_CMDLINE_OVERRIDE is not set
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+
+#
+# Power management and ACPI options
+#
+# CONFIG_PM is not set
+
+#
+# CPU Frequency scaling
+#
+# CONFIG_CPU_FREQ is not set
+CONFIG_CPU_IDLE=y
+CONFIG_CPU_IDLE_GOV_LADDER=y
+CONFIG_CPU_IDLE_GOV_MENU=y
+
+#
+# Bus options (PCI etc.)
+#
+CONFIG_PCI=y
+# CONFIG_PCI_GOBIOS is not set
+# CONFIG_PCI_GOMMCONFIG is not set
+CONFIG_PCI_GODIRECT=y
+# CONFIG_PCI_GOOLPC is not set
+# CONFIG_PCI_GOANY is not set
+CONFIG_PCI_DIRECT=y
+CONFIG_PCI_DOMAINS=y
+CONFIG_PCIEPORTBUS=y
+CONFIG_PCIEAER=y
+CONFIG_PCIE_ECRC=y
+CONFIG_PCIEAER_INJECT=y
+CONFIG_PCIEASPM=y
+# CONFIG_PCIEASPM_DEBUG is not set
+CONFIG_ARCH_SUPPORTS_MSI=y
+CONFIG_PCI_MSI=y
+# CONFIG_PCI_LEGACY is not set
+# CONFIG_PCI_DEBUG is not set
+CONFIG_PCI_STUB=y
+# CONFIG_HT_IRQ is not set
+CONFIG_PCI_IOV=y
+CONFIG_ISA_DMA_API=y
+CONFIG_ISA=y
+# CONFIG_EISA is not set
+# CONFIG_MCA is not set
+# CONFIG_SCx200 is not set
+CONFIG_OLPC=y
+CONFIG_PCCARD=m
+CONFIG_PCMCIA_DEBUG=y
+# CONFIG_PCMCIA is not set
+CONFIG_CARDBUS=y
+
+#
+# PC-card bridges
+#
+CONFIG_YENTA=m
+CONFIG_YENTA_O2=y
+CONFIG_YENTA_RICOH=y
+CONFIG_YENTA_TI=y
+# CONFIG_YENTA_ENE_TUNE is not set
+# CONFIG_YENTA_TOSHIBA is not set
+CONFIG_PCMCIA_PROBE=y
+CONFIG_PCCARD_NONSTATIC=m
+# CONFIG_HOTPLUG_PCI is not set
+
+#
+# Executable file formats / Emulations
+#
+CONFIG_BINFMT_ELF=y
+CONFIG_HAVE_AOUT=y
+CONFIG_BINFMT_AOUT=m
+# CONFIG_BINFMT_MISC is not set
+CONFIG_HAVE_ATOMIC_IOMAP=y
+CONFIG_NET=y
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+# CONFIG_PACKET_MMAP is not set
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+# CONFIG_XFRM_USER is not set
+CONFIG_XFRM_SUB_POLICY=y
+CONFIG_XFRM_MIGRATE=y
+# CONFIG_XFRM_STATISTICS is not set
+CONFIG_XFRM_IPCOMP=m
+# CONFIG_NET_KEY is not set
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+CONFIG_IP_ADVANCED_ROUTER=y
+CONFIG_ASK_IP_FIB_HASH=y
+# CONFIG_IP_FIB_TRIE is not set
+CONFIG_IP_FIB_HASH=y
+CONFIG_IP_MULTIPLE_TABLES=y
+CONFIG_IP_ROUTE_MULTIPATH=y
+CONFIG_IP_ROUTE_VERBOSE=y
+# CONFIG_IP_PNP is not set
+CONFIG_NET_IPIP=m
+CONFIG_NET_IPGRE=m
+CONFIG_NET_IPGRE_BROADCAST=y
+CONFIG_IP_MROUTE=y
+CONFIG_IP_PIMSM_V1=y
+CONFIG_IP_PIMSM_V2=y
+CONFIG_ARPD=y
+CONFIG_SYN_COOKIES=y
+# CONFIG_INET_AH is not set
+CONFIG_INET_ESP=m
+CONFIG_INET_IPCOMP=m
+CONFIG_INET_XFRM_TUNNEL=m
+CONFIG_INET_TUNNEL=m
+CONFIG_INET_XFRM_MODE_TRANSPORT=m
+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
+# CONFIG_INET_XFRM_MODE_BEET is not set
+CONFIG_INET_LRO=y
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+CONFIG_TCP_CONG_ADVANCED=y
+CONFIG_TCP_CONG_BIC=y
+# CONFIG_TCP_CONG_CUBIC is not set
+# CONFIG_TCP_CONG_WESTWOOD is not set
+CONFIG_TCP_CONG_HTCP=y
+CONFIG_TCP_CONG_HSTCP=y
+CONFIG_TCP_CONG_HYBLA=m
+CONFIG_TCP_CONG_VEGAS=y
+CONFIG_TCP_CONG_SCALABLE=m
+# CONFIG_TCP_CONG_LP is not set
+CONFIG_TCP_CONG_VENO=y
+CONFIG_TCP_CONG_YEAH=y
+CONFIG_TCP_CONG_ILLINOIS=y
+# CONFIG_DEFAULT_BIC is not set
+# CONFIG_DEFAULT_CUBIC is not set
+# CONFIG_DEFAULT_HTCP is not set
+# CONFIG_DEFAULT_VEGAS is not set
+# CONFIG_DEFAULT_WESTWOOD is not set
+CONFIG_DEFAULT_RENO=y
+CONFIG_DEFAULT_TCP_CONG="reno"
+# CONFIG_TCP_MD5SIG is not set
+# CONFIG_IPV6 is not set
+CONFIG_NETLABEL=y
+CONFIG_NETWORK_SECMARK=y
+CONFIG_NETFILTER=y
+CONFIG_NETFILTER_DEBUG=y
+CONFIG_NETFILTER_ADVANCED=y
+
+#
+# Core Netfilter Configuration
+#
+CONFIG_NETFILTER_NETLINK=y
+CONFIG_NETFILTER_NETLINK_QUEUE=m
+CONFIG_NETFILTER_NETLINK_LOG=y
+# CONFIG_NF_CONNTRACK is not set
+CONFIG_NETFILTER_XTABLES=y
+CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
+CONFIG_NETFILTER_XT_TARGET_DSCP=m
+# CONFIG_NETFILTER_XT_TARGET_HL is not set
+# CONFIG_NETFILTER_XT_TARGET_LED is not set
+# CONFIG_NETFILTER_XT_TARGET_MARK is not set
+CONFIG_NETFILTER_XT_TARGET_NFLOG=y
+# CONFIG_NETFILTER_XT_TARGET_NFQUEUE is not set
+CONFIG_NETFILTER_XT_TARGET_RATEEST=y
+CONFIG_NETFILTER_XT_TARGET_TRACE=m
+# CONFIG_NETFILTER_XT_TARGET_SECMARK is not set
+CONFIG_NETFILTER_XT_TARGET_TCPMSS=m
+CONFIG_NETFILTER_XT_TARGET_TCPOPTSTRIP=m
+# CONFIG_NETFILTER_XT_MATCH_COMMENT is not set
+# CONFIG_NETFILTER_XT_MATCH_DCCP is not set
+CONFIG_NETFILTER_XT_MATCH_DSCP=m
+CONFIG_NETFILTER_XT_MATCH_ESP=m
+CONFIG_NETFILTER_XT_MATCH_HASHLIMIT=m
+CONFIG_NETFILTER_XT_MATCH_HL=m
+CONFIG_NETFILTER_XT_MATCH_IPRANGE=y
+CONFIG_NETFILTER_XT_MATCH_LENGTH=m
+CONFIG_NETFILTER_XT_MATCH_LIMIT=m
+# CONFIG_NETFILTER_XT_MATCH_MAC is not set
+# CONFIG_NETFILTER_XT_MATCH_MARK is not set
+# CONFIG_NETFILTER_XT_MATCH_MULTIPORT is not set
+# CONFIG_NETFILTER_XT_MATCH_OWNER is not set
+CONFIG_NETFILTER_XT_MATCH_POLICY=y
+CONFIG_NETFILTER_XT_MATCH_PKTTYPE=y
+CONFIG_NETFILTER_XT_MATCH_QUOTA=y
+CONFIG_NETFILTER_XT_MATCH_RATEEST=y
+CONFIG_NETFILTER_XT_MATCH_REALM=m
+CONFIG_NETFILTER_XT_MATCH_RECENT=m
+CONFIG_NETFILTER_XT_MATCH_RECENT_PROC_COMPAT=y
+CONFIG_NETFILTER_XT_MATCH_SCTP=m
+# CONFIG_NETFILTER_XT_MATCH_STATISTIC is not set
+CONFIG_NETFILTER_XT_MATCH_STRING=y
+# CONFIG_NETFILTER_XT_MATCH_TCPMSS is not set
+CONFIG_NETFILTER_XT_MATCH_TIME=y
+CONFIG_NETFILTER_XT_MATCH_U32=y
+CONFIG_NETFILTER_XT_MATCH_OSF=m
+CONFIG_IP_VS=m
+CONFIG_IP_VS_DEBUG=y
+CONFIG_IP_VS_TAB_BITS=12
+
+#
+# IPVS transport protocol load balancing support
+#
+CONFIG_IP_VS_PROTO_TCP=y
+# CONFIG_IP_VS_PROTO_UDP is not set
+CONFIG_IP_VS_PROTO_AH_ESP=y
+# CONFIG_IP_VS_PROTO_ESP is not set
+CONFIG_IP_VS_PROTO_AH=y
+
+#
+# IPVS scheduler
+#
+# CONFIG_IP_VS_RR is not set
+CONFIG_IP_VS_WRR=m
+# CONFIG_IP_VS_LC is not set
+CONFIG_IP_VS_WLC=m
+CONFIG_IP_VS_LBLC=m
+CONFIG_IP_VS_LBLCR=m
+# CONFIG_IP_VS_DH is not set
+CONFIG_IP_VS_SH=m
+CONFIG_IP_VS_SED=m
+CONFIG_IP_VS_NQ=m
+
+#
+# IPVS application helper
+#
+CONFIG_IP_VS_FTP=m
+
+#
+# IP: Netfilter Configuration
+#
+# CONFIG_NF_DEFRAG_IPV4 is not set
+CONFIG_IP_NF_QUEUE=m
+CONFIG_IP_NF_IPTABLES=y
+CONFIG_IP_NF_MATCH_ADDRTYPE=y
+CONFIG_IP_NF_MATCH_AH=y
+CONFIG_IP_NF_MATCH_ECN=y
+# CONFIG_IP_NF_MATCH_TTL is not set
+# CONFIG_IP_NF_FILTER is not set
+# CONFIG_IP_NF_TARGET_LOG is not set
+CONFIG_IP_NF_TARGET_ULOG=m
+CONFIG_IP_NF_MANGLE=m
+# CONFIG_IP_NF_TARGET_ECN is not set
+# CONFIG_IP_NF_TARGET_TTL is not set
+CONFIG_IP_NF_RAW=m
+CONFIG_IP_NF_SECURITY=m
+CONFIG_IP_NF_ARPTABLES=m
+CONFIG_IP_NF_ARPFILTER=m
+CONFIG_IP_NF_ARP_MANGLE=m
+# CONFIG_IP_DCCP is not set
+CONFIG_IP_SCTP=y
+CONFIG_SCTP_DBG_MSG=y
+# CONFIG_SCTP_DBG_OBJCNT is not set
+# CONFIG_SCTP_HMAC_NONE is not set
+CONFIG_SCTP_HMAC_SHA1=y
+# CONFIG_SCTP_HMAC_MD5 is not set
+CONFIG_RDS=m
+# CONFIG_RDS_DEBUG is not set
+CONFIG_TIPC=m
+CONFIG_TIPC_ADVANCED=y
+CONFIG_TIPC_ZONES=3
+CONFIG_TIPC_CLUSTERS=1
+CONFIG_TIPC_NODES=255
+CONFIG_TIPC_SLAVE_NODES=0
+CONFIG_TIPC_PORTS=8191
+CONFIG_TIPC_LOG=0
+CONFIG_TIPC_DEBUG=y
+CONFIG_ATM=y
+# CONFIG_ATM_CLIP is not set
+# CONFIG_ATM_LANE is not set
+CONFIG_ATM_BR2684=y
+# CONFIG_ATM_BR2684_IPFILTER is not set
+# CONFIG_BRIDGE is not set
+CONFIG_NET_DSA=y
+CONFIG_NET_DSA_TAG_DSA=y
+# CONFIG_NET_DSA_TAG_EDSA is not set
+# CONFIG_NET_DSA_TAG_TRAILER is not set
+CONFIG_NET_DSA_MV88E6XXX=y
+# CONFIG_NET_DSA_MV88E6060 is not set
+CONFIG_NET_DSA_MV88E6XXX_NEED_PPU=y
+CONFIG_NET_DSA_MV88E6131=y
+# CONFIG_NET_DSA_MV88E6123_61_65 is not set
+# CONFIG_VLAN_8021Q is not set
+# CONFIG_DECNET is not set
+CONFIG_LLC=y
+# CONFIG_LLC2 is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_ECONET is not set
+CONFIG_WAN_ROUTER=y
+# CONFIG_PHONET is not set
+CONFIG_IEEE802154=y
+# CONFIG_NET_SCHED is not set
+CONFIG_NET_CLS_ROUTE=y
+# CONFIG_DCB is not set
+
+#
+# Network testing
+#
+CONFIG_NET_PKTGEN=m
+CONFIG_NET_TCPPROBE=y
+CONFIG_NET_DROP_MONITOR=y
+# CONFIG_HAMRADIO is not set
+CONFIG_CAN=y
+CONFIG_CAN_RAW=y
+CONFIG_CAN_BCM=m
+
+#
+# CAN Device Drivers
+#
+CONFIG_CAN_VCAN=y
+CONFIG_CAN_DEV=m
+# CONFIG_CAN_CALC_BITTIMING is not set
+# CONFIG_CAN_SJA1000 is not set
+CONFIG_CAN_DEBUG_DEVICES=y
+CONFIG_IRDA=m
+
+#
+# IrDA protocols
+#
+# CONFIG_IRLAN is not set
+# CONFIG_IRCOMM is not set
+CONFIG_IRDA_ULTRA=y
+
+#
+# IrDA options
+#
+CONFIG_IRDA_CACHE_LAST_LSAP=y
+# CONFIG_IRDA_FAST_RR is not set
+CONFIG_IRDA_DEBUG=y
+
+#
+# Infrared-port device drivers
+#
+
+#
+# SIR device drivers
+#
+# CONFIG_IRTTY_SIR is not set
+
+#
+# Dongle support
+#
+CONFIG_KINGSUN_DONGLE=m
+# CONFIG_KSDAZZLE_DONGLE is not set
+CONFIG_KS959_DONGLE=m
+
+#
+# FIR device drivers
+#
+CONFIG_USB_IRDA=m
+CONFIG_SIGMATEL_FIR=m
+CONFIG_NSC_FIR=m
+CONFIG_WINBOND_FIR=m
+CONFIG_TOSHIBA_FIR=m
+CONFIG_SMC_IRCC_FIR=m
+# CONFIG_ALI_FIR is not set
+# CONFIG_VLSI_FIR is not set
+CONFIG_VIA_FIR=m
+CONFIG_MCS_FIR=m
+CONFIG_BT=y
+CONFIG_BT_L2CAP=m
+CONFIG_BT_SCO=m
+CONFIG_BT_RFCOMM=m
+CONFIG_BT_RFCOMM_TTY=y
+CONFIG_BT_BNEP=m
+CONFIG_BT_BNEP_MC_FILTER=y
+CONFIG_BT_BNEP_PROTO_FILTER=y
+# CONFIG_BT_HIDP is not set
+
+#
+# Bluetooth device drivers
+#
+# CONFIG_BT_HCIBTUSB is not set
+CONFIG_BT_HCIUART=y
+CONFIG_BT_HCIUART_H4=y
+CONFIG_BT_HCIUART_BCSP=y
+# CONFIG_BT_HCIUART_LL is not set
+# CONFIG_BT_HCIBCM203X is not set
+# CONFIG_BT_HCIBPA10X is not set
+# CONFIG_BT_HCIBFUSB is not set
+CONFIG_BT_HCIVHCI=m
+CONFIG_AF_RXRPC=y
+CONFIG_AF_RXRPC_DEBUG=y
+CONFIG_RXKAD=y
+CONFIG_FIB_RULES=y
+CONFIG_WIRELESS=y
+CONFIG_CFG80211=y
+CONFIG_CFG80211_REG_DEBUG=y
+# CONFIG_CFG80211_DEBUGFS is not set
+CONFIG_WIRELESS_OLD_REGULATORY=y
+CONFIG_WIRELESS_EXT=y
+# CONFIG_WIRELESS_EXT_SYSFS is not set
+CONFIG_LIB80211=y
+CONFIG_LIB80211_CRYPT_WEP=y
+CONFIG_LIB80211_CRYPT_CCMP=y
+CONFIG_LIB80211_CRYPT_TKIP=y
+CONFIG_LIB80211_DEBUG=y
+CONFIG_MAC80211=m
+CONFIG_MAC80211_DEFAULT_PS=y
+CONFIG_MAC80211_DEFAULT_PS_VALUE=1
+
+#
+# Rate control algorithm selection
+#
+CONFIG_MAC80211_RC_PID=y
+# CONFIG_MAC80211_RC_MINSTREL is not set
+CONFIG_MAC80211_RC_DEFAULT_PID=y
+# CONFIG_MAC80211_RC_DEFAULT_MINSTREL is not set
+CONFIG_MAC80211_RC_DEFAULT="pid"
+CONFIG_MAC80211_LEDS=y
+CONFIG_MAC80211_DEBUGFS=y
+# CONFIG_MAC80211_DEBUG_MENU is not set
+CONFIG_WIMAX=m
+CONFIG_WIMAX_DEBUG_LEVEL=8
+# CONFIG_RFKILL is not set
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+# CONFIG_FIRMWARE_IN_KERNEL is not set
+CONFIG_EXTRA_FIRMWARE=""
+# CONFIG_DEBUG_DRIVER is not set
+CONFIG_DEBUG_DEVRES=y
+# CONFIG_SYS_HYPERVISOR is not set
+# CONFIG_CONNECTOR is not set
+# CONFIG_MTD is not set
+# CONFIG_PARPORT is not set
+CONFIG_PNP=y
+# CONFIG_PNP_DEBUG_MESSAGES is not set
+
+#
+# Protocols
+#
+CONFIG_ISAPNP=y
+# CONFIG_PNPBIOS is not set
+# CONFIG_PNPACPI is not set
+CONFIG_BLK_DEV=y
+# CONFIG_BLK_DEV_FD is not set
+CONFIG_BLK_DEV_XD=m
+CONFIG_BLK_CPQ_DA=y
+# CONFIG_BLK_CPQ_CISS_DA is not set
+# CONFIG_BLK_DEV_DAC960 is not set
+# CONFIG_BLK_DEV_UMEM is not set
+# CONFIG_BLK_DEV_COW_COMMON is not set
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_BLK_DEV_CRYPTOLOOP=m
+# CONFIG_BLK_DEV_NBD is not set
+CONFIG_BLK_DEV_SX8=y
+CONFIG_BLK_DEV_UB=m
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_COUNT=16
+CONFIG_BLK_DEV_RAM_SIZE=4096
+# CONFIG_BLK_DEV_XIP is not set
+# CONFIG_CDROM_PKTCDVD is not set
+CONFIG_ATA_OVER_ETH=m
+# CONFIG_VIRTIO_BLK is not set
+CONFIG_BLK_DEV_HD=y
+CONFIG_MISC_DEVICES=y
+# CONFIG_IBM_ASM is not set
+CONFIG_PHANTOM=y
+CONFIG_SGI_IOC4=y
+CONFIG_TIFM_CORE=m
+# CONFIG_TIFM_7XX1 is not set
+# CONFIG_ICS932S401 is not set
+# CONFIG_ENCLOSURE_SERVICES is not set
+CONFIG_HP_ILO=y
+# CONFIG_ISL29003 is not set
+CONFIG_C2PORT=m
+# CONFIG_C2PORT_DURAMAR_2150 is not set
+
+#
+# EEPROM support
+#
+CONFIG_EEPROM_AT24=m
+# CONFIG_EEPROM_AT25 is not set
+CONFIG_EEPROM_LEGACY=y
+CONFIG_EEPROM_MAX6875=m
+CONFIG_EEPROM_93CX6=y
+# CONFIG_CB710_CORE is not set
+CONFIG_HAVE_IDE=y
+# CONFIG_IDE is not set
+
+#
+# SCSI device support
+#
+CONFIG_RAID_ATTRS=y
+CONFIG_SCSI=y
+CONFIG_SCSI_DMA=y
+CONFIG_SCSI_TGT=y
+CONFIG_SCSI_NETLINK=y
+# CONFIG_SCSI_PROC_FS is not set
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+CONFIG_BLK_DEV_SD=y
+CONFIG_CHR_DEV_ST=m
+CONFIG_CHR_DEV_OSST=m
+# CONFIG_BLK_DEV_SR is not set
+# CONFIG_CHR_DEV_SG is not set
+CONFIG_CHR_DEV_SCH=m
+CONFIG_SCSI_MULTI_LUN=y
+CONFIG_SCSI_CONSTANTS=y
+CONFIG_SCSI_LOGGING=y
+# CONFIG_SCSI_SCAN_ASYNC is not set
+CONFIG_SCSI_WAIT_SCAN=m
+
+#
+# SCSI Transports
+#
+CONFIG_SCSI_SPI_ATTRS=y
+CONFIG_SCSI_FC_ATTRS=y
+CONFIG_SCSI_FC_TGT_ATTRS=y
+CONFIG_SCSI_ISCSI_ATTRS=y
+CONFIG_SCSI_SAS_ATTRS=y
+CONFIG_SCSI_SAS_LIBSAS=m
+CONFIG_SCSI_SAS_ATA=y
+CONFIG_SCSI_SAS_HOST_SMP=y
+CONFIG_SCSI_SAS_LIBSAS_DEBUG=y
+# CONFIG_SCSI_SRP_ATTRS is not set
+CONFIG_SCSI_LOWLEVEL=y
+CONFIG_ISCSI_TCP=m
+CONFIG_SCSI_CXGB3_ISCSI=y
+CONFIG_BLK_DEV_3W_XXXX_RAID=y
+CONFIG_SCSI_3W_9XXX=y
+CONFIG_SCSI_7000FASST=y
+# CONFIG_SCSI_ACARD is not set
+# CONFIG_SCSI_AHA152X is not set
+# CONFIG_SCSI_AHA1542 is not set
+CONFIG_SCSI_AACRAID=y
+CONFIG_SCSI_AIC7XXX=y
+CONFIG_AIC7XXX_CMDS_PER_DEVICE=32
+CONFIG_AIC7XXX_RESET_DELAY_MS=5000
+# CONFIG_AIC7XXX_DEBUG_ENABLE is not set
+CONFIG_AIC7XXX_DEBUG_MASK=0
+CONFIG_AIC7XXX_REG_PRETTY_PRINT=y
+CONFIG_SCSI_AIC7XXX_OLD=m
+CONFIG_SCSI_AIC79XX=y
+CONFIG_AIC79XX_CMDS_PER_DEVICE=32
+CONFIG_AIC79XX_RESET_DELAY_MS=5000
+CONFIG_AIC79XX_DEBUG_ENABLE=y
+CONFIG_AIC79XX_DEBUG_MASK=0
+CONFIG_AIC79XX_REG_PRETTY_PRINT=y
+# CONFIG_SCSI_AIC94XX is not set
+# CONFIG_SCSI_MVSAS is not set
+CONFIG_SCSI_DPT_I2O=y
+CONFIG_SCSI_ADVANSYS=m
+CONFIG_SCSI_IN2000=y
+CONFIG_SCSI_ARCMSR=m
+CONFIG_SCSI_ARCMSR_AER=y
+CONFIG_MEGARAID_NEWGEN=y
+CONFIG_MEGARAID_MM=y
+# CONFIG_MEGARAID_MAILBOX is not set
+# CONFIG_MEGARAID_LEGACY is not set
+CONFIG_MEGARAID_SAS=m
+CONFIG_SCSI_MPT2SAS=y
+CONFIG_SCSI_MPT2SAS_MAX_SGE=128
+CONFIG_SCSI_MPT2SAS_LOGGING=y
+CONFIG_SCSI_HPTIOP=y
+CONFIG_SCSI_BUSLOGIC=m
+# CONFIG_SCSI_FLASHPOINT is not set
+CONFIG_LIBFC=y
+CONFIG_LIBFCOE=m
+CONFIG_FCOE=m
+CONFIG_FCOE_FNIC=y
+# CONFIG_SCSI_DMX3191D is not set
+CONFIG_SCSI_DTC3280=m
+CONFIG_SCSI_EATA=m
+CONFIG_SCSI_EATA_TAGGED_QUEUE=y
+CONFIG_SCSI_EATA_LINKED_COMMANDS=y
+CONFIG_SCSI_EATA_MAX_TAGS=16
+# CONFIG_SCSI_FUTURE_DOMAIN is not set
+CONFIG_SCSI_GDTH=y
+# CONFIG_SCSI_GENERIC_NCR5380 is not set
+CONFIG_SCSI_GENERIC_NCR5380_MMIO=y
+CONFIG_SCSI_IPS=m
+# CONFIG_SCSI_INITIO is not set
+CONFIG_SCSI_INIA100=y
+# CONFIG_SCSI_NCR53C406A is not set
+# CONFIG_SCSI_STEX is not set
+CONFIG_SCSI_SYM53C8XX_2=y
+CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=1
+CONFIG_SCSI_SYM53C8XX_DEFAULT_TAGS=16
+CONFIG_SCSI_SYM53C8XX_MAX_TAGS=64
+CONFIG_SCSI_SYM53C8XX_MMIO=y
+CONFIG_SCSI_IPR=m
+# CONFIG_SCSI_IPR_TRACE is not set
+CONFIG_SCSI_IPR_DUMP=y
+# CONFIG_SCSI_PAS16 is not set
+CONFIG_SCSI_QLOGIC_FAS=m
+# CONFIG_SCSI_QLOGIC_1280 is not set
+# CONFIG_SCSI_QLA_FC is not set
+CONFIG_SCSI_QLA_ISCSI=y
+# CONFIG_SCSI_LPFC is not set
+CONFIG_SCSI_SYM53C416=m
+CONFIG_SCSI_DC395x=y
+CONFIG_SCSI_DC390T=y
+# CONFIG_SCSI_T128 is not set
+CONFIG_SCSI_U14_34F=m
+CONFIG_SCSI_U14_34F_TAGGED_QUEUE=y
+CONFIG_SCSI_U14_34F_LINKED_COMMANDS=y
+CONFIG_SCSI_U14_34F_MAX_TAGS=8
+CONFIG_SCSI_ULTRASTOR=y
+CONFIG_SCSI_NSP32=y
+CONFIG_SCSI_SRP=y
+# CONFIG_SCSI_DH is not set
+CONFIG_SCSI_OSD_INITIATOR=m
+# CONFIG_SCSI_OSD_ULD is not set
+CONFIG_SCSI_OSD_DPRINT_SENSE=1
+CONFIG_SCSI_OSD_DEBUG=y
+CONFIG_ATA=y
+# CONFIG_ATA_NONSTANDARD is not set
+CONFIG_SATA_PMP=y
+CONFIG_SATA_AHCI=y
+CONFIG_SATA_SIL24=m
+CONFIG_ATA_SFF=y
+CONFIG_SATA_SVW=m
+CONFIG_ATA_PIIX=y
+CONFIG_SATA_MV=m
+CONFIG_SATA_NV=y
+CONFIG_PDC_ADMA=m
+CONFIG_SATA_QSTOR=y
+CONFIG_SATA_PROMISE=m
+# CONFIG_SATA_SX4 is not set
+# CONFIG_SATA_SIL is not set
+CONFIG_SATA_SIS=m
+# CONFIG_SATA_ULI is not set
+# CONFIG_SATA_VIA is not set
+CONFIG_SATA_VITESSE=m
+CONFIG_SATA_INIC162X=m
+CONFIG_PATA_ALI=m
+CONFIG_PATA_AMD=y
+# CONFIG_PATA_ARTOP is not set
+CONFIG_PATA_ATIIXP=y
+CONFIG_PATA_CMD640_PCI=m
+CONFIG_PATA_CMD64X=m
+CONFIG_PATA_CS5520=y
+CONFIG_PATA_CS5530=m
+CONFIG_PATA_CS5535=m
+CONFIG_PATA_CS5536=m
+CONFIG_PATA_CYPRESS=y
+# CONFIG_PATA_EFAR is not set
+CONFIG_ATA_GENERIC=m
+# CONFIG_PATA_HPT366 is not set
+CONFIG_PATA_HPT37X=y
+CONFIG_PATA_HPT3X2N=y
+CONFIG_PATA_HPT3X3=y
+# CONFIG_PATA_HPT3X3_DMA is not set
+CONFIG_PATA_ISAPNP=y
+CONFIG_PATA_IT821X=y
+# CONFIG_PATA_IT8213 is not set
+CONFIG_PATA_JMICRON=m
+CONFIG_PATA_LEGACY=m
+CONFIG_PATA_TRIFLEX=m
+CONFIG_PATA_MARVELL=m
+# CONFIG_PATA_MPIIX is not set
+CONFIG_PATA_OLDPIIX=y
+# CONFIG_PATA_NETCELL is not set
+CONFIG_PATA_NINJA32=m
+# CONFIG_PATA_NS87410 is not set
+# CONFIG_PATA_NS87415 is not set
+CONFIG_PATA_OPTI=y
+# CONFIG_PATA_OPTIDMA is not set
+CONFIG_PATA_PDC_OLD=m
+# CONFIG_PATA_QDI is not set
+CONFIG_PATA_RADISYS=y
+# CONFIG_PATA_RZ1000 is not set
+CONFIG_PATA_SC1200=m
+CONFIG_PATA_SERVERWORKS=y
+CONFIG_PATA_PDC2027X=y
+CONFIG_PATA_SIL680=m
+CONFIG_PATA_SIS=y
+CONFIG_PATA_VIA=m
+CONFIG_PATA_WINBOND=m
+CONFIG_PATA_WINBOND_VLB=m
+# CONFIG_PATA_PLATFORM is not set
+CONFIG_PATA_SCH=y
+# CONFIG_MD is not set
+CONFIG_FUSION=y
+CONFIG_FUSION_SPI=y
+CONFIG_FUSION_FC=m
+# CONFIG_FUSION_SAS is not set
+CONFIG_FUSION_MAX_SGE=128
+CONFIG_FUSION_CTL=m
+CONFIG_FUSION_LAN=m
+# CONFIG_FUSION_LOGGING is not set
+
+#
+# IEEE 1394 (FireWire) support
+#
+
+#
+# You can enable one or both FireWire driver stacks.
+#
+
+#
+# See the help texts for more information.
+#
+# CONFIG_FIREWIRE is not set
+CONFIG_IEEE1394=m
+CONFIG_IEEE1394_OHCI1394=m
+# CONFIG_IEEE1394_PCILYNX is not set
+CONFIG_IEEE1394_SBP2=m
+# CONFIG_IEEE1394_SBP2_PHYS_DMA is not set
+CONFIG_IEEE1394_ETH1394_ROM_ENTRY=y
+CONFIG_IEEE1394_ETH1394=m
+CONFIG_IEEE1394_RAWIO=m
+CONFIG_IEEE1394_VIDEO1394=m
+CONFIG_IEEE1394_DV1394=m
+# CONFIG_IEEE1394_VERBOSEDEBUG is not set
+CONFIG_I2O=m
+CONFIG_I2O_LCT_NOTIFY_ON_CHANGES=y
+CONFIG_I2O_EXT_ADAPTEC=y
+CONFIG_I2O_CONFIG=m
+CONFIG_I2O_CONFIG_OLD_IOCTL=y
+# CONFIG_I2O_BUS is not set
+# CONFIG_I2O_BLOCK is not set
+# CONFIG_I2O_SCSI is not set
+CONFIG_I2O_PROC=m
+CONFIG_MACINTOSH_DRIVERS=y
+# CONFIG_MAC_EMUMOUSEBTN is not set
+CONFIG_NETDEVICES=y
+CONFIG_DUMMY=y
+CONFIG_BONDING=m
+CONFIG_MACVLAN=m
+CONFIG_EQUALIZER=m
+CONFIG_TUN=m
+CONFIG_VETH=m
+CONFIG_NET_SB1000=m
+CONFIG_ARCNET=y
+CONFIG_ARCNET_1201=y
+# CONFIG_ARCNET_1051 is not set
+CONFIG_ARCNET_RAW=y
+# CONFIG_ARCNET_CAP is not set
+# CONFIG_ARCNET_COM90xx is not set
+# CONFIG_ARCNET_COM90xxIO is not set
+# CONFIG_ARCNET_RIM_I is not set
+CONFIG_ARCNET_COM20020=y
+CONFIG_ARCNET_COM20020_ISA=y
+CONFIG_ARCNET_COM20020_PCI=y
+CONFIG_PHYLIB=y
+
+#
+# MII PHY device drivers
+#
+# CONFIG_MARVELL_PHY is not set
+# CONFIG_DAVICOM_PHY is not set
+CONFIG_QSEMI_PHY=y
+# CONFIG_LXT_PHY is not set
+# CONFIG_CICADA_PHY is not set
+# CONFIG_VITESSE_PHY is not set
+CONFIG_SMSC_PHY=m
+CONFIG_BROADCOM_PHY=y
+CONFIG_ICPLUS_PHY=y
+CONFIG_REALTEK_PHY=y
+# CONFIG_NATIONAL_PHY is not set
+CONFIG_STE10XP=y
+CONFIG_LSI_ET1011C_PHY=m
+CONFIG_FIXED_PHY=y
+CONFIG_MDIO_BITBANG=m
+CONFIG_MDIO_GPIO=m
+CONFIG_NET_ETHERNET=y
+CONFIG_MII=y
+CONFIG_HAPPYMEAL=y
+# CONFIG_SUNGEM is not set
+CONFIG_CASSINI=y
+CONFIG_NET_VENDOR_3COM=y
+CONFIG_EL1=m
+# CONFIG_EL2 is not set
+# CONFIG_ELPLUS is not set
+CONFIG_EL16=m
+CONFIG_EL3=m
+CONFIG_3C515=y
+CONFIG_VORTEX=y
+# CONFIG_TYPHOON is not set
+CONFIG_LANCE=y
+CONFIG_NET_VENDOR_SMC=y
+CONFIG_ULTRA=m
+CONFIG_SMC9194=y
+# CONFIG_ENC28J60 is not set
+CONFIG_ETHOC=m
+CONFIG_NET_VENDOR_RACAL=y
+# CONFIG_NI52 is not set
+CONFIG_NI65=m
+# CONFIG_DNET is not set
+# CONFIG_NET_TULIP is not set
+# CONFIG_AT1700 is not set
+CONFIG_DEPCA=y
+CONFIG_HP100=y
+CONFIG_NET_ISA=y
+CONFIG_E2100=y
+CONFIG_EWRK3=y
+CONFIG_EEXPRESS=y
+CONFIG_EEXPRESS_PRO=m
+# CONFIG_HPLAN is not set
+CONFIG_LP486E=m
+CONFIG_ETH16I=m
+# CONFIG_NE2000 is not set
+CONFIG_ZNET=y
+CONFIG_SEEQ8005=y
+# CONFIG_IBM_NEW_EMAC_ZMII is not set
+# CONFIG_IBM_NEW_EMAC_RGMII is not set
+# CONFIG_IBM_NEW_EMAC_TAH is not set
+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
+# CONFIG_IBM_NEW_EMAC_NO_FLOW_CTRL is not set
+# CONFIG_IBM_NEW_EMAC_MAL_CLR_ICINTSTAT is not set
+# CONFIG_IBM_NEW_EMAC_MAL_COMMON_ERR is not set
+CONFIG_NET_PCI=y
+CONFIG_PCNET32=y
+CONFIG_AMD8111_ETH=m
+CONFIG_ADAPTEC_STARFIRE=y
+CONFIG_AC3200=y
+CONFIG_APRICOT=m
+# CONFIG_B44 is not set
+CONFIG_FORCEDETH=y
+CONFIG_FORCEDETH_NAPI=y
+# CONFIG_CS89x0 is not set
+CONFIG_E100=y
+# CONFIG_FEALNX is not set
+CONFIG_NATSEMI=m
+# CONFIG_NE2K_PCI is not set
+# CONFIG_8139CP is not set
+CONFIG_8139TOO=y
+# CONFIG_8139TOO_PIO is not set
+CONFIG_8139TOO_TUNE_TWISTER=y
+CONFIG_8139TOO_8129=y
+CONFIG_8139_OLD_RX_RESET=y
+# CONFIG_R6040 is not set
+CONFIG_SIS900=y
+CONFIG_EPIC100=y
+# CONFIG_SMSC9420 is not set
+CONFIG_SUNDANCE=y
+CONFIG_SUNDANCE_MMIO=y
+CONFIG_TLAN=y
+CONFIG_KS8842=y
+# CONFIG_KS8851 is not set
+# CONFIG_VIA_RHINE is not set
+CONFIG_SC92031=y
+# CONFIG_ATL2 is not set
+CONFIG_NETDEV_1000=y
+CONFIG_ACENIC=m
+CONFIG_ACENIC_OMIT_TIGON_I=y
+# CONFIG_DL2K is not set
+# CONFIG_E1000 is not set
+CONFIG_E1000E=y
+CONFIG_IP1000=m
+CONFIG_IGB=m
+CONFIG_IGB_DCA=y
+# CONFIG_IGBVF is not set
+CONFIG_NS83820=m
+CONFIG_HAMACHI=m
+# CONFIG_YELLOWFIN is not set
+# CONFIG_R8169 is not set
+# CONFIG_SIS190 is not set
+# CONFIG_SKGE is not set
+# CONFIG_SKY2 is not set
+# CONFIG_VIA_VELOCITY is not set
+CONFIG_TIGON3=y
+CONFIG_BNX2=m
+# CONFIG_QLA3XXX is not set
+CONFIG_ATL1=m
+# CONFIG_ATL1E is not set
+# CONFIG_ATL1C is not set
+CONFIG_JME=m
+CONFIG_NETDEV_10000=y
+CONFIG_MDIO=y
+CONFIG_CHELSIO_T1=m
+CONFIG_CHELSIO_T1_1G=y
+CONFIG_CHELSIO_T3_DEPENDS=y
+CONFIG_CHELSIO_T3=y
+# CONFIG_ENIC is not set
+CONFIG_IXGBE=y
+CONFIG_IXGBE_DCA=y
+CONFIG_IXGB=m
+CONFIG_S2IO=m
+CONFIG_MYRI10GE=m
+CONFIG_MYRI10GE_DCA=y
+# CONFIG_NIU is not set
+CONFIG_MLX4_EN=y
+CONFIG_MLX4_CORE=y
+CONFIG_MLX4_DEBUG=y
+CONFIG_TEHUTI=y
+# CONFIG_BNX2X is not set
+CONFIG_QLGE=y
+CONFIG_SFC=m
+CONFIG_BE2NET=m
+CONFIG_TR=y
+CONFIG_IBMTR=y
+CONFIG_IBMOL=m
+# CONFIG_IBMLS is not set
+# CONFIG_3C359 is not set
+# CONFIG_TMS380TR is not set
+# CONFIG_SMCTR is not set
+
+#
+# Wireless LAN
+#
+# CONFIG_WLAN_PRE80211 is not set
+CONFIG_WLAN_80211=y
+# CONFIG_LIBERTAS is not set
+CONFIG_LIBERTAS_THINFIRM=m
+CONFIG_LIBERTAS_THINFIRM_USB=m
+CONFIG_AIRO=y
+# CONFIG_ATMEL is not set
+CONFIG_AT76C50X_USB=m
+CONFIG_PRISM54=m
+# CONFIG_USB_ZD1201 is not set
+# CONFIG_USB_NET_RNDIS_WLAN is not set
+# CONFIG_RTL8180 is not set
+CONFIG_RTL8187=m
+CONFIG_RTL8187_LEDS=y
+# CONFIG_ADM8211 is not set
+CONFIG_MAC80211_HWSIM=m
+CONFIG_MWL8K=m
+CONFIG_P54_COMMON=m
+CONFIG_P54_USB=m
+# CONFIG_P54_PCI is not set
+# CONFIG_P54_SPI is not set
+CONFIG_P54_LEDS=y
+CONFIG_ATH_COMMON=m
+# CONFIG_ATH5K is not set
+CONFIG_ATH9K=m
+CONFIG_ATH9K_DEBUG=y
+CONFIG_AR9170_USB=m
+CONFIG_AR9170_LEDS=y
+# CONFIG_IPW2100 is not set
+CONFIG_IPW2200=m
+CONFIG_IPW2200_MONITOR=y
+CONFIG_IPW2200_RADIOTAP=y
+CONFIG_IPW2200_PROMISCUOUS=y
+# CONFIG_IPW2200_QOS is not set
+# CONFIG_IPW2200_DEBUG is not set
+CONFIG_LIBIPW=m
+CONFIG_LIBIPW_DEBUG=y
+CONFIG_IWLWIFI=m
+# CONFIG_IWLWIFI_LEDS is not set
+CONFIG_IWLWIFI_SPECTRUM_MEASUREMENT=y
+# CONFIG_IWLWIFI_DEBUG is not set
+# CONFIG_IWLAGN is not set
+CONFIG_IWL3945=m
+# CONFIG_IWL3945_SPECTRUM_MEASUREMENT is not set
+CONFIG_HOSTAP=y
+# CONFIG_HOSTAP_FIRMWARE is not set
+CONFIG_HOSTAP_PLX=m
+# CONFIG_HOSTAP_PCI is not set
+CONFIG_B43=m
+CONFIG_B43_PCI_AUTOSELECT=y
+CONFIG_B43_PCICORE_AUTOSELECT=y
+CONFIG_B43_LEDS=y
+# CONFIG_B43_DEBUG is not set
+CONFIG_B43LEGACY=m
+CONFIG_B43LEGACY_PCI_AUTOSELECT=y
+CONFIG_B43LEGACY_PCICORE_AUTOSELECT=y
+CONFIG_B43LEGACY_LEDS=y
+CONFIG_B43LEGACY_DEBUG=y
+CONFIG_B43LEGACY_PIO=y
+# CONFIG_B43LEGACY_DMA_AND_PIO_MODE is not set
+# CONFIG_B43LEGACY_DMA_MODE is not set
+CONFIG_B43LEGACY_PIO_MODE=y
+CONFIG_ZD1211RW=m
+CONFIG_ZD1211RW_DEBUG=y
+CONFIG_HERMES=y
+CONFIG_HERMES_CACHE_FW_ON_INIT=y
+CONFIG_PLX_HERMES=y
+# CONFIG_TMD_HERMES is not set
+# CONFIG_NORTEL_HERMES is not set
+# CONFIG_PCI_HERMES is not set
+CONFIG_WL12XX=m
+
+#
+# WiMAX Wireless Broadband devices
+#
+
+#
+# Enable MMC support to see WiMAX SDIO drivers
+#
+
+#
+# USB Network Adapters
+#
+# CONFIG_USB_CATC is not set
+CONFIG_USB_KAWETH=m
+# CONFIG_USB_PEGASUS is not set
+CONFIG_USB_RTL8150=m
+# CONFIG_USB_USBNET is not set
+# CONFIG_WAN is not set
+CONFIG_ATM_DRIVERS=y
+CONFIG_ATM_DUMMY=m
+# CONFIG_ATM_TCP is not set
+CONFIG_ATM_LANAI=m
+CONFIG_ATM_ENI=y
+# CONFIG_ATM_ENI_DEBUG is not set
+CONFIG_ATM_ENI_TUNE_BURST=y
+CONFIG_ATM_ENI_BURST_TX_16W=y
+# CONFIG_ATM_ENI_BURST_TX_8W is not set
+# CONFIG_ATM_ENI_BURST_TX_4W is not set
+CONFIG_ATM_ENI_BURST_TX_2W=y
+CONFIG_ATM_ENI_BURST_RX_16W=y
+# CONFIG_ATM_ENI_BURST_RX_8W is not set
+CONFIG_ATM_ENI_BURST_RX_4W=y
+# CONFIG_ATM_ENI_BURST_RX_2W is not set
+CONFIG_ATM_FIRESTREAM=m
+CONFIG_ATM_ZATM=m
+CONFIG_ATM_ZATM_DEBUG=y
+CONFIG_ATM_NICSTAR=y
+# CONFIG_ATM_NICSTAR_USE_SUNI is not set
+CONFIG_ATM_NICSTAR_USE_IDT77105=y
+CONFIG_ATM_IDT77252=y
+CONFIG_ATM_IDT77252_DEBUG=y
+CONFIG_ATM_IDT77252_RCV_ALL=y
+CONFIG_ATM_IDT77252_USE_SUNI=y
+CONFIG_ATM_AMBASSADOR=m
+CONFIG_ATM_AMBASSADOR_DEBUG=y
+CONFIG_ATM_HORIZON=y
+# CONFIG_ATM_HORIZON_DEBUG is not set
+# CONFIG_ATM_IA is not set
+CONFIG_ATM_FORE200E=m
+CONFIG_ATM_FORE200E_USE_TASKLET=y
+CONFIG_ATM_FORE200E_TX_RETRY=16
+CONFIG_ATM_FORE200E_DEBUG=0
+CONFIG_ATM_HE=m
+CONFIG_ATM_HE_USE_SUNI=y
+# CONFIG_ATM_SOLOS is not set
+CONFIG_IEEE802154_DRIVERS=m
+# CONFIG_IEEE802154_FAKEHARD is not set
+CONFIG_FDDI=m
+# CONFIG_DEFXX is not set
+CONFIG_SKFP=m
+# CONFIG_HIPPI is not set
+# CONFIG_PPP is not set
+CONFIG_SLIP=y
+# CONFIG_SLIP_COMPRESSED is not set
+CONFIG_SLIP_SMART=y
+# CONFIG_SLIP_MODE_SLIP6 is not set
+CONFIG_NET_FC=y
+CONFIG_NETCONSOLE=y
+CONFIG_NETCONSOLE_DYNAMIC=y
+CONFIG_NETPOLL=y
+# CONFIG_NETPOLL_TRAP is not set
+CONFIG_NET_POLL_CONTROLLER=y
+# CONFIG_VIRTIO_NET is not set
+CONFIG_ISDN=y
+# CONFIG_ISDN_I4L is not set
+# CONFIG_ISDN_CAPI is not set
+# CONFIG_PHONE is not set
+
+#
+# Input device support
+#
+CONFIG_INPUT=y
+CONFIG_INPUT_FF_MEMLESS=m
+CONFIG_INPUT_POLLDEV=y
+
+#
+# Userland interfaces
+#
+CONFIG_INPUT_MOUSEDEV=y
+CONFIG_INPUT_MOUSEDEV_PSAUX=y
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+# CONFIG_INPUT_JOYDEV is not set
+CONFIG_INPUT_EVDEV=y
+# CONFIG_INPUT_EVBUG is not set
+
+#
+# Input Device Drivers
+#
+CONFIG_INPUT_KEYBOARD=y
+CONFIG_KEYBOARD_ATKBD=y
+# CONFIG_KEYBOARD_LKKBD is not set
+CONFIG_KEYBOARD_GPIO=y
+# CONFIG_KEYBOARD_MATRIX is not set
+# CONFIG_KEYBOARD_LM8323 is not set
+CONFIG_KEYBOARD_NEWTON=m
+# CONFIG_KEYBOARD_STOWAWAY is not set
+CONFIG_KEYBOARD_SUNKBD=y
+# CONFIG_KEYBOARD_XTKBD is not set
+CONFIG_INPUT_MOUSE=y
+# CONFIG_MOUSE_PS2 is not set
+CONFIG_MOUSE_SERIAL=m
+# CONFIG_MOUSE_APPLETOUCH is not set
+CONFIG_MOUSE_BCM5974=m
+CONFIG_MOUSE_INPORT=y
+# CONFIG_MOUSE_ATIXL is not set
+CONFIG_MOUSE_LOGIBM=y
+CONFIG_MOUSE_PC110PAD=y
+CONFIG_MOUSE_VSXXXAA=y
+# CONFIG_MOUSE_GPIO is not set
+CONFIG_MOUSE_SYNAPTICS_I2C=y
+CONFIG_INPUT_JOYSTICK=y
+CONFIG_JOYSTICK_ANALOG=y
+# CONFIG_JOYSTICK_A3D is not set
+CONFIG_JOYSTICK_ADI=y
+CONFIG_JOYSTICK_COBRA=y
+# CONFIG_JOYSTICK_GF2K is not set
+CONFIG_JOYSTICK_GRIP=y
+# CONFIG_JOYSTICK_GRIP_MP is not set
+# CONFIG_JOYSTICK_GUILLEMOT is not set
+# CONFIG_JOYSTICK_INTERACT is not set
+CONFIG_JOYSTICK_SIDEWINDER=m
+# CONFIG_JOYSTICK_TMDC is not set
+CONFIG_JOYSTICK_IFORCE=m
+# CONFIG_JOYSTICK_IFORCE_USB is not set
+# CONFIG_JOYSTICK_IFORCE_232 is not set
+# CONFIG_JOYSTICK_WARRIOR is not set
+CONFIG_JOYSTICK_MAGELLAN=m
+CONFIG_JOYSTICK_SPACEORB=m
+CONFIG_JOYSTICK_SPACEBALL=m
+CONFIG_JOYSTICK_STINGER=y
+CONFIG_JOYSTICK_TWIDJOY=m
+CONFIG_JOYSTICK_ZHENHUA=y
+# CONFIG_JOYSTICK_JOYDUMP is not set
+CONFIG_JOYSTICK_XPAD=m
+CONFIG_JOYSTICK_XPAD_FF=y
+CONFIG_JOYSTICK_XPAD_LEDS=y
+# CONFIG_INPUT_TABLET is not set
+CONFIG_INPUT_TOUCHSCREEN=y
+CONFIG_TOUCHSCREEN_ADS7846=m
+# CONFIG_TOUCHSCREEN_AD7877 is not set
+# CONFIG_TOUCHSCREEN_AD7879_I2C is not set
+CONFIG_TOUCHSCREEN_AD7879_SPI=m
+CONFIG_TOUCHSCREEN_AD7879=m
+CONFIG_TOUCHSCREEN_EETI=m
+# CONFIG_TOUCHSCREEN_FUJITSU is not set
+CONFIG_TOUCHSCREEN_GUNZE=y
+CONFIG_TOUCHSCREEN_ELO=m
+CONFIG_TOUCHSCREEN_WACOM_W8001=m
+CONFIG_TOUCHSCREEN_MTOUCH=y
+CONFIG_TOUCHSCREEN_INEXIO=m
+CONFIG_TOUCHSCREEN_MK712=y
+CONFIG_TOUCHSCREEN_HTCPEN=m
+CONFIG_TOUCHSCREEN_PENMOUNT=m
+CONFIG_TOUCHSCREEN_TOUCHRIGHT=y
+CONFIG_TOUCHSCREEN_TOUCHWIN=y
+# CONFIG_TOUCHSCREEN_USB_COMPOSITE is not set
+# CONFIG_TOUCHSCREEN_TOUCHIT213 is not set
+CONFIG_TOUCHSCREEN_TSC2007=m
+# CONFIG_TOUCHSCREEN_W90X900 is not set
+# CONFIG_INPUT_MISC is not set
+
+#
+# Hardware I/O ports
+#
+CONFIG_SERIO=y
+CONFIG_SERIO_I8042=y
+CONFIG_SERIO_SERPORT=m
+CONFIG_SERIO_CT82C710=y
+CONFIG_SERIO_PCIPS2=m
+CONFIG_SERIO_LIBPS2=y
+# CONFIG_SERIO_RAW is not set
+CONFIG_GAMEPORT=y
+CONFIG_GAMEPORT_NS558=m
+CONFIG_GAMEPORT_L4=y
+CONFIG_GAMEPORT_EMU10K1=y
+CONFIG_GAMEPORT_FM801=y
+
+#
+# Character devices
+#
+CONFIG_VT=y
+# CONFIG_CONSOLE_TRANSLATIONS is not set
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+CONFIG_VT_HW_CONSOLE_BINDING=y
+CONFIG_DEVKMEM=y
+CONFIG_SERIAL_NONSTANDARD=y
+CONFIG_COMPUTONE=y
+CONFIG_ROCKETPORT=m
+CONFIG_CYCLADES=m
+CONFIG_CYZ_INTR=y
+# CONFIG_DIGIEPCA is not set
+CONFIG_MOXA_INTELLIO=m
+CONFIG_MOXA_SMARTIO=y
+CONFIG_ISI=y
+CONFIG_SYNCLINK=m
+# CONFIG_SYNCLINKMP is not set
+CONFIG_SYNCLINK_GT=m
+CONFIG_N_HDLC=y
+CONFIG_RISCOM8=m
+# CONFIG_SPECIALIX is not set
+CONFIG_SX=y
+CONFIG_RIO=y
+CONFIG_RIO_OLDPCI=y
+CONFIG_STALDRV=y
+CONFIG_STALLION=m
+CONFIG_ISTALLION=m
+# CONFIG_NOZOMI is not set
+
+#
+# Serial drivers
+#
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_FIX_EARLYCON_MEM=y
+CONFIG_SERIAL_8250_PCI=y
+CONFIG_SERIAL_8250_PNP=y
+CONFIG_SERIAL_8250_NR_UARTS=4
+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+# CONFIG_SERIAL_8250_EXTENDED is not set
+
+#
+# Non-8250 serial port support
+#
+# CONFIG_SERIAL_MAX3100 is not set
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+CONFIG_SERIAL_JSM=y
+CONFIG_UNIX98_PTYS=y
+CONFIG_DEVPTS_MULTIPLE_INSTANCES=y
+CONFIG_LEGACY_PTYS=y
+CONFIG_LEGACY_PTY_COUNT=256
+CONFIG_HVC_DRIVER=y
+CONFIG_VIRTIO_CONSOLE=y
+# CONFIG_IPMI_HANDLER is not set
+# CONFIG_HW_RANDOM is not set
+CONFIG_NVRAM=y
+CONFIG_DTLK=y
+CONFIG_R3964=m
+# CONFIG_APPLICOM is not set
+CONFIG_SONYPI=m
+CONFIG_MWAVE=m
+# CONFIG_PC8736x_GPIO is not set
+CONFIG_NSC_GPIO=y
+CONFIG_CS5535_GPIO=m
+CONFIG_RAW_DRIVER=m
+CONFIG_MAX_RAW_DEVS=256
+CONFIG_HANGCHECK_TIMER=m
+CONFIG_TCG_TPM=y
+CONFIG_TCG_TIS=y
+# CONFIG_TCG_NSC is not set
+# CONFIG_TCG_ATMEL is not set
+CONFIG_TCG_INFINEON=m
+CONFIG_TELCLOCK=y
+CONFIG_DEVPORT=y
+CONFIG_I2C=y
+CONFIG_I2C_BOARDINFO=y
+CONFIG_I2C_CHARDEV=y
+# CONFIG_I2C_HELPER_AUTO is not set
+
+#
+# I2C Algorithms
+#
+CONFIG_I2C_ALGOBIT=y
+CONFIG_I2C_ALGOPCF=y
+CONFIG_I2C_ALGOPCA=y
+
+#
+# I2C Hardware Bus support
+#
+
+#
+# PC SMBus host controller drivers
+#
+CONFIG_I2C_ALI1535=y
+CONFIG_I2C_ALI1563=m
+CONFIG_I2C_ALI15X3=y
+CONFIG_I2C_AMD756=y
+# CONFIG_I2C_AMD8111 is not set
+# CONFIG_I2C_I801 is not set
+# CONFIG_I2C_ISCH is not set
+CONFIG_I2C_PIIX4=y
+# CONFIG_I2C_NFORCE2 is not set
+# CONFIG_I2C_SIS5595 is not set
+CONFIG_I2C_SIS630=m
+CONFIG_I2C_SIS96X=m
+CONFIG_I2C_VIA=m
+CONFIG_I2C_VIAPRO=y
+
+#
+# I2C system bus drivers (mostly embedded / system-on-chip)
+#
+CONFIG_I2C_GPIO=y
+# CONFIG_I2C_OCORES is not set
+# CONFIG_I2C_SIMTEC is not set
+
+#
+# External I2C/SMBus adapter drivers
+#
+CONFIG_I2C_PARPORT_LIGHT=m
+# CONFIG_I2C_TAOS_EVM is not set
+# CONFIG_I2C_TINY_USB is not set
+
+#
+# Graphics adapter I2C/DDC channel drivers
+#
+CONFIG_I2C_VOODOO3=m
+
+#
+# Other I2C/SMBus bus drivers
+#
+# CONFIG_I2C_PCA_ISA is not set
+CONFIG_I2C_PCA_PLATFORM=y
+CONFIG_I2C_STUB=m
+CONFIG_SCx200_ACB=m
+
+#
+# Miscellaneous I2C Chip support
+#
+CONFIG_DS1682=y
+CONFIG_SENSORS_PCA9539=y
+# CONFIG_SENSORS_TSL2550 is not set
+# CONFIG_I2C_DEBUG_CORE is not set
+CONFIG_I2C_DEBUG_ALGO=y
+CONFIG_I2C_DEBUG_BUS=y
+# CONFIG_I2C_DEBUG_CHIP is not set
+CONFIG_SPI=y
+CONFIG_SPI_DEBUG=y
+CONFIG_SPI_MASTER=y
+
+#
+# SPI Master Controller Drivers
+#
+CONFIG_SPI_BITBANG=y
+# CONFIG_SPI_GPIO is not set
+
+#
+# SPI Protocol Masters
+#
+CONFIG_SPI_SPIDEV=m
+CONFIG_SPI_TLE62X0=y
+
+#
+# PPS support
+#
+CONFIG_PPS=m
+# CONFIG_PPS_DEBUG is not set
+CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
+CONFIG_GPIOLIB=y
+CONFIG_DEBUG_GPIO=y
+# CONFIG_GPIO_SYSFS is not set
+
+#
+# Memory mapped GPIO expanders:
+#
+
+#
+# I2C GPIO expanders:
+#
+CONFIG_GPIO_MAX732X=m
+# CONFIG_GPIO_PCA953X is not set
+CONFIG_GPIO_PCF857X=y
+# CONFIG_GPIO_TWL4030 is not set
+
+#
+# PCI GPIO expanders:
+#
+CONFIG_GPIO_BT8XX=y
+
+#
+# SPI GPIO expanders:
+#
+CONFIG_GPIO_MAX7301=m
+CONFIG_GPIO_MCP23S08=y
+CONFIG_W1=m
+
+#
+# 1-wire Bus Masters
+#
+# CONFIG_W1_MASTER_MATROX is not set
+# CONFIG_W1_MASTER_DS2490 is not set
+CONFIG_W1_MASTER_DS2482=m
+CONFIG_W1_MASTER_GPIO=m
+
+#
+# 1-wire Slaves
+#
+CONFIG_W1_SLAVE_THERM=m
+CONFIG_W1_SLAVE_SMEM=m
+CONFIG_W1_SLAVE_DS2431=m
+CONFIG_W1_SLAVE_DS2433=m
+# CONFIG_W1_SLAVE_DS2433_CRC is not set
+CONFIG_W1_SLAVE_DS2760=m
+CONFIG_W1_SLAVE_BQ27000=m
+CONFIG_POWER_SUPPLY=y
+CONFIG_POWER_SUPPLY_DEBUG=y
+# CONFIG_PDA_POWER is not set
+CONFIG_BATTERY_DS2760=m
+CONFIG_BATTERY_DS2782=y
+CONFIG_BATTERY_OLPC=y
+CONFIG_BATTERY_BQ27x00=m
+# CONFIG_BATTERY_MAX17040 is not set
+CONFIG_CHARGER_PCF50633=m
+CONFIG_HWMON=m
+CONFIG_HWMON_VID=m
+# CONFIG_SENSORS_ABITUGURU is not set
+CONFIG_SENSORS_ABITUGURU3=m
+# CONFIG_SENSORS_AD7414 is not set
+CONFIG_SENSORS_AD7418=m
+CONFIG_SENSORS_ADCXX=m
+# CONFIG_SENSORS_ADM1021 is not set
+CONFIG_SENSORS_ADM1025=m
+# CONFIG_SENSORS_ADM1026 is not set
+CONFIG_SENSORS_ADM1029=m
+CONFIG_SENSORS_ADM1031=m
+CONFIG_SENSORS_ADM9240=m
+CONFIG_SENSORS_ADT7462=m
+# CONFIG_SENSORS_ADT7470 is not set
+# CONFIG_SENSORS_ADT7473 is not set
+CONFIG_SENSORS_ADT7475=m
+# CONFIG_SENSORS_K8TEMP is not set
+# CONFIG_SENSORS_ASB100 is not set
+CONFIG_SENSORS_ATXP1=m
+CONFIG_SENSORS_DS1621=m
+CONFIG_SENSORS_I5K_AMB=m
+CONFIG_SENSORS_F71805F=m
+CONFIG_SENSORS_F71882FG=m
+CONFIG_SENSORS_F75375S=m
+# CONFIG_SENSORS_FSCHER is not set
+CONFIG_SENSORS_FSCPOS=m
+# CONFIG_SENSORS_FSCHMD is not set
+# CONFIG_SENSORS_G760A is not set
+CONFIG_SENSORS_GL518SM=m
+# CONFIG_SENSORS_GL520SM is not set
+CONFIG_SENSORS_CORETEMP=m
+CONFIG_SENSORS_IT87=m
+CONFIG_SENSORS_LM63=m
+CONFIG_SENSORS_LM70=m
+CONFIG_SENSORS_LM75=m
+# CONFIG_SENSORS_LM77 is not set
+CONFIG_SENSORS_LM78=m
+# CONFIG_SENSORS_LM80 is not set
+CONFIG_SENSORS_LM83=m
+# CONFIG_SENSORS_LM85 is not set
+CONFIG_SENSORS_LM87=m
+# CONFIG_SENSORS_LM90 is not set
+# CONFIG_SENSORS_LM92 is not set
+# CONFIG_SENSORS_LM93 is not set
+CONFIG_SENSORS_LTC4215=m
+CONFIG_SENSORS_LTC4245=m
+CONFIG_SENSORS_LM95241=m
+CONFIG_SENSORS_MAX1111=m
+CONFIG_SENSORS_MAX1619=m
+CONFIG_SENSORS_MAX6650=m
+# CONFIG_SENSORS_PC87360 is not set
+CONFIG_SENSORS_PC87427=m
+CONFIG_SENSORS_PCF8591=m
+CONFIG_SENSORS_SHT15=m
+CONFIG_SENSORS_SIS5595=m
+# CONFIG_SENSORS_DME1737 is not set
+# CONFIG_SENSORS_SMSC47M1 is not set
+CONFIG_SENSORS_SMSC47M192=m
+CONFIG_SENSORS_SMSC47B397=m
+CONFIG_SENSORS_ADS7828=m
+CONFIG_SENSORS_THMC50=m
+CONFIG_SENSORS_TMP401=m
+CONFIG_SENSORS_VIA686A=m
+CONFIG_SENSORS_VT1211=m
+CONFIG_SENSORS_VT8231=m
+CONFIG_SENSORS_W83781D=m
+# CONFIG_SENSORS_W83791D is not set
+CONFIG_SENSORS_W83792D=m
+CONFIG_SENSORS_W83793=m
+CONFIG_SENSORS_W83L785TS=m
+# CONFIG_SENSORS_W83L786NG is not set
+# CONFIG_SENSORS_W83627HF is not set
+CONFIG_SENSORS_W83627EHF=m
+CONFIG_SENSORS_HDAPS=m
+CONFIG_SENSORS_LIS3_SPI=m
+CONFIG_SENSORS_APPLESMC=m
+CONFIG_HWMON_DEBUG_CHIP=y
+CONFIG_THERMAL=y
+CONFIG_WATCHDOG=y
+# CONFIG_WATCHDOG_NOWAYOUT is not set
+
+#
+# Watchdog Device Drivers
+#
+# CONFIG_SOFT_WATCHDOG is not set
+CONFIG_TWL4030_WATCHDOG=y
+CONFIG_ACQUIRE_WDT=y
+CONFIG_ADVANTECH_WDT=m
+CONFIG_ALIM1535_WDT=m
+CONFIG_ALIM7101_WDT=m
+CONFIG_SC520_WDT=m
+# CONFIG_EUROTECH_WDT is not set
+CONFIG_IB700_WDT=m
+CONFIG_IBMASR=m
+CONFIG_WAFER_WDT=y
+CONFIG_I6300ESB_WDT=y
+CONFIG_ITCO_WDT=m
+CONFIG_ITCO_VENDOR_SUPPORT=y
+CONFIG_IT8712F_WDT=y
+CONFIG_IT87_WDT=m
+# CONFIG_HP_WATCHDOG is not set
+CONFIG_SC1200_WDT=y
+CONFIG_PC87413_WDT=y
+# CONFIG_RDC321X_WDT is not set
+CONFIG_60XX_WDT=y
+# CONFIG_SBC8360_WDT is not set
+# CONFIG_SBC7240_WDT is not set
+CONFIG_CPU5_WDT=y
+# CONFIG_SMSC_SCH311X_WDT is not set
+# CONFIG_SMSC37B787_WDT is not set
+CONFIG_W83627HF_WDT=m
+# CONFIG_W83697HF_WDT is not set
+# CONFIG_W83697UG_WDT is not set
+CONFIG_W83877F_WDT=m
+CONFIG_W83977F_WDT=m
+CONFIG_MACHZ_WDT=y
+CONFIG_SBC_EPX_C3_WATCHDOG=m
+
+#
+# ISA-based Watchdog Cards
+#
+CONFIG_PCWATCHDOG=y
+# CONFIG_MIXCOMWD is not set
+# CONFIG_WDT is not set
+
+#
+# PCI-based Watchdog Cards
+#
+CONFIG_PCIPCWATCHDOG=m
+CONFIG_WDTPCI=m
+
+#
+# USB-based Watchdog Cards
+#
+CONFIG_USBPCWATCHDOG=y
+CONFIG_SSB_POSSIBLE=y
+
+#
+# Sonics Silicon Backplane
+#
+CONFIG_SSB=m
+CONFIG_SSB_SPROM=y
+CONFIG_SSB_PCIHOST_POSSIBLE=y
+CONFIG_SSB_PCIHOST=y
+CONFIG_SSB_B43_PCI_BRIDGE=y
+CONFIG_SSB_SILENT=y
+CONFIG_SSB_DRIVER_PCICORE_POSSIBLE=y
+CONFIG_SSB_DRIVER_PCICORE=y
+
+#
+# Multifunction device drivers
+#
+CONFIG_MFD_CORE=y
+CONFIG_MFD_SM501=m
+CONFIG_MFD_SM501_GPIO=y
+CONFIG_HTC_PASIC3=m
+# CONFIG_TPS65010 is not set
+CONFIG_TWL4030_CORE=y
+# CONFIG_MFD_TMIO is not set
+# CONFIG_PMIC_DA903X is not set
+CONFIG_MFD_WM8400=y
+CONFIG_MFD_PCF50633=m
+CONFIG_PCF50633_ADC=m
+CONFIG_PCF50633_GPIO=m
+# CONFIG_AB3100_CORE is not set
+CONFIG_EZX_PCAP=y
+# CONFIG_REGULATOR is not set
+CONFIG_MEDIA_SUPPORT=y
+
+#
+# Multimedia core support
+#
+# CONFIG_VIDEO_DEV is not set
+CONFIG_DVB_CORE=m
+CONFIG_VIDEO_MEDIA=m
+
+#
+# Multimedia drivers
+#
+# CONFIG_MEDIA_ATTACH is not set
+CONFIG_MEDIA_TUNER=m
+# CONFIG_MEDIA_TUNER_CUSTOMISE is not set
+CONFIG_MEDIA_TUNER_SIMPLE=m
+CONFIG_MEDIA_TUNER_TDA8290=m
+CONFIG_MEDIA_TUNER_TDA827X=m
+CONFIG_MEDIA_TUNER_TDA18271=m
+CONFIG_MEDIA_TUNER_TDA9887=m
+CONFIG_MEDIA_TUNER_TEA5761=m
+CONFIG_MEDIA_TUNER_TEA5767=m
+CONFIG_MEDIA_TUNER_MT20XX=m
+CONFIG_MEDIA_TUNER_MT2060=m
+CONFIG_MEDIA_TUNER_QT1010=m
+CONFIG_MEDIA_TUNER_XC2028=m
+CONFIG_MEDIA_TUNER_XC5000=m
+CONFIG_MEDIA_TUNER_MXL5005S=m
+CONFIG_MEDIA_TUNER_MC44S803=m
+CONFIG_DVB_DYNAMIC_MINORS=y
+CONFIG_DVB_CAPTURE_DRIVERS=y
+
+#
+# Supported SAA7146 based PCI Adapters
+#
+# CONFIG_TTPCI_EEPROM is not set
+# CONFIG_DVB_BUDGET_CORE is not set
+
+#
+# Supported USB Adapters
+#
+CONFIG_DVB_USB=m
+CONFIG_DVB_USB_DEBUG=y
+# CONFIG_DVB_USB_A800 is not set
+# CONFIG_DVB_USB_DIBUSB_MB is not set
+CONFIG_DVB_USB_DIBUSB_MC=m
+# CONFIG_DVB_USB_DIB0700 is not set
+CONFIG_DVB_USB_UMT_010=m
+# CONFIG_DVB_USB_CXUSB is not set
+CONFIG_DVB_USB_M920X=m
+CONFIG_DVB_USB_GL861=m
+CONFIG_DVB_USB_AU6610=m
+CONFIG_DVB_USB_DIGITV=m
+CONFIG_DVB_USB_VP7045=m
+CONFIG_DVB_USB_VP702X=m
+CONFIG_DVB_USB_GP8PSK=m
+CONFIG_DVB_USB_NOVA_T_USB2=m
+CONFIG_DVB_USB_TTUSB2=m
+# CONFIG_DVB_USB_DTT200U is not set
+CONFIG_DVB_USB_OPERA1=m
+CONFIG_DVB_USB_DW2102=m
+# CONFIG_DVB_USB_CINERGY_T2 is not set
+CONFIG_DVB_USB_ANYSEE=m
+# CONFIG_DVB_USB_DTV5100 is not set
+CONFIG_DVB_USB_AF9015=m
+CONFIG_DVB_USB_CE6230=m
+CONFIG_DVB_TTUSB_BUDGET=m
+# CONFIG_DVB_TTUSB_DEC is not set
+CONFIG_DVB_SIANO_SMS1XXX=m
+CONFIG_DVB_SIANO_SMS1XXX_SMS_IDS=y
+
+#
+# Supported FlexCopII (B2C2) Adapters
+#
+CONFIG_DVB_B2C2_FLEXCOP=m
+CONFIG_DVB_B2C2_FLEXCOP_PCI=m
+# CONFIG_DVB_B2C2_FLEXCOP_USB is not set
+CONFIG_DVB_B2C2_FLEXCOP_DEBUG=y
+
+#
+# Supported BT878 Adapters
+#
+
+#
+# Supported Pluto2 Adapters
+#
+# CONFIG_DVB_PLUTO2 is not set
+
+#
+# Supported SDMC DM1105 Adapters
+#
+# CONFIG_DVB_DM1105 is not set
+
+#
+# Supported FireWire (IEEE 1394) Adapters
+#
+CONFIG_DVB_FIREDTV=m
+CONFIG_DVB_FIREDTV_IEEE1394=y
+CONFIG_DVB_FIREDTV_INPUT=y
+
+#
+# Supported DVB Frontends
+#
+CONFIG_DVB_FE_CUSTOMISE=y
+
+#
+# Customise DVB Frontends
+#
+
+#
+# Multistandard (satellite) frontends
+#
+CONFIG_DVB_STB0899=m
+CONFIG_DVB_STB6100=m
+# CONFIG_DVB_STV090x is not set
+CONFIG_DVB_STV6110x=m
+
+#
+# DVB-S (satellite) frontends
+#
+CONFIG_DVB_CX24110=m
+# CONFIG_DVB_CX24123 is not set
+CONFIG_DVB_MT312=m
+CONFIG_DVB_ZL10036=m
+CONFIG_DVB_S5H1420=m
+CONFIG_DVB_STV0288=m
+CONFIG_DVB_STB6000=m
+# CONFIG_DVB_STV0299 is not set
+CONFIG_DVB_STV6110=m
+CONFIG_DVB_STV0900=m
+CONFIG_DVB_TDA8083=m
+CONFIG_DVB_TDA10086=m
+# CONFIG_DVB_TDA8261 is not set
+CONFIG_DVB_VES1X93=m
+CONFIG_DVB_TUNER_ITD1000=m
+CONFIG_DVB_TUNER_CX24113=m
+# CONFIG_DVB_TDA826X is not set
+CONFIG_DVB_TUA6100=m
+CONFIG_DVB_CX24116=m
+# CONFIG_DVB_SI21XX is not set
+
+#
+# DVB-T (terrestrial) frontends
+#
+# CONFIG_DVB_SP8870 is not set
+CONFIG_DVB_SP887X=m
+# CONFIG_DVB_CX22700 is not set
+CONFIG_DVB_CX22702=m
+CONFIG_DVB_DRX397XD=m
+CONFIG_DVB_L64781=m
+CONFIG_DVB_TDA1004X=m
+CONFIG_DVB_NXT6000=m
+CONFIG_DVB_MT352=m
+CONFIG_DVB_ZL10353=m
+CONFIG_DVB_DIB3000MB=m
+CONFIG_DVB_DIB3000MC=m
+CONFIG_DVB_DIB7000M=m
+CONFIG_DVB_DIB7000P=m
+CONFIG_DVB_TDA10048=m
+CONFIG_DVB_AF9013=m
+
+#
+# DVB-C (cable) frontends
+#
+CONFIG_DVB_VES1820=m
+# CONFIG_DVB_TDA10021 is not set
+CONFIG_DVB_TDA10023=m
+# CONFIG_DVB_STV0297 is not set
+
+#
+# ATSC (North American/Korean Terrestrial/Cable DTV) frontends
+#
+CONFIG_DVB_NXT200X=m
+# CONFIG_DVB_OR51211 is not set
+CONFIG_DVB_OR51132=m
+# CONFIG_DVB_BCM3510 is not set
+CONFIG_DVB_LGDT330X=m
+# CONFIG_DVB_LGDT3304 is not set
+CONFIG_DVB_LGDT3305=m
+CONFIG_DVB_S5H1409=m
+CONFIG_DVB_S5H1411=m
+
+#
+# ISDB-T (terrestrial) frontends
+#
+CONFIG_DVB_S921=m
+
+#
+# Digital terrestrial only tuners/PLL
+#
+CONFIG_DVB_PLL=m
+CONFIG_DVB_TUNER_DIB0070=m
+
+#
+# SEC control devices for DVB-S
+#
+# CONFIG_DVB_LNBP21 is not set
+# CONFIG_DVB_ISL6405 is not set
+CONFIG_DVB_ISL6421=m
+CONFIG_DVB_ISL6423=m
+CONFIG_DVB_LGS8GL5=m
+# CONFIG_DVB_LGS8GXX is not set
+
+#
+# Tools to develop new frontends
+#
+CONFIG_DVB_DUMMY_FE=m
+# CONFIG_DAB is not set
+
+#
+# Graphics support
+#
+# CONFIG_AGP is not set
+# CONFIG_DRM is not set
+CONFIG_VGASTATE=y
+# CONFIG_VIDEO_OUTPUT_CONTROL is not set
+CONFIG_FB=y
+CONFIG_FIRMWARE_EDID=y
+CONFIG_FB_DDC=y
+CONFIG_FB_BOOT_VESA_SUPPORT=y
+CONFIG_FB_CFB_FILLRECT=y
+CONFIG_FB_CFB_COPYAREA=y
+CONFIG_FB_CFB_IMAGEBLIT=y
+# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
+CONFIG_FB_SYS_FILLRECT=y
+CONFIG_FB_SYS_COPYAREA=y
+CONFIG_FB_SYS_IMAGEBLIT=y
+# CONFIG_FB_FOREIGN_ENDIAN is not set
+CONFIG_FB_SYS_FOPS=y
+CONFIG_FB_DEFERRED_IO=y
+CONFIG_FB_SVGALIB=y
+# CONFIG_FB_MACMODES is not set
+CONFIG_FB_BACKLIGHT=y
+CONFIG_FB_MODE_HELPERS=y
+CONFIG_FB_TILEBLITTING=y
+
+#
+# Frame buffer hardware drivers
+#
+# CONFIG_FB_CIRRUS is not set
+CONFIG_FB_PM2=m
+CONFIG_FB_PM2_FIFO_DISCONNECT=y
+CONFIG_FB_CYBER2000=y
+# CONFIG_FB_ARC is not set
+# CONFIG_FB_ASILIANT is not set
+# CONFIG_FB_IMSTT is not set
+# CONFIG_FB_VGA16 is not set
+# CONFIG_FB_VESA is not set
+# CONFIG_FB_N411 is not set
+CONFIG_FB_HGA=y
+# CONFIG_FB_HGA_ACCEL is not set
+CONFIG_FB_S1D13XXX=y
+# CONFIG_FB_NVIDIA is not set
+CONFIG_FB_RIVA=m
+# CONFIG_FB_RIVA_I2C is not set
+# CONFIG_FB_RIVA_DEBUG is not set
+CONFIG_FB_RIVA_BACKLIGHT=y
+# CONFIG_FB_LE80578 is not set
+# CONFIG_FB_MATROX is not set
+# CONFIG_FB_RADEON is not set
+CONFIG_FB_ATY128=m
+# CONFIG_FB_ATY128_BACKLIGHT is not set
+CONFIG_FB_ATY=y
+CONFIG_FB_ATY_CT=y
+CONFIG_FB_ATY_GENERIC_LCD=y
+# CONFIG_FB_ATY_GX is not set
+# CONFIG_FB_ATY_BACKLIGHT is not set
+# CONFIG_FB_S3 is not set
+# CONFIG_FB_SAVAGE is not set
+CONFIG_FB_SIS=y
+# CONFIG_FB_SIS_300 is not set
+CONFIG_FB_SIS_315=y
+CONFIG_FB_VIA=m
+CONFIG_FB_NEOMAGIC=m
+CONFIG_FB_KYRO=y
+CONFIG_FB_3DFX=y
+CONFIG_FB_3DFX_ACCEL=y
+CONFIG_FB_3DFX_I2C=y
+# CONFIG_FB_VOODOO1 is not set
+CONFIG_FB_VT8623=m
+CONFIG_FB_TRIDENT=m
+CONFIG_FB_ARK=y
+# CONFIG_FB_PM3 is not set
+CONFIG_FB_CARMINE=m
+CONFIG_FB_CARMINE_DRAM_EVAL=y
+# CONFIG_CARMINE_DRAM_CUSTOM is not set
+CONFIG_FB_GEODE=y
+CONFIG_FB_GEODE_LX=y
+CONFIG_FB_GEODE_GX=y
+CONFIG_FB_GEODE_GX1=y
+CONFIG_FB_TMIO=m
+CONFIG_FB_TMIO_ACCELL=y
+# CONFIG_FB_SM501 is not set
+# CONFIG_FB_VIRTUAL is not set
+CONFIG_FB_METRONOME=y
+CONFIG_FB_MB862XX=m
+CONFIG_FB_MB862XX_PCI_GDC=y
+CONFIG_FB_BROADSHEET=m
+CONFIG_BACKLIGHT_LCD_SUPPORT=y
+CONFIG_LCD_CLASS_DEVICE=m
+CONFIG_LCD_LTV350QV=m
+CONFIG_LCD_ILI9320=m
+CONFIG_LCD_TDO24M=m
+CONFIG_LCD_VGG2432A4=m
+CONFIG_LCD_PLATFORM=m
+CONFIG_BACKLIGHT_CLASS_DEVICE=y
+CONFIG_BACKLIGHT_GENERIC=y
+CONFIG_BACKLIGHT_PROGEAR=y
+CONFIG_BACKLIGHT_MBP_NVIDIA=y
+CONFIG_BACKLIGHT_SAHARA=m
+
+#
+# Display device support
+#
+CONFIG_DISPLAY_SUPPORT=m
+
+#
+# Display hardware drivers
+#
+
+#
+# Console display driver support
+#
+CONFIG_VGA_CONSOLE=y
+CONFIG_VGACON_SOFT_SCROLLBACK=y
+CONFIG_VGACON_SOFT_SCROLLBACK_SIZE=64
+# CONFIG_MDA_CONSOLE is not set
+CONFIG_DUMMY_CONSOLE=y
+# CONFIG_FRAMEBUFFER_CONSOLE is not set
+CONFIG_FONT_8x16=y
+CONFIG_LOGO=y
+CONFIG_LOGO_LINUX_MONO=y
+CONFIG_LOGO_LINUX_VGA16=y
+CONFIG_LOGO_LINUX_CLUT224=y
+CONFIG_SOUND=y
+CONFIG_SOUND_OSS_CORE=y
+# CONFIG_SND is not set
+CONFIG_SOUND_PRIME=y
+CONFIG_SOUND_MSNDCLAS=m
+CONFIG_MSNDCLAS_INIT_FILE="/etc/sound/msndinit.bin"
+CONFIG_MSNDCLAS_PERM_FILE="/etc/sound/msndperm.bin"
+CONFIG_SOUND_MSNDPIN=m
+CONFIG_MSNDPIN_INIT_FILE="/etc/sound/pndspini.bin"
+CONFIG_MSNDPIN_PERM_FILE="/etc/sound/pndsperm.bin"
+CONFIG_SOUND_OSS=y
+CONFIG_SOUND_TRACEINIT=y
+# CONFIG_SOUND_DMAP is not set
+CONFIG_SOUND_SSCAPE=m
+CONFIG_SOUND_VMIDI=m
+# CONFIG_SOUND_TRIX is not set
+CONFIG_SOUND_MSS=m
+CONFIG_SOUND_MPU401=y
+CONFIG_SOUND_PAS=y
+CONFIG_PAS_JOYSTICK=y
+# CONFIG_SOUND_PSS is not set
+CONFIG_SOUND_SB=y
+CONFIG_SOUND_YM3812=y
+CONFIG_SOUND_UART6850=m
+CONFIG_SOUND_AEDSP16=m
+# CONFIG_SC6600 is not set
+CONFIG_SOUND_KAHLUA=y
+CONFIG_HID_SUPPORT=y
+CONFIG_HID=m
+CONFIG_HID_DEBUG=y
+# CONFIG_HIDRAW is not set
+
+#
+# USB Input Devices
+#
+CONFIG_USB_HID=m
+# CONFIG_HID_PID is not set
+# CONFIG_USB_HIDDEV is not set
+
+#
+# USB HID Boot Protocol drivers
+#
+# CONFIG_USB_KBD is not set
+CONFIG_USB_MOUSE=y
+
+#
+# Special HID drivers
+#
+CONFIG_HID_A4TECH=m
+CONFIG_HID_APPLE=m
+# CONFIG_HID_BELKIN is not set
+# CONFIG_HID_CHERRY is not set
+CONFIG_HID_CHICONY=m
+# CONFIG_HID_CYPRESS is not set
+CONFIG_HID_DRAGONRISE=m
+CONFIG_DRAGONRISE_FF=y
+CONFIG_HID_EZKEY=m
+CONFIG_HID_KYE=m
+CONFIG_HID_GYRATION=m
+# CONFIG_HID_KENSINGTON is not set
+# CONFIG_HID_LOGITECH is not set
+CONFIG_HID_MICROSOFT=m
+# CONFIG_HID_MONTEREY is not set
+CONFIG_HID_NTRIG=m
+CONFIG_HID_PANTHERLORD=m
+# CONFIG_PANTHERLORD_FF is not set
+# CONFIG_HID_PETALYNX is not set
+# CONFIG_HID_SAMSUNG is not set
+# CONFIG_HID_SONY is not set
+# CONFIG_HID_SUNPLUS is not set
+CONFIG_HID_GREENASIA=m
+# CONFIG_GREENASIA_FF is not set
+CONFIG_HID_SMARTJOYPLUS=m
+CONFIG_SMARTJOYPLUS_FF=y
+# CONFIG_HID_TOPSEED is not set
+CONFIG_HID_THRUSTMASTER=m
+# CONFIG_THRUSTMASTER_FF is not set
+# CONFIG_HID_ZEROPLUS is not set
+CONFIG_USB_SUPPORT=y
+CONFIG_USB_ARCH_HAS_HCD=y
+CONFIG_USB_ARCH_HAS_OHCI=y
+CONFIG_USB_ARCH_HAS_EHCI=y
+CONFIG_USB=y
+# CONFIG_USB_DEBUG is not set
+CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
+
+#
+# Miscellaneous USB options
+#
+CONFIG_USB_DEVICEFS=y
+CONFIG_USB_DEVICE_CLASS=y
+CONFIG_USB_DYNAMIC_MINORS=y
+# CONFIG_USB_OTG is not set
+CONFIG_USB_OTG_WHITELIST=y
+# CONFIG_USB_OTG_BLACKLIST_HUB is not set
+# CONFIG_USB_MON is not set
+CONFIG_USB_WUSB=y
+CONFIG_USB_WUSB_CBAF=y
+CONFIG_USB_WUSB_CBAF_DEBUG=y
+
+#
+# USB Host Controller Drivers
+#
+# CONFIG_USB_C67X00_HCD is not set
+CONFIG_USB_XHCI_HCD=m
+CONFIG_USB_XHCI_HCD_DEBUGGING=y
+CONFIG_USB_EHCI_HCD=y
+# CONFIG_USB_EHCI_ROOT_HUB_TT is not set
+CONFIG_USB_EHCI_TT_NEWSCHED=y
+CONFIG_USB_OXU210HP_HCD=y
+# CONFIG_USB_ISP116X_HCD is not set
+CONFIG_USB_ISP1760_HCD=m
+CONFIG_USB_OHCI_HCD=y
+# CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
+# CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
+CONFIG_USB_OHCI_LITTLE_ENDIAN=y
+CONFIG_USB_UHCI_HCD=y
+CONFIG_USB_U132_HCD=y
+# CONFIG_USB_SL811_HCD is not set
+# CONFIG_USB_R8A66597_HCD is not set
+CONFIG_USB_HWA_HCD=y
+
+#
+# USB Device Class drivers
+#
+CONFIG_USB_ACM=m
+CONFIG_USB_PRINTER=y
+CONFIG_USB_WDM=y
+# CONFIG_USB_TMC is not set
+
+#
+# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may
+#
+
+#
+# also be needed; see USB_STORAGE Help for more info
+#
+# CONFIG_USB_STORAGE is not set
+# CONFIG_USB_LIBUSUAL is not set
+
+#
+# USB Imaging devices
+#
+CONFIG_USB_MDC800=y
+# CONFIG_USB_MICROTEK is not set
+
+#
+# USB port drivers
+#
+CONFIG_USB_SERIAL=m
+CONFIG_USB_EZUSB=y
+CONFIG_USB_SERIAL_GENERIC=y
+# CONFIG_USB_SERIAL_AIRCABLE is not set
+# CONFIG_USB_SERIAL_ARK3116 is not set
+CONFIG_USB_SERIAL_BELKIN=m
+CONFIG_USB_SERIAL_CH341=m
+CONFIG_USB_SERIAL_WHITEHEAT=m
+CONFIG_USB_SERIAL_DIGI_ACCELEPORT=m
+CONFIG_USB_SERIAL_CP210X=m
+CONFIG_USB_SERIAL_CYPRESS_M8=m
+# CONFIG_USB_SERIAL_EMPEG is not set
+CONFIG_USB_SERIAL_FTDI_SIO=m
+# CONFIG_USB_SERIAL_FUNSOFT is not set
+# CONFIG_USB_SERIAL_VISOR is not set
+CONFIG_USB_SERIAL_IPAQ=m
+CONFIG_USB_SERIAL_IR=m
+CONFIG_USB_SERIAL_EDGEPORT=m
+CONFIG_USB_SERIAL_EDGEPORT_TI=m
+CONFIG_USB_SERIAL_GARMIN=m
+CONFIG_USB_SERIAL_IPW=m
+CONFIG_USB_SERIAL_IUU=m
+# CONFIG_USB_SERIAL_KEYSPAN_PDA is not set
+CONFIG_USB_SERIAL_KEYSPAN=m
+# CONFIG_USB_SERIAL_KLSI is not set
+CONFIG_USB_SERIAL_KOBIL_SCT=m
+# CONFIG_USB_SERIAL_MCT_U232 is not set
+CONFIG_USB_SERIAL_MOS7720=m
+CONFIG_USB_SERIAL_MOS7840=m
+# CONFIG_USB_SERIAL_MOTOROLA is not set
+# CONFIG_USB_SERIAL_NAVMAN is not set
+CONFIG_USB_SERIAL_PL2303=m
+CONFIG_USB_SERIAL_OTI6858=m
+CONFIG_USB_SERIAL_QUALCOMM=m
+CONFIG_USB_SERIAL_SPCP8X5=m
+CONFIG_USB_SERIAL_HP4X=m
+# CONFIG_USB_SERIAL_SAFE is not set
+CONFIG_USB_SERIAL_SIEMENS_MPI=m
+# CONFIG_USB_SERIAL_SIERRAWIRELESS is not set
+CONFIG_USB_SERIAL_SYMBOL=m
+CONFIG_USB_SERIAL_TI=m
+CONFIG_USB_SERIAL_CYBERJACK=m
+CONFIG_USB_SERIAL_XIRCOM=m
+CONFIG_USB_SERIAL_OPTION=m
+CONFIG_USB_SERIAL_OMNINET=m
+CONFIG_USB_SERIAL_OPTICON=m
+CONFIG_USB_SERIAL_DEBUG=m
+
+#
+# USB Miscellaneous drivers
+#
+# CONFIG_USB_EMI62 is not set
+# CONFIG_USB_EMI26 is not set
+# CONFIG_USB_ADUTUX is not set
+CONFIG_USB_SEVSEG=m
+CONFIG_USB_RIO500=m
+CONFIG_USB_LEGOTOWER=y
+CONFIG_USB_LCD=m
+CONFIG_USB_BERRY_CHARGE=y
+# CONFIG_USB_LED is not set
+CONFIG_USB_CYPRESS_CY7C63=m
+CONFIG_USB_CYTHERM=m
+CONFIG_USB_IDMOUSE=y
+CONFIG_USB_FTDI_ELAN=y
+CONFIG_USB_APPLEDISPLAY=m
+CONFIG_USB_SISUSBVGA=m
+CONFIG_USB_SISUSBVGA_CON=y
+CONFIG_USB_LD=y
+# CONFIG_USB_TRANCEVIBRATOR is not set
+CONFIG_USB_IOWARRIOR=y
+# CONFIG_USB_TEST is not set
+CONFIG_USB_ISIGHTFW=y
+# CONFIG_USB_VST is not set
+CONFIG_USB_ATM=y
+# CONFIG_USB_SPEEDTOUCH is not set
+CONFIG_USB_CXACRU=m
+# CONFIG_USB_UEAGLEATM is not set
+# CONFIG_USB_XUSBATM is not set
+
+#
+# OTG and related infrastructure
+#
+# CONFIG_USB_GPIO_VBUS is not set
+# CONFIG_NOP_USB_XCEIV is not set
+CONFIG_UWB=y
+CONFIG_UWB_HWA=y
+CONFIG_UWB_WHCI=m
+CONFIG_UWB_WLP=y
+CONFIG_UWB_I1480U=y
+# CONFIG_UWB_I1480U_WLP is not set
+# CONFIG_MMC is not set
+CONFIG_MEMSTICK=m
+CONFIG_MEMSTICK_DEBUG=y
+
+#
+# MemoryStick drivers
+#
+CONFIG_MEMSTICK_UNSAFE_RESUME=y
+CONFIG_MSPRO_BLOCK=m
+
+#
+# MemoryStick Host Controller Drivers
+#
+CONFIG_MEMSTICK_TIFM_MS=m
+CONFIG_MEMSTICK_JMICRON_38X=m
+CONFIG_NEW_LEDS=y
+CONFIG_LEDS_CLASS=m
+
+#
+# LED drivers
+#
+# CONFIG_LEDS_ALIX2 is not set
+CONFIG_LEDS_PCA9532=m
+CONFIG_LEDS_GPIO=m
+CONFIG_LEDS_GPIO_PLATFORM=y
+# CONFIG_LEDS_LP3944 is not set
+CONFIG_LEDS_CLEVO_MAIL=m
+CONFIG_LEDS_PCA955X=m
+CONFIG_LEDS_DAC124S085=m
+CONFIG_LEDS_BD2802=m
+
+#
+# LED Triggers
+#
+CONFIG_LEDS_TRIGGERS=y
+CONFIG_LEDS_TRIGGER_TIMER=y
+CONFIG_LEDS_TRIGGER_HEARTBEAT=y
+CONFIG_LEDS_TRIGGER_BACKLIGHT=y
+CONFIG_LEDS_TRIGGER_GPIO=m
+CONFIG_LEDS_TRIGGER_DEFAULT_ON=y
+
+#
+# iptables trigger is under Netfilter config (LED target)
+#
+CONFIG_ACCESSIBILITY=y
+# CONFIG_A11Y_BRAILLE_CONSOLE is not set
+CONFIG_INFINIBAND=m
+CONFIG_INFINIBAND_USER_MAD=m
+# CONFIG_INFINIBAND_USER_ACCESS is not set
+CONFIG_INFINIBAND_ADDR_TRANS=y
+CONFIG_INFINIBAND_MTHCA=m
+CONFIG_INFINIBAND_MTHCA_DEBUG=y
+# CONFIG_INFINIBAND_AMSO1100 is not set
+# CONFIG_INFINIBAND_CXGB3 is not set
+# CONFIG_MLX4_INFINIBAND is not set
+CONFIG_INFINIBAND_NES=m
+CONFIG_INFINIBAND_NES_DEBUG=y
+CONFIG_INFINIBAND_IPOIB=m
+CONFIG_INFINIBAND_IPOIB_CM=y
+# CONFIG_INFINIBAND_IPOIB_DEBUG is not set
+# CONFIG_INFINIBAND_SRP is not set
+# CONFIG_INFINIBAND_ISER is not set
+CONFIG_EDAC=y
+
+#
+# Reporting subsystems
+#
+CONFIG_EDAC_DEBUG=y
+# CONFIG_EDAC_DEBUG_VERBOSE is not set
+CONFIG_EDAC_MM_EDAC=y
+# CONFIG_EDAC_AMD76X is not set
+CONFIG_EDAC_E7XXX=m
+# CONFIG_EDAC_E752X is not set
+# CONFIG_EDAC_I82875P is not set
+# CONFIG_EDAC_I82975X is not set
+CONFIG_EDAC_I3000=m
+# CONFIG_EDAC_X38 is not set
+CONFIG_EDAC_I5400=m
+CONFIG_EDAC_I82860=y
+CONFIG_EDAC_R82600=y
+# CONFIG_EDAC_I5000 is not set
+# CONFIG_EDAC_I5100 is not set
+CONFIG_RTC_LIB=m
+CONFIG_RTC_CLASS=m
+
+#
+# RTC interfaces
+#
+CONFIG_RTC_INTF_SYSFS=y
+# CONFIG_RTC_INTF_PROC is not set
+CONFIG_RTC_INTF_DEV=y
+CONFIG_RTC_INTF_DEV_UIE_EMUL=y
+CONFIG_RTC_DRV_TEST=m
+
+#
+# I2C RTC drivers
+#
+CONFIG_RTC_DRV_DS1307=m
+CONFIG_RTC_DRV_DS1374=m
+CONFIG_RTC_DRV_DS1672=m
+CONFIG_RTC_DRV_MAX6900=m
+CONFIG_RTC_DRV_RS5C372=m
+CONFIG_RTC_DRV_ISL1208=m
+# CONFIG_RTC_DRV_X1205 is not set
+CONFIG_RTC_DRV_PCF8563=m
+CONFIG_RTC_DRV_PCF8583=m
+CONFIG_RTC_DRV_M41T80=m
+CONFIG_RTC_DRV_M41T80_WDT=y
+CONFIG_RTC_DRV_TWL4030=m
+CONFIG_RTC_DRV_S35390A=m
+CONFIG_RTC_DRV_FM3130=m
+# CONFIG_RTC_DRV_RX8581 is not set
+CONFIG_RTC_DRV_RX8025=m
+
+#
+# SPI RTC drivers
+#
+CONFIG_RTC_DRV_M41T94=m
+CONFIG_RTC_DRV_DS1305=m
+CONFIG_RTC_DRV_DS1390=m
+CONFIG_RTC_DRV_MAX6902=m
+CONFIG_RTC_DRV_R9701=m
+CONFIG_RTC_DRV_RS5C348=m
+# CONFIG_RTC_DRV_DS3234 is not set
+
+#
+# Platform RTC drivers
+#
+# CONFIG_RTC_DRV_CMOS is not set
+CONFIG_RTC_DRV_DS1286=m
+CONFIG_RTC_DRV_DS1511=m
+CONFIG_RTC_DRV_DS1553=m
+# CONFIG_RTC_DRV_DS1742 is not set
+CONFIG_RTC_DRV_STK17TA8=m
+CONFIG_RTC_DRV_M48T86=m
+CONFIG_RTC_DRV_M48T35=m
+CONFIG_RTC_DRV_M48T59=m
+CONFIG_RTC_DRV_BQ4802=m
+# CONFIG_RTC_DRV_V3020 is not set
+CONFIG_RTC_DRV_PCF50633=m
+
+#
+# on-CPU RTC drivers
+#
+CONFIG_DMADEVICES=y
+
+#
+# DMA Devices
+#
+CONFIG_INTEL_IOATDMA=y
+CONFIG_DMA_ENGINE=y
+
+#
+# DMA Clients
+#
+CONFIG_NET_DMA=y
+CONFIG_ASYNC_TX_DMA=y
+# CONFIG_DMATEST is not set
+CONFIG_DCA=y
+# CONFIG_AUXDISPLAY is not set
+CONFIG_UIO=y
+CONFIG_UIO_CIF=m
+# CONFIG_UIO_PDRV is not set
+CONFIG_UIO_PDRV_GENIRQ=y
+CONFIG_UIO_SMX=m
+# CONFIG_UIO_AEC is not set
+CONFIG_UIO_SERCOS3=m
+
+#
+# TI VLYNQ
+#
+# CONFIG_STAGING is not set
+# CONFIG_X86_PLATFORM_DEVICES is not set
+
+#
+# Firmware Drivers
+#
+CONFIG_EDD=m
+CONFIG_EDD_OFF=y
+CONFIG_FIRMWARE_MEMMAP=y
+CONFIG_DELL_RBU=m
+CONFIG_DCDBAS=y
+# CONFIG_DMIID is not set
+CONFIG_ISCSI_IBFT_FIND=y
+CONFIG_ISCSI_IBFT=y
+
+#
+# File systems
+#
+CONFIG_EXT2_FS=m
+CONFIG_EXT2_FS_XATTR=y
+CONFIG_EXT2_FS_POSIX_ACL=y
+# CONFIG_EXT2_FS_SECURITY is not set
+CONFIG_EXT2_FS_XIP=y
+CONFIG_EXT3_FS=y
+CONFIG_EXT3_DEFAULTS_TO_ORDERED=y
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_EXT3_FS_POSIX_ACL=y
+CONFIG_EXT3_FS_SECURITY=y
+# CONFIG_EXT4_FS is not set
+CONFIG_FS_XIP=y
+CONFIG_JBD=y
+CONFIG_JBD_DEBUG=y
+CONFIG_JBD2=m
+# CONFIG_JBD2_DEBUG is not set
+CONFIG_FS_MBCACHE=y
+CONFIG_REISERFS_FS=y
+# CONFIG_REISERFS_CHECK is not set
+# CONFIG_REISERFS_PROC_INFO is not set
+# CONFIG_REISERFS_FS_XATTR is not set
+# CONFIG_JFS_FS is not set
+CONFIG_FS_POSIX_ACL=y
+CONFIG_XFS_FS=y
+CONFIG_XFS_QUOTA=y
+# CONFIG_XFS_POSIX_ACL is not set
+# CONFIG_XFS_RT is not set
+CONFIG_XFS_DEBUG=y
+CONFIG_GFS2_FS=y
+CONFIG_GFS2_FS_LOCKING_DLM=y
+CONFIG_OCFS2_FS=m
+CONFIG_OCFS2_FS_O2CB=m
+CONFIG_OCFS2_FS_USERSPACE_CLUSTER=m
+CONFIG_OCFS2_FS_STATS=y
+CONFIG_OCFS2_DEBUG_MASKLOG=y
+CONFIG_OCFS2_DEBUG_FS=y
+# CONFIG_OCFS2_FS_POSIX_ACL is not set
+# CONFIG_BTRFS_FS is not set
+CONFIG_FILE_LOCKING=y
+CONFIG_FSNOTIFY=y
+CONFIG_DNOTIFY=y
+CONFIG_INOTIFY=y
+# CONFIG_INOTIFY_USER is not set
+CONFIG_QUOTA=y
+CONFIG_QUOTA_NETLINK_INTERFACE=y
+CONFIG_PRINT_QUOTA_WARNING=y
+CONFIG_QUOTA_TREE=m
+CONFIG_QFMT_V1=m
+CONFIG_QFMT_V2=m
+CONFIG_QUOTACTL=y
+CONFIG_AUTOFS_FS=m
+CONFIG_AUTOFS4_FS=y
+CONFIG_FUSE_FS=y
+# CONFIG_CUSE is not set
+
+#
+# Caches
+#
+# CONFIG_FSCACHE is not set
+
+#
+# CD-ROM/DVD Filesystems
+#
+# CONFIG_ISO9660_FS is not set
+CONFIG_UDF_FS=m
+CONFIG_UDF_NLS=y
+
+#
+# DOS/FAT/NT Filesystems
+#
+CONFIG_FAT_FS=m
+CONFIG_MSDOS_FS=m
+# CONFIG_VFAT_FS is not set
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_NTFS_FS=y
+# CONFIG_NTFS_DEBUG is not set
+# CONFIG_NTFS_RW is not set
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_VMCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_PROC_PAGE_MONITOR=y
+CONFIG_SYSFS=y
+# CONFIG_TMPFS is not set
+# CONFIG_HUGETLBFS is not set
+# CONFIG_HUGETLB_PAGE is not set
+CONFIG_CONFIGFS_FS=y
+CONFIG_MISC_FILESYSTEMS=y
+CONFIG_ADFS_FS=y
+CONFIG_ADFS_FS_RW=y
+# CONFIG_AFFS_FS is not set
+CONFIG_ECRYPT_FS=m
+CONFIG_HFS_FS=y
+# CONFIG_HFSPLUS_FS is not set
+CONFIG_BEFS_FS=m
+CONFIG_BEFS_DEBUG=y
+# CONFIG_BFS_FS is not set
+# CONFIG_EFS_FS is not set
+CONFIG_CRAMFS=y
+# CONFIG_SQUASHFS is not set
+# CONFIG_VXFS_FS is not set
+CONFIG_MINIX_FS=y
+CONFIG_OMFS_FS=y
+CONFIG_HPFS_FS=y
+CONFIG_QNX4FS_FS=m
+CONFIG_ROMFS_FS=y
+CONFIG_ROMFS_BACKED_BY_BLOCK=y
+# CONFIG_ROMFS_BACKED_BY_MTD is not set
+# CONFIG_ROMFS_BACKED_BY_BOTH is not set
+CONFIG_ROMFS_ON_BLOCK=y
+CONFIG_SYSV_FS=m
+CONFIG_UFS_FS=m
+CONFIG_UFS_FS_WRITE=y
+CONFIG_UFS_DEBUG=y
+CONFIG_NILFS2_FS=y
+CONFIG_NETWORK_FILESYSTEMS=y
+CONFIG_NFS_FS=m
+CONFIG_NFS_V3=y
+CONFIG_NFS_V3_ACL=y
+CONFIG_NFS_V4=y
+CONFIG_NFS_V4_1=y
+# CONFIG_NFSD is not set
+CONFIG_LOCKD=m
+CONFIG_LOCKD_V4=y
+CONFIG_EXPORTFS=y
+CONFIG_NFS_ACL_SUPPORT=m
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=m
+CONFIG_SUNRPC_GSS=m
+CONFIG_SUNRPC_XPRT_RDMA=m
+CONFIG_RPCSEC_GSS_KRB5=m
+# CONFIG_RPCSEC_GSS_SPKM3 is not set
+CONFIG_SMB_FS=y
+CONFIG_SMB_NLS_DEFAULT=y
+CONFIG_SMB_NLS_REMOTE="cp437"
+CONFIG_CIFS=m
+CONFIG_CIFS_STATS=y
+CONFIG_CIFS_STATS2=y
+CONFIG_CIFS_WEAK_PW_HASH=y
+CONFIG_CIFS_UPCALL=y
+CONFIG_CIFS_XATTR=y
+# CONFIG_CIFS_POSIX is not set
+CONFIG_CIFS_DEBUG2=y
+CONFIG_CIFS_DFS_UPCALL=y
+CONFIG_CIFS_EXPERIMENTAL=y
+# CONFIG_NCP_FS is not set
+CONFIG_CODA_FS=y
+# CONFIG_AFS_FS is not set
+
+#
+# Partition Types
+#
+CONFIG_PARTITION_ADVANCED=y
+CONFIG_ACORN_PARTITION=y
+CONFIG_ACORN_PARTITION_CUMANA=y
+# CONFIG_ACORN_PARTITION_EESOX is not set
+# CONFIG_ACORN_PARTITION_ICS is not set
+# CONFIG_ACORN_PARTITION_ADFS is not set
+# CONFIG_ACORN_PARTITION_POWERTEC is not set
+CONFIG_ACORN_PARTITION_RISCIX=y
+CONFIG_OSF_PARTITION=y
+CONFIG_AMIGA_PARTITION=y
+CONFIG_ATARI_PARTITION=y
+# CONFIG_MAC_PARTITION is not set
+CONFIG_MSDOS_PARTITION=y
+CONFIG_BSD_DISKLABEL=y
+# CONFIG_MINIX_SUBPARTITION is not set
+CONFIG_SOLARIS_X86_PARTITION=y
+# CONFIG_UNIXWARE_DISKLABEL is not set
+CONFIG_LDM_PARTITION=y
+# CONFIG_LDM_DEBUG is not set
+CONFIG_SGI_PARTITION=y
+CONFIG_ULTRIX_PARTITION=y
+CONFIG_SUN_PARTITION=y
+CONFIG_KARMA_PARTITION=y
+CONFIG_EFI_PARTITION=y
+CONFIG_SYSV68_PARTITION=y
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="iso8859-1"
+CONFIG_NLS_CODEPAGE_437=m
+CONFIG_NLS_CODEPAGE_737=m
+CONFIG_NLS_CODEPAGE_775=y
+# CONFIG_NLS_CODEPAGE_850 is not set
+CONFIG_NLS_CODEPAGE_852=m
+# CONFIG_NLS_CODEPAGE_855 is not set
+CONFIG_NLS_CODEPAGE_857=y
+CONFIG_NLS_CODEPAGE_860=y
+CONFIG_NLS_CODEPAGE_861=m
+# CONFIG_NLS_CODEPAGE_862 is not set
+# CONFIG_NLS_CODEPAGE_863 is not set
+CONFIG_NLS_CODEPAGE_864=y
+CONFIG_NLS_CODEPAGE_865=m
+# CONFIG_NLS_CODEPAGE_866 is not set
+# CONFIG_NLS_CODEPAGE_869 is not set
+CONFIG_NLS_CODEPAGE_936=y
+CONFIG_NLS_CODEPAGE_950=m
+# CONFIG_NLS_CODEPAGE_932 is not set
+CONFIG_NLS_CODEPAGE_949=m
+CONFIG_NLS_CODEPAGE_874=y
+# CONFIG_NLS_ISO8859_8 is not set
+CONFIG_NLS_CODEPAGE_1250=y
+CONFIG_NLS_CODEPAGE_1251=y
+CONFIG_NLS_ASCII=m
+CONFIG_NLS_ISO8859_1=y
+# CONFIG_NLS_ISO8859_2 is not set
+CONFIG_NLS_ISO8859_3=y
+CONFIG_NLS_ISO8859_4=m
+CONFIG_NLS_ISO8859_5=y
+# CONFIG_NLS_ISO8859_6 is not set
+# CONFIG_NLS_ISO8859_7 is not set
+CONFIG_NLS_ISO8859_9=y
+CONFIG_NLS_ISO8859_13=y
+# CONFIG_NLS_ISO8859_14 is not set
+CONFIG_NLS_ISO8859_15=m
+CONFIG_NLS_KOI8_R=m
+CONFIG_NLS_KOI8_U=y
+CONFIG_NLS_UTF8=m
+CONFIG_DLM=y
+# CONFIG_DLM_DEBUG is not set
+
+#
+# Kernel hacking
+#
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+# CONFIG_PRINTK_TIME is not set
+# CONFIG_ALLOW_WARNINGS is not set
+CONFIG_FRAME_WARN=1024
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_UNUSED_SYMBOLS=y
+CONFIG_DEBUG_FS=y
+# CONFIG_HEADERS_CHECK is not set
+# CONFIG_DEBUG_SECTION_MISMATCH is not set
+CONFIG_DEBUG_KERNEL=y
+# CONFIG_DEBUG_SHIRQ is not set
+CONFIG_DETECT_SOFTLOCKUP=y
+# CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC is not set
+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
+CONFIG_DETECT_HUNG_TASK=y
+CONFIG_BOOTPARAM_HUNG_TASK_PANIC=y
+CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE=1
+CONFIG_SCHED_DEBUG=y
+# CONFIG_SCHEDSTATS is not set
+# CONFIG_TIMER_STATS is not set
+# CONFIG_DEBUG_OBJECTS is not set
+# CONFIG_SLUB_DEBUG_ON is not set
+# CONFIG_SLUB_STATS is not set
+CONFIG_DEBUG_KMEMLEAK=y
+CONFIG_DEBUG_KMEMLEAK_EARLY_LOG_SIZE=400
+# CONFIG_DEBUG_KMEMLEAK_TEST is not set
+CONFIG_DEBUG_RT_MUTEXES=y
+CONFIG_DEBUG_PI_LIST=y
+CONFIG_RT_MUTEX_TESTER=y
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_MUTEXES=y
+CONFIG_DEBUG_LOCK_ALLOC=y
+# CONFIG_PROVE_LOCKING is not set
+CONFIG_LOCKDEP=y
+CONFIG_LOCK_STAT=y
+CONFIG_DEBUG_LOCKDEP=y
+CONFIG_TRACE_IRQFLAGS=y
+CONFIG_DEBUG_SPINLOCK_SLEEP=y
+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+CONFIG_STACKTRACE=y
+# CONFIG_DEBUG_KOBJECT is not set
+# CONFIG_DEBUG_HIGHMEM is not set
+# CONFIG_DEBUG_BUGVERBOSE is not set
+# CONFIG_DEBUG_INFO is not set
+CONFIG_DEBUG_VM=y
+# CONFIG_DEBUG_VIRTUAL is not set
+CONFIG_DEBUG_WRITECOUNT=y
+CONFIG_DEBUG_MEMORY_INIT=y
+CONFIG_DEBUG_LIST=y
+# CONFIG_DEBUG_SG is not set
+CONFIG_DEBUG_NOTIFIERS=y
+CONFIG_ARCH_WANT_FRAME_POINTERS=y
+CONFIG_FRAME_POINTER=y
+# CONFIG_BOOT_PRINTK_DELAY is not set
+CONFIG_RCU_TORTURE_TEST=m
+# CONFIG_RCU_CPU_STALL_DETECTOR is not set
+# CONFIG_KPROBES_SANITY_TEST is not set
+CONFIG_BACKTRACE_SELF_TEST=y
+# CONFIG_DEBUG_BLOCK_EXT_DEVT is not set
+# CONFIG_LKDTM is not set
+# CONFIG_FAULT_INJECTION is not set
+# CONFIG_LATENCYTOP is not set
+CONFIG_SYSCTL_SYSCALL_CHECK=y
+CONFIG_DEBUG_PAGEALLOC=y
+CONFIG_USER_STACKTRACE_SUPPORT=y
+CONFIG_NOP_TRACER=y
+CONFIG_HAVE_FUNCTION_TRACER=y
+CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
+CONFIG_HAVE_FUNCTION_GRAPH_FP_TEST=y
+CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=y
+CONFIG_HAVE_DYNAMIC_FTRACE=y
+CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+CONFIG_HAVE_FTRACE_SYSCALLS=y
+CONFIG_TRACER_MAX_TRACE=y
+CONFIG_RING_BUFFER=y
+CONFIG_EVENT_TRACING=y
+CONFIG_CONTEXT_SWITCH_TRACER=y
+CONFIG_TRACING=y
+CONFIG_GENERIC_TRACER=y
+CONFIG_TRACING_SUPPORT=y
+CONFIG_FTRACE=y
+# CONFIG_FUNCTION_TRACER is not set
+CONFIG_IRQSOFF_TRACER=y
+CONFIG_SYSPROF_TRACER=y
+CONFIG_SCHED_TRACER=y
+# CONFIG_FTRACE_SYSCALLS is not set
+# CONFIG_BOOT_TRACER is not set
+CONFIG_BRANCH_PROFILE_NONE=y
+# CONFIG_PROFILE_ANNOTATED_BRANCHES is not set
+# CONFIG_PROFILE_ALL_BRANCHES is not set
+# CONFIG_POWER_TRACER is not set
+CONFIG_KSYM_TRACER=y
+# CONFIG_PROFILE_KSYM_TRACER is not set
+# CONFIG_STACK_TRACER is not set
+CONFIG_KMEMTRACE=y
+# CONFIG_WORKQUEUE_TRACER is not set
+# CONFIG_BLK_DEV_IO_TRACE is not set
+# CONFIG_FTRACE_STARTUP_TEST is not set
+# CONFIG_MMIOTRACE is not set
+# CONFIG_RING_BUFFER_BENCHMARK is not set
+CONFIG_PROVIDE_OHCI1394_DMA_INIT=y
+CONFIG_DYNAMIC_DEBUG=y
+CONFIG_DMA_API_DEBUG=y
+CONFIG_SAMPLES=y
+# CONFIG_SAMPLE_MARKERS is not set
+CONFIG_SAMPLE_TRACEPOINTS=m
+# CONFIG_SAMPLE_TRACE_EVENTS is not set
+# CONFIG_SAMPLE_KOBJECT is not set
+CONFIG_SAMPLE_KPROBES=m
+# CONFIG_SAMPLE_KRETPROBES is not set
+CONFIG_SAMPLE_HW_BREAKPOINT=m
+CONFIG_HAVE_ARCH_KGDB=y
+CONFIG_KGDB=y
+# CONFIG_KGDB_SERIAL_CONSOLE is not set
+CONFIG_KGDB_TESTS=y
+# CONFIG_KGDB_TESTS_ON_BOOT is not set
+CONFIG_HAVE_ARCH_KMEMCHECK=y
+CONFIG_STRICT_DEVMEM=y
+CONFIG_X86_VERBOSE_BOOTUP=y
+CONFIG_EARLY_PRINTK=y
+CONFIG_EARLY_PRINTK_DBGP=y
+CONFIG_DEBUG_STACKOVERFLOW=y
+CONFIG_DEBUG_STACK_USAGE=y
+# CONFIG_DEBUG_PER_CPU_MAPS is not set
+CONFIG_X86_PTDUMP=y
+# CONFIG_DEBUG_RODATA is not set
+# CONFIG_DEBUG_NX_TEST is not set
+CONFIG_4KSTACKS=y
+CONFIG_DOUBLEFAULT=y
+CONFIG_IOMMU_STRESS=y
+CONFIG_HAVE_MMIOTRACE_SUPPORT=y
+CONFIG_IO_DELAY_TYPE_0X80=0
+CONFIG_IO_DELAY_TYPE_0XED=1
+CONFIG_IO_DELAY_TYPE_UDELAY=2
+CONFIG_IO_DELAY_TYPE_NONE=3
+# CONFIG_IO_DELAY_0X80 is not set
+# CONFIG_IO_DELAY_0XED is not set
+CONFIG_IO_DELAY_UDELAY=y
+# CONFIG_IO_DELAY_NONE is not set
+CONFIG_DEFAULT_IO_DELAY_TYPE=2
+CONFIG_DEBUG_BOOT_PARAMS=y
+CONFIG_CPA_DEBUG=y
+CONFIG_OPTIMIZE_INLINING=y
+
+#
+# Security options
+#
+CONFIG_KEYS=y
+CONFIG_KEYS_DEBUG_PROC_KEYS=y
+CONFIG_SECURITY=y
+CONFIG_SECURITYFS=y
+# CONFIG_SECURITY_NETWORK is not set
+CONFIG_SECURITY_PATH=y
+CONFIG_SECURITY_FILE_CAPABILITIES=y
+# CONFIG_SECURITY_ROOTPLUG is not set
+CONFIG_SECURITY_TOMOYO=y
+CONFIG_CRYPTO=y
+
+#
+# Crypto core or helper
+#
+CONFIG_CRYPTO_FIPS=y
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_ALGAPI2=y
+CONFIG_CRYPTO_AEAD=y
+CONFIG_CRYPTO_AEAD2=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_BLKCIPHER2=y
+CONFIG_CRYPTO_HASH=y
+CONFIG_CRYPTO_HASH2=y
+CONFIG_CRYPTO_RNG=y
+CONFIG_CRYPTO_RNG2=y
+CONFIG_CRYPTO_PCOMP=y
+CONFIG_CRYPTO_MANAGER=y
+CONFIG_CRYPTO_MANAGER2=y
+CONFIG_CRYPTO_GF128MUL=y
+# CONFIG_CRYPTO_NULL is not set
+CONFIG_CRYPTO_WORKQUEUE=y
+CONFIG_CRYPTO_CRYPTD=m
+CONFIG_CRYPTO_AUTHENC=y
+# CONFIG_CRYPTO_TEST is not set
+
+#
+# Authenticated Encryption with Associated Data
+#
+CONFIG_CRYPTO_CCM=y
+# CONFIG_CRYPTO_GCM is not set
+CONFIG_CRYPTO_SEQIV=y
+
+#
+# Block modes
+#
+CONFIG_CRYPTO_CBC=y
+CONFIG_CRYPTO_CTR=y
+CONFIG_CRYPTO_CTS=m
+CONFIG_CRYPTO_ECB=y
+CONFIG_CRYPTO_LRW=y
+CONFIG_CRYPTO_PCBC=y
+# CONFIG_CRYPTO_XTS is not set
+
+#
+# Hash modes
+#
+CONFIG_CRYPTO_HMAC=y
+CONFIG_CRYPTO_XCBC=m
+
+#
+# Digest
+#
+CONFIG_CRYPTO_CRC32C=y
+CONFIG_CRYPTO_CRC32C_INTEL=y
+CONFIG_CRYPTO_MD4=m
+CONFIG_CRYPTO_MD5=y
+CONFIG_CRYPTO_MICHAEL_MIC=y
+CONFIG_CRYPTO_RMD128=m
+CONFIG_CRYPTO_RMD160=m
+# CONFIG_CRYPTO_RMD256 is not set
+CONFIG_CRYPTO_RMD320=m
+CONFIG_CRYPTO_SHA1=y
+CONFIG_CRYPTO_SHA256=m
+CONFIG_CRYPTO_SHA512=y
+CONFIG_CRYPTO_TGR192=y
+CONFIG_CRYPTO_WP512=m
+
+#
+# Ciphers
+#
+CONFIG_CRYPTO_AES=y
+# CONFIG_CRYPTO_AES_586 is not set
+CONFIG_CRYPTO_ANUBIS=y
+CONFIG_CRYPTO_ARC4=y
+# CONFIG_CRYPTO_BLOWFISH is not set
+CONFIG_CRYPTO_CAMELLIA=m
+# CONFIG_CRYPTO_CAST5 is not set
+# CONFIG_CRYPTO_CAST6 is not set
+CONFIG_CRYPTO_DES=y
+CONFIG_CRYPTO_FCRYPT=y
+CONFIG_CRYPTO_KHAZAD=m
+CONFIG_CRYPTO_SALSA20=y
+# CONFIG_CRYPTO_SALSA20_586 is not set
+# CONFIG_CRYPTO_SEED is not set
+CONFIG_CRYPTO_SERPENT=m
+CONFIG_CRYPTO_TEA=y
+CONFIG_CRYPTO_TWOFISH=y
+CONFIG_CRYPTO_TWOFISH_COMMON=y
+# CONFIG_CRYPTO_TWOFISH_586 is not set
+
+#
+# Compression
+#
+CONFIG_CRYPTO_DEFLATE=m
+# CONFIG_CRYPTO_ZLIB is not set
+CONFIG_CRYPTO_LZO=m
+
+#
+# Random Number Generation
+#
+CONFIG_CRYPTO_ANSI_CPRNG=m
+CONFIG_CRYPTO_HW=y
+CONFIG_CRYPTO_DEV_PADLOCK=m
+# CONFIG_CRYPTO_DEV_PADLOCK_AES is not set
+# CONFIG_CRYPTO_DEV_PADLOCK_SHA is not set
+CONFIG_CRYPTO_DEV_GEODE=y
+CONFIG_CRYPTO_DEV_HIFN_795X=y
+# CONFIG_CRYPTO_DEV_HIFN_795X_RNG is not set
+CONFIG_HAVE_KVM=y
+CONFIG_HAVE_KVM_IRQCHIP=y
+CONFIG_VIRTUALIZATION=y
+CONFIG_KVM=m
+CONFIG_KVM_INTEL=m
+CONFIG_KVM_AMD=m
+CONFIG_KVM_TRACE=y
+CONFIG_LGUEST=y
+CONFIG_VIRTIO=y
+CONFIG_VIRTIO_RING=y
+# CONFIG_VIRTIO_PCI is not set
+CONFIG_VIRTIO_BALLOON=m
+CONFIG_BINARY_PRINTF=y
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+CONFIG_GENERIC_FIND_FIRST_BIT=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+CONFIG_GENERIC_FIND_LAST_BIT=y
+CONFIG_CRC_CCITT=m
+CONFIG_CRC16=m
+CONFIG_CRC_T10DIF=y
+CONFIG_CRC_ITU_T=y
+CONFIG_CRC32=y
+CONFIG_CRC7=m
+CONFIG_LIBCRC32C=y
+CONFIG_AUDIT_GENERIC=y
+CONFIG_ZLIB_INFLATE=y
+CONFIG_ZLIB_DEFLATE=m
+CONFIG_LZO_COMPRESS=m
+CONFIG_LZO_DECOMPRESS=m
+CONFIG_TEXTSEARCH=y
+CONFIG_TEXTSEARCH_KMP=y
+CONFIG_TEXTSEARCH_BM=y
+CONFIG_TEXTSEARCH_FSM=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
+CONFIG_CHECK_SIGNATURE=y
+CONFIG_NLATTR=y
+
+--0F1p//8PRICkK4MW
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: attachment; filename="hang.log"
+Content-Transfer-Encoding: 8bit
+
+[    0.000000] Linux version 2.6.31-rc6-tip (mingo@sirius) (gcc version 4.3.2 20081105 (Red Hat 4.3.2-7) (GCC) ) #5302 SMP PREEMPT Tue Aug 18 16:54:36 CEST 2009
+[    0.000000] KERNEL supported cpus:
+[    0.000000]   Intel GenuineIntel
+[    0.000000]   AMD AuthenticAMD
+[    0.000000]   NSC Geode by NSC
+[    0.000000]   Cyrix CyrixInstead
+[    0.000000]   Centaur CentaurHauls
+[    0.000000]   Transmeta GenuineTMx86
+[    0.000000]   Transmeta TransmetaCPU
+[    0.000000]   UMC UMC UMC UMC
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
+[    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 000000003fff0000 (usable)
+[    0.000000]  BIOS-e820: 000000003fff0000 - 000000003fff3000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 000000003fff3000 - 0000000040000000 (ACPI data)
+[    0.000000]  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+[    0.000000] console [earlyser0] enabled
+[    0.000000] debug: ignoring loglevel setting.
+[    0.000000] using polling idle threads.
+[    0.000000] last_pfn = 0x3fff0 max_arch_pfn = 0x100000
+[    0.000000] MTRR default type: uncachable
+[    0.000000] MTRR fixed ranges enabled:
+[    0.000000]   00000-9FFFF write-back
+[    0.000000]   A0000-BFFFF uncachable
+[    0.000000]   C0000-C7FFF write-protect
+[    0.000000]   C8000-FFFFF uncachable
+[    0.000000] MTRR variable ranges enabled:
+[    0.000000]   0 base 0000000000 mask FFC0000000 write-back
+[    0.000000]   1 disabled
+[    0.000000]   2 disabled
+[    0.000000]   3 disabled
+[    0.000000]   4 disabled
+[    0.000000]   5 disabled
+[    0.000000]   6 disabled
+[    0.000000]   7 disabled
+[    0.000000] initial memory mapped : 0 - 02800000
+[    0.000000] init_memory_mapping: 0000000000000000-000000001fff0000
+[    0.000000]  0000000000 - 001fff0000 page 4k
+[    0.000000] kernel direct mapping tables up to 1fff0000 @ 7000-8b000
+[    0.000000] ACPI: RSDP 000f76f0 00014 (v00 Nvidia)
+[    0.000000] ACPI: RSDT 3fff3040 00034 (v01 Nvidia AWRDACPI 42302E31 AWRD 00000000)
+[    0.000000] ACPI: FACP 3fff30c0 00074 (v01 Nvidia AWRDACPI 42302E31 AWRD 00000000)
+[    0.000000] ACPI: DSDT 3fff3180 06264 (v01 NVIDIA AWRDACPI 00001000 MSFT 0100000E)
+[    0.000000] ACPI: FACS 3fff0000 00040
+[    0.000000] ACPI: SRAT 3fff9500 000A0 (v01 AMD    HAMMER   00000001 AMD  00000001)
+[    0.000000] ACPI: MCFG 3fff9600 0003C (v01 Nvidia AWRDACPI 42302E31 AWRD 00000000)
+[    0.000000] ACPI: APIC 3fff9440 0007C (v01 Nvidia AWRDACPI 42302E31 AWRD 00000000)
+[    0.000000] ACPI: Local APIC address 0xfee00000
+[    0.000000] 512MB HIGHMEM available.
+[    0.000000] 511MB LOWMEM available.
+[    0.000000]   mapped low ram: 0 - 1fff0000
+[    0.000000]   low ram: 0 - 1fff0000
+[    0.000000]   node 0 low ram: 00000000 - 1fff0000
+[    0.000000]   node 0 bootmap 00002000 - 00006000
+[    0.000000] (8 early reservations) ==> bootmem [0000000000 - 001fff0000]
+[    0.000000]   #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+[    0.000000]   #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==> [0000001000 - 0000002000]
+[    0.000000]   #2 [0000006000 - 0000007000]       TRAMPOLINE ==> [0000006000 - 0000007000]
+[    0.000000]   #3 [0001000000 - 000225a9e4]    TEXT DATA BSS ==> [0001000000 - 000225a9e4]
+[    0.000000]   #4 [000009f800 - 0000100000]    BIOS reserved ==> [000009f800 - 0000100000]
+[    0.000000]   #5 [000225b000 - 0002265000]              BRK ==> [000225b000 - 0002265000]
+[    0.000000]   #6 [0000007000 - 000007f000]          PGTABLE ==> [0000007000 - 000007f000]
+[    0.000000]   #7 [0000002000 - 0000006000]          BOOTMAP ==> [0000002000 - 0000006000]
+[    0.000000] Scan SMP from 80000000 for 1024 bytes.
+[    0.000000] Scan SMP from 8009fc00 for 1024 bytes.
+[    0.000000] Scan SMP from 800f0000 for 65536 bytes.
+[    0.000000] found SMP MP-table at [800f5680] f5680
+[    0.000000]   mpc: f1400-f152c
+[    0.000000] Zone PFN ranges:
+[    0.000000]   DMA      0x00000000 -> 0x00001000
+[    0.000000]   Normal   0x00001000 -> 0x0001fff0
+[    0.000000]   HighMem  0x0001fff0 -> 0x0003fff0
+[    0.000000] Movable zone start PFN for each node
+[    0.000000] early_node_map[2] active PFN ranges
+[    0.000000]     0: 0x00000000 -> 0x0000009f
+[    0.000000]     0: 0x00000100 -> 0x0003fff0
+[    0.000000] On node 0 totalpages: 262031
+[    0.000000]   DMA zone: 40 pages used for memmap
+[    0.000000]   DMA zone: 0 pages reserved
+[    0.000000]   DMA zone: 3959 pages, LIFO batch:0
+[    0.000000]   Normal zone: 1240 pages used for memmap
+[    0.000000]   Normal zone: 125720 pages, LIFO batch:31
+[    0.000000]   HighMem zone: 1280 pages used for memmap
+[    0.000000]   HighMem zone: 129792 pages, LIFO batch:31
+[    0.000000] Using APIC driver default
+[    0.000000] Nvidia board detected. Ignoring ACPI timer override.
+[    0.000000] If you got timer trouble try acpi_use_timer_override
+[    0.000000] ACPI: PM-Timer IO Port: 0x4008
+[    0.000000] ACPI: Local APIC address 0xfee00000
+[    0.000000] ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+[    0.000000] ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+[    0.000000] ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
+[    0.000000] ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
+[    0.000000] IOAPIC[0]: apic_id 2, version 17, address 0xfec00000, GSI 0-23
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.000000] ACPI: BIOS IRQ0 pin2 override ignored.
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 14 global_irq 14 high edge)
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 15 global_irq 15 high edge)
+[    0.000000] ACPI: IRQ9 used by override.
+[    0.000000] ACPI: IRQ14 used by override.
+[    0.000000] ACPI: IRQ15 used by override.
+[    0.000000] Enabling APIC mode:  Flat.  Using 1 I/O APICs
+[    0.000000] Using ACPI (MADT) for SMP configuration information
+[    0.000000] SMP: Allowing 2 CPUs, 0 hotplug CPUs
+[    0.000000] mapped APIC to ffffb000 (fee00000)
+[    0.000000] mapped IOAPIC to ffffa000 (fec00000)
+[    0.000000] nr_irqs_gsi: 24
+[    0.000000] PM: Registered nosave memory: 000000000009f000 - 00000000000a0000
+[    0.000000] PM: Registered nosave memory: 00000000000a0000 - 00000000000f0000
+[    0.000000] PM: Registered nosave memory: 00000000000f0000 - 0000000000100000
+[    0.000000] Allocating PCI resources starting at 40000000 (gap: 40000000:a0000000)
+[    0.000000] NR_CPUS:32 nr_cpumask_bits:32 nr_cpu_ids:2 nr_node_ids:1
+[    0.000000] PERCPU: Embedded 14 pages at 82c6e000, static data 44820 bytes
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 259471
+[    0.000000] Kernel command line: root=/dev/sda1 earlyprintk=serial,ttyS0,115200,keep console=tty debug initcall_debug enforcing=0 apic=verbose ignore_loglevel sysrq_always_enabled selinux=0 nmi_watchdog=2 3 panic=1 no_hz=off highres=0 nmi_watchdog=0 hpet=disable idle=mwait idle=poll highmem=512m notsc pci=nomsi
+[    0.000000] debug: sysrq always enabled.
+[    0.000000] PID hash table entries: 2048 (order: 11, 8192 bytes)
+[    0.000000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+[    0.000000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+[    0.000000] Enabling fast FPU save and restore... done.
+[    0.000000] Enabling unmasked SIMD FPU exception support... done.
+[    0.000000] Initializing CPU#0
+[    0.000000] Initializing HighMem for node 0 (0001fff0:0003fff0)
+[    0.000000] Memory: 1017220k/1048512k available (10665k kernel code, 30124k reserved, 5828k data, 568k init, 524288k highmem)
+[    0.000000] virtual kernel memory layout:
+[    0.000000]     fixmap  : 0xffad7000 - 0xfffff000   (5280 kB)
+[    0.000000]     pkmap   : 0xff400000 - 0xff800000   (4096 kB)
+[    0.000000]     vmalloc : 0xa07f0000 - 0xff3fe000   (1516 MB)
+[    0.000000]     lowmem  : 0x80000000 - 0x9fff0000   ( 511 MB)
+[    0.000000]       .init : 0x82029000 - 0x820b7000   ( 568 kB)
+[    0.000000]       .data : 0x81a6a765 - 0x8201bb34   (5828 kB)
+[    0.000000]       .text : 0x81000000 - 0x81a6a765   (10665 kB)
+[    0.000000] Checking if this processor honours the WP bit even in supervisor mode...Ok.
+[    0.000000] SLUB: Genslabs=13, HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+[    0.000000] Preemptible RCU implementation.
+[    0.000000] NR_IRQS:2304 nr_irqs:424
+[    0.000000] spurious 8259A interrupt: IRQ7.
+[    0.000000] Console: colour VGA+ 80x25
+[    0.000000] console [tty0] enabled
+[    0.000000] ------------------------
+[    0.000000] | Locking API testsuite:
+[    0.000000] ----------------------------------------------------------------------------
+[    0.000000]                                  | spin |wlock |rlock |mutex | wsem | rsem |
+[    0.000000]   --------------------------------------------------------------------------
+[    0.000000]                      A-A deadlock:failed|failed|  ok  |failed|failed|failed|
+[    0.000000]                  A-B-B-A deadlock:failed|failed|  ok  |failed|failed|failed|
+[    0.000000]              A-B-B-C-C-A deadlock:failed|failed|  ok  |failed|failed|failed|
+[    0.000000]              A-B-C-A-B-C deadlock:failed|failed|  ok  |failed|failed|failed|
+[    0.000000]          A-B-B-C-C-D-D-A deadlock:failed|failed|  ok  |failed|failed|failed|
+[    0.000000]          A-B-C-D-B-D-D-A deadlock:failed|failed|  ok  |failed|failed|failed|
+[    0.000000]          A-B-C-D-B-C-D-A deadlock:failed|failed|  ok  |failed|failed|failed|
+[    0.000000]                     double unlock:  ok  |  ok  |failed|  ok  |failed|failed|
+[    0.000000]                   initialize held:failed|failed|failed|failed|failed|failed|
+[    0.000000]                  bad unlock order:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.000000]   --------------------------------------------------------------------------
+[    0.000000]               recursive read-lock:             |  ok  |             |failed|
+[    0.000000]            recursive read-lock #2:             |  ok  |             |failed|
+[    0.000000]             mixed read-write-lock:             |failed|             |failed|
+[    0.000000]             mixed write-read-lock:             |failed|             |failed|
+[    0.000000]   --------------------------------------------------------------------------
+[    0.000000]      hard-irqs-on + irq-safe-A/12:failed|failed|  ok  |
+[    0.000000]      soft-irqs-on + irq-safe-A/12:failed|failed|  ok  |
+[    0.000000]      hard-irqs-on + irq-safe-A/21:failed|failed|  ok  |
+[    0.000000]      soft-irqs-on + irq-safe-A/21:failed|failed|  ok  |
+[    0.000000]        sirq-safe-A => hirqs-on/12:failed|failed|  ok  |
+[    0.000000]        sirq-safe-A => hirqs-on/21:failed|failed|  ok  |
+[    0.000000]          hard-safe-A + irqs-on/12:failed|failed|  ok  |
+[    0.000000]          soft-safe-A + irqs-on/12:failed|failed|  ok  |
+[    0.000000]          hard-safe-A + irqs-on/21:failed|failed|  ok  |
+[    0.000000]          soft-safe-A + irqs-on/21:failed|failed|  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #1/123:failed|failed|  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #1/123:failed|failed|  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #1/132:failed|failed|  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #1/132:failed|failed|  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #1/213:failed|failed|  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #1/213:failed|failed|  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #1/231:failed|failed|  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #1/231:failed|failed|  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #1/312:failed|failed|  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #1/312:failed|failed|  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #1/321:failed|failed|  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #1/321:failed|failed|  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #2/123:failed|failed|  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #2/123:failed|failed|  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #2/132:failed|failed|  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #2/132:failed|failed|  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #2/213:failed|failed|  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #2/213:failed|failed|  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #2/231:failed|failed|  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #2/231:failed|failed|  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #2/312:failed|failed|  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #2/312:failed|failed|  ok  |
+[    0.000000]     hard-safe-A + unsafe-B #2/321:failed|failed|  ok  |
+[    0.000000]     soft-safe-A + unsafe-B #2/321:failed|failed|  ok  |
+[    0.000000]       hard-irq lock-inversion/123:failed|failed|  ok  |
+[    0.000000]       soft-irq lock-inversion/123:failed|failed|  ok  |
+[    0.000000]       hard-irq lock-inversion/132:failed|failed|  ok  |
+[    0.000000]       soft-irq lock-inversion/132:failed|failed|  ok  |
+[    0.000000]       hard-irq lock-inversion/213:failed|failed|  ok  |
+[    0.000000]       soft-irq lock-inversion/213:failed|failed|  ok  |
+[    0.000000]       hard-irq lock-inversion/231:failed|failed|  ok  |
+[    0.000000]       soft-irq lock-inversion/231:failed|failed|  ok  |
+[    0.000000]       hard-irq lock-inversion/312:failed|failed|  ok  |
+[    0.000000]       soft-irq lock-inversion/312:failed|failed|  ok  |
+[    0.000000]       hard-irq lock-inversion/321:failed|failed|  ok  |
+[    0.000000]       soft-irq lock-inversion/321:failed|failed|  ok  |
+[    0.000000]       hard-irq read-recursion/123:  ok  |
+[    0.000000]       soft-irq read-recursion/123:  ok  |
+[    0.000000]       hard-irq read-recursion/132:  ok  |
+[    0.000000]       soft-irq read-recursion/132:  ok  |
+[    0.000000]       hard-irq read-recursion/213:  ok  |
+[    0.000000]       soft-irq read-recursion/213:  ok  |
+[    0.000000]       hard-irq read-recursion/231:  ok  |
+[    0.000000]       soft-irq read-recursion/231:  ok  |
+[    0.000000]       hard-irq read-recursion/312:  ok  |
+[    0.000000]       soft-irq read-recursion/312:  ok  |
+[    0.000000]       hard-irq read-recursion/321:  ok  |
+[    0.000000]       soft-irq read-recursion/321:  ok  |
+[    0.000000] --------------------------------------------------------
+[    0.000000] 142 out of 218 testcases failed, as expected. |
+[    0.000000] ----------------------------------------------------
+[    0.000000] allocated 5242880 bytes of page_cgroup
+[    0.000000] please try 'cgroup_disable=memory' option if you don't want memory cgroups
+[    0.004000] Calibrating delay loop... 2007.04 BogoMIPS (lpj=4014080)
+[    0.092000] Security Framework initialized
+[    0.096000] TOMOYO Linux initialized
+[    0.100000] Mount-cache hash table entries: 512
+[    0.104000] Initializing cgroup subsys debug
+[    0.108000] Initializing cgroup subsys ns
+[    0.112000] Initializing cgroup subsys cpuacct
+[    0.116000] Initializing cgroup subsys memory
+[    0.120000] Initializing cgroup subsys devices
+[    0.124000] Initializing cgroup subsys freezer
+[    0.128000] Initializing cgroup subsys net_cls
+[    0.132001] CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+[    0.136001] CPU: L2 Cache: 512K (64 bytes/line)
+[    0.140001] CPU: Physical Processor ID: 0
+[    0.144001] CPU: Processor Core ID: 0
+[    0.148001] mce: CPU supports 5 MCE banks
+[    0.152001] Performance Counters: AMD PMU driver.
+[    0.156001] ... version:                 0
+[    0.160001] ... bit width:               48
+[    0.164001] ... generic counters:        4
+[    0.168001] ... value mask:              0000ffffffffffff
+[    0.172001] ... max period:              00007fffffffffff
+[    0.176001] ... fixed-purpose counters:  0
+[    0.180001] ... counter mask:            000000000000000f
+[    0.184001] Checking 'hlt' instruction... OK.
+[    0.204001] ACPI: Core revision 20090521
+[    0.268001] ftrace: converting mcount calls to 0f 1f 44 00 00
+[    0.276001] ftrace: allocating 46099 entries in 91 pages
+[    0.284001] enabled ExtINT on CPU#0
+[    0.284001] ENABLING IO-APIC IRQs
+[    0.288001] init IO_APIC IRQs
+[    0.292001] IOAPIC[0]: Set routing entry (2-0 -> 0x30 -> IRQ 0 Mode:0 Active:0)
+[    0.296001] IOAPIC[0]: Set routing entry (2-1 -> 0x31 -> IRQ 1 Mode:0 Active:0)
+[    0.300001] IOAPIC[0]: Set routing entry (2-3 -> 0x33 -> IRQ 3 Mode:0 Active:0)
+[    0.304001] IOAPIC[0]: Set routing entry (2-4 -> 0x34 -> IRQ 4 Mode:0 Active:0)
+[    0.308001] IOAPIC[0]: Set routing entry (2-5 -> 0x35 -> IRQ 5 Mode:0 Active:0)
+[    0.312001] IOAPIC[0]: Set routing entry (2-6 -> 0x36 -> IRQ 6 Mode:0 Active:0)
+[    0.316001] IOAPIC[0]: Set routing entry (2-7 -> 0x37 -> IRQ 7 Mode:0 Active:0)
+[    0.320001] IOAPIC[0]: Set routing entry (2-8 -> 0x38 -> IRQ 8 Mode:0 Active:0)
+[    0.324001] IOAPIC[0]: Set routing entry (2-9 -> 0x39 -> IRQ 9 Mode:1 Active:0)
+[    0.328001] IOAPIC[0]: Set routing entry (2-10 -> 0x3a -> IRQ 10 Mode:0 Active:0)
+[    0.332001] IOAPIC[0]: Set routing entry (2-11 -> 0x3b -> IRQ 11 Mode:0 Active:0)
+[    0.336001] IOAPIC[0]: Set routing entry (2-12 -> 0x3c -> IRQ 12 Mode:0 Active:0)
+[    0.340001] IOAPIC[0]: Set routing entry (2-13 -> 0x3d -> IRQ 13 Mode:0 Active:0)
+[    0.344001] IOAPIC[0]: Set routing entry (2-14 -> 0x3e -> IRQ 14 Mode:0 Active:0)
+[    0.348001] IOAPIC[0]: Set routing entry (2-15 -> 0x3f -> IRQ 15 Mode:0 Active:0)
+[    0.352001]  2-16 2-17 2-18 2-19 2-20 2-21 2-22 2-23 (apicid-pin) not connected
+[    0.360001] ..TIMER: vector=0x30 apic1=0 pin1=0 apic2=-1 pin2=-1
+[    0.404001] CPU0: AMD Athlon(tm) 64 X2 Dual Core Processor 3800+ stepping 02
+[    0.412001] Using local APIC timer interrupts.
+[    0.412001] calibrating APIC timer ...
+[    0.416001] ... lapic delta = 1256510
+[    0.416001] ... PM-Timer delta = 357975
+[    0.416001] ... PM-Timer result ok
+[    0.416001] ..... delta 1256510
+[    0.416001] ..... mult: 53963320
+[    0.416001] ..... calibration result: 804166
+[    0.416001] ..... host bus clock speed is 201.0166 MHz.
+[    0.420001] calling  migration_init+0x0/0x47 @ 1
+[    0.424001] initcall migration_init+0x0/0x47 returned 0 after 0 usecs
+[    0.428001] calling  spawn_ksoftirqd+0x0/0x47 @ 1
+[    0.432001] initcall spawn_ksoftirqd+0x0/0x47 returned 0 after 0 usecs
+[    0.436001] calling  init_call_single_data+0x0/0xaf @ 1
+[    0.440001] initcall init_call_single_data+0x0/0xaf returned 0 after 0 usecs
+[    0.444001] calling  spawn_softlockup_task+0x0/0x5f @ 1
+[    0.448001] initcall spawn_softlockup_task+0x0/0x5f returned 0 after 0 usecs
+[    0.452001] calling  relay_init+0x0/0x11 @ 1
+[    0.456001] initcall relay_init+0x0/0x11 returned 0 after 0 usecs
+[    0.460001] calling  tracer_alloc_buffers+0x0/0x1c4 @ 1
+[    0.464001] initcall tracer_alloc_buffers+0x0/0x1c4 returned 0 after 0 usecs
+[    0.468001] calling  init_trace_printk+0x0/0x7 @ 1
+[    0.472001] initcall init_trace_printk+0x0/0x7 returned 0 after 0 usecs
+[    0.476001] calling  trace_workqueue_early_init+0x0/0x129 @ 1
+[    0.480001] initcall trace_workqueue_early_init+0x0/0x129 returned 0 after 0 usecs
+[    0.484001] Booting processor 1 APIC 0x1 ip 0x6000
+[    0.004000] Initializing CPU#1
+[    0.004000] masked ExtINT on CPU#1
+[    0.004000] Calibrating delay loop... 2007.04 BogoMIPS (lpj=4014080)
+[    0.004000] CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+[    0.004000] CPU: L2 Cache: 512K (64 bytes/line)
+[    0.004000] CPU: Physical Processor ID: 0
+[    0.004000] CPU: Processor Core ID: 1
+[    0.004000] mce: CPU supports 5 MCE banks
+[    0.588001] CPU1: AMD Athlon(tm) 64 X2 Dual Core Processor 3800+ stepping 02
+[    0.596001] Brought up 2 CPUs
+[    0.600001] Total of 2 processors activated (4014.08 BogoMIPS).
+[    0.604001] CPU0 attaching sched-domain:
+[    0.608001]  domain 0: span 0-1 level MC
+[    0.612001]   groups: 0 1
+[    0.616001] CPU1 attaching sched-domain:
+[    0.620001]  domain 0: span 0-1 level MC
+[    0.624002]   groups: 1 0
+[    0.628002] device: 'platform': device_add
+[    0.632002] PM: Adding info for No Bus:platform
+[    0.636002] khelper used greatest stack depth: 6952 bytes left
+[    0.644002] bus: 'platform': registered
+[    0.644002] Registering sysdev class 'cpu'
+[    0.648002] calling  init_mmap_min_addr+0x0/0x11 @ 1
+[    0.652002] initcall init_mmap_min_addr+0x0/0x11 returned 0 after 0 usecs
+[    0.656002] calling  init_cpufreq_transition_notifier_list+0x0/0x18 @ 1
+[    0.660002] initcall init_cpufreq_transition_notifier_list+0x0/0x18 returned 0 after 0 usecs
+[    0.664002] calling  net_ns_init+0x0/0x12e @ 1
+[    0.668002] initcall net_ns_init+0x0/0x12e returned 0 after 0 usecs
+[    0.672002] calling  e820_mark_nvs_memory+0x0/0x31 @ 1
+[    0.676002] initcall e820_mark_nvs_memory+0x0/0x31 returned 0 after 0 usecs
+[    0.680002] calling  cpufreq_tsc+0x0/0x25 @ 1
+[    0.684002] initcall cpufreq_tsc+0x0/0x25 returned 0 after 0 usecs
+[    0.688002] calling  pci_reboot_init+0x0/0x7 @ 1
+[    0.692002] initcall pci_reboot_init+0x0/0x7 returned 0 after 0 usecs
+[    0.696002] calling  reboot_init+0x0/0x7 @ 1
+[    0.700002] initcall reboot_init+0x0/0x7 returned 0 after 0 usecs
+[    0.704002] calling  init_lapic_sysfs+0x0/0x28 @ 1
+[    0.708002] Registering sysdev class 'lapic'
+[    0.712002] Registering sys device of class 'lapic'
+[    0.716002] Registering sys device 'lapic0'
+[    0.720002] initcall init_lapic_sysfs+0x0/0x28 returned 0 after 11718 usecs
+[    0.724002] calling  print_banner+0x0/0xd @ 1
+[    0.728002] Booting paravirtualized kernel on bare hardware
+[    0.732002] initcall print_banner+0x0/0xd returned 0 after 3906 usecs
+[    0.736002] calling  init_smp_flush+0x0/0x2f @ 1
+[    0.740002] initcall init_smp_flush+0x0/0x2f returned 0 after 0 usecs
+[    0.744002] calling  alloc_frozen_cpus+0x0/0xc @ 1
+[    0.748002] initcall alloc_frozen_cpus+0x0/0xc returned 0 after 0 usecs
+[    0.752002] calling  sysctl_init+0x0/0x13 @ 1
+[    0.756002] initcall sysctl_init+0x0/0x13 returned 0 after 0 usecs
+[    0.760002] calling  ksysfs_init+0x0/0x96 @ 1
+[    0.764002] initcall ksysfs_init+0x0/0x96 returned 0 after 0 usecs
+[    0.768002] calling  async_init+0x0/0x3c @ 1
+[    0.772002] initcall async_init+0x0/0x3c returned 0 after 0 usecs
+[    0.776002] calling  init_jiffies_clocksource+0x0/0xf @ 1
+[    0.780002] initcall init_jiffies_clocksource+0x0/0xf returned 0 after 0 usecs
+[    0.784002] calling  pm_init+0x0/0x2d @ 1
+[    0.788002] initcall pm_init+0x0/0x2d returned 0 after 0 usecs
+[    0.792002] calling  pm_disk_init+0x0/0x14 @ 1
+[    0.796002] initcall pm_disk_init+0x0/0x14 returned 0 after 0 usecs
+[    0.800002] calling  swsusp_header_init+0x0/0x2b @ 1
+[    0.804002] initcall swsusp_header_init+0x0/0x2b returned 0 after 0 usecs
+[    0.808002] calling  init_hw_breakpoint+0x0/0xf @ 1
+[    0.812002] initcall init_hw_breakpoint+0x0/0xf returned 0 after 0 usecs
+[    0.816002] calling  filelock_init+0x0/0x27 @ 1
+[    0.820002] initcall filelock_init+0x0/0x27 returned 0 after 0 usecs
+[    0.824002] calling  init_aout_binfmt+0x0/0x11 @ 1
+[    0.828002] initcall init_aout_binfmt+0x0/0x11 returned 0 after 0 usecs
+[    0.832002] calling  init_misc_binfmt+0x0/0x35 @ 1
+[    0.836002] initcall init_misc_binfmt+0x0/0x35 returned 0 after 0 usecs
+[    0.840002] calling  init_script_binfmt+0x0/0x11 @ 1
+[    0.844002] initcall init_script_binfmt+0x0/0x11 returned 0 after 0 usecs
+[    0.848002] calling  init_elf_binfmt+0x0/0x11 @ 1
+[    0.852002] initcall init_elf_binfmt+0x0/0x11 returned 0 after 0 usecs
+[    0.856002] calling  debugfs_init+0x0/0x4a @ 1
+[    0.860002] initcall debugfs_init+0x0/0x4a returned 0 after 0 usecs
+[    0.864002] calling  securityfs_init+0x0/0x41 @ 1
+[    0.868002] initcall securityfs_init+0x0/0x41 returned 0 after 0 usecs
+[    0.872002] calling  random32_init+0x0/0xd1 @ 1
+[    0.876002] initcall random32_init+0x0/0xd1 returned 0 after 0 usecs
+[    0.880002] calling  regulator_init+0x0/0x23 @ 1
+[    0.884002] regulator: core version 0.5
+[    0.888002] device class 'regulator': registering
+[    0.892002] initcall regulator_init+0x0/0x23 returned 0 after 7812 usecs
+[    0.896002] calling  cpufreq_core_init+0x0/0x8b @ 1
+[    0.900002] initcall cpufreq_core_init+0x0/0x8b returned 0 after 0 usecs
+[    0.904002] calling  cpuidle_init+0x0/0x32 @ 1
+[    0.908002] initcall cpuidle_init+0x0/0x32 returned 0 after 0 usecs
+[    0.912002] calling  virtio_init+0x0/0x24 @ 1
+[    0.916002] bus: 'virtio': registered
+[    0.920002] initcall virtio_init+0x0/0x24 returned 0 after 3906 usecs
+[    0.924002] calling  sock_init+0x0/0x51 @ 1
+[    0.928002] initcall sock_init+0x0/0x51 returned 0 after 0 usecs
+[    0.932002] calling  netpoll_init+0x0/0x39 @ 1
+[    0.936002] initcall netpoll_init+0x0/0x39 returned 0 after 0 usecs
+[    0.940002] calling  netlink_proto_init+0x0/0x179 @ 1
+[    0.944002] NET: Registered protocol family 16
+[    0.948002] initcall netlink_proto_init+0x0/0x179 returned 0 after 3906 usecs
+[    0.952002] calling  olpc_init+0x0/0x103 @ 1
+[    0.956002] initcall olpc_init+0x0/0x103 returned 0 after 0 usecs
+[    0.960002] calling  bdi_class_init+0x0/0x35 @ 1
+[    0.964002] device class 'bdi': registering
+[    0.968002] initcall bdi_class_init+0x0/0x35 returned 0 after 3906 usecs
+[    0.972002] calling  kobject_uevent_init+0x0/0x4e @ 1
+[    0.976002] initcall kobject_uevent_init+0x0/0x4e returned 0 after 0 usecs
+[    0.980002] calling  pcibus_class_init+0x0/0x14 @ 1
+[    0.984002] device class 'pci_bus': registering
+[    0.988002] initcall pcibus_class_init+0x0/0x14 returned 0 after 3906 usecs
+[    0.992002] calling  pci_driver_init+0x0/0xf @ 1
+[    0.996002] bus: 'pci': registered
+[    1.000002] initcall pci_driver_init+0x0/0xf returned 0 after 3906 usecs
+[    1.004002] calling  backlight_class_init+0x0/0x4d @ 1
+[    1.008002] device class 'backlight': registering
+[    1.012002] initcall backlight_class_init+0x0/0x4d returned 0 after 3906 usecs
+[    1.016002] calling  video_output_class_init+0x0/0x14 @ 1
+[    1.020002] device class 'video_output': registering
+[    1.024002] initcall video_output_class_init+0x0/0x14 returned 0 after 3906 usecs
+[    1.028002] calling  tty_class_init+0x0/0x2c @ 1
+[    1.032002] device class 'tty': registering
+[    1.036002] initcall tty_class_init+0x0/0x2c returned 0 after 3906 usecs
+[    1.040002] calling  vtconsole_class_init+0x0/0xa1 @ 1
+[    1.044002] device class 'vtconsole': registering
+[    1.048002] device: 'vtcon0': device_add
+[    1.052002] PM: Adding info for No Bus:vtcon0
+[    1.056002] initcall vtconsole_class_init+0x0/0xa1 returned 0 after 11718 usecs
+[    1.060002] calling  spi_init+0x0/0xcd @ 1
+[    1.064002] bus: 'spi': registered
+[    1.068002] device class 'spi_master': registering
+[    1.072002] initcall spi_init+0x0/0xcd returned 0 after 7812 usecs
+[    1.076002] calling  i2c_init+0x0/0x54 @ 1
+[    1.080002] bus: 'i2c': registered
+[    1.084002] device class 'i2c-adapter': registering
+[    1.088002] bus: 'i2c': add driver dummy
+[    1.092002] i2c-core: driver [dummy] registered
+[    1.096002] initcall i2c_init+0x0/0x54 returned 0 after 15625 usecs
+[    1.100002] calling  amd_postcore_init+0x0/0x92 @ 1
+[    1.104002] initcall amd_postcore_init+0x0/0x92 returned 0 after 0 usecs
+[    1.108002] calling  arch_kdebugfs_init+0x0/0x1e @ 1
+[    1.112002] initcall arch_kdebugfs_init+0x0/0x1e returned 0 after 0 usecs
+[    1.116002] calling  init_pit_clocksource+0x0/0x93 @ 1
+[    1.120002] initcall init_pit_clocksource+0x0/0x93 returned 0 after 0 usecs
+[    1.124002] calling  mtrr_if_init+0x0/0x44 @ 1
+[    1.128002] initcall mtrr_if_init+0x0/0x44 returned 0 after 0 usecs
+[    1.132002] calling  ffh_cstate_init+0x0/0x27 @ 1
+[    1.136003] initcall ffh_cstate_init+0x0/0x27 returned -1 after 0 usecs
+[    1.140003] initcall ffh_cstate_init+0x0/0x27 returned with error code -1 
+[    1.144003] calling  arch_init_ftrace_syscalls+0x0/0xf1 @ 1
+[    1.148003] initcall arch_init_ftrace_syscalls+0x0/0xf1 returned 0 after 0 usecs
+[    1.152003] calling  kdump_buf_page_init+0x0/0x91 @ 1
+[    1.156003] initcall kdump_buf_page_init+0x0/0x91 returned 0 after 0 usecs
+[    1.160003] calling  acpi_pci_init+0x0/0x4c @ 1
+[    1.164003] ACPI: bus type pci registered
+[    1.168003] initcall acpi_pci_init+0x0/0x4c returned 0 after 3906 usecs
+[    1.172003] calling  dma_bus_init+0x0/0x32 @ 1
+[    1.176003] device class 'dma': registering
+[    1.180003] initcall dma_bus_init+0x0/0x32 returned 0 after 3906 usecs
+[    1.184003] calling  dma_channel_table_init+0x0/0xdf @ 1
+[    1.188003] initcall dma_channel_table_init+0x0/0xdf returned 0 after 0 usecs
+[    1.192003] calling  dca_init+0x0/0x19 @ 1
+[    1.196003] dca service started, version 1.8
+[    1.200003] device class 'dca': registering
+[    1.204003] initcall dca_init+0x0/0x19 returned 0 after 7812 usecs
+[    1.208003] calling  pci_arch_init+0x0/0x4e @ 1
+[    1.220003] PCI: PCI BIOS revision 3.00 entry at 0xf21d0, last bus=5
+[    1.224003] PCI: Using configuration type 1 for base access
+[    1.228003] initcall pci_arch_init+0x0/0x4e returned 0 after 15625 usecs
+[    1.232003] calling  topology_init+0x0/0x62 @ 1
+[    1.236003] Registering sys device of class 'cpu'
+[    1.240003] Registering sys device 'cpu0'
+[    1.248003] Registering sys device of class 'cpu'
+[    1.252003] Registering sys device 'cpu1'
+[    1.256003] initcall topology_init+0x0/0x62 returned 0 after 19531 usecs
+[    1.260003] calling  mtrr_init_finialize+0x0/0x35 @ 1
+[    1.264003] initcall mtrr_init_finialize+0x0/0x35 returned 0 after 0 usecs
+[    1.268003] calling  mca_init+0x0/0x410 @ 1
+[    1.272003] bus: 'MCA': registered
+[    1.276003] initcall mca_init+0x0/0x410 returned -19 after 3906 usecs
+[    1.280003] calling  param_sysfs_init+0x0/0xb3 @ 1
+[    1.380003] initcall param_sysfs_init+0x0/0xb3 returned 0 after 93750 usecs
+[    1.384003] calling  pm_sysrq_init+0x0/0x1b @ 1
+[    1.388003] initcall pm_sysrq_init+0x0/0x1b returned 0 after 0 usecs
+[    1.392003] calling  audit_watch_init+0x0/0x27 @ 1
+[    1.396003] initcall audit_watch_init+0x0/0x27 returned 0 after 0 usecs
+[    1.400003] calling  init_slow_work+0x0/0x2f @ 1
+[    1.404003] initcall init_slow_work+0x0/0x2f returned 0 after 0 usecs
+[    1.408003] calling  default_bdi_init+0x0/0x2f @ 1
+[    1.412003] device: 'default': device_add
+[    1.416003] PM: Adding info for No Bus:default
+[    1.420003] initcall default_bdi_init+0x0/0x2f returned 0 after 7812 usecs
+[    1.424003] calling  init_bio+0x0/0x117 @ 1
+[    1.428003] bio: create slab <bio-0> at 0
+[    1.432003] initcall init_bio+0x0/0x117 returned 0 after 3906 usecs
+[    1.436003] calling  fsnotify_init+0x0/0xf @ 1
+[    1.444003] initcall fsnotify_init+0x0/0xf returned 0 after 0 usecs
+[    1.448003] calling  fsnotify_notification_init+0x0/0xe7 @ 1
+[    1.456003] initcall fsnotify_notification_init+0x0/0xe7 returned 0 after 0 usecs
+[    1.460003] calling  cryptomgr_init+0x0/0xf @ 1
+[    1.468003] initcall cryptomgr_init+0x0/0xf returned 0 after 0 usecs
+[    1.472003] calling  blk_settings_init+0x0/0x1d @ 1
+[    1.476003] initcall blk_settings_init+0x0/0x1d returned 0 after 0 usecs
+[    1.480003] calling  blk_ioc_init+0x0/0x24 @ 1
+[    1.484003] initcall blk_ioc_init+0x0/0x24 returned 0 after 0 usecs
+[    1.488003] calling  blk_softirq_init+0x0/0x89 @ 1
+[    1.492003] initcall blk_softirq_init+0x0/0x89 returned 0 after 0 usecs
+[    1.496003] calling  genhd_device_init+0x0/0x50 @ 1
+[    1.500003] device class 'block': registering
+[    1.504003] initcall genhd_device_init+0x0/0x50 returned 0 after 3906 usecs
+[    1.508003] calling  gpiolib_debugfs_init+0x0/0x1f @ 1
+[    1.512003] initcall gpiolib_debugfs_init+0x0/0x1f returned 0 after 0 usecs
+[    1.516003] calling  max732x_init+0x0/0x11 @ 1
+[    1.520003] bus: 'i2c': add driver max732x
+[    1.524003] i2c-core: driver [max732x] registered
+[    1.528003] initcall max732x_init+0x0/0x11 returned 0 after 7812 usecs
+[    1.532003] calling  pcf857x_init+0x0/0x11 @ 1
+[    1.536003] bus: 'i2c': add driver pcf857x
+[    1.540003] i2c-core: driver [pcf857x] registered
+[    1.544003] initcall pcf857x_init+0x0/0x11 returned 0 after 7812 usecs
+[    1.548003] calling  pci_slot_init+0x0/0x40 @ 1
+[    1.552003] initcall pci_slot_init+0x0/0x40 returned 0 after 0 usecs
+[    1.556003] calling  fbmem_init+0x0/0x78 @ 1
+[    1.560003] device class 'graphics': registering
+[    1.564003] initcall fbmem_init+0x0/0x78 returned 0 after 3906 usecs
+[    1.568003] calling  acpi_init+0x0/0x10e @ 1
+[    1.576003] ACPI: EC: Look up EC in DSDT
+[    1.688004] ACPI: Interpreter enabled
+[    1.692004] ACPI: (supports S0 S4 S5)
+[    1.696004] ACPI: Using IOAPIC for interrupt routing
+[    1.700004] bus: 'acpi': registered
+[    1.704004] device: 'LNXSYSTM:00': device_add
+[    1.708004] bus: 'acpi': add device LNXSYSTM:00
+[    1.712004] PM: Adding info for acpi:LNXSYSTM:00
+[    1.716004] device: 'LNXPWRBN:00': device_add
+[    1.720004] bus: 'acpi': add device LNXPWRBN:00
+[    1.724004] PM: Adding info for acpi:LNXPWRBN:00
+[    1.728004] device: 'LNXCPU:00': device_add
+[    1.732004] bus: 'acpi': add device LNXCPU:00
+[    1.736004] PM: Adding info for acpi:LNXCPU:00
+[    1.740004] device: 'LNXCPU:01': device_add
+[    1.744004] bus: 'acpi': add device LNXCPU:01
+[    1.748004] PM: Adding info for acpi:LNXCPU:01
+[    1.752004] device: 'device:00': device_add
+[    1.756004] bus: 'acpi': add device device:00
+[    1.760004] PM: Adding info for acpi:device:00
+[    1.764004] device: 'device:00': dev_uevent: bus uevent() returned -12
+[    1.768004] device: 'PNP0C0C:00': device_add
+[    1.772004] bus: 'acpi': add device PNP0C0C:00
+[    1.776004] PM: Adding info for acpi:PNP0C0C:00
+[    1.780004] device: 'PNP0A08:00': device_add
+[    1.784004] bus: 'acpi': add device PNP0A08:00
+[    1.788004] PM: Adding info for acpi:PNP0A08:00
+[    1.792004] device: 'PNP0C02:00': device_add
+[    1.796004] bus: 'acpi': add device PNP0C02:00
+[    1.800004] PM: Adding info for acpi:PNP0C02:00
+[    1.804004] device: 'device:01': device_add
+[    1.808004] bus: 'acpi': add device device:01
+[    1.812004] PM: Adding info for acpi:device:01
+[    1.816004] device: 'device:01': dev_uevent: bus uevent() returned -12
+[    1.820004] device: 'device:02': device_add
+[    1.824004] bus: 'acpi': add device device:02
+[    1.828004] PM: Adding info for acpi:device:02
+[    1.832004] device: 'device:02': dev_uevent: bus uevent() returned -12
+[    1.836004] device: 'device:03': device_add
+[    1.840004] bus: 'acpi': add device device:03
+[    1.844004] PM: Adding info for acpi:device:03
+[    1.848004] device: 'device:03': dev_uevent: bus uevent() returned -12
+[    1.856004] device: 'device:04': device_add
+[    1.860004] bus: 'acpi': add device device:04
+[    1.864004] PM: Adding info for acpi:device:04
+[    1.868004] device: 'device:04': dev_uevent: bus uevent() returned -12
+[    1.872004] device: 'device:05': device_add
+[    1.876004] bus: 'acpi': add device device:05
+[    1.880004] PM: Adding info for acpi:device:05
+[    1.884004] device: 'device:05': dev_uevent: bus uevent() returned -12
+[    1.888004] device: 'device:06': device_add
+[    1.892004] bus: 'acpi': add device device:06
+[    1.896004] PM: Adding info for acpi:device:06
+[    1.900004] device: 'device:06': dev_uevent: bus uevent() returned -12
+[    1.904004] device: 'device:07': device_add
+[    1.908004] bus: 'acpi': add device device:07
+[    1.912004] PM: Adding info for acpi:device:07
+[    1.916004] device: 'device:07': dev_uevent: bus uevent() returned -12
+[    1.920004] device: 'device:08': device_add
+[    1.924004] bus: 'acpi': add device device:08
+[    1.928004] PM: Adding info for acpi:device:08
+[    1.932004] device: 'device:08': dev_uevent: bus uevent() returned -12
+[    1.936004] device: 'device:09': device_add
+[    1.940004] bus: 'acpi': add device device:09
+[    1.944004] PM: Adding info for acpi:device:09
+[    1.948004] device: 'device:09': dev_uevent: bus uevent() returned -12
+[    1.952004] device: 'device:0a': device_add
+[    1.956004] bus: 'acpi': add device device:0a
+[    1.960004] PM: Adding info for acpi:device:0a
+[    1.964004] device: 'device:0a': dev_uevent: bus uevent() returned -12
+[    1.968004] device: 'device:0b': device_add
+[    1.972004] bus: 'acpi': add device device:0b
+[    1.976004] PM: Adding info for acpi:device:0b
+[    1.980004] device: 'device:0b': dev_uevent: bus uevent() returned -12
+[    1.984004] device: 'device:0c': device_add
+[    1.988004] bus: 'acpi': add device device:0c
+[    1.992004] PM: Adding info for acpi:device:0c
+[    1.996004] device: 'device:0c': dev_uevent: bus uevent() returned -12
+[    2.000004] device: 'device:0d': device_add
+[    2.004004] bus: 'acpi': add device device:0d
+[    2.008004] PM: Adding info for acpi:device:0d
+[    2.012004] device: 'device:0d': dev_uevent: bus uevent() returned -12
+[    2.016004] device: 'device:0e': device_add
+[    2.020004] bus: 'acpi': add device device:0e
+[    2.024004] PM: Adding info for acpi:device:0e
+[    2.028004] device: 'device:0e': dev_uevent: bus uevent() returned -12
+[    2.036004] device: 'device:0f': device_add
+[    2.040004] bus: 'acpi': add device device:0f
+[    2.044004] PM: Adding info for acpi:device:0f
+[    2.048004] device: 'device:0f': dev_uevent: bus uevent() returned -12
+[    2.052004] device: 'device:10': device_add
+[    2.056004] bus: 'acpi': add device device:10
+[    2.060004] PM: Adding info for acpi:device:10
+[    2.064004] device: 'device:10': dev_uevent: bus uevent() returned -12
+[    2.068004] device: 'device:11': device_add
+[    2.072004] bus: 'acpi': add device device:11
+[    2.076004] PM: Adding info for acpi:device:11
+[    2.080004] device: 'device:11': dev_uevent: bus uevent() returned -12
+[    2.084004] device: 'device:12': device_add
+[    2.088004] bus: 'acpi': add device device:12
+[    2.092004] PM: Adding info for acpi:device:12
+[    2.096004] device: 'device:12': dev_uevent: bus uevent() returned -12
+[    2.100004] device: 'device:13': device_add
+[    2.104004] bus: 'acpi': add device device:13
+[    2.108004] PM: Adding info for acpi:device:13
+[    2.112004] device: 'device:13': dev_uevent: bus uevent() returned -12
+[    2.116004] device: 'device:14': device_add
+[    2.120004] bus: 'acpi': add device device:14
+[    2.124004] PM: Adding info for acpi:device:14
+[    2.128004] device: 'device:14': dev_uevent: bus uevent() returned -12
+[    2.132004] device: 'device:15': device_add
+[    2.136004] bus: 'acpi': add device device:15
+[    2.140004] PM: Adding info for acpi:device:15
+[    2.144004] device: 'device:15': dev_uevent: bus uevent() returned -12
+[    2.148004] device: 'device:16': device_add
+[    2.152004] bus: 'acpi': add device device:16
+[    2.156004] PM: Adding info for acpi:device:16
+[    2.160004] device: 'device:16': dev_uevent: bus uevent() returned -12
+[    2.164004] device: 'device:17': device_add
+[    2.168004] bus: 'acpi': add device device:17
+[    2.172004] PM: Adding info for acpi:device:17
+[    2.176004] device: 'device:17': dev_uevent: bus uevent() returned -12
+[    2.180004] device: 'device:18': device_add
+[    2.184004] bus: 'acpi': add device device:18
+[    2.188004] PM: Adding info for acpi:device:18
+[    2.192004] device: 'device:18': dev_uevent: bus uevent() returned -12
+[    2.196004] device: 'device:19': device_add
+[    2.200004] bus: 'acpi': add device device:19
+[    2.204004] PM: Adding info for acpi:device:19
+[    2.208004] device: 'device:19': dev_uevent: bus uevent() returned -12
+[    2.212005] device: 'device:1a': device_add
+[    2.216005] bus: 'acpi': add device device:1a
+[    2.220005] PM: Adding info for acpi:device:1a
+[    2.224005] device: 'device:1a': dev_uevent: bus uevent() returned -12
+[    2.228005] device: 'device:1b': device_add
+[    2.232005] bus: 'acpi': add device device:1b
+[    2.236005] PM: Adding info for acpi:device:1b
+[    2.240005] device: 'device:1b': dev_uevent: bus uevent() returned -12
+[    2.244005] device: 'device:1c': device_add
+[    2.248005] bus: 'acpi': add device device:1c
+[    2.252005] PM: Adding info for acpi:device:1c
+[    2.256005] device: 'device:1c': dev_uevent: bus uevent() returned -12
+[    2.260005] device: 'device:1d': device_add
+[    2.264005] bus: 'acpi': add device device:1d
+[    2.268005] PM: Adding info for acpi:device:1d
+[    2.272005] device: 'device:1d': dev_uevent: bus uevent() returned -12
+[    2.276005] device: 'ATK0110:00': device_add
+[    2.280005] bus: 'acpi': add device ATK0110:00
+[    2.284005] PM: Adding info for acpi:ATK0110:00
+[    2.292005] device: 'PNP0C0F:00': device_add
+[    2.296005] bus: 'acpi': add device PNP0C0F:00
+[    2.300005] PM: Adding info for acpi:PNP0C0F:00
+[    2.304005] device: 'PNP0C0F:01': device_add
+[    2.308005] bus: 'acpi': add device PNP0C0F:01
+[    2.312005] PM: Adding info for acpi:PNP0C0F:01
+[    2.320005] device: 'PNP0C0F:02': device_add
+[    2.324005] bus: 'acpi': add device PNP0C0F:02
+[    2.328005] PM: Adding info for acpi:PNP0C0F:02
+[    2.332005] device: 'PNP0C0F:03': device_add
+[    2.336005] bus: 'acpi': add device PNP0C0F:03
+[    2.340005] PM: Adding info for acpi:PNP0C0F:03
+[    2.348005] device: 'PNP0C0F:04': device_add
+[    2.352005] bus: 'acpi': add device PNP0C0F:04
+[    2.356005] PM: Adding info for acpi:PNP0C0F:04
+[    2.360005] device: 'PNP0C0F:05': device_add
+[    2.364005] bus: 'acpi': add device PNP0C0F:05
+[    2.368005] PM: Adding info for acpi:PNP0C0F:05
+[    2.376005] device: 'PNP0C0F:06': device_add
+[    2.380005] bus: 'acpi': add device PNP0C0F:06
+[    2.384005] PM: Adding info for acpi:PNP0C0F:06
+[    2.388005] device: 'PNP0C0F:07': device_add
+[    2.392005] bus: 'acpi': add device PNP0C0F:07
+[    2.396005] PM: Adding info for acpi:PNP0C0F:07
+[    2.404005] device: 'PNP0C0F:08': device_add
+[    2.408005] bus: 'acpi': add device PNP0C0F:08
+[    2.412005] PM: Adding info for acpi:PNP0C0F:08
+[    2.416005] device: 'PNP0C0F:09': device_add
+[    2.420005] bus: 'acpi': add device PNP0C0F:09
+[    2.424005] PM: Adding info for acpi:PNP0C0F:09
+[    2.432005] device: 'PNP0C0F:0a': device_add
+[    2.436005] bus: 'acpi': add device PNP0C0F:0a
+[    2.440005] PM: Adding info for acpi:PNP0C0F:0a
+[    2.444005] device: 'PNP0C0F:0b': device_add
+[    2.448005] bus: 'acpi': add device PNP0C0F:0b
+[    2.452005] PM: Adding info for acpi:PNP0C0F:0b
+[    2.460005] device: 'PNP0C0F:0c': device_add
+[    2.464005] bus: 'acpi': add device PNP0C0F:0c
+[    2.468005] PM: Adding info for acpi:PNP0C0F:0c
+[    2.472005] device: 'PNP0C0F:0d': device_add
+[    2.476005] bus: 'acpi': add device PNP0C0F:0d
+[    2.480005] PM: Adding info for acpi:PNP0C0F:0d
+[    2.488005] device: 'PNP0C0F:0e': device_add
+[    2.492005] bus: 'acpi': add device PNP0C0F:0e
+[    2.496005] PM: Adding info for acpi:PNP0C0F:0e
+[    2.500005] device: 'PNP0C0F:0f': device_add
+[    2.504005] bus: 'acpi': add device PNP0C0F:0f
+[    2.508005] PM: Adding info for acpi:PNP0C0F:0f
+[    2.516005] device: 'PNP0C0F:10': device_add
+[    2.520005] bus: 'acpi': add device PNP0C0F:10
+[    2.524005] PM: Adding info for acpi:PNP0C0F:10
+[    2.528005] device: 'PNP0C0F:11': device_add
+[    2.532005] bus: 'acpi': add device PNP0C0F:11
+[    2.536005] PM: Adding info for acpi:PNP0C0F:11
+[    2.540005] device: 'PNP0C0F:12': device_add
+[    2.544005] bus: 'acpi': add device PNP0C0F:12
+[    2.548005] PM: Adding info for acpi:PNP0C0F:12
+[    2.552005] device: 'PNP0C0F:13': device_add
+[    2.556005] bus: 'acpi': add device PNP0C0F:13
+[    2.560005] PM: Adding info for acpi:PNP0C0F:13
+[    2.564005] device: 'PNP0C0F:14': device_add
+[    2.568005] bus: 'acpi': add device PNP0C0F:14
+[    2.572005] PM: Adding info for acpi:PNP0C0F:14
+[    2.576005] device: 'PNP0C0F:15': device_add
+[    2.580005] bus: 'acpi': add device PNP0C0F:15
+[    2.584005] PM: Adding info for acpi:PNP0C0F:15
+[    2.588005] device: 'PNP0C0F:16': device_add
+[    2.592005] bus: 'acpi': add device PNP0C0F:16
+[    2.596005] PM: Adding info for acpi:PNP0C0F:16
+[    2.600005] device: 'PNP0C0F:17': device_add
+[    2.604005] bus: 'acpi': add device PNP0C0F:17
+[    2.608005] PM: Adding info for acpi:PNP0C0F:17
+[    2.612005] device: 'PNP0C0F:18': device_add
+[    2.616005] bus: 'acpi': add device PNP0C0F:18
+[    2.620005] PM: Adding info for acpi:PNP0C0F:18
+[    2.628005] device: 'PNP0C0F:19': device_add
+[    2.632005] bus: 'acpi': add device PNP0C0F:19
+[    2.636005] PM: Adding info for acpi:PNP0C0F:19
+[    2.640005] device: 'PNP0C0F:1a': device_add
+[    2.644005] bus: 'acpi': add device PNP0C0F:1a
+[    2.648005] PM: Adding info for acpi:PNP0C0F:1a
+[    2.656005] device: 'PNP0C0F:1b': device_add
+[    2.660005] bus: 'acpi': add device PNP0C0F:1b
+[    2.664005] PM: Adding info for acpi:PNP0C0F:1b
+[    2.668005] device: 'PNP0C0F:1c': device_add
+[    2.672005] bus: 'acpi': add device PNP0C0F:1c
+[    2.676005] PM: Adding info for acpi:PNP0C0F:1c
+[    2.684005] device: 'PNP0C0F:1d': device_add
+[    2.688005] bus: 'acpi': add device PNP0C0F:1d
+[    2.692005] PM: Adding info for acpi:PNP0C0F:1d
+[    2.696005] device: 'PNP0C0F:1e': device_add
+[    2.700005] bus: 'acpi': add device PNP0C0F:1e
+[    2.704005] PM: Adding info for acpi:PNP0C0F:1e
+[    2.712005] device: 'PNP0C0F:1f': device_add
+[    2.716005] bus: 'acpi': add device PNP0C0F:1f
+[    2.720005] PM: Adding info for acpi:PNP0C0F:1f
+[    2.724005] device: 'PNP0C02:01': device_add
+[    2.728005] bus: 'acpi': add device PNP0C02:01
+[    2.732005] PM: Adding info for acpi:PNP0C02:01
+[    2.740005] device: 'PNP0000:00': device_add
+[    2.744005] bus: 'acpi': add device PNP0000:00
+[    2.748005] PM: Adding info for acpi:PNP0000:00
+[    2.752005] device: 'PNP0200:00': device_add
+[    2.756005] bus: 'acpi': add device PNP0200:00
+[    2.760005] PM: Adding info for acpi:PNP0200:00
+[    2.764005] device: 'PNP0100:00': device_add
+[    2.768005] bus: 'acpi': add device PNP0100:00
+[    2.772005] PM: Adding info for acpi:PNP0100:00
+[    2.776005] device: 'PNP0B00:00': device_add
+[    2.780006] bus: 'acpi': add device PNP0B00:00
+[    2.784006] PM: Adding info for acpi:PNP0B00:00
+[    2.788006] device: 'PNP0800:00': device_add
+[    2.792006] bus: 'acpi': add device PNP0800:00
+[    2.796006] PM: Adding info for acpi:PNP0800:00
+[    2.804006] device: 'PNP0C04:00': device_add
+[    2.808006] bus: 'acpi': add device PNP0C04:00
+[    2.812006] PM: Adding info for acpi:PNP0C04:00
+[    2.816006] device: 'PNP0700:00': device_add
+[    2.820006] bus: 'acpi': add device PNP0700:00
+[    2.824006] PM: Adding info for acpi:PNP0700:00
+[    2.828006] device: 'PNP0501:00': device_add
+[    2.832006] bus: 'acpi': add device PNP0501:00
+[    2.836006] PM: Adding info for acpi:PNP0501:00
+[    2.848006] device: 'PNP0401:00': device_add
+[    2.852006] bus: 'acpi': add device PNP0401:00
+[    2.856006] PM: Adding info for acpi:PNP0401:00
+[    2.860006] device: 'PNP0F13:00': device_add
+[    2.864006] bus: 'acpi': add device PNP0F13:00
+[    2.868006] PM: Adding info for acpi:PNP0F13:00
+[    2.872006] device: 'PNP0303:00': device_add
+[    2.876006] bus: 'acpi': add device PNP0303:00
+[    2.880006] PM: Adding info for acpi:PNP0303:00
+[    2.888006] device: 'PNPB006:00': device_add
+[    2.892006] bus: 'acpi': add device PNPB006:00
+[    2.896006] PM: Adding info for acpi:PNPB006:00
+[    2.904006] device: 'PNPB02F:00': device_add
+[    2.908006] bus: 'acpi': add device PNPB02F:00
+[    2.912006] PM: Adding info for acpi:PNPB02F:00
+[    2.916006] device: 'PNP0C02:02': device_add
+[    2.920006] bus: 'acpi': add device PNP0C02:02
+[    2.924006] PM: Adding info for acpi:PNP0C02:02
+[    2.928006] device: 'PNP0C01:00': device_add
+[    2.932006] bus: 'acpi': add device PNP0C01:00
+[    2.940006] PM: Adding info for acpi:PNP0C01:00
+[    2.944006] device: 'LNXTHERM:00': device_add
+[    2.948006] bus: 'acpi': add device LNXTHERM:00
+[    2.952006] PM: Adding info for acpi:LNXTHERM:00
+[    2.956006] device: 'PNP0C0B:00': device_add
+[    2.960006] bus: 'acpi': add device PNP0C0B:00
+[    2.964006] PM: Adding info for acpi:PNP0C0B:00
+[    2.968006] device: 'LNXTHERM:01': device_add
+[    2.972006] bus: 'acpi': add device LNXTHERM:01
+[    2.976006] PM: Adding info for acpi:LNXTHERM:01
+[    2.980006] bus: 'acpi': add driver ec
+[    2.984006] bus: 'acpi': add driver power
+[    2.988006] initcall acpi_init+0x0/0x10e returned 0 after 1382814 usecs
+[    2.992006] calling  dock_init+0x0/0x7d @ 1
+[    2.996006] ACPI: No dock devices found.
+[    3.000006] initcall dock_init+0x0/0x7d returned 0 after 3906 usecs
+[    3.004006] calling  acpi_pci_root_init+0x0/0x25 @ 1
+[    3.008006] bus: 'acpi': add driver pci_root
+[    3.012006] bus: 'acpi': driver_probe_device: matched device PNP0A08:00 with driver pci_root
+[    3.016006] bus: 'acpi': really_probe: probing driver pci_root with device PNP0A08:00
+[    3.020006] ACPI: PCI Root Bridge [PCI0] (0000:00)
+[    3.024006] device: 'pci0000:00': device_add
+[    3.028006] PM: Adding info for No Bus:pci0000:00
+[    3.032006] device: '0000:00': device_add
+[    3.036006] PM: Adding info for No Bus:0000:00
+[    3.040006] pci 0000:00:01.1: reg 10 io port: [0xdc00-0xdc1f]
+[    3.044006] pci 0000:00:01.1: reg 20 io port: [0x4c00-0x4c3f]
+[    3.048006] pci 0000:00:01.1: reg 24 io port: [0x4c40-0x4c7f]
+[    3.052006] pci 0000:00:01.1: PME# supported from D3hot D3cold
+[    3.056006] pci 0000:00:01.1: PME# disabled
+[    3.060006] pci 0000:00:02.0: reg 10 32bit mmio: [0xda102000-0xda102fff]
+[    3.064006] pci 0000:00:02.0: supports D1 D2
+[    3.068006] pci 0000:00:02.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    3.072006] pci 0000:00:02.0: PME# disabled
+[    3.076006] pci 0000:00:02.1: reg 10 32bit mmio: [0xfeb00000-0xfeb000ff]
+[    3.080006] pci 0000:00:02.1: supports D1 D2
+[    3.084006] pci 0000:00:02.1: PME# supported from D0 D1 D2 D3hot D3cold
+[    3.088006] pci 0000:00:02.1: PME# disabled
+[    3.092006] pci 0000:00:04.0: reg 10 io port: [0xd400-0xd4ff]
+[    3.096006] pci 0000:00:04.0: reg 14 io port: [0xd800-0xd8ff]
+[    3.100006] pci 0000:00:04.0: reg 18 32bit mmio: [0xda101000-0xda101fff]
+[    3.104006] pci 0000:00:04.0: supports D1 D2
+[    3.108006] pci 0000:00:06.0: reg 20 io port: [0xf000-0xf00f]
+[    3.112006] pci 0000:00:0a.0: reg 10 32bit mmio: [0xda100000-0xda100fff]
+[    3.116006] pci 0000:00:0a.0: reg 14 io port: [0xd000-0xd007]
+[    3.120006] pci 0000:00:0a.0: supports D1 D2
+[    3.124006] pci 0000:00:0a.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    3.128006] pci 0000:00:0a.0: PME# disabled
+[    3.132006] pci 0000:00:0b.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    3.136006] pci 0000:00:0b.0: PME# disabled
+[    3.140006] pci 0000:00:0c.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    3.144006] pci 0000:00:0c.0: PME# disabled
+[    3.148006] pci 0000:00:0d.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    3.152006] pci 0000:00:0d.0: PME# disabled
+[    3.156006] pci 0000:00:0e.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    3.160006] pci 0000:00:0e.0: PME# disabled
+[    3.164006] pci 0000:05:07.0: reg 10 io port: [0xc000-0xc0ff]
+[    3.168006] pci 0000:05:07.0: reg 14 32bit mmio: [0xda000000-0xda0000ff]
+[    3.172006] pci 0000:05:07.0: supports D1 D2
+[    3.176006] pci 0000:05:07.0: PME# supported from D1 D2 D3hot
+[    3.180006] pci 0000:05:07.0: PME# disabled
+[    3.184006] pci 0000:00:09.0: transparent bridge
+[    3.188006] pci 0000:00:09.0: bridge io port: [0xc000-0xcfff]
+[    3.192006] pci 0000:00:09.0: bridge 32bit mmio: [0xda000000-0xda0fffff]
+[    3.196006] pci 0000:01:00.0: reg 10 32bit mmio: [0xd0000000-0xd7ffffff]
+[    3.200006] pci 0000:01:00.0: reg 14 io port: [0xb000-0xb0ff]
+[    3.204006] pci 0000:01:00.0: reg 18 32bit mmio: [0xd9000000-0xd900ffff]
+[    3.208006] pci 0000:01:00.0: reg 30 32bit mmio: [0x000000-0x01ffff]
+[    3.212006] pci 0000:01:00.0: supports D1 D2
+[    3.216006] pci 0000:01:00.1: reg 10 32bit mmio: [0xd9010000-0xd901ffff]
+[    3.220006] pci 0000:01:00.1: supports D1 D2
+[    3.224006] pci 0000:00:0e.0: bridge io port: [0xb000-0xbfff]
+[    3.228006] pci 0000:00:0e.0: bridge 32bit mmio: [0xd8000000-0xd9ffffff]
+[    3.232006] pci 0000:00:0e.0: bridge 64bit mmio pref: [0xd0000000-0xd7ffffff]
+[    3.236006] pci_bus 0000:00: on NUMA node 0
+[    3.240006] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+[    3.252006] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.HUB0._PRT]
+[    3.260006] device: '0000:00:00.0': device_add
+[    3.296006] bus: 'pci': add device 0000:00:00.0
+[    3.300006] PM: Adding info for pci:0000:00:00.0
+[    3.304006] device: '0000:00:01.0': device_add
+[    3.344006] bus: 'pci': add device 0000:00:01.0
+[    3.348006] PM: Adding info for pci:0000:00:01.0
+[    3.352006] device: '0000:00:01.1': device_add
+[    3.392007] bus: 'pci': add device 0000:00:01.1
+[    3.396007] PM: Adding info for pci:0000:00:01.1
+[    3.400007] device: '0000:00:02.0': device_add
+[    3.440007] bus: 'pci': add device 0000:00:02.0
+[    3.444007] PM: Adding info for pci:0000:00:02.0
+[    3.448007] device: '0000:00:02.1': device_add
+[    3.488007] bus: 'pci': add device 0000:00:02.1
+[    3.492007] PM: Adding info for pci:0000:00:02.1
+[    3.496007] device: '0000:00:04.0': device_add
+[    3.536007] bus: 'pci': add device 0000:00:04.0
+[    3.540007] PM: Adding info for pci:0000:00:04.0
+[    3.544007] device: '0000:00:06.0': device_add
+[    3.584007] bus: 'pci': add device 0000:00:06.0
+[    3.588007] PM: Adding info for pci:0000:00:06.0
+[    3.592007] device: '0000:00:09.0': device_add
+[    3.632007] bus: 'pci': add device 0000:00:09.0
+[    3.636007] PM: Adding info for pci:0000:00:09.0
+[    3.640007] device: '0000:00:0a.0': device_add
+[    3.680007] bus: 'pci': add device 0000:00:0a.0
+[    3.684007] PM: Adding info for pci:0000:00:0a.0
+[    3.688007] device: '0000:00:0b.0': device_add
+[    3.728007] bus: 'pci': add device 0000:00:0b.0
+[    3.732007] PM: Adding info for pci:0000:00:0b.0
+[    3.736007] device: '0000:00:0c.0': device_add
+[    3.776007] bus: 'pci': add device 0000:00:0c.0
+[    3.780007] PM: Adding info for pci:0000:00:0c.0
+[    3.784007] device: '0000:00:0d.0': device_add
+[    3.824007] bus: 'pci': add device 0000:00:0d.0
+[    3.828007] PM: Adding info for pci:0000:00:0d.0
+[    3.832007] device: '0000:00:0e.0': device_add
+[    3.872007] bus: 'pci': add device 0000:00:0e.0
+[    3.876007] PM: Adding info for pci:0000:00:0e.0
+[    3.880007] device: '0000:00:18.0': device_add
+[    3.920007] bus: 'pci': add device 0000:00:18.0
+[    3.924007] PM: Adding info for pci:0000:00:18.0
+[    3.928007] device: '0000:00:18.1': device_add
+[    3.968007] bus: 'pci': add device 0000:00:18.1
+[    3.972007] PM: Adding info for pci:0000:00:18.1
+[    3.976008] device: '0000:00:18.2': device_add
+[    4.016008] bus: 'pci': add device 0000:00:18.2
+[    4.020008] PM: Adding info for pci:0000:00:18.2
+[    4.024008] device: '0000:00:18.3': device_add
+[    4.064008] bus: 'pci': add device 0000:00:18.3
+[    4.068008] PM: Adding info for pci:0000:00:18.3
+[    4.072008] device: '0000:05:07.0': device_add
+[    4.076008] bus: 'pci': add device 0000:05:07.0
+[    4.084008] PM: Adding info for pci:0000:05:07.0
+[    4.088008] device: '0000:05': device_add
+[    4.092008] PM: Adding info for No Bus:0000:05
+[    4.096008] device: '0000:04': device_add
+[    4.100008] PM: Adding info for No Bus:0000:04
+[    4.104008] device: '0000:03': device_add
+[    4.108008] PM: Adding info for No Bus:0000:03
+[    4.112008] device: '0000:02': device_add
+[    4.116008] PM: Adding info for No Bus:0000:02
+[    4.120008] device: '0000:01:00.0': device_add
+[    4.124008] bus: 'pci': add device 0000:01:00.0
+[    4.128008] PM: Adding info for pci:0000:01:00.0
+[    4.132008] device: '0000:01:00.1': device_add
+[    4.136008] bus: 'pci': add device 0000:01:00.1
+[    4.140008] PM: Adding info for pci:0000:01:00.1
+[    4.144008] device: '0000:01': device_add
+[    4.148008] PM: Adding info for No Bus:0000:01
+[    4.152008] driver: 'PNP0A08:00': driver_bound: bound to device 'pci_root'
+[    4.156008] bus: 'acpi': really_probe: bound device PNP0A08:00 to driver pci_root
+[    4.160008] initcall acpi_pci_root_init+0x0/0x25 returned 0 after 1125001 usecs
+[    4.164008] calling  acpi_pci_link_init+0x0/0x3f @ 1
+[    4.168008] bus: 'acpi': add driver pci_link
+[    4.172008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:00 with driver pci_link
+[    4.176008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:00
+[    4.180008] ACPI: PCI Interrupt Link [LNK1] (IRQs 3 4 5 7 9 10 11 12 14 15) *0, disabled.
+[    4.188008] driver: 'PNP0C0F:00': driver_bound: bound to device 'pci_link'
+[    4.192008] bus: 'acpi': really_probe: bound device PNP0C0F:00 to driver pci_link
+[    4.196008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:01 with driver pci_link
+[    4.200008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:01
+[    4.204008] ACPI: PCI Interrupt Link [LNK2] (IRQs 3 4 5 7 9 10 *11 12 14 15)
+[    4.212008] driver: 'PNP0C0F:01': driver_bound: bound to device 'pci_link'
+[    4.216008] bus: 'acpi': really_probe: bound device PNP0C0F:01 to driver pci_link
+[    4.220008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:02 with driver pci_link
+[    4.224008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:02
+[    4.232008] ACPI: PCI Interrupt Link [LNK3] (IRQs 3 4 *5 7 9 10 11 12 14 15)
+[    4.236008] driver: 'PNP0C0F:02': driver_bound: bound to device 'pci_link'
+[    4.240008] bus: 'acpi': really_probe: bound device PNP0C0F:02 to driver pci_link
+[    4.244008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:03 with driver pci_link
+[    4.248008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:03
+[    4.252008] ACPI: PCI Interrupt Link [LNK4] (IRQs 3 4 5 7 9 10 11 12 14 15) *0, disabled.
+[    4.260008] driver: 'PNP0C0F:03': driver_bound: bound to device 'pci_link'
+[    4.264008] bus: 'acpi': really_probe: bound device PNP0C0F:03 to driver pci_link
+[    4.268008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:04 with driver pci_link
+[    4.272008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:04
+[    4.276008] ACPI: PCI Interrupt Link [LNK5] (IRQs 3 4 5 7 9 10 11 12 14 15) *0, disabled.
+[    4.284008] driver: 'PNP0C0F:04': driver_bound: bound to device 'pci_link'
+[    4.288008] bus: 'acpi': really_probe: bound device PNP0C0F:04 to driver pci_link
+[    4.292008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:05 with driver pci_link
+[    4.296008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:05
+[    4.300008] ACPI: PCI Interrupt Link [LUBA] (IRQs 3 4 5 7 9 10 11 12 14 15) *0, disabled.
+[    4.308008] driver: 'PNP0C0F:05': driver_bound: bound to device 'pci_link'
+[    4.312008] bus: 'acpi': really_probe: bound device PNP0C0F:05 to driver pci_link
+[    4.316008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:06 with driver pci_link
+[    4.320008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:06
+[    4.328008] ACPI: PCI Interrupt Link [LUBB] (IRQs 3 4 5 7 9 10 11 12 14 15) *0, disabled.
+[    4.336008] driver: 'PNP0C0F:06': driver_bound: bound to device 'pci_link'
+[    4.340008] bus: 'acpi': really_probe: bound device PNP0C0F:06 to driver pci_link
+[    4.344008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:07 with driver pci_link
+[    4.348008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:07
+[    4.352008] ACPI: PCI Interrupt Link [LMAC] (IRQs 3 4 5 7 9 10 *11 12 14 15)
+[    4.356008] driver: 'PNP0C0F:07': driver_bound: bound to device 'pci_link'
+[    4.360008] bus: 'acpi': really_probe: bound device PNP0C0F:07 to driver pci_link
+[    4.364008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:08 with driver pci_link
+[    4.368008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:08
+[    4.372008] ACPI: PCI Interrupt Link [LACI] (IRQs *3 4 5 7 9 10 11 12 14 15)
+[    4.380008] driver: 'PNP0C0F:08': driver_bound: bound to device 'pci_link'
+[    4.384008] bus: 'acpi': really_probe: bound device PNP0C0F:08 to driver pci_link
+[    4.388008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:09 with driver pci_link
+[    4.392008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:09
+[    4.400008] ACPI: PCI Interrupt Link [LMCI] (IRQs 3 4 5 7 9 10 11 12 14 15) *0, disabled.
+[    4.408008] driver: 'PNP0C0F:09': driver_bound: bound to device 'pci_link'
+[    4.412008] bus: 'acpi': really_probe: bound device PNP0C0F:09 to driver pci_link
+[    4.416008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:0a with driver pci_link
+[    4.420008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:0a
+[    4.424008] ACPI: PCI Interrupt Link [LSMB] (IRQs 3 4 5 7 9 10 11 12 14 15) *0, disabled.
+[    4.432008] driver: 'PNP0C0F:0a': driver_bound: bound to device 'pci_link'
+[    4.436008] bus: 'acpi': really_probe: bound device PNP0C0F:0a to driver pci_link
+[    4.440008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:0b with driver pci_link
+[    4.444008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:0b
+[    4.448008] ACPI: PCI Interrupt Link [LUB2] (IRQs 3 4 5 7 9 10 11 12 14 15) *0, disabled.
+[    4.456008] driver: 'PNP0C0F:0b': driver_bound: bound to device 'pci_link'
+[    4.460008] bus: 'acpi': really_probe: bound device PNP0C0F:0b to driver pci_link
+[    4.464008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:0c with driver pci_link
+[    4.468008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:0c
+[    4.472008] ACPI: PCI Interrupt Link [LIDE] (IRQs 3 4 5 7 9 10 11 12 14 15) *0, disabled.
+[    4.480008] driver: 'PNP0C0F:0c': driver_bound: bound to device 'pci_link'
+[    4.484008] bus: 'acpi': really_probe: bound device PNP0C0F:0c to driver pci_link
+[    4.488008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:0d with driver pci_link
+[    4.492008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:0d
+[    4.496008] ACPI: PCI Interrupt Link [LSID] (IRQs 3 4 5 7 9 10 11 12 14 15) *0, disabled.
+[    4.504008] driver: 'PNP0C0F:0d': driver_bound: bound to device 'pci_link'
+[    4.508008] bus: 'acpi': really_probe: bound device PNP0C0F:0d to driver pci_link
+[    4.512008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:0e with driver pci_link
+[    4.516008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:0e
+[    4.524008] ACPI: PCI Interrupt Link [LFID] (IRQs 3 4 5 7 9 10 11 12 14 15) *0, disabled.
+[    4.532008] driver: 'PNP0C0F:0e': driver_bound: bound to device 'pci_link'
+[    4.536008] bus: 'acpi': really_probe: bound device PNP0C0F:0e to driver pci_link
+[    4.540008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:0f with driver pci_link
+[    4.544008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:0f
+[    4.548008] ACPI: PCI Interrupt Link [LPCA] (IRQs 3 4 5 7 9 10 11 12 14 15) *0, disabled.
+[    4.556008] driver: 'PNP0C0F:0f': driver_bound: bound to device 'pci_link'
+[    4.560008] bus: 'acpi': really_probe: bound device PNP0C0F:0f to driver pci_link
+[    4.564008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:10 with driver pci_link
+[    4.568008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:10
+[    4.572008] ACPI: PCI Interrupt Link [APC1] (IRQs 16) *0, disabled.
+[    4.580008] driver: 'PNP0C0F:10': driver_bound: bound to device 'pci_link'
+[    4.584008] bus: 'acpi': really_probe: bound device PNP0C0F:10 to driver pci_link
+[    4.588008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:11 with driver pci_link
+[    4.592008] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:11
+[    4.596008] ACPI: PCI Interrupt Link [APC2] (IRQs 17) *0
+[    4.600008] driver: 'PNP0C0F:11': driver_bound: bound to device 'pci_link'
+[    4.604008] bus: 'acpi': really_probe: bound device PNP0C0F:11 to driver pci_link
+[    4.608008] bus: 'acpi': driver_probe_device: matched device PNP0C0F:12 with driver pci_link
+[    4.612009] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:12
+[    4.616009] ACPI: PCI Interrupt Link [APC3] (IRQs 18) *0
+[    4.620009] driver: 'PNP0C0F:12': driver_bound: bound to device 'pci_link'
+[    4.624009] bus: 'acpi': really_probe: bound device PNP0C0F:12 to driver pci_link
+[    4.628009] bus: 'acpi': driver_probe_device: matched device PNP0C0F:13 with driver pci_link
+[    4.632009] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:13
+[    4.636009] ACPI: PCI Interrupt Link [APC4] (IRQs 19) *0, disabled.
+[    4.644009] driver: 'PNP0C0F:13': driver_bound: bound to device 'pci_link'
+[    4.648009] bus: 'acpi': really_probe: bound device PNP0C0F:13 to driver pci_link
+[    4.652009] bus: 'acpi': driver_probe_device: matched device PNP0C0F:14 with driver pci_link
+[    4.656009] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:14
+[    4.664009] ACPI: PCI Interrupt Link [APC5] (IRQs *16), disabled.
+[    4.668009] driver: 'PNP0C0F:14': driver_bound: bound to device 'pci_link'
+[    4.672009] bus: 'acpi': really_probe: bound device PNP0C0F:14 to driver pci_link
+[    4.676009] bus: 'acpi': driver_probe_device: matched device PNP0C0F:15 with driver pci_link
+[    4.680009] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:15
+[    4.684009] ACPI: PCI Interrupt Link [APCF] (IRQs 20 21 22 23) *0, disabled.
+[    4.692009] driver: 'PNP0C0F:15': driver_bound: bound to device 'pci_link'
+[    4.696009] bus: 'acpi': really_probe: bound device PNP0C0F:15 to driver pci_link
+[    4.700009] bus: 'acpi': driver_probe_device: matched device PNP0C0F:16 with driver pci_link
+[    4.704009] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:16
+[    4.712009] ACPI: PCI Interrupt Link [APCG] (IRQs 20 21 22 23) *0, disabled.
+[    4.716009] driver: 'PNP0C0F:16': driver_bound: bound to device 'pci_link'
+[    4.720009] bus: 'acpi': really_probe: bound device PNP0C0F:16 to driver pci_link
+[    4.724009] bus: 'acpi': driver_probe_device: matched device PNP0C0F:17 with driver pci_link
+[    4.728009] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:17
+[    4.732009] ACPI: PCI Interrupt Link [APCH] (IRQs 20 21 22 23) *0
+[    4.740009] driver: 'PNP0C0F:17': driver_bound: bound to device 'pci_link'
+[    4.744009] bus: 'acpi': really_probe: bound device PNP0C0F:17 to driver pci_link
+[    4.748009] bus: 'acpi': driver_probe_device: matched device PNP0C0F:18 with driver pci_link
+[    4.752009] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:18
+[    4.760009] ACPI: PCI Interrupt Link [APCJ] (IRQs 20 21 22 23) *0
+[    4.764009] driver: 'PNP0C0F:18': driver_bound: bound to device 'pci_link'
+[    4.768009] bus: 'acpi': really_probe: bound device PNP0C0F:18 to driver pci_link
+[    4.772009] bus: 'acpi': driver_probe_device: matched device PNP0C0F:19 with driver pci_link
+[    4.776009] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:19
+[    4.780009] ACPI: PCI Interrupt Link [APCK] (IRQs 20 21 22 23) *0, disabled.
+[    4.788009] driver: 'PNP0C0F:19': driver_bound: bound to device 'pci_link'
+[    4.792009] bus: 'acpi': really_probe: bound device PNP0C0F:19 to driver pci_link
+[    4.796009] bus: 'acpi': driver_probe_device: matched device PNP0C0F:1a with driver pci_link
+[    4.800009] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:1a
+[    4.804009] ACPI: PCI Interrupt Link [APCS] (IRQs 20 21 22 23) *0, disabled.
+[    4.812009] driver: 'PNP0C0F:1a': driver_bound: bound to device 'pci_link'
+[    4.816009] bus: 'acpi': really_probe: bound device PNP0C0F:1a to driver pci_link
+[    4.820009] bus: 'acpi': driver_probe_device: matched device PNP0C0F:1b with driver pci_link
+[    4.824009] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:1b
+[    4.832009] ACPI: PCI Interrupt Link [APCL] (IRQs 20 21 22 23) *0, disabled.
+[    4.836009] driver: 'PNP0C0F:1b': driver_bound: bound to device 'pci_link'
+[    4.840009] bus: 'acpi': really_probe: bound device PNP0C0F:1b to driver pci_link
+[    4.844009] bus: 'acpi': driver_probe_device: matched device PNP0C0F:1c with driver pci_link
+[    4.848009] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:1c
+[    4.852009] ACPI: PCI Interrupt Link [APCZ] (IRQs 20 21 22 23) *0, disabled.
+[    4.856009] driver: 'PNP0C0F:1c': driver_bound: bound to device 'pci_link'
+[    4.860009] bus: 'acpi': really_probe: bound device PNP0C0F:1c to driver pci_link
+[    4.864009] bus: 'acpi': driver_probe_device: matched device PNP0C0F:1d with driver pci_link
+[    4.868009] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:1d
+[    4.872009] ACPI: PCI Interrupt Link [APSI] (IRQs 20 21 22 23) *0, disabled.
+[    4.880009] driver: 'PNP0C0F:1d': driver_bound: bound to device 'pci_link'
+[    4.884009] bus: 'acpi': really_probe: bound device PNP0C0F:1d to driver pci_link
+[    4.888009] bus: 'acpi': driver_probe_device: matched device PNP0C0F:1e with driver pci_link
+[    4.892009] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:1e
+[    4.896009] ACPI: PCI Interrupt Link [APSJ] (IRQs 20 21 22 23) *0, disabled.
+[    4.904009] driver: 'PNP0C0F:1e': driver_bound: bound to device 'pci_link'
+[    4.908009] bus: 'acpi': really_probe: bound device PNP0C0F:1e to driver pci_link
+[    4.912009] bus: 'acpi': driver_probe_device: matched device PNP0C0F:1f with driver pci_link
+[    4.916009] bus: 'acpi': really_probe: probing driver pci_link with device PNP0C0F:1f
+[    4.924009] ACPI: PCI Interrupt Link [APCP] (IRQs 20 21 22 23) *0, disabled.
+[    4.928009] driver: 'PNP0C0F:1f': driver_bound: bound to device 'pci_link'
+[    4.932009] bus: 'acpi': really_probe: bound device PNP0C0F:1f to driver pci_link
+[    4.936009] initcall acpi_pci_link_init+0x0/0x3f returned 0 after 750001 usecs
+[    4.940009] calling  pnp_init+0x0/0xf @ 1
+[    4.944009] bus: 'pnp': registered
+[    4.948009] initcall pnp_init+0x0/0xf returned 0 after 3906 usecs
+[    4.952009] calling  regulator_fixed_voltage_init+0x0/0xf @ 1
+[    4.956009] bus: 'platform': add driver reg-fixed-voltage
+[    4.960009] initcall regulator_fixed_voltage_init+0x0/0xf returned 0 after 3906 usecs
+[    4.964009] calling  pcf50633_regulator_init+0x0/0xf @ 1
+[    4.968009] bus: 'platform': add driver pcf50633-regltr
+[    4.976009] initcall pcf50633_regulator_init+0x0/0xf returned 0 after 7812 usecs
+[    4.980009] calling  misc_init+0x0/0x92 @ 1
+[    4.984009] device class 'misc': registering
+[    4.988009] initcall misc_init+0x0/0x92 returned 0 after 3906 usecs
+[    4.992009] calling  cn_init+0x0/0xd0 @ 1
+[    4.996009] initcall cn_init+0x0/0xd0 returned 0 after 0 usecs
+[    5.000009] calling  tifm_init+0x0/0x6f @ 1
+[    5.004009] bus: 'tifm': registered
+[    5.004009] device class 'tifm_adapter': registering
+[    5.008009] initcall tifm_init+0x0/0x6f returned 0 after 3906 usecs
+[    5.012009] calling  wm8400_module_init+0x0/0x2a @ 1
+[    5.016009] bus: 'i2c': add driver WM8400
+[    5.020009] i2c-core: driver [WM8400] registered
+[    5.024009] initcall wm8400_module_init+0x0/0x2a returned 0 after 7812 usecs
+[    5.028009] calling  tps_init+0x0/0x6f @ 1
+[    5.032009] tps65010: version 2 May 2005
+[    5.036009] bus: 'i2c': add driver tps65010
+[    5.044009] i2c-core: driver [tps65010] registered
+[    5.048009] bus: 'i2c': remove driver tps65010
+[    5.052009] driver: 'tps65010': driver_release
+[    5.056009] i2c-core: driver [tps65010] unregistered
+[    5.076009] bus: 'i2c': add driver tps65010
+[    5.080009] i2c-core: driver [tps65010] registered
+[    5.084009] bus: 'i2c': remove driver tps65010
+[    5.088009] driver: 'tps65010': driver_release
+[    5.092009] i2c-core: driver [tps65010] unregistered
+[    5.112009] bus: 'i2c': add driver tps65010
+[    5.116009] i2c-core: driver [tps65010] registered
+[    5.120009] bus: 'i2c': remove driver tps65010
+[    5.124009] driver: 'tps65010': driver_release
+[    5.128009] i2c-core: driver [tps65010] unregistered
+[    5.132009] tps65010: no chip?
+[    5.136009] initcall tps_init+0x0/0x6f returned -19 after 101562 usecs
+[    5.140009] calling  pcf50633_init+0x0/0x11 @ 1
+[    5.144009] bus: 'i2c': add driver pcf50633
+[    5.148009] i2c-core: driver [pcf50633] registered
+[    5.152009] initcall pcf50633_init+0x0/0x11 returned 0 after 7812 usecs
+[    5.156009] calling  ab3100_i2c_init+0x0/0x11 @ 1
+[    5.160009] bus: 'i2c': add driver ab3100
+[    5.164009] i2c-core: driver [ab3100] registered
+[    5.168009] initcall ab3100_i2c_init+0x0/0x11 returned 0 after 7812 usecs
+[    5.172009] calling  init_scsi+0x0/0x89 @ 1
+[    5.176009] device class 'scsi_host': registering
+[    5.180009] bus: 'scsi': registered
+[    5.184009] device class 'scsi_device': registering
+[    5.188009] SCSI subsystem initialized
+[    5.192009] initcall init_scsi+0x0/0x89 returned 0 after 15625 usecs
+[    5.196009] calling  ata_init+0x0/0x75 @ 1
+[    5.200009] libata version 3.00 loaded.
+[    5.204009] initcall ata_init+0x0/0x75 returned 0 after 3906 usecs
+[    5.208009] calling  phy_init+0x0/0x29 @ 1
+[    5.212009] device class 'mdio_bus': registering
+[    5.220009] bus: 'mdio_bus': registered
+[    5.224009] bus: 'mdio_bus': add driver Generic PHY
+[    5.228009] initcall phy_init+0x0/0x29 returned 0 after 15625 usecs
+[    5.232009] calling  init_pcmcia_cs+0x0/0x2d @ 1
+[    5.236009] device class 'pcmcia_socket': registering
+[    5.240009] initcall init_pcmcia_cs+0x0/0x2d returned 0 after 3906 usecs
+[    5.244009] calling  nop_usb_xceiv_init+0x0/0xf @ 1
+[    5.248009] bus: 'platform': add driver nop_usb_xceiv
+[    5.252009] initcall nop_usb_xceiv_init+0x0/0xf returned 0 after 3906 usecs
+[    5.256009] calling  usb_init+0x0/0x17f @ 1
+[    5.260009] bus: 'usb': registered
+[    5.264009] bus: 'usb': add driver usbfs
+[    5.268009] usbcore: registered new interface driver usbfs
+[    5.272010] bus: 'usb': add driver hub
+[    5.276010] usbcore: registered new interface driver hub
+[    5.280010] bus: 'usb': add driver usb
+[    5.284010] usbcore: registered new device driver usb
+[    5.288010] initcall usb_init+0x0/0x17f returned 0 after 27343 usecs
+[    5.292010] calling  serio_init+0x0/0x73 @ 1
+[    5.296010] bus: 'serio': registered
+[    5.300010] initcall serio_init+0x0/0x73 returned 0 after 3906 usecs
+[    5.304010] calling  input_init+0x0/0x106 @ 1
+[    5.308010] device class 'input': registering
+[    5.312010] initcall input_init+0x0/0x106 returned 0 after 3906 usecs
+[    5.316010] calling  rtc_init+0x0/0x5e @ 1
+[    5.320010] device class 'rtc': registering
+[    5.328010] initcall rtc_init+0x0/0x5e returned 0 after 7812 usecs
+[    5.332010] calling  power_supply_class_init+0x0/0x2f @ 1
+[    5.336010] device class 'power_supply': registering
+[    5.340010] initcall power_supply_class_init+0x0/0x2f returned 0 after 3906 usecs
+[    5.344010] calling  hwmon_init+0x0/0x3c @ 1
+[    5.348010] device class 'hwmon': registering
+[    5.352010] initcall hwmon_init+0x0/0x3c returned 0 after 3906 usecs
+[    5.356010] calling  thermal_init+0x0/0x46 @ 1
+[    5.360010] device class 'thermal': registering
+[    5.368010] initcall thermal_init+0x0/0x46 returned 0 after 7812 usecs
+[    5.372010] calling  mmc_init+0x0/0x68 @ 1
+[    5.376010] bus: 'mmc': registered
+[    5.380010] device class 'mmc_host': registering
+[    5.384010] bus: 'sdio': registered
+[    5.388010] initcall mmc_init+0x0/0x68 returned 0 after 11718 usecs
+[    5.392010] calling  leds_init+0x0/0x36 @ 1
+[    5.396010] device class 'leds': registering
+[    5.400010] initcall leds_init+0x0/0x36 returned 0 after 3906 usecs
+[    5.404010] calling  pci_subsys_init+0x0/0xe3 @ 1
+[    5.408010] PCI: Using ACPI for IRQ routing
+[    5.412010] initcall pci_subsys_init+0x0/0xe3 returned 0 after 3906 usecs
+[    5.416010] calling  proto_init+0x0/0xf @ 1
+[    5.420010] initcall proto_init+0x0/0xf returned 0 after 0 usecs
+[    5.424010] calling  net_dev_init+0x0/0x180 @ 1
+[    5.428010] device class 'net': registering
+[    5.432010] device: 'lo': device_add
+[    5.436010] PM: Adding info for No Bus:lo
+[    5.440010] initcall net_dev_init+0x0/0x180 returned 0 after 11718 usecs
+[    5.444010] calling  neigh_init+0x0/0x66 @ 1
+[    5.448010] initcall neigh_init+0x0/0x66 returned 0 after 0 usecs
+[    5.452010] calling  fib_rules_init+0x0/0x99 @ 1
+[    5.456010] initcall fib_rules_init+0x0/0x99 returned 0 after 0 usecs
+[    5.460010] calling  pktsched_init+0x0/0xa9 @ 1
+[    5.464010] initcall pktsched_init+0x0/0xa9 returned 0 after 0 usecs
+[    5.468010] calling  tc_filter_init+0x0/0x43 @ 1
+[    5.472010] initcall tc_filter_init+0x0/0x43 returned 0 after 0 usecs
+[    5.476010] calling  tc_action_init+0x0/0x43 @ 1
+[    5.480010] initcall tc_action_init+0x0/0x43 returned 0 after 0 usecs
+[    5.484010] calling  genl_init+0x0/0xb0 @ 1
+[    5.528010] initcall genl_init+0x0/0xb0 returned 0 after 39062 usecs
+[    5.532010] calling  cipso_v4_init+0x0/0x6d @ 1
+[    5.536010] initcall cipso_v4_init+0x0/0x6d returned 0 after 0 usecs
+[    5.540010] calling  wanrouter_init+0x0/0x42 @ 1
+[    5.544010] Sangoma WANPIPE Router v1.1 (c) 1995-2000 Sangoma Technologies Inc.
+[    5.548010] initcall wanrouter_init+0x0/0x42 returned 0 after 3906 usecs
+[    5.552010] calling  bt_init+0x0/0x50 @ 1
+[    5.556010] Bluetooth: Core ver 2.15
+[    5.560010] device class 'bluetooth': registering
+[    5.568010] NET: Registered protocol family 31
+[    5.572010] Bluetooth: HCI device and connection manager initialized
+[    5.576010] Bluetooth: HCI socket layer initialized
+[    5.580010] initcall bt_init+0x0/0x50 returned 0 after 23437 usecs
+[    5.584010] calling  wireless_nlevent_init+0x0/0x39 @ 1
+[    5.588010] initcall wireless_nlevent_init+0x0/0x39 returned 0 after 0 usecs
+[    5.592010] calling  netlbl_init+0x0/0x6d @ 1
+[    5.596010] NetLabel: Initializing
+[    5.600010] NetLabel:  domain hash size = 128
+[    5.604010] NetLabel:  protocols = UNLABELED CIPSOv4
+[    5.608010] NetLabel:  unlabeled traffic allowed by default
+[    5.612010] initcall netlbl_init+0x0/0x6d returned 0 after 15625 usecs
+[    5.616010] calling  sysctl_init+0x0/0x3b @ 1
+[    5.620010] initcall sysctl_init+0x0/0x3b returned 0 after 0 usecs
+[    5.624010] calling  pci_iommu_init+0x0/0x25 @ 1
+[    5.780010] DMA-API: preallocated 32768 debug entries
+[    5.784010] DMA-API: debugging enabled by kernel config
+[    5.788010] initcall pci_iommu_init+0x0/0x25 returned 0 after 156250 usecs
+[    5.792010] calling  print_all_ICs+0x0/0x28 @ 1
+[    5.796010] 
+[    5.796010] printing PIC contents
+[    5.800010] ... PIC  IMR: ffff
+[    5.800010] ... PIC  IRR: 0829
+[    5.804010] ... PIC  ISR: 0000
+[    5.808010] ... PIC ELCR: 0828
+[    5.812010] printing local APIC contents on CPU#0/0:
+[    5.812010] ... APIC ID:      00000000 (0)
+[    5.812010] ... APIC VERSION: 00040010
+[    5.812010] ... APIC TASKPRI: 00000000 (00)
+[    5.812010] ... APIC ARBPRI: 000000e0 (e0)
+[    5.812010] ... APIC PROCPRI: 00000000
+[    5.812010] ... APIC LDR: 01000000
+[    5.812010] ... APIC DFR: ffffffff
+[    5.812010] ... APIC SPIV: 000001ff
+[    5.812010] ... APIC ISR field:
+[    5.812010] 0000000000000000000000000000000000000000000000000000000000000000
+[    5.812010] ... APIC TMR field:
+[    5.812010] 0000000000000000000000000000000000000000000000000000000000000000
+[    5.812010] ... APIC IRR field:
+[    5.812010] 0000000000000000000000000000000000000000000000000000000000008000
+[    5.812010] ... APIC ESR: 00000000
+[    5.812010] ... APIC ICR: 000008fb
+[    5.812010] ... APIC ICR2: 02000000
+[    5.812010] ... APIC LVTT: 000200ef
+[    5.812010] ... APIC LVTPC: 00000400
+[    5.812010] ... APIC LVT0: 00010700
+[    5.812010] ... APIC LVT1: 00000400
+[    5.812010] ... APIC LVTERR: 000000fe
+[    5.812010] ... APIC TMICT: 0000c454
+[    5.812010] ... APIC TMCCT: 000055ed
+[    5.812010] ... APIC TDCR: 00000003
+[    5.812010] 
+[    5.816010] printing local APIC contents on CPU#1/1:
+[    5.816011] ... APIC ID:      01000000 (1)
+[    5.816011] ... APIC VERSION: 00040010
+[    5.816011] ... APIC TASKPRI: 00000000 (00)
+[    5.816011] ... APIC ARBPRI: 000000e0 (e0)
+[    5.816011] ... APIC PROCPRI: 00000000
+[    5.816011] ... APIC LDR: 02000000
+[    5.816011] ... APIC DFR: ffffffff
+[    5.816011] ... APIC SPIV: 000001ff
+[    5.816011] ... APIC ISR field:
+[    5.816011] 0000000000000000000000000000000000000000000000000000000000000000
+[    5.816011] ... APIC TMR field:
+[    5.816011] 0000000000000000000000000000000000000000000000000000000000000000
+[    5.816011] ... APIC IRR field:
+[    5.816011] 0000000000000000000000000000000000000000000000000000000000008000
+[    5.816011] ... APIC ESR: 00000000
+[    5.816011] ... APIC ICR: 000008fd
+[    5.816011] ... APIC ICR2: 01000000
+[    5.816011] ... APIC LVTT: 000200ef
+[    5.816011] ... APIC LVTPC: 00010400
+[    5.816011] ... APIC LVT0: 00010700
+[    5.816011] ... APIC LVT1: 00010400
+[    5.816011] ... APIC LVTERR: 000000fe
+[    5.816011] ... APIC TMICT: 0000c454
+[    5.816011] ... APIC TMCCT: 0000b19f
+[    5.816011] ... APIC TDCR: 00000003
+[    5.816011] 
+[    5.920010] number of MP IRQ sources: 16.
+[    5.924010] number of IO-APIC #2 registers: 24.
+[    5.928010] testing the IO APIC.......................
+[    5.932010] 
+[    5.932010] IO APIC #2......
+[    5.936010] .... register #00: 00000000
+[    5.940010] .......    : physical APIC id: 00
+[    5.944010] .......    : Delivery Type: 0
+[    5.948010] .......    : LTS          : 0
+[    5.952010] .... register #01: 00170011
+[    5.956010] .......     : max redirection entries: 0017
+[    5.960010] .......     : PRQ implemented: 0
+[    5.964011] .......     : IO APIC version: 0011
+[    5.968011] .... register #02: 00000000
+[    5.972011] .......     : arbitration: 00
+[    5.976011] .... IRQ redirection table:
+[    5.980011]  NR Dst Mask Trig IRR Pol Stat Dmod Deli Vect:   
+[    5.984011]  00 003 0    0    0   0   0    1    1    30
+[    5.988011]  01 003 0    0    0   0   0    1    1    31
+[    5.992011]  02 003 1    0    0   0   0    0    0    32
+[    6.000011]  03 003 1    0    0   0   0    1    1    33
+[    6.004011]  04 003 0    0    0   0   0    1    1    34
+[    6.008011]  05 003 1    0    0   0   0    1    1    35
+[    6.016011]  06 003 0    0    0   0   0    1    1    36
+[    6.020011]  07 003 1    0    0   0   0    1    1    37
+[    6.024011]  08 003 0    0    0   0   0    1    1    38
+[    6.028011]  09 003 0    1    0   0   0    1    1    39
+[    6.036011]  0a 003 0    0    0   0   0    1    1    3A
+[    6.040011]  0b 003 1    0    0   0   0    1    1    3B
+[    6.044011]  0c 003 0    0    0   0   0    1    1    3C
+[    6.052011]  0d 003 0    0    0   0   0    1    1    3D
+[    6.056011]  0e 003 0    0    0   0   0    1    1    3E
+[    6.060011]  0f 003 0    0    0   0   0    1    1    3F
+[    6.068011]  10 000 1    0    0   0   0    0    0    00
+[    6.072011]  11 000 1    0    0   0   0    0    0    00
+[    6.076011]  12 000 1    0    0   0   0    0    0    00
+[    6.080011]  13 000 1    0    0   0   0    0    0    00
+[    6.088011]  14 000 1    0    0   0   0    0    0    00
+[    6.092011]  15 000 1    0    0   0   0    0    0    00
+[    6.096011]  16 000 1    0    0   0   0    0    0    00
+[    6.104011]  17 000 1    0    0   0   0    0    0    00
+[    6.108011] IRQ to pin mappings:
+[    6.112011] IRQ0 -> 0:0
+[    6.112011] IRQ1 -> 0:1
+[    6.116011] IRQ2 -> 0:2
+[    6.120011] IRQ3 -> 0:3
+[    6.120011] IRQ4 -> 0:4
+[    6.124011] IRQ5 -> 0:5
+[    6.124011] IRQ6 -> 0:6
+[    6.128011] IRQ7 -> 0:7
+[    6.132011] IRQ8 -> 0:8
+[    6.132011] IRQ9 -> 0:9
+[    6.136011] IRQ10 -> 0:10
+[    6.136011] IRQ11 -> 0:11
+[    6.140011] IRQ12 -> 0:12
+[    6.144011] IRQ13 -> 0:13
+[    6.144011] IRQ14 -> 0:14
+[    6.148011] IRQ15 -> 0:15
+[    6.152011] .................................... done.
+[    6.156011] initcall print_all_ICs+0x0/0x28 returned 0 after 351562 usecs
+[    6.160011] calling  hpet_late_init+0x0/0x1ea @ 1
+[    6.164011] initcall hpet_late_init+0x0/0x1ea returned -19 after 0 usecs
+[    6.168011] calling  clocksource_done_booting+0x0/0x11 @ 1
+[    6.172011] initcall clocksource_done_booting+0x0/0x11 returned 0 after 0 usecs
+[    6.176011] calling  ftrace_init_debugfs+0x0/0x93 @ 1
+[    6.180011] initcall ftrace_init_debugfs+0x0/0x93 returned 0 after 0 usecs
+[    6.184011] calling  rb_init_debugfs+0x0/0x27 @ 1
+[    6.188011] initcall rb_init_debugfs+0x0/0x27 returned 0 after 0 usecs
+[    6.192011] calling  tracer_init_debugfs+0x0/0x212 @ 1
+[    6.196011] initcall tracer_init_debugfs+0x0/0x212 returned 0 after 0 usecs
+[    6.200011] calling  init_trace_printk_function_export+0x0/0x2a @ 1
+[    6.204011] initcall init_trace_printk_function_export+0x0/0x2a returned 0 after 0 usecs
+[    6.208011] calling  stat_workqueue_init+0x0/0x27 @ 1
+[    6.212011] initcall stat_workqueue_init+0x0/0x27 returned 0 after 0 usecs
+[    6.216011] calling  event_trace_init+0x0/0x1be @ 1
+[    6.368011] initcall event_trace_init+0x0/0x1be returned 0 after 144531 usecs
+[    6.372011] calling  init_pipe_fs+0x0/0x3d @ 1
+[    6.376011] initcall init_pipe_fs+0x0/0x3d returned 0 after 0 usecs
+[    6.380011] calling  eventpoll_init+0x0/0xb9 @ 1
+[    6.384011] initcall eventpoll_init+0x0/0xb9 returned 0 after 0 usecs
+[    6.388011] calling  anon_inode_init+0x0/0xeb @ 1
+[    6.392011] initcall anon_inode_init+0x0/0xeb returned 0 after 0 usecs
+[    6.396011] calling  fscache_init+0x0/0x92 @ 1
+[    6.400011] Slow work thread pool: Starting up
+[    6.404011] Slow work thread pool: Ready
+[    6.408011] FS-Cache: Loaded
+[    6.408011] initcall fscache_init+0x0/0x92 returned 0 after 7812 usecs
+[    6.412011] calling  tomoyo_initerface_init+0x0/0x112 @ 1
+[    6.416011] initcall tomoyo_initerface_init+0x0/0x112 returned 0 after 0 usecs
+[    6.420011] calling  blk_scsi_ioctl_init+0x0/0x294 @ 1
+[    6.424011] initcall blk_scsi_ioctl_init+0x0/0x294 returned 0 after 0 usecs
+[    6.428011] calling  acpi_event_init+0x0/0x6f @ 1
+[    6.472011] initcall acpi_event_init+0x0/0x6f returned 0 after 39062 usecs
+[    6.476011] calling  pnpacpi_init+0x0/0x7b @ 1
+[    6.480011] pnp: PnP ACPI init
+[    6.484011] device: 'pnp0': device_add
+[    6.488011] PM: Adding info for No Bus:pnp0
+[    6.492011] ACPI: bus type pnp registered
+[    6.496011] device: '00:00': device_add
+[    6.500011] bus: 'pnp': add device 00:00
+[    6.504011] PM: Adding info for pnp:00:00
+[    6.508011] device: '00:01': device_add
+[    6.512011] bus: 'pnp': add device 00:01
+[    6.516011] PM: Adding info for pnp:00:01
+[    6.532011] device: '00:02': device_add
+[    6.536011] bus: 'pnp': add device 00:02
+[    6.540011] PM: Adding info for pnp:00:02
+[    6.544011] device: '00:03': device_add
+[    6.548011] bus: 'pnp': add device 00:03
+[    6.552011] PM: Adding info for pnp:00:03
+[    6.556011] IOAPIC[0]: Set routing entry (2-8 -> 0x38 -> IRQ 8 Mode:0 Active:0)
+[    6.560011] device: '00:04': device_add
+[    6.564011] bus: 'pnp': add device 00:04
+[    6.568011] PM: Adding info for pnp:00:04
+[    6.572011] device: '00:05': device_add
+[    6.576011] bus: 'pnp': add device 00:05
+[    6.580011] PM: Adding info for pnp:00:05
+[    6.584011] IOAPIC[0]: Set routing entry (2-13 -> 0x3d -> IRQ 13 Mode:0 Active:0)
+[    6.588011] device: '00:06': device_add
+[    6.592011] bus: 'pnp': add device 00:06
+[    6.596011] PM: Adding info for pnp:00:06
+[    6.604011] IOAPIC[0]: Set routing entry (2-6 -> 0x36 -> IRQ 6 Mode:0 Active:0)
+[    6.608011] device: '00:07': device_add
+[    6.612011] bus: 'pnp': add device 00:07
+[    6.616011] PM: Adding info for pnp:00:07
+[    6.620011] IOAPIC[0]: Set routing entry (2-4 -> 0x34 -> IRQ 4 Mode:0 Active:0)
+[    6.624011] device: '00:08': device_add
+[    6.628011] bus: 'pnp': add device 00:08
+[    6.632011] PM: Adding info for pnp:00:08
+[    6.644011] IOAPIC[0]: Set routing entry (2-7 -> 0x37 -> IRQ 7 Mode:0 Active:0)
+[    6.648011] device: '00:09': device_add
+[    6.652011] bus: 'pnp': add device 00:09
+[    6.656011] PM: Adding info for pnp:00:09
+[    6.660011] IOAPIC[0]: Set routing entry (2-12 -> 0x3c -> IRQ 12 Mode:0 Active:0)
+[    6.664011] device: '00:0a': device_add
+[    6.668011] bus: 'pnp': add device 00:0a
+[    6.672011] PM: Adding info for pnp:00:0a
+[    6.676011] IOAPIC[0]: Set routing entry (2-1 -> 0x31 -> IRQ 1 Mode:0 Active:0)
+[    6.680011] device: '00:0b': device_add
+[    6.684011] bus: 'pnp': add device 00:0b
+[    6.688012] PM: Adding info for pnp:00:0b
+[    6.692012] IOAPIC[0]: Set routing entry (2-10 -> 0x3a -> IRQ 10 Mode:0 Active:0)
+[    6.696012] device: '00:0c': device_add
+[    6.700012] bus: 'pnp': add device 00:0c
+[    6.704012] PM: Adding info for pnp:00:0c
+[    6.712012] device: '00:0d': device_add
+[    6.716012] bus: 'pnp': add device 00:0d
+[    6.720012] PM: Adding info for pnp:00:0d
+[    6.724012] device: '00:0e': device_add
+[    6.728012] bus: 'pnp': add device 00:0e
+[    6.732012] PM: Adding info for pnp:00:0e
+[    6.736012] device: '00:0f': device_add
+[    6.740012] bus: 'pnp': add device 00:0f
+[    6.744012] PM: Adding info for pnp:00:0f
+[    6.748012] pnp: PnP ACPI: found 16 devices
+[    6.752012] ACPI: ACPI bus type pnp unregistered
+[    6.756012] initcall pnpacpi_init+0x0/0x7b returned 0 after 269531 usecs
+[    6.760012] calling  pnp_system_init+0x0/0xf @ 1
+[    6.764012] bus: 'pnp': add driver system
+[    6.768012] bus: 'pnp': driver_probe_device: matched device 00:01 with driver system
+[    6.772012] bus: 'pnp': really_probe: probing driver system with device 00:01
+[    6.776012] system 00:01: ioport range 0x4000-0x407f has been reserved
+[    6.780012] system 00:01: ioport range 0x4080-0x40ff has been reserved
+[    6.784012] system 00:01: ioport range 0x4400-0x447f has been reserved
+[    6.788012] system 00:01: ioport range 0x4480-0x44ff has been reserved
+[    6.792012] system 00:01: ioport range 0x4800-0x487f has been reserved
+[    6.796012] system 00:01: ioport range 0x4880-0x48ff has been reserved
+[    6.800012] driver: '00:01': driver_bound: bound to device 'system'
+[    6.804012] bus: 'pnp': really_probe: bound device 00:01 to driver system
+[    6.808012] bus: 'pnp': driver_probe_device: matched device 00:02 with driver system
+[    6.812012] bus: 'pnp': really_probe: probing driver system with device 00:02
+[    6.816012] system 00:02: ioport range 0x4d0-0x4d1 has been reserved
+[    6.820012] system 00:02: ioport range 0x800-0x805 has been reserved
+[    6.824012] system 00:02: ioport range 0x290-0x297 has been reserved
+[    6.828012] driver: '00:02': driver_bound: bound to device 'system'
+[    6.832012] bus: 'pnp': really_probe: bound device 00:02 to driver system
+[    6.836012] bus: 'pnp': driver_probe_device: matched device 00:0e with driver system
+[    6.840012] bus: 'pnp': really_probe: probing driver system with device 00:0e
+[    6.844012] system 00:0e: iomem range 0xe0000000-0xefffffff has been reserved
+[    6.848012] driver: '00:0e': driver_bound: bound to device 'system'
+[    6.852012] bus: 'pnp': really_probe: bound device 00:0e to driver system
+[    6.856012] bus: 'pnp': driver_probe_device: matched device 00:0f with driver system
+[    6.860012] bus: 'pnp': really_probe: probing driver system with device 00:0f
+[    6.864012] system 00:0f: iomem range 0xf0000-0xf3fff could not be reserved
+[    6.868012] system 00:0f: iomem range 0xf4000-0xf7fff could not be reserved
+[    6.872012] system 00:0f: iomem range 0xf8000-0xfbfff could not be reserved
+[    6.876012] system 00:0f: iomem range 0xfc000-0xfffff could not be reserved
+[    6.880012] system 00:0f: iomem range 0x3fff0000-0x3fffffff could not be reserved
+[    6.884012] system 00:0f: iomem range 0xffff0000-0xffffffff has been reserved
+[    6.888012] system 00:0f: iomem range 0x0-0x9ffff could not be reserved
+[    6.892012] system 00:0f: iomem range 0x100000-0x3ffeffff could not be reserved
+[    6.896012] system 00:0f: iomem range 0xfec00000-0xfec00fff could not be reserved
+[    6.900012] system 00:0f: iomem range 0xfee00000-0xfeefffff has been reserved
+[    6.904012] system 00:0f: iomem range 0xfefff000-0xfeffffff has been reserved
+[    6.908012] system 00:0f: iomem range 0xfff80000-0xfff80fff has been reserved
+[    6.912012] system 00:0f: iomem range 0xfff90000-0xfffbffff has been reserved
+[    6.916012] system 00:0f: iomem range 0xfffed000-0xfffeffff has been reserved
+[    6.920012] driver: '00:0f': driver_bound: bound to device 'system'
+[    6.924012] bus: 'pnp': really_probe: bound device 00:0f to driver system
+[    6.928012] initcall pnp_system_init+0x0/0xf returned 0 after 160156 usecs
+[    6.932012] calling  chr_dev_init+0x0/0x89 @ 1
+[    6.936012] device class 'mem': registering
+[    6.940012] device: 'mem': device_add
+[    6.944012] PM: Adding info for No Bus:mem
+[    6.948012] device: 'null': device_add
+[    6.952012] PM: Adding info for No Bus:null
+[    6.956012] device: 'port': device_add
+[    6.960012] PM: Adding info for No Bus:port
+[    6.964012] device: 'zero': device_add
+[    6.968012] PM: Adding info for No Bus:zero
+[    6.972012] device: 'full': device_add
+[    6.976012] PM: Adding info for No Bus:full
+[    6.980012] device: 'random': device_add
+[    6.984012] PM: Adding info for No Bus:random
+[    6.988012] device: 'urandom': device_add
+[    6.992012] PM: Adding info for No Bus:urandom
+[    6.996012] device: 'kmsg': device_add
+[    7.000012] PM: Adding info for No Bus:kmsg
+[    7.004012] device: 'oldmem': device_add
+[    7.008012] PM: Adding info for No Bus:oldmem
+[    7.012012] initcall chr_dev_init+0x0/0x89 returned 0 after 74218 usecs
+[    7.016012] calling  firmware_class_init+0x0/0x61 @ 1
+[    7.020012] device class 'firmware': registering
+[    7.024012] initcall firmware_class_init+0x0/0x61 returned 0 after 3906 usecs
+[    7.028012] calling  init_pcmcia_bus+0x0/0x6c @ 1
+[    7.032012] bus: 'pcmcia': registered
+[    7.036012] initcall init_pcmcia_bus+0x0/0x6c returned 0 after 3906 usecs
+[    7.040012] calling  cpufreq_gov_userspace_init+0x0/0xf @ 1
+[    7.044012] initcall cpufreq_gov_userspace_init+0x0/0xf returned 0 after 0 usecs
+[    7.048012] calling  init_acpi_pm_clocksource+0x0/0x12d @ 1
+[    7.084012] initcall init_acpi_pm_clocksource+0x0/0x12d returned 0 after 31250 usecs
+[    7.088015] Switched to high resolution mode on CPU 0
+[    7.088353] Switched to high resolution mode on CPU 1
+[    7.098071] calling  ssb_modinit+0x0/0x53 @ 1
+[    7.105007] bus: 'ssb': registered
+[    7.106577] initcall ssb_modinit+0x0/0x53 returned 0 after 3456 usecs
+[    7.112353] calling  pcibios_assign_resources+0x0/0x66 @ 1
+[    7.117813] pci 0000:00:09.0: PCI bridge, secondary bus 0000:05
+[    7.123785] pci 0000:00:09.0:   IO window: 0xc000-0xcfff
+[    7.129071] pci 0000:00:09.0:   MEM window: 0xda000000-0xda0fffff
+[    7.135137] pci 0000:00:09.0:   PREFETCH window: disabled
+[    7.140510] pci 0000:00:0b.0: PCI bridge, secondary bus 0000:04
+[    7.146404] pci 0000:00:0b.0:   IO window: disabled
+[    7.151258] pci 0000:00:0b.0:   MEM window: disabled
+[    7.156198] pci 0000:00:0b.0:   PREFETCH window: disabled
+[    7.161571] pci 0000:00:0c.0: PCI bridge, secondary bus 0000:03
+[    7.167463] pci 0000:00:0c.0:   IO window: disabled
+[    7.172318] pci 0000:00:0c.0:   MEM window: disabled
+[    7.177257] pci 0000:00:0c.0:   PREFETCH window: disabled
+[    7.182630] pci 0000:00:0d.0: PCI bridge, secondary bus 0000:02
+[    7.188524] pci 0000:00:0d.0:   IO window: disabled
+[    7.193378] pci 0000:00:0d.0:   MEM window: disabled
+[    7.198317] pci 0000:00:0d.0:   PREFETCH window: disabled
+[    7.203691] pci 0000:00:0e.0: PCI bridge, secondary bus 0000:01
+[    7.209583] pci 0000:00:0e.0:   IO window: 0xb000-0xbfff
+[    7.214871] pci 0000:00:0e.0:   MEM window: 0xd8000000-0xd9ffffff
+[    7.220938] pci 0000:00:0e.0:   PREFETCH window: 0x000000d0000000-0x000000d7ffffff
+[    7.228477] pci 0000:00:09.0: setting latency timer to 64
+[    7.233851] pci 0000:00:0b.0: setting latency timer to 64
+[    7.239224] pci 0000:00:0c.0: setting latency timer to 64
+[    7.244597] pci 0000:00:0d.0: setting latency timer to 64
+[    7.249971] pci 0000:00:0e.0: setting latency timer to 64
+[    7.255344] pci_bus 0000:00: resource 0 io:  [0x00-0xffff]
+[    7.260804] pci_bus 0000:00: resource 1 mem: [0x000000-0xffffffff]
+[    7.266957] pci_bus 0000:05: resource 0 io:  [0xc000-0xcfff]
+[    7.272590] pci_bus 0000:05: resource 1 mem: [0xda000000-0xda0fffff]
+[    7.278917] pci_bus 0000:05: resource 3 io:  [0x00-0xffff]
+[    7.284376] pci_bus 0000:05: resource 4 mem: [0x000000-0xffffffff]
+[    7.290531] pci_bus 0000:01: resource 0 io:  [0xb000-0xbfff]
+[    7.296164] pci_bus 0000:01: resource 1 mem: [0xd8000000-0xd9ffffff]
+[    7.302490] pci_bus 0000:01: resource 2 pref mem [0xd0000000-0xd7ffffff]
+[    7.309718] initcall pcibios_assign_resources+0x0/0x66 returned 0 after 187407 usecs
+[    7.317431] calling  sysctl_core_init+0x0/0x2d @ 1
+[    7.322198] initcall sysctl_core_init+0x0/0x2d returned 0 after 22 usecs
+[    7.328872] calling  inet_init+0x0/0x199 @ 1
+[    7.333118] NET: Registered protocol family 2
+[    7.337452] IP route cache hash table entries: 16384 (order: 4, 65536 bytes)
+[    7.344508] TCP established hash table entries: 65536 (order: 7, 524288 bytes)
+[    7.352127] TCP bind hash table entries: 65536 (order: 8, 1310720 bytes)
+[    7.363322] TCP: Hash tables configured (established 65536 bind 65536)
+[    7.366624] TCP reno registered
+[    7.370624] initcall inet_init+0x0/0x199 returned 0 after 36032 usecs
+[    7.376358] calling  af_unix_init+0x0/0x47 @ 1
+[    7.380776] NET: Registered protocol family 1
+[    7.385110] initcall af_unix_init+0x0/0x47 returned 0 after 4257 usecs
+[    7.391611] calling  populate_rootfs+0x0/0x62 @ 1
+[    7.396290] initcall populate_rootfs+0x0/0x62 returned 0 after 271 usecs
+[    7.403173] calling  i8259A_init_sysfs+0x0/0x1d @ 1
+[    7.408025] Registering sysdev class 'i8259'
+[    7.412470] Registering sys device of class 'i8259'
+[    7.417247] Registering sys device 'i82590'
+[    7.421561] initcall i8259A_init_sysfs+0x0/0x1d returned 0 after 13222 usecs
+[    7.428514] calling  sbf_init+0x0/0xdb @ 1
+[    7.432586] initcall sbf_init+0x0/0xdb returned 0 after 1 usecs
+[    7.438479] calling  i8237A_init_sysfs+0x0/0x1d @ 1
+[    7.443333] Registering sysdev class 'i8237'
+[    7.447759] Registering sys device of class 'i8237'
+[    7.452537] Registering sys device 'i82370'
+[    7.456856] initcall i8237A_init_sysfs+0x0/0x1d returned 0 after 13209 usecs
+[    7.463803] calling  add_rtc_cmos+0x0/0x94 @ 1
+[    7.468223] initcall add_rtc_cmos+0x0/0x94 returned 0 after 4 usecs
+[    7.474464] calling  cache_sysfs_init+0x0/0x86 @ 1
+[    7.484001] initcall cache_sysfs_init+0x0/0x86 returned 0 after 1851 usecs
+[    7.487906] calling  cpu_debug_init+0x0/0xe3 @ 1
+[    7.496498] cpu0(2) debug files 137
+[    7.504690] cpu1(2) debug files 137
+[    7.510596] initcall cpu_debug_init+0x0/0xe3 returned 0 after 17673 usecs
+[    7.517355] calling  mce_init_device+0x0/0x108 @ 1
+[    7.522121] Registering sysdev class 'machinecheck'
+[    7.527180] Registering sys device of class 'machinecheck'
+[    7.532566] Registering sys device 'machinecheck0'
+[    7.537486] Registering sys device of class 'machinecheck'
+[    7.543044] Registering sys device 'machinecheck1'
+[    7.551965] device: 'mcelog': device_add
+[    7.551965] PM: Adding info for No Bus:mcelog
+[    7.556401] initcall mce_init_device+0x0/0x108 returned 0 after 33483 usecs
+[    7.563272] calling  threshold_init_device+0x0/0x9b @ 1
+[    7.568471] initcall threshold_init_device+0x0/0x9b returned 0 after 1 usecs
+[    7.575491] calling  thermal_throttle_init_device+0x0/0xad @ 1
+[    7.581297] initcall thermal_throttle_init_device+0x0/0xad returned 0 after 1 usecs
+[    7.588924] calling  powernow_k6_init+0x0/0x86 @ 1
+[    7.593691] initcall powernow_k6_init+0x0/0x86 returned -19 after 1 usecs
+[    7.600451] calling  longrun_init+0x0/0x2d @ 1
+[    7.604871] initcall longrun_init+0x0/0x2d returned -19 after 1 usecs
+[    7.611284] calling  cpufreq_gx_init+0x0/0x1ae @ 1
+[    7.616051] initcall cpufreq_gx_init+0x0/0x1ae returned -19 after 2 usecs
+[    7.622811] calling  speedstep_init+0x0/0x126 @ 1
+[    7.627491] initcall speedstep_init+0x0/0x126 returned -19 after 1 usecs
+[    7.634163] calling  speedstep_init+0x0/0xfa @ 1
+[    7.638757] initcall speedstep_init+0x0/0xfa returned -19 after 1 usecs
+[    7.645344] calling  nforce2_init+0x0/0x5e @ 1
+[    7.649764] cpufreq-nforce2: No nForce2 chipset.
+[    7.654358] initcall nforce2_init+0x0/0x5e returned -19 after 4486 usecs
+[    7.661031] calling  msr_init+0x0/0x170 @ 1
+[    7.665191] device class 'msr': registering
+[    7.669533] device: 'msr0': device_add
+[    7.673533] PM: Adding info for No Bus:msr0
+[    7.677525] device: 'msr1': device_add
+[    7.681525] PM: Adding info for No Bus:msr1
+[    7.685513] initcall msr_init+0x0/0x170 returned 0 after 19850 usecs
+[    7.691771] calling  ioapic_init_sysfs+0x0/0x84 @ 1
+[    7.696625] Registering sysdev class 'ioapic'
+[    7.701133] Registering sys device of class 'ioapic'
+[    7.706002] Registering sys device 'ioapic0'
+[    7.710405] initcall ioapic_init_sysfs+0x0/0x84 returned 0 after 13461 usecs
+[    7.717355] calling  init_vmi_clocksource+0x0/0xd6 @ 1
+[    7.722469] initcall init_vmi_clocksource+0x0/0xd6 returned 0 after 1 usecs
+[    7.729402] calling  scx200_init+0x0/0x20 @ 1
+[    7.733735] scx200: NatSemi SCx200 Driver
+[    7.737735] bus: 'pci': add driver scx200
+[    7.741913] initcall scx200_init+0x0/0x20 returned 0 after 8001 usecs
+[    7.748269] calling  start_pageattr_test+0x0/0x3d @ 1
+[    7.753392] initcall start_pageattr_test+0x0/0x3d returned 0 after 98 usecs
+[    7.760256] calling  init+0x0/0xf @ 1
+[    7.768003] initcall init+0x0/0xf returned 0 after 272 usecs
+[    7.769729] calling  init+0x0/0xf @ 1
+[    7.773729] initcall init+0x0/0xf returned 0 after 97 usecs
+[    7.778942] calling  crc32c_intel_mod_init+0x0/0x1d @ 1
+[    7.784141] initcall crc32c_intel_mod_init+0x0/0x1d returned -19 after 1 usecs
+[    7.791334] calling  init_sched_debug_procfs+0x0/0x27 @ 1
+[    7.796707] initcall init_sched_debug_procfs+0x0/0x27 returned 0 after 18 usecs
+[    7.803988] calling  proc_schedstat_init+0x0/0x1c @ 1
+[    7.809019] initcall proc_schedstat_init+0x0/0x1c returned 0 after 13 usecs
+[    7.815948] calling  proc_execdomains_init+0x0/0x1c @ 1
+[    7.821147] initcall proc_execdomains_init+0x0/0x1c returned 0 after 13 usecs
+[    7.828254] calling  ioresources_init+0x0/0x31 @ 1
+[    7.833023] initcall ioresources_init+0x0/0x31 returned 0 after 25 usecs
+[    7.839694] calling  uid_cache_init+0x0/0x76 @ 1
+[    7.844287] initcall uid_cache_init+0x0/0x76 returned 0 after 11 usecs
+[    7.850788] calling  init_posix_timers+0x0/0xb0 @ 1
+[    7.855641] initcall init_posix_timers+0x0/0xb0 returned 0 after 11 usecs
+[    7.862401] calling  init_posix_cpu_timers+0x0/0xb7 @ 1
+[    7.867601] initcall init_posix_cpu_timers+0x0/0xb7 returned 0 after 1 usecs
+[    7.874620] calling  nsproxy_cache_init+0x0/0x27 @ 1
+[    7.879561] initcall nsproxy_cache_init+0x0/0x27 returned 0 after 7 usecs
+[    7.886321] calling  create_proc_profile+0x0/0x65 @ 1
+[    7.891348] initcall create_proc_profile+0x0/0x65 returned 0 after 1 usecs
+[    7.898195] calling  timekeeping_init_device+0x0/0x1d @ 1
+[    7.903567] Registering sysdev class 'timekeeping'
+[    7.908514] Registering sys device of class 'timekeeping'
+[    7.913812] Registering sys device 'timekeeping0'
+[    7.918649] initcall timekeeping_init_device+0x0/0x1d returned 0 after 14731 usecs
+[    7.926145] calling  init_clocksource_sysfs+0x0/0x43 @ 1
+[    7.931431] Registering sysdev class 'clocksource'
+[    7.936367] Registering sys device of class 'clocksource'
+[    7.941666] Registering sys device 'clocksource0'
+[    7.946501] initcall init_clocksource_sysfs+0x0/0x43 returned 0 after 14732 usecs
+[    7.953921] calling  init_timer_list_procfs+0x0/0x27 @ 1
+[    7.959208] initcall init_timer_list_procfs+0x0/0x27 returned 0 after 13 usecs
+[    7.966401] calling  init_tstats_procfs+0x0/0x27 @ 1
+[    7.971342] initcall init_tstats_procfs+0x0/0x27 returned 0 after 13 usecs
+[    7.978187] calling  futex_init+0x0/0x64 @ 1
+[    7.982435] initcall futex_init+0x0/0x64 returned 0 after 4 usecs
+[    7.988501] calling  init_rttest+0x0/0x10a @ 1
+[    7.992921] Registering sysdev class 'rttest'
+[    7.997492] Registering sys device of class 'rttest'
+[    8.002360] Registering sys device 'rttest0'
+[    8.006846] Registering sys device of class 'rttest'
+[    8.011711] Registering sys device 'rttest1'
+[    8.019957] Registering sys device of class 'rttest'
+[    8.021072] Registering sys device 'rttest2'
+[    8.025549] Registering sys device of class 'rttest'
+[    8.030413] Registering sys device 'rttest3'
+[    8.034899] Registering sys device of class 'rttest'
+[    8.039765] Registering sys device 'rttest4'
+[    8.044249] Registering sys device of class 'rttest'
+[    8.049117] Registering sys device 'rttest5'
+[    8.053598] Registering sys device of class 'rttest'
+[    8.058467] Registering sys device 'rttest6'
+[    8.062957] Registering sys device of class 'rttest'
+[    8.067819] Registering sys device 'rttest7'
+[    8.072220] Initializing RT-Tester: OK
+[    8.072220] initcall init_rttest+0x0/0x10a returned 0 after 81001 usecs
+[    8.082465] calling  proc_dma_init+0x0/0x1c @ 1
+[    8.086971] initcall proc_dma_init+0x0/0x1c returned 0 after 15 usecs
+[    8.093386] calling  kallsyms_init+0x0/0x1f @ 1
+[    8.097892] initcall kallsyms_init+0x0/0x1f returned 0 after 13 usecs
+[    8.104305] calling  snapshot_device_init+0x0/0xf @ 1
+[    8.109332] device: 'snapshot': device_add
+[    8.113405] PM: Adding info for No Bus:snapshot
+[    8.118074] initcall snapshot_device_init+0x0/0xf returned 0 after 8541 usecs
+[    8.125114] calling  crash_save_vmcoreinfo_init+0x0/0x37e @ 1
+[    8.130833] initcall crash_save_vmcoreinfo_init+0x0/0x37e returned 0 after 26 usecs
+[    8.138460] calling  crash_notes_memory_init+0x0/0x31 @ 1
+[    8.143833] initcall crash_notes_memory_init+0x0/0x31 returned 0 after 6 usecs
+[    8.151027] calling  audit_init+0x0/0x121 @ 1
+[    8.155361] audit: initializing netlink socket (disabled)
+[    8.160733] type=2000 audit(1250628820.160:1): initialized
+[    8.166194] initcall audit_init+0x0/0x121 returned 0 after 10583 usecs
+[    8.172694] calling  audit_tree_init+0x0/0x3b @ 1
+[    8.177374] initcall audit_tree_init+0x0/0x3b returned 0 after 7 usecs
+[    8.183874] calling  hung_task_init+0x0/0x42 @ 1
+[    8.188536] initcall hung_task_init+0x0/0x42 returned 0 after 70 usecs
+[    8.194968] calling  rcu_torture_init+0x0/0x5b6 @ 1
+[    8.199821] rcu-torture:--- Start of test: nreaders=4 nfakewriters=4 stat_interval=0 verbose=0 test_no_idle_hz=0 shuffle_interval=3 stutter=5 irqreader=1
+[    8.214148] initcall rcu_torture_init+0x0/0x5b6 returned 0 after 13994 usecs
+[    8.221095] calling  rcupreempt_trace_init+0x0/0xaf @ 1
+[    8.226295] initcall rcupreempt_trace_init+0x0/0xaf returned 0 after 64 usecs
+[    8.233403] calling  utsname_sysctl_init+0x0/0x11 @ 1
+[    8.238429] initcall utsname_sysctl_init+0x0/0x11 returned 0 after 9 usecs
+[    8.245848] calling  init_lstats_procfs+0x0/0x1f @ 1
+[    8.250786] initcall init_lstats_procfs+0x0/0x1f returned 0 after 15 usecs
+[    8.257634] calling  ftrace_mod_cmd_init+0x0/0xf @ 1
+[    8.262574] initcall ftrace_mod_cmd_init+0x0/0xf returned 0 after 2 usecs
+[    8.269335] calling  init_events+0x0/0x5a @ 1
+[    8.273667] initcall init_events+0x0/0x5a returned 0 after 5 usecs
+[    8.279821] calling  init_sched_switch_trace+0x0/0xf @ 1
+[    8.285107] initcall init_sched_switch_trace+0x0/0xf returned 0 after 3 usecs
+[    8.292213] calling  init_function_trace+0x0/0x35 @ 1
+[    8.297241] initcall init_function_trace+0x0/0x35 returned 0 after 3 usecs
+[    8.304087] calling  init_irqsoff_tracer+0x0/0x11 @ 1
+[    8.309114] initcall init_irqsoff_tracer+0x0/0x11 returned 0 after 2 usecs
+[    8.315962] calling  stack_trace_init+0x0/0x5b @ 1
+[    8.320728] initcall stack_trace_init+0x0/0x5b returned 0 after 27 usecs
+[    8.327402] calling  init_mmio_trace+0x0/0xf @ 1
+[    8.335995] initcall init_mmio_trace+0x0/0xf returned 0 after 2 usecs
+[    8.338408] calling  init_power_trace+0x0/0xf @ 1
+[    8.343088] initcall init_power_trace+0x0/0xf returned 0 after 1 usecs
+[    8.349589] calling  init_kmem_tracer+0x0/0x4a @ 1
+[    8.354356] Warning: could not register the kmem tracer
+[    8.359555] initcall init_kmem_tracer+0x0/0x4a returned 1 after 5077 usecs
+[    8.366401] initcall init_kmem_tracer+0x0/0x4a returned with error code 1 
+[    8.373249] calling  init_blk_tracer+0x0/0x4b @ 1
+[    8.377928] initcall init_blk_tracer+0x0/0x4b returned 0 after 2 usecs
+[    8.384428] calling  init_ksym_trace+0x0/0x47 @ 1
+[    8.389109] initcall init_ksym_trace+0x0/0x47 returned 0 after 14 usecs
+[    8.395695] calling  perf_counter_sysfs_init+0x0/0x14 @ 1
+[    8.401069] initcall perf_counter_sysfs_init+0x0/0x14 returned 0 after 26 usecs
+[    8.408348] calling  init_per_zone_wmark_min+0x0/0x65 @ 1
+[    8.413722] initcall init_per_zone_wmark_min+0x0/0x65 returned 0 after 49 usecs
+[    8.421003] calling  pdflush_init+0x0/0x1b @ 1
+[    8.425562] initcall pdflush_init+0x0/0x1b returned 0 after 144 usecs
+[    8.431913] calling  kswapd_init+0x0/0x1d @ 1
+[    8.436313] initcall kswapd_init+0x0/0x1d returned 0 after 74 usecs
+[    8.442486] calling  init_tmpfs+0x0/0xb9 @ 1
+[    8.446734] initcall init_tmpfs+0x0/0xb9 returned 0 after 77 usecs
+[    8.452898] calling  setup_vmstat+0x0/0xd4 @ 1
+[    8.457315] initcall setup_vmstat+0x0/0xd4 returned 0 after 55 usecs
+[    8.463643] calling  mm_sysfs_init+0x0/0x22 @ 1
+[    8.468149] initcall mm_sysfs_init+0x0/0x22 returned 0 after 25 usecs
+[    8.474563] calling  proc_vmalloc_init+0x0/0x1f @ 1
+[    8.479417] initcall proc_vmalloc_init+0x0/0x1f returned 0 after 13 usecs
+[    8.486176] calling  init_emergency_pool+0x0/0x57 @ 1
+[    8.491203] highmem bounce pool size: 64 pages
+[    8.495632] initcall init_emergency_pool+0x0/0x57 returned 0 after 4325 usecs
+[    8.502738] calling  procswaps_init+0x0/0x1c @ 1
+[    8.507332] initcall procswaps_init+0x0/0x1c returned 0 after 13 usecs
+[    8.513831] calling  hugetlb_init+0x0/0x17e @ 1
+[    8.518338] HugeTLB registered 4 MB page size, pre-allocated 0 pages
+[    8.524664] initcall hugetlb_init+0x0/0x17e returned 0 after 6255 usecs
+[    8.531261] calling  slab_proc_init+0x0/0x1f @ 1
+[    8.535853] initcall slab_proc_init+0x0/0x1f returned 0 after 13 usecs
+[    8.542353] calling  slab_sysfs_init+0x0/0xb6 @ 1
+[    8.551968] khelper used greatest stack depth: 6832 bytes left
+[    8.579773] initcall slab_sysfs_init+0x0/0xb6 returned 0 after 29142 usecs
+[    8.583660] calling  kmemleak_test_init+0x0/0x60e @ 1
+[    8.588686] Kmemleak testing
+[    8.588686] kmemleak: kmalloc(32) = 9d934bc0
+[    8.595837] kmemleak: kmalloc(32) = 9d934be0
+[    8.600083] kmemleak: kmalloc(1024) = 9e86f400
+[    8.604615] kmemleak: kmalloc(1024) = 9e86f800
+[    8.609035] kmemleak: kmalloc(2048) = 9f2fc800
+[    8.613454] kmemleak: kmalloc(2048) = 9f2fd000
+[    8.617875] kmemleak: kmalloc(4096) = 9e84b000
+[    8.622294] kmemleak: kmalloc(4096) = 9e84c000
+[    8.626714] kmemleak: kmem_cache_alloc(files_cachep) = 9d5fea00
+[    8.632608] kmemleak: kmem_cache_alloc(files_cachep) = 9d5feb00
+[    8.638501] kmemleak: vmalloc(64) = a080d000
+[    8.642748] kmemleak: vmalloc(64) = a0810000
+[    8.646995] kmemleak: vmalloc(64) = a0813000
+[    8.651242] kmemleak: vmalloc(64) = a0816000
+[    8.655488] kmemleak: vmalloc(64) = a0819000
+[    8.659735] kmemleak: kmalloc(sizeof(*elem)) = 9d5fec00
+[    8.664934] kmemleak: kmalloc(sizeof(*elem)) = 9d5fed00
+[    8.670134] kmemleak: kmalloc(sizeof(*elem)) = 9d5fee00
+[    8.675335] kmemleak: kmalloc(sizeof(*elem)) = 9d5fef00
+[    8.680535] kmemleak: kmalloc(sizeof(*elem)) = 9f27d000
+[    8.685735] kmemleak: kmalloc(sizeof(*elem)) = 9f27d100
+[    8.690936] kmemleak: kmalloc(sizeof(*elem)) = 9f27d200
+[    8.696135] kmemleak: kmalloc(sizeof(*elem)) = 9f27d300
+[    8.701334] kmemleak: kmalloc(sizeof(*elem)) = 9f27d400
+[    8.706535] kmemleak: kmalloc(sizeof(*elem)) = 9f27d500
+[    8.711734] kmemleak: kmalloc(129) = 9dae1540
+[    8.716067] kmemleak: kmalloc(129) = 9dae1480
+[    8.720402] initcall kmemleak_test_init+0x0/0x60e returned 0 after 128508 usecs
+[    8.727682] calling  fasync_init+0x0/0x24 @ 1
+[    8.732014] initcall fasync_init+0x0/0x24 returned 0 after 21 usecs
+[    8.738255] calling  proc_filesystems_init+0x0/0x1c @ 1
+[    8.743454] initcall proc_filesystems_init+0x0/0x1c returned 0 after 18 usecs
+[    8.750561] calling  dnotify_init+0x0/0x6f @ 1
+[    8.754981] initcall dnotify_init+0x0/0x6f returned 0 after 35 usecs
+[    8.761308] calling  inotify_setup+0x0/0x11 @ 1
+[    8.765815] initcall inotify_setup+0x0/0x11 returned 0 after 1 usecs
+[    8.772141] calling  inotify_user_setup+0x0/0x9e @ 1
+[    8.777081] initcall inotify_user_setup+0x0/0x9e returned 0 after 87 usecs
+[    8.783946] calling  proc_locks_init+0x0/0x1c @ 1
+[    8.788626] initcall proc_locks_init+0x0/0x1c returned 0 after 13 usecs
+[    8.795212] calling  init_mbcache+0x0/0x11 @ 1
+[    8.799631] initcall init_mbcache+0x0/0x11 returned 0 after 2 usecs
+[    8.805872] calling  dquot_init+0x0/0xe4 @ 1
+[    8.810119] VFS: Disk quotas dquot_6.5.2
+[    8.814507] Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
+[    8.820962] initcall dquot_init+0x0/0xe4 returned 0 after 10617 usecs
+[    8.827374] calling  proc_cmdline_init+0x0/0x1c @ 1
+[    8.832227] initcall proc_cmdline_init+0x0/0x1c returned 0 after 14 usecs
+[    8.838988] calling  proc_cpuinfo_init+0x0/0x1c @ 1
+[    8.843840] initcall proc_cpuinfo_init+0x0/0x1c returned 0 after 13 usecs
+[    8.850601] calling  proc_devices_init+0x0/0x1c @ 1
+[    8.855454] initcall proc_devices_init+0x0/0x1c returned 0 after 13 usecs
+[    8.862214] calling  proc_interrupts_init+0x0/0x1c @ 1
+[    8.867327] initcall proc_interrupts_init+0x0/0x1c returned 0 after 13 usecs
+[    8.874347] calling  proc_loadavg_init+0x0/0x1c @ 1
+[    8.879200] initcall proc_loadavg_init+0x0/0x1c returned 0 after 13 usecs
+[    8.885961] calling  proc_meminfo_init+0x0/0x1c @ 1
+[    8.890814] initcall proc_meminfo_init+0x0/0x1c returned 0 after 13 usecs
+[    8.897575] calling  proc_stat_init+0x0/0x1c @ 1
+[    8.902167] initcall proc_stat_init+0x0/0x1c returned 0 after 13 usecs
+[    8.908667] calling  proc_uptime_init+0x0/0x1c @ 1
+[    8.913434] initcall proc_uptime_init+0x0/0x1c returned 0 after 13 usecs
+[    8.920108] calling  proc_version_init+0x0/0x1c @ 1
+[    8.924961] initcall proc_version_init+0x0/0x1c returned 0 after 13 usecs
+[    8.931721] calling  proc_softirqs_init+0x0/0x1c @ 1
+[    8.936661] initcall proc_softirqs_init+0x0/0x1c returned 0 after 13 usecs
+[    8.943508] calling  vmcore_init+0x0/0x75 @ 1
+[    8.947841] initcall vmcore_init+0x0/0x75 returned 0 after 1 usecs
+[    8.953994] calling  proc_kmsg_init+0x0/0x1f @ 1
+[    8.958588] initcall proc_kmsg_init+0x0/0x1f returned 0 after 13 usecs
+[    8.965087] calling  configfs_init+0x0/0xd6 @ 1
+[    8.970056] initcall configfs_init+0x0/0xd6 returned 0 after 500 usecs
+[    8.976537] calling  init_devpts_fs+0x0/0x3d @ 1
+[    8.981130] initcall init_devpts_fs+0x0/0x3d returned 0 after 67 usecs
+[    8.987630] calling  init_dlm+0x0/0x8f @ 1
+[    8.991703] device: 'dlm-control': device_add
+[    8.996115] PM: Adding info for No Bus:dlm-control
+[    9.001058] device: 'dlm-monitor': device_add
+[    9.005336] PM: Adding info for No Bus:dlm-monitor
+[    9.010262] device: 'dlm_plock': device_add
+[    9.014384] PM: Adding info for No Bus:dlm_plock
+[    9.019136] DLM (built Aug 18 2009 16:53:49) installed
+[    9.024177] initcall init_dlm+0x0/0x8f returned 0 after 31712 usecs
+[    9.030417] calling  init_ext3_fs+0x0/0x64 @ 1
+[    9.035803] initcall init_ext3_fs+0x0/0x64 returned 0 after 947 usecs
+[    9.042144] calling  init_ext2_fs+0x0/0x54 @ 1
+[    9.047022] initcall init_ext2_fs+0x0/0x54 returned 0 after 450 usecs
+[    9.053367] calling  init_ext4_fs+0x0/0xd8 @ 1
+[    9.063774] initcall init_ext4_fs+0x0/0xd8 returned 0 after 2432 usecs
+[    9.066705] calling  journal_init+0x0/0xb6 @ 1
+[    9.075603] initcall journal_init+0x0/0xb6 returned 0 after 1150 usecs
+[    9.078735] calling  journal_init+0x0/0xcf @ 1
+[    9.083646] initcall journal_init+0x0/0xcf returned 0 after 579 usecs
+[    9.090088] calling  init_ramfs_fs+0x0/0xf @ 1
+[    9.094508] initcall init_ramfs_fs+0x0/0xf returned 0 after 3 usecs
+[    9.100747] calling  init_hugetlbfs_fs+0x0/0x82 @ 1
+[    9.106067] initcall init_hugetlbfs_fs+0x0/0x82 returned 0 after 517 usecs
+[    9.112907] calling  init_coda+0x0/0x114 @ 1
+[    9.117619] device class 'coda': registering
+[    9.122000] device: 'cfs0': device_add
+[    9.126000] PM: Adding info for No Bus:cfs0
+[    9.129989] device: 'cfs1': device_add
+[    9.133989] PM: Adding info for No Bus:cfs1
+[    9.137973] device: 'cfs2': device_add
+[    9.141973] PM: Adding info for No Bus:cfs2
+[    9.145958] device: 'cfs3': device_add
+[    9.149958] PM: Adding info for No Bus:cfs3
+[    9.153949] device: 'cfs4': device_add
+[    9.157949] PM: Adding info for No Bus:cfs4
+[    9.161940] initcall init_coda+0x0/0x114 returned 0 after 43750 usecs
+[    9.168295] calling  init_fat_fs+0x0/0x46 @ 1
+[    9.173591] initcall init_fat_fs+0x0/0x46 returned 0 after 952 usecs
+[    9.179857] calling  init_msdos_fs+0x0/0xf @ 1
+[    9.184276] initcall init_msdos_fs+0x0/0xf returned 0 after 3 usecs
+[    9.190516] calling  init_iso9660_fs+0x0/0x64 @ 1
+[    9.195674] initcall init_iso9660_fs+0x0/0x64 returned 0 after 498 usecs
+[    9.202303] calling  init_nfsd+0x0/0xa6 @ 1
+[    9.206463] Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+[    9.216789] initcall init_nfsd+0x0/0xa6 returned 0 after 10792 usecs
+[    9.223772] calling  init_nlm+0x0/0x1c @ 1
+[    9.228399] initcall init_nlm+0x0/0x1c returned 0 after 10 usecs
+[    9.234379] calling  init_nls_cp775+0x0/0xf @ 1
+[    9.238885] initcall init_nls_cp775+0x0/0xf returned 0 after 2 usecs
+[    9.245212] calling  init_nls_cp850+0x0/0xf @ 1
+[    9.249719] initcall init_nls_cp850+0x0/0xf returned 0 after 1 usecs
+[    9.256045] calling  init_nls_cp860+0x0/0xf @ 1
+[    9.260551] initcall init_nls_cp860+0x0/0xf returned 0 after 1 usecs
+[    9.266878] calling  init_nls_cp861+0x0/0xf @ 1
+[    9.271386] initcall init_nls_cp861+0x0/0xf returned 0 after 1 usecs
+[    9.277712] calling  init_nls_cp863+0x0/0xf @ 1
+[    9.282218] initcall init_nls_cp863+0x0/0xf returned 0 after 1 usecs
+[    9.288545] calling  init_nls_cp864+0x0/0xf @ 1
+[    9.293052] initcall init_nls_cp864+0x0/0xf returned 0 after 1 usecs
+[    9.299379] calling  init_nls_cp865+0x0/0xf @ 1
+[    9.303886] initcall init_nls_cp865+0x0/0xf returned 0 after 1 usecs
+[    9.310211] calling  init_nls_cp866+0x0/0xf @ 1
+[    9.314718] initcall init_nls_cp866+0x0/0xf returned 0 after 1 usecs
+[    9.321046] calling  init_nls_cp869+0x0/0xf @ 1
+[    9.325552] initcall init_nls_cp869+0x0/0xf returned 0 after 1 usecs
+[    9.331879] calling  init_nls_cp932+0x0/0xf @ 1
+[    9.336385] initcall init_nls_cp932+0x0/0xf returned 0 after 1 usecs
+[    9.342711] calling  init_nls_euc_jp+0x0/0x39 @ 1
+[    9.347392] initcall init_nls_euc_jp+0x0/0x39 returned 0 after 1 usecs
+[    9.353891] calling  init_nls_cp949+0x0/0xf @ 1
+[    9.358398] initcall init_nls_cp949+0x0/0xf returned 0 after 1 usecs
+[    9.364725] calling  init_nls_cp950+0x0/0xf @ 1
+[    9.369231] initcall init_nls_cp950+0x0/0xf returned 0 after 1 usecs
+[    9.375558] calling  init_nls_cp1250+0x0/0xf @ 1
+[    9.380151] initcall init_nls_cp1250+0x0/0xf returned 0 after 1 usecs
+[    9.386565] calling  init_nls_cp1251+0x0/0xf @ 1
+[    9.391158] initcall init_nls_cp1251+0x0/0xf returned 0 after 1 usecs
+[    9.397572] calling  init_nls_ascii+0x0/0xf @ 1
+[    9.402078] initcall init_nls_ascii+0x0/0xf returned 0 after 1 usecs
+[    9.408405] calling  init_nls_iso8859_1+0x0/0xf @ 1
+[    9.413258] initcall init_nls_iso8859_1+0x0/0xf returned 0 after 1 usecs
+[    9.419931] calling  init_nls_iso8859_2+0x0/0xf @ 1
+[    9.424785] initcall init_nls_iso8859_2+0x0/0xf returned 0 after 1 usecs
+[    9.431458] calling  init_nls_iso8859_3+0x0/0xf @ 1
+[    9.436312] initcall init_nls_iso8859_3+0x0/0xf returned 0 after 1 usecs
+[    9.442985] calling  init_nls_iso8859_4+0x0/0xf @ 1
+[    9.447837] initcall init_nls_iso8859_4+0x0/0xf returned 0 after 1 usecs
+[    9.454511] calling  init_nls_iso8859_5+0x0/0xf @ 1
+[    9.459364] initcall init_nls_iso8859_5+0x0/0xf returned 0 after 1 usecs
+[    9.466038] calling  init_nls_iso8859_6+0x0/0xf @ 1
+[    9.470891] initcall init_nls_iso8859_6+0x0/0xf returned 0 after 1 usecs
+[    9.477565] calling  init_nls_iso8859_7+0x0/0xf @ 1
+[    9.482417] initcall init_nls_iso8859_7+0x0/0xf returned 0 after 1 usecs
+[    9.489091] calling  init_nls_cp1255+0x0/0xf @ 1
+[    9.493685] initcall init_nls_cp1255+0x0/0xf returned 0 after 1 usecs
+[    9.500098] calling  init_nls_iso8859_15+0x0/0xf @ 1
+[    9.505038] initcall init_nls_iso8859_15+0x0/0xf returned 0 after 1 usecs
+[    9.511798] calling  init_nls_koi8_r+0x0/0xf @ 1
+[    9.516391] initcall init_nls_koi8_r+0x0/0xf returned 0 after 1 usecs
+[    9.522805] calling  init_nls_koi8_u+0x0/0xf @ 1
+[    9.527398] initcall init_nls_koi8_u+0x0/0xf returned 0 after 1 usecs
+[    9.533811] calling  init_nls_koi8_ru+0x0/0x39 @ 1
+[    9.538578] initcall init_nls_koi8_ru+0x0/0x39 returned 0 after 2 usecs
+[    9.545165] calling  init_nls_utf8+0x0/0x1f @ 1
+[    9.549671] initcall init_nls_utf8+0x0/0x1f returned 0 after 2 usecs
+[    9.559997] calling  init_smb_fs+0x0/0x64 @ 1
+[    9.560811] initcall init_smb_fs+0x0/0x64 returned 0 after 494 usecs
+[    9.567092] calling  init_ncp_fs+0x0/0x54 @ 1
+[    9.571895] initcall init_ncp_fs+0x0/0x54 returned 0 after 464 usecs
+[    9.578152] calling  init_ntfs_fs+0x0/0x1ea @ 1
+[    9.582657] NTFS driver 2.1.29 [Flags: R/W DEBUG].
+[    9.591953] initcall init_ntfs_fs+0x0/0x1ea returned 0 after 5673 usecs
+[    9.594982] calling  init_autofs4_fs+0x0/0x1e @ 1
+[    9.599660] device: 'autofs': device_add
+[    9.603660] PM: Adding info for No Bus:autofs
+[    9.612003] initcall init_autofs4_fs+0x0/0x1e returned 0 after 8208 usecs
+[    9.614750] calling  fuse_init+0x0/0x10a @ 1
+[    9.618997] fuse init (API version 7.12)
+[    9.623845] device: 'fuse': device_add
+[    9.627845] PM: Adding info for No Bus:fuse
+[    9.631852] initcall fuse_init+0x0/0x10a returned 0 after 12604 usecs
+[    9.638245] calling  init_udf_fs+0x0/0x54 @ 1
+[    9.643046] initcall init_udf_fs+0x0/0x54 returned 0 after 459 usecs
+[    9.649305] calling  init_jfs_fs+0x0/0x203 @ 1
+[    9.654662] JFS: nTxBlock = 7953, nTxLock = 63624
+[    9.663437] initcall init_jfs_fs+0x0/0x203 returned 0 after 9189 usecs
+[    9.669577] calling  ocfs2_init+0x0/0x3d1 @ 1
+[    9.673909] OCFS2 1.5.0
+[    9.677909] initcall ocfs2_init+0x0/0x3d1 returned 0 after 3646 usecs
+[    9.683979] calling  ocfs2_stack_glue_init+0x0/0x7c @ 1
+[    9.689180] initcall ocfs2_stack_glue_init+0x0/0x7c returned 0 after 58 usecs
+[    9.696286] calling  o2cb_stack_init+0x0/0xf @ 1
+[    9.700879] ocfs2: Registered cluster interface o2cb
+[    9.705819] initcall o2cb_stack_init+0x0/0xf returned 0 after 4823 usecs
+[    9.712492] calling  ocfs2_user_plugin_init+0x0/0x4b @ 1
+[    9.717779] device: 'ocfs2_control': device_add
+[    9.722285] PM: Adding info for No Bus:ocfs2_control
+[    9.727390] ocfs2: Registered cluster interface user
+[    9.732253] initcall ocfs2_user_plugin_init+0x0/0x4b returned 0 after 14135 usecs
+[    9.739705] calling  init_o2nm+0x0/0x92 @ 1
+[    9.743866] OCFS2 Node Manager 1.5.0
+[    9.752003] initcall init_o2nm+0x0/0x92 returned 0 after 4057 usecs
+[    9.754187] calling  dlm_init+0x0/0x2ef @ 1
+[    9.758348] OCFS2 DLM 1.5.0
+[    9.762348] initcall dlm_init+0x0/0x2ef returned 0 after 2812 usecs
+[    9.767396] calling  init_dlmfs_fs+0x0/0xc2 @ 1
+[    9.771902] OCFS2 DLMFS 1.5.0
+[    9.775902] OCFS2 User DLM kernel interface loaded
+[    9.780102] initcall init_dlmfs_fs+0x0/0xc2 returned 0 after 8009 usecs
+[    9.786688] calling  init_btrfs_fs+0x0/0x83 @ 1
+[    9.795805] device: 'btrfs-control': device_add
+[    9.797834] PM: Adding info for No Bus:btrfs-control
+[    9.802936] Btrfs loaded
+[    9.806936] initcall init_btrfs_fs+0x0/0x83 returned 0 after 13846 usecs
+[    9.812047] calling  ipc_init+0x0/0x20 @ 1
+[    9.816120] msgmni has been set to 964
+[    9.817011] initcall ipc_init+0x0/0x20 returned 0 after 3659 usecs
+[    9.826000] calling  ipc_sysctl_init+0x0/0x11 @ 1
+[    9.830680] initcall ipc_sysctl_init+0x0/0x11 returned 0 after 8 usecs
+[    9.837180] calling  init_mqueue_fs+0x0/0xa3 @ 1
+[    9.842252] initcall init_mqueue_fs+0x0/0xa3 returned 0 after 554 usecs
+[    9.848855] calling  key_proc_init+0x0/0x4e @ 1
+[    9.853360] initcall key_proc_init+0x0/0x4e returned 0 after 27 usecs
+[    9.859774] calling  crypto_wq_init+0x0/0x29 @ 1
+[    9.864520] initcall crypto_wq_init+0x0/0x29 returned 0 after 159 usecs
+[    9.871041] calling  crypto_algapi_init+0x0/0xc @ 1
+[    9.875893] initcall crypto_algapi_init+0x0/0xc returned 0 after 22 usecs
+[    9.882654] calling  chainiv_module_init+0x0/0xf @ 1
+[    9.887594] initcall chainiv_module_init+0x0/0xf returned 0 after 2 usecs
+[    9.894354] calling  eseqiv_module_init+0x0/0xf @ 1
+[    9.899208] initcall eseqiv_module_init+0x0/0xf returned 0 after 1 usecs
+[    9.905880] calling  seqiv_module_init+0x0/0xf @ 1
+[    9.910647] initcall seqiv_module_init+0x0/0xf returned 0 after 1 usecs
+[    9.917234] calling  hmac_module_init+0x0/0xf @ 1
+[    9.921913] initcall hmac_module_init+0x0/0xf returned 0 after 1 usecs
+[    9.928414] calling  crypto_null_mod_init+0x0/0x69 @ 1
+[    9.933619] alg: No test for cipher_null (cipher_null-generic)
+[    9.939375] alg: No test for ecb(cipher_null) (ecb-cipher_null)
+[    9.949004] alg: No test for digest_null (digest_null-generic)
+[    9.951114] alg: No test for compress_null (compress_null-generic)
+[    9.957256] initcall crypto_null_mod_init+0x0/0x69 returned 0 after 23190 usecs
+[    9.964535] calling  md5_mod_init+0x0/0xf @ 1
+[    9.972955] initcall md5_mod_init+0x0/0xf returned 0 after 165 usecs
+[    9.975291] calling  rmd256_mod_init+0x0/0xf @ 1
+[    9.981004] initcall rmd256_mod_init+0x0/0xf returned 0 after 147 usecs
+[    9.986549] calling  sha1_generic_mod_init+0x0/0xf @ 1
+[    9.993004] initcall sha1_generic_mod_init+0x0/0xf returned 0 after 138 usecs
+[    9.998847] calling  sha256_generic_mod_init+0x0/0x33 @ 1
+[   10.005004] cryptomgr_test used greatest stack depth: 6448 bytes left
+[   10.010803] initcall sha256_generic_mod_init+0x0/0x33 returned 0 after 6431 usecs
+[   10.018217] calling  tgr192_mod_init+0x0/0x52 @ 1
+[   10.025004] initcall tgr192_mod_init+0x0/0x52 returned 0 after 442 usecs
+[   10.029951] calling  crypto_ecb_module_init+0x0/0xf @ 1
+[   10.035151] initcall crypto_ecb_module_init+0x0/0xf returned 0 after 1 usecs
+[   10.042172] calling  crypto_cbc_module_init+0x0/0xf @ 1
+[   10.047371] initcall crypto_cbc_module_init+0x0/0xf returned 0 after 1 usecs
+[   10.054390] calling  crypto_pcbc_module_init+0x0/0xf @ 1
+[   10.059677] initcall crypto_pcbc_module_init+0x0/0xf returned 0 after 1 usecs
+[   10.066784] calling  crypto_cts_module_init+0x0/0xf @ 1
+[   10.071983] initcall crypto_cts_module_init+0x0/0xf returned 0 after 1 usecs
+[   10.079004] calling  crypto_module_init+0x0/0xf @ 1
+[   10.083858] initcall crypto_module_init+0x0/0xf returned 0 after 1 usecs
+[   10.090531] calling  crypto_module_init+0x0/0xf @ 1
+[   10.095384] initcall crypto_module_init+0x0/0xf returned 0 after 1 usecs
+[   10.102058] calling  crypto_ctr_module_init+0x0/0x35 @ 1
+[   10.107344] initcall crypto_ctr_module_init+0x0/0x35 returned 0 after 1 usecs
+[   10.114450] calling  crypto_gcm_module_init+0x0/0x4f @ 1
+[   10.119738] initcall crypto_gcm_module_init+0x0/0x4f returned 0 after 2 usecs
+[   10.126845] calling  des_generic_mod_init+0x0/0x33 @ 1
+[   10.133004] initcall des_generic_mod_init+0x0/0x33 returned 0 after 367 usecs
+[   10.139369] calling  fcrypt_mod_init+0x0/0xf @ 1
+[   10.145004] alg: No test for fcrypt (fcrypt-generic)
+[   10.148937] initcall fcrypt_mod_init+0x0/0xf returned 0 after 4860 usecs
+[   10.155592] calling  blowfish_mod_init+0x0/0xf @ 1
+[   10.164448] initcall blowfish_mod_init+0x0/0xf returned 0 after 799 usecs
+[   10.167865] calling  twofish_mod_init+0x0/0xf @ 1
+[   10.173004] initcall twofish_mod_init+0x0/0xf returned 0 after 246 usecs
+[   10.179400] calling  serpent_mod_init+0x0/0x33 @ 1
+[   10.185005] initcall serpent_mod_init+0x0/0x33 returned 0 after 356 usecs
+[   10.191220] calling  aes_init+0x0/0xf @ 1
+[   10.197004] initcall aes_init+0x0/0xf returned 0 after 178 usecs
+[   10.201300] calling  camellia_init+0x0/0xf @ 1
+[   10.209004] initcall camellia_init+0x0/0xf returned 0 after 172 usecs
+[   10.212870] calling  cast5_mod_init+0x0/0xf @ 1
+[   10.221004] initcall cast5_mod_init+0x0/0xf returned 0 after 183 usecs
+[   10.223989] calling  cast6_mod_init+0x0/0xf @ 1
+[   10.229004] initcall cast6_mod_init+0x0/0xf returned 0 after 187 usecs
+[   10.235118] calling  arc4_init+0x0/0xf @ 1
+[   10.241004] initcall arc4_init+0x0/0xf returned 0 after 176 usecs
+[   10.245362] calling  khazad_mod_init+0x0/0xf @ 1
+[   10.253004] initcall khazad_mod_init+0x0/0xf returned 0 after 201 usecs
+[   10.256672] calling  salsa20_generic_mod_init+0x0/0xf @ 1
+[   10.265004] initcall salsa20_generic_mod_init+0x0/0xf returned 0 after 95 usecs
+[   10.269376] calling  deflate_mod_init+0x0/0xf @ 1
+[   10.277004] initcall deflate_mod_init+0x0/0xf returned 0 after 451 usecs
+[   10.281120] calling  michael_mic_init+0x0/0xf @ 1
+[   10.289004] initcall michael_mic_init+0x0/0xf returned 0 after 163 usecs
+[   10.292569] calling  crc32c_mod_init+0x0/0xf @ 1
+[   10.301004] initcall crc32c_mod_init+0x0/0xf returned 0 after 175 usecs
+[   10.303853] calling  crypto_authenc_module_init+0x0/0xf @ 1
+[   10.309399] initcall crypto_authenc_module_init+0x0/0xf returned 0 after 2 usecs
+[   10.316765] calling  lzo_mod_init+0x0/0xf @ 1
+[   10.325004] initcall lzo_mod_init+0x0/0xf returned 0 after 147 usecs
+[   10.327504] calling  krng_mod_init+0x0/0xf @ 1
+[   10.333004] alg: No test for stdrng (krng)
+[   10.336041] initcall krng_mod_init+0x0/0xf returned 0 after 4021 usecs
+[   10.342523] calling  proc_genhd_init+0x0/0x31 @ 1
+[   10.347203] initcall proc_genhd_init+0x0/0x31 returned 0 after 27 usecs
+[   10.353789] calling  bsg_init+0x0/0x10d @ 1
+[   10.361004] device class 'bsg': registering
+[   10.365005] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 252)
+[   10.370110] initcall bsg_init+0x0/0x10d returned 0 after 11875 usecs
+[   10.376435] calling  noop_init+0x0/0x11 @ 1
+[   10.380596] io scheduler noop registered
+[   10.384596] initcall noop_init+0x0/0x11 returned 0 after 3807 usecs
+[   10.390735] calling  as_init+0x0/0x11 @ 1
+[   10.394735] io scheduler anticipatory registered
+[   10.399316] initcall as_init+0x0/0x11 returned 0 after 4485 usecs
+[   10.405382] calling  deadline_init+0x0/0x11 @ 1
+[   10.409888] io scheduler deadline registered
+[   10.414136] initcall deadline_init+0x0/0x11 returned 0 after 4148 usecs
+[   10.420721] calling  cfq_init+0x0/0x89 @ 1
+[   10.429003] io scheduler cfq registered (default)
+[   10.429927] initcall cfq_init+0x0/0x89 returned 0 after 5011 usecs
+[   10.436080] calling  libcrc32c_mod_init+0x0/0x29 @ 1
+[   10.441023] initcall libcrc32c_mod_init+0x0/0x29 returned 0 after 9 usecs
+[   10.447779] calling  init_kmp+0x0/0xf @ 1
+[   10.451779] initcall init_kmp+0x0/0xf returned 0 after 1 usecs
+[   10.457573] calling  init_bm+0x0/0xf @ 1
+[   10.461573] initcall init_bm+0x0/0xf returned 0 after 1 usecs
+[   10.467192] calling  init_fsm+0x0/0xf @ 1
+[   10.471192] initcall init_fsm+0x0/0xf returned 0 after 1 usecs
+[   10.476987] calling  percpu_counter_startup+0x0/0x2e @ 1
+[   10.482273] initcall percpu_counter_startup+0x0/0x2e returned 0 after 2 usecs
+[   10.489379] calling  audit_classes_init+0x0/0x4f @ 1
+[   10.494319] initcall audit_classes_init+0x0/0x4f returned 0 after 23 usecs
+[   10.501166] calling  pci_init+0x0/0x31 @ 1
+[   10.505239] initcall pci_init+0x0/0x31 returned 0 after 137 usecs
+[   10.511367] calling  pci_proc_init+0x0/0x5b @ 1
+[   10.516005] initcall pci_proc_init+0x0/0x5b returned 0 after 457 usecs
+[   10.522764] calling  pci_hotplug_init+0x0/0x18 @ 1
+[   10.527530] pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+[   10.533076] initcall pci_hotplug_init+0x0/0x18 returned 0 after 5418 usecs
+[   10.539923] calling  ibmphp_init+0x0/0x1b9 @ 1
+[   10.544343] ibmphpd: IBM Hot Plug PCI Controller Driver version: 0.6
+[   10.550670] initcall ibmphp_init+0x0/0x1b9 returned -19 after 6242 usecs
+[   10.557344] calling  progearbl_init+0x0/0x49 @ 1
+[   10.561937] bus: 'platform': add driver progear-bl
+[   10.569004] Registering platform device 'progear-bl'. Parent at platform
+[   10.573516] device: 'progear-bl': device_add
+[   10.577762] bus: 'platform': add device progear-bl
+[   10.582529] PM: Adding info for platform:progear-bl
+[   10.589004] bus: 'platform': driver_probe_device: matched device progear-bl with driver progear-bl
+[   10.596421] bus: 'platform': really_probe: probing driver progear-bl with device progear-bl
+[   10.604742] ALI M7101 PMU not found.
+[   10.608742] initcall progearbl_init+0x0/0x49 returned 0 after 45278 usecs
+[   10.615055] calling  display_class_init+0x0/0x69 @ 1
+[   10.620005] device class 'display': registering
+[   10.625004] initcall display_class_init+0x0/0x69 returned 0 after 4577 usecs
+[   10.631626] calling  pm2fb_init+0x0/0x42 @ 1
+[   10.635872] bus: 'pci': add driver pm2fb
+[   10.641004] initcall pm2fb_init+0x0/0x42 returned 0 after 4019 usecs
+[   10.646239] calling  pm3fb_init+0x0/0xed @ 1
+[   10.650484] bus: 'pci': add driver pm3fb
+[   10.657005] initcall pm3fb_init+0x0/0xed returned 0 after 4031 usecs
+[   10.660868] calling  matroxfb_init+0x0/0x63 @ 1
+[   10.665374] bus: 'pci': add driver matroxfb
+[   10.673004] initcall matroxfb_init+0x0/0x63 returned 0 after 4273 usecs
+[   10.676259] calling  matroxfb_crtc2_init+0x0/0x2d @ 1
+[   10.681286] initcall matroxfb_crtc2_init+0x0/0x2d returned 0 after 2 usecs
+[   10.688133] calling  i2c_matroxfb_init+0x0/0x27 @ 1
+[   10.692985] initcall i2c_matroxfb_init+0x0/0x27 returned 0 after 1 usecs
+[   10.699659] calling  matroxfb_maven_init+0x0/0x11 @ 1
+[   10.704686] bus: 'i2c': add driver maven
+[   10.709005] i2c-core: driver [maven] registered
+[   10.713222] initcall matroxfb_maven_init+0x0/0x11 returned 0 after 8340 usecs
+[   10.720329] calling  nvidiafb_init+0x0/0x47 @ 1
+[   10.724836] bus: 'pci': add driver nvidiafb
+[   10.733003] initcall nvidiafb_init+0x0/0x47 returned 0 after 4275 usecs
+[   10.735721] calling  atyfb_init+0x0/0x46 @ 1
+[   10.739968] bus: 'pci': add driver atyfb
+[   10.745004] initcall atyfb_init+0x0/0x46 returned 0 after 4026 usecs
+[   10.750342] calling  aty128fb_init+0x0/0x47 @ 1
+[   10.754849] bus: 'pci': add driver aty128fb
+[   10.761004] initcall aty128fb_init+0x0/0x47 returned 0 after 4287 usecs
+[   10.765752] calling  sisfb_init+0x0/0x42 @ 1
+[   10.769997] bus: 'pci': add driver sisfb
+[   10.777004] initcall sisfb_init+0x0/0x42 returned 0 after 4019 usecs
+[   10.780363] calling  kyrofb_init+0x0/0xcb @ 1
+[   10.784696] bus: 'pci': add driver kyrofb
+[   10.789004] initcall kyrofb_init+0x0/0xcb returned 0 after 4106 usecs
+[   10.795236] calling  gx1fb_init+0x0/0x42 @ 1
+[   10.799481] bus: 'pci': add driver gx1fb
+[   10.805004] initcall gx1fb_init+0x0/0x42 returned 0 after 4027 usecs
+[   10.809856] calling  gxfb_init+0x0/0x6e @ 1
+[   10.814015] bus: 'pci': add driver gxfb
+[   10.821005] initcall gxfb_init+0x0/0x6e returned 0 after 3949 usecs
+[   10.824225] calling  lxfb_init+0x0/0xcb @ 1
+[   10.828385] bus: 'pci': add driver lxfb
+[   10.833005] initcall lxfb_init+0x0/0xcb returned 0 after 3943 usecs
+[   10.838586] calling  neofb_init+0x0/0x42 @ 1
+[   10.842832] bus: 'pci': add driver neofb
+[   10.849004] initcall neofb_init+0x0/0x42 returned 0 after 4020 usecs
+[   10.853199] calling  tdfxfb_init+0x0/0x42 @ 1
+[   10.857531] bus: 'pci': add driver tdfxfb
+[   10.865004] initcall tdfxfb_init+0x0/0x42 returned 0 after 4107 usecs
+[   10.868078] calling  tridentfb_init+0x0/0x42 @ 1
+[   10.872672] bus: 'pci': add driver tridentfb
+[   10.881003] initcall tridentfb_init+0x0/0x42 returned 0 after 4358 usecs
+[   10.883731] calling  vmlfb_init+0x0/0x81 @ 1
+[   10.887976] vmlfb: initializing
+[   10.891976] bus: 'pci': add driver vmlfb
+[   10.897004] initcall vmlfb_init+0x0/0x81 returned 0 after 7072 usecs
+[   10.901472] calling  s3fb_init+0x0/0xc7 @ 1
+[   10.905631] bus: 'pci': add driver s3fb
+[   10.913004] initcall s3fb_init+0x0/0xc7 returned 0 after 3939 usecs
+[   10.915832] calling  arkfb_init+0x0/0x4b @ 1
+[   10.920079] bus: 'pci': add driver arkfb
+[   10.925004] initcall arkfb_init+0x0/0x4b returned 0 after 4026 usecs
+[   10.930453] calling  hecubafb_init+0x0/0xf @ 1
+[   10.934873] bus: 'platform': add driver hecubafb
+[   10.941005] initcall hecubafb_init+0x0/0xf returned 0 after 4696 usecs
+[   10.946104] calling  n411_init+0x0/0x7c @ 1
+[   10.950264] no IO addresses supplied
+[   10.954264] initcall n411_init+0x0/0x7c returned -22 after 3469 usecs
+[   10.960231] initcall n411_init+0x0/0x7c returned with error code -22 
+[   10.966645] calling  sstfb_init+0x0/0x47 @ 1
+[   10.970891] bus: 'pci': add driver sstfb
+[   10.977005] initcall sstfb_init+0x0/0x47 returned 0 after 4019 usecs
+[   10.981257] calling  tmiofb_init+0x0/0x59 @ 1
+[   10.985590] bus: 'platform': add driver tmio-fb
+[   10.993004] initcall tmiofb_init+0x0/0x59 returned 0 after 4595 usecs
+[   10.996632] calling  metronomefb_init+0x0/0xf @ 1
+[   11.001311] bus: 'platform': add driver metronomefb
+[   11.009005] initcall metronomefb_init+0x0/0xf returned 0 after 4933 usecs
+[   11.013046] calling  broadsheetfb_init+0x0/0xf @ 1
+[   11.017813] bus: 'platform': add driver broadsheetfb
+[   11.025004] initcall broadsheetfb_init+0x0/0xf returned 0 after 5019 usecs
+[   11.029721] calling  s1d13xxxfb_init+0x0/0x28 @ 1
+[   11.034401] bus: 'platform': add driver s1d13xxxfb
+[   11.041004] initcall s1d13xxxfb_init+0x0/0x28 returned 0 after 4853 usecs
+[   11.046058] calling  carminefb_init+0x0/0x31 @ 1
+[   11.050650] bus: 'pci': add driver carminefb
+[   11.057004] initcall carminefb_init+0x0/0x31 returned 0 after 4357 usecs
+[   11.061710] calling  mb862xxfb_init+0x0/0x1b @ 1
+[   11.066302] bus: 'pci': add driver mb862xxfb
+[   11.073005] initcall mb862xxfb_init+0x0/0x1b returned 0 after 4357 usecs
+[   11.077362] calling  uvesafb_init+0x0/0xc9 @ 1
+[   11.081780] bus: 'platform': add driver uvesafb
+[   11.089004] Registering platform device 'uvesafb.0'. Parent at platform
+[   11.097005] device: 'uvesafb.0': device_add
+[   11.097165] bus: 'platform': add device uvesafb.0
+[   11.101845] PM: Adding info for platform:uvesafb.0
+[   11.109004] bus: 'platform': driver_probe_device: matched device uvesafb.0 with driver uvesafb
+[   11.115313] bus: 'platform': really_probe: probing driver uvesafb with device uvesafb.0
+[   11.125004] uvesafb: failed to execute /sbin/v86d
+[   11.128764] uvesafb: make sure that the v86d helper is installed and executable
+[   11.136044] uvesafb: Getting VBE info block failed (eax=0x4f00, err=-2)
+[   11.142630] uvesafb: vbe_init() failed with -22
+[   11.147136] uvesafb: probe of uvesafb.0 failed with error -22
+[   11.152857] initcall uvesafb_init+0x0/0xc9 returned 0 after 69416 usecs
+[   11.159443] calling  acpi_reserve_resources+0x0/0xc8 @ 1
+[   11.164730] initcall acpi_reserve_resources+0x0/0xc8 returned 0 after 30 usecs
+[   11.171923] calling  irqrouter_init_sysfs+0x0/0x33 @ 1
+[   11.177037] Registering sysdev class 'irqrouter'
+[   11.185004] Registering sys device of class 'irqrouter'
+[   11.186925] Registering sys device 'irqrouter0'
+[   11.193004] initcall irqrouter_init_sysfs+0x0/0x33 returned 0 after 14209 usecs
+[   11.198816] calling  acpi_button_init+0x0/0x4a @ 1
+[   11.203583] bus: 'acpi': add driver button
+[   11.207656] bus: 'acpi': driver_probe_device: matched device LNXPWRBN:00 with driver button
+[   11.215976] bus: 'acpi': really_probe: probing driver button with device LNXPWRBN:00
+[   11.223689] device: 'input0': device_add
+[   11.227689] PM: Adding info for No Bus:input0
+[   11.233005] input: Power Button as /class/input/input0
+[   11.237356] ACPI: Power Button [PWRF]
+[   11.244997] driver: 'LNXPWRBN:00': driver_bound: bound to device 'button'
+[   11.247757] bus: 'acpi': really_probe: bound device LNXPWRBN:00 to driver button
+[   11.255123] bus: 'acpi': driver_probe_device: matched device PNP0C0C:00 with driver button
+[   11.263357] bus: 'acpi': really_probe: probing driver button with device PNP0C0C:00
+[   11.270983] device: 'input1': device_add
+[   11.274983] PM: Adding info for No Bus:input1
+[   11.281004] input: Power Button as /class/input/input1
+[   11.284643] ACPI: Power Button [PWRB]
+[   11.288643] driver: 'PNP0C0C:00': driver_bound: bound to device 'button'
+[   11.294956] bus: 'acpi': really_probe: bound device PNP0C0C:00 to driver button
+[   11.305004] initcall acpi_button_init+0x0/0x4a returned 0 after 96537 usecs
+[   11.309299] calling  acpi_fan_init+0x0/0x4a @ 1
+[   11.313805] bus: 'acpi': add driver fan
+[   11.317805] bus: 'acpi': driver_probe_device: matched device PNP0C0B:00 with driver fan
+[   11.325593] bus: 'acpi': really_probe: probing driver fan with device PNP0C0B:00
+[   11.336958] device: 'cooling_device0': device_add
+[   11.337691] PM: Adding info for No Bus:cooling_device0
+[   11.345004] fan PNP0C0B:00: registered as cooling_device0
+[   11.348299] ACPI: Fan [FAN] (on)
+[   11.352299] driver: 'PNP0C0B:00': driver_bound: bound to device 'fan'
+[   11.357918] bus: 'acpi': really_probe: bound device PNP0C0B:00 to driver fan
+[   11.369003] initcall acpi_fan_init+0x0/0x4a returned 0 after 50109 usecs
+[   11.371717] calling  acpi_video_init+0x0/0xa @ 1
+[   11.376310] bus: 'acpi': add driver video
+[   11.381005] initcall acpi_video_init+0x0/0xa returned 0 after 4106 usecs
+[   11.387118] calling  acpi_processor_init+0x0/0xd5 @ 1
+[   11.392143] bus: 'acpi': add driver processor
+[   11.396476] bus: 'acpi': driver_probe_device: matched device LNXCPU:00 with driver processor
+[   11.404884] bus: 'acpi': really_probe: probing driver processor with device LNXCPU:00
+[   11.412683] device: 'cooling_device1': device_add
+[   11.417511] PM: Adding info for No Bus:cooling_device1
+[   11.425004] processor LNXCPU:00: registered as cooling_device1
+[   11.428553] driver: 'LNXCPU:00': driver_bound: bound to device 'processor'
+[   11.435398] bus: 'acpi': really_probe: bound device LNXCPU:00 to driver processor
+[   11.442851] bus: 'acpi': driver_probe_device: matched device LNXCPU:01 with driver processor
+[   11.451259] bus: 'acpi': really_probe: probing driver processor with device LNXCPU:01
+[   11.459058] device: 'cooling_device2': device_add
+[   11.463870] PM: Adding info for No Bus:cooling_device2
+[   11.473003] processor LNXCPU:01: registered as cooling_device2
+[   11.474910] driver: 'LNXCPU:01': driver_bound: bound to device 'processor'
+[   11.481757] bus: 'acpi': really_probe: bound device LNXCPU:01 to driver processor
+[   11.493004] initcall acpi_processor_init+0x0/0xd5 returned 0 after 95023 usecs
+[   11.496595] calling  acpi_container_init+0x0/0x3d @ 1
+[   11.501621] bus: 'acpi': add driver container
+[   11.540007] initcall acpi_container_init+0x0/0x3d returned 0 after 34966 usecs
+[   11.544582] calling  acpi_battery_init+0x0/0x13 @ 1
+[   11.549704] bus: 'acpi': add driver battery
+[   11.557004] initcall acpi_battery_init+0x0/0x13 returned 0 after 4715 usecs
+[   11.561396] calling  acpi_smb_hc_init+0x0/0x15 @ 1
+[   11.566161] bus: 'acpi': add driver smbus_hc
+[   11.573004] initcall acpi_smb_hc_init+0x0/0x15 returned 0 after 4288 usecs
+[   11.577636] calling  acpi_sbs_init+0x0/0x46 @ 1
+[   11.582143] bus: 'acpi': add driver sbs
+[   11.589005] initcall acpi_sbs_init+0x0/0x46 returned 0 after 3928 usecs
+[   11.592682] calling  regulator_virtual_consumer_init+0x0/0xf @ 1
+[   11.598662] bus: 'platform': add driver reg-virt-consumer
+[   11.605004] initcall regulator_virtual_consumer_init+0x0/0xf returned 0 after 5443 usecs
+[   11.612251] calling  regulator_userspace_consumer_init+0x0/0xf @ 1
+[   11.618403] bus: 'platform': add driver reg-userspace-consumer
+[   11.625004] initcall regulator_userspace_consumer_init+0x0/0xf returned 0 after 5868 usecs
+[   11.632600] calling  rand_initialize+0x0/0x2a @ 1
+[   11.637279] initcall rand_initialize+0x0/0x2a returned 0 after 38 usecs
+[   11.643867] calling  tty_init+0x0/0xd5 @ 1
+[   11.647940] device: 'tty': device_add
+[   11.651940] PM: Adding info for No Bus:tty
+[   11.657005] device: 'console': device_add
+[   11.659815] PM: Adding info for No Bus:console
+[   11.665005] device: 'tty0': device_add
+[   11.668332] PM: Adding info for No Bus:tty0
+[   11.673004] device class 'vc': registering
+[   11.677004] device: 'vcs': device_add
+[   11.680540] PM: Adding info for No Bus:vcs
+[   11.685005] device: 'vcsa': device_add
+[   11.688358] PM: Adding info for No Bus:vcsa
+[   11.693005] device: 'vcs1': device_add
+[   11.696352] PM: Adding info for No Bus:vcs1
+[   11.701004] device: 'vcsa1': device_add
+[   11.704336] PM: Adding info for No Bus:vcsa1
+[   11.709005] device: 'tty1': device_add
+[   11.712497] PM: Adding info for No Bus:tty1
+[   11.717004] device: 'tty2': device_add
+[   11.720511] PM: Adding info for No Bus:tty2
+[   11.725004] device: 'tty3': device_add
+[   11.728503] PM: Adding info for No Bus:tty3
+[   11.733004] device: 'tty4': device_add
+[   11.736495] PM: Adding info for No Bus:tty4
+[   11.741004] device: 'tty5': device_add
+[   11.744489] PM: Adding info for No Bus:tty5
+[   11.749005] device: 'tty6': device_add
+[   11.752480] PM: Adding info for No Bus:tty6
+[   11.757004] device: 'tty7': device_add
+[   11.760470] PM: Adding info for No Bus:tty7
+[   11.765004] device: 'tty8': device_add
+[   11.768460] PM: Adding info for No Bus:tty8
+[   11.773004] device: 'tty9': device_add
+[   11.776454] PM: Adding info for No Bus:tty9
+[   11.781005] device: 'tty10': device_add
+[   11.784446] PM: Adding info for No Bus:tty10
+[   11.789005] device: 'tty11': device_add
+[   11.792606] PM: Adding info for No Bus:tty11
+[   11.797004] device: 'tty12': device_add
+[   11.800771] PM: Adding info for No Bus:tty12
+[   11.805005] device: 'tty13': device_add
+[   11.808941] PM: Adding info for No Bus:tty13
+[   11.816998] device: 'tty14': device_add
+[   11.816998] PM: Adding info for No Bus:tty14
+[   11.825005] device: 'tty15': device_add
+[   11.825279] PM: Adding info for No Bus:tty15
+[   11.833004] device: 'tty16': device_add
+[   11.833449] PM: Adding info for No Bus:tty16
+[   11.841004] device: 'tty17': device_add
+[   11.841609] PM: Adding info for No Bus:tty17
+[   11.849004] device: 'tty18': device_add
+[   11.849775] PM: Adding info for No Bus:tty18
+[   11.857004] device: 'tty19': device_add
+[   11.857941] PM: Adding info for No Bus:tty19
+[   11.865004] device: 'tty20': device_add
+[   11.866108] PM: Adding info for No Bus:tty20
+[   11.873004] device: 'tty21': device_add
+[   11.874273] PM: Adding info for No Bus:tty21
+[   11.881004] device: 'tty22': device_add
+[   11.882441] PM: Adding info for No Bus:tty22
+[   11.889004] device: 'tty23': device_add
+[   11.890609] PM: Adding info for No Bus:tty23
+[   11.897004] device: 'tty24': device_add
+[   11.898774] PM: Adding info for No Bus:tty24
+[   11.905005] device: 'tty25': device_add
+[   11.906943] PM: Adding info for No Bus:tty25
+[   11.913004] device: 'tty26': device_add
+[   11.915109] PM: Adding info for No Bus:tty26
+[   11.921004] device: 'tty27': device_add
+[   11.923275] PM: Adding info for No Bus:tty27
+[   11.929004] device: 'tty28': device_add
+[   11.931445] PM: Adding info for No Bus:tty28
+[   11.937005] device: 'tty29': device_add
+[   11.939612] PM: Adding info for No Bus:tty29
+[   11.945004] device: 'tty30': device_add
+[   11.947777] PM: Adding info for No Bus:tty30
+[   11.953004] device: 'tty31': device_add
+[   11.956335] PM: Adding info for No Bus:tty31
+[   11.961005] device: 'tty32': device_add
+[   11.964745] PM: Adding info for No Bus:tty32
+[   11.969004] device: 'tty33': device_add
+[   11.972913] PM: Adding info for No Bus:tty33
+[   11.980984] device: 'tty34': device_add
+[   11.984931] PM: Adding info for No Bus:tty34
+[   11.989004] device: 'tty35': device_add
+[   11.989349] PM: Adding info for No Bus:tty35
+[   11.997004] device: 'tty36': device_add
+[   11.997516] PM: Adding info for No Bus:tty36
+[   12.005004] device: 'tty37': device_add
+[   12.005683] PM: Adding info for No Bus:tty37
+[   12.013004] device: 'tty38': device_add
+[   12.013855] PM: Adding info for No Bus:tty38
+[   12.021004] device: 'tty39': device_add
+[   12.022046] PM: Adding info for No Bus:tty39
+[   12.029005] device: 'tty40': device_add
+[   12.030219] PM: Adding info for No Bus:tty40
+[   12.037004] device: 'tty41': device_add
+[   12.038391] PM: Adding info for No Bus:tty41
+[   12.045005] device: 'tty42': device_add
+[   12.046551] PM: Adding info for No Bus:tty42
+[   12.053005] device: 'tty43': device_add
+[   12.054723] PM: Adding info for No Bus:tty43
+[   12.061004] device: 'tty44': device_add
+[   12.062891] PM: Adding info for No Bus:tty44
+[   12.069005] device: 'tty45': device_add
+[   12.071167] PM: Adding info for No Bus:tty45
+[   12.077004] device: 'tty46': device_add
+[   12.079346] PM: Adding info for No Bus:tty46
+[   12.085004] device: 'tty47': device_add
+[   12.087512] PM: Adding info for No Bus:tty47
+[   12.093005] device: 'tty48': device_add
+[   12.095671] PM: Adding info for No Bus:tty48
+[   12.101004] device: 'tty49': device_add
+[   12.103840] PM: Adding info for No Bus:tty49
+[   12.109004] device: 'tty50': device_add
+[   12.112011] PM: Adding info for No Bus:tty50
+[   12.117005] device: 'tty51': device_add
+[   12.120179] PM: Adding info for No Bus:tty51
+[   12.125004] device: 'tty52': device_add
+[   12.128348] PM: Adding info for No Bus:tty52
+[   12.133005] device: 'tty53': device_add
+[   12.136522] PM: Adding info for No Bus:tty53
+[   12.141005] device: 'tty54': device_add
+[   12.144683] PM: Adding info for No Bus:tty54
+[   12.149004] device: 'tty55': device_add
+[   12.152847] PM: Adding info for No Bus:tty55
+[   12.160912] device: 'tty56': device_add
+[   12.160912] PM: Adding info for No Bus:tty56
+[   12.169004] device: 'tty57': device_add
+[   12.172989] PM: Adding info for No Bus:tty57
+[   12.177005] device: 'tty58': device_add
+[   12.177402] PM: Adding info for No Bus:tty58
+[   12.185005] device: 'tty59': device_add
+[   12.185567] PM: Adding info for No Bus:tty59
+[   12.193004] device: 'tty60': device_add
+[   12.193733] PM: Adding info for No Bus:tty60
+[   12.201005] device: 'tty61': device_add
+[   12.201903] PM: Adding info for No Bus:tty61
+[   12.209004] device: 'tty62': device_add
+[   12.210065] PM: Adding info for No Bus:tty62
+[   12.217004] device: 'tty63': device_add
+[   12.218232] PM: Adding info for No Bus:tty63
+[   12.225004] initcall tty_init+0x0/0xd5 returned 0 after 561208 usecs
+[   12.228868] calling  pty_init+0x0/0x11 @ 1
+[   12.232941] device: 'ptyp0': device_add
+[   12.236941] PM: Adding info for No Bus:ptyp0
+[   12.245004] device: 'ptyp1': device_add
+[   12.248935] PM: Adding info for No Bus:ptyp1
+[   12.253004] device: 'ptyp2': device_add
+[   12.253348] PM: Adding info for No Bus:ptyp2
+[   12.261005] device: 'ptyp3': device_add
+[   12.261512] PM: Adding info for No Bus:ptyp3
+[   12.269005] device: 'ptyp4': device_add
+[   12.269675] PM: Adding info for No Bus:ptyp4
+[   12.277005] device: 'ptyp5': device_add
+[   12.277840] PM: Adding info for No Bus:ptyp5
+[   12.285004] device: 'ptyp6': device_add
+[   12.286001] PM: Adding info for No Bus:ptyp6
+[   12.293004] device: 'ptyp7': device_add
+[   12.294167] PM: Adding info for No Bus:ptyp7
+[   12.301004] device: 'ptyp8': device_add
+[   12.302332] PM: Adding info for No Bus:ptyp8
+[   12.309005] device: 'ptyp9': device_add
+[   12.310505] PM: Adding info for No Bus:ptyp9
+[   12.317004] device: 'ptypa': device_add
+[   12.318667] PM: Adding info for No Bus:ptypa
+[   12.325005] device: 'ptypb': device_add
+[   12.326832] PM: Adding info for No Bus:ptypb
+[   12.333004] device: 'ptypc': device_add
+[   12.335003] PM: Adding info for No Bus:ptypc
+[   12.341004] device: 'ptypd': device_add
+[   12.343177] PM: Adding info for No Bus:ptypd
+[   12.349004] device: 'ptype': device_add
+[   12.351341] PM: Adding info for No Bus:ptype
+[   12.357004] device: 'ptypf': device_add
+[   12.359505] PM: Adding info for No Bus:ptypf
+[   12.365005] device: 'ptyq0': device_add
+[   12.367670] PM: Adding info for No Bus:ptyq0
+[   12.373005] device: 'ptyq1': device_add
+[   12.375845] PM: Adding info for No Bus:ptyq1
+[   12.381004] device: 'ptyq2': device_add
+[   12.384009] PM: Adding info for No Bus:ptyq2
+[   12.389004] device: 'ptyq3': device_add
+[   12.392178] PM: Adding info for No Bus:ptyq3
+[   12.397004] device: 'ptyq4': device_add
+[   12.400346] PM: Adding info for No Bus:ptyq4
+[   12.405004] device: 'ptyq5': device_add
+[   12.408512] PM: Adding info for No Bus:ptyq5
+[   12.413005] device: 'ptyq6': device_add
+[   12.416678] PM: Adding info for No Bus:ptyq6
+[   12.421004] device: 'ptyq7': device_add
+[   12.424845] PM: Adding info for No Bus:ptyq7
+[   12.432913] device: 'ptyq8': device_add
+[   12.432913] PM: Adding info for No Bus:ptyq8
+[   12.441004] device: 'ptyq9': device_add
+[   12.444958] PM: Adding info for No Bus:ptyq9
+[   12.449005] device: 'ptyqa': device_add
+[   12.449372] PM: Adding info for No Bus:ptyqa
+[   12.457005] device: 'ptyqb': device_add
+[   12.457540] PM: Adding info for No Bus:ptyqb
+[   12.465004] device: 'ptyqc': device_add
+[   12.465705] PM: Adding info for No Bus:ptyqc
+[   12.473004] device: 'ptyqd': device_add
+[   12.473874] PM: Adding info for No Bus:ptyqd
+[   12.481004] device: 'ptyqe': device_add
+[   12.482041] PM: Adding info for No Bus:ptyqe
+[   12.489004] device: 'ptyqf': device_add
+[   12.490206] PM: Adding info for No Bus:ptyqf
+[   12.497004] device: 'ptyr0': device_add
+[   12.498373] PM: Adding info for No Bus:ptyr0
+[   12.505005] device: 'ptyr1': device_add
+[   12.506542] PM: Adding info for No Bus:ptyr1
+[   12.513004] device: 'ptyr2': device_add
+[   12.514707] PM: Adding info for No Bus:ptyr2
+[   12.521004] device: 'ptyr3': device_add
+[   12.522870] PM: Adding info for No Bus:ptyr3
+[   12.529005] device: 'ptyr4': device_add
+[   12.531036] PM: Adding info for No Bus:ptyr4
+[   12.537004] device: 'ptyr5': device_add
+[   12.539209] PM: Adding info for No Bus:ptyr5
+[   12.545004] device: 'ptyr6': device_add
+[   12.547371] PM: Adding info for No Bus:ptyr6
+[   12.553004] device: 'ptyr7': device_add
+[   12.555537] PM: Adding info for No Bus:ptyr7
+[   12.561004] device: 'ptyr8': device_add
+[   12.563701] PM: Adding info for No Bus:ptyr8
+[   12.569004] device: 'ptyr9': device_add
+[   12.571877] PM: Adding info for No Bus:ptyr9
+[   12.577005] device: 'ptyra': device_add
+[   12.580047] PM: Adding info for No Bus:ptyra
+[   12.585004] device: 'ptyrb': device_add
+[   12.588212] PM: Adding info for No Bus:ptyrb
+[   12.593004] device: 'ptyrc': device_add
+[   12.596380] PM: Adding info for No Bus:ptyrc
+[   12.601005] device: 'ptyrd': device_add
+[   12.604545] PM: Adding info for No Bus:ptyrd
+[   12.609005] device: 'ptyre': device_add
+[   12.612711] PM: Adding info for No Bus:ptyre
+[   12.617005] device: 'ptyrf': device_add
+[   12.620880] PM: Adding info for No Bus:ptyrf
+[   12.628945] device: 'ptys0': device_add
+[   12.628945] PM: Adding info for No Bus:ptys0
+[   12.637005] device: 'ptys1': device_add
+[   12.640972] PM: Adding info for No Bus:ptys1
+[   12.645004] device: 'ptys2': device_add
+[   12.645383] PM: Adding info for No Bus:ptys2
+[   12.653004] device: 'ptys3': device_add
+[   12.653548] PM: Adding info for No Bus:ptys3
+[   12.661004] device: 'ptys4': device_add
+[   12.661713] PM: Adding info for No Bus:ptys4
+[   12.669004] device: 'ptys5': device_add
+[   12.669877] PM: Adding info for No Bus:ptys5
+[   12.677004] device: 'ptys6': device_add
+[   12.678048] PM: Adding info for No Bus:ptys6
+[   12.685004] device: 'ptys7': device_add
+[   12.686210] PM: Adding info for No Bus:ptys7
+[   12.693004] device: 'ptys8': device_add
+[   12.694779] PM: Adding info for No Bus:ptys8
+[   12.701005] device: 'ptys9': device_add
+[   12.703189] PM: Adding info for No Bus:ptys9
+[   12.709005] device: 'ptysa': device_add
+[   12.711353] PM: Adding info for No Bus:ptysa
+[   12.717004] device: 'ptysb': device_add
+[   12.719522] PM: Adding info for No Bus:ptysb
+[   12.725005] device: 'ptysc': device_add
+[   12.727688] PM: Adding info for No Bus:ptysc
+[   12.733004] device: 'ptysd': device_add
+[   12.735866] PM: Adding info for No Bus:ptysd
+[   12.741005] device: 'ptyse': device_add
+[   12.744030] PM: Adding info for No Bus:ptyse
+[   12.749004] device: 'ptysf': device_add
+[   12.752190] PM: Adding info for No Bus:ptysf
+[   12.757004] device: 'ptyt0': device_add
+[   12.760353] PM: Adding info for No Bus:ptyt0
+[   12.765004] device: 'ptyt1': device_add
+[   12.768524] PM: Adding info for No Bus:ptyt1
+[   12.773004] device: 'ptyt2': device_add
+[   12.776682] PM: Adding info for No Bus:ptyt2
+[   12.781004] device: 'ptyt3': device_add
+[   12.784846] PM: Adding info for No Bus:ptyt3
+[   12.792912] device: 'ptyt4': device_add
+[   12.792912] PM: Adding info for No Bus:ptyt4
+[   12.801004] device: 'ptyt5': device_add
+[   12.804954] PM: Adding info for No Bus:ptyt5
+[   12.809004] device: 'ptyt6': device_add
+[   12.809362] PM: Adding info for No Bus:ptyt6
+[   12.817005] device: 'ptyt7': device_add
+[   12.817521] PM: Adding info for No Bus:ptyt7
+[   12.825004] device: 'ptyt8': device_add
+[   12.825696] PM: Adding info for No Bus:ptyt8
+[   12.833005] device: 'ptyt9': device_add
+[   12.833866] PM: Adding info for No Bus:ptyt9
+[   12.841005] device: 'ptyta': device_add
+[   12.842033] PM: Adding info for No Bus:ptyta
+[   12.849005] device: 'ptytb': device_add
+[   12.850199] PM: Adding info for No Bus:ptytb
+[   12.857004] device: 'ptytc': device_add
+[   12.858365] PM: Adding info for No Bus:ptytc
+[   12.865004] device: 'ptytd': device_add
+[   12.866531] PM: Adding info for No Bus:ptytd
+[   12.873004] device: 'ptyte': device_add
+[   12.874698] PM: Adding info for No Bus:ptyte
+[   12.881004] device: 'ptytf': device_add
+[   12.882858] PM: Adding info for No Bus:ptytf
+[   12.889005] device: 'ptyu0': device_add
+[   12.891023] PM: Adding info for No Bus:ptyu0
+[   12.897004] device: 'ptyu1': device_add
+[   12.899189] PM: Adding info for No Bus:ptyu1
+[   12.905004] device: 'ptyu2': device_add
+[   12.907351] PM: Adding info for No Bus:ptyu2
+[   12.913004] device: 'ptyu3': device_add
+[   12.915517] PM: Adding info for No Bus:ptyu3
+[   12.921005] device: 'ptyu4': device_add
+[   12.923683] PM: Adding info for No Bus:ptyu4
+[   12.929004] device: 'ptyu5': device_add
+[   12.931851] PM: Adding info for No Bus:ptyu5
+[   12.937004] device: 'ptyu6': device_add
+[   12.940027] PM: Adding info for No Bus:ptyu6
+[   12.945004] device: 'ptyu7': device_add
+[   12.948190] PM: Adding info for No Bus:ptyu7
+[   12.953004] device: 'ptyu8': device_add
+[   12.956360] PM: Adding info for No Bus:ptyu8
+[   12.961004] device: 'ptyu9': device_add
+[   12.964527] PM: Adding info for No Bus:ptyu9
+[   12.969004] device: 'ptyua': device_add
+[   12.972687] PM: Adding info for No Bus:ptyua
+[   12.977005] device: 'ptyub': device_add
+[   12.980853] PM: Adding info for No Bus:ptyub
+[   12.988916] device: 'ptyuc': device_add
+[   12.988916] PM: Adding info for No Bus:ptyuc
+[   12.997005] device: 'ptyud': device_add
+[   13.000960] PM: Adding info for No Bus:ptyud
+[   13.005005] device: 'ptyue': device_add
+[   13.005379] PM: Adding info for No Bus:ptyue
+[   13.013004] device: 'ptyuf': device_add
+[   13.013544] PM: Adding info for No Bus:ptyuf
+[   13.021004] device: 'ptyv0': device_add
+[   13.021714] PM: Adding info for No Bus:ptyv0
+[   13.029004] device: 'ptyv1': device_add
+[   13.029881] PM: Adding info for No Bus:ptyv1
+[   13.037004] device: 'ptyv2': device_add
+[   13.038057] PM: Adding info for No Bus:ptyv2
+[   13.045004] device: 'ptyv3': device_add
+[   13.046216] PM: Adding info for No Bus:ptyv3
+[   13.053004] device: 'ptyv4': device_add
+[   13.054380] PM: Adding info for No Bus:ptyv4
+[   13.061004] device: 'ptyv5': device_add
+[   13.062556] PM: Adding info for No Bus:ptyv5
+[   13.069005] device: 'ptyv6': device_add
+[   13.070720] PM: Adding info for No Bus:ptyv6
+[   13.077005] device: 'ptyv7': device_add
+[   13.078880] PM: Adding info for No Bus:ptyv7
+[   13.085004] device: 'ptyv8': device_add
+[   13.087046] PM: Adding info for No Bus:ptyv8
+[   13.093004] device: 'ptyv9': device_add
+[   13.095227] PM: Adding info for No Bus:ptyv9
+[   13.101004] device: 'ptyva': device_add
+[   13.103390] PM: Adding info for No Bus:ptyva
+[   13.109004] device: 'ptyvb': device_add
+[   13.111555] PM: Adding info for No Bus:ptyvb
+[   13.117004] device: 'ptyvc': device_add
+[   13.119720] PM: Adding info for No Bus:ptyvc
+[   13.125004] device: 'ptyvd': device_add
+[   13.127889] PM: Adding info for No Bus:ptyvd
+[   13.133005] device: 'ptyve': device_add
+[   13.136066] PM: Adding info for No Bus:ptyve
+[   13.141005] device: 'ptyvf': device_add
+[   13.144230] PM: Adding info for No Bus:ptyvf
+[   13.149004] device: 'ptyw0': device_add
+[   13.152400] PM: Adding info for No Bus:ptyw0
+[   13.157004] device: 'ptyw1': device_add
+[   13.160565] PM: Adding info for No Bus:ptyw1
+[   13.165004] device: 'ptyw2': device_add
+[   13.168738] PM: Adding info for No Bus:ptyw2
+[   13.173004] device: 'ptyw3': device_add
+[   13.176910] PM: Adding info for No Bus:ptyw3
+[   13.184984] device: 'ptyw4': device_add
+[   13.184984] PM: Adding info for No Bus:ptyw4
+[   13.193004] device: 'ptyw5': device_add
+[   13.193267] PM: Adding info for No Bus:ptyw5
+[   13.201004] device: 'ptyw6': device_add
+[   13.201444] PM: Adding info for No Bus:ptyw6
+[   13.209004] device: 'ptyw7': device_add
+[   13.209610] PM: Adding info for No Bus:ptyw7
+[   13.217004] device: 'ptyw8': device_add
+[   13.217777] PM: Adding info for No Bus:ptyw8
+[   13.225004] device: 'ptyw9': device_add
+[   13.225954] PM: Adding info for No Bus:ptyw9
+[   13.233004] device: 'ptywa': device_add
+[   13.234234] PM: Adding info for No Bus:ptywa
+[   13.241004] device: 'ptywb': device_add
+[   13.242405] PM: Adding info for No Bus:ptywb
+[   13.249005] device: 'ptywc': device_add
+[   13.250579] PM: Adding info for No Bus:ptywc
+[   13.257004] device: 'ptywd': device_add
+[   13.258744] PM: Adding info for No Bus:ptywd
+[   13.265004] device: 'ptywe': device_add
+[   13.266908] PM: Adding info for No Bus:ptywe
+[   13.273004] device: 'ptywf': device_add
+[   13.275086] PM: Adding info for No Bus:ptywf
+[   13.281004] device: 'ptyx0': device_add
+[   13.283251] PM: Adding info for No Bus:ptyx0
+[   13.289004] device: 'ptyx1': device_add
+[   13.291422] PM: Adding info for No Bus:ptyx1
+[   13.297004] device: 'ptyx2': device_add
+[   13.299589] PM: Adding info for No Bus:ptyx2
+[   13.305004] device: 'ptyx3': device_add
+[   13.307754] PM: Adding info for No Bus:ptyx3
+[   13.313004] device: 'ptyx4': device_add
+[   13.315919] PM: Adding info for No Bus:ptyx4
+[   13.321004] device: 'ptyx5': device_add
+[   13.324051] PM: Adding info for No Bus:ptyx5
+[   13.329004] device: 'ptyx6': device_add
+[   13.332298] PM: Adding info for No Bus:ptyx6
+[   13.337005] device: 'ptyx7': device_add
+[   13.340469] PM: Adding info for No Bus:ptyx7
+[   13.345004] device: 'ptyx8': device_add
+[   13.348651] PM: Adding info for No Bus:ptyx8
+[   13.353004] device: 'ptyx9': device_add
+[   13.356846] PM: Adding info for No Bus:ptyx9
+[   13.364910] device: 'ptyxa': device_add
+[   13.364910] PM: Adding info for No Bus:ptyxa
+[   13.373004] device: 'ptyxb': device_add
+[   13.373278] PM: Adding info for No Bus:ptyxb
+[   13.381005] device: 'ptyxc': device_add
+[   13.381454] PM: Adding info for No Bus:ptyxc
+[   13.389004] device: 'ptyxd': device_add
+[   13.389635] PM: Adding info for No Bus:ptyxd
+[   13.397004] device: 'ptyxe': device_add
+[   13.397810] PM: Adding info for No Bus:ptyxe
+[   13.405004] device: 'ptyxf': device_add
+[   13.405989] PM: Adding info for No Bus:ptyxf
+[   13.413004] device: 'ptyy0': device_add
+[   13.414154] PM: Adding info for No Bus:ptyy0
+[   13.421005] device: 'ptyy1': device_add
+[   13.422321] PM: Adding info for No Bus:ptyy1
+[   13.429004] device: 'ptyy2': device_add
+[   13.430883] PM: Adding info for No Bus:ptyy2
+[   13.437005] device: 'ptyy3': device_add
+[   13.439294] PM: Adding info for No Bus:ptyy3
+[   13.445004] device: 'ptyy4': device_add
+[   13.447461] PM: Adding info for No Bus:ptyy4
+[   13.453004] device: 'ptyy5': device_add
+[   13.455630] PM: Adding info for No Bus:ptyy5
+[   13.461005] device: 'ptyy6': device_add
+[   13.463795] PM: Adding info for No Bus:ptyy6
+[   13.469004] device: 'ptyy7': device_add
+[   13.471962] PM: Adding info for No Bus:ptyy7
+[   13.477004] device: 'ptyy8': device_add
+[   13.480138] PM: Adding info for No Bus:ptyy8
+[   13.485004] device: 'ptyy9': device_add
+[   13.488307] PM: Adding info for No Bus:ptyy9
+[   13.493004] device: 'ptyya': device_add
+[   13.496471] PM: Adding info for No Bus:ptyya
+[   13.501004] device: 'ptyyb': device_add
+[   13.504639] PM: Adding info for No Bus:ptyyb
+[   13.509004] device: 'ptyyc': device_add
+[   13.512806] PM: Adding info for No Bus:ptyyc
+[   13.517004] device: 'ptyyd': device_add
+[   13.520973] PM: Adding info for No Bus:ptyyd
+[   13.529003] device: 'ptyye': device_add
+[   13.529003] PM: Adding info for No Bus:ptyye
+[   13.537004] device: 'ptyyf': device_add
+[   13.537335] PM: Adding info for No Bus:ptyyf
+[   13.545004] device: 'ptyz0': device_add
+[   13.545502] PM: Adding info for No Bus:ptyz0
+[   13.553005] device: 'ptyz1': device_add
+[   13.553677] PM: Adding info for No Bus:ptyz1
+[   13.561004] device: 'ptyz2': device_add
+[   13.561850] PM: Adding info for No Bus:ptyz2
+[   13.569004] device: 'ptyz3': device_add
+[   13.570021] PM: Adding info for No Bus:ptyz3
+[   13.577005] device: 'ptyz4': device_add
+[   13.578193] PM: Adding info for No Bus:ptyz4
+[   13.585005] device: 'ptyz5': device_add
+[   13.586369] PM: Adding info for No Bus:ptyz5
+[   13.593004] device: 'ptyz6': device_add
+[   13.594541] PM: Adding info for No Bus:ptyz6
+[   13.601005] device: 'ptyz7': device_add
+[   13.602721] PM: Adding info for No Bus:ptyz7
+[   13.609004] device: 'ptyz8': device_add
+[   13.610885] PM: Adding info for No Bus:ptyz8
+[   13.617004] device: 'ptyz9': device_add
+[   13.619063] PM: Adding info for No Bus:ptyz9
+[   13.625005] device: 'ptyza': device_add
+[   13.627237] PM: Adding info for No Bus:ptyza
+[   13.633004] device: 'ptyzb': device_add
+[   13.635416] PM: Adding info for No Bus:ptyzb
+[   13.641005] device: 'ptyzc': device_add
+[   13.643595] PM: Adding info for No Bus:ptyzc
+[   13.649004] device: 'ptyzd': device_add
+[   13.651765] PM: Adding info for No Bus:ptyzd
+[   13.657005] device: 'ptyze': device_add
+[   13.659939] PM: Adding info for No Bus:ptyze
+[   13.665004] device: 'ptyzf': device_add
+[   13.668127] PM: Adding info for No Bus:ptyzf
+[   13.673004] device: 'ptya0': device_add
+[   13.676291] PM: Adding info for No Bus:ptya0
+[   13.681004] device: 'ptya1': device_add
+[   13.684465] PM: Adding info for No Bus:ptya1
+[   13.689004] device: 'ptya2': device_add
+[   13.692639] PM: Adding info for No Bus:ptya2
+[   13.697005] device: 'ptya3': device_add
+[   13.700819] PM: Adding info for No Bus:ptya3
+[   13.708991] device: 'ptya4': device_add
+[   13.708991] PM: Adding info for No Bus:ptya4
+[   13.717004] device: 'ptya5': device_add
+[   13.720918] PM: Adding info for No Bus:ptya5
+[   13.725004] device: 'ptya6': device_add
+[   13.725338] PM: Adding info for No Bus:ptya6
+[   13.733005] device: 'ptya7': device_add
+[   13.733520] PM: Adding info for No Bus:ptya7
+[   13.741004] device: 'ptya8': device_add
+[   13.741693] PM: Adding info for No Bus:ptya8
+[   13.749005] device: 'ptya9': device_add
+[   13.749886] PM: Adding info for No Bus:ptya9
+[   13.757004] device: 'ptyaa': device_add
+[   13.758059] PM: Adding info for No Bus:ptyaa
+[   13.765004] device: 'ptyab': device_add
+[   13.766236] PM: Adding info for No Bus:ptyab
+[   13.773004] device: 'ptyac': device_add
+[   13.774413] PM: Adding info for No Bus:ptyac
+[   13.781005] device: 'ptyad': device_add
+[   13.782587] PM: Adding info for No Bus:ptyad
+[   13.789005] device: 'ptyae': device_add
+[   13.790762] PM: Adding info for No Bus:ptyae
+[   13.797004] device: 'ptyaf': device_add
+[   13.798939] PM: Adding info for No Bus:ptyaf
+[   13.805005] device: 'ptyb0': device_add
+[   13.807107] PM: Adding info for No Bus:ptyb0
+[   13.813004] device: 'ptyb1': device_add
+[   13.815282] PM: Adding info for No Bus:ptyb1
+[   13.821005] device: 'ptyb2': device_add
+[   13.823457] PM: Adding info for No Bus:ptyb2
+[   13.829004] device: 'ptyb3': device_add
+[   13.831635] PM: Adding info for No Bus:ptyb3
+[   13.837004] device: 'ptyb4': device_add
+[   13.839807] PM: Adding info for No Bus:ptyb4
+[   13.845005] device: 'ptyb5': device_add
+[   13.848006] PM: Adding info for No Bus:ptyb5
+[   13.853005] device: 'ptyb6': device_add
+[   13.856158] PM: Adding info for No Bus:ptyb6
+[   13.861005] device: 'ptyb7': device_add
+[   13.864327] PM: Adding info for No Bus:ptyb7
+[   13.869004] device: 'ptyb8': device_add
+[   13.872499] PM: Adding info for No Bus:ptyb8
+[   13.877004] device: 'ptyb9': device_add
+[   13.880688] PM: Adding info for No Bus:ptyb9
+[   13.885004] device: 'ptyba': device_add
+[   13.888860] PM: Adding info for No Bus:ptyba
+[   13.896935] device: 'ptybb': device_add
+[   13.896935] PM: Adding info for No Bus:ptybb
+[   13.905004] device: 'ptybc': device_add
+[   13.905256] PM: Adding info for No Bus:ptybc
+[   13.913004] device: 'ptybd': device_add
+[   13.913440] PM: Adding info for No Bus:ptybd
+[   13.921004] device: 'ptybe': device_add
+[   13.921614] PM: Adding info for No Bus:ptybe
+[   13.929004] device: 'ptybf': device_add
+[   13.929795] PM: Adding info for No Bus:ptybf
+[   13.937005] device: 'ptyc0': device_add
+[   13.937967] PM: Adding info for No Bus:ptyc0
+[   13.945004] device: 'ptyc1': device_add
+[   13.946139] PM: Adding info for No Bus:ptyc1
+[   13.953004] device: 'ptyc2': device_add
+[   13.954312] PM: Adding info for No Bus:ptyc2
+[   13.961004] device: 'ptyc3': device_add
+[   13.962484] PM: Adding info for No Bus:ptyc3
+[   13.969004] device: 'ptyc4': device_add
+[   13.970658] PM: Adding info for No Bus:ptyc4
+[   13.977004] device: 'ptyc5': device_add
+[   13.978832] PM: Adding info for No Bus:ptyc5
+[   13.985004] device: 'ptyc6': device_add
+[   13.987003] PM: Adding info for No Bus:ptyc6
+[   13.993004] device: 'ptyc7': device_add
+[   13.995178] PM: Adding info for No Bus:ptyc7
+[   14.001004] device: 'ptyc8': device_add
+[   14.003349] PM: Adding info for No Bus:ptyc8
+[   14.009004] device: 'ptyc9': device_add
+[   14.011529] PM: Adding info for No Bus:ptyc9
+[   14.017004] device: 'ptyca': device_add
+[   14.019703] PM: Adding info for No Bus:ptyca
+[   14.025005] device: 'ptycb': device_add
+[   14.027884] PM: Adding info for No Bus:ptycb
+[   14.033004] device: 'ptycc': device_add
+[   14.036055] PM: Adding info for No Bus:ptycc
+[   14.041004] device: 'ptycd': device_add
+[   14.044221] PM: Adding info for No Bus:ptycd
+[   14.049004] device: 'ptyce': device_add
+[   14.052398] PM: Adding info for No Bus:ptyce
+[   14.057004] device: 'ptycf': device_add
+[   14.060573] PM: Adding info for No Bus:ptycf
+[   14.065004] device: 'ptyd0': device_add
+[   14.068747] PM: Adding info for No Bus:ptyd0
+[   14.073004] device: 'ptyd1': device_add
+[   14.076919] PM: Adding info for No Bus:ptyd1
+[   14.084999] device: 'ptyd2': device_add
+[   14.084999] PM: Adding info for No Bus:ptyd2
+[   14.093005] device: 'ptyd3': device_add
+[   14.093316] PM: Adding info for No Bus:ptyd3
+[   14.101004] device: 'ptyd4': device_add
+[   14.101501] PM: Adding info for No Bus:ptyd4
+[   14.109004] device: 'ptyd5': device_add
+[   14.109668] PM: Adding info for No Bus:ptyd5
+[   14.117005] device: 'ptyd6': device_add
+[   14.117855] PM: Adding info for No Bus:ptyd6
+[   14.125004] device: 'ptyd7': device_add
+[   14.126048] PM: Adding info for No Bus:ptyd7
+[   14.133004] device: 'ptyd8': device_add
+[   14.134247] PM: Adding info for No Bus:ptyd8
+[   14.141005] device: 'ptyd9': device_add
+[   14.142432] PM: Adding info for No Bus:ptyd9
+[   14.149005] device: 'ptyda': device_add
+[   14.150608] PM: Adding info for No Bus:ptyda
+[   14.157004] device: 'ptydb': device_add
+[   14.158790] PM: Adding info for No Bus:ptydb
+[   14.165005] device: 'ptydc': device_add
+[   14.167350] PM: Adding info for No Bus:ptydc
+[   14.173005] device: 'ptydd': device_add
+[   14.175774] PM: Adding info for No Bus:ptydd
+[   14.181004] device: 'ptyde': device_add
+[   14.183950] PM: Adding info for No Bus:ptyde
+[   14.189005] device: 'ptydf': device_add
+[   14.192133] PM: Adding info for No Bus:ptydf
+[   14.197004] device: 'ptye0': device_add
+[   14.200302] PM: Adding info for No Bus:ptye0
+[   14.205004] device: 'ptye1': device_add
+[   14.208484] PM: Adding info for No Bus:ptye1
+[   14.213004] device: 'ptye2': device_add
+[   14.216661] PM: Adding info for No Bus:ptye2
+[   14.221004] device: 'ptye3': device_add
+[   14.224833] PM: Adding info for No Bus:ptye3
+[   14.232923] device: 'ptye4': device_add
+[   14.232923] PM: Adding info for No Bus:ptye4
+[   14.241004] device: 'ptye5': device_add
+[   14.244947] PM: Adding info for No Bus:ptye5
+[   14.249004] device: 'ptye6': device_add
+[   14.249371] PM: Adding info for No Bus:ptye6
+[   14.257004] device: 'ptye7': device_add
+[   14.257539] PM: Adding info for No Bus:ptye7
+[   14.265005] device: 'ptye8': device_add
+[   14.265714] PM: Adding info for No Bus:ptye8
+[   14.273004] device: 'ptye9': device_add
+[   14.273905] PM: Adding info for No Bus:ptye9
+[   14.281004] device: 'ptyea': device_add
+[   14.282075] PM: Adding info for No Bus:ptyea
+[   14.289004] device: 'ptyeb': device_add
+[   14.290258] PM: Adding info for No Bus:ptyeb
+[   14.297005] device: 'ptyec': device_add
+[   14.298432] PM: Adding info for No Bus:ptyec
+[   14.305004] device: 'ptyed': device_add
+[   14.306609] PM: Adding info for No Bus:ptyed
+[   14.313005] device: 'ptyee': device_add
+[   14.314783] PM: Adding info for No Bus:ptyee
+[   14.321004] device: 'ptyef': device_add
+[   14.322959] PM: Adding info for No Bus:ptyef
+[   14.329005] device: 'ttyp0': device_add
+[   14.331144] PM: Adding info for No Bus:ttyp0
+[   14.337004] device: 'ttyp1': device_add
+[   14.339337] PM: Adding info for No Bus:ttyp1
+[   14.345004] device: 'ttyp2': device_add
+[   14.347513] PM: Adding info for No Bus:ttyp2
+[   14.353004] device: 'ttyp3': device_add
+[   14.355678] PM: Adding info for No Bus:ttyp3
+[   14.361004] device: 'ttyp4': device_add
+[   14.363855] PM: Adding info for No Bus:ttyp4
+[   14.369004] device: 'ttyp5': device_add
+[   14.372040] PM: Adding info for No Bus:ttyp5
+[   14.377005] device: 'ttyp6': device_add
+[   14.380209] PM: Adding info for No Bus:ttyp6
+[   14.385004] device: 'ttyp7': device_add
+[   14.388383] PM: Adding info for No Bus:ttyp7
+[   14.393004] device: 'ttyp8': device_add
+[   14.396665] PM: Adding info for No Bus:ttyp8
+[   14.401004] device: 'ttyp9': device_add
+[   14.404852] PM: Adding info for No Bus:ttyp9
+[   14.412937] device: 'ttypa': device_add
+[   14.412937] PM: Adding info for No Bus:ttypa
+[   14.421004] device: 'ttypb': device_add
+[   14.424972] PM: Adding info for No Bus:ttypb
+[   14.429004] device: 'ttypc': device_add
+[   14.429405] PM: Adding info for No Bus:ttypc
+[   14.437004] device: 'ttypd': device_add
+[   14.437580] PM: Adding info for No Bus:ttypd
+[   14.445004] device: 'ttype': device_add
+[   14.445756] PM: Adding info for No Bus:ttype
+[   14.453005] device: 'ttypf': device_add
+[   14.453933] PM: Adding info for No Bus:ttypf
+[   14.461004] device: 'ttyq0': device_add
+[   14.462105] PM: Adding info for No Bus:ttyq0
+[   14.469004] device: 'ttyq1': device_add
+[   14.470280] PM: Adding info for No Bus:ttyq1
+[   14.477005] device: 'ttyq2': device_add
+[   14.478457] PM: Adding info for No Bus:ttyq2
+[   14.485004] device: 'ttyq3': device_add
+[   14.486626] PM: Adding info for No Bus:ttyq3
+[   14.493004] device: 'ttyq4': device_add
+[   14.494798] PM: Adding info for No Bus:ttyq4
+[   14.501004] device: 'ttyq5': device_add
+[   14.502974] PM: Adding info for No Bus:ttyq5
+[   14.509004] device: 'ttyq6': device_add
+[   14.511150] PM: Adding info for No Bus:ttyq6
+[   14.517005] device: 'ttyq7': device_add
+[   14.519326] PM: Adding info for No Bus:ttyq7
+[   14.525004] device: 'ttyq8': device_add
+[   14.527512] PM: Adding info for No Bus:ttyq8
+[   14.533005] device: 'ttyq9': device_add
+[   14.535686] PM: Adding info for No Bus:ttyq9
+[   14.541005] device: 'ttyqa': device_add
+[   14.543859] PM: Adding info for No Bus:ttyqa
+[   14.549005] device: 'ttyqb': device_add
+[   14.552032] PM: Adding info for No Bus:ttyqb
+[   14.557004] device: 'ttyqc': device_add
+[   14.560200] PM: Adding info for No Bus:ttyqc
+[   14.565005] device: 'ttyqd': device_add
+[   14.568376] PM: Adding info for No Bus:ttyqd
+[   14.573005] device: 'ttyqe': device_add
+[   14.576552] PM: Adding info for No Bus:ttyqe
+[   14.581004] device: 'ttyqf': device_add
+[   14.584735] PM: Adding info for No Bus:ttyqf
+[   14.589005] device: 'ttyr0': device_add
+[   14.592911] PM: Adding info for No Bus:ttyr0
+[   14.600987] device: 'ttyr1': device_add
+[   14.600987] PM: Adding info for No Bus:ttyr1
+[   14.609004] device: 'ttyr2': device_add
+[   14.609286] PM: Adding info for No Bus:ttyr2
+[   14.617004] device: 'ttyr3': device_add
+[   14.617465] PM: Adding info for No Bus:ttyr3
+[   14.625004] device: 'ttyr4': device_add
+[   14.625650] PM: Adding info for No Bus:ttyr4
+[   14.633004] device: 'ttyr5': device_add
+[   14.633825] PM: Adding info for No Bus:ttyr5
+[   14.641005] device: 'ttyr6': device_add
+[   14.642001] PM: Adding info for No Bus:ttyr6
+[   14.649004] device: 'ttyr7': device_add
+[   14.650185] PM: Adding info for No Bus:ttyr7
+[   14.657004] device: 'ttyr8': device_add
+[   14.658358] PM: Adding info for No Bus:ttyr8
+[   14.665005] device: 'ttyr9': device_add
+[   14.666537] PM: Adding info for No Bus:ttyr9
+[   14.673004] device: 'ttyra': device_add
+[   14.674709] PM: Adding info for No Bus:ttyra
+[   14.681005] device: 'ttyrb': device_add
+[   14.682885] PM: Adding info for No Bus:ttyrb
+[   14.689004] device: 'ttyrc': device_add
+[   14.691055] PM: Adding info for No Bus:ttyrc
+[   14.697004] device: 'ttyrd': device_add
+[   14.699240] PM: Adding info for No Bus:ttyrd
+[   14.705004] device: 'ttyre': device_add
+[   14.707412] PM: Adding info for No Bus:ttyre
+[   14.713005] device: 'ttyrf': device_add
+[   14.715588] PM: Adding info for No Bus:ttyrf
+[   14.721004] device: 'ttys0': device_add
+[   14.723775] PM: Adding info for No Bus:ttys0
+[   14.729004] device: 'ttys1': device_add
+[   14.731948] PM: Adding info for No Bus:ttys1
+[   14.737005] device: 'ttys2': device_add
+[   14.740124] PM: Adding info for No Bus:ttys2
+[   14.745004] device: 'ttys3': device_add
+[   14.748300] PM: Adding info for No Bus:ttys3
+[   14.753005] device: 'ttys4': device_add
+[   14.756471] PM: Adding info for No Bus:ttys4
+[   14.761005] device: 'ttys5': device_add
+[   14.764654] PM: Adding info for No Bus:ttys5
+[   14.769004] device: 'ttys6': device_add
+[   14.772846] PM: Adding info for No Bus:ttys6
+[   14.780918] device: 'ttys7': device_add
+[   14.780918] PM: Adding info for No Bus:ttys7
+[   14.789004] device: 'ttys8': device_add
+[   14.793003] PM: Adding info for No Bus:ttys8
+[   14.797005] device: 'ttys9': device_add
+[   14.797431] PM: Adding info for No Bus:ttys9
+[   14.805004] device: 'ttysa': device_add
+[   14.805606] PM: Adding info for No Bus:ttysa
+[   14.813005] device: 'ttysb': device_add
+[   14.813787] PM: Adding info for No Bus:ttysb
+[   14.821004] device: 'ttysc': device_add
+[   14.821975] PM: Adding info for No Bus:ttysc
+[   14.829005] device: 'ttysd': device_add
+[   14.830147] PM: Adding info for No Bus:ttysd
+[   14.837004] device: 'ttyse': device_add
+[   14.838332] PM: Adding info for No Bus:ttyse
+[   14.845004] device: 'ttysf': device_add
+[   14.846501] PM: Adding info for No Bus:ttysf
+[   14.853004] device: 'ttyt0': device_add
+[   14.854675] PM: Adding info for No Bus:ttyt0
+[   14.861004] device: 'ttyt1': device_add
+[   14.862857] PM: Adding info for No Bus:ttyt1
+[   14.869005] device: 'ttyt2': device_add
+[   14.871036] PM: Adding info for No Bus:ttyt2
+[   14.877005] device: 'ttyt3': device_add
+[   14.879208] PM: Adding info for No Bus:ttyt3
+[   14.885004] device: 'ttyt4': device_add
+[   14.887390] PM: Adding info for No Bus:ttyt4
+[   14.893004] device: 'ttyt5': device_add
+[   14.895571] PM: Adding info for No Bus:ttyt5
+[   14.901004] device: 'ttyt6': device_add
+[   14.904139] PM: Adding info for No Bus:ttyt6
+[   14.909004] device: 'ttyt7': device_add
+[   14.912570] PM: Adding info for No Bus:ttyt7
+[   14.917005] device: 'ttyt8': device_add
+[   14.920746] PM: Adding info for No Bus:ttyt8
+[   14.925004] device: 'ttyt9': device_add
+[   14.928931] PM: Adding info for No Bus:ttyt9
+[   14.937003] device: 'ttyta': device_add
+[   14.940915] PM: Adding info for No Bus:ttyta
+[   14.945004] device: 'ttytb': device_add
+[   14.945342] PM: Adding info for No Bus:ttytb
+[   14.953004] device: 'ttytc': device_add
+[   14.953526] PM: Adding info for No Bus:ttytc
+[   14.961004] device: 'ttytd': device_add
+[   14.961710] PM: Adding info for No Bus:ttytd
+[   14.969004] device: 'ttyte': device_add
+[   14.969883] PM: Adding info for No Bus:ttyte
+[   14.977004] device: 'ttytf': device_add
+[   14.978065] PM: Adding info for No Bus:ttytf
+[   14.985004] device: 'ttyu0': device_add
+[   14.986241] PM: Adding info for No Bus:ttyu0
+[   14.993004] device: 'ttyu1': device_add
+[   14.994429] PM: Adding info for No Bus:ttyu1
+[   15.001005] device: 'ttyu2': device_add
+[   15.002610] PM: Adding info for No Bus:ttyu2
+[   15.009005] device: 'ttyu3': device_add
+[   15.010793] PM: Adding info for No Bus:ttyu3
+[   15.017004] device: 'ttyu4': device_add
+[   15.018978] PM: Adding info for No Bus:ttyu4
+[   15.025004] device: 'ttyu5': device_add
+[   15.027167] PM: Adding info for No Bus:ttyu5
+[   15.033004] device: 'ttyu6': device_add
+[   15.035340] PM: Adding info for No Bus:ttyu6
+[   15.041005] device: 'ttyu7': device_add
+[   15.043522] PM: Adding info for No Bus:ttyu7
+[   15.049004] device: 'ttyu8': device_add
+[   15.051700] PM: Adding info for No Bus:ttyu8
+[   15.057004] device: 'ttyu9': device_add
+[   15.059884] PM: Adding info for No Bus:ttyu9
+[   15.065004] device: 'ttyua': device_add
+[   15.068064] PM: Adding info for No Bus:ttyua
+[   15.073005] device: 'ttyub': device_add
+[   15.076238] PM: Adding info for No Bus:ttyub
+[   15.081004] device: 'ttyuc': device_add
+[   15.084418] PM: Adding info for No Bus:ttyuc
+[   15.089004] device: 'ttyud': device_add
+[   15.092600] PM: Adding info for No Bus:ttyud
+[   15.097004] device: 'ttyue': device_add
+[   15.100783] PM: Adding info for No Bus:ttyue
+[   15.105004] device: 'ttyuf': device_add
+[   15.108968] PM: Adding info for No Bus:ttyuf
+[   15.117003] device: 'ttyv0': device_add
+[   15.120914] PM: Adding info for No Bus:ttyv0
+[   15.125004] device: 'ttyv1': device_add
+[   15.125346] PM: Adding info for No Bus:ttyv1
+[   15.133004] device: 'ttyv2': device_add
+[   15.133532] PM: Adding info for No Bus:ttyv2
+[   15.141005] device: 'ttyv3': device_add
+[   15.141712] PM: Adding info for No Bus:ttyv3
+[   15.149004] device: 'ttyv4': device_add
+[   15.149897] PM: Adding info for No Bus:ttyv4
+[   15.157004] device: 'ttyv5': device_add
+[   15.158074] PM: Adding info for No Bus:ttyv5
+[   15.165004] device: 'ttyv6': device_add
+[   15.166259] PM: Adding info for No Bus:ttyv6
+[   15.173004] device: 'ttyv7': device_add
+[   15.174442] PM: Adding info for No Bus:ttyv7
+[   15.181005] device: 'ttyv8': device_add
+[   15.182628] PM: Adding info for No Bus:ttyv8
+[   15.189004] device: 'ttyv9': device_add
+[   15.190811] PM: Adding info for No Bus:ttyv9
+[   15.197004] device: 'ttyva': device_add
+[   15.198992] PM: Adding info for No Bus:ttyva
+[   15.205005] device: 'ttyvb': device_add
+[   15.207179] PM: Adding info for No Bus:ttyvb
+[   15.213004] device: 'ttyvc': device_add
+[   15.215361] PM: Adding info for No Bus:ttyvc
+[   15.221004] device: 'ttyvd': device_add
+[   15.223551] PM: Adding info for No Bus:ttyvd
+[   15.229004] device: 'ttyve': device_add
+[   15.231731] PM: Adding info for No Bus:ttyve
+[   15.237004] device: 'ttyvf': device_add
+[   15.239914] PM: Adding info for No Bus:ttyvf
+[   15.245004] device: 'ttyw0': device_add
+[   15.249005] PM: Adding info for No Bus:ttyw0
+[   15.253004] device: 'ttyw1': device_add
+[   15.256296] PM: Adding info for No Bus:ttyw1
+[   15.261004] device: 'ttyw2': device_add
+[   15.264476] PM: Adding info for No Bus:ttyw2
+[   15.269005] device: 'ttyw3': device_add
+[   15.272655] PM: Adding info for No Bus:ttyw3
+[   15.277005] device: 'ttyw4': device_add
+[   15.280841] PM: Adding info for No Bus:ttyw4
+[   15.288950] device: 'ttyw5': device_add
+[   15.288950] PM: Adding info for No Bus:ttyw5
+[   15.297004] device: 'ttyw6': device_add
+[   15.297256] PM: Adding info for No Bus:ttyw6
+[   15.305004] device: 'ttyw7': device_add
+[   15.305455] PM: Adding info for No Bus:ttyw7
+[   15.313005] device: 'ttyw8': device_add
+[   15.313637] PM: Adding info for No Bus:ttyw8
+[   15.321004] device: 'ttyw9': device_add
+[   15.321847] PM: Adding info for No Bus:ttyw9
+[   15.329004] device: 'ttywa': device_add
+[   15.330040] PM: Adding info for No Bus:ttywa
+[   15.337005] device: 'ttywb': device_add
+[   15.338223] PM: Adding info for No Bus:ttywb
+[   15.345005] device: 'ttywc': device_add
+[   15.346407] PM: Adding info for No Bus:ttywc
+[   15.353004] device: 'ttywd': device_add
+[   15.354592] PM: Adding info for No Bus:ttywd
+[   15.361004] device: 'ttywe': device_add
+[   15.362779] PM: Adding info for No Bus:ttywe
+[   15.369005] device: 'ttywf': device_add
+[   15.370978] PM: Adding info for No Bus:ttywf
+[   15.377005] device: 'ttyx0': device_add
+[   15.379161] PM: Adding info for No Bus:ttyx0
+[   15.385005] device: 'ttyx1': device_add
+[   15.387346] PM: Adding info for No Bus:ttyx1
+[   15.393004] device: 'ttyx2': device_add
+[   15.395526] PM: Adding info for No Bus:ttyx2
+[   15.401005] device: 'ttyx3': device_add
+[   15.403716] PM: Adding info for No Bus:ttyx3
+[   15.409005] device: 'ttyx4': device_add
+[   15.411901] PM: Adding info for No Bus:ttyx4
+[   15.417005] device: 'ttyx5': device_add
+[   15.420055] PM: Adding info for No Bus:ttyx5
+[   15.425005] device: 'ttyx6': device_add
+[   15.428291] PM: Adding info for No Bus:ttyx6
+[   15.433004] device: 'ttyx7': device_add
+[   15.436488] PM: Adding info for No Bus:ttyx7
+[   15.441005] device: 'ttyx8': device_add
+[   15.444666] PM: Adding info for No Bus:ttyx8
+[   15.449005] device: 'ttyx9': device_add
+[   15.452866] PM: Adding info for No Bus:ttyx9
+[   15.460988] device: 'ttyxa': device_add
+[   15.460988] PM: Adding info for No Bus:ttyxa
+[   15.469004] device: 'ttyxb': device_add
+[   15.469310] PM: Adding info for No Bus:ttyxb
+[   15.477005] device: 'ttyxc': device_add
+[   15.477494] PM: Adding info for No Bus:ttyxc
+[   15.485004] device: 'ttyxd': device_add
+[   15.485678] PM: Adding info for No Bus:ttyxd
+[   15.493004] device: 'ttyxe': device_add
+[   15.493870] PM: Adding info for No Bus:ttyxe
+[   15.501005] device: 'ttyxf': device_add
+[   15.502097] PM: Adding info for No Bus:ttyxf
+[   15.509005] device: 'ttyy0': device_add
+[   15.510285] PM: Adding info for No Bus:ttyy0
+[   15.517004] device: 'ttyy1': device_add
+[   15.518479] PM: Adding info for No Bus:ttyy1
+[   15.525005] device: 'ttyy2': device_add
+[   15.526660] PM: Adding info for No Bus:ttyy2
+[   15.533004] device: 'ttyy3': device_add
+[   15.534855] PM: Adding info for No Bus:ttyy3
+[   15.541004] device: 'ttyy4': device_add
+[   15.543051] PM: Adding info for No Bus:ttyy4
+[   15.549004] device: 'ttyy5': device_add
+[   15.551228] PM: Adding info for No Bus:ttyy5
+[   15.557004] device: 'ttyy6': device_add
+[   15.559527] PM: Adding info for No Bus:ttyy6
+[   15.565005] device: 'ttyy7': device_add
+[   15.567724] PM: Adding info for No Bus:ttyy7
+[   15.573004] device: 'ttyy8': device_add
+[   15.575921] PM: Adding info for No Bus:ttyy8
+[   15.581005] device: 'ttyy9': device_add
+[   15.584115] PM: Adding info for No Bus:ttyy9
+[   15.589004] device: 'ttyya': device_add
+[   15.592290] PM: Adding info for No Bus:ttyya
+[   15.597005] device: 'ttyyb': device_add
+[   15.600482] PM: Adding info for No Bus:ttyyb
+[   15.605004] device: 'ttyyc': device_add
+[   15.608665] PM: Adding info for No Bus:ttyyc
+[   15.613004] device: 'ttyyd': device_add
+[   15.616846] PM: Adding info for No Bus:ttyyd
+[   15.624937] device: 'ttyye': device_add
+[   15.624937] PM: Adding info for No Bus:ttyye
+[   15.633004] device: 'ttyyf': device_add
+[   15.636988] PM: Adding info for No Bus:ttyyf
+[   15.641004] device: 'ttyz0': device_add
+[   15.641810] PM: Adding info for No Bus:ttyz0
+[   15.649004] device: 'ttyz1': device_add
+[   15.650250] PM: Adding info for No Bus:ttyz1
+[   15.657005] device: 'ttyz2': device_add
+[   15.658433] PM: Adding info for No Bus:ttyz2
+[   15.665005] device: 'ttyz3': device_add
+[   15.666620] PM: Adding info for No Bus:ttyz3
+[   15.673004] device: 'ttyz4': device_add
+[   15.674806] PM: Adding info for No Bus:ttyz4
+[   15.681004] device: 'ttyz5': device_add
+[   15.682993] PM: Adding info for No Bus:ttyz5
+[   15.689004] device: 'ttyz6': device_add
+[   15.691173] PM: Adding info for No Bus:ttyz6
+[   15.697005] device: 'ttyz7': device_add
+[   15.699361] PM: Adding info for No Bus:ttyz7
+[   15.705004] device: 'ttyz8': device_add
+[   15.707554] PM: Adding info for No Bus:ttyz8
+[   15.713004] device: 'ttyz9': device_add
+[   15.715754] PM: Adding info for No Bus:ttyz9
+[   15.721004] device: 'ttyza': device_add
+[   15.723950] PM: Adding info for No Bus:ttyza
+[   15.729005] device: 'ttyzb': device_add
+[   15.732142] PM: Adding info for No Bus:ttyzb
+[   15.737005] device: 'ttyzc': device_add
+[   15.740317] PM: Adding info for No Bus:ttyzc
+[   15.745004] device: 'ttyzd': device_add
+[   15.748511] PM: Adding info for No Bus:ttyzd
+[   15.753004] device: 'ttyze': device_add
+[   15.756693] PM: Adding info for No Bus:ttyze
+[   15.761005] device: 'ttyzf': device_add
+[   15.764884] PM: Adding info for No Bus:ttyzf
+[   15.772980] device: 'ttya0': device_add
+[   15.772980] PM: Adding info for No Bus:ttya0
+[   15.781004] device: 'ttya1': device_add
+[   15.781303] PM: Adding info for No Bus:ttya1
+[   15.789004] device: 'ttya2': device_add
+[   15.789501] PM: Adding info for No Bus:ttya2
+[   15.797004] device: 'ttya3': device_add
+[   15.797693] PM: Adding info for No Bus:ttya3
+[   15.805004] device: 'ttya4': device_add
+[   15.805909] PM: Adding info for No Bus:ttya4
+[   15.813004] device: 'ttya5': device_add
+[   15.814105] PM: Adding info for No Bus:ttya5
+[   15.821004] device: 'ttya6': device_add
+[   15.822326] PM: Adding info for No Bus:ttya6
+[   15.829005] device: 'ttya7': device_add
+[   15.830516] PM: Adding info for No Bus:ttya7
+[   15.837004] device: 'ttya8': device_add
+[   15.838701] PM: Adding info for No Bus:ttya8
+[   15.845005] device: 'ttya9': device_add
+[   15.846913] PM: Adding info for No Bus:ttya9
+[   15.853004] device: 'ttyaa': device_add
+[   15.855108] PM: Adding info for No Bus:ttyaa
+[   15.861004] device: 'ttyab': device_add
+[   15.863307] PM: Adding info for No Bus:ttyab
+[   15.869004] device: 'ttyac': device_add
+[   15.871500] PM: Adding info for No Bus:ttyac
+[   15.877004] device: 'ttyad': device_add
+[   15.879692] PM: Adding info for No Bus:ttyad
+[   15.885004] device: 'ttyae': device_add
+[   15.887884] PM: Adding info for No Bus:ttyae
+[   15.893005] device: 'ttyaf': device_add
+[   15.896078] PM: Adding info for No Bus:ttyaf
+[   15.901005] device: 'ttyb0': device_add
+[   15.904253] PM: Adding info for No Bus:ttyb0
+[   15.909004] device: 'ttyb1': device_add
+[   15.912440] PM: Adding info for No Bus:ttyb1
+[   15.917004] device: 'ttyb2': device_add
+[   15.920640] PM: Adding info for No Bus:ttyb2
+[   15.925005] device: 'ttyb3': device_add
+[   15.928831] PM: Adding info for No Bus:ttyb3
+[   15.936917] device: 'ttyb4': device_add
+[   15.936917] PM: Adding info for No Bus:ttyb4
+[   15.945004] device: 'ttyb5': device_add
+[   15.945262] PM: Adding info for No Bus:ttyb5
+[   15.953004] device: 'ttyb6': device_add
+[   15.953459] PM: Adding info for No Bus:ttyb6
+[   15.961004] device: 'ttyb7': device_add
+[   15.961655] PM: Adding info for No Bus:ttyb7
+[   15.969004] device: 'ttyb8': device_add
+[   15.969854] PM: Adding info for No Bus:ttyb8
+[   15.977005] device: 'ttyb9': device_add
+[   15.978049] PM: Adding info for No Bus:ttyb9
+[   15.985005] device: 'ttyba': device_add
+[   15.986237] PM: Adding info for No Bus:ttyba
+[   15.993004] device: 'ttybb': device_add
+[   15.994431] PM: Adding info for No Bus:ttybb
+[   16.001004] device: 'ttybc': device_add
+[   16.002627] PM: Adding info for No Bus:ttybc
+[   16.009005] device: 'ttybd': device_add
+[   16.010819] PM: Adding info for No Bus:ttybd
+[   16.017004] device: 'ttybe': device_add
+[   16.019012] PM: Adding info for No Bus:ttybe
+[   16.025005] device: 'ttybf': device_add
+[   16.027205] PM: Adding info for No Bus:ttybf
+[   16.033005] device: 'ttyc0': device_add
+[   16.035396] PM: Adding info for No Bus:ttyc0
+[   16.041004] device: 'ttyc1': device_add
+[   16.043588] PM: Adding info for No Bus:ttyc1
+[   16.049004] device: 'ttyc2': device_add
+[   16.051784] PM: Adding info for No Bus:ttyc2
+[   16.057004] device: 'ttyc3': device_add
+[   16.060006] PM: Adding info for No Bus:ttyc3
+[   16.065005] device: 'ttyc4': device_add
+[   16.068177] PM: Adding info for No Bus:ttyc4
+[   16.073004] device: 'ttyc5': device_add
+[   16.076368] PM: Adding info for No Bus:ttyc5
+[   16.081004] device: 'ttyc6': device_add
+[   16.084561] PM: Adding info for No Bus:ttyc6
+[   16.089004] device: 'ttyc7': device_add
+[   16.092752] PM: Adding info for No Bus:ttyc7
+[   16.097004] device: 'ttyc8': device_add
+[   16.100943] PM: Adding info for No Bus:ttyc8
+[   16.109002] device: 'ttyc9': device_add
+[   16.112891] PM: Adding info for No Bus:ttyc9
+[   16.117004] device: 'ttyca': device_add
+[   16.117343] PM: Adding info for No Bus:ttyca
+[   16.125004] device: 'ttycb': device_add
+[   16.125541] PM: Adding info for No Bus:ttycb
+[   16.133004] device: 'ttycc': device_add
+[   16.133736] PM: Adding info for No Bus:ttycc
+[   16.141004] device: 'ttycd': device_add
+[   16.141928] PM: Adding info for No Bus:ttycd
+[   16.149005] device: 'ttyce': device_add
+[   16.150129] PM: Adding info for No Bus:ttyce
+[   16.157004] device: 'ttycf': device_add
+[   16.158324] PM: Adding info for No Bus:ttycf
+[   16.165004] device: 'ttyd0': device_add
+[   16.166516] PM: Adding info for No Bus:ttyd0
+[   16.173004] device: 'ttyd1': device_add
+[   16.174705] PM: Adding info for No Bus:ttyd1
+[   16.181005] device: 'ttyd2': device_add
+[   16.182891] PM: Adding info for No Bus:ttyd2
+[   16.189004] device: 'ttyd3': device_add
+[   16.191083] PM: Adding info for No Bus:ttyd3
+[   16.197004] device: 'ttyd4': device_add
+[   16.199275] PM: Adding info for No Bus:ttyd4
+[   16.205004] device: 'ttyd5': device_add
+[   16.207462] PM: Adding info for No Bus:ttyd5
+[   16.213004] device: 'ttyd6': device_add
+[   16.215665] PM: Adding info for No Bus:ttyd6
+[   16.221004] device: 'ttyd7': device_add
+[   16.223865] PM: Adding info for No Bus:ttyd7
+[   16.229004] device: 'ttyd8': device_add
+[   16.232058] PM: Adding info for No Bus:ttyd8
+[   16.237004] device: 'ttyd9': device_add
+[   16.240253] PM: Adding info for No Bus:ttyd9
+[   16.245004] device: 'ttyda': device_add
+[   16.248452] PM: Adding info for No Bus:ttyda
+[   16.253004] device: 'ttydb': device_add
+[   16.256646] PM: Adding info for No Bus:ttydb
+[   16.261004] device: 'ttydc': device_add
+[   16.264835] PM: Adding info for No Bus:ttydc
+[   16.272929] device: 'ttydd': device_add
+[   16.272929] PM: Adding info for No Bus:ttydd
+[   16.281004] device: 'ttyde': device_add
+[   16.281276] PM: Adding info for No Bus:ttyde
+[   16.289004] device: 'ttydf': device_add
+[   16.289468] PM: Adding info for No Bus:ttydf
+[   16.297004] device: 'ttye0': device_add
+[   16.297660] PM: Adding info for No Bus:ttye0
+[   16.305004] device: 'ttye1': device_add
+[   16.305857] PM: Adding info for No Bus:ttye1
+[   16.313004] device: 'ttye2': device_add
+[   16.314046] PM: Adding info for No Bus:ttye2
+[   16.321005] device: 'ttye3': device_add
+[   16.322250] PM: Adding info for No Bus:ttye3
+[   16.329004] device: 'ttye4': device_add
+[   16.330456] PM: Adding info for No Bus:ttye4
+[   16.337004] device: 'ttye5': device_add
+[   16.338648] PM: Adding info for No Bus:ttye5
+[   16.345004] device: 'ttye6': device_add
+[   16.346842] PM: Adding info for No Bus:ttye6
+[   16.353004] device: 'ttye7': device_add
+[   16.355041] PM: Adding info for No Bus:ttye7
+[   16.361004] device: 'ttye8': device_add
+[   16.363228] PM: Adding info for No Bus:ttye8
+[   16.369004] device: 'ttye9': device_add
+[   16.371422] PM: Adding info for No Bus:ttye9
+[   16.377004] device: 'ttyea': device_add
+[   16.380003] PM: Adding info for No Bus:ttyea
+[   16.385004] device: 'ttyeb': device_add
+[   16.388440] PM: Adding info for No Bus:ttyeb
+[   16.393005] device: 'ttyec': device_add
+[   16.396632] PM: Adding info for No Bus:ttyec
+[   16.401005] device: 'ttyed': device_add
+[   16.404826] PM: Adding info for No Bus:ttyed
+[   16.412918] device: 'ttyee': device_add
+[   16.412918] PM: Adding info for No Bus:ttyee
+[   16.421004] device: 'ttyef': device_add
+[   16.424979] PM: Adding info for No Bus:ttyef
+[   16.429005] device: 'ptmx': device_add
+[   16.429421] PM: Adding info for No Bus:ptmx
+[   16.437004] initcall pty_init+0x0/0x11 returned 0 after 4102104 usecs
+[   16.439837] calling  sysrq_init+0x0/0x1f @ 1
+[   16.444084] initcall sysrq_init+0x0/0x1f returned 0 after 22 usecs
+[   16.450238] calling  rp_init+0x0/0x299 @ 1
+[   16.454311] RocketPort device driver module, version 2.09, 12-June-2003
+[   16.460897] No rocketport ports found; unloading driver
+[   16.466098] initcall rp_init+0x0/0x299 returned -6 after 11516 usecs
+[   16.472423] initcall rp_init+0x0/0x299 returned with error code -6 
+[   16.478664] calling  cy_init+0x0/0xe7 @ 1
+[   16.482664] Cyclades driver 2.5 (built Aug 18 2009 16:53:42)
+[   16.488283] bus: 'pci': add driver cyclades
+[   16.493004] initcall cy_init+0x0/0xe7 returned 0 after 9791 usecs
+[   16.498667] calling  stallion_module_init+0x0/0x28b @ 1
+[   16.503866] Stallion Multiport Serial Driver: version 5.6.0
+[   16.509414] bus: 'pci': add driver stallion
+[   16.517005] device class 'staliomem': registering
+[   16.521005] device: 'staliomem0': device_add
+[   16.522795] PM: Adding info for No Bus:staliomem0
+[   16.529004] device: 'staliomem1': device_add
+[   16.531835] PM: Adding info for No Bus:staliomem1
+[   16.537004] device: 'staliomem2': device_add
+[   16.540873] PM: Adding info for No Bus:staliomem2
+[   16.549003] device: 'staliomem3': device_add
+[   16.549914] PM: Adding info for No Bus:staliomem3
+[   16.557004] initcall stallion_module_init+0x0/0x28b returned 0 after 49705 usecs
+[   16.562081] calling  istallion_module_init+0x0/0x23b @ 1
+[   16.567367] Stallion Intelligent Multiport Serial Driver: version 5.6.0
+[   16.573954] istallion: failed to register serial driver
+[   16.579154] initcall istallion_module_init+0x0/0x23b returned -16 after 11511 usecs
+[   16.586781] initcall istallion_module_init+0x0/0x23b returned with error code -16 
+[   16.594321] calling  nozomi_init+0x0/0xf4 @ 1
+[   16.598654] Initializing Nozomi driver 2.1d (build date: Aug 18 2009 16:53:42)
+[   16.605848] bus: 'pci': add driver nozomi
+[   16.613004] initcall nozomi_init+0x0/0xf4 returned 0 after 11133 usecs
+[   16.616482] calling  moxa_init+0x0/0xf1 @ 1
+[   16.620641] MOXA Intellio family driver version 6.0k
+[   16.625581] device: 'ttyMX0': device_add
+[   16.629581] PM: Adding info for No Bus:ttyMX0
+[   16.637004] device: 'ttyMX1': device_add
+[   16.638003] PM: Adding info for No Bus:ttyMX1
+[   16.645005] device: 'ttyMX2': device_add
+[   16.646368] PM: Adding info for No Bus:ttyMX2
+[   16.653004] device: 'ttyMX3': device_add
+[   16.654751] PM: Adding info for No Bus:ttyMX3
+[   16.661004] device: 'ttyMX4': device_add
+[   16.663122] PM: Adding info for No Bus:ttyMX4
+[   16.669004] device: 'ttyMX5': device_add
+[   16.671486] PM: Adding info for No Bus:ttyMX5
+[   16.677005] device: 'ttyMX6': device_add
+[   16.679855] PM: Adding info for No Bus:ttyMX6
+[   16.685004] device: 'ttyMX7': device_add
+[   16.688227] PM: Adding info for No Bus:ttyMX7
+[   16.693005] device: 'ttyMX8': device_add
+[   16.696589] PM: Adding info for No Bus:ttyMX8
+[   16.701005] device: 'ttyMX9': device_add
+[   16.704954] PM: Adding info for No Bus:ttyMX9
+[   16.713004] device: 'ttyMX10': device_add
+[   16.713318] PM: Adding info for No Bus:ttyMX10
+[   16.721004] device: 'ttyMX11': device_add
+[   16.721852] PM: Adding info for No Bus:ttyMX11
+[   16.729004] device: 'ttyMX12': device_add
+[   16.730390] PM: Adding info for No Bus:ttyMX12
+[   16.737004] device: 'ttyMX13': device_add
+[   16.738931] PM: Adding info for No Bus:ttyMX13
+[   16.745005] device: 'ttyMX14': device_add
+[   16.747461] PM: Adding info for No Bus:ttyMX14
+[   16.753004] device: 'ttyMX15': device_add
+[   16.756009] PM: Adding info for No Bus:ttyMX15
+[   16.761005] device: 'ttyMX16': device_add
+[   16.764557] PM: Adding info for No Bus:ttyMX16
+[   16.772991] device: 'ttyMX17': device_add
+[   16.773137] PM: Adding info for No Bus:ttyMX17
+[   16.781004] device: 'ttyMX18': device_add
+[   16.781681] PM: Adding info for No Bus:ttyMX18
+[   16.789004] device: 'ttyMX19': device_add
+[   16.790233] PM: Adding info for No Bus:ttyMX19
+[   16.797004] device: 'ttyMX20': device_add
+[   16.798772] PM: Adding info for No Bus:ttyMX20
+[   16.805004] device: 'ttyMX21': device_add
+[   16.807308] PM: Adding info for No Bus:ttyMX21
+[   16.813004] device: 'ttyMX22': device_add
+[   16.815844] PM: Adding info for No Bus:ttyMX22
+[   16.821005] device: 'ttyMX23': device_add
+[   16.824387] PM: Adding info for No Bus:ttyMX23
+[   16.829004] device: 'ttyMX24': device_add
+[   16.832931] PM: Adding info for No Bus:ttyMX24
+[   16.841004] device: 'ttyMX25': device_add
+[   16.841481] PM: Adding info for No Bus:ttyMX25
+[   16.849004] device: 'ttyMX26': device_add
+[   16.850016] PM: Adding info for No Bus:ttyMX26
+[   16.857004] device: 'ttyMX27': device_add
+[   16.858567] PM: Adding info for No Bus:ttyMX27
+[   16.865005] device: 'ttyMX28': device_add
+[   16.867215] PM: Adding info for No Bus:ttyMX28
+[   16.873004] device: 'ttyMX29': device_add
+[   16.875756] PM: Adding info for No Bus:ttyMX29
+[   16.881004] device: 'ttyMX30': device_add
+[   16.884303] PM: Adding info for No Bus:ttyMX30
+[   16.889004] device: 'ttyMX31': device_add
+[   16.892850] PM: Adding info for No Bus:ttyMX31
+[   16.901004] device: 'ttyMX32': device_add
+[   16.901394] PM: Adding info for No Bus:ttyMX32
+[   16.909004] device: 'ttyMX33': device_add
+[   16.909938] PM: Adding info for No Bus:ttyMX33
+[   16.917004] device: 'ttyMX34': device_add
+[   16.918501] PM: Adding info for No Bus:ttyMX34
+[   16.925005] device: 'ttyMX35': device_add
+[   16.927055] PM: Adding info for No Bus:ttyMX35
+[   16.933004] device: 'ttyMX36': device_add
+[   16.935600] PM: Adding info for No Bus:ttyMX36
+[   16.941004] device: 'ttyMX37': device_add
+[   16.944155] PM: Adding info for No Bus:ttyMX37
+[   16.949005] device: 'ttyMX38': device_add
+[   16.952705] PM: Adding info for No Bus:ttyMX38
+[   16.961005] device: 'ttyMX39': device_add
+[   16.961243] PM: Adding info for No Bus:ttyMX39
+[   16.969004] device: 'ttyMX40': device_add
+[   16.969794] PM: Adding info for No Bus:ttyMX40
+[   16.977004] device: 'ttyMX41': device_add
+[   16.978329] PM: Adding info for No Bus:ttyMX41
+[   16.985004] device: 'ttyMX42': device_add
+[   16.986884] PM: Adding info for No Bus:ttyMX42
+[   16.993004] device: 'ttyMX43': device_add
+[   16.995434] PM: Adding info for No Bus:ttyMX43
+[   17.001004] device: 'ttyMX44': device_add
+[   17.004006] PM: Adding info for No Bus:ttyMX44
+[   17.009004] device: 'ttyMX45': device_add
+[   17.012518] PM: Adding info for No Bus:ttyMX45
+[   17.020971] device: 'ttyMX46': device_add
+[   17.021118] PM: Adding info for No Bus:ttyMX46
+[   17.029004] device: 'ttyMX47': device_add
+[   17.029659] PM: Adding info for No Bus:ttyMX47
+[   17.037005] device: 'ttyMX48': device_add
+[   17.038207] PM: Adding info for No Bus:ttyMX48
+[   17.045004] device: 'ttyMX49': device_add
+[   17.046757] PM: Adding info for No Bus:ttyMX49
+[   17.053004] device: 'ttyMX50': device_add
+[   17.055310] PM: Adding info for No Bus:ttyMX50
+[   17.061004] device: 'ttyMX51': device_add
+[   17.063856] PM: Adding info for No Bus:ttyMX51
+[   17.069005] device: 'ttyMX52': device_add
+[   17.072406] PM: Adding info for No Bus:ttyMX52
+[   17.077005] device: 'ttyMX53': device_add
+[   17.084894] PM: Adding info for No Bus:ttyMX53
+[   17.089004] device: 'ttyMX54': device_add
+[   17.089509] PM: Adding info for No Bus:ttyMX54
+[   17.097005] device: 'ttyMX55': device_add
+[   17.098057] PM: Adding info for No Bus:ttyMX55
+[   17.105005] device: 'ttyMX56': device_add
+[   17.106604] PM: Adding info for No Bus:ttyMX56
+[   17.113005] device: 'ttyMX57': device_add
+[   17.115157] PM: Adding info for No Bus:ttyMX57
+[   17.121005] device: 'ttyMX58': device_add
+[   17.123707] PM: Adding info for No Bus:ttyMX58
+[   17.129004] device: 'ttyMX59': device_add
+[   17.132255] PM: Adding info for No Bus:ttyMX59
+[   17.137005] device: 'ttyMX60': device_add
+[   17.140801] PM: Adding info for No Bus:ttyMX60
+[   17.149004] device: 'ttyMX61': device_add
+[   17.149347] PM: Adding info for No Bus:ttyMX61
+[   17.157004] device: 'ttyMX62': device_add
+[   17.157892] PM: Adding info for No Bus:ttyMX62
+[   17.165004] device: 'ttyMX63': device_add
+[   17.166997] PM: Adding info for No Bus:ttyMX63
+[   17.173004] device: 'ttyMX64': device_add
+[   17.175629] PM: Adding info for No Bus:ttyMX64
+[   17.181005] device: 'ttyMX65': device_add
+[   17.184174] PM: Adding info for No Bus:ttyMX65
+[   17.189005] device: 'ttyMX66': device_add
+[   17.192722] PM: Adding info for No Bus:ttyMX66
+[   17.201004] device: 'ttyMX67': device_add
+[   17.201272] PM: Adding info for No Bus:ttyMX67
+[   17.209005] device: 'ttyMX68': device_add
+[   17.209812] PM: Adding info for No Bus:ttyMX68
+[   17.217004] device: 'ttyMX69': device_add
+[   17.218361] PM: Adding info for No Bus:ttyMX69
+[   17.225005] device: 'ttyMX70': device_add
+[   17.226907] PM: Adding info for No Bus:ttyMX70
+[   17.233004] device: 'ttyMX71': device_add
+[   17.235450] PM: Adding info for No Bus:ttyMX71
+[   17.241004] device: 'ttyMX72': device_add
+[   17.244007] PM: Adding info for No Bus:ttyMX72
+[   17.249004] device: 'ttyMX73': device_add
+[   17.252552] PM: Adding info for No Bus:ttyMX73
+[   17.260993] device: 'ttyMX74': device_add
+[   17.261139] PM: Adding info for No Bus:ttyMX74
+[   17.269004] device: 'ttyMX75': device_add
+[   17.269688] PM: Adding info for No Bus:ttyMX75
+[   17.277005] device: 'ttyMX76': device_add
+[   17.278248] PM: Adding info for No Bus:ttyMX76
+[   17.285004] device: 'ttyMX77': device_add
+[   17.286793] PM: Adding info for No Bus:ttyMX77
+[   17.293004] device: 'ttyMX78': device_add
+[   17.295338] PM: Adding info for No Bus:ttyMX78
+[   17.301004] device: 'ttyMX79': device_add
+[   17.303882] PM: Adding info for No Bus:ttyMX79
+[   17.309004] device: 'ttyMX80': device_add
+[   17.312429] PM: Adding info for No Bus:ttyMX80
+[   17.317004] device: 'ttyMX81': device_add
+[   17.324909] PM: Adding info for No Bus:ttyMX81
+[   17.329004] device: 'ttyMX82': device_add
+[   17.329528] PM: Adding info for No Bus:ttyMX82
+[   17.337004] device: 'ttyMX83': device_add
+[   17.338081] PM: Adding info for No Bus:ttyMX83
+[   17.345005] device: 'ttyMX84': device_add
+[   17.346635] PM: Adding info for No Bus:ttyMX84
+[   17.353004] device: 'ttyMX85': device_add
+[   17.355177] PM: Adding info for No Bus:ttyMX85
+[   17.361004] device: 'ttyMX86': device_add
+[   17.363725] PM: Adding info for No Bus:ttyMX86
+[   17.369004] device: 'ttyMX87': device_add
+[   17.372272] PM: Adding info for No Bus:ttyMX87
+[   17.377004] device: 'ttyMX88': device_add
+[   17.380831] PM: Adding info for No Bus:ttyMX88
+[   17.389005] device: 'ttyMX89': device_add
+[   17.389378] PM: Adding info for No Bus:ttyMX89
+[   17.397005] device: 'ttyMX90': device_add
+[   17.397923] PM: Adding info for No Bus:ttyMX90
+[   17.405004] device: 'ttyMX91': device_add
+[   17.406474] PM: Adding info for No Bus:ttyMX91
+[   17.413004] device: 'ttyMX92': device_add
+[   17.415014] PM: Adding info for No Bus:ttyMX92
+[   17.421004] device: 'ttyMX93': device_add
+[   17.423568] PM: Adding info for No Bus:ttyMX93
+[   17.429005] device: 'ttyMX94': device_add
+[   17.432123] PM: Adding info for No Bus:ttyMX94
+[   17.437004] device: 'ttyMX95': device_add
+[   17.440687] PM: Adding info for No Bus:ttyMX95
+[   17.449004] device: 'ttyMX96': device_add
+[   17.449228] PM: Adding info for No Bus:ttyMX96
+[   17.457004] device: 'ttyMX97': device_add
+[   17.457778] PM: Adding info for No Bus:ttyMX97
+[   17.465005] device: 'ttyMX98': device_add
+[   17.466333] PM: Adding info for No Bus:ttyMX98
+[   17.473004] device: 'ttyMX99': device_add
+[   17.474890] PM: Adding info for No Bus:ttyMX99
+[   17.481005] device: 'ttyMX100': device_add
+[   17.483461] PM: Adding info for No Bus:ttyMX100
+[   17.489004] device: 'ttyMX101': device_add
+[   17.492188] PM: Adding info for No Bus:ttyMX101
+[   17.497005] device: 'ttyMX102': device_add
+[   17.504916] PM: Adding info for No Bus:ttyMX102
+[   17.509005] device: 'ttyMX103': device_add
+[   17.509634] PM: Adding info for No Bus:ttyMX103
+[   17.517004] device: 'ttyMX104': device_add
+[   17.518353] PM: Adding info for No Bus:ttyMX104
+[   17.525004] device: 'ttyMX105': device_add
+[   17.527072] PM: Adding info for No Bus:ttyMX105
+[   17.533004] device: 'ttyMX106': device_add
+[   17.535808] PM: Adding info for No Bus:ttyMX106
+[   17.541004] device: 'ttyMX107': device_add
+[   17.544535] PM: Adding info for No Bus:ttyMX107
+[   17.553004] device: 'ttyMX108': device_add
+[   17.553253] PM: Adding info for No Bus:ttyMX108
+[   17.561005] device: 'ttyMX109': device_add
+[   17.561981] PM: Adding info for No Bus:ttyMX109
+[   17.569005] device: 'ttyMX110': device_add
+[   17.570700] PM: Adding info for No Bus:ttyMX110
+[   17.577004] device: 'ttyMX111': device_add
+[   17.579427] PM: Adding info for No Bus:ttyMX111
+[   17.585005] device: 'ttyMX112': device_add
+[   17.588163] PM: Adding info for No Bus:ttyMX112
+[   17.593005] device: 'ttyMX113': device_add
+[   17.600899] PM: Adding info for No Bus:ttyMX113
+[   17.605005] device: 'ttyMX114': device_add
+[   17.605627] PM: Adding info for No Bus:ttyMX114
+[   17.613005] device: 'ttyMX115': device_add
+[   17.614353] PM: Adding info for No Bus:ttyMX115
+[   17.621004] device: 'ttyMX116': device_add
+[   17.623082] PM: Adding info for No Bus:ttyMX116
+[   17.629004] device: 'ttyMX117': device_add
+[   17.631809] PM: Adding info for No Bus:ttyMX117
+[   17.637004] device: 'ttyMX118': device_add
+[   17.640535] PM: Adding info for No Bus:ttyMX118
+[   17.649005] device: 'ttyMX119': device_add
+[   17.649254] PM: Adding info for No Bus:ttyMX119
+[   17.657004] device: 'ttyMX120': device_add
+[   17.657982] PM: Adding info for No Bus:ttyMX120
+[   17.665005] device: 'ttyMX121': device_add
+[   17.666709] PM: Adding info for No Bus:ttyMX121
+[   17.673004] device: 'ttyMX122': device_add
+[   17.675436] PM: Adding info for No Bus:ttyMX122
+[   17.681004] device: 'ttyMX123': device_add
+[   17.684172] PM: Adding info for No Bus:ttyMX123
+[   17.689004] device: 'ttyMX124': device_add
+[   17.696890] PM: Adding info for No Bus:ttyMX124
+[   17.701004] device: 'ttyMX125': device_add
+[   17.701619] PM: Adding info for No Bus:ttyMX125
+[   17.709004] device: 'ttyMX126': device_add
+[   17.710346] PM: Adding info for No Bus:ttyMX126
+[   17.717005] device: 'ttyMX127': device_add
+[   17.719082] PM: Adding info for No Bus:ttyMX127
+[   17.725004] device: 'ttyMX128': device_add
+[   17.727809] PM: Adding info for No Bus:ttyMX128
+[   17.733004] bus: 'pci': add driver moxa
+[   17.737004] initcall moxa_init+0x0/0xf1 returned 0 after 1089697 usecs
+[   17.742924] calling  mxser_module_init+0x0/0x1a5 @ 1
+[   17.747863] MOXA Smartio/Industio family driver version 2.0.4
+[   17.753583] bus: 'pci': add driver mxser
+[   17.761004] initcall mxser_module_init+0x0/0x1a5 returned 0 after 9613 usecs
+[   17.764651] calling  ip2_loadmain+0x0/0x8ea @ 1
+[   17.769157] Computone IntelliPort Plus multiport driver version 1.2.14
+[   17.775657] device class 'ip2': registering
+[   17.781004] initcall ip2_loadmain+0x0/0x8ea returned 0 after 10624 usecs
+[   17.786638] calling  riscom8_init_module+0x0/0x77 @ 1
+[   17.791665] rc: SDL RISCom/8 card driver v1.1, (c) D.Gorodchanin 1994-1996.
+[   17.798598] device: 'ttyL0': device_add
+[   17.802598] PM: Adding info for No Bus:ttyL0
+[   17.809004] device: 'ttyL1': device_add
+[   17.810866] PM: Adding info for No Bus:ttyL1
+[   17.817004] device: 'ttyL2': device_add
+[   17.819066] PM: Adding info for No Bus:ttyL2
+[   17.825005] device: 'ttyL3': device_add
+[   17.827273] PM: Adding info for No Bus:ttyL3
+[   17.833005] device: 'ttyL4': device_add
+[   17.835480] PM: Adding info for No Bus:ttyL4
+[   17.841004] device: 'ttyL5': device_add
+[   17.843687] PM: Adding info for No Bus:ttyL5
+[   17.849004] device: 'ttyL6': device_add
+[   17.851899] PM: Adding info for No Bus:ttyL6
+[   17.857005] device: 'ttyL7': device_add
+[   17.860115] PM: Adding info for No Bus:ttyL7
+[   17.865004] device: 'ttyL8': device_add
+[   17.868309] PM: Adding info for No Bus:ttyL8
+[   17.873005] device: 'ttyL9': device_add
+[   17.876516] PM: Adding info for No Bus:ttyL9
+[   17.881004] device: 'ttyL10': device_add
+[   17.884721] PM: Adding info for No Bus:ttyL10
+[   17.892996] device: 'ttyL11': device_add
+[   17.896952] PM: Adding info for No Bus:ttyL11
+[   17.901004] device: 'ttyL12': device_add
+[   17.901496] PM: Adding info for No Bus:ttyL12
+[   17.909005] device: 'ttyL13': device_add
+[   17.909873] PM: Adding info for No Bus:ttyL13
+[   17.917004] device: 'ttyL14': device_add
+[   17.918256] PM: Adding info for No Bus:ttyL14
+[   17.925004] device: 'ttyL15': device_add
+[   17.926630] PM: Adding info for No Bus:ttyL15
+[   17.933004] device: 'ttyL16': device_add
+[   17.935014] PM: Adding info for No Bus:ttyL16
+[   17.941004] device: 'ttyL17': device_add
+[   17.943397] PM: Adding info for No Bus:ttyL17
+[   17.949005] device: 'ttyL18': device_add
+[   17.952267] PM: Adding info for No Bus:ttyL18
+[   17.957005] device: 'ttyL19': device_add
+[   17.960798] PM: Adding info for No Bus:ttyL19
+[   17.969008] device: 'ttyL20': device_add
+[   17.969175] PM: Adding info for No Bus:ttyL20
+[   17.977004] device: 'ttyL21': device_add
+[   17.977555] PM: Adding info for No Bus:ttyL21
+[   17.985005] device: 'ttyL22': device_add
+[   17.985928] PM: Adding info for No Bus:ttyL22
+[   17.993004] device: 'ttyL23': device_add
+[   17.994304] PM: Adding info for No Bus:ttyL23
+[   18.001004] device: 'ttyL24': device_add
+[   18.002688] PM: Adding info for No Bus:ttyL24
+[   18.009004] device: 'ttyL25': device_add
+[   18.011080] PM: Adding info for No Bus:ttyL25
+[   18.017004] device: 'ttyL26': device_add
+[   18.019462] PM: Adding info for No Bus:ttyL26
+[   18.025003] device: 'ttyL27': device_add
+[   18.027844] PM: Adding info for No Bus:ttyL27
+[   18.033004] device: 'ttyL28': device_add
+[   18.036223] PM: Adding info for No Bus:ttyL28
+[   18.041004] device: 'ttyL29': device_add
+[   18.044604] PM: Adding info for No Bus:ttyL29
+[   18.052988] device: 'ttyL30': device_add
+[   18.052988] PM: Adding info for No Bus:ttyL30
+[   18.061004] device: 'ttyL31': device_add
+[   18.061368] PM: Adding info for No Bus:ttyL31
+[   18.069005] rc0: RISCom/8 Board at 0x220 not found.
+[   18.070592] rc1: RISCom/8 Board at 0x240 not found.
+[   18.075445] rc2: RISCom/8 Board at 0x250 not found.
+[   18.080300] rc3: RISCom/8 Board at 0x260 not found.
+[   18.085153] device: 'ttyL0': device_unregister
+[   18.089676] PM: Removing info for No Bus:ttyL0
+[   18.097004] device: 'ttyL0': device_create_release
+[   18.099029] device: 'ttyL1': device_unregister
+[   18.103492] PM: Removing info for No Bus:ttyL1
+[   18.109004] device: 'ttyL1': device_create_release
+[   18.112835] device: 'ttyL2': device_unregister
+[   18.117297] PM: Removing info for No Bus:ttyL2
+[   18.125004] device: 'ttyL2': device_create_release
+[   18.126623] device: 'ttyL3': device_unregister
+[   18.131078] PM: Removing info for No Bus:ttyL3
+[   18.137005] device: 'ttyL3': device_create_release
+[   18.140403] device: 'ttyL4': device_unregister
+[   18.144858] PM: Removing info for No Bus:ttyL4
+[   18.153004] device: 'ttyL4': device_create_release
+[   18.154183] device: 'ttyL5': device_unregister
+[   18.158638] PM: Removing info for No Bus:ttyL5
+[   18.165004] device: 'ttyL5': device_create_release
+[   18.168005] device: 'ttyL6': device_unregister
+[   18.172426] PM: Removing info for No Bus:ttyL6
+[   18.180947] device: 'ttyL6': device_create_release
+[   18.181795] device: 'ttyL7': device_unregister
+[   18.186249] PM: Removing info for No Bus:ttyL7
+[   18.193004] device: 'ttyL7': device_create_release
+[   18.195575] device: 'ttyL8': device_unregister
+[   18.200030] PM: Removing info for No Bus:ttyL8
+[   18.205005] device: 'ttyL8': device_create_release
+[   18.209355] device: 'ttyL9': device_unregister
+[   18.213810] PM: Removing info for No Bus:ttyL9
+[   18.221004] device: 'ttyL9': device_create_release
+[   18.223136] device: 'ttyL10': device_unregister
+[   18.227677] PM: Removing info for No Bus:ttyL10
+[   18.233004] device: 'ttyL10': device_create_release
+[   18.237176] device: 'ttyL11': device_unregister
+[   18.241715] PM: Removing info for No Bus:ttyL11
+[   18.249004] device: 'ttyL11': device_create_release
+[   18.251215] device: 'ttyL12': device_unregister
+[   18.255756] PM: Removing info for No Bus:ttyL12
+[   18.261004] device: 'ttyL12': device_create_release
+[   18.265255] device: 'ttyL13': device_unregister
+[   18.269796] PM: Removing info for No Bus:ttyL13
+[   18.277004] device: 'ttyL13': device_create_release
+[   18.279296] device: 'ttyL14': device_unregister
+[   18.283836] PM: Removing info for No Bus:ttyL14
+[   18.289005] device: 'ttyL14': device_create_release
+[   18.293335] device: 'ttyL15': device_unregister
+[   18.297876] PM: Removing info for No Bus:ttyL15
+[   18.305005] device: 'ttyL15': device_create_release
+[   18.307375] device: 'ttyL16': device_unregister
+[   18.311916] PM: Removing info for No Bus:ttyL16
+[   18.317005] device: 'ttyL16': device_create_release
+[   18.321416] device: 'ttyL17': device_unregister
+[   18.325956] PM: Removing info for No Bus:ttyL17
+[   18.333005] device: 'ttyL17': device_create_release
+[   18.335455] device: 'ttyL18': device_unregister
+[   18.340006] PM: Removing info for No Bus:ttyL18
+[   18.345004] device: 'ttyL18': device_create_release
+[   18.349495] device: 'ttyL19': device_unregister
+[   18.354036] PM: Removing info for No Bus:ttyL19
+[   18.361005] device: 'ttyL19': device_create_release
+[   18.363535] device: 'ttyL20': device_unregister
+[   18.368085] PM: Removing info for No Bus:ttyL20
+[   18.373004] device: 'ttyL20': device_create_release
+[   18.377583] device: 'ttyL21': device_unregister
+[   18.382125] PM: Removing info for No Bus:ttyL21
+[   18.389004] device: 'ttyL21': device_create_release
+[   18.391624] device: 'ttyL22': device_unregister
+[   18.396165] PM: Removing info for No Bus:ttyL22
+[   18.401004] device: 'ttyL22': device_create_release
+[   18.405664] device: 'ttyL23': device_unregister
+[   18.410205] PM: Removing info for No Bus:ttyL23
+[   18.417004] device: 'ttyL23': device_create_release
+[   18.419704] device: 'ttyL24': device_unregister
+[   18.424255] PM: Removing info for No Bus:ttyL24
+[   18.429004] device: 'ttyL24': device_create_release
+[   18.433761] device: 'ttyL25': device_unregister
+[   18.438303] PM: Removing info for No Bus:ttyL25
+[   18.445004] device: 'ttyL25': device_create_release
+[   18.447801] device: 'ttyL26': device_unregister
+[   18.452342] PM: Removing info for No Bus:ttyL26
+[   18.460947] device: 'ttyL26': device_create_release
+[   18.461885] device: 'ttyL27': device_unregister
+[   18.466426] PM: Removing info for No Bus:ttyL27
+[   18.473004] device: 'ttyL27': device_create_release
+[   18.476005] device: 'ttyL28': device_unregister
+[   18.480474] PM: Removing info for No Bus:ttyL28
+[   18.489003] device: 'ttyL28': device_create_release
+[   18.489973] device: 'ttyL29': device_unregister
+[   18.494514] PM: Removing info for No Bus:ttyL29
+[   18.501004] device: 'ttyL29': device_create_release
+[   18.504022] device: 'ttyL30': device_unregister
+[   18.508563] PM: Removing info for No Bus:ttyL30
+[   18.517004] device: 'ttyL30': device_create_release
+[   18.518062] device: 'ttyL31': device_unregister
+[   18.522612] PM: Removing info for No Bus:ttyL31
+[   18.529004] device: 'ttyL31': device_create_release
+[   18.532110] rc: No RISCom/8 boards detected.
+[   18.536357] initcall riscom8_init_module+0x0/0x77 returned -5 after 727238 usecs
+[   18.543724] initcall riscom8_init_module+0x0/0x77 returned with error code -5 
+[   18.550917] calling  isicom_init+0x0/0x184 @ 1
+[   18.555337] bus: 'pci': add driver isicom
+[   18.561004] initcall isicom_init+0x0/0x184 returned 0 after 4117 usecs
+[   18.565979] calling  synclink_init+0x0/0x12d @ 1
+[   18.570573] SyncLink serial driver $Revision: 4.38 $
+[   18.575513] bus: 'pci': add driver synclink
+[   18.581004] device: 'ttySL0': device_add
+[   18.583874] PM: Adding info for No Bus:ttySL0
+[   18.589004] device: 'ttySL1': device_add
+[   18.592285] PM: Adding info for No Bus:ttySL1
+[   18.597005] device: 'ttySL2': device_add
+[   18.600656] PM: Adding info for No Bus:ttySL2
+[   18.608928] device: 'ttySL3': device_add
+[   18.608928] PM: Adding info for No Bus:ttySL3
+[   18.617004] device: 'ttySL4': device_add
+[   18.617401] PM: Adding info for No Bus:ttySL4
+[   18.625005] device: 'ttySL5': device_add
+[   18.625773] PM: Adding info for No Bus:ttySL5
+[   18.633004] device: 'ttySL6': device_add
+[   18.634147] PM: Adding info for No Bus:ttySL6
+[   18.641004] device: 'ttySL7': device_add
+[   18.642530] PM: Adding info for No Bus:ttySL7
+[   18.649005] device: 'ttySL8': device_add
+[   18.650900] PM: Adding info for No Bus:ttySL8
+[   18.657004] device: 'ttySL9': device_add
+[   18.659281] PM: Adding info for No Bus:ttySL9
+[   18.665005] device: 'ttySL10': device_add
+[   18.667657] PM: Adding info for No Bus:ttySL10
+[   18.673005] device: 'ttySL11': device_add
+[   18.676205] PM: Adding info for No Bus:ttySL11
+[   18.681004] device: 'ttySL12': device_add
+[   18.684753] PM: Adding info for No Bus:ttySL12
+[   18.693005] device: 'ttySL13': device_add
+[   18.693308] PM: Adding info for No Bus:ttySL13
+[   18.701004] device: 'ttySL14': device_add
+[   18.701852] PM: Adding info for No Bus:ttySL14
+[   18.709005] device: 'ttySL15': device_add
+[   18.710397] PM: Adding info for No Bus:ttySL15
+[   18.717004] device: 'ttySL16': device_add
+[   18.718955] PM: Adding info for No Bus:ttySL16
+[   18.725005] device: 'ttySL17': device_add
+[   18.727504] PM: Adding info for No Bus:ttySL17
+[   18.733005] device: 'ttySL18': device_add
+[   18.736052] PM: Adding info for No Bus:ttySL18
+[   18.741004] device: 'ttySL19': device_add
+[   18.744599] PM: Adding info for No Bus:ttySL19
+[   18.753003] device: 'ttySL20': device_add
+[   18.753148] PM: Adding info for No Bus:ttySL20
+[   18.761005] device: 'ttySL21': device_add
+[   18.762337] PM: Adding info for No Bus:ttySL21
+[   18.769005] device: 'ttySL22': device_add
+[   18.770888] PM: Adding info for No Bus:ttySL22
+[   18.777005] device: 'ttySL23': device_add
+[   18.779437] PM: Adding info for No Bus:ttySL23
+[   18.785004] device: 'ttySL24': device_add
+[   18.788006] PM: Adding info for No Bus:ttySL24
+[   18.793004] device: 'ttySL25': device_add
+[   18.796542] PM: Adding info for No Bus:ttySL25
+[   18.804989] device: 'ttySL26': device_add
+[   18.805101] PM: Adding info for No Bus:ttySL26
+[   18.813004] device: 'ttySL27': device_add
+[   18.813656] PM: Adding info for No Bus:ttySL27
+[   18.821004] device: 'ttySL28': device_add
+[   18.822216] PM: Adding info for No Bus:ttySL28
+[   18.829005] device: 'ttySL29': device_add
+[   18.830758] PM: Adding info for No Bus:ttySL29
+[   18.837004] device: 'ttySL30': device_add
+[   18.839306] PM: Adding info for No Bus:ttySL30
+[   18.845004] device: 'ttySL31': device_add
+[   18.847860] PM: Adding info for No Bus:ttySL31
+[   18.853004] device: 'ttySL32': device_add
+[   18.856413] PM: Adding info for No Bus:ttySL32
+[   18.861004] device: 'ttySL33': device_add
+[   18.868911] PM: Adding info for No Bus:ttySL33
+[   18.873004] device: 'ttySL34': device_add
+[   18.873540] PM: Adding info for No Bus:ttySL34
+[   18.881004] device: 'ttySL35': device_add
+[   18.882091] PM: Adding info for No Bus:ttySL35
+[   18.889004] device: 'ttySL36': device_add
+[   18.890651] PM: Adding info for No Bus:ttySL36
+[   18.897004] device: 'ttySL37': device_add
+[   18.899316] PM: Adding info for No Bus:ttySL37
+[   18.905004] device: 'ttySL38': device_add
+[   18.907875] PM: Adding info for No Bus:ttySL38
+[   18.913004] device: 'ttySL39': device_add
+[   18.916428] PM: Adding info for No Bus:ttySL39
+[   18.924987] device: 'ttySL40': device_add
+[   18.928910] PM: Adding info for No Bus:ttySL40
+[   18.933004] device: 'ttySL41': device_add
+[   18.933547] PM: Adding info for No Bus:ttySL41
+[   18.941004] device: 'ttySL42': device_add
+[   18.942100] PM: Adding info for No Bus:ttySL42
+[   18.949004] device: 'ttySL43': device_add
+[   18.950656] PM: Adding info for No Bus:ttySL43
+[   18.957004] device: 'ttySL44': device_add
+[   18.959216] PM: Adding info for No Bus:ttySL44
+[   18.965005] device: 'ttySL45': device_add
+[   18.967771] PM: Adding info for No Bus:ttySL45
+[   18.973004] device: 'ttySL46': device_add
+[   18.976328] PM: Adding info for No Bus:ttySL46
+[   18.981004] device: 'ttySL47': device_add
+[   18.984883] PM: Adding info for No Bus:ttySL47
+[   18.993004] device: 'ttySL48': device_add
+[   18.993441] PM: Adding info for No Bus:ttySL48
+[   19.001004] device: 'ttySL49': device_add
+[   19.001997] PM: Adding info for No Bus:ttySL49
+[   19.009004] device: 'ttySL50': device_add
+[   19.010557] PM: Adding info for No Bus:ttySL50
+[   19.017004] device: 'ttySL51': device_add
+[   19.019110] PM: Adding info for No Bus:ttySL51
+[   19.025004] device: 'ttySL52': device_add
+[   19.027666] PM: Adding info for No Bus:ttySL52
+[   19.033004] device: 'ttySL53': device_add
+[   19.036233] PM: Adding info for No Bus:ttySL53
+[   19.041004] device: 'ttySL54': device_add
+[   19.044793] PM: Adding info for No Bus:ttySL54
+[   19.053005] device: 'ttySL55': device_add
+[   19.053345] PM: Adding info for No Bus:ttySL55
+[   19.061004] device: 'ttySL56': device_add
+[   19.061898] PM: Adding info for No Bus:ttySL56
+[   19.069004] device: 'ttySL57': device_add
+[   19.070462] PM: Adding info for No Bus:ttySL57
+[   19.077004] device: 'ttySL58': device_add
+[   19.079017] PM: Adding info for No Bus:ttySL58
+[   19.085004] device: 'ttySL59': device_add
+[   19.087567] PM: Adding info for No Bus:ttySL59
+[   19.093004] device: 'ttySL60': device_add
+[   19.096134] PM: Adding info for No Bus:ttySL60
+[   19.101005] device: 'ttySL61': device_add
+[   19.104692] PM: Adding info for No Bus:ttySL61
+[   19.113004] device: 'ttySL62': device_add
+[   19.113247] PM: Adding info for No Bus:ttySL62
+[   19.121004] device: 'ttySL63': device_add
+[   19.121802] PM: Adding info for No Bus:ttySL63
+[   19.129004] device: 'ttySL64': device_add
+[   19.130367] PM: Adding info for No Bus:ttySL64
+[   19.137004] device: 'ttySL65': device_add
+[   19.138939] PM: Adding info for No Bus:ttySL65
+[   19.145004] device: 'ttySL66': device_add
+[   19.147491] PM: Adding info for No Bus:ttySL66
+[   19.153004] device: 'ttySL67': device_add
+[   19.156046] PM: Adding info for No Bus:ttySL67
+[   19.161004] device: 'ttySL68': device_add
+[   19.164602] PM: Adding info for No Bus:ttySL68
+[   19.173003] device: 'ttySL69': device_add
+[   19.173160] PM: Adding info for No Bus:ttySL69
+[   19.181004] device: 'ttySL70': device_add
+[   19.181720] PM: Adding info for No Bus:ttySL70
+[   19.189005] device: 'ttySL71': device_add
+[   19.190277] PM: Adding info for No Bus:ttySL71
+[   19.197005] device: 'ttySL72': device_add
+[   19.198833] PM: Adding info for No Bus:ttySL72
+[   19.205004] device: 'ttySL73': device_add
+[   19.207390] PM: Adding info for No Bus:ttySL73
+[   19.213004] device: 'ttySL74': device_add
+[   19.215940] PM: Adding info for No Bus:ttySL74
+[   19.221004] device: 'ttySL75': device_add
+[   19.224494] PM: Adding info for No Bus:ttySL75
+[   19.232948] device: 'ttySL76': device_add
+[   19.233107] PM: Adding info for No Bus:ttySL76
+[   19.241004] device: 'ttySL77': device_add
+[   19.241684] PM: Adding info for No Bus:ttySL77
+[   19.249005] device: 'ttySL78': device_add
+[   19.250234] PM: Adding info for No Bus:ttySL78
+[   19.257004] device: 'ttySL79': device_add
+[   19.258805] PM: Adding info for No Bus:ttySL79
+[   19.265004] device: 'ttySL80': device_add
+[   19.267369] PM: Adding info for No Bus:ttySL80
+[   19.273004] device: 'ttySL81': device_add
+[   19.275932] PM: Adding info for No Bus:ttySL81
+[   19.281004] device: 'ttySL82': device_add
+[   19.284497] PM: Adding info for No Bus:ttySL82
+[   19.292946] device: 'ttySL83': device_add
+[   19.293104] PM: Adding info for No Bus:ttySL83
+[   19.301004] device: 'ttySL84': device_add
+[   19.301662] PM: Adding info for No Bus:ttySL84
+[   19.309004] device: 'ttySL85': device_add
+[   19.310222] PM: Adding info for No Bus:ttySL85
+[   19.317005] device: 'ttySL86': device_add
+[   19.318789] PM: Adding info for No Bus:ttySL86
+[   19.325004] device: 'ttySL87': device_add
+[   19.327346] PM: Adding info for No Bus:ttySL87
+[   19.333004] device: 'ttySL88': device_add
+[   19.335910] PM: Adding info for No Bus:ttySL88
+[   19.341004] device: 'ttySL89': device_add
+[   19.344480] PM: Adding info for No Bus:ttySL89
+[   19.352947] device: 'ttySL90': device_add
+[   19.353105] PM: Adding info for No Bus:ttySL90
+[   19.361005] device: 'ttySL91': device_add
+[   19.361661] PM: Adding info for No Bus:ttySL91
+[   19.369005] device: 'ttySL92': device_add
+[   19.370218] PM: Adding info for No Bus:ttySL92
+[   19.377004] device: 'ttySL93': device_add
+[   19.378782] PM: Adding info for No Bus:ttySL93
+[   19.385005] device: 'ttySL94': device_add
+[   19.387336] PM: Adding info for No Bus:ttySL94
+[   19.393004] device: 'ttySL95': device_add
+[   19.395905] PM: Adding info for No Bus:ttySL95
+[   19.401005] device: 'ttySL96': device_add
+[   19.404459] PM: Adding info for No Bus:ttySL96
+[   19.412930] device: 'ttySL97': device_add
+[   19.413014] PM: Adding info for No Bus:ttySL97
+[   19.421004] device: 'ttySL98': device_add
+[   19.421643] PM: Adding info for No Bus:ttySL98
+[   19.429004] device: 'ttySL99': device_add
+[   19.430213] PM: Adding info for No Bus:ttySL99
+[   19.437004] device: 'ttySL100': device_add
+[   19.438792] PM: Adding info for No Bus:ttySL100
+[   19.445004] device: 'ttySL101': device_add
+[   19.447536] PM: Adding info for No Bus:ttySL101
+[   19.453005] device: 'ttySL102': device_add
+[   19.456272] PM: Adding info for No Bus:ttySL102
+[   19.464988] device: 'ttySL103': device_add
+[   19.469000] PM: Adding info for No Bus:ttySL103
+[   19.473004] device: 'ttySL104': device_add
+[   19.473744] PM: Adding info for No Bus:ttySL104
+[   19.481004] device: 'ttySL105': device_add
+[   19.482490] PM: Adding info for No Bus:ttySL105
+[   19.489004] device: 'ttySL106': device_add
+[   19.491225] PM: Adding info for No Bus:ttySL106
+[   19.497004] device: 'ttySL107': device_add
+[   19.500006] PM: Adding info for No Bus:ttySL107
+[   19.505005] device: 'ttySL108': device_add
+[   19.508715] PM: Adding info for No Bus:ttySL108
+[   19.517004] device: 'ttySL109': device_add
+[   19.517451] PM: Adding info for No Bus:ttySL109
+[   19.525004] device: 'ttySL110': device_add
+[   19.526195] PM: Adding info for No Bus:ttySL110
+[   19.533004] device: 'ttySL111': device_add
+[   19.535572] PM: Adding info for No Bus:ttySL111
+[   19.541004] device: 'ttySL112': device_add
+[   19.544317] PM: Adding info for No Bus:ttySL112
+[   19.552943] device: 'ttySL113': device_add
+[   19.553062] PM: Adding info for No Bus:ttySL113
+[   19.561004] device: 'ttySL114': device_add
+[   19.561807] PM: Adding info for No Bus:ttySL114
+[   19.569005] device: 'ttySL115': device_add
+[   19.570542] PM: Adding info for No Bus:ttySL115
+[   19.577004] device: 'ttySL116': device_add
+[   19.579279] PM: Adding info for No Bus:ttySL116
+[   19.585004] device: 'ttySL117': device_add
+[   19.588023] PM: Adding info for No Bus:ttySL117
+[   19.593004] device: 'ttySL118': device_add
+[   19.596768] PM: Adding info for No Bus:ttySL118
+[   19.605004] device: 'ttySL119': device_add
+[   19.605503] PM: Adding info for No Bus:ttySL119
+[   19.613005] device: 'ttySL120': device_add
+[   19.614240] PM: Adding info for No Bus:ttySL120
+[   19.621004] device: 'ttySL121': device_add
+[   19.622976] PM: Adding info for No Bus:ttySL121
+[   19.629004] device: 'ttySL122': device_add
+[   19.631721] PM: Adding info for No Bus:ttySL122
+[   19.637004] device: 'ttySL123': device_add
+[   19.640457] PM: Adding info for No Bus:ttySL123
+[   19.649004] device: 'ttySL124': device_add
+[   19.649201] PM: Adding info for No Bus:ttySL124
+[   19.657004] device: 'ttySL125': device_add
+[   19.657946] PM: Adding info for No Bus:ttySL125
+[   19.665005] device: 'ttySL126': device_add
+[   19.666690] PM: Adding info for No Bus:ttySL126
+[   19.673004] device: 'ttySL127': device_add
+[   19.675427] PM: Adding info for No Bus:ttySL127
+[   19.681004] SyncLink serial driver $Revision: 4.38 $, tty major#250
+[   19.686347] initcall synclink_init+0x0/0x12d returned 0 after 1089623 usecs
+[   19.693279] calling  slgt_init+0x0/0x183 @ 1
+[   19.697526] SyncLink GT
+[   19.697526] SyncLink GT, tty major#249
+[   19.703680] bus: 'pci': add driver synclink_gt
+[   19.709004] SyncLink GT no devices found
+[   19.712323] initcall slgt_init+0x0/0x183 returned 0 after 14287 usecs
+[   19.718568] calling  sx_init+0x0/0xc9 @ 1
+[   19.722568] device: 'sxctl': device_add
+[   19.726556] PM: Adding info for No Bus:sxctl
+[   19.733005] bus: 'pci': add driver sx
+[   19.737005] initcall sx_init+0x0/0xc9 returned 0 after 11740 usecs
+[   19.740660] calling  rio_init+0x0/0x772 @ 1
+[   19.744821] device: 'rioctl': device_add
+[   19.748821] PM: Adding info for No Bus:rioctl
+[   19.757005] device: 'rioctl': device_unregister
+[   19.760399] PM: Removing info for No Bus:rioctl
+[   19.769003] device: 'rioctl': device_create_release
+[   19.770014] initcall rio_init+0x0/0x772 returned -5 after 24610 usecs
+[   19.776428] initcall rio_init+0x0/0x772 returned with error code -5 
+[   19.782754] calling  applicom_init+0x0/0x418 @ 1
+[   19.787347] Applicom driver: $Id: ac.c,v 1.30 2000/03/22 16:03:57 dwmw2 Exp $
+[   19.794455] ac.o: No PCI boards found.
+[   19.798455] ac.o: For an ISA board you must supply memory and irq parameters.
+[   19.805287] initcall applicom_init+0x0/0x418 returned -6 after 17520 usecs
+[   19.812134] initcall applicom_init+0x0/0x418 returned with error code -6 
+[   19.818895] calling  sonypi_init+0x0/0x19 @ 1
+[   19.825004] sonypi: Sony Programmable I/O Controller Driver v1.26.
+[   19.833004] initcall sonypi_init+0x0/0x19 returned -19 after 6008 usecs
+[   19.837004] calling  hpet_init+0x0/0x57 @ 1
+[   19.841004] device: 'hpet': device_add
+[   19.845004] PM: Adding info for No Bus:hpet
+[   19.849004] bus: 'acpi': add driver hpet
+[   19.853004] initcall hpet_init+0x0/0x57 returned 0 after 11847 usecs
+[   19.858510] calling  nvram_init+0x0/0x70 @ 1
+[   19.862757] device: 'nvram': device_add
+[   19.866757] PM: Adding info for No Bus:nvram
+[   19.873005] Non-volatile memory driver v1.3
+[   19.875090] initcall nvram_init+0x0/0x70 returned 0 after 12045 usecs
+[   19.881503] calling  i8k_init+0x0/0x48 @ 1
+[   19.885575] initcall i8k_init+0x0/0x48 returned -19 after 1 usecs
+[   19.891642] calling  mod_init+0x0/0x1ff @ 1
+[   19.896005] initcall mod_init+0x0/0x1ff returned -19 after 300 usecs
+[   19.902362] calling  mod_init+0x0/0x91 @ 1
+[   19.906436] initcall mod_init+0x0/0x91 returned -19 after 142 usecs
+[   19.912746] calling  mod_init+0x0/0x41 @ 1
+[   19.916819] initcall mod_init+0x0/0x41 returned -19 after 1 usecs
+[   19.922885] calling  scx200_gpio_init+0x0/0x10e @ 1
+[   19.927739] scx200_gpio: no SCx200 gpio present
+[   19.932246] initcall scx200_gpio_init+0x0/0x10e returned -19 after 4397 usecs
+[   19.939352] calling  pc8736x_gpio_init+0x0/0x33a @ 1
+[   19.944291] Registering platform device 'pc8736x_gpio.0'. Parent at platform
+[   19.951313] device: 'pc8736x_gpio.0': device_add
+[   19.955904] bus: 'platform': add device pc8736x_gpio.0
+[   19.961023] PM: Adding info for platform:pc8736x_gpio.0
+[   19.969004] platform pc8736x_gpio.0: NatSemi pc8736x GPIO Driver Initializing
+[   19.973421] platform pc8736x_gpio.0: no device found
+[   19.978361] PM: Removing info for platform:pc8736x_gpio.0
+[   19.983735] bus: 'platform': remove device pc8736x_gpio.0
+[   19.993004] initcall pc8736x_gpio_init+0x0/0x33a returned -19 after 43930 usecs
+[   19.996509] calling  nsc_gpio_init+0x0/0x11 @ 1
+[   20.001019] nsc_gpio initializing
+[   20.004309] initcall nsc_gpio_init+0x0/0x11 returned 0 after 3212 usecs
+[   20.010895] calling  cs5535_gpio_init+0x0/0x149 @ 1
+[   20.015748] cs5535_gpio: DIVIL not found
+[   20.019748] initcall cs5535_gpio_init+0x0/0x149 returned -19 after 3811 usecs
+[   20.026756] calling  tlclk_init+0x0/0x1e1 @ 1
+[   20.031089] telclk_interrup = 0xf non-mcpbl0010 hw.
+[   20.035942] initcall tlclk_init+0x0/0x1e1 returned -6 after 4749 usecs
+[   20.042442] initcall tlclk_init+0x0/0x1e1 returned with error code -6 
+[   20.048942] calling  mwave_init+0x0/0x26a @ 1
+[   20.053275] smapi::smapi_init, ERROR invalid usSmapiID
+[   20.058389] mwave: tp3780i::tp3780I_InitializeBoardData: Error: SMAPI is not available on this machine
+[   20.067662] mwave: mwavedd::mwave_init: Error: Failed to initialize board data
+[   20.074855] mwave: mwavedd::mwave_init: Error: Failed to initialize
+[   20.081096] initcall mwave_init+0x0/0x26a returned -5 after 27169 usecs
+[   20.087681] initcall mwave_init+0x0/0x26a returned with error code -5 
+[   20.094182] calling  agp_init+0x0/0x21 @ 1
+[   20.098255] Linux agpgart interface v0.103
+[   20.102329] initcall agp_init+0x0/0x21 returned 0 after 3977 usecs
+[   20.108481] calling  agp_ali_init+0x0/0x24 @ 1
+[   20.112902] bus: 'pci': add driver agpgart-ali
+[   20.121004] initcall agp_ali_init+0x0/0x24 returned 0 after 4530 usecs
+[   20.123970] calling  agp_amdk7_init+0x0/0x24 @ 1
+[   20.128562] bus: 'pci': add driver agpgart-amdk7
+[   20.137004] initcall agp_amdk7_init+0x0/0x24 returned 0 after 4698 usecs
+[   20.139977] calling  agp_amd64_init+0x0/0xaf @ 1
+[   20.144570] bus: 'pci': add driver agpgart-amd64
+[   20.153004] initcall agp_amd64_init+0x0/0xaf returned -19 after 4886 usecs
+[   20.156349] calling  agp_efficeon_init+0x0/0x39 @ 1
+[   20.161202] bus: 'pci': add driver agpgart-efficeon
+[   20.169005] initcall agp_efficeon_init+0x0/0x39 returned 0 after 4953 usecs
+[   20.173136] calling  agp_sis_init+0x0/0x24 @ 1
+[   20.177556] bus: 'pci': add driver agpgart-sis
+[   20.185004] initcall agp_sis_init+0x0/0x24 returned 0 after 4535 usecs
+[   20.188632] calling  agp_serverworks_init+0x0/0x24 @ 1
+[   20.193744] bus: 'pci': add driver agpgart-serverworks
+[   20.201004] initcall agp_serverworks_init+0x0/0x24 returned 0 after 5213 usecs
+[   20.206226] calling  agp_via_init+0x0/0x24 @ 1
+[   20.210645] bus: 'pci': add driver agpgart-via
+[   20.217005] initcall agp_via_init+0x0/0x24 returned 0 after 4524 usecs
+[   20.221704] calling  init_ipwireless+0x0/0x36 @ 1
+[   20.226384] ipwireless 1.1 by Stephen Blackheath, Ben Martel, Jiri Kosina and David Sterba
+[   20.234617] bus: 'pcmcia': add driver ipwireless
+[   20.241004] initcall init_ipwireless+0x0/0x36 returned 0 after 12729 usecs
+[   20.246187] calling  synclink_cs_init+0x0/0x128 @ 1
+[   20.251040] SyncLink PC Card driver $Revision: 4.34 $
+[   20.256066] bus: 'pcmcia': add driver synclink_cs
+[   20.264952] device: 'ttySLP0': device_add
+[   20.268908] PM: Adding info for No Bus:ttySLP0
+[   20.273004] device: 'ttySLP1': device_add
+[   20.273601] PM: Adding info for No Bus:ttySLP1
+[   20.281004] device: 'ttySLP2': device_add
+[   20.282170] PM: Adding info for No Bus:ttySLP2
+[   20.289004] device: 'ttySLP3': device_add
+[   20.290732] PM: Adding info for No Bus:ttySLP3
+[   20.297004] SyncLink PC Card driver $Revision: 4.34 $, tty major#247
+[   20.301559] initcall synclink_cs_init+0x0/0x128 returned 0 after 49333 usecs
+[   20.308578] calling  cmm_init+0x0/0xa0 @ 1
+[   20.312652] cm4000_cs.c v2.4.0gm6 - All bugs added by Harald Welte
+[   20.318805] device class 'cardman_4000': registering
+[   20.325005] bus: 'pcmcia': add driver cm4000_cs
+[   20.329004] initcall cmm_init+0x0/0xa0 returned 0 after 15568 usecs
+[   20.334761] calling  cm4040_init+0x0/0xa0 @ 1
+[   20.339093] OMNIKEY CardMan 4040 v1.1.0gm5 - All bugs added by Harald Welte
+[   20.346027] device class 'cardman_4040': registering
+[   20.353004] bus: 'pcmcia': add driver cm4040_cs
+[   20.357004] initcall cm4040_init+0x0/0xa0 returned 0 after 16317 usecs
+[   20.362225] calling  hangcheck_init+0x0/0xa9 @ 1
+[   20.366818] Hangcheck: starting hangcheck timer 0.9.0 (tick is 180 seconds, margin is 60 seconds).
+[   20.375745] Hangcheck: Using get_cycles().
+[   20.379818] initcall hangcheck_init+0x0/0xa9 returned 0 after 12693 usecs
+[   20.386578] calling  init_tis+0x0/0x81 @ 1
+[   20.390652] bus: 'pnp': add driver tpm_tis
+[   20.397004] initcall init_tis+0x0/0x81 returned 0 after 4182 usecs
+[   20.401013] calling  init_nsc+0x0/0x19a @ 1
+[   20.405169] initcall init_nsc+0x0/0x19a returned -19 after 12 usecs
+[   20.411408] calling  drm_core_init+0x0/0xec @ 1
+[   20.415915] device class 'drm': registering
+[   20.421004] [drm] Initialized drm 1.1.0 20060810
+[   20.425397] initcall drm_core_init+0x0/0xec returned 0 after 9259 usecs
+[   20.431983] calling  tdfx_init+0x0/0xf @ 1
+[   20.436056] initcall tdfx_init+0x0/0xf returned 0 after 58 usecs
+[   20.442037] calling  r128_init+0x0/0x19 @ 1
+[   20.446197] initcall r128_init+0x0/0x19 returned 0 after 335 usecs
+[   20.452618] calling  mga_init+0x0/0x19 @ 1
+[   20.456691] initcall mga_init+0x0/0x19 returned 0 after 37 usecs
+[   20.462672] calling  sis_init+0x0/0x19 @ 1
+[   20.466745] initcall sis_init+0x0/0x19 returned 0 after 73 usecs
+[   20.472725] calling  savage_init+0x0/0x19 @ 1
+[   20.477059] initcall savage_init+0x0/0x19 returned 0 after 208 usecs
+[   20.483523] calling  via_init+0x0/0x1e @ 1
+[   20.487597] initcall via_init+0x0/0x1e returned 0 after 84 usecs
+[   20.493585] calling  cn_proc_init+0x0/0x30 @ 1
+[   20.498006] initcall cn_proc_init+0x0/0x30 returned 0 after 8 usecs
+[   20.504246] calling  serial8250_init+0x0/0x114 @ 1
+[   20.509018] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
+[   20.515252] Registering platform device 'serial8250'. Parent at platform
+[   20.521927] device: 'serial8250': device_add
+[   20.526172] bus: 'platform': add device serial8250
+[   20.530939] PM: Adding info for platform:serial8250
+[   20.537004] async_waiting @ 1
+[   20.540037] async_continuing @ 1 after 1 usec
+[   20.672008] async_waiting @ 1
+[   20.676008] async_continuing @ 1 after 1 usec
+ÿ[   20.808005] serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+[   20.810006] device: 'ttyS0': device_add
+[   20.814006] PM: Adding info for No Bus:ttyS0
+[   20.818359] device: 'ttyS1': device_add
+[   20.822359] PM: Adding info for No Bus:ttyS1
+[   20.826651] device: 'ttyS2': device_add
+[   20.830651] PM: Adding info for No Bus:ttyS2
+[   20.834937] device: 'ttyS3': device_add
+[   20.838937] PM: Adding info for No Bus:ttyS3
+[   20.843220] bus: 'platform': add driver serial8250
+[   20.847916] bus: 'platform': driver_probe_device: matched device serial8250 with driver serial8250
+[   20.856842] bus: 'platform': really_probe: probing driver serial8250 with device serial8250
+[   20.865163] driver: 'serial8250': driver_bound: bound to device 'serial8250'
+[   20.872182] bus: 'platform': really_probe: bound device serial8250 to driver serial8250
+[   20.880331] initcall serial8250_init+0x0/0x114 returned 0 after 362613 usecs
+[   20.887280] calling  serial8250_pci_init+0x0/0x16 @ 1
+[   20.892307] bus: 'pci': add driver serial
+[   20.896524] initcall serial8250_pci_init+0x0/0x16 returned 0 after 4134 usecs
+[   20.903573] calling  init_serial_cs+0x0/0xf @ 1
+[   20.908080] bus: 'pcmcia': add driver serial_cs
+[   20.912791] initcall init_serial_cs+0x0/0xf returned 0 after 4610 usecs
+[   20.919311] calling  mca_init+0x0/0x1d @ 1
+[   20.923386] initcall mca_init+0x0/0x1d returned -19 after 1 usecs
+[   20.929451] calling  max3100_init+0x0/0xf @ 1
+[   20.933784] bus: 'spi': add driver max3100
+[   20.938055] initcall max3100_init+0x0/0xf returned 0 after 4173 usecs
+[   20.944402] calling  jsm_init_module+0x0/0x3a @ 1
+[   20.949081] bus: 'pci': add driver jsm
+[   20.953081] initcall jsm_init_module+0x0/0x3a returned 0 after 3866 usecs
+[   20.959724] calling  init_kgdboc+0x0/0x15 @ 1
+[   20.964057] initcall init_kgdboc+0x0/0x15 returned 0 after 1 usecs
+[   20.970211] calling  topology_sysfs_init+0x0/0x82 @ 1
+[   20.975238] initcall topology_sysfs_init+0x0/0x82 returned 0 after 92 usecs
+[   20.982197] calling  floppy_init+0x0/0x54c @ 1
+[   20.986617] bus: 'platform': add driver floppy
+[   20.991315] Floppy drive(s): fd0 is 1.44M
+[   21.012003] FDC 0 is a post-1991 82077
+[   21.020003] Registering platform device 'floppy.0'. Parent at platform
+[   21.022887] device: 'floppy.0': device_add
+[   21.026960] bus: 'platform': add device floppy.0
+[   21.031553] PM: Adding info for platform:floppy.0
+[   21.036395] bus: 'platform': driver_probe_device: matched device floppy.0 with driver floppy
+[   21.044762] bus: 'platform': really_probe: probing driver floppy with device floppy.0
+[   21.052562] driver: 'floppy.0': driver_bound: bound to device 'floppy'
+[   21.059061] bus: 'platform': really_probe: bound device floppy.0 to driver floppy
+[   21.066515] device: 'fd0': device_add
+[   21.070515] PM: Adding info for No Bus:fd0
+[   21.074540] device: '2:0': device_add
+[   21.078540] PM: Adding info for No Bus:2:0
+[   21.082583] initcall floppy_init+0x0/0x54c returned 0 after 93767 usecs
+[   21.089145] calling  loop_init+0x0/0x156 @ 1
+[   21.093391] device: 'loop0': device_add
+[   21.097404] PM: Adding info for No Bus:loop0
+[   21.101930] device: '7:0': device_add
+[   21.105930] PM: Adding info for No Bus:7:0
+[   21.109895] device: 'loop1': device_add
+[   21.113895] PM: Adding info for No Bus:loop1
+[   21.118310] device: '7:1': device_add
+[   21.122310] PM: Adding info for No Bus:7:1
+[   21.126280] device: 'loop2': device_add
+[   21.130280] PM: Adding info for No Bus:loop2
+[   21.134600] device: '7:2': device_add
+[   21.138600] PM: Adding info for No Bus:7:2
+[   21.142563] device: 'loop3': device_add
+[   21.146563] PM: Adding info for No Bus:loop3
+[   21.150861] device: '7:3': device_add
+[   21.154861] PM: Adding info for No Bus:7:3
+[   21.158822] device: 'loop4': device_add
+[   21.162822] PM: Adding info for No Bus:loop4
+[   21.167119] device: '7:4': device_add
+[   21.171119] PM: Adding info for No Bus:7:4
+[   21.175079] device: 'loop5': device_add
+[   21.179079] PM: Adding info for No Bus:loop5
+[   21.183372] device: '7:5': device_add
+[   21.187372] PM: Adding info for No Bus:7:5
+[   21.191338] device: 'loop6': device_add
+[   21.195338] PM: Adding info for No Bus:loop6
+[   21.199647] device: '7:6': device_add
+[   21.203647] PM: Adding info for No Bus:7:6
+[   21.207604] device: 'loop7': device_add
+[   21.211604] PM: Adding info for No Bus:loop7
+[   21.219901] device: '7:7': device_add
+[   21.219901] PM: Adding info for No Bus:7:7
+[   21.223882] loop: module loaded
+[   21.227882] initcall loop_init+0x0/0x156 returned 0 after 130452 usecs
+[   21.233470] calling  cpqarray_init+0x0/0x5a @ 1
+[   21.237977] Compaq SMART2 Driver (v 2.6.0)
+[   21.242050] bus: 'pci': add driver cpqarray
+[   21.246418] bus: 'pci': remove driver cpqarray
+[   21.250946] driver: 'cpqarray': driver_release
+[   21.255293] initcall cpqarray_init+0x0/0x5a returned -19 after 16913 usecs
+[   21.262139] calling  cciss_init+0x0/0x47 @ 1
+[   21.266386] HP CISS Driver (v 3.6.20)
+[   21.270386] bus: 'cciss': registered
+[   21.274205] bus: 'pci': add driver cciss
+[   21.277850] initcall cciss_init+0x0/0x47 returned 0 after 11212 usecs
+[   21.284205] calling  DAC960_init_module+0x0/0x46 @ 1
+[   21.289144] bus: 'pci': add driver DAC960
+[   21.293335] device: 'dac960_gam': device_add
+[   21.297534] PM: Adding info for No Bus:dac960_gam
+[   21.302460] initcall DAC960_init_module+0x0/0x46 returned 0 after 13008 usecs
+[   21.309494] calling  mm_init+0x0/0x155 @ 1
+[   21.313567] bus: 'pci': add driver umem
+[   21.317592] MM: desc_per_page = 128
+[   21.321592] initcall mm_init+0x0/0x155 returned 0 after 7268 usecs
+[   21.327157] calling  init_cryptoloop+0x0/0x26 @ 1
+[   21.331837] initcall init_cryptoloop+0x0/0x26 returned 0 after 1 usecs
+[   21.338337] calling  ibmasm_init+0x0/0x56 @ 1
+[   21.342670] bus: 'pci': add driver ibmasm
+[   21.346867] ibmasm: IBM ASM Service Processor Driver version 1.0 loaded
+[   21.353392] initcall ibmasm_init+0x0/0x56 returned 0 after 10473 usecs
+[   21.359890] calling  tifm_7xx1_init+0x0/0x16 @ 1
+[   21.364485] bus: 'pci': add driver tifm_7xx1
+[   21.368935] initcall tifm_7xx1_init+0x0/0x16 returned 0 after 4361 usecs
+[   21.375552] calling  ioc4_init+0x0/0x1b @ 1
+[   21.379712] bus: 'pci': add driver IOC4
+[   21.383729] initcall ioc4_init+0x0/0x1b returned 0 after 3937 usecs
+[   21.389912] calling  init_kgdbts+0x0/0x15 @ 1
+[   21.394245] initcall init_kgdbts+0x0/0x15 returned 0 after 1 usecs
+[   21.400399] calling  isl29003_init+0x0/0x11 @ 1
+[   21.404905] bus: 'i2c': add driver isl29003
+[   21.409264] i2c-core: driver [isl29003] registered
+[   21.413954] initcall isl29003_init+0x0/0x11 returned 0 after 8839 usecs
+[   21.420540] calling  c2port_init+0x0/0x45 @ 1
+[   21.424873] Silicon Labs C2 port support v. 0.51.0 - (C) 2007 Rodolfo Giometti
+[   21.432067] device class 'c2port': registering
+[   21.436672] initcall c2port_init+0x0/0x45 returned 0 after 11525 usecs
+[   21.443100] calling  duramar2150_c2port_init+0x0/0x62 @ 1
+[   21.448473] device: 'c2port0': device_add
+[   21.452477] PM: Adding info for No Bus:c2port0
+[   21.457112] c2port c2port0: C2 port uc added
+[   21.461290] c2port c2port0: uc flash has 30 blocks x 512 bytes (15360 bytes total)
+[   21.468831] initcall duramar2150_c2port_init+0x0/0x62 returned 0 after 19879 usecs
+[   21.476371] calling  at24_init+0x0/0x2b @ 1
+[   21.480531] bus: 'i2c': add driver at24
+[   21.484542] i2c-core: driver [at24] registered
+[   21.488886] initcall at24_init+0x0/0x2b returned 0 after 8159 usecs
+[   21.495125] calling  at25_init+0x0/0xf @ 1
+[   21.499199] bus: 'spi': add driver at25
+[   21.503212] initcall at25_init+0x0/0xf returned 0 after 3922 usecs
+[   21.509295] calling  eeprom_init+0x0/0x11 @ 1
+[   21.513629] bus: 'i2c': add driver eeprom
+[   21.517819] i2c-core: driver [eeprom] registered
+[   21.522339] initcall eeprom_init+0x0/0x11 returned 0 after 8507 usecs
+[   21.528753] calling  max6875_init+0x0/0x11 @ 1
+[   21.533727] bus: 'i2c': add driver max6875
+[   21.538000] i2c-core: driver [max6875] registered
+[   21.542601] initcall max6875_init+0x0/0x11 returned 0 after 8667 usecs
+[   21.549102] calling  sm501_base_init+0x0/0x20 @ 1
+[   21.553782] bus: 'platform': add driver sm501
+[   21.558324] bus: 'pci': add driver sm501
+[   21.562362] initcall sm501_base_init+0x0/0x20 returned 0 after 8392 usecs
+[   21.569062] calling  pasic3_base_init+0x0/0x14 @ 1
+[   21.573828] bus: 'platform': add driver pasic3
+[   21.578453] bus: 'platform': remove driver pasic3
+[   21.583226] driver: 'pasic3': driver_release
+[   21.587400] initcall pasic3_base_init+0x0/0x14 returned -19 after 13258 usecs
+[   21.594506] calling  ezx_pcap_init+0x0/0xf @ 1
+[   21.598926] bus: 'spi': add driver ezx-pcap
+[   21.603286] initcall ezx_pcap_init+0x0/0xf returned 0 after 4259 usecs
+[   21.609717] calling  pcf50633_adc_init+0x0/0xf @ 1
+[   21.614482] bus: 'platform': add driver pcf50633-adc
+[   21.619629] initcall pcf50633_adc_init+0x0/0xf returned 0 after 5028 usecs
+[   21.626409] calling  mac_hid_init+0x0/0x75 @ 1
+[   21.630828] device: 'input2': device_add
+[   21.634828] PM: Adding info for No Bus:input2
+[   21.639361] input: Macintosh mouse button emulation as /class/input/input2
+[   21.646143] initcall mac_hid_init+0x0/0x75 returned 0 after 14969 usecs
+[   21.652729] calling  scsi_tgt_init+0x0/0x77 @ 1
+[   21.657441] device: 'tgt': device_add
+[   21.661441] PM: Adding info for No Bus:tgt
+[   21.665457] initcall scsi_tgt_init+0x0/0x77 returned 0 after 8033 usecs
+[   21.671978] calling  spi_transport_init+0x0/0x65 @ 1
+[   21.676917] device class 'spi_transport': registering
+[   21.682127] device class 'spi_host': registering
+[   21.686833] initcall spi_transport_init+0x0/0x65 returned 0 after 9685 usecs
+[   21.693783] calling  fc_transport_init+0x0/0x43 @ 1
+[   21.698636] device class 'fc_host': registering
+[   21.703321] device class 'fc_vports': registering
+[   21.712005] device class 'fc_remote_ports': registering
+[   21.713415] device class 'fc_transport': registering
+[   21.718471] initcall fc_transport_init+0x0/0x43 returned 0 after 19372 usecs
+[   21.725426] calling  iscsi_transport_init+0x0/0x11f @ 1
+[   21.730625] Loading iSCSI transport class v2.0-870.
+[   21.735478] device class 'iscsi_transport': registering
+[   21.740855] device class 'iscsi_endpoint': registering
+[   21.746076] device class 'iscsi_host': registering
+[   21.750949] device class 'iscsi_connection': registering
+[   21.756346] device class 'iscsi_session': registering
+[   21.761578] initcall iscsi_transport_init+0x0/0x11f returned 0 after 30235 usecs
+[   21.768906] calling  sas_transport_init+0x0/0x9f @ 1
+[   21.773846] device class 'sas_host': registering
+[   21.778621] device class 'sas_phy': registering
+[   21.783232] device class 'sas_port': registering
+[   21.787936] device class 'sas_device': registering
+[   21.792806] device class 'sas_end_device': registering
+[   21.798021] device class 'sas_expander': registering
+[   21.803070] initcall sas_transport_init+0x0/0x9f returned 0 after 28542 usecs
+[   21.810107] calling  sas_class_init+0x0/0x2c @ 1
+[   21.814701] initcall sas_class_init+0x0/0x2c returned 0 after 31 usecs
+[   21.821201] calling  scsi_dh_init+0x0/0x34 @ 1
+[   21.825621] initcall scsi_dh_init+0x0/0x34 returned 0 after 2 usecs
+[   21.831860] calling  rdac_init+0x0/0x26 @ 1
+[   21.836020] rdac: device handler registered
+[   21.840180] initcall rdac_init+0x0/0x26 returned 0 after 4058 usecs
+[   21.846420] calling  hp_sw_init+0x0/0xf @ 1
+[   21.850580] hp_sw: device handler registered
+[   21.854827] initcall hp_sw_init+0x0/0xf returned 0 after 4147 usecs
+[   21.861067] calling  alua_init+0x0/0x2c @ 1
+[   21.865227] alua: device handler registered
+[   21.869388] initcall alua_init+0x0/0x2c returned 0 after 4062 usecs
+[   21.875627] calling  libfc_init+0x0/0x65 @ 1
+[   21.883987] initcall libfc_init+0x0/0x65 returned 0 after 135 usecs
+[   21.886175] calling  fnic_init_module+0x0/0x1a7 @ 1
+[   21.891027] fnic: Cisco FCoE HBA Driver, ver 1.0.0.1121
+[   21.897311] bus: 'pci': add driver fnic
+[   21.901311] initcall fnic_init_module+0x0/0x1a7 returned 0 after 10033 usecs
+[   21.908248] calling  NCR_700_init+0x0/0x1c @ 1
+[   21.912668] initcall NCR_700_init+0x0/0x1c returned 0 after 10 usecs
+[   21.918996] calling  sim710_init+0x0/0x11 @ 1
+[   21.923328] initcall sim710_init+0x0/0x11 returned 0 after 1 usecs
+[   21.929482] calling  BusLogic_init+0x0/0x548 @ 1
+[   21.934075] initcall BusLogic_init+0x0/0x548 returned 0 after 114 usecs
+[   21.940706] calling  adpt_init+0x0/0x6f @ 1
+[   21.944865] Loading Adaptec I2O RAID: Version 2.4 Build 5go
+[   21.950411] Detecting Adaptec I2O RAID controllers...
+[   21.955438] initcall adpt_init+0x0/0x6f returned -19 after 10335 usecs
+[   21.961938] calling  arcmsr_module_init+0x0/0x1b @ 1
+[   21.966878] bus: 'pci': add driver arcmsr
+[   21.971074] initcall arcmsr_module_init+0x0/0x1b returned 0 after 4114 usecs
+[   21.978042] calling  ahc_linux_init+0x0/0x5c @ 1
+[   21.982633] bus: 'pci': add driver aic7xxx
+[   21.986923] initcall ahc_linux_init+0x0/0x5c returned 0 after 4203 usecs
+[   21.993537] calling  aac_init+0x0/0x5e @ 1
+[   21.997609] Adaptec aacraid driver 1.1-5[2461]-ms
+[   22.002290] bus: 'pci': add driver aacraid
+[   22.006571] initcall aac_init+0x0/0x5e returned 0 after 8786 usecs
+[   22.012691] calling  aic94xx_init+0x0/0x115 @ 1
+[   22.017197] aic94xx: Adaptec aic94xx SAS/SATA driver version 1.0.3 loaded
+[   22.027956] bus: 'pci': add driver aic94xx
+[   22.028242] initcall aic94xx_init+0x0/0x115 returned 0 after 10810 usecs
+[   22.034869] calling  ips_module_init+0x0/0x5b @ 1
+[   22.039548] bus: 'pci': add driver ips
+[   22.043548] bus: 'pci': remove driver ips
+[   22.047569] driver: 'ips': driver_release
+[   22.051569] initcall ips_module_init+0x0/0x5b returned -19 after 11657 usecs
+[   22.058502] calling  init_this_scsi_driver+0x0/0xc5 @ 1
+[   22.063702] scsi: <fdomain> Detection failed (no card)
+[   22.068816] initcall init_this_scsi_driver+0x0/0xc5 returned -19 after 4993 usecs
+[   22.076269] calling  qla1280_init+0x0/0x16 @ 1
+[   22.080688] bus: 'pci': add driver qla1280
+[   22.084966] initcall qla1280_init+0x0/0x16 returned 0 after 4190 usecs
+[   22.091411] calling  qla2x00_module_init+0x0/0xfd @ 1
+[   22.096436] QLogic Fibre Channel HBA Driver: 8.03.01-k4
+[   22.101637] bus: 'pci': add driver qla2xxx
+[   22.105919] initcall qla2x00_module_init+0x0/0xfd returned 0 after 9272 usecs
+[   22.112964] calling  lpfc_init+0x0/0xb7 @ 1
+[   22.117124] Emulex LightPulse Fibre Channel SCSI driver 8.3.3
+[   22.122843] Copyright(c) 2004-2009 Emulex.  All rights reserved.
+[   22.128824] bus: 'pci': add driver lpfc
+[   22.132842] initcall lpfc_init+0x0/0xb7 returned 0 after 15365 usecs
+[   22.139111] calling  ibmmca_init+0x0/0x14 @ 1
+[   22.143444] initcall ibmmca_init+0x0/0x14 returned 0 after 1 usecs
+[   22.149597] calling  init_this_scsi_driver+0x0/0xc5 @ 1
+[   22.154797] initcall init_this_scsi_driver+0x0/0xc5 returned -19 after 12 usecs
+[   22.162078] calling  dc395x_module_init+0x0/0x16 @ 1
+[   22.167017] bus: 'pci': add driver dc395x
+[   22.171207] initcall dc395x_module_init+0x0/0x16 returned 0 after 4106 usecs
+[   22.178172] calling  dc390_module_init+0x0/0x8b @ 1
+[   22.183024] DC390: clustering now enabled by default. If you get problems load
+[   22.190219]        with "disable_clustering=1" and report to maintainers
+[   22.196891] bus: 'pci': add driver tmscsim
+[   22.201175] initcall dc390_module_init+0x0/0x8b returned 0 after 17740 usecs
+[   22.208141] calling  megasas_init+0x0/0x11b @ 1
+[   22.212647] megasas: 00.00.04.01 Thu July 24 11:41:51 PST 2008
+[   22.218454] bus: 'pci': add driver megaraid_sas
+[   22.223167] initcall megasas_init+0x0/0x11b returned 0 after 10312 usecs
+[   22.229808] calling  _scsih_init+0x0/0xcd @ 1
+[   22.234141] mpt2sas version 01.100.03.00 loaded
+[   22.238648] device: 'mpt2ctl': device_add
+[   22.242648] PM: Adding info for No Bus:mpt2ctl
+[   22.247284] bus: 'pci': add driver mpt2sas
+[   22.251492] initcall _scsih_init+0x0/0xcd returned 0 after 16958 usecs
+[   22.257931] calling  atp870u_init+0x0/0x16 @ 1
+[   22.262351] bus: 'pci': add driver atp870u
+[   22.266632] initcall atp870u_init+0x0/0x16 returned 0 after 4195 usecs
+[   22.273072] calling  gdth_init+0x0/0xcf @ 1
+[   22.277231] GDT-HA: Storage RAID Controller Driver. Version: 3.05
+[   22.283299] bus: 'pci': add driver gdth
+[   22.287314] initcall gdth_init+0x0/0xcf returned 0 after 9886 usecs
+[   22.293526] calling  initio_init_driver+0x0/0x16 @ 1
+[   22.298465] bus: 'pci': add driver initio
+[   22.302657] initcall initio_init_driver+0x0/0x16 returned 0 after 4108 usecs
+[   22.309619] calling  inia100_init+0x0/0x16 @ 1
+[   22.314039] bus: 'pci': add driver inia100
+[   22.318319] initcall inia100_init+0x0/0x16 returned 0 after 4198 usecs
+[   22.324768] calling  tw_init+0x0/0x25 @ 1
+[   22.328768] 3ware Storage Controller device driver for Linux v1.26.02.002.
+[   22.335602] bus: 'pci': add driver 3w-xxxx
+[   22.339881] initcall tw_init+0x0/0x25 returned 0 after 10881 usecs
+[   22.345976] calling  twa_init+0x0/0x25 @ 1
+[   22.350049] 3ware 9000 Storage Controller device driver for Linux v2.26.02.012.
+[   22.357329] bus: 'pci': add driver 3w-9xxx
+[   22.361617] initcall twa_init+0x0/0x25 returned 0 after 11311 usecs
+[   22.367798] calling  init_nsp32+0x0/0x2c @ 1
+[   22.372045] nsp32: loading...
+[   22.372045] bus: 'pci': add driver nsp32
+[   22.379100] initcall init_nsp32+0x0/0x2c returned 0 after 6903 usecs
+[   22.385366] calling  ipr_init+0x0/0x2a @ 1
+[   22.389439] ipr: IBM Power RAID SCSI Device Driver version: 2.4.3 (June 10, 2009)
+[   22.396893] bus: 'pci': add driver ipr
+[   22.400893] initcall ipr_init+0x0/0x2a returned 0 after 11134 usecs
+[   22.407007] calling  hptiop_module_init+0x0/0x2a @ 1
+[   22.411947] RocketRAID 3xxx/4xxx Controller driver v1.3 (071203)
+[   22.417926] bus: 'pci': add driver hptiop
+[   22.422122] initcall hptiop_module_init+0x0/0x2a returned 0 after 9950 usecs
+[   22.429090] calling  init_osst+0x0/0x10f @ 1
+[   22.433336] osst :I: Tape driver with OnStream support version 0.99.4
+[   22.433336] osst :I: $Id: osst.c,v 1.73 2005/01/01 21:13:34 wriede Exp $
+[   22.446968] device class 'onstream_tape': registering
+[   22.455995] bus: 'scsi': add driver osst
+[   22.456247] initcall init_osst+0x0/0x10f returned 0 after 22383 usecs
+[   22.462595] calling  init_sd+0x0/0xbd @ 1
+[   22.466595] device class 'scsi_disk': registering
+[   22.471447] bus: 'scsi': add driver sd
+[   22.475447] initcall init_sd+0x0/0xbd returned 0 after 8512 usecs
+[   22.481289] calling  init_sr+0x0/0x3d @ 1
+[   22.485289] bus: 'scsi': add driver sr
+[   22.489275] initcall init_sr+0x0/0x3d returned 0 after 3844 usecs
+[   22.495208] calling  init_ch_module+0x0/0x8c @ 1
+[   22.499800] SCSI Media Changer driver v0.25 
+[   22.504046] device class 'scsi_changer': registering
+[   22.509167] bus: 'scsi': add driver ch
+[   22.513167] initcall init_ch_module+0x0/0x8c returned 0 after 12960 usecs
+[   22.519760] calling  ahci_init+0x0/0x16 @ 1
+[   22.523919] bus: 'pci': add driver ahci
+[   22.527949] initcall ahci_init+0x0/0x16 returned 0 after 3950 usecs
+[   22.534129] calling  k2_sata_init+0x0/0x16 @ 1
+[   22.538550] bus: 'pci': add driver sata_svw
+[   22.542917] initcall k2_sata_init+0x0/0x16 returned 0 after 4279 usecs
+[   22.549357] calling  piix_init+0x0/0x24 @ 1
+[   22.553516] bus: 'pci': add driver ata_piix
+[   22.557890] initcall piix_init+0x0/0x24 returned 0 after 4286 usecs
+[   22.564073] calling  pdc_ata_init+0x0/0x16 @ 1
+[   22.568492] bus: 'pci': add driver sata_promise
+[   22.573200] initcall pdc_ata_init+0x0/0x16 returned 0 after 4612 usecs
+[   22.579637] calling  qs_ata_init+0x0/0x16 @ 1
+[   22.583970] bus: 'pci': add driver sata_qstor
+[   22.588508] initcall qs_ata_init+0x0/0x16 returned 0 after 4445 usecs
+[   22.594866] calling  sil_init+0x0/0x16 @ 1
+[   22.598938] bus: 'pci': add driver sata_sil
+[   22.603305] initcall sil_init+0x0/0x16 returned 0 after 4283 usecs
+[   22.609409] calling  sil24_init+0x0/0x16 @ 1
+[   22.613654] bus: 'pci': add driver sata_sil24
+[   22.618192] initcall sil24_init+0x0/0x16 returned 0 after 4443 usecs
+[   22.624462] calling  svia_init+0x0/0x16 @ 1
+[   22.628622] bus: 'pci': add driver sata_via
+[   22.632987] initcall svia_init+0x0/0x16 returned 0 after 4278 usecs
+[   22.639169] calling  sis_init+0x0/0x16 @ 1
+[   22.643242] bus: 'pci': add driver sata_sis
+[   22.647613] initcall sis_init+0x0/0x16 returned 0 after 4287 usecs
+[   22.653713] calling  pdc_sata_init+0x0/0x16 @ 1
+[   22.658218] bus: 'pci': add driver sata_sx4
+[   22.662580] initcall pdc_sata_init+0x0/0x16 returned 0 after 4273 usecs
+[   22.669104] calling  nv_init+0x0/0x16 @ 1
+[   22.673104] bus: 'pci': add driver sata_nv
+[   22.677368] initcall nv_init+0x0/0x16 returned 0 after 4191 usecs
+[   22.683378] calling  mv_init+0x0/0x3a @ 1
+[   22.687378] bus: 'pci': add driver sata_mv
+[   22.691650] bus: 'platform': add driver sata_mv
+[   22.696305] initcall mv_init+0x0/0x3a returned 0 after 8734 usecs
+[   22.702306] calling  inic_init+0x0/0x16 @ 1
+[   22.706465] bus: 'pci': add driver sata_inic162x
+[   22.711260] initcall inic_init+0x0/0x16 returned 0 after 4697 usecs
+[   22.717437] calling  adma_ata_init+0x0/0x16 @ 1
+[   22.721945] bus: 'pci': add driver pdc_adma
+[   22.726310] initcall adma_ata_init+0x0/0x16 returned 0 after 4277 usecs
+[   22.732838] calling  ali_init+0x0/0x40 @ 1
+[   22.736911] bus: 'pci': add driver pata_ali
+[   22.741276] initcall ali_init+0x0/0x40 returned 0 after 4278 usecs
+[   22.747373] calling  amd_init+0x0/0x16 @ 1
+[   22.751446] bus: 'pci': add driver pata_amd
+[   22.755606] bus: 'pci': driver_probe_device: matched device 0000:00:06.0 with driver pata_amd
+[   22.764099] bus: 'pci': really_probe: probing driver pata_amd with device 0000:00:06.0
+[   22.775986] pata_amd 0000:00:06.0: version 0.4.1
+[   22.776580] pata_amd 0000:00:06.0: setting latency timer to 64
+[   22.782680] scsi0 : pata_amd
+[   22.786680] device: 'host0': device_add
+[   22.789463] PM: Adding info for No Bus:host0
+[   22.793531] device: 'host0': device_add
+[   22.797531] PM: Adding info for No Bus:host0
+[   22.801995] scsi1 : pata_amd
+[   22.805995] device: 'host1': device_add
+[   22.808780] PM: Adding info for No Bus:host1
+[   22.812841] device: 'host1': device_add
+[   22.816841] PM: Adding info for No Bus:host1
+[   22.832009] ata1: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0xf000 irq 14
+[   22.840220] ata2: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xf008 irq 15
+[   23.020003] ata1.00: ATA-6: HDS722525VLAT80, V36OA60A, max UDMA/100
+[   23.022685] ata1.00: 488397168 sectors, multi 1: LBA48 
+[   23.027886] ata1: nv_mode_filter: 0x3f39f&0x3f01f->0x3f01f, BIOS=0x3f000 (0xc60000c0) ACPI=0x3f01f (20:600:0x13)
+[   23.064003] ata1.00: configured for UDMA/100
+[   23.068004] async_waiting @ 1
+[   23.068004] async_continuing @ 1 after 1 usec
+[   23.075920] scsi 0:0:0:0: Direct-Access     ATA      HDS722525VLAT80  V36O PQ: 0 ANSI: 5
+[   23.080425] device: 'target0:0:0': device_add
+[   23.084757] PM: Adding info for No Bus:target0:0:0
+[   23.089524] device: '0:0:0:0': device_add
+[   23.093524] bus: 'scsi': add device 0:0:0:0
+[   23.097766] PM: Adding info for scsi:0:0:0:0
+[   23.102205] bus: 'scsi': driver_probe_device: matched device 0:0:0:0 with driver osst
+[   23.109960] bus: 'scsi': really_probe: probing driver osst with device 0:0:0:0
+[   23.117153] bus: 'scsi': driver_probe_device: matched device 0:0:0:0 with driver sd
+[   23.124780] bus: 'scsi': really_probe: probing driver sd with device 0:0:0:0
+[   23.135800] device: '0:0:0:0': device_add
+[   23.136008] PM: Adding info for No Bus:0:0:0:0
+[   23.140693] sd 0:0:0:0: [sda] 488397168 512-byte logical blocks: (250 GB/232 GiB)
+[   23.148328] sd 0:0:0:0: [sda] Write Protect is off
+[   23.153520] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+[   23.158545] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+[   23.167776] device: 'sda': device_add
+[   23.171776] PM: Adding info for No Bus:sda
+[   23.179697]  sda: sda1 sda2 sda3 < sda5 sda6 sda7 sda8 sda9 sda10 >
+[   23.276943] device: 'sda1': device_add
+[   23.276943] PM: Adding info for No Bus:sda1
+[   23.281050] device: 'sda2': device_add
+[   23.285050] PM: Adding info for No Bus:sda2
+[   23.289326] device: 'sda3': device_add
+[   23.293326] PM: Adding info for No Bus:sda3
+[   23.297429] device: 'sda5': device_add
+[   23.301429] PM: Adding info for No Bus:sda5
+[   23.305568] device: 'sda6': device_add
+[   23.309568] PM: Adding info for No Bus:sda6
+[   23.313662] device: 'sda7': device_add
+[   23.317662] PM: Adding info for No Bus:sda7
+[   23.321748] device: 'sda8': device_add
+[   23.325748] PM: Adding info for No Bus:sda8
+[   23.329842] device: 'sda9': device_add
+[   23.333842] PM: Adding info for No Bus:sda9
+[   23.337929] device: 'sda10': device_add
+[   23.341929] PM: Adding info for No Bus:sda10
+[   23.348020] device: '8:0': device_add
+[   23.352430] PM: Adding info for No Bus:8:0
+[   23.357047] sd 0:0:0:0: [sda] Attached SCSI disk
+[   23.362360] driver: '0:0:0:0': driver_bound: bound to device 'sd'
+[   23.368426] bus: 'scsi': really_probe: bound device 0:0:0:0 to driver sd
+[   23.375099] device: '0:0:0:0': device_add
+[   23.379099] PM: Adding info for No Bus:0:0:0:0
+[   23.383850] device: '0:0:0:0': device_add
+[   23.387918] PM: Adding info for No Bus:0:0:0:0
+[   23.392731] async_waiting @ 1
+[   23.395657] async_continuing @ 1 after 1 usec
+[   23.562845] ata2.01: ATAPI: DVDRW IDE 16X, VER A079, max UDMA/66
+[   23.569033] ata2: nv_mode_filter: 0x1f39f&0x701f->0x701f, BIOS=0x7000 (0xc60000c0) ACPI=0x701f (600:60:0x1c)
+[   23.596005] ata2.01: configured for UDMA/33
+[   23.596966] async_waiting @ 1
+[   23.599842] async_continuing @ 1 after 1 usec
+[   23.604692] scsi 1:0:1:0: CD-ROM            DVDRW    IDE 16X          A079 PQ: 0 ANSI: 5
+[   23.612773] device: 'target1:0:1': device_add
+[   23.617109] PM: Adding info for No Bus:target1:0:1
+[   23.621875] device: '1:0:1:0': device_add
+[   23.625875] bus: 'scsi': add device 1:0:1:0
+[   23.630116] PM: Adding info for scsi:1:0:1:0
+[   23.634559] bus: 'scsi': driver_probe_device: matched device 1:0:1:0 with driver osst
+[   23.642319] bus: 'scsi': really_probe: probing driver osst with device 1:0:1:0
+[   23.649512] bus: 'scsi': driver_probe_device: matched device 1:0:1:0 with driver sd
+[   23.657138] bus: 'scsi': really_probe: probing driver sd with device 1:0:1:0
+[   23.664158] bus: 'scsi': driver_probe_device: matched device 1:0:1:0 with driver sr
+[   23.671786] bus: 'scsi': really_probe: probing driver sr with device 1:0:1:0
+[   23.685003] sr0: scsi3-mmc drive: 1x/48x writer cd/rw xa/form2 cdda tray
+[   23.689562] Uniform CD-ROM driver Revision: 3.20
+[   23.694153] device: 'sr0': device_add
+[   23.698153] PM: Adding info for No Bus:sr0
+[   23.702378] device: '11:0': device_add
+[   23.706435] PM: Adding info for No Bus:11:0
+[   23.710836] sr 1:0:1:0: Attached scsi CD-ROM sr0
+[   23.715432] driver: '1:0:1:0': driver_bound: bound to device 'sr'
+[   23.721497] bus: 'scsi': really_probe: bound device 1:0:1:0 to driver sr
+[   23.728171] device: '1:0:1:0': device_add
+[   23.732171] PM: Adding info for No Bus:1:0:1:0
+[   23.736813] device: '1:0:1:0': device_add
+[   23.741006] PM: Adding info for No Bus:1:0:1:0
+[   23.745575] driver: '0000:00:06.0': driver_bound: bound to device 'pata_amd'
+[   23.752569] bus: 'pci': really_probe: bound device 0000:00:06.0 to driver pata_amd
+[   23.760881] initcall amd_init+0x0/0x16 returned 0 after 985792 usecs
+[   23.767154] calling  artop_init+0x0/0x16 @ 1
+[   23.771400] bus: 'pci': add driver pata_artop
+[   23.775949] initcall artop_init+0x0/0x16 returned 0 after 4458 usecs
+[   23.782216] calling  cmd640_init+0x0/0x16 @ 1
+[   23.786549] bus: 'pci': add driver pata_cmd640
+[   23.791175] initcall cmd640_init+0x0/0x16 returned 0 after 4530 usecs
+[   23.797531] calling  cmd64x_init+0x0/0x16 @ 1
+[   23.801864] bus: 'pci': add driver pata_cmd64x
+[   23.806509] initcall cmd64x_init+0x0/0x16 returned 0 after 4551 usecs
+[   23.812862] calling  cs5520_init+0x0/0x16 @ 1
+[   23.817195] bus: 'pci': add driver pata_cs5520
+[   23.821818] initcall cs5520_init+0x0/0x16 returned 0 after 4528 usecs
+[   23.828176] calling  cs5535_init+0x0/0x16 @ 1
+[   23.832509] bus: 'pci': add driver cs5535
+[   23.836703] initcall cs5535_init+0x0/0x16 returned 0 after 4109 usecs
+[   23.843056] calling  cs5536_init+0x0/0x16 @ 1
+[   23.847389] bus: 'pci': add driver pata_cs5536
+[   23.852038] initcall cs5536_init+0x0/0x16 returned 0 after 4554 usecs
+[   23.858397] calling  cy82c693_init+0x0/0x16 @ 1
+[   23.862903] bus: 'pci': add driver pata_cypress
+[   23.867614] initcall cy82c693_init+0x0/0x16 returned 0 after 4616 usecs
+[   23.874145] calling  efar_init+0x0/0x16 @ 1
+[   23.878303] bus: 'pci': add driver pata_efar
+[   23.882757] initcall efar_init+0x0/0x16 returned 0 after 4363 usecs
+[   23.888938] calling  hpt36x_init+0x0/0x16 @ 1
+[   23.893271] bus: 'pci': add driver pata_hpt366
+[   23.897902] initcall hpt36x_init+0x0/0x16 returned 0 after 4536 usecs
+[   23.904261] calling  hpt37x_init+0x0/0x16 @ 1
+[   23.908594] bus: 'pci': add driver pata_hpt37x
+[   23.913218] initcall hpt37x_init+0x0/0x16 returned 0 after 4530 usecs
+[   23.919575] calling  hpt3x2n_init+0x0/0x16 @ 1
+[   23.923994] bus: 'pci': add driver pata_hpt3x2n
+[   23.928712] initcall hpt3x2n_init+0x0/0x16 returned 0 after 4621 usecs
+[   23.935157] calling  hpt3x3_init+0x0/0x16 @ 1
+[   23.939490] bus: 'pci': add driver pata_hpt3x3
+[   23.944112] initcall hpt3x3_init+0x0/0x16 returned 0 after 4529 usecs
+[   23.950471] calling  it821x_init+0x0/0x16 @ 1
+[   23.954804] bus: 'pci': add driver pata_it821x
+[   23.959436] initcall it821x_init+0x0/0x16 returned 0 after 4539 usecs
+[   23.965794] calling  it8213_init+0x0/0x16 @ 1
+[   23.970127] bus: 'pci': add driver pata_it8213
+[   23.974751] initcall it8213_init+0x0/0x16 returned 0 after 4530 usecs
+[   23.981108] calling  jmicron_init+0x0/0x16 @ 1
+[   23.985529] bus: 'pci': add driver pata_jmicron
+[   23.990241] initcall jmicron_init+0x0/0x16 returned 0 after 4617 usecs
+[   23.996682] calling  ns87415_init+0x0/0x16 @ 1
+[   24.001102] bus: 'pci': add driver pata_ns87415
+[   24.005819] initcall ns87415_init+0x0/0x16 returned 0 after 4625 usecs
+[   24.012265] calling  opti_init+0x0/0x16 @ 1
+[   24.016425] bus: 'pci': add driver pata_opti
+[   24.020875] initcall opti_init+0x0/0x16 returned 0 after 4361 usecs
+[   24.027059] calling  marvell_init+0x0/0x16 @ 1
+[   24.031479] bus: 'pci': add driver pata_marvell
+[   24.036195] initcall marvell_init+0x0/0x16 returned 0 after 4620 usecs
+[   24.042632] calling  mpiix_init+0x0/0x16 @ 1
+[   24.046879] bus: 'pci': add driver pata_mpiix
+[   24.051418] initcall mpiix_init+0x0/0x16 returned 0 after 4447 usecs
+[   24.057687] calling  oldpiix_init+0x0/0x16 @ 1
+[   24.062107] bus: 'pci': add driver pata_oldpiix
+[   24.066823] initcall oldpiix_init+0x0/0x16 returned 0 after 4621 usecs
+[   24.073270] calling  pdc2027x_init+0x0/0x16 @ 1
+[   24.077775] bus: 'pci': add driver pata_pdc2027x
+[   24.082576] initcall pdc2027x_init+0x0/0x16 returned 0 after 4702 usecs
+[   24.089104] calling  pdc202xx_init+0x0/0x16 @ 1
+[   24.093610] bus: 'pci': add driver pata_pdc202xx_old
+[   24.098761] initcall pdc202xx_init+0x0/0x16 returned 0 after 5048 usecs
+[   24.105294] calling  radisys_init+0x0/0x16 @ 1
+[   24.109713] bus: 'pci': add driver pata_radisys
+[   24.114429] initcall radisys_init+0x0/0x16 returned 0 after 4619 usecs
+[   24.120876] calling  rz1000_init+0x0/0x16 @ 1
+[   24.125208] bus: 'pci': add driver pata_rz1000
+[   24.129835] initcall rz1000_init+0x0/0x16 returned 0 after 4533 usecs
+[   24.136189] calling  sc1200_init+0x0/0x16 @ 1
+[   24.140522] bus: 'pci': add driver sc1200
+[   24.144715] initcall sc1200_init+0x0/0x16 returned 0 after 4109 usecs
+[   24.151071] calling  serverworks_init+0x0/0x16 @ 1
+[   24.155836] bus: 'pci': add driver pata_serverworks
+[   24.160903] initcall serverworks_init+0x0/0x16 returned 0 after 4962 usecs
+[   24.167693] calling  sil680_init+0x0/0x16 @ 1
+[   24.172027] bus: 'pci': add driver pata_sil680
+[   24.176652] initcall sil680_init+0x0/0x16 returned 0 after 4532 usecs
+[   24.183007] calling  sl82c105_init+0x0/0x16 @ 1
+[   24.187514] bus: 'pci': add driver pata_sl82c105
+[   24.192319] initcall sl82c105_init+0x0/0x16 returned 0 after 4712 usecs
+[   24.198849] calling  sis_init+0x0/0x16 @ 1
+[   24.202922] bus: 'pci': add driver pata_sis
+[   24.207288] initcall sis_init+0x0/0x16 returned 0 after 4277 usecs
+[   24.213383] calling  triflex_init+0x0/0x16 @ 1
+[   24.217804] bus: 'pci': add driver pata_triflex
+[   24.222515] initcall triflex_init+0x0/0x16 returned 0 after 4615 usecs
+[   24.228958] calling  sch_init+0x0/0x16 @ 1
+[   24.233030] bus: 'pci': add driver pata_sch
+[   24.237396] initcall sch_init+0x0/0x16 returned 0 after 4278 usecs
+[   24.243491] calling  ata_generic_init+0x0/0x16 @ 1
+[   24.248258] bus: 'pci': add driver ata_generic
+[   24.252888] initcall ata_generic_init+0x0/0x16 returned 0 after 4537 usecs
+[   24.259681] calling  e1000_init_module+0x0/0x53 @ 1
+[   24.264533] e1000e: Intel(R) PRO/1000 Network Driver - 1.0.2-k2
+[   24.270427] e1000e: Copyright (c) 1999-2008 Intel Corporation.
+[   24.276233] bus: 'pci': add driver e1000e
+[   24.280431] initcall e1000_init_module+0x0/0x53 returned 0 after 15552 usecs
+[   24.287405] calling  igb_init_module+0x0/0x43 @ 1
+[   24.292085] Intel(R) Gigabit Ethernet Network Driver - version 1.3.16-k2
+[   24.298758] Copyright (c) 2007-2009 Intel Corporation.
+[   24.303872] bus: 'pci': add driver igb
+[   24.307872] initcall igb_init_module+0x0/0x43 returned 0 after 15377 usecs
+[   24.314610] calling  igbvf_init_module+0x0/0x53 @ 1
+[   24.319464] Intel(R) Virtual Function Network Driver - version 1.0.0-k0
+[   24.326050] Copyright (c) 2009 Intel Corporation.
+[   24.330729] bus: 'pci': add driver igbvf
+[   24.334839] initcall igbvf_init_module+0x0/0x53 returned 0 after 15040 usecs
+[   24.341816] calling  bonding_init+0x0/0xb5 @ 1
+[   24.346234] Ethernet Channel Bonding Driver: v3.5.0 (November 4, 2008)
+[   24.352735] bonding: Warning: either miimon or arp_interval and arp_ip_target module parameters must be specified, otherwise bonding will not detect link failures! see bonding.txt for details.
+[   24.369952] device: 'bond0': device_add
+[   24.373952] PM: Adding info for No Bus:bond0
+[   24.378381] initcall bonding_init+0x0/0xb5 returned 0 after 31637 usecs
+[   24.385148] calling  atl2_init_module+0x0/0x39 @ 1
+[   24.389914] Atheros(R) L2 Ethernet Driver - version 2.2.3
+[   24.395287] Copyright (c) 2007 Atheros Corporation.
+[   24.400141] bus: 'pci': add driver atl2
+[   24.404160] initcall atl2_init_module+0x0/0x39 returned 0 after 13932 usecs
+[   24.411045] calling  rr_init_module+0x0/0x16 @ 1
+[   24.415637] bus: 'pci': add driver rrunner
+[   24.419922] initcall rr_init_module+0x0/0x16 returned 0 after 4198 usecs
+[   24.426540] calling  happy_meal_probe+0x0/0x16 @ 1
+[   24.431306] bus: 'pci': add driver hme
+[   24.435306] initcall happy_meal_probe+0x0/0x16 returned 0 after 3868 usecs
+[   24.442045] calling  gem_init+0x0/0x16 @ 1
+[   24.446117] bus: 'pci': add driver gem
+[   24.450117] initcall gem_init+0x0/0x16 returned 0 after 3853 usecs
+[   24.456146] calling  cas_init+0x0/0x36 @ 1
+[   24.460218] bus: 'pci': add driver cassini
+[   24.464506] initcall cas_init+0x0/0x36 returned 0 after 4201 usecs
+[   24.470602] calling  vortex_init+0x0/0x9c @ 1
+[   24.474934] bus: 'pci': add driver 3c59x
+[   24.479045] initcall vortex_init+0x0/0x9c returned 0 after 4032 usecs
+[   24.485405] calling  typhoon_init+0x0/0x16 @ 1
+[   24.489824] bus: 'pci': add driver typhoon
+[   24.494105] initcall typhoon_init+0x0/0x16 returned 0 after 4194 usecs
+[   24.500545] calling  ne2k_pci_init+0x0/0x16 @ 1
+[   24.505051] bus: 'pci': add driver ne2k-pci
+[   24.509417] initcall ne2k_pci_init+0x0/0x16 returned 0 after 4279 usecs
+[   24.515946] calling  e100_init_module+0x0/0x4d @ 1
+[   24.520712] e100: Intel(R) PRO/100 Network Driver, 3.5.24-k2-NAPI
+[   24.526779] e100: Copyright(c) 1999-2006 Intel Corporation
+[   24.532238] bus: 'pci': add driver e100
+[   24.536263] initcall e100_init_module+0x0/0x4d returned 0 after 15201 usecs
+[   24.543141] calling  tlan_probe+0x0/0xc9 @ 1
+[   24.547388] ThunderLAN driver v1.15a
+[   24.551388] bus: 'pci': add driver tlan
+[   24.554965] TLAN: 0 devices installed, PCI: 0  EISA: 0
+[   24.560021] bus: 'pci': remove driver tlan
+[   24.564250] driver: 'tlan': driver_release
+[   24.568250] initcall tlan_probe+0x0/0xc9 returned -19 after 20377 usecs
+[   24.574835] calling  epic_init+0x0/0x16 @ 1
+[   24.578994] bus: 'pci': add driver epic100
+[   24.583276] initcall epic_init+0x0/0x16 returned 0 after 4195 usecs
+[   24.589456] calling  smsc9420_init_module+0x0/0x39 @ 1
+[   24.594569] bus: 'pci': add driver smsc9420
+[   24.598938] initcall smsc9420_init_module+0x0/0x39 returned 0 after 4279 usecs
+[   24.606096] calling  sis190_init_module+0x0/0x16 @ 1
+[   24.611036] bus: 'pci': add driver sis190
+[   24.615234] initcall sis190_init_module+0x0/0x16 returned 0 after 4116 usecs
+[   24.622199] calling  r6040_init+0x0/0x16 @ 1
+[   24.626445] bus: 'pci': add driver r6040
+[   24.630552] initcall r6040_init+0x0/0x16 returned 0 after 4025 usecs
+[   24.636820] calling  yellowfin_init+0x0/0x16 @ 1
+[   24.641412] bus: 'pci': add driver yellowfin
+[   24.645865] initcall yellowfin_init+0x0/0x16 returned 0 after 4362 usecs
+[   24.652480] calling  acenic_init+0x0/0x16 @ 1
+[   24.656813] bus: 'pci': add driver acenic
+[   24.661009] initcall acenic_init+0x0/0x16 returned 0 after 4115 usecs
+[   24.667370] calling  natsemi_init_mod+0x0/0x16 @ 1
+[   24.672136] bus: 'pci': add driver natsemi
+[   24.677006] initcall natsemi_init_mod+0x0/0x16 returned 0 after 4768 usecs
+[   24.683793] calling  ns83820_init+0x0/0x20 @ 1
+[   24.688212] ns83820.c: National Semiconductor DP83820 10/100/1000 driver.
+[   24.694973] bus: 'pci': add driver ns83820
+[   24.699254] initcall ns83820_init+0x0/0x20 returned 0 after 10797 usecs
+[   24.705780] calling  fealnx_init+0x0/0x16 @ 1
+[   24.710112] bus: 'pci': add driver fealnx
+[   24.714309] initcall fealnx_init+0x0/0x16 returned 0 after 4112 usecs
+[   24.720660] calling  tg3_init+0x0/0x16 @ 1
+[   24.724734] bus: 'pci': add driver tg3
+[   24.728734] initcall tg3_init+0x0/0x16 returned 0 after 3865 usecs
+[   24.734770] calling  bnx2_init+0x0/0x16 @ 1
+[   24.738930] bus: 'pci': add driver bnx2
+[   24.742959] initcall bnx2_init+0x0/0x16 returned 0 after 3952 usecs
+[   24.749148] calling  sky2_init_module+0x0/0x47 @ 1
+[   24.753914] sky2 driver version 1.23
+[   24.757914] bus: 'pci': add driver sky2
+[   24.761492] initcall sky2_init_module+0x0/0x47 returned 0 after 7413 usecs
+[   24.768284] calling  ks8842_init+0x0/0xf @ 1
+[   24.772531] bus: 'platform': add driver ks8842
+[   24.777165] initcall ks8842_init+0x0/0xf returned 0 after 4528 usecs
+[   24.783425] calling  ks8851_init+0x0/0xf @ 1
+[   24.787671] bus: 'spi': add driver ks8851
+[   24.791860] initcall ks8851_init+0x0/0xf returned 0 after 4094 usecs
+[   24.798115] calling  rhine_init+0x0/0x30 @ 1
+[   24.802362] bus: 'pci': add driver via-rhine
+[   24.806828] initcall rhine_init+0x0/0x30 returned 0 after 4376 usecs
+[   24.813100] calling  velocity_init_module+0x0/0x34 @ 1
+[   24.818212] bus: 'pci': add driver via-velocity
+[   24.822935] initcall velocity_init_module+0x0/0x34 returned 0 after 4629 usecs
+[   24.830104] calling  starfire_init+0x0/0x16 @ 1
+[   24.834610] bus: 'pci': add driver starfire
+[   24.838975] initcall starfire_init+0x0/0x16 returned 0 after 4276 usecs
+[   24.845505] calling  marvell_init+0x0/0x46 @ 1
+[   24.849924] bus: 'mdio_bus': add driver Marvell 88E1101
+[   24.855324] bus: 'mdio_bus': add driver Marvell 88E1112
+[   24.860664] bus: 'mdio_bus': add driver Marvell 88E1111
+[   24.865992] bus: 'mdio_bus': add driver Marvell 88E1118
+[   24.871321] bus: 'mdio_bus': add driver Marvell 88E1121R
+[   24.876745] bus: 'mdio_bus': add driver Marvell 88E1145
+[   24.882079] bus: 'mdio_bus': add driver Marvell 88E1240
+[   24.887420] initcall marvell_init+0x0/0x46 returned 0 after 36619 usecs
+[   24.893934] calling  davicom_init+0x0/0x4d @ 1
+[   24.898353] bus: 'mdio_bus': add driver Davicom DM9161E
+[   24.903755] bus: 'mdio_bus': add driver Davicom DM9161A
+[   24.909105] bus: 'mdio_bus': add driver Davicom DM9131
+[   24.914358] initcall davicom_init+0x0/0x4d returned 0 after 15630 usecs
+[   24.920878] calling  cicada_init+0x0/0x33 @ 1
+[   24.925211] bus: 'mdio_bus': add driver Cicada Cis8204
+[   24.930526] bus: 'mdio_bus': add driver Cicada Cis8201
+[   24.935773] initcall cicada_init+0x0/0x33 returned 0 after 10314 usecs
+[   24.942207] calling  lxt_init+0x0/0x33 @ 1
+[   24.946280] bus: 'mdio_bus': add driver LXT970
+[   24.950900] bus: 'mdio_bus': add driver LXT971
+[   24.955476] initcall lxt_init+0x0/0x33 returned 0 after 8984 usecs
+[   24.961560] calling  smsc_init+0x0/0x81 @ 1
+[   24.965720] bus: 'mdio_bus': add driver SMSC LAN83C185
+[   24.971033] bus: 'mdio_bus': add driver SMSC LAN8187
+[   24.976104] bus: 'mdio_bus': add driver SMSC LAN8700
+[   24.981174] bus: 'mdio_bus': add driver SMSC LAN911x Internal PHY
+[   24.987379] bus: 'mdio_bus': add driver SMSC LAN8710/LAN8720
+[   24.993160] initcall smsc_init+0x0/0x81 returned 0 after 26798 usecs
+[   24.999415] calling  vsc82xx_init+0x0/0x33 @ 1
+[   25.003836] bus: 'mdio_bus': add driver Vitesse VSC8244
+[   25.009238] bus: 'mdio_bus': add driver Vitesse VSC8221
+[   25.014564] initcall vsc82xx_init+0x0/0x33 returned 0 after 10478 usecs
+[   25.021082] calling  realtek_init+0x0/0xf @ 1
+[   25.025415] bus: 'mdio_bus': add driver RTL821x Gigabit Ethernet
+[   25.031596] initcall realtek_init+0x0/0xf returned 0 after 6039 usecs
+[   25.037939] calling  et1011c_init+0x0/0xf @ 1
+[   25.042272] bus: 'mdio_bus': add driver ET1011C
+[   25.046977] initcall et1011c_init+0x0/0xf returned 0 after 4598 usecs
+[   25.053322] calling  fixed_mdio_bus_init+0x0/0xae @ 1
+[   25.058349] Registering platform device 'Fixed MDIO bus.0'. Parent at platform
+[   25.065542] device: 'Fixed MDIO bus.0': device_add
+[   25.070308] bus: 'platform': add device Fixed MDIO bus.0
+[   25.075595] PM: Adding info for platform:Fixed MDIO bus.0
+[   25.081142] device: '0': device_add
+[   25.081142] PM: Adding info for No Bus:0
+[   25.088628] Fixed MDIO Bus: probed
+[   25.091931] initcall fixed_mdio_bus_init+0x0/0xae returned 0 after 32794 usecs
+[   25.099125] calling  mdio_gpio_init+0x0/0xf @ 1
+[   25.103632] bus: 'platform': add driver mdio-gpio
+[   25.108519] initcall mdio_gpio_init+0x0/0xf returned 0 after 4775 usecs
+[   25.115037] calling  ns_init+0x0/0xf @ 1
+[   25.119037] bus: 'mdio_bus': add driver NatSemi DP83865
+[   25.124338] initcall ns_init+0x0/0xf returned 0 after 5277 usecs
+[   25.130247] calling  ste10Xp_init+0x0/0x1d @ 1
+[   25.134667] bus: 'mdio_bus': add driver STe100p
+[   25.139374] bus: 'mdio_bus': add driver STe101p
+[   25.144002] initcall ste10Xp_init+0x0/0x1d returned 0 after 9119 usecs
+[   25.150433] calling  sundance_init+0x0/0x16 @ 1
+[   25.154939] bus: 'pci': add driver sundance
+[   25.159311] initcall sundance_init+0x0/0x16 returned 0 after 4283 usecs
+[   25.165842] calling  hamachi_init+0x0/0x16 @ 1
+[   25.170261] bus: 'pci': add driver hamachi
+[   25.174543] initcall hamachi_init+0x0/0x16 returned 0 after 4199 usecs
+[   25.180991] calling  net_olddevs_init+0x0/0x27 @ 1
+[   25.185757] initcall net_olddevs_init+0x0/0x27 returned 0 after 357 usecs
+[   25.192812] calling  hp100_module_init+0x0/0x16 @ 1
+[   25.197665] bus: 'pci': add driver hp100
+[   25.201784] initcall hp100_module_init+0x0/0x16 returned 0 after 4036 usecs
+[   25.208663] calling  ultramca_init_module+0x0/0x28 @ 1
+[   25.213776] initcall ultramca_init_module+0x0/0x28 returned -6 after 1 usecs
+[   25.220797] initcall ultramca_init_module+0x0/0x28 returned with error code -6 
+[   25.228076] calling  b44_init+0x0/0x56 @ 1
+[   25.232151] bus: 'pci': add driver b44
+[   25.236089] bus: 'ssb': add driver b44
+[   25.240089] initcall b44_init+0x0/0x56 returned 0 after 7626 usecs
+[   25.246044] calling  init_nic+0x0/0x16 @ 1
+[   25.250116] bus: 'pci': add driver forcedeth
+[   25.254363] bus: 'pci': driver_probe_device: matched device 0000:00:0a.0 with driver forcedeth
+[   25.262943] bus: 'pci': really_probe: probing driver forcedeth with device 0000:00:0a.0
+[   25.270916] forcedeth: Reverse Engineered nForce ethernet driver. Version 0.64.
+[   25.282197] ACPI: PCI Interrupt Link [APCH] enabled at IRQ 23
+[   25.286898]   alloc irq_desc for 23 on node -1
+[   25.286898]   alloc kstat_irqs on node -1
+[   25.295312] IOAPIC[0]: Set routing entry (2-23 -> 0x49 -> IRQ 23 Mode:1 Active:1)
+[   25.302758] forcedeth 0000:00:0a.0: PCI INT A -> Link[APCH] -> GSI 23 (level, low) -> IRQ 23
+[   25.311164] forcedeth 0000:00:0a.0: setting latency timer to 64
+[   25.317057] nv_probe: set workaround bit for reversed mac addr
+[   25.844003] device: 'eth0': device_add
+[   25.844003] PM: Adding info for No Bus:eth0
+[   25.848722] forcedeth 0000:00:0a.0: ifname eth0, PHY OUI 0x5043 @ 1, addr 00:13:d4:dc:41:12
+[   25.857113] forcedeth 0000:00:0a.0: highdma csum gbit lnktim desc-v3
+[   25.863439] driver: '0000:00:0a.0': driver_bound: bound to device 'forcedeth'
+[   25.870546] bus: 'pci': really_probe: bound device 0000:00:0a.0 to driver forcedeth
+[   25.878369] initcall init_nic+0x0/0x16 returned 0 after 613544 usecs
+[   25.884639] calling  ql3xxx_init_module+0x0/0x16 @ 1
+[   25.889577] bus: 'pci': add driver qla3xxx
+[   25.893861] initcall ql3xxx_init_module+0x0/0x16 returned 0 after 4195 usecs
+[   25.900828] calling  ppp_init+0x0/0xb9 @ 1
+[   25.904900] PPP generic driver version 2.4.2
+[   25.909147] device class 'ppp': registering
+[   25.913523] device: 'ppp': device_add
+[   25.917523] PM: Adding info for No Bus:ppp
+[   25.921438] initcall ppp_init+0x0/0xb9 returned 0 after 16154 usecs
+[   25.927608] calling  ppp_async_init+0x0/0x2d @ 1
+[   25.932200] initcall ppp_async_init+0x0/0x2d returned 0 after 2 usecs
+[   25.938614] calling  ppp_sync_init+0x0/0x2d @ 1
+[   25.943120] initcall ppp_sync_init+0x0/0x2d returned 0 after 1 usecs
+[   25.949446] calling  deflate_init+0x0/0x30 @ 1
+[   25.953867] PPP Deflate Compression module registered
+[   25.958893] initcall deflate_init+0x0/0x30 returned 0 after 4912 usecs
+[   25.965393] calling  bsdcomp_init+0x0/0x26 @ 1
+[   25.969813] PPP BSD Compression module registered
+[   25.974494] initcall bsdcomp_init+0x0/0x26 returned 0 after 4571 usecs
+[   25.980993] calling  pppox_init+0x0/0xf @ 1
+[   25.985153] NET: Registered protocol family 24
+[   25.989574] initcall pppox_init+0x0/0xf returned 0 after 4317 usecs
+[   25.995813] calling  pppoe_init+0x0/0x73 @ 1
+[   26.000061] initcall pppoe_init+0x0/0x73 returned 0 after 30 usecs
+[   26.006214] calling  dummy_init_module+0x0/0x95 @ 1
+[   26.011067] device: 'dummy0': device_add
+[   26.015067] PM: Adding info for No Bus:dummy0
+[   26.019697] initcall dummy_init_module+0x0/0x95 returned 0 after 8507 usecs
+[   26.026642] calling  ifb_init_module+0x0/0x9a @ 1
+[   26.031320] device: 'ifb0': device_add
+[   26.035320] PM: Adding info for No Bus:ifb0
+[   26.039616] device: 'ifb1': device_add
+[   26.043616] PM: Adding info for No Bus:ifb1
+[   26.047935] initcall ifb_init_module+0x0/0x9a returned 0 after 16308 usecs
+[   26.054792] calling  macvlan_init_module+0x0/0x45 @ 1
+[   26.059817] initcall macvlan_init_module+0x0/0x45 returned 0 after 3 usecs
+[   26.066663] calling  ibmlana_init_module+0x0/0xf @ 1
+[   26.071604] initcall ibmlana_init_module+0x0/0xf returned 0 after 1 usecs
+[   26.078364] calling  el3_init_module+0x0/0x113 @ 1
+[   26.083131] bus: 'pnp': add driver 3c509
+[   26.087242] initcall el3_init_module+0x0/0x113 returned 0 after 4026 usecs
+[   26.094658] calling  rtl8139_init_module+0x0/0x16 @ 1
+[   26.099684] bus: 'pci': add driver 8139too
+[   26.103757] bus: 'pci': driver_probe_device: matched device 0000:05:07.0 with driver 8139too
+[   26.112164] bus: 'pci': really_probe: probing driver 8139too with device 0000:05:07.0
+[   26.119964] 8139too Fast Ethernet driver 0.9.28
+[   26.125006] ACPI: PCI Interrupt Link [APC2] enabled at IRQ 17
+[   26.131466]   alloc irq_desc for 17 on node -1
+[   26.131466]   alloc kstat_irqs on node -1
+[   26.139880] IOAPIC[0]: Set routing entry (2-17 -> 0x51 -> IRQ 17 Mode:1 Active:1)
+[   26.147325] 8139too 0000:05:07.0: PCI INT A -> Link[APC2] -> GSI 17 (level, low) -> IRQ 17
+[   26.155558] device: 'eth1': device_add
+[   26.159558] PM: Adding info for No Bus:eth1
+[   26.164231] eth1: RealTek RTL8139 at 0xc000, 00:c0:df:03:68:5d, IRQ 17
+[   26.170751] driver: '0000:05:07.0': driver_bound: bound to device '8139too'
+[   26.177685] bus: 'pci': really_probe: bound device 0000:05:07.0 to driver 8139too
+[   26.185316] initcall rtl8139_init_module+0x0/0x16 returned 0 after 83637 usecs
+[   26.192478] calling  depca_module_init+0x0/0xc8 @ 1
+[   26.197331] bus: 'platform': add driver depca
+[   26.201869] Registering platform device 'depca.0'. Parent at platform
+[   26.208217] device: 'depca.0': device_add
+[   26.212217] bus: 'platform': add device depca.0
+[   26.216710] PM: Adding info for platform:depca.0
+[   26.221461] bus: 'platform': driver_probe_device: matched device depca.0 with driver depca
+[   26.229657] bus: 'platform': really_probe: probing driver depca with device depca.0
+[   26.237284] PM: Removing info for platform:depca.0
+[   26.242051] bus: 'platform': remove device depca.0
+[   26.246976] Registering platform device 'depca.1'. Parent at platform
+[   26.253336] device: 'depca.1': device_add
+[   26.257336] bus: 'platform': add device depca.1
+[   26.261829] PM: Adding info for platform:depca.1
+[   26.266582] bus: 'platform': driver_probe_device: matched device depca.1 with driver depca
+[   26.274768] bus: 'platform': really_probe: probing driver depca with device depca.1
+[   26.282394] PM: Removing info for platform:depca.1
+[   26.287162] bus: 'platform': remove device depca.1
+[   26.292097] initcall depca_module_init+0x0/0xc8 returned 0 after 92555 usecs
+[   26.299053] calling  sc92031_init+0x0/0x16 @ 1
+[   26.303472] bus: 'pci': add driver sc92031
+[   26.307756] initcall sc92031_init+0x0/0x16 returned 0 after 4198 usecs
+[   26.314202] calling  tun_init+0x0/0x79 @ 1
+[   26.318274] tun: Universal TUN/TAP device driver, 1.6
+[   26.323301] tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
+[   26.329454] device: 'tun': device_add
+[   26.333454] PM: Adding info for No Bus:tun
+[   26.337409] initcall tun_init+0x0/0x79 returned 0 after 18690 usecs
+[   26.343581] calling  veth_init+0x0/0xf @ 1
+[   26.347654] initcall veth_init+0x0/0xf returned 0 after 1 usecs
+[   26.353548] calling  rio_init+0x0/0x16 @ 1
+[   26.357621] bus: 'pci': add driver dl2k
+[   26.361646] initcall rio_init+0x0/0x16 returned 0 after 3946 usecs
+[   26.367745] calling  amd8111e_init+0x0/0x16 @ 1
+[   26.372250] bus: 'pci': add driver amd8111e
+[   26.376618] initcall amd8111e_init+0x0/0x16 returned 0 after 4279 usecs
+[   26.383145] calling  ethoc_init+0x0/0xf @ 1
+[   26.387304] bus: 'platform': add driver ethoc
+[   26.391849] initcall ethoc_init+0x0/0xf returned 0 after 4442 usecs
+[   26.398017] calling  dnet_init+0x0/0xf @ 1
+[   26.402089] bus: 'platform': add driver dnet
+[   26.406543] initcall dnet_init+0x0/0xf returned 0 after 4351 usecs
+[   26.412630] calling  init_dlci+0x0/0x2a @ 1
+[   26.416789] DLCI driver v0.35, 4 Jan 1997, mike.mclagan@linux.org.
+[   26.422942] initcall init_dlci+0x0/0x2a returned 0 after 6007 usecs
+[   26.429182] calling  pegasus_init+0x0/0x3b @ 1
+[   26.433601] pegasus: v0.6.14 (2006/09/27), Pegasus/Pegasus II USB Ethernet driver
+[   26.441055] bus: 'usb': add driver pegasus
+[   26.445331] usbcore: registered new interface driver pegasus
+[   26.450892] initcall pegasus_init+0x0/0x3b returned 0 after 16892 usecs
+[   26.457479] calling  asix_init+0x0/0x16 @ 1
+[   26.461639] bus: 'usb': add driver asix
+[   26.465654] usbcore: registered new interface driver asix
+[   26.470955] initcall asix_init+0x0/0x16 returned 0 after 9105 usecs
+[   26.477195] calling  cdc_init+0x0/0x16 @ 1
+[   26.481269] bus: 'usb': add driver cdc_ether
+[   26.485719] usbcore: registered new interface driver cdc_ether
+[   26.491452] initcall cdc_init+0x0/0x16 returned 0 after 9952 usecs
+[   26.497605] calling  eem_init+0x0/0x16 @ 1
+[   26.501679] bus: 'usb': add driver cdc_eem
+[   26.505955] usbcore: registered new interface driver cdc_eem
+[   26.511516] initcall eem_init+0x0/0x16 returned 0 after 9612 usecs
+[   26.517668] calling  smsc95xx_init+0x0/0x16 @ 1
+[   26.522176] bus: 'usb': add driver smsc95xx
+[   26.526537] usbcore: registered new interface driver smsc95xx
+[   26.532185] initcall smsc95xx_init+0x0/0x16 returned 0 after 9781 usecs
+[   26.538772] calling  usbnet_init+0x0/0x16 @ 1
+[   26.543105] bus: 'usb': add driver gl620a
+[   26.547295] usbcore: registered new interface driver gl620a
+[   26.552768] initcall usbnet_init+0x0/0x16 returned 0 after 9444 usecs
+[   26.559182] calling  net1080_init+0x0/0x16 @ 1
+[   26.563602] bus: 'usb': add driver net1080
+[   26.567883] usbcore: registered new interface driver net1080
+[   26.573438] initcall net1080_init+0x0/0x16 returned 0 after 9612 usecs
+[   26.579939] calling  rndis_init+0x0/0x16 @ 1
+[   26.584186] bus: 'usb': add driver rndis_host
+[   26.588720] usbcore: registered new interface driver rndis_host
+[   26.594542] initcall rndis_init+0x0/0x16 returned 0 after 10122 usecs
+[   26.600955] calling  cdc_subset_init+0x0/0x16 @ 1
+[   26.605635] bus: 'usb': add driver cdc_subset
+[   26.610169] usbcore: registered new interface driver cdc_subset
+[   26.615984] initcall cdc_subset_init+0x0/0x16 returned 0 after 10112 usecs
+[   26.622829] calling  zaurus_init+0x0/0x16 @ 1
+[   26.627163] bus: 'usb': add driver zaurus
+[   26.631358] usbcore: registered new interface driver zaurus
+[   26.636827] initcall zaurus_init+0x0/0x16 returned 0 after 9446 usecs
+[   26.643240] calling  usbnet_init+0x0/0x26 @ 1
+[   26.647573] initcall usbnet_init+0x0/0x26 returned 0 after 6 usecs
+[   26.653726] calling  int51x1_init+0x0/0x16 @ 1
+[   26.658147] bus: 'usb': add driver int51x1
+[   26.662421] usbcore: registered new interface driver int51x1
+[   26.667983] initcall int51x1_init+0x0/0x16 returned 0 after 9613 usecs
+[   26.674484] calling  usbpn_init+0x0/0x16 @ 1
+[   26.678730] bus: 'usb': add driver cdc_phonet
+[   26.683262] usbcore: registered new interface driver cdc_phonet
+[   26.689079] initcall usbpn_init+0x0/0x16 returned 0 after 10113 usecs
+[   26.695492] calling  ipw2100_init+0x0/0x68 @ 1
+[   26.699912] ipw2100: Intel(R) PRO/Wireless 2100 Network Driver, git-1.2.2
+[   26.706671] ipw2100: Copyright(c) 2003-2006 Intel Corporation
+[   26.712391] bus: 'pci': add driver ipw2100
+[   26.716678] initcall ipw2100_init+0x0/0x68 returned 0 after 16405 usecs
+[   26.723226] calling  ieee80211_init+0x0/0x1b @ 1
+[   26.727818] ieee80211: 802.11 data/management/control stack, git-1.1.13
+[   26.734405] ieee80211: Copyright (C) 2004-2005 Intel Corporation <jketreno@linux.intel.com>
+[   26.742724] initcall ieee80211_init+0x0/0x1b returned 0 after 14555 usecs
+[   26.749485] calling  init_orinoco+0x0/0x16 @ 1
+[   26.753904] orinoco 0.15 (David Gibson <hermes@gibson.dropbear.id.au>, Pavel Roskin <proski@gnu.org>, et al)
+[   26.763698] initcall init_orinoco+0x0/0x16 returned 0 after 9562 usecs
+[   26.770198] calling  orinoco_plx_init+0x0/0x25 @ 1
+[   26.774965] orinoco_plx 0.15 (Pavel Roskin <proski@gnu.org>, David Gibson <hermes@gibson.dropbear.id.au>, Daniel Barlow <dan@telent.net>)
+[   26.787271] bus: 'pci': add driver orinoco_plx
+[   26.791899] initcall orinoco_plx_init+0x0/0x25 returned 0 after 16553 usecs
+[   26.798773] calling  orinoco_pci_init+0x0/0x25 @ 1
+[   26.803539] orinoco_pci 0.15 (Pavel Roskin <proski@gnu.org>, David Gibson <hermes@gibson.dropbear.id.au> & Jean Tourrilhes <jt@hpl.hp.com>)
+[   26.816022] bus: 'pci': add driver orinoco_pci
+[   26.820651] initcall orinoco_pci_init+0x0/0x25 returned 0 after 16727 usecs
+[   26.827529] calling  init_spectrum_cs+0x0/0x1e @ 1
+[   26.832295] spectrum_cs 0.15 (Pavel Roskin <proski@gnu.org>, David Gibson <hermes@gibson.dropbear.id.au>, et al)
+[   26.842434] bus: 'pcmcia': add driver spectrum_cs
+[   26.847322] initcall init_spectrum_cs+0x0/0x1e returned 0 after 14685 usecs
+[   26.854196] calling  airo_cs_init+0x0/0x14 @ 1
+[   26.858615] bus: 'pcmcia': add driver airo_cs
+[   26.863157] initcall airo_cs_init+0x0/0x14 returned 0 after 4445 usecs
+[   26.869596] calling  airo_init_module+0x0/0xce @ 1
+[   26.874362] airo(): Probing for PCI adapters
+[   26.878609] bus: 'pci': add driver airo
+[   26.882632] airo(): Finished probing for PCI adapters
+[   26.887597] initcall airo_init_module+0x0/0xce returned 0 after 12924 usecs
+[   26.894530] calling  atmel_init_module+0x0/0x16 @ 1
+[   26.899383] bus: 'pci': add driver atmel
+[   26.903499] initcall atmel_init_module+0x0/0x16 returned 0 after 4033 usecs
+[   26.910373] calling  prism54_module_init+0x0/0x2a @ 1
+[   26.915399] Loaded prism54 driver, version 1.2
+[   26.919820] bus: 'pci': add driver prism54
+[   26.924124] initcall prism54_module_init+0x0/0x2a returned 0 after 8534 usecs
+[   26.931173] calling  init_ray_cs+0x0/0xb0 @ 1
+[   26.935506] bus: 'pcmcia': add driver ray_cs
+[   26.939955] initcall init_ray_cs+0x0/0xb0 returned 0 after 4418 usecs
+[   26.946375] calling  wl3501_init_module+0x0/0xf @ 1
+[   26.951228] bus: 'pcmcia': add driver wl3501_cs
+[   26.955933] initcall wl3501_init_module+0x0/0xf returned 0 after 4604 usecs
+[   26.962806] calling  zd1201_init+0x0/0x16 @ 1
+[   26.967139] bus: 'usb': add driver zd1201
+[   26.971336] usbcore: registered new interface driver zd1201
+[   26.976812] initcall zd1201_init+0x0/0x16 returned 0 after 9452 usecs
+[   26.983225] calling  init_netconsole+0x0/0x11f @ 1
+[   26.987992] console [netcon0] enabled
+[   26.991992] netconsole: network logging started
+[   26.996693] initcall init_netconsole+0x0/0x11f returned 0 after 8497 usecs
+[   27.003540] calling  init+0x0/0xf @ 1
+[   27.007540] bus: 'virtio': add driver virtio_net
+[   27.011973] initcall init+0x0/0xf returned 0 after 4685 usecs
+[   27.017623] calling  i2400m_driver_init+0x0/0x7 @ 1
+[   27.022477] initcall i2400m_driver_init+0x0/0x7 returned 0 after 1 usecs
+[   27.029149] calling  i2400ms_driver_init+0x0/0xf @ 1
+[   27.034090] bus: 'sdio': add driver i2400m_sdio
+[   27.038792] initcall i2400ms_driver_init+0x0/0xf returned 0 after 4595 usecs
+[   27.045738] calling  i2o_iop_init+0x0/0x41 @ 1
+[   27.050158] I2O subsystem v1.325
+[   27.054158] i2o: max drivers = 8
+[   27.056748] bus: 'i2o': registered
+[   27.060748] bus: 'i2o': add driver exec-osm
+[   27.064583] bus: 'pci': add driver PCI_I2O
+[   27.068815] initcall i2o_iop_init+0x0/0x41 returned 0 after 18234 usecs
+[   27.075343] calling  i2o_config_init+0x0/0x8c @ 1
+[   27.080025] I2O Configuration OSM v1.323
+[   27.083921] bus: 'i2o': add driver config-osm
+[   27.088462] device: 'i2octl': device_add
+[   27.092462] PM: Adding info for No Bus:i2octl
+[   27.096867] initcall i2o_config_init+0x0/0x8c returned 0 after 16450 usecs
+[   27.103648] calling  i2o_bus_init+0x0/0x37 @ 1
+[   27.108069] I2O Bus Adapter OSM v1.317
+[   27.111793] bus: 'i2o': add driver bus-osm
+[   27.116080] initcall i2o_bus_init+0x0/0x37 returned 0 after 7825 usecs
+[   27.122507] calling  i2o_scsi_init+0x0/0x37 @ 1
+[   27.127014] I2O SCSI Peripheral OSM v1.316
+[   27.131088] bus: 'i2o': add driver scsi-osm
+[   27.135452] initcall i2o_scsi_init+0x0/0x37 returned 0 after 8240 usecs
+[   27.141964] calling  i2o_proc_init+0x0/0x75 @ 1
+[   27.146471] I2O ProcFS OSM v1.316
+[   27.150471] bus: 'i2o': add driver proc-osm
+[   27.154133] initcall i2o_proc_init+0x0/0x75 returned 0 after 7503 usecs
+[   27.160667] calling  fusion_init+0x0/0x10c @ 1
+[   27.165087] Fusion MPT base driver 3.04.10
+[   27.169159] Copyright (c) 1999-2008 LSI Corporation
+[   27.174013] initcall fusion_init+0x0/0x10c returned 0 after 8756 usecs
+[   27.180514] calling  mptspi_init+0x0/0xb9 @ 1
+[   27.184847] Fusion MPT SPI Host driver 3.04.10
+[   27.189266] bus: 'pci': add driver mptspi
+[   27.193468] initcall mptspi_init+0x0/0xb9 returned 0 after 8434 usecs
+[   27.199824] calling  mptfc_init+0x0/0xcc @ 1
+[   27.204069] Fusion MPT FC Host driver 3.04.10
+[   27.208402] bus: 'pci': add driver mptfc
+[   27.212514] initcall mptfc_init+0x0/0xcc returned 0 after 8264 usecs
+[   27.218786] calling  fw_core_init+0x0/0x72 @ 1
+[   27.223390] bus: 'firewire': registered
+[   27.227390] initcall fw_core_init+0x0/0x72 returned 0 after 3917 usecs
+[   27.233691] calling  fw_ohci_init+0x0/0x16 @ 1
+[   27.238112] bus: 'pci': add driver firewire_ohci
+[   27.242912] initcall fw_ohci_init+0x0/0x16 returned 0 after 4702 usecs
+[   27.249352] calling  uio_init+0x0/0x7 @ 1
+[   27.253352] initcall uio_init+0x0/0x7 returned 0 after 1 usecs
+[   27.259146] calling  uio_pdrv_init+0x0/0xf @ 1
+[   27.263565] bus: 'platform': add driver uio_pdrv
+[   27.268362] initcall uio_pdrv_init+0x0/0xf returned 0 after 4687 usecs
+[   27.274790] calling  uio_pdrv_genirq_init+0x0/0xf @ 1
+[   27.279815] bus: 'platform': add driver uio_pdrv_genirq
+[   27.285219] initcall uio_pdrv_genirq_init+0x0/0xf returned 0 after 5280 usecs
+[   27.292253] calling  smx_ce_init_module+0x0/0xf @ 1
+[   27.297106] bus: 'platform': add driver smx-ce
+[   27.301733] initcall smx_ce_init_module+0x0/0xf returned 0 after 4521 usecs
+[   27.308598] calling  sercos3_init_module+0x0/0x16 @ 1
+[   27.313623] bus: 'pci': add driver sercos3
+[   27.317905] initcall sercos3_init_module+0x0/0x16 returned 0 after 4200 usecs
+[   27.324961] calling  cdrom_init+0x0/0x5b @ 1
+[   27.329207] initcall cdrom_init+0x0/0x5b returned 0 after 1 usecs
+[   27.335274] calling  spi_gpio_init+0x0/0x14 @ 1
+[   27.339780] bus: 'platform': add driver spi_gpio
+[   27.344575] bus: 'platform': remove driver spi_gpio
+[   27.349519] driver: 'spi_gpio': driver_release
+[   27.353864] initcall spi_gpio_init+0x0/0x14 returned -19 after 13757 usecs
+[   27.360711] calling  spidev_init+0x0/0x82 @ 1
+[   27.365043] device class 'spidev': registering
+[   27.369661] bus: 'spi': add driver spidev
+[   27.373781] initcall spidev_init+0x0/0x82 returned 0 after 8537 usecs
+[   27.380124] calling  tle62x0_init+0x0/0xf @ 1
+[   27.384457] bus: 'spi': add driver tle62x0
+[   27.388726] initcall tle62x0_init+0x0/0xf returned 0 after 4170 usecs
+[   27.395065] calling  nonstatic_sysfs_init+0x0/0xf @ 1
+[   27.400092] initcall nonstatic_sysfs_init+0x0/0xf returned 0 after 3 usecs
+[   27.406939] calling  yenta_socket_init+0x0/0x16 @ 1
+[   27.411792] bus: 'pci': add driver yenta_cardbus
+[   27.416598] initcall yenta_socket_init+0x0/0x16 returned 0 after 4708 usecs
+[   27.423475] calling  aoe_init+0x0/0x9d @ 1
+[   27.427547] device class 'aoe': registering
+[   27.431892] device: 'err': device_add
+[   27.435892] PM: Adding info for No Bus:err
+[   27.439740] device: 'discover': device_add
+[   27.443754] PM: Adding info for No Bus:discover
+[   27.448453] device: 'interfaces': device_add
+[   27.452647] PM: Adding info for No Bus:interfaces
+[   27.457514] device: 'revalidate': device_add
+[   27.461704] PM: Adding info for No Bus:revalidate
+[   27.466592] device: 'flush': device_add
+[   27.470592] PM: Adding info for No Bus:flush
+[   27.474777] aoe: AoE v47 initialised.
+[   27.478777] initcall aoe_init+0x0/0x9d returned 0 after 49748 usecs
+[   27.484653] calling  uwb_subsys_init+0x0/0x46 @ 1
+[   27.489332] device class 'uwb_rc': registering
+[   27.493934] initcall uwb_subsys_init+0x0/0x46 returned 0 after 4526 usecs
+[   27.500652] calling  wlp_subsys_init+0x0/0x7 @ 1
+[   27.505244] initcall wlp_subsys_init+0x0/0x7 returned 0 after 1 usecs
+[   27.511658] calling  umc_bus_init+0x0/0xf @ 1
+[   27.516177] bus: 'umc': registered
+[   27.520177] initcall umc_bus_init+0x0/0xf returned 0 after 3473 usecs
+[   27.525958] calling  whci_init+0x0/0x16 @ 1
+[   27.530118] bus: 'pci': add driver whci
+[   27.534146] initcall whci_init+0x0/0x16 returned 0 after 3948 usecs
+[   27.540327] calling  whcrc_driver_init+0x0/0x16 @ 1
+[   27.545180] bus: 'umc': add driver whc-rc
+[   27.549368] initcall whcrc_driver_init+0x0/0x16 returned 0 after 4093 usecs
+[   27.556231] calling  hwarc_driver_init+0x0/0x16 @ 1
+[   27.561083] bus: 'usb': add driver hwa-rc
+[   27.565274] usbcore: registered new interface driver hwa-rc
+[   27.570748] initcall hwarc_driver_init+0x0/0x16 returned 0 after 9443 usecs
+[   27.577681] calling  mon_init+0x0/0xed @ 1
+[   27.581753] device class 'usbmon': registering
+[   27.586367] device: 'usbmon0': device_add
+[   27.590367] PM: Adding info for No Bus:usbmon0
+[   27.594943] initcall mon_init+0x0/0xed returned 0 after 12885 usecs
+[   27.601116] calling  ehci_hcd_init+0x0/0xc2 @ 1
+[   27.605622] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[   27.612121] ehci_hcd: block sizes: qh 128 qtd 96 itd 160 sitd 96
+[   27.618102] bus: 'pci': add driver ehci_hcd
+[   27.622261] bus: 'pci': driver_probe_device: matched device 0000:00:02.1 with driver ehci_hcd
+[   27.630755] bus: 'pci': really_probe: probing driver ehci_hcd with device 0000:00:02.1
+[   27.642641] ACPI: PCI Interrupt Link [APCL] enabled at IRQ 22
+[   27.647206]   alloc irq_desc for 22 on node -1
+[   27.647206]   alloc kstat_irqs on node -1
+[   27.655618] IOAPIC[0]: Set routing entry (2-22 -> 0x59 -> IRQ 22 Mode:1 Active:1)
+[   27.663064] ehci_hcd 0000:00:02.1: PCI INT B -> Link[APCL] -> GSI 22 (level, low) -> IRQ 22
+[   27.671384] ehci_hcd 0000:00:02.1: setting latency timer to 64
+[   27.677192] ehci_hcd 0000:00:02.1: EHCI Host Controller
+[   27.682391] drivers/usb/core/inode.c: creating file 'devices'
+[   27.688198] drivers/usb/core/inode.c: creating file '001'
+[   27.693572] device: 'usbmon1': device_add
+[   27.697575] PM: Adding info for No Bus:usbmon1
+[   27.702306] ehci_hcd 0000:00:02.1: new USB bus registered, assigned bus number 1
+[   27.709631] ehci_hcd 0000:00:02.1: reset hcs_params 0x10148a dbg=1 cc=1 pcc=4 !ppc ports=10
+[   27.717950] ehci_hcd 0000:00:02.1: reset portroute 0 0 0 0 0 0 0 0 0 0 
+[   27.724537] ehci_hcd 0000:00:02.1: reset hcc_params a086 caching frame 256/512/1024 park
+[   27.732597] ehci_hcd 0000:00:02.1: park 0
+[   27.736597] ehci_hcd 0000:00:02.1: reset command 080b02 park=3 ithresh=8 period=1024 Reset HALT
+[   27.745260] ehci_hcd 0000:00:02.1: bogus port configuration: cc=1 x pcc=4 < ports=10
+[   27.752972] ehci_hcd 0000:00:02.1: debug port 1
+[   27.757479] ehci_hcd 0000:00:02.1: cache line size of 64 is not supported
+[   27.764239] ehci_hcd 0000:00:02.1: supports USB remote wakeup
+[   27.769958] ehci_hcd 0000:00:02.1: irq 22, io mem 0xfeb00000
+[   27.775611] ehci_hcd 0000:00:02.1: reset command 080b02 park=3 ithresh=8 period=1024 Reset HALT
+[   27.784276] ehci_hcd 0000:00:02.1: init command 010009 (park)=0 ithresh=1 period=256 RUN
+[   27.809002] ehci_hcd 0000:00:02.1: USB 2.0 started, EHCI 1.00
+[   27.810667] usb usb1: default language 0x0409
+[   27.815157] usb usb1: udev 1, busnum 1, minor = 0
+[   27.819870] usb usb1: New USB device found, idVendor=1d6b, idProduct=0002
+[   27.826631] usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[   27.833824] usb usb1: Product: EHCI Host Controller
+[   27.838677] usb usb1: Manufacturer: Linux 2.6.31-rc6-tip ehci_hcd
+[   27.844744] usb usb1: SerialNumber: 0000:00:02.1
+[   27.849337] device: 'usb1': device_add
+[   27.853337] bus: 'usb': add device usb1
+[   27.857078] PM: Adding info for usb:usb1
+[   27.861078] usb usb1: uevent
+[   27.863985] bus: 'usb': driver_probe_device: matched device usb1 with driver usb
+[   27.871307] bus: 'usb': really_probe: probing driver usb with device usb1
+[   27.878067] usb usb1: usb_probe_device
+[   27.882383] usb usb1: configuration #1 chosen from 1 choice
+[   27.887930] usb usb1: adding 1-0:1.0 (config #1, interface 0)
+[   27.893650] device: '1-0:1.0': device_add
+[   27.897650] bus: 'usb': add device 1-0:1.0
+[   27.901745] PM: Adding info for usb:1-0:1.0
+[   27.905904] usb 1-0:1.0: uevent
+[   27.909904] bus: 'usb': driver_probe_device: matched device 1-0:1.0 with driver hub
+[   27.916782] bus: 'usb': really_probe: probing driver hub with device 1-0:1.0
+[   27.923801] hub 1-0:1.0: usb_probe_interface
+[   27.928048] hub 1-0:1.0: usb_probe_interface - got id
+[   27.933075] hub 1-0:1.0: USB hub found
+[   27.933075] hub 1-0:1.0: 10 ports detected
+[   27.940876] hub 1-0:1.0: standalone hub
+[   27.944876] hub 1-0:1.0: no power switching (usb 1.0)
+[   27.949715] hub 1-0:1.0: individual port over-current protection
+[   27.955694] hub 1-0:1.0: power on to power good time: 20ms
+[   27.961155] hub 1-0:1.0: local power source is good
+[   27.966007] hub 1-0:1.0: trying to enable port power on non-switchable hub
+[   27.973005] driver: '1-0:1.0': driver_bound: bound to device 'hub'
+[   27.979181] bus: 'usb': really_probe: bound device 1-0:1.0 to driver hub
+[   27.985854] device: 'ep_81': device_add
+[   27.989854] PM: Adding info for No Bus:ep_81
+[   27.993976] drivers/usb/core/inode.c: creating file '001'
+[   27.999349] driver: 'usb1': driver_bound: bound to device 'usb'
+[   28.005242] bus: 'usb': really_probe: bound device usb1 to driver usb
+[   28.011655] device: 'ep_00': device_add
+[   28.015655] PM: Adding info for No Bus:ep_00
+[   28.019750] driver: '0000:00:02.1': driver_bound: bound to device 'ehci_hcd'
+[   28.026770] bus: 'pci': really_probe: bound device 0000:00:02.1 to driver ehci_hcd
+[   28.034493] initcall ehci_hcd_init+0x0/0xc2 returned 0 after 418834 usecs
+[   28.041201] calling  isp116x_init+0x0/0x38 @ 1
+[   28.045620] 116x: driver isp116x-hcd, 03 Nov 2005
+[   28.050300] bus: 'platform': add driver isp116x-hcd
+[   28.055361] initcall isp116x_init+0x0/0x38 returned 0 after 9516 usecs
+[   28.061792] calling  ohci_hcd_mod_init+0x0/0xd1 @ 1
+[   28.066645] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+[   28.072799] ohci_hcd: block sizes: ed 64 td 64
+[   28.077219] bus: 'pci': add driver ohci_hcd
+[   28.081378] bus: 'pci': driver_probe_device: matched device 0000:00:02.0 with driver ohci_hcd
+[   28.089873] bus: 'pci': really_probe: probing driver ohci_hcd with device 0000:00:02.0
+[   28.100009] ACPI: PCI Interrupt Link [APCF] enabled at IRQ 21
+[   28.106289]   alloc irq_desc for 21 on node -1
+[   28.108011]   alloc kstat_irqs on node -1
+[   28.114701] IOAPIC[0]: Set routing entry (2-21 -> 0x61 -> IRQ 21 Mode:1 Active:1)
+[   28.122147] ohci_hcd 0000:00:02.0: PCI INT A -> Link[APCF] -> GSI 21 (level, low) -> IRQ 21
+[   28.130467] ohci_hcd 0000:00:02.0: setting latency timer to 64
+[   28.136273] ohci_hcd 0000:00:02.0: OHCI Host Controller
+[   28.141473] drivers/usb/core/inode.c: creating file '002'
+[   28.146864] device: 'usbmon2': device_add
+[   28.150876] PM: Adding info for No Bus:usbmon2
+[   28.155522] hub 1-0:1.0: state 7 ports 10 chg 0000 evt 0000
+[   28.156013] ohci_hcd 0000:00:02.0: new USB bus registered, assigned bus number 2
+[   28.156013] ohci_hcd 0000:00:02.0: USB HC TakeOver from BIOS/SMM
+[   28.188009] ohci_hcd 0000:00:02.0: created debug files
+[   28.193152] ohci_hcd 0000:00:02.0: supports USB remote wakeup
+[   28.198870] ohci_hcd 0000:00:02.0: irq 21, io mem 0xda102000
+[   28.260003] ohci_hcd 0000:00:02.0: OHCI controller state
+[   28.263205] ohci_hcd 0000:00:02.0: OHCI 1.0, NO legacy support registers
+[   28.269879] ohci_hcd 0000:00:02.0: control 0x683 RWE RWC HCFS=operational CBSR=3
+[   28.277245] ohci_hcd 0000:00:02.0: cmdstatus 0x00000 SOC=0
+[   28.282705] ohci_hcd 0000:00:02.0: intrstatus 0x00000004 SF
+[   28.288252] ohci_hcd 0000:00:02.0: intrenable 0x8000004a MIE RHSC RD WDH
+[   28.294926] ohci_hcd 0000:00:02.0: hcca frame #0027
+[   28.299779] ohci_hcd 0000:00:02.0: roothub.a 0100020a POTPGT=1 NPS NDP=10(10)
+[   28.306885] ohci_hcd 0000:00:02.0: roothub.b 00000000 PPCM=0000 DR=0000
+[   28.313471] ohci_hcd 0000:00:02.0: roothub.status 00008000 DRWE
+[   28.319366] ohci_hcd 0000:00:02.0: roothub.portstatus [0] 0x00000100 PPS
+[   28.326038] ohci_hcd 0000:00:02.0: roothub.portstatus [1] 0x00000100 PPS
+[   28.332712] ohci_hcd 0000:00:02.0: roothub.portstatus [2] 0x00000100 PPS
+[   28.339385] ohci_hcd 0000:00:02.0: roothub.portstatus [3] 0x00000100 PPS
+[   28.346059] ohci_hcd 0000:00:02.0: roothub.portstatus [4] 0x00000100 PPS
+[   28.352732] ohci_hcd 0000:00:02.0: roothub.portstatus [5] 0x00000100 PPS
+[   28.359406] ohci_hcd 0000:00:02.0: roothub.portstatus [6] 0x00000100 PPS
+[   28.366078] ohci_hcd 0000:00:02.0: roothub.portstatus [7] 0x00000100 PPS
+[   28.372752] ohci_hcd 0000:00:02.0: roothub.portstatus [8] 0x00000100 PPS
+[   28.379426] ohci_hcd 0000:00:02.0: roothub.portstatus [9] 0x00000100 PPS
+[   28.386099] usb usb2: default language 0x0409
+[   28.390493] usb usb2: udev 1, busnum 2, minor = 128
+[   28.395372] usb usb2: New USB device found, idVendor=1d6b, idProduct=0001
+[   28.402132] usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[   28.409326] usb usb2: Product: OHCI Host Controller
+[   28.414179] usb usb2: Manufacturer: Linux 2.6.31-rc6-tip ohci_hcd
+[   28.420245] usb usb2: SerialNumber: 0000:00:02.0
+[   28.424838] device: 'usb2': device_add
+[   28.428838] bus: 'usb': add device usb2
+[   28.432666] PM: Adding info for usb:usb2
+[   28.436666] usb usb2: uevent
+[   28.439596] bus: 'usb': driver_probe_device: matched device usb2 with driver usb
+[   28.446931] bus: 'usb': really_probe: probing driver usb with device usb2
+[   28.453690] usb usb2: usb_probe_device
+[   28.457690] usb usb2: configuration #1 chosen from 1 choice
+[   28.462963] usb usb2: adding 2-0:1.0 (config #1, interface 0)
+[   28.468683] device: '2-0:1.0': device_add
+[   28.472683] bus: 'usb': add device 2-0:1.0
+[   28.476779] PM: Adding info for usb:2-0:1.0
+[   28.480937] usb 2-0:1.0: uevent
+[   28.484937] bus: 'usb': driver_probe_device: matched device 2-0:1.0 with driver hub
+[   28.491816] bus: 'usb': really_probe: probing driver hub with device 2-0:1.0
+[   28.498834] hub 2-0:1.0: usb_probe_interface
+[   28.503081] hub 2-0:1.0: usb_probe_interface - got id
+[   28.508108] hub 2-0:1.0: USB hub found
+[   28.508108] hub 2-0:1.0: 10 ports detected
+[   28.515909] hub 2-0:1.0: standalone hub
+[   28.519909] hub 2-0:1.0: no power switching (usb 1.0)
+[   28.524747] hub 2-0:1.0: global over-current protection
+[   28.529948] hub 2-0:1.0: power on to power good time: 2ms
+[   28.535321] hub 2-0:1.0: local power source is good
+[   28.540175] hub 2-0:1.0: no over-current condition exists
+[   28.545548] hub 2-0:1.0: trying to enable port power on non-switchable hub
+[   28.552394] driver: '2-0:1.0': driver_bound: bound to device 'hub'
+[   28.558704] bus: 'usb': really_probe: bound device 2-0:1.0 to driver hub
+[   28.565377] device: 'ep_81': device_add
+[   28.569377] PM: Adding info for No Bus:ep_81
+[   28.573507] drivers/usb/core/inode.c: creating file '001'
+[   28.578880] driver: 'usb2': driver_bound: bound to device 'usb'
+[   28.584775] bus: 'usb': really_probe: bound device usb2 to driver usb
+[   28.591187] device: 'ep_00': device_add
+[   28.595187] PM: Adding info for No Bus:ep_00
+[   28.599281] driver: '0000:00:02.0': driver_bound: bound to device 'ohci_hcd'
+[   28.606302] bus: 'pci': really_probe: bound device 0000:00:02.0 to driver ohci_hcd
+[   28.614029] bus: 'ssb': add driver ohci_hcd
+[   28.618334] bus: 'platform': add driver sm501-usb
+[   28.623163] initcall ohci_hcd_mod_init+0x0/0xd1 returned 0 after 543483 usecs
+[   28.630213] calling  uhci_hcd_init+0x0/0x151 @ 1
+[   28.634806] uhci_hcd: USB Universal Host Controller Interface driver
+[   28.641133] bus: 'pci': add driver uhci_hcd
+[   28.645521] initcall uhci_hcd_init+0x0/0x151 returned 0 after 10484 usecs
+[   28.652227] calling  sl811h_init+0x0/0x38 @ 1
+[   28.656560] sl811: driver sl811-hcd, 19 May 2005
+[   28.661152] bus: 'platform': add driver sl811-hcd
+[   28.665991] initcall sl811h_init+0x0/0x38 returned 0 after 9289 usecs
+[   28.672420] calling  init_sl811_cs+0x0/0xf @ 1
+[   28.676837] bus: 'pcmcia': add driver sl811_cs
+[   28.684004] hub 2-0:1.0: state 7 ports 10 chg 0000 evt 0000
+[   28.686901] initcall init_sl811_cs+0x0/0xf returned 0 after 9852 usecs
+[   28.693399] calling  hwahc_driver_init+0x0/0x16 @ 1
+[   28.698253] bus: 'usb': add driver hwa-hc
+[   28.704004] usbcore: registered new interface driver hwa-hc
+[   28.707925] initcall hwahc_driver_init+0x0/0x16 returned 0 after 9494 usecs
+[   28.714859] calling  wusbcore_init+0x0/0x66 @ 1
+[   28.720005] initcall wusbcore_init+0x0/0x66 returned 0 after 95 usecs
+[   28.725805] calling  acm_init+0x0/0xcb @ 1
+[   28.729878] bus: 'usb': add driver cdc_acm
+[   28.736004] usbcore: registered new interface driver cdc_acm
+[   28.739741] cdc_acm: v0.26:USB Abstract Control Model driver for USB modems and ISDN adapters
+[   28.748234] initcall acm_init+0x0/0xcb returned 0 after 17925 usecs
+[   28.754474] calling  wdm_init+0x0/0x16 @ 1
+[   28.758548] bus: 'usb': add driver cdc_wdm
+[   28.764005] usbcore: registered new interface driver cdc_wdm
+[   28.768385] initcall wdm_init+0x0/0x16 returned 0 after 9614 usecs
+[   28.774538] calling  usbtmc_init+0x0/0x2d @ 1
+[   28.778871] bus: 'usb': add driver usbtmc
+[   28.784005] usbcore: registered new interface driver usbtmc
+[   28.788543] initcall usbtmc_init+0x0/0x2d returned 0 after 9453 usecs
+[   28.794956] calling  usb_usual_init+0x0/0x30 @ 1
+[   28.799549] bus: 'usb': add driver libusual
+[   28.804004] usbcore: registered new interface driver libusual
+[   28.809569] initcall usb_usual_init+0x0/0x30 returned 0 after 9797 usecs
+[   28.816241] calling  microtek_drv_init+0x0/0x16 @ 1
+[   28.821094] bus: 'usb': add driver microtekX6
+[   28.828004] usbcore: registered new interface driver microtekX6
+[   28.831461] initcall microtek_drv_init+0x0/0x16 returned 0 after 10130 usecs
+[   28.838480] calling  usb_serial_init+0x0/0x1cc @ 1
+[   28.844004] bus: 'usb-serial': registered
+[   28.847435] bus: 'usb': add driver usbserial
+[   28.852004] usbcore: registered new interface driver usbserial
+[   28.857608] usbserial: USB Serial Driver core
+[   28.862496] initcall usb_serial_init+0x0/0x1cc returned 0 after 18799 usecs
+[   28.869428] calling  aircable_init+0x0/0x3a @ 1
+[   28.873935] bus: 'usb-serial': add driver aircable
+[   28.880004] USB Serial support registered for aircable
+[   28.883955] bus: 'usb': add driver aircable
+[   28.892004] usbcore: registered new interface driver aircable
+[   28.893965] initcall aircable_init+0x0/0x3a returned 0 after 19562 usecs
+[   28.900638] calling  belkin_sa_init+0x0/0x49 @ 1
+[   28.905230] bus: 'usb-serial': add driver belkin
+[   28.912004] USB Serial support registered for Belkin / Peracom / GoHubs USB Serial Adapter
+[   28.918231] bus: 'usb': add driver belkin
+[   28.924004] usbcore: registered new interface driver belkin
+[   28.927903] belkin_sa: v1.2:USB Belkin Serial converter driver
+[   28.933709] initcall belkin_sa_init+0x0/0x49 returned 0 after 27811 usecs
+[   28.940469] calling  cp210x_init+0x0/0x49 @ 1
+[   28.944803] bus: 'usb-serial': add driver cp210x
+[   28.952005] USB Serial support registered for cp210x
+[   28.954484] bus: 'usb': add driver cp210x
+[   28.960005] usbcore: registered new interface driver cp210x
+[   28.964156] cp210x: v0.09:Silicon Labs CP210x RS232 serial adaptor driver
+[   28.970915] initcall cp210x_init+0x0/0x49 returned 0 after 25501 usecs
+[   28.977415] calling  cyberjack_init+0x0/0x54 @ 1
+[   28.982008] bus: 'usb-serial': add driver cyberjack
+[   28.988005] USB Serial support registered for Reiner SCT Cyberjack USB card reader
+[   28.994567] bus: 'usb': add driver cyberjack
+[   29.000004] usbcore: registered new interface driver cyberjack
+[   29.004760] cyberjack: v1.01 Matthias Bruestle
+[   29.009179] cyberjack: REINER SCT cyberJack pinpad/e-com USB Chipcard Reader Driver
+[   29.016805] initcall cyberjack_init+0x0/0x54 returned 0 after 33980 usecs
+[   29.023566] calling  debug_init+0x0/0x3a @ 1
+[   29.027812] bus: 'usb-serial': add driver debug
+[   29.036004] USB Serial support registered for debug
+[   29.037311] bus: 'usb': add driver debug
+[   29.044004] usbcore: registered new interface driver debug
+[   29.046810] initcall debug_init+0x0/0x3a returned 0 after 18552 usecs
+[   29.053222] calling  digi_init+0x0/0x63 @ 1
+[   29.057383] bus: 'usb-serial': add driver digi_2
+[   29.064004] USB Serial support registered for Digi 2 port USB adapter
+[   29.068537] bus: 'usb-serial': add driver digi_4
+[   29.076005] USB Serial support registered for Digi 4 port USB adapter
+[   29.079691] bus: 'usb': add driver digi_acceleport
+[   29.088004] usbcore: registered new interface driver digi_acceleport
+[   29.090924] digi_acceleport: v1.80.1.2:Digi AccelePort USB-2/USB-4 Serial Converter driver
+[   29.099155] initcall digi_init+0x0/0x63 returned 0 after 40793 usecs
+[   29.105483] calling  edgeport_init+0x0/0x63 @ 1
+[   29.109990] bus: 'usb-serial': add driver edgeport_ti_1
+[   29.116004] USB Serial support registered for Edgeport TI 1 port adapter
+[   29.122010] bus: 'usb-serial': add driver edgeport_ti_2
+[   29.128004] USB Serial support registered for Edgeport TI 2 port adapter
+[   29.134040] bus: 'usb': add driver io_ti
+[   29.140004] usbcore: registered new interface driver io_ti
+[   29.143539] io_ti: v0.7mode043006:Edgeport USB Serial Driver
+[   29.149171] initcall edgeport_init+0x0/0x63 returned 0 after 38262 usecs
+[   29.155845] calling  empeg_init+0x0/0x14f @ 1
+[   29.160178] bus: 'usb-serial': add driver empeg
+[   29.168004] USB Serial support registered for empeg
+[   29.169764] bus: 'usb': add driver empeg
+[   29.176005] usbcore: registered new interface driver empeg
+[   29.179263] empeg: v1.2:USB Empeg Mark I/II Driver
+[   29.184029] initcall empeg_init+0x0/0x14f returned 0 after 23292 usecs
+[   29.190529] calling  funsoft_init+0x0/0x3a @ 1
+[   29.194949] bus: 'usb-serial': add driver funsoft
+[   29.200004] USB Serial support registered for funsoft
+[   29.204794] bus: 'usb': add driver funsoft
+[   29.212005] usbcore: registered new interface driver funsoft
+[   29.214649] initcall funsoft_init+0x0/0x3a returned 0 after 19238 usecs
+[   29.221235] calling  garmin_init+0x0/0x49 @ 1
+[   29.225568] bus: 'usb-serial': add driver garmin_gps
+[   29.232005] USB Serial support registered for Garmin GPS usb/tty
+[   29.236637] bus: 'usb': add driver garmin_gps
+[   29.244005] usbcore: registered new interface driver garmin_gps
+[   29.247010] garmin_gps: v0.33:garmin gps driver
+[   29.251516] initcall garmin_init+0x0/0x49 returned 0 after 25339 usecs
+[   29.258016] calling  hp49gp_init+0x0/0x49 @ 1
+[   29.262349] bus: 'usb-serial': add driver hp4X
+[   29.268004] USB Serial support registered for hp4X
+[   29.271675] bus: 'usb': add driver hp4X
+[   29.276004] usbcore: registered new interface driver hp4X
+[   29.280992] hp4x: v1.00:HP4x (48/49) Generic Serial driver
+[   29.286451] initcall hp49gp_init+0x0/0x49 returned 0 after 23538 usecs
+[   29.292952] calling  usb_ipw_init+0x0/0x49 @ 1
+[   29.297372] bus: 'usb-serial': add driver ipw
+[   29.304004] USB Serial support registered for IPWireless converter
+[   29.307998] bus: 'usb': add driver ipwtty
+[   29.316003] usbcore: registered new interface driver ipwtty
+[   29.317670] ipw: v0.3:IPWireless tty driver
+[   29.321828] initcall usb_ipw_init+0x0/0x49 returned 0 after 23882 usecs
+[   29.328415] calling  ir_init+0x0/0x49 @ 1
+[   29.332415] bus: 'usb-serial': add driver ir-usb
+[   29.340004] USB Serial support registered for IR Dongle
+[   29.342352] bus: 'usb': add driver ir-usb
+[   29.348005] usbcore: registered new interface driver ir-usb
+[   29.352026] ir_usb: v0.4:USB IR Dongle driver
+[   29.356357] initcall ir_init+0x0/0x49 returned 0 after 23393 usecs
+[   29.362510] calling  iuu_init+0x0/0x49 @ 1
+[   29.366583] bus: 'usb-serial': add driver iuu_phoenix
+[   29.372004] USB Serial support registered for iuu_phoenix
+[   29.377122] bus: 'usb': add driver iuu_phoenix
+[   29.384004] usbcore: registered new interface driver iuu_phoenix
+[   29.387661] iuu_phoenix: v0.10:Infinity USB Unlimited Phoenix driver
+[   29.393987] initcall iuu_init+0x0/0x49 returned 0 after 26762 usecs
+[   29.400227] calling  keyspan_init+0x0/0x97 @ 1
+[   29.404647] bus: 'usb-serial': add driver keyspan_no_firm
+[   29.412004] USB Serial support registered for Keyspan - (without firmware)
+[   29.417006] bus: 'usb-serial': add driver keyspan_1
+[   29.424004] USB Serial support registered for Keyspan 1 port adapter
+[   29.428334] bus: 'usb-serial': add driver keyspan_2
+[   29.436004] USB Serial support registered for Keyspan 2 port adapter
+[   29.439653] bus: 'usb-serial': add driver keyspan_4
+[   29.448004] USB Serial support registered for Keyspan 4 port adapter
+[   29.450980] bus: 'usb': add driver keyspan
+[   29.456004] usbcore: registered new interface driver keyspan
+[   29.460826] keyspan: v1.1.5:Keyspan USB to Serial Converter Driver
+[   29.466978] initcall keyspan_init+0x0/0x97 returned 0 after 60871 usecs
+[   29.473565] calling  keyspan_pda_init+0x0/0x63 @ 1
+[   29.478331] bus: 'usb-serial': add driver keyspan_pda
+[   29.484004] USB Serial support registered for Keyspan PDA
+[   29.488879] bus: 'usb-serial': add driver keyspan_pda_pre
+[   29.496004] USB Serial support registered for Keyspan PDA - (prerenumeration)
+[   29.501594] bus: 'usb': add driver keyspan_pda
+[   29.508005] usbcore: registered new interface driver keyspan_pda
+[   29.512140] keyspan_pda: v1.1:USB Keyspan PDA Converter driver
+[   29.517946] initcall keyspan_pda_init+0x0/0x63 returned 0 after 38686 usecs
+[   29.524880] calling  kobil_init+0x0/0x49 @ 1
+[   29.529127] bus: 'usb-serial': add driver kobil
+[   29.536004] USB Serial support registered for KOBIL USB smart card terminal
+[   29.540724] bus: 'usb': add driver kobil
+[   29.548004] usbcore: registered new interface driver kobil
+[   29.550223] kobil_sct: 21/05/2004:KOBIL USB Smart Card Terminal Driver (experimental)
+[   29.558022] initcall kobil_init+0x0/0x49 returned 0 after 28217 usecs
+[   29.564434] calling  moschip7840_init+0x0/0xa9 @ 1
+[   29.569202] bus: 'usb-serial': add driver mos7840
+[   29.576004] USB Serial support registered for Moschip 7840/7820 USB Serial Driver
+[   29.581500] mos7840: 1.3.2:Moschip 7840/7820 USB Serial Driver
+[   29.587306] bus: 'usb': add driver mos7840
+[   29.592004] usbcore: registered new interface driver mos7840
+[   29.597153] initcall moschip7840_init+0x0/0xa9 returned 0 after 27298 usecs
+[   29.604085] calling  navman_init+0x0/0x3a @ 1
+[   29.608418] bus: 'usb-serial': add driver navman
+[   29.616005] USB Serial support registered for navman
+[   29.618091] bus: 'usb': add driver navman
+[   29.624004] usbcore: registered new interface driver navman
+[   29.627754] initcall navman_init+0x0/0x3a returned 0 after 18884 usecs
+[   29.634253] calling  option_init+0x0/0x49 @ 1
+[   29.638587] bus: 'usb-serial': add driver option1
+[   29.644004] USB Serial support registered for GSM modem (1-port)
+[   29.649394] bus: 'usb': add driver option
+[   29.656004] usbcore: registered new interface driver option
+[   29.659075] option: v0.7.2:USB Driver for GSM modems
+[   29.664018] initcall option_init+0x0/0x49 returned 0 after 24835 usecs
+[   29.668004] ohci_hcd 0000:00:02.0: auto-stop root hub
+[   29.675541] calling  pl2303_init+0x0/0x49 @ 1
+[   29.679875] bus: 'usb-serial': add driver pl2303
+[   29.688004] USB Serial support registered for pl2303
+[   29.689557] bus: 'usb': add driver pl2303
+[   29.696004] usbcore: registered new interface driver pl2303
+[   29.699229] pl2303: Prolific PL2303 USB to serial adaptor driver
+[   29.705207] initcall pl2303_init+0x0/0x49 returned 0 after 24740 usecs
+[   29.711708] calling  sierra_init+0x0/0x49 @ 1
+[   29.716040] bus: 'usb-serial': add driver sierra
+[   29.724004] USB Serial support registered for Sierra USB modem
+[   29.726590] bus: 'usb': add driver sierra
+[   29.732004] usbcore: registered new interface driver sierra
+[   29.736252] sierra: v.1.3.7:USB Driver for Sierra Wireless USB modems
+[   29.742666] initcall sierra_init+0x0/0x49 returned 0 after 26001 usecs
+[   29.749166] calling  spcp8x5_init+0x0/0x49 @ 1
+[   29.753585] bus: 'usb-serial': add driver SPCP8x5
+[   29.760004] USB Serial support registered for SPCP8x5
+[   29.763440] bus: 'usb': add driver spcp8x5
+[   29.768005] usbcore: registered new interface driver spcp8x5
+[   29.773285] spcp8x5: v0.04:SPCP8x5 USB to serial adaptor driver
+[   29.779177] initcall spcp8x5_init+0x0/0x49 returned 0 after 24992 usecs
+[   29.785765] calling  visor_init+0x0/0x171 @ 1
+[   29.790098] bus: 'usb-serial': add driver visor
+[   29.796004] USB Serial support registered for Handspring Visor / Palm OS
+[   29.801981] bus: 'usb-serial': add driver clie_3.5
+[   29.808004] USB Serial support registered for Sony Clie 3.5
+[   29.812450] bus: 'usb-serial': add driver clie_5
+[   29.820004] USB Serial support registered for Sony Clie 5.0
+[   29.822737] bus: 'usb': add driver visor
+[   29.828004] usbcore: registered new interface driver visor
+[   29.832235] visor: USB HandSpring Visor / Palm OS driver
+[   29.837521] initcall visor_init+0x0/0x171 returned 0 after 46312 usecs
+[   29.844025] calling  whiteheat_init+0x0/0x63 @ 1
+[   29.848615] bus: 'usb-serial': add driver whiteheatnofirm
+[   29.856004] USB Serial support registered for Connect Tech - WhiteHEAT - (prerenumeration)
+[   29.862396] bus: 'usb-serial': add driver whiteheat
+[   29.868004] USB Serial support registered for Connect Tech - WhiteHEAT
+[   29.873897] bus: 'usb': add driver whiteheat
+[   29.880004] usbcore: registered new interface driver whiteheat
+[   29.884089] whiteheat: v2.0:USB ConnectTech WhiteHEAT driver
+[   29.889721] initcall whiteheat_init+0x0/0x63 returned 0 after 40143 usecs
+[   29.896481] calling  berry_init+0x0/0x16 @ 1
+[   29.900728] bus: 'usb': add driver berry_charge
+[   29.908005] usbcore: registered new interface driver berry_charge
+[   29.911441] initcall berry_init+0x0/0x16 returned 0 after 10470 usecs
+[   29.917853] calling  usb_cytherm_init+0x0/0x3c @ 1
+[   29.922619] bus: 'usb': add driver cytherm
+[   29.928004] usbcore: registered new interface driver cytherm
+[   29.932466] cytherm: v1.0:Cypress USB Thermometer driver
+[   29.937751] initcall usb_cytherm_init+0x0/0x3c returned 0 after 14776 usecs
+[   29.944685] calling  emi26_init+0x0/0x16 @ 1
+[   29.948932] bus: 'usb': add driver emi26 - firmware loader
+[   29.956004] usbcore: registered new interface driver emi26 - firmware loader
+[   29.961552] initcall emi26_init+0x0/0x16 returned 0 after 12330 usecs
+[   29.967963] calling  iowarrior_init+0x0/0x16 @ 1
+[   29.972557] bus: 'usb': add driver iowarrior
+[   29.980004] usbcore: registered new interface driver iowarrior
+[   29.982750] initcall iowarrior_init+0x0/0x16 returned 0 after 9961 usecs
+[   29.989422] calling  isight_firmware_init+0x0/0x16 @ 1
+[   29.994536] bus: 'usb': add driver isight_firmware
+[   30.000004] usbcore: registered new interface driver isight_firmware
+[   30.005768] initcall isight_firmware_init+0x0/0x16 returned 0 after 10976 usecs
+[   30.013048] calling  ld_usb_init+0x0/0x2f @ 1
+[   30.017382] bus: 'usb': add driver ldusb
+[   30.024004] usbcore: registered new interface driver ldusb
+[   30.026881] initcall ld_usb_init+0x0/0x2f returned 0 after 9283 usecs
+[   30.033293] calling  usb_led_init+0x0/0x2f @ 1
+[   30.037713] bus: 'usb': add driver usbled
+[   30.044004] usbcore: registered new interface driver usbled
+[   30.047386] initcall usb_led_init+0x0/0x2f returned 0 after 9453 usecs
+[   30.053885] calling  lego_usb_tower_init+0x0/0x75 @ 1
+[   30.058912] drivers/usb/misc/legousbtower.c: lego_usb_tower_init: enter
+[   30.065499] bus: 'usb': add driver legousbtower
+[   30.072004] usbcore: registered new interface driver legousbtower
+[   30.076211] legousbtower: v0.96:LEGO USB Tower Driver
+[   30.081237] drivers/usb/misc/legousbtower.c: lego_usb_tower_init: leave, return value 0
+[   30.089210] initcall lego_usb_tower_init+0x0/0x75 returned 0 after 29586 usecs
+[   30.096404] calling  usbtest_init+0x0/0x3b @ 1
+[   30.100823] bus: 'usb': add driver usbtest
+[   30.108005] usbcore: registered new interface driver usbtest
+[   30.110679] initcall usbtest_init+0x0/0x3b returned 0 after 9632 usecs
+[   30.117177] calling  usb_sevseg_init+0x0/0x2f @ 1
+[   30.121857] bus: 'usb': add driver usbsevseg
+[   30.128004] usbcore: registered new interface driver usbsevseg
+[   30.132050] initcall usb_sevseg_init+0x0/0x2f returned 0 after 9962 usecs
+[   30.138810] calling  vstusb_init+0x0/0x35 @ 1
+[   30.143143] bus: 'usb': add driver vstusb
+[   30.148005] usbcore: registered new interface driver vstusb
+[   30.152815] initcall vstusb_init+0x0/0x35 returned 0 after 9452 usecs
+[   30.159229] calling  i8042_init+0x0/0x98 @ 1
+[   30.163475] bus: 'pnp': add driver i8042 kbd
+[   30.167722] bus: 'pnp': driver_probe_device: matched device 00:0b with driver i8042 kbd
+[   30.175695] bus: 'pnp': really_probe: probing driver i8042 kbd with device 00:0b
+[   30.183061] driver: '00:0b': driver_bound: bound to device 'i8042 kbd'
+[   30.189562] bus: 'pnp': really_probe: bound device 00:0b to driver i8042 kbd
+[   30.200004] bus: 'pnp': add driver i8042 aux
+[   30.200942] bus: 'pnp': driver_probe_device: matched device 00:0a with driver i8042 aux
+[   30.208914] bus: 'pnp': really_probe: probing driver i8042 aux with device 00:0a
+[   30.216280] driver: '00:0a': driver_bound: bound to device 'i8042 aux'
+[   30.222781] bus: 'pnp': really_probe: bound device 00:0a to driver i8042 aux
+[   30.232004] PNP: PS/2 Controller [PNP0303:PS2K,PNP0f13:PS2M] at 0x60,0x64 irq 1,12
+[   30.237480] bus: 'platform': add driver i8042
+[   30.244004] Registering platform device 'i8042'. Parent at platform
+[   30.248202] device: 'i8042': device_add
+[   30.252202] bus: 'platform': add device i8042
+[   30.256348] PM: Adding info for platform:i8042
+[   30.264005] bus: 'platform': driver_probe_device: matched device i8042 with driver i8042
+[   30.268958] bus: 'platform': really_probe: probing driver i8042 with device i8042
+[   30.278194] serio: i8042 KBD port at 0x60,0x64 irq 1
+[   30.284158] serio: i8042 AUX port at 0x60,0x64 irq 12
+[   30.292004] driver: 'i8042': driver_bound: bound to device 'i8042'
+[   30.296004] bus: 'platform': really_probe: bound device i8042 to driver i8042
+[   30.300004] device: 'serio0': device_add
+[   30.300004] bus: 'serio': add device serio0
+[   30.300004] PM: Adding info for serio:serio0
+[   30.300004] device: 'serio1': device_add
+[   30.300004] bus: 'serio': add device serio1
+[   30.300004] PM: Adding info for serio:serio1
+[   30.327058] initcall i8042_init+0x0/0x98 returned 0 after 159752 usecs
+[   30.333558] calling  serport_init+0x0/0x2b @ 1
+[   30.337979] initcall serport_init+0x0/0x2b returned 0 after 1 usecs
+[   30.344218] calling  serio_raw_init+0x0/0x16 @ 1
+[   30.348812] bus: 'serio': add driver serio_raw
+[   30.356005] initcall serio_raw_init+0x0/0x16 returned 0 after 4547 usecs
+[   30.360070] calling  mousedev_init+0x0/0x51 @ 1
+[   30.364576] device: 'mice': device_add
+[   30.368576] PM: Adding info for No Bus:mice
+[   30.376005] device: 'mouse0': device_add
+[   30.376732] PM: Adding info for No Bus:mouse0
+[   30.384004] mice: PS/2 mouse device common for all mice
+[   30.386287] initcall mousedev_init+0x0/0x51 returned 0 after 21202 usecs
+[   30.392960] calling  evdev_init+0x0/0xf @ 1
+[   30.397120] device: 'event0': device_add
+[   30.401120] PM: Adding info for No Bus:event0
+[   30.408004] device: 'event1': device_add
+[   30.409595] PM: Adding info for No Bus:event1
+[   30.416004] device: 'event2': device_add
+[   30.418018] PM: Adding info for No Bus:event2
+[   30.424004] initcall evdev_init+0x0/0xf returned 0 after 24714 usecs
+[   30.428684] calling  evbug_init+0x0/0xf @ 1
+[   30.432844] evbug.c: Connected device: input0 (Power Button at LNXPWRBN/button/input0)
+[   30.440731] evbug.c: Connected device: input1 (Power Button at PNP0C0C/button/input0)
+[   30.448531] evbug.c: Connected device: input2 (Macintosh mouse button emulation at unknown)
+[   30.456850] initcall evbug_init+0x0/0xf returned 0 after 23444 usecs
+[   30.463178] calling  atkbd_init+0x0/0x16 @ 1
+[   30.467424] bus: 'serio': add driver atkbd
+[   30.472004] initcall atkbd_init+0x0/0x16 returned 0 after 4201 usecs
+[   30.472004] bus: 'serio': driver_probe_device: matched device serio0 with driver atkbd
+[   30.472004] bus: 'serio': really_probe: probing driver atkbd with device serio0
+[   30.493147] calling  gpio_keys_init+0x0/0xf @ 1
+[   30.500004] bus: 'platform': add driver gpio-keys
+[   30.500004] device: 'input3': device_add
+[   30.500004] PM: Adding info for No Bus:input3
+[   30.500004] input: AT Translated Set 2 keyboard as /class/input/input3
+[   30.500004] device: 'event3': device_add
+[   30.500004] PM: Adding info for No Bus:event3
+[   30.500004] evbug.c: Connected device: input3 (AT Translated Set 2 keyboard at isa0060/serio0/input0)
+[   30.500004] driver: 'serio0': driver_bound: bound to device 'atkbd'
+[   30.500004] bus: 'serio': really_probe: bound device serio0 to driver atkbd
+[   30.500004] bus: 'serio': driver_probe_device: matched device serio1 with driver atkbd
+[   30.500004] bus: 'serio': really_probe: probing driver atkbd with device serio1
+[   30.564004] initcall gpio_keys_init+0x0/0xf returned 0 after 63858 usecs
+[   30.569647] calling  matrix_keypad_init+0x0/0xf @ 1
+[   30.574501] bus: 'platform': add driver matrix-keypad
+[   30.580005] initcall matrix_keypad_init+0x0/0xf returned 0 after 5113 usecs
+[   30.586591] calling  nkbd_init+0x0/0x16 @ 1
+[   30.590751] bus: 'serio': add driver newtonkbd
+[   30.596004] initcall nkbd_init+0x0/0x16 returned 0 after 4548 usecs
+[   30.601575] calling  skbd_init+0x0/0x16 @ 1
+[   30.605736] bus: 'serio': add driver stowaway
+[   30.612004] initcall skbd_init+0x0/0x16 returned 0 after 4454 usecs
+[   30.616464] calling  sunkbd_init+0x0/0x16 @ 1
+[   30.620798] bus: 'serio': add driver sunkbd
+[   30.628004] initcall sunkbd_init+0x0/0x16 returned 0 after 4294 usecs
+[   30.631536] calling  xtkbd_init+0x0/0x16 @ 1
+[   30.635783] bus: 'serio': add driver xtkbd
+[   30.643966] initcall xtkbd_init+0x0/0x16 returned 0 after 4217 usecs
+[   30.646356] calling  atp_init+0x0/0x16 @ 1
+[   30.650429] bus: 'usb': add driver appletouch
+[   30.656004] usbcore: registered new interface driver appletouch
+[   30.660794] initcall atp_init+0x0/0x16 returned 0 after 10129 usecs
+[   30.667034] calling  bcm5974_init+0x0/0x16 @ 1
+[   30.671455] bus: 'usb': add driver bcm5974
+[   30.676005] usbcore: registered new interface driver bcm5974
+[   30.681925] initcall bcm5974_init+0x0/0x16 returned 0 after 10232 usecs
+[   30.688511] calling  gpio_mouse_init+0x0/0xf @ 1
+[   30.693104] bus: 'platform': add driver gpio_mouse
+[   30.700004] initcall gpio_mouse_init+0x0/0xf returned 0 after 4855 usecs
+[   30.704674] calling  sermouse_init+0x0/0x16 @ 1
+[   30.709181] bus: 'serio': add driver sermouse
+[   30.716004] initcall sermouse_init+0x0/0x16 returned 0 after 4457 usecs
+[   30.720256] calling  usb_acecad_init+0x0/0x2d @ 1
+[   30.724936] bus: 'usb': add driver usb_acecad
+[   30.732004] usbcore: registered new interface driver usb_acecad
+[   30.735293] acecad: v3.2:USB Acecad Flair tablet driver
+[   30.740493] initcall usb_acecad_init+0x0/0x2d returned 0 after 15194 usecs
+[   30.747340] calling  gtco_init+0x0/0x3b @ 1
+[   30.751500] bus: 'usb': add driver gtco
+[   30.756004] usbcore: registered new interface driver gtco
+[   30.760817] GTCO usb driver version: 2.00.0006initcall gtco_init+0x0/0x3b returned 0 after 13247 usecs
+[   30.770090] calling  kbtab_init+0x0/0x2d @ 1
+[   30.774337] bus: 'usb': add driver kbtab
+[   30.780004] usbcore: registered new interface driver kbtab
+[   30.783836] kbtab: v0.0.2:USB KB Gear JamStudio Tablet driver
+[   30.789556] initcall kbtab_init+0x0/0x2d returned 0 after 14862 usecs
+[   30.795968] calling  wacom_init+0x0/0x37 @ 1
+[   30.800215] bus: 'usb': add driver wacom
+[   30.808004] hub 1-0:1.0: hub_suspend
+[   30.808004] usb usb1: bus auto-suspend
+[   30.811695] ehci_hcd 0000:00:02.1: suspend root hub
+[   30.816275] hub 2-0:1.0: hub_suspend
+[   30.819828] usb usb2: bus auto-suspend
+[   30.823828] ohci_hcd 0000:00:02.0: suspend root hub
+[   30.828409] usbcore: registered new interface driver wacom
+[   30.833868] wacom: v1.51:USB Wacom Graphire and Wacom Intuos tablet driver
+[   30.840715] initcall wacom_init+0x0/0x37 returned 0 after 39550 usecs
+[   30.847127] calling  ad7877_init+0x0/0xf @ 1
+[   30.851375] bus: 'spi': add driver ad7877
+[   30.856004] initcall ad7877_init+0x0/0xf returned 0 after 4097 usecs
+[   30.861818] calling  ad7879_init+0x0/0x11 @ 1
+[   30.866151] bus: 'i2c': add driver ad7879
+[   30.872005] i2c-core: driver [ad7879] registered
+[   30.874861] initcall ad7879_init+0x0/0x11 returned 0 after 8508 usecs
+[   30.881275] calling  ads7846_init+0x0/0xf @ 1
+[   30.885608] bus: 'spi': add driver ads7846
+[   30.892004] initcall ads7846_init+0x0/0xf returned 0 after 4180 usecs
+[   30.896225] calling  gunze_init+0x0/0x16 @ 1
+[   30.900471] bus: 'serio': add driver gunze
+[   30.908005] initcall gunze_init+0x0/0x16 returned 0 after 4218 usecs
+[   30.911045] calling  eeti_ts_init+0x0/0x11 @ 1
+[   30.915464] bus: 'i2c': add driver eeti_ts
+[   30.920004] i2c-core: driver [eeti_ts] registered
+[   30.924348] initcall eeti_ts_init+0x0/0x11 returned 0 after 8676 usecs
+[   30.930847] calling  elo_init+0x0/0x16 @ 1
+[   30.934921] bus: 'serio': add driver elo
+[   30.940005] initcall elo_init+0x0/0x16 returned 0 after 4030 usecs
+[   30.945131] calling  fujitsu_init+0x0/0x16 @ 1
+[   30.949551] bus: 'serio': add driver fujitsu_ts
+[   30.956004] initcall fujitsu_init+0x0/0x16 returned 0 after 4634 usecs
+[   30.960722] calling  inexio_init+0x0/0x16 @ 1
+[   30.965055] bus: 'serio': add driver inexio
+[   30.972004] initcall inexio_init+0x0/0x16 returned 0 after 4288 usecs
+[   30.975785] calling  mtouch_init+0x0/0x16 @ 1
+[   30.980118] bus: 'serio': add driver mtouch
+[   30.988004] initcall mtouch_init+0x0/0x16 returned 0 after 4286 usecs
+[   30.990849] calling  mk712_init+0x0/0x1b5 @ 1
+[   30.995181] mk712: device not present
+[   30.999181] initcall mk712_init+0x0/0x1b5 returned -19 after 3557 usecs
+[   31.005408] calling  pm_init+0x0/0x16 @ 1
+[   31.009408] bus: 'serio': add driver penmountlpc
+[   31.016005] initcall pm_init+0x0/0x16 returned 0 after 4711 usecs
+[   31.020211] calling  touchit213_init+0x0/0x16 @ 1
+[   31.024889] bus: 'serio': add driver touchit213
+[   31.032004] initcall touchit213_init+0x0/0x16 returned 0 after 4625 usecs
+[   31.036313] calling  tr_init+0x0/0x16 @ 1
+[   31.040313] bus: 'serio': add driver touchright
+[   31.048005] initcall tr_init+0x0/0x16 returned 0 after 4633 usecs
+[   31.051037] calling  tw_init+0x0/0x16 @ 1
+[   31.055037] bus: 'serio': add driver touchwin
+[   31.060005] initcall tw_init+0x0/0x16 returned 0 after 4455 usecs
+[   31.065580] calling  w8001_init+0x0/0x16 @ 1
+[   31.069827] bus: 'serio': add driver w8001
+[   31.076005] initcall w8001_init+0x0/0x16 returned 0 after 4208 usecs
+[   31.080391] calling  w90x900ts_init+0x0/0xf @ 1
+[   31.084899] bus: 'platform': add driver w90x900-ts
+[   31.092004] initcall w90x900ts_init+0x0/0xf returned 0 after 4863 usecs
+[   31.096390] calling  ati_remote_init+0x0/0x3c @ 1
+[   31.101070] bus: 'usb': add driver ati_remote
+[   31.108004] usbcore: registered new interface driver ati_remote
+[   31.111436] ati_remote: 2.2.1:ATI/X10 RF USB Remote Control
+[   31.116982] initcall ati_remote_init+0x0/0x3c returned 0 after 15539 usecs
+[   31.123829] calling  cm109_init+0x0/0x38 @ 1
+[   31.128076] cm109: Keymap for Komunikate KIP1000 phone loaded
+[   31.133795] bus: 'usb': add driver cm109
+[   31.140004] usbcore: registered new interface driver cm109
+[   31.143286] cm109: CM109 phone driver: 20080805 (C) Alfred E. Heggestad
+[   31.149872] initcall cm109_init+0x0/0x38 returned 0 after 21285 usecs
+[   31.156285] calling  usb_keyspan_init+0x0/0x2f @ 1
+[   31.161052] bus: 'usb': add driver keyspan_remote
+[   31.168004] usbcore: registered new interface driver keyspan_remote
+[   31.172102] initcall usb_keyspan_init+0x0/0x2f returned 0 after 10797 usecs
+[   31.179035] calling  pcf50633_input_init+0x0/0xf @ 1
+[   31.183975] bus: 'platform': add driver pcf50633-input
+[   31.192004] initcall pcf50633_input_init+0x0/0xf returned 0 after 5194 usecs
+[   31.196240] calling  rotary_encoder_init+0x0/0xf @ 1
+[   31.201178] bus: 'platform': add driver rotary-encoder
+[   31.208004] initcall rotary_encoder_init+0x0/0xf returned 0 after 5194 usecs
+[   31.213443] calling  uinput_init+0x0/0xf @ 1
+[   31.217688] device: 'uinput': device_add
+[   31.221688] PM: Adding info for No Bus:uinput
+[   31.228004] initcall uinput_init+0x0/0xf returned 0 after 8240 usecs
+[   31.232379] calling  wb_module_init+0x0/0x11f @ 1
+[   31.237058] wistron_btns: System unknown
+[   31.241058] initcall wb_module_init+0x0/0x11f returned -19 after 3800 usecs
+[   31.247892] calling  yealink_dev_init+0x0/0x2d @ 1
+[   31.252659] bus: 'usb': add driver yealink
+[   31.260004] usbcore: registered new interface driver yealink
+[   31.262495] yealink: yld-20051230:Yealink phone driver
+[   31.267609] initcall yealink_dev_init+0x0/0x2d returned 0 after 14600 usecs
+[   31.274542] calling  ds1286_init+0x0/0xf @ 1
+[   31.278789] bus: 'platform': add driver rtc-ds1286
+[   31.284005] initcall ds1286_init+0x0/0xf returned 0 after 4858 usecs
+[   31.290012] calling  ds1307_init+0x0/0x11 @ 1
+[   31.294346] bus: 'i2c': add driver rtc-ds1307
+[   31.300004] i2c-core: driver [rtc-ds1307] registered
+[   31.303749] initcall ds1307_init+0x0/0x11 returned 0 after 9182 usecs
+[   31.310162] calling  ds1374_init+0x0/0x11 @ 1
+[   31.314496] bus: 'i2c': add driver rtc-ds1374
+[   31.320004] i2c-core: driver [rtc-ds1374] registered
+[   31.323900] initcall ds1374_init+0x0/0x11 returned 0 after 9184 usecs
+[   31.330312] calling  ds1390_init+0x0/0xf @ 1
+[   31.334559] bus: 'spi': add driver rtc-ds1390
+[   31.340004] initcall ds1390_init+0x0/0xf returned 0 after 4431 usecs
+[   31.345350] calling  ds1511_rtc_init+0x0/0xf @ 1
+[   31.349942] bus: 'platform': add driver ds1511
+[   31.356004] initcall ds1511_rtc_init+0x0/0xf returned 0 after 4523 usecs
+[   31.361175] calling  ds1553_init+0x0/0xf @ 1
+[   31.365420] bus: 'platform': add driver rtc-ds1553
+[   31.372004] initcall ds1553_init+0x0/0xf returned 0 after 4861 usecs
+[   31.376654] calling  ds1672_init+0x0/0x11 @ 1
+[   31.380986] bus: 'i2c': add driver rtc-ds1672
+[   31.388005] i2c-core: driver [rtc-ds1672] registered
+[   31.390389] initcall ds1672_init+0x0/0x11 returned 0 after 9182 usecs
+[   31.396802] calling  ds1742_init+0x0/0xf @ 1
+[   31.401049] bus: 'platform': add driver rtc-ds1742
+[   31.408004] initcall ds1742_init+0x0/0xf returned 0 after 4862 usecs
+[   31.412282] calling  ds3234_init+0x0/0xf @ 1
+[   31.416528] bus: 'spi': add driver ds3234
+[   31.424004] initcall ds3234_init+0x0/0xf returned 0 after 4092 usecs
+[   31.426972] calling  fm3130_init+0x0/0x11 @ 1
+[   31.431305] bus: 'i2c': add driver rtc-fm3130
+[   31.436004] i2c-core: driver [rtc-fm3130] registered
+[   31.440700] initcall fm3130_init+0x0/0x11 returned 0 after 9175 usecs
+[   31.447113] calling  isl1208_init+0x0/0x11 @ 1
+[   31.451532] bus: 'i2c': add driver rtc-isl1208
+[   31.460003] i2c-core: driver [rtc-isl1208] registered
+[   31.461101] initcall isl1208_init+0x0/0x11 returned 0 after 9345 usecs
+[   31.467601] calling  m41t80_rtc_init+0x0/0x11 @ 1
+[   31.472281] bus: 'i2c': add driver rtc-m41t80
+[   31.480004] i2c-core: driver [rtc-m41t80] registered
+[   31.481684] initcall m41t80_rtc_init+0x0/0x11 returned 0 after 9183 usecs
+[   31.488444] calling  m41t94_init+0x0/0xf @ 1
+[   31.492691] bus: 'spi': add driver rtc-m41t94
+[   31.500004] initcall m41t94_init+0x0/0xf returned 0 after 4437 usecs
+[   31.503490] calling  m48t35_init+0x0/0xf @ 1
+[   31.507736] bus: 'platform': add driver rtc-m48t35
+[   31.516004] initcall m48t35_init+0x0/0xf returned 0 after 4858 usecs
+[   31.518960] calling  m48t59_rtc_init+0x0/0xf @ 1
+[   31.523553] bus: 'platform': add driver rtc-m48t59
+[   31.532004] initcall m48t59_rtc_init+0x0/0xf returned 0 after 4864 usecs
+[   31.535132] calling  max6902_init+0x0/0xf @ 1
+[   31.539465] bus: 'spi': add driver rtc-max6902
+[   31.547980] initcall max6902_init+0x0/0xf returned 0 after 4531 usecs
+[   31.550446] calling  pcf8563_init+0x0/0x11 @ 1
+[   31.554866] bus: 'i2c': add driver rtc-pcf8563
+[   31.560004] i2c-core: driver [rtc-pcf8563] registered
+[   31.564434] initcall pcf8563_init+0x0/0x11 returned 0 after 9346 usecs
+[   31.570934] calling  r9701_init+0x0/0xf @ 1
+[   31.575093] bus: 'spi': add driver rtc-r9701
+[   31.580004] initcall r9701_init+0x0/0xf returned 0 after 4350 usecs
+[   31.585710] calling  rs5c348_init+0x0/0xf @ 1
+[   31.590043] bus: 'spi': add driver rtc-rs5c348
+[   31.596004] initcall rs5c348_init+0x0/0xf returned 0 after 4524 usecs
+[   31.601649] calling  rs5c372_init+0x0/0x11 @ 1
+[   31.606068] bus: 'i2c': add driver rtc-rs5c372
+[   31.612004] i2c-core: driver [rtc-rs5c372] registered
+[   31.615636] initcall rs5c372_init+0x0/0x11 returned 0 after 9345 usecs
+[   31.622136] calling  rx8581_init+0x0/0x11 @ 1
+[   31.626470] bus: 'i2c': add driver rtc-rx8581
+[   31.632004] i2c-core: driver [rtc-rx8581] registered
+[   31.635865] initcall rx8581_init+0x0/0x11 returned 0 after 9176 usecs
+[   31.642278] calling  s35390a_rtc_init+0x0/0x11 @ 1
+[   31.647044] bus: 'i2c': add driver rtc-s35390a
+[   31.652005] i2c-core: driver [rtc-s35390a] registered
+[   31.656622] initcall s35390a_rtc_init+0x0/0x11 returned 0 after 9353 usecs
+[   31.663467] calling  stk17ta8_init+0x0/0xf @ 1
+[   31.667887] bus: 'platform': add driver stk17ta8
+[   31.676005] initcall stk17ta8_init+0x0/0xf returned 0 after 4698 usecs
+[   31.679119] calling  v3020_init+0x0/0xf @ 1
+[   31.683280] bus: 'platform': add driver v3020
+[   31.688005] initcall v3020_init+0x0/0xf returned 0 after 4433 usecs
+[   31.693983] calling  x1205_init+0x0/0x11 @ 1
+[   31.698230] bus: 'i2c': add driver rtc-x1205
+[   31.704004] i2c-core: driver [rtc-x1205] registered
+[   31.707460] initcall x1205_init+0x0/0x11 returned 0 after 9015 usecs
+[   31.713786] calling  i2c_dev_init+0x0/0x8b @ 1
+[   31.718206] i2c /dev entries driver
+[   31.722206] device class 'i2c-dev': registering
+[   31.728004] bus: 'i2c': add driver dev_driver
+[   31.732005] i2c-core: driver [dev_driver] registered
+[   31.735696] initcall i2c_dev_init+0x0/0x8b returned 0 after 17079 usecs
+[   31.742283] calling  i2c_ali15x3_init+0x0/0x16 @ 1
+[   31.747049] bus: 'pci': add driver ali15x3_smbus
+[   31.752004] initcall i2c_ali15x3_init+0x0/0x16 returned 0 after 4723 usecs
+[   31.758654] calling  amd756_init+0x0/0x16 @ 1
+[   31.762987] bus: 'pci': add driver amd756_smbus
+[   31.768005] initcall amd756_init+0x0/0x16 returned 0 after 4623 usecs
+[   31.774063] calling  i2c_amd8111_init+0x0/0x16 @ 1
+[   31.778829] bus: 'pci': add driver amd8111_smbus2
+[   31.784004] initcall i2c_amd8111_init+0x0/0x16 returned 0 after 4799 usecs
+[   31.790513] calling  nforce2_init+0x0/0x16 @ 1
+[   31.794932] bus: 'pci': add driver nForce2_smbus
+[   31.799526] bus: 'pci': driver_probe_device: matched device 0000:00:01.1 with driver nForce2_smbus
+[   31.808453] bus: 'pci': really_probe: probing driver nForce2_smbus with device 0000:00:01.1
+[   31.820005] device: 'i2c-0': device_add
+[   31.824005] PM: Adding info for No Bus:i2c-0
+[   31.828004] i2c-adapter i2c-0: adapter [SMBus nForce2 adapter at 4c00] registered
+[   31.832555] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x50
+[   31.853008] i2c-adapter i2c-0: Creating eeprom at 0x50
+[   31.858044] device: '0-0050': device_add
+[   31.862044] bus: 'i2c': add device 0-0050
+[   31.865944] PM: Adding info for i2c:0-0050
+[   31.870020] i2c 0-0050: uevent
+[   31.876004] bus: 'i2c': driver_probe_device: matched device 0-0050 with driver eeprom
+[   31.880975] bus: 'i2c': really_probe: probing driver eeprom with device 0-0050
+[   31.888168] eeprom 0-0050: probe
+[   31.891375] driver: '0-0050': driver_bound: bound to device 'eeprom'
+[   31.897701] bus: 'i2c': really_probe: bound device 0-0050 to driver eeprom
+[   31.904549] i2c-adapter i2c-0: client [eeprom] registered with bus id 0-0050
+[   31.911569] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x51
+[   31.933008] i2c-adapter i2c-0: Creating eeprom at 0x51
+[   31.938045] device: '0-0051': device_add
+[   31.942045] bus: 'i2c': add device 0-0051
+[   31.945945] PM: Adding info for i2c:0-0051
+[   31.950022] i2c 0-0051: uevent
+[   31.956005] bus: 'i2c': driver_probe_device: matched device 0-0051 with driver eeprom
+[   31.960978] bus: 'i2c': really_probe: probing driver eeprom with device 0-0051
+[   31.968170] eeprom 0-0051: probe
+[   31.971376] driver: '0-0051': driver_bound: bound to device 'eeprom'
+[   31.977704] bus: 'i2c': really_probe: bound device 0-0051 to driver eeprom
+[   31.984551] i2c-adapter i2c-0: client [eeprom] registered with bus id 0-0051
+[   31.991570] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x52
+[   32.005008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x53
+[   32.017008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x54
+[   32.029008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x55
+[   32.041008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x56
+[   32.053008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x57
+[   32.065008] device: 'i2c-0': device_add
+[   32.069008] PM: Adding info for No Bus:i2c-0
+[   32.076004] i2c-dev: adapter [SMBus nForce2 adapter at 4c00] registered as minor 0
+[   32.080813] i2c-adapter i2c-0: nForce2 SMBus adapter at 0x4c00
+[   32.086618] device: 'i2c-1': device_add
+[   32.090618] PM: Adding info for No Bus:i2c-1
+[   32.096005] i2c-adapter i2c-1: adapter [SMBus nForce2 adapter at 4c40] registered
+[   32.102323] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x50
+[   32.117008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x51
+[   32.129008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x52
+[   32.141008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x53
+[   32.153008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x54
+[   32.165008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x55
+[   32.177008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x56
+[   32.189008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x57
+[   32.201008] device: 'i2c-1': device_add
+[   32.205008] PM: Adding info for No Bus:i2c-1
+[   32.212004] i2c-dev: adapter [SMBus nForce2 adapter at 4c40] registered as minor 1
+[   32.216792] i2c-adapter i2c-1: nForce2 SMBus adapter at 0x4c40
+[   32.222598] driver: '0000:00:01.1': driver_bound: bound to device 'nForce2_smbus'
+[   32.230051] bus: 'pci': really_probe: bound device 0000:00:01.1 to driver nForce2_smbus
+[   32.240004] initcall nforce2_init+0x0/0x16 returned 0 after 432911 usecs
+[   32.244836] calling  i2c_sis5595_init+0x0/0x16 @ 1
+[   32.249603] bus: 'pci': add driver sis5595_smbus
+[   32.256004] initcall i2c_sis5595_init+0x0/0x16 returned 0 after 4704 usecs
+[   32.261191] calling  i2c_sis96x_init+0x0/0x16 @ 1
+[   32.265871] bus: 'pci': add driver sis96x_smbus
+[   32.272004] initcall i2c_sis96x_init+0x0/0x16 returned 0 after 4627 usecs
+[   32.277294] calling  i2c_vt596_init+0x0/0x16 @ 1
+[   32.281886] bus: 'pci': add driver vt596_smbus
+[   32.288005] initcall i2c_vt596_init+0x0/0x16 returned 0 after 4536 usecs
+[   32.293127] calling  i2c_gpio_init+0x0/0x28 @ 1
+[   32.297634] bus: 'platform': add driver i2c-gpio
+[   32.304005] initcall i2c_gpio_init+0x0/0x28 returned 0 after 4691 usecs
+[   32.308953] calling  ocores_i2c_init+0x0/0xf @ 1
+[   32.313547] bus: 'platform': add driver ocores-i2c
+[   32.320004] initcall ocores_i2c_init+0x0/0xf returned 0 after 4862 usecs
+[   32.325125] calling  i2c_adap_simtec_init+0x0/0xf @ 1
+[   32.330152] bus: 'platform': add driver simtec-i2c
+[   32.336005] initcall i2c_adap_simtec_init+0x0/0xf returned 0 after 4861 usecs
+[   32.342163] calling  i2c_parport_init+0x0/0x12b @ 1
+[   32.347017] i2c-parport-light: adapter type unspecified
+[   32.352217] initcall i2c_parport_init+0x0/0x12b returned -19 after 5078 usecs
+[   32.359323] calling  i2c_pca_pf_init+0x0/0xf @ 1
+[   32.363917] bus: 'platform': add driver i2c-pca-platform
+[   32.372004] initcall i2c_pca_pf_init+0x0/0xf returned 0 after 5364 usecs
+[   32.380008] calling  scx200_acb_init+0x0/0x15 @ 1
+[   32.380686] initcall scx200_acb_init+0x0/0x15 returned -19 after 39 usecs
+[   32.387447] calling  scx200_i2c_init+0x0/0x9a @ 1
+[   32.392126] scx200_i2c: no SCx200 gpio pins available
+[   32.397153] initcall scx200_i2c_init+0x0/0x9a returned -19 after 4909 usecs
+[   32.404086] calling  ds1682_init+0x0/0x11 @ 1
+[   32.408421] bus: 'i2c': add driver ds1682
+[   32.416004] i2c-core: driver [ds1682] registered
+[   32.417130] initcall ds1682_init+0x0/0x11 returned 0 after 8507 usecs
+[   32.423543] calling  pca9539_init+0x0/0x11 @ 1
+[   32.427963] bus: 'i2c': add driver pca9539
+[   32.436004] i2c-core: driver [pca9539] registered
+[   32.436838] initcall pca9539_init+0x0/0x11 returned 0 after 8679 usecs
+[   32.443339] calling  pda_power_init+0x0/0xf @ 1
+[   32.447845] bus: 'platform': add driver pda-power
+[   32.456004] initcall pda_power_init+0x0/0xf returned 0 after 4770 usecs
+[   32.459242] calling  ds2782_init+0x0/0x11 @ 1
+[   32.463575] bus: 'i2c': add driver ds2782-battery
+[   32.472004] i2c-core: driver [ds2782-battery] registered
+[   32.473671] initcall ds2782_init+0x0/0x11 returned 0 after 9861 usecs
+[   32.480085] calling  max17040_init+0x0/0x11 @ 1
+[   32.484592] bus: 'i2c': add driver max17040
+[   32.492004] i2c-core: driver [max17040] registered
+[   32.493640] initcall max17040_init+0x0/0x11 returned 0 after 8836 usecs
+[   32.500226] calling  asb100_init+0x0/0x11 @ 1
+[   32.504559] bus: 'i2c': add driver asb100
+[   32.512004] i2c-core: driver [asb100] registered
+[   32.513261] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   32.529008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   32.541008] initcall asb100_init+0x0/0x11 returned 0 after 35600 usecs
+[   32.547442] calling  sensors_w83627hf_init+0x0/0x6b @ 1
+[   32.552642] initcall sensors_w83627hf_init+0x0/0x6b returned -19 after 18 usecs
+[   32.559922] calling  sensors_w83791d_init+0x0/0x11 @ 1
+[   32.565035] bus: 'i2c': add driver w83791d
+[   32.572004] i2c-core: driver [w83791d] registered
+[   32.573911] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2c
+[   32.589009] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   32.601009] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   32.613008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2f
+[   32.625008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2c
+[   32.637008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   32.649008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   32.661008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2f
+[   32.673008] initcall sensors_w83791d_init+0x0/0x11 returned 0 after 105447 usecs
+[   32.680328] calling  abituguru_init+0x0/0x129 @ 1
+[   32.685009] abituguru: no Abit uGuru found, data = 0xFF, cmd = 0xFF
+[   32.691811] initcall abituguru_init+0x0/0x129 returned -19 after 6642 usecs
+[   32.698744] calling  abituguru3_init+0x0/0x12f @ 1
+[   32.703512] abituguru3: no Abit uGuru3 found, data = 0xFF, cmd = 0xFF
+[   32.709925] initcall abituguru3_init+0x0/0x12f returned -19 after 6261 usecs
+[   32.716945] calling  ad7414_init+0x0/0x11 @ 1
+[   32.721278] bus: 'i2c': add driver ad7414
+[   32.728004] i2c-core: driver [ad7414] registered
+[   32.729980] initcall ad7414_init+0x0/0x11 returned 0 after 8499 usecs
+[   32.736393] calling  init_adcxx+0x0/0x67 @ 1
+[   32.740639] bus: 'spi': add driver adcxx1s
+[   32.748005] bus: 'spi': add driver adcxx2s
+[   32.752004] bus: 'spi': add driver adcxx4s
+[   32.756005] bus: 'spi': add driver adcxx8s
+[   32.760005] initcall init_adcxx+0x0/0x67 returned 0 after 16494 usecs
+[   32.763867] calling  sensors_adm1025_init+0x0/0x11 @ 1
+[   32.768979] bus: 'i2c': add driver adm1025
+[   32.776004] i2c-core: driver [adm1025] registered
+[   32.777854] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2c
+[   32.793009] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   32.805008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   32.817009] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2c
+[   32.829008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   32.841008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   32.853008] initcall sensors_adm1025_init+0x0/0x11 returned 0 after 82064 usecs
+[   32.860239] calling  sm_adm1026_init+0x0/0x11 @ 1
+[   32.864920] bus: 'i2c': add driver adm1026
+[   32.872004] i2c-core: driver [adm1026] registered
+[   32.873803] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2c
+[   32.889008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   32.901007] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   32.913008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2c
+[   32.925008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   32.937008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   32.949009] initcall sm_adm1026_init+0x0/0x11 returned 0 after 82123 usecs
+[   32.955781] calling  sensors_adm1029_init+0x0/0x11 @ 1
+[   32.960894] bus: 'i2c': add driver adm1029
+[   32.968005] i2c-core: driver [adm1029] registered
+[   32.969778] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x28
+[   32.985009] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x29
+[   32.997009] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2a
+[   33.009008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2b
+[   33.021008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2c
+[   33.033008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   33.045008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   33.057008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2f
+[   33.069008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x28
+[   33.081008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x29
+[   33.093008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2a
+[   33.105008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2b
+[   33.117008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2c
+[   33.129009] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   33.141008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   33.153008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2f
+[   33.165008] initcall sensors_adm1029_init+0x0/0x11 returned 0 after 199333 usecs
+[   33.172328] calling  sensors_adm1031_init+0x0/0x11 @ 1
+[   33.177441] bus: 'i2c': add driver adm1031
+[   33.181717] i2c-core: driver [adm1031] registered
+[   33.186324] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2c
+[   33.205003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   33.217003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   33.228005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2c
+[   33.237008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   33.249008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   33.264005] initcall sensors_adm1031_init+0x0/0x11 returned 0 after 80650 usecs
+[   33.267261] calling  adt7470_init+0x0/0x11 @ 1
+[   33.271681] bus: 'i2c': add driver adt7470
+[   33.276004] i2c-core: driver [adt7470] registered
+[   33.280555] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2c
+[   33.293008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   33.305008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2f
+[   33.320005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2c
+[   33.329008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   33.341009] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2f
+[   33.356005] initcall adt7470_init+0x0/0x11 returned 0 after 78463 usecs
+[   33.358538] calling  sensors_adt7475_init+0x0/0x11 @ 1
+[   33.363651] bus: 'i2c': add driver adt7475
+[   33.368004] i2c-core: driver [adt7475] registered
+[   33.372526] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   33.385008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   33.397008] initcall sensors_adt7475_init+0x0/0x11 returned 0 after 32581 usecs
+[   33.404246] calling  applesmc_init+0x0/0x25 @ 1
+[   33.408753] applesmc: supported laptop not found!
+[   33.413433] applesmc: driver init failed (ret=-19)!
+[   33.418287] initcall applesmc_init+0x0/0x25 returned -19 after 9309 usecs
+[   33.425046] calling  atk0110_init+0x0/0x28 @ 1
+[   33.429466] bus: 'acpi': add driver ATK0110
+[   33.433626] bus: 'acpi': driver_probe_device: matched device ATK0110:00 with driver ATK0110
+[   33.441946] bus: 'acpi': really_probe: probing driver ATK0110 with device ATK0110:00
+[   33.449659] ATK0110 ATK0110:00: adding...
+[   33.453659] ATK0110 ATK0110:00: board ID = A8N-E
+[   33.458361] ATK0110 ATK0110:00: Using old hwmon interface
+[   33.467735] ATK0110 ATK0110:00: voltage: 0x6020000 Vcore Voltage [1450-1750] enabled
+[   33.472480] ATK0110 ATK0110:00: voltage: 0x6020001  +3.3 Voltage [3000-3600] enabled
+[   33.480192] ATK0110 ATK0110:00: voltage: 0x6020002  +5.0 Voltage [4500-5500] enabled
+[   33.487906] ATK0110 ATK0110:00: voltage: 0x6020003 +12.0 Voltage [11200-13200] enabled
+[   33.499792] ATK0110 ATK0110:00: temperature: 0x6030000 CPU Temperature [900-1250] enabled
+[   33.504539] ATK0110 ATK0110:00: temperature: 0x6030001 MB Temperature [700-1250] enabled
+[   33.513006] ATK0110 ATK0110:00: fan: 0x6040000 CPU FAN Speed [0-1800] enabled
+[   33.520944] ATK0110 ATK0110:00: fan: 0x6040001 CHASSIS FAN Speed [0-1800] enabled
+[   33.528396] ATK0110 ATK0110:00: fan: 0x6040002 POWER FAN Speed [0-1800] disabled
+[   33.535763] ATK0110 ATK0110:00: fan: 0x6040005 CHIPSET FAN Speed [0-1800] enabled
+[   33.543217] ATK0110 ATK0110:00: fan: 0x6040006 CHASSIS2 FAN Speed [0-1800] disabled
+[   33.550842] ATK0110 ATK0110:00: registering hwmon device
+[   33.556133] device: 'hwmon0': device_add
+[   33.560133] PM: Adding info for No Bus:hwmon0
+[   33.564592] ATK0110 ATK0110:00: populating sysfs directory
+[   33.569981] driver: 'ATK0110:00': driver_bound: bound to device 'ATK0110'
+[   33.576950] bus: 'acpi': really_probe: bound device ATK0110:00 to driver ATK0110
+[   33.584509] initcall atk0110_init+0x0/0x28 returned 0 after 151412 usecs
+[   33.591111] calling  atxp1_init+0x0/0x11 @ 1
+[   33.595357] bus: 'i2c': add driver atxp1
+[   33.599465] i2c-core: driver [atxp1] registered
+[   33.603894] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x37
+[   33.621003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4e
+[   33.633003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x37
+[   33.645003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4e
+[   33.657003] initcall atxp1_init+0x0/0x11 returned 0 after 56307 usecs
+[   33.659352] calling  coretemp_init+0x0/0x15b @ 1
+[   33.663944] initcall coretemp_init+0x0/0x15b returned -19 after 1 usecs
+[   33.670532] calling  ds1621_init+0x0/0x11 @ 1
+[   33.674865] bus: 'i2c': add driver ds1621
+[   33.679052] i2c-core: driver [ds1621] registered
+[   33.683566] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x48
+[   33.701002] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x49
+[   33.713003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4a
+[   33.724005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4b
+[   33.736005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4c
+[   33.748005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4d
+[   33.760005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4e
+[   33.772005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4f
+[   33.784005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x48
+[   33.793009] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x49
+[   33.805008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4a
+[   33.820005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4b
+[   33.832005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4c
+[   33.844005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4d
+[   33.856005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4e
+[   33.868003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4f
+[   33.881003] initcall ds1621_init+0x0/0x11 returned 0 after 197412 usecs
+[   33.883532] calling  f71882fg_init+0x0/0x72 @ 1
+[   33.888039] f71882fg: Not a Fintek device
+[   33.892039] f71882fg: Not a Fintek device
+[   33.896027] initcall f71882fg_init+0x0/0x72 returned -19 after 7793 usecs
+[   33.902772] calling  sensors_f75375_init+0x0/0x11 @ 1
+[   33.907799] bus: 'i2c': add driver f75375
+[   33.911986] i2c-core: driver [f75375] registered
+[   33.916509] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   33.933003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   33.945003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   33.957003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   33.969003] initcall sensors_f75375_init+0x0/0x11 returned 0 after 55874 usecs
+[   33.972158] calling  sensors_fscher_init+0x0/0x11 @ 1
+[   33.977185] bus: 'i2c': add driver fscher
+[   33.981371] i2c-core: driver [fscher] registered
+[   33.985886] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x73
+[   34.005003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x73
+[   34.017002] initcall sensors_fscher_init+0x0/0x11 returned 0 after 34991 usecs
+[   34.020163] calling  fschmd_init+0x0/0x11 @ 1
+[   34.024495] bus: 'i2c': add driver fschmd
+[   34.028682] i2c-core: driver [fschmd] registered
+[   34.033198] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x73
+[   34.053003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x73
+[   34.065003] initcall fschmd_init+0x0/0x11 returned 0 after 35664 usecs
+[   34.067439] calling  g760a_init+0x0/0x11 @ 1
+[   34.071685] bus: 'i2c': add driver g760a
+[   34.075788] i2c-core: driver [g760a] registered
+[   34.080214] initcall g760a_init+0x0/0x11 returned 0 after 8329 usecs
+[   34.086541] calling  sensors_gl518sm_init+0x0/0x11 @ 1
+[   34.091654] bus: 'i2c': add driver gl518sm
+[   34.095931] i2c-core: driver [gl518sm] registered
+[   34.100538] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2c
+[   34.117003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   34.129003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2c
+[   34.141003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   34.153003] initcall sensors_gl518sm_init+0x0/0x11 returned 0 after 56017 usecs
+[   34.156246] calling  sensors_gl520sm_init+0x0/0x11 @ 1
+[   34.161360] bus: 'i2c': add driver gl520sm
+[   34.165636] i2c-core: driver [gl520sm] registered
+[   34.170244] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2c
+[   34.189003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   34.201003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2c
+[   34.213003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   34.225003] initcall sensors_gl520sm_init+0x0/0x11 returned 0 after 58256 usecs
+[   34.228249] calling  hdaps_init+0x0/0x25 @ 1
+[   34.232496] hdaps: supported laptop not found!
+[   34.236915] hdaps: driver init failed (ret=-19)!
+[   34.241509] initcall hdaps_init+0x0/0x25 returned -19 after 8801 usecs
+[   34.248014] calling  sm_it87_init+0x0/0x62 @ 1
+[   34.252429] it87: Found IT8712F chip at 0x290, revision 7
+[   34.257802] it87: in3 is VCC (+5V)
+[   34.261802] it87: in7 is VCCH (+5V Stand-By)
+[   34.265428] bus: 'platform': add driver it87
+[   34.269882] ACPI: I/O resource it87 [0x295-0x296] conflicts with ACPI region IP__ [0x295-0x296]
+[   34.278507] ACPI: Device needs an ACPI driver
+[   34.282840] bus: 'platform': remove driver it87
+[   34.287510] driver: 'it87': driver_release
+[   34.291510] initcall sm_it87_init+0x0/0x62 returned -16 after 38165 usecs
+[   34.298267] initcall sm_it87_init+0x0/0x62 returned with error code -16 
+[   34.304940] calling  k8temp_init+0x0/0x16 @ 1
+[   34.309274] bus: 'pci': add driver k8temp
+[   34.313274] bus: 'pci': driver_probe_device: matched device 0000:00:18.3 with driver k8temp
+[   34.321581] bus: 'pci': really_probe: probing driver k8temp with device 0000:00:18.3
+[   34.329294] device: 'hwmon1': device_add
+[   34.333294] PM: Adding info for No Bus:hwmon1
+[   34.337743] driver: '0000:00:18.3': driver_bound: bound to device 'k8temp'
+[   34.344522] bus: 'pci': really_probe: bound device 0000:00:18.3 to driver k8temp
+[   34.352074] initcall k8temp_init+0x0/0x16 returned 0 after 41812 usecs
+[   34.358519] calling  sensors_lm63_init+0x0/0x11 @ 1
+[   34.363372] bus: 'i2c': add driver lm63
+[   34.367396] i2c-core: driver [lm63] registered
+[   34.371743] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4c
+[   34.389003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4c
+[   34.401003] initcall sensors_lm63_init+0x0/0x11 returned 0 after 32855 usecs
+[   34.403965] calling  sensors_lm75_init+0x0/0x11 @ 1
+[   34.408819] bus: 'i2c': add driver lm75
+[   34.412834] i2c-core: driver [lm75] registered
+[   34.417175] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x48
+[   34.437003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x49
+[   34.449003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4a
+[   34.457008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4b
+[   34.469008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4c
+[   34.481008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4d
+[   34.493009] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4e
+[   34.505008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4f
+[   34.517008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x48
+[   34.529008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x49
+[   34.541008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4a
+[   34.553008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4b
+[   34.565008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4c
+[   34.577009] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4d
+[   34.593003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4e
+[   34.605003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4f
+[   34.617003] initcall sensors_lm75_init+0x0/0x11 returned 0 after 199410 usecs
+[   34.620050] calling  sensors_lm77_init+0x0/0x11 @ 1
+[   34.624905] bus: 'i2c': add driver lm77
+[   34.628920] i2c-core: driver [lm77] registered
+[   34.633259] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x48
+[   34.653002] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x49
+[   34.665003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4a
+[   34.676005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4b
+[   34.688005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x48
+[   34.697008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x49
+[   34.709008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4a
+[   34.724005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4b
+[   34.736005] initcall sensors_lm77_init+0x0/0x11 returned 0 after 104611 usecs
+[   34.739061] calling  sm_lm78_init+0x0/0x5d @ 1
+[   34.743481] bus: 'i2c': add driver lm78
+[   34.748004] i2c-core: driver [lm78] registered
+[   34.751836] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x28
+[   34.765008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x29
+[   34.777008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2a
+[   34.789008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2b
+[   34.804005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2c
+[   34.816005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   34.828005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   34.840005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2f
+[   34.852005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x28
+[   34.861009] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x29
+[   34.873008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2a
+[   34.888005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2b
+[   34.900005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2c
+[   34.912005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   34.924005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   34.936005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2f
+[   34.945008] initcall sm_lm78_init+0x0/0x5d returned 0 after 196808 usecs
+[   34.951613] calling  sensors_lm80_init+0x0/0x11 @ 1
+[   34.956466] bus: 'i2c': add driver lm80
+[   34.960479] i2c-core: driver [lm80] registered
+[   34.964821] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x28
+[   34.981003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x29
+[   34.993002] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2a
+[   35.004005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2b
+[   35.016005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2c
+[   35.028005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   35.040005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   35.052005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2f
+[   35.064005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x28
+[   35.073008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x29
+[   35.085008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2a
+[   35.097008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2b
+[   35.112005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2c
+[   35.124005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   35.136003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   35.149003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2f
+[   35.161003] initcall sensors_lm80_init+0x0/0x11 returned 0 after 195848 usecs
+[   35.164049] calling  sensors_lm83_init+0x0/0x11 @ 1
+[   35.168904] bus: 'i2c': add driver lm83
+[   35.172917] i2c-core: driver [lm83] registered
+[   35.177258] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x18
+[   35.197003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x19
+[   35.209003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x1a
+[   35.220005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x29
+[   35.232005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2a
+[   35.244005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2b
+[   35.256005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4c
+[   35.268005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4d
+[   35.280005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4e
+[   35.292005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x18
+[   35.301008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x19
+[   35.313009] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x1a
+[   35.328005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x29
+[   35.340005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2a
+[   35.352005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2b
+[   35.364003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4c
+[   35.377003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4d
+[   35.389003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4e
+[   35.401003] initcall sensors_lm83_init+0x0/0x11 returned 0 after 222764 usecs
+[   35.404046] calling  sm_lm85_init+0x0/0x11 @ 1
+[   35.408468] bus: 'i2c': add driver lm85
+[   35.412480] i2c-core: driver [lm85] registered
+[   35.416823] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2c
+[   35.433003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   35.445003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   35.456005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2c
+[   35.465008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   35.477008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   35.492005] initcall sm_lm85_init+0x0/0x11 returned 0 after 77694 usecs
+[   35.494535] calling  sensors_lm87_init+0x0/0x11 @ 1
+[   35.499388] bus: 'i2c': add driver lm87
+[   35.504004] i2c-core: driver [lm87] registered
+[   35.507743] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2c
+[   35.521008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   35.533008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   35.548005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2c
+[   35.557008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   35.569008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   35.584005] initcall sensors_lm87_init+0x0/0x11 returned 0 after 78749 usecs
+[   35.586973] calling  sensors_lm95241_init+0x0/0x11 @ 1
+[   35.592087] bus: 'i2c': add driver lm95241
+[   35.600004] i2c-core: driver [lm95241] registered
+[   35.600970] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x19
+[   35.613008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2a
+[   35.625008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2b
+[   35.640005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x19
+[   35.649008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2a
+[   35.665008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2b
+[   35.680005] initcall sensors_lm95241_init+0x0/0x11 returned 0 after 81972 usecs
+[   35.683260] calling  ltc4215_init+0x0/0x11 @ 1
+[   35.687680] bus: 'i2c': add driver ltc4215
+[   35.692004] i2c-core: driver [ltc4215] registered
+[   35.696555] initcall ltc4215_init+0x0/0x11 returned 0 after 8679 usecs
+[   35.703054] calling  ltc4245_init+0x0/0x11 @ 1
+[   35.707474] bus: 'i2c': add driver ltc4245
+[   35.712004] i2c-core: driver [ltc4245] registered
+[   35.716367] initcall ltc4245_init+0x0/0x11 returned 0 after 8697 usecs
+[   35.722866] calling  sensors_max1619_init+0x0/0x11 @ 1
+[   35.727980] bus: 'i2c': add driver max1619
+[   35.736004] i2c-core: driver [max1619] registered
+[   35.736863] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x18
+[   35.749008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x19
+[   35.761008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x1a
+[   35.776005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x29
+[   35.788005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2a
+[   35.800005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2b
+[   35.812005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4c
+[   35.824004] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4d
+[   35.836005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4e
+[   35.848005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x18
+[   35.857009] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x19
+[   35.869008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x1a
+[   35.884005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x29
+[   35.896004] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2a
+[   35.908005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2b
+[   35.920003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4c
+[   35.933003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4d
+[   35.945003] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4e
+[   35.957003] initcall sensors_max1619_init+0x0/0x11 returned 0 after 219760 usecs
+[   35.960335] calling  sensors_max6650_init+0x0/0x11 @ 1
+[   35.965449] bus: 'i2c': add driver max6650
+[   35.969731] i2c-core: driver [max6650] registered
+[   35.974332] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x1b
+[   35.993002] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x1f
+[   36.005003] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x48
+[   36.016005] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x4b
+[   36.028005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x1b
+[   36.037009] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x1f
+[   36.049008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x48
+[   36.064005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x4b
+[   36.076005] initcall sensors_max6650_init+0x0/0x11 returned 0 after 104080 usecs
+[   36.079345] calling  pc87427_init+0x0/0x67 @ 1
+[   36.083764] initcall pc87427_init+0x0/0x67 returned -19 after 15 usecs
+[   36.090264] calling  sht15_init+0x0/0x47 @ 1
+[   36.094511] bus: 'platform': add driver sht10
+[   36.100004] bus: 'platform': add driver sht11
+[   36.104004] bus: 'platform': add driver sht15
+[   36.108004] bus: 'platform': add driver sht71
+[   36.116004] bus: 'platform': add driver sht75
+[   36.120004] initcall sht15_init+0x0/0x47 returned 0 after 21876 usecs
+[   36.123249] calling  sm_sis5595_init+0x0/0x16 @ 1
+[   36.127929] bus: 'pci': add driver sis5595
+[   36.136004] initcall sm_sis5595_init+0x0/0x16 returned 0 after 4209 usecs
+[   36.138928] calling  sm_smsc47m1_init+0x0/0x51 @ 1
+[   36.143695] initcall sm_smsc47m1_init+0x0/0x51 returned -19 after 7 usecs
+[   36.150455] calling  smsc47m192_init+0x0/0x11 @ 1
+[   36.155134] bus: 'i2c': add driver smsc47m192
+[   36.160004] i2c-core: driver [smsc47m192] registered
+[   36.164529] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2c
+[   36.177008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   36.189008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2c
+[   36.201008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   36.213008] initcall smsc47m192_init+0x0/0x11 returned 0 after 56523 usecs
+[   36.219788] calling  sm_thmc50_init+0x0/0x11 @ 1
+[   36.224381] bus: 'i2c': add driver thmc50
+[   36.232004] i2c-core: driver [thmc50] registered
+[   36.233091] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2c
+[   36.245008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2d
+[   36.257008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   36.272005] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2c
+[   36.281008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2d
+[   36.293008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   36.308005] initcall sm_thmc50_init+0x0/0x11 returned 0 after 77780 usecs
+[   36.310710] calling  sm_via686a_init+0x0/0x16 @ 1
+[   36.315389] bus: 'pci': add driver via686a
+[   36.320004] initcall sm_via686a_init+0x0/0x16 returned 0 after 4291 usecs
+[   36.326466] calling  vt1211_init+0x0/0x9a @ 1
+[   36.330799] initcall vt1211_init+0x0/0x9a returned -19 after 18 usecs
+[   36.337212] calling  sensors_w83627ehf_init+0x0/0x12d @ 1
+[   36.342586] initcall sensors_w83627ehf_init+0x0/0x12d returned -19 after 27 usecs
+[   36.350039] calling  sensors_w83l785ts_init+0x0/0x11 @ 1
+[   36.355325] bus: 'i2c': add driver w83l785ts
+[   36.360004] i2c-core: driver [w83l785ts] registered
+[   36.364556] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   36.377008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   36.389008] initcall sensors_w83l785ts_init+0x0/0x11 returned 0 after 32897 usecs
+[   36.396414] calling  sensors_w83l786ng_init+0x0/0x11 @ 1
+[   36.401701] bus: 'i2c': add driver w83l786ng
+[   36.408004] i2c-core: driver [w83l786ng] registered
+[   36.410931] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2e
+[   36.425008] i2c-adapter i2c-0: found normal entry for adapter 0, addr 0x2f
+[   36.437008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2e
+[   36.449008] i2c-adapter i2c-1: found normal entry for adapter 1, addr 0x2f
+[   36.461008] initcall sensors_w83l786ng_init+0x0/0x11 returned 0 after 57921 usecs
+[   36.468417] calling  bcm203x_init+0x0/0x44 @ 1
+[   36.472836] Bluetooth: Broadcom Blutonium firmware driver ver 1.2
+[   36.478903] bus: 'usb': add driver bcm203x
+[   36.484005] usbcore: registered new interface driver bcm203x
+[   36.488749] initcall bcm203x_init+0x0/0x44 returned 0 after 15546 usecs
+[   36.495335] calling  bpa10x_init+0x0/0x25 @ 1
+[   36.499669] Bluetooth: Digianswer Bluetooth USB driver ver 0.10
+[   36.505562] bus: 'usb': add driver bpa10x
+[   36.512005] usbcore: registered new interface driver bpa10x
+[   36.515235] initcall bpa10x_init+0x0/0x25 returned 0 after 15207 usecs
+[   36.521734] calling  bfusb_init+0x0/0x44 @ 1
+[   36.525982] Bluetooth: BlueFRITZ! USB driver ver 1.2
+[   36.530922] bus: 'usb': add driver bfusb
+[   36.536004] usbcore: registered new interface driver bfusb
+[   36.540412] initcall bfusb_init+0x0/0x44 returned 0 after 14098 usecs
+[   36.546825] calling  init_bt3c_cs+0x0/0xf @ 1
+[   36.551157] bus: 'pcmcia': add driver bt3c_cs
+[   36.556004] initcall init_bt3c_cs+0x0/0xf returned 0 after 4448 usecs
+[   36.562051] calling  init_btuart_cs+0x0/0xf @ 1
+[   36.566559] bus: 'pcmcia': add driver btuart_cs
+[   36.572004] initcall init_btuart_cs+0x0/0xf returned 0 after 4605 usecs
+[   36.577781] calling  btusb_init+0x0/0x25 @ 1
+[   36.582029] Bluetooth: Generic Bluetooth USB driver ver 0.5
+[   36.587575] bus: 'usb': add driver btusb
+[   36.592004] usbcore: registered new interface driver btusb
+[   36.597065] initcall btusb_init+0x0/0x25 returned 0 after 14692 usecs
+[   36.603479] calling  btsdio_init+0x0/0x1e @ 1
+[   36.607811] Bluetooth: Generic Bluetooth SDIO driver ver 0.1
+[   36.613445] bus: 'sdio': add driver btsdio
+[   36.620004] initcall btsdio_init+0x0/0x1e returned 0 after 9679 usecs
+[   36.624063] calling  edac_init+0x0/0xcc @ 1
+[   36.628222] EDAC MC: Ver: 2.1.0 Aug 18 2009
+[   36.632382] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.641309] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.650234] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.659162] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.668088] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.677015] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.685942] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.694868] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.703795] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.712721] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.721649] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.730575] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.739501] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.748429] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.757355] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.766282] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.775208] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.784135] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.793062] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.801989] EDAC DEBUG: in drivers/edac/edac_pci_sysfs.c, line at 537: edac_pci_dev_parity_clear()
+[   36.810915] Registering sysdev class 'edac'
+[   36.816005] EDAC DEBUG: in drivers/edac/edac_mc_sysfs.c, line at 905: edac_sysfs_setup_mc_kset()
+[   36.828003] EDAC DEBUG: in drivers/edac/edac_mc_sysfs.c, line at 922: edac_sysfs_setup_mc_kset() Registered '.../edac/mc' kobject
+[   36.840004] initcall edac_init+0x0/0xcc returned 0 after 203354 usecs
+[   36.842800] calling  amd76x_init+0x0/0x29 @ 1
+[   36.847133] bus: 'pci': add driver amd76x_edac
+[   36.852004] initcall amd76x_init+0x0/0x29 returned 0 after 4537 usecs
+[   36.858114] calling  i5000_init+0x0/0x5b @ 1
+[   36.862361] EDAC DEBUG: in drivers/edac/i5000_edac.c, line at 1540: MC: drivers/edac/i5000_edac.c: i5000_init()
+[   36.872414] bus: 'pci': add driver i5000_edac
+[   36.880004] initcall i5000_init+0x0/0x5b returned 0 after 14271 usecs
+[   36.883308] calling  i5100_init+0x0/0x23 @ 1
+[   36.887555] bus: 'pci': add driver i5100_edac
+[   36.895996] initcall i5100_init+0x0/0x23 returned 0 after 4472 usecs
+[   36.898388] calling  i5400_init+0x0/0x5b @ 1
+[   36.902635] EDAC DEBUG: in drivers/edac/i5400_edac.c, line at 1445: MC: drivers/edac/i5400_edac.c: i5400_init()
+[   36.912688] bus: 'pci': add driver i5400_edac
+[   36.920004] initcall i5400_init+0x0/0x5b returned 0 after 14276 usecs
+[   36.923592] calling  e752x_init+0x0/0x5b @ 1
+[   36.927837] bus: 'pci': add driver e752x_edac
+[   36.936004] initcall e752x_init+0x0/0x5b returned 0 after 4455 usecs
+[   36.938654] calling  i82875p_init+0x0/0xea @ 1
+[   36.943073] bus: 'pci': add driver i82875p_edac
+[   36.948004] EDAC DEBUG: in drivers/edac/i82875p_edac.c, line at 552: 875p pci_get_device fail
+[   36.956264] bus: 'pci': remove driver i82875p_edac
+[   36.964005] driver: 'i82875p_edac': driver_release
+[   36.965884] initcall i82875p_init+0x0/0xea returned -19 after 22279 usecs
+[   36.972644] calling  i82975x_init+0x0/0xea @ 1
+[   36.977063] bus: 'pci': add driver i82975x_edac
+[   36.984004] EDAC DEBUG: in drivers/edac/i82975x_edac.c, line at 626: i82975x pci_get_device fail
+[   36.990506] bus: 'pci': remove driver i82975x_edac
+[   36.996005] driver: 'i82975x_edac': driver_release
+[   37.000135] initcall i82975x_init+0x0/0xea returned -19 after 22533 usecs
+[   37.006894] calling  i3000_init+0x0/0xf8 @ 1
+[   37.011141] bus: 'pci': add driver i3000_edac
+[   37.016004] EDAC DEBUG: in drivers/edac/i3000_edac.c, line at 510: i3000 pci_get_device fail
+[   37.024064] bus: 'pci': remove driver i3000_edac
+[   37.032004] driver: 'i3000_edac': driver_release
+[   37.033345] initcall i3000_init+0x0/0xf8 returned -19 after 21687 usecs
+[   37.039931] calling  x38_init+0x0/0xf8 @ 1
+[   37.048006] bus: 'pci': add driver x38_edac
+[   37.052004] EDAC DEBUG: in drivers/edac/x38_edac.c, line at 480: x38 pci_get_device fail
+[   37.056416] bus: 'pci': remove driver x38_edac
+[   37.064004] driver: 'x38_edac': driver_release
+[   37.065351] initcall x38_init+0x0/0xf8 returned -19 after 20846 usecs
+[   37.071765] calling  i82860_init+0x0/0xea @ 1
+[   37.076098] bus: 'pci': add driver i82860_edac
+[   37.084004] EDAC DEBUG: in drivers/edac/i82860_edac.c, line at 309: 860 pci_get_device fail
+[   37.089020] bus: 'pci': remove driver i82860_edac
+[   37.096004] driver: 'i82860_edac': driver_release
+[   37.098467] initcall i82860_init+0x0/0xea returned -19 after 21847 usecs
+[   37.105139] calling  r82600_init+0x0/0x29 @ 1
+[   37.109473] bus: 'pci': add driver r82600_edac
+[   37.116004] initcall r82600_init+0x0/0x29 returned 0 after 4539 usecs
+[   37.120463] calling  cpufreq_stats_init+0x0/0xbe @ 1
+[   37.125403] initcall cpufreq_stats_init+0x0/0xbe returned 0 after 4 usecs
+[   37.132163] calling  cpufreq_gov_powersave_init+0x0/0xf @ 1
+[   37.137709] initcall cpufreq_gov_powersave_init+0x0/0xf returned 0 after 2 usecs
+[   37.145076] calling  cpufreq_gov_dbs_init+0x0/0xcb @ 1
+[   37.152004] initcall cpufreq_gov_dbs_init+0x0/0xcb returned 0 after 151 usecs
+[   37.160004] calling  cpufreq_gov_dbs_init+0x0/0x57 @ 1
+[   37.164004] initcall cpufreq_gov_dbs_init+0x0/0x57 returned 0 after 144 usecs
+[   37.172003] calling  init_ladder+0x0/0xf @ 1
+[   37.176004] cpuidle: using governor ladder
+[   37.180004] initcall init_ladder+0x0/0xf returned 0 after 3976 usecs
+[   37.188005] calling  init_menu+0x0/0xf @ 1
+[   37.192004] cpuidle: using governor menu
+[   37.196005] initcall init_menu+0x0/0xf returned 0 after 3808 usecs
+[   37.200004] calling  mmc_blk_init+0x0/0x3d @ 1
+[   37.204005] bus: 'mmc': add driver mmcblk
+[   37.208004] initcall mmc_blk_init+0x0/0x3d returned 0 after 4102 usecs
+[   37.213491] calling  mmc_test_init+0x0/0xf @ 1
+[   37.217911] bus: 'mmc': add driver mmc_test
+[   37.224005] initcall mmc_test_init+0x0/0xf returned 0 after 4265 usecs
+[   37.228701] calling  sdio_uart_init+0x0/0xc3 @ 1
+[   37.233294] bus: 'sdio': add driver sdio_uart
+[   37.240004] initcall sdio_uart_init+0x0/0xc3 returned 0 after 4435 usecs
+[   37.244431] calling  sdhci_drv_init+0x0/0x1b @ 1
+[   37.249024] sdhci: Secure Digital Host Controller Interface driver
+[   37.255177] sdhci: Copyright(c) Pierre Ossman
+[   37.259511] initcall sdhci_drv_init+0x0/0x1b returned 0 after 10240 usecs
+[   37.266270] calling  sdhci_drv_init+0x0/0xf @ 1
+[   37.270777] bus: 'platform': add driver sdhci
+[   37.276004] initcall sdhci_drv_init+0x0/0xf returned 0 after 4437 usecs
+[   37.281836] calling  tifm_sd_init+0x0/0xf @ 1
+[   37.286170] bus: 'tifm': add driver tifm_sd
+[   37.292005] initcall tifm_sd_init+0x0/0xf returned 0 after 4264 usecs
+[   37.296872] calling  sdricoh_drv_init+0x0/0xf @ 1
+[   37.301553] bus: 'pcmcia': add driver sdricoh_cs
+[   37.308004] initcall sdricoh_drv_init+0x0/0xf returned 0 after 4702 usecs
+[   37.313054] calling  via_sd_drv_init+0x0/0x20 @ 1
+[   37.317734] via_sdmmc: VIA SD/MMC Card Reader driver (C) 2008 VIA Technologies, Inc.
+[   37.325447] bus: 'pci': add driver via_sdmmc
+[   37.332004] initcall via_sd_drv_init+0x0/0x20 returned 0 after 11900 usecs
+[   37.336688] calling  memstick_init+0x0/0x6f @ 1
+[   37.344004] bus: 'memstick': registered
+[   37.345458] device class 'memstick_host': registering
+[   37.352004] initcall memstick_init+0x0/0x6f returned 0 after 9070 usecs
+[   37.356993] calling  mspro_block_init+0x0/0x63 @ 1
+[   37.361760] bus: 'memstick': add driver mspro_block
+[   37.368003] initcall mspro_block_init+0x0/0x63 returned 0 after 4938 usecs
+[   37.373590] calling  jmb38x_ms_init+0x0/0x16 @ 1
+[   37.378183] bus: 'pci': add driver jmb38x_ms
+[   37.384005] initcall jmb38x_ms_init+0x0/0x16 returned 0 after 4378 usecs
+[   37.389269] calling  net48xx_led_init+0x0/0x53 @ 1
+[   37.394035] initcall net48xx_led_init+0x0/0x53 returned -19 after 1 usecs
+[   37.400794] calling  wrap_led_init+0x0/0x53 @ 1
+[   37.405301] initcall wrap_led_init+0x0/0x53 returned -19 after 1 usecs
+[   37.411801] calling  pca9532_init+0x0/0x11 @ 1
+[   37.416221] bus: 'i2c': add driver pca9532
+[   37.424004] i2c-core: driver [pca9532] registered
+[   37.425105] initcall pca9532_init+0x0/0x11 returned 0 after 8677 usecs
+[   37.431605] calling  lp3944_module_init+0x0/0x11 @ 1
+[   37.436544] bus: 'i2c': add driver lp3944
+[   37.444004] i2c-core: driver [lp3944] registered
+[   37.445246] initcall lp3944_module_init+0x0/0x11 returned 0 after 8499 usecs
+[   37.452266] calling  dac124s085_leds_init+0x0/0xf @ 1
+[   37.457292] bus: 'spi': add driver dac124s085
+[   37.464004] initcall dac124s085_leds_init+0x0/0xf returned 0 after 4431 usecs
+[   37.468862] calling  timer_trig_init+0x0/0xf @ 1
+[   37.473456] initcall timer_trig_init+0x0/0xf returned 0 after 2 usecs
+[   37.479869] calling  defon_trig_init+0x0/0xf @ 1
+[   37.484463] initcall defon_trig_init+0x0/0xf returned 0 after 1 usecs
+[   37.490877] calling  dcdrbu_init+0x0/0x10f @ 1
+[   37.495297] Registering platform device 'dell_rbu'. Parent at platform
+[   37.501796] device: 'dell_rbu': device_add
+[   37.505869] bus: 'platform': add device dell_rbu
+[   37.510463] PM: Adding info for platform:dell_rbu
+[   37.516005] initcall dcdrbu_init+0x0/0x10f returned 0 after 19584 usecs
+[   37.521859] calling  dcdbas_init+0x0/0x53 @ 1
+[   37.526192] bus: 'platform': add driver dcdbas
+[   37.532004] Registering platform device 'dcdbas'. Parent at platform
+[   37.537078] device: 'dcdbas': device_add
+[   37.541078] bus: 'platform': add device dcdbas
+[   37.545398] PM: Adding info for platform:dcdbas
+[   37.552004] bus: 'platform': driver_probe_device: matched device dcdbas with driver dcdbas
+[   37.558259] bus: 'platform': really_probe: probing driver dcdbas with device dcdbas
+[   37.565885] dcdbas dcdbas: Dell Systems Management Base Driver (version 5.6.0-3.2)
+[   37.573452] driver: 'dcdbas': driver_bound: bound to device 'dcdbas'
+[   37.579779] bus: 'platform': really_probe: bound device dcdbas to driver dcdbas
+[   37.587059] initcall dcdbas_init+0x0/0x53 returned 0 after 59440 usecs
+[   37.593559] calling  padlock_init+0x0/0xc4 @ 1
+[   37.597979] padlock: VIA PadLock not detected.
+[   37.602398] initcall padlock_init+0x0/0xc4 returned -19 after 4314 usecs
+[   37.609072] calling  padlock_init+0x0/0x6e @ 1
+[   37.613492] padlock: VIA PadLock Hash Engine not detected.
+[   37.618951] initcall padlock_init+0x0/0x6e returned -19 after 5331 usecs
+[   37.625626] calling  geode_aes_init+0x0/0x16 @ 1
+[   37.630218] bus: 'pci': add driver Geode LX AES
+[   37.636004] initcall geode_aes_init+0x0/0x16 returned 0 after 4629 usecs
+[   37.641555] calling  init_hrt_clocksource+0x0/0x12c @ 1
+[   37.646754] initcall init_hrt_clocksource+0x0/0x12c returned -19 after 1 usecs
+[   37.653948] calling  ioat_init_module+0x0/0x16 @ 1
+[   37.658715] bus: 'pci': add driver ioatdma
+[   37.664004] initcall ioat_init_module+0x0/0x16 returned 0 after 4198 usecs
+[   37.669782] calling  hid_init+0x0/0x3d @ 1
+[   37.676004] bus: 'hid': registered
+[   37.678041] device class 'hidraw': registering
+[   37.684004] initcall hid_init+0x0/0x3d returned 0 after 7975 usecs
+[   37.688103] calling  a4_init+0x0/0x1b @ 1
+[   37.692103] bus: 'hid': add driver a4tech
+[   37.700004] initcall a4_init+0x0/0x1b returned 0 after 4107 usecs
+[   37.702291] calling  belkin_init+0x0/0x1b @ 1
+[   37.706624] bus: 'hid': add driver belkin
+[   37.712004] initcall belkin_init+0x0/0x1b returned 0 after 4094 usecs
+[   37.717154] calling  cp_init+0x0/0x1b @ 1
+[   37.721154] bus: 'hid': add driver cypress
+[   37.728004] initcall cp_init+0x0/0x1b returned 0 after 4185 usecs
+[   37.731420] calling  ez_init+0x0/0x1b @ 1
+[   37.735961] bus: 'hid': add driver ezkey
+[   37.743955] initcall ez_init+0x0/0x1b returned 0 after 4051 usecs
+[   37.746101] calling  gyration_init+0x0/0x1b @ 1
+[   37.750608] bus: 'hid': add driver gyration
+[   37.756004] CPA self-test:
+[   37.756004] initcall gyration_init+0x0/0x1b returned 0 after 4279 usecs
+[   37.756004] calling  kye_init+0x0/0x1b @ 1
+[   37.756004] bus: 'hid': add driver kye
+[   37.756004] initcall kye_init+0x0/0x1b returned 0 after 208 usecs
+[   37.756004] calling  lg_init+0x0/0x1b @ 1
+[   37.756004] bus: 'hid': add driver logitech
+[   37.756004] initcall lg_init+0x0/0x1b returned 0 after 205 usecs
+[   37.756004] calling  ms_init+0x0/0x1b @ 1
+[   37.756004] bus: 'hid': add driver microsoft
+[   37.756004] initcall ms_init+0x0/0x1b returned 0 after 197 usecs
+[   37.756004] calling  ntrig_init+0x0/0x1b @ 1
+[   37.756004] bus: 'hid': add driver ntrig
+[   37.756004] initcall ntrig_init+0x0/0x1b returned 0 after 208 usecs
+[   37.756004] calling  pl_init+0x0/0x1b @ 1
+[   37.756004] bus: 'hid': add driver pantherlord
+[   37.758866] initcall pl_init+0x0/0x1b returned 0 after 222 usecs
+[   37.758866] calling  pl_init+0x0/0x1b @ 1
+[   37.758866] bus: 'hid': add driver petalynx
+[   37.758866] initcall pl_init+0x0/0x1b returned 0 after 207 usecs
+[   37.758866] calling  sony_init+0x0/0x1b @ 1
+[   37.758866] bus: 'hid': add driver sony
+[   37.758866] initcall sony_init+0x0/0x1b returned 0 after 201 usecs
+[   37.758866] calling  sp_init+0x0/0x1b @ 1
+[   37.758866] bus: 'hid': add driver sunplus
+[   37.758866] initcall sp_init+0x0/0x1b returned 0 after 201 usecs
+[   37.758866] calling  ga_init+0x0/0x16 @ 1
+[   37.758866] bus: 'hid': add driver greenasia
+[   37.758866] initcall ga_init+0x0/0x16 returned 0 after 210 usecs
+[   37.758866] calling  tm_init+0x0/0x1b @ 1
+[   37.758866] bus: 'hid': add driver thrustmaster
+[   37.758866] initcall tm_init+0x0/0x1b returned 0 after 203 usecs
+[   37.758866] calling  zp_init+0x0/0x1b @ 1
+[   37.758866] bus: 'hid': add driver zeroplus
+[   37.758866] initcall zp_init+0x0/0x1b returned 0 after 207 usecs
+[   37.758866] calling  hid_init+0x0/0xaa @ 1
+[   37.758866] bus: 'hid': add driver generic-usb
+[   37.758866] bus: 'usb': add driver hiddev
+[   37.758866] usbcore: registered new interface driver hiddev
+[   37.758866] bus: 'usb': add driver usbhid
+[   37.758866] usbcore: registered new interface driver usbhid
+[   37.758866] usbhid: v2.6:USB HID core driver
+[   37.758866] initcall hid_init+0x0/0xaa returned 0 after 733 usecs
+[   37.758866] calling  usb_mouse_init+0x0/0x2d @ 1
+[   37.758866] bus: 'usb': add driver usbmouse
+[   37.758866] usbcore: registered new interface driver usbmouse
+[   37.758866] usbmouse: v1.6:USB HID Boot Protocol mouse driver
+[   37.758866] initcall usb_mouse_init+0x0/0x2d returned 0 after 212 usecs
+[   37.758866] calling  virtio_pci_init+0x0/0x44 @ 1
+[   37.758866] device: 'virtio-pci': device_add
+[   37.758866] PM: Adding info for No Bus:virtio-pci
+[   37.758866] bus: 'pci': add driver virtio-pci
+[   37.758866] initcall virtio_pci_init+0x0/0x44 returned 0 after 320 usecs
+[   37.758866] calling  eeepc_laptop_init+0x0/0x213 @ 1
+[   37.758866] bus: 'acpi': add driver Eee PC Hotkey Driver
+[   37.758866] bus: 'acpi': remove driver Eee PC Hotkey Driver
+[   37.758866] driver: 'Eee PC Hotkey Driver': driver_release
+[   37.758866] initcall eeepc_laptop_init+0x0/0x213 returned -19 after 408 usecs
+[   37.758866] calling  msi_init+0x0/0x113 @ 1
+[   37.758866] initcall msi_init+0x0/0x113 returned -19 after 2 usecs
+[   37.758866] calling  compal_init+0x0/0xe5 @ 1
+[   37.758866] initcall compal_init+0x0/0xe5 returned -19 after 2 usecs
+[   37.758866] calling  thinkpad_acpi_module_init+0x0/0x3c3 @ 1
+[   37.758866] initcall thinkpad_acpi_module_init+0x0/0x3c3 returned -19 after 74 usecs
+[   37.758866] calling  fujitsu_init+0x0/0x2e3 @ 1
+[   37.758866] bus: 'acpi': add driver Fujitsu laptop FUJ02B1 ACPI brightness driver
+[   37.758866] Registering platform device 'fujitsu-laptop'. Parent at platform
+[   37.758866] device: 'fujitsu-laptop': device_add
+[   37.758866] bus: 'platform': add device fujitsu-laptop
+[   37.758866] PM: Adding info for platform:fujitsu-laptop
+[   37.758866] device: 'fujitsu-laptop': device_add
+[   37.760016] PM: Adding info for No Bus:fujitsu-laptop
+[   37.760016] bus: 'platform': add driver fujitsu-laptop
+[   37.760016] bus: 'platform': driver_probe_device: matched device fujitsu-laptop with driver fujitsu-laptop
+[   37.760016] bus: 'platform': really_probe: probing driver fujitsu-laptop with device fujitsu-laptop
+[   37.760016] driver: 'fujitsu-laptop': driver_bound: bound to device 'fujitsu-laptop'
+[   37.760016] bus: 'platform': really_probe: bound device fujitsu-laptop to driver fujitsu-laptop
+[   37.760016] bus: 'acpi': add driver Fujitsu laptop FUJ02E3 ACPI hotkeys driver
+[   37.760016] fujitsu-laptop: driver 0.5.0 successfully loaded.
+[   37.760016] initcall fujitsu_init+0x0/0x2e3 returned 0 after 1380 usecs
+[   37.760016] calling  acpi_pcc_init+0x0/0x25 @ 1
+[   37.760016] bus: 'acpi': add driver Panasonic Laptop Support
+[   37.760016] initcall acpi_pcc_init+0x0/0x25 returned 0 after 204 usecs
+[   37.760016] calling  asus_acpi_init+0x0/0xdb @ 1
+[   37.760016] bus: 'acpi': add driver asus_acpi
+[   37.760016] bus: 'acpi': remove driver asus_acpi
+[   37.760016] driver: 'asus_acpi': driver_release
+[   37.760016] initcall asus_acpi_init+0x0/0xdb returned -19 after 391 usecs
+[   37.760016] calling  toshiba_acpi_init+0x0/0x1f4 @ 1
+[   37.760016] initcall toshiba_acpi_init+0x0/0x1f4 returned -19 after 19 usecs
+[   37.760016] calling  flow_cache_init+0x0/0x177 @ 1
+[   37.760016] initcall flow_cache_init+0x0/0x177 returned 0 after 535 usecs
+[   37.760016] calling  pg_init+0x0/0x142 @ 1
+[   37.760016] pktgen v2.70: Packet Generator for packet performance testing.
+[   38.252004] initcall pg_init+0x0/0x142 returned 0 after 477652 usecs
+[   38.253011]  4k 131056 large 0 gb 0 x 131056[80000000-9ffef000] miss 0
+[   38.263863] calling  llc_init+0x0/0x1b @ 1
+[   38.267934] initcall llc_init+0x0/0x1b returned 0 after 2 usecs
+[   38.273827] calling  llc2_init+0x0/0xb5 @ 1
+[   38.277987] NET: Registered protocol family 26
+[   38.282469] initcall llc2_init+0x0/0xb5 returned 0 after 4327 usecs
+[   38.288708] calling  snap_init+0x0/0x31 @ 1
+[   38.292868] initcall snap_init+0x0/0x31 returned 0 after 9 usecs
+[   38.299481] calling  blackhole_module_init+0x0/0xf @ 1
+[   38.304593] initcall blackhole_module_init+0x0/0xf returned 0 after 2 usecs
+[   38.311527] calling  gact_init_module+0x0/0x19 @ 1
+[   38.316294] GACT probability on
+[   38.316294] initcall gact_init_module+0x0/0x19 returned 0 after 3031 usecs
+[   38.326260] calling  mirred_init_module+0x0/0x19 @ 1
+[   38.331201] Mirror/redirect action on
+[   38.335201] initcall mirred_init_module+0x0/0x19 returned 0 after 3553 usecs
+[   38.341860] calling  nat_init_module+0x0/0xf @ 1
+[   38.346584] initcall nat_init_module+0x0/0xf returned 0 after 1 usecs
+[   38.352997] calling  pedit_init_module+0x0/0xf @ 1
+[   38.357763] initcall pedit_init_module+0x0/0xf returned 0 after 1 usecs
+[   38.364350] calling  simp_init_module+0x0/0x26 @ 1
+[   38.369117] Simple TC action Loaded
+[   38.373117] initcall simp_init_module+0x0/0x26 returned 0 after 3384 usecs
+[   38.379430] calling  cbq_module_init+0x0/0xf @ 1
+[   38.384023] initcall cbq_module_init+0x0/0xf returned 0 after 1 usecs
+[   38.390437] calling  htb_module_init+0x0/0xf @ 1
+[   38.395031] initcall htb_module_init+0x0/0xf returned 0 after 3 usecs
+[   38.401444] calling  hfsc_init+0x0/0xf @ 1
+[   38.405516] initcall hfsc_init+0x0/0xf returned 0 after 1 usecs
+[   38.411410] calling  red_module_init+0x0/0xf @ 1
+[   38.420004] initcall red_module_init+0x0/0xf returned 0 after 1 usecs
+[   38.422416] calling  gred_module_init+0x0/0xf @ 1
+[   38.427097] initcall gred_module_init+0x0/0xf returned 0 after 1 usecs
+[   38.433597] calling  ingress_module_init+0x0/0xf @ 1
+[   38.438537] initcall ingress_module_init+0x0/0xf returned 0 after 1 usecs
+[   38.445297] calling  dsmark_module_init+0x0/0xf @ 1
+[   38.450151] initcall dsmark_module_init+0x0/0xf returned 0 after 1 usecs
+[   38.456824] calling  sfq_module_init+0x0/0xf @ 1
+[   38.461417] initcall sfq_module_init+0x0/0xf returned 0 after 1 usecs
+[   38.467829] calling  tbf_module_init+0x0/0xf @ 1
+[   38.472423] initcall tbf_module_init+0x0/0xf returned 0 after 1 usecs
+[   38.478836] calling  prio_module_init+0x0/0xf @ 1
+[   38.483516] initcall prio_module_init+0x0/0xf returned 0 after 1 usecs
+[   38.490016] calling  netem_module_init+0x0/0x19 @ 1
+[   38.494869] netem: version 1.2
+[   38.498869] initcall netem_module_init+0x0/0x19 returned 0 after 2962 usecs
+[   38.504837] calling  init_u32+0x0/0x2d @ 1
+[   38.508910] u32 classifier
+[   38.508910]     input device check on 
+[   38.515323]     Actions configured 
+[   38.519323] initcall init_u32+0x0/0x2d returned 0 after 9649 usecs
+[   38.524943] calling  init_route4+0x0/0xf @ 1
+[   38.529189] initcall init_route4+0x0/0xf returned 0 after 1 usecs
+[   38.535256] calling  init_fw+0x0/0xf @ 1
+[   38.539256] initcall init_fw+0x0/0xf returned 0 after 1 usecs
+[   38.544876] calling  init_rsvp+0x0/0xf @ 1
+[   38.548949] initcall init_rsvp+0x0/0xf returned 0 after 1 usecs
+[   38.554842] calling  init_rsvp+0x0/0xf @ 1
+[   38.558916] initcall init_rsvp+0x0/0xf returned 0 after 1 usecs
+[   38.564809] calling  init_basic+0x0/0xf @ 1
+[   38.568969] initcall init_basic+0x0/0xf returned 0 after 3 usecs
+[   38.574950] calling  cls_flow_init+0x0/0xf @ 1
+[   38.579369] initcall cls_flow_init+0x0/0xf returned 0 after 1 usecs
+[   38.585610] calling  init_cgroup_cls+0x0/0xf @ 1
+[   38.590203] initcall init_cgroup_cls+0x0/0xf returned 0 after 1 usecs
+[   38.596616] calling  nfnetlink_init+0x0/0x51 @ 1
+[   38.601210] Netfilter messages via NETLINK v0.30.
+[   38.605890] initcall nfnetlink_init+0x0/0x51 returned 0 after 4599 usecs
+[   38.612563] calling  nfnetlink_queue_init+0x0/0x87 @ 1
+[   38.617676] initcall nfnetlink_queue_init+0x0/0x87 returned 0 after 20 usecs
+[   38.624697] calling  nfnetlink_log_init+0x0/0xb3 @ 1
+[   38.629636] initcall nfnetlink_log_init+0x0/0xb3 returned 0 after 25 usecs
+[   38.636484] calling  nf_conntrack_standalone_init+0x0/0xf @ 1
+[   38.642204] nf_conntrack version 0.5.0 (16383 buckets, 65532 max)
+[   38.653005]  4k 131056 large 0 gb 0 x 131056[80000000-9ffef000] miss 0
+[   38.665007]  4k 131056 large 0 gb 0 x 131056[80000000-9ffef000] miss 0
+[   38.671753] ok.
+[   38.676004] CONFIG_NF_CT_ACCT is deprecated and will be removed soon. Please use
+[   38.681541] nf_conntrack.acct=1 kernel parameter, acct=1 nf_conntrack module option or
+[   38.689425] sysctl net.netfilter.nf_conntrack_acct=1 to enable it.
+[   38.695580] initcall nf_conntrack_standalone_init+0x0/0xf returned 0 after 52200 usecs
+[   38.703501] calling  nf_conntrack_proto_dccp_init+0x0/0x5b @ 1
+[   38.709307] initcall nf_conntrack_proto_dccp_init+0x0/0x5b returned 0 after 38 usecs
+[   38.717025] calling  nf_ct_proto_gre_init+0x0/0x38 @ 1
+[   38.722135] initcall nf_ct_proto_gre_init+0x0/0x38 returned 0 after 9 usecs
+[   38.729068] calling  nf_conntrack_amanda_init+0x0/0x91 @ 1
+[   38.734528] initcall nf_conntrack_amanda_init+0x0/0x91 returned 0 after 28 usecs
+[   38.741894] calling  nf_conntrack_ftp_init+0x0/0x1d1 @ 1
+[   38.747181] initcall nf_conntrack_ftp_init+0x0/0x1d1 returned 0 after 10 usecs
+[   38.754375] calling  nf_conntrack_h323_init+0x0/0x121 @ 1
+[   38.759747] initcall nf_conntrack_h323_init+0x0/0x121 returned 0 after 11 usecs
+[   38.767028] calling  nf_conntrack_netbios_ns_init+0x0/0x19 @ 1
+[   38.772834] initcall nf_conntrack_netbios_ns_init+0x0/0x19 returned 0 after 1 usecs
+[   38.780461] calling  nf_conntrack_pptp_init+0x0/0x33 @ 1
+[   38.785748] initcall nf_conntrack_pptp_init+0x0/0x33 returned 0 after 2 usecs
+[   38.792854] calling  nf_conntrack_sane_init+0x0/0x1d2 @ 1
+[   38.798228] initcall nf_conntrack_sane_init+0x0/0x1d2 returned 0 after 10 usecs
+[   38.805508] calling  nf_conntrack_sip_init+0x0/0x14c @ 1
+[   38.810795] initcall nf_conntrack_sip_init+0x0/0x14c returned 0 after 2 usecs
+[   38.817901] calling  nf_conntrack_tftp_init+0x0/0x144 @ 1
+[   38.823274] initcall nf_conntrack_tftp_init+0x0/0x144 returned 0 after 2 usecs
+[   38.830467] calling  xt_init+0x0/0x159 @ 1
+[   38.834541] initcall xt_init+0x0/0x159 returned 0 after 7 usecs
+[   38.840434] calling  tcpudp_mt_init+0x0/0x14 @ 1
+[   38.845027] initcall tcpudp_mt_init+0x0/0x14 returned 0 after 3 usecs
+[   38.851441] calling  hl_tg_init+0x0/0x14 @ 1
+[   38.855688] initcall hl_tg_init+0x0/0x14 returned 0 after 2 usecs
+[   38.861754] calling  led_tg_init+0x0/0xf @ 1
+[   38.866001] initcall led_tg_init+0x0/0xf returned 0 after 1 usecs
+[   38.872067] calling  mark_tg_init+0x0/0x14 @ 1
+[   38.876488] initcall mark_tg_init+0x0/0x14 returned 0 after 2 usecs
+[   38.882727] calling  nflog_tg_init+0x0/0xf @ 1
+[   38.887147] initcall nflog_tg_init+0x0/0xf returned 0 after 1 usecs
+[   38.893387] calling  nfqueue_tg_init+0x0/0x23 @ 1
+[   38.898067] initcall nfqueue_tg_init+0x0/0x23 returned 0 after 6 usecs
+[   38.904568] calling  xt_rateest_tg_init+0x0/0x31 @ 1
+[   38.909507] initcall xt_rateest_tg_init+0x0/0x31 returned 0 after 4 usecs
+[   38.916267] calling  secmark_tg_init+0x0/0xf @ 1
+[   38.920861] initcall secmark_tg_init+0x0/0xf returned 0 after 1 usecs
+[   38.927274] calling  tcpmss_tg_init+0x0/0x14 @ 1
+[   38.931867] initcall tcpmss_tg_init+0x0/0x14 returned 0 after 2 usecs
+[   38.938281] calling  trace_tg_init+0x0/0xf @ 1
+[   38.942700] initcall trace_tg_init+0x0/0xf returned 0 after 1 usecs
+[   38.948940] calling  xt_cluster_mt_init+0x0/0xf @ 1
+[   38.953794] initcall xt_cluster_mt_init+0x0/0xf returned 0 after 1 usecs
+[   38.960467] calling  comment_mt_init+0x0/0xf @ 1
+[   38.965061] initcall comment_mt_init+0x0/0xf returned 0 after 1 usecs
+[   38.971474] calling  connbytes_mt_init+0x0/0xf @ 1
+[   38.976241] initcall connbytes_mt_init+0x0/0xf returned 0 after 1 usecs
+[   38.982827] calling  conntrack_mt_init+0x0/0x14 @ 1
+[   38.987681] initcall conntrack_mt_init+0x0/0x14 returned 0 after 2 usecs
+[   38.994354] calling  esp_mt_init+0x0/0x14 @ 1
+[   38.998687] initcall esp_mt_init+0x0/0x14 returned 0 after 1 usecs
+[   39.004845] calling  hashlimit_mt_init+0x0/0xc6 @ 1
+[   39.009694] initcall hashlimit_mt_init+0x0/0xc6 returned 0 after 51 usecs
+[   39.016455] calling  helper_mt_init+0x0/0xf @ 1
+[   39.020962] initcall helper_mt_init+0x0/0xf returned 0 after 1 usecs
+[   39.027288] calling  hl_mt_init+0x0/0x14 @ 1
+[   39.031535] initcall hl_mt_init+0x0/0x14 returned 0 after 1 usecs
+[   39.037601] calling  limit_mt_init+0x0/0xf @ 1
+[   39.042021] initcall limit_mt_init+0x0/0xf returned 0 after 1 usecs
+[   39.048261] calling  mark_mt_init+0x0/0x14 @ 1
+[   39.052681] initcall mark_mt_init+0x0/0x14 returned 0 after 1 usecs
+[   39.058921] calling  multiport_mt_init+0x0/0x14 @ 1
+[   39.063775] initcall multiport_mt_init+0x0/0x14 returned 0 after 2 usecs
+[   39.070447] calling  xt_osf_init+0x0/0x79 @ 1
+[   39.074781] initcall xt_osf_init+0x0/0x79 returned 0 after 2 usecs
+[   39.080934] calling  owner_mt_init+0x0/0x14 @ 1
+[   39.085441] initcall owner_mt_init+0x0/0x14 returned 0 after 2 usecs
+[   39.091768] calling  policy_mt_init+0x0/0x14 @ 1
+[   39.096361] initcall policy_mt_init+0x0/0x14 returned 0 after 2 usecs
+[   39.102774] calling  quota_mt_init+0x0/0xf @ 1
+[   39.107194] initcall quota_mt_init+0x0/0xf returned 0 after 1 usecs
+[   39.113434] calling  xt_rateest_mt_init+0x0/0xf @ 1
+[   39.118287] initcall xt_rateest_mt_init+0x0/0xf returned 0 after 1 usecs
+[   39.124960] calling  realm_mt_init+0x0/0xf @ 1
+[   39.129380] initcall realm_mt_init+0x0/0xf returned 0 after 1 usecs
+[   39.135621] calling  state_mt_init+0x0/0x14 @ 1
+[   39.140128] initcall state_mt_init+0x0/0x14 returned 0 after 2 usecs
+[   39.146454] calling  statistic_mt_init+0x0/0xf @ 1
+[   39.151220] initcall statistic_mt_init+0x0/0xf returned 0 after 1 usecs
+[   39.157807] calling  string_mt_init+0x0/0x14 @ 1
+[   39.162401] initcall string_mt_init+0x0/0x14 returned 0 after 2 usecs
+[   39.168814] calling  tcpmss_mt_init+0x0/0x14 @ 1
+[   39.173407] initcall tcpmss_mt_init+0x0/0x14 returned 0 after 1 usecs
+[   39.179820] calling  time_mt_init+0x0/0x47 @ 1
+[   39.184241] xt_time: kernel timezone is -0000
+[   39.188574] initcall time_mt_init+0x0/0x47 returned 0 after 4231 usecs
+[   39.195073] calling  ip_vs_init+0x0/0xa5 @ 1
+[   39.199321] IPVS: Registered protocols (UDP, ESP)
+[   39.208002] IPVS: Connection hash table configured (size=4096, memory=32Kbytes)
+[   39.211316] IPVS: Each connection entry needs 200 bytes at least
+[   39.217296] IPVS: ipvs loaded.
+[   39.221296] initcall ip_vs_init+0x0/0xa5 returned 0 after 20515 usecs
+[   39.226743] calling  ip_vs_wrr_init+0x0/0xf @ 1
+[   39.231249] IPVS: [wrr] scheduler registered.
+[   39.235582] initcall ip_vs_wrr_init+0x0/0xf returned 0 after 4232 usecs
+[   39.242169] calling  ip_vs_lblc_init+0x0/0x37 @ 1
+[   39.246849] IPVS: [lblc] scheduler registered.
+[   39.251270] initcall ip_vs_lblc_init+0x0/0x37 returned 0 after 4316 usecs
+[   39.258030] calling  ip_vs_lblcr_init+0x0/0x37 @ 1
+[   39.262796] IPVS: [lblcr] scheduler registered.
+[   39.267303] initcall ip_vs_lblcr_init+0x0/0x37 returned 0 after 4400 usecs
+[   39.274149] calling  ip_vs_dh_init+0x0/0xf @ 1
+[   39.278569] IPVS: [dh] scheduler registered.
+[   39.282816] initcall ip_vs_dh_init+0x0/0xf returned 0 after 4147 usecs
+[   39.289316] calling  ip_vs_sed_init+0x0/0xf @ 1
+[   39.293822] IPVS: [sed] scheduler registered.
+[   39.298155] initcall ip_vs_sed_init+0x0/0xf returned 0 after 4231 usecs
+[   39.304742] calling  ip_vs_nq_init+0x0/0xf @ 1
+[   39.309161] IPVS: [nq] scheduler registered.
+[   39.313409] initcall ip_vs_nq_init+0x0/0xf returned 0 after 4147 usecs
+[   39.319909] calling  sysctl_ipv4_init+0x0/0x3f @ 1
+[   39.324675] initcall sysctl_ipv4_init+0x0/0x3f returned 0 after 19 usecs
+[   39.331348] calling  ipgre_init+0x0/0x98 @ 1
+[   39.335596] GRE over IPv4 tunneling driver
+[   39.339669] device: 'gre0': device_add
+[   39.343669] PM: Adding info for No Bus:gre0
+[   39.352001] initcall ipgre_init+0x0/0x98 returned 0 after 12220 usecs
+[   39.354446] calling  init_syncookies+0x0/0x16 @ 1
+[   39.359126] initcall init_syncookies+0x0/0x16 returned 0 after 38 usecs
+[   39.365713] calling  ah4_init+0x0/0x5a @ 1
+[   39.369785] initcall ah4_init+0x0/0x5a returned 0 after 2 usecs
+[   39.375679] calling  esp4_init+0x0/0x5a @ 1
+[   39.379839] initcall esp4_init+0x0/0x5a returned 0 after 1 usecs
+[   39.385819] calling  tunnel4_init+0x0/0x5a @ 1
+[   39.390239] initcall tunnel4_init+0x0/0x5a returned 0 after 1 usecs
+[   39.396479] calling  xfrm4_transport_init+0x0/0x14 @ 1
+[   39.401592] initcall xfrm4_transport_init+0x0/0x14 returned 0 after 1 usecs
+[   39.408526] calling  ipv4_netfilter_init+0x0/0x14 @ 1
+[   39.413552] initcall ipv4_netfilter_init+0x0/0x14 returned 0 after 1 usecs
+[   39.420399] calling  nf_conntrack_l3proto_ipv4_init+0x0/0x11d @ 1
+[   39.426466] initcall nf_conntrack_l3proto_ipv4_init+0x0/0x11d returned 0 after 92 usecs
+[   39.434483] calling  nf_defrag_init+0x0/0x14 @ 1
+[   39.439076] initcall nf_defrag_init+0x0/0x14 returned 0 after 2 usecs
+[   39.445489] calling  arp_tables_init+0x0/0x78 @ 1
+[   39.450169] arp_tables: (C) 2002 David S. Miller
+[   39.454763] initcall arp_tables_init+0x0/0x78 returned 0 after 4485 usecs
+[   39.461522] calling  ip_queue_init+0x0/0x10a @ 1
+[   39.466116] initcall ip_queue_init+0x0/0x10a returned 0 after 44 usecs
+[   39.472616] calling  bictcp_register+0x0/0xf @ 1
+[   39.477210] TCP bic registered
+[   39.481210] initcall bictcp_register+0x0/0xf returned 0 after 2961 usecs
+[   39.486916] calling  cubictcp_register+0x0/0x7f @ 1
+[   39.491769] TCP cubic registered
+[   39.495769] initcall cubictcp_register+0x0/0x7f returned 0 after 3131 usecs
+[   39.501909] calling  tcp_westwood_register+0x0/0xf @ 1
+[   39.507022] TCP westwood registered
+[   39.511022] initcall tcp_westwood_register+0x0/0xf returned 0 after 3384 usecs
+[   39.517683] calling  tcp_vegas_register+0x0/0x11 @ 1
+[   39.522622] TCP vegas registered
+[   39.526622] initcall tcp_vegas_register+0x0/0x11 returned 0 after 3131 usecs
+[   39.532849] calling  tcp_veno_register+0x0/0x11 @ 1
+[   39.537702] TCP veno registered
+[   39.541702] initcall tcp_veno_register+0x0/0x11 returned 0 after 3046 usecs
+[   39.547756] calling  tcp_scalable_register+0x0/0xf @ 1
+[   39.552869] TCP scalable registered
+[   39.556869] initcall tcp_scalable_register+0x0/0xf returned 0 after 3385 usecs
+[   39.563529] calling  tcp_lp_register+0x0/0xf @ 1
+[   39.568123] TCP lp registered
+[   39.569011] initcall tcp_lp_register+0x0/0xf returned 0 after 3407 usecs
+[   39.578297] calling  tcp_yeah_register+0x0/0x11 @ 1
+[   39.583150] TCP yeah registered
+[   39.587150] initcall tcp_yeah_register+0x0/0x11 returned 0 after 3046 usecs
+[   39.593203] calling  tcp_illinois_register+0x0/0xf @ 1
+[   39.598316] TCP illinois registered
+[   39.602316] initcall tcp_illinois_register+0x0/0xf returned 0 after 3385 usecs
+[   39.608977] calling  xfrm_user_init+0x0/0x40 @ 1
+[   39.613570] Initializing XFRM netlink socket
+[   39.617817] initcall xfrm_user_init+0x0/0x40 returned 0 after 4164 usecs
+[   39.624490] calling  inet6_init+0x0/0x2a2 @ 1
+[   39.631216] NET: Registered protocol family 10
+[   39.639585] initcall inet6_init+0x0/0x2a2 returned 0 after 8135 usecs
+[   39.643497] calling  ah6_init+0x0/0x5a @ 1
+[   39.647570] initcall ah6_init+0x0/0x5a returned 0 after 2 usecs
+[   39.653464] calling  ipcomp6_init+0x0/0x5a @ 1
+[   39.657883] initcall ipcomp6_init+0x0/0x5a returned 0 after 2 usecs
+[   39.664124] calling  xfrm6_tunnel_init+0x0/0xdb @ 1
+[   39.668977] initcall xfrm6_tunnel_init+0x0/0xdb returned 0 after 30 usecs
+[   39.675737] calling  tunnel6_init+0x0/0x5a @ 1
+[   39.680156] initcall tunnel6_init+0x0/0x5a returned 0 after 1 usecs
+[   39.686397] calling  xfrm6_transport_init+0x0/0x14 @ 1
+[   39.691510] initcall xfrm6_transport_init+0x0/0x14 returned 0 after 1 usecs
+[   39.698444] calling  xfrm6_mode_tunnel_init+0x0/0x14 @ 1
+[   39.703730] initcall xfrm6_mode_tunnel_init+0x0/0x14 returned 0 after 1 usecs
+[   39.710836] calling  xfrm6_ro_init+0x0/0x14 @ 1
+[   39.715342] initcall xfrm6_ro_init+0x0/0x14 returned 0 after 1 usecs
+[   39.721670] calling  mip6_init+0x0/0xa7 @ 1
+[   39.725830] Mobile IPv6
+[   39.729830] initcall mip6_init+0x0/0xa7 returned 0 after 2376 usecs
+[   39.734496] calling  ip6_tables_init+0x0/0x92 @ 1
+[   39.739177] ip6_tables: (C) 2000-2006 Netfilter Core Team
+[   39.744550] initcall ip6_tables_init+0x0/0x92 returned 0 after 5247 usecs
+[   39.751310] calling  ip6table_filter_init+0x0/0x5d @ 1
+[   39.756424] initcall ip6table_filter_init+0x0/0x5d returned 0 after 30 usecs
+[   39.763444] calling  ip6table_mangle_init+0x0/0x38 @ 1
+[   39.768557] initcall ip6table_mangle_init+0x0/0x38 returned 0 after 28 usecs
+[   39.775577] calling  ip6table_raw_init+0x0/0x38 @ 1
+[   39.780429] initcall ip6table_raw_init+0x0/0x38 returned 0 after 25 usecs
+[   39.787190] calling  nf_conntrack_l3proto_ipv6_init+0x0/0xef @ 1
+[   39.793169] initcall nf_conntrack_l3proto_ipv6_init+0x0/0xef returned 0 after 21 usecs
+[   39.801056] calling  ah_mt6_init+0x0/0xf @ 1
+[   39.805303] initcall ah_mt6_init+0x0/0xf returned 0 after 1 usecs
+[   39.811370] calling  eui64_mt6_init+0x0/0xf @ 1
+[   39.815877] initcall eui64_mt6_init+0x0/0xf returned 0 after 1 usecs
+[   39.822204] calling  ipv6header_mt6_init+0x0/0xf @ 1
+[   39.827143] initcall ipv6header_mt6_init+0x0/0xf returned 0 after 1 usecs
+[   39.833903] calling  mh_mt6_init+0x0/0xf @ 1
+[   39.838150] initcall mh_mt6_init+0x0/0xf returned 0 after 1 usecs
+[   39.844216] calling  hbh_mt6_init+0x0/0x14 @ 1
+[   39.848636] initcall hbh_mt6_init+0x0/0x14 returned 0 after 1 usecs
+[   39.854876] calling  rt_mt6_init+0x0/0xf @ 1
+[   39.859123] initcall rt_mt6_init+0x0/0xf returned 0 after 1 usecs
+[   39.865189] calling  log_tg6_init+0x0/0x24 @ 1
+[   39.869610] initcall log_tg6_init+0x0/0x24 returned 0 after 2 usecs
+[   39.875849] calling  reject_tg6_init+0x0/0xf @ 1
+[   39.880443] initcall reject_tg6_init+0x0/0xf returned 0 after 1 usecs
+[   39.886856] calling  sit_init+0x0/0x5f @ 1
+[   39.890929] IPv6 over IPv4 tunneling driver
+[   39.895089] device: 'sit0': device_add
+[   39.899089] PM: Adding info for No Bus:sit0
+[   39.903398] initcall sit_init+0x0/0x5f returned 0 after 12386 usecs
+[   39.909781] calling  packet_init+0x0/0x39 @ 1
+[   39.914114] NET: Registered protocol family 17
+[   39.918533] initcall packet_init+0x0/0x39 returned 0 after 4332 usecs
+[   39.924947] calling  dsa_init_module+0x0/0x11 @ 1
+[   39.929626] initcall dsa_init_module+0x0/0x11 returned 0 after 1 usecs
+[   39.936127] calling  trailer_init_module+0x0/0x11 @ 1
+[   39.941153] initcall trailer_init_module+0x0/0x11 returned 0 after 1 usecs
+[   39.951999] calling  mv88e6060_init+0x0/0x11 @ 1
+[   39.952594] initcall mv88e6060_init+0x0/0x11 returned 0 after 2 usecs
+[   39.959007] calling  mv88e6131_init+0x0/0x11 @ 1
+[   39.963600] initcall mv88e6131_init+0x0/0x11 returned 0 after 1 usecs
+[   39.970014] calling  dsa_init_module+0x0/0xf @ 1
+[   39.974606] bus: 'platform': add driver dsa
+[   39.978982] initcall dsa_init_module+0x0/0xf returned 0 after 4277 usecs
+[   39.985588] calling  atalk_init+0x0/0x77 @ 1
+[   39.989834] NET: Registered protocol family 5
+[   40.064003] initcall atalk_init+0x0/0x77 returned 0 after 68603 usecs
+[   40.066421] calling  x25_init+0x0/0x50 @ 1
+[   40.070494] NET: Registered protocol family 9
+[   40.074828] X.25 for Linux Version 0.2
+[   40.078828] initcall x25_init+0x0/0x50 returned 0 after 7925 usecs
+[   40.084709] calling  l2cap_init+0x0/0xba @ 1
+[   40.088955] Bluetooth: L2CAP ver 2.13
+[   40.092955] Bluetooth: L2CAP socket layer initialized
+[   40.097622] initcall l2cap_init+0x0/0xba returned 0 after 8463 usecs
+[   40.103948] calling  bnep_init+0x0/0x6a @ 1
+[   40.108109] Bluetooth: BNEP (Ethernet Emulation) ver 1.3
+[   40.113395] Bluetooth: BNEP filters: protocol multicast
+[   40.118594] initcall bnep_init+0x0/0x6a returned 0 after 10239 usecs
+[   40.124921] calling  init_sunrpc+0x0/0x53 @ 1
+[   40.129932] RPC: Registered udp transport module.
+[   40.134828] RPC: Registered tcp transport module.
+[   40.139507] initcall init_sunrpc+0x0/0x53 returned 0 after 10013 usecs
+[   40.146008] calling  init_rpcsec_gss+0x0/0x3f @ 1
+[   40.150687] initcall init_rpcsec_gss+0x0/0x3f returned 0 after 70 usecs
+[   40.157275] calling  init_spkm3_module+0x0/0x26 @ 1
+[   40.162128] initcall init_spkm3_module+0x0/0x26 returned 0 after 30 usecs
+[   40.168888] calling  af_rxrpc_init+0x0/0x167 @ 1
+[   40.173641] NET: Registered protocol family 33
+[   40.178023] initcall af_rxrpc_init+0x0/0x167 returned 0 after 4464 usecs
+[   40.184696] calling  decnet_init+0x0/0x7c @ 1
+[   40.189029] NET4: DECnet for Linux: V.2.5.68s (C) 1995-2003 Linux DECnet Project Team
+[   40.197008] DECnet: Routing cache hash table of 1024 buckets, 20Kbytes
+[   40.203460] NET: Registered protocol family 12
+[   40.207879] initcall decnet_init+0x0/0x7c returned 0 after 18435 usecs
+[   40.214380] calling  dn_rtmsg_init+0x0/0x60 @ 1
+[   40.218886] initcall dn_rtmsg_init+0x0/0x60 returned 0 after 25 usecs
+[   40.225299] calling  econet_proto_init+0x0/0x39 @ 1
+[   40.230152] NET: Registered protocol family 19
+[   40.234572] initcall econet_proto_init+0x0/0x39 returned 0 after 4315 usecs
+[   40.241506] calling  phonet_init+0x0/0x6b @ 1
+[   40.245839] NET: Registered protocol family 35
+[   40.250259] initcall phonet_init+0x0/0x6b returned 0 after 4347 usecs
+[   40.256672] calling  pep_register+0x0/0x14 @ 1
+[   40.261092] initcall pep_register+0x0/0x14 returned 0 after 22 usecs
+[   40.267420] calling  vlan_proto_init+0x0/0xa7 @ 1
+[   40.272099] 802.1Q VLAN Support v1.8 Ben Greear <greearb@candelatech.com>
+[   40.278859] All bugs added by David S. Miller <davem@redhat.com>
+[   40.284838] initcall vlan_proto_init+0x0/0xa7 returned 0 after 12484 usecs
+[   40.291686] calling  dccp_init+0x0/0x318 @ 1
+[   40.299933] CCID: Activated CCID 2 (TCP-like)
+[   40.302550] CCID: Activated CCID 3 (TCP-Friendly Rate Control)
+[   40.308352] initcall dccp_init+0x0/0x318 returned 0 after 12131 usecs
+[   40.314765] calling  dccp_v4_init+0x0/0x72 @ 1
+[   40.323699] initcall dccp_v4_init+0x0/0x72 returned 0 after 1070 usecs
+[   40.326709] calling  dccp_v6_init+0x0/0x72 @ 1
+[   40.335735] initcall dccp_v6_init+0x0/0x72 returned 0 after 1141 usecs
+[   40.338730] calling  sctp_init+0x0/0x68c @ 1
+[   40.346974] SCTP: Hash tables configured (established 43690 bind 52428)
+[   40.355588] initcall sctp_init+0x0/0x68c returned 0 after 9054 usecs
+[   40.358507] calling  lib80211_init+0x0/0x19 @ 1
+[   40.363013] lib80211: common routines for IEEE802.11 drivers
+[   40.368645] lib80211_crypt: registered algorithm 'NULL'
+[   40.373846] initcall lib80211_init+0x0/0x19 returned 0 after 10572 usecs
+[   40.380519] calling  lib80211_crypto_wep_init+0x0/0xf @ 1
+[   40.385892] lib80211_crypt: registered algorithm 'WEP'
+[   40.391006] initcall lib80211_crypto_wep_init+0x0/0xf returned 0 after 4994 usecs
+[   40.398458] calling  lib80211_crypto_ccmp_init+0x0/0xf @ 1
+[   40.403919] lib80211_crypt: registered algorithm 'CCMP'
+[   40.409118] initcall lib80211_crypto_ccmp_init+0x0/0xf returned 0 after 5078 usecs
+[   40.416658] calling  lib80211_crypto_tkip_init+0x0/0xf @ 1
+[   40.422119] lib80211_crypt: registered algorithm 'TKIP'
+[   40.427319] initcall lib80211_crypto_tkip_init+0x0/0xf returned 0 after 5077 usecs
+[   40.434859] calling  wimax_subsys_init+0x0/0x1a2 @ 1
+[   40.468003] initcall wimax_subsys_init+0x0/0x1a2 returned 0 after 23668 usecs
+[   40.471069] calling  severities_debugfs_init+0x0/0x4e @ 1
+[   40.476442] initcall severities_debugfs_init+0x0/0x4e returned 0 after 34 usecs
+[   40.483722] calling  powernowk8_init+0x0/0xb4 @ 1
+[   40.488402] powernow-k8: Found 1 AMD Athlon(tm) 64 X2 Dual Core Processor 3800+ processors (2 cpu cores) (version 2.20.00)
+[   40.499408] [Firmware Bug]: powernow-k8: No compatible ACPI _PSS objects found.
+[   40.499408] [Firmware Bug]: powernow-k8: Try again with latest BIOS.
+[   40.513019] initcall powernowk8_init+0x0/0xb4 returned -19 after 24075 usecs
+[   40.520036] calling  acpi_cpufreq_init+0x0/0x4a @ 1
+[   40.524889] initcall acpi_cpufreq_init+0x0/0x4a returned -19 after 87 usecs
+[   40.531839] calling  powernow_init+0x0/0x21 @ 1
+[   40.536346] initcall powernow_init+0x0/0x21 returned -19 after 1 usecs
+[   40.542846] calling  longhaul_init+0x0/0x77 @ 1
+[   40.547352] initcall longhaul_init+0x0/0x77 returned -19 after 1 usecs
+[   40.553853] calling  centrino_init+0x0/0x2a @ 1
+[   40.558360] initcall centrino_init+0x0/0x2a returned -19 after 1 usecs
+[   40.564860] calling  cpufreq_p4_init+0x0/0x4f @ 1
+[   40.569539] initcall cpufreq_p4_init+0x0/0x4f returned -19 after 1 usecs
+[   40.576212] calling  hpet_insert_resource+0x0/0x1e @ 1
+[   40.581325] initcall hpet_insert_resource+0x0/0x1e returned 1 after 1 usecs
+[   40.588258] initcall hpet_insert_resource+0x0/0x1e returned with error code 1 
+[   40.595451] calling  update_mp_table+0x0/0x1bc @ 1
+[   40.600219] initcall update_mp_table+0x0/0x1bc returned 0 after 1 usecs
+[   40.606806] calling  lapic_insert_resource+0x0/0x33 @ 1
+[   40.612560] initcall lapic_insert_resource+0x0/0x33 returned 0 after 3 usecs
+[   40.619579] calling  print_ipi_mode+0x0/0x25 @ 1
+[   40.624173] Using IPI No-Shortcut mode
+[   40.625012] initcall print_ipi_mode+0x0/0x25 returned 0 after 3628 usecs
+[   40.634573] calling  init_lapic_nmi_sysfs+0x0/0x33 @ 1
+[   40.639687] initcall init_lapic_nmi_sysfs+0x0/0x33 returned 0 after 1 usecs
+[   40.646621] calling  io_apic_bug_finalize+0x0/0x1a @ 1
+[   40.651733] initcall io_apic_bug_finalize+0x0/0x1a returned 0 after 1 usecs
+[   40.658667] calling  check_early_ioremap_leak+0x0/0x5e @ 1
+[   40.664127] initcall check_early_ioremap_leak+0x0/0x5e returned 0 after 1 usecs
+[   40.671407] calling  sched_init_debug+0x0/0x1f @ 1
+[   40.676174] initcall sched_init_debug+0x0/0x1f returned 0 after 14 usecs
+[   40.682846] calling  init_oops_id+0x0/0x3f @ 1
+[   40.687267] initcall init_oops_id+0x0/0x3f returned 0 after 5 usecs
+[   40.693507] calling  disable_boot_consoles+0x0/0x4f @ 1
+[   40.698707] initcall disable_boot_consoles+0x0/0x4f returned 0 after 1 usecs
+[   40.705726] calling  pm_qos_power_init+0x0/0xae @ 1
+[   40.710580] device: 'cpu_dma_latency': device_add
+[   40.715259] PM: Adding info for No Bus:cpu_dma_latency
+[   40.720684] device: 'network_latency': device_add
+[   40.725306] PM: Adding info for No Bus:network_latency
+[   40.730606] device: 'network_throughput': device_add
+[   40.735489] PM: Adding info for No Bus:network_throughput
+[   40.741056] initcall pm_qos_power_init+0x0/0xae returned 0 after 29765 usecs
+[   40.752004] calling  software_resume+0x0/0x1bb @ 1
+[   40.752770] PM: Resume from disk failed.
+[   40.756770] initcall software_resume+0x0/0x1bb returned -2 after 3804 usecs
+[   40.763603] initcall software_resume+0x0/0x1bb returned with error code -2 
+[   40.770536] calling  clear_boot_tracer+0x0/0x27 @ 1
+[   40.775389] initcall clear_boot_tracer+0x0/0x27 returned 0 after 1 usecs
+[   40.782063] calling  max_swapfiles_check+0x0/0x7 @ 1
+[   40.787003] initcall max_swapfiles_check+0x0/0x7 returned 0 after 1 usecs
+[   40.793763] calling  failslab_debugfs_init+0x0/0x58 @ 1
+[   40.798962] initcall failslab_debugfs_init+0x0/0x58 returned 0 after 166 usecs
+[   40.806278] calling  kmemleak_late_init+0x0/0x73 @ 1
+[   40.811317] kmemleak: Kernel memory leak detector initialized
+[   40.811328] kmemleak: Automatic memory scanning thread started
+[   40.822769] initcall kmemleak_late_init+0x0/0x73 returned 0 after 11287 usecs
+[   40.829875] calling  afs_init+0x0/0x183 @ 1
+[   40.834034] kAFS: Red Hat AFS client v0.1 registering.
+[   40.841004] initcall afs_init+0x0/0x183 returned 0 after 5818 usecs
+[   40.846161] calling  init_ima+0x0/0x19 @ 1
+[   40.853005] No TPM chip found, activating TPM-bypass!
+[   40.855668] initcall init_ima+0x0/0x19 returned 0 after 5391 usecs
+[   40.861829] calling  fail_make_request_debugfs+0x0/0x14 @ 1
+[   40.867377] initcall fail_make_request_debugfs+0x0/0x14 returned 0 after 390 usecs
+[   40.875272] calling  fail_io_timeout_debugfs+0x0/0x14 @ 1
+[   40.884645] initcall fail_io_timeout_debugfs+0x0/0x14 returned 0 after 344 usecs
+[   40.888324] calling  random32_reseed+0x0/0xb0 @ 1
+[   40.897005] initcall random32_reseed+0x0/0xb0 returned 0 after 14 usecs
+[   40.899589] calling  pci_resource_alignment_sysfs_init+0x0/0x14 @ 1
+[   40.905830] initcall pci_resource_alignment_sysfs_init+0x0/0x14 returned 0 after 9 usecs
+[   40.913889] calling  pci_sysfs_init+0x0/0x44 @ 1
+[   40.918482] initcall pci_sysfs_init+0x0/0x44 returned 0 after 543 usecs
+[   40.925548] calling  regulator_init_complete+0x0/0xea @ 1
+[   40.930919] initcall regulator_init_complete+0x0/0xea returned 0 after 2 usecs
+[   40.938114] calling  seqgen_init+0x0/0xe @ 1
+[   40.942360] initcall seqgen_init+0x0/0xe returned 0 after 16 usecs
+[   40.948514] calling  scsi_complete_async_scans+0x0/0x135 @ 1
+[   40.954147] initcall scsi_complete_async_scans+0x0/0x135 returned 0 after 1 usecs
+[   40.961600] calling  rtc_hctosys+0x0/0x10a @ 1
+[   40.966019] drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
+[   40.972260] initcall rtc_hctosys+0x0/0x10a returned -19 after 6094 usecs
+[   40.978933] calling  dmatest_init+0x0/0x5f @ 1
+[   40.983353] initcall dmatest_init+0x0/0x5f returned 0 after 2 usecs
+[   40.993004] calling  tcp_congestion_default+0x0/0xf @ 1
+[   40.997004] initcall tcp_congestion_default+0x0/0xf returned 0 after 2 usecs
+[   41.005004] calling  initialize_hashrnd+0x0/0x16 @ 1
+[   41.009004] initcall initialize_hashrnd+0x0/0x16 returned 0 after 4 usecs
+[   41.017004] async_waiting @ 1
+[   41.017004] async_continuing @ 1 after 1 usec
+[   41.025003] EXT3-fs: INFO: recovery required on readonly filesystem.
+[   41.028180] EXT3-fs: write access will be enabled during recovery.
+[   41.072934] kjournald starting.  Commit interval 5 seconds
+[   41.072934] EXT3-fs: recovery complete.
+[   41.072934] EXT3-fs: mounted filesystem with writeback data mode.
+[   41.072934] VFS: Mounted root (ext3 filesystem) readonly on device 8:1.
+[   41.072934] async_waiting @ 1
+[   41.072934] async_continuing @ 1 after 2 usec
+[   41.072934] debug: unmapping init memory 82029000..820b7000
+[   41.105009] Write protecting the kernel text: 10668k
+[   41.111007] Testing CPA: Reverting 81000000-81a6b000
+[   41.115948] Testing CPA: write protecting again
+[   41.120523] Write protecting the kernel read-only data: 5012k
+[   41.126390] Testing CPA: undo 81a6b000-81f50000
+[   41.130897] Testing CPA: write protecting again
+[   41.176842] Not activating Mandatory Access Control now since /sbin/tomoyo-init doesn't exist.
+[   41.669003] hostname used greatest stack depth: 6244 bytes left
+[   41.769003] mount used greatest stack depth: 6024 bytes left
+[   42.883810] touch used greatest stack depth: 5956 bytes left
+[   43.384943] fgrep used greatest stack depth: 5652 bytes left
+[   44.525004] EXT3 FS on sda1, internal journal
+[   44.588904] kjournald starting.  Commit interval 5 seconds
+[   44.588904] EXT3 FS on sda5, internal journal
+[   44.588904] EXT3-fs: mounted filesystem with writeback data mode.
+[   48.661003] sshd used greatest stack depth: 5576 bytes left
+[   48.826921] Adding 3911816k swap on /dev/sda2.  Priority:-1 extents:1 across:3911816k 
+[   50.660003] CPU 1 is now offline
+[   50.660003] SMP alternatives: switching to UP code
+[   50.668010] CPU0 attaching NULL sched-domain.
+[   50.675312] CPU1 attaching NULL sched-domain.
+[   50.679643] CPU0 attaching NULL sched-domain.
+[   50.687977] device: 'msr1': device_unregister
+[   50.689186] PM: Removing info for No Bus:msr1
+[   50.693518] device: 'msr1': device_create_release
+[   51.736017] device: 'msr1': device_add
+[   51.840009] PM: Adding info for No Bus:msr1
+[   51.846868] SMP alternatives: switching to SMP code
+[   51.856010] Booting processor 1 APIC 0x1 ip 0x6000
+[   50.668010] Initializing CPU#1
+[   50.668010] masked ExtINT on CPU#1
+[   50.668010] Calibrating delay loop... 2007.04 BogoMIPS (lpj=4014080)
+[   50.668010] CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+[   50.668010] CPU: L2 Cache: 512K (64 bytes/line)
+[   50.668010] CPU: Physical Processor ID: 0
+[   50.668010] CPU: Processor Core ID: 1
+[   50.668010] mce: CPU supports 5 MCE banks
+[   51.960007] CPU1: AMD Athlon(tm) 64 X2 Dual Core Processor 3800+ stepping 02
+[   52.003188] CPU0 attaching NULL sched-domain.
+[   52.004010] Switched to high resolution mode on CPU 1
+[   52.060003] CPU0 attaching sched-domain:
+[   52.060003]  domain 0: span 0-1 level MC
+[   52.062108]   groups: 0 1
+[   52.066108] CPU1 attaching sched-domain:
+[   52.070253]  domain 0: span 0-1 level MC
+[   52.074253]   groups: 1 0
+[   52.077726] Registering sys device of class 'machinecheck'
+[   52.083125] Registering sys device 'machinecheck1'
+[   53.268007] CPU 1 is now offline
+[   53.300013] SMP alternatives: switching to UP code
+[   53.312014] CPU0 attaching NULL sched-domain.
+[   53.319322] CPU1 attaching NULL sched-domain.
+[   53.323654] CPU0 attaching NULL sched-domain.
+[   53.332003] device: 'msr1': device_unregister
+[   53.333250] PM: Removing info for No Bus:msr1
+[   53.341581] device: 'msr1': device_create_release
+[   53.344810] sshd used greatest stack depth: 5416 bytes left
+[   57.632003] eth0: no IPv6 routers present
+[  103.564010] kmemleak: 29 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[  200.380003] Hangcheck: hangcheck value past margin!
+[  248.192003] INFO: task S99local:2974 blocked for more than 120 seconds.
+[  248.194532] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[  248.202330] S99local      D 0000000c  6256  2974   2687 0x00000000
+[  248.208929]  9c7ebe90 00000086 6b67ef8b 0000000c 9f25a610 81a69869 00000001 820b6990
+[  248.216123]  820b6990 820b6990 9c6e4c20 9c6e4eb4 82c78990 00000000 6b993559 0000000c
+[  248.220616]  9c7ebe90 8105f22a 9c6e4eb4 9c6e4c20 00000001 9c7ebe98 9c7ebeb4 81a65cb3
+[  248.229990] Call Trace:
+[  248.234049]  [<81a69869>] ? _spin_unlock_irqrestore+0x22/0x37
+[  248.239769]  [<8105f22a>] ? prepare_to_wait+0x48/0x4e
+[  248.244796]  [<81a65cb3>] rcu_barrier_cpu_hotplug+0xaa/0xc9
+[  248.250343]  [<8105f029>] ? autoremove_wake_function+0x0/0x38
+[  248.256063]  [<81062cf2>] notifier_call_chain+0x49/0x71
+[  248.261263]  [<81062da0>] raw_notifier_call_chain+0x11/0x13
+[  248.266809]  [<81a0b475>] _cpu_down+0x272/0x288
+[  248.271316]  [<81a0b4d5>] cpu_down+0x4a/0xa2
+[  248.275563]  [<81a0c48a>] store_online+0x2a/0x5e
+[  248.280156]  [<81a0c460>] ? store_online+0x0/0x5e
+[  248.284836]  [<814ddc35>] sysdev_store+0x20/0x28
+[  248.289429]  [<8112e403>] sysfs_write_file+0xb8/0xe3
+[  248.294369]  [<8112e34b>] ? sysfs_write_file+0x0/0xe3
+[  248.299396]  [<810e4c8f>] vfs_write+0x91/0x120
+[  248.303817]  [<810e4dc1>] sys_write+0x40/0x65
+[  248.308150]  [<81002d73>] sysenter_do_call+0x12/0x28
+[  248.313090] Kernel panic - not syncing: hung_task: blocked tasks
+[  248.319069] Rebooting in 1 seconds..Press any key to enter the menu
+
+
+--0F1p//8PRICkK4MW--
